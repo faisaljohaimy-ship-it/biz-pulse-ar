@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -117,7 +117,10 @@ function AssistantThread() {
 
 function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMessages: UIMessage[] }) {
   const { t } = useI18n();
+  const qc = useQueryClient();
   const [input, setInput] = useState("");
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
@@ -133,13 +136,55 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
       }),
   );
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     id: threadId,
     messages: initialMessages,
     transport,
   });
 
   const isLoading = status === "submitted" || status === "streaming";
+
+  // Realtime subscription for live message sync across devices
+  useEffect(() => {
+    const channel = supabase
+      .channel(`messages:${threadId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `thread_id=eq.${threadId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as {
+            id: string;
+            role: "user" | "assistant" | "system";
+            parts: Array<{ type: string; text?: string }>;
+            created_at: string;
+          };
+          const uiMsg: UIMessage = {
+            id: newMsg.id,
+            role: newMsg.role,
+            parts: newMsg.parts as UIMessage["parts"],
+          };
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === uiMsg.id)) return prev;
+            return [...prev, uiMsg];
+          });
+          // Also invalidate server cache so other queries stay fresh
+          qc.invalidateQueries({ queryKey: ["messages", threadId] });
+        },
+      )
+      .subscribe();
+
+    channelRef.current = channel;
+
+    return () => {
+      channel.unsubscribe();
+      channelRef.current = null;
+    };
+  }, [threadId, qc, setMessages]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
