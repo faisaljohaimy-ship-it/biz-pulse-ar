@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
 
 function AssistantThread() {
   const { threadId } = useParams({ from: "/_authenticated/assistant/$threadId" });
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
