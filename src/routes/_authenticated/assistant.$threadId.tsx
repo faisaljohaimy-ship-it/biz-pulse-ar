@@ -115,16 +115,25 @@ const MODELS = [
 ];
 
 function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMessages: UIMessage[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const qc = useQueryClient();
   const [input, setInput] = useState("");
+  const [model, setModel] = useState<string>(() => {
+    if (typeof window === "undefined") return MODELS[0].id;
+    return localStorage.getItem("nexus.model") ?? MODELS[0].id;
+  });
+  const modelRef = useRef(model);
+  useEffect(() => {
+    modelRef.current = model;
+    if (typeof window !== "undefined") localStorage.setItem("nexus.model", model);
+  }, [model]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: { threadId },
+        body: () => ({ threadId, model: modelRef.current }),
         fetch: async (url, init) => {
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
