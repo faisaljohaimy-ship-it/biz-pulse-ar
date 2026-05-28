@@ -14,9 +14,19 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
+import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/voice'
+import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
+import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
+import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
+import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
 
@@ -44,9 +54,50 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWorkflowsRoute = AuthenticatedWorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVoiceRoute = AuthenticatedVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
+  id: '/prompts',
+  path: '/prompts',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMarketplaceRoute =
+  AuthenticatedMarketplaceRouteImport.update({
+    id: '/marketplace',
+    path: '/marketplace',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedKnowledgeRoute = AuthenticatedKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -57,6 +108,16 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAssistantIndexRoute =
@@ -75,9 +136,19 @@ const AuthenticatedAssistantThreadIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/files': typeof AuthenticatedFilesRoute
+  '/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/prompts': typeof AuthenticatedPromptsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
+  '/team': typeof AuthenticatedTeamRoute
+  '/voice': typeof AuthenticatedVoiceRoute
+  '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -86,9 +157,19 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/files': typeof AuthenticatedFilesRoute
+  '/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/prompts': typeof AuthenticatedPromptsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
+  '/team': typeof AuthenticatedTeamRoute
+  '/voice': typeof AuthenticatedVoiceRoute
+  '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -99,9 +180,19 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tasks': typeof AuthenticatedTasksRoute
+  '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/voice': typeof AuthenticatedVoiceRoute
+  '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -112,9 +203,19 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/admin'
+    | '/agents'
     | '/analytics'
     | '/dashboard'
+    | '/files'
+    | '/knowledge'
+    | '/marketplace'
+    | '/prompts'
     | '/settings'
+    | '/tasks'
+    | '/team'
+    | '/voice'
+    | '/workflows'
     | '/api/chat'
     | '/api/voice-token'
     | '/assistant/$threadId'
@@ -123,9 +224,19 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/admin'
+    | '/agents'
     | '/analytics'
     | '/dashboard'
+    | '/files'
+    | '/knowledge'
+    | '/marketplace'
+    | '/prompts'
     | '/settings'
+    | '/tasks'
+    | '/team'
+    | '/voice'
+    | '/workflows'
     | '/api/chat'
     | '/api/voice-token'
     | '/assistant/$threadId'
@@ -135,9 +246,19 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/admin'
+    | '/_authenticated/agents'
     | '/_authenticated/analytics'
     | '/_authenticated/dashboard'
+    | '/_authenticated/files'
+    | '/_authenticated/knowledge'
+    | '/_authenticated/marketplace'
+    | '/_authenticated/prompts'
     | '/_authenticated/settings'
+    | '/_authenticated/tasks'
+    | '/_authenticated/team'
+    | '/_authenticated/voice'
+    | '/_authenticated/workflows'
     | '/api/chat'
     | '/api/voice-token'
     | '/_authenticated/assistant/$threadId'
@@ -189,11 +310,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/workflows': {
+      id: '/_authenticated/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof AuthenticatedWorkflowsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/voice': {
+      id: '/_authenticated/voice'
+      path: '/voice'
+      fullPath: '/voice'
+      preLoaderRoute: typeof AuthenticatedVoiceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/team': {
+      id: '/_authenticated/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof AuthenticatedTeamRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tasks': {
+      id: '/_authenticated/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AuthenticatedTasksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/prompts': {
+      id: '/_authenticated/prompts'
+      path: '/prompts'
+      fullPath: '/prompts'
+      preLoaderRoute: typeof AuthenticatedPromptsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/marketplace': {
+      id: '/_authenticated/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof AuthenticatedMarketplaceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/knowledge': {
+      id: '/_authenticated/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof AuthenticatedKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/files': {
+      id: '/_authenticated/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof AuthenticatedFilesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -208,6 +385,20 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/agents': {
+      id: '/_authenticated/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/assistant/': {
@@ -228,17 +419,37 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
+  AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
+  AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
+  AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedVoiceRoute: typeof AuthenticatedVoiceRoute
+  AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
   AuthenticatedAssistantThreadIdRoute: typeof AuthenticatedAssistantThreadIdRoute
   AuthenticatedAssistantIndexRoute: typeof AuthenticatedAssistantIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
+  AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
+  AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTasksRoute: AuthenticatedTasksRoute,
+  AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedVoiceRoute: AuthenticatedVoiceRoute,
+  AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
   AuthenticatedAssistantThreadIdRoute: AuthenticatedAssistantThreadIdRoute,
   AuthenticatedAssistantIndexRoute: AuthenticatedAssistantIndexRoute,
 }
