@@ -144,3 +144,45 @@ function SignUpForm() {
     </form>
   );
 }
+
+function AdminGate() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [pwd, setPwd] = useState("");
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwd === "99999") {
+      sessionStorage.setItem("admin_unlocked", "1");
+      toast.success("✓ Admin");
+      navigate({ to: "/admin" });
+    } else {
+      toast.error("✗");
+    }
+  };
+
+  return (
+    <div className="mt-8 text-center">
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="text-xs text-muted-foreground/60 hover:text-muted-foreground"
+        >
+          Admin
+        </button>
+      ) : (
+        <form onSubmit={onSubmit} className="mx-auto flex max-w-xs items-center gap-2">
+          <Input
+            type="password"
+            placeholder="••••"
+            value={pwd}
+            onChange={(e) => setPwd(e.target.value)}
+            autoFocus
+            className="h-8 text-xs"
+          />
+          <Button type="submit" size="sm" variant="outline">→</Button>
+        </form>
+      )}
+    </div>
+  );
+}
