@@ -17,7 +17,7 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import { Shimmer } from "@/components/ui/shimmer";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 
 export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
   component: AssistantThread,
@@ -108,7 +108,7 @@ function AssistantThread() {
         {messagesQ.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">...</div>
         ) : (
-          <ChatWindow key={threadId} threadId={threadId} initialMessages={messagesQ.data ?? []} />
+          <ChatWindow key={threadId} threadId={threadId} initialMessages={(messagesQ.data ?? []) as unknown as UIMessage[]} />
         )}
       </div>
     </div>
