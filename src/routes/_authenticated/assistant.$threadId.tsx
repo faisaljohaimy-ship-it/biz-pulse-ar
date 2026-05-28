@@ -166,7 +166,7 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
           const uiMsg: UIMessage = {
             id: newMsg.id,
             role: newMsg.role,
-            parts: newMsg.parts,
+            parts: newMsg.parts as UIMessage["parts"],
             createdAt: new Date(newMsg.created_at),
             experimental_attachments: undefined,
           };
