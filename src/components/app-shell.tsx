@@ -65,9 +65,10 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   ];
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
           <Bot className="h-5 w-5 text-primary-foreground" />
+          <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
