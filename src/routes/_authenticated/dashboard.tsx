@@ -28,6 +28,7 @@ import {
   YAxis,
 } from "recharts";
 import { createThread } from "@/lib/threads.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
