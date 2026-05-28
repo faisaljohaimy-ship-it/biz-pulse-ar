@@ -11,12 +11,12 @@ export type Locale = "ar" | "en";
 type Dict = Record<string, { ar: string; en: string }>;
 
 const dict: Dict = {
-  "app.name": { ar: "نظام التشغيل الذكي", en: "AI Operating System" },
+  "app.name": { ar: "نكسس — نظام التشغيل الذكي", en: "Nexus AI OS" },
   "app.tagline": {
-    ar: "منصة المؤسسة الذكية للقيادة التنفيذية",
-    en: "Enterprise intelligence for executive leaders",
+    ar: "مركز القيادة الذكية للمؤسسات",
+    en: "Intelligent command for enterprises",
   },
-  "nav.dashboard": { ar: "لوحة القيادة", en: "Dashboard" },
+  "nav.dashboard": { ar: "مركز القيادة", en: "Command Center" },
   "nav.analytics": { ar: "التحليلات", en: "Analytics" },
   "nav.assistant": { ar: "المساعد الذكي", en: "AI Assistant" },
   "nav.settings": { ar: "الإعدادات", en: "Settings" },
@@ -30,10 +30,36 @@ const dict: Dict = {
   "auth.no_account": { ar: "ليس لديك حساب؟", en: "No account?" },
   "auth.welcome": { ar: "مرحباً بعودتك", en: "Welcome back" },
   "auth.create_account": { ar: "أنشئ حسابك", en: "Create your account" },
-  "dashboard.title": { ar: "لوحة القيادة التنفيذية", en: "Executive Dashboard" },
+  "dashboard.title": { ar: "مركز القيادة الذكي", en: "AI Command Center" },
   "dashboard.subtitle": {
-    ar: "نظرة شاملة على أداء المؤسسة في الوقت الفعلي",
-    en: "Real-time view of enterprise performance",
+    ar: "نظرة شاملة على أداء المؤسسة مدعومة بالذكاء الاصطناعي",
+    en: "AI-driven view of your enterprise in real time",
+  },
+  "dashboard.greeting": { ar: "مرحباً", en: "Welcome" },
+  "dashboard.status_live": { ar: "متصل مباشرة", en: "Live" },
+  "dashboard.ask_placeholder": {
+    ar: "اسأل المساعد عن أي شيء — تقرير، تحليل، توقع...",
+    en: "Ask the assistant anything — report, analysis, forecast...",
+  },
+  "dashboard.suggestion_1": { ar: "لخّص أداء الربع الحالي", en: "Summarize this quarter's performance" },
+  "dashboard.suggestion_2": { ar: "ما أكبر فرص النمو؟", en: "What are the biggest growth opportunities?" },
+  "dashboard.suggestion_3": { ar: "حلّل سلوك المستخدمين", en: "Analyze user behavior trends" },
+  "dashboard.open_assistant": { ar: "افتح المساعد", en: "Open Assistant" },
+  "dashboard.insights": { ar: "أهم الإشارات الذكية", en: "Top AI signals" },
+  "dashboard.insight_1_t": { ar: "نمو غير مسبوق في القطاع الرقمي", en: "Record growth in the digital segment" },
+  "dashboard.insight_1_d": {
+    ar: "ارتفع تبني الذكاء الاصطناعي بنسبة 24٪ هذا الشهر.",
+    en: "AI adoption is up 24% this month.",
+  },
+  "dashboard.insight_2_t": { ar: "انخفاض في معدل التحويل", en: "Conversion dip detected" },
+  "dashboard.insight_2_d": {
+    ar: "تراجع طفيف بنسبة 1.2٪ — يُنصح بمراجعة المسار.",
+    en: "Down 1.2% — funnel review recommended.",
+  },
+  "dashboard.insight_3_t": { ar: "فرصة تحسين الكفاءة", en: "Efficiency opportunity" },
+  "dashboard.insight_3_d": {
+    ar: "أتمتة 8 سير عمل يمكن أن توفر ~120 ساعة شهرياً.",
+    en: "Automating 8 flows could save ~120 hours/month.",
   },
   "kpi.revenue": { ar: "الإيرادات", en: "Revenue" },
   "kpi.users": { ar: "المستخدمون النشطون", en: "Active users" },
