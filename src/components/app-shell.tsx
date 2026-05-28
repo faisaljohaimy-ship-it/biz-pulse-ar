@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   return (
     <div className="flex min-h-screen bg-background">
@@ -25,7 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent side="start" className="w-72 bg-sidebar p-0 text-sidebar-foreground">
+            <SheetContent side={locale === "ar" ? "right" : "left"} className="w-72 bg-sidebar p-0 text-sidebar-foreground">
               <SidebarBody onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
