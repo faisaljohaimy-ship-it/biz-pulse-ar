@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 const BodySchema = z.object({
   messages: z.array(z.any()),
@@ -31,9 +31,9 @@ export const Route = createFileRoute("/api/chat")({
         const authHeader = request.headers.get("authorization") ?? request.headers.get("Authorization");
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
-        const supabase = createServerClient(supabaseUrl, supabasePublishable, {
-          cookies: { getAll: () => [], setAll: () => {} },
+        const supabase = createClient(supabaseUrl, supabasePublishable, {
           global: authHeader ? { headers: { Authorization: authHeader } } : undefined,
+          auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data: userData, error: userError } = await supabase.auth.getUser();
         if (userError || !userData.user) {
