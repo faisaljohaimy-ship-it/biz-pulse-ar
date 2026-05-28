@@ -11,30 +11,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="relative flex min-h-screen bg-background">
+      {/* Ambient glow */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 start-[-10%] h-[480px] w-[480px] rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute bottom-[-160px] end-[-10%] h-[420px] w-[420px] rounded-full bg-accent/20 blur-3xl" />
+      </div>
+
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-e border-sidebar-border bg-sidebar md:flex md:flex-col">
+      <aside className="hidden w-64 shrink-0 border-e border-sidebar-border glass-sidebar md:flex md:flex-col">
         <SidebarBody />
       </aside>
 
       {/* Mobile header + sheet */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent side={locale === "ar" ? "right" : "left"} className="w-72 bg-sidebar p-0 text-sidebar-foreground">
+            <SheetContent
+              side={locale === "ar" ? "right" : "left"}
+              className="w-72 glass-sidebar p-0 text-sidebar-foreground"
+            >
               <SidebarBody onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-primary">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
               <Bot className="h-4 w-4 text-primary-foreground" />
+              <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
-            <span className="text-sm font-semibold">Nexus</span>
+            <span className="text-sm font-bold tracking-tight">Nexus</span>
           </div>
           <LangAndUser compact />
         </header>
