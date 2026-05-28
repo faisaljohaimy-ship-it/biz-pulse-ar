@@ -95,16 +95,6 @@ function AssistantThread() {
 
       {/* Chat */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold">{t("assistant.title")}</div>
-            <div className="text-[11px] text-muted-foreground">Gemini 3 Flash · {locale.toUpperCase()}</div>
-          </div>
-        </div>
-
         {messagesQ.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">...</div>
         ) : (
@@ -114,6 +104,15 @@ function AssistantThread() {
     </div>
   );
 }
+
+const MODELS = [
+  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+  { id: "openai/gpt-4o-mini", label: "GPT-4o mini" },
+  { id: "openai/gpt-4o", label: "GPT-4o" },
+  { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet" },
+  { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+];
 
 function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMessages: UIMessage[] }) {
   const { t } = useI18n();
