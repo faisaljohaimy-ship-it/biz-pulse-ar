@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
 
 function AssistantThread() {
   const { threadId } = useParams({ from: "/_authenticated/assistant/$threadId" });
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -95,16 +95,6 @@ function AssistantThread() {
 
       {/* Chat */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold">{t("assistant.title")}</div>
-            <div className="text-[11px] text-muted-foreground">Gemini 3 Flash · {locale.toUpperCase()}</div>
-          </div>
-        </div>
-
         {messagesQ.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">...</div>
         ) : (
@@ -115,17 +105,35 @@ function AssistantThread() {
   );
 }
 
+const MODELS = [
+  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+  { id: "openai/gpt-4o-mini", label: "GPT-4o mini" },
+  { id: "openai/gpt-4o", label: "GPT-4o" },
+  { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet" },
+  { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+];
+
 function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMessages: UIMessage[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const qc = useQueryClient();
   const [input, setInput] = useState("");
+  const [model, setModel] = useState<string>(() => {
+    if (typeof window === "undefined") return MODELS[0].id;
+    return localStorage.getItem("nexus.model") ?? MODELS[0].id;
+  });
+  const modelRef = useRef(model);
+  useEffect(() => {
+    modelRef.current = model;
+    if (typeof window !== "undefined") localStorage.setItem("nexus.model", model);
+  }, [model]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: { threadId },
+        body: () => ({ threadId, model: modelRef.current }),
         fetch: async (url, init) => {
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
@@ -194,16 +202,65 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
     await sendMessage({ text });
   };
 
+  const suggestions = [
+    t("assistant.sugg_1"),
+    t("assistant.sugg_2"),
+    t("assistant.sugg_3"),
+    t("assistant.sugg_4"),
+  ];
+
+  const sendSuggestion = async (text: string) => {
+    if (isLoading) return;
+    await sendMessage({ text });
+  };
+
   return (
     <>
+      {/* Header with model picker */}
+      <div className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:px-6">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+          <Sparkles className="h-4 w-4 text-primary-foreground" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold">{t("assistant.title")}</div>
+          <div className="text-[11px] text-muted-foreground">{locale.toUpperCase()} · OpenRouter</div>
+        </div>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="hidden sm:inline">{t("assistant.model")}</span>
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="rounded-md border border-border bg-card px-2 py-1.5 text-xs text-foreground outline-none focus:border-primary"
+          >
+            {MODELS.map((m) => (
+              <option key={m.id} value={m.id}>{m.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <Conversation>
         <ConversationContent>
           {messages.length === 0 ? (
-            <ConversationEmptyState
-              icon={<Sparkles className="h-8 w-8 text-primary" />}
-              title={t("assistant.title")}
-              description={t("assistant.empty")}
-            />
+            <div className="flex flex-col items-center justify-center gap-6 p-8 text-center">
+              <ConversationEmptyState
+                icon={<Sparkles className="h-8 w-8 text-primary" />}
+                title={t("assistant.title")}
+                description={t("assistant.empty")}
+              />
+              <div className="grid w-full max-w-xl grid-cols-1 gap-2 sm:grid-cols-2">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => sendSuggestion(s)}
+                    className="rounded-xl border border-border bg-card/60 px-3 py-2.5 text-start text-sm text-foreground/90 transition-all hover:border-primary/60 hover:bg-card hover:shadow-glow"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
             messages.map((m) => (
               <Message from={m.role} key={m.id}>
@@ -225,6 +282,7 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
+
 
       <form
         onSubmit={onSubmit}

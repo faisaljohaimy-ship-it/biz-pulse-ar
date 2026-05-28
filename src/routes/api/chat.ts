@@ -1,23 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { z } from "zod";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import {
+  createOpenRouterProvider,
+  DEFAULT_OPENROUTER_MODEL,
+  OPENROUTER_MODELS,
+} from "@/lib/ai-gateway.server";
 import { createClient } from "@supabase/supabase-js";
+
+const ModelEnum = z.enum(
+  OPENROUTER_MODELS.map((m) => m.id) as [string, ...string[]],
+);
 
 const BodySchema = z.object({
   messages: z.array(z.any()),
   threadId: z.string().uuid().optional(),
+  model: ModelEnum.optional(),
 });
 
-const SYSTEM_PROMPT = `أنت مساعد تنفيذي ذكي لمنصة مؤسسات. تجيب بإيجاز وبلغة المستخدم (العربية افتراضياً، أو الإنجليزية إذا تواصل المستخدم بالإنجليزية). استخدم تنسيق Markdown، وعند تقديم بيانات استخدم جداول أو نقاط واضحة. تفهم سياق الأعمال: الإيرادات، KPIs، الفرق، والاستراتيجية.`;
+const SYSTEM_PROMPT = `أنت مساعد تنفيذي ذكي لمنصة "نكسس" المؤسسية. أجب بإيجاز وبلغة المستخدم (العربية افتراضياً، أو الإنجليزية إذا كتب بالإنجليزية). استخدم تنسيق Markdown، وعند تقديم بيانات استخدم جداول أو نقاط واضحة. تفهم سياق الأعمال: الإيرادات، KPIs، الفرق، والاستراتيجية. كن دقيقاً ومباشراً وذا طابع تنفيذي.
+
+You are an executive AI assistant for the Nexus enterprise platform. Reply concisely in the user's language (default Arabic, English if they write in English). Use Markdown, with tables or bullets for data. Be precise, direct, and executive in tone.`;
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = process.env.OPENROUTER_API_KEY;
         if (!apiKey) {
-          return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+          return new Response("Missing OPENROUTER_API_KEY", { status: 500 });
         }
 
         const raw = await request.json();
@@ -25,10 +36,11 @@ export const Route = createFileRoute("/api/chat")({
         if (!parsed.success) {
           return new Response("Invalid body", { status: 400 });
         }
-        const { messages, threadId } = parsed.data;
+        const { messages, threadId, model: modelId } = parsed.data;
 
-        // Authenticate user via bearer token (same pattern as auth-middleware)
-        const authHeader = request.headers.get("authorization") ?? request.headers.get("Authorization");
+        // Authenticate user via bearer token
+        const authHeader =
+          request.headers.get("authorization") ?? request.headers.get("Authorization");
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
         const supabase = createClient(supabaseUrl, supabasePublishable, {
@@ -41,8 +53,8 @@ export const Route = createFileRoute("/api/chat")({
         }
         const userId = userData.user.id;
 
-        const gateway = createLovableAiGatewayProvider(apiKey);
-        const model = gateway("google/gemini-3-flash-preview");
+        const provider = createOpenRouterProvider(apiKey);
+        const model = provider(modelId ?? DEFAULT_OPENROUTER_MODEL);
 
         const uiMessages = messages as UIMessage[];
 
@@ -57,7 +69,6 @@ export const Route = createFileRoute("/api/chat")({
           onFinish: async ({ messages: finalMessages }) => {
             if (!threadId) return;
             try {
-              // Verify thread belongs to user
               const { data: thread } = await supabase
                 .from("threads")
                 .select("id")
@@ -66,7 +77,6 @@ export const Route = createFileRoute("/api/chat")({
                 .maybeSingle();
               if (!thread) return;
 
-              // Persist only the last user message and the new assistant message
               const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
               const newAssistant = finalMessages[finalMessages.length - 1];
 
@@ -91,7 +101,7 @@ export const Route = createFileRoute("/api/chat")({
                 const { error: insertErr } = await supabase.from("messages").insert(rows);
                 if (insertErr) console.error("messages insert failed", insertErr);
               }
-              // Touch thread updated_at and set title from first user message if still default
+
               const firstText =
                 lastUser?.parts.find((p) => p.type === "text")?.text?.slice(0, 60) ?? null;
               const { data: t } = await supabase
