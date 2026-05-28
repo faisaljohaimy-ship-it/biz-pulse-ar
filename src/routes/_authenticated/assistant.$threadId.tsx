@@ -167,8 +167,6 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             id: newMsg.id,
             role: newMsg.role,
             parts: newMsg.parts as UIMessage["parts"],
-            createdAt: new Date(newMsg.created_at),
-            experimental_attachments: undefined,
           };
           setMessages((prev) => {
             if (prev.some((m) => m.id === uiMsg.id)) return prev;
