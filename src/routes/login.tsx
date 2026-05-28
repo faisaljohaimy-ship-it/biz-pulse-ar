@@ -62,6 +62,8 @@ function LoginPage() {
             </TabsContent>
           </Tabs>
         </div>
+
+        <AdminGate />
       </div>
     </div>
   );
