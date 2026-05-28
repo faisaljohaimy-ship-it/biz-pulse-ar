@@ -61,14 +61,14 @@ function Dashboard() {
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const fmt = locale === "ar" ? "ar-EG" : "en-US";
+  const create = useServerFn(createThread);
 
   const startAssistant = async (initial?: string) => {
     const seed = (initial ?? prompt).trim();
     setSubmitting(true);
     try {
-      const thread = await createThread({ data: { title: seed?.slice(0, 60) || undefined } });
-      const search = seed ? { q: seed } : undefined;
-      navigate({ to: "/assistant/$threadId", params: { threadId: thread.id }, search });
+      const thread = await create({ data: { title: seed?.slice(0, 60) || undefined } });
+      navigate({ to: "/assistant/$threadId", params: { threadId: thread.id } });
     } finally {
       setSubmitting(false);
     }
