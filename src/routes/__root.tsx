@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import appCss from "../styles.css?url";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -121,10 +122,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <I18nProvider>
-          <Outlet />
-          <Toaster />
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <Outlet />
+            <Toaster />
+          </I18nProvider>
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
