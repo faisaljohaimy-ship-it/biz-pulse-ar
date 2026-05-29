@@ -36,6 +36,7 @@ import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCrisisRouteImport } from './routes/_authenticated/crisis'
 import { Route as AuthenticatedCockpitRouteImport } from './routes/_authenticated/cockpit'
 import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authenticated/chief-of-staff'
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
@@ -189,6 +190,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCrisisRoute = AuthenticatedCrisisRouteImport.update({
+  id: '/crisis',
+  path: '/crisis',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCockpitRoute = AuthenticatedCockpitRouteImport.update({
   id: '/cockpit',
   path: '/cockpit',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
+  '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
+  '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
   '/_authenticated/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/_authenticated/cockpit': typeof AuthenticatedCockpitRoute
+  '/_authenticated/crisis': typeof AuthenticatedCrisisRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
+    | '/crisis'
     | '/dashboard'
     | '/decisions'
     | '/departments'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
+    | '/crisis'
     | '/dashboard'
     | '/decisions'
     | '/departments'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/_authenticated/briefing'
     | '/_authenticated/chief-of-staff'
     | '/_authenticated/cockpit'
+    | '/_authenticated/crisis'
     | '/_authenticated/dashboard'
     | '/_authenticated/decisions'
     | '/_authenticated/departments'
@@ -687,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/crisis': {
+      id: '/_authenticated/crisis'
+      path: '/crisis'
+      fullPath: '/crisis'
+      preLoaderRoute: typeof AuthenticatedCrisisRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cockpit': {
       id: '/_authenticated/cockpit'
       path: '/cockpit'
@@ -777,6 +796,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
   AuthenticatedChiefOfStaffRoute: typeof AuthenticatedChiefOfStaffRoute
   AuthenticatedCockpitRoute: typeof AuthenticatedCockpitRoute
+  AuthenticatedCrisisRoute: typeof AuthenticatedCrisisRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
@@ -813,6 +833,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
   AuthenticatedChiefOfStaffRoute: AuthenticatedChiefOfStaffRoute,
   AuthenticatedCockpitRoute: AuthenticatedCockpitRoute,
+  AuthenticatedCrisisRoute: AuthenticatedCrisisRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
@@ -853,3 +874,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
