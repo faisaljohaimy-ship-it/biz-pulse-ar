@@ -120,7 +120,16 @@ export function ExecutiveOverlay() {
     <>
       <FloatingDock state={s} />
       <ExecutiveAvatar state={s} />
-      <CommandPalette open={s.paletteOpen} onClose={() => s.setPalette(false)} />
+      <CommandPalette
+        open={s.paletteOpen}
+        onClose={() => s.setPalette(false)}
+        onOpenBriefing={() => s.setBriefing(true)}
+        onOpenAvatar={() => s.setAvatar(true)}
+        onStartPresenting={() => {
+          s.setPresenting(true);
+          document.body.classList.add("nexus-presenting");
+        }}
+      />
       <BriefingPanel open={s.briefingOpen} onClose={() => s.setBriefing(false)} />
       <AvatarConsole open={s.avatarOpen} onClose={() => s.setAvatar(false)} />
       <ShortcutsHelp open={s.shortcutsOpen} onClose={() => s.setShortcuts(false)} />
