@@ -142,6 +142,7 @@ function LaunchExperience() {
           onAction={() => navigate({ to: "/transformation" })}
           onEnter={() => setOpen(true)}
         />
+        <AIDetectionPanel isAr={isAr} navigate={navigate} />
         <LiveMetricsStrip isAr={isAr} />
         <PillarsGrid isAr={isAr} />
       </main>
