@@ -126,8 +126,8 @@ function FloatingDock({ state }: { state: OverlayState }) {
             className="group flex items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-semibold text-slate-200 transition hover:bg-cyan-400/10 hover:text-cyan-200"
           >
             <it.icon className="h-3.5 w-3.5 text-cyan-300/80 group-hover:text-cyan-200" />
-            <span>{it.label}</span>
-            <kbd className="rounded border border-slate-700/60 bg-slate-900/60 px-1.5 py-0.5 text-[9px] text-slate-400">{it.kbd}</kbd>
+            <span className="nexus-dock-label hidden sm:inline">{it.label}</span>
+            <kbd className="hidden rounded border border-slate-700/60 bg-slate-900/60 px-1.5 py-0.5 text-[9px] text-slate-400 sm:inline">{it.kbd}</kbd>
           </button>
         ))}
       </div>
