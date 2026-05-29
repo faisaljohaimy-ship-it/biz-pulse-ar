@@ -418,7 +418,15 @@ function suggestionsForPath(pathname: string): string[] {
   return ["act_brief", "act_pres", "n_cockpit", "n_intel", "act_ask1"];
 }
 
-function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
+type CommandPaletteProps = {
+  open: boolean;
+  onClose: () => void;
+  onOpenBriefing: () => void;
+  onOpenAvatar: () => void;
+  onStartPresenting: () => void;
+};
+
+function CommandPalette({ open, onClose, onOpenBriefing, onOpenAvatar, onStartPresenting }: CommandPaletteProps) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const navigate = useNavigate();
@@ -429,15 +437,12 @@ function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Stable refs for the action ctx
-  const noopSetters = useRef({ b: (_: boolean) => {}, p: (_: boolean) => {}, a: (_: boolean) => {} }).current;
-  // Action commands inherit overlay setters via window event bus to avoid prop drilling further
-  const actions = useMemo(() => buildActionCommands(ar, {
-    setBriefing: (v) => window.dispatchEvent(new CustomEvent("nexus:set-briefing", { detail: v })),
-    setPresenting: (v) => window.dispatchEvent(new CustomEvent("nexus:set-presenting", { detail: v })),
-    setAvatar: (v) => window.dispatchEvent(new CustomEvent("nexus:set-avatar", { detail: v })),
+  const actions = useMemo(() => buildActionCommands({
+    onOpenBriefing,
+    onStartPresenting,
+    onOpenAvatar,
     navigate: (o) => navigate(o),
-  }), [ar, navigate, noopSetters]);
+  }), [navigate, onOpenBriefing, onStartPresenting, onOpenAvatar]);
 
   const all = useMemo(() => [...ALL_STATIC, ...actions], [actions]);
 
