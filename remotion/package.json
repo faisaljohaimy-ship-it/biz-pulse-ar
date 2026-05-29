@@ -1,0 +1,25 @@
+{
+  "name": "remotion",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.469",
+    "@remotion/cli": "^4.0.469",
+    "@remotion/compositor-linux-x64-musl": "^4.0.469",
+    "@remotion/google-fonts": "^4.0.469",
+    "@remotion/renderer": "^4.0.469",
+    "@remotion/transitions": "^4.0.469",
+    "@types/react": "^19.2.15",
+    "lucide-react": "^0.469.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "remotion": "^4.0.469"
+  }
+}
