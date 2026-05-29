@@ -50,18 +50,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   return (
-    <div className="relative flex min-h-screen bg-background">
+    <div className="nexus-app-shell relative flex min-h-screen bg-background">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 start-[-10%] h-[480px] w-[480px] rounded-full bg-primary/20 blur-3xl" />
         <div className="absolute bottom-[-160px] end-[-10%] h-[420px] w-[420px] rounded-full bg-accent/20 blur-3xl" />
       </div>
 
-      <aside className="hidden w-64 shrink-0 border-e border-sidebar-border glass-sidebar md:flex md:flex-col">
+      <aside className="nexus-sidebar hidden shrink-0 border-e border-sidebar-border glass-sidebar md:flex md:w-56 md:flex-col lg:w-60 xl:w-64 2xl:w-72">
         <SidebarBody />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
+        <header className="nexus-mobile-header sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -84,7 +84,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <ThemeToggle />
         </header>
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="nexus-main min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
+            {children}
+          </div>
+        </main>
       </div>
       <ExecutiveOverlay />
     </div>
