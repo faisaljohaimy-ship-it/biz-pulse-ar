@@ -1,0 +1,183 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useI18n } from "@/lib/i18n";
+import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { AlertTriangle, TrendingUp, ShieldAlert, Sparkles, FileText, ArrowUpRight } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/briefing")({
+  component: BriefingPage,
+});
+
+function BriefingPage() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+
+  const summary = ar
+    ? "أداء المؤسسة يفوق الخطة بنسبة 8.4٪ مع تسارع تبني الذكاء الاصطناعي عبر 5 إدارات. تم رصد 3 مخاطر تتطلب قراراً تنفيذياً، وفرصتان استراتيجيتان جاهزتان للتنفيذ."
+    : "Enterprise performance is 8.4% above plan, with AI adoption accelerating across 5 divisions. 3 risks require executive decisions and 2 strategic opportunities are ready to execute.";
+
+  const alerts = [
+    { t: ar ? "تجاوز ميزانية الحوسبة السحابية بنسبة 14٪" : "Cloud compute budget exceeded by 14%", tone: "amber" as const, t2: ar ? "المالية" : "Finance" },
+    { t: ar ? "تأخر مشروع SAP S/4HANA بأسبوعين" : "SAP S/4HANA rollout slipped by 2 weeks", tone: "rose" as const, t2: ar ? "تكنولوجيا" : "IT" },
+    { t: ar ? "ارتفاع رضا العملاء إلى 92٪" : "Customer satisfaction up to 92%", tone: "emerald" as const, t2: ar ? "العمليات" : "Ops" },
+    { t: ar ? "محاولة وصول غير مصرح بها مكتشفة" : "Unauthorized access attempt detected", tone: "rose" as const, t2: ar ? "الأمن" : "Security" },
+  ];
+
+  const risks = [
+    { t: ar ? "اعتماد عالٍ على مورد سحابي واحد" : "Heavy reliance on single cloud vendor", level: ar ? "حرج" : "Critical", p: 78 },
+    { t: ar ? "نقص في كفاءات الذكاء الاصطناعي" : "AI talent shortage in EMEA", level: ar ? "مرتفع" : "High", p: 65 },
+    { t: ar ? "تذبذب سعر العملة في الأسواق الناشئة" : "FX volatility in emerging markets", level: ar ? "متوسط" : "Medium", p: 42 },
+  ];
+
+  const opportunities = [
+    { t: ar ? "أتمتة عمليات المالية توفر 3.2M ر.س سنوياً" : "Finance automation saves SAR 3.2M / yr", p: 86 },
+    { t: ar ? "توسعة منتج AI Copilot إلى قطاع B2B" : "Expand AI Copilot to B2B segment", p: 79 },
+    { t: ar ? "شراكة استراتيجية مع موزع إقليمي" : "Strategic alliance with regional distributor", p: 71 },
+  ];
+
+  const actions = [
+    ar ? "اعتماد ميزانية إضافية للحوسبة السحابية بقيمة 1.2M ر.س" : "Approve additional SAR 1.2M cloud compute budget",
+    ar ? "تكليف فريق ضربة للإسراع في تنفيذ SAP S/4HANA" : "Form a tiger team to accelerate SAP S/4HANA",
+    ar ? "إطلاق مبادرة استقطاب 12 مهندس AI" : "Launch hiring drive for 12 AI engineers",
+    ar ? "تفعيل خطة استمرارية الأعمال السحابية البديلة" : "Activate secondary cloud BCP plan",
+  ];
+
+  return (
+    <NexusPage
+      eyebrow="EXECUTIVE BRIEFING"
+      title={ar ? "موجز التنفيذيين اليومي" : "Daily Executive Briefing"}
+      subtitle={ar ? "تقرير ذكي مولد بواسطة Nexus AI — تحديث مباشر كل 15 دقيقة." : "AI-generated executive intelligence, refreshed every 15 minutes."}
+      actions={<NexusPill tone="emerald">● LIVE</NexusPill>}
+    >
+      {/* Strategic summary */}
+      <NexusCard glow>
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold tracking-[0.3em] text-cyan-300/80">
+              {ar ? "الملخص الاستراتيجي" : "STRATEGIC SUMMARY"}
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-200">{summary}</p>
+          </div>
+        </div>
+      </NexusCard>
+
+      {/* KPIs */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <NexusStat label={ar ? "النمو vs الخطة" : "Growth vs Plan"} value="+8.4%" hint={ar ? "ربع سنوي" : "QoQ"} tone="emerald" />
+        <NexusStat label={ar ? "التنبيهات النشطة" : "Active Alerts"} value="14" hint={ar ? "3 حرجة" : "3 critical"} tone="amber" />
+        <NexusStat label={ar ? "المخاطر المرصودة" : "Risks Tracked"} value="9" hint={ar ? "2 جديدة اليوم" : "2 new today"} tone="rose" />
+        <NexusStat label={ar ? "الفرص الاستراتيجية" : "Opportunities"} value="6" hint={ar ? "4 جاهزة للتنفيذ" : "4 ready to act"} tone="cyan" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Alerts */}
+        <NexusCard>
+          <SectionTitle icon={AlertTriangle} title={ar ? "تنبيهات تنفيذية" : "Executive Alerts"} />
+          <ul className="mt-3 space-y-2">
+            {alerts.map((a, i) => (
+              <li key={i} className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3">
+                <NexusPill tone={a.tone}>{a.t2}</NexusPill>
+                <span className="text-sm text-slate-200">{a.t}</span>
+              </li>
+            ))}
+          </ul>
+        </NexusCard>
+
+        {/* Risks */}
+        <NexusCard>
+          <SectionTitle icon={ShieldAlert} title={ar ? "المخاطر" : "Risks"} />
+          <ul className="mt-3 space-y-3">
+            {risks.map((r, i) => (
+              <li key={i}>
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="text-slate-200">{r.t}</span>
+                  <NexusPill tone={r.p > 70 ? "rose" : r.p > 50 ? "amber" : "slate"}>{r.level}</NexusPill>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-rose-500/70 to-amber-400/70"
+                    style={{ width: `${r.p}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </NexusCard>
+
+        {/* Opportunities */}
+        <NexusCard>
+          <SectionTitle icon={TrendingUp} title={ar ? "الفرص" : "Opportunities"} />
+          <ul className="mt-3 space-y-3">
+            {opportunities.map((o, i) => (
+              <li key={i}>
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="text-slate-200">{o.t}</span>
+                  <NexusPill tone="emerald">{o.p}%</NexusPill>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-500/80 to-cyan-400/80"
+                    style={{ width: `${o.p}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </NexusCard>
+
+        {/* Recommended actions */}
+        <NexusCard>
+          <SectionTitle icon={ArrowUpRight} title={ar ? "إجراءات موصى بها" : "Recommended Actions"} />
+          <ul className="mt-3 space-y-2">
+            {actions.map((a, i) => (
+              <li key={i} className="flex items-start gap-3 rounded-lg border border-cyan-400/15 bg-cyan-400/[0.04] p-3 text-sm text-slate-200">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-cyan-400/40 text-[10px] font-bold text-cyan-300">
+                  {i + 1}
+                </span>
+                {a}
+              </li>
+            ))}
+          </ul>
+        </NexusCard>
+      </div>
+
+      {/* AI Reports */}
+      <NexusCard>
+        <SectionTitle icon={FileText} title={ar ? "تقارير تنفيذية مولدة بالذكاء الاصطناعي" : "AI-Generated Executive Reports"} />
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            ar ? "ملخص الأداء الربعي Q3 2026" : "Q3 2026 Performance Brief",
+            ar ? "تحليل المنافسة في السوق السعودي" : "KSA Competitive Landscape",
+            ar ? "خارطة طريق تبني الذكاء الاصطناعي" : "AI Adoption Roadmap",
+            ar ? "تقرير المخاطر التشغيلية" : "Operational Risk Report",
+            ar ? "ملف الفرص الاستثمارية" : "Investment Opportunities Dossier",
+            ar ? "موجز اجتماع مجلس الإدارة" : "Board Meeting Briefing",
+          ].map((title, i) => (
+            <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+              <div className="text-[10px] font-bold tracking-widest text-cyan-300/80">
+                {ar ? "تقرير" : "REPORT"} · {String(i + 1).padStart(2, "0")}
+              </div>
+              <div className="mt-1.5 text-sm font-semibold text-white">{title}</div>
+              <div className="mt-1 text-[11px] text-slate-500">
+                {ar ? "تم التوليد منذ" : "Generated"} {[2, 14, 38, 60, 90, 120][i]} {ar ? "دقيقة" : "min ago"}
+              </div>
+            </div>
+          ))}
+        </div>
+      </NexusCard>
+    </NexusPage>
+  );
+}
+
+function SectionTitle({ icon: Icon, title }: { icon: React.ComponentType<{ className?: string }>; title: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300">
+        <Icon className="h-3.5 w-3.5" />
+      </div>
+      <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">{title}</div>
+    </div>
+  );
+}
