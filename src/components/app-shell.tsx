@@ -33,6 +33,9 @@ import {
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
+  Ghost,
+  Zap,
+  GitBranch,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
