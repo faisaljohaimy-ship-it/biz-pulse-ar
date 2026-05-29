@@ -52,10 +52,12 @@ type OverlayState = {
   briefingOpen: boolean;
   presenting: boolean;
   avatarOpen: boolean;
+  shortcutsOpen: boolean;
   setPalette: (v: boolean) => void;
   setBriefing: (v: boolean) => void;
   setPresenting: (v: boolean) => void;
   setAvatar: (v: boolean) => void;
+  setShortcuts: (v: boolean) => void;
 };
 
 function useOverlayState(): OverlayState {
@@ -63,10 +65,12 @@ function useOverlayState(): OverlayState {
   const [briefingOpen, setBriefing] = useState(false);
   const [presenting, setPresenting] = useState(false);
   const [avatarOpen, setAvatar] = useState(false);
+  const [shortcutsOpen, setShortcuts] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setPalette((v) => !v);
       }
@@ -74,16 +78,17 @@ function useOverlayState(): OverlayState {
         setPalette(false);
         setBriefing(false);
         setAvatar(false);
+        setShortcuts(false);
         if (presenting) {
           setPresenting(false);
           document.body.classList.remove("nexus-presenting");
         }
       }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+      if (meta && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setBriefing((v) => !v);
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === ".") {
+      if (meta && e.key === ".") {
         e.preventDefault();
         setPresenting((v) => {
           const next = !v;
@@ -91,12 +96,20 @@ function useOverlayState(): OverlayState {
           return next;
         });
       }
+      if (meta && e.key === "/") {
+        e.preventDefault();
+        setShortcuts((v) => !v);
+      }
+      if (meta && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        setAvatar((v) => !v);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [presenting]);
 
-  return { paletteOpen, briefingOpen, presenting, avatarOpen, setPalette, setBriefing, setPresenting, setAvatar };
+  return { paletteOpen, briefingOpen, presenting, avatarOpen, shortcutsOpen, setPalette, setBriefing, setPresenting, setAvatar, setShortcuts };
 }
 
 /* ─────────────────────────── Root ─────────────────────────── */
@@ -110,6 +123,7 @@ export function ExecutiveOverlay() {
       <CommandPalette open={s.paletteOpen} onClose={() => s.setPalette(false)} />
       <BriefingPanel open={s.briefingOpen} onClose={() => s.setBriefing(false)} />
       <AvatarConsole open={s.avatarOpen} onClose={() => s.setAvatar(false)} />
+      <ShortcutsHelp open={s.shortcutsOpen} onClose={() => s.setShortcuts(false)} />
       {s.presenting && <PresentationOverlay onExit={() => {
         s.setPresenting(false);
         document.body.classList.remove("nexus-presenting");
