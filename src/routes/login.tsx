@@ -51,6 +51,16 @@ function LoginPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-2xl backdrop-blur">
+          <DemoLoginButton />
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("auth.signin")} / {t("auth.signup")}
+            </span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">{t("auth.signin")}</TabsTrigger>
