@@ -260,8 +260,40 @@ function CommandCenter() {
 /* ─────────────────────────────────────────────────────────────────── */
 
 function Stage({ isAr }: { isAr: boolean }) {
+  const [active, setActive] = useState<OrbitNode | null>(null);
+  const [ctx, setCtx] = useState<{ node: OrbitNode; x: number; y: number } | null>(null);
+  const navigate = useNavigate();
+
+  const openDrill = useCallback((n: OrbitNode) => {
+    setCtx(null);
+    setActive(n);
+  }, []);
+
+  const openContext = useCallback((n: OrbitNode, x: number, y: number) => {
+    setActive(null);
+    setCtx({ node: n, x, y });
+  }, []);
+
+  // Dismiss context menu on outside click / Escape
+  useEffect(() => {
+    if (!ctx && !active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setCtx(null);
+        setActive(null);
+      }
+    };
+    const onScroll = () => setCtx(null);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, true);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll, true);
+    };
+  }, [ctx, active]);
+
   return (
-    <div className="relative h-[520px] w-full overflow-hidden rounded-3xl border border-cyan-400/10 bg-gradient-to-b from-[#060d1e]/80 to-[#020512]/80 shadow-[0_40px_120px_-40px_rgba(34,211,238,0.35)] backdrop-blur-xl md:h-[560px]">
+    <div className="relative h-[460px] w-full overflow-hidden rounded-3xl border border-cyan-400/10 bg-gradient-to-b from-[#060d1e]/80 to-[#020512]/80 shadow-[0_40px_120px_-40px_rgba(34,211,238,0.35)] backdrop-blur-xl sm:h-[520px] md:h-[560px] xl:h-[620px] [@media(orientation:landscape)_and_(max-height:540px)]:h-[300px]">
       {/* radial floor grid */}
       <FloorGrid />
       {/* connection beams */}
@@ -272,7 +304,14 @@ function Stage({ isAr }: { isAr: boolean }) {
       <CoreOrb isAr={isAr} />
       {/* nodes */}
       {NODES.map((n, i) => (
-        <NodeChip key={n.id} node={n} delay={i * 120} isAr={isAr} />
+        <NodeChip
+          key={n.id}
+          node={n}
+          delay={i * 120}
+          isAr={isAr}
+          onActivate={() => openDrill(n)}
+          onContext={(x, y) => openContext(n, x, y)}
+        />
       ))}
       {/* corner badges */}
       <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
@@ -280,9 +319,52 @@ function Stage({ isAr }: { isAr: boolean }) {
           {isAr ? "الواجهة الرئيسية ثلاثية الأبعاد" : "3D ENTERPRISE COMMAND VIEW"}
         </span>
       </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+        <span className="rounded-full border border-white/5 bg-[#06101f]/60 px-3 py-1 text-[10px] text-slate-400 backdrop-blur">
+          {isAr ? "انقر لفتح · انقر بزر آخر للقائمة السياقية" : "Click to drill · Right-click for context"}
+        </span>
+      </div>
+
+      {ctx && (
+        <NodeContextMenu
+          node={ctx.node}
+          x={ctx.x}
+          y={ctx.y}
+          isAr={isAr}
+          onClose={() => setCtx(null)}
+          onOpen={() => {
+            setCtx(null);
+            navigate({ to: ctx.node.route });
+          }}
+          onDrill={() => openDrill(ctx.node)}
+          onRelated={(to) => {
+            setCtx(null);
+            navigate({ to });
+          }}
+        />
+      )}
+
+      {active && (
+        <NodeDrillPanel
+          node={active}
+          isAr={isAr}
+          onClose={() => setActive(null)}
+          onOpen={() => {
+            const r = active.route;
+            setActive(null);
+            navigate({ to: r });
+          }}
+          onRelated={(to) => {
+            setActive(null);
+            navigate({ to });
+          }}
+        />
+      )}
     </div>
   );
 }
+
+
 
 function FloorGrid() {
   return (
