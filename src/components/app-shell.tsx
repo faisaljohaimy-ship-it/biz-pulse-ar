@@ -79,8 +79,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-              <Bot className="h-4 w-4 text-primary-foreground" />
+            <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
+              <img src="/nexus-icon.png" alt="Nexus" className="h-full w-full object-cover" />
               <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
             <span className="text-sm font-bold tracking-tight">Nexus</span>
