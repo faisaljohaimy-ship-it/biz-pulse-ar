@@ -25,6 +25,7 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticated/outcomes'
 import { Route as AuthenticatedOrchestrationRouteImport } from './routes/_authenticated/orchestration'
+import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
@@ -128,6 +129,11 @@ const AuthenticatedOrchestrationRoute =
     path: '/orchestration',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMarketplaceRoute =
   AuthenticatedMarketplaceRouteImport.update({
     id: '/marketplace',
@@ -264,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/memory': typeof AuthenticatedMemoryRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -302,6 +309,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/memory': typeof AuthenticatedMemoryRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -342,6 +350,7 @@ export interface FileRoutesById {
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/orchestration': typeof AuthenticatedOrchestrationRoute
   '/_authenticated/outcomes': typeof AuthenticatedOutcomesRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -382,6 +391,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/knowledge'
     | '/marketplace'
+    | '/memory'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/knowledge'
     | '/marketplace'
+    | '/memory'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -459,6 +470,7 @@ export interface FileRouteTypes {
     | '/_authenticated/intelligence'
     | '/_authenticated/knowledge'
     | '/_authenticated/marketplace'
+    | '/_authenticated/memory'
     | '/_authenticated/orchestration'
     | '/_authenticated/outcomes'
     | '/_authenticated/portfolio'
@@ -596,6 +608,13 @@ declare module '@tanstack/react-router' {
       path: '/orchestration'
       fullPath: '/orchestration'
       preLoaderRoute: typeof AuthenticatedOrchestrationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/memory': {
+      id: '/_authenticated/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AuthenticatedMemoryRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/marketplace': {
@@ -768,6 +787,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
+  AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedOrchestrationRoute: typeof AuthenticatedOrchestrationRoute
   AuthenticatedOutcomesRoute: typeof AuthenticatedOutcomesRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -803,6 +823,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
+  AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedOrchestrationRoute: AuthenticatedOrchestrationRoute,
   AuthenticatedOutcomesRoute: AuthenticatedOutcomesRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
