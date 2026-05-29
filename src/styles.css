@@ -335,3 +335,40 @@ body.nexus-presenting aside,
 body.nexus-presenting header.glass,
 body.nexus-presenting .nexus-chrome { display: none !important; }
 body.nexus-presenting main { padding: 0 !important; }
+body.nexus-presenting .nexus-main > div { max-width: none !important; }
+
+/* ── Executive Cockpit (mobile landscape) ─────────────────────────
+   When phone is rotated, we abandon the stacked-mobile UI and render
+   a compact desktop-style cockpit: collapsed icon rail + hidden mobile
+   top header + slim overlay dock. Activated automatically by orientation
+   and viewport height. */
+@media (orientation: landscape) and (max-width: 1023px) and (max-height: 540px) {
+  .nexus-mobile-header { display: none !important; }
+  .nexus-sidebar {
+    display: flex !important;
+    width: 56px !important;
+    flex-direction: column;
+  }
+  /* Hide group labels + nav text → icon-only rail with tooltips on hover */
+  .nexus-sidebar nav > div > div:first-child { display: none; }
+  .nexus-sidebar nav a > span,
+  .nexus-sidebar .nexus-brand-text,
+  .nexus-sidebar .nexus-user-meta { display: none !important; }
+  .nexus-sidebar nav a {
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .nexus-sidebar nav { padding: 0.5rem 0.25rem; }
+  .nexus-main > div { padding: 0.5rem 0.75rem !important; }
+  /* Compact overlay chrome */
+  .nexus-chrome kbd { display: none !important; }
+  .nexus-chrome .nexus-dock-label { display: none !important; }
+  .nexus-chrome .nexus-avatar-meta { display: none !important; }
+}
+
+/* ── 4K / ultrawide tuning ────────────────────────────────────── */
+@media (min-width: 2200px) {
+  .nexus-sidebar { width: 22rem !important; }
+}
+
