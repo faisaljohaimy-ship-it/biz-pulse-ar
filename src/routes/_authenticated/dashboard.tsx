@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   Activity,
   AlertTriangle,
+  ArrowUpRight,
   Bot,
   Building2,
   Cpu,
@@ -17,12 +18,17 @@ import {
   Target,
   TrendingUp,
   Workflow,
+  X,
   Zap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CommandCenter,
 });
+
+type NodeStatus = "healthy" | "warning" | "critical";
+
+type Kpi3D = { label_ar: string; label_en: string; value: string; delta: string; trend: "up" | "down" | "flat" };
 
 type OrbitNode = {
   id: string;
@@ -31,19 +37,135 @@ type OrbitNode = {
   meta_ar: string;
   meta_en: string;
   icon: React.ComponentType<{ className?: string }>;
-  // position on the stage, in percentages
+  /** Click target — real route in the app */
+  route: string;
+  /** Current operational status */
+  status: NodeStatus;
+  /** position on the stage, in percentages */
   x: number;
   y: number;
-  hue: number; // accent hue for the node glow
+  /** accent hue for the node glow */
+  hue: number;
+  kpis: Kpi3D[];
+  agents: string[];
+  integrations: string[];
+  related: { label_ar: string; label_en: string; to: string }[];
 };
 
 const NODES: OrbitNode[] = [
-  { id: "dept", label_ar: "الأقسام", label_en: "DEPARTMENTS", meta_ar: "24 نشط", meta_en: "24 Active", icon: Building2, x: 18, y: 22, hue: 210 },
-  { id: "data", label_ar: "بحيرة البيانات", label_en: "DATA LAKE", meta_ar: "1.4 تيرابايت", meta_en: "1.4 TB Active", icon: Database, x: 78, y: 22, hue: 195 },
-  { id: "int", label_ar: "التكاملات", label_en: "INTEGRATIONS", meta_ar: "18 متصل", meta_en: "18 Connected", icon: GitBranch, x: 10, y: 62, hue: 220 },
-  { id: "agents", label_ar: "وكلاء الذكاء", label_en: "AI AGENTS", meta_ar: "48 نشط", meta_en: "48 Active", icon: Bot, x: 86, y: 62, hue: 175 },
-  { id: "auto", label_ar: "الأتمتة", label_en: "AUTOMATIONS", meta_ar: "342 تشغيل", meta_en: "342 Running", icon: Workflow, x: 50, y: 82, hue: 200 },
+  {
+    id: "dept",
+    label_ar: "الأقسام",
+    label_en: "DEPARTMENTS",
+    meta_ar: "24 نشط",
+    meta_en: "24 Active",
+    icon: Building2,
+    route: "/departments",
+    status: "healthy",
+    x: 18, y: 22, hue: 210,
+    kpis: [
+      { label_ar: "الكفاءة", label_en: "Efficiency", value: "92%", delta: "+3.4%", trend: "up" },
+      { label_ar: "الإشغال", label_en: "Utilization", value: "87%", delta: "+1.1%", trend: "up" },
+      { label_ar: "تنفيذ الأهداف", label_en: "OKR Attainment", value: "78%", delta: "-2.0%", trend: "down" },
+    ],
+    agents: ["HR Pulse", "Ops Conductor", "Finance Sentinel"],
+    integrations: ["Workday", "SAP", "Slack"],
+    related: [
+      { label_ar: "المحفظة", label_en: "Portfolio", to: "/portfolio" },
+      { label_ar: "النتائج", label_en: "Outcomes", to: "/outcomes" },
+    ],
+  },
+  {
+    id: "data",
+    label_ar: "بحيرة البيانات",
+    label_en: "DATA LAKE",
+    meta_ar: "1.4 تيرابايت",
+    meta_en: "1.4 TB Active",
+    icon: Database,
+    route: "/analytics",
+    status: "healthy",
+    x: 78, y: 22, hue: 195,
+    kpis: [
+      { label_ar: "الإنتاجية", label_en: "Throughput", value: "12.4k/s", delta: "+8.7%", trend: "up" },
+      { label_ar: "جودة البيانات", label_en: "Data Quality", value: "98.2%", delta: "+0.3%", trend: "up" },
+      { label_ar: "زمن الاستجابة", label_en: "Latency", value: "42ms", delta: "-6ms", trend: "up" },
+    ],
+    agents: ["Insight Miner", "Anomaly Hunter", "Forecast Oracle"],
+    integrations: ["Snowflake", "BigQuery", "Kafka"],
+    related: [
+      { label_ar: "المعرفة", label_en: "Knowledge", to: "/knowledge" },
+      { label_ar: "محلل AI", label_en: "AI Analyst", to: "/analyst" },
+    ],
+  },
+  {
+    id: "int",
+    label_ar: "التكاملات",
+    label_en: "INTEGRATIONS",
+    meta_ar: "18 متصل",
+    meta_en: "18 Connected",
+    icon: GitBranch,
+    route: "/integrations",
+    status: "warning",
+    x: 10, y: 62, hue: 220,
+    kpis: [
+      { label_ar: "اتصالات نشطة", label_en: "Active Links", value: "18/20", delta: "+2", trend: "up" },
+      { label_ar: "معدل الفشل", label_en: "Failure Rate", value: "1.3%", delta: "+0.4%", trend: "down" },
+      { label_ar: "حجم المزامنة", label_en: "Sync Volume", value: "842k/d", delta: "+11%", trend: "up" },
+    ],
+    agents: ["Sync Guardian", "Webhook Relay"],
+    integrations: ["Salesforce", "HubSpot", "Stripe", "Zapier"],
+    related: [
+      { label_ar: "التنسيق", label_en: "Orchestration", to: "/orchestration" },
+      { label_ar: "التوأم الرقمي", label_en: "Digital Twin", to: "/digital-twin" },
+    ],
+  },
+  {
+    id: "agents",
+    label_ar: "وكلاء الذكاء",
+    label_en: "AI AGENTS",
+    meta_ar: "48 نشط",
+    meta_en: "48 Active",
+    icon: Bot,
+    route: "/agents",
+    status: "healthy",
+    x: 86, y: 62, hue: 175,
+    kpis: [
+      { label_ar: "المهام/اليوم", label_en: "Tasks / day", value: "8,932", delta: "+23.8%", trend: "up" },
+      { label_ar: "الدقة", label_en: "Accuracy", value: "96.4%", delta: "+1.2%", trend: "up" },
+      { label_ar: "متوسط الزمن", label_en: "Avg Latency", value: "1.8s", delta: "-0.4s", trend: "up" },
+    ],
+    agents: ["ARIA Executive", "Code Co-Pilot", "Email Triage", "Meeting Scribe"],
+    integrations: ["OpenAI", "Anthropic", "Gemini"],
+    related: [
+      { label_ar: "مركز AI Ops", label_en: "AI Ops", to: "/ai-ops" },
+      { label_ar: "مسارات العمل", label_en: "Workflows", to: "/workflows" },
+    ],
+  },
+  {
+    id: "auto",
+    label_ar: "الأتمتة",
+    label_en: "AUTOMATIONS",
+    meta_ar: "342 تشغيل",
+    meta_en: "342 Running",
+    icon: Workflow,
+    route: "/workflows",
+    status: "healthy",
+    x: 50, y: 82, hue: 200,
+    kpis: [
+      { label_ar: "تشغيلات/الساعة", label_en: "Runs / hr", value: "1,247", delta: "+15.3%", trend: "up" },
+      { label_ar: "نسبة النجاح", label_en: "Success Rate", value: "99.4%", delta: "+0.1%", trend: "up" },
+      { label_ar: "توفير الوقت", label_en: "Time Saved", value: "412h/d", delta: "+38h", trend: "up" },
+    ],
+    agents: ["Flow Maestro", "Retry Sentinel"],
+    integrations: ["n8n", "Zapier", "GitHub Actions"],
+    related: [
+      { label_ar: "التنسيق", label_en: "Orchestration", to: "/orchestration" },
+      { label_ar: "المهام", label_en: "Tasks", to: "/tasks" },
+    ],
+  },
 ];
+
+
 
 function CommandCenter() {
   const { locale } = useI18n();
