@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { useEnterprisePulse, formatRelativeTime } from "@/lib/enterprise-pulse";
 import { AlertTriangle, TrendingUp, ShieldAlert, Sparkles, FileText, ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/briefing")({
@@ -10,17 +11,18 @@ export const Route = createFileRoute("/_authenticated/briefing")({
 function BriefingPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const pulse = useEnterprisePulse();
 
   const summary = ar
-    ? "أداء المؤسسة يفوق الخطة بنسبة 8.4٪ مع تسارع تبني الذكاء الاصطناعي عبر 5 إدارات. تم رصد 3 مخاطر تتطلب قراراً تنفيذياً، وفرصتان استراتيجيتان جاهزتان للتنفيذ."
-    : "Enterprise performance is 8.4% above plan, with AI adoption accelerating across 5 divisions. 3 risks require executive decisions and 2 strategic opportunities are ready to execute.";
+    ? `أداء المؤسسة عند صحة ${pulse.health} مع حالة "${pulse.status === "healthy" ? "صحية" : pulse.status === "warning" ? "تحذير" : "حرجة"}". الإيراد ${pulse.kpis[0].value} (${pulse.kpis[0].delta})، تبني الذكاء الاصطناعي ${pulse.kpis[2].value}. ${pulse.alerts.length} تنبيهات نشطة، ${pulse.intel.length} إشارات استراتيجية.`
+    : `Enterprise health is ${pulse.health} with "${pulse.status}" status. Revenue ${pulse.kpis[0].value} (${pulse.kpis[0].delta}), AI adoption at ${pulse.kpis[2].value}. ${pulse.alerts.length} active alerts and ${pulse.intel.length} strategic signals.`;
 
-  const alerts = [
-    { t: ar ? "تجاوز ميزانية الحوسبة السحابية بنسبة 14٪" : "Cloud compute budget exceeded by 14%", tone: "amber" as const, t2: ar ? "المالية" : "Finance" },
-    { t: ar ? "تأخر مشروع SAP S/4HANA بأسبوعين" : "SAP S/4HANA rollout slipped by 2 weeks", tone: "rose" as const, t2: ar ? "تكنولوجيا" : "IT" },
-    { t: ar ? "ارتفاع رضا العملاء إلى 92٪" : "Customer satisfaction up to 92%", tone: "emerald" as const, t2: ar ? "العمليات" : "Ops" },
-    { t: ar ? "محاولة وصول غير مصرح بها مكتشفة" : "Unauthorized access attempt detected", tone: "rose" as const, t2: ar ? "الأمن" : "Security" },
-  ];
+  const alerts = pulse.alerts.map((a) => ({
+    t: ar ? a.title_ar : a.title_en,
+    tone: (a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : a.severity === "medium" ? "amber" : "emerald") as "rose" | "amber" | "emerald",
+    t2: a.owner,
+    route: a.route,
+  }));
 
   const risks = [
     { t: ar ? "اعتماد عالٍ على مورد سحابي واحد" : "Heavy reliance on single cloud vendor", level: ar ? "حرج" : "Critical", p: 78 },
