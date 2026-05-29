@@ -137,6 +137,11 @@ function LaunchExperience() {
           </div>
         </div>
 
+        <EnterpriseStatusPanel
+          isAr={isAr}
+          onAction={() => navigate({ to: "/transformation" })}
+          onEnter={() => setOpen(true)}
+        />
         <LiveMetricsStrip isAr={isAr} />
         <PillarsGrid isAr={isAr} />
       </main>
