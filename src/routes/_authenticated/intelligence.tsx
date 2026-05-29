@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { Brain, TrendingUp, ShieldAlert, Lightbulb, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
@@ -10,6 +11,8 @@ export const Route = createFileRoute("/_authenticated/intelligence")({
 function IntelligencePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const pulse = useEnterprisePulse();
+  const navigate = useNavigate();
 
   const predictions = [
     { t: ar ? "إيرادات Q4 ستتجاوز الخطة بنسبة 6.2٪" : "Q4 revenue likely to beat plan by 6.2%", c: 91 },
