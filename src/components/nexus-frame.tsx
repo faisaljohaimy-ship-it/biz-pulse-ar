@@ -70,10 +70,6 @@ export function NexusPage({
   eyebrow,
   title,
   subtitle,
-export function NexusPage({
-  eyebrow,
-  title,
-  subtitle,
   children,
   actions,
   status,
