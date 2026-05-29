@@ -105,9 +105,21 @@ function CommandCenter() {
         </header>
 
         {/* ── 3D stage ─────────────────────────────────────────────── */}
-        <main className="relative mt-6 flex-1">
+        <main className="relative mt-6">
           <Stage isAr={isAr} />
         </main>
+
+        {/* ── Live intelligence ticker ─────────────────────────────── */}
+        <IntelligenceTicker isAr={isAr} />
+
+        {/* ── Executive intelligence grid ──────────────────────────── */}
+        <section className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <EnterpriseHealth isAr={isAr} />
+          <RiskRadar isAr={isAr} />
+          <StrategicObjectives isAr={isAr} />
+          <IntegrationTopology isAr={isAr} />
+          <OrchestrationFlow isAr={isAr} />
+        </section>
 
         {/* ── KPI strip ────────────────────────────────────────────── */}
         <footer className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
