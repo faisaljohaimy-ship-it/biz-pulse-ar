@@ -142,6 +142,7 @@ function LaunchExperience() {
           onAction={() => navigate({ to: "/transformation" })}
           onEnter={() => setOpen(true)}
         />
+        <AIDetectionPanel isAr={isAr} navigate={navigate} />
         <LiveMetricsStrip isAr={isAr} />
         <PillarsGrid isAr={isAr} />
       </main>
@@ -503,6 +504,130 @@ function EnterpriseStatusPanel({
     </section>
   );
 }
+
+/* ============================================================
+   AI Detection Panel — proactive signals from ARIA
+   ============================================================ */
+function AIDetectionPanel({
+  isAr,
+  navigate,
+}: {
+  isAr: boolean;
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  const [pulse, setPulse] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setPulse((n) => (n + 1) % 4), 1800);
+    return () => clearInterval(id);
+  }, []);
+
+  const signals = [
+    {
+      key: "delayed",
+      count: 3,
+      label_ar: "مبادرات متأخرة",
+      label_en: "Delayed initiatives",
+      tone: "amber",
+      icon: Activity,
+      route: "/execution" as const,
+    },
+    {
+      key: "decisions",
+      count: 2,
+      label_ar: "قرارات مجلس معلّقة",
+      label_en: "Unresolved board decisions",
+      tone: "violet",
+      icon: Brain,
+      route: "/decisions" as const,
+    },
+    {
+      key: "risk",
+      count: 1,
+      label_ar: "خطر تشغيلي يتصاعد",
+      label_en: "Operational risk rising",
+      tone: "rose",
+      icon: ShieldCheck,
+      route: "/risk" as const,
+    },
+    {
+      key: "opps",
+      count: 4,
+      label_ar: "فرص استراتيجية مكتشفة",
+      label_en: "Strategic opportunities identified",
+      tone: "emerald",
+      icon: Sparkles,
+      route: "/intelligence" as const,
+    },
+  ] as const;
+
+  const toneMap: Record<string, { ring: string; chip: string; dot: string }> = {
+    amber: { ring: "border-amber-500/30 hover:border-amber-400/60", chip: "text-amber-300 bg-amber-500/10", dot: "bg-amber-400" },
+    violet: { ring: "border-violet-500/30 hover:border-violet-400/60", chip: "text-violet-300 bg-violet-500/10", dot: "bg-violet-400" },
+    rose: { ring: "border-rose-500/30 hover:border-rose-400/60", chip: "text-rose-300 bg-rose-500/10", dot: "bg-rose-400" },
+    emerald: { ring: "border-emerald-500/30 hover:border-emerald-400/60", chip: "text-emerald-300 bg-emerald-500/10", dot: "bg-emerald-400" },
+  };
+
+  return (
+    <section
+      aria-label={isAr ? "اكتشافات الذكاء الاصطناعي" : "AI Detections"}
+      className="mt-4 w-full max-w-4xl rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-white/[0.02] to-transparent p-3 backdrop-blur-xl md:p-5"
+    >
+      <header className="flex items-center justify-between gap-2 px-1 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="relative flex h-5 w-5 items-center justify-center rounded-md bg-primary/20">
+            <Brain className="h-3 w-3 text-primary" />
+            <span className="absolute inset-0 animate-ping rounded-md bg-primary/30" />
+          </div>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/90">
+            {isAr ? "ARIA · رصد استباقي" : "ARIA · Proactive Detection"}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className={`h-1 w-1 rounded-full transition ${pulse === i ? "bg-primary" : "bg-primary/20"}`}
+            />
+          ))}
+        </div>
+      </header>
+
+      <ul className="grid gap-2 md:grid-cols-2">
+        {signals.map((s) => {
+          const tone = toneMap[s.tone];
+          return (
+            <li key={s.key}>
+              <button
+                onClick={() => navigate({ to: s.route })}
+                className={`group flex w-full items-center gap-3 rounded-xl border bg-white/[0.03] p-3 text-left transition hover:bg-white/[0.06] ${tone.ring}`}
+              >
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tone.chip}`}>
+                  <s.icon className="h-4 w-4" />
+                </span>
+                <span className="flex-1 leading-tight">
+                  <span className="flex items-baseline gap-2">
+                    <span className="text-xl font-bold tabular-nums text-foreground">{s.count}</span>
+                    <span className="text-xs text-foreground/90">
+                      {isAr ? s.label_ar : s.label_en}
+                    </span>
+                  </span>
+                  <span className="mt-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <span className={`h-1.5 w-1.5 rounded-full ${tone.dot} animate-pulse`} />
+                    {isAr ? "اكتشف بواسطة AI" : "AI detected"}
+                  </span>
+                </span>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground opacity-0 transition group-hover:opacity-100">
+                  {isAr ? "افتح ←" : "Open →"}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 
 /* ============================================================
    Command Auth Console — terminal-style login
