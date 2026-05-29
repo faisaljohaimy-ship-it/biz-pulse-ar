@@ -251,8 +251,8 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
   const send = (text: string) => {
     if (!text.trim() || isLoading) return;
     const ctx = ar
-      ? `سياق مباشر من Nexus Pulse: الصحة العامة ${pulse.health}، الحالة ${pulse.status}، الإيراد ${pulse.kpis[0].value} (${pulse.kpis[0].delta})، EBITDA ${pulse.kpis[1].value}، حوادث P1 ${pulse.kpis[4].value}، مهام مفتوحة ${pulse.counts.openTasks}. تنبيهات نشطة: ${pulse.alerts.map((a: PulseAlert) => a.title_ar).join("؛ ")}.`
-      : `Live Nexus Pulse context: health ${pulse.health}, status ${pulse.status}, revenue ${pulse.kpis[0].value} (${pulse.kpis[0].delta}), EBITDA ${pulse.kpis[1].value}, P1 incidents ${pulse.kpis[4].value}, open tasks ${pulse.counts.openTasks}. Active alerts: ${pulse.alerts.map((a: PulseAlert) => a.title_en).join("; ")}.`;
+      ? `سياق مباشر من Nexus Pulse: الصحة العامة ${pulse.health}، الحالة ${pulse.status}، الإيراد ${pulse.kpis[0].value} (${pulse.kpis[0].delta})، EBITDA ${pulse.kpis[1].value}، حوادث P1 ${pulse.kpis[4].value}، مهام مفتوحة ${pulse.counts.openTasks}. تنبيهات نشطة: ${pulse.alerts.map((a: PulseAlert) => a.title_ar).join("؛ ")}. تنبؤات الأزمات الأعلى: ${pulse.crises.slice(0,3).map((c) => `${c.title_ar} (${c.riskScore})`).join("؛ ")}. بنود منسية: ${pulse.memory.filter((m) => m.status === "forgotten").map((m) => m.title_ar).join("؛ ") || "لا يوجد"}.`
+      : `Live Nexus Pulse context: health ${pulse.health}, status ${pulse.status}, revenue ${pulse.kpis[0].value} (${pulse.kpis[0].delta}), EBITDA ${pulse.kpis[1].value}, P1 incidents ${pulse.kpis[4].value}, open tasks ${pulse.counts.openTasks}. Active alerts: ${pulse.alerts.map((a: PulseAlert) => a.title_en).join("; ")}. Top crisis predictions: ${pulse.crises.slice(0,3).map((c) => `${c.title_en} (${c.riskScore})`).join("; ")}. Forgotten items: ${pulse.memory.filter((m) => m.status === "forgotten").map((m) => m.title_en).join("; ") || "none"}.`;
     sendMessage({ text: `${ctx}\n\n${text}` });
     setInput("");
   };

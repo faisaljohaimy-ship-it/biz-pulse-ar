@@ -25,16 +25,20 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticated/outcomes'
 import { Route as AuthenticatedOrchestrationRouteImport } from './routes/_authenticated/orchestration'
+import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
+import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCrisisRouteImport } from './routes/_authenticated/crisis'
 import { Route as AuthenticatedCockpitRouteImport } from './routes/_authenticated/cockpit'
 import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authenticated/chief-of-staff'
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
@@ -128,6 +132,11 @@ const AuthenticatedOrchestrationRoute =
     path: '/orchestration',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMarketplaceRoute =
   AuthenticatedMarketplaceRouteImport.update({
     id: '/marketplace',
@@ -156,9 +165,19 @@ const AuthenticatedGovernanceRoute = AuthenticatedGovernanceRouteImport.update({
   path: '/governance',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedForgottenRoute = AuthenticatedForgottenRouteImport.update({
+  id: '/forgotten',
+  path: '/forgotten',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
+  id: '/execution',
+  path: '/execution',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDigitalTwinRoute =
@@ -181,6 +200,11 @@ const AuthenticatedDecisionsRoute = AuthenticatedDecisionsRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCrisisRoute = AuthenticatedCrisisRouteImport.update({
+  id: '/crisis',
+  path: '/crisis',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCockpitRoute = AuthenticatedCockpitRouteImport.update({
@@ -254,16 +278,20 @@ export interface FileRoutesByFullPath {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
+  '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/execution': typeof AuthenticatedExecutionRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/memory': typeof AuthenticatedMemoryRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -292,16 +320,20 @@ export interface FileRoutesByTo {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
+  '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/execution': typeof AuthenticatedExecutionRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/memory': typeof AuthenticatedMemoryRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -332,16 +364,20 @@ export interface FileRoutesById {
   '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
   '/_authenticated/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/_authenticated/cockpit': typeof AuthenticatedCockpitRoute
+  '/_authenticated/crisis': typeof AuthenticatedCrisisRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/_authenticated/execution': typeof AuthenticatedExecutionRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/orchestration': typeof AuthenticatedOrchestrationRoute
   '/_authenticated/outcomes': typeof AuthenticatedOutcomesRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -372,16 +408,20 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
+    | '/crisis'
     | '/dashboard'
     | '/decisions'
     | '/departments'
     | '/digital-twin'
+    | '/execution'
     | '/files'
+    | '/forgotten'
     | '/governance'
     | '/integrations'
     | '/intelligence'
     | '/knowledge'
     | '/marketplace'
+    | '/memory'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -410,16 +450,20 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
+    | '/crisis'
     | '/dashboard'
     | '/decisions'
     | '/departments'
     | '/digital-twin'
+    | '/execution'
     | '/files'
+    | '/forgotten'
     | '/governance'
     | '/integrations'
     | '/intelligence'
     | '/knowledge'
     | '/marketplace'
+    | '/memory'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -449,16 +493,20 @@ export interface FileRouteTypes {
     | '/_authenticated/briefing'
     | '/_authenticated/chief-of-staff'
     | '/_authenticated/cockpit'
+    | '/_authenticated/crisis'
     | '/_authenticated/dashboard'
     | '/_authenticated/decisions'
     | '/_authenticated/departments'
     | '/_authenticated/digital-twin'
+    | '/_authenticated/execution'
     | '/_authenticated/files'
+    | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/integrations'
     | '/_authenticated/intelligence'
     | '/_authenticated/knowledge'
     | '/_authenticated/marketplace'
+    | '/_authenticated/memory'
     | '/_authenticated/orchestration'
     | '/_authenticated/outcomes'
     | '/_authenticated/portfolio'
@@ -598,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrchestrationRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/memory': {
+      id: '/_authenticated/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AuthenticatedMemoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/marketplace': {
       id: '/_authenticated/marketplace'
       path: '/marketplace'
@@ -633,11 +688,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGovernanceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/forgotten': {
+      id: '/_authenticated/forgotten'
+      path: '/forgotten'
+      fullPath: '/forgotten'
+      preLoaderRoute: typeof AuthenticatedForgottenRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/files': {
       id: '/_authenticated/files'
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/execution': {
+      id: '/_authenticated/execution'
+      path: '/execution'
+      fullPath: '/execution'
+      preLoaderRoute: typeof AuthenticatedExecutionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/digital-twin': {
@@ -666,6 +735,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/crisis': {
+      id: '/_authenticated/crisis'
+      path: '/crisis'
+      fullPath: '/crisis'
+      preLoaderRoute: typeof AuthenticatedCrisisRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cockpit': {
@@ -758,16 +834,20 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
   AuthenticatedChiefOfStaffRoute: typeof AuthenticatedChiefOfStaffRoute
   AuthenticatedCockpitRoute: typeof AuthenticatedCockpitRoute
+  AuthenticatedCrisisRoute: typeof AuthenticatedCrisisRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
+  AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
+  AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedOrchestrationRoute: typeof AuthenticatedOrchestrationRoute
   AuthenticatedOutcomesRoute: typeof AuthenticatedOutcomesRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -793,16 +873,20 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
   AuthenticatedChiefOfStaffRoute: AuthenticatedChiefOfStaffRoute,
   AuthenticatedCockpitRoute: AuthenticatedCockpitRoute,
+  AuthenticatedCrisisRoute: AuthenticatedCrisisRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
+  AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
+  AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedOrchestrationRoute: AuthenticatedOrchestrationRoute,
   AuthenticatedOutcomesRoute: AuthenticatedOutcomesRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,

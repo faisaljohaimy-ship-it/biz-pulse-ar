@@ -33,6 +33,9 @@ import {
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
+  Ghost,
+  Zap,
+  GitBranch,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -114,6 +117,10 @@ function useNavGroups(): NavGroup[] {
         { to: "/chief-of-staff", icon: Crown, label: t("nav.chief") },
         { to: "/intelligence", icon: Brain, label: t("nav.intelligence") },
         { to: "/boardroom", icon: Presentation, label: t("nav.boardroom") },
+        { to: "/memory", icon: Brain, label: ar(locale, "ذاكرة المؤسسة", "Memory") },
+        { to: "/crisis", icon: Zap, label: ar(locale, "تنبؤ الأزمات", "Crisis") },
+        { to: "/execution", icon: GitBranch, label: ar(locale, "ذكاء التنفيذ", "Execution") },
+        { to: "/forgotten", icon: Ghost, label: ar(locale, "ما الذي نُسي؟", "Forgotten") },
       ],
     },
     {
