@@ -165,7 +165,7 @@ function ExecutiveAvatar({ state }: { state: OverlayState }) {
           <span className="relative inline-flex h-3 w-3 rounded-full border border-[#040816] bg-emerald-400" />
         </span>
       </div>
-      <div className="text-start leading-tight">
+      <div className="nexus-avatar-meta hidden text-start leading-tight sm:block">
         <div className="text-[10px] font-bold tracking-[0.25em] text-cyan-300/90">ARIA</div>
         <div className="text-[10px] text-slate-400">{ar ? "كبيرة المستشارين" : "Chief AI Officer"}</div>
       </div>
