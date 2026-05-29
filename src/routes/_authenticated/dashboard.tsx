@@ -3,13 +3,18 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   Activity,
+  AlertTriangle,
   Bot,
   Building2,
   Cpu,
   Database,
   GitBranch,
+  Heart,
+  Radar,
   Search,
+  ShieldCheck,
   Sparkles,
+  Target,
   TrendingUp,
   Workflow,
   Zap,
