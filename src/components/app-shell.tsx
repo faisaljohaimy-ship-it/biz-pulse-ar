@@ -172,13 +172,14 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <Bot className="h-5 w-5 text-primary-foreground" />
           <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
         </div>
-        <div className="min-w-0">
+        <div className="nexus-brand-text min-w-0">
           <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
           <div className="truncate text-[11px] text-muted-foreground">{t("app.tagline")}</div>
         </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3">
+
         {groups.map((g) => (
           <div key={g.label} className="mb-4">
             <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
