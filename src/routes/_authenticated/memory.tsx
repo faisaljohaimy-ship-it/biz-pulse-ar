@@ -75,10 +75,10 @@ function MemoryPage() {
       whatNext={ar ? "راجع البنود المتأخرة والمنسية ثم أعد إسنادها." : "Triage overdue & forgotten items, then re-assign owners."}
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "إجمالي البنود" : "Total entries"} value={String(counts.total)} tone="cyan" icon={Brain} />
-        <NexusStat label={ar ? "متأخر" : "Overdue"} value={String(counts.overdue)} tone="amber" icon={Clock} />
-        <NexusStat label={ar ? "منسية" : "Forgotten"} value={String(counts.forgotten)} tone="rose" icon={AlertTriangle} />
-        <NexusStat label={ar ? "تأثير حرج" : "Critical impact"} value={String(counts.critical)} tone="violet" icon={CheckCircle2} />
+        <NexusStat label={ar ? "إجمالي البنود" : "Total entries"} value={String(counts.total)} tone="cyan" />
+        <NexusStat label={ar ? "متأخر" : "Overdue"} value={String(counts.overdue)} tone="amber" />
+        <NexusStat label={ar ? "منسية" : "Forgotten"} value={String(counts.forgotten)} tone="rose" />
+        <NexusStat label={ar ? "تأثير حرج" : "Critical impact"} value={String(counts.critical)} tone="violet" />
       </div>
 
       <NexusCard>
