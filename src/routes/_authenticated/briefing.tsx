@@ -48,7 +48,11 @@ function BriefingPage() {
       eyebrow="EXECUTIVE BRIEFING"
       title={ar ? "موجز التنفيذيين اليومي" : "Daily Executive Briefing"}
       subtitle={ar ? "تقرير ذكي مولد بواسطة Nexus AI — تحديث مباشر كل 15 دقيقة." : "AI-generated executive intelligence, refreshed every 15 minutes."}
-      actions={<NexusPill tone="emerald">● LIVE</NexusPill>}
+      actions={
+        <NexusPill tone={pulse.status === "healthy" ? "emerald" : pulse.status === "warning" ? "amber" : "rose"}>
+          ● LIVE · {formatRelativeTime(pulse.lastRefreshed, locale === "ar" ? "ar" : "en")}
+        </NexusPill>
+      }
     >
       {/* Strategic summary */}
       <NexusCard glow>
@@ -58,19 +62,19 @@ function BriefingPage() {
           </div>
           <div className="min-w-0">
             <div className="text-[10px] font-bold tracking-[0.3em] text-cyan-300/80">
-              {ar ? "الملخص الاستراتيجي" : "STRATEGIC SUMMARY"}
+              {ar ? "الملخص الاستراتيجي · ARIA" : "STRATEGIC SUMMARY · ARIA"}
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-200">{summary}</p>
           </div>
         </div>
       </NexusCard>
 
-      {/* KPIs */}
+      {/* KPIs — from live pulse */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "النمو vs الخطة" : "Growth vs Plan"} value="+8.4%" hint={ar ? "ربع سنوي" : "QoQ"} tone="emerald" />
-        <NexusStat label={ar ? "التنبيهات النشطة" : "Active Alerts"} value="14" hint={ar ? "3 حرجة" : "3 critical"} tone="amber" />
-        <NexusStat label={ar ? "المخاطر المرصودة" : "Risks Tracked"} value="9" hint={ar ? "2 جديدة اليوم" : "2 new today"} tone="rose" />
-        <NexusStat label={ar ? "الفرص الاستراتيجية" : "Opportunities"} value="6" hint={ar ? "4 جاهزة للتنفيذ" : "4 ready to act"} tone="cyan" />
+        <NexusStat label={pulse.kpis[0][ar ? "label_ar" : "label_en"]} value={pulse.kpis[0].value} hint={pulse.kpis[0].delta} tone="emerald" />
+        <NexusStat label={ar ? "التنبيهات النشطة" : "Active Alerts"} value={String(pulse.alerts.length)} hint={ar ? `${pulse.alerts.filter((a) => a.severity === "critical").length} حرجة` : `${pulse.alerts.filter((a) => a.severity === "critical").length} critical`} tone="amber" />
+        <NexusStat label={pulse.kpis[4][ar ? "label_ar" : "label_en"]} value={pulse.kpis[4].value} hint={pulse.kpis[4].delta} tone="rose" />
+        <NexusStat label={pulse.kpis[2][ar ? "label_ar" : "label_en"]} value={pulse.kpis[2].value} hint={pulse.kpis[2].delta} tone="cyan" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
