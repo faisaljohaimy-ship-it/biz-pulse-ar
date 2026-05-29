@@ -325,6 +325,12 @@ function BeamsLayer() {
 
 function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr: boolean }) {
   const Icon = node.icon;
+  const seed = node.id.charCodeAt(0) + node.id.charCodeAt(node.id.length - 1);
+  const buildings = Array.from({ length: 6 }).map((_, i) => ({
+    h: 28 + ((seed * (i + 2)) % 58),
+    w: 9 + ((seed + i * 3) % 7),
+    o: 0.5 + ((i % 3) * 0.18),
+  }));
   return (
     <div
       className="group absolute -translate-x-1/2 -translate-y-1/2"
@@ -334,37 +340,87 @@ function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr:
         animation: `float-y 6s ease-in-out ${delay}ms infinite`,
       }}
     >
-      {/* light pillar */}
-      <div
-        className="absolute left-1/2 top-full h-24 w-px -translate-x-1/2 opacity-70"
-        style={{
-          background: `linear-gradient(to bottom, hsla(${node.hue},90%,70%,0.9), transparent)`,
-          boxShadow: `0 0 12px hsla(${node.hue},90%,70%,0.6)`,
-        }}
-      />
-      {/* base ring */}
-      <div
-        className="absolute left-1/2 top-[calc(100%+6rem)] h-3 w-16 -translate-x-1/2 rounded-full blur-md"
-        style={{ background: `hsla(${node.hue},90%,60%,0.6)` }}
-      />
-      {/* chip */}
-      <div
-        className="relative flex min-w-[140px] items-center gap-2.5 rounded-2xl border border-cyan-300/30 bg-[#06101f]/85 px-3 py-2 shadow-[0_8px_30px_-8px_rgba(34,211,238,0.6)] backdrop-blur-xl transition-transform group-hover:-translate-y-1"
-        style={{
-          boxShadow: `0 0 30px hsla(${node.hue},90%,60%,0.25), inset 0 0 0 1px hsla(${node.hue},90%,70%,0.15)`,
-        }}
-      >
+      <div className="relative">
+        {/* energy beam shooting up */}
         <div
-          className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ background: `hsla(${node.hue},90%,55%,0.18)`, color: `hsl(${node.hue},90%,75%)` }}
-        >
-          <Icon className="h-4 w-4" />
-        </div>
-        <div className="leading-tight">
-          <div className="text-[10px] font-semibold tracking-[0.2em] text-slate-200">
-            {isAr ? node.label_ar : node.label_en}
+          className="absolute left-1/2 top-[-130px] h-[130px] w-[3px] -translate-x-1/2 rounded-full"
+          style={{
+            background: `linear-gradient(to top, hsla(${node.hue},95%,72%,0.95), hsla(${node.hue},95%,80%,0.2) 60%, transparent)`,
+            boxShadow: `0 0 24px hsla(${node.hue},95%,70%,0.9), 0 0 60px hsla(${node.hue},95%,70%,0.5)`,
+          }}
+        />
+        <div
+          className="absolute left-1/2 top-[-140px] h-6 w-6 -translate-x-1/2 rounded-full blur-md"
+          style={{ background: `hsla(${node.hue},95%,75%,0.9)` }}
+        />
+
+        {/* isometric district platform */}
+        <div className="relative h-[96px] w-[210px]">
+          <div
+            className="absolute left-1/2 top-[60px] h-7 w-[190px] -translate-x-1/2 rounded-[50%] blur-xl"
+            style={{ background: `hsla(${node.hue},95%,60%,0.6)` }}
+          />
+          <svg viewBox="0 0 210 96" className="absolute inset-0 h-full w-full">
+            <defs>
+              <radialGradient id={`pad-${node.id}`} cx="50%" cy="60%" r="60%">
+                <stop offset="0%" stopColor={`hsla(${node.hue},95%,65%,0.55)`} />
+                <stop offset="60%" stopColor={`hsla(${node.hue},85%,40%,0.25)`} />
+                <stop offset="100%" stopColor="rgba(2,8,23,0)" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="105" cy="66" rx="98" ry="22" fill={`url(#pad-${node.id})`} />
+            <ellipse cx="105" cy="66" rx="98" ry="22" fill="none" stroke={`hsla(${node.hue},95%,75%,0.75)`} strokeWidth="1" />
+            <ellipse cx="105" cy="66" rx="76" ry="15" fill="none" stroke={`hsla(${node.hue},95%,75%,0.4)`} strokeWidth="0.6" strokeDasharray="2 3" />
+          </svg>
+
+          {/* 3D building cluster */}
+          <div className="absolute inset-x-0 bottom-[30px] flex items-end justify-center gap-[3px]">
+            {buildings.map((b, i) => (
+              <div
+                key={i}
+                className="relative rounded-t-sm"
+                style={{
+                  width: b.w,
+                  height: b.h,
+                  background: `linear-gradient(to top, hsla(${node.hue},60%,10%,0.95), hsla(${node.hue},70%,20%,0.9))`,
+                  border: `1px solid hsla(${node.hue},90%,55%,0.55)`,
+                  boxShadow: `0 0 10px hsla(${node.hue},95%,55%,${b.o * 0.55}), inset 0 -10px 14px hsla(${node.hue},95%,55%,${b.o * 0.45})`,
+                }}
+              >
+                <div
+                  className="absolute inset-x-0.5 top-1 bottom-1 opacity-90"
+                  style={{
+                    backgroundImage: `repeating-linear-gradient(to bottom, hsla(${node.hue},95%,78%,${b.o}) 0 1px, transparent 1px 4px)`,
+                  }}
+                />
+                <div
+                  className="absolute -top-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
+                  style={{ background: `hsl(${node.hue},95%,82%)`, boxShadow: `0 0 6px hsl(${node.hue},95%,75%)` }}
+                />
+              </div>
+            ))}
           </div>
-          <div className="text-[10px] text-slate-400">{isAr ? node.meta_ar : node.meta_en}</div>
+        </div>
+
+        {/* holographic label chip */}
+        <div
+          className="relative mt-2 flex min-w-[150px] items-center gap-2.5 rounded-2xl border border-cyan-300/30 bg-[#06101f]/85 px-3 py-2 backdrop-blur-xl transition-transform group-hover:-translate-y-1"
+          style={{
+            boxShadow: `0 0 30px hsla(${node.hue},90%,60%,0.35), inset 0 0 0 1px hsla(${node.hue},90%,70%,0.18)`,
+          }}
+        >
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ background: `hsla(${node.hue},90%,55%,0.18)`, color: `hsl(${node.hue},90%,75%)` }}
+          >
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="leading-tight">
+            <div className="text-[10px] font-semibold tracking-[0.2em] text-slate-200">
+              {isAr ? node.label_ar : node.label_en}
+            </div>
+            <div className="text-[10px] text-slate-400">{isAr ? node.meta_ar : node.meta_en}</div>
+          </div>
         </div>
       </div>
     </div>
