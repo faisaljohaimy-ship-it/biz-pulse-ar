@@ -18,6 +18,14 @@ import {
   ListChecks,
   Sun,
   Moon,
+  FileText,
+  Crown,
+  Boxes,
+  Plug,
+  Network,
+  GitMerge,
+  Brain,
+  Presentation,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -83,6 +91,24 @@ function useNavGroups(): NavGroup[] {
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
         { to: "/tasks", icon: ListChecks, label: t("nav.tasks") },
         { to: "/files", icon: FolderUp, label: t("nav.files") },
+      ],
+    },
+    {
+      label: t("nav.group.executive"),
+      items: [
+        { to: "/briefing", icon: FileText, label: t("nav.briefing") },
+        { to: "/chief-of-staff", icon: Crown, label: t("nav.chief") },
+        { to: "/intelligence", icon: Brain, label: t("nav.intelligence") },
+        { to: "/boardroom", icon: Presentation, label: t("nav.boardroom") },
+      ],
+    },
+    {
+      label: t("nav.group.enterprise"),
+      items: [
+        { to: "/digital-twin", icon: Boxes, label: t("nav.twin") },
+        { to: "/integrations", icon: Plug, label: t("nav.integrations") },
+        { to: "/ai-ops", icon: Network, label: t("nav.aiops") },
+        { to: "/orchestration", icon: GitMerge, label: t("nav.orchestration") },
       ],
     },
     {
