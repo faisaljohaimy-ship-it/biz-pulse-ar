@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Rocket } from "lucide-react";
+import { ensureDemoUser, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo.functions";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -49,6 +51,16 @@ function LoginPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-2xl backdrop-blur">
+          <DemoLoginButton />
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("auth.signin")} / {t("auth.signup")}
+            </span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">{t("auth.signin")}</TabsTrigger>
@@ -68,6 +80,56 @@ function LoginPage() {
     </div>
   );
 }
+function DemoLoginButton() {
+  const { locale } = useI18n();
+  const navigate = useNavigate();
+  const ensure = useServerFn(ensureDemoUser);
+  const [loading, setLoading] = useState(false);
+
+  const enterDemo = async () => {
+    setLoading(true);
+    try {
+      // 1) Ensure the seeded executive demo account exists (idempotent)
+      await ensure();
+      // 2) Sign in with the seeded credentials
+      const { error } = await supabase.auth.signInWithPassword({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+      });
+      if (error) throw error;
+      toast.success(locale === "ar" ? "مرحباً في مركز القيادة التنفيذي" : "Welcome to the Executive Command Center");
+      // 3) Route directly to the Executive Command Center
+      navigate({ to: "/dashboard", replace: true });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Demo sign-in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={enterDemo}
+      disabled={loading}
+      className="group relative w-full overflow-hidden rounded-xl border border-primary/40 bg-gradient-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.01] disabled:opacity-60"
+    >
+      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+      <span className="relative flex items-center justify-center gap-2">
+        <Rocket className="h-4 w-4" />
+        {loading
+          ? (locale === "ar" ? "...جاري الدخول" : "Entering...")
+          : (locale === "ar" ? "ادخل كعرض تنفيذي" : "Enter as Demo")}
+      </span>
+      <span className="relative mt-1 block text-[10px] font-normal tracking-wide opacity-80">
+        {locale === "ar"
+          ? "وصول فوري لمركز القيادة — للعروض والاجتماعات التنفيذية"
+          : "Instant access to the Executive Command Center — for demos & boardroom reviews"}
+      </span>
+    </button>
+  );
+}
+
 
 function SignInForm() {
   const { t } = useI18n();
