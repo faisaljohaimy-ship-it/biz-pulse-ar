@@ -311,7 +311,7 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
               </div>
             </div>
           )}
-          {messages.map((m) => {
+          {messages.map((m: UIMessage) => {
             const text = m.parts
               .map((p) => (p.type === "text" ? p.text : ""))
               .join("");
