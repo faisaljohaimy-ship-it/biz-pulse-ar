@@ -42,6 +42,10 @@ import {
   Keyboard,
   ChevronLeft,
 } from "lucide-react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
+import { supabase } from "@/integrations/supabase/client";
+import { useEnterprisePulse, type PulseAlert } from "@/lib/enterprise-pulse";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 
@@ -218,66 +222,147 @@ function ExecutiveAvatar({ state }: { state: OverlayState }) {
 function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const [msg, setMsg] = useState("");
-  if (!open) return null;
+  const pulse = useEnterprisePulse();
+  const [input, setInput] = useState("");
+  const [transport] = useState(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        fetch: async (url, init) => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          const headers = new Headers(init?.headers);
+          if (token) headers.set("Authorization", `Bearer ${token}`);
+          return fetch(url, { ...init, headers });
+        },
+      }),
+  );
+  const { messages, sendMessage, status } = useChat({ id: "aria-console", transport });
+  const isLoading = status === "submitted" || status === "streaming";
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, isLoading]);
+
   const suggestions = ar
-    ? ["لخص أداء اليوم", "ما أكبر 3 مخاطر؟", "جهز اجتماع مجلس الإدارة", "حلل أداء الفريق المالي"]
-    : ["Summarize today's performance", "Top 3 strategic risks?", "Prep the board meeting", "Analyze finance team performance"];
+    ? ["لخص أداء اليوم", "ما أكبر 3 مخاطر؟", "جهز اجتماع مجلس الإدارة", "ما الفرص الاستراتيجية؟"]
+    : ["Summarize today's performance", "Top 3 strategic risks?", "Prep the board meeting", "What strategic opportunities?"];
+
+  const send = (text: string) => {
+    if (!text.trim() || isLoading) return;
+    const ctx = ar
+      ? `سياق مباشر من Nexus Pulse: الصحة العامة ${pulse.health}، الحالة ${pulse.status}، الإيراد ${pulse.kpis[0].value} (${pulse.kpis[0].delta})، EBITDA ${pulse.kpis[1].value}، حوادث P1 ${pulse.kpis[4].value}، مهام مفتوحة ${pulse.counts.openTasks}. تنبيهات نشطة: ${pulse.alerts.map((a: PulseAlert) => a.title_ar).join("؛ ")}.`
+      : `Live Nexus Pulse context: health ${pulse.health}, status ${pulse.status}, revenue ${pulse.kpis[0].value} (${pulse.kpis[0].delta}), EBITDA ${pulse.kpis[1].value}, P1 incidents ${pulse.kpis[4].value}, open tasks ${pulse.counts.openTasks}. Active alerts: ${pulse.alerts.map((a: PulseAlert) => a.title_en).join("; ")}.`;
+    sendMessage({ text: `${ctx}\n\n${text}` });
+    setInput("");
+  };
+
+  if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end p-4 sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-end p-3 sm:p-6" onClick={onClose}>
       <div className="absolute inset-0 bg-[#020514]/70 backdrop-blur-md" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative z-10 mb-20 w-full max-w-md overflow-hidden rounded-3xl border border-cyan-300/25 bg-[#040816]/95 shadow-[0_40px_120px_-20px_rgba(34,211,238,0.6)]"
+        className="relative z-10 mb-20 flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[#040816]/95 shadow-[0_40px_120px_-20px_rgba(34,211,238,0.6)]"
         style={{ animation: "scale-in 0.25s ease-out" }}
       >
-        <div className="relative h-28 overflow-hidden bg-gradient-to-br from-cyan-500/30 via-blue-600/30 to-indigo-700/30">
+        <div className="relative h-24 shrink-0 overflow-hidden bg-gradient-to-br from-cyan-500/30 via-blue-600/30 to-indigo-700/30">
           <div className="absolute inset-0 opacity-40" style={{
             backgroundImage: "linear-gradient(rgba(186,230,253,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(186,230,253,0.5) 1px,transparent 1px)",
             backgroundSize: "20px 20px",
             maskImage: "radial-gradient(ellipse at center,black,transparent 80%)",
           }}/>
-          <div className="absolute left-5 bottom-3 flex items-center gap-3">
-            <div className="relative h-14 w-14">
+          <div className="absolute start-5 bottom-3 flex items-center gap-3">
+            <div className="relative h-12 w-12">
               <span className="absolute inset-[-6px] rounded-full bg-cyan-400/40 blur-xl animate-pulse" />
               <span className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700" />
-              <span className="absolute inset-[3px] rounded-full" style={{
-                background: "radial-gradient(circle at 30% 30%,rgba(186,230,253,0.9),rgba(56,189,248,0.3) 50%,transparent 75%)",
-              }}/>
             </div>
             <div>
               <div className="text-sm font-bold text-white">ARIA</div>
-              <div className="text-[10px] tracking-[0.25em] text-cyan-200/90">{ar ? "كبيرة المستشارين التنفيذيين" : "EXECUTIVE AI ADVISOR"}</div>
+              <div className="text-[10px] tracking-[0.25em] text-cyan-200/90">
+                {ar ? "كبيرة المستشارين · مباشر" : "EXEC ADVISOR · LIVE"}
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="absolute right-3 top-3 rounded-lg p-1 text-slate-300 hover:bg-white/10">
+          <button onClick={onClose} className="absolute end-3 top-3 rounded-lg p-1 text-slate-300 hover:bg-white/10">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="space-y-3 p-5">
-          <p className="text-sm text-slate-300">
-            {ar ? "مساء الخير. تم تحليل 247 إشارة اليوم. الأداء العام +12.4% فوق الهدف. هناك فرصتان استراتيجيتان جديدتان تتطلبان قرارك." : "Good evening. I've analyzed 247 signals today. Overall performance +12.4% above target. Two new strategic opportunities require your decision."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {suggestions.map((s) => (
-              <button key={s} className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-[11px] text-cyan-200 hover:bg-cyan-400/15">
-                {s}
-              </button>
-            ))}
-          </div>
+
+        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+          {messages.length === 0 && (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-300">
+                {ar
+                  ? `مرحباً. الصحة العامة ${pulse.health}، الحالة "${pulse.status === "healthy" ? "صحية" : pulse.status === "warning" ? "تحذير" : "حرجة"}". اسألني عن أي مؤشر أو خطر أو فرصة.`
+                  : `Hi. Overall health ${pulse.health}, status "${pulse.status}". Ask me about any KPI, risk or opportunity.`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-[11px] text-cyan-200 hover:bg-cyan-400/15"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {messages.map((m: UIMessage) => {
+            const text = m.parts
+              .map((p) => (p.type === "text" ? p.text : ""))
+              .join("");
+            const isUser = m.role === "user";
+            const displayText = isUser ? text.split("\n\n").slice(-1)[0] : text;
+            return (
+              <div
+                key={m.id}
+                className={cn(
+                  "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
+                  isUser
+                    ? "ms-auto bg-cyan-400/15 text-cyan-50 border border-cyan-400/25"
+                    : "bg-white/[0.04] text-slate-100 border border-white/5",
+                )}
+              >
+                {displayText || (isLoading ? "…" : "")}
+              </div>
+            );
+          })}
+          {isLoading && messages[messages.length - 1]?.role === "user" && (
+            <div className="bg-white/[0.04] border border-white/5 rounded-2xl px-3.5 py-2.5 text-sm text-slate-400 max-w-[88%]">
+              <span className="inline-flex gap-1">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300" />
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300" style={{ animationDelay: "0.15s" }} />
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300" style={{ animationDelay: "0.3s" }} />
+              </span>
+            </div>
+          )}
+        </div>
+
+        <form
+          onSubmit={(e) => { e.preventDefault(); send(input); }}
+          className="shrink-0 border-t border-white/5 p-3"
+        >
           <div className="relative">
             <input
-              value={msg}
-              onChange={(e) => setMsg(e.target.value)}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading}
               placeholder={ar ? "تحدث مع ARIA..." : "Talk to ARIA..."}
-              className="w-full rounded-2xl border border-cyan-400/20 bg-[#06101f]/80 py-3 ps-4 pe-20 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-300/50 focus:outline-none"
+              className="w-full rounded-2xl border border-cyan-400/20 bg-[#06101f]/80 py-3 ps-4 pe-12 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-300/50 focus:outline-none disabled:opacity-50"
             />
-            <div className="absolute end-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-              <button className="rounded-lg p-2 text-slate-400 hover:bg-cyan-400/10 hover:text-cyan-300"><Mic className="h-4 w-4" /></button>
-              <button className="rounded-lg bg-cyan-400/20 p-2 text-cyan-200 hover:bg-cyan-400/30"><Zap className="h-4 w-4" /></button>
-            </div>
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="absolute end-2 top-1/2 -translate-y-1/2 rounded-lg bg-cyan-400/20 p-2 text-cyan-200 hover:bg-cyan-400/30 disabled:opacity-30"
+            >
+              <Zap className="h-4 w-4" />
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

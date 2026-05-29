@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill } from "@/components/nexus-frame";
+import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { Presentation, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/boardroom")({
@@ -11,20 +12,34 @@ export const Route = createFileRoute("/_authenticated/boardroom")({
 function BoardroomPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const pulse = useEnterprisePulse();
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") setIdx((i) => Math.min(3, i + 1));
+      if (e.key === "ArrowLeft") setIdx((i) => Math.max(0, i - 1));
+      if (e.key === "Escape" && fs) setFs(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fs]);
+
   const slides = [
     {
-      eyebrow: ar ? "نظرة المجلس" : "BOARD OVERVIEW",
+      eyebrow: ar ? "نظرة المجلس · مباشر" : "BOARD OVERVIEW · LIVE",
       title: ar ? "أداء يفوق التوقعات" : "Performance Above Expectations",
       kpis: [
-        { l: ar ? "الإيرادات السنوية" : "Annual Revenue", v: "SAR 1.42B", d: "+18.6%" },
-        { l: ar ? "هامش EBITDA" : "EBITDA Margin", v: "34.2%", d: "+3.1pp" },
-        { l: ar ? "صافي الربح" : "Net Profit", v: "SAR 412M", d: "+22%" },
-        { l: ar ? "تدفق نقدي" : "Free Cash Flow", v: "SAR 386M", d: "+14%" },
+        { l: pulse.kpis[0][ar ? "label_ar" : "label_en"], v: pulse.kpis[0].value, d: pulse.kpis[0].delta },
+        { l: pulse.kpis[1][ar ? "label_ar" : "label_en"], v: pulse.kpis[1].value, d: pulse.kpis[1].delta },
+        { l: pulse.kpis[3][ar ? "label_ar" : "label_en"], v: pulse.kpis[3].value, d: pulse.kpis[3].delta },
+        { l: ar ? "صحة المنصة" : "Platform Health", v: `${pulse.health}`, d: pulse.status.toUpperCase() },
       ],
-      body: ar ? "تجاوزت المؤسسة جميع أهداف الخطة الاستراتيجية للسنة المالية مع نمو متسارع في القطاعات الرقمية والذكاء الاصطناعي." : "The enterprise exceeded all strategic plan targets for the fiscal year, with accelerating growth in digital and AI segments.",
+      body: ar
+        ? `تجاوزت المؤسسة جميع أهداف الخطة الاستراتيجية. ${pulse.intel[0].text_ar} بثقة ${pulse.intel[0].confidence}٪.`
+        : `The enterprise exceeded all strategic plan targets. ${pulse.intel[0].text_en} with ${pulse.intel[0].confidence}% confidence.`,
     },
     {
       eyebrow: ar ? "الأولويات الاستراتيجية" : "STRATEGIC PRIORITIES",

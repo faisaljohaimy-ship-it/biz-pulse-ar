@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { useEnterprisePulse, formatRelativeTime } from "@/lib/enterprise-pulse";
 import { AlertTriangle, TrendingUp, ShieldAlert, Sparkles, FileText, ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/briefing")({
@@ -10,17 +11,18 @@ export const Route = createFileRoute("/_authenticated/briefing")({
 function BriefingPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const pulse = useEnterprisePulse();
 
   const summary = ar
-    ? "أداء المؤسسة يفوق الخطة بنسبة 8.4٪ مع تسارع تبني الذكاء الاصطناعي عبر 5 إدارات. تم رصد 3 مخاطر تتطلب قراراً تنفيذياً، وفرصتان استراتيجيتان جاهزتان للتنفيذ."
-    : "Enterprise performance is 8.4% above plan, with AI adoption accelerating across 5 divisions. 3 risks require executive decisions and 2 strategic opportunities are ready to execute.";
+    ? `أداء المؤسسة عند صحة ${pulse.health} مع حالة "${pulse.status === "healthy" ? "صحية" : pulse.status === "warning" ? "تحذير" : "حرجة"}". الإيراد ${pulse.kpis[0].value} (${pulse.kpis[0].delta})، تبني الذكاء الاصطناعي ${pulse.kpis[2].value}. ${pulse.alerts.length} تنبيهات نشطة، ${pulse.intel.length} إشارات استراتيجية.`
+    : `Enterprise health is ${pulse.health} with "${pulse.status}" status. Revenue ${pulse.kpis[0].value} (${pulse.kpis[0].delta}), AI adoption at ${pulse.kpis[2].value}. ${pulse.alerts.length} active alerts and ${pulse.intel.length} strategic signals.`;
 
-  const alerts = [
-    { t: ar ? "تجاوز ميزانية الحوسبة السحابية بنسبة 14٪" : "Cloud compute budget exceeded by 14%", tone: "amber" as const, t2: ar ? "المالية" : "Finance" },
-    { t: ar ? "تأخر مشروع SAP S/4HANA بأسبوعين" : "SAP S/4HANA rollout slipped by 2 weeks", tone: "rose" as const, t2: ar ? "تكنولوجيا" : "IT" },
-    { t: ar ? "ارتفاع رضا العملاء إلى 92٪" : "Customer satisfaction up to 92%", tone: "emerald" as const, t2: ar ? "العمليات" : "Ops" },
-    { t: ar ? "محاولة وصول غير مصرح بها مكتشفة" : "Unauthorized access attempt detected", tone: "rose" as const, t2: ar ? "الأمن" : "Security" },
-  ];
+  const alerts = pulse.alerts.map((a) => ({
+    t: ar ? a.title_ar : a.title_en,
+    tone: (a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : a.severity === "medium" ? "amber" : "emerald") as "rose" | "amber" | "emerald",
+    t2: a.owner,
+    route: a.route,
+  }));
 
   const risks = [
     { t: ar ? "اعتماد عالٍ على مورد سحابي واحد" : "Heavy reliance on single cloud vendor", level: ar ? "حرج" : "Critical", p: 78 },
@@ -46,7 +48,11 @@ function BriefingPage() {
       eyebrow="EXECUTIVE BRIEFING"
       title={ar ? "موجز التنفيذيين اليومي" : "Daily Executive Briefing"}
       subtitle={ar ? "تقرير ذكي مولد بواسطة Nexus AI — تحديث مباشر كل 15 دقيقة." : "AI-generated executive intelligence, refreshed every 15 minutes."}
-      actions={<NexusPill tone="emerald">● LIVE</NexusPill>}
+      actions={
+        <NexusPill tone={pulse.status === "healthy" ? "emerald" : pulse.status === "warning" ? "amber" : "rose"}>
+          ● LIVE · {formatRelativeTime(pulse.lastRefreshed, locale === "ar" ? "ar" : "en")}
+        </NexusPill>
+      }
     >
       {/* Strategic summary */}
       <NexusCard glow>
@@ -56,19 +62,19 @@ function BriefingPage() {
           </div>
           <div className="min-w-0">
             <div className="text-[10px] font-bold tracking-[0.3em] text-cyan-300/80">
-              {ar ? "الملخص الاستراتيجي" : "STRATEGIC SUMMARY"}
+              {ar ? "الملخص الاستراتيجي · ARIA" : "STRATEGIC SUMMARY · ARIA"}
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-200">{summary}</p>
           </div>
         </div>
       </NexusCard>
 
-      {/* KPIs */}
+      {/* KPIs — from live pulse */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "النمو vs الخطة" : "Growth vs Plan"} value="+8.4%" hint={ar ? "ربع سنوي" : "QoQ"} tone="emerald" />
-        <NexusStat label={ar ? "التنبيهات النشطة" : "Active Alerts"} value="14" hint={ar ? "3 حرجة" : "3 critical"} tone="amber" />
-        <NexusStat label={ar ? "المخاطر المرصودة" : "Risks Tracked"} value="9" hint={ar ? "2 جديدة اليوم" : "2 new today"} tone="rose" />
-        <NexusStat label={ar ? "الفرص الاستراتيجية" : "Opportunities"} value="6" hint={ar ? "4 جاهزة للتنفيذ" : "4 ready to act"} tone="cyan" />
+        <NexusStat label={pulse.kpis[0][ar ? "label_ar" : "label_en"]} value={pulse.kpis[0].value} hint={pulse.kpis[0].delta} tone="emerald" />
+        <NexusStat label={ar ? "التنبيهات النشطة" : "Active Alerts"} value={String(pulse.alerts.length)} hint={ar ? `${pulse.alerts.filter((a) => a.severity === "critical").length} حرجة` : `${pulse.alerts.filter((a) => a.severity === "critical").length} critical`} tone="amber" />
+        <NexusStat label={pulse.kpis[4][ar ? "label_ar" : "label_en"]} value={pulse.kpis[4].value} hint={pulse.kpis[4].delta} tone="rose" />
+        <NexusStat label={pulse.kpis[2][ar ? "label_ar" : "label_en"]} value={pulse.kpis[2].value} hint={pulse.kpis[2].delta} tone="cyan" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -77,9 +83,14 @@ function BriefingPage() {
           <SectionTitle icon={AlertTriangle} title={ar ? "تنبيهات تنفيذية" : "Executive Alerts"} />
           <ul className="mt-3 space-y-2">
             {alerts.map((a, i) => (
-              <li key={i} className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3">
-                <NexusPill tone={a.tone}>{a.t2}</NexusPill>
-                <span className="text-sm text-slate-200">{a.t}</span>
+              <li key={i}>
+                <Link
+                  to={a.route}
+                  className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3 transition hover:border-cyan-400/30 hover:bg-cyan-400/[0.04]"
+                >
+                  <NexusPill tone={a.tone}>{a.t2}</NexusPill>
+                  <span className="text-sm text-slate-200">{a.t}</span>
+                </Link>
               </li>
             ))}
           </ul>
