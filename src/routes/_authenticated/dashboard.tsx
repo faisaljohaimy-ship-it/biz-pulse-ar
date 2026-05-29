@@ -3,13 +3,18 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   Activity,
+  AlertTriangle,
   Bot,
   Building2,
   Cpu,
   Database,
   GitBranch,
+  Heart,
+  Radar,
   Search,
+  ShieldCheck,
   Sparkles,
+  Target,
   TrendingUp,
   Workflow,
   Zap,
@@ -100,9 +105,21 @@ function CommandCenter() {
         </header>
 
         {/* ── 3D stage ─────────────────────────────────────────────── */}
-        <main className="relative mt-6 flex-1">
+        <main className="relative mt-6">
           <Stage isAr={isAr} />
         </main>
+
+        {/* ── Live intelligence ticker ─────────────────────────────── */}
+        <IntelligenceTicker isAr={isAr} />
+
+        {/* ── Executive intelligence grid ──────────────────────────── */}
+        <section className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <EnterpriseHealth isAr={isAr} />
+          <RiskRadar isAr={isAr} />
+          <StrategicObjectives isAr={isAr} />
+          <IntegrationTopology isAr={isAr} />
+          <OrchestrationFlow isAr={isAr} />
+        </section>
 
         {/* ── KPI strip ────────────────────────────────────────────── */}
         <footer className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
@@ -420,5 +437,463 @@ function Kpi({
         <span className="text-slate-500"> vs last month</span>
       </div>
     </div>
+  );
+}
+
+/* ═════════════════════ Executive Intelligence ═════════════════════ */
+
+function IntelligenceTicker({ isAr }: { isAr: boolean }) {
+  const items = isAr
+    ? [
+        { tone: "emerald", txt: "وكيل المبيعات أغلق صفقة بقيمة 2.4M ريال — منطقة الرياض" },
+        { tone: "cyan", txt: "تحسين تلقائي لخط أنابيب البيانات — وفر 14% من زمن المعالجة" },
+        { tone: "amber", txt: "تنبيه: ارتفاع غير معتاد في مكالمات API لـ SAP — قيد المراقبة" },
+        { tone: "violet", txt: "تم نشر نموذج التنبؤ الجديد (v4.2) عبر 12 قسم" },
+        { tone: "emerald", txt: "مؤشر سلامة المؤسسة ارتفع إلى 94 — أعلى مستوى هذا الربع" },
+        { tone: "cyan", txt: "اكتمل تكامل Oracle Cloud — تدفق البيانات يعمل في الوقت الفعلي" },
+      ]
+    : [
+        { tone: "emerald", txt: "Sales Agent closed $2.4M deal — Riyadh region" },
+        { tone: "cyan", txt: "Auto-tuned data pipeline — 14% processing time saved" },
+        { tone: "amber", txt: "Anomaly: unusual spike in SAP API calls — monitoring" },
+        { tone: "violet", txt: "Forecast model v4.2 deployed across 12 departments" },
+        { tone: "emerald", txt: "Enterprise health index rose to 94 — quarterly high" },
+        { tone: "cyan", txt: "Oracle Cloud integration completed — realtime data flow active" },
+      ];
+  const loop = [...items, ...items];
+  const toneClr: Record<string, string> = {
+    emerald: "text-emerald-300 bg-emerald-400/10 border-emerald-400/30",
+    cyan: "text-cyan-300 bg-cyan-400/10 border-cyan-400/30",
+    amber: "text-amber-300 bg-amber-400/10 border-amber-400/30",
+    violet: "text-violet-300 bg-violet-400/10 border-violet-400/30",
+  };
+  return (
+    <div className="relative mt-4 overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#06101f]/80 backdrop-blur-xl">
+      <div className="absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-[#04060f] to-transparent" />
+      <div className="absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#04060f] to-transparent" />
+      <div className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-md border border-cyan-400/30 bg-[#04060f]/90 px-2 py-1 text-[10px] font-bold tracking-[0.25em] text-cyan-300">
+        {isAr ? "البث المباشر" : "LIVE FEED"}
+      </div>
+      <div className="flex animate-ticker-x gap-3 whitespace-nowrap py-2.5 pl-32 pr-6">
+        {loop.map((it, i) => (
+          <span
+            key={i}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium ${toneClr[it.tone]}`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-current animate-glow-pulse" />
+            {it.txt}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectionHead({
+  icon: Icon,
+  eyebrow,
+  title,
+  tone = "cyan",
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  eyebrow: string;
+  title: string;
+  tone?: "cyan" | "emerald" | "amber" | "rose" | "violet";
+}) {
+  const tones: Record<string, string> = {
+    cyan: "text-cyan-300 bg-cyan-400/10 border-cyan-400/30",
+    emerald: "text-emerald-300 bg-emerald-400/10 border-emerald-400/30",
+    amber: "text-amber-300 bg-amber-400/10 border-amber-400/30",
+    rose: "text-rose-300 bg-rose-400/10 border-rose-400/30",
+    violet: "text-violet-300 bg-violet-400/10 border-violet-400/30",
+  };
+  return (
+    <div className="mb-3 flex items-center gap-2.5">
+      <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${tones[tone]}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="leading-tight">
+        <div className="text-[9px] font-bold tracking-[0.3em] text-slate-400">{eyebrow}</div>
+        <div className="text-sm font-semibold text-slate-100">{title}</div>
+      </div>
+    </div>
+  );
+}
+
+function ExecCard({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`holo-edge group relative overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#06101f]/80 p-4 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-cyan-300/35 shadow-exec ${className ?? ""}`}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
+
+/* — Enterprise Health Score (animated SVG ring) — */
+function EnterpriseHealth({ isAr }: { isAr: boolean }) {
+  const score = 94;
+  const r = 70;
+  const c = 2 * Math.PI * r;
+  const offset = c - (score / 100) * c;
+  const segments = [
+    { label_ar: "العمليات", label_en: "Operations", v: 96, tone: "emerald" },
+    { label_ar: "البيانات", label_en: "Data", v: 92, tone: "cyan" },
+    { label_ar: "الأمن", label_en: "Security", v: 98, tone: "emerald" },
+    { label_ar: "الذكاء", label_en: "AI", v: 89, tone: "violet" },
+    { label_ar: "التكاملات", label_en: "Integrations", v: 91, tone: "cyan" },
+  ];
+  const toneClr: Record<string, string> = {
+    emerald: "bg-emerald-400", cyan: "bg-cyan-400", violet: "bg-violet-400",
+  };
+  return (
+    <ExecCard className="lg:col-span-4">
+      <SectionHead
+        icon={Heart}
+        eyebrow={isAr ? "صحة المؤسسة" : "ENTERPRISE HEALTH"}
+        title={isAr ? "مؤشر الصحة العام" : "Composite Health Index"}
+        tone="emerald"
+      />
+      <div className="flex items-center gap-5">
+        <div className="relative h-44 w-44 shrink-0">
+          <div className="absolute inset-0 rounded-full bg-emerald-400/10 blur-2xl" />
+          <svg viewBox="0 0 180 180" className="relative h-full w-full -rotate-90">
+            <defs>
+              <linearGradient id="healthGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#34d399" />
+                <stop offset="100%" stopColor="#22d3ee" />
+              </linearGradient>
+            </defs>
+            <circle cx="90" cy="90" r={r} fill="none" stroke="rgba(34,211,238,0.1)" strokeWidth="10" />
+            <circle
+              cx="90" cy="90" r={r} fill="none"
+              stroke="url(#healthGrad)" strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={c} strokeDashoffset={offset}
+              style={{ filter: "drop-shadow(0 0 8px rgba(52,211,153,0.6))" }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-4xl font-bold text-white">{score}</div>
+            <div className="text-[10px] font-semibold tracking-[0.3em] text-emerald-300">
+              {isAr ? "ممتاز" : "EXCELLENT"}
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 space-y-2.5">
+          {segments.map((s) => (
+            <div key={s.label_en}>
+              <div className="mb-1 flex justify-between text-[11px]">
+                <span className="text-slate-300">{isAr ? s.label_ar : s.label_en}</span>
+                <span className="font-semibold text-slate-100">{s.v}</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-800/60">
+                <div
+                  className={`h-full rounded-full ${toneClr[s.tone]}`}
+                  style={{ width: `${s.v}%`, boxShadow: "0 0 8px currentColor" }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </ExecCard>
+  );
+}
+
+/* — Executive Risk Radar (polar SVG) — */
+function RiskRadar({ isAr }: { isAr: boolean }) {
+  const axes = isAr
+    ? ["مالي", "تشغيلي", "سيبراني", "امتثال", "سمعة", "سلسلة الإمداد"]
+    : ["Financial", "Operational", "Cyber", "Compliance", "Reputation", "Supply"];
+  const values = [0.35, 0.62, 0.48, 0.28, 0.4, 0.55];
+  const cx = 110, cy = 110, R = 88;
+  const pt = (i: number, v: number) => {
+    const a = (Math.PI * 2 * i) / axes.length - Math.PI / 2;
+    return [cx + Math.cos(a) * R * v, cy + Math.sin(a) * R * v] as const;
+  };
+  const poly = values.map((v, i) => pt(i, v).join(",")).join(" ");
+  return (
+    <ExecCard className="lg:col-span-4">
+      <SectionHead
+        icon={Radar}
+        eyebrow={isAr ? "رادار المخاطر التنفيذي" : "EXECUTIVE RISK RADAR"}
+        title={isAr ? "تقييم متعدد الأبعاد" : "Multi-Vector Assessment"}
+        tone="amber"
+      />
+      <div className="relative mx-auto h-56 w-56">
+        <div className="absolute inset-0 rounded-full bg-amber-400/5 blur-2xl" />
+        <svg viewBox="0 0 220 220" className="relative h-full w-full">
+          {[0.25, 0.5, 0.75, 1].map((s) => (
+            <circle key={s} cx={cx} cy={cy} r={R * s} fill="none" stroke="rgba(34,211,238,0.12)" />
+          ))}
+          {axes.map((_, i) => {
+            const [x, y] = pt(i, 1);
+            return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(34,211,238,0.1)" />;
+          })}
+          <polygon
+            points={poly}
+            fill="rgba(251,191,36,0.25)"
+            stroke="rgba(251,191,36,0.9)"
+            strokeWidth="1.5"
+            style={{ filter: "drop-shadow(0 0 8px rgba(251,191,36,0.6))" }}
+          />
+          {values.map((v, i) => {
+            const [x, y] = pt(i, v);
+            return <circle key={i} cx={x} cy={y} r="3" fill="#fbbf24" />;
+          })}
+          {/* sweep */}
+          <g className="animate-radar-sweep" style={{ transformOrigin: "110px 110px" }}>
+            <defs>
+              <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="rgba(34,211,238,0)" />
+                <stop offset="100%" stopColor="rgba(34,211,238,0.5)" />
+              </linearGradient>
+            </defs>
+            <path d={`M ${cx} ${cy} L ${cx + R} ${cy} A ${R} ${R} 0 0 0 ${cx + R * Math.cos(-Math.PI / 6)} ${cy + R * Math.sin(-Math.PI / 6)} Z`} fill="url(#sweep)" />
+          </g>
+          {axes.map((lbl, i) => {
+            const [x, y] = pt(i, 1.18);
+            return (
+              <text
+                key={lbl}
+                x={x}
+                y={y}
+                fill="rgba(203,213,225,0.9)"
+                fontSize="9"
+                fontWeight="600"
+                textAnchor="middle"
+                dominantBaseline="middle"
+              >
+                {lbl}
+              </text>
+            );
+          })}
+        </svg>
+      </div>
+      <div className="mt-3 flex items-center justify-between text-[11px]">
+        <span className="text-slate-400">{isAr ? "متوسط المخاطر" : "Avg risk"}</span>
+        <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 font-semibold text-amber-300">
+          {isAr ? "متوسط — تحت السيطرة" : "Moderate — under control"}
+        </span>
+      </div>
+    </ExecCard>
+  );
+}
+
+/* — Strategic Objectives — */
+function StrategicObjectives({ isAr }: { isAr: boolean }) {
+  const items = isAr
+    ? [
+        { name: "التحول الرقمي 2030", v: 78, owner: "CTO", tone: "cyan" },
+        { name: "السعودة في القيادة", v: 92, owner: "CHRO", tone: "emerald" },
+        { name: "خفض الانبعاثات 40%", v: 54, owner: "COO", tone: "violet" },
+        { name: "توسع الخليج", v: 67, owner: "CEO", tone: "cyan" },
+        { name: "تبني الذكاء الاصطناعي", v: 88, owner: "CDO", tone: "emerald" },
+      ]
+    : [
+        { name: "Digital Transformation 2030", v: 78, owner: "CTO", tone: "cyan" },
+        { name: "Leadership Saudization", v: 92, owner: "CHRO", tone: "emerald" },
+        { name: "Cut Emissions 40%", v: 54, owner: "COO", tone: "violet" },
+        { name: "Gulf Expansion", v: 67, owner: "CEO", tone: "cyan" },
+        { name: "AI Adoption", v: 88, owner: "CDO", tone: "emerald" },
+      ];
+  const toneText: Record<string, string> = {
+    cyan: "text-cyan-300", emerald: "text-emerald-300", violet: "text-violet-300",
+  };
+  const toneBg: Record<string, string> = {
+    cyan: "bg-gradient-to-r from-cyan-500 to-blue-500",
+    emerald: "bg-gradient-to-r from-emerald-500 to-teal-500",
+    violet: "bg-gradient-to-r from-violet-500 to-fuchsia-500",
+  };
+  return (
+    <ExecCard className="lg:col-span-4">
+      <SectionHead
+        icon={Target}
+        eyebrow={isAr ? "الأهداف الاستراتيجية" : "STRATEGIC OBJECTIVES"}
+        title={isAr ? "تتبع الأولويات التنفيذية" : "Executive Priority Tracking"}
+        tone="violet"
+      />
+      <div className="space-y-3">
+        {items.map((o) => (
+          <div key={o.name} className="group/obj rounded-xl border border-slate-700/40 bg-slate-900/40 p-3 transition-colors hover:border-cyan-400/30">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="truncate text-[12px] font-semibold text-slate-100">{o.name}</div>
+                <div className="text-[10px] text-slate-500">{isAr ? "المسؤول" : "Owner"} · {o.owner}</div>
+              </div>
+              <div className={`text-lg font-bold tabular-nums ${toneText[o.tone]}`}>{o.v}%</div>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800">
+              <div
+                className={`h-full rounded-full ${toneBg[o.tone]} transition-all duration-1000`}
+                style={{ width: `${o.v}%`, boxShadow: "0 0 10px rgba(34,211,238,0.5)" }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </ExecCard>
+  );
+}
+
+/* — Live Integration Topology — */
+function IntegrationTopology({ isAr }: { isAr: boolean }) {
+  const nodes = [
+    { id: "sap", name: "SAP S/4", x: 18, y: 28, status: "ok" },
+    { id: "ora", name: "Oracle Cloud", x: 82, y: 28, status: "ok" },
+    { id: "m365", name: "Microsoft 365", x: 14, y: 72, status: "warn" },
+    { id: "shp", name: "SharePoint", x: 86, y: 72, status: "ok" },
+    { id: "azr", name: "Azure AD", x: 50, y: 12, status: "ok" },
+    { id: "tms", name: "Teams", x: 50, y: 88, status: "ok" },
+  ];
+  const statusClr: Record<string, string> = {
+    ok: "border-emerald-400/50 bg-emerald-400/10 text-emerald-300 shadow-[0_0_18px_rgba(52,211,153,0.45)]",
+    warn: "border-amber-400/50 bg-amber-400/10 text-amber-300 shadow-[0_0_18px_rgba(251,191,36,0.45)]",
+  };
+  return (
+    <ExecCard className="lg:col-span-7">
+      <SectionHead
+        icon={GitBranch}
+        eyebrow={isAr ? "طوبولوجيا التكامل المباشرة" : "LIVE INTEGRATION TOPOLOGY"}
+        title={isAr ? "تدفق البيانات بين الأنظمة" : "Cross-System Data Flow"}
+        tone="cyan"
+      />
+      <div className="relative h-64 overflow-hidden rounded-xl border border-cyan-400/10 bg-gradient-to-b from-[#04060f] to-[#020512]">
+        <div className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(34,211,238,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.25) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        {/* center hub */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute -inset-6 rounded-full bg-cyan-400/20 blur-2xl animate-glow-pulse" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-cyan-300/60 bg-[#06101f]" style={{ boxShadow: "0 0 30px rgba(34,211,238,0.6), inset 0 0 20px rgba(34,211,238,0.3)" }}>
+            <Cpu className="h-6 w-6 text-cyan-300" />
+          </div>
+          <div className="mt-1 text-center text-[9px] font-bold tracking-[0.3em] text-cyan-300">NEXUS HUB</div>
+        </div>
+        {/* beams */}
+        <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="topBeam" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="rgba(34,211,238,0)" />
+              <stop offset="50%" stopColor="rgba(34,211,238,0.7)" />
+              <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+            </linearGradient>
+          </defs>
+          {nodes.map((n) => (
+            <line
+              key={n.id}
+              x1={50} y1={50} x2={n.x} y2={n.y}
+              stroke="url(#topBeam)" strokeWidth="0.3"
+              strokeDasharray="0.8 1.2"
+              style={{ animation: "dash 4s linear infinite" }}
+            />
+          ))}
+        </svg>
+        {nodes.map((n) => (
+          <div
+            key={n.id}
+            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold backdrop-blur ${statusClr[n.status]}`}
+            style={{ left: `${n.x}%`, top: `${n.y}%` }}
+          >
+            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current animate-glow-pulse" />
+            {n.name}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[10px]">
+        <div className="rounded-md border border-emerald-400/20 bg-emerald-400/5 py-1.5">
+          <div className="font-bold text-emerald-300">18</div>
+          <div className="text-slate-400">{isAr ? "متصل" : "Connected"}</div>
+        </div>
+        <div className="rounded-md border border-amber-400/20 bg-amber-400/5 py-1.5">
+          <div className="font-bold text-amber-300">1</div>
+          <div className="text-slate-400">{isAr ? "تحذير" : "Warning"}</div>
+        </div>
+        <div className="rounded-md border border-cyan-400/20 bg-cyan-400/5 py-1.5">
+          <div className="font-bold text-cyan-300">42 ms</div>
+          <div className="text-slate-400">{isAr ? "متوسط الكمون" : "Avg latency"}</div>
+        </div>
+      </div>
+    </ExecCard>
+  );
+}
+
+/* — AI Orchestration Flow — */
+function OrchestrationFlow({ isAr }: { isAr: boolean }) {
+  const stages = isAr
+    ? [
+        { name: "الاستيعاب", count: "1.2M", icon: Database },
+        { name: "التحليل", count: "842K", icon: Activity },
+        { name: "الاستدلال", count: "318K", icon: Bot },
+        { name: "القرار", count: "94K", icon: ShieldCheck },
+        { name: "التنفيذ", count: "12.4K", icon: Zap },
+      ]
+    : [
+        { name: "Ingest", count: "1.2M", icon: Database },
+        { name: "Analyze", count: "842K", icon: Activity },
+        { name: "Reason", count: "318K", icon: Bot },
+        { name: "Decide", count: "94K", icon: ShieldCheck },
+        { name: "Execute", count: "12.4K", icon: Zap },
+      ];
+  return (
+    <ExecCard className="lg:col-span-5">
+      <SectionHead
+        icon={Workflow}
+        eyebrow={isAr ? "تنسيق الذكاء الاصطناعي" : "AI ORCHESTRATION"}
+        title={isAr ? "خط أنابيب القرار الحي" : "Live Decision Pipeline"}
+        tone="violet"
+      />
+      <div className="relative flex items-stretch gap-1.5">
+        {stages.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.name} className="relative flex-1">
+              <div className="group/st relative overflow-hidden rounded-lg border border-cyan-400/20 bg-[#04060f]/80 p-2.5 text-center transition-all hover:border-cyan-300/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.35)]">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
+                <div className="mx-auto mb-1.5 flex h-7 w-7 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300">
+                  <Icon className="h-3.5 w-3.5" />
+                </div>
+                <div className="text-[9px] font-bold tracking-wider text-slate-400">{s.name}</div>
+                <div className="mt-1 text-sm font-bold text-cyan-200">{s.count}</div>
+              </div>
+              {i < stages.length - 1 && (
+                <div className="pointer-events-none absolute top-1/2 -right-1 z-10 h-px w-2 bg-gradient-to-r from-cyan-400 to-transparent" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4 space-y-2">
+        {[
+          { l_ar: "وكلاء نشطون", l_en: "Active Agents", v: "48", t: "emerald" },
+          { l_ar: "قرارات/الدقيقة", l_en: "Decisions / min", v: "1,284", t: "cyan" },
+          { l_ar: "دقة النموذج", l_en: "Model accuracy", v: "97.4%", t: "violet" },
+        ].map((r) => (
+          <div key={r.l_en} className="flex items-center justify-between rounded-lg border border-slate-700/40 bg-slate-900/40 px-3 py-2">
+            <span className="text-[11px] text-slate-300">{isAr ? r.l_ar : r.l_en}</span>
+            <span className={`text-sm font-bold tabular-nums ${
+              r.t === "emerald" ? "text-emerald-300" : r.t === "cyan" ? "text-cyan-300" : "text-violet-300"
+            }`}>{r.v}</span>
+          </div>
+        ))}
+        <div className="mt-2 flex items-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-300" />
+          <span className="text-[11px] text-amber-200">
+            {isAr ? "تنبيه: نموذج التنبؤ يحتاج إعادة تدريب خلال 6 أيام" : "Alert: forecast model needs retraining in 6 days"}
+          </span>
+        </div>
+      </div>
+    </ExecCard>
   );
 }
