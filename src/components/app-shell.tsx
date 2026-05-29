@@ -34,6 +34,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ExecutiveOverlay } from "@/components/executive-overlay";
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
@@ -78,6 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="min-w-0 flex-1">{children}</main>
       </div>
+      <ExecutiveOverlay />
     </div>
   );
 }
