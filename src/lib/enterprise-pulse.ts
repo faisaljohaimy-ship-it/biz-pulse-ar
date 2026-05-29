@@ -41,6 +41,68 @@ export type PulseIntel = {
   tone: "cyan" | "violet" | "emerald" | "amber" | "rose";
 };
 
+export type MemoryKind =
+  | "decision"
+  | "initiative"
+  | "commitment"
+  | "risk"
+  | "escalation"
+  | "meeting"
+  | "recommendation"
+  | "dependency";
+
+export type MemoryStatus = "open" | "in_progress" | "blocked" | "done" | "forgotten";
+
+export type MemoryEntry = {
+  id: string;
+  kind: MemoryKind;
+  title_ar: string;
+  title_en: string;
+  owner: string;
+  department: string;
+  due: string; // ISO
+  createdAt: string;
+  status: MemoryStatus;
+  progress: number; // 0-100
+  impact: "low" | "medium" | "high" | "critical";
+  daysSilent: number; // days since last update
+  dependsOn?: string[]; // memory ids
+  decisionRoute?: string;
+  source_ar: string;
+  source_en: string;
+};
+
+export type CrisisPrediction = {
+  id: string;
+  title_ar: string;
+  title_en: string;
+  category: "delay" | "silence" | "bottleneck" | "dependency" | "workflow" | "escalation" | "missed_commitment";
+  riskScore: number; // 0-100
+  probability: number; // 0-100
+  impact_ar: string;
+  impact_en: string;
+  owner: string;
+  action_ar: string;
+  action_en: string;
+  linkedMemoryId?: string;
+  route: string;
+};
+
+export type ExecutionStep = {
+  id: string;
+  decision_ar: string;
+  decision_en: string;
+  action_ar: string;
+  action_en: string;
+  owner: string;
+  department: string;
+  dependency_ar: string;
+  dependency_en: string;
+  risk: "low" | "medium" | "high" | "critical";
+  completion: number; // 0-100
+  status: MemoryStatus;
+};
+
 export type EnterprisePulse = {
   status: PulseStatus;
   health: number; // 0-100
@@ -48,6 +110,9 @@ export type EnterprisePulse = {
   kpis: PulseKpi[];
   alerts: PulseAlert[];
   intel: PulseIntel[];
+  memory: MemoryEntry[];
+  crises: CrisisPrediction[];
+  execution: ExecutionStep[];
   counts: {
     openTasks: number;
     conversations: number;
