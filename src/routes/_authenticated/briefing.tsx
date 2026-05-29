@@ -83,9 +83,14 @@ function BriefingPage() {
           <SectionTitle icon={AlertTriangle} title={ar ? "تنبيهات تنفيذية" : "Executive Alerts"} />
           <ul className="mt-3 space-y-2">
             {alerts.map((a, i) => (
-              <li key={i} className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3">
-                <NexusPill tone={a.tone}>{a.t2}</NexusPill>
-                <span className="text-sm text-slate-200">{a.t}</span>
+              <li key={i}>
+                <Link
+                  to={a.route}
+                  className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3 transition hover:border-cyan-400/30 hover:bg-cyan-400/[0.04]"
+                >
+                  <NexusPill tone={a.tone}>{a.t2}</NexusPill>
+                  <span className="text-sm text-slate-200">{a.t}</span>
+                </Link>
               </li>
             ))}
           </ul>
