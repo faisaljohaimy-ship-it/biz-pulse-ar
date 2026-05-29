@@ -79,8 +79,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-              <Bot className="h-4 w-4 text-primary-foreground" />
+            <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
+              <img src="/nexus-icon.png" alt="Nexus" className="h-full w-full object-cover" />
               <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
             <span className="text-sm font-bold tracking-tight">Nexus</span>
@@ -175,8 +175,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-          <Bot className="h-5 w-5 text-primary-foreground" />
+        <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-glow">
+          <img src="/nexus-icon.png" alt="Nexus AI OS" className="h-full w-full object-cover" />
           <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
         </div>
         <div className="nexus-brand-text min-w-0">

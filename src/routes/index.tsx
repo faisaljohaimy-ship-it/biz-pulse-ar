@@ -95,11 +95,19 @@ function LaunchExperience() {
 
       {/* === Hero === */}
       <main className="nexus-launch-main relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pt-2 pb-16 md:px-10 md:pt-10 md:pb-24">
-        <div className="mb-4 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 backdrop-blur">
-          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-          <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            {isAr ? "منصة تنفيذية معتمدة" : "Fortune 500 Executive Platform"}
-          </span>
+        <div className="mb-5 flex flex-col items-center gap-3">
+          <img
+            src="/nexus-icon.png"
+            alt="Nexus AI OS"
+            className="h-20 w-20 rounded-3xl shadow-glow ring-1 ring-white/10 md:h-24 md:w-24"
+            draggable={false}
+          />
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 backdrop-blur">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              {isAr ? "منصة تنفيذية معتمدة" : "Fortune 500 Executive Platform"}
+            </span>
+          </div>
         </div>
 
         <h1 className="max-w-4xl text-center text-3xl font-bold leading-[1.05] tracking-tight sm:text-4xl md:text-6xl lg:text-7xl">

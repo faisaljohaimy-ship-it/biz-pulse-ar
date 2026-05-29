@@ -85,7 +85,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/240b3097-9dde-48d4-9a84-6834a3854070/id-preview-7cce999b--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1779971838108.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/240b3097-9dde-48d4-9a84-6834a3854070/id-preview-7cce999b--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1779971838108.png" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/nexus-icon.png" },
+      { rel: "apple-touch-icon", href: "/nexus-icon.png" },
+      { rel: "shortcut icon", href: "/nexus-icon.png" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
