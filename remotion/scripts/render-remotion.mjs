@@ -4,6 +4,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const compId = process.argv[2] ?? "main";
+const out = process.argv[3] ?? "/mnt/documents/nexus-launch.mp4";
 
 const bundled = await bundle({
   entryPoint: path.resolve(__dirname, "../src/index.ts"),
@@ -17,14 +19,14 @@ const browser = await openBrowser("chrome", {
 });
 
 const composition = await selectComposition({
-  serveUrl: bundled, id: "main", puppeteerInstance: browser,
+  serveUrl: bundled, id: compId, puppeteerInstance: browser,
 });
 
 await renderMedia({
   composition, serveUrl: bundled, codec: "h264",
-  outputLocation: "/mnt/documents/nexus-launch.mp4",
+  outputLocation: out,
   puppeteerInstance: browser, muted: true, concurrency: 1,
 });
 
 await browser.close({ silent: false });
-console.log("DONE");
+console.log("DONE", out);
