@@ -92,7 +92,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 function useNavGroups(): NavGroup[] {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const ar = (loc: string, arText: string, enText: string) => (loc === "ar" ? arText : enText);
   return [
     {
       label: t("nav.group.workspace"),
