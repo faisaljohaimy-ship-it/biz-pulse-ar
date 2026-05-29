@@ -42,6 +42,10 @@ import {
   Keyboard,
   ChevronLeft,
 } from "lucide-react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
+import { supabase } from "@/integrations/supabase/client";
+import { useEnterprisePulse, type PulseAlert } from "@/lib/enterprise-pulse";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 
