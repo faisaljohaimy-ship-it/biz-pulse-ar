@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { Brain, TrendingUp, ShieldAlert, Lightbulb, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
@@ -10,6 +11,8 @@ export const Route = createFileRoute("/_authenticated/intelligence")({
 function IntelligencePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const pulse = useEnterprisePulse();
+  const navigate = useNavigate();
 
   const predictions = [
     { t: ar ? "إيرادات Q4 ستتجاوز الخطة بنسبة 6.2٪" : "Q4 revenue likely to beat plan by 6.2%", c: 91 },
@@ -43,6 +46,23 @@ function IntelligencePage() {
       title={ar ? "طبقة ذكاء القرارات" : "Decision Intelligence Layer"}
       subtitle={ar ? "تنبؤات، مخاطر، فرص، وتوصيات استراتيجية مدعومة بالذكاء الاصطناعي." : "Predictions, risks, opportunities and strategic AI recommendations."}
       actions={<NexusPill tone="violet"><Brain className="h-3 w-3" /> AI MODELED</NexusPill>}
+      status={pulse.status}
+      lastRefreshed={pulse.lastRefreshed}
+      owner={ar ? "وحدة استخبارات الأعمال" : "Business Intelligence Unit"}
+      nextAction={{
+        label: ar ? "افتح أعلى توصية" : "Open top recommendation",
+        onClick: () => navigate({ to: "/decisions" }),
+      }}
+      why={
+        ar
+          ? `النماذج رصدت ${pulse.intel.length} إشارات استراتيجية بثقة تتجاوز 80٪، أهمها تسارع تبني الذكاء الاصطناعي.`
+          : `Models flagged ${pulse.intel.length} strategic signals above 80% confidence, led by accelerating AI adoption.`
+      }
+      whatNext={
+        ar
+          ? "حوّل أعلى توصية إلى قرار رسمي، وعيّن المسؤول، وحدّد موعد المراجعة في لوحة القرارات."
+          : "Convert the top recommendation into a formal decision, assign an owner, and schedule review on the Decisions board."
+      }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <NexusStat label={ar ? "إشارات نشطة" : "Live signals"} value="186" tone="cyan" />

@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import { ArrowRight, Sparkles, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
+import { formatRelativeTime, type PulseStatus } from "@/lib/enterprise-pulse";
 
 /* ───────────────────────── Ambient layers ───────────────────────── */
 
@@ -69,12 +72,24 @@ export function NexusPage({
   subtitle,
   children,
   actions,
+  status,
+  lastRefreshed,
+  owner,
+  nextAction,
+  why,
+  whatNext,
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: string;
   children: ReactNode;
   actions?: ReactNode;
+  status?: PulseStatus;
+  lastRefreshed?: Date;
+  owner?: string;
+  nextAction?: { label: string; onClick: () => void };
+  why?: string;
+  whatNext?: string;
 }) {
   return (
     <div className="relative min-h-[calc(100vh-3.5rem)] overflow-hidden bg-[#04060f] text-slate-200">
@@ -97,7 +112,6 @@ export function NexusPage({
         />
         <Starfield />
         <ParticleField />
-        {/* vignette */}
         <div
           className="absolute inset-0"
           style={{
@@ -105,7 +119,6 @@ export function NexusPage({
               "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%)",
           }}
         />
-        {/* scanlines */}
         <div className="scanlines absolute inset-0 opacity-40 mix-blend-overlay" />
       </div>
 
@@ -125,10 +138,138 @@ export function NexusPage({
               <p className="mt-1 max-w-3xl text-sm text-slate-400">{subtitle}</p>
             )}
           </div>
-          {actions && <div className="flex items-center gap-2">{actions}</div>}
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
         </header>
+
+        {(status || lastRefreshed || owner || nextAction) && (
+          <ExecutiveStatusBar
+            status={status}
+            lastRefreshed={lastRefreshed}
+            owner={owner}
+            nextAction={nextAction}
+          />
+        )}
+
+        {(why || whatNext) && <WhyWhatNext why={why} whatNext={whatNext} />}
+
         {children}
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────── Executive primitives ─────────────────────── */
+
+export function ExecutiveStatusBar({
+  status,
+  lastRefreshed,
+  owner,
+  nextAction,
+}: {
+  status?: PulseStatus;
+  lastRefreshed?: Date;
+  owner?: string;
+  nextAction?: { label: string; onClick: () => void };
+}) {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const tone =
+    status === "critical" ? "rose" : status === "warning" ? "amber" : "emerald";
+  const label =
+    status === "critical"
+      ? ar
+        ? "حرج"
+        : "CRITICAL"
+      : status === "warning"
+        ? ar
+          ? "انتباه"
+          : "ATTENTION"
+        : ar
+          ? "صحي"
+          : "HEALTHY";
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-2.5 text-[11px] text-slate-400 backdrop-blur-sm">
+      {status && (
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "relative flex h-2 w-2 rounded-full",
+              tone === "rose" && "bg-rose-400",
+              tone === "amber" && "bg-amber-400",
+              tone === "emerald" && "bg-emerald-400",
+            )}
+          >
+            <span
+              className={cn(
+                "absolute inset-0 animate-ping rounded-full opacity-60",
+                tone === "rose" && "bg-rose-400",
+                tone === "amber" && "bg-amber-400",
+                tone === "emerald" && "bg-emerald-400",
+              )}
+            />
+          </span>
+          <NexusPill tone={tone}>{label}</NexusPill>
+        </div>
+      )}
+      {lastRefreshed && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-slate-500">{ar ? "آخر تحديث:" : "Updated:"}</span>
+          <span className="font-medium text-slate-300">
+            {formatRelativeTime(lastRefreshed, ar ? "ar" : "en")}
+          </span>
+        </div>
+      )}
+      {owner && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-slate-500">{ar ? "المسؤول:" : "Owner:"}</span>
+          <span className="font-medium text-slate-300">{owner}</span>
+        </div>
+      )}
+      {nextAction && (
+        <button
+          onClick={nextAction.onClick}
+          className="ms-auto inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/20"
+        >
+          <Target className="h-3 w-3" />
+          {nextAction.label}
+          <ArrowRight className="h-3 w-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function WhyWhatNext({ why, whatNext }: { why?: string; whatNext?: string }) {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {why && (
+        <div className="flex items-start gap-3 rounded-2xl border border-violet-400/20 bg-violet-500/[0.05] p-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-400/10 text-violet-300">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-violet-300/80">
+              {ar ? "لماذا يحدث ذلك" : "Why this is happening"}
+            </div>
+            <p className="mt-1 text-sm leading-relaxed text-slate-200">{why}</p>
+          </div>
+        </div>
+      )}
+      {whatNext && (
+        <div className="flex items-start gap-3 rounded-2xl border border-cyan-400/25 bg-cyan-500/[0.05] p-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
+            <Target className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-300/80">
+              {ar ? "الإجراء الموصى به" : "Recommended next action"}
+            </div>
+            <p className="mt-1 text-sm leading-relaxed text-slate-200">{whatNext}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

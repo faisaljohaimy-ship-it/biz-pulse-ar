@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/risk")({
@@ -40,12 +41,31 @@ function heatTone(lk: number, im: number) {
 function RiskPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const pulse = useEnterprisePulse();
+  const navigate = useNavigate();
   return (
     <NexusPage
       eyebrow="ENTERPRISE RISK"
       title={ar ? "إدارة المخاطر المؤسسية" : "Enterprise Risk Management"}
       subtitle={ar ? "سجل المخاطر، الضوابط، الامتثال، نتائج التدقيق، وتتبع التخفيف." : "Risk register, controls, compliance, audit findings, and mitigation tracking."}
       actions={<NexusPill tone="rose"><Shield className="h-3 w-3" /> 6 ACTIVE</NexusPill>}
+      status={pulse.status}
+      lastRefreshed={pulse.lastRefreshed}
+      owner={ar ? "كبير ضباط المخاطر" : "Chief Risk Officer"}
+      nextAction={{
+        label: ar ? "افتح أعلى مخاطرة" : "Open top risk",
+        onClick: () => navigate({ to: "/governance" }),
+      }}
+      why={
+        ar
+          ? "تذبذب سعر العملة وضغط تنظيمي في السوق رفعا درجة المخاطر المالية والتشغيلية هذا الأسبوع."
+          : "FX volatility and regulatory pressure raised financial and operational risk scores this week."
+      }
+      whatNext={
+        ar
+          ? "وقّع على توسعة برنامج التحوّط ومراجعة سياسة وصول حسابات الخدمة قبل اجتماع لجنة المراجعة."
+          : "Approve the hedging program expansion and review service account access policy before the Audit Committee."
+      }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <NexusStat label={ar ? "مخاطر نشطة" : "Active risks"} value="34" tone="rose" />
