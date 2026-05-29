@@ -372,3 +372,10 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
   .nexus-sidebar { width: 22rem !important; }
 }
 
+/* ── Reduced motion: kill orbital spins + node float for accessibility/perf ── */
+@media (prefers-reduced-motion: reduce) {
+  .nexus-node { animation: none !important; }
+  .nexus-node:hover { transform: translate(-50%, -50%) scale(1.02) !important; }
+}
+
+
