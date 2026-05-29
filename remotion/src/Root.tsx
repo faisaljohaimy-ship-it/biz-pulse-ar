@@ -2,11 +2,13 @@ import { Composition } from "remotion";
 import { MainVideo, FPS, DURATION } from "./MainVideo";
 import { Part2Video, PART2_DURATION } from "./Part2Video";
 import { Part3Video, PART3_DURATION } from "./Part3Video";
+import { Part4Video, PART4_DURATION } from "./Part4Video";
 
 export const RemotionRoot = () => (
   <>
     <Composition id="main" component={MainVideo} durationInFrames={DURATION} fps={FPS} width={1920} height={1080} />
     <Composition id="part2" component={Part2Video} durationInFrames={PART2_DURATION} fps={FPS} width={1920} height={1080} />
     <Composition id="part3" component={Part3Video} durationInFrames={PART3_DURATION} fps={FPS} width={1920} height={1080} />
+    <Composition id="part4" component={Part4Video} durationInFrames={PART4_DURATION} fps={FPS} width={1920} height={1080} />
   </>
 );
