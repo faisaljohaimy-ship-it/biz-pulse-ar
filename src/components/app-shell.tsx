@@ -175,8 +175,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-          <Bot className="h-5 w-5 text-primary-foreground" />
+        <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-glow">
+          <img src="/nexus-icon.png" alt="Nexus AI OS" className="h-full w-full object-cover" />
           <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
         </div>
         <div className="nexus-brand-text min-w-0">
