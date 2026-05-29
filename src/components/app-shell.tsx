@@ -257,7 +257,7 @@ function UserChip() {
   const { user, signOut } = useAuth();
   const { t } = useI18n();
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="nexus-user-meta flex min-w-0 items-center gap-2">
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
         {user?.email?.[0]?.toUpperCase() ?? "?"}
       </div>
@@ -266,5 +266,6 @@ function UserChip() {
         <LogOut className="h-3.5 w-3.5" data-flip-rtl />
       </Button>
     </div>
+
   );
 }
