@@ -527,7 +527,19 @@ function BeamsLayer() {
   );
 }
 
-function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr: boolean }) {
+function NodeChip({
+  node,
+  delay,
+  isAr,
+  onActivate,
+  onContext,
+}: {
+  node: OrbitNode;
+  delay: number;
+  isAr: boolean;
+  onActivate: () => void;
+  onContext: (x: number, y: number) => void;
+}) {
   const Icon = node.icon;
   const seed = node.id.charCodeAt(0) + node.id.charCodeAt(node.id.length - 1);
   const buildings = Array.from({ length: 6 }).map((_, i) => ({
@@ -535,9 +547,45 @@ function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr:
     w: 9 + ((seed + i * 3) % 7),
     o: 0.5 + ((i % 3) * 0.18),
   }));
+  const longPress = useRef<number | null>(null);
+  const statusColor =
+    node.status === "healthy"
+      ? "rgb(52,211,153)"
+      : node.status === "warning"
+      ? "rgb(251,191,36)"
+      : "rgb(248,113,113)";
+  const ariaLabel = `${isAr ? node.label_ar : node.label_en} — ${isAr ? node.meta_ar : node.meta_en}`;
   return (
-    <div
-      className="group absolute -translate-x-1/2 -translate-y-1/2"
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={onActivate}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onContext(e.clientX, e.clientY);
+      }}
+      onTouchStart={(e) => {
+        const t = e.touches[0];
+        const x = t.clientX;
+        const y = t.clientY;
+        longPress.current = window.setTimeout(() => {
+          onContext(x, y);
+          longPress.current = null;
+        }, 500);
+      }}
+      onTouchEnd={() => {
+        if (longPress.current) {
+          window.clearTimeout(longPress.current);
+          longPress.current = null;
+        }
+      }}
+      onTouchMove={() => {
+        if (longPress.current) {
+          window.clearTimeout(longPress.current);
+          longPress.current = null;
+        }
+      }}
+      className="nexus-node group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-3xl outline-none transition-transform duration-300 will-change-transform hover:-translate-y-[6px] hover:scale-[1.03] focus-visible:scale-[1.03] focus-visible:ring-2 focus-visible:ring-cyan-300/70"
       style={{
         left: `${node.x}%`,
         top: `${node.y}%`,
@@ -545,6 +593,13 @@ function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr:
       }}
     >
       <div className="relative">
+        {/* hover halo — cheap radial bg, no filters that hurt FPS */}
+        <div
+          className="pointer-events-none absolute -inset-6 rounded-[36px] opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+          style={{
+            background: `radial-gradient(ellipse at center, hsla(${node.hue},95%,65%,0.35), transparent 65%)`,
+          }}
+        />
         {/* energy beam shooting up */}
         <div
           className="absolute left-1/2 top-[-130px] h-[130px] w-[3px] -translate-x-1/2 rounded-full"
@@ -608,7 +663,7 @@ function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr:
 
         {/* holographic label chip */}
         <div
-          className="relative mt-2 flex min-w-[150px] items-center gap-2.5 rounded-2xl border border-cyan-300/30 bg-[#06101f]/85 px-3 py-2 backdrop-blur-xl transition-transform group-hover:-translate-y-1"
+          className="relative mt-2 flex min-w-[150px] items-center gap-2.5 rounded-2xl border border-cyan-300/30 bg-[#06101f]/85 px-3 py-2 text-start backdrop-blur-xl transition-transform group-hover:-translate-y-1"
           style={{
             boxShadow: `0 0 30px hsla(${node.hue},90%,60%,0.35), inset 0 0 0 1px hsla(${node.hue},90%,70%,0.18)`,
           }}
@@ -619,17 +674,287 @@ function NodeChip({ node, delay, isAr }: { node: OrbitNode; delay: number; isAr:
           >
             <Icon className="h-4 w-4" />
           </div>
-          <div className="leading-tight">
-            <div className="text-[10px] font-semibold tracking-[0.2em] text-slate-200">
+          <div className="min-w-0 leading-tight">
+            <div className="truncate text-[10px] font-semibold tracking-[0.2em] text-slate-200">
               {isAr ? node.label_ar : node.label_en}
             </div>
-            <div className="text-[10px] text-slate-400">{isAr ? node.meta_ar : node.meta_en}</div>
+            <div className="truncate text-[10px] text-slate-400">{isAr ? node.meta_ar : node.meta_en}</div>
           </div>
+          {/* status pulse */}
+          <span className="relative ms-auto flex h-2.5 w-2.5 shrink-0">
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
+              style={{ background: statusColor }}
+            />
+            <span
+              className="relative inline-flex h-2.5 w-2.5 rounded-full"
+              style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }}
+            />
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ─────────────────────────── Context Menu ─────────────────────────── */
+
+function NodeContextMenu({
+  node,
+  x,
+  y,
+  isAr,
+  onClose,
+  onOpen,
+  onDrill,
+  onRelated,
+}: {
+  node: OrbitNode;
+  x: number;
+  y: number;
+  isAr: boolean;
+  onClose: () => void;
+  onOpen: () => void;
+  onDrill: () => void;
+  onRelated: (to: string) => void;
+}) {
+  // Clamp so the menu stays in viewport
+  const W = 240, H = 280;
+  const left = Math.min(x, (typeof window !== "undefined" ? window.innerWidth : 1024) - W - 12);
+  const top = Math.min(y, (typeof window !== "undefined" ? window.innerHeight : 768) - H - 12);
+  return (
+    <div className="fixed inset-0 z-40" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="absolute w-60 overflow-hidden rounded-xl border border-cyan-300/30 bg-[#040816]/95 text-sm text-slate-200 shadow-[0_30px_80px_-10px_rgba(34,211,238,0.45)] backdrop-blur-xl"
+        style={{ left, top, animation: "scale-in 0.12s ease-out" }}
+      >
+        <div className="border-b border-white/5 px-3 py-2">
+          <div className="text-[10px] font-bold tracking-[0.2em] text-cyan-300/80">
+            {isAr ? node.label_ar : node.label_en}
+          </div>
+          <div className="text-[10px] text-slate-500">{isAr ? "إجراءات سياقية" : "Context actions"}</div>
+        </div>
+        <ul className="py-1">
+          <CtxItem label={isAr ? "فتح الوحدة" : "Open module"} onClick={onOpen} hint="↵" />
+          <CtxItem label={isAr ? "تفاصيل تنفيذية" : "Executive drill-down"} onClick={onDrill} hint="Space" />
+        </ul>
+        {node.related.length > 0 && (
+          <>
+            <div className="border-t border-white/5 px-3 py-1 text-[9px] font-bold tracking-[0.2em] text-slate-500">
+              {isAr ? "روابط ذات صلة" : "RELATED"}
+            </div>
+            <ul className="pb-1">
+              {node.related.map((r) => (
+                <CtxItem
+                  key={r.to}
+                  label={isAr ? r.label_ar : r.label_en}
+                  onClick={() => onRelated(r.to)}
+                />
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CtxItem({ label, onClick, hint }: { label: string; onClick: () => void; hint?: string }) {
+  return (
+    <li>
+      <button
+        onClick={onClick}
+        className="flex w-full items-center justify-between gap-3 px-3 py-2 text-start text-[12px] text-slate-200 hover:bg-cyan-400/10 hover:text-cyan-200"
+      >
+        <span>{label}</span>
+        {hint && <kbd className="rounded border border-slate-700/60 bg-slate-900/60 px-1.5 py-0.5 text-[9px] text-slate-400">{hint}</kbd>}
+      </button>
+    </li>
+  );
+}
+
+/* ─────────────────────────── Drill-down Panel ─────────────────────────── */
+
+function NodeDrillPanel({
+  node,
+  isAr,
+  onClose,
+  onOpen,
+  onRelated,
+}: {
+  node: OrbitNode;
+  isAr: boolean;
+  onClose: () => void;
+  onOpen: () => void;
+  onRelated: (to: string) => void;
+}) {
+  const Icon = node.icon;
+  const statusLabel =
+    node.status === "healthy"
+      ? isAr ? "صحي" : "Healthy"
+      : node.status === "warning"
+      ? isAr ? "تحذير" : "Warning"
+      : isAr ? "حرج" : "Critical";
+  const statusColor =
+    node.status === "healthy" ? "emerald" : node.status === "warning" ? "amber" : "rose";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-[#020514]/75 backdrop-blur-md" />
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-cyan-300/25 bg-[#040816]/95 shadow-[0_40px_120px_-20px_rgba(34,211,238,0.6)]"
+        style={{ animation: "scale-in 0.2s ease-out" }}
+      >
+        {/* header */}
+        <div
+          className="relative flex items-center gap-4 border-b border-white/5 px-5 py-4"
+          style={{ background: `linear-gradient(135deg, hsla(${node.hue},90%,55%,0.15), transparent 70%)` }}
+        >
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+            style={{
+              background: `hsla(${node.hue},90%,55%,0.18)`,
+              color: `hsl(${node.hue},90%,75%)`,
+              boxShadow: `0 0 24px hsla(${node.hue},90%,60%,0.45)`,
+            }}
+          >
+            <Icon className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-bold tracking-[0.3em] text-cyan-300/80">
+              {isAr ? "كيان مؤسسي" : "ENTERPRISE ENTITY"}
+            </div>
+            <h2 className="truncate text-lg font-bold text-white sm:text-xl">
+              {isAr ? node.label_ar : node.label_en}
+            </h2>
+            <div className="mt-0.5 text-[11px] text-slate-400">{isAr ? node.meta_ar : node.meta_en}</div>
+          </div>
+          <span
+            className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border-${statusColor}-400/40 bg-${statusColor}-400/10 text-${statusColor}-300`}
+          >
+            {statusLabel}
+          </span>
+          <button
+            onClick={onClose}
+            aria-label={isAr ? "إغلاق" : "Close"}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-white/5 hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="max-h-[70vh] space-y-5 overflow-y-auto p-5">
+          {/* KPIs */}
+          <section>
+            <div className="mb-2 text-[10px] font-bold tracking-[0.25em] text-cyan-300/80">
+              {isAr ? "مؤشرات الأداء الحية" : "LIVE KPIs"}
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {node.kpis.map((k) => (
+                <div key={k.label_en} className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                    {isAr ? k.label_ar : k.label_en}
+                  </div>
+                  <div className="mt-1 text-xl font-bold text-cyan-200">{k.value}</div>
+                  <div
+                    className={`mt-0.5 text-[11px] font-semibold ${
+                      k.trend === "up" ? "text-emerald-300" : k.trend === "down" ? "text-rose-300" : "text-slate-400"
+                    }`}
+                  >
+                    {k.delta}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Agents + Integrations */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <DrillList
+              title={isAr ? "وكلاء الذكاء المرتبطون" : "RELATED AI AGENTS"}
+              icon={Bot}
+              items={node.agents}
+            />
+            <DrillList
+              title={isAr ? "التكاملات النشطة" : "ACTIVE INTEGRATIONS"}
+              icon={GitBranch}
+              items={node.integrations}
+            />
+          </div>
+
+          {/* Related navigation */}
+          {node.related.length > 0 && (
+            <section>
+              <div className="mb-2 text-[10px] font-bold tracking-[0.25em] text-cyan-300/80">
+                {isAr ? "مسارات العمل ذات الصلة" : "RELATED WORKFLOWS"}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {node.related.map((r) => (
+                  <button
+                    key={r.to}
+                    onClick={() => onRelated(r.to)}
+                    className="group inline-flex items-center gap-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 transition hover:border-cyan-300/50 hover:bg-cyan-400/15"
+                  >
+                    {isAr ? r.label_ar : r.label_en}
+                    <ArrowUpRight className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t border-white/5 bg-[#02050f]/60 p-3">
+          <span className="text-[10px] tracking-[0.25em] text-slate-500">
+            {isAr ? "تم التوليد بواسطة ARIA" : "Generated by ARIA"}
+          </span>
+          <button
+            onClick={onOpen}
+            className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/30 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 px-4 py-2 text-xs font-bold text-cyan-100 hover:from-cyan-500/30 hover:to-blue-600/30"
+          >
+            {isAr ? "فتح الوحدة الكاملة" : "Open Full Module"}
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
+function DrillList({
+  title,
+  icon: Icon,
+  items,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items: string[];
+}) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-3">
+      <div className="mb-2 flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] text-cyan-300/70">
+        <Icon className="h-3.5 w-3.5" /> {title}
+      </div>
+      <ul className="space-y-1.5">
+        {items.map((it) => (
+          <li
+            key={it}
+            className="flex items-center gap-2 rounded-lg border border-white/5 bg-[#06101f]/60 px-2.5 py-1.5 text-[12px] text-slate-200"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/80" />
+            {it}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
 
 function CityscapeBackdrop() {
   return (
