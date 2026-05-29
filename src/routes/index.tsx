@@ -370,6 +370,141 @@ function PillarsGrid({ isAr }: { isAr: boolean }) {
 }
 
 /* ============================================================
+   Enterprise Status Panel — live executive snapshot
+   ============================================================ */
+function EnterpriseStatusPanel({
+  isAr,
+  onAction,
+  onEnter,
+}: {
+  isAr: boolean;
+  onAction: () => void;
+  onEnter: () => void;
+}) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((n) => n + 1), 3000);
+    return () => clearInterval(id);
+  }, []);
+
+  const health = Math.max(94, Math.min(98, 96 + Math.sin(tick / 4) * 1.2));
+  const risks = 2;
+  const opps = 7;
+  const decisions = 14 + (tick % 3);
+
+  const stats = [
+    {
+      key: "health",
+      label: isAr ? "صحة المؤسسة" : "Enterprise Health",
+      value: `${health.toFixed(0)}%`,
+      tone: "emerald" as const,
+      icon: Activity,
+    },
+    {
+      key: "risk",
+      label: isAr ? "مخاطر حرجة" : "Critical Risks",
+      value: String(risks),
+      tone: "rose" as const,
+      icon: ShieldCheck,
+    },
+    {
+      key: "opps",
+      label: isAr ? "فرص استراتيجية" : "Strategic Opportunities",
+      value: String(opps),
+      tone: "violet" as const,
+      icon: Sparkles,
+    },
+    {
+      key: "dec",
+      label: isAr ? "قرارات بانتظار الاعتماد" : "Decisions Waiting",
+      value: String(decisions),
+      tone: "amber" as const,
+      icon: Zap,
+    },
+  ];
+
+  const toneRing: Record<string, string> = {
+    emerald: "border-emerald-500/30 bg-emerald-500/[0.06] text-emerald-300",
+    rose: "border-rose-500/30 bg-rose-500/[0.06] text-rose-300",
+    violet: "border-violet-500/30 bg-violet-500/[0.06] text-violet-300",
+    amber: "border-amber-500/30 bg-amber-500/[0.06] text-amber-300",
+  };
+
+  return (
+    <section
+      aria-label={isAr ? "حالة المؤسسة" : "Enterprise Status"}
+      className="mt-7 w-full max-w-4xl rounded-2xl border border-white/10 bg-white/[0.035] p-3 backdrop-blur-xl md:mt-10 md:p-5"
+    >
+      <header className="flex items-center justify-between gap-2 px-1 pb-3">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            {isAr ? "حالة المؤسسة · مباشر" : "Enterprise Status · Live"}
+          </span>
+        </div>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          {isAr ? "محدّث الآن" : "updated now"}
+        </span>
+      </header>
+
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+        {stats.map((s) => (
+          <div
+            key={s.key}
+            className={`rounded-xl border p-3 transition hover:scale-[1.01] md:p-4 ${toneRing[s.tone]}`}
+          >
+            <div className="flex items-center justify-between">
+              <s.icon className="h-3.5 w-3.5 opacity-90" />
+              <span className="text-[9px] uppercase tracking-widest opacity-70">
+                {isAr ? "مباشر" : "Live"}
+              </span>
+            </div>
+            <div className="mt-2 text-2xl font-bold tabular-nums text-foreground md:text-3xl">
+              {s.value}
+            </div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-col items-stretch gap-2.5 rounded-xl border border-primary/25 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3 md:flex-row md:items-center md:justify-between md:p-4">
+        <div className="flex items-start gap-2.5">
+          <Rocket className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div className="leading-tight">
+            <div className="text-[9px] font-semibold uppercase tracking-[0.22em] text-primary/80">
+              {isAr ? "إجراء تنفيذي موصى به" : "Recommended Executive Action"}
+            </div>
+            <div className="mt-1 text-sm font-semibold text-foreground md:text-base">
+              {isAr ? "مراجعة برنامج التحول" : "Review Transformation Program"}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onEnter}
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:text-foreground"
+          >
+            {isAr ? "تسجيل الدخول" : "Sign in"}
+          </button>
+          <button
+            onClick={onAction}
+            className="group inline-flex items-center gap-1.5 rounded-lg bg-gradient-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.02]"
+          >
+            {isAr ? "افتح البرنامج" : "Open Program"}
+            <Rocket className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
    Command Auth Console — terminal-style login
    ============================================================ */
 type Line = { kind: "in" | "out" | "err" | "sys"; text: string };
