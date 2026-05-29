@@ -139,12 +139,14 @@ function FloatingDock({ state }: { state: OverlayState }) {
   const ar = locale === "ar";
   const items = [
     { icon: Command, label: ar ? "أوامر" : "Command", kbd: "⌘K", onClick: () => state.setPalette(true) },
-    { icon: FileText, label: ar ? "موجز تنفيذي" : "Briefing", kbd: "⌘J", onClick: () => state.setBriefing(true) },
+    { icon: FileText, label: ar ? "موجز" : "Briefing", kbd: "⌘J", onClick: () => state.setBriefing(true) },
+    { icon: Sparkles, label: "ARIA", kbd: "⌘I", onClick: () => state.setAvatar(true) },
     { icon: Presentation, label: ar ? "عرض" : "Present", kbd: "⌘.", onClick: () => {
       const v = !state.presenting;
       state.setPresenting(v);
       document.body.classList.toggle("nexus-presenting", v);
     }},
+    { icon: Keyboard, label: ar ? "اختصارات" : "Shortcuts", kbd: "⌘/", onClick: () => state.setShortcuts(true) },
   ];
   return (
     <div className="nexus-chrome pointer-events-none fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
