@@ -504,7 +504,7 @@ function EnterpriseStatusPanel({
   );
 }
 
-
+/* ============================================================
    Command Auth Console — terminal-style login
    ============================================================ */
 type Line = { kind: "in" | "out" | "err" | "sys"; text: string };
