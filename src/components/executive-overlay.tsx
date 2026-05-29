@@ -796,22 +796,244 @@ function BriefingBlock({ icon: Icon, tone, title, children }: { icon: React.Comp
 
 /* ─────────────────────────── Presentation Mode ─────────────────────────── */
 
+type Slide = {
+  badge_en: string;
+  badge_ar: string;
+  title_en: string;
+  title_ar: string;
+  body_en: string;
+  body_ar: string;
+  metrics?: { label_en: string; label_ar: string; value: string; delta?: string; tone?: "up" | "down" | "flat" }[];
+  bullets_en?: string[];
+  bullets_ar?: string[];
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const SLIDES: Slide[] = [
+  {
+    badge_en: "EXECUTIVE OVERVIEW",
+    badge_ar: "نظرة عامة تنفيذية",
+    title_en: "Today's Enterprise Pulse",
+    title_ar: "نبض المؤسسة اليوم",
+    body_en: "Performance is 12.4% above plan. ARIA has analyzed 247 signals across portfolio, risk and transformation.",
+    body_ar: "الأداء أعلى من الخطة بـ 12.4%. حللت ARIA 247 إشارة عبر المحفظة والمخاطر والتحول.",
+    metrics: [
+      { label_en: "Health", label_ar: "الصحة", value: "94", delta: "+2.1", tone: "up" },
+      { label_en: "Risk", label_ar: "المخاطر", value: "21", delta: "+4", tone: "down" },
+      { label_en: "Opportunities", label_ar: "الفرص", value: "12", delta: "+3", tone: "up" },
+      { label_en: "Velocity", label_ar: "السرعة", value: "88", delta: "+5", tone: "up" },
+    ],
+    icon: Activity,
+  },
+  {
+    badge_en: "STRATEGIC RISKS",
+    badge_ar: "المخاطر الاستراتيجية",
+    title_en: "Top 3 Risks Requiring Decision",
+    title_ar: "أكبر 3 مخاطر تتطلب قراراً",
+    body_en: "Concentrated exposure and execution slippage are the two themes for the board this quarter.",
+    body_ar: "التركّز والتأخر التنفيذي هما المحوران أمام مجلس الإدارة هذا الربع.",
+    bullets_en: [
+      "ERP rollout slipping by 18 days — escalate to steering committee",
+      "Revenue concentration 34% in one client — diversification plan needed",
+      "Services margin compression — Q4 repricing recommended",
+    ],
+    bullets_ar: [
+      "تأخر مشروع ERP بـ 18 يوم — تصعيد للجنة التوجيه",
+      "تركز الإيرادات 34% في عميل واحد — خطة تنويع مطلوبة",
+      "ضغط على هامش الخدمات — يُوصى بإعادة التسعير للربع الرابع",
+    ],
+    icon: ShieldAlert,
+  },
+  {
+    badge_en: "GROWTH OPPORTUNITIES",
+    badge_ar: "فرص النمو",
+    title_en: "Three High-Value Opportunities",
+    title_ar: "ثلاث فرص عالية القيمة",
+    body_en: "Combined upside of approximately $4.6M over 12 months if executed in the next two quarters.",
+    body_ar: "إمكانات تقريبية بـ 4.6 مليون دولار خلال 12 شهراً عند التنفيذ في الربعين المقبلين.",
+    bullets_en: [
+      "Eastern region demand +18% — accelerate sales hiring",
+      "Automating 3 finance ops saves $1.2M annually",
+      "Two regional alliance candidates ready for term sheets",
+    ],
+    bullets_ar: [
+      "طلب المنطقة الشرقية +18% — تسريع توظيف المبيعات",
+      "أتمتة 3 عمليات مالية توفر 1.2M سنوياً",
+      "مرشحان لتحالف إقليمي جاهزان لمذكرة الشروط",
+    ],
+    icon: TrendingUp,
+  },
+  {
+    badge_en: "RECOMMENDED ACTIONS",
+    badge_ar: "الإجراءات الموصى بها",
+    title_en: "Decisions for This Board Cycle",
+    title_ar: "قرارات لدورة المجلس هذه",
+    body_en: "ARIA recommends three executive moves that unlock the strategic plan and de-risk Q4 delivery.",
+    body_ar: "توصي ARIA بثلاث خطوات تنفيذية تطلق الخطة الاستراتيجية وتقلل مخاطر تسليم الربع الرابع.",
+    bullets_en: [
+      "Accelerate hiring of Chief Digital Officer",
+      "Reprice services portfolio for Q4",
+      "Launch a customer diversification program",
+    ],
+    bullets_ar: [
+      "تسريع توظيف رئيس التحول الرقمي",
+      "إعادة تسعير محفظة الخدمات للربع الرابع",
+      "إطلاق برنامج تنويع قاعدة العملاء",
+    ],
+    icon: Target,
+  },
+];
+
 function PresentationOverlay({ onExit }: { onExit: () => void }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const [idx, setIdx] = useState(0);
+  const total = SLIDES.length;
+
   useEffect(() => {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
     return () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); };
   }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
+        setIdx((i) => Math.min(i + 1, total - 1));
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        setIdx((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Home") {
+        setIdx(0);
+      } else if (e.key === "End") {
+        setIdx(total - 1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [total]);
+
+  const slide = SLIDES[idx];
+  const SlideIcon = slide.icon;
+  const progress = ((idx + 1) / total) * 100;
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-30">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse" />
-      <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse" />
-      <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-full border border-cyan-300/30 bg-[#040816]/90 px-4 py-2 backdrop-blur-xl">
-        <Presentation className="h-4 w-4 text-cyan-300" />
-        <span className="text-xs font-bold tracking-[0.25em] text-cyan-200">{ar ? "وضع العرض التنفيذي" : "EXECUTIVE PRESENTATION MODE"}</span>
-        <button onClick={onExit} className="ms-2 rounded-md px-2 py-1 text-[10px] font-bold text-slate-300 hover:bg-white/10">{ar ? "إنهاء (ESC)" : "EXIT (ESC)"}</button>
+    <div className="fixed inset-0 z-40 bg-gradient-to-br from-[#020514] via-[#040b1f] to-[#02050f]">
+      {/* Grid background */}
+      <div className="pointer-events-none absolute inset-0 opacity-30" style={{
+        backgroundImage: "linear-gradient(rgba(34,211,238,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.18) 1px,transparent 1px)",
+        backgroundSize: "80px 80px",
+        maskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
+      }} />
+      <div className="pointer-events-none absolute -left-40 top-1/4 h-[420px] w-[420px] rounded-full bg-cyan-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-40 bottom-0 h-[480px] w-[480px] rounded-full bg-blue-700/25 blur-3xl" />
+
+      {/* Top bar */}
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 border-b border-cyan-300/15 bg-[#040816]/70 px-4 py-3 backdrop-blur-xl sm:px-8">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_0_30px_rgba(34,211,238,0.5)]">
+            <Presentation className="h-4 w-4 text-white" />
+          </div>
+          <div className="leading-tight">
+            <div className="text-[10px] font-bold tracking-[0.3em] text-cyan-300/90">{ar ? "وضع العرض التنفيذي" : "EXECUTIVE PRESENTATION"}</div>
+            <div className="text-[10px] text-slate-400">ARIA · Nexus AI OS</div>
+          </div>
+        </div>
+        <div className="hidden items-center gap-2 text-[10px] font-bold text-slate-400 sm:flex">
+          <kbd className="rounded bg-slate-800/80 px-2 py-0.5">←</kbd>
+          <kbd className="rounded bg-slate-800/80 px-2 py-0.5">→</kbd>
+          <span>{ar ? "تنقل" : "Navigate"}</span>
+          <span className="mx-2 opacity-50">·</span>
+          <kbd className="rounded bg-slate-800/80 px-2 py-0.5">ESC</kbd>
+          <span>{ar ? "خروج" : "Exit"}</span>
+        </div>
+        <button onClick={onExit} className="rounded-lg border border-cyan-300/30 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-bold text-cyan-200 hover:bg-cyan-400/20">
+          {ar ? "إنهاء" : "Exit"}
+        </button>
+      </div>
+
+      {/* Slide content */}
+      <div key={idx} className="absolute inset-0 flex items-center justify-center px-6 py-20 sm:px-16" style={{ animation: "scale-in 0.35s ease-out" }}>
+        <div className="w-full max-w-5xl">
+          <div className="flex items-center gap-3 text-[10px] font-bold tracking-[0.3em] text-cyan-300/80">
+            <SlideIcon className="h-4 w-4" />
+            {ar ? slide.badge_ar : slide.badge_en}
+          </div>
+          <h1 className="mt-4 bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-4xl font-bold leading-tight text-transparent sm:text-6xl">
+            {ar ? slide.title_ar : slide.title_en}
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-xl">
+            {ar ? slide.body_ar : slide.body_en}
+          </p>
+
+          {slide.metrics && (
+            <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+              {slide.metrics.map((m) => (
+                <div key={m.label_en} className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.06] p-4 backdrop-blur-xl">
+                  <div className="text-[10px] uppercase tracking-widest text-slate-400">{ar ? m.label_ar : m.label_en}</div>
+                  <div className="mt-2 text-3xl font-bold text-cyan-200 sm:text-4xl">{m.value}</div>
+                  {m.delta && (
+                    <div className={cn(
+                      "mt-1 text-xs font-bold",
+                      m.tone === "up" ? "text-emerald-300" : m.tone === "down" ? "text-rose-300" : "text-slate-400",
+                    )}>{m.delta}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {slide.bullets_en && (
+            <ul className="mt-8 space-y-3">
+              {(ar ? slide.bullets_ar! : slide.bullets_en).map((b, i) => (
+                <li key={i} className="flex items-start gap-4 rounded-2xl border border-cyan-300/15 bg-cyan-400/[0.04] p-4 text-base text-slate-100 backdrop-blur-xl sm:text-lg">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-400/10 text-sm font-bold text-cyan-200">{i + 1}</span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="absolute inset-x-0 bottom-0 border-t border-cyan-300/15 bg-[#040816]/70 backdrop-blur-xl">
+        <div className="h-1 bg-slate-800">
+          <div className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 transition-all duration-500" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-8">
+          <button
+            onClick={() => setIdx((i) => Math.max(i - 1, 0))}
+            disabled={idx === 0}
+            className="flex items-center gap-2 rounded-lg border border-cyan-300/20 bg-cyan-400/5 px-3 py-1.5 text-xs font-bold text-cyan-200 transition hover:bg-cyan-400/15 disabled:opacity-30"
+          >
+            <ChevronLeft className="h-4 w-4" /> {ar ? "السابق" : "Prev"}
+          </button>
+          <div className="flex items-center gap-1.5">
+            {SLIDES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                aria-label={`Slide ${i + 1}`}
+                className={cn(
+                  "h-2 rounded-full transition-all",
+                  i === idx ? "w-8 bg-cyan-300" : "w-2 bg-slate-600 hover:bg-slate-400",
+                )}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-mono text-slate-400">{idx + 1} / {total}</span>
+            <button
+              onClick={() => setIdx((i) => Math.min(i + 1, total - 1))}
+              disabled={idx === total - 1}
+              className="flex items-center gap-2 rounded-lg border border-cyan-300/30 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:from-cyan-500/30 hover:to-blue-600/30 disabled:opacity-30"
+            >
+              {ar ? "التالي" : "Next"} <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
