@@ -50,18 +50,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   return (
-    <div className="relative flex min-h-screen bg-background">
+    <div className="nexus-app-shell relative flex min-h-screen bg-background">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 start-[-10%] h-[480px] w-[480px] rounded-full bg-primary/20 blur-3xl" />
         <div className="absolute bottom-[-160px] end-[-10%] h-[420px] w-[420px] rounded-full bg-accent/20 blur-3xl" />
       </div>
 
-      <aside className="hidden w-64 shrink-0 border-e border-sidebar-border glass-sidebar md:flex md:flex-col">
+      <aside className="nexus-sidebar hidden shrink-0 border-e border-sidebar-border glass-sidebar md:flex md:w-56 md:flex-col lg:w-60 xl:w-64 2xl:w-72">
         <SidebarBody />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
+        <header className="nexus-mobile-header sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -84,7 +84,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <ThemeToggle />
         </header>
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="nexus-main min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
+            {children}
+          </div>
+        </main>
       </div>
       <ExecutiveOverlay />
     </div>
@@ -168,13 +172,14 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <Bot className="h-5 w-5 text-primary-foreground" />
           <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
         </div>
-        <div className="min-w-0">
+        <div className="nexus-brand-text min-w-0">
           <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
           <div className="truncate text-[11px] text-muted-foreground">{t("app.tagline")}</div>
         </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3">
+
         {groups.map((g) => (
           <div key={g.label} className="mb-4">
             <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
@@ -252,7 +257,7 @@ function UserChip() {
   const { user, signOut } = useAuth();
   const { t } = useI18n();
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="nexus-user-meta flex min-w-0 items-center gap-2">
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
         {user?.email?.[0]?.toUpperCase() ?? "?"}
       </div>
@@ -261,5 +266,6 @@ function UserChip() {
         <LogOut className="h-3.5 w-3.5" data-flip-rtl />
       </Button>
     </div>
+
   );
 }
