@@ -325,3 +325,13 @@
     animation: shimmer-x 2.4s linear infinite;
   }
 }
+
+/* ── Executive Overlay animations ──────────────────────────────── */
+@keyframes slide-in-right { from { transform: translateX(100%); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+@keyframes slide-in-left  { from { transform: translateX(-100%); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+
+/* Presentation mode hides app chrome (sidebar, mobile header, overlay dock/avatar) */
+body.nexus-presenting aside,
+body.nexus-presenting header.glass,
+body.nexus-presenting .nexus-chrome { display: none !important; }
+body.nexus-presenting main { padding: 0 !important; }
