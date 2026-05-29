@@ -20,11 +20,19 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
+import { Route as AuthenticatedOrchestrationRouteImport } from './routes/_authenticated/orchestration'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
+import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
+import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authenticated/chief-of-staff'
+import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
+import { Route as AuthenticatedBoardroomRouteImport } from './routes/_authenticated/boardroom'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAiOpsRouteImport } from './routes/_authenticated/ai-ops'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
@@ -84,6 +92,12 @@ const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
   path: '/prompts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedOrchestrationRoute =
+  AuthenticatedOrchestrationRouteImport.update({
+    id: '/orchestration',
+    path: '/orchestration',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMarketplaceRoute =
   AuthenticatedMarketplaceRouteImport.update({
     id: '/marketplace',
@@ -95,19 +109,58 @@ const AuthenticatedKnowledgeRoute = AuthenticatedKnowledgeRouteImport.update({
   path: '/knowledge',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedIntelligenceRoute =
+  AuthenticatedIntelligenceRouteImport.update({
+    id: '/intelligence',
+    path: '/intelligence',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIntegrationsRoute =
+  AuthenticatedIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDigitalTwinRoute =
+  AuthenticatedDigitalTwinRouteImport.update({
+    id: '/digital-twin',
+    path: '/digital-twin',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedChiefOfStaffRoute =
+  AuthenticatedChiefOfStaffRouteImport.update({
+    id: '/chief-of-staff',
+    path: '/chief-of-staff',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBriefingRoute = AuthenticatedBriefingRouteImport.update({
+  id: '/briefing',
+  path: '/briefing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBoardroomRoute = AuthenticatedBoardroomRouteImport.update({
+  id: '/boardroom',
+  path: '/boardroom',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAiOpsRoute = AuthenticatedAiOpsRouteImport.update({
+  id: '/ai-ops',
+  path: '/ai-ops',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
@@ -138,11 +191,19 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
+  '/ai-ops': typeof AuthenticatedAiOpsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/boardroom': typeof AuthenticatedBoardroomRoute
+  '/briefing': typeof AuthenticatedBriefingRoute
+  '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
+  '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -159,11 +220,19 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
+  '/ai-ops': typeof AuthenticatedAiOpsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/boardroom': typeof AuthenticatedBoardroomRoute
+  '/briefing': typeof AuthenticatedBriefingRoute
+  '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
+  '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -182,11 +251,19 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
+  '/_authenticated/ai-ops': typeof AuthenticatedAiOpsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/boardroom': typeof AuthenticatedBoardroomRoute
+  '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
+  '/_authenticated/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
+  '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
+  '/_authenticated/orchestration': typeof AuthenticatedOrchestrationRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
@@ -205,11 +282,19 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin'
     | '/agents'
+    | '/ai-ops'
     | '/analytics'
+    | '/boardroom'
+    | '/briefing'
+    | '/chief-of-staff'
     | '/dashboard'
+    | '/digital-twin'
     | '/files'
+    | '/integrations'
+    | '/intelligence'
     | '/knowledge'
     | '/marketplace'
+    | '/orchestration'
     | '/prompts'
     | '/settings'
     | '/tasks'
@@ -226,11 +311,19 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin'
     | '/agents'
+    | '/ai-ops'
     | '/analytics'
+    | '/boardroom'
+    | '/briefing'
+    | '/chief-of-staff'
     | '/dashboard'
+    | '/digital-twin'
     | '/files'
+    | '/integrations'
+    | '/intelligence'
     | '/knowledge'
     | '/marketplace'
+    | '/orchestration'
     | '/prompts'
     | '/settings'
     | '/tasks'
@@ -248,11 +341,19 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/admin'
     | '/_authenticated/agents'
+    | '/_authenticated/ai-ops'
     | '/_authenticated/analytics'
+    | '/_authenticated/boardroom'
+    | '/_authenticated/briefing'
+    | '/_authenticated/chief-of-staff'
     | '/_authenticated/dashboard'
+    | '/_authenticated/digital-twin'
     | '/_authenticated/files'
+    | '/_authenticated/integrations'
+    | '/_authenticated/intelligence'
     | '/_authenticated/knowledge'
     | '/_authenticated/marketplace'
+    | '/_authenticated/orchestration'
     | '/_authenticated/prompts'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
@@ -352,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPromptsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/orchestration': {
+      id: '/_authenticated/orchestration'
+      path: '/orchestration'
+      fullPath: '/orchestration'
+      preLoaderRoute: typeof AuthenticatedOrchestrationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/marketplace': {
       id: '/_authenticated/marketplace'
       path: '/marketplace'
@@ -366,11 +474,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKnowledgeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/intelligence': {
+      id: '/_authenticated/intelligence'
+      path: '/intelligence'
+      fullPath: '/intelligence'
+      preLoaderRoute: typeof AuthenticatedIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/integrations': {
+      id: '/_authenticated/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/files': {
       id: '/_authenticated/files'
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/digital-twin': {
+      id: '/_authenticated/digital-twin'
+      path: '/digital-twin'
+      fullPath: '/digital-twin'
+      preLoaderRoute: typeof AuthenticatedDigitalTwinRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -380,11 +509,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/chief-of-staff': {
+      id: '/_authenticated/chief-of-staff'
+      path: '/chief-of-staff'
+      fullPath: '/chief-of-staff'
+      preLoaderRoute: typeof AuthenticatedChiefOfStaffRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/briefing': {
+      id: '/_authenticated/briefing'
+      path: '/briefing'
+      fullPath: '/briefing'
+      preLoaderRoute: typeof AuthenticatedBriefingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/boardroom': {
+      id: '/_authenticated/boardroom'
+      path: '/boardroom'
+      fullPath: '/boardroom'
+      preLoaderRoute: typeof AuthenticatedBoardroomRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/analytics': {
       id: '/_authenticated/analytics'
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-ops': {
+      id: '/_authenticated/ai-ops'
+      path: '/ai-ops'
+      fullPath: '/ai-ops'
+      preLoaderRoute: typeof AuthenticatedAiOpsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/agents': {
@@ -421,11 +578,19 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
+  AuthenticatedAiOpsRoute: typeof AuthenticatedAiOpsRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedBoardroomRoute: typeof AuthenticatedBoardroomRoute
+  AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
+  AuthenticatedChiefOfStaffRoute: typeof AuthenticatedChiefOfStaffRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
+  AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
+  AuthenticatedOrchestrationRoute: typeof AuthenticatedOrchestrationRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
@@ -439,11 +604,19 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
+  AuthenticatedAiOpsRoute: AuthenticatedAiOpsRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedBoardroomRoute: AuthenticatedBoardroomRoute,
+  AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
+  AuthenticatedChiefOfStaffRoute: AuthenticatedChiefOfStaffRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
+  AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
+  AuthenticatedOrchestrationRoute: AuthenticatedOrchestrationRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
@@ -468,13 +641,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
