@@ -26,6 +26,13 @@ import {
   GitMerge,
   Brain,
   Presentation,
+  Briefcase,
+  Gavel,
+  Building2,
+  Rocket,
+  ShieldAlert,
+  ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -107,6 +114,15 @@ function useNavGroups(): NavGroup[] {
     {
       label: t("nav.group.enterprise"),
       items: [
+        { to: "/cockpit", icon: Crown, label: ar(locale, "قمرة القيادة", "Cockpit") },
+        { to: "/portfolio", icon: Briefcase, label: ar(locale, "المحفظة", "Portfolio") },
+        { to: "/decisions", icon: Gavel, label: ar(locale, "القرارات", "Decisions") },
+        { to: "/departments", icon: Building2, label: ar(locale, "الأقسام", "Departments") },
+        { to: "/transformation", icon: Rocket, label: ar(locale, "التحول", "Transformation") },
+        { to: "/risk", icon: ShieldAlert, label: ar(locale, "المخاطر", "Risk") },
+        { to: "/governance", icon: ShieldCheck, label: ar(locale, "الحوكمة", "Governance") },
+        { to: "/outcomes", icon: TrendingUp, label: ar(locale, "النتائج", "Outcomes") },
+        { to: "/analyst", icon: Brain, label: ar(locale, "محلل AI", "AI Analyst") },
         { to: "/digital-twin", icon: Boxes, label: t("nav.twin") },
         { to: "/integrations", icon: Plug, label: t("nav.integrations") },
         { to: "/ai-ops", icon: Network, label: t("nav.aiops") },
