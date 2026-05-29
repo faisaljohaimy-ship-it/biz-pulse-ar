@@ -373,17 +373,16 @@ const REPORT_COMMANDS: Cmd[] = [
   { id: "r_port", label_en: "Report · Portfolio Review", label_ar: "تقرير · مراجعة المحفظة", group: "Reports", group_ar: "التقارير", kind: "report", to: "/portfolio", icon: FileText },
 ];
 
-function buildActionCommands(ar: boolean, ctx: { setBriefing: (v: boolean) => void; setPresenting: (v: boolean) => void; setAvatar: (v: boolean) => void; navigate: (opts: { to: string }) => void }): Cmd[] {
+function buildActionCommands(ctx: { onOpenBriefing: () => void; onStartPresenting: () => void; onOpenAvatar: () => void; navigate: (opts: { to: string }) => void }): Cmd[] {
   return [
-    { id: "act_brief", label_en: "Open Executive Briefing", label_ar: "افتح الموجز التنفيذي", group: "Quick Actions", group_ar: "إجراءات سريعة", kind: "action", icon: FileText, run: () => ctx.setBriefing(true) },
-    { id: "act_pres", label_en: "Enter Presentation Mode", label_ar: "ادخل وضع العرض", group: "Quick Actions", group_ar: "إجراءات سريعة", kind: "action", icon: Presentation, run: () => { ctx.setPresenting(true); document.body.classList.add("nexus-presenting"); } },
-    { id: "act_aria", label_en: "Talk to ARIA", label_ar: "تحدث مع ARIA", group: "Quick Actions", group_ar: "إجراءات سريعة", kind: "action", icon: Sparkles, run: () => ctx.setAvatar(true) },
-    { id: "act_ask1", label_en: "Ask ARIA: top 3 risks today", label_ar: "اسأل ARIA: أكبر 3 مخاطر اليوم", group: "AI Actions", group_ar: "إجراءات الذكاء", kind: "action", icon: ShieldAlert, run: () => ctx.setAvatar(true) },
+    { id: "act_brief", label_en: "Open Executive Briefing", label_ar: "افتح الموجز التنفيذي", group: "Quick Actions", group_ar: "إجراءات سريعة", kind: "action", icon: FileText, run: () => ctx.onOpenBriefing() },
+    { id: "act_pres", label_en: "Enter Presentation Mode", label_ar: "ادخل وضع العرض", group: "Quick Actions", group_ar: "إجراءات سريعة", kind: "action", icon: Presentation, run: () => ctx.onStartPresenting() },
+    { id: "act_aria", label_en: "Talk to ARIA", label_ar: "تحدث مع ARIA", group: "Quick Actions", group_ar: "إجراءات سريعة", kind: "action", icon: Sparkles, run: () => ctx.onOpenAvatar() },
+    { id: "act_ask1", label_en: "Ask ARIA: top 3 risks today", label_ar: "اسأل ARIA: أكبر 3 مخاطر اليوم", group: "AI Actions", group_ar: "إجراءات الذكاء", kind: "action", icon: ShieldAlert, run: () => ctx.onOpenAvatar() },
     { id: "act_ask2", label_en: "Generate Board Pack PDF", label_ar: "أنشئ ملف مجلس الإدارة PDF", group: "AI Actions", group_ar: "إجراءات الذكاء", kind: "action", icon: FileText, run: () => ctx.navigate({ to: "/boardroom" }) },
     { id: "act_ask3", label_en: "Run scenario: −10% revenue Q3", label_ar: "شغّل سيناريو: −10% إيرادات الربع 3", group: "AI Actions", group_ar: "إجراءات الذكاء", kind: "action", icon: TrendingUp, run: () => ctx.navigate({ to: "/intelligence" }) },
-    { id: "act_ask4", label_en: "Summarize today's performance", label_ar: "لخص أداء اليوم", group: "AI Actions", group_ar: "إجراءات الذكاء", kind: "action", icon: Activity, run: () => ctx.setBriefing(true) },
-    void ar, // keep ar referenced
-  ].filter(Boolean) as Cmd[];
+    { id: "act_ask4", label_en: "Summarize today's performance", label_ar: "لخص أداء اليوم", group: "AI Actions", group_ar: "إجراءات الذكاء", kind: "action", icon: Activity, run: () => ctx.onOpenBriefing() },
+  ];
 }
 
 const ALL_STATIC: Cmd[] = [
