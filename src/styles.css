@@ -389,3 +389,33 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+
+/* ── 3D Digital Twin globe ─────────────────────────────────── */
+@keyframes nexus-globe-spin-y {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(360deg); }
+}
+@keyframes nexus-ring-spin {
+  from { transform: rotateX(75deg) rotateZ(0deg); }
+  to   { transform: rotateX(75deg) rotateZ(360deg); }
+}
+@keyframes nexus-ring-spin-rev {
+  from { transform: rotateX(60deg) rotateZ(20deg); }
+  to   { transform: rotateX(60deg) rotateZ(-340deg); }
+}
+.nexus-globe-inner    { animation: nexus-globe-spin-y 48s linear infinite; transform-style: preserve-3d; }
+.nexus-orbit-ring     { animation: nexus-ring-spin 22s linear infinite;    transform-style: preserve-3d; }
+.nexus-orbit-ring-rev { animation: nexus-ring-spin-rev 34s linear infinite; transform-style: preserve-3d; }
+
+/* Phone in landscape: keep hero + 3D scene visible without scroll-away */
+@media (orientation: landscape) and (max-height: 540px) {
+  .nexus-launch-main { padding-top: 0.25rem !important; padding-bottom: 1rem !important; }
+  .nexus-launch-main h1 { font-size: 1.6rem !important; line-height: 1.05 !important; }
+  .nexus-launch-main p  { font-size: 0.75rem !important; margin-top: 0.5rem !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-globe-inner,
+  .nexus-orbit-ring,
+  .nexus-orbit-ring-rev { animation: none !important; }
+}
