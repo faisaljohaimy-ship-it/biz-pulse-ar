@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Brain, Filter, ArrowRight, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Brain, Filter, ArrowRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse, type MemoryEntry, type MemoryKind, type MemoryStatus } from "@/lib/enterprise-pulse";
