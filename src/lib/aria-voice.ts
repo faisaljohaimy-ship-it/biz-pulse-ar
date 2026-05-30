@@ -73,12 +73,8 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
     }
   }, [scribe, stopSpeaking]);
 
-  const stopListening = useCallback(async () => {
-    try {
-      await scribe.disconnect();
-    } catch {
-      /* noop */
-    }
+  const stopListening = useCallback(() => {
+    try { scribe.disconnect(); } catch { /* noop */ }
     setListening(false);
     setPartial("");
   }, [scribe]);
