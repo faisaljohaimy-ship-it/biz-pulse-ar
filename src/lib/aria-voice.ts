@@ -122,7 +122,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
 
   useEffect(() => () => {
     stopSpeaking();
-    scribe.disconnect().catch(() => {});
+    try { scribe.disconnect(); } catch { /* noop */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
