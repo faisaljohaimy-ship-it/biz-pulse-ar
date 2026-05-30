@@ -7,6 +7,7 @@ import { Part5Video, PART5_DURATION } from "./Part5Video";
 import { Part6VideoAR, PART6_DURATION } from "./Part6VideoAR";
 import { DocumentaryAR, DOC_DURATION, DOC_FPS } from "./DocumentaryAR";
 import { DocumentaryEN, DOC_EN_DURATION, DOC_EN_FPS } from "./DocumentaryEN";
+import { StepsAR, STEPS_AR_DURATION, STEPS_AR_FPS } from "./StepsAR";
 
 export const RemotionRoot = () => (
   <>
