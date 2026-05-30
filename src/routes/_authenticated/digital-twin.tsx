@@ -1,149 +1,552 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { NexusPage, NexusCard, NexusPill } from "@/components/nexus-frame";
-import { Building2, Database, Workflow, GitBranch, Boxes } from "lucide-react";
+import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import {
+  Boxes, Building2, Database, Bot, Plug, Workflow, BookOpen,
+  ShieldAlert, Crown, Sparkles, Activity, Gauge, Brain, Zap,
+  TrendingUp, Mic, Send, ArrowRight, X,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
   component: DigitalTwinPage,
 });
 
-type Node = { id: string; label_ar: string; label_en: string; x: number; y: number; kind: "dept" | "system" | "project"; meta?: string };
+/* ────────── Node graph (orbital model) ────────── */
 
-const NODES: Node[] = [
-  { id: "ceo", label_ar: "المكتب التنفيذي", label_en: "Executive Office", x: 50, y: 12, kind: "dept" },
-  { id: "fin", label_ar: "المالية", label_en: "Finance", x: 20, y: 35, kind: "dept" },
-  { id: "ops", label_ar: "العمليات", label_en: "Operations", x: 50, y: 35, kind: "dept" },
-  { id: "tech", label_ar: "التكنولوجيا", label_en: "Technology", x: 80, y: 35, kind: "dept" },
-  { id: "sap", label_ar: "SAP S/4HANA", label_en: "SAP S/4HANA", x: 12, y: 65, kind: "system" },
-  { id: "crm", label_ar: "Salesforce CRM", label_en: "Salesforce CRM", x: 32, y: 70, kind: "system" },
-  { id: "dl", label_ar: "بحيرة البيانات", label_en: "Data Lake", x: 52, y: 65, kind: "system" },
-  { id: "m365", label_ar: "Microsoft 365", label_en: "Microsoft 365", x: 72, y: 70, kind: "system" },
-  { id: "aiops", label_ar: "AI Ops", label_en: "AI Ops", x: 90, y: 65, kind: "system" },
-  { id: "p1", label_ar: "تحول رقمي 2027", label_en: "Digital Transform 2027", x: 25, y: 90, kind: "project" },
-  { id: "p2", label_ar: "أتمتة المالية", label_en: "Finance Automation", x: 55, y: 92, kind: "project" },
-  { id: "p3", label_ar: "AI Copilot التوسع", label_en: "AI Copilot Rollout", x: 80, y: 90, kind: "project" },
+type TwinNode = {
+  id: string;
+  label_ar: string;
+  label_en: string;
+  ring: 0 | 1 | 2;            // 0 = inner, 2 = outer
+  angle: number;              // degrees on its ring
+  icon: typeof Building2;
+  tone: string;               // hex tint
+  route: string;
+  kpi_ar: string;
+  kpi_en: string;
+  value: string;
+};
+
+const NODES: TwinNode[] = [
+  { id: "depts",    label_ar: "الإدارات",        label_en: "Departments",  ring: 0, angle:   0, icon: Building2,  tone: "#22d3ee", route: "/departments",  kpi_ar: "إدارة نشطة", kpi_en: "active depts", value: "12" },
+  { id: "data",     label_ar: "بحيرة البيانات",  label_en: "Data Lake",    ring: 0, angle: 120, icon: Database,   tone: "#7dd3fc", route: "/knowledge",    kpi_ar: "تدفق/ثانية",  kpi_en: "events/s",     value: "184k" },
+  { id: "agents",   label_ar: "وكلاء AI",        label_en: "AI Agents",    ring: 0, angle: 240, icon: Bot,        tone: "#a78bfa", route: "/agents",       kpi_ar: "وكيل نشط",   kpi_en: "online",       value: "47" },
+
+  { id: "integ",    label_ar: "التكاملات",       label_en: "Integrations", ring: 1, angle:  30, icon: Plug,       tone: "#34d399", route: "/integrations", kpi_ar: "نظام مربوط", kpi_en: "systems",      value: "63" },
+  { id: "flows",    label_ar: "الأتمتة",         label_en: "Automations",  ring: 1, angle: 100, icon: Workflow,   tone: "#f59e0b", route: "/orchestration",kpi_ar: "تنفيذ/يوم",  kpi_en: "runs/day",     value: "9.2k" },
+  { id: "know",     label_ar: "مركز المعرفة",   label_en: "Knowledge Hub",ring: 1, angle: 170, icon: BookOpen,   tone: "#67e8f9", route: "/knowledge",    kpi_ar: "وثيقة",       kpi_en: "documents",    value: "21,408" },
+  { id: "risk",     label_ar: "محرك المخاطر",   label_en: "Risk Engine",  ring: 1, angle: 240, icon: ShieldAlert,tone: "#f43f5e", route: "/risk",         kpi_ar: "إشارة حرجة", kpi_en: "critical",     value: "2" },
+  { id: "board",    label_ar: "قاعة الإدارة",   label_en: "Boardroom",    ring: 1, angle: 310, icon: Crown,      tone: "#fbbf24", route: "/boardroom",    kpi_ar: "قرار معلق",  kpi_en: "pending",      value: "5" },
+
+  { id: "intel",    label_ar: "الذكاء التنفيذي",label_en: "Intelligence", ring: 2, angle:  60, icon: Brain,      tone: "#c4b5fd", route: "/intelligence", kpi_ar: "إشارة", kpi_en: "signals",      value: "318" },
+  { id: "exec",     label_ar: "التنفيذ",         label_en: "Execution",    ring: 2, angle: 200, icon: Activity,   tone: "#5eead4", route: "/execution",    kpi_ar: "سرعة",        kpi_en: "velocity",     value: "87%" },
 ];
 
 const EDGES: Array<[string, string]> = [
-  ["ceo", "fin"], ["ceo", "ops"], ["ceo", "tech"],
-  ["fin", "sap"], ["fin", "crm"],
-  ["ops", "dl"], ["ops", "crm"],
-  ["tech", "m365"], ["tech", "aiops"], ["tech", "dl"],
-  ["sap", "p2"], ["dl", "p1"], ["aiops", "p3"], ["crm", "p3"],
+  ["depts", "data"], ["depts", "agents"], ["data", "agents"],
+  ["depts", "integ"], ["data", "know"], ["agents", "flows"],
+  ["integ", "flows"], ["flows", "risk"], ["risk", "board"],
+  ["know", "intel"], ["agents", "intel"], ["board", "exec"],
+  ["flows", "exec"], ["risk", "intel"],
 ];
+
+/* ────────── Page ────────── */
 
 function DigitalTwinPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const [active, setActive] = useState<string | null>("dl");
+  const navigate = useNavigate();
+  const pulse = useEnterprisePulse();
 
-  const stats = [
-    { l: ar ? "إدارات" : "Departments", v: "12", i: Building2 },
-    { l: ar ? "أنظمة" : "Systems", v: "47", i: Database },
-    { l: ar ? "مشاريع" : "Projects", v: "23", i: Workflow },
-    { l: ar ? "تبعيات" : "Dependencies", v: "186", i: GitBranch },
+  const [t, setT] = useState(0);             // animation clock (frames)
+  const [active, setActive] = useState<string | null>("data");
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const [ariaOpen, setAriaOpen] = useState(false);
+  const sceneRef = useRef<HTMLDivElement>(null);
+
+  // Animation tick — slow, executive (≈30fps via rAF throttle)
+  useEffect(() => {
+    let raf = 0;
+    let last = 0;
+    const loop = (now: number) => {
+      if (now - last > 33) { setT((v) => v + 1); last = now; }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // Mouse parallax — subtle camera drift
+  const onMouseMove = (e: React.MouseEvent) => {
+    const r = sceneRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    setParallax({ x: nx, y: ny });
+  };
+
+  /* Positions: project each node onto an elliptical orbit */
+  const positions = useMemo(() => {
+    const rings = [
+      { rx: 18, ry: 11, speed: 0.10 }, // inner
+      { rx: 32, ry: 19, speed: 0.06 }, // mid
+      { rx: 44, ry: 26, speed: 0.04 }, // outer
+    ];
+    return NODES.map((n) => {
+      const r = rings[n.ring];
+      const a = ((n.angle + t * r.speed) * Math.PI) / 180;
+      const x = 50 + Math.cos(a) * r.rx;
+      const y = 50 + Math.sin(a) * r.ry;
+      // depth from y component for parallax shading
+      const depth = (Math.sin(a) + 1) / 2; // 0..1 (front→back)
+      return { id: n.id, x, y, depth };
+    });
+  }, [t]);
+
+  const posOf = (id: string) => positions.find((p) => p.id === id)!;
+  const activeNode = active ? NODES.find((n) => n.id === active) : null;
+  const activeEdges = active ? EDGES.filter(([a, b]) => a === active || b === active).map(([a, b]) => (a === active ? b : a)) : [];
+
+  /* Executive status indicators */
+  const statusBar = [
+    { label_ar: "صحة المؤسسة",      label_en: "Enterprise Health",  value: `${pulse.health}%`,   tone: "#22d3ee", icon: Gauge },
+    { label_ar: "المخاطر التشغيلية", label_en: "Operational Risk",   value: pulse.status === "critical" ? "HIGH" : pulse.status === "warning" ? "MED" : "LOW", tone: "#f43f5e", icon: ShieldAlert },
+    { label_ar: "نشاط الذكاء",       label_en: "AI Activity",         value: `${pulse.counts.conversations}`, tone: "#a78bfa", icon: Brain },
+    { label_ar: "إنتاجية الأتمتة",   label_en: "Automation Throughput",value: "9.2k/d", tone: "#f59e0b", icon: Zap },
+    { label_ar: "سرعة القرار",       label_en: "Decision Velocity",   value: "2.4h",   tone: "#34d399", icon: TrendingUp },
+    { label_ar: "حداثة البيانات",    label_en: "Data Freshness",      value: "12s",    tone: "#67e8f9", icon: Activity },
   ];
 
   return (
-    <NexusPage
-      eyebrow="DIGITAL TWIN"
-      title={ar ? "التوأم الرقمي للمؤسسة" : "Enterprise Digital Twin"}
-      subtitle={ar ? "خريطة حية لجميع الأقسام والأنظمة والمشاريع وعلاقاتها." : "Live map of every department, system, project and their relationships."}
-      actions={<NexusPill tone="cyan"><Boxes className="h-3 w-3" /> 3D MODEL</NexusPill>}
+    <div
+      ref={sceneRef}
+      onMouseMove={onMouseMove}
+      className="relative h-[calc(100dvh-3.5rem)] min-h-[640px] w-full overflow-hidden rounded-2xl border border-white/5 bg-[#02030a] text-slate-100"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 35%, #0b2046 0%, #050816 55%, #02030a 100%)",
+      }}
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <NexusCard key={s.l}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{s.l}</div>
-                <div className="mt-1 text-2xl font-bold text-cyan-300">{s.v}</div>
-              </div>
-              <s.i className="h-5 w-5 text-cyan-300/60" />
+      {/* Starfield */}
+      <Starfield />
+      {/* Grid floor */}
+      <GridFloor t={t} />
+      {/* Vignette */}
+      <div className="pointer-events-none absolute inset-0" style={{
+        background: "radial-gradient(ellipse at center, transparent 40%, rgba(2,4,10,0.92) 100%)",
+      }} />
+
+      {/* Top executive status bar */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-wrap items-center justify-center gap-2 p-3 sm:gap-3 sm:p-4">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300">
+            <Boxes className="h-4 w-4" />
+          </div>
+          <div className="leading-tight">
+            <div className="text-[9px] font-bold tracking-[0.3em] text-cyan-300/80">NEXUS · DIGITAL TWIN</div>
+            <div className="text-[11px] font-semibold text-white">
+              {ar ? "كون المؤسسة المباشر" : "Live Enterprise Universe"}
             </div>
-          </NexusCard>
+          </div>
+        </div>
+        {statusBar.map((s) => (
+          <div key={s.label_en}
+            className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl"
+            style={{ boxShadow: `0 0 24px -12px ${s.tone}55` }}
+          >
+            <s.icon className="h-3.5 w-3.5" style={{ color: s.tone }} />
+            <div className="leading-tight">
+              <div className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                {ar ? s.label_ar : s.label_en}
+              </div>
+              <div className="text-[12px] font-bold" style={{ color: s.tone }}>{s.value}</div>
+            </div>
+          </div>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <NexusCard glow className="relative h-[560px] overflow-hidden p-0">
-          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
-            {EDGES.map(([a, b], i) => {
-              const na = NODES.find((n) => n.id === a)!;
-              const nb = NODES.find((n) => n.id === b)!;
-              const isActive = active === a || active === b;
-              return (
-                <line
-                  key={i}
-                  x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
-                  stroke={isActive ? "rgba(34,211,238,0.9)" : "rgba(34,211,238,0.18)"}
-                  strokeWidth={isActive ? 0.35 : 0.15}
-                  strokeDasharray="0.6 0.4"
-                />
-              );
-            })}
-          </svg>
-          {NODES.map((n) => {
-            const isActive = active === n.id;
-            const color = n.kind === "dept" ? "cyan" : n.kind === "system" ? "violet" : "emerald";
-            const ring = color === "cyan" ? "border-cyan-400/50 bg-cyan-400/10 text-cyan-200" :
-              color === "violet" ? "border-violet-400/50 bg-violet-400/10 text-violet-200" :
-              "border-emerald-400/50 bg-emerald-400/10 text-emerald-200";
+      {/* The orbital scene — parallax wrapper */}
+      <div
+        className="absolute inset-0 transition-transform duration-300 ease-out will-change-transform"
+        style={{
+          transform: `perspective(1400px) rotateX(${parallax.y * -3}deg) rotateY(${parallax.x * 4}deg) translateZ(0)`,
+        }}
+      >
+        {/* SVG edges + orbits */}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          <defs>
+            <radialGradient id="coreGlow" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.7" />
+              <stop offset="40%" stopColor="#7c3aed" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="transparent" />
+            </radialGradient>
+            <linearGradient id="streamGrad" x1="0" x2="1">
+              <stop offset="0%" stopColor="#22d3ee" stopOpacity="0" />
+              <stop offset="50%" stopColor="#7dd3fc" stopOpacity="1" />
+              <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* Orbit ellipses */}
+          {[{ rx: 18, ry: 11 }, { rx: 32, ry: 19 }, { rx: 44, ry: 26 }].map((r, i) => (
+            <ellipse
+              key={i}
+              cx={50} cy={50} rx={r.rx} ry={r.ry}
+              fill="none"
+              stroke="#22d3ee"
+              strokeOpacity={0.18 - i * 0.04}
+              strokeWidth={0.12}
+              strokeDasharray="0.6 0.5"
+            />
+          ))}
+
+          {/* Core glow */}
+          <circle cx={50} cy={50} r={14} fill="url(#coreGlow)" />
+
+          {/* Intelligence streams */}
+          {EDGES.map(([a, b], i) => {
+            const pa = posOf(a), pb = posOf(b);
+            const isActive = active === a || active === b;
+            const op = isActive ? 0.9 : 0.18;
             return (
-              <button
-                key={n.id}
-                onClick={() => setActive(n.id)}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl border px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition ${ring} ${isActive ? "scale-110 shadow-[0_0_30px_-5px_rgba(34,211,238,0.7)]" : "opacity-90 hover:opacity-100"}`}
-                style={{ left: `${n.x}%`, top: `${n.y}%` }}
-              >
-                {ar ? n.label_ar : n.label_en}
-              </button>
+              <line
+                key={i}
+                x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                stroke={isActive ? "url(#streamGrad)" : "#22d3ee"}
+                strokeOpacity={op}
+                strokeWidth={isActive ? 0.22 : 0.1}
+                strokeDasharray="0.5 0.5"
+                style={{
+                  strokeDashoffset: -((t + i * 7) % 100) / 10,
+                  transition: "stroke-opacity 220ms",
+                }}
+              />
             );
           })}
-        </NexusCard>
+        </svg>
 
-        <NexusCard>
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
-            {ar ? "تفاصيل العقدة" : "NODE DETAILS"}
-          </div>
-          {active ? (
-            <div className="mt-3 space-y-3">
-              <div className="text-lg font-bold text-white">
-                {ar ? NODES.find((n) => n.id === active)?.label_ar : NODES.find((n) => n.id === active)?.label_en}
-              </div>
-              <NexusPill tone="cyan">{NODES.find((n) => n.id === active)?.kind.toUpperCase()}</NexusPill>
-              <dl className="grid grid-cols-2 gap-2 text-xs">
-                {[
-                  [ar ? "الحالة" : "Status", ar ? "صحي" : "Healthy"],
-                  [ar ? "الاتصالات" : "Connections", "14"],
-                  [ar ? "آخر تحديث" : "Last sync", "2m"],
-                  [ar ? "الحرجية" : "Criticality", ar ? "مرتفعة" : "High"],
-                  [ar ? "المالك" : "Owner", "Sarah K."],
-                  [ar ? "SLA" : "SLA", "99.95%"],
-                ].map(([k, v]) => (
-                  <div key={k} className="rounded-md bg-white/[0.03] p-2">
-                    <dt className="text-[10px] uppercase tracking-widest text-slate-500">{k}</dt>
-                    <dd className="mt-0.5 font-semibold text-slate-200">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-              <div>
-                <div className="text-[10px] font-bold tracking-widest text-slate-400">
-                  {ar ? "تبعيات نشطة" : "ACTIVE DEPENDENCIES"}
+        {/* Holographic Core */}
+        <HolographicCore t={t} />
+
+        {/* Nodes */}
+        {NODES.map((n) => {
+          const p = posOf(n.id);
+          const Icon = n.icon;
+          const isActive = active === n.id;
+          const isLinked = activeEdges.includes(n.id);
+          const scale = 0.85 + p.depth * 0.4 + (isActive ? 0.25 : 0);
+          const opacity = 0.55 + p.depth * 0.45;
+          return (
+            <button
+              key={n.id}
+              onClick={() => { setActive(n.id); }}
+              onDoubleClick={() => navigate({ to: n.route })}
+              onMouseEnter={() => setActive(n.id)}
+              className="group absolute -translate-x-1/2 -translate-y-1/2 outline-none"
+              style={{
+                left: `${p.x}%`, top: `${p.y}%`,
+                zIndex: 10 + Math.round(p.depth * 10) + (isActive ? 30 : 0),
+                transform: `translate(-50%, -50%) scale(${scale})`,
+                opacity,
+                transition: "transform 300ms ease-out, opacity 300ms",
+              }}
+            >
+              {/* Pulse ring */}
+              <span
+                className="absolute inset-0 -m-3 rounded-full"
+                style={{
+                  boxShadow: `0 0 ${isActive ? 48 : 24}px ${isActive ? n.tone : n.tone + "88"}`,
+                  background: `radial-gradient(circle, ${n.tone}33 0%, transparent 70%)`,
+                  animation: `twin-pulse ${4 + (n.angle % 3)}s ease-in-out infinite`,
+                }}
+              />
+              <div
+                className="relative flex items-center gap-2 rounded-2xl border bg-white/[0.06] px-2.5 py-1.5 backdrop-blur-xl"
+                style={{
+                  borderColor: isActive || isLinked ? n.tone : `${n.tone}55`,
+                  boxShadow: `0 8px 32px -8px ${n.tone}99, inset 0 0 0 1px rgba(255,255,255,0.04)`,
+                }}
+              >
+                <div
+                  className="flex h-7 w-7 items-center justify-center rounded-lg"
+                  style={{ background: `${n.tone}22`, color: n.tone }}
+                >
+                  <Icon className="h-3.5 w-3.5" />
                 </div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {["SAP", "Snowflake", "Teams", "AzureAD"].map((d) => (
-                    <NexusPill key={d} tone="slate">{d}</NexusPill>
-                  ))}
+                <div className="leading-tight">
+                  <div className="text-[10px] font-bold tracking-wide text-white">
+                    {ar ? n.label_ar : n.label_en}
+                  </div>
+                  <div className="text-[9px] font-semibold" style={{ color: n.tone }}>
+                    {n.value} <span className="text-slate-400">{ar ? n.kpi_ar : n.kpi_en}</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active node executive card */}
+      {activeNode && (
+        <div
+          className="pointer-events-auto absolute bottom-4 start-4 z-30 w-[min(360px,calc(100%-2rem))] rounded-2xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-2xl"
+          style={{ boxShadow: `0 24px 64px -24px ${activeNode.tone}cc` }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-xl"
+                style={{ background: `${activeNode.tone}22`, color: activeNode.tone }}
+              >
+                <activeNode.icon className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                  {ar ? "وحدة مؤسسية" : "Enterprise Module"}
+                </div>
+                <div className="text-sm font-bold text-white">
+                  {ar ? activeNode.label_ar : activeNode.label_en}
                 </div>
               </div>
             </div>
-          ) : (
-            <p className="mt-3 text-sm text-slate-500">{ar ? "اختر عقدة لعرض التفاصيل" : "Select a node to view details"}</p>
-          )}
-        </NexusCard>
+            <button onClick={() => setActive(null)} className="rounded-md p-1 text-slate-400 hover:bg-white/5 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <Mini label={ar ? "الحالة" : "Status"} value={ar ? "صحي" : "Healthy"} tone="#34d399" />
+            <Mini label={ar ? "الاتصالات" : "Links"} value={String(activeEdges.length)} tone="#22d3ee" />
+            <Mini label={ar ? "القيمة" : "Metric"} value={activeNode.value} tone={activeNode.tone} />
+          </div>
+          <button
+            onClick={() => navigate({ to: activeNode.route })}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 px-3 py-2 text-xs font-bold text-white transition hover:from-cyan-500/30 hover:to-violet-500/30"
+          >
+            {ar ? "افتح الوحدة" : "Open module"}
+            <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+          </button>
+        </div>
+      )}
+
+      {/* ARIA dock */}
+      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} />
+
+      {/* Keyframes */}
+      <style>{`
+        @keyframes twin-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.15); opacity: 1; }
+        }
+        @keyframes core-rotate {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to   { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes core-rotate-rev {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to   { transform: translate(-50%, -50%) rotate(-360deg); }
+        }
+        @keyframes core-breath {
+          0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+        }
+        @keyframes star-twinkle {
+          0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ────────── Sub-components ────────── */
+
+function Mini({ label, value, tone }: { label: string; value: string; tone: string }) {
+  return (
+    <div className="rounded-xl border border-white/5 bg-white/[0.03] px-2 py-2">
+      <div className="text-[8.5px] font-bold uppercase tracking-[0.2em] text-slate-500">{label}</div>
+      <div className="mt-0.5 text-sm font-bold" style={{ color: tone }}>{value}</div>
+    </div>
+  );
+}
+
+function HolographicCore({ t }: { t: number }) {
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2">
+      {/* Outer breath */}
+      <div
+        className="absolute left-1/2 top-1/2 h-full w-full rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(34,211,238,0.35) 0%, rgba(124,58,237,0.18) 35%, transparent 70%)",
+          animation: "core-breath 4s ease-in-out infinite",
+        }}
+      />
+      {/* Rotating rings */}
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="absolute left-1/2 top-1/2 rounded-full border"
+          style={{
+            width: `${60 + i * 40}%`,
+            height: `${60 + i * 40}%`,
+            borderColor: i === 0 ? "rgba(34,211,238,0.6)" : i === 1 ? "rgba(167,139,250,0.45)" : "rgba(125,211,252,0.3)",
+            borderStyle: "dashed",
+            borderWidth: 1,
+            animation: `${i % 2 === 0 ? "core-rotate" : "core-rotate-rev"} ${24 + i * 8}s linear infinite`,
+          }}
+        />
+      ))}
+      {/* Inner core */}
+      <div
+        className="absolute left-1/2 top-1/2 flex h-[110px] w-[110px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(125,211,252,0.95) 0%, rgba(34,211,238,0.55) 40%, rgba(124,58,237,0.25) 70%, transparent 100%)",
+          boxShadow: "0 0 80px rgba(34,211,238,0.8), inset 0 0 40px rgba(255,255,255,0.3)",
+          transform: `translate(-50%, -50%) scale(${1 + Math.sin(t / 20) * 0.04})`,
+        }}
+      >
+        <div className="text-center leading-tight">
+          <div className="text-[9px] font-bold tracking-[0.3em] text-cyan-50/90">NEXUS</div>
+          <div className="text-[8px] font-semibold tracking-[0.25em] text-cyan-100/70">CORE</div>
+        </div>
       </div>
-    </NexusPage>
+    </div>
+  );
+}
+
+function GridFloor({ t }: { t: number }) {
+  const offset = (t * 0.4) % 40;
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 opacity-40"
+      style={{
+        background: `
+          linear-gradient(to bottom, transparent 0%, rgba(34,211,238,0.04) 60%, rgba(34,211,238,0.12) 100%),
+          repeating-linear-gradient(to right, rgba(34,211,238,0.18) 0 1px, transparent 1px 80px),
+          repeating-linear-gradient(to bottom, rgba(34,211,238,0.18) 0 1px, transparent 1px 80px)
+        `,
+        backgroundPositionY: `0px, 0px, ${offset}px`,
+        transform: "perspective(700px) rotateX(62deg) translateY(20%)",
+        transformOrigin: "center top",
+        maskImage: "linear-gradient(to bottom, transparent 0%, black 30%, black 80%, transparent 100%)",
+      }}
+    />
+  );
+}
+
+function Starfield() {
+  const stars = useMemo(
+    () => Array.from({ length: 80 }).map((_, i) => ({
+      x: Math.abs((Math.sin(i * 92.13) * 43758.5453) % 1) * 100,
+      y: Math.abs((Math.cos(i * 17.7) * 43758.5453) % 1) * 100,
+      r: i % 7 === 0 ? 1.4 : 0.6,
+      d: (i % 7) * 0.6,
+    })),
+    [],
+  );
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full">
+      {stars.map((s, i) => (
+        <circle
+          key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r} fill="white"
+          style={{ animation: `star-twinkle ${3 + (i % 5)}s ease-in-out ${s.d}s infinite` }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/* ────────── ARIA Copilot Dock ────────── */
+
+function AriaDock({ open, onToggle, ar }: { open: boolean; onToggle: () => void; ar: boolean }) {
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Array<{ role: "user" | "aria"; text: string }>>([
+    { role: "aria", text: ar ? "أنا ARIA. اسألني عن أي شيء في المؤسسة." : "I'm ARIA. Ask me anything across the enterprise." },
+  ]);
+  const suggestions = ar
+    ? ["أظهر المخاطر الحرجة", "افتح التكاملات", "أنشئ ملخص لقاعة الإدارة"]
+    : ["Show critical risks", "Open integrations", "Create board briefing"];
+
+  const send = (text: string) => {
+    if (!text.trim()) return;
+    setMessages((m) => [...m, { role: "user", text }, {
+      role: "aria",
+      text: ar
+        ? "تم تجهيز بطاقة استخبارات تنفيذية. سأعرض النتائج بعد قليل."
+        : "Generating an executive intelligence card with the latest signals…",
+    }]);
+    setInput("");
+  };
+
+  return (
+    <div className="absolute bottom-4 end-4 z-40">
+      {open && (
+        <div className="mb-3 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl"
+          style={{ boxShadow: "0 24px 64px -16px rgba(34,211,238,0.4)" }}>
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 text-white">
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <div className="text-[10px] font-bold tracking-[0.25em] text-cyan-300">ARIA</div>
+                <div className="text-[10px] text-slate-400">{ar ? "كوبايلوت تنفيذي" : "Executive Copilot"}</div>
+              </div>
+            </div>
+            <button onClick={onToggle} className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="max-h-64 overflow-y-auto px-3 py-3 space-y-2">
+            {messages.map((m, i) => (
+              <div key={i} className={m.role === "aria" ? "" : "text-end"}>
+                <div className={`inline-block max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                  m.role === "aria"
+                    ? "border border-cyan-300/20 bg-cyan-400/5 text-slate-100"
+                    : "bg-gradient-to-br from-cyan-500 to-violet-500 text-white"
+                }`}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5 border-t border-white/10 px-3 py-2">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                onClick={() => send(s)}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] text-slate-300 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-cyan-200"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <form onSubmit={(e) => { e.preventDefault(); send(input); }}
+            className="flex items-center gap-2 border-t border-white/10 p-2">
+            <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-cyan-300">
+              <Mic className="h-4 w-4" />
+            </button>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={ar ? "اسأل ARIA…" : "Ask ARIA…"}
+              className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
+            />
+            <button type="submit" className="rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 p-2 text-white">
+              <Send className="h-3.5 w-3.5" />
+            </button>
+          </form>
+        </div>
+      )}
+      <button
+        onClick={onToggle}
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-cyan-500/30 to-violet-500/30 backdrop-blur-xl transition hover:scale-105"
+        style={{ boxShadow: "0 0 40px rgba(34,211,238,0.5), inset 0 0 20px rgba(255,255,255,0.1)" }}
+        aria-label="ARIA"
+      >
+        <span className="absolute inset-0 rounded-full" style={{ animation: "twin-pulse 3s ease-in-out infinite", background: "radial-gradient(circle, rgba(34,211,238,0.3) 0%, transparent 70%)" }} />
+        <Sparkles className="relative h-6 w-6 text-white" />
+      </button>
+    </div>
   );
 }
