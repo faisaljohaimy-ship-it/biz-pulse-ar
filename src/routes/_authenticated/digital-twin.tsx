@@ -141,9 +141,9 @@ function DigitalTwinPage() {
     { label_ar: "صحة المؤسسة",      label_en: "Enterprise Health",  value: `${pulse.health}%`,   tone: "#22d3ee", icon: Gauge },
     { label_ar: "المخاطر التشغيلية", label_en: "Operational Risk",   value: pulse.status === "critical" ? "HIGH" : pulse.status === "warning" ? "MED" : "LOW", tone: "#f43f5e", icon: ShieldAlert },
     { label_ar: "نشاط الذكاء",       label_en: "AI Activity",         value: `${pulse.counts.conversations}`, tone: "#a78bfa", icon: Brain },
-    { label_ar: "إنتاجية الأتمتة",   label_en: "Automation Throughput",value: "9.2k/d", tone: "#f59e0b", icon: Zap },
-    { label_ar: "سرعة القرار",       label_en: "Decision Velocity",   value: "2.4h",   tone: "#34d399", icon: TrendingUp },
-    { label_ar: "حداثة البيانات",    label_en: "Data Freshness",      value: "12s",    tone: "#67e8f9", icon: Activity },
+    { label_ar: "إنتاجية الأتمتة",   label_en: "Automation Throughput",value: signals ? `${signals.automations}/wk` : "—", tone: "#f59e0b", icon: Zap },
+    { label_ar: "سرعة التنفيذ",       label_en: "Execution Velocity",  value: signals ? `${signals.executionVelocity}%` : "—",   tone: "#34d399", icon: TrendingUp },
+    { label_ar: "إشارات حية",         label_en: "Live Signals",        value: signals ? String(signals.intelligenceSignals) : "—",    tone: "#67e8f9", icon: Activity },
   ];
 
   return (
