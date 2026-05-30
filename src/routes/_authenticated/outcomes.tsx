@@ -1,93 +1,120 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { DollarSign, Zap, ShieldCheck, TrendingUp, Bot } from "lucide-react";
+import { TrendingUp, DollarSign } from "lucide-react";
+import { businessOutcomes } from "@/lib/enterprise-domains";
+import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
 export const Route = createFileRoute("/_authenticated/outcomes")({
   component: OutcomesPage,
 });
 
-const OUTCOMES = [
-  { key: "cost", icon: DollarSign, color: "emerald", label_ar: "وفر التكاليف", label_en: "Cost savings", value: "SAR 38.4M", delta: "+12.6%", from: "Q1 26", to: "Q2 26", drivers_ar: ["أتمتة 14 عملية مالية", "إعادة التفاوض على 3 عقود", "ترشيد طبقة API"], drivers_en: ["14 finance processes automated", "3 contracts renegotiated", "API tier rationalization"] },
-  { key: "prod", icon: Zap, color: "cyan", label_ar: "نمو الإنتاجية", label_en: "Productivity gains", value: "+14.2%", delta: "+3.1pp", from: "Q1 26", to: "Q2 26", drivers_ar: ["نشر AI Copilot لـ 8 أقسام", "تقليل اجتماعات بنسبة 22٪", "أدوات تعاون موحدة"], drivers_en: ["AI Copilot in 8 depts", "Meetings -22%", "Unified collab tools"] },
-  { key: "auto", icon: Bot, color: "violet", label_ar: "أثر الأتمتة", label_en: "Automation impact", value: "2,140 hr/mo", delta: "+18%", from: "Q1 26", to: "Q2 26", drivers_ar: ["86 سير عمل نشط", "نجاح 94.7٪", "نشر إضافي للعمليات"], drivers_en: ["86 active workflows", "94.7% success", "Additional ops rollout"] },
-  { key: "rev", icon: TrendingUp, color: "cyan", label_ar: "أثر الإيراد", label_en: "Revenue impact", value: "+SAR 64M", delta: "+8.2%", from: "Q1 26", to: "Q2 26", drivers_ar: ["توسع الإمارات", "تحسين قمع التحويل", "تجديد عقود الفرص"], drivers_en: ["UAE expansion", "Funnel optimization", "Opportunity contract renewals"] },
-  { key: "risk", icon: ShieldCheck, color: "emerald", label_ar: "تقليل المخاطر", label_en: "Risk reduction", value: "-38%", delta: "-12pp", from: "Q1 26", to: "Q2 26", drivers_ar: ["تحوط العملة", "ضوابط ZTNA", "مراجعة وصول ربع سنوية"], drivers_en: ["FX hedging", "ZTNA controls", "Quarterly access review"] },
-];
+const CATEGORIES = ["cost", "productivity", "automation", "revenue", "risk"];
 
-const TIMELINE = [
-  { q: "Q3 2025", v_ar: "إطلاق Nexus وقياس خط الأساس", v_en: "Nexus launch & baseline measurement", amt: "—" },
-  { q: "Q4 2025", v_ar: "بدء أتمتة المالية وحوكمة التكاملات", v_en: "Finance automation & integration governance kickoff", amt: "+SAR 4.2M" },
-  { q: "Q1 2026", v_ar: "نشر AI Copilot لـ 4 أقسام", v_en: "AI Copilot rolled out to 4 depts", amt: "+SAR 11.8M" },
-  { q: "Q2 2026", v_ar: "توسع الإمارات + إعادة هيكلة العقود", v_en: "UAE expansion + contract restructuring", amt: "+SAR 22.4M" },
-  { q: "Q3 2026", v_ar: "متوقع: نشر العمليات + S/4HANA", v_en: "Forecast: Ops rollout + S/4HANA", amt: "+SAR 18M" },
-];
-
-const colorMap: Record<string, { text: string; bg: string; border: string }> = {
-  emerald: { text: "text-emerald-300", bg: "bg-emerald-500/10", border: "border-emerald-400/30" },
-  cyan: { text: "text-cyan-300", bg: "bg-cyan-500/10", border: "border-cyan-400/30" },
-  violet: { text: "text-violet-300", bg: "bg-violet-500/10", border: "border-violet-400/30" },
-};
+function categoryTone(c: string) {
+  if (c === "cost" || c === "risk") return "emerald";
+  if (c === "revenue") return "cyan";
+  if (c === "automation") return "violet";
+  return "cyan";
+}
 
 function OutcomesPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+
+  const q = businessOutcomes.useList();
+  const create = businessOutcomes.useCreate();
+  const del = businessOutcomes.useDelete();
+  const outcomes = q.data ?? [];
+
+  const byCategory = (c: string) => outcomes.filter((o) => o.category === c).length;
+
   return (
     <NexusPage
-      eyebrow="BUSINESS OUTCOMES"
+      eyebrow="BUSINESS OUTCOMES · LIVE"
       title={ar ? "تتبع نتائج الأعمال" : "Business Outcome Tracking"}
       subtitle={ar ? "الأثر الحقيقي عبر التكلفة، الإنتاجية، الأتمتة، الإيراد، والمخاطر." : "Real impact across cost, productivity, automation, revenue, and risk."}
-      actions={<NexusPill tone="emerald"><TrendingUp className="h-3 w-3" /> +SAR 102.4M YTD</NexusPill>}
+      actions={
+        <NexusPill tone="emerald">
+          <TrendingUp className="h-3 w-3" /> {outcomes.length} OUTCOMES
+        </NexusPill>
+      }
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "أثر مالي محقق" : "Realized financial impact"} value="SAR 102.4M" tone="emerald" />
-        <NexusStat label={ar ? "ساعات موفرة/شهر" : "Hours saved/mo"} value="2,140" tone="violet" />
-        <NexusStat label={ar ? "نمو الإنتاجية" : "Productivity growth"} value="+14.2%" tone="cyan" />
-        <NexusStat label={ar ? "تقليل المخاطر" : "Risk reduction"} value="-38%" tone="emerald" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {CATEGORIES.map((c) => (
+          <NexusStat
+            key={c}
+            label={c.toUpperCase()}
+            value={String(byCategory(c))}
+            tone={c === "cost" ? "emerald" : c === "revenue" ? "cyan" : c === "automation" ? "violet" : c === "risk" ? "rose" : "amber"}
+          />
+        ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        {OUTCOMES.map((o) => {
-          const c = colorMap[o.color];
-          return (
-            <NexusCard key={o.key} glow>
-              <div className="flex items-start justify-between">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${c.border} ${c.bg} ${c.text}`}>
-                  <o.icon className="h-5 w-5" />
-                </div>
-                <NexusPill tone={o.color === "emerald" ? "emerald" : o.color === "cyan" ? "cyan" : "violet"}>{o.delta}</NexusPill>
-              </div>
-              <div className="mt-3 text-[10px] uppercase tracking-widest text-slate-500">{ar ? o.label_ar : o.label_en}</div>
-              <div className={`mt-1 text-3xl font-bold ${c.text}`}>{o.value}</div>
-              <div className="mt-1 text-[10px] text-slate-500">{o.from} → {o.to}</div>
-              <ul className="mt-4 space-y-1.5 border-t border-white/5 pt-3 text-[11px] text-slate-300">
-                {(ar ? o.drivers_ar : o.drivers_en).map((d, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className={`mt-1 h-1 w-1 rounded-full ${c.bg.replace("/10", "")}`} />
-                    {d}
-                  </li>
-                ))}
-              </ul>
-            </NexusCard>
-          );
-        })}
-      </div>
-
-      <NexusCard>
-        <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">{ar ? "خط زمن تحقق الفوائد" : "BENEFITS REALIZATION TIMELINE"}</div>
-        <div className="mt-4 space-y-3">
-          {TIMELINE.map((t, i) => (
-            <div key={t.q} className="flex items-center gap-3">
-              <div className="w-20 text-[11px] font-mono font-bold text-cyan-300">{t.q}</div>
-              <div className="relative flex-1">
-                <div className="h-px bg-white/10" />
-                <div className={`absolute -top-1 h-2 w-2 rounded-full ${i < 4 ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" : "bg-cyan-400/60"}`} />
-                <div className="mt-2 text-sm text-slate-200">{ar ? t.v_ar : t.v_en}</div>
-              </div>
-              <div className={`w-28 text-end text-sm font-bold ${i < 4 ? "text-emerald-300" : "text-slate-500"}`}>{t.amt}</div>
+      <NexusCard glow>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4 text-emerald-300" />
+            <div className="text-[11px] font-bold tracking-[0.25em] text-emerald-300/80">
+              {ar ? "النتائج المُحقَّقة" : "REALIZED OUTCOMES"}
             </div>
-          ))}
+          </div>
+          <InlineAddForm
+            ar={ar}
+            isPending={create.isPending}
+            fields={[
+              { key: "category", label: ar ? "الفئة" : "Category", type: "select", options: CATEGORIES, defaultValue: "cost" },
+              { key: "label", label: ar ? "الاسم" : "Label", required: true, placeholder: ar ? "وفر التكاليف" : "Cost savings" },
+              { key: "label_en", label: ar ? "بالإنجليزية" : "English label" },
+              { key: "value", label: ar ? "القيمة" : "Value", required: true, placeholder: "SAR 38.4M" },
+              { key: "delta", label: "Δ", placeholder: "+12.6%" },
+              { key: "period_from", label: ar ? "من" : "From", placeholder: "Q1 26" },
+              { key: "period_to", label: ar ? "إلى" : "To", placeholder: "Q2 26" },
+            ]}
+            onSubmit={(v) =>
+              create.mutate({
+                category: String(v.category),
+                label: String(v.label),
+                label_en: String(v.label_en || ""),
+                value: String(v.value),
+                delta: String(v.delta || ""),
+                period_from: String(v.period_from || ""),
+                period_to: String(v.period_to || ""),
+              })
+            }
+          />
         </div>
+
+        {q.isLoading ? (
+          <div className="mt-6 text-center text-sm text-slate-400">{ar ? "جاري التحميل..." : "Loading..."}</div>
+        ) : outcomes.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState title={ar ? "لا توجد نتائج بعد — سجل أول نتيجة عمل." : "No outcomes yet — record your first business outcome."} />
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {outcomes.map((o) => (
+              <div key={o.id} className="rounded-xl border border-emerald-400/15 bg-emerald-500/[0.04] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <NexusPill tone={categoryTone(o.category)}>{o.category}</NexusPill>
+                  <div className="flex items-center gap-2">
+                    {o.delta && <NexusPill tone="emerald">{o.delta}</NexusPill>}
+                    <DeleteButton ar={ar} isPending={del.isPending} onDelete={() => del.mutate(o.id)} />
+                  </div>
+                </div>
+                <div className="mt-3 text-[10px] uppercase tracking-widest text-slate-500">
+                  {ar ? o.label : (o.label_en || o.label)}
+                </div>
+                <div className="mt-1 text-3xl font-bold text-emerald-300">{o.value}</div>
+                {(o.period_from || o.period_to) && (
+                  <div className="mt-1 text-[10px] text-slate-500">
+                    {o.period_from || "—"} → {o.period_to || "—"}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </NexusCard>
     </NexusPage>
   );
