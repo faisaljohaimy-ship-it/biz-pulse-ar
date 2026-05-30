@@ -74,11 +74,15 @@ function IntelligencePage() {
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "إشارات نشطة" : "Live signals"} value="186" tone="cyan" />
-        <NexusStat label={ar ? "دقة النموذج" : "Model accuracy"} value="91.4%" tone="emerald" />
-        <NexusStat label={ar ? "مخاطر مرصودة" : "Risks flagged"} value="9" tone="rose" />
-        <NexusStat label={ar ? "فرص مكتشفة" : "Opportunities"} value="14" tone="violet" />
+        <NexusStat label={ar ? "إشارات نشطة" : "Live signals"} value={String(signals)} tone="cyan" />
+        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise health"} value={`${health}%`} tone={health >= 70 ? "emerald" : "amber"} />
+        <NexusStat label={ar ? "مخاطر مرصودة" : "Risks flagged"} value={String(risksFlagged)} tone="rose" />
+        <NexusStat label={ar ? "فرص مكتشفة" : "Opportunities"} value={String(opportunities)} tone="violet" />
       </div>
+
+      <PredictionsPanel compact />
+
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         <NexusCard>
