@@ -122,7 +122,7 @@ function DigitalTwinPage() {
     <div
       ref={sceneRef}
       onMouseMove={onMouseMove}
-      className="relative -m-4 sm:-m-6 lg:-m-8 h-[calc(100dvh-4rem)] min-h-[640px] overflow-hidden bg-[#02030a] text-slate-100"
+      className="relative h-[calc(100dvh-3.5rem)] min-h-[640px] w-full overflow-hidden rounded-2xl border border-white/5 bg-[#02030a] text-slate-100"
       style={{
         background:
           "radial-gradient(ellipse at 50% 35%, #0b2046 0%, #050816 55%, #02030a 100%)",
