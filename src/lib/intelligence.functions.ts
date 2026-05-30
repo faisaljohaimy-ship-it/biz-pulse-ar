@@ -314,3 +314,242 @@ export const getTwinSignals = createServerFn({ method: "GET" })
       generatedAt: new Date().toISOString(),
     };
   });
+
+/* ────────── Predictive Intelligence Engine ────────── */
+
+export type Prediction = {
+  id: string;
+  kind: "anomaly" | "forecast" | "opportunity" | "risk" | "recommendation";
+  title_ar: string;
+  title_en: string;
+  detail_ar: string;
+  detail_en: string;
+  confidence: number; // 0-100
+  impact: "low" | "medium" | "high" | "critical";
+  horizonDays: number;
+  tone: "emerald" | "cyan" | "amber" | "rose" | "violet";
+  route?: string;
+};
+
+export type PredictionsPayload = {
+  predictions: Prediction[];
+  generatedAt: string;
+  sampleSize: number;
+};
+
+function linregSlope(values: number[]): number {
+  const n = values.length;
+  if (n < 2) return 0;
+  const xMean = (n - 1) / 2;
+  const yMean = values.reduce((s, v) => s + v, 0) / n;
+  let num = 0;
+  let den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (i - xMean) * (values[i] - yMean);
+    den += (i - xMean) ** 2;
+  }
+  return den === 0 ? 0 : num / den;
+}
+
+export const getPredictions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PredictionsPayload> => {
+    const { supabase } = context;
+    const day = 86_400_000;
+    const now = Date.now();
+    const cutoff = new Date(now - 28 * day).toISOString();
+
+    const [events, alerts, tasks] = await Promise.all([
+      supabase
+        .from("intelligence_events")
+        .select("kind,status,impact,progress,due_at,created_at,last_update,title,title_en,decision_route")
+        .gte("created_at", cutoff)
+        .limit(2000),
+      supabase
+        .from("intelligence_alerts")
+        .select("severity,business_impact_score,created_at,resolved_at,title,title_en,route")
+        .gte("created_at", cutoff)
+        .limit(1000),
+      supabase
+        .from("tasks")
+        .select("status,created_at,updated_at")
+        .gte("created_at", cutoff)
+        .limit(2000),
+    ]);
+
+    const ev = events.data ?? [];
+    const al = alerts.data ?? [];
+    const tk = tasks.data ?? [];
+
+    // Daily completion series (last 14 days)
+    const days = 14;
+    const series: number[] = Array(days).fill(0);
+    const createdSeries: number[] = Array(days).fill(0);
+    for (const t of tk) {
+      const ageDone = Math.floor((now - new Date(t.updated_at).getTime()) / day);
+      if (t.status === "done" && ageDone >= 0 && ageDone < days) series[days - 1 - ageDone]++;
+      const ageCreated = Math.floor((now - new Date(t.created_at).getTime()) / day);
+      if (ageCreated >= 0 && ageCreated < days) createdSeries[days - 1 - ageCreated]++;
+    }
+
+    const slope = linregSlope(series);
+    const avgDone = series.reduce((s, v) => s + v, 0) / days;
+    const stdDone = Math.sqrt(
+      series.reduce((s, v) => s + (v - avgDone) ** 2, 0) / days,
+    );
+    const last = series[days - 1];
+    const anomalyZ = stdDone === 0 ? 0 : (last - avgDone) / stdDone;
+    const forecast7 = Math.max(0, Math.round((avgDone + slope * 7) * 7));
+
+    // Critical alert pressure trend
+    const alertsByDay: number[] = Array(days).fill(0);
+    for (const a of al) {
+      const age = Math.floor((now - new Date(a.created_at).getTime()) / day);
+      if (age >= 0 && age < days) alertsByDay[days - 1 - age]++;
+    }
+    const alertSlope = linregSlope(alertsByDay);
+
+    // Forgotten / silent risk
+    const silent = ev.filter((e) => {
+      const idleDays = (now - new Date(e.last_update).getTime()) / day;
+      return idleDays >= 10 && e.status !== "done";
+    });
+
+    const overdue = ev.filter(
+      (e) => e.due_at && new Date(e.due_at).getTime() < now && e.status !== "done",
+    );
+
+    const openRecs = ev.filter((e) => e.kind === "recommendation" && e.status !== "done");
+    const openRisks = ev.filter((e) => e.kind === "risk" && e.status !== "done");
+
+    const predictions: Prediction[] = [];
+
+    // 1. Velocity forecast
+    predictions.push({
+      id: "velocity-forecast",
+      kind: "forecast",
+      title_ar: `توقع إنجاز ${forecast7} مهمة خلال الأسبوع القادم`,
+      title_en: `Forecast: ${forecast7} task completions next 7 days`,
+      detail_ar: `الميل اليومي ${slope >= 0 ? "+" : ""}${slope.toFixed(2)} مهمة/يوم بناءً على آخر 14 يوماً.`,
+      detail_en: `Daily trend ${slope >= 0 ? "+" : ""}${slope.toFixed(2)} tasks/day based on last 14 days.`,
+      confidence: Math.min(95, 60 + Math.round(Math.min(20, tk.length / 5))),
+      impact: slope < -0.5 ? "high" : "medium",
+      horizonDays: 7,
+      tone: slope >= 0 ? "emerald" : "amber",
+      route: "/execution",
+    });
+
+    // 2. Anomaly detection
+    if (Math.abs(anomalyZ) >= 1.5) {
+      const dropping = anomalyZ < 0;
+      predictions.push({
+        id: "exec-anomaly",
+        kind: "anomaly",
+        title_ar: dropping
+          ? "شذوذ: انخفاض حاد في معدل الإنجاز اليوم"
+          : "شذوذ: قفزة في معدل الإنجاز اليوم",
+        title_en: dropping
+          ? "Anomaly: sharp drop in completion rate today"
+          : "Anomaly: completion rate spike today",
+        detail_ar: `الانحراف المعياري ${anomalyZ.toFixed(2)} عن المعدل (${avgDone.toFixed(1)}/يوم).`,
+        detail_en: `Z-score ${anomalyZ.toFixed(2)} from baseline (${avgDone.toFixed(1)}/day).`,
+        confidence: Math.min(96, 70 + Math.round(Math.abs(anomalyZ) * 8)),
+        impact: dropping ? "high" : "low",
+        horizonDays: 1,
+        tone: dropping ? "rose" : "cyan",
+        route: "/cockpit",
+      });
+    }
+
+    // 3. Alert pressure
+    if (alertSlope > 0.3) {
+      predictions.push({
+        id: "alert-pressure",
+        kind: "risk",
+        title_ar: "ضغط تنبيهات متصاعد — تدخل تنفيذي مطلوب",
+        title_en: "Rising alert pressure — executive intervention likely",
+        detail_ar: `معدل التنبيهات يرتفع بمعدل ${alertSlope.toFixed(2)}/يوم على مدى أسبوعين.`,
+        detail_en: `Alert intake rising at ${alertSlope.toFixed(2)}/day over 2 weeks.`,
+        confidence: 82,
+        impact: "high",
+        horizonDays: 5,
+        tone: "rose",
+        route: "/fabric",
+      });
+    }
+
+    // 4. Silent / forgotten risk
+    if (silent.length >= 3) {
+      predictions.push({
+        id: "silent-risk",
+        kind: "risk",
+        title_ar: `${silent.length} بنود استراتيجية صامتة ≥ 10 أيام`,
+        title_en: `${silent.length} strategic items silent ≥ 10 days`,
+        detail_ar: "أعد إسناد مالك جديد قبل أن تتحول إلى متأخرات حرجة.",
+        detail_en: "Re-assign owners before they escalate into critical overdue.",
+        confidence: 88,
+        impact: silent.length >= 8 ? "critical" : "high",
+        horizonDays: 14,
+        tone: "rose",
+        route: "/forgotten",
+      });
+    }
+
+    // 5. Overdue cascade
+    if (overdue.length >= 2) {
+      predictions.push({
+        id: "overdue-cascade",
+        kind: "risk",
+        title_ar: `${overdue.length} بنود متأخرة قد تؤخر تبعيات`,
+        title_en: `${overdue.length} overdue items risk cascading dependencies`,
+        detail_ar: "احتمال تأثير سلسلة على القرارات والمبادرات المرتبطة.",
+        detail_en: "High probability of cascade onto linked decisions and initiatives.",
+        confidence: 79,
+        impact: "high",
+        horizonDays: 10,
+        tone: "amber",
+        route: "/memory",
+      });
+    }
+
+    // 6. Opportunity surface
+    if (openRecs.length > 0) {
+      const top = openRecs.slice(0, 1)[0];
+      predictions.push({
+        id: "opportunity-top",
+        kind: "opportunity",
+        title_ar: `فرصة جاهزة: ${top.title}`,
+        title_en: `Ready opportunity: ${top.title_en ?? top.title}`,
+        detail_ar: `${openRecs.length} توصية AI مفتوحة بانتظار قرار تنفيذي.`,
+        detail_en: `${openRecs.length} open AI recommendations awaiting executive sign-off.`,
+        confidence: 84,
+        impact: top.impact === "critical" || top.impact === "high" ? "high" : "medium",
+        horizonDays: 7,
+        tone: "emerald",
+        route: top.decision_route ?? "/decisions",
+      });
+    }
+
+    // 7. Executive recommendation
+    if (openRisks.length > 0 || alertSlope > 0.3) {
+      predictions.push({
+        id: "exec-recommendation",
+        kind: "recommendation",
+        title_ar: "توصية: عقد مراجعة مخاطر تنفيذية خلال 48 ساعة",
+        title_en: "Recommendation: convene executive risk review within 48h",
+        detail_ar: `${openRisks.length} مخاطر مفتوحة و ${al.filter((a) => !a.resolved_at).length} تنبيه نشط يتطلب توافقاً تنفيذياً.`,
+        detail_en: `${openRisks.length} open risks and ${al.filter((a) => !a.resolved_at).length} active alerts require executive alignment.`,
+        confidence: 90,
+        impact: "high",
+        horizonDays: 2,
+        tone: "violet",
+        route: "/boardroom",
+      });
+    }
+
+    return {
+      predictions,
+      generatedAt: new Date().toISOString(),
+      sampleSize: ev.length + al.length + tk.length,
+    };
+  });

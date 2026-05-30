@@ -6,11 +6,13 @@ import { DefaultChatTransport } from "ai";
 import { useI18n } from "@/lib/i18n";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
+import { useAriaVoice } from "@/lib/aria-voice";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Boxes, Building2, Database, Bot, Plug, Workflow, BookOpen,
   ShieldAlert, Crown, Sparkles, Activity, Gauge, Brain, Zap,
-  TrendingUp, Mic, Send, ArrowRight, X,
+  TrendingUp, Mic, MicOff, Send, ArrowRight, X, Maximize2, Minimize2,
+  Volume2, VolumeX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
@@ -91,7 +93,30 @@ function DigitalTwinPage() {
   const [active, setActive] = useState<string | null>("data");
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [ariaOpen, setAriaOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const sceneRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = async () => {
+    const el = sceneRef.current;
+    if (!el) return;
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen({ navigationUI: "hide" } as FullscreenOptions);
+        if ("orientation" in screen && "lock" in (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })) {
+          await (screen.orientation as unknown as { lock: (o: string) => Promise<void> })
+            .lock("landscape").catch(() => {});
+        }
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch { /* user-cancelled */ }
+  };
+
+  useEffect(() => {
+    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
 
   // Animation tick — slow, executive (≈30fps via rAF throttle)
   useEffect(() => {
@@ -192,6 +217,14 @@ function DigitalTwinPage() {
             </div>
           </div>
         ))}
+        <button
+          onClick={toggleFullscreen}
+          className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-[11px] font-bold text-cyan-200 backdrop-blur-xl hover:bg-cyan-400/20"
+          aria-label="fullscreen"
+        >
+          {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          <span className="hidden sm:inline">{ar ? (isFullscreen ? "خروج" : "ملء الشاشة") : (isFullscreen ? "Exit" : "Cinema")}</span>
+        </button>
       </div>
 
       {/* The orbital scene — parallax wrapper */}
@@ -501,8 +534,13 @@ function AriaDock({
   pulseHealth: number;
   pulseStatus: string;
 }) {
+  const navigate = useNavigate();
   const [input, setInput] = useState("");
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const spokenRef = useRef<Set<string>>(new Set());
+  const sendRef = useRef<(t: string) => void>(() => {});
 
   const [transport] = useState(
     () =>
@@ -520,22 +558,66 @@ function AriaDock({
   const { messages, sendMessage, status } = useChat({ id: "aria-digital-twin", transport });
   const isLoading = status === "submitted" || status === "streaming";
 
+  // Voice command routing — intercept navigation intents before sending to LLM
+  const VOICE_ROUTES: Array<{ patterns: RegExp[]; to: string; speak_ar: string; speak_en: string }> = [
+    { patterns: [/digital\s*twin|توأم|الكون/i], to: "/digital-twin", speak_ar: "جاري فتح التوأم الرقمي", speak_en: "Opening Digital Twin" },
+    { patterns: [/risk|مخاطر/i], to: "/risk", speak_ar: "أعرض سجل المخاطر", speak_en: "Showing risk register" },
+    { patterns: [/board\s*room|مجلس|قاعة الإدارة|board summary|ملخص.*مجلس/i], to: "/boardroom", speak_ar: "أفتح قاعة الإدارة", speak_en: "Opening boardroom" },
+    { patterns: [/decision|قرار/i], to: "/decisions", speak_ar: "أعرض القرارات", speak_en: "Opening decisions" },
+    { patterns: [/intelligence|ذكاء|signals|إشارات/i], to: "/intelligence", speak_ar: "أعرض الذكاء", speak_en: "Opening intelligence" },
+    { patterns: [/forgotten|منس/i], to: "/forgotten", speak_ar: "البنود المنسية", speak_en: "Opening forgotten items" },
+    { patterns: [/cockpit|قمرة/i], to: "/cockpit", speak_ar: "قمرة القيادة", speak_en: "Opening cockpit" },
+    { patterns: [/fabric|نسيج/i], to: "/fabric", speak_ar: "نسيج الذكاء", speak_en: "Opening intelligence fabric" },
+    { patterns: [/memory|ذاكرة/i], to: "/memory", speak_ar: "ذاكرة المؤسسة", speak_en: "Opening memory" },
+  ];
+
+  const send = (text: string) => {
+    const t = text.trim();
+    if (!t || isLoading) return;
+    // voice navigation intent
+    const lower = t.toLowerCase();
+    const hit = VOICE_ROUTES.find((r) => r.patterns.some((p) => p.test(lower)));
+    if (hit && /^(open|show|go to|navigate|افتح|اعرض|انتقل|اذهب)/i.test(t)) {
+      voice.speak(ar ? hit.speak_ar : hit.speak_en);
+      navigate({ to: hit.to });
+      setInput("");
+      return;
+    }
+    const ctx = ar
+      ? `سياق Nexus Digital Twin (مباشر): الصحة ${pulseHealth}%، الحالة ${pulseStatus}، الإدارات ${signals?.departments ?? "?"}، أحداث الذكاء ${signals?.events ?? "?"}، الوكلاء النشطون ${signals?.agents ?? "?"}، التكاملات ${signals?.integrations ?? "?"}، المهام ${signals?.automations ?? "?"}، الوثائق ${signals?.documents ?? "?"}، مخاطر حرجة ${signals?.criticalRisks ?? "?"}، قرارات مجلس معلَّقة ${signals?.boardActions ?? "?"}، إشارات مفتوحة ${signals?.intelligenceSignals ?? "?"}، سرعة التنفيذ ${signals?.executionVelocity ?? "?"}%. أجب باختصار تنفيذي.`
+      : `Nexus Digital Twin context (live): health ${pulseHealth}%, status ${pulseStatus}, departments ${signals?.departments ?? "?"}, intelligence events ${signals?.events ?? "?"}, active agents ${signals?.agents ?? "?"}, integrations ${signals?.integrations ?? "?"}, tasks ${signals?.automations ?? "?"}, documents ${signals?.documents ?? "?"}, critical risks ${signals?.criticalRisks ?? "?"}, pending board actions ${signals?.boardActions ?? "?"}, open signals ${signals?.intelligenceSignals ?? "?"}, execution velocity ${signals?.executionVelocity ?? "?"}%. Answer with an executive-grade brief.`;
+    sendMessage({ text: `${ctx}\n\n${t}` });
+    setInput("");
+  };
+  sendRef.current = send;
+
+  const voice = useAriaVoice({
+    onFinal: (txt) => sendRef.current(txt),
+  });
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading]);
 
-  const suggestions = ar
-    ? ["لخص حالة المؤسسة الآن", "ما أكبر المخاطر الحرجة؟", "ما البنود المنسية الحرجة؟", "جهز ملخص قاعة الإدارة"]
-    : ["Summarize enterprise state now", "Top critical risks?", "Most urgent forgotten items?", "Prep board briefing"];
+  // auto-speak assistant final replies
+  useEffect(() => {
+    if (!autoSpeak || isLoading) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenRef.current.has(last.id)) return;
+    const text = last.parts
+      .filter((p) => p.type === "text")
+      .map((p) => (p as { text: string }).text)
+      .join("")
+      .trim();
+    if (text.length < 4) return;
+    spokenRef.current.add(last.id);
+    voice.speak(text);
+  }, [messages, isLoading, autoSpeak, voice]);
 
-  const send = (text: string) => {
-    if (!text.trim() || isLoading) return;
-    const ctx = ar
-      ? `سياق Nexus Digital Twin (مباشر): الصحة ${pulseHealth}%، الحالة ${pulseStatus}، الإدارات ${signals?.departments ?? "?"}، أحداث الذكاء ${signals?.events ?? "?"}، الوكلاء النشطون ${signals?.agents ?? "?"}، التكاملات ${signals?.integrations ?? "?"}، المهام ${signals?.automations ?? "?"}، الوثائق ${signals?.documents ?? "?"}، مخاطر حرجة ${signals?.criticalRisks ?? "?"}، قرارات مجلس معلَّقة ${signals?.boardActions ?? "?"}، إشارات مفتوحة ${signals?.intelligenceSignals ?? "?"}، سرعة التنفيذ ${signals?.executionVelocity ?? "?"}%.`
-      : `Nexus Digital Twin context (live): health ${pulseHealth}%, status ${pulseStatus}, departments ${signals?.departments ?? "?"}, intelligence events ${signals?.events ?? "?"}, active agents ${signals?.agents ?? "?"}, integrations ${signals?.integrations ?? "?"}, tasks ${signals?.automations ?? "?"}, documents ${signals?.documents ?? "?"}, critical risks ${signals?.criticalRisks ?? "?"}, pending board actions ${signals?.boardActions ?? "?"}, open signals ${signals?.intelligenceSignals ?? "?"}, execution velocity ${signals?.executionVelocity ?? "?"}%.`;
-    sendMessage({ text: `${ctx}\n\n${text}` });
-    setInput("");
-  };
+  const suggestions = ar
+    ? ["لخص حالة المؤسسة الآن", "ما أكبر المخاطر الحرجة؟", "افتح التوأم الرقمي", "جهز ملخص قاعة الإدارة"]
+    : ["Summarize enterprise state now", "Top critical risks?", "Open Digital Twin", "Prep board briefing"];
 
   return (
     <div className="absolute bottom-4 end-4 z-40">
@@ -549,17 +631,30 @@ function AriaDock({
               </div>
               <div>
                 <div className="text-[10px] font-bold tracking-[0.25em] text-cyan-300">ARIA</div>
-                <div className="text-[10px] text-slate-400">{ar ? "كوبايلوت تنفيذي" : "Executive Copilot"}</div>
+                <div className="text-[10px] text-slate-400">
+                  {voice.listening ? (ar ? "أستمع…" : "Listening…") : voice.speaking ? (ar ? "أتحدث…" : "Speaking…") : (ar ? "كوبايلوت تنفيذي" : "Executive Copilot")}
+                </div>
               </div>
             </div>
-            <button onClick={onToggle} className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white">
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setAutoSpeak((v) => !v)}
+                className={`rounded p-1 ${autoSpeak ? "text-cyan-300" : "text-slate-500"} hover:bg-white/5`}
+                title={autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : (ar ? "الصوت مغلق" : "Voice off")}
+              >
+                {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </button>
+              <button onClick={onToggle} className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           <div ref={scrollRef} className="max-h-72 overflow-y-auto px-3 py-3 space-y-2">
             {messages.length === 0 && (
               <div className="rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-slate-200">
-                {ar ? "أنا ARIA. اسألني عن أي شيء في المؤسسة." : "I'm ARIA. Ask me anything across the enterprise."}
+                {ar
+                  ? "أنا ARIA. تكلم أو اكتب — جرّب: «افتح التوأم الرقمي» أو «ما المخاطر الحرجة؟»"
+                  : "I'm ARIA. Talk or type — try: 'Open Digital Twin' or 'What are critical risks?'"}
               </div>
             )}
             {messages.map((m) => {
@@ -581,8 +676,20 @@ function AriaDock({
                 </div>
               );
             })}
+            {voice.partial && (
+              <div className="text-end">
+                <div className="inline-block max-w-[90%] rounded-xl bg-cyan-500/30 px-3 py-2 text-xs italic text-white">
+                  {voice.partial}
+                </div>
+              </div>
+            )}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="inline-block rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200">…</div>
+            )}
+            {voice.error && (
+              <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">
+                {ar ? "خطأ صوتي: " : "Voice error: "}{voice.error}
+              </div>
             )}
           </div>
           <div className="flex flex-wrap gap-1.5 border-t border-white/10 px-3 py-2">
@@ -599,13 +706,21 @@ function AriaDock({
           </div>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
             className="flex items-center gap-2 border-t border-white/10 p-2">
-            <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-cyan-300" aria-label="mic">
-              <Mic className="h-4 w-4" />
+            <button
+              type="button"
+              onPointerDown={() => { setVoiceMode(true); voice.startListening(); }}
+              onPointerUp={() => { if (voiceMode) { voice.stopListening(); setVoiceMode(false); } }}
+              onClick={() => { if (!voiceMode) voice.toggleListening(); }}
+              className={`rounded-lg p-2 ${voice.listening ? "bg-rose-500/20 text-rose-300" : "text-slate-400 hover:bg-white/5 hover:text-cyan-300"}`}
+              aria-label="mic"
+              title={ar ? "اضغط للتحدث (ضغطة طويلة) أو اضغط لتشغيل/إيقاف" : "Hold to talk, click to toggle"}
+            >
+              {voice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={ar ? "اسأل ARIA…" : "Ask ARIA…"}
+              placeholder={ar ? "اسأل ARIA أو تكلم…" : "Ask ARIA or speak…"}
               className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
               disabled={isLoading}
             />
