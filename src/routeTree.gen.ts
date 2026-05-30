@@ -27,6 +27,7 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticated/outcomes'
 import { Route as AuthenticatedOrchestrationRouteImport } from './routes/_authenticated/orchestration'
+import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authenticated/observability'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
@@ -143,6 +144,12 @@ const AuthenticatedOrchestrationRoute =
   AuthenticatedOrchestrationRouteImport.update({
     id: '/orchestration',
     path: '/orchestration',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedObservabilityRoute =
+  AuthenticatedObservabilityRouteImport.update({
+    id: '/observability',
+    path: '/observability',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
@@ -311,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
+  '/observability': typeof AuthenticatedObservabilityRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -356,6 +364,7 @@ export interface FileRoutesByTo {
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
+  '/observability': typeof AuthenticatedObservabilityRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -403,6 +412,7 @@ export interface FileRoutesById {
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
+  '/_authenticated/observability': typeof AuthenticatedObservabilityRoute
   '/_authenticated/orchestration': typeof AuthenticatedOrchestrationRoute
   '/_authenticated/outcomes': typeof AuthenticatedOutcomesRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -450,6 +460,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/marketplace'
     | '/memory'
+    | '/observability'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -495,6 +506,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/marketplace'
     | '/memory'
+    | '/observability'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -541,6 +553,7 @@ export interface FileRouteTypes {
     | '/_authenticated/knowledge'
     | '/_authenticated/marketplace'
     | '/_authenticated/memory'
+    | '/_authenticated/observability'
     | '/_authenticated/orchestration'
     | '/_authenticated/outcomes'
     | '/_authenticated/portfolio'
@@ -695,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/orchestration'
       fullPath: '/orchestration'
       preLoaderRoute: typeof AuthenticatedOrchestrationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/observability': {
+      id: '/_authenticated/observability'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof AuthenticatedObservabilityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/memory': {
@@ -907,6 +927,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
+  AuthenticatedObservabilityRoute: typeof AuthenticatedObservabilityRoute
   AuthenticatedOrchestrationRoute: typeof AuthenticatedOrchestrationRoute
   AuthenticatedOutcomesRoute: typeof AuthenticatedOutcomesRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -948,6 +969,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
+  AuthenticatedObservabilityRoute: AuthenticatedObservabilityRoute,
   AuthenticatedOrchestrationRoute: AuthenticatedOrchestrationRoute,
   AuthenticatedOutcomesRoute: AuthenticatedOutcomesRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
@@ -979,13 +1001,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
