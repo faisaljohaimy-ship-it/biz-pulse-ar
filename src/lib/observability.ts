@@ -25,7 +25,7 @@ export async function logAudit(
       entity: opts.entity ?? null,
       entity_id: opts.entityId ?? null,
       route: opts.route ?? (typeof window !== "undefined" ? window.location.pathname : null),
-      metadata: opts.metadata ?? {},
+      metadata: (opts.metadata ?? {}) as never,
     });
   } catch {
     /* swallow — observability must never break UX */
