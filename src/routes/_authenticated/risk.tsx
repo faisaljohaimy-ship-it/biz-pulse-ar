@@ -4,6 +4,7 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
+import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/risk")({
   component: RiskPage,
