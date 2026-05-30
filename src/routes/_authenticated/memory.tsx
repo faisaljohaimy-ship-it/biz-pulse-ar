@@ -1,15 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Brain, Filter, ArrowRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { useEnterprisePulse, type MemoryEntry, type MemoryKind, type MemoryStatus } from "@/lib/enterprise-pulse";
+import { supabase } from "@/integrations/supabase/client";
+import { useFabricSnapshot } from "@/lib/use-fabric";
+import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/memory")({
   component: MemoryPage,
 });
 
-const KIND_LABELS: Record<MemoryKind, { ar: string; en: string }> = {
+type MemoryKind = "decision" | "initiative" | "commitment" | "risk" | "recommendation" | "meeting" | "dependency" | "escalation" | "board_action";
+type MemoryStatus = "open" | "in_progress" | "blocked" | "done" | "forgotten";
+
+type Row = {
+  id: string;
+  kind: MemoryKind;
+  status: MemoryStatus;
+  title: string;
+  title_en: string | null;
+  owner: string | null;
+  department: string | null;
+  due_at: string | null;
+  last_update: string;
+  progress: number;
+  impact: "low" | "medium" | "high" | "critical";
+  decision_route: string | null;
+};
+
+const KIND_LABELS: Record<string, { ar: string; en: string }> = {
   decision: { ar: "قرار", en: "Decision" },
   initiative: { ar: "مبادرة", en: "Initiative" },
   commitment: { ar: "التزام", en: "Commitment" },
@@ -18,6 +38,7 @@ const KIND_LABELS: Record<MemoryKind, { ar: string; en: string }> = {
   meeting: { ar: "اجتماع", en: "Meeting" },
   recommendation: { ar: "توصية", en: "Recommendation" },
   dependency: { ar: "تبعية", en: "Dependency" },
+  board_action: { ar: "إجراء مجلس", en: "Board action" },
 };
 
 const STATUS_TONE: Record<MemoryStatus, "emerald" | "cyan" | "amber" | "rose" | "violet"> = {
@@ -28,7 +49,8 @@ const STATUS_TONE: Record<MemoryStatus, "emerald" | "cyan" | "amber" | "rose" | 
   forgotten: "rose",
 };
 
-function fmtDue(iso: string, ar: boolean) {
+function fmtDue(iso: string | null, ar: boolean) {
+  if (!iso) return ar ? "غير محدد" : "no due";
   const d = new Date(iso);
   const diffDays = Math.round((d.getTime() - Date.now()) / 86_400_000);
   if (diffDays < 0) return ar ? `متأخر ${-diffDays} يوم` : `${-diffDays}d overdue`;
@@ -39,27 +61,40 @@ function fmtDue(iso: string, ar: boolean) {
 function MemoryPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const pulse = useEnterprisePulse();
+  const { data: fabric } = useFabricSnapshot();
+  const [rows, setRows] = useState<Row[]>([]);
   const [kindFilter, setKindFilter] = useState<MemoryKind | "all">("all");
   const [statusFilter, setStatusFilter] = useState<MemoryStatus | "all">("all");
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("intelligence_events")
+        .select("id,kind,status,title,title_en,owner,department,due_at,last_update,progress,impact,decision_route")
+        .order("last_update", { ascending: false })
+        .limit(500);
+      if (alive && data) setRows(data as Row[]);
+    })();
+    return () => { alive = false; };
+  }, []);
+
   const filtered = useMemo(
-    () =>
-      pulse.memory.filter(
-        (m) =>
-          (kindFilter === "all" || m.kind === kindFilter) &&
-          (statusFilter === "all" || m.status === statusFilter),
-      ),
-    [pulse.memory, kindFilter, statusFilter],
+    () => rows.filter(
+      (m) =>
+        (kindFilter === "all" || m.kind === kindFilter) &&
+        (statusFilter === "all" || m.status === statusFilter),
+    ),
+    [rows, kindFilter, statusFilter],
   );
 
   const counts = useMemo(() => {
-    const total = pulse.memory.length;
-    const overdue = pulse.memory.filter((m) => new Date(m.due).getTime() < Date.now() && m.status !== "done").length;
-    const forgotten = pulse.memory.filter((m) => m.status === "forgotten").length;
-    const critical = pulse.memory.filter((m) => m.impact === "critical").length;
-    return { total, overdue, forgotten, critical };
-  }, [pulse.memory]);
+    const now = Date.now();
+    const overdue = rows.filter((m) => m.due_at && new Date(m.due_at).getTime() < now && m.status !== "done").length;
+    const forgotten = rows.filter((m) => m.status === "forgotten").length;
+    const critical = rows.filter((m) => m.impact === "critical").length;
+    return { total: rows.length, overdue, forgotten, critical };
+  }, [rows]);
 
   return (
     <NexusPage
@@ -70,7 +105,7 @@ function MemoryPage() {
           ? "كل قرار والتزام وخطر وتوصية ومتابعة — لا شيء يُنسى."
           : "Every decision, commitment, risk, recommendation and follow-up — nothing forgotten."
       }
-      actions={<NexusPill tone="violet"><Brain className="h-3 w-3" /> LIVE</NexusPill>}
+      actions={<NexusPill tone="violet"><Brain className="h-3 w-3" /> LIVE · {fabric.counts.events}</NexusPill>}
       why={ar ? "الإدارات تنسى قراراتها ومتابعاتها بمرور الوقت." : "Departments forget their decisions and follow-ups over time."}
       whatNext={ar ? "راجع البنود المتأخرة والمنسية ثم أعد إسنادها." : "Triage overdue & forgotten items, then re-assign owners."}
     >
@@ -80,6 +115,8 @@ function MemoryPage() {
         <NexusStat label={ar ? "منسية" : "Forgotten"} value={String(counts.forgotten)} tone="rose" />
         <NexusStat label={ar ? "تأثير حرج" : "Critical impact"} value={String(counts.critical)} tone="violet" />
       </div>
+
+      <PredictionsPanel compact />
 
       <NexusCard>
         <div className="flex flex-wrap items-center gap-2">
@@ -118,7 +155,7 @@ function MemoryPage() {
         ))}
         {filtered.length === 0 && (
           <NexusCard>
-            <p className="text-sm text-slate-400">{ar ? "لا توجد نتائج بهذه الفلاتر." : "No entries match these filters."}</p>
+            <p className="text-sm text-slate-400">{ar ? "لا توجد نتائج." : "No entries match these filters."}</p>
           </NexusCard>
         )}
       </div>
@@ -126,32 +163,32 @@ function MemoryPage() {
   );
 }
 
-function MemoryRow({ m, ar }: { m: MemoryEntry; ar: boolean }) {
+function MemoryRow({ m, ar }: { m: Row; ar: boolean }) {
   const tone = STATUS_TONE[m.status];
-  const overdue = new Date(m.due).getTime() < Date.now() && m.status !== "done";
+  const overdue = m.due_at ? new Date(m.due_at).getTime() < Date.now() && m.status !== "done" : false;
+  const daysSilent = Math.round((Date.now() - new Date(m.last_update).getTime()) / 86_400_000);
   return (
     <NexusCard>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <NexusPill tone={tone}>{ar ? KIND_LABELS[m.kind].ar : KIND_LABELS[m.kind].en}</NexusPill>
+            <NexusPill tone={tone}>{ar ? KIND_LABELS[m.kind]?.ar : KIND_LABELS[m.kind]?.en}</NexusPill>
             {m.impact === "critical" && <NexusPill tone="rose">CRITICAL</NexusPill>}
             {overdue && <NexusPill tone="amber">{ar ? "متأخر" : "OVERDUE"}</NexusPill>}
-            {m.daysSilent >= 7 && <NexusPill tone="rose">{ar ? `صامت ${m.daysSilent}ي` : `silent ${m.daysSilent}d`}</NexusPill>}
+            {daysSilent >= 7 && <NexusPill tone="rose">{ar ? `صامت ${daysSilent}ي` : `silent ${daysSilent}d`}</NexusPill>}
           </div>
-          <h3 className="mt-2 text-sm font-semibold text-slate-100">{ar ? m.title_ar : m.title_en}</h3>
+          <h3 className="mt-2 text-sm font-semibold text-slate-100">{ar ? m.title : (m.title_en ?? m.title)}</h3>
           <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-slate-400">
-            <span>{ar ? "المالك" : "Owner"}: <span className="text-slate-200">{m.owner}</span></span>
-            <span>{ar ? "الإدارة" : "Dept"}: <span className="text-slate-200">{m.department}</span></span>
-            <span>{ar ? "الاستحقاق" : "Due"}: <span className={overdue ? "text-rose-300" : "text-slate-200"}>{fmtDue(m.due, ar)}</span></span>
-            <span>{ar ? "المصدر" : "Source"}: <span className="text-slate-200">{ar ? m.source_ar : m.source_en}</span></span>
+            {m.owner && <span>{ar ? "المالك" : "Owner"}: <span className="text-slate-200">{m.owner}</span></span>}
+            {m.department && <span>{ar ? "الإدارة" : "Dept"}: <span className="text-slate-200">{m.department}</span></span>}
+            <span>{ar ? "الاستحقاق" : "Due"}: <span className={overdue ? "text-rose-300" : "text-slate-200"}>{fmtDue(m.due_at, ar)}</span></span>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
             <div className="h-full bg-gradient-to-r from-cyan-400 to-violet-400" style={{ width: `${m.progress}%` }} />
           </div>
         </div>
-        {m.decisionRoute && (
-          <Link to={m.decisionRoute} className="inline-flex items-center gap-1 self-start rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:bg-cyan-500/20">
+        {m.decision_route && (
+          <Link to={m.decision_route} className="inline-flex items-center gap-1 self-start rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:bg-cyan-500/20">
             {ar ? "افتح" : "Open"} <ArrowRight className="h-3 w-3" />
           </Link>
         )}
