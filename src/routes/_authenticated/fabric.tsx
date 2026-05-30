@@ -2,12 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
   Ghost,
-  Layers,
   Plus,
   Sparkles,
   Database,
@@ -421,6 +419,3 @@ function NewAlertDialog({ ar }: { ar: boolean }) {
     </Dialog>
   );
 }
-
-// suppress unused
-void Activity; void Layers;
