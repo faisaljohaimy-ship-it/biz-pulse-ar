@@ -227,3 +227,90 @@ export const resolveAlert = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/**
+ * Twin signals — real per-node counts that feed the Digital Twin orbital scene.
+ * Every value is derived from Supabase tables the user owns (RLS-scoped).
+ */
+export type TwinSignals = {
+  departments: number;
+  events: number;
+  agents: number;
+  integrations: number;
+  automations: number;
+  documents: number;
+  criticalRisks: number;
+  boardActions: number;
+  intelligenceSignals: number;
+  executionVelocity: number; // 0-100
+  generatedAt: string;
+};
+
+export const getTwinSignals = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<TwinSignals> => {
+    const { supabase } = context;
+    const [events, alerts, tasks, docs] = await Promise.all([
+      supabase
+        .from("intelligence_events")
+        .select("kind,status,impact,department,source,created_at,updated_at")
+        .limit(2000),
+      supabase
+        .from("intelligence_alerts")
+        .select("severity,resolved_at,source")
+        .limit(1000),
+      supabase
+        .from("tasks")
+        .select("status,assigned_agent,updated_at,created_at")
+        .limit(2000),
+      supabase.from("knowledge_docs").select("id", { count: "exact", head: true }),
+    ]);
+
+    const ev = events.data ?? [];
+    const al = alerts.data ?? [];
+    const tk = tasks.data ?? [];
+
+    const departments = new Set(
+      ev.map((e) => e.department).filter((d): d is string => !!d),
+    ).size;
+    const agents = new Set(
+      tk.map((t) => t.assigned_agent).filter((a): a is string => !!a),
+    ).size;
+    const integrations = new Set(
+      [
+        ...ev.map((e) => e.source),
+        ...al.map((a) => a.source),
+      ].filter((s): s is string => !!s),
+    ).size;
+    const automations = tk.length;
+    const criticalRisks = ev.filter(
+      (e) => e.kind === "risk" && e.impact === "critical" && e.status !== "done",
+    ).length + al.filter((a) => a.severity === "critical" && !a.resolved_at).length;
+    const boardActions = ev.filter(
+      (e) => e.kind === "board_action" && e.status !== "done",
+    ).length;
+    const intelligenceSignals = ev.length + al.filter((a) => !a.resolved_at).length;
+
+    const day = 86_400_000;
+    const cutoff = Date.now() - 14 * day;
+    const created14 = tk.filter((t) => new Date(t.created_at).getTime() >= cutoff).length;
+    const done14 = tk.filter(
+      (t) => t.status === "done" && new Date(t.updated_at).getTime() >= cutoff,
+    ).length;
+    const executionVelocity =
+      created14 === 0 ? (done14 > 0 ? 100 : 70) : Math.min(100, Math.round((done14 / created14) * 100));
+
+    return {
+      departments,
+      events: ev.length,
+      agents,
+      integrations,
+      automations,
+      documents: docs.count ?? 0,
+      criticalRisks,
+      boardActions,
+      intelligenceSignals,
+      executionVelocity,
+      generatedAt: new Date().toISOString(),
+    };
+  });
