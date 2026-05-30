@@ -147,6 +147,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/assistant", icon: Sparkles, label: t("nav.assistant") },
         { to: "/agents", icon: Bot, label: t("nav.agents") },
         { to: "/voice", icon: Mic, label: t("nav.voice") },
+        { to: "/tts", icon: Volume2, label: t("nav.tts") },
         { to: "/workflows", icon: Workflow, label: t("nav.workflows") },
         { to: "/prompts", icon: BookMarked, label: t("nav.prompts") },
         { to: "/marketplace", icon: Store, label: t("nav.marketplace") },
