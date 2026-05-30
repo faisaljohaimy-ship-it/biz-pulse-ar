@@ -252,6 +252,8 @@ function FabricPage() {
           </ul>
         )}
       </NexusCard>
+
+      <PredictionsPanel />
     </NexusPage>
   );
 }
