@@ -5,6 +5,7 @@ import { Part3Video, PART3_DURATION } from "./Part3Video";
 import { Part4Video, PART4_DURATION } from "./Part4Video";
 import { Part5Video, PART5_DURATION } from "./Part5Video";
 import { Part6VideoAR, PART6_DURATION } from "./Part6VideoAR";
+import { DocumentaryAR, DOC_DURATION, DOC_FPS } from "./DocumentaryAR";
 
 export const RemotionRoot = () => (
   <>
@@ -14,5 +15,6 @@ export const RemotionRoot = () => (
     <Composition id="part4" component={Part4Video} durationInFrames={PART4_DURATION} fps={FPS} width={1920} height={1080} />
     <Composition id="part5" component={Part5Video} durationInFrames={PART5_DURATION} fps={FPS} width={1920} height={1080} />
     <Composition id="part6ar" component={Part6VideoAR} durationInFrames={PART6_DURATION} fps={FPS} width={1920} height={1080} />
+    <Composition id="docar" component={DocumentaryAR} durationInFrames={DOC_DURATION} fps={DOC_FPS} width={1920} height={1080} />
   </>
 );
