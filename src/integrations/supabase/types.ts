@@ -14,6 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
+      intelligence_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          business_impact_score: number
+          created_at: string
+          detail: string | null
+          id: string
+          metadata: Json
+          owner: string | null
+          related_event: string | null
+          resolved_at: string | null
+          route: string | null
+          severity: Database["public"]["Enums"]["intel_alert_severity"]
+          source: string | null
+          title: string
+          title_en: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          business_impact_score?: number
+          created_at?: string
+          detail?: string | null
+          id?: string
+          metadata?: Json
+          owner?: string | null
+          related_event?: string | null
+          resolved_at?: string | null
+          route?: string | null
+          severity?: Database["public"]["Enums"]["intel_alert_severity"]
+          source?: string | null
+          title: string
+          title_en?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          business_impact_score?: number
+          created_at?: string
+          detail?: string | null
+          id?: string
+          metadata?: Json
+          owner?: string | null
+          related_event?: string | null
+          resolved_at?: string | null
+          route?: string | null
+          severity?: Database["public"]["Enums"]["intel_alert_severity"]
+          source?: string | null
+          title?: string
+          title_en?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intelligence_alerts_related_event_fkey"
+            columns: ["related_event"]
+            isOneToOne: false
+            referencedRelation: "intelligence_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intelligence_events: {
+        Row: {
+          created_at: string
+          decision_route: string | null
+          department: string | null
+          depends_on: string[]
+          due_at: string | null
+          external_ref: string | null
+          id: string
+          impact: Database["public"]["Enums"]["intel_impact"]
+          kind: Database["public"]["Enums"]["intel_event_kind"]
+          last_update: string
+          metadata: Json
+          owner: string | null
+          progress: number
+          source: string | null
+          status: Database["public"]["Enums"]["intel_event_status"]
+          title: string
+          title_en: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          decision_route?: string | null
+          department?: string | null
+          depends_on?: string[]
+          due_at?: string | null
+          external_ref?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["intel_impact"]
+          kind: Database["public"]["Enums"]["intel_event_kind"]
+          last_update?: string
+          metadata?: Json
+          owner?: string | null
+          progress?: number
+          source?: string | null
+          status?: Database["public"]["Enums"]["intel_event_status"]
+          title: string
+          title_en?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          decision_route?: string | null
+          department?: string | null
+          depends_on?: string[]
+          due_at?: string | null
+          external_ref?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["intel_impact"]
+          kind?: Database["public"]["Enums"]["intel_event_kind"]
+          last_update?: string
+          metadata?: Json
+          owner?: string | null
+          progress?: number
+          source?: string | null
+          status?: Database["public"]["Enums"]["intel_event_status"]
+          title?: string
+          title_en?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       knowledge_docs: {
         Row: {
           content: string
@@ -244,6 +375,24 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "member"
+      intel_alert_severity: "low" | "medium" | "high" | "critical"
+      intel_event_kind:
+        | "decision"
+        | "initiative"
+        | "commitment"
+        | "risk"
+        | "recommendation"
+        | "meeting"
+        | "dependency"
+        | "escalation"
+        | "board_action"
+      intel_event_status:
+        | "open"
+        | "in_progress"
+        | "blocked"
+        | "done"
+        | "forgotten"
+      intel_impact: "low" | "medium" | "high" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -372,6 +521,26 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "member"],
+      intel_alert_severity: ["low", "medium", "high", "critical"],
+      intel_event_kind: [
+        "decision",
+        "initiative",
+        "commitment",
+        "risk",
+        "recommendation",
+        "meeting",
+        "dependency",
+        "escalation",
+        "board_action",
+      ],
+      intel_event_status: [
+        "open",
+        "in_progress",
+        "blocked",
+        "done",
+        "forgotten",
+      ],
+      intel_impact: ["low", "medium", "high", "critical"],
     },
   },
 } as const
