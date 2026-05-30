@@ -37,6 +37,7 @@ import {
   Zap,
   GitBranch,
   Volume2,
+  Layers,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -114,6 +115,7 @@ function useNavGroups(): NavGroup[] {
     {
       label: t("nav.group.executive"),
       items: [
+        { to: "/fabric", icon: Layers, label: ar(locale, "النسيج الذكي", "Intelligence Fabric") },
         { to: "/briefing", icon: FileText, label: t("nav.briefing") },
         { to: "/chief-of-staff", icon: Crown, label: t("nav.chief") },
         { to: "/intelligence", icon: Brain, label: t("nav.intelligence") },

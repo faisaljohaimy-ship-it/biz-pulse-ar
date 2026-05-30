@@ -35,6 +35,7 @@ import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedFabricRouteImport } from './routes/_authenticated/fabric'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
@@ -187,6 +188,11 @@ const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   path: '/files',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFabricRoute = AuthenticatedFabricRouteImport.update({
+  id: '/fabric',
+  path: '/fabric',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
   id: '/execution',
   path: '/execution',
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/execution': typeof AuthenticatedExecutionRoute
+  '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/execution': typeof AuthenticatedExecutionRoute
+  '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
@@ -386,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
+  '/_authenticated/fabric': typeof AuthenticatedFabricRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
@@ -432,6 +441,7 @@ export interface FileRouteTypes {
     | '/departments'
     | '/digital-twin'
     | '/execution'
+    | '/fabric'
     | '/files'
     | '/forgotten'
     | '/governance'
@@ -476,6 +486,7 @@ export interface FileRouteTypes {
     | '/departments'
     | '/digital-twin'
     | '/execution'
+    | '/fabric'
     | '/files'
     | '/forgotten'
     | '/governance'
@@ -521,6 +532,7 @@ export interface FileRouteTypes {
     | '/_authenticated/departments'
     | '/_authenticated/digital-twin'
     | '/_authenticated/execution'
+    | '/_authenticated/fabric'
     | '/_authenticated/files'
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
@@ -741,6 +753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/fabric': {
+      id: '/_authenticated/fabric'
+      path: '/fabric'
+      fullPath: '/fabric'
+      preLoaderRoute: typeof AuthenticatedFabricRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/execution': {
       id: '/_authenticated/execution'
       path: '/execution'
@@ -879,6 +898,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
+  AuthenticatedFabricRoute: typeof AuthenticatedFabricRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
@@ -919,6 +939,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
+  AuthenticatedFabricRoute: AuthenticatedFabricRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
