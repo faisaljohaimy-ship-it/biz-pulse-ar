@@ -143,13 +143,14 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
   ascending = false,
 ) {
   const key = [table];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tbl = () => supabase.from(table) as any;
 
   function useList() {
     return useQuery<T[]>({
       queryKey: key,
       queryFn: async () => {
-        const { data, error } = await supabase
-          .from(table)
+        const { data, error } = await tbl()
           .select("*")
           .order(orderCol, { ascending });
         if (error) throw error;
@@ -167,8 +168,7 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth.user?.id;
         if (!uid) throw new Error("Not authenticated");
-        const { data, error } = await supabase
-          .from(table)
+        const { data, error } = await tbl()
           .insert({ ...payload, user_id: uid })
           .select()
           .single();
@@ -183,8 +183,7 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     const qc = useQueryClient();
     return useMutation({
       mutationFn: async ({ id, patch }: { id: string; patch: Partial<Insert> }) => {
-        const { data, error } = await supabase
-          .from(table)
+        const { data, error } = await tbl()
           .update(patch)
           .eq("id", id)
           .select()
@@ -200,7 +199,7 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     const qc = useQueryClient();
     return useMutation({
       mutationFn: async (id: string) => {
-        const { error } = await supabase.from(table).delete().eq("id", id);
+        const { error } = await tbl().delete().eq("id", id);
         if (error) throw error;
         return id;
       },
