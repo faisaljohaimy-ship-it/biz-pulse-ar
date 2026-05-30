@@ -63,6 +63,29 @@ function DigitalTwinPage() {
   const ar = locale === "ar";
   const navigate = useNavigate();
   const pulse = useEnterprisePulse();
+  const signalsQuery = useQuery({
+    queryKey: ["twin-signals"],
+    queryFn: () => getTwinSignals(),
+    refetchInterval: 30_000,
+  });
+  const signals: TwinSignals | undefined = signalsQuery.data;
+
+  const liveNodes = useMemo(() => {
+    if (!signals) return NODES;
+    const map: Record<string, string> = {
+      depts: String(signals.departments || NODES.find((n) => n.id === "depts")!.value),
+      data: String(signals.events),
+      agents: String(signals.agents || NODES.find((n) => n.id === "agents")!.value),
+      integ: String(signals.integrations || NODES.find((n) => n.id === "integ")!.value),
+      flows: String(signals.automations),
+      know: String(signals.documents),
+      risk: String(signals.criticalRisks),
+      board: String(signals.boardActions),
+      intel: String(signals.intelligenceSignals),
+      exec: `${signals.executionVelocity}%`,
+    };
+    return NODES.map((n) => ({ ...n, value: map[n.id] ?? n.value }));
+  }, [signals]);
 
   const [t, setT] = useState(0);             // animation clock (frames)
   const [active, setActive] = useState<string | null>("data");
