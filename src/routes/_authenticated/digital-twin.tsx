@@ -6,11 +6,13 @@ import { DefaultChatTransport } from "ai";
 import { useI18n } from "@/lib/i18n";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
+import { useAriaVoice } from "@/lib/aria-voice";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Boxes, Building2, Database, Bot, Plug, Workflow, BookOpen,
   ShieldAlert, Crown, Sparkles, Activity, Gauge, Brain, Zap,
-  TrendingUp, Mic, Send, ArrowRight, X,
+  TrendingUp, Mic, MicOff, Send, ArrowRight, X, Maximize2, Minimize2,
+  Volume2, VolumeX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
