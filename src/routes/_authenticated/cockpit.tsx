@@ -22,8 +22,12 @@ function CockpitPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const pulse = useEnterprisePulse();
+  const { data: fabric } = useFabricSnapshot();
   const navigate = useNavigate();
-  const criticalAlert = pulse.alerts.find((a) => a.severity === "critical");
+  const health = metric(fabric, "enterpriseHealth");
+  const criticalAlerts = fabric.topAlerts.filter((a) => a.severity === "critical");
+  const criticalAlert = criticalAlerts[0];
+
 
   return (
     <NexusPage
