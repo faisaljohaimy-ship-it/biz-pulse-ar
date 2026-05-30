@@ -359,7 +359,7 @@ function DigitalTwinPage() {
       )}
 
       {/* ARIA dock */}
-      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} />
+      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} />
 
       {/* Keyframes */}
       <style>{`
