@@ -17,6 +17,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
 import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/voice'
+import { Route as AuthenticatedTtsRouteImport } from './routes/_authenticated/tts'
 import { Route as AuthenticatedTransformationRouteImport } from './routes/_authenticated/transformation'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
@@ -89,6 +90,11 @@ const AuthenticatedWorkflowsRoute = AuthenticatedWorkflowsRouteImport.update({
 const AuthenticatedVoiceRoute = AuthenticatedVoiceRouteImport.update({
   id: '/voice',
   path: '/voice',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTtsRoute = AuthenticatedTtsRouteImport.update({
+  id: '/tts',
+  path: '/tts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTransformationRoute =
@@ -307,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/transformation': typeof AuthenticatedTransformationRoute
+  '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
@@ -350,6 +357,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/transformation': typeof AuthenticatedTransformationRoute
+  '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
@@ -395,6 +403,7 @@ export interface FileRoutesById {
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
+  '/_authenticated/tts': typeof AuthenticatedTtsRoute
   '/_authenticated/voice': typeof AuthenticatedVoiceRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
@@ -440,6 +449,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/transformation'
+    | '/tts'
     | '/voice'
     | '/workflows'
     | '/api/chat'
@@ -483,6 +493,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/transformation'
+    | '/tts'
     | '/voice'
     | '/workflows'
     | '/api/chat'
@@ -527,6 +538,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks'
     | '/_authenticated/team'
     | '/_authenticated/transformation'
+    | '/_authenticated/tts'
     | '/_authenticated/voice'
     | '/_authenticated/workflows'
     | '/api/chat'
@@ -601,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/voice'
       fullPath: '/voice'
       preLoaderRoute: typeof AuthenticatedVoiceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tts': {
+      id: '/_authenticated/tts'
+      path: '/tts'
+      fullPath: '/tts'
+      preLoaderRoute: typeof AuthenticatedTtsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/transformation': {
@@ -877,6 +896,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
+  AuthenticatedTtsRoute: typeof AuthenticatedTtsRoute
   AuthenticatedVoiceRoute: typeof AuthenticatedVoiceRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
   AuthenticatedAssistantThreadIdRoute: typeof AuthenticatedAssistantThreadIdRoute
@@ -916,6 +936,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,
+  AuthenticatedTtsRoute: AuthenticatedTtsRoute,
   AuthenticatedVoiceRoute: AuthenticatedVoiceRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
   AuthenticatedAssistantThreadIdRoute: AuthenticatedAssistantThreadIdRoute,
