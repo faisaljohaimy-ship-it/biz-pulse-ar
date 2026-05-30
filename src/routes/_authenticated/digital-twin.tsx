@@ -133,7 +133,7 @@ function DigitalTwinPage() {
   }, [t]);
 
   const posOf = (id: string) => positions.find((p) => p.id === id)!;
-  const activeNode = active ? NODES.find((n) => n.id === active) : null;
+  const activeNode = active ? liveNodes.find((n) => n.id === active) : null;
   const activeEdges = active ? EDGES.filter(([a, b]) => a === active || b === active).map(([a, b]) => (a === active ? b : a)) : [];
 
   /* Executive status indicators */
