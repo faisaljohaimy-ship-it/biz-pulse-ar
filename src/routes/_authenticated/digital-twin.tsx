@@ -1,7 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { useI18n } from "@/lib/i18n";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Boxes, Building2, Database, Bot, Plug, Workflow, BookOpen,
   ShieldAlert, Crown, Sparkles, Activity, Gauge, Brain, Zap,
