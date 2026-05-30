@@ -1,7 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { useI18n } from "@/lib/i18n";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Boxes, Building2, Database, Bot, Plug, Workflow, BookOpen,
   ShieldAlert, Crown, Sparkles, Activity, Gauge, Brain, Zap,
@@ -58,6 +63,29 @@ function DigitalTwinPage() {
   const ar = locale === "ar";
   const navigate = useNavigate();
   const pulse = useEnterprisePulse();
+  const signalsQuery = useQuery({
+    queryKey: ["twin-signals"],
+    queryFn: () => getTwinSignals(),
+    refetchInterval: 30_000,
+  });
+  const signals: TwinSignals | undefined = signalsQuery.data;
+
+  const liveNodes = useMemo(() => {
+    if (!signals) return NODES;
+    const map: Record<string, string> = {
+      depts: String(signals.departments || NODES.find((n) => n.id === "depts")!.value),
+      data: String(signals.events),
+      agents: String(signals.agents || NODES.find((n) => n.id === "agents")!.value),
+      integ: String(signals.integrations || NODES.find((n) => n.id === "integ")!.value),
+      flows: String(signals.automations),
+      know: String(signals.documents),
+      risk: String(signals.criticalRisks),
+      board: String(signals.boardActions),
+      intel: String(signals.intelligenceSignals),
+      exec: `${signals.executionVelocity}%`,
+    };
+    return NODES.map((n) => ({ ...n, value: map[n.id] ?? n.value }));
+  }, [signals]);
 
   const [t, setT] = useState(0);             // animation clock (frames)
   const [active, setActive] = useState<string | null>("data");
@@ -105,7 +133,7 @@ function DigitalTwinPage() {
   }, [t]);
 
   const posOf = (id: string) => positions.find((p) => p.id === id)!;
-  const activeNode = active ? NODES.find((n) => n.id === active) : null;
+  const activeNode = active ? liveNodes.find((n) => n.id === active) : null;
   const activeEdges = active ? EDGES.filter(([a, b]) => a === active || b === active).map(([a, b]) => (a === active ? b : a)) : [];
 
   /* Executive status indicators */
@@ -113,9 +141,9 @@ function DigitalTwinPage() {
     { label_ar: "صحة المؤسسة",      label_en: "Enterprise Health",  value: `${pulse.health}%`,   tone: "#22d3ee", icon: Gauge },
     { label_ar: "المخاطر التشغيلية", label_en: "Operational Risk",   value: pulse.status === "critical" ? "HIGH" : pulse.status === "warning" ? "MED" : "LOW", tone: "#f43f5e", icon: ShieldAlert },
     { label_ar: "نشاط الذكاء",       label_en: "AI Activity",         value: `${pulse.counts.conversations}`, tone: "#a78bfa", icon: Brain },
-    { label_ar: "إنتاجية الأتمتة",   label_en: "Automation Throughput",value: "9.2k/d", tone: "#f59e0b", icon: Zap },
-    { label_ar: "سرعة القرار",       label_en: "Decision Velocity",   value: "2.4h",   tone: "#34d399", icon: TrendingUp },
-    { label_ar: "حداثة البيانات",    label_en: "Data Freshness",      value: "12s",    tone: "#67e8f9", icon: Activity },
+    { label_ar: "إنتاجية الأتمتة",   label_en: "Automation Throughput",value: signals ? `${signals.automations}/wk` : "—", tone: "#f59e0b", icon: Zap },
+    { label_ar: "سرعة التنفيذ",       label_en: "Execution Velocity",  value: signals ? `${signals.executionVelocity}%` : "—",   tone: "#34d399", icon: TrendingUp },
+    { label_ar: "إشارات حية",         label_en: "Live Signals",        value: signals ? String(signals.intelligenceSignals) : "—",    tone: "#67e8f9", icon: Activity },
   ];
 
   return (
@@ -230,7 +258,7 @@ function DigitalTwinPage() {
         <HolographicCore t={t} />
 
         {/* Nodes */}
-        {NODES.map((n) => {
+        {liveNodes.map((n) => {
           const p = posOf(n.id);
           const Icon = n.icon;
           const isActive = active === n.id;
@@ -331,7 +359,7 @@ function DigitalTwinPage() {
       )}
 
       {/* ARIA dock */}
-      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} />
+      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} />
 
       {/* Keyframes */}
       <style>{`
@@ -458,30 +486,61 @@ function Starfield() {
 
 /* ────────── ARIA Copilot Dock ────────── */
 
-function AriaDock({ open, onToggle, ar }: { open: boolean; onToggle: () => void; ar: boolean }) {
+function AriaDock({
+  open,
+  onToggle,
+  ar,
+  signals,
+  pulseHealth,
+  pulseStatus,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  ar: boolean;
+  signals: TwinSignals | undefined;
+  pulseHealth: number;
+  pulseStatus: string;
+}) {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: "user" | "aria"; text: string }>>([
-    { role: "aria", text: ar ? "أنا ARIA. اسألني عن أي شيء في المؤسسة." : "I'm ARIA. Ask me anything across the enterprise." },
-  ]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const [transport] = useState(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        fetch: async (url, init) => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          const headers = new Headers(init?.headers);
+          if (token) headers.set("Authorization", `Bearer ${token}`);
+          return fetch(url, { ...init, headers });
+        },
+      }),
+  );
+  const { messages, sendMessage, status } = useChat({ id: "aria-digital-twin", transport });
+  const isLoading = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, isLoading]);
+
   const suggestions = ar
-    ? ["أظهر المخاطر الحرجة", "افتح التكاملات", "أنشئ ملخص لقاعة الإدارة"]
-    : ["Show critical risks", "Open integrations", "Create board briefing"];
+    ? ["لخص حالة المؤسسة الآن", "ما أكبر المخاطر الحرجة؟", "ما البنود المنسية الحرجة؟", "جهز ملخص قاعة الإدارة"]
+    : ["Summarize enterprise state now", "Top critical risks?", "Most urgent forgotten items?", "Prep board briefing"];
 
   const send = (text: string) => {
-    if (!text.trim()) return;
-    setMessages((m) => [...m, { role: "user", text }, {
-      role: "aria",
-      text: ar
-        ? "تم تجهيز بطاقة استخبارات تنفيذية. سأعرض النتائج بعد قليل."
-        : "Generating an executive intelligence card with the latest signals…",
-    }]);
+    if (!text.trim() || isLoading) return;
+    const ctx = ar
+      ? `سياق Nexus Digital Twin (مباشر): الصحة ${pulseHealth}%، الحالة ${pulseStatus}، الإدارات ${signals?.departments ?? "?"}، أحداث الذكاء ${signals?.events ?? "?"}، الوكلاء النشطون ${signals?.agents ?? "?"}، التكاملات ${signals?.integrations ?? "?"}، المهام ${signals?.automations ?? "?"}، الوثائق ${signals?.documents ?? "?"}، مخاطر حرجة ${signals?.criticalRisks ?? "?"}، قرارات مجلس معلَّقة ${signals?.boardActions ?? "?"}، إشارات مفتوحة ${signals?.intelligenceSignals ?? "?"}، سرعة التنفيذ ${signals?.executionVelocity ?? "?"}%.`
+      : `Nexus Digital Twin context (live): health ${pulseHealth}%, status ${pulseStatus}, departments ${signals?.departments ?? "?"}, intelligence events ${signals?.events ?? "?"}, active agents ${signals?.agents ?? "?"}, integrations ${signals?.integrations ?? "?"}, tasks ${signals?.automations ?? "?"}, documents ${signals?.documents ?? "?"}, critical risks ${signals?.criticalRisks ?? "?"}, pending board actions ${signals?.boardActions ?? "?"}, open signals ${signals?.intelligenceSignals ?? "?"}, execution velocity ${signals?.executionVelocity ?? "?"}%.`;
+    sendMessage({ text: `${ctx}\n\n${text}` });
     setInput("");
   };
 
   return (
     <div className="absolute bottom-4 end-4 z-40">
       {open && (
-        <div className="mb-3 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl"
+        <div className="mb-3 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl"
           style={{ boxShadow: "0 24px 64px -16px rgba(34,211,238,0.4)" }}>
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
             <div className="flex items-center gap-2">
@@ -497,25 +556,42 @@ function AriaDock({ open, onToggle, ar }: { open: boolean; onToggle: () => void;
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="max-h-64 overflow-y-auto px-3 py-3 space-y-2">
-            {messages.map((m, i) => (
-              <div key={i} className={m.role === "aria" ? "" : "text-end"}>
-                <div className={`inline-block max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
-                  m.role === "aria"
-                    ? "border border-cyan-300/20 bg-cyan-400/5 text-slate-100"
-                    : "bg-gradient-to-br from-cyan-500 to-violet-500 text-white"
-                }`}>
-                  {m.text}
-                </div>
+          <div ref={scrollRef} className="max-h-72 overflow-y-auto px-3 py-3 space-y-2">
+            {messages.length === 0 && (
+              <div className="rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-slate-200">
+                {ar ? "أنا ARIA. اسألني عن أي شيء في المؤسسة." : "I'm ARIA. Ask me anything across the enterprise."}
               </div>
-            ))}
+            )}
+            {messages.map((m) => {
+              const text = m.parts
+                .filter((p) => p.type === "text")
+                .map((p) => (p as { text: string }).text)
+                .join("");
+              const isUser = m.role === "user";
+              const display = isUser ? text.split("\n\n").slice(-1)[0] : text;
+              return (
+                <div key={m.id} className={isUser ? "text-end" : ""}>
+                  <div className={`inline-block max-w-[90%] whitespace-pre-wrap rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                    isUser
+                      ? "bg-gradient-to-br from-cyan-500 to-violet-500 text-white"
+                      : "border border-cyan-300/20 bg-cyan-400/5 text-slate-100"
+                  }`}>
+                    {display || (isLoading ? "…" : "")}
+                  </div>
+                </div>
+              );
+            })}
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
+              <div className="inline-block rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200">…</div>
+            )}
           </div>
           <div className="flex flex-wrap gap-1.5 border-t border-white/10 px-3 py-2">
             {suggestions.map((s) => (
               <button
                 key={s}
                 onClick={() => send(s)}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] text-slate-300 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-cyan-200"
+                disabled={isLoading}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] text-slate-300 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-cyan-200 disabled:opacity-40"
               >
                 {s}
               </button>
@@ -523,7 +599,7 @@ function AriaDock({ open, onToggle, ar }: { open: boolean; onToggle: () => void;
           </div>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
             className="flex items-center gap-2 border-t border-white/10 p-2">
-            <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-cyan-300">
+            <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-cyan-300" aria-label="mic">
               <Mic className="h-4 w-4" />
             </button>
             <input
@@ -531,8 +607,9 @@ function AriaDock({ open, onToggle, ar }: { open: boolean; onToggle: () => void;
               onChange={(e) => setInput(e.target.value)}
               placeholder={ar ? "اسأل ARIA…" : "Ask ARIA…"}
               className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
+              disabled={isLoading}
             />
-            <button type="submit" className="rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 p-2 text-white">
+            <button type="submit" disabled={isLoading || !input.trim()} className="rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 p-2 text-white disabled:opacity-40">
               <Send className="h-3.5 w-3.5" />
             </button>
           </form>
