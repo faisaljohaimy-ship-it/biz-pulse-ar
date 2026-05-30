@@ -2,11 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { useFabricSnapshot, metric } from "@/lib/use-fabric";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { Brain, TrendingUp, ShieldAlert, Lightbulb, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
 });
+
 
 function IntelligencePage() {
   const { locale } = useI18n();
