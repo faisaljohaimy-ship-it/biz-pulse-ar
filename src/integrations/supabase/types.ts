@@ -587,6 +587,249 @@ export type Database = {
         }
         Relationships: []
       }
+      pulse_crises: {
+        Row: {
+          action: string
+          action_en: string
+          category: string
+          created_at: string
+          id: string
+          impact: string
+          impact_en: string
+          key: string
+          linked_memory_key: string | null
+          owner: string
+          probability: number
+          risk_score: number
+          route: string
+          sort_order: number
+          title: string
+          title_en: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          action_en?: string
+          category: string
+          created_at?: string
+          id?: string
+          impact?: string
+          impact_en?: string
+          key: string
+          linked_memory_key?: string | null
+          owner?: string
+          probability?: number
+          risk_score?: number
+          route?: string
+          sort_order?: number
+          title: string
+          title_en: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          action_en?: string
+          category?: string
+          created_at?: string
+          id?: string
+          impact?: string
+          impact_en?: string
+          key?: string
+          linked_memory_key?: string | null
+          owner?: string
+          probability?: number
+          risk_score?: number
+          route?: string
+          sort_order?: number
+          title?: string
+          title_en?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pulse_execution: {
+        Row: {
+          action: string
+          action_en: string
+          completion: number
+          created_at: string
+          decision: string
+          decision_en: string
+          department: string
+          dependency: string
+          dependency_en: string
+          id: string
+          key: string
+          owner: string
+          risk: string
+          sort_order: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          action_en?: string
+          completion?: number
+          created_at?: string
+          decision: string
+          decision_en: string
+          department?: string
+          dependency?: string
+          dependency_en?: string
+          id?: string
+          key: string
+          owner?: string
+          risk?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          action_en?: string
+          completion?: number
+          created_at?: string
+          decision?: string
+          decision_en?: string
+          department?: string
+          dependency?: string
+          dependency_en?: string
+          id?: string
+          key?: string
+          owner?: string
+          risk?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pulse_kpis: {
+        Row: {
+          created_at: string
+          delta: string
+          id: string
+          key: string
+          label: string
+          label_en: string
+          sort_order: number
+          tone: string
+          trend: string
+          updated_at: string
+          user_id: string
+          value: string
+          why: string
+          why_en: string
+        }
+        Insert: {
+          created_at?: string
+          delta?: string
+          id?: string
+          key: string
+          label: string
+          label_en: string
+          sort_order?: number
+          tone?: string
+          trend?: string
+          updated_at?: string
+          user_id: string
+          value: string
+          why?: string
+          why_en?: string
+        }
+        Update: {
+          created_at?: string
+          delta?: string
+          id?: string
+          key?: string
+          label?: string
+          label_en?: string
+          sort_order?: number
+          tone?: string
+          trend?: string
+          updated_at?: string
+          user_id?: string
+          value?: string
+          why?: string
+          why_en?: string
+        }
+        Relationships: []
+      }
+      pulse_memory: {
+        Row: {
+          created_at: string
+          days_silent: number
+          decision_route: string | null
+          department: string
+          depends_on: string[]
+          due_at: string | null
+          id: string
+          impact: string
+          key: string
+          kind: string
+          owner: string
+          progress: number
+          sort_order: number
+          source: string
+          source_en: string
+          status: string
+          title: string
+          title_en: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_silent?: number
+          decision_route?: string | null
+          department?: string
+          depends_on?: string[]
+          due_at?: string | null
+          id?: string
+          impact?: string
+          key: string
+          kind: string
+          owner?: string
+          progress?: number
+          sort_order?: number
+          source?: string
+          source_en?: string
+          status?: string
+          title: string
+          title_en: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_silent?: number
+          decision_route?: string | null
+          department?: string
+          depends_on?: string[]
+          due_at?: string | null
+          id?: string
+          impact?: string
+          key?: string
+          kind?: string
+          owner?: string
+          progress?: number
+          sort_order?: number
+          source?: string
+          source_en?: string
+          status?: string
+          title?: string
+          title_en?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           assigned_agent: string | null
