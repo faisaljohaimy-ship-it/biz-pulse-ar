@@ -31,7 +31,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    commitStrategy: "vad",
+    commitStrategy: CommitStrategy.VAD,
     onPartialTranscript: (d: { text: string }) => {
       setPartial(d.text);
       onPartial?.(d.text);
