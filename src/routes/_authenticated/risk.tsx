@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/risk")({
