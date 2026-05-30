@@ -391,8 +391,17 @@ function DigitalTwinPage() {
         </div>
       )}
 
+      {/* Predictions overlay */}
+      {showPredictions && (
+        <div className="pointer-events-auto absolute inset-x-3 bottom-20 z-30 mx-auto max-w-3xl">
+          <div className="rounded-2xl border border-violet-400/20 bg-[#02030a]/85 backdrop-blur-xl">
+            <PredictionsPanel compact />
+          </div>
+        </div>
+      )}
+
       {/* ARIA dock */}
-      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} />
+      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} onTogglePredictions={() => setShowPredictions((v) => !v)} predictionsOpen={showPredictions} />
 
       {/* Keyframes */}
       <style>{`
