@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Gavel, CheckCircle2, Clock, AlertOctagon } from "lucide-react";
+import { useFabricSnapshot, metric } from "@/lib/use-fabric";
+import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/decisions")({
   component: DecisionsPage,
 });
+
 
 const DECISIONS = [
   { id: "D-2401", t_ar: "إقرار التحوط على العملة لمدة 6 أشهر", t_en: "Approve 6-month FX hedge", status: "executed", impact_ar: "حماية SAR 1.8M", impact_en: "Protects SAR 1.8M", owner: "CFO", date: "2026-04-12", outcome_ar: "تم تجنب خسارة 1.6M", outcome_en: "Avoided 1.6M loss" },
