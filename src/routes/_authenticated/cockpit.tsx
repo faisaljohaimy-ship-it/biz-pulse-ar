@@ -2,11 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { useFabricSnapshot, metric } from "@/lib/use-fabric";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { Crown, TrendingUp, TrendingDown, AlertTriangle, Sparkles, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cockpit")({
   component: CockpitPage,
 });
+
 
 const PERSONAS = [
   { key: "ceo", name_ar: "الرئيس التنفيذي", name_en: "CEO", focus: ["revenue", "margin", "adoption"] },
