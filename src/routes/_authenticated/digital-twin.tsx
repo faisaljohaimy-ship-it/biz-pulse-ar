@@ -258,7 +258,7 @@ function DigitalTwinPage() {
         <HolographicCore t={t} />
 
         {/* Nodes */}
-        {NODES.map((n) => {
+        {liveNodes.map((n) => {
           const p = posOf(n.id);
           const Icon = n.icon;
           const isActive = active === n.id;
