@@ -69,6 +69,10 @@ function CockpitPage() {
         <NexusStat label={ar ? "محادثات ARIA" : "ARIA conversations"} value={String(pulse.counts.conversations)} tone="violet" />
       </div>
 
+      <PredictionsPanel />
+
+
+
       <div className="grid gap-4 lg:grid-cols-2">
         {PERSONAS.map((p) => {
           const personaKpis = pulse.kpis.filter((k) => p.focus.includes(k.id));
