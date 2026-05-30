@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useI18n } from "@/lib/i18n";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
 import { useAriaVoice } from "@/lib/aria-voice";
 import { supabase } from "@/integrations/supabase/client";
@@ -393,15 +394,25 @@ function DigitalTwinPage() {
 
       {/* Predictions overlay */}
       {showPredictions && (
-        <div className="pointer-events-auto absolute inset-x-3 bottom-20 z-30 mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-violet-400/20 bg-[#02030a]/85 backdrop-blur-xl">
+        <div className="pointer-events-auto absolute inset-x-3 bottom-24 z-30 mx-auto max-w-3xl">
+          <div className="rounded-2xl border border-violet-400/20 bg-[#02030a]/90 backdrop-blur-xl">
             <PredictionsPanel compact />
           </div>
         </div>
       )}
 
+      {/* Predictions toggle */}
+      <button
+        onClick={() => setShowPredictions((v) => !v)}
+        className="absolute bottom-4 start-4 z-30 flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[11px] font-semibold text-violet-200 backdrop-blur-xl hover:bg-violet-500/25"
+        aria-label="Toggle predictions"
+      >
+        <Sparkles className="h-3.5 w-3.5" />
+        {ar ? (showPredictions ? "إخفاء التنبؤات" : "التنبؤات") : (showPredictions ? "Hide predictions" : "Predictions")}
+      </button>
+
       {/* ARIA dock */}
-      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} onTogglePredictions={() => setShowPredictions((v) => !v)} predictionsOpen={showPredictions} />
+      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} />
 
       {/* Keyframes */}
       <style>{`
