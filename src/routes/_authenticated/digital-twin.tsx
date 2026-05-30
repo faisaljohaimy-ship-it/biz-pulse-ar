@@ -94,6 +94,7 @@ function DigitalTwinPage() {
   const [active, setActive] = useState<string | null>("data");
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [ariaOpen, setAriaOpen] = useState(false);
+  const [showPredictions, setShowPredictions] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const sceneRef = useRef<HTMLDivElement>(null);
 
