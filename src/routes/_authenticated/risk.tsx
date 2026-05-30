@@ -4,6 +4,7 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
+import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/risk")({
   component: RiskPage,
@@ -43,13 +44,18 @@ function RiskPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const pulse = useEnterprisePulse();
+  const { data: fabric } = useFabricSnapshot();
   const navigate = useNavigate();
+  const riskExposure = metric(fabric, "riskExposure");
+  const openAlerts = fabric.counts.openAlerts;
+  const overdue = fabric.counts.overdue;
+  const health = metric(fabric, "enterpriseHealth");
   return (
     <NexusPage
       eyebrow="ENTERPRISE RISK"
       title={ar ? "إدارة المخاطر المؤسسية" : "Enterprise Risk Management"}
       subtitle={ar ? "سجل المخاطر، الضوابط، الامتثال، نتائج التدقيق، وتتبع التخفيف." : "Risk register, controls, compliance, audit findings, and mitigation tracking."}
-      actions={<NexusPill tone="rose"><Shield className="h-3 w-3" /> 6 ACTIVE</NexusPill>}
+      actions={<NexusPill tone="rose"><Shield className="h-3 w-3" /> {openAlerts} {ar ? "تنبيه نشط" : "ACTIVE"}</NexusPill>}
       status={pulse.status}
       lastRefreshed={pulse.lastRefreshed}
       owner={ar ? "كبير ضباط المخاطر" : "Chief Risk Officer"}
@@ -59,21 +65,25 @@ function RiskPage() {
       }}
       why={
         ar
-          ? "تذبذب سعر العملة وضغط تنظيمي في السوق رفعا درجة المخاطر المالية والتشغيلية هذا الأسبوع."
-          : "FX volatility and regulatory pressure raised financial and operational risk scores this week."
+          ? `مؤشر التعرض للمخاطر ${riskExposure}/100 مع ${openAlerts} تنبيه مفتوح و${overdue} بنود متأخرة.`
+          : `Risk exposure index at ${riskExposure}/100 with ${openAlerts} open alerts and ${overdue} overdue items.`
       }
       whatNext={
         ar
-          ? "وقّع على توسعة برنامج التحوّط ومراجعة سياسة وصول حسابات الخدمة قبل اجتماع لجنة المراجعة."
-          : "Approve the hedging program expansion and review service account access policy before the Audit Committee."
+          ? "راجع التنبيهات الحرجة واعتمد خطط التخفيف لتقليل التعرض."
+          : "Review critical alerts and approve mitigation plans to lower exposure."
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "مخاطر نشطة" : "Active risks"} value="34" tone="rose" />
-        <NexusStat label={ar ? "ضوابط فعالة" : "Controls effective"} value="92%" tone="emerald" />
-        <NexusStat label={ar ? "نتائج تدقيق مفتوحة" : "Open audit findings"} value="9" tone="amber" />
-        <NexusStat label={ar ? "امتثال" : "Compliance score"} value="A-" tone="emerald" />
+        <NexusStat label={ar ? "تعرض المخاطر" : "Risk exposure"} value={`${riskExposure}`} tone={riskExposure >= 70 ? "emerald" : riskExposure >= 50 ? "amber" : "rose"} />
+        <NexusStat label={ar ? "تنبيهات مفتوحة" : "Open alerts"} value={String(openAlerts)} tone={openAlerts > 5 ? "rose" : "emerald"} />
+        <NexusStat label={ar ? "بنود متأخرة" : "Overdue items"} value={String(overdue)} tone={overdue > 0 ? "amber" : "emerald"} />
+        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise health"} value={`${health}%`} tone={health >= 70 ? "emerald" : "amber"} />
       </div>
+
+      <PredictionsPanel compact />
+
+
 
       <NexusCard glow>
         <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-rose-300" />

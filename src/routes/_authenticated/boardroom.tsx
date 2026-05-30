@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill } from "@/components/nexus-frame";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { getFabricSnapshot } from "@/lib/intelligence.functions";
 import { Presentation, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 

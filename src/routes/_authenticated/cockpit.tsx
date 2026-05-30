@@ -2,11 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { useFabricSnapshot, metric } from "@/lib/use-fabric";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { Crown, TrendingUp, TrendingDown, AlertTriangle, Sparkles, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cockpit")({
   component: CockpitPage,
 });
+
 
 const PERSONAS = [
   { key: "ceo", name_ar: "الرئيس التنفيذي", name_en: "CEO", focus: ["revenue", "margin", "adoption"] },
@@ -19,8 +22,12 @@ function CockpitPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const pulse = useEnterprisePulse();
+  const { data: fabric } = useFabricSnapshot();
   const navigate = useNavigate();
-  const criticalAlert = pulse.alerts.find((a) => a.severity === "critical");
+  const health = metric(fabric, "enterpriseHealth");
+  const criticalAlerts = fabric.topAlerts.filter((a) => a.severity === "critical");
+  const criticalAlert = criticalAlerts[0];
+
 
   return (
     <NexusPage
@@ -32,34 +39,39 @@ function CockpitPage() {
       lastRefreshed={pulse.lastRefreshed}
       owner={ar ? "مكتب الرئيس التنفيذي" : "Office of the CEO"}
       nextAction={
-        criticalAlert
+        criticalAlert && criticalAlert.route
           ? {
               label: ar ? "افتح التنبيه الحرج" : "Open critical alert",
-              onClick: () => navigate({ to: criticalAlert.route }),
+              onClick: () => navigate({ to: criticalAlert.route! }),
             }
           : undefined
       }
       why={
         ar
-          ? `صحة المؤسسة ${pulse.health}٪. ${pulse.alerts.filter((a) => a.severity === "critical").length} تنبيه حرج و${pulse.alerts.filter((a) => a.severity === "high").length} عالٍ مفتوحان حالياً.`
-          : `Enterprise health ${pulse.health}%. ${pulse.alerts.filter((a) => a.severity === "critical").length} critical and ${pulse.alerts.filter((a) => a.severity === "high").length} high alerts open.`
+          ? `صحة المؤسسة ${health}٪. ${criticalAlerts.length} تنبيه حرج و${fabric.counts.openAlerts} تنبيهات مفتوحة.`
+          : `Enterprise health ${health}%. ${criticalAlerts.length} critical and ${fabric.counts.openAlerts} open alerts.`
       }
       whatNext={
         ar
-          ? "راجع تنبيه SharePoint مع CIO، ثم وقّع على قرار الأتمتة المعلّق في لوحة القرارات."
-          : "Review the SharePoint alert with the CIO, then approve the pending automation decision in the Decisions board."
+          ? "راجع التنبيهات الحرجة ووقّع على القرارات المعلّقة."
+          : "Triage critical alerts and approve pending decisions."
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise health"} value={`${pulse.health}%`} tone="cyan" />
+        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise health"} value={`${health}%`} tone={health >= 70 ? "emerald" : "amber"} />
         <NexusStat
           label={ar ? "تنبيهات حرجة" : "Critical alerts"}
-          value={String(pulse.alerts.filter((a) => a.severity === "critical").length)}
+          value={String(criticalAlerts.length)}
           tone="rose"
+
         />
         <NexusStat label={ar ? "مهام مفتوحة" : "Open tasks"} value={String(pulse.counts.openTasks)} tone="amber" />
         <NexusStat label={ar ? "محادثات ARIA" : "ARIA conversations"} value={String(pulse.counts.conversations)} tone="violet" />
       </div>
+
+      <PredictionsPanel />
+
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         {PERSONAS.map((p) => {

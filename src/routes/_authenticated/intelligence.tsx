@@ -2,17 +2,26 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
+import { useFabricSnapshot, metric } from "@/lib/use-fabric";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { Brain, TrendingUp, ShieldAlert, Lightbulb, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
 });
 
+
 function IntelligencePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const pulse = useEnterprisePulse();
+  const { data: fabric } = useFabricSnapshot();
   const navigate = useNavigate();
+  const signals = fabric.counts.events;
+  const risksFlagged = fabric.topAlerts.filter((a) => a.severity === "critical" || a.severity === "high").length;
+  const opportunities = metric(fabric, "opportunityIndex");
+  const health = metric(fabric, "enterpriseHealth");
+
 
   const predictions = [
     { t: ar ? "إيرادات Q4 ستتجاوز الخطة بنسبة 6.2٪" : "Q4 revenue likely to beat plan by 6.2%", c: 91 },
@@ -65,11 +74,15 @@ function IntelligencePage() {
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "إشارات نشطة" : "Live signals"} value="186" tone="cyan" />
-        <NexusStat label={ar ? "دقة النموذج" : "Model accuracy"} value="91.4%" tone="emerald" />
-        <NexusStat label={ar ? "مخاطر مرصودة" : "Risks flagged"} value="9" tone="rose" />
-        <NexusStat label={ar ? "فرص مكتشفة" : "Opportunities"} value="14" tone="violet" />
+        <NexusStat label={ar ? "إشارات نشطة" : "Live signals"} value={String(signals)} tone="cyan" />
+        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise health"} value={`${health}%`} tone={health >= 70 ? "emerald" : "amber"} />
+        <NexusStat label={ar ? "مخاطر مرصودة" : "Risks flagged"} value={String(risksFlagged)} tone="rose" />
+        <NexusStat label={ar ? "فرص مكتشفة" : "Opportunities"} value={String(opportunities)} tone="violet" />
       </div>
+
+      <PredictionsPanel compact />
+
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         <NexusCard>
