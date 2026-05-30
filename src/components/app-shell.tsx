@@ -36,6 +36,7 @@ import {
   Ghost,
   Zap,
   GitBranch,
+  Volume2,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
