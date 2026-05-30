@@ -13,9 +13,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
 import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/voice'
+import { Route as AuthenticatedTtsRouteImport } from './routes/_authenticated/tts'
 import { Route as AuthenticatedTransformationRouteImport } from './routes/_authenticated/transformation'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
@@ -70,6 +72,11 @@ const ApiVoiceTokenRoute = ApiVoiceTokenRouteImport.update({
   path: '/api/voice-token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -83,6 +90,11 @@ const AuthenticatedWorkflowsRoute = AuthenticatedWorkflowsRouteImport.update({
 const AuthenticatedVoiceRoute = AuthenticatedVoiceRouteImport.update({
   id: '/voice',
   path: '/voice',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTtsRoute = AuthenticatedTtsRouteImport.update({
+  id: '/tts',
+  path: '/tts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTransformationRoute =
@@ -301,9 +313,11 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/transformation': typeof AuthenticatedTransformationRoute
+  '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -343,9 +357,11 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/transformation': typeof AuthenticatedTransformationRoute
+  '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
@@ -387,9 +403,11 @@ export interface FileRoutesById {
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
+  '/_authenticated/tts': typeof AuthenticatedTtsRoute
   '/_authenticated/voice': typeof AuthenticatedVoiceRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -431,9 +449,11 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/transformation'
+    | '/tts'
     | '/voice'
     | '/workflows'
     | '/api/chat'
+    | '/api/tts'
     | '/api/voice-token'
     | '/assistant/$threadId'
     | '/assistant/'
@@ -473,9 +493,11 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/transformation'
+    | '/tts'
     | '/voice'
     | '/workflows'
     | '/api/chat'
+    | '/api/tts'
     | '/api/voice-token'
     | '/assistant/$threadId'
     | '/assistant'
@@ -516,9 +538,11 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks'
     | '/_authenticated/team'
     | '/_authenticated/transformation'
+    | '/_authenticated/tts'
     | '/_authenticated/voice'
     | '/_authenticated/workflows'
     | '/api/chat'
+    | '/api/tts'
     | '/api/voice-token'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/assistant/'
@@ -529,6 +553,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
 }
 
@@ -562,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVoiceTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -581,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/voice'
       fullPath: '/voice'
       preLoaderRoute: typeof AuthenticatedVoiceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tts': {
+      id: '/_authenticated/tts'
+      path: '/tts'
+      fullPath: '/tts'
+      preLoaderRoute: typeof AuthenticatedTtsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/transformation': {
@@ -857,6 +896,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
+  AuthenticatedTtsRoute: typeof AuthenticatedTtsRoute
   AuthenticatedVoiceRoute: typeof AuthenticatedVoiceRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
   AuthenticatedAssistantThreadIdRoute: typeof AuthenticatedAssistantThreadIdRoute
@@ -896,6 +936,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,
+  AuthenticatedTtsRoute: AuthenticatedTtsRoute,
   AuthenticatedVoiceRoute: AuthenticatedVoiceRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
   AuthenticatedAssistantThreadIdRoute: AuthenticatedAssistantThreadIdRoute,
@@ -911,18 +952,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiTtsRoute: ApiTtsRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

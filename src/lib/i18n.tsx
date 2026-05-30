@@ -23,6 +23,7 @@ const dict: Dict = {
   "nav.tasks": { ar: "مدير المهام", en: "Task Manager" },
   "nav.files": { ar: "مركز الملفات", en: "File Center" },
   "nav.voice": { ar: "المساعد الصوتي", en: "Voice Assistant" },
+  "nav.tts": { ar: "النص إلى صوت", en: "Text to Speech" },
   "nav.marketplace": { ar: "متجر الأدوات", en: "Tools Marketplace" },
   "nav.knowledge": { ar: "قاعدة المعرفة", en: "Knowledge Base" },
   "nav.workflows": { ar: "أتمتة سير العمل", en: "Workflows" },
