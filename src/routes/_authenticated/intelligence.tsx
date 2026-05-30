@@ -15,7 +15,13 @@ function IntelligencePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const pulse = useEnterprisePulse();
+  const { data: fabric } = useFabricSnapshot();
   const navigate = useNavigate();
+  const signals = fabric.counts.events;
+  const risksFlagged = fabric.topAlerts.filter((a) => a.severity === "critical" || a.severity === "high").length;
+  const opportunities = metric(fabric, "opportunityIndex");
+  const health = metric(fabric, "enterpriseHealth");
+
 
   const predictions = [
     { t: ar ? "إيرادات Q4 ستتجاوز الخطة بنسبة 6.2٪" : "Q4 revenue likely to beat plan by 6.2%", c: 91 },
