@@ -33,19 +33,28 @@ function statusTone(s: string) {
 function DecisionsPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const { data: fabric } = useFabricSnapshot();
+  const stratProgress = metric(fabric, "strategicProgress");
+  const velocity = metric(fabric, "executionVelocity");
+  const latency = metric(fabric, "decisionLatency");
+  const opportunity = metric(fabric, "opportunityIndex");
   return (
     <NexusPage
       eyebrow="DECISION CENTER"
       title={ar ? "مركز القرارات التنفيذية" : "Executive Decision Center"}
       subtitle={ar ? "توصيات الذكاء الاصطناعي، تتبع القرارات، النتائج، وتحليل الأثر الاستراتيجي." : "AI recommendations, decision tracking, outcomes, and strategic impact."}
-      actions={<NexusPill tone="violet"><Gavel className="h-3 w-3" /> 6 ACTIVE</NexusPill>}
+      actions={<NexusPill tone="violet"><Gavel className="h-3 w-3" /> {fabric.counts.events} {ar ? "حدث" : "EVENTS"}</NexusPill>}
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "قرارات هذا الربع" : "Decisions this quarter"} value="38" tone="cyan" />
-        <NexusStat label={ar ? "معدل التنفيذ" : "Execution rate"} value="94%" tone="emerald" />
-        <NexusStat label={ar ? "أثر مالي محقق" : "Realized impact"} value="SAR 38M" tone="violet" />
-        <NexusStat label={ar ? "مخاطر تم تجنبها" : "Risks averted"} value="SAR 240M" tone="emerald" />
+        <NexusStat label={ar ? "تقدم استراتيجي" : "Strategic progress"} value={`${stratProgress}%`} tone="cyan" />
+        <NexusStat label={ar ? "سرعة التنفيذ" : "Execution velocity"} value={`${velocity}%`} tone="emerald" />
+        <NexusStat label={ar ? "زمن القرار" : "Decision latency"} value={`${latency}`} tone="violet" />
+        <NexusStat label={ar ? "مؤشر الفرص" : "Opportunity index"} value={`${opportunity}`} tone="emerald" />
       </div>
+
+      <PredictionsPanel compact />
+
+
 
       <NexusCard glow>
         <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-cyan-300" />
