@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill } from "@/components/nexus-frame";
+import { PredictionsPanel } from "@/components/predictions-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
