@@ -93,7 +93,30 @@ function DigitalTwinPage() {
   const [active, setActive] = useState<string | null>("data");
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [ariaOpen, setAriaOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const sceneRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = async () => {
+    const el = sceneRef.current;
+    if (!el) return;
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen({ navigationUI: "hide" } as FullscreenOptions);
+        if ("orientation" in screen && "lock" in (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })) {
+          await (screen.orientation as unknown as { lock: (o: string) => Promise<void> })
+            .lock("landscape").catch(() => {});
+        }
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch { /* user-cancelled */ }
+  };
+
+  useEffect(() => {
+    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
 
   // Animation tick — slow, executive (≈30fps via rAF throttle)
   useEffect(() => {
