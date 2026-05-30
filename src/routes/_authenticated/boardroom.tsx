@@ -188,6 +188,8 @@ function BoardroomPage() {
           </div>
         </NexusCard>
       )}
+
+      {!fs && <PredictionsPanel />}
     </NexusPage>
   );
 }
