@@ -21,5 +21,6 @@ export const RemotionRoot = () => (
     <Composition id="docar" component={DocumentaryAR} durationInFrames={DOC_DURATION} fps={DOC_FPS} width={1920} height={1080} />
     <Composition id="docen" component={DocumentaryEN} durationInFrames={DOC_EN_DURATION} fps={DOC_EN_FPS} width={1920} height={1080} />
     <Composition id="stepsar" component={StepsAR} durationInFrames={STEPS_AR_DURATION} fps={STEPS_AR_FPS} width={1920} height={1080} />
+    <Composition id="stepsar3d" component={StepsAR3D} durationInFrames={STEPS_AR3D_DURATION} fps={STEPS_AR3D_FPS} width={1920} height={1080} />
   </>
 );
