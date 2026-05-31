@@ -9,6 +9,7 @@ import { DocumentaryAR, DOC_DURATION, DOC_FPS } from "./DocumentaryAR";
 import { DocumentaryEN, DOC_EN_DURATION, DOC_EN_FPS } from "./DocumentaryEN";
 import { StepsAR, STEPS_AR_DURATION, STEPS_AR_FPS } from "./StepsAR";
 import { StepsAR3D, STEPS_AR3D_DURATION, STEPS_AR3D_FPS } from "./StepsAR3D";
+import { SimAR3D, SIM_AR3D_DURATION, SIM_AR3D_FPS } from "./SimAR3D";
 
 export const RemotionRoot = () => (
   <>
@@ -22,5 +23,6 @@ export const RemotionRoot = () => (
     <Composition id="docen" component={DocumentaryEN} durationInFrames={DOC_EN_DURATION} fps={DOC_EN_FPS} width={1920} height={1080} />
     <Composition id="stepsar" component={StepsAR} durationInFrames={STEPS_AR_DURATION} fps={STEPS_AR_FPS} width={1920} height={1080} />
     <Composition id="stepsar3d" component={StepsAR3D} durationInFrames={STEPS_AR3D_DURATION} fps={STEPS_AR3D_FPS} width={1920} height={1080} />
+    <Composition id="simar3d" component={SimAR3D} durationInFrames={SIM_AR3D_DURATION} fps={SIM_AR3D_FPS} width={1920} height={1080} />
   </>
 );
