@@ -305,21 +305,102 @@ const TitleCard: React.FC<{ s: Sim; dur: number }> = ({ s, dur }) => {
   );
 };
 
+// Living-system overlay: animated neural nodes + flowing connections + breathing energy
+const LivingSystem: React.FC<{ tone: string; seed: number }> = ({ tone, seed }) => {
+  const f = useCurrentFrame();
+  const rand = (n: number) => {
+    const x = Math.sin((seed + 1) * 9301 + n * 49297) * 233280;
+    return x - Math.floor(x);
+  };
+  const NODES = 22;
+  const nodes = Array.from({ length: NODES }).map((_, i) => {
+    const baseX = rand(i * 2) * 1920;
+    const baseY = 80 + rand(i * 2 + 1) * 920;
+    const driftX = Math.sin((f + i * 23) / 70) * 24;
+    const driftY = Math.cos((f + i * 17) / 80) * 18;
+    return { x: baseX + driftX, y: baseY + driftY, i };
+  });
+  const links: Array<[number, number]> = [];
+  for (let i = 0; i < NODES; i++) {
+    for (let j = i + 1; j < NODES; j++) {
+      const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+      if (Math.hypot(dx, dy) < 320) links.push([i, j]);
+    }
+  }
+  return (
+    <svg style={{ position: "absolute", inset: 0, pointerEvents: "none", mixBlendMode: "screen" }} width="100%" height="100%">
+      {links.map(([a, b], k) => {
+        const op = 0.08 + Math.abs(Math.sin((f + k * 11) / 28)) * 0.18;
+        return <line key={k} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y} stroke={tone} strokeWidth={0.6} opacity={op} />;
+      })}
+      {links.slice(0, 14).map(([a, b], k) => {
+        const t = ((f + k * 40) % 90) / 90;
+        const x = nodes[a].x + (nodes[b].x - nodes[a].x) * t;
+        const y = nodes[a].y + (nodes[b].y - nodes[a].y) * t;
+        return <circle key={`p${k}`} cx={x} cy={y} r={2.2} fill={tone} opacity={0.85} style={{ filter: `drop-shadow(0 0 6px ${tone})` }} />;
+      })}
+      {nodes.map((n) => {
+        const pulse = 2.5 + Math.abs(Math.sin((f + n.i * 14) / 18)) * 3.5;
+        const halo = 10 + Math.abs(Math.sin((f + n.i * 19) / 22)) * 14;
+        return (
+          <g key={n.i}>
+            <circle cx={n.x} cy={n.y} r={halo} fill={tone} opacity={0.06} />
+            <circle cx={n.x} cy={n.y} r={pulse} fill={tone} opacity={0.9} style={{ filter: `drop-shadow(0 0 10px ${tone})` }} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+const EnergySheen: React.FC<{ tone: string }> = ({ tone }) => {
+  const f = useCurrentFrame();
+  const angle = (f * 0.35) % 360;
+  const x = 50 + Math.sin(f / 90) * 30;
+  const y = 50 + Math.cos(f / 110) * 25;
+  return (
+    <AbsoluteFill style={{
+      background: `radial-gradient(ellipse at ${x}% ${y}%, ${tone}26 0%, transparent 45%), conic-gradient(from ${angle}deg at 50% 50%, transparent 0deg, ${tone}1a 90deg, transparent 180deg, ${tone}14 270deg, transparent 360deg)`,
+      mixBlendMode: "screen", pointerEvents: "none",
+    }} />
+  );
+};
+
 const Scene: React.FC<{ s: Sim; idx: number; total: number }> = ({ s, idx, total }) => {
   const cam = useCamera(s.dur, idx % 3 === 0 ? "pull" : idx % 3 === 1 ? "push" : "orbit");
   const f = useCurrentFrame();
   const fadeIn = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
   const fadeOut = interpolate(f, [s.dur - 20, s.dur], [1, 0], { extrapolateLeft: "clamp" });
+  // Living breath on the background image itself
+  const breathe = 1 + Math.sin(f / 38) * 0.012;
+  const hueShift = Math.sin(f / 90) * 8;
   return (
     <AbsoluteFill style={{ background: "#04060d", color: "#e2f0ff", fontFamily, opacity: fadeIn * fadeOut }}>
       <AbsoluteFill style={{ overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, transform: `scale(${cam.scale}) translate(${cam.tx}px, ${cam.ty}px)`, transformOrigin: "center" }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          transform: `scale(${cam.scale * breathe}) translate(${cam.tx}px, ${cam.ty}px)`,
+          transformOrigin: "center",
+          filter: `hue-rotate(${hueShift}deg) saturate(1.08) contrast(1.05)`,
+        }}>
+          <Img src={staticFile(`images/scenes/${s.bg}`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+        {/* Duplicate tinted layer that pulses — gives the image a living glow from within */}
+        <div style={{
+          position: "absolute", inset: 0,
+          transform: `scale(${cam.scale * (breathe + 0.01)}) translate(${cam.tx}px, ${cam.ty}px)`,
+          transformOrigin: "center", mixBlendMode: "screen",
+          opacity: 0.18 + Math.sin(f / 30) * 0.08,
+          filter: `blur(8px) saturate(1.5)`,
+        }}>
           <Img src={staticFile(`images/scenes/${s.bg}`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       </AbsoluteFill>
-      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(2,6,18,0.6) 0%, rgba(2,6,18,0.2) 40%, rgba(2,6,18,0.9) 100%)" }} />
+      <EnergySheen tone={s.chartTone} />
+      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(2,6,18,0.55) 0%, rgba(2,6,18,0.15) 40%, rgba(2,6,18,0.88) 100%)" }} />
       <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 25%, rgba(2,4,10,0.85) 100%)" }} />
       <AbsoluteFill style={{ opacity: 0.3, mixBlendMode: "screen" }}><TwinBackground /></AbsoluteFill>
+      <LivingSystem tone={s.chartTone} seed={idx + 1} />
       <Particles />
       <ScanSweep />
 
