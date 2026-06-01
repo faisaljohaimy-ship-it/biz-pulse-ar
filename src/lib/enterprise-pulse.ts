@@ -305,16 +305,32 @@ export function useEnterprisePulse(): EnterprisePulse {
 
     load();
 
-    const channel = supabase
-      .channel("enterprise-pulse-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "pulse_kpis" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "pulse_crises" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "pulse_execution" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "pulse_memory" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, load)
-      .subscribe();
+    // Unique channel topic per hook instance to avoid collisions in
+    // React StrictMode / multi-mount scenarios. Reusing the same topic
+    // returns an already-joined channel, and adding postgres_changes
+    // callbacks to a joined channel throws:
+    //   "cannot add 'postgres_changes' callbacks for realtime subscriptions"
+    const topic = `enterprise-pulse-live:${Math.random().toString(36).slice(2)}`;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
+        .channel(topic)
+        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_kpis" }, load)
+        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_crises" }, load)
+        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_execution" }, load)
+        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_memory" }, load)
+        .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, load)
+        .subscribe();
+    } catch (err) {
+      // Realtime is best-effort; page remains functional with initial load.
+      console.warn("[enterprise-pulse] realtime unavailable", err);
+    }
 
-    return () => { cancelled = true; supabase.removeChannel(channel); };
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+
   }, []);
 
   return pulse;
