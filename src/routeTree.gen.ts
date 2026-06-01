@@ -9,7 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as BookRouteImport } from './routes/book'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
@@ -55,9 +59,29 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
 
+const RequestDemoRoute = RequestDemoRouteImport.update({
+  id: '/request-demo',
+  path: '/request-demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -293,7 +317,11 @@ const AuthenticatedAssistantThreadIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
+  '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/request-demo': typeof RequestDemoRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -339,7 +367,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
+  '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/request-demo': typeof RequestDemoRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -387,7 +419,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/book': typeof BookRoute
+  '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/request-demo': typeof RequestDemoRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -435,7 +471,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/book'
+    | '/contact'
+    | '/demo'
     | '/login'
+    | '/request-demo'
     | '/admin'
     | '/agents'
     | '/ai-ops'
@@ -481,7 +521,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/book'
+    | '/contact'
+    | '/demo'
     | '/login'
+    | '/request-demo'
     | '/admin'
     | '/agents'
     | '/ai-ops'
@@ -528,7 +572,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/book'
+    | '/contact'
+    | '/demo'
     | '/login'
+    | '/request-demo'
     | '/_authenticated/admin'
     | '/_authenticated/agents'
     | '/_authenticated/ai-ops'
@@ -576,7 +624,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  BookRoute: typeof BookRoute
+  ContactRoute: typeof ContactRoute
+  DemoRoute: typeof DemoRoute
   LoginRoute: typeof LoginRoute
+  RequestDemoRoute: typeof RequestDemoRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
@@ -584,11 +636,39 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/request-demo': {
+      id: '/request-demo'
+      path: '/request-demo'
+      fullPath: '/request-demo'
+      preLoaderRoute: typeof RequestDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -993,7 +1073,11 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  BookRoute: BookRoute,
+  ContactRoute: ContactRoute,
+  DemoRoute: DemoRoute,
   LoginRoute: LoginRoute,
+  RequestDemoRoute: RequestDemoRoute,
   ApiChatRoute: ApiChatRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,

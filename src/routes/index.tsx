@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -139,6 +139,23 @@ function LaunchExperience() {
               <kbd className="hidden rounded border border-white/30 bg-white/10 px-1.5 py-0.5 text-[10px] font-mono sm:inline">⌘K</kbd>
             </span>
           </button>
+
+          {/* Secondary CTAs — Demo Center / Request Demo / Contact Sales / Book Meeting */}
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+            <Link to="/demo" className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10">
+              {isAr ? "مركز العرض" : "Demo Center"}
+            </Link>
+            <Link to="/request-demo" className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+              {isAr ? "اطلب عرضاً" : "Request Demo"}
+            </Link>
+            <Link to="/contact" className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+              {isAr ? "تواصل مع المبيعات" : "Contact Sales"}
+            </Link>
+            <Link to="/book" className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+              {isAr ? "احجز اجتماعاً" : "Book Meeting"}
+            </Link>
+          </div>
+
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
             <Lock className="h-3 w-3" />
             {isAr ? "تشفير من الطرف إلى الطرف · تحقق متعدد العوامل" : "End-to-end encrypted · Multi-factor verified"}
