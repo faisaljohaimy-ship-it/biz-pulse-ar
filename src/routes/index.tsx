@@ -154,6 +154,9 @@ function LaunchExperience() {
             <Link to="/book" className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
               {isAr ? "احجز اجتماعاً" : "Book Meeting"}
             </Link>
+            <a href="/standalone.html" target="_blank" rel="noreferrer" className="rounded-lg border border-accent/40 bg-accent/5 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/10">
+              {isAr ? "العرض المستقل (Offline)" : "Standalone Demo (Offline)"}
+            </a>
           </div>
 
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
