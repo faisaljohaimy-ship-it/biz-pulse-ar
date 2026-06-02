@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark" data-locale="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nexus AI OS — مركز القيادة المؤسسي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   NEXUS AI OS — single-file command center
+   Theme: Saudi Energy (deep navy + emerald). Dark default, RTL/AR.
+   Self-contained: no external scripts. Works offline in Safari.
+   ============================================================ */
+:root{
+  --radius:1rem;
+  --bg:oklch(0.16 0.04 240);
+  --fg:oklch(0.98 0.005 240);
+  --card:oklch(0.21 0.05 240);
+  --popover:oklch(0.20 0.05 240);
+  --primary:oklch(0.62 0.17 235);
+  --primary-glow:oklch(0.72 0.16 230);
+  --secondary:oklch(0.26 0.05 240);
+  --muted:oklch(0.24 0.04 240);
+  --muted-fg:oklch(0.72 0.03 235);
+  --accent:oklch(0.68 0.16 160);
+  --destructive:oklch(0.65 0.22 25);
+  --success:oklch(0.72 0.17 160);
+  --warning:oklch(0.82 0.15 85);
+  --border:oklch(0.32 0.04 240 / 50%);
+  --sidebar:oklch(0.13 0.04 240);
+  --c1:oklch(0.62 0.17 235);--c2:oklch(0.72 0.17 160);--c3:oklch(0.78 0.12 200);--c4:oklch(0.82 0.15 85);--c5:oklch(0.70 0.18 320);
+  --grad-primary:linear-gradient(135deg,oklch(0.62 0.17 235),oklch(0.72 0.16 200));
+  --grad-emerald:linear-gradient(135deg,oklch(0.72 0.17 160),oklch(0.62 0.17 200));
+  --grad-hero:linear-gradient(135deg,oklch(0.62 0.17 235) 0%,oklch(0.55 0.15 215) 45%,oklch(0.70 0.17 160) 100%);
+  --shadow-glow:0 20px 60px -20px oklch(0.62 0.17 235 / 45%);
+  --shadow-elev:0 10px 40px -15px oklch(0.08 0.02 240 / 70%);
+  --font-sans:"Space Grotesk","DM Sans",system-ui,sans-serif;
+  --font-ar:"Cairo","IBM Plex Sans Arabic",system-ui,sans-serif;
+}
+[data-theme="light"]{
+  --bg:oklch(0.985 0.005 240);--fg:oklch(0.18 0.04 240);--card:oklch(1 0 0);--popover:oklch(1 0 0);
+  --primary:oklch(0.52 0.17 235);--secondary:oklch(0.95 0.01 240);--muted:oklch(0.95 0.01 240);
+  --muted-fg:oklch(0.45 0.03 240);--accent:oklch(0.55 0.16 160);--border:oklch(0.88 0.02 240 / 80%);
+  --sidebar:oklch(0.98 0.005 240);--shadow-elev:0 10px 40px -18px oklch(0.55 0.06 240 / 30%);
+}
+*{box-sizing:border-box;border-color:var(--border);margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-ar);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+[data-locale="en"] body, [data-locale="en"]{direction:ltr;font-family:var(--font-sans)}
+.atmos{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.atmos .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.22}
+.atmos .b1{top:-160px;inset-inline-start:-10%;width:480px;height:480px;background:var(--primary)}
+.atmos .b2{bottom:-160px;inset-inline-end:-10%;width:420px;height:420px;background:var(--accent)}
+[data-theme="light"] body{background-image:radial-gradient(ellipse 60% 50% at 8% 0%,oklch(0.52 0.17 235/.10),transparent 60%),radial-gradient(ellipse 50% 40% at 100% 100%,oklch(0.55 0.16 160/.10),transparent 60%)}
+
+.app{display:flex;height:100vh}
+/* ---------------- Sidebar ---------------- */
+.sidebar{
+  width:268px;flex-shrink:0;height:100vh;display:flex;flex-direction:column;
+  background:color-mix(in oklch,var(--sidebar) 88%,transparent);
+  backdrop-filter:blur(20px);
+  border-inline-end:1px solid var(--border);
+  overflow-y:auto;scrollbar-width:thin;
+}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.brand{display:flex;align-items:center;gap:12px;padding:20px 18px 16px}
+.brand .logo{width:40px;height:40px;border-radius:11px;background:var(--grad-hero);display:grid;place-items:center;box-shadow:var(--shadow-glow);position:relative}
+.brand .logo svg{width:22px;height:22px}
+.brand .logo::after{content:"";position:absolute;inset:0;border-radius:11px;border:1px solid oklch(0.72 0.16 230/.5);animation:ring 3s ease-in-out infinite}
+@keyframes ring{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.6;transform:scale(1.06)}}
+.brand .name{font-family:var(--font-sans);font-weight:700;font-size:17px;letter-spacing:-.02em}
+.brand .sub{font-size:10px;color:var(--muted-fg);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.navgroup{padding:6px 12px}
+.navgroup>.glabel{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-fg);padding:14px 10px 6px}
+.navitem{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:11px;cursor:pointer;color:oklch(0.88 0.02 240);font-size:13.5px;font-weight:500;transition:.18s;position:relative}
+[data-theme="light"] .navitem{color:oklch(0.30 0.04 240)}
+.navitem:hover{background:color-mix(in oklch,var(--primary) 10%,transparent);color:var(--fg)}
+.navitem.active{background:var(--grad-primary);color:#fff;box-shadow:0 6px 22px -10px var(--primary)}
+.navitem svg{width:17px;height:17px;flex-shrink:0}
+.navitem .badge{margin-inline-start:auto;font-size:10px;background:var(--accent);color:#04221a;border-radius:8px;padding:1px 7px;font-weight:700}
+
+/* ---------------- Main ---------------- */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+.topbar{height:64px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;border-bottom:1px solid var(--border);background:color-mix(in oklch,var(--card) 55%,transparent);backdrop-filter:blur(20px)}
+.menu-btn{display:none;background:none;border:none;color:var(--fg);cursor:pointer}
+.pagetitle{font-family:var(--font-sans);font-weight:700;font-size:18px;letter-spacing:-.02em}
+[data-locale="ar"] .pagetitle{font-family:var(--font-ar)}
+.pillrow{display:flex;align-items:center;gap:8px;margin-inline-start:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:color-mix(in oklch,var(--success) 16%,transparent);color:var(--success);border:1px solid color-mix(in oklch,var(--success) 35%,transparent)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 0 0 var(--success);animation:livedot 1.8s infinite}
+@keyframes livedot{0%{box-shadow:0 0 0 0 color-mix(in oklch,var(--success) 70%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.spacer{flex:1}
+.tb-btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:11px;border:1px solid var(--border);background:color-mix(in oklch,var(--card) 60%,transparent);color:var(--fg);cursor:pointer;font-size:12.5px;font-weight:600;font-family:inherit;transition:.18s}
+.tb-btn:hover{border-color:var(--primary);background:color-mix(in oklch,var(--primary) 12%,transparent)}
+.tb-btn svg{width:16px;height:16px}
+.tb-btn.aria{background:var(--grad-emerald);border:none;color:#04221a}
+.clock{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted-fg);font-weight:600}
+
+.scroll{flex:1;overflow-y:auto;padding:26px 28px 60px}
+.scroll::-webkit-scrollbar{width:9px}.scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+
+/* page header strip */
+.whystrip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.whycard{background:color-mix(in oklch,var(--card) 70%,transparent);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.whycard .k{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:5px}
+.whycard .v{font-size:13.5px;font-weight:600;line-height:1.5}
+.whycard.next .v{color:var(--accent)}
+
+/* KPI grid */
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.kpi{position:relative;background:linear-gradient(160deg,color-mix(in oklch,var(--card) 92%,transparent),color-mix(in oklch,var(--bg) 70%,transparent));border:1px solid var(--border);border-radius:16px;padding:18px;overflow:hidden;transition:.25s}
+.kpi:hover{transform:translateY(-3px);border-color:color-mix(in oklch,var(--primary) 50%,transparent);box-shadow:var(--shadow-elev)}
+.kpi .top{display:flex;align-items:center;justify-content:space-between}
+.kpi .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:color-mix(in oklch,var(--primary) 16%,transparent);color:var(--primary-glow)}
+.kpi .ic svg{width:18px;height:18px}
+.kpi .delta{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px}
+.kpi .delta.up{color:var(--success);background:color-mix(in oklch,var(--success) 14%,transparent)}
+.kpi .delta.down{color:var(--destructive);background:color-mix(in oklch,var(--destructive) 14%,transparent)}
+.kpi .val{font-family:var(--font-sans);font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:14px;font-variant-numeric:tabular-nums}
+.kpi .lab{font-size:12.5px;color:var(--muted-fg);font-weight:500;margin-top:3px}
+.kpi .spark{position:absolute;inset-inline-end:0;bottom:0;width:60%;height:42px;opacity:.5}
+
+/* panels */
+.row{display:grid;gap:16px;margin-bottom:18px}
+.row.r2{grid-template-columns:1.6fr 1fr}
+.row.r3{grid-template-columns:repeat(3,1fr)}
+.panel{background:color-mix(in oklch,var(--card) 80%,transparent);border:1px solid var(--border);border-radius:16px;padding:18px;backdrop-filter:blur(10px)}
+.panel h3{font-family:var(--font-sans);font-size:14.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+[data-locale="ar"] .panel h3{font-family:var(--font-ar)}
+.panel h3 svg{width:17px;height:17px;color:var(--primary-glow)}
+.panel .desc{font-size:11.5px;color:var(--muted-fg);margin-bottom:14px}
+canvas{display:block;width:100%}
+
+/* feed list */
+.feed{display:flex;flex-direction:column;gap:10px}
+.feeditem{display:flex;gap:11px;align-items:flex-start;padding:11px;border-radius:12px;background:color-mix(in oklch,var(--bg) 45%,transparent);border:1px solid var(--border)}
+.feeditem .tag{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.feeditem .t{font-size:12.5px;font-weight:600;line-height:1.5}
+.feeditem .m{font-size:11px;color:var(--muted-fg);margin-top:2px}
+.feeditem .time{margin-inline-start:auto;font-size:10px;color:var(--muted-fg);white-space:nowrap}
+
+/* agent swarm */
+.agents{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.agent{display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;background:color-mix(in oklch,var(--bg) 45%,transparent);border:1px solid var(--border)}
+.agent .av{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;font-family:var(--font-sans)}
+.agent .nm{font-size:12.5px;font-weight:600}
+.agent .st{font-size:10px;color:var(--muted-fg);display:flex;align-items:center;gap:4px}
+.agent .st .d{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.agent.idle .st .d{background:var(--muted-fg)}
+.agent.busy .st .d{background:var(--warning);animation:livedot 1.6s infinite}
+
+/* progress bars */
+.prog{margin:9px 0}
+.prog .pl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.prog .pl span:last-child{color:var(--muted-fg);font-variant-numeric:tabular-nums;font-weight:600}
+.bar{height:8px;border-radius:5px;background:color-mix(in oklch,var(--bg) 60%,transparent);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;background:var(--grad-primary);transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+
+/* generic page placeholder */
+.modpanel{text-align:center;padding:50px 20px}
+.modpanel .big{width:64px;height:64px;border-radius:18px;background:var(--grad-primary);display:grid;place-items:center;margin:0 auto 18px;box-shadow:var(--shadow-glow)}
+.modpanel .big svg{width:30px;height:30px;color:#fff}
+.modpanel h2{font-family:var(--font-sans);font-size:20px;font-weight:700;margin-bottom:8px}
+[data-locale="ar"] .modpanel h2{font-family:var(--font-ar)}
+.modpanel p{color:var(--muted-fg);font-size:13.5px;max-width:520px;margin:0 auto 22px;line-height:1.7}
+.modfeatures{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:760px;margin:0 auto}
+.modfeatures .mf{background:color-mix(in oklch,var(--card) 70%,transparent);border:1px solid var(--border);border-radius:13px;padding:16px;text-align:start}
+.modfeatures .mf b{display:block;font-size:13px;margin-bottom:5px}
+.modfeatures .mf small{color:var(--muted-fg);font-size:11.5px;line-height:1.6}
+
+/* ARIA copilot drawer */
+.aria-drawer{position:fixed;inset-block:0;inset-inline-end:0;width:400px;max-width:92vw;background:color-mix(in oklch,var(--card) 96%,transparent);backdrop-filter:blur(24px);border-inline-start:1px solid var(--border);box-shadow:-30px 0 80px -30px oklch(0.05 0.02 240/.7);transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);z-index:60;display:flex;flex-direction:column}
+[data-locale="en"] .aria-drawer{transform:translateX(-100%)}
+.aria-drawer.open{transform:translateX(0)!important}
+.aria-head{padding:18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px}
+.aria-head .av{width:38px;height:38px;border-radius:11px;background:var(--grad-emerald);display:grid;place-items:center;box-shadow:var(--shadow-glow)}
+.aria-head .av svg{width:20px;height:20px;color:#04221a}
+.aria-head .nm{font-family:var(--font-sans);font-weight:700;font-size:15px}
+.aria-head .role{font-size:10.5px;color:var(--muted-fg)}
+.aria-head .x{margin-inline-start:auto;background:none;border:none;color:var(--muted-fg);cursor:pointer;font-size:20px}
+.aria-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;padding:11px 13px;border-radius:14px;font-size:13px;line-height:1.65}
+.msg.bot{background:color-mix(in oklch,var(--bg) 50%,transparent);border:1px solid var(--border);align-self:flex-start;border-start-start-radius:4px}
+.msg.user{background:var(--grad-primary);color:#fff;align-self:flex-end;border-start-end-radius:4px}
+.msg.bot b{color:var(--accent)}
+.suggest{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 12px}
+.suggest button{font-size:11.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklch,var(--card) 60%,transparent);color:var(--fg);cursor:pointer;font-family:inherit}
+.suggest button:hover{border-color:var(--accent);color:var(--accent)}
+.aria-input{display:flex;gap:9px;padding:14px 16px;border-top:1px solid var(--border)}
+.aria-input input{flex:1;background:color-mix(in oklch,var(--bg) 55%,transparent);border:1px solid var(--border);border-radius:11px;padding:11px 13px;color:var(--fg);font-family:inherit;font-size:13px;outline:none}
+.aria-input input:focus{border-color:var(--accent)}
+.aria-input button{width:42px;border-radius:11px;border:none;background:var(--grad-emerald);color:#04221a;cursor:pointer;display:grid;place-items:center}
+.aria-input button svg{width:18px;height:18px}
+.scrim{position:fixed;inset:0;background:oklch(0.08 0.02 240/.55);backdrop-filter:blur(2px);z-index:55;opacity:0;visibility:hidden;transition:.3s}
+.scrim.show{opacity:1;visibility:visible}
+
+/* command palette */
+.cmdk{position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding-top:14vh;background:oklch(0.08 0.02 240/.55);backdrop-filter:blur(4px)}
+.cmdk.show{display:flex}
+.cmdk-box{width:560px;max-width:92vw;background:color-mix(in oklch,var(--popover) 98%,transparent);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-elev);overflow:hidden}
+.cmdk-box input{width:100%;padding:16px 18px;border:none;border-bottom:1px solid var(--border);background:transparent;color:var(--fg);font-family:inherit;font-size:15px;outline:none}
+.cmdk-list{max-height:340px;overflow-y:auto;padding:8px}
+.cmdk-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px}
+.cmdk-item svg{width:16px;height:16px;color:var(--muted-fg)}
+.cmdk-item.sel,.cmdk-item:hover{background:color-mix(in oklch,var(--primary) 14%,transparent)}
+.cmdk-item .grp{margin-inline-start:auto;font-size:10px;color:var(--muted-fg)}
+
+@media(max-width:1100px){.kgrid{grid-template-columns:repeat(2,1fr)}.row.r2,.row.r3{grid-template-columns:1fr}.whystrip{grid-template-columns:1fr}}
+@media(max-width:820px){
+  .sidebar{position:fixed;inset-block:0;inset-inline-start:0;z-index:70;transform:translateX(-100%);transition:.3s}
+  [data-locale="ar"] .sidebar{transform:translateX(100%)}
+  .sidebar.open{transform:translateX(0)!important}
+  .menu-btn{display:inline-flex}
+  .modfeatures{grid-template-columns:1fr}
+  .clock{display:none}
+}
+.fade{animation:fade .5s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="atmos"><div class="blob b1"></div><div class="blob b2"></div></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="name">Nexus<span style="color:var(--accent)"> AI</span> OS</div>
+        <div class="sub" id="brandSub">حضارة تشغيلية ذكية</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="menu"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="pagetitle" id="pageTitle">لوحة القيادة</div>
+      <div class="pillrow"><span class="pill"><span class="dot"></span><span id="livePill">مباشر</span></span></div>
+      <div class="spacer"></div>
+      <span class="clock" id="clock"></span>
+      <button class="tb-btn" id="cmdBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span id="cmdLabel">بحث ⌘K</span></button>
+      <button class="tb-btn" id="langBtn">EN</button>
+      <button class="tb-btn" id="themeBtn"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg></button>
+      <button class="tb-btn aria" id="ariaBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/><circle cx="12" cy="12" r="4"/></svg><span id="ariaLabel">آريا</span></button>
+    </header>
+    <div class="scroll" id="view"></div>
+  </div>
+</div>
+
+<!-- ARIA copilot -->
+<div class="scrim" id="scrim"></div>
+<aside class="aria-drawer" id="ariaDrawer">
+  <div class="aria-head">
+    <div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/><circle cx="12" cy="12" r="4"/></svg></div>
+    <div><div class="nm">ARIA</div><div class="role" id="ariaRole">مساعد القيادة التنفيذي</div></div>
+    <button class="x" id="ariaClose">×</button>
+  </div>
+  <div class="aria-body" id="ariaBody"></div>
+  <div class="suggest" id="ariaSuggest"></div>
+  <div class="aria-input">
+    <input id="ariaInput" placeholder="اسأل آريا..." />
+    <button id="ariaSend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+  </div>
+</aside>
+
+<!-- command palette -->
+<div class="cmdk" id="cmdk"><div class="cmdk-box"><input id="cmdInput" placeholder="انتقل إلى..." /><div class="cmdk-list" id="cmdList"></div></div></div>
+
+<script>
+/* =================== i18n + data model =================== */
+const I = {
+  ar:{brandSub:"حضارة تشغيلية ذكية",live:"مباشر",cmd:"بحث ⌘K",aria:"آريا",ariaRole:"مساعد القيادة التنفيذي",
+      ariaPlaceholder:"اسأل آريا...",cmdPlaceholder:"انتقل إلى...",
+      groups:{workspace:"مساحة العمل",executive:"القيادة التنفيذية",enterprise:"المؤسسة",intelligence:"الذكاء",collab:"التعاون",admin:"الإدارة"},
+      why:{why:"لماذا يهم",what:"الحالة الراهنة",next:"الإجراء التالي"}},
+  en:{brandSub:"Autonomous operations civilization",live:"Live",cmd:"Search ⌘K",aria:"ARIA",ariaRole:"Executive copilot",
+      ariaPlaceholder:"Ask ARIA...",cmdPlaceholder:"Jump to...",
+      groups:{workspace:"Workspace",executive:"Executive",enterprise:"Enterprise",intelligence:"Intelligence",collab:"Collaboration",admin:"Admin"},
+      why:{why:"Why it matters",what:"Current state",next:"Next action"}}
+};
+const ic=(p)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICON={
+  dashboard:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+  tasks:'<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><line x1="13" y1="6" x2="21" y2="6"/><line x1="13" y1="12" x2="21" y2="12"/><line x1="13" y1="18" x2="21" y2="18"/>',
+  files:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z"/><path d="M14 2v6h6"/>',
+  fabric:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  briefing:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>',
+  crown:'<path d="m2 18 3-12 5 6 2-7 2 7 5-6 3 12Z"/>',
+  brain:'<path d="M9.5 2a3 3 0 0 0-3 3v.5A3 3 0 0 0 4 8.5a3 3 0 0 0 0 6A3 3 0 0 0 6.5 18a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M14.5 2a3 3 0 0 1 3 3v.5A3 3 0 0 1 20 8.5a3 3 0 0 1 0 6 3 3 0 0 1-2.5 3.5"/>',
+  board:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+  zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  branch:'<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+  ghost:'<path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8Z"/>',
+  brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  gavel:'<path d="m14 13-7.5 7.5a2.1 2.1 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/>',
+  build:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/>',
+  rocket:'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2Z"/>',
+  shieldA:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M12 8v4M12 16h.01"/>',
+  shieldC:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
+  trend:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  twin:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22" x2="12" y2="12"/>',
+  plug:'<path d="M12 22v-5M9 8V2M15 8V2M18 8v4a6 6 0 0 1-12 0V8Z"/>',
+  net:'<circle cx="12" cy="12" r="2"/><path d="M4.93 4.93 9 9M15 15l4.07 4.07M4.93 19.07 9 15M15 9l4.07-4.07"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>',
+  merge:'<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/>',
+  spark:'<path d="m12 3-1.9 5.8L4 10.5l4.1 3.3L6.8 20 12 16.5 17.2 20l-1.3-6.2L20 10.5l-6.1-1.7Z"/>',
+  bot:'<rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h.01M16 16h.01"/>',
+  mic:'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/>',
+  vol:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/>',
+  flow:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M9 6h6a2 2 0 0 1 2 2v7"/>',
+  bookmark:'<path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/>',
+  store:'<path d="M3 9 4 4h16l1 5M4 9v11h16V9M4 9h16"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+  chart:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 6 9.4l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 5.6V4.5a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11h.1a2 2 0 0 1 0 4Z"/>'
+};
+const NAV=[
+ {g:"workspace",items:[["dashboard","لوحة القيادة","Dashboard","dashboard"],["tasks","المهام","Tasks","tasks","12"],["files","الملفات","Files","files"]]},
+ {g:"executive",items:[["fabric","النسيج الذكي","Intelligence Fabric","fabric"],["briefing","الإحاطة","Briefing","briefing"],["chief","رئيس الديوان","Chief of Staff","crown"],["intelligence","الاستخبارات","Intelligence","brain"],["boardroom","قاعة المجلس","Boardroom","board"],["memory","ذاكرة المؤسسة","Memory","brain"],["crisis","تنبؤ الأزمات","Crisis","zap"],["execution","ذكاء التنفيذ","Execution","branch"],["forgotten","ما الذي نُسي؟","Forgotten","ghost"]]},
+ {g:"enterprise",items:[["cockpit","قمرة القيادة","Cockpit","crown"],["portfolio","المحفظة","Portfolio","brief"],["decisions","القرارات","Decisions","gavel"],["departments","الأقسام","Departments","build"],["transformation","التحول","Transformation","rocket"],["risk","المخاطر","Risk","shieldA"],["governance","الحوكمة","Governance","shieldC"],["outcomes","النتائج","Outcomes","trend"],["analyst","محلل AI","AI Analyst","brain"],["twin","التوأم الرقمي","Digital Twin","twin"],["integrations","التكاملات","Integrations","plug"],["aiops","عمليات الذكاء","AI Ops","net"],["orchestration","التنسيق","Orchestration","merge"]]},
+ {g:"intelligence",items:[["assistant","المساعد","Assistant","spark"],["agents","الوكلاء","Agents","bot"],["voice","الصوت","Voice","mic"],["tts","تحويل النص لصوت","TTS","vol"],["workflows","التدفقات","Workflows","flow"],["prompts","المحفزات","Prompts","bookmark"],["marketplace","المتجر","Marketplace","store"],["knowledge","المعرفة","Knowledge","book"],["analytics","التحليلات","Analytics","chart"]]},
+ {g:"collab",items:[["team","الفريق","Team","users"]]},
+ {g:"admin",items:[["admin","الإدارة","Admin","shield"],["settings","الإعدادات","Settings","gear"]]}
+];
+const META={};NAV.forEach(grp=>grp.items.forEach(it=>META[it[0]]={ar:it[1],en:it[2],icon:it[3],badge:it[4]}));
+
+let LOCALE="ar", THEME="dark", CURRENT="dashboard";
+const T=()=>I[LOCALE];
+const L=(ar,en)=>LOCALE==="ar"?ar:en;
+
+/* =================== synthetic enterprise pulse =================== */
+let seed=20260602;
+function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}
+function series(n,base,amp){let v=base,out=[];for(let i=0;i<n;i++){v+=(rnd()-0.45)*amp;out.push(Math.max(0,v));}return out;}
+const PULSE={
+  uptime:99.98, agents:42, agentsActive:38, automations:1284, throughput:series(24,720,90),
+  inference:series(24,180,30), revenue:series(12,4.2,0.6), risk:series(12,32,8),
+  decisions:317, latencyMs:142, costPerK:0.31
+};
+
+/* =================== render: sidebar nav =================== */
+function renderNav(){
+  const nav=document.getElementById("nav");
+  nav.innerHTML=NAV.map(grp=>`
+    <div class="navgroup">
+      <div class="glabel">${T().groups[grp.g]}</div>
+      ${grp.items.map(it=>`
+        <div class="navitem ${it[0]===CURRENT?'active':''}" data-route="${it[0]}">
+          ${ic(ICON[it[3]])}<span>${L(it[1],it[2])}</span>
+          ${it[4]?`<span class="badge">${it[4]}</span>`:''}
+        </div>`).join("")}
+    </div>`).join("");
+  nav.querySelectorAll(".navitem").forEach(n=>n.onclick=()=>{go(n.dataset.route);document.getElementById("sidebar").classList.remove("open");});
+}
+
+/* =================== canvas charts (no libs) =================== */
+function oklchToCss(v){return v;}
+function lineChart(c,data,color,fill){
+  const dpr=window.devicePixelRatio||1, w=c.clientWidth, h=c.clientHeight||150;
+  c.width=w*dpr;c.height=h*dpr;const x=c.getContext("2d");x.scale(dpr,dpr);
+  const mn=Math.min(...data),mx=Math.max(...data),pad=10;
+  const px=i=>pad+i*(w-pad*2)/(data.length-1);
+  const py=v=>h-pad-((v-mn)/((mx-mn)||1))*(h-pad*2);
+  x.beginPath();data.forEach((v,i)=>{i?x.lineTo(px(i),py(v)):x.moveTo(px(i),py(v));});
+  x.lineWidth=2.5;x.strokeStyle=color;x.lineJoin="round";x.stroke();
+  if(fill){const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,color.replace(")","/0.28)").replace("oklch(","oklch("));g.addColorStop(1,"transparent");
+    x.lineTo(px(data.length-1),h-pad);x.lineTo(px(0),h-pad);x.closePath();x.fillStyle=g;x.fill();}
+}
+function barChart(c,data,color){
+  const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight||150;
+  c.width=w*dpr;c.height=h*dpr;const x=c.getContext("2d");x.scale(dpr,dpr);
+  const mx=Math.max(...data),pad=8,bw=(w-pad*2)/data.length*0.62,gap=(w-pad*2)/data.length;
+  data.forEach((v,i)=>{const bh=(v/mx)*(h-pad*2),bx=pad+i*gap+(gap-bw)/2,by=h-pad-bh;
+    const g=x.createLinearGradient(0,by,0,h);g.addColorStop(0,color);g.addColorStop(1,color.replace(")","/0.35)"));
+    x.fillStyle=g;x.beginPath();x.roundRect(bx,by,bw,bh,4);x.fill();});
+}
+function donut(c,pct,color){
+  const dpr=window.devicePixelRatio||1,s=c.clientWidth;c.width=s*dpr;c.height=s*dpr;
+  const x=c.getContext("2d");x.scale(dpr,dpr);const r=s/2-8,cx=s/2,cy=s/2;
+  x.lineWidth=10;x.strokeStyle="oklch(0.30 0.04 240)";x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.stroke();
+  x.strokeStyle=color;x.lineCap="round";x.beginPath();x.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*pct);x.stroke();
+  x.fillStyle="var(--fg)";
+}
+
+/* =================== views =================== */
+function whyStrip(why,what,next){
+  return `<div class="whystrip fade">
+    <div class="whycard"><div class="k">${T().why.why}</div><div class="v">${why}</div></div>
+    <div class="whycard"><div class="k">${T().why.what}</div><div class="v">${what}</div></div>
+    <div class="whycard next"><div class="k">${T().why.next}</div><div class="v">${next}</div></div></div>`;
+}
+function kpi(icon,val,lab,delta,up){
+  return `<div class="kpi fade"><div class="top"><div class="ic">${ic(ICON[icon])}</div>
+    <span class="delta ${up?'up':'down'}">${up?'▲':'▼'} ${delta}</span></div>
+    <div class="val" data-count="${val}">${val}</div><div class="lab">${lab}</div>
+    <canvas class="spark" data-spark="${icon}"></canvas></div>`;
+}
+function dashboardView(){
+  return whyStrip(
+    L("النظام يدير 38 وكيلاً ذاتيًا و1,284 أتمتة عبر المؤسسة دون تدخل بشري.","38 autonomous agents and 1,284 automations run the enterprise with no manual intervention."),
+    L("جاهزية تشغيلية 99.98% وزمن استجابة 142ms مع 317 قرارًا مدعومًا اليوم.","99.98% uptime, 142ms latency, 317 AI-assisted decisions today."),
+    L("مراجعة تنبيه المخاطر في قسم الإمداد قبل 14:00.","Review the supply-chain risk alert before 14:00.")
+  )+
+  `<div class="kgrid">
+    ${kpi("shieldC","99.98%",L("الجاهزية التشغيلية","Operational uptime"),"0.04%",true)}
+    ${kpi("bot","38 / 42",L("الوكلاء النشطون","Active agents"),"6",true)}
+    ${kpi("merge","1,284",L("الأتمتة الجارية","Live automations"),"12%",true)}
+    ${kpi("zap","142ms",L("زمن الاستجابة","Inference latency"),"8ms",false)}
+  </div>
+  <div class="row r2">
+    <div class="panel"><h3>${ic(ICON.chart)}${L("نبض المؤسسة — الإنتاجية اللحظية","Enterprise pulse — live throughput")}</h3>
+      <div class="desc">${L("طلبات/دقيقة عبر منظومة التنسيق متعددة الوكلاء — آخر 24 ساعة","Requests/min across the multi-agent orchestration fabric — last 24h")}</div>
+      <canvas id="cThroughput" style="height:190px"></canvas></div>
+    <div class="panel"><h3>${ic(ICON.bot)}${L("سرب الوكلاء","Agent swarm")}</h3>
+      <div class="desc">${L("الوكلاء المتخصصون وحالتهم اللحظية","Specialized agents and their live status")}</div>
+      <div class="agents" id="agentGrid"></div></div>
+  </div>
+  <div class="row r3">
+    <div class="panel"><h3>${ic(ICON.zap)}${L("الاستخبارات والتنبيهات","Intelligence & alerts")}</h3><div class="desc">${L("تيار تشغيلي مباشر","Live operational feed")}</div><div class="feed" id="feed"></div></div>
+    <div class="panel"><h3>${ic(ICON.trend)}${L("الإيراد المتكرر (M$)","Recurring revenue (M$)")}</h3><div class="desc">${L("12 شهرًا","Trailing 12 months")}</div><canvas id="cRev" style="height:120px;margin-top:24px"></canvas></div>
+    <div class="panel"><h3>${ic(ICON.rocket)}${L("مبادرات التحول","Transformation initiatives")}</h3><div class="desc">${L("نسبة الإنجاز","Completion")}</div>
+      ${prog(L("ترحيل البنية السحابية","Cloud-native migration"),82)}${prog(L("أتمتة DevSecOps","DevSecOps automation"),67)}${prog(L("منصة RAG المعرفية","Knowledge RAG platform"),91)}${prog(L("الحوكمة الصفرية الثقة","Zero-trust governance"),54)}</div>
+  </div>`;
+}
+function prog(l,v){return `<div class="prog"><div class="pl"><span>${l}</span><span>${v}%</span></div><div class="bar"><i style="width:0" data-w="${v}"></i></div></div>`;}
+
+const AGENTS=[["EX","Executive","var(--c1)","busy"],["CT","CTO","var(--c2)","busy"],["AR","Architect","var(--c3)","active"],["DO","DevOps","var(--c4)","busy"],["SE","Security","var(--destructive)","active"],["AU","Automation","var(--c2)","busy"],["PR","Product","var(--c5)","idle"],["AN","Analytics","var(--c1)","busy"]];
+const FEED=[
+  ["var(--destructive)",L("مخاطر","Risk"),L("ارتفاع زمن استجابة في عقدة الإمداد — تم فتح تحقيق آلي","Latency spike in supply node — auto-investigation opened"),"2m"],
+  ["var(--success)",L("أتمتة","Auto"),L("اكتمل نشر الإصدار 4.8 عبر 6 مناطق بنجاح","Release 4.8 deployed across 6 regions"),"11m"],
+  ["var(--warning)",L("توقع","Predict"),L("توقع ذروة طلب +23% الأسبوع القادم — تم تجهيز التوسع","Forecast +23% demand next week — autoscaling staged"),"26m"],
+  ["var(--c1)",L("قرار","Decision"),L("وافقت آريا على إعادة توزيع الميزانية بين 3 أقسام","ARIA approved budget reallocation across 3 depts"),"41m"],
+  ["var(--c3)",L("تكامل","Integration"),L("تم ربط مصدر بيانات جديد بنسيج الاستخبارات","New data source wired into the intelligence fabric"),"1h"]
+];
+function renderDashboardWidgets(){
+  const ag=document.getElementById("agentGrid");
+  if(ag)ag.innerHTML=AGENTS.map(a=>`<div class="agent ${a[3]}"><div class="av" style="background:${a[2]}">${a[0]}</div><div><div class="nm">${L({Executive:"تنفيذي",CTO:"تقني",Architect:"معماري",DevOps:"عمليات",Security:"أمن",Automation:"أتمتة",Product:"منتج",Analytics:"تحليل"}[a[1]],a[1])}</div><div class="st"><span class="d"></span>${a[3]==="busy"?L("ينفّذ","executing"):a[3]==="idle"?L("خامل","idle"):L("نشط","active")}</div></div></div>`).join("");
+  const f=document.getElementById("feed");
+  if(f)f.innerHTML=FEED.map(x=>`<div class="feeditem"><span class="tag" style="background:${x[0]}"></span><div><div class="t">${x[2]}</div><div class="m">${x[1]}</div></div><span class="time">${x[3]}</span></div>`).join("");
+  const t=document.getElementById("cThroughput");if(t)lineChart(t,PULSE.throughput,"oklch(0.62 0.17 235)",true);
+  const r=document.getElementById("cRev");if(r)barChart(r,PULSE.revenue,"oklch(0.72 0.17 160)");
+  document.querySelectorAll("[data-spark]").forEach(c=>lineChart(c,series(16,50,18),"oklch(0.72 0.16 230)",false));
+  setTimeout(()=>document.querySelectorAll(".bar i[data-w]").forEach(b=>b.style.width=b.dataset.w+"%"),60);
+  animateCounters();
+}
+function animateCounters(){document.querySelectorAll(".val[data-count]").forEach(el=>{
+  const raw=el.dataset.count,m=raw.match(/[\d,.]+/);if(!m)return;const target=parseFloat(m[0].replace(/,/g,""));const suf=raw.slice(m.index+m[0].length),pre=raw.slice(0,m.index);
+  let cur=0,steps=34,inc=target/steps,i=0;const fmt=v=>raw.includes(",")?Math.round(v).toLocaleString():(raw.includes(".")?v.toFixed(2):Math.round(v));
+  const t=setInterval(()=>{cur+=inc;if(++i>=steps){cur=target;clearInterval(t);}el.textContent=pre+fmt(cur)+suf;},18);});}
+
+/* generic module view for the other routes */
+const MODFEAT={
+  cockpit:[["لوحات تنفيذية","Executive dashboards","رؤية لحظية موحدة لكل مؤشرات المؤسسة","Unified live view of every enterprise KPI"],["مراقبة العمليات","Live ops monitoring","تتبّع الأنظمة والوكلاء والتدفقات لحظيًا","Track systems, agents and flows in real time"],["مساعد آريا","ARIA copilot","قرارات مدعومة بالذكاء داخل قمرة القيادة","AI-assisted decisions inside the cockpit"]],
+  agents:[["تنسيق السرب","Swarm coordination","10 وكلاء متخصصين يتعاونون باستقلالية","10 specialized agents collaborating autonomously"],["توجيه المهام","Task routing","توجيه ذكي للمهام حسب التخصص","Intelligent routing by specialization"],["مزامنة السياق","Context sync","ذاكرة مشتركة عبر كل الوكلاء","Shared memory across all agents"]],
+  intelligence:[["تحليل تنبؤي","Predictive analysis","توقع الأعطال والاختناقات قبل حدوثها","Predict failures and bottlenecks early"],["كشف الشذوذ","Anomaly detection","رصد آلي للأنماط غير الطبيعية","Automatic detection of abnormal patterns"],["استخبارات السوق","Market intel","تحليل المنافسين وفرص النمو","Competitor and growth-opportunity analysis"]],
+  risk:[["تحليل التهديدات","Threat analysis","تقييم مستمر لسطح الهجوم","Continuous attack-surface assessment"],["تصليب البنية","Hardening","توصيات أمنية تلقائية","Automated security recommendations"],["استمرارية الأعمال","Continuity","جاهزية التعافي من الكوارث","Disaster-recovery readiness"]],
+  orchestration:[["تدفقات ذاتية","Autonomous pipelines","تشغيل التدفقات عند وقوع الأحداث","Event-driven workflow execution"],["توجيه الأدوات","Tool routing","اختيار الأداة المثلى لكل مهمة","Optimal tool selection per task"],["خفض الكلفة","Cost optimization","موازنة الجودة مقابل الكلفة","Balance quality against inference cost"]]
+};
+function moduleView(route){
+  const m=META[route]; const feats=MODFEAT[route]||[
+    ["جاهز للإنتاج","Production-ready","معماري قابل للتوسع لملايين المستخدمين","Scalable architecture for millions of users"],
+    ["أمن واستمرارية","Secure & resilient","مبادئ الثقة الصفرية والمراقبة الشاملة","Zero-trust principles and full observability"],
+    ["أتمتة ذكية","Intelligent automation","تدفقات مؤتمتة موصولة بنبض المؤسسة","Automated flows wired to the enterprise pulse"]
+  ];
+  return whyStrip(
+    L(`وحدة «${m.ar}» جزء من منظومة Nexus الموحّدة وتشارك نفس نبض المؤسسة.`,`The ${m.en} module is part of the unified Nexus fabric and shares the same enterprise pulse.`),
+    L("متصلة بطبقة الذاكرة والسياق — لا أرقام متناقضة بين الشاشات.","Wired to the memory & context layer — no contradictory numbers across screens."),
+    L("افتح آريا للحصول على إحاطة لحظية حول هذه الوحدة.","Open ARIA for a live briefing on this module.")
+  )+
+  `<div class="panel fade"><div class="modpanel">
+    <div class="big">${ic(ICON[m.icon])}</div>
+    <h2>${L(m.ar,m.en)}</h2>
+    <p>${L("هذه الوحدة في النسخة الأصلية الكاملة موصولة بقاعدة بيانات Supabase وخوادم TanStack وبوابة الذكاء. في نسخة العرض المستقلة هذه (HTML واحد) تعرض الوحدة هويتها وقدراتها ضمن مركز القيادة.","In the full original build this module is wired to Supabase, TanStack server functions and the AI gateway. In this standalone single-file demo it presents its identity and capabilities inside the command center.")}</p>
+    <div class="modfeatures">${feats.map(f=>`<div class="mf"><b>${L(f[0],f[1])}</b><small>${L(f[2],f[3])}</small></div>`).join("")}</div>
+  </div></div>`;
+}
+
+function render(){
+  document.getElementById("pageTitle").textContent=L(META[CURRENT].ar,META[CURRENT].en);
+  const v=document.getElementById("view");
+  v.innerHTML=CURRENT==="dashboard"?dashboardView():moduleView(CURRENT);
+  if(CURRENT==="dashboard")renderDashboardWidgets();
+  v.scrollTop=0;
+}
+function go(route){CURRENT=route;renderNav();render();}
+
+/* =================== ARIA copilot (rule-based) =================== */
+const ARIA_SUGGEST_AR=["اشرح مؤشر الجاهزية","صِغ إحاطة تنفيذية","ما أبرز المخاطر؟","أوصِ بإجراءات"];
+const ARIA_SUGGEST_EN=["Explain the uptime KPI","Draft a briefing","Top risks?","Recommend actions"];
+function ariaReply(q){
+  q=q.toLowerCase();
+  const hit=(...k)=>k.some(x=>q.includes(x));
+  if(hit("جاهز","uptime","كفاءة"))return L("<b>الجاهزية 99.98%</b> محسوبة من نبض المؤسسة عبر 6 مناطق. الانقطاع الوحيد كان 4 دقائق بسبب تدوير عقدة — وتمت معالجته آليًا. الاتجاه صاعد +0.04% هذا الأسبوع.","<b>Uptime is 99.98%</b>, computed from the enterprise pulse across 6 regions. The only blip was a 4-minute node rotation, auto-remediated. Trend is +0.04% this week.");
+  if(hit("إحاطة","briefing","brief"))return L("<b>الإحاطة التنفيذية:</b> 38 وكيلاً نشطاً، 1,284 أتمتة، 317 قراراً مدعوماً اليوم. الإيراد المتكرر +12% شهرياً. خطر واحد متوسط في الإمداد قيد المعالجة. لا حاجة لتدخل بشري عاجل.","<b>Executive briefing:</b> 38 active agents, 1,284 automations, 317 AI-assisted decisions today. Recurring revenue +12% MoM. One medium supply-chain risk being handled. No urgent human action required.");
+  if(hit("مخاطر","risk","خطر"))return L("<b>أبرز المخاطر:</b> 1) زمن استجابة في عقدة الإمداد (متوسط). 2) سعة قاعدة البيانات تقترب من 78%. 3) شهادة TLS لأحد التكاملات تنتهي خلال 9 أيام. أوصي بمعالجة الأولى قبل 14:00.","<b>Top risks:</b> 1) Supply-node latency (medium). 2) DB capacity nearing 78%. 3) A TLS cert expires in 9 days. I recommend handling #1 before 14:00.");
+  if(hit("أوص","recommend","إجراء","action"))return L("<b>توصياتي:</b> فعّل التوسع الاستباقي لعقدة الإمداد، رحّل 12% من الأحمال إلى المنطقة الثانية، وجدول تجديد شهادات TLS آلياً. أستطيع تنفيذ الثلاثة عبر التدفقات الذاتية بنقرة موافقة.","<b>Recommendations:</b> enable proactive autoscaling on the supply node, shift 12% of load to region 2, and schedule automatic TLS renewal. I can run all three via autonomous pipelines on your approval.");
+  return L("أنا آريا، مساعد القيادة. أقرأ نبض المؤسسة لحظياً وأستطيع شرح المؤشرات، صياغة الإحاطات، تحليل المخاطر، والتوصية بإجراءات. هذه نسخة عرض بقواعد محلية — في النظام الكامل أتصل ببوابة الذكاء والخوادم.","I'm ARIA, your executive copilot. I read the live enterprise pulse and can explain KPIs, draft briefings, analyze risk, and recommend actions. This is a local rule-based demo — in the full system I connect to the AI gateway and server functions.");
+}
+function ariaPush(text,who){const b=document.getElementById("ariaBody");const d=document.createElement("div");d.className="msg "+who;d.innerHTML=text;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function ariaSend(q){if(!q.trim())return;ariaPush(q,"user");setTimeout(()=>ariaPush(ariaReply(q),"bot"),350);}
+function renderAriaSuggest(){document.getElementById("ariaSuggest").innerHTML=(LOCALE==="ar"?ARIA_SUGGEST_AR:ARIA_SUGGEST_EN).map(s=>`<button>${s}</button>`).join("");
+  document.querySelectorAll("#ariaSuggest button").forEach(b=>b.onclick=()=>ariaSend(b.textContent));}
+function openAria(){document.getElementById("ariaDrawer").classList.add("open");document.getElementById("scrim").classList.add("show");}
+function closeAria(){document.getElementById("ariaDrawer").classList.remove("open");document.getElementById("scrim").classList.remove("show");}
+
+/* =================== command palette =================== */
+function openCmd(){document.getElementById("cmdk").classList.add("show");const i=document.getElementById("cmdInput");i.value="";renderCmd("");i.focus();}
+function closeCmd(){document.getElementById("cmdk").classList.remove("show");}
+let cmdSel=0,cmdItems=[];
+function renderCmd(q){
+  cmdItems=[];NAV.forEach(g=>g.items.forEach(it=>{const lab=L(it[1],it[2]);if(lab.toLowerCase().includes(q.toLowerCase())||it[0].includes(q.toLowerCase()))cmdItems.push({r:it[0],lab,g:T().groups[g.g],icon:it[3]});}));
+  cmdSel=0;
+  document.getElementById("cmdList").innerHTML=cmdItems.map((c,i)=>`<div class="cmdk-item ${i===0?'sel':''}" data-r="${c.r}">${ic(ICON[c.icon])}<span>${c.lab}</span><span class="grp">${c.g}</span></div>`).join("")||`<div style="padding:14px;color:var(--muted-fg);font-size:13px">${L("لا نتائج","No results")}</div>`;
+  document.querySelectorAll(".cmdk-item").forEach(el=>el.onclick=()=>{go(el.dataset.r);closeCmd();});
+}
+
+/* =================== theme + locale =================== */
+function applyLocale(){
+  document.documentElement.lang=LOCALE;document.documentElement.dir=LOCALE==="ar"?"rtl":"ltr";
+  document.documentElement.dataset.locale=LOCALE;
+  document.getElementById("brandSub").textContent=T().brandSub;
+  document.getElementById("livePill").textContent=T().live;
+  document.getElementById("cmdLabel").textContent=T().cmd;
+  document.getElementById("ariaLabel").textContent=T().aria;
+  document.getElementById("ariaRole").textContent=T().ariaRole;
+  document.getElementById("ariaInput").placeholder=T().ariaPlaceholder;
+  document.getElementById("cmdInput").placeholder=T().cmdPlaceholder;
+  document.getElementById("langBtn").textContent=LOCALE==="ar"?"EN":"ع";
+  renderNav();render();renderAriaSuggest();
+}
+function applyTheme(){document.documentElement.dataset.theme=THEME;
+  document.getElementById("themeIcon").innerHTML=THEME==="dark"
+    ?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/>'
+    :'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>';
+  if(CURRENT==="dashboard")renderDashboardWidgets();}
+
+/* =================== events =================== */
+document.getElementById("ariaBtn").onclick=openAria;
+document.getElementById("ariaClose").onclick=closeAria;
+document.getElementById("scrim").onclick=closeAria;
+document.getElementById("ariaSend").onclick=()=>{const i=document.getElementById("ariaInput");ariaSend(i.value);i.value="";};
+document.getElementById("ariaInput").addEventListener("keydown",e=>{if(e.key==="Enter"){ariaSend(e.target.value);e.target.value="";}});
+document.getElementById("cmdBtn").onclick=openCmd;
+document.getElementById("cmdInput").addEventListener("input",e=>renderCmd(e.target.value));
+document.getElementById("cmdInput").addEventListener("keydown",e=>{
+  const items=document.querySelectorAll(".cmdk-item");if(!items.length)return;
+  if(e.key==="ArrowDown"){cmdSel=(cmdSel+1)%items.length;}else if(e.key==="ArrowUp"){cmdSel=(cmdSel-1+items.length)%items.length;}
+  else if(e.key==="Enter"){if(cmdItems[cmdSel]){go(cmdItems[cmdSel].r);closeCmd();}return;}else return;
+  items.forEach((el,i)=>el.classList.toggle("sel",i===cmdSel));e.preventDefault();});
+document.getElementById("langBtn").onclick=()=>{LOCALE=LOCALE==="ar"?"en":"ar";applyLocale();};
+document.getElementById("themeBtn").onclick=()=>{THEME=THEME==="dark"?"light":"dark";applyTheme();};
+document.getElementById("menuBtn").onclick=()=>document.getElementById("sidebar").classList.toggle("open");
+document.addEventListener("keydown",e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openCmd();}
+  if(e.key==="Escape"){closeCmd();closeAria();}
+});
+window.addEventListener("resize",()=>{if(CURRENT==="dashboard")renderDashboardWidgets();});
+
+/* live clock */
+function tick(){const d=new Date();const opt={hour:"2-digit",minute:"2-digit",second:"2-digit"};
+  document.getElementById("clock").textContent=d.toLocaleTimeString(LOCALE==="ar"?"ar-SA":"en-US",opt);}
+setInterval(tick,1000);tick();
+
+/* live pulse mutation — numbers stay coherent across screens */
+setInterval(()=>{
+  PULSE.throughput.push(Math.max(400,PULSE.throughput.at(-1)+(rnd()-0.45)*80));PULSE.throughput.shift();
+  if(CURRENT==="dashboard"){const t=document.getElementById("cThroughput");if(t)lineChart(t,PULSE.throughput,"oklch(0.62 0.17 235)",true);}
+},2500);
+
+/* boot */
+applyTheme();applyLocale();
+ariaPush(L("مرحباً، أنا <b>آريا</b> — مساعد القيادة التنفيذي. أقرأ نبض المؤسسة لحظياً. كيف أخدمك؟","Hello, I'm <b>ARIA</b> — your executive copilot. I read the enterprise pulse in real time. How can I help?"),"bot");
+</script>
+</body>
+</html>
