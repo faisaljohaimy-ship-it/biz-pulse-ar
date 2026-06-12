@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/chat")({
         if (!parsed.success) {
           return new Response("Invalid body", { status: 400 });
         }
-        const { messages, threadId, model: modelId } = parsed.data;
+        const { messages, threadId, model: modelId, grounded } = parsed.data;
 
         // Authenticate user via bearer token
         const authHeader =
@@ -59,9 +59,25 @@ export const Route = createFileRoute("/api/chat")({
 
         const uiMessages = messages as UIMessage[];
 
+        // Inject live enterprise context (RAG over Supabase tables) unless explicitly disabled.
+        let systemPrompt = SYSTEM_PROMPT;
+        if (grounded !== false) {
+          const { buildAriaContext } = await import("@/lib/aria-context.server");
+          const ctx = await buildAriaContext(supabase);
+          systemPrompt = `${SYSTEM_PROMPT}
+
+# ENTERPRISE CONTEXT (LIVE — source of truth)
+${ctx}
+
+# RULES
+- Ground every numerical or factual claim in the ENTERPRISE CONTEXT block above.
+- If the context is "NO_ENTERPRISE_DATA_AVAILABLE" or the user asks something not covered, say so explicitly and ask the user for clarification — do NOT fabricate KPIs, owners, or financials.
+- Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing data.`;
+        }
+
         const result = streamText({
           model,
-          system: SYSTEM_PROMPT,
+          system: systemPrompt,
           messages: await convertToModelMessages(uiMessages),
         });
 
