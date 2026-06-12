@@ -520,6 +520,60 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          ip: string | null
+          kind: string
+          metadata: Json
+          name: string
+          notes: string | null
+          role: string | null
+          source: string | null
+          status: string
+          team_size: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          ip?: string | null
+          kind: string
+          metadata?: Json
+          name: string
+          notes?: string | null
+          role?: string | null
+          source?: string | null
+          status?: string
+          team_size?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          ip?: string | null
+          kind?: string
+          metadata?: Json
+          name?: string
+          notes?: string | null
+          role?: string | null
+          source?: string | null
+          status?: string
+          team_size?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string

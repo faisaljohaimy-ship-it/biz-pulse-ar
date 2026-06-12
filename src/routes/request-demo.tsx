@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { useI18n } from "@/lib/i18n";
+import { submitLead } from "@/lib/leads.functions";
+import { DOMAIN_URL } from "@/lib/domain";
 import { Sparkles, ArrowLeft, Send } from "lucide-react";
 
 export const Route = createFileRoute("/request-demo")({
@@ -11,7 +14,9 @@ export const Route = createFileRoute("/request-demo")({
       { name: "description", content: "Request a personalized walkthrough of Nexus AI OS for your executive team." },
       { property: "og:title", content: "Request a Demo — Nexus AI OS" },
       { property: "og:description", content: "Personalized executive walkthrough tailored to your enterprise." },
+      { property: "og:url", content: `${DOMAIN_URL}/request-demo` },
     ],
+    links: [{ rel: "canonical", href: `${DOMAIN_URL}/request-demo` }],
   }),
   component: RequestDemoPage,
 });
@@ -21,6 +26,7 @@ function RequestDemoPage() {
   const isAr = locale === "ar";
   return (
     <FormShell
+      kind="demo"
       isAr={isAr}
       eyebrow={isAr ? "اطلب عرضاً شخصياً" : "Request a Demo"}
       title={isAr ? "أرنا مؤسستك. سنُريك Nexus." : "Tell us about your enterprise. We'll show you Nexus."}
@@ -31,7 +37,7 @@ function RequestDemoPage() {
         { name: "email", label: isAr ? "البريد الإلكتروني للعمل" : "Work email", type: "email", required: true },
         { name: "company", label: isAr ? "اسم الشركة" : "Company", required: true },
         { name: "role", label: isAr ? "المنصب" : "Role" },
-        { name: "size", label: isAr ? "حجم الفريق" : "Team size" },
+        { name: "team_size", label: isAr ? "حجم الفريق" : "Team size" },
         { name: "notes", label: isAr ? "ماذا تريد أن ترى؟" : "What would you like to see?", textarea: true },
       ]}
       submitLabel={isAr ? "اطلب العرض" : "Request demo"}
@@ -40,8 +46,9 @@ function RequestDemoPage() {
 }
 
 export function FormShell({
-  isAr, eyebrow, title, subtitle, fields, successMsg, submitLabel,
+  kind, isAr, eyebrow, title, subtitle, fields, successMsg, submitLabel,
 }: {
+  kind: "contact" | "demo" | "book";
   isAr: boolean;
   eyebrow: string;
   title: string;
@@ -50,17 +57,44 @@ export function FormShell({
   successMsg: string;
   submitLabel: string;
 }) {
+  const submit = useServerFn(submitLead);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
-    // Lightweight client-side handler — stores nothing server-side beyond a toast.
-    // Replace with a server fn / CRM webhook before production go-live.
-    await new Promise((r) => setTimeout(r, 700));
-    toast.success(successMsg);
-    (e.currentTarget as HTMLFormElement).reset();
-    setSubmitting(false);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const get = (k: string) => {
+      const v = fd.get(k);
+      return typeof v === "string" && v.trim() ? v.trim() : null;
+    };
+    try {
+      const known = new Set(["name", "email", "company", "role", "team_size", "notes"]);
+      const metadata: Record<string, string> = {};
+      for (const [k, v] of fd.entries()) {
+        if (typeof v === "string" && !known.has(k) && v.trim()) metadata[k] = v.trim();
+      }
+      await submit({
+        data: {
+          kind,
+          name: get("name") ?? "",
+          email: get("email") ?? "",
+          company: get("company"),
+          role: get("role"),
+          team_size: get("team_size"),
+          notes: get("notes") ?? get("message") ?? get("topic"),
+          source: typeof window !== "undefined" ? window.location.pathname : null,
+          metadata,
+        },
+      });
+      toast.success(successMsg);
+      form.reset();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : (isAr ? "تعذر الإرسال" : "Submission failed"));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

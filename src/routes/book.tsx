@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { FormShell } from "./request-demo";
 
+import { DOMAIN_URL } from "@/lib/domain";
+
 export const Route = createFileRoute("/book")({
   head: () => ({
     meta: [
@@ -9,7 +11,9 @@ export const Route = createFileRoute("/book")({
       { name: "description", content: "Book a 30-minute strategy session with a Nexus AI OS specialist." },
       { property: "og:title", content: "Book a Meeting — Nexus AI OS" },
       { property: "og:description", content: "30-minute strategy session with a specialist." },
+      { property: "og:url", content: `${DOMAIN_URL}/book` },
     ],
+    links: [{ rel: "canonical", href: `${DOMAIN_URL}/book` }],
   }),
   component: BookPage,
 });
@@ -19,6 +23,7 @@ function BookPage() {
   const isAr = locale === "ar";
   return (
     <FormShell
+      kind="book"
       isAr={isAr}
       eyebrow={isAr ? "احجز اجتماعاً" : "Book a Meeting"}
       title={isAr ? "٣٠ دقيقة مع متخصص." : "30 minutes with a specialist."}
