@@ -15,6 +15,7 @@ const ModelEnum = z.enum(
 const BodySchema = z.object({
   messages: z.array(z.any()),
   threadId: z.string().uuid().optional(),
+  grounded: z.boolean().optional(),
   model: ModelEnum.optional(),
 });
 
