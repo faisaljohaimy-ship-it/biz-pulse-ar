@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { FormShell } from "./request-demo";
 
+import { DOMAIN_URL } from "@/lib/domain";
+
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
@@ -9,7 +11,9 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: "Talk to Nexus AI OS enterprise sales about pricing, deployment, and security." },
       { property: "og:title", content: "Contact Sales — Nexus AI OS" },
       { property: "og:description", content: "Enterprise pricing, deployment, and security conversations." },
+      { property: "og:url", content: `${DOMAIN_URL}/contact` },
     ],
+    links: [{ rel: "canonical", href: `${DOMAIN_URL}/contact` }],
   }),
   component: ContactPage,
 });
