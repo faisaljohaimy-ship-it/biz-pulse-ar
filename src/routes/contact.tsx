@@ -23,6 +23,7 @@ function ContactPage() {
   const isAr = locale === "ar";
   return (
     <FormShell
+      kind="contact"
       isAr={isAr}
       eyebrow={isAr ? "تواصل مع المبيعات" : "Contact Sales"}
       title={isAr ? "حلول مؤسسية. أسعار مخصصة." : "Enterprise solutions. Custom pricing."}
