@@ -1,0 +1,26 @@
+# Nexus AI OS
+
+> Enterprise Intelligence Operating System — an executive AI platform for live KPIs, decision intelligence, crisis management, and execution tracking across the entire enterprise.
+
+Nexus AI OS unifies enterprise data (intelligence events, alerts, KPIs, governance, transformation programs, business outcomes) into a single executive operating system with multilingual AI assistants grounded in real organizational data.
+
+## Core capabilities
+- Executive Cockpit — live financial, operational and risk signals
+- Decision Intelligence — AI recommendations grounded in enterprise data (RAG)
+- Execution Engine — boardroom decision → task tracking
+- Boardroom Mode — strategic presentation surface
+- ARIA voice copilot — bilingual (AR/EN) with ElevenLabs STT/TTS
+
+## Public pages
+- [Home](https://biz-pulse-ar.lovable.app/)
+- [Demo Center](https://biz-pulse-ar.lovable.app/demo)
+- [Cinematic Demo](https://biz-pulse-ar.lovable.app/cinematic-demo)
+- [Request a Demo](https://biz-pulse-ar.lovable.app/request-demo)
+- [Contact Sales](https://biz-pulse-ar.lovable.app/contact)
+- [Book a Meeting](https://biz-pulse-ar.lovable.app/book)
+
+## AI providers
+ARIA uses OpenRouter as a unified gateway across OpenAI (GPT-4o), Anthropic (Claude 3.5 Sonnet), and Google (Gemini 2.5 Flash/Pro). Voice via ElevenLabs.
+
+## Contact
+Sales: https://biz-pulse-ar.lovable.app/contact
