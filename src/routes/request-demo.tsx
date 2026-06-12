@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { useI18n } from "@/lib/i18n";
+import { submitLead } from "@/lib/leads.functions";
 import { Sparkles, ArrowLeft, Send } from "lucide-react";
 
 export const Route = createFileRoute("/request-demo")({
