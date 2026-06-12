@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_authenticated/
+Disallow: /admin
+
+Sitemap: https://biz-pulse-ar.lovable.app/sitemap.xml
