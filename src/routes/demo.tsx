@@ -275,7 +275,7 @@ function DemoCenter() {
 function ModeCard({
   icon: Icon, tone, title, subtitle, bullets, cta, loading, onClick,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   tone: "primary" | "accent";
   title: string;
   subtitle: string;
@@ -324,14 +324,14 @@ function CtaCard({
   to, icon: Icon, title, desc, primary,
 }: {
   to: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   desc: string;
   primary?: boolean;
 }) {
   return (
     <Link
-      to={to}
+      to={to as "/"}
       className={`group flex items-center gap-3 rounded-xl border p-4 transition ${primary
         ? "border-primary/50 bg-gradient-primary text-primary-foreground shadow-glow hover:scale-[1.02]"
         : "border-white/10 bg-white/[0.03] hover:border-primary/40"}`}
