@@ -15,6 +15,7 @@ import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as FilmsRouteImport } from './routes/films'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
@@ -93,6 +94,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FilmsRoute = FilmsRouteImport.update({
+  id: '/films',
+  path: '/films',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
   '/demo': typeof DemoRoute
+  '/films': typeof FilmsRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
   '/demo': typeof DemoRoute
+  '/films': typeof FilmsRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -471,6 +479,7 @@ export interface FileRoutesById {
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
   '/demo': typeof DemoRoute
+  '/films': typeof FilmsRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -529,6 +538,7 @@ export interface FileRouteTypes {
     | '/cinematic-demo'
     | '/contact'
     | '/demo'
+    | '/films'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -585,6 +595,7 @@ export interface FileRouteTypes {
     | '/cinematic-demo'
     | '/contact'
     | '/demo'
+    | '/films'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -642,6 +653,7 @@ export interface FileRouteTypes {
     | '/cinematic-demo'
     | '/contact'
     | '/demo'
+    | '/films'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -700,6 +712,7 @@ export interface RootRouteChildren {
   CinematicDemoRoute: typeof CinematicDemoRoute
   ContactRoute: typeof ContactRoute
   DemoRoute: typeof DemoRoute
+  FilmsRoute: typeof FilmsRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -753,6 +766,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/films': {
+      id: '/films'
+      path: '/films'
+      fullPath: '/films'
+      preLoaderRoute: typeof FilmsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -1198,6 +1218,7 @@ const rootRouteChildren: RootRouteChildren = {
   CinematicDemoRoute: CinematicDemoRoute,
   ContactRoute: ContactRoute,
   DemoRoute: DemoRoute,
+  FilmsRoute: FilmsRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
