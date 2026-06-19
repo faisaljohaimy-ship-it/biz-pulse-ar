@@ -275,7 +275,7 @@ function DemoCenter() {
 function ModeCard({
   icon: Icon, tone, title, subtitle, bullets, cta, loading, onClick,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   tone: "primary" | "accent";
   title: string;
   subtitle: string;
@@ -324,7 +324,7 @@ function CtaCard({
   to, icon: Icon, title, desc, primary,
 }: {
   to: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   desc: string;
   primary?: boolean;
