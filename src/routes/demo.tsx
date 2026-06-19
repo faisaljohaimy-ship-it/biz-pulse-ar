@@ -331,7 +331,7 @@ function CtaCard({
 }) {
   return (
     <Link
-      to={to}
+      to={to as "/"}
       className={`group flex items-center gap-3 rounded-xl border p-4 transition ${primary
         ? "border-primary/50 bg-gradient-primary text-primary-foreground shadow-glow hover:scale-[1.02]"
         : "border-white/10 bg-white/[0.03] hover:border-primary/40"}`}
