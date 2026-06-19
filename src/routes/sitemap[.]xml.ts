@@ -4,7 +4,7 @@ import { DOMAIN_URL } from "@/lib/domain";
 
 interface Entry {
   path: string;
-  changefreq?: "weekly" | "monthly" | "daily";
+  changefreq?: "weekly" | "monthly" | "daily" | "yearly";
   priority?: string;
 }
 
@@ -14,11 +14,14 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const entries: Entry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/pricing", changefreq: "monthly", priority: "0.9" },
           { path: "/demo", changefreq: "weekly", priority: "0.9" },
           { path: "/cinematic-demo", changefreq: "monthly", priority: "0.7" },
           { path: "/request-demo", changefreq: "monthly", priority: "0.8" },
           { path: "/contact", changefreq: "monthly", priority: "0.8" },
           { path: "/book", changefreq: "monthly", priority: "0.8" },
+          { path: "/privacy", changefreq: "yearly", priority: "0.3" },
+          { path: "/terms", changefreq: "yearly", priority: "0.3" },
           { path: "/login", changefreq: "monthly", priority: "0.4" },
         ];
         const urls = entries
