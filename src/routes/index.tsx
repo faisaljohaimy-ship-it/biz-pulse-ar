@@ -26,6 +26,7 @@ const CityScene = lazy(() => import("@/components/cinematic/CityScene"));
 const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
+import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
 const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
