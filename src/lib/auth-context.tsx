@@ -15,6 +15,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Demo capture bypass: ?demo=1 → synthetic user so /_authenticated renders
+    // for product-tour screen recording. No real session is created.
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("demo") === "1" || window.localStorage.getItem("nx_demo") === "1") {
+        window.localStorage.setItem("nx_demo", "1");
+        setUser({ id: "demo-user", email: "demo@neexios.com" } as unknown as User);
+        setLoading(false);
+        return;
+      }
+    }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
     });
