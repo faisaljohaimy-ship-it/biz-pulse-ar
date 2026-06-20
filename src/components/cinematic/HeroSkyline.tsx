@@ -238,7 +238,44 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
           {/* ground glow strip */}
           <rect x="0" y="416" width="1600" height="4" fill="url(#kingdomGlow)" opacity="0.5" />
         </svg>
+
+        {/* ============ INTERACTIVE LANDMARK HOTSPOTS ============ */}
+        {/* Coordinates are percentages matching the SVG viewBox 1600×420.
+            Faisaliah pyramid tip ~ x:14%  · Kingdom arch ~ x:50% · PIF ~ x:70%  */}
+        <LandmarkHotspot
+          id="faisaliah"
+          xPct={14}
+          yPct={26}
+          active={active === "faisaliah"}
+          onClick={() => setActive(active === "faisaliah" ? null : "faisaliah")}
+          label={isAr ? "الفيصلية" : "Al Faisaliah"}
+        />
+        <LandmarkHotspot
+          id="kingdom"
+          xPct={50}
+          yPct={38}
+          active={active === "kingdom"}
+          onClick={() => setActive(active === "kingdom" ? null : "kingdom")}
+          label={isAr ? "المملكة" : "Kingdom Centre"}
+        />
+        <LandmarkHotspot
+          id="pif"
+          xPct={70}
+          yPct={18}
+          active={active === "pif"}
+          onClick={() => setActive(active === "pif" ? null : "pif")}
+          label={isAr ? "صندوق الاستثمارات" : "PIF Tower"}
+        />
+
+        {active && (
+          <LandmarkCard
+            isAr={isAr}
+            landmark={active}
+            onClose={() => setActive(null)}
+          />
+        )}
       </div>
+
 
       {/* ============ EXECUTIVE HOLOGRAM KPIs ============ */}
       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[6] hidden -translate-y-1/2 px-8 lg:block">
