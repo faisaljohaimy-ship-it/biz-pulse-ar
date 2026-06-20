@@ -11,10 +11,12 @@ import { X, TrendingUp, Briefcase, Bot, ShieldAlert, Building2 } from "lucide-re
  */
 export function HeroSkyline({ isAr }: { isAr: boolean }) {
   const [t, setT] = useState(0);
+  const [active, setActive] = useState<null | "kingdom" | "faisaliah" | "pif">(null);
   useEffect(() => {
     const i = setInterval(() => setT((x) => x + 1), 2200);
     return () => clearInterval(i);
   }, []);
+
 
   // live, gently drifting KPI values
   const drift = (base: number, amp: number) =>
