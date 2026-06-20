@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /_authenticated/
 Disallow: /admin
 
-Sitemap: https://biz-pulse-ar.lovable.app/sitemap.xml
+Sitemap: https://neexios.com/sitemap.xml
