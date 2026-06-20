@@ -25,6 +25,7 @@ import { CountUp } from "@/components/cinematic/CountUp";
 const CityScene = lazy(() => import("@/components/cinematic/CityScene"));
 const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
+const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
