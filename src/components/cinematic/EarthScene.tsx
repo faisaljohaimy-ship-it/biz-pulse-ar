@@ -4,55 +4,61 @@ import * as THREE from "three";
 
 type Intensity = "normal" | "network";
 
+// Centered on the Arabian Peninsula (~45°E, 25°N) — NASA Black Marble night map.
+const EARTH_NIGHT_URL = "https://unpkg.com/three-globe/example/img/earth-night.jpg";
+const ARABIA_LON = 45 * (Math.PI / 180);
+const ARABIA_LAT = 25 * (Math.PI / 180);
+
 function Earth() {
-  const earthRef = useRef<THREE.Mesh>(null);
+  const earthRef = useRef<THREE.Group>(null);
   const wireRef = useRef<THREE.Mesh>(null);
   const atmoRef = useRef<THREE.Mesh>(null);
 
-  const cityTexture = useMemo(() => {
-    const size = 1024;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size / 2;
-    const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#020410";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < 2400; i++) {
-      ctx.fillStyle = `rgba(245, 180, 84, ${Math.random() * 0.9})`;
-      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.2, 1.2);
-    }
-    for (let i = 0; i < 800; i++) {
-      ctx.fillStyle = `rgba(120, 180, 255, ${Math.random() * 0.5})`;
-      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1, 1);
-    }
-    const tex = new THREE.CanvasTexture(canvas);
+  const nightTexture = useMemo(() => {
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    const tex = loader.load(EARTH_NIGHT_URL);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
     return tex;
   }, []);
 
+  // Default Three sphere maps texture u=0 to +X; texture center (Greenwich, lon 0) ends at -X.
+  // To bring longitude L to face camera (+Z), rotate Y by (π/2 - L).
+  const baseYaw = Math.PI / 2 - ARABIA_LON;
+
   useFrame((s) => {
     const t = s.clock.elapsedTime;
-    if (earthRef.current) earthRef.current.rotation.y = t * 0.08;
-    if (wireRef.current) wireRef.current.rotation.y = t * 0.08;
+    const yaw = baseYaw + Math.sin(t * 0.08) * 0.06;
+    if (earthRef.current) {
+      earthRef.current.rotation.y = yaw;
+      earthRef.current.rotation.x = -ARABIA_LAT + Math.sin(t * 0.05) * 0.02;
+    }
+    if (wireRef.current) {
+      wireRef.current.rotation.y = yaw;
+      wireRef.current.rotation.x = -ARABIA_LAT;
+    }
     if (atmoRef.current) atmoRef.current.scale.setScalar(1 + Math.sin(t * 1.2) * 0.005);
   });
 
   return (
     <group>
-      <mesh ref={earthRef}>
-        <sphereGeometry args={[2.4, 64, 64]} />
-        <meshStandardMaterial
-          map={cityTexture}
-          emissive={new THREE.Color("#f5b454")}
-          emissiveMap={cityTexture}
-          emissiveIntensity={1.4}
-          roughness={0.95}
-          metalness={0.1}
-        />
-      </mesh>
+      <group ref={earthRef}>
+        <mesh>
+          <sphereGeometry args={[2.4, 96, 96]} />
+          <meshStandardMaterial
+            map={nightTexture}
+            emissive={new THREE.Color("#f5b454")}
+            emissiveMap={nightTexture}
+            emissiveIntensity={1.25}
+            roughness={0.95}
+            metalness={0.05}
+          />
+        </mesh>
+      </group>
       <mesh ref={wireRef}>
         <sphereGeometry args={[2.41, 32, 24]} />
-        <meshBasicMaterial color="#3a8eff" wireframe transparent opacity={0.18} />
+        <meshBasicMaterial color="#3a8eff" wireframe transparent opacity={0.14} />
       </mesh>
       <mesh ref={atmoRef}>
         <sphereGeometry args={[2.55, 64, 64]} />
