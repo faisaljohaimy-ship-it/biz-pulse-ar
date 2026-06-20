@@ -641,7 +641,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
             <ScrollReveal key={s.l} delay={i * 120} direction="scale">
               <div className="px-6 py-10 text-center">
                 <div className="bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 bg-clip-text text-7xl font-bold tracking-tight text-transparent sm:text-8xl">
-                  {s.v}
+                  <CountUp value={s.v} />
                 </div>
                 <div className="mt-4 text-sm uppercase tracking-[0.2em] text-white/60">{s.l}</div>
               </div>
