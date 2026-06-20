@@ -87,6 +87,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "Nexus AI OS — Enterprise Intelligence Operating System" },
       { name: "twitter:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { name: "description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1f0a8a47-2f6d-4496-974f-4f6b0de036a0/id-preview-ea108ac2--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1781912378542.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1f0a8a47-2f6d-4496-974f-4f6b0de036a0/id-preview-ea108ac2--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1781912378542.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
