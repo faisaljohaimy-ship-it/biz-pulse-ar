@@ -289,6 +289,7 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
       className="relative flex min-h-[100svh] items-center overflow-hidden bg-[#04060d] py-24"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,80,80,0.12),transparent_55%)]" />
+      <ChaosCanvas />
       <ParticleField density={0.00006} />
 
       {/* floating systems orbiting a center */}
