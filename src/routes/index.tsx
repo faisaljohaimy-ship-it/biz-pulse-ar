@@ -27,6 +27,7 @@ const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
+const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -258,6 +259,11 @@ function CinematicHome() {
       {/* ============ EXECUTIVE WAR ROOM ============ */}
       <Suspense fallback={null}>
         <WarRoomScene isAr={isAr} />
+      </Suspense>
+
+      {/* ============ AUTONOMOUS ENTERPRISE ============ */}
+      <Suspense fallback={null}>
+        <AutonomousEnterpriseScene isAr={isAr} />
       </Suspense>
 
       {/* ============ SCENE 08 — GLOBAL EXPANSION ============ */}
