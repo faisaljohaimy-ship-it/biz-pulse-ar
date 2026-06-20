@@ -331,6 +331,15 @@ function ROIPage() {
         .roi-live-dot { animation: roi-pulse 1.8s ease-in-out infinite; }
         @keyframes roi-shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
         .roi-shimmer { background: linear-gradient(90deg, transparent, rgba(251,191,36,0.18), transparent); background-size: 200% 100%; animation: roi-shimmer 3.2s linear infinite; }
+        @media print {
+          html, body { background: #ffffff !important; color: #0a0a0f !important; }
+          header, aside, button { display: none !important; }
+          .roi-shimmer, .roi-live-dot { display: none !important; }
+          [class*="bg-clip-text"] { -webkit-text-fill-color: #b45309 !important; color: #b45309 !important; background: none !important; }
+          .text-muted-foreground, [class*="text-amber"], [class*="text-emerald"], [class*="text-cyan"], [class*="text-rose"] { color: #0a0a0f !important; }
+          [class*="bg-white/"], [class*="border-"] { background: #ffffff !important; border-color: #d4d4d8 !important; }
+          main { max-width: 100% !important; }
+        }
       `}</style>
     </div>
   );
