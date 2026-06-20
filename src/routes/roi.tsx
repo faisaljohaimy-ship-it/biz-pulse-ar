@@ -291,18 +291,25 @@ function ROIPage() {
               locale={locale}
             />
 
-            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row print:hidden">
               <Link
-                to="/request-demo"
+                to="/executive-briefing"
                 className="flex-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 px-6 py-3 text-center text-sm font-medium text-[#0a0a0f] transition hover:from-amber-300 hover:to-amber-400"
               >
                 {isAr ? "اطلب عرضًا تنفيذيًا" : "Request Executive Briefing"}
               </Link>
-              <Link
-                to="/pricing"
-                className="flex-1 rounded-lg border border-amber-400/20 px-6 py-3 text-center text-sm text-amber-200/90 transition hover:bg-amber-400/5"
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 rounded-lg border border-amber-400/30 px-6 py-3 text-center text-sm text-amber-200/90 transition hover:bg-amber-400/5"
               >
-                {isAr ? "خطط الاستثمار" : "View Investment Tiers"}
+                {isAr ? "تصدير النتائج PDF" : "Export Results as PDF"}
+              </button>
+              <Link
+                to="/government-brief"
+                className="flex-1 rounded-lg border border-white/10 px-6 py-3 text-center text-sm text-foreground transition hover:bg-white/5"
+              >
+                {isAr ? "الملف الحكومي" : "Government Brief"}
               </Link>
             </div>
 
