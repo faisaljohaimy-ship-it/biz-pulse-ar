@@ -197,15 +197,39 @@ function TrustPage() {
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(214,158,46,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(214,158,46,0.05)_1px,transparent_1px)] [background-size:56px_56px] opacity-25" />
       </div>
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
+      <header className="relative z-10 mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-5 sm:px-6 sm:py-6">
+        <Link to="/" className="inline-flex min-w-0 items-center gap-2 truncate text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className={`h-4 w-4 shrink-0 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
-        <div className="text-xs uppercase tracking-[0.32em] text-amber-300/70">
+        <div className="text-[10px] uppercase tracking-[0.28em] text-amber-300/70 sm:text-xs sm:tracking-[0.32em]">
           {isAr ? "الثقة والأمان" : "Trust & Security"}
         </div>
       </header>
+
+      <nav className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="-mx-1 flex gap-1 overflow-x-auto pb-2 sm:gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            { to: "/trust",         en: "Trust",         ar: "الثقة",            active: true  },
+            { to: "/security",      en: "Security",      ar: "الأمن",            active: false },
+            { to: "/dpa",           en: "DPA",           ar: "ملحق المعالجة",     active: false },
+            { to: "/subprocessors", en: "Subprocessors", ar: "المورّدون الفرعيون", active: false },
+            { to: "/sla",           en: "SLA",           ar: "اتفاقية الخدمة",    active: false },
+          ].map((t) => (
+            <Link
+              key={t.to}
+              to={t.to}
+              className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition sm:text-xs ${
+                t.active
+                  ? "border-amber-400/40 bg-amber-400/10 text-amber-200"
+                  : "border-white/10 bg-white/[0.02] text-muted-foreground hover:border-amber-400/25 hover:text-foreground"
+              }`}
+            >
+              {isAr ? t.ar : t.en}
+            </Link>
+          ))}
+        </div>
+      </nav>
 
       <main className="relative z-10 mx-auto max-w-7xl px-6 pb-24">
         {/* HERO */}
