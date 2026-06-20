@@ -27,6 +27,7 @@ const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
+const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
