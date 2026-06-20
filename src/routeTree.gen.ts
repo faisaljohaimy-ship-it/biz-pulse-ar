@@ -29,6 +29,7 @@ import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DataRoomRouteImport } from './routes/data-room'
 import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as BookRouteImport } from './routes/book'
@@ -176,6 +177,11 @@ const DataRoomRoute = DataRoomRouteImport.update({
 const CustomersRoute = CustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -434,6 +440,7 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/customers': typeof CustomersRoute
   '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
@@ -503,6 +510,7 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/customers': typeof CustomersRoute
   '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
@@ -574,6 +582,7 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/customers': typeof CustomersRoute
   '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
@@ -645,6 +654,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/cookie-policy'
     | '/customers'
     | '/data-room'
     | '/demo'
@@ -714,6 +724,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/cookie-policy'
     | '/customers'
     | '/data-room'
     | '/demo'
@@ -784,6 +795,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/cookie-policy'
     | '/customers'
     | '/data-room'
     | '/demo'
@@ -855,6 +867,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   CinematicDemoRoute: typeof CinematicDemoRoute
   ContactRoute: typeof ContactRoute
+  CookiePolicyRoute: typeof CookiePolicyRoute
   CustomersRoute: typeof CustomersRoute
   DataRoomRoute: typeof DataRoomRoute
   DemoRoute: typeof DemoRoute
@@ -1020,6 +1033,13 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/customers'
       preLoaderRoute: typeof CustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1457,6 +1477,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   CinematicDemoRoute: CinematicDemoRoute,
   ContactRoute: ContactRoute,
+  CookiePolicyRoute: CookiePolicyRoute,
   CustomersRoute: CustomersRoute,
   DataRoomRoute: DataRoomRoute,
   DemoRoute: DemoRoute,
