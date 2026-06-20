@@ -8,16 +8,14 @@ export function ScrollReveal({
   direction = "up",
   className = "",
   threshold = 0.15,
-  as: As = "div",
 }: {
   children: ReactNode;
   delay?: number;
   direction?: Direction;
   className?: string;
   threshold?: number;
-  as?: React.ElementType;
 }) {
-  const ref = useRef<HTMLElement | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
