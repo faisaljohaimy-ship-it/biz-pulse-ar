@@ -20,6 +20,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as BookRouteImport } from './routes/book'
@@ -122,6 +123,11 @@ const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomersRoute = CustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/customers': typeof CustomersRoute
   '/demo': typeof DemoRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -440,6 +447,7 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/customers': typeof CustomersRoute
   '/demo': typeof DemoRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -502,6 +510,7 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/customers': typeof CustomersRoute
   '/demo': typeof DemoRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -564,6 +573,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/customers'
     | '/demo'
     | '/executive-briefing'
     | '/films'
@@ -624,6 +634,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/customers'
     | '/demo'
     | '/executive-briefing'
     | '/films'
@@ -685,6 +696,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/customers'
     | '/demo'
     | '/executive-briefing'
     | '/films'
@@ -747,6 +759,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   CinematicDemoRoute: typeof CinematicDemoRoute
   ContactRoute: typeof ContactRoute
+  CustomersRoute: typeof CustomersRoute
   DemoRoute: typeof DemoRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
@@ -840,6 +853,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customers': {
+      id: '/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof CustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1277,6 +1297,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   CinematicDemoRoute: CinematicDemoRoute,
   ContactRoute: ContactRoute,
+  CustomersRoute: CustomersRoute,
   DemoRoute: DemoRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
