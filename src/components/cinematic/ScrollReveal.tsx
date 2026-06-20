@@ -61,10 +61,11 @@ export function ScrollReveal({
     willChange: "transform, opacity",
   };
 
+  const Tag = As as React.ElementType;
   return (
-    <As ref={ref as never} className={className} style={style}>
+    <Tag ref={ref} className={className} style={style}>
       {children}
-    </As>
+    </Tag>
   );
 }
 
