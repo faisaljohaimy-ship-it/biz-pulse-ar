@@ -29,5 +29,6 @@ export const RemotionRoot = () => (
     <Composition id="simar3d" component={SimAR3D} durationInFrames={SIM_AR3D_DURATION} fps={SIM_AR3D_FPS} width={1920} height={1080} />
     <Composition id="neexios" component={NeexiosCinematic} durationInFrames={NX_DURATION} fps={NX_FPS} width={1920} height={1080} />
     <Composition id="execdemo" component={ExecutiveDemo} durationInFrames={DX_DURATION} fps={DX_FPS} width={1920} height={1080} />
+    <Composition id="walkthrough" component={ExecutiveWalkthrough} durationInFrames={WT_DURATION} fps={WT_FPS} width={1920} height={1080} />
   </>
 );
