@@ -26,6 +26,7 @@ const CityScene = lazy(() => import("@/components/cinematic/CityScene"));
 const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
+import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
 const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
@@ -164,6 +165,9 @@ function CinematicHome() {
         <ParticleField density={0.00012} />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(58,142,255,0.28),transparent_55%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-[#04060d]" />
+
+        {/* Riyadh skyline · executive holograms · volumetric beams */}
+        <HeroSkyline isAr={isAr} />
 
         {/* corner telemetry HUD */}
         <div className="pointer-events-none absolute inset-x-5 top-24 z-[5] hidden justify-between text-[10px] uppercase tracking-[0.28em] text-white/45 md:flex">
