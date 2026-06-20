@@ -669,9 +669,12 @@ function GlobalScene({ isAr }: { isAr: boolean }) {
           loading="lazy"
           width={1920}
           height={1080}
-          className="h-full w-full scale-110 object-cover opacity-50"
+          className="h-full w-full scale-110 object-cover opacity-40"
         />
       </Parallax>
+      <div className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen">
+        <Suspense fallback={null}><EarthScene intensity="network" /></Suspense>
+      </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#04060d] via-[#04060d]/40 to-transparent" />
       <ParticleField density={0.00008} />
 
