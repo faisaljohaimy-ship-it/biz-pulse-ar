@@ -310,8 +310,8 @@ function HoloKpi({
         style={{ animation: "hero-scan 4s linear infinite" }}
       />
       {/* corner ticks */}
-      <span className={`absolute ${side === "left" ? "left-1" : "right-1"} top-1 h-2 w-2 border-t border-${side === "left" ? "l" : "r"} border-amber-300/60`} />
-      <span className={`absolute ${side === "left" ? "left-1" : "right-1"} bottom-1 h-2 w-2 border-b border-${side === "left" ? "l" : "r"} border-amber-300/60`} />
+      <span className={`absolute top-1 h-2 w-2 border-amber-300/60 ${side === "left" ? "left-1 border-l border-t" : "right-1 border-r border-t"}`} />
+      <span className={`absolute bottom-1 h-2 w-2 border-amber-300/60 ${side === "left" ? "left-1 border-l border-b" : "right-1 border-r border-b"}`} />
 
       <div className="flex items-center justify-between">
         <span className="text-[9px] uppercase tracking-[0.28em] text-white/55">{k.label}</span>
