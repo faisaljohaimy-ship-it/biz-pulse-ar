@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
@@ -70,11 +70,7 @@ function CinematicHome() {
   const ensureDemo = useServerFn(ensureDemoUser);
   const [demoLoading, setDemoLoading] = useState(false);
 
-  useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
-  }, [user, loading, navigate]);
-
-  if (loading || user) {
+  if (loading) {
     return (
       <div className="flex min-h-[100svh] items-center justify-center bg-[#04060d]">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
@@ -132,10 +128,10 @@ function CinematicHome() {
               </button>
             </nav>
             <Link
-              to="/login"
+              to={user ? "/dashboard" : "/login"}
               className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
             >
-              {isAr ? "دخول" : "Sign in"}
+              {user ? (isAr ? "غرفة القيادة" : "Command Center") : (isAr ? "دخول" : "Sign in")}
             </Link>
           </div>
         </div>
