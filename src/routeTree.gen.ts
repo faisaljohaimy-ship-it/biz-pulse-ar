@@ -23,8 +23,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
+import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
 import { Route as DpaRouteImport } from './routes/dpa'
+import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as DataRoomRouteImport } from './routes/data-room'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
@@ -145,14 +148,29 @@ const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
   path: '/executive-briefing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
+  id: '/executive-booking',
+  path: '/executive-booking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DpaRoute = DpaRouteImport.update({
   id: '/dpa',
   path: '/dpa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoVideosRoute = DemoVideosRouteImport.update({
+  id: '/demo-videos',
+  path: '/demo-videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataRoomRoute = DataRoomRouteImport.update({
+  id: '/data-room',
+  path: '/data-room',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CustomersRoute = CustomersRouteImport.update({
@@ -417,8 +435,11 @@ export interface FileRoutesByFullPath {
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
   '/customers': typeof CustomersRoute
+  '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
+  '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
@@ -483,8 +504,11 @@ export interface FileRoutesByTo {
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
   '/customers': typeof CustomersRoute
+  '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
+  '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
@@ -551,8 +575,11 @@ export interface FileRoutesById {
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
   '/customers': typeof CustomersRoute
+  '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
+  '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
@@ -619,8 +646,11 @@ export interface FileRouteTypes {
     | '/cinematic-demo'
     | '/contact'
     | '/customers'
+    | '/data-room'
     | '/demo'
+    | '/demo-videos'
     | '/dpa'
+    | '/executive-booking'
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
@@ -685,8 +715,11 @@ export interface FileRouteTypes {
     | '/cinematic-demo'
     | '/contact'
     | '/customers'
+    | '/data-room'
     | '/demo'
+    | '/demo-videos'
     | '/dpa'
+    | '/executive-booking'
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
@@ -752,8 +785,11 @@ export interface FileRouteTypes {
     | '/cinematic-demo'
     | '/contact'
     | '/customers'
+    | '/data-room'
     | '/demo'
+    | '/demo-videos'
     | '/dpa'
+    | '/executive-booking'
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
@@ -820,8 +856,11 @@ export interface RootRouteChildren {
   CinematicDemoRoute: typeof CinematicDemoRoute
   ContactRoute: typeof ContactRoute
   CustomersRoute: typeof CustomersRoute
+  DataRoomRoute: typeof DataRoomRoute
   DemoRoute: typeof DemoRoute
+  DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
+  ExecutiveBookingRoute: typeof ExecutiveBookingRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
@@ -941,6 +980,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExecutiveBriefingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/executive-booking': {
+      id: '/executive-booking'
+      path: '/executive-booking'
+      fullPath: '/executive-booking'
+      preLoaderRoute: typeof ExecutiveBookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dpa': {
       id: '/dpa'
       path: '/dpa'
@@ -948,11 +994,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DpaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo-videos': {
+      id: '/demo-videos'
+      path: '/demo-videos'
+      fullPath: '/demo-videos'
+      preLoaderRoute: typeof DemoVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo': {
       id: '/demo'
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-room': {
+      id: '/data-room'
+      path: '/data-room'
+      fullPath: '/data-room'
+      preLoaderRoute: typeof DataRoomRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/customers': {
@@ -1398,8 +1458,11 @@ const rootRouteChildren: RootRouteChildren = {
   CinematicDemoRoute: CinematicDemoRoute,
   ContactRoute: ContactRoute,
   CustomersRoute: CustomersRoute,
+  DataRoomRoute: DataRoomRoute,
   DemoRoute: DemoRoute,
+  DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
+  ExecutiveBookingRoute: ExecutiveBookingRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
