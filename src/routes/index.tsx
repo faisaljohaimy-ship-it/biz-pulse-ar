@@ -752,6 +752,48 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
         { tag: "People", t: "Restructure product org — 3 new leads", c: "+22% velocity" },
       ];
 
+  // Future scenarios + Board Meeting Mode
+  type ScenarioKey = "conservative" | "base" | "aggressive";
+  const [scenario, setScenario] = useState<ScenarioKey>("base");
+  const [boardMode, setBoardMode] = useState(false);
+
+  const scenarios: Record<ScenarioKey, {
+    label: string; revenue: string; risk: string; roi: string; horizon: string; note: string;
+    tone: string; pts: number[];
+  }> = {
+    conservative: {
+      label: isAr ? "محافظ" : "Conservative",
+      revenue: "+SAR 96M", risk: "−42%", roi: "+8.4%",
+      horizon: isAr ? "أفق ١٨ شهر" : "18-month horizon",
+      note: isAr ? "تنفيذ تدريجي · مخاطرة منخفضة" : "Gradual rollout · low risk exposure",
+      tone: "cyan",
+      pts: [40, 42, 46, 49, 53, 56, 58, 62, 65, 68, 72, 76],
+    },
+    base: {
+      label: isAr ? "أساسي" : "Base",
+      revenue: "+SAR 184M", risk: "−61%", roi: "+11.2%",
+      horizon: isAr ? "أفق ١٢ شهر" : "12-month horizon",
+      note: isAr ? "خطة موصى بها من ARIA" : "ARIA-recommended trajectory",
+      tone: "emerald",
+      pts: [40, 46, 54, 60, 68, 76, 84, 90, 96, 104, 112, 120],
+    },
+    aggressive: {
+      label: isAr ? "هجومي" : "Aggressive",
+      revenue: "+SAR 312M", risk: "−39%", roi: "+18.7%",
+      horizon: isAr ? "أفق ٩ أشهر" : "9-month horizon",
+      note: isAr ? "توسّع متوازٍ · رأس مال أعلى" : "Parallel expansion · higher capital",
+      tone: "amber",
+      pts: [40, 52, 64, 78, 92, 108, 124, 138, 152, 166, 178, 188],
+    },
+  };
+  const cur = scenarios[scenario];
+  const toneClasses: Record<string, { text: string; bg: string; ring: string; from: string; to: string }> = {
+    cyan:    { text: "text-cyan-300",    bg: "bg-cyan-400",    ring: "ring-cyan-300/40",    from: "from-cyan-400",    to: "to-cyan-200" },
+    emerald: { text: "text-emerald-300", bg: "bg-emerald-400", ring: "ring-emerald-300/40", from: "from-emerald-400", to: "to-emerald-200" },
+    amber:   { text: "text-amber-300",   bg: "bg-amber-400",   ring: "ring-amber-300/40",   from: "from-amber-400",   to: "to-amber-200" },
+  };
+  const tc = toneClasses[cur.tone];
+
   const kpis = [
     { v: "12.8K", l: isAr ? "إشارة/ث" : "Signals/sec", c: "text-cyan-300" },
     { v: "47", l: isAr ? "تنبيه نشط" : "Active alerts", c: "text-amber-300" },
