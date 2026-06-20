@@ -298,18 +298,58 @@ function CinematicHome() {
    ═════════════════════════════════════════════════════════ */
 function ChaosScene({ isAr }: { isAr: boolean }) {
   const systems = ["ERP", "SAP", "CRM", "Excel", "Emails", "BI", "Docs", "Slack", "SharePoint", "Oracle", "HRMS", "Finance"];
+
+  const painsLeft = isAr
+    ? [
+        { k: "صوامع البيانات",   v: 73, hint: "١٢ نظاماً غير متصل" },
+        { k: "تأخّر التقارير",   v: 86, hint: "متوسط ٩ أيام/تقرير" },
+        { k: "اختناقات تشغيلية", v: 64, hint: "٤١ موافقة عالقة" },
+      ]
+    : [
+        { k: "Data Silos",              v: 73, hint: "12 disconnected systems" },
+        { k: "Slow Reporting",          v: 86, hint: "9 days avg per report" },
+        { k: "Operational Bottlenecks", v: 64, hint: "41 approvals stuck" },
+      ];
+  const painsRight = isAr
+    ? [
+        { k: "تصاعد المخاطر", v: 78, hint: "٣ إشارات حرجة بدون مالك" },
+        { k: "قرارات بطيئة",  v: 81, hint: "متوسط ٤.٢ يوم/قرار" },
+        { k: "ضياع المعرفة",  v: 69, hint: "٣٧٪ من المستندات يتيمة" },
+      ]
+    : [
+        { k: "Risk Escalation", v: 78, hint: "3 critical signals unowned" },
+        { k: "Slow Decisions",  v: 81, hint: "4.2 days avg per decision" },
+        { k: "Lost Knowledge",  v: 69, hint: "37% of docs orphaned" },
+      ];
+
+  const PainCard = ({ k, v, hint }: { k: string; v: number; hint: string }) => (
+    <div className="rounded-lg border border-red-500/15 bg-gradient-to-br from-red-500/[0.06] to-transparent p-4 backdrop-blur-sm">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] uppercase tracking-[0.28em] text-red-300/85">{k}</span>
+        <span className="text-xs font-semibold tabular-nums text-red-200">{v}%</span>
+      </div>
+      <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-red-400 via-red-500 to-red-600"
+          style={{ width: `${v}%`, animation: "chaos-pulse 2.8s ease-in-out infinite" }}
+        />
+      </div>
+      <div className="mt-2 text-[10px] text-white/45">{hint}</div>
+    </div>
+  );
+
   return (
     <section
       data-scene="2"
-      className="relative flex min-h-[100svh] items-center overflow-hidden bg-[#04060d] py-24"
+      className="relative flex min-h-[110svh] items-center overflow-hidden bg-[#04060d] py-24"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,80,80,0.12),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,80,80,0.14),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(255,120,80,0.08),transparent_55%)]" />
       <ChaosCanvas />
       <ParticleField density={0.00006} />
 
-      {/* floating systems orbiting a center */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="relative h-[520px] w-[520px] max-w-[90vw]">
+        <div className="relative h-[520px] w-[520px] max-w-[88vw]">
           {systems.map((s, i) => {
             const angle = (i / systems.length) * Math.PI * 2;
             const radius = 220;
@@ -328,7 +368,6 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
               </div>
             );
           })}
-          {/* lines from center */}
           <svg className="absolute inset-0 h-full w-full" viewBox="-260 -260 520 520" aria-hidden>
             {systems.map((_, i) => {
               const angle = (i / systems.length) * Math.PI * 2;
@@ -340,35 +379,58 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
                   y1={0}
                   x2={Math.cos(angle) * r}
                   y2={Math.sin(angle) * r}
-                  stroke="rgba(255,255,255,0.08)"
+                  stroke="rgba(255,80,80,0.18)"
                   strokeDasharray="2 4"
                 />
               );
             })}
           </svg>
-          {/* glowing core */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-amber-300 to-amber-600 shadow-[0_0_60px_rgba(245,180,84,0.7)] animate-pulse" />
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-red-400 to-red-700 shadow-[0_0_60px_rgba(255,80,80,0.6)] animate-pulse" />
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-3xl px-5">
-        <ScrollReveal>
-          <p className="text-xs uppercase tracking-[0.35em] text-red-400/80">{isAr ? "المشهد ٠٢ · الفوضى" : "Scene 02 · The Chaos"}</p>
-          <h2 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-            {isAr ? "اثنا عشر نظامًا." : "Twelve systems."}{" "}
-            <span className="text-white/40">{isAr ? "صفر معنى." : "Zero meaning."}</span>
-          </h2>
-        </ScrollReveal>
-        <ScrollReveal delay={250}>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/65">
-            {isAr
-              ? "كل ERP وCRM وExcel وبريد يحمل قطعة من الحقيقة. بدون نواة، تبقى مجرد ضوضاء."
-              : "Every ERP, CRM, spreadsheet and inbox holds a fragment of the truth. Without a core, it's just noise."}
-          </p>
-        </ScrollReveal>
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-5">
+        <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,2fr)_1fr]">
+          <div className="order-2 space-y-3 lg:order-1">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-red-300/70">
+              {isAr ? "نقاط الألم" : "Pain Signals"}
+            </p>
+            {painsLeft.map((p) => <PainCard key={p.k} {...p} />)}
+          </div>
+
+          <div className="order-1 text-center lg:order-2">
+            <ScrollReveal>
+              <p className="text-xs uppercase tracking-[0.4em] text-red-400/80">
+                {isAr ? "المشهد ٠٢ · الفوضى" : "Scene 02 · The Chaos"}
+              </p>
+              <h2 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+                {isAr ? "اثنا عشر نظامًا." : "Twelve systems."}{" "}
+                <span className="text-white/40">{isAr ? "صفر معنى." : "Zero meaning."}</span>
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal delay={250}>
+              <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg">
+                {isAr
+                  ? "كل ERP وCRM وExcel وبريد يحمل قطعة من الحقيقة. بدون نواة، تبقى مجرد ضوضاء."
+                  : "Every ERP, CRM, spreadsheet and inbox holds a fragment of the truth. Without a core, it's just noise."}
+              </p>
+            </ScrollReveal>
+          </div>
+
+          <div className="order-3 space-y-3">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-red-300/70 ltr:text-right">
+              {isAr ? "نقاط الألم" : "Pain Signals"}
+            </p>
+            {painsRight.map((p) => <PainCard key={p.k} {...p} />)}
+          </div>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes chaos-pulse { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
+      `}</style>
     </section>
   );
 }
@@ -1124,6 +1186,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
   const [projects, setProjects] = useState(48);
   const [revenue, setRevenue] = useState(180); // SAR millions / year
   const [departments, setDepartments] = useState(12);
+  const [opCosts, setOpCosts] = useState(120); // SAR millions / year — operational baseline
 
   // Derived impact model — designed to feel responsive and grounded.
   const sim = useMemo(() => {
@@ -1131,16 +1194,18 @@ function RoiScene({ isAr }: { isAr: boolean }) {
     const projF = Math.min(projects / 80, 1.4);
     const deptF = Math.min(departments / 20, 1.3);
     const revF = Math.min(revenue / 500, 1.6);
+    const costF = Math.min(opCosts / Math.max(revenue, 1), 1.4); // cost intensity
     const scale = (empF + projF + deptF) / 3;
 
-    const costReduction = Math.min(0.42, 0.18 + scale * 0.22);                // %
-    const efficiency    = Math.min(0.78, 0.32 + scale * 0.42);                // %
-    const riskReduction = Math.min(0.71, 0.28 + scale * 0.36);                // %
-    const revenueGrowth = Math.min(0.46, 0.12 + scale * 0.22 + revF * 0.06);  // %
+    // The heavier the op-cost base, the larger the absolute savings opportunity.
+    const costReduction = Math.min(0.46, 0.18 + scale * 0.22 + costF * 0.05);
+    const efficiency    = Math.min(0.82, 0.32 + scale * 0.42 + costF * 0.05);
+    const riskReduction = Math.min(0.74, 0.28 + scale * 0.36);
+    const revenueGrowth = Math.min(0.46, 0.12 + scale * 0.22 + revF * 0.06);
 
-    const annualSavings  = revenue * costReduction * 0.55;     // SAR M
+    const annualSavings  = opCosts * costReduction;            // SAR M — applied to op-costs base
     const newRevenue     = revenue * revenueGrowth;            // SAR M
-    const hoursSaved     = Math.round(employees * 6.4 * efficiency); // hours / month
+    const hoursSaved     = Math.round(employees * 6.4 * efficiency);
     const decisionsAuto  = Math.round(projects * departments * 2.6);
 
     const investment = 2.4 + departments * 0.18 + employees * 0.0009; // SAR M / yr
@@ -1153,7 +1218,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
       annualSavings, newRevenue, hoursSaved, decisionsAuto,
       investment, totalImpact, roi, payback,
     };
-  }, [employees, projects, revenue, departments]);
+  }, [employees, projects, revenue, departments, opCosts]);
 
   const fmtPct = (n: number) => `${(n * 100).toFixed(1)}%`;
   const fmtM   = (n: number) => `SAR ${n.toFixed(1)}M`;
@@ -1163,10 +1228,11 @@ function RoiScene({ isAr }: { isAr: boolean }) {
     id: string; label: string; value: number; set: (v: number) => void;
     min: number; max: number; step: number; suffix?: string;
   }[] = [
-    { id: "emp", label: isAr ? "الموظفون"     : "Employees",   value: employees,   set: setEmployees,   min: 50,  max: 25000, step: 50 },
-    { id: "prj", label: isAr ? "المشاريع"      : "Projects",    value: projects,    set: setProjects,    min: 5,   max: 400,   step: 1  },
-    { id: "rev", label: isAr ? "الإيراد السنوي" : "Annual Revenue", value: revenue, set: setRevenue,     min: 10,  max: 2000,  step: 5, suffix: "M SAR" },
-    { id: "dep", label: isAr ? "الأقسام"      : "Departments", value: departments, set: setDepartments, min: 2,   max: 40,    step: 1  },
+    { id: "emp", label: isAr ? "الموظفون"        : "Employees",         value: employees,   set: setEmployees,   min: 50,  max: 25000, step: 50 },
+    { id: "prj", label: isAr ? "المشاريع"         : "Projects",          value: projects,    set: setProjects,    min: 5,   max: 400,   step: 1  },
+    { id: "dep", label: isAr ? "الأقسام"          : "Departments",       value: departments, set: setDepartments, min: 2,   max: 40,    step: 1  },
+    { id: "rev", label: isAr ? "الإيراد السنوي"    : "Annual Revenue",    value: revenue,     set: setRevenue,     min: 10,  max: 2000,  step: 5,  suffix: "M SAR" },
+    { id: "cst", label: isAr ? "التكاليف التشغيلية" : "Operational Costs", value: opCosts,     set: setOpCosts,     min: 5,   max: 1500,  step: 5,  suffix: "M SAR" },
   ];
 
   const impacts = [
@@ -1478,52 +1544,127 @@ function FilmsScene({ isAr }: { isAr: boolean }) {
    SCENE 10 — FINAL REVEAL
    ═════════════════════════════════════════════════════════ */
 function FinalRevealScene({ isAr }: { isAr: boolean }) {
+  // 18 light streams converging to the logo origin from every direction.
+  const streams = Array.from({ length: 18 }, (_, i) => {
+    const a = (i / 18) * Math.PI * 2;
+    return {
+      a,
+      x: Math.cos(a) * 60, // vw offset
+      y: Math.sin(a) * 60,
+      delay: (i % 6) * 0.18,
+    };
+  });
+
   return (
     <section
       data-scene="10"
-      className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-black"
+      className="relative flex min-h-[120svh] items-center justify-center overflow-hidden bg-black"
     >
+      {/* Earth backdrop */}
       <img
         src={cinematicEarth}
         alt=""
         loading="lazy"
         width={1920}
         height={1080}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45"
       />
       <div className="pointer-events-none absolute inset-0 opacity-90">
-        <Suspense fallback={null}><EarthScene /></Suspense>
+        <Suspense fallback={null}><EarthScene intensity="network" /></Suspense>
       </div>
-      <ParticleField density={0.00015} />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black" />
+      <ParticleField density={0.00018} />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/10 to-black" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,180,84,0.18),transparent_55%)]" />
 
-      <div className="relative z-10 mx-auto max-w-3xl px-5 text-center">
+      {/* Converging light streams forming the logo origin */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        {streams.map((s, i) => (
+          <span
+            key={i}
+            className="absolute left-1/2 top-1/2 h-[2px] w-[60vmax] origin-left rounded-full"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(245,180,84,0) 0%, rgba(245,180,84,0.9) 70%, rgba(255,255,255,1) 100%)",
+              transform: `translate(-100%, -50%) rotate(${(s.a * 180) / Math.PI}deg)`,
+              animation: `nx-stream 4.6s cubic-bezier(.22,.61,.36,1) ${s.delay}s infinite`,
+              opacity: 0,
+            }}
+          />
+        ))}
+        {/* concentric rings exhaling outward */}
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={`r${i}`}
+            className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-300/40"
+            style={{ animation: `nx-ring 5.6s ease-out ${i * 0.9}s infinite` }}
+          />
+        ))}
+        {/* core flare */}
+        <span
+          className="absolute left-1/2 top-1/2 h-[160px] w-[160px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(255,243,196,0.95) 0%, rgba(245,180,84,0.55) 35%, rgba(245,180,84,0) 70%)",
+            animation: "nx-core 3.4s ease-in-out infinite",
+            filter: "blur(2px)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-4xl px-5 text-center">
         <ScrollReveal>
-          <p className="text-xs uppercase tracking-[0.4em] text-amber-300/80">{isAr ? "المشهد ١٠ · الكشف" : "Scene 10 · The Reveal"}</p>
+          <p className="text-[10px] uppercase tracking-[0.5em] text-amber-300/80 sm:text-xs">
+            {isAr ? "المشهد ١٠ · الكشف" : "Scene 10 · The Reveal"}
+          </p>
         </ScrollReveal>
-        <ScrollReveal delay={200}>
-          <h2 className="mt-6 text-4xl font-bold leading-[0.98] tracking-tight sm:text-6xl lg:text-8xl">
+
+        {/* Logo lockup, formed from light */}
+        <ScrollReveal delay={150}>
+          <div className="mt-10">
+            <div
+              className="bg-gradient-to-br from-white via-amber-100 to-amber-400 bg-clip-text text-7xl font-bold leading-[0.92] tracking-[-0.04em] text-transparent sm:text-9xl"
+              style={{
+                animation: "nx-lockup 3.2s cubic-bezier(.22,.61,.36,1) both",
+                textShadow: "0 0 60px rgba(245,180,84,0.35)",
+              }}
+            >
+              NEXUS
+            </div>
+            <div
+              className="mt-2 text-xs uppercase tracking-[0.7em] text-white/65 sm:text-sm"
+              style={{ animation: "nx-fade 2s ease-out 1.4s both" }}
+            >
+              AI&nbsp;·&nbsp;OS
+            </div>
+            <div
+              className="mx-auto mt-6 h-px w-40 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent"
+              style={{ animation: "nx-line 1.8s ease-out 1.2s both" }}
+            />
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={500}>
+          <h2 className="mt-10 text-3xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             {isAr ? (
               <>
-                المستقبل ذكي.<br />
-                <span className="bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text text-transparent">
+                <span className="block text-white/90">المستقبل ذكي.</span>
+                <span className="mt-1 block bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text text-transparent">
                   المستقبل نكسس.
                 </span>
               </>
             ) : (
               <>
-                The future is intelligent.<br />
-                <span className="bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text text-transparent">
+                <span className="block text-white/90">The future is intelligent.</span>
+                <span className="mt-1 block bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text text-transparent">
                   The future is Nexus.
                 </span>
               </>
             )}
           </h2>
-        </ScrollReveal>
-        <ScrollReveal delay={500}>
-          <p className="mx-auto mt-6 max-w-xl text-base text-white/65 sm:text-lg">
+          <p className="mx-auto mt-6 max-w-xl text-base text-white/60 sm:text-lg">
             {isAr ? "شبكة ذكاء عالمية. نظام تشغيل واحد." : "A global intelligence network. One operating system."}
           </p>
+
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
               to="/request-demo"
@@ -1539,6 +1680,7 @@ function FinalRevealScene({ isAr }: { isAr: boolean }) {
               {isAr ? "للمؤسسات" : "Talk to enterprise"}
             </Link>
           </div>
+
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.35em] text-white/35">
             <span>{isAr ? "للمؤسسات" : "Enterprise"}</span>
             <span>·</span>
@@ -1550,6 +1692,31 @@ function FinalRevealScene({ isAr }: { isAr: boolean }) {
           </div>
         </ScrollReveal>
       </div>
+
+      <style>{`
+        @keyframes nx-stream {
+          0%   { opacity: 0; transform: translate(-100%,-50%) rotate(var(--r,0deg)) scaleX(0.2); }
+          40%  { opacity: 1; }
+          75%  { opacity: 0.9; transform: translate(-100%,-50%) rotate(var(--r,0deg)) scaleX(1); }
+          100% { opacity: 0; transform: translate(-100%,-50%) rotate(var(--r,0deg)) scaleX(1); }
+        }
+        @keyframes nx-ring {
+          0%   { opacity: 0.85; transform: translate(-50%,-50%) scale(0.2); }
+          80%  { opacity: 0;    transform: translate(-50%,-50%) scale(3.6); }
+          100% { opacity: 0;    transform: translate(-50%,-50%) scale(3.6); }
+        }
+        @keyframes nx-core {
+          0%,100% { opacity: 0.55; transform: translate(-50%,-50%) scale(0.85); }
+          50%     { opacity: 1;    transform: translate(-50%,-50%) scale(1.15); }
+        }
+        @keyframes nx-lockup {
+          0%   { opacity: 0; letter-spacing: 0.6em; filter: blur(18px); transform: translateY(10px); }
+          60%  { opacity: 1; letter-spacing: -0.02em; filter: blur(0);  }
+          100% { opacity: 1; letter-spacing: -0.04em; filter: blur(0); transform: translateY(0); }
+        }
+        @keyframes nx-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes nx-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      `}</style>
     </section>
   );
 }
