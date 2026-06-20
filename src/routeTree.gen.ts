@@ -16,6 +16,7 @@ import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RoiRouteImport } from './routes/roi'
+import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -113,6 +114,11 @@ const SecurityRoute = SecurityRouteImport.update({
 const RoiRoute = RoiRouteImport.update({
   id: '/roi',
   path: '/roi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsibleAiRoute = ResponsibleAiRouteImport.update({
+  id: '/responsible-ai',
+  path: '/responsible-ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RequestDemoRoute = RequestDemoRouteImport.update({
@@ -461,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -532,6 +539,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -605,6 +613,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -678,6 +687,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/responsible-ai'
     | '/roi'
     | '/security'
     | '/sitemap.xml'
@@ -749,6 +759,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/responsible-ai'
     | '/roi'
     | '/security'
     | '/sitemap.xml'
@@ -821,6 +832,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/responsible-ai'
     | '/roi'
     | '/security'
     | '/sitemap.xml'
@@ -894,6 +906,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RequestDemoRoute: typeof RequestDemoRoute
+  ResponsibleAiRoute: typeof ResponsibleAiRoute
   RoiRoute: typeof RoiRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -955,6 +968,13 @@ declare module '@tanstack/react-router' {
       path: '/roi'
       fullPath: '/roi'
       preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responsible-ai': {
+      id: '/responsible-ai'
+      path: '/responsible-ai'
+      fullPath: '/responsible-ai'
+      preLoaderRoute: typeof ResponsibleAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/request-demo': {
@@ -1512,6 +1532,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RequestDemoRoute: RequestDemoRoute,
+  ResponsibleAiRoute: ResponsibleAiRoute,
   RoiRoute: RoiRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
