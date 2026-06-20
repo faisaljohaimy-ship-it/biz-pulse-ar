@@ -10,6 +10,7 @@ import { DocumentaryEN, DOC_EN_DURATION, DOC_EN_FPS } from "./DocumentaryEN";
 import { StepsAR, STEPS_AR_DURATION, STEPS_AR_FPS } from "./StepsAR";
 import { StepsAR3D, STEPS_AR3D_DURATION, STEPS_AR3D_FPS } from "./StepsAR3D";
 import { SimAR3D, SIM_AR3D_DURATION, SIM_AR3D_FPS } from "./SimAR3D";
+import { NeexiosCinematic, NX_DURATION, NX_FPS } from "./NeexiosCinematic";
 
 export const RemotionRoot = () => (
   <>
