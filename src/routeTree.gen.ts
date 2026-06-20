@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RoiRouteImport } from './routes/roi'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -74,6 +75,11 @@ const TermsRoute = TermsRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoiRoute = RoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RequestDemoRoute = RequestDemoRouteImport.update({
@@ -368,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -425,6 +432,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -484,6 +492,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -543,6 +552,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/roi'
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
@@ -600,6 +610,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/roi'
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
@@ -658,6 +669,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/roi'
     | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/admin'
@@ -717,6 +729,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RequestDemoRoute: typeof RequestDemoRoute
+  RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -738,6 +751,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roi': {
+      id: '/roi'
+      path: '/roi'
+      fullPath: '/roi'
+      preLoaderRoute: typeof RoiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/request-demo': {
@@ -1223,6 +1243,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RequestDemoRoute: RequestDemoRoute,
+  RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiChatRoute: ApiChatRoute,
