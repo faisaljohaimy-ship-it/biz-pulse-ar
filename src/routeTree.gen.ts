@@ -33,6 +33,7 @@ import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
@@ -197,6 +198,11 @@ const CinematicDemoRoute = CinematicDemoRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AupRoute = AupRouteImport.update({
+  id: '/aup',
+  path: '/aup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -437,6 +443,7 @@ const AuthenticatedAssistantThreadIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aup': typeof AupRoute
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
@@ -507,6 +514,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aup': typeof AupRoute
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
@@ -579,6 +587,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/aup': typeof AupRoute
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
@@ -651,6 +660,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/aup'
     | '/book'
     | '/cinematic-demo'
     | '/contact'
@@ -721,6 +731,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/aup'
     | '/book'
     | '/cinematic-demo'
     | '/contact'
@@ -792,6 +803,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/aup'
     | '/book'
     | '/cinematic-demo'
     | '/contact'
@@ -864,6 +876,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AupRoute: typeof AupRoute
   BookRoute: typeof BookRoute
   CinematicDemoRoute: typeof CinematicDemoRoute
   ContactRoute: typeof ContactRoute
@@ -1061,6 +1074,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aup': {
+      id: '/aup'
+      path: '/aup'
+      fullPath: '/aup'
+      preLoaderRoute: typeof AupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1474,6 +1494,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AupRoute: AupRoute,
   BookRoute: BookRoute,
   CinematicDemoRoute: CinematicDemoRoute,
   ContactRoute: ContactRoute,
