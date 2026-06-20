@@ -522,14 +522,36 @@ function TwinCityScene({ isAr }: { isAr: boolean }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SCENE 05 — COMMAND CENTER
+   SCENE 05 — EXECUTIVE COMMAND CENTER (Boardroom)
    ═════════════════════════════════════════════════════════ */
 function CommandCenterScene({ isAr }: { isAr: boolean }) {
+  const recs = isAr
+    ? [
+        { tag: "TActical", t: "إعادة تخصيص ٢.٤M ريال إلى قطاع الخدمات", c: "+11.2% ROI" },
+        { tag: "Risk", t: "تأمين سلسلة الإمداد — مورد بديل في الرياض", c: "−68% تعرض" },
+        { tag: "Growth", t: "إطلاق ARIA في قطاع التجزئة Q3", c: "+SAR 18M" },
+        { tag: "People", t: "إعادة هيكلة فريق المنتج — ٣ قادة جدد", c: "+22% إنتاجية" },
+      ]
+    : [
+        { tag: "Tactical", t: "Reallocate SAR 2.4M into Services vertical", c: "+11.2% ROI" },
+        { tag: "Risk", t: "Hedge supply chain — alternate Riyadh vendor", c: "−68% exposure" },
+        { tag: "Growth", t: "Launch ARIA in Retail vertical Q3", c: "+SAR 18M" },
+        { tag: "People", t: "Restructure product org — 3 new leads", c: "+22% velocity" },
+      ];
+
+  const kpis = [
+    { v: "12.8K", l: isAr ? "إشارة/ث" : "Signals/sec", c: "text-cyan-300" },
+    { v: "47", l: isAr ? "تنبيه نشط" : "Active alerts", c: "text-amber-300" },
+    { v: "94%", l: isAr ? "ثقة النموذج" : "Model confidence", c: "text-emerald-300" },
+    { v: "<1s", l: isAr ? "زمن القرار" : "Decision latency", c: "text-violet-300" },
+  ];
+
   return (
     <section
       data-scene="5"
-      className="relative flex min-h-[100svh] items-center overflow-hidden"
+      className="relative flex min-h-[130svh] items-center overflow-hidden bg-[#02030a]"
     >
+      {/* Panoramic holographic backdrop */}
       <div className="absolute inset-0">
         <img
           src={cinematicBoardroom}
@@ -537,53 +559,354 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
           loading="lazy"
           width={1920}
           height={1080}
-          className="h-full w-full object-cover opacity-45"
+          className="h-full w-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#04060d] via-[#04060d]/40 to-[#04060d]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(58,142,255,0.15),transparent_55%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#02030a] via-[#02030a]/55 to-[#02030a]" />
+        {/* Curved holo wall grid */}
+        <div
+          className="absolute inset-x-0 top-0 h-[85%] opacity-[0.18]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(96,165,250,0.45) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.45) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+            transform: "perspective(900px) rotateX(38deg) translateY(-10%) scale(1.4)",
+            transformOrigin: "50% 0%",
+            maskImage: "radial-gradient(ellipse 70% 55% at 50% 30%, #000 40%, transparent 80%)",
+          }}
+        />
+        {/* Floor reflection grid */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-[40%] opacity-[0.22]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(125,211,252,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(125,211,252,0.5) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+            transform: "perspective(700px) rotateX(60deg)",
+            transformOrigin: "50% 100%",
+            maskImage: "linear-gradient(to top, #000 5%, transparent 90%)",
+          }}
+        />
+        {/* Volumetric light beams */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,rgba(96,165,250,0.18),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_30%,rgba(167,139,250,0.12),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_30%,rgba(245,180,84,0.10),transparent_45%)]" />
+        {/* Top vignette */}
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#02030a] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-60 bg-gradient-to-t from-[#02030a] to-transparent" />
       </div>
-      <ParticleField density={0.00005} />
+      <ParticleField density={0.00009} />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 py-32">
-        <div className="max-w-2xl">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-28 sm:py-36">
+        {/* Title */}
+        <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
-            <p className="text-xs uppercase tracking-[0.35em] text-blue-300/80">{isAr ? "المشهد ٠٥ · غرفة القيادة" : "Scene 05 · The Command Room"}</p>
+            <p className="text-[11px] uppercase tracking-[0.45em] text-blue-300/80">
+              {isAr ? "المشهد ٠٥ · غرفة القيادة التنفيذية" : "Scene 05 · Executive Command Center"}
+            </p>
           </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <h2 className="mt-4 text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              {isAr ? "غرفة قيادة" : "A command room"}<br />
-              <span className="bg-gradient-to-r from-blue-200 to-cyan-300 bg-clip-text text-transparent">
-                {isAr ? "تليق بالقرار." : "worthy of the decision."}
+          <ScrollReveal delay={150}>
+            <h2 className="mt-5 text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+              {isAr ? "حيث تتخذ القرارات" : "Where the decisions"}
+              <br />
+              <span className="bg-gradient-to-r from-blue-200 via-cyan-200 to-violet-300 bg-clip-text text-transparent">
+                {isAr ? "بمليار دولار." : "of a trillion are made."}
               </span>
             </h2>
           </ScrollReveal>
-          <ScrollReveal delay={400}>
-            <p className="mt-6 text-lg text-white/70">
+          <ScrollReveal delay={300}>
+            <p className="mx-auto mt-5 max-w-xl text-base text-white/65 sm:text-lg">
               {isAr
-                ? "شاشات حية. تحليل لحظي. توصيات ARIA. كل ما يحتاجه مجلس الإدارة في ٦٠ ثانية."
-                : "Live screens. Realtime analytics. ARIA's recommendations. Everything a board needs in 60 seconds."}
+                ? "جدار هولوجرافي بانورامي. ARIA في المركز. كل مؤشر، كل خطر، كل فرصة — على شاشة واحدة."
+                : "A panoramic holographic wall. ARIA at its core. Every metric, risk and opportunity — one surface of truth."}
             </p>
           </ScrollReveal>
         </div>
 
-        {/* HUD — full-bleed glass strip, not cards */}
-        <ScrollReveal delay={600}>
-          <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl sm:grid-cols-4">
-            {[
-              { v: "12.8K", l: isAr ? "إشارة/ث" : "Signals/sec" },
-              { v: "47", l: isAr ? "تنبيه نشط" : "Active alerts" },
-              { v: "94%", l: isAr ? "ثقة النموذج" : "Model confidence" },
-              { v: "<1s", l: isAr ? "زمن القرار" : "Decision latency" },
-            ].map((s) => (
-              <div key={s.l} className="bg-[#04060d]/50 px-6 py-8">
-                <div className="text-3xl font-bold tracking-tight text-white sm:text-4xl">{s.v}</div>
-                <div className="mt-1.5 text-[11px] uppercase tracking-wider text-white/50">{s.l}</div>
+        {/* Executive KPI strip */}
+        <ScrollReveal delay={400}>
+          <div className="mx-auto mt-14 grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-2xl sm:grid-cols-4">
+            {kpis.map((s) => (
+              <div key={s.l} className="relative bg-[#04060d]/60 px-5 py-6">
+                <div className={`text-3xl font-bold tracking-tight sm:text-4xl ${s.c}`}>{s.v}</div>
+                <div className="mt-1.5 text-[10px] uppercase tracking-[0.25em] text-white/45">{s.l}</div>
+                <span className={`absolute right-3 top-3 h-1.5 w-1.5 rounded-full ${s.c.replace("text-", "bg-")} animate-pulse`} />
               </div>
             ))}
           </div>
         </ScrollReveal>
+
+        {/* Holographic wall — 3 columns on desktop */}
+        <div className="mt-14 grid gap-5 lg:grid-cols-[1fr_1.25fr_1fr]">
+          {/* LEFT — Risk Heat Map + Revenue Projection */}
+          <div className="space-y-5">
+            <HoloFrame label={isAr ? "خريطة المخاطر" : "Risk Heat Map"} accent="amber">
+              <RiskHeatmap />
+              <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-white/50">
+                <span>{isAr ? "٧ مناطق حرجة" : "7 critical zones"}</span>
+                <span className="text-amber-300">●  LIVE</span>
+              </div>
+            </HoloFrame>
+            <HoloFrame label={isAr ? "توقّع الإيرادات" : "Revenue Projection"} accent="cyan">
+              <RevenueProjection />
+              <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-wider">
+                <span className="text-white/50">{isAr ? "أفق ١٢ شهر" : "12-month horizon"}</span>
+                <span className="text-emerald-300">+ SAR 184M</span>
+              </div>
+            </HoloFrame>
+          </div>
+
+          {/* CENTER — ARIA */}
+          <ScrollReveal delay={200} direction="scale">
+            <div className="relative h-[440px] overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-b from-white/[0.05] to-white/[0.01] backdrop-blur-2xl sm:h-[520px]">
+              {/* Aria core */}
+              <div className="absolute inset-0">
+                <Suspense fallback={null}>
+                  <AriaCore />
+                </Suspense>
+              </div>
+              {/* Glow pedestal */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(ellipse_at_50%_100%,rgba(96,165,250,0.45),transparent_70%)]" />
+              {/* Label */}
+              <div className="absolute inset-x-0 top-5 text-center">
+                <p className="text-[10px] uppercase tracking-[0.5em] text-cyan-200/80">
+                  {isAr ? "الذكاء التنفيذي" : "Executive Intelligence"}
+                </p>
+                <p className="mt-1 text-2xl font-semibold tracking-wide text-white">ARIA</p>
+              </div>
+              {/* Speaking waveform */}
+              <div className="absolute inset-x-0 bottom-6 flex items-end justify-center gap-1">
+                {Array.from({ length: 28 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="w-[3px] rounded-full bg-cyan-300/70"
+                    style={{
+                      height: `${8 + Math.abs(Math.sin(i * 0.6)) * 28}px`,
+                      animation: `pulse 1.${(i % 9) + 1}s ease-in-out ${i * 0.05}s infinite`,
+                    }}
+                  />
+                ))}
+              </div>
+              {/* Quote */}
+              <div className="absolute inset-x-6 bottom-20 text-center">
+                <p className="text-[13px] leading-relaxed text-white/85 sm:text-sm">
+                  {isAr
+                    ? "« أوصي بإعادة تخصيص ٢.٤M ريال — تأثير +١١.٢٪ على العائد. »"
+                    : "“I recommend reallocating SAR 2.4M — projected +11.2% ROI impact.”"}
+                </p>
+              </div>
+              {/* Corner brackets */}
+              <Corners />
+            </div>
+          </ScrollReveal>
+
+          {/* RIGHT — Opportunity Radar + AI Recommendations */}
+          <div className="space-y-5">
+            <HoloFrame label={isAr ? "رادار الفرص" : "Opportunity Radar"} accent="emerald">
+              <OpportunityRadar />
+              <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-white/50">
+                <span>{isAr ? "١٢ فرصة مكتشفة" : "12 opportunities detected"}</span>
+                <span className="text-emerald-300">SAR 42M</span>
+              </div>
+            </HoloFrame>
+            <HoloFrame label={isAr ? "توصيات ARIA" : "ARIA Recommendations"} accent="violet">
+              <ul className="space-y-2.5">
+                {recs.map((r) => (
+                  <li
+                    key={r.t}
+                    className="group flex items-start justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-2.5 transition hover:border-violet-300/30 hover:bg-violet-500/[0.06]"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-[9px] uppercase tracking-[0.2em] text-violet-300/80">{r.tag}</div>
+                      <div className="mt-0.5 truncate text-[12px] text-white/85">{r.t}</div>
+                    </div>
+                    <div className="shrink-0 text-[11px] font-semibold text-emerald-300">{r.c}</div>
+                  </li>
+                ))}
+              </ul>
+            </HoloFrame>
+          </div>
+        </div>
+
+        {/* Executive Decision Engine bar */}
+        <ScrollReveal delay={300}>
+          <div className="mx-auto mt-10 flex max-w-5xl flex-col items-center justify-between gap-4 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-blue-500/[0.08] via-cyan-400/[0.06] to-violet-500/[0.08] px-6 py-5 backdrop-blur-2xl sm:flex-row">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-60" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300" />
+              </span>
+              <p className="text-[11px] uppercase tracking-[0.35em] text-white/65">
+                {isAr ? "محرّك القرار التنفيذي" : "Executive Decision Engine"}
+              </p>
+            </div>
+            <div className="flex items-center gap-6 text-center">
+              <Stat n={3} l={isAr ? "قرار جاهز" : "Decisions ready"} />
+              <span className="h-6 w-px bg-white/15" />
+              <Stat n={11.2} suffix="%" l={isAr ? "أثر متوقع" : "Projected impact"} />
+              <span className="h-6 w-px bg-white/15" />
+              <Stat n={94} suffix="%" l={isAr ? "ثقة" : "Confidence"} />
+            </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
+  );
+}
+
+function Stat({ n, suffix, l }: { n: number; suffix?: string; l: string }) {
+  return (
+    <div>
+      <div className="text-xl font-bold tracking-tight text-white">
+        <CountUp end={n} duration={1200} />
+        {suffix}
+      </div>
+      <div className="text-[9px] uppercase tracking-[0.2em] text-white/45">{l}</div>
+    </div>
+  );
+}
+
+function Corners() {
+  const c = "absolute h-5 w-5 border-cyan-300/60";
+  return (
+    <>
+      <span className={`${c} left-3 top-3 border-l border-t`} />
+      <span className={`${c} right-3 top-3 border-r border-t`} />
+      <span className={`${c} bottom-3 left-3 border-b border-l`} />
+      <span className={`${c} bottom-3 right-3 border-b border-r`} />
+    </>
+  );
+}
+
+function HoloFrame({
+  label,
+  accent,
+  children,
+}: {
+  label: string;
+  accent: "amber" | "cyan" | "emerald" | "violet";
+  children: React.ReactNode;
+}) {
+  const accentMap = {
+    amber: "text-amber-300 bg-amber-300",
+    cyan: "text-cyan-300 bg-cyan-300",
+    emerald: "text-emerald-300 bg-emerald-300",
+    violet: "text-violet-300 bg-violet-300",
+  } as const;
+  const [text, dot] = accentMap[accent].split(" ");
+  return (
+    <ScrollReveal>
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#05080f]/70 p-4 backdrop-blur-2xl">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={`h-1.5 w-1.5 rounded-full ${dot} animate-pulse`} />
+            <p className={`text-[10px] uppercase tracking-[0.3em] ${text}`}>{label}</p>
+          </div>
+          <span className="font-mono text-[9px] text-white/35">LIVE · 24/7</span>
+        </div>
+        {children}
+        <Corners />
+      </div>
+    </ScrollReveal>
+  );
+}
+
+function RiskHeatmap() {
+  const cells = Array.from({ length: 48 });
+  return (
+    <div className="grid grid-cols-8 gap-[3px]">
+      {cells.map((_, i) => {
+        const r = (Math.sin(i * 1.7) + Math.cos(i * 0.9) + 2) / 4; // 0..1
+        const color =
+          r > 0.75
+            ? "bg-red-500/80"
+            : r > 0.55
+            ? "bg-amber-400/70"
+            : r > 0.35
+            ? "bg-yellow-300/40"
+            : "bg-emerald-400/25";
+        return (
+          <span
+            key={i}
+            className={`aspect-square rounded-sm ${color}`}
+            style={{ animation: `pulse 2.${i % 9}s ease-in-out ${(i % 12) * 0.08}s infinite` }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function RevenueProjection() {
+  const pts = [12, 18, 16, 24, 28, 26, 34, 40, 46, 52, 60, 72];
+  const max = Math.max(...pts);
+  const path = pts
+    .map((v, i) => {
+      const x = (i / (pts.length - 1)) * 100;
+      const y = 100 - (v / max) * 90;
+      return `${i === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+  const area = `${path} L 100 100 L 0 100 Z`;
+  return (
+    <svg viewBox="0 0 100 100" className="h-28 w-full" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="rev-fill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="rgb(34,211,238)" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="rgb(34,211,238)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[20, 40, 60, 80].map((y) => (
+        <line key={y} x1="0" x2="100" y1={y} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="0.3" />
+      ))}
+      <path d={area} fill="url(#rev-fill)" />
+      <path d={path} fill="none" stroke="rgb(125,211,252)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      {pts.map((v, i) => {
+        const x = (i / (pts.length - 1)) * 100;
+        const y = 100 - (v / max) * 90;
+        return <circle key={i} cx={x} cy={y} r="0.9" fill="rgb(186,230,253)" />;
+      })}
+    </svg>
+  );
+}
+
+function OpportunityRadar() {
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[180px]">
+      {[0.3, 0.55, 0.8, 1].map((s, i) => (
+        <span
+          key={i}
+          className="absolute inset-0 m-auto rounded-full border border-emerald-300/25"
+          style={{ width: `${s * 100}%`, height: `${s * 100}%` }}
+        />
+      ))}
+      <span className="absolute inset-0 h-px w-full top-1/2 bg-emerald-300/15" />
+      <span className="absolute inset-0 w-px h-full left-1/2 bg-emerald-300/15" />
+      {/* Sweep */}
+      <div
+        className="absolute inset-0 origin-center rounded-full"
+        style={{
+          background:
+            "conic-gradient(from 0deg, rgba(52,211,153,0.45) 0deg, rgba(52,211,153,0) 90deg, transparent 360deg)",
+          animation: "spin 4s linear infinite",
+          maskImage: "radial-gradient(circle, #000 65%, transparent 70%)",
+        }}
+      />
+      {/* Blips */}
+      {[
+        { x: 30, y: 35, d: 0 },
+        { x: 70, y: 28, d: 0.6 },
+        { x: 58, y: 62, d: 1.2 },
+        { x: 38, y: 70, d: 1.8 },
+        { x: 75, y: 55, d: 2.4 },
+      ].map((b, i) => (
+        <span
+          key={i}
+          className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+          style={{ left: `${b.x}%`, top: `${b.y}%`, animation: `pulse 2s ease-in-out ${b.d}s infinite` }}
+        />
+      ))}
+      <span className="absolute inset-0 m-auto h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_12px_rgba(167,243,208,0.9)]" />
+    </div>
   );
 }
 
