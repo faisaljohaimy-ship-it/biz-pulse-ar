@@ -142,68 +142,63 @@ function CinematicHome() {
       {/* Side film-strip indicator (desktop) */}
       <CinematicProgress labels={sceneLabels} total={10} />
 
-      {/* ============ SCENE 01 — CINEMATIC HERO (Reference B) ============ */}
+      {/* ============ SCENE 01 — EARTH · GLOBAL INTELLIGENCE ============ */}
       <section
         data-scene="1"
         className="relative flex min-h-[100svh] items-center justify-center overflow-hidden"
       >
-        {/* Riyadh-style skyline backdrop */}
         <img
-          src={cinematicCity}
+          src={cinematicEarth}
           alt=""
           width={1920}
           height={1080}
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-55"
           fetchPriority="high"
         />
-        {/* atmospheric lighting */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(58,142,255,0.32),transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_80%,rgba(167,139,250,0.22),transparent_60%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-[#04060d] to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent via-[#04060d]/70 to-[#04060d]" />
-
-        {/* ARIA core — centerpiece hologram */}
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-95">
-          <Suspense fallback={null}><AriaCore /></Suspense>
+        <div className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen">
+          <Suspense fallback={null}><EarthScene intensity="network" /></Suspense>
         </div>
-        <ParticleField density={0.0001} />
+        <ParticleField density={0.00012} />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(58,142,255,0.28),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-[#04060d]" />
 
-        {/* Holographic side panels — investor KPIs */}
-        <HeroHoloPanels isAr={isAr} />
-
-        {/* light pedestal under the core */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-[18%] z-0 flex justify-center">
-          <div className="h-24 w-[520px] max-w-[80vw] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(245,180,84,0.45),transparent_70%)] blur-2xl" />
+        {/* corner telemetry HUD */}
+        <div className="pointer-events-none absolute inset-x-5 top-24 z-[5] hidden justify-between text-[10px] uppercase tracking-[0.28em] text-white/45 md:flex">
+          <div>{isAr ? "إحداثيات · 24.7°N 46.6°E" : "Coord · 24.7°N 46.6°E"}</div>
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+            {isAr ? "الشبكة · مباشرة" : "Network · Live"}
+          </div>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pt-28 text-center sm:pt-36">
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pt-32 text-center sm:pt-40">
           <ScrollReveal direction="scale">
             <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] text-amber-300 backdrop-blur-md">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-80" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-400" />
               </span>
-              {isAr ? "ARIA · الذكاء التنفيذي" : "ARIA · Executive Intelligence"}
+              {isAr ? "شبكة ذكاء عالمية" : "A Global Intelligence Network"}
             </div>
           </ScrollReveal>
 
-          <ScrollReveal delay={150}>
-            <h1 className="mt-8 text-4xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-[96px]">
-              <span className="block bg-gradient-to-br from-white via-white to-white/30 bg-clip-text text-transparent">
+          <ScrollReveal delay={200}>
+            <h1 className="mt-8 text-5xl font-bold leading-[0.95] tracking-tight sm:text-7xl lg:text-[112px]">
+              <span className="block bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent">
                 NEXUS AI OS
               </span>
             </h1>
           </ScrollReveal>
-          <ScrollReveal delay={300}>
-            <p className="mx-auto mt-5 max-w-2xl text-base font-light leading-relaxed text-white/80 sm:text-xl">
+          <ScrollReveal delay={400}>
+            <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-white/80 sm:text-2xl">
               {isAr
-                ? "مستقبل المؤسسات الذكية يبدأ الآن — نظام تشغيل واحد للبيانات، الذكاء، والقرار."
-                : "The future of intelligent enterprises starts now — one operating system for data, intelligence, and decision."}
+                ? "نظام التشغيل الذكي للمؤسسات — ملايين الإشارات. قرار واحد."
+                : "The Operating System for Intelligent Enterprises — millions of signals. One decision."}
             </p>
           </ScrollReveal>
 
-          <ScrollReveal delay={500}>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <ScrollReveal delay={600}>
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/request-demo"
                 className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-7 py-3.5 text-sm font-semibold text-black shadow-[0_10px_60px_-10px_rgba(245,180,84,0.9)] transition hover:scale-[1.03]"
