@@ -453,6 +453,9 @@ function TwinCityScene({ isAr }: { isAr: boolean }) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#04060d]/70 via-[#04060d]/30 to-[#04060d]" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#04060d] via-transparent to-transparent" />
 
+      {/* Floating district hologram chips (Reference A) */}
+      <TwinHoloLabels isAr={isAr} />
+
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 py-32">
         <ScrollReveal>
           <p className="text-xs uppercase tracking-[0.35em] text-amber-300/80">{isAr ? "المشهد ٠٤ · التوأم الرقمي" : "Scene 04 · The Digital Twin"}</p>
