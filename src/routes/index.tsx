@@ -2022,41 +2022,55 @@ function TwinActivityFeed({ isAr }: { isAr: boolean }) {
 function TwinDistrictRoster({ isAr }: { isAr: boolean }) {
   const districts = isAr
     ? [
-        { n: "المالية", health: 96, tone: "bg-emerald-400" },
-        { n: "العمليات", health: 88, tone: "bg-cyan-400" },
-        { n: "المبيعات", health: 92, tone: "bg-amber-400" },
-        { n: "اللوجستيات", health: 64, tone: "bg-red-400" },
-        { n: "البحث والتطوير", health: 81, tone: "bg-violet-400" },
-        { n: "الموارد البشرية", health: 90, tone: "bg-emerald-300" },
+        { n: "المقر التنفيذي",     health: 99, tone: "bg-white",         note: "HQ · ARIA" },
+        { n: "حي المالية",           health: 96, tone: "bg-emerald-400",  note: "SAR 1.8B AUM" },
+        { n: "حي العمليات",          health: 88, tone: "bg-cyan-400",     note: "98.4% uptime" },
+        { n: "الخدمات اللوجستية",     health: 64, tone: "bg-red-400",      note: "3 risks · open" },
+        { n: "حي الابتكار",          health: 81, tone: "bg-violet-400",   note: "12 R&D builds" },
+        { n: "حي الجهات الحكومية",   health: 92, tone: "bg-amber-400",    note: "Vision 2030" },
+        { n: "أبراج بحيرات البيانات", health: 94, tone: "bg-sky-300",      note: "8 lakes · live" },
+        { n: "مناطق وكلاء الذكاء",   health: 90, tone: "bg-fuchsia-400",  note: "48 agents" },
       ]
     : [
-        { n: "Finance", health: 96, tone: "bg-emerald-400" },
-        { n: "Operations", health: 88, tone: "bg-cyan-400" },
-        { n: "Sales", health: 92, tone: "bg-amber-400" },
-        { n: "Logistics", health: 64, tone: "bg-red-400" },
-        { n: "R&D", health: 81, tone: "bg-violet-400" },
-        { n: "People", health: 90, tone: "bg-emerald-300" },
+        { n: "Executive HQ",       health: 99, tone: "bg-white",        note: "HQ · ARIA core" },
+        { n: "Finance District",   health: 96, tone: "bg-emerald-400", note: "SAR 1.8B AUM" },
+        { n: "Operations District", health: 88, tone: "bg-cyan-400",   note: "98.4% uptime" },
+        { n: "Logistics District", health: 64, tone: "bg-red-400",     note: "3 risks open" },
+        { n: "Innovation District", health: 81, tone: "bg-violet-400", note: "12 R&D builds" },
+        { n: "Government District", health: 92, tone: "bg-amber-400",  note: "Vision 2030" },
+        { n: "Data Lake Towers",   health: 94, tone: "bg-sky-300",     note: "8 lakes live" },
+        { n: "AI Agent Zones",     health: 90, tone: "bg-fuchsia-400", note: "48 agents" },
       ];
   return (
-    <aside className="pointer-events-none absolute left-6 top-32 z-[5] hidden w-[240px] xl:block">
+    <aside className="pointer-events-none absolute left-6 top-32 z-[5] hidden w-[260px] xl:block">
       <div className="rounded-2xl border border-white/10 bg-[#04060d]/70 p-4 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(245,180,84,0.45)]">
-        <div className="border-b border-white/10 pb-2 text-[10px] uppercase tracking-[0.28em] text-white/55">
-          {isAr ? "أحياء المدينة · صحة لحظية" : "City Districts · Live health"}
+        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+          <span className="text-[10px] uppercase tracking-[0.28em] text-white/55">
+            {isAr ? "أحياء المؤسسة" : "Enterprise Districts"}
+          </span>
+          <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.25em] text-emerald-300/85">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+            LIVE
+          </span>
         </div>
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-3 space-y-2.5">
           {districts.map((d, i) => (
             <li
               key={d.n}
               className="animate-fade-in"
-              style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
+              style={{ animationDelay: `${i * 110}ms`, animationFillMode: "both" }}
             >
               <div className="flex items-baseline justify-between">
-                <span className="text-xs font-semibold text-white">{d.n}</span>
-                <span className="text-[10px] font-mono text-white/55">{d.health}%</span>
+                <span className="flex items-center gap-2 text-xs font-semibold text-white">
+                  <span className={`h-1.5 w-1.5 rounded-full ${d.tone}`} />
+                  {d.n}
+                </span>
+                <span className="text-[10px] font-mono tabular-nums text-white/55">{d.health}%</span>
               </div>
               <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
                 <div className={`h-full ${d.tone} rounded-full`} style={{ width: `${d.health}%` }} />
               </div>
+              <div className="mt-1 text-[9px] uppercase tracking-[0.18em] text-white/40">{d.note}</div>
             </li>
           ))}
         </ul>
