@@ -11,6 +11,7 @@ import { StepsAR, STEPS_AR_DURATION, STEPS_AR_FPS } from "./StepsAR";
 import { StepsAR3D, STEPS_AR3D_DURATION, STEPS_AR3D_FPS } from "./StepsAR3D";
 import { SimAR3D, SIM_AR3D_DURATION, SIM_AR3D_FPS } from "./SimAR3D";
 import { NeexiosCinematic, NX_DURATION, NX_FPS } from "./NeexiosCinematic";
+import { ExecutiveDemo, DX_DURATION, DX_FPS } from "./ExecutiveDemo";
 
 export const RemotionRoot = () => (
   <>
@@ -26,5 +27,6 @@ export const RemotionRoot = () => (
     <Composition id="stepsar3d" component={StepsAR3D} durationInFrames={STEPS_AR3D_DURATION} fps={STEPS_AR3D_FPS} width={1920} height={1080} />
     <Composition id="simar3d" component={SimAR3D} durationInFrames={SIM_AR3D_DURATION} fps={SIM_AR3D_FPS} width={1920} height={1080} />
     <Composition id="neexios" component={NeexiosCinematic} durationInFrames={NX_DURATION} fps={NX_FPS} width={1920} height={1080} />
+    <Composition id="execdemo" component={ExecutiveDemo} durationInFrames={DX_DURATION} fps={DX_FPS} width={1920} height={1080} />
   </>
 );

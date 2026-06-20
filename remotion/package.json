@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "puppeteer-core": "^25.1.0"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"
