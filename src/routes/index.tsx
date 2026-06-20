@@ -752,6 +752,48 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
         { tag: "People", t: "Restructure product org — 3 new leads", c: "+22% velocity" },
       ];
 
+  // Future scenarios + Board Meeting Mode
+  type ScenarioKey = "conservative" | "base" | "aggressive";
+  const [scenario, setScenario] = useState<ScenarioKey>("base");
+  const [boardMode, setBoardMode] = useState(false);
+
+  const scenarios: Record<ScenarioKey, {
+    label: string; revenue: string; risk: string; roi: string; horizon: string; note: string;
+    tone: string; pts: number[];
+  }> = {
+    conservative: {
+      label: isAr ? "محافظ" : "Conservative",
+      revenue: "+SAR 96M", risk: "−42%", roi: "+8.4%",
+      horizon: isAr ? "أفق ١٨ شهر" : "18-month horizon",
+      note: isAr ? "تنفيذ تدريجي · مخاطرة منخفضة" : "Gradual rollout · low risk exposure",
+      tone: "cyan",
+      pts: [40, 42, 46, 49, 53, 56, 58, 62, 65, 68, 72, 76],
+    },
+    base: {
+      label: isAr ? "أساسي" : "Base",
+      revenue: "+SAR 184M", risk: "−61%", roi: "+11.2%",
+      horizon: isAr ? "أفق ١٢ شهر" : "12-month horizon",
+      note: isAr ? "خطة موصى بها من ARIA" : "ARIA-recommended trajectory",
+      tone: "emerald",
+      pts: [40, 46, 54, 60, 68, 76, 84, 90, 96, 104, 112, 120],
+    },
+    aggressive: {
+      label: isAr ? "هجومي" : "Aggressive",
+      revenue: "+SAR 312M", risk: "−39%", roi: "+18.7%",
+      horizon: isAr ? "أفق ٩ أشهر" : "9-month horizon",
+      note: isAr ? "توسّع متوازٍ · رأس مال أعلى" : "Parallel expansion · higher capital",
+      tone: "amber",
+      pts: [40, 52, 64, 78, 92, 108, 124, 138, 152, 166, 178, 188],
+    },
+  };
+  const cur = scenarios[scenario];
+  const toneClasses: Record<string, { text: string; bg: string; ring: string; from: string; to: string }> = {
+    cyan:    { text: "text-cyan-300",    bg: "bg-cyan-400",    ring: "ring-cyan-300/40",    from: "from-cyan-400",    to: "to-cyan-200" },
+    emerald: { text: "text-emerald-300", bg: "bg-emerald-400", ring: "ring-emerald-300/40", from: "from-emerald-400", to: "to-emerald-200" },
+    amber:   { text: "text-amber-300",   bg: "bg-amber-400",   ring: "ring-amber-300/40",   from: "from-amber-400",   to: "to-amber-200" },
+  };
+  const tc = toneClasses[cur.tone];
+
   const kpis = [
     { v: "12.8K", l: isAr ? "إشارة/ث" : "Signals/sec", c: "text-cyan-300" },
     { v: "47", l: isAr ? "تنبيه نشط" : "Active alerts", c: "text-amber-300" },
@@ -940,7 +982,111 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
           </div>
         </div>
 
-        {/* Executive Decision Engine bar */}
+        {/* Future Scenarios + Board Meeting Mode */}
+        <ScrollReveal delay={200}>
+          <div className={`mx-auto mt-10 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-2xl transition-all duration-500 ${boardMode ? "ring-1 ring-cyan-300/40 shadow-[0_0_120px_-30px_rgba(96,165,250,0.55)]" : ""}`}>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-3">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] uppercase tracking-[0.35em] text-cyan-200/85">
+                  {isAr ? "سيناريوهات مستقبلية" : "Future Scenarios"}
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40">
+                  · ARIA Simulation
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {(Object.keys(scenarios) as ScenarioKey[]).map((k) => {
+                  const active = scenario === k;
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => setScenario(k)}
+                      className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.25em] transition ${
+                        active
+                          ? `border-white/40 bg-white/10 text-white ${tc.ring} ring-1`
+                          : "border-white/10 text-white/55 hover:border-white/25 hover:text-white/85"
+                      }`}
+                    >
+                      {scenarios[k].label}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setBoardMode((v) => !v)}
+                  aria-pressed={boardMode}
+                  className={`ml-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.25em] transition ${
+                    boardMode
+                      ? "border-cyan-300/50 bg-cyan-400/10 text-cyan-100"
+                      : "border-white/15 text-white/60 hover:border-white/30 hover:text-white/90"
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${boardMode ? "bg-cyan-300" : "bg-white/40"}`} />
+                  {isAr ? "وضع اجتماع المجلس" : "Board Meeting Mode"}
+                </button>
+              </div>
+            </div>
+
+            <div className={`grid gap-px bg-white/5 transition-all duration-500 sm:grid-cols-4 ${boardMode ? "p-1" : ""}`}>
+              <div className="bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "الإيراد الإضافي" : "Incremental Revenue"}
+                </div>
+                <div className={`mt-2 bg-gradient-to-br ${tc.from} ${tc.to} bg-clip-text font-bold tracking-tight text-transparent tabular-nums ${boardMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
+                  {cur.revenue}
+                </div>
+                <div className="mt-1 text-[10px] text-white/45">{cur.horizon}</div>
+              </div>
+              <div className="bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "خفض المخاطر" : "Risk Reduction"}
+                </div>
+                <div className={`mt-2 bg-gradient-to-br from-rose-300 to-rose-500 bg-clip-text font-bold tracking-tight text-transparent tabular-nums ${boardMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
+                  {cur.risk}
+                </div>
+                <div className="mt-1 text-[10px] text-white/45">{isAr ? "تعرض مرجّح" : "Weighted exposure"}</div>
+              </div>
+              <div className="bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "أثر العائد" : "ROI Impact"}
+                </div>
+                <div className={`mt-2 bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text font-bold tracking-tight text-transparent tabular-nums ${boardMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
+                  {cur.roi}
+                </div>
+                <div className="mt-1 text-[10px] text-white/45">{isAr ? "سنوياً مرجح" : "Annualised weighted"}</div>
+              </div>
+              <div className="relative bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "مسار المحاكاة" : "Simulation Trajectory"}
+                </div>
+                <svg viewBox="0 0 120 50" className="mt-3 h-14 w-full">
+                  <defs>
+                    <linearGradient id={`sg-${scenario}`} x1="0" x2="1">
+                      <stop offset="0%" stopColor={cur.tone === "amber" ? "#fbbf24" : cur.tone === "emerald" ? "#34d399" : "#67e8f9"} stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0.9" />
+                    </linearGradient>
+                  </defs>
+                  <polyline
+                    fill="none"
+                    stroke={`url(#sg-${scenario})`}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points={cur.pts
+                      .map((p, i) => {
+                        const x = (i / (cur.pts.length - 1)) * 120;
+                        const y = 50 - (p / 200) * 50;
+                        return `${x},${y}`;
+                      })
+                      .join(" ")}
+                    style={{ filter: "drop-shadow(0 0 6px rgba(125,211,252,0.5))" }}
+                  />
+                </svg>
+                <div className="mt-1 text-[10px] text-white/55">{cur.note}</div>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
         <ScrollReveal delay={300}>
           <div className="mx-auto mt-10 flex max-w-5xl flex-col items-center justify-between gap-4 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-blue-500/[0.08] via-cyan-400/[0.06] to-violet-500/[0.08] px-6 py-5 backdrop-blur-2xl sm:flex-row">
             <div className="flex items-center gap-3">
@@ -1876,41 +2022,55 @@ function TwinActivityFeed({ isAr }: { isAr: boolean }) {
 function TwinDistrictRoster({ isAr }: { isAr: boolean }) {
   const districts = isAr
     ? [
-        { n: "المالية", health: 96, tone: "bg-emerald-400" },
-        { n: "العمليات", health: 88, tone: "bg-cyan-400" },
-        { n: "المبيعات", health: 92, tone: "bg-amber-400" },
-        { n: "اللوجستيات", health: 64, tone: "bg-red-400" },
-        { n: "البحث والتطوير", health: 81, tone: "bg-violet-400" },
-        { n: "الموارد البشرية", health: 90, tone: "bg-emerald-300" },
+        { n: "المقر التنفيذي",     health: 99, tone: "bg-white",         note: "HQ · ARIA" },
+        { n: "حي المالية",           health: 96, tone: "bg-emerald-400",  note: "SAR 1.8B AUM" },
+        { n: "حي العمليات",          health: 88, tone: "bg-cyan-400",     note: "98.4% uptime" },
+        { n: "الخدمات اللوجستية",     health: 64, tone: "bg-red-400",      note: "3 risks · open" },
+        { n: "حي الابتكار",          health: 81, tone: "bg-violet-400",   note: "12 R&D builds" },
+        { n: "حي الجهات الحكومية",   health: 92, tone: "bg-amber-400",    note: "Vision 2030" },
+        { n: "أبراج بحيرات البيانات", health: 94, tone: "bg-sky-300",      note: "8 lakes · live" },
+        { n: "مناطق وكلاء الذكاء",   health: 90, tone: "bg-fuchsia-400",  note: "48 agents" },
       ]
     : [
-        { n: "Finance", health: 96, tone: "bg-emerald-400" },
-        { n: "Operations", health: 88, tone: "bg-cyan-400" },
-        { n: "Sales", health: 92, tone: "bg-amber-400" },
-        { n: "Logistics", health: 64, tone: "bg-red-400" },
-        { n: "R&D", health: 81, tone: "bg-violet-400" },
-        { n: "People", health: 90, tone: "bg-emerald-300" },
+        { n: "Executive HQ",       health: 99, tone: "bg-white",        note: "HQ · ARIA core" },
+        { n: "Finance District",   health: 96, tone: "bg-emerald-400", note: "SAR 1.8B AUM" },
+        { n: "Operations District", health: 88, tone: "bg-cyan-400",   note: "98.4% uptime" },
+        { n: "Logistics District", health: 64, tone: "bg-red-400",     note: "3 risks open" },
+        { n: "Innovation District", health: 81, tone: "bg-violet-400", note: "12 R&D builds" },
+        { n: "Government District", health: 92, tone: "bg-amber-400",  note: "Vision 2030" },
+        { n: "Data Lake Towers",   health: 94, tone: "bg-sky-300",     note: "8 lakes live" },
+        { n: "AI Agent Zones",     health: 90, tone: "bg-fuchsia-400", note: "48 agents" },
       ];
   return (
-    <aside className="pointer-events-none absolute left-6 top-32 z-[5] hidden w-[240px] xl:block">
+    <aside className="pointer-events-none absolute left-6 top-32 z-[5] hidden w-[260px] xl:block">
       <div className="rounded-2xl border border-white/10 bg-[#04060d]/70 p-4 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(245,180,84,0.45)]">
-        <div className="border-b border-white/10 pb-2 text-[10px] uppercase tracking-[0.28em] text-white/55">
-          {isAr ? "أحياء المدينة · صحة لحظية" : "City Districts · Live health"}
+        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+          <span className="text-[10px] uppercase tracking-[0.28em] text-white/55">
+            {isAr ? "أحياء المؤسسة" : "Enterprise Districts"}
+          </span>
+          <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.25em] text-emerald-300/85">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+            LIVE
+          </span>
         </div>
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-3 space-y-2.5">
           {districts.map((d, i) => (
             <li
               key={d.n}
               className="animate-fade-in"
-              style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
+              style={{ animationDelay: `${i * 110}ms`, animationFillMode: "both" }}
             >
               <div className="flex items-baseline justify-between">
-                <span className="text-xs font-semibold text-white">{d.n}</span>
-                <span className="text-[10px] font-mono text-white/55">{d.health}%</span>
+                <span className="flex items-center gap-2 text-xs font-semibold text-white">
+                  <span className={`h-1.5 w-1.5 rounded-full ${d.tone}`} />
+                  {d.n}
+                </span>
+                <span className="text-[10px] font-mono tabular-nums text-white/55">{d.health}%</span>
               </div>
               <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
                 <div className={`h-full ${d.tone} rounded-full`} style={{ width: `${d.health}%` }} />
               </div>
+              <div className="mt-1 text-[9px] uppercase tracking-[0.18em] text-white/40">{d.note}</div>
             </li>
           ))}
         </ul>
