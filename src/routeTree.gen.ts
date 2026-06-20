@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SubprocessorsRouteImport } from './routes/subprocessors'
+import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -19,6 +22,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
+import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -80,9 +84,24 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubprocessorsRoute = SubprocessorsRouteImport.update({
+  id: '/subprocessors',
+  path: '/subprocessors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SlaRoute = SlaRouteImport.update({
+  id: '/sla',
+  path: '/sla',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoiRoute = RoiRouteImport.update({
@@ -118,6 +137,11 @@ const FilmsRoute = FilmsRouteImport.update({
 const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
   id: '/executive-briefing',
   path: '/executive-briefing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DpaRoute = DpaRouteImport.update({
+  id: '/dpa',
+  path: '/dpa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -388,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/customers': typeof CustomersRoute
   '/demo': typeof DemoRoute
+  '/dpa': typeof DpaRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/login': typeof LoginRoute
@@ -395,7 +420,10 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
   '/roi': typeof RoiRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sla': typeof SlaRoute
+  '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -449,6 +477,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/customers': typeof CustomersRoute
   '/demo': typeof DemoRoute
+  '/dpa': typeof DpaRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/login': typeof LoginRoute
@@ -456,7 +485,10 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
   '/roi': typeof RoiRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sla': typeof SlaRoute
+  '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -512,6 +544,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/customers': typeof CustomersRoute
   '/demo': typeof DemoRoute
+  '/dpa': typeof DpaRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/login': typeof LoginRoute
@@ -519,7 +552,10 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
   '/roi': typeof RoiRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sla': typeof SlaRoute
+  '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -575,6 +611,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/customers'
     | '/demo'
+    | '/dpa'
     | '/executive-briefing'
     | '/films'
     | '/login'
@@ -582,7 +619,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/request-demo'
     | '/roi'
+    | '/security'
     | '/sitemap.xml'
+    | '/sla'
+    | '/subprocessors'
     | '/terms'
     | '/trust'
     | '/admin'
@@ -636,6 +676,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/customers'
     | '/demo'
+    | '/dpa'
     | '/executive-briefing'
     | '/films'
     | '/login'
@@ -643,7 +684,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/request-demo'
     | '/roi'
+    | '/security'
     | '/sitemap.xml'
+    | '/sla'
+    | '/subprocessors'
     | '/terms'
     | '/trust'
     | '/admin'
@@ -698,6 +742,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/customers'
     | '/demo'
+    | '/dpa'
     | '/executive-briefing'
     | '/films'
     | '/login'
@@ -705,7 +750,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/request-demo'
     | '/roi'
+    | '/security'
     | '/sitemap.xml'
+    | '/sla'
+    | '/subprocessors'
     | '/terms'
     | '/trust'
     | '/_authenticated/admin'
@@ -761,6 +809,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CustomersRoute: typeof CustomersRoute
   DemoRoute: typeof DemoRoute
+  DpaRoute: typeof DpaRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
   LoginRoute: typeof LoginRoute
@@ -768,7 +817,10 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RequestDemoRoute: typeof RequestDemoRoute
   RoiRoute: typeof RoiRoute
+  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SlaRoute: typeof SlaRoute
+  SubprocessorsRoute: typeof SubprocessorsRoute
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -792,11 +844,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subprocessors': {
+      id: '/subprocessors'
+      path: '/subprocessors'
+      fullPath: '/subprocessors'
+      preLoaderRoute: typeof SubprocessorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sla': {
+      id: '/sla'
+      path: '/sla'
+      fullPath: '/sla'
+      preLoaderRoute: typeof SlaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roi': {
@@ -846,6 +919,13 @@ declare module '@tanstack/react-router' {
       path: '/executive-briefing'
       fullPath: '/executive-briefing'
       preLoaderRoute: typeof ExecutiveBriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dpa': {
+      id: '/dpa'
+      path: '/dpa'
+      fullPath: '/dpa'
+      preLoaderRoute: typeof DpaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -1299,6 +1379,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CustomersRoute: CustomersRoute,
   DemoRoute: DemoRoute,
+  DpaRoute: DpaRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
   LoginRoute: LoginRoute,
@@ -1306,7 +1387,10 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RequestDemoRoute: RequestDemoRoute,
   RoiRoute: RoiRoute,
+  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SlaRoute: SlaRoute,
+  SubprocessorsRoute: SubprocessorsRoute,
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
   ApiChatRoute: ApiChatRoute,
