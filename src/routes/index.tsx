@@ -243,6 +243,12 @@ function CinematicHome() {
         </div>
       </section>
 
+      {/* ============ MOBILE EXECUTIVE STRIP (mobile only) ============ */}
+      <MobileExecutiveStrip isAr={isAr} />
+
+      {/* ============ TRUST & SOVEREIGNTY BAR ============ */}
+      <TrustBar isAr={isAr} />
+
       {/* ============ SCENE 02 — ENTERPRISE DATA CHAOS ============ */}
       <ChaosScene isAr={isAr} />
 
