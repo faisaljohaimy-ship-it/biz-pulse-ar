@@ -261,6 +261,11 @@ function CinematicHome() {
         <WarRoomScene isAr={isAr} />
       </Suspense>
 
+      {/* ============ AUTONOMOUS ENTERPRISE ============ */}
+      <Suspense fallback={null}>
+        <AutonomousEnterpriseScene isAr={isAr} />
+      </Suspense>
+
       {/* ============ SCENE 08 — GLOBAL EXPANSION ============ */}
       <GlobalScene isAr={isAr} />
 
