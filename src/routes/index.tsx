@@ -19,6 +19,8 @@ import cinematicEarth from "@/assets/cinematic-earth.jpg";
 import { ScrollReveal, Parallax } from "@/components/cinematic/ScrollReveal";
 import { CinematicProgress } from "@/components/cinematic/CinematicProgress";
 import { ParticleField } from "@/components/cinematic/ParticleField";
+import { ChaosCanvas } from "@/components/cinematic/ChaosCanvas";
+import { CountUp } from "@/components/cinematic/CountUp";
 
 const CityScene = lazy(() => import("@/components/cinematic/CityScene"));
 const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
