@@ -16,11 +16,14 @@ import {
 export const Route = createFileRoute("/demo")({
   head: () => ({
     meta: [
-      { title: "Demo Center — Nexus AI OS" },
-      { name: "description", content: "Explore Nexus AI OS with a fully seeded executive demo. Investor mode, enterprise mode, guided tour, and live sample data." },
-      { property: "og:title", content: "Demo Center — Nexus AI OS" },
+      { title: "Demo Center — NEEXIOS | NEXUS AI OS" },
+      { name: "description", content: "Explore NEXUS AI OS with a fully seeded executive demo. Investor mode, enterprise mode, guided tour, and live sample data." },
+      { property: "og:title", content: "Demo Center — NEEXIOS | NEXUS AI OS" },
       { property: "og:description", content: "Experience the executive operating system with sample enterprise data, investor mode, and a guided product tour." },
+      { property: "og:url", content: "https://neexios.com/demo" },
+      { property: "og:type", content: "website" },
     ],
+    links: [{ rel: "canonical", href: "https://neexios.com/demo" }],
   }),
   component: DemoCenter,
 });
