@@ -2,11 +2,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
-/**
- * Procedural futuristic city — instanced glowing buildings on a dark plane,
- * with golden + blue data streams flowing along the ground. Lightweight,
- * runs at 60fps on mobile because it uses InstancedMesh + simple shaders.
- */
 function CityGrid() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const groupRef = useRef<THREE.Group>(null);
@@ -25,7 +20,6 @@ function CityGrid() {
     return { buildings: arr, count: arr.length };
   }, []);
 
-  // Apply transforms once
   useMemo(() => {
     if (!meshRef.current) return;
     const dummy = new THREE.Object3D();
@@ -44,9 +38,20 @@ function CityGrid() {
 
   useFrame((state) => {
     if (!groupRef.current) return;
-    const t = state.clock.elapsedTime;
-    groupRef.current.rotation.y = t * 0.045;
+    groupRef.current.rotation.y = state.clock.elapsedTime * 0.045;
   });
+
+  // Pick a few buildings as "signal beacons"
+  const beacons = useMemo(() => {
+    const picks = buildings.filter((_, i) => i % 7 === 0).slice(0, 18);
+    return picks.map((b, i) => ({
+      x: b.x,
+      z: b.z,
+      h: b.h,
+      kind: i % 4 === 0 ? "risk" : i % 3 === 0 ? "opp" : "data",
+      phase: Math.random() * Math.PI * 2,
+    }));
+  }, [buildings]);
 
   return (
     <group ref={groupRef} position={[0, -2, 0]}>
@@ -54,20 +59,20 @@ function CityGrid() {
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial
           emissive={new THREE.Color("#3a6cff")}
-          emissiveIntensity={0.35}
+          emissiveIntensity={0.4}
           roughness={0.35}
           metalness={0.8}
         />
       </instancedMesh>
 
-      {/* Ground plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
         <planeGeometry args={[120, 120]} />
         <meshStandardMaterial color="#04060d" metalness={0.6} roughness={0.4} />
       </mesh>
 
-      {/* Data stream rings */}
       <DataRings />
+      <DataBeams beacons={beacons} />
+      <GroundPulses />
     </group>
   );
 }
@@ -86,8 +91,7 @@ function DataRings() {
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     refs.current.forEach((m, i) => {
-      if (!m) return;
-      m.rotation.z = t * rings[i].speed;
+      if (m) m.rotation.z = t * rings[i].speed;
     });
   });
   return (
@@ -107,12 +111,97 @@ function DataRings() {
   );
 }
 
+/** Vertical glowing beams shooting up from beacon buildings — red=risk, gold=opportunity, cyan=data. */
+function DataBeams({
+  beacons,
+}: {
+  beacons: { x: number; z: number; h: number; kind: string; phase: number }[];
+}) {
+  const refs = useRef<(THREE.Mesh | null)[]>([]);
+  useFrame((s) => {
+    const t = s.clock.elapsedTime;
+    beacons.forEach((b, i) => {
+      const m = refs.current[i];
+      if (!m) return;
+      const pulse = 0.55 + Math.sin(t * 2 + b.phase) * 0.45;
+      m.scale.y = 6 + pulse * 6;
+      m.position.y = m.scale.y / 2 + b.h;
+      (m.material as THREE.MeshBasicMaterial).opacity = 0.35 + pulse * 0.45;
+    });
+  });
+  const colorFor = (k: string) =>
+    k === "risk" ? "#ff4d57" : k === "opp" ? "#f5b454" : "#5cbdff";
+  return (
+    <>
+      {beacons.map((b, i) => (
+        <mesh
+          key={i}
+          ref={(el) => (refs.current[i] = el)}
+          position={[b.x, b.h + 3, b.z]}
+        >
+          <cylinderGeometry args={[0.05, 0.05, 1, 8, 1, true]} />
+          <meshBasicMaterial
+            color={colorFor(b.kind)}
+            transparent
+            opacity={0.6}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+/** Expanding ground rings — like dropped pebbles of signal. */
+function GroundPulses() {
+  const N = 6;
+  const refs = useRef<(THREE.Mesh | null)[]>([]);
+  const pulses = useMemo(
+    () =>
+      Array.from({ length: N }, () => ({
+        x: (Math.random() - 0.5) * 24,
+        z: (Math.random() - 0.5) * 24,
+        speed: 0.5 + Math.random() * 0.6,
+        phase: Math.random(),
+        color: Math.random() > 0.6 ? "#f5b454" : "#5cbdff",
+      })),
+    [],
+  );
+  useFrame((s) => {
+    const t = s.clock.elapsedTime;
+    pulses.forEach((p, i) => {
+      const m = refs.current[i];
+      if (!m) return;
+      const tt = ((t * p.speed + p.phase) % 1 + 1) % 1;
+      const r = 0.2 + tt * 5;
+      m.scale.set(r, r, r);
+      (m.material as THREE.MeshBasicMaterial).opacity = (1 - tt) * 0.55;
+    });
+  });
+  return (
+    <>
+      {pulses.map((p, i) => (
+        <mesh
+          key={i}
+          ref={(el) => (refs.current[i] = el)}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[p.x, 0.03, p.z]}
+        >
+          <ringGeometry args={[0.92, 1, 64]} />
+          <meshBasicMaterial color={p.color} transparent opacity={0.4} side={THREE.DoubleSide} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
 function CameraDrift() {
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    state.camera.position.x = Math.sin(t * 0.08) * 2.2;
-    state.camera.position.y = 4.2 + Math.sin(t * 0.12) * 0.4;
-    state.camera.lookAt(0, 0.5, 0);
+    state.camera.position.x = Math.sin(t * 0.08) * 2.4;
+    state.camera.position.y = 4.0 + Math.sin(t * 0.12) * 0.6;
+    state.camera.position.z = 14 + Math.sin(t * 0.05) * 1.6;
+    state.camera.lookAt(0, 0.6, 0);
   });
   return null;
 }
@@ -128,7 +217,8 @@ export default function CityScene() {
       <fog attach="fog" args={["#04060d", 14, 38]} />
       <ambientLight intensity={0.35} />
       <directionalLight position={[8, 10, 6]} intensity={0.9} color="#9bb6ff" />
-      <pointLight position={[0, 5, 0]} intensity={1.5} color="#f5b454" distance={28} />
+      <pointLight position={[0, 5, 0]} intensity={1.6} color="#f5b454" distance={30} />
+      <pointLight position={[-10, 3, -8]} intensity={0.6} color="#ff5566" distance={20} />
       <CityGrid />
       <CameraDrift />
     </Canvas>

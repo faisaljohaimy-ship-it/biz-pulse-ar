@@ -2,23 +2,19 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
-/**
- * ARIA Core — a pulsing 3D energy nucleus.
- * Inner sphere with iridescent shader-ish material, two counter-rotating
- * wireframe shells, and a particle halo.
- */
 function Core() {
   const coreRef = useRef<THREE.Mesh>(null);
   const shellARef = useRef<THREE.Mesh>(null);
   const shellBRef = useRef<THREE.Mesh>(null);
+  const scanRef = useRef<THREE.Mesh>(null);
 
   useFrame((s) => {
     const t = s.clock.elapsedTime;
     if (coreRef.current) {
-      const p = 1 + Math.sin(t * 1.8) * 0.04;
+      const p = 1 + Math.sin(t * 1.8) * 0.05;
       coreRef.current.scale.setScalar(p);
       (coreRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
-        1.3 + Math.sin(t * 2.4) * 0.4;
+        1.4 + Math.sin(t * 2.4) * 0.5;
     }
     if (shellARef.current) {
       shellARef.current.rotation.x = t * 0.25;
@@ -27,6 +23,10 @@ function Core() {
     if (shellBRef.current) {
       shellBRef.current.rotation.x = -t * 0.18;
       shellBRef.current.rotation.z = t * 0.22;
+    }
+    if (scanRef.current) {
+      scanRef.current.rotation.x = Math.PI / 2;
+      scanRef.current.position.y = Math.sin(t * 0.7) * 1.8;
     }
   });
 
@@ -48,14 +48,126 @@ function Core() {
       </mesh>
       <mesh ref={shellBRef}>
         <icosahedronGeometry args={[2.05, 1]} />
-        <meshBasicMaterial color="#f5b454" wireframe transparent opacity={0.25} />
+        <meshBasicMaterial color="#f5b454" wireframe transparent opacity={0.28} />
+      </mesh>
+      {/* horizontal scan disc */}
+      <mesh ref={scanRef}>
+        <ringGeometry args={[1.7, 2.2, 96]} />
+        <meshBasicMaterial color="#a78bfa" transparent opacity={0.22} side={THREE.DoubleSide} />
       </mesh>
       {/* glow halo */}
       <mesh>
         <sphereGeometry args={[1.25, 32, 32]} />
-        <meshBasicMaterial color="#a78bfa" transparent opacity={0.12} />
+        <meshBasicMaterial color="#a78bfa" transparent opacity={0.14} />
       </mesh>
     </group>
+  );
+}
+
+/** Volumetric light cones — soft additive beams piercing through the core. */
+function Volumetric() {
+  const refs = useRef<(THREE.Mesh | null)[]>([]);
+  const cones = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => ({
+        rot: (i / 6) * Math.PI * 2,
+        tilt: (Math.random() - 0.5) * 0.4,
+        color: i % 2 === 0 ? "#a78bfa" : "#f5b454",
+      })),
+    [],
+  );
+  useFrame((s) => {
+    const t = s.clock.elapsedTime;
+    refs.current.forEach((m, i) => {
+      if (!m) return;
+      m.rotation.z = cones[i].rot + t * 0.08;
+      const breath = 0.6 + Math.sin(t * 1.4 + i) * 0.25;
+      (m.material as THREE.MeshBasicMaterial).opacity = 0.08 + breath * 0.1;
+    });
+  });
+  return (
+    <group>
+      {cones.map((c, i) => (
+        <mesh
+          key={i}
+          ref={(el) => (refs.current[i] = el)}
+          rotation={[c.tilt, 0, c.rot]}
+        >
+          <coneGeometry args={[1.4, 7, 32, 1, true]} />
+          <meshBasicMaterial
+            color={c.color}
+            transparent
+            opacity={0.12}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/** Particle streams flowing into the core — data converging into ARIA. */
+function DataStreams() {
+  const ref = useRef<THREE.Points>(null);
+  const COUNT = 800;
+  const { positions, speeds } = useMemo(() => {
+    const positions = new Float32Array(COUNT * 3);
+    const speeds = new Float32Array(COUNT);
+    for (let i = 0; i < COUNT; i++) {
+      const r = 3 + Math.random() * 4;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = r * Math.cos(phi);
+      speeds[i] = 0.004 + Math.random() * 0.012;
+    }
+    return { positions, speeds };
+  }, []);
+  useFrame(() => {
+    if (!ref.current) return;
+    const attr = ref.current.geometry.attributes.position as THREE.BufferAttribute;
+    const arr = attr.array as Float32Array;
+    for (let i = 0; i < COUNT; i++) {
+      const ix = i * 3;
+      const x = arr[ix];
+      const y = arr[ix + 1];
+      const z = arr[ix + 2];
+      const d = Math.hypot(x, y, z);
+      if (d < 1.2) {
+        // respawn far out
+        const r = 5 + Math.random() * 2.5;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        arr[ix] = r * Math.sin(phi) * Math.cos(theta);
+        arr[ix + 1] = r * Math.sin(phi) * Math.sin(theta);
+        arr[ix + 2] = r * Math.cos(phi);
+      } else {
+        const k = speeds[i] / d;
+        arr[ix] = x - x * k;
+        arr[ix + 1] = y - y * k;
+        arr[ix + 2] = z - z * k;
+      }
+    }
+    attr.needsUpdate = true;
+  });
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        color="#c4b5fd"
+        size={0.05}
+        sizeAttenuation
+        transparent
+        opacity={0.9}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
   );
 }
 
@@ -84,7 +196,7 @@ function Halo() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial color="#c4b5fd" size={0.035} sizeAttenuation transparent opacity={0.85} />
+      <pointsMaterial color="#c4b5fd" size={0.035} sizeAttenuation transparent opacity={0.6} />
     </points>
   );
 }
@@ -98,9 +210,11 @@ export default function AriaCore() {
       style={{ position: "absolute", inset: 0 }}
     >
       <ambientLight intensity={0.4} />
-      <pointLight position={[4, 4, 4]} intensity={1.5} color="#a78bfa" />
-      <pointLight position={[-4, -2, 3]} intensity={0.8} color="#f5b454" />
+      <pointLight position={[4, 4, 4]} intensity={1.6} color="#a78bfa" />
+      <pointLight position={[-4, -2, 3]} intensity={0.9} color="#f5b454" />
+      <Volumetric />
       <Halo />
+      <DataStreams />
       <Core />
     </Canvas>
   );

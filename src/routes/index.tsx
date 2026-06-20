@@ -19,6 +19,8 @@ import cinematicEarth from "@/assets/cinematic-earth.jpg";
 import { ScrollReveal, Parallax } from "@/components/cinematic/ScrollReveal";
 import { CinematicProgress } from "@/components/cinematic/CinematicProgress";
 import { ParticleField } from "@/components/cinematic/ParticleField";
+import { ChaosCanvas } from "@/components/cinematic/ChaosCanvas";
+import { CountUp } from "@/components/cinematic/CountUp";
 
 const CityScene = lazy(() => import("@/components/cinematic/CityScene"));
 const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
@@ -287,6 +289,7 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
       className="relative flex min-h-[100svh] items-center overflow-hidden bg-[#04060d] py-24"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,80,80,0.12),transparent_55%)]" />
+      <ChaosCanvas />
       <ParticleField density={0.00006} />
 
       {/* floating systems orbiting a center */}
@@ -638,7 +641,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
             <ScrollReveal key={s.l} delay={i * 120} direction="scale">
               <div className="px-6 py-10 text-center">
                 <div className="bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 bg-clip-text text-7xl font-bold tracking-tight text-transparent sm:text-8xl">
-                  {s.v}
+                  <CountUp value={s.v} />
                 </div>
                 <div className="mt-4 text-sm uppercase tracking-[0.2em] text-white/60">{s.l}</div>
               </div>
@@ -666,9 +669,12 @@ function GlobalScene({ isAr }: { isAr: boolean }) {
           loading="lazy"
           width={1920}
           height={1080}
-          className="h-full w-full scale-110 object-cover opacity-50"
+          className="h-full w-full scale-110 object-cover opacity-40"
         />
       </Parallax>
+      <div className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen">
+        <Suspense fallback={null}><EarthScene intensity="network" /></Suspense>
+      </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#04060d] via-[#04060d]/40 to-transparent" />
       <ParticleField density={0.00008} />
 
