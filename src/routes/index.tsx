@@ -430,9 +430,9 @@ function TwinCityScene({ isAr }: { isAr: boolean }) {
   return (
     <section
       data-scene="4"
-      className="relative flex min-h-[100svh] items-center overflow-hidden"
+      className="relative flex min-h-[120svh] items-stretch overflow-hidden"
     >
-      <Parallax strength={120} className="absolute inset-0">
+      <Parallax strength={140} className="absolute inset-0">
         <img
           src={cinematicCity}
           alt=""
@@ -442,39 +442,69 @@ function TwinCityScene({ isAr }: { isAr: boolean }) {
           className="h-full w-full scale-110 object-cover"
         />
       </Parallax>
-      <div className="pointer-events-none absolute inset-0 opacity-60 mix-blend-screen">
+      {/* Live 3D city — taller, more dominant */}
+      <div className="pointer-events-none absolute inset-0 opacity-85 mix-blend-screen">
         <Suspense fallback={null}><CityScene /></Suspense>
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#04060d]/70 via-[#04060d]/30 to-[#04060d]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#04060d] via-transparent to-transparent" />
+      <ParticleField density={0.00008} />
+      {/* fog layers */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#04060d] via-[#04060d]/60 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-[#04060d] via-[#04060d]/40 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_60%,transparent_30%,rgba(4,6,13,0.65)_85%)]" />
 
-      {/* Floating district hologram chips (Reference A) */}
+      {/* Floating district hologram chips */}
       <TwinHoloLabels isAr={isAr} />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 py-32">
-        <ScrollReveal>
-          <p className="text-xs uppercase tracking-[0.35em] text-amber-300/80">{isAr ? "المشهد ٠٤ · التوأم الرقمي" : "Scene 04 · The Digital Twin"}</p>
-        </ScrollReveal>
-        <ScrollReveal delay={200}>
-          <h2 className="mt-4 max-w-3xl text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-            {isAr ? (
-              <>مؤسستك. <span className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">كمدينة حيّة.</span></>
-            ) : (
-              <>Your enterprise. <span className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">As a living city.</span></>
-            )}
-          </h2>
-        </ScrollReveal>
-        <ScrollReveal delay={350}>
-          <p className="mt-6 max-w-xl text-lg text-white/70">
-            {isAr
-              ? "لا لوحات ميتة. مدينة رقمية تنبض، حيث كل إشارة لها معنى تنفيذي."
-              : "No dead dashboards. A digital city that breathes, where every signal carries executive meaning."}
-          </p>
+      {/* Live activity feed (right rail, desktop) */}
+      <TwinActivityFeed isAr={isAr} />
+
+      {/* District roster (left rail, desktop) */}
+      <TwinDistrictRoster isAr={isAr} />
+
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col justify-between px-5 py-32">
+        <div>
+          <ScrollReveal>
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-300/80">{isAr ? "المشهد ٠٤ · التوأم الرقمي" : "Scene 04 · The Digital Twin"}</p>
+          </ScrollReveal>
+          <ScrollReveal delay={200}>
+            <h2 className="mt-4 max-w-3xl text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+              {isAr ? (
+                <>مؤسستك. <span className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">كمدينة حيّة.</span></>
+              ) : (
+                <>Your enterprise. <span className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">As a living city.</span></>
+              )}
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal delay={350}>
+            <p className="mt-6 max-w-xl text-lg text-white/75">
+              {isAr
+                ? "أحياء = إدارات. مبانٍ = مشاريع. طائرات ذاتية = وكلاء ذكاء. تيارات ضوئية = بيانات تتدفق بين الجميع."
+                : "Districts are departments. Buildings are projects. Drones are AI agents. Light streams are data flowing between them all."}
+            </p>
+          </ScrollReveal>
+        </div>
+
+        {/* bottom executive HUD strip */}
+        <ScrollReveal delay={500}>
+          <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl sm:grid-cols-5">
+            {[
+              { v: "24", l: isAr ? "حياً" : "Districts" },
+              { v: "1,847", l: isAr ? "مبنى" : "Buildings" },
+              { v: "48", l: isAr ? "وكيل ذكاء" : "AI Agents" },
+              { v: "12.8K", l: isAr ? "إشارة/ث" : "Signals/sec" },
+              { v: "342", l: isAr ? "أتمتة" : "Automations" },
+            ].map((s) => (
+              <div key={s.l} className="bg-[#04060d]/55 px-5 py-6">
+                <div className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{s.v}</div>
+                <div className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/55">{s.l}</div>
+              </div>
+            ))}
+          </div>
         </ScrollReveal>
 
-        {/* legend strip — not cards, a horizontal HUD */}
-        <ScrollReveal delay={500}>
-          <div className="mt-14 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6">
+        {/* legend */}
+        <ScrollReveal delay={650}>
+          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6">
             {signals.map((s) => (
               <div key={s.t} className="flex items-center gap-2.5">
                 <span className={`relative flex h-2.5 w-2.5 ${s.c} rounded-full`}>
@@ -980,5 +1010,105 @@ export function TwinHoloLabels({ isAr }: { isAr: boolean }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TWIN ACTIVITY FEED — live signals streaming on the right
+   ═════════════════════════════════════════════════════════ */
+function TwinActivityFeed({ isAr }: { isAr: boolean }) {
+  const items = isAr
+    ? [
+        { t: "↑", txt: "وكيل المبيعات أغلق صفقة 2.4M ريال", tone: "text-amber-300", dot: "bg-amber-400" },
+        { t: "⚠", txt: "ارتفاع مخاطر سلسلة الإمداد · حي اللوجستيات", tone: "text-red-400", dot: "bg-red-500" },
+        { t: "✓", txt: "أتمتة الفواتير اكتملت · 1,284 معاملة", tone: "text-emerald-300", dot: "bg-emerald-400" },
+        { t: "◎", txt: "ARIA: توصية بإعادة التخصيص — حي المنتجات", tone: "text-violet-300", dot: "bg-violet-400" },
+        { t: "↗", txt: "كفاءة العمليات +3.4% خلال آخر ساعة", tone: "text-cyan-300", dot: "bg-cyan-400" },
+        { t: "⬡", txt: "مشروع جديد قيد الإنشاء · حي البحث والتطوير", tone: "text-amber-200", dot: "bg-amber-300" },
+      ]
+    : [
+        { t: "↑", txt: "Sales agent closed deal · 2.4M SAR", tone: "text-amber-300", dot: "bg-amber-400" },
+        { t: "⚠", txt: "Supply-chain risk rising · Logistics district", tone: "text-red-400", dot: "bg-red-500" },
+        { t: "✓", txt: "Invoice automation complete · 1,284 txns", tone: "text-emerald-300", dot: "bg-emerald-400" },
+        { t: "◎", txt: "ARIA: reallocation recommended · Products district", tone: "text-violet-300", dot: "bg-violet-400" },
+        { t: "↗", txt: "Ops efficiency +3.4% in the last hour", tone: "text-cyan-300", dot: "bg-cyan-400" },
+        { t: "⬡", txt: "New project under construction · R&D district", tone: "text-amber-200", dot: "bg-amber-300" },
+      ];
+  return (
+    <aside className="pointer-events-none absolute right-6 top-32 z-[5] hidden w-[280px] xl:block">
+      <div className="rounded-2xl border border-white/10 bg-[#04060d]/70 p-4 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(58,142,255,0.55)]">
+        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-white/55">{isAr ? "تيار الإشارات · مباشر" : "Signal Feed · Live"}</div>
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-80" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          </span>
+        </div>
+        <ul className="mt-3 space-y-2.5">
+          {items.map((it, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2.5 animate-fade-in"
+              style={{ animationDelay: `${i * 220}ms`, animationFillMode: "both" }}
+            >
+              <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${it.dot}`} />
+              <div className="min-w-0">
+                <span className={`text-[10px] font-bold ${it.tone}`}>{it.t}</span>
+                <span className="ml-1.5 text-[11px] leading-snug text-white/80">{it.txt}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TWIN DISTRICT ROSTER — left rail
+   ═════════════════════════════════════════════════════════ */
+function TwinDistrictRoster({ isAr }: { isAr: boolean }) {
+  const districts = isAr
+    ? [
+        { n: "المالية", health: 96, tone: "bg-emerald-400" },
+        { n: "العمليات", health: 88, tone: "bg-cyan-400" },
+        { n: "المبيعات", health: 92, tone: "bg-amber-400" },
+        { n: "اللوجستيات", health: 64, tone: "bg-red-400" },
+        { n: "البحث والتطوير", health: 81, tone: "bg-violet-400" },
+        { n: "الموارد البشرية", health: 90, tone: "bg-emerald-300" },
+      ]
+    : [
+        { n: "Finance", health: 96, tone: "bg-emerald-400" },
+        { n: "Operations", health: 88, tone: "bg-cyan-400" },
+        { n: "Sales", health: 92, tone: "bg-amber-400" },
+        { n: "Logistics", health: 64, tone: "bg-red-400" },
+        { n: "R&D", health: 81, tone: "bg-violet-400" },
+        { n: "People", health: 90, tone: "bg-emerald-300" },
+      ];
+  return (
+    <aside className="pointer-events-none absolute left-6 top-32 z-[5] hidden w-[240px] xl:block">
+      <div className="rounded-2xl border border-white/10 bg-[#04060d]/70 p-4 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(245,180,84,0.45)]">
+        <div className="border-b border-white/10 pb-2 text-[10px] uppercase tracking-[0.28em] text-white/55">
+          {isAr ? "أحياء المدينة · صحة لحظية" : "City Districts · Live health"}
+        </div>
+        <ul className="mt-3 space-y-3">
+          {districts.map((d, i) => (
+            <li
+              key={d.n}
+              className="animate-fade-in"
+              style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
+            >
+              <div className="flex items-baseline justify-between">
+                <span className="text-xs font-semibold text-white">{d.n}</span>
+                <span className="text-[10px] font-mono text-white/55">{d.health}%</span>
+              </div>
+              <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+                <div className={`h-full ${d.tone} rounded-full`} style={{ width: `${d.health}%` }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
   );
 }
