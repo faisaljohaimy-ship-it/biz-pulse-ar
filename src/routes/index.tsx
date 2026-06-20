@@ -1119,49 +1119,215 @@ function PredictiveScene({ isAr }: { isAr: boolean }) {
    SCENE 07 — ROI TRANSFORMATION
    ═════════════════════════════════════════════════════════ */
 function RoiScene({ isAr }: { isAr: boolean }) {
-  const stats = isAr
-    ? [
-        { v: "35%", l: "خفض التكاليف" },
-        { v: "90%", l: "تسريع التقارير" },
-        { v: "10×", l: "تسريع القرار" },
-        { v: "24/7", l: "ذكاء تشغيلي" },
-      ]
-    : [
-        { v: "35%", l: "Cost Reduction" },
-        { v: "90%", l: "Faster Reporting" },
-        { v: "10×", l: "Faster Decisions" },
-        { v: "24/7", l: "Operational Intelligence" },
-      ];
+  // Live investor-grade business simulation.
+  const [employees, setEmployees] = useState(1200);
+  const [projects, setProjects] = useState(48);
+  const [revenue, setRevenue] = useState(180); // SAR millions / year
+  const [departments, setDepartments] = useState(12);
+
+  // Derived impact model — designed to feel responsive and grounded.
+  const sim = useMemo(() => {
+    const empF = Math.log10(employees + 10) / 3.2;          // 0..~1.3
+    const projF = Math.min(projects / 80, 1.4);
+    const deptF = Math.min(departments / 20, 1.3);
+    const revF = Math.min(revenue / 500, 1.6);
+    const scale = (empF + projF + deptF) / 3;
+
+    const costReduction = Math.min(0.42, 0.18 + scale * 0.22);                // %
+    const efficiency    = Math.min(0.78, 0.32 + scale * 0.42);                // %
+    const riskReduction = Math.min(0.71, 0.28 + scale * 0.36);                // %
+    const revenueGrowth = Math.min(0.46, 0.12 + scale * 0.22 + revF * 0.06);  // %
+
+    const annualSavings  = revenue * costReduction * 0.55;     // SAR M
+    const newRevenue     = revenue * revenueGrowth;            // SAR M
+    const hoursSaved     = Math.round(employees * 6.4 * efficiency); // hours / month
+    const decisionsAuto  = Math.round(projects * departments * 2.6);
+
+    const investment = 2.4 + departments * 0.18 + employees * 0.0009; // SAR M / yr
+    const totalImpact = annualSavings + newRevenue;
+    const roi = ((totalImpact - investment) / investment) * 100;
+    const payback = Math.max(1, Math.round((investment / Math.max(totalImpact, 0.1)) * 12));
+
+    return {
+      costReduction, efficiency, riskReduction, revenueGrowth,
+      annualSavings, newRevenue, hoursSaved, decisionsAuto,
+      investment, totalImpact, roi, payback,
+    };
+  }, [employees, projects, revenue, departments]);
+
+  const fmtPct = (n: number) => `${(n * 100).toFixed(1)}%`;
+  const fmtM   = (n: number) => `SAR ${n.toFixed(1)}M`;
+  const fmtN   = (n: number) => n.toLocaleString(isAr ? "ar-SA" : "en-US");
+
+  const sliders: {
+    id: string; label: string; value: number; set: (v: number) => void;
+    min: number; max: number; step: number; suffix?: string;
+  }[] = [
+    { id: "emp", label: isAr ? "الموظفون"     : "Employees",   value: employees,   set: setEmployees,   min: 50,  max: 25000, step: 50 },
+    { id: "prj", label: isAr ? "المشاريع"      : "Projects",    value: projects,    set: setProjects,    min: 5,   max: 400,   step: 1  },
+    { id: "rev", label: isAr ? "الإيراد السنوي" : "Annual Revenue", value: revenue, set: setRevenue,     min: 10,  max: 2000,  step: 5, suffix: "M SAR" },
+    { id: "dep", label: isAr ? "الأقسام"      : "Departments", value: departments, set: setDepartments, min: 2,   max: 40,    step: 1  },
+  ];
+
+  const impacts = [
+    { l: isAr ? "خفض التكاليف"      : "Cost Reduction",  v: fmtPct(sim.costReduction), tone: "amber"   },
+    { l: isAr ? "كفاءة تشغيلية"    : "Operational Efficiency", v: fmtPct(sim.efficiency), tone: "cyan" },
+    { l: isAr ? "خفض المخاطر"      : "Risk Reduction",   v: fmtPct(sim.riskReduction), tone: "rose"   },
+    { l: isAr ? "نمو الإيرادات"    : "Revenue Growth",   v: fmtPct(sim.revenueGrowth), tone: "emerald" },
+  ];
+
+  const toneClass: Record<string, string> = {
+    amber:   "from-amber-200 via-amber-300 to-amber-500",
+    cyan:    "from-cyan-200  via-cyan-300  to-cyan-500",
+    rose:    "from-rose-200  via-rose-300  to-rose-500",
+    emerald: "from-emerald-200 via-emerald-300 to-emerald-500",
+  };
+
   return (
     <section
       data-scene="7"
-      className="relative flex min-h-[100svh] items-center overflow-hidden bg-[#04060d] py-32"
+      className="relative flex min-h-[120svh] items-center overflow-hidden bg-[#04060d] py-24 sm:py-32"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,180,84,0.08),transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(245,180,84,0.10),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_90%,rgba(92,189,255,0.08),transparent_55%)]" />
       <ParticleField density={0.0001} />
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5">
         <ScrollReveal>
           <div className="text-center">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-300/80">{isAr ? "المشهد ٠٧ · العائد" : "Scene 07 · The Return"}</p>
-            <h2 className="mt-4 text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl">
-              {isAr ? "الأرقام تتحدث." : "The numbers speak."}
+            <p className="text-[10px] uppercase tracking-[0.5em] text-amber-300/80 sm:text-xs">
+              {isAr ? "المشهد ٠٧ · محرّك العائد" : "Scene 07 · ROI Engine"}
+            </p>
+            <h2 className="mt-4 text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+              {isAr ? "حرّك الأرقام. شاهد المؤسسة تتحوّل." : "Move the numbers. Watch the enterprise transform."}
             </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-white/55 sm:text-base">
+              {isAr
+                ? "محاكاة استثمارية حيّة — كل مدخل يعيد حساب الأثر فوراً عبر التكاليف، المخاطر، الكفاءة، والنمو."
+                : "A live investor-grade simulation — every input instantly recalculates impact across cost, risk, efficiency and growth."}
+            </p>
           </div>
         </ScrollReveal>
 
-        {/* full-bleed numeric strip, not cards */}
-        <div className="mt-20 grid divide-y divide-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
-          {stats.map((s, i) => (
-            <ScrollReveal key={s.l} delay={i * 120} direction="scale">
-              <div className="px-6 py-10 text-center">
-                <div className="bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 bg-clip-text text-7xl font-bold tracking-tight text-transparent sm:text-8xl">
-                  <CountUp value={s.v} />
+        <div className="mt-14 grid gap-6 lg:grid-cols-5">
+          {/* Controls */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 backdrop-blur-sm lg:col-span-2">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-[0.32em] text-white/55">
+                {isAr ? "متغيّرات الأعمال" : "Business Variables"}
+              </span>
+              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-emerald-300/85">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/60" />
+                  <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                {isAr ? "حيّة" : "Live"}
+              </span>
+            </div>
+            <div className="space-y-5">
+              {sliders.map((s) => (
+                <div key={s.id}>
+                  <div className="flex items-baseline justify-between text-sm">
+                    <label htmlFor={s.id} className="text-white/75">{s.label}</label>
+                    <span className="font-semibold tabular-nums text-amber-200">
+                      {fmtN(s.value)}{s.suffix ? ` ${s.suffix}` : ""}
+                    </span>
+                  </div>
+                  <input
+                    id={s.id}
+                    type="range"
+                    min={s.min}
+                    max={s.max}
+                    step={s.step}
+                    value={s.value}
+                    onChange={(e) => s.set(Number(e.target.value))}
+                    className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-amber-300
+                               [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
+                               [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-300
+                               [&::-webkit-slider-thumb]:shadow-[0_0_18px_rgba(245,180,84,0.65)]
+                               [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full
+                               [&::-moz-range-thumb]:bg-amber-300 [&::-moz-range-thumb]:border-0"
+                  />
                 </div>
-                <div className="mt-4 text-sm uppercase tracking-[0.2em] text-white/60">{s.l}</div>
+              ))}
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/10 pt-5 text-[11px]">
+              <div>
+                <div className="uppercase tracking-[0.28em] text-white/45">{isAr ? "ساعات موفّرة/شهرياً" : "Hours saved / mo"}</div>
+                <div className="mt-1 text-lg font-semibold tabular-nums text-white">{fmtN(sim.hoursSaved)}</div>
               </div>
-            </ScrollReveal>
-          ))}
+              <div>
+                <div className="uppercase tracking-[0.28em] text-white/45">{isAr ? "قرارات مؤتمتة" : "Decisions automated"}</div>
+                <div className="mt-1 text-lg font-semibold tabular-nums text-white">{fmtN(sim.decisionsAuto)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Impact dashboard */}
+          <div className="lg:col-span-3">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {impacts.map((m) => {
+                const pct = parseFloat(m.v);
+                return (
+                  <div
+                    key={m.l}
+                    className="rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-5"
+                  >
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-white/55">{m.l}</span>
+                    </div>
+                    <div className={`mt-2 bg-gradient-to-br ${toneClass[m.tone]} bg-clip-text text-4xl font-bold tabular-nums tracking-tight text-transparent sm:text-5xl`}>
+                      {m.v}
+                    </div>
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${toneClass[m.tone]} transition-[width] duration-500 ease-out`}
+                        style={{ width: `${Math.min(100, pct * 1.6)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Headline ROI */}
+            <div className="mt-5 overflow-hidden rounded-xl border border-amber-300/30 bg-gradient-to-br from-amber-500/10 via-transparent to-cyan-500/10 p-6">
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.35em] text-amber-200/85">
+                    {isAr ? "العائد على الاستثمار · سنوياً" : "Annualised ROI"}
+                  </div>
+                  <div className="mt-2 bg-gradient-to-br from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-6xl font-bold tabular-nums tracking-tight text-transparent sm:text-7xl">
+                    {sim.roi.toFixed(0)}%
+                  </div>
+                  <div className="mt-1 text-xs text-white/55">
+                    {isAr ? `استرداد خلال ${sim.payback} شهر` : `Payback in ${sim.payback} months`}
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-5 text-right rtl:text-left">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.28em] text-white/50">{isAr ? "وفورات" : "Savings"}</div>
+                    <div className="mt-1 text-base font-semibold tabular-nums text-white">{fmtM(sim.annualSavings)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.28em] text-white/50">{isAr ? "إيراد جديد" : "New Revenue"}</div>
+                    <div className="mt-1 text-base font-semibold tabular-nums text-white">{fmtM(sim.newRevenue)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.28em] text-white/50">{isAr ? "استثمار" : "Investment"}</div>
+                    <div className="mt-1 text-base font-semibold tabular-nums text-white">{fmtM(sim.investment)}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-cyan-300 transition-[width] duration-500 ease-out"
+                  style={{ width: `${Math.min(100, sim.roi / 8)}%` }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
