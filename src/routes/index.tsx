@@ -128,10 +128,10 @@ function CinematicHome() {
               </button>
             </nav>
             <Link
-              to="/login"
+              to={user ? "/dashboard" : "/login"}
               className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
             >
-              {isAr ? "دخول" : "Sign in"}
+              {user ? (isAr ? "غرفة القيادة" : "Command Center") : (isAr ? "دخول" : "Sign in")}
             </Link>
           </div>
         </div>
