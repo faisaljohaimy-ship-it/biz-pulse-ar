@@ -13,6 +13,7 @@ import { SimAR3D, SIM_AR3D_DURATION, SIM_AR3D_FPS } from "./SimAR3D";
 import { NeexiosCinematic, NX_DURATION, NX_FPS } from "./NeexiosCinematic";
 import { ExecutiveDemo, DX_DURATION, DX_FPS } from "./ExecutiveDemo";
 import { ExecutiveWalkthrough, WT_DURATION, WT_FPS } from "./ExecutiveWalkthrough";
+import { EnterpriseFilm, FILM_DURATION, FILM_FPS } from "./EnterpriseFilm";
 
 export const RemotionRoot = () => (
   <>
@@ -30,5 +31,6 @@ export const RemotionRoot = () => (
     <Composition id="neexios" component={NeexiosCinematic} durationInFrames={NX_DURATION} fps={NX_FPS} width={1920} height={1080} />
     <Composition id="execdemo" component={ExecutiveDemo} durationInFrames={DX_DURATION} fps={DX_FPS} width={1920} height={1080} />
     <Composition id="walkthrough" component={ExecutiveWalkthrough} durationInFrames={WT_DURATION} fps={WT_FPS} width={1920} height={1080} />
+    <Composition id="film" component={EnterpriseFilm} durationInFrames={FILM_DURATION} fps={FILM_FPS} width={1920} height={1080} />
   </>
 );
