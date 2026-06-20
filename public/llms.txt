@@ -12,15 +12,15 @@ Nexus AI OS unifies enterprise data (intelligence events, alerts, KPIs, governan
 - ARIA voice copilot — bilingual (AR/EN) with ElevenLabs STT/TTS
 
 ## Public pages
-- [Home](https://biz-pulse-ar.lovable.app/)
-- [Demo Center](https://biz-pulse-ar.lovable.app/demo)
-- [Cinematic Demo](https://biz-pulse-ar.lovable.app/cinematic-demo)
-- [Request a Demo](https://biz-pulse-ar.lovable.app/request-demo)
-- [Contact Sales](https://biz-pulse-ar.lovable.app/contact)
-- [Book a Meeting](https://biz-pulse-ar.lovable.app/book)
+- [Home](https://neexios.com/)
+- [Demo Center](https://neexios.com/demo)
+- [Cinematic Demo](https://neexios.com/cinematic-demo)
+- [Request a Demo](https://neexios.com/request-demo)
+- [Contact Sales](https://neexios.com/contact)
+- [Book a Meeting](https://neexios.com/book)
 
 ## AI providers
 ARIA uses OpenRouter as a unified gateway across OpenAI (GPT-4o), Anthropic (Claude 3.5 Sonnet), and Google (Gemini 2.5 Flash/Pro). Voice via ElevenLabs.
 
 ## Contact
-Sales: https://biz-pulse-ar.lovable.app/contact
+Sales: https://neexios.com/contact
