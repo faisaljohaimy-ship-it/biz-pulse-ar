@@ -1822,7 +1822,8 @@ function FinalRevealScene({ isAr }: { isAr: boolean }) {
 
       <ParticleField density={0.00010} />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-
+      {/* ARIA CORE ACTIVATION — converging light forms the lockup origin */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         {streams.map((s, i) => (
           <span
             key={i}
