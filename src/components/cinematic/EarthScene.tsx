@@ -229,9 +229,82 @@ export default function EarthScene({ intensity = "normal" }: { intensity?: Inten
       <pointLight position={[-6, -2, 4]} intensity={0.6} color="#f5b454" />
       <Stars />
       <Earth />
+      <CityHubs />
       <Satellites count={intensity === "network" ? 22 : 14} />
       <NetworkArcs count={intensity === "network" ? 26 : 12} />
       <CameraOrbit />
     </Canvas>
+  );
+}
+
+/** Glowing markers + ground pulses at major executive hubs. */
+function CityHubs() {
+  // [lon°, lat°, color]
+  const hubs: [number, number, string][] = [
+    [46.7, 24.7, "#f5b454"],   // Riyadh
+    [55.3, 25.2, "#f5b454"],   // Dubai
+    [-0.1, 51.5, "#9bb6ff"],   // London
+    [-74.0, 40.7, "#9bb6ff"],  // New York
+    [139.7, 35.7, "#a78bfa"],  // Tokyo
+    [103.8, 1.35, "#a78bfa"],  // Singapore
+    [116.4, 39.9, "#a78bfa"],  // Beijing
+    [13.4, 52.5, "#9bb6ff"],   // Berlin
+    [31.2, 30.0, "#f5b454"],   // Cairo
+  ];
+  const baseYaw = Math.PI / 2 - ARABIA_LON;
+  const group = useRef<THREE.Group>(null);
+  const pulseRefs = useRef<(THREE.Mesh | null)[]>([]);
+  useFrame((s) => {
+    const t = s.clock.elapsedTime;
+    const yaw = baseYaw + Math.sin(t * 0.08) * 0.06;
+    if (group.current) {
+      group.current.rotation.y = yaw;
+      group.current.rotation.x = -ARABIA_LAT + Math.sin(t * 0.05) * 0.02;
+    }
+    pulseRefs.current.forEach((m, i) => {
+      if (!m) return;
+      const tt = ((t * 0.6 + i * 0.17) % 1 + 1) % 1;
+      const sc = 1 + tt * 3.2;
+      m.scale.setScalar(sc);
+      (m.material as THREE.MeshBasicMaterial).opacity = (1 - tt) * 0.55;
+    });
+  });
+  return (
+    <group ref={group}>
+      {hubs.map(([lon, lat, color], i) => {
+        const lonR = lon * (Math.PI / 180);
+        const latR = lat * (Math.PI / 180);
+        const r = 2.42;
+        const x = r * Math.cos(latR) * Math.cos(lonR);
+        const y = r * Math.sin(latR);
+        const z = -r * Math.cos(latR) * Math.sin(lonR);
+        const normal = new THREE.Vector3(x, y, z).normalize();
+        const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+        return (
+          <group key={i} position={[x, y, z]} quaternion={quat}>
+            {/* hub dot */}
+            <mesh>
+              <sphereGeometry args={[0.035, 12, 12]} />
+              <meshBasicMaterial color={color} />
+            </mesh>
+            {/* glow */}
+            <mesh>
+              <sphereGeometry args={[0.08, 12, 12]} />
+              <meshBasicMaterial color={color} transparent opacity={0.28} />
+            </mesh>
+            {/* ground pulse ring (tangent to surface) */}
+            <mesh ref={(el) => (pulseRefs.current[i] = el)} rotation={[Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[0.05, 0.07, 48]} />
+              <meshBasicMaterial color={color} transparent opacity={0.55} side={THREE.DoubleSide} />
+            </mesh>
+            {/* uplink beam */}
+            <mesh position={[0, 0.18, 0]}>
+              <cylinderGeometry args={[0.008, 0.008, 0.36, 6]} />
+              <meshBasicMaterial color={color} transparent opacity={0.55} />
+            </mesh>
+          </group>
+        );
+      })}
+    </group>
   );
 }
