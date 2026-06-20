@@ -25,6 +25,7 @@ import { CountUp } from "@/components/cinematic/CountUp";
 const CityScene = lazy(() => import("@/components/cinematic/CityScene"));
 const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
+const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -238,6 +239,11 @@ function CinematicHome() {
 
       {/* ============ SCENE 04 — DIGITAL TWIN CITY ============ */}
       <TwinCityScene isAr={isAr} />
+
+      {/* ============ TRANSITION — CITY → BOARDROOM ============ */}
+      <Suspense fallback={null}>
+        <CityToBoardroomTransition isAr={isAr} />
+      </Suspense>
 
       {/* ============ SCENE 05 — COMMAND CENTER ============ */}
       <CommandCenterScene isAr={isAr} />
