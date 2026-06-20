@@ -16,6 +16,7 @@ import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RoiRouteImport } from './routes/roi'
+import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -29,9 +30,11 @@ import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DataRoomRouteImport } from './routes/data-room'
 import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
@@ -113,6 +116,11 @@ const RoiRoute = RoiRouteImport.update({
   path: '/roi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResponsibleAiRoute = ResponsibleAiRouteImport.update({
+  id: '/responsible-ai',
+  path: '/responsible-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RequestDemoRoute = RequestDemoRouteImport.update({
   id: '/request-demo',
   path: '/request-demo',
@@ -178,6 +186,11 @@ const CustomersRoute = CustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -191,6 +204,11 @@ const CinematicDemoRoute = CinematicDemoRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AupRoute = AupRouteImport.update({
+  id: '/aup',
+  path: '/aup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -431,9 +449,11 @@ const AuthenticatedAssistantThreadIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aup': typeof AupRoute
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/customers': typeof CustomersRoute
   '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
@@ -447,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -500,9 +521,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aup': typeof AupRoute
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/customers': typeof CustomersRoute
   '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
@@ -516,6 +539,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -571,9 +595,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/aup': typeof AupRoute
   '/book': typeof BookRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/customers': typeof CustomersRoute
   '/data-room': typeof DataRoomRoute
   '/demo': typeof DemoRoute
@@ -587,6 +613,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
+  '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -642,9 +669,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/aup'
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/cookie-policy'
     | '/customers'
     | '/data-room'
     | '/demo'
@@ -658,6 +687,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/responsible-ai'
     | '/roi'
     | '/security'
     | '/sitemap.xml'
@@ -711,9 +741,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/aup'
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/cookie-policy'
     | '/customers'
     | '/data-room'
     | '/demo'
@@ -727,6 +759,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/responsible-ai'
     | '/roi'
     | '/security'
     | '/sitemap.xml'
@@ -781,9 +814,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/aup'
     | '/book'
     | '/cinematic-demo'
     | '/contact'
+    | '/cookie-policy'
     | '/customers'
     | '/data-room'
     | '/demo'
@@ -797,6 +832,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/request-demo'
+    | '/responsible-ai'
     | '/roi'
     | '/security'
     | '/sitemap.xml'
@@ -852,9 +888,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AupRoute: typeof AupRoute
   BookRoute: typeof BookRoute
   CinematicDemoRoute: typeof CinematicDemoRoute
   ContactRoute: typeof ContactRoute
+  CookiePolicyRoute: typeof CookiePolicyRoute
   CustomersRoute: typeof CustomersRoute
   DataRoomRoute: typeof DataRoomRoute
   DemoRoute: typeof DemoRoute
@@ -868,6 +906,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RequestDemoRoute: typeof RequestDemoRoute
+  ResponsibleAiRoute: typeof ResponsibleAiRoute
   RoiRoute: typeof RoiRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -929,6 +968,13 @@ declare module '@tanstack/react-router' {
       path: '/roi'
       fullPath: '/roi'
       preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responsible-ai': {
+      id: '/responsible-ai'
+      path: '/responsible-ai'
+      fullPath: '/responsible-ai'
+      preLoaderRoute: typeof ResponsibleAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/request-demo': {
@@ -1022,6 +1068,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -1041,6 +1094,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aup': {
+      id: '/aup'
+      path: '/aup'
+      fullPath: '/aup'
+      preLoaderRoute: typeof AupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1454,9 +1514,11 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AupRoute: AupRoute,
   BookRoute: BookRoute,
   CinematicDemoRoute: CinematicDemoRoute,
   ContactRoute: ContactRoute,
+  CookiePolicyRoute: CookiePolicyRoute,
   CustomersRoute: CustomersRoute,
   DataRoomRoute: DataRoomRoute,
   DemoRoute: DemoRoute,
@@ -1470,6 +1532,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RequestDemoRoute: RequestDemoRoute,
+  ResponsibleAiRoute: ResponsibleAiRoute,
   RoiRoute: RoiRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
