@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { X, TrendingUp, Briefcase, Bot, ShieldAlert, Building2 } from "lucide-react";
+
 
 /**
  * Cinematic Riyadh skyline + executive holograms.
