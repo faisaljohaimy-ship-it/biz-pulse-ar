@@ -298,18 +298,58 @@ function CinematicHome() {
    ═════════════════════════════════════════════════════════ */
 function ChaosScene({ isAr }: { isAr: boolean }) {
   const systems = ["ERP", "SAP", "CRM", "Excel", "Emails", "BI", "Docs", "Slack", "SharePoint", "Oracle", "HRMS", "Finance"];
+
+  const painsLeft = isAr
+    ? [
+        { k: "صوامع البيانات",   v: 73, hint: "١٢ نظاماً غير متصل" },
+        { k: "تأخّر التقارير",   v: 86, hint: "متوسط ٩ أيام/تقرير" },
+        { k: "اختناقات تشغيلية", v: 64, hint: "٤١ موافقة عالقة" },
+      ]
+    : [
+        { k: "Data Silos",              v: 73, hint: "12 disconnected systems" },
+        { k: "Slow Reporting",          v: 86, hint: "9 days avg per report" },
+        { k: "Operational Bottlenecks", v: 64, hint: "41 approvals stuck" },
+      ];
+  const painsRight = isAr
+    ? [
+        { k: "تصاعد المخاطر", v: 78, hint: "٣ إشارات حرجة بدون مالك" },
+        { k: "قرارات بطيئة",  v: 81, hint: "متوسط ٤.٢ يوم/قرار" },
+        { k: "ضياع المعرفة",  v: 69, hint: "٣٧٪ من المستندات يتيمة" },
+      ]
+    : [
+        { k: "Risk Escalation", v: 78, hint: "3 critical signals unowned" },
+        { k: "Slow Decisions",  v: 81, hint: "4.2 days avg per decision" },
+        { k: "Lost Knowledge",  v: 69, hint: "37% of docs orphaned" },
+      ];
+
+  const PainCard = ({ k, v, hint }: { k: string; v: number; hint: string }) => (
+    <div className="rounded-lg border border-red-500/15 bg-gradient-to-br from-red-500/[0.06] to-transparent p-4 backdrop-blur-sm">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] uppercase tracking-[0.28em] text-red-300/85">{k}</span>
+        <span className="text-xs font-semibold tabular-nums text-red-200">{v}%</span>
+      </div>
+      <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-red-400 via-red-500 to-red-600"
+          style={{ width: `${v}%`, animation: "chaos-pulse 2.8s ease-in-out infinite" }}
+        />
+      </div>
+      <div className="mt-2 text-[10px] text-white/45">{hint}</div>
+    </div>
+  );
+
   return (
     <section
       data-scene="2"
-      className="relative flex min-h-[100svh] items-center overflow-hidden bg-[#04060d] py-24"
+      className="relative flex min-h-[110svh] items-center overflow-hidden bg-[#04060d] py-24"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,80,80,0.12),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,80,80,0.14),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(255,120,80,0.08),transparent_55%)]" />
       <ChaosCanvas />
       <ParticleField density={0.00006} />
 
-      {/* floating systems orbiting a center */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="relative h-[520px] w-[520px] max-w-[90vw]">
+        <div className="relative h-[520px] w-[520px] max-w-[88vw]">
           {systems.map((s, i) => {
             const angle = (i / systems.length) * Math.PI * 2;
             const radius = 220;
@@ -328,7 +368,6 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
               </div>
             );
           })}
-          {/* lines from center */}
           <svg className="absolute inset-0 h-full w-full" viewBox="-260 -260 520 520" aria-hidden>
             {systems.map((_, i) => {
               const angle = (i / systems.length) * Math.PI * 2;
@@ -340,35 +379,58 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
                   y1={0}
                   x2={Math.cos(angle) * r}
                   y2={Math.sin(angle) * r}
-                  stroke="rgba(255,255,255,0.08)"
+                  stroke="rgba(255,80,80,0.18)"
                   strokeDasharray="2 4"
                 />
               );
             })}
           </svg>
-          {/* glowing core */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-amber-300 to-amber-600 shadow-[0_0_60px_rgba(245,180,84,0.7)] animate-pulse" />
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-red-400 to-red-700 shadow-[0_0_60px_rgba(255,80,80,0.6)] animate-pulse" />
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-3xl px-5">
-        <ScrollReveal>
-          <p className="text-xs uppercase tracking-[0.35em] text-red-400/80">{isAr ? "المشهد ٠٢ · الفوضى" : "Scene 02 · The Chaos"}</p>
-          <h2 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-            {isAr ? "اثنا عشر نظامًا." : "Twelve systems."}{" "}
-            <span className="text-white/40">{isAr ? "صفر معنى." : "Zero meaning."}</span>
-          </h2>
-        </ScrollReveal>
-        <ScrollReveal delay={250}>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/65">
-            {isAr
-              ? "كل ERP وCRM وExcel وبريد يحمل قطعة من الحقيقة. بدون نواة، تبقى مجرد ضوضاء."
-              : "Every ERP, CRM, spreadsheet and inbox holds a fragment of the truth. Without a core, it's just noise."}
-          </p>
-        </ScrollReveal>
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-5">
+        <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,2fr)_1fr]">
+          <div className="order-2 space-y-3 lg:order-1">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-red-300/70">
+              {isAr ? "نقاط الألم" : "Pain Signals"}
+            </p>
+            {painsLeft.map((p) => <PainCard key={p.k} {...p} />)}
+          </div>
+
+          <div className="order-1 text-center lg:order-2">
+            <ScrollReveal>
+              <p className="text-xs uppercase tracking-[0.4em] text-red-400/80">
+                {isAr ? "المشهد ٠٢ · الفوضى" : "Scene 02 · The Chaos"}
+              </p>
+              <h2 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+                {isAr ? "اثنا عشر نظامًا." : "Twelve systems."}{" "}
+                <span className="text-white/40">{isAr ? "صفر معنى." : "Zero meaning."}</span>
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal delay={250}>
+              <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg">
+                {isAr
+                  ? "كل ERP وCRM وExcel وبريد يحمل قطعة من الحقيقة. بدون نواة، تبقى مجرد ضوضاء."
+                  : "Every ERP, CRM, spreadsheet and inbox holds a fragment of the truth. Without a core, it's just noise."}
+              </p>
+            </ScrollReveal>
+          </div>
+
+          <div className="order-3 space-y-3">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-red-300/70 ltr:text-right">
+              {isAr ? "نقاط الألم" : "Pain Signals"}
+            </p>
+            {painsRight.map((p) => <PainCard key={p.k} {...p} />)}
+          </div>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes chaos-pulse { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
+      `}</style>
     </section>
   );
 }
