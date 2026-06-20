@@ -1012,3 +1012,103 @@ export function TwinHoloLabels({ isAr }: { isAr: boolean }) {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════
+   TWIN ACTIVITY FEED — live signals streaming on the right
+   ═════════════════════════════════════════════════════════ */
+function TwinActivityFeed({ isAr }: { isAr: boolean }) {
+  const items = isAr
+    ? [
+        { t: "↑", txt: "وكيل المبيعات أغلق صفقة 2.4M ريال", tone: "text-amber-300", dot: "bg-amber-400" },
+        { t: "⚠", txt: "ارتفاع مخاطر سلسلة الإمداد · حي اللوجستيات", tone: "text-red-400", dot: "bg-red-500" },
+        { t: "✓", txt: "أتمتة الفواتير اكتملت · 1,284 معاملة", tone: "text-emerald-300", dot: "bg-emerald-400" },
+        { t: "◎", txt: "ARIA: توصية بإعادة التخصيص — حي المنتجات", tone: "text-violet-300", dot: "bg-violet-400" },
+        { t: "↗", txt: "كفاءة العمليات +3.4% خلال آخر ساعة", tone: "text-cyan-300", dot: "bg-cyan-400" },
+        { t: "⬡", txt: "مشروع جديد قيد الإنشاء · حي البحث والتطوير", tone: "text-amber-200", dot: "bg-amber-300" },
+      ]
+    : [
+        { t: "↑", txt: "Sales agent closed deal · 2.4M SAR", tone: "text-amber-300", dot: "bg-amber-400" },
+        { t: "⚠", txt: "Supply-chain risk rising · Logistics district", tone: "text-red-400", dot: "bg-red-500" },
+        { t: "✓", txt: "Invoice automation complete · 1,284 txns", tone: "text-emerald-300", dot: "bg-emerald-400" },
+        { t: "◎", txt: "ARIA: reallocation recommended · Products district", tone: "text-violet-300", dot: "bg-violet-400" },
+        { t: "↗", txt: "Ops efficiency +3.4% in the last hour", tone: "text-cyan-300", dot: "bg-cyan-400" },
+        { t: "⬡", txt: "New project under construction · R&D district", tone: "text-amber-200", dot: "bg-amber-300" },
+      ];
+  return (
+    <aside className="pointer-events-none absolute right-6 top-32 z-[5] hidden w-[280px] xl:block">
+      <div className="rounded-2xl border border-white/10 bg-[#04060d]/70 p-4 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(58,142,255,0.55)]">
+        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-white/55">{isAr ? "تيار الإشارات · مباشر" : "Signal Feed · Live"}</div>
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-80" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          </span>
+        </div>
+        <ul className="mt-3 space-y-2.5">
+          {items.map((it, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2.5 animate-fade-in"
+              style={{ animationDelay: `${i * 220}ms`, animationFillMode: "both" }}
+            >
+              <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${it.dot}`} />
+              <div className="min-w-0">
+                <span className={`text-[10px] font-bold ${it.tone}`}>{it.t}</span>
+                <span className="ml-1.5 text-[11px] leading-snug text-white/80">{it.txt}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TWIN DISTRICT ROSTER — left rail
+   ═════════════════════════════════════════════════════════ */
+function TwinDistrictRoster({ isAr }: { isAr: boolean }) {
+  const districts = isAr
+    ? [
+        { n: "المالية", health: 96, tone: "bg-emerald-400" },
+        { n: "العمليات", health: 88, tone: "bg-cyan-400" },
+        { n: "المبيعات", health: 92, tone: "bg-amber-400" },
+        { n: "اللوجستيات", health: 64, tone: "bg-red-400" },
+        { n: "البحث والتطوير", health: 81, tone: "bg-violet-400" },
+        { n: "الموارد البشرية", health: 90, tone: "bg-emerald-300" },
+      ]
+    : [
+        { n: "Finance", health: 96, tone: "bg-emerald-400" },
+        { n: "Operations", health: 88, tone: "bg-cyan-400" },
+        { n: "Sales", health: 92, tone: "bg-amber-400" },
+        { n: "Logistics", health: 64, tone: "bg-red-400" },
+        { n: "R&D", health: 81, tone: "bg-violet-400" },
+        { n: "People", health: 90, tone: "bg-emerald-300" },
+      ];
+  return (
+    <aside className="pointer-events-none absolute left-6 top-32 z-[5] hidden w-[240px] xl:block">
+      <div className="rounded-2xl border border-white/10 bg-[#04060d]/70 p-4 backdrop-blur-xl shadow-[0_0_60px_-20px_rgba(245,180,84,0.45)]">
+        <div className="border-b border-white/10 pb-2 text-[10px] uppercase tracking-[0.28em] text-white/55">
+          {isAr ? "أحياء المدينة · صحة لحظية" : "City Districts · Live health"}
+        </div>
+        <ul className="mt-3 space-y-3">
+          {districts.map((d, i) => (
+            <li
+              key={d.n}
+              className="animate-fade-in"
+              style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
+            >
+              <div className="flex items-baseline justify-between">
+                <span className="text-xs font-semibold text-white">{d.n}</span>
+                <span className="text-[10px] font-mono text-white/55">{d.health}%</span>
+              </div>
+              <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+                <div className={`h-full ${d.tone} rounded-full`} style={{ width: `${d.health}%` }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  );
+}
