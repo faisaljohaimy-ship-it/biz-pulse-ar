@@ -982,7 +982,111 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
           </div>
         </div>
 
-        {/* Executive Decision Engine bar */}
+        {/* Future Scenarios + Board Meeting Mode */}
+        <ScrollReveal delay={200}>
+          <div className={`mx-auto mt-10 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-2xl transition-all duration-500 ${boardMode ? "ring-1 ring-cyan-300/40 shadow-[0_0_120px_-30px_rgba(96,165,250,0.55)]" : ""}`}>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-3">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] uppercase tracking-[0.35em] text-cyan-200/85">
+                  {isAr ? "سيناريوهات مستقبلية" : "Future Scenarios"}
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40">
+                  · ARIA Simulation
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {(Object.keys(scenarios) as ScenarioKey[]).map((k) => {
+                  const active = scenario === k;
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => setScenario(k)}
+                      className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.25em] transition ${
+                        active
+                          ? `border-white/40 bg-white/10 text-white ${tc.ring} ring-1`
+                          : "border-white/10 text-white/55 hover:border-white/25 hover:text-white/85"
+                      }`}
+                    >
+                      {scenarios[k].label}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setBoardMode((v) => !v)}
+                  aria-pressed={boardMode}
+                  className={`ml-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.25em] transition ${
+                    boardMode
+                      ? "border-cyan-300/50 bg-cyan-400/10 text-cyan-100"
+                      : "border-white/15 text-white/60 hover:border-white/30 hover:text-white/90"
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${boardMode ? "bg-cyan-300" : "bg-white/40"}`} />
+                  {isAr ? "وضع اجتماع المجلس" : "Board Meeting Mode"}
+                </button>
+              </div>
+            </div>
+
+            <div className={`grid gap-px bg-white/5 transition-all duration-500 sm:grid-cols-4 ${boardMode ? "p-1" : ""}`}>
+              <div className="bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "الإيراد الإضافي" : "Incremental Revenue"}
+                </div>
+                <div className={`mt-2 bg-gradient-to-br ${tc.from} ${tc.to} bg-clip-text font-bold tracking-tight text-transparent tabular-nums ${boardMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
+                  {cur.revenue}
+                </div>
+                <div className="mt-1 text-[10px] text-white/45">{cur.horizon}</div>
+              </div>
+              <div className="bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "خفض المخاطر" : "Risk Reduction"}
+                </div>
+                <div className={`mt-2 bg-gradient-to-br from-rose-300 to-rose-500 bg-clip-text font-bold tracking-tight text-transparent tabular-nums ${boardMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
+                  {cur.risk}
+                </div>
+                <div className="mt-1 text-[10px] text-white/45">{isAr ? "تعرض مرجّح" : "Weighted exposure"}</div>
+              </div>
+              <div className="bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "أثر العائد" : "ROI Impact"}
+                </div>
+                <div className={`mt-2 bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text font-bold tracking-tight text-transparent tabular-nums ${boardMode ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
+                  {cur.roi}
+                </div>
+                <div className="mt-1 text-[10px] text-white/45">{isAr ? "سنوياً مرجح" : "Annualised weighted"}</div>
+              </div>
+              <div className="relative bg-[#04060d]/70 px-5 py-5">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                  {isAr ? "مسار المحاكاة" : "Simulation Trajectory"}
+                </div>
+                <svg viewBox="0 0 120 50" className="mt-3 h-14 w-full">
+                  <defs>
+                    <linearGradient id={`sg-${scenario}`} x1="0" x2="1">
+                      <stop offset="0%" stopColor={cur.tone === "amber" ? "#fbbf24" : cur.tone === "emerald" ? "#34d399" : "#67e8f9"} stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0.9" />
+                    </linearGradient>
+                  </defs>
+                  <polyline
+                    fill="none"
+                    stroke={`url(#sg-${scenario})`}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points={cur.pts
+                      .map((p, i) => {
+                        const x = (i / (cur.pts.length - 1)) * 120;
+                        const y = 50 - (p / 200) * 50;
+                        return `${x},${y}`;
+                      })
+                      .join(" ")}
+                    style={{ filter: "drop-shadow(0 0 6px rgba(125,211,252,0.5))" }}
+                  />
+                </svg>
+                <div className="mt-1 text-[10px] text-white/55">{cur.note}</div>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
         <ScrollReveal delay={300}>
           <div className="mx-auto mt-10 flex max-w-5xl flex-col items-center justify-between gap-4 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-blue-500/[0.08] via-cyan-400/[0.06] to-violet-500/[0.08] px-6 py-5 backdrop-blur-2xl sm:flex-row">
             <div className="flex items-center gap-3">
