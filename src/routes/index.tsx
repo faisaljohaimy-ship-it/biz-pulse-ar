@@ -27,6 +27,9 @@ const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
+import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
+import { TrustBar } from "@/components/cinematic/TrustBar";
+import { CinematicAudio } from "@/components/cinematic/CinematicAudio";
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
 const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
@@ -133,12 +136,15 @@ function CinematicHome() {
                 {isAr ? "EN" : "AR"}
               </button>
             </nav>
-            <Link
-              to={user ? "/dashboard" : "/login"}
-              className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
-            >
-              {user ? (isAr ? "غرفة القيادة" : "Command Center") : (isAr ? "دخول" : "Sign in")}
-            </Link>
+            <div className="flex items-center gap-2">
+              <CinematicAudio isAr={isAr} />
+              <Link
+                to={user ? "/dashboard" : "/login"}
+                className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
+              >
+                {user ? (isAr ? "غرفة القيادة" : "Command Center") : (isAr ? "دخول" : "Sign in")}
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -236,6 +242,12 @@ function CinematicHome() {
           <span className="text-[10px] uppercase tracking-[0.35em]">{isAr ? "اكتشف القصة" : "Discover the story"}</span>
         </div>
       </section>
+
+      {/* ============ MOBILE EXECUTIVE STRIP (mobile only) ============ */}
+      <MobileExecutiveStrip isAr={isAr} />
+
+      {/* ============ TRUST & SOVEREIGNTY BAR ============ */}
+      <TrustBar isAr={isAr} />
 
       {/* ============ SCENE 02 — ENTERPRISE DATA CHAOS ============ */}
       <ChaosScene isAr={isAr} />
@@ -1722,23 +1734,95 @@ function FinalRevealScene({ isAr }: { isAr: boolean }) {
       data-scene="10"
       className="relative flex min-h-[120svh] items-center justify-center overflow-hidden bg-black"
     >
-      {/* Earth backdrop */}
-      <img
-        src={cinematicEarth}
-        alt=""
-        loading="lazy"
-        width={1920}
-        height={1080}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45"
-      />
-      <div className="pointer-events-none absolute inset-0 opacity-90">
-        <Suspense fallback={null}><EarthScene intensity="network" /></Suspense>
-      </div>
-      <ParticleField density={0.00018} />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/10 to-black" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,180,84,0.18),transparent_55%)]" />
+      {/* SUNRISE EARTH HORIZON — unique to this scene (no reused Earth image) */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* deep space gradient */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_120%,rgba(245,180,84,0.55)_0%,rgba(184,84,32,0.25)_18%,rgba(20,30,80,0.45)_38%,#02030a_70%)]" />
+        {/* atmospheric haze band */}
+        <div className="absolute inset-x-[-20%] bottom-[18%] h-[26%] bg-gradient-to-t from-amber-400/35 via-rose-300/20 to-transparent blur-2xl" />
+        {/* sun corona */}
+        <div
+          className="absolute left-1/2 bottom-[6%] h-[420px] w-[420px] -translate-x-1/2 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(255,243,196,0.95) 0%, rgba(245,180,84,0.55) 30%, rgba(245,140,60,0.18) 55%, transparent 75%)",
+            animation: "nx-core 5s ease-in-out infinite",
+            filter: "blur(6px)",
+          }}
+        />
+        {/* earth curvature horizon */}
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" className="absolute inset-x-0 bottom-0 h-full w-full">
+          <defs>
+            <radialGradient id="earthRim" cx="50%" cy="100%" r="80%">
+              <stop offset="0%" stopColor="rgba(245,180,84,0.9)" />
+              <stop offset="22%" stopColor="rgba(180,90,40,0.5)" />
+              <stop offset="55%" stopColor="rgba(8,12,30,0.95)" />
+              <stop offset="100%" stopColor="#02030a" />
+            </radialGradient>
+            <radialGradient id="atmoGlow" cx="50%" cy="100%" r="70%">
+              <stop offset="0%" stopColor="rgba(120,180,255,0.35)" />
+              <stop offset="40%" stopColor="rgba(60,90,200,0.12)" />
+              <stop offset="100%" stopColor="transparent" />
+            </radialGradient>
+          </defs>
+          {/* atmosphere glow */}
+          <ellipse cx="800" cy="1080" rx="1400" ry="380" fill="url(#atmoGlow)" />
+          {/* earth body */}
+          <ellipse cx="800" cy="1180" rx="1300" ry="340" fill="url(#earthRim)" />
+          {/* horizon thin glow line */}
+          <ellipse cx="800" cy="840" rx="1300" ry="3" fill="rgba(255,220,160,0.85)" />
+          <ellipse cx="800" cy="840" rx="1300" ry="10" fill="rgba(245,180,84,0.35)" filter="blur(6px)" />
+        </svg>
 
-      {/* Converging light streams forming the logo origin */}
+        {/* GLOBAL DATA NETWORK — meridian arcs */}
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full opacity-70">
+          {[0, 1, 2, 3, 4].map((i) => {
+            const ry = 380 + i * 60;
+            const op = 0.5 - i * 0.07;
+            return (
+              <ellipse
+                key={`arc-${i}`}
+                cx="800"
+                cy="1180"
+                rx={1300 - i * 40}
+                ry={ry}
+                fill="none"
+                stroke="rgba(180,210,255,0.5)"
+                strokeWidth="0.8"
+                strokeDasharray="2 6"
+                opacity={op}
+              >
+                <animate attributeName="stroke-dashoffset" values="0;-32" dur={`${10 + i * 2}s`} repeatCount="indefinite" />
+              </ellipse>
+            );
+          })}
+          {/* travelling data pings */}
+          {[120, 380, 720, 1080, 1380].map((cx, i) => (
+            <circle key={`p-${i}`} cx={cx} cy="820" r="2.5" fill="#9ec8ff">
+              <animate attributeName="opacity" values="0;1;0" dur={`${2.4 + i * 0.4}s`} repeatCount="indefinite" />
+              <animate attributeName="cy" values="820;780;820" dur={`${2.4 + i * 0.4}s`} repeatCount="indefinite" />
+            </circle>
+          ))}
+        </svg>
+
+        {/* sun rays */}
+        {[-30, -15, 0, 15, 30].map((rot, i) => (
+          <div
+            key={`ray-${i}`}
+            className="absolute left-1/2 bottom-[10%] h-[80vh] w-[140px] origin-bottom -translate-x-1/2 opacity-60"
+            style={{
+              transform: `translateX(-50%) rotate(${rot}deg)`,
+              background: "linear-gradient(to top, rgba(255,220,160,0.35), rgba(245,180,84,0.08) 40%, transparent 75%)",
+              filter: "blur(18px)",
+              animation: `hero-beam ${6 + i}s ease-in-out ${i * 0.5}s infinite alternate`,
+            }}
+          />
+        ))}
+      </div>
+
+      <ParticleField density={0.00010} />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+      {/* ARIA CORE ACTIVATION — converging light forms the lockup origin */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         {streams.map((s, i) => (
           <span

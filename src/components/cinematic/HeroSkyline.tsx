@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { X, TrendingUp, Briefcase, Bot, ShieldAlert, Building2 } from "lucide-react";
+
 
 /**
  * Cinematic Riyadh skyline + executive holograms.
@@ -9,10 +11,12 @@ import { useEffect, useState } from "react";
  */
 export function HeroSkyline({ isAr }: { isAr: boolean }) {
   const [t, setT] = useState(0);
+  const [active, setActive] = useState<null | "kingdom" | "faisaliah" | "pif">(null);
   useEffect(() => {
     const i = setInterval(() => setT((x) => x + 1), 2200);
     return () => clearInterval(i);
   }, []);
+
 
   // live, gently drifting KPI values
   const drift = (base: number, amp: number) =>
@@ -234,7 +238,44 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
           {/* ground glow strip */}
           <rect x="0" y="416" width="1600" height="4" fill="url(#kingdomGlow)" opacity="0.5" />
         </svg>
+
+        {/* ============ INTERACTIVE LANDMARK HOTSPOTS ============ */}
+        {/* Coordinates are percentages matching the SVG viewBox 1600×420.
+            Faisaliah pyramid tip ~ x:14%  · Kingdom arch ~ x:50% · PIF ~ x:70%  */}
+        <LandmarkHotspot
+          id="faisaliah"
+          xPct={14}
+          yPct={26}
+          active={active === "faisaliah"}
+          onClick={() => setActive(active === "faisaliah" ? null : "faisaliah")}
+          label={isAr ? "الفيصلية" : "Al Faisaliah"}
+        />
+        <LandmarkHotspot
+          id="kingdom"
+          xPct={50}
+          yPct={38}
+          active={active === "kingdom"}
+          onClick={() => setActive(active === "kingdom" ? null : "kingdom")}
+          label={isAr ? "المملكة" : "Kingdom Centre"}
+        />
+        <LandmarkHotspot
+          id="pif"
+          xPct={70}
+          yPct={18}
+          active={active === "pif"}
+          onClick={() => setActive(active === "pif" ? null : "pif")}
+          label={isAr ? "صندوق الاستثمارات" : "PIF Tower"}
+        />
+
+        {active && (
+          <LandmarkCard
+            isAr={isAr}
+            landmark={active}
+            onClose={() => setActive(null)}
+          />
+        )}
       </div>
+
 
       {/* ============ EXECUTIVE HOLOGRAM KPIs ============ */}
       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[6] hidden -translate-y-1/2 px-8 lg:block">
@@ -329,4 +370,187 @@ function HoloKpi({
   );
 }
 
+// ============================================================
+// LANDMARK INTERACTIVITY
+// ============================================================
+
+type LandmarkId = "kingdom" | "faisaliah" | "pif";
+
+const LANDMARK_DATA: Record<
+  LandmarkId,
+  {
+    en: { name: string; district: string };
+    ar: { name: string; district: string };
+    tone: string;
+    revenue: string;
+    projects: string;
+    agents: string;
+    risk: string;
+  }
+> = {
+  kingdom: {
+    en: { name: "Kingdom Centre", district: "Olaya · Financial District" },
+    ar: { name: "برج المملكة", district: "العليا · الحي المالي" },
+    tone: "from-amber-300 to-amber-600",
+    revenue: "$84.2M",
+    projects: "127",
+    agents: "14",
+    risk: "Low · 2.1",
+  },
+  faisaliah: {
+    en: { name: "Al Faisaliah", district: "Olaya · Innovation Hub" },
+    ar: { name: "برج الفيصلية", district: "العليا · مركز الابتكار" },
+    tone: "from-cyan-300 to-blue-600",
+    revenue: "$48.6M",
+    projects: "84",
+    agents: "9",
+    risk: "Low · 1.8",
+  },
+  pif: {
+    en: { name: "PIF Tower", district: "KAFD · Sovereign Capital" },
+    ar: { name: "برج صندوق الاستثمارات", district: "المركز المالي · الاستثمار السيادي" },
+    tone: "from-fuchsia-300 to-violet-600",
+    revenue: "$182.4M",
+    projects: "312",
+    agents: "22",
+    risk: "Low · 1.4",
+  },
+};
+
+function LandmarkHotspot({
+  xPct,
+  yPct,
+  active,
+  onClick,
+  label,
+}: {
+  id: LandmarkId;
+  xPct: number;
+  yPct: number;
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      className="group pointer-events-auto absolute z-[6] -translate-x-1/2 -translate-y-1/2"
+      style={{ left: `${xPct}%`, top: `${yPct}%` }}
+    >
+      <span className="relative flex h-3 w-3 items-center justify-center">
+        <span
+          className={`absolute inline-flex h-full w-full rounded-full bg-amber-300/80 ${
+            active ? "" : "animate-ping opacity-70"
+          }`}
+        />
+        <span
+          className={`relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-300 ring-2 ${
+            active ? "ring-amber-200 shadow-[0_0_24px_2px_rgba(245,180,84,0.9)]" : "ring-amber-200/40"
+          }`}
+        />
+      </span>
+      {/* leader line */}
+      <span className="pointer-events-none absolute left-1/2 top-3 h-6 w-px -translate-x-1/2 bg-gradient-to-b from-amber-300/70 to-transparent" />
+      {/* tag */}
+      <span className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-300/30 bg-[#04060d]/85 px-2 py-0.5 text-[9px] uppercase tracking-[0.22em] text-amber-200/90 backdrop-blur-md opacity-0 transition-opacity group-hover:opacity-100">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function LandmarkCard({
+  isAr,
+  landmark,
+  onClose,
+}: {
+  isAr: boolean;
+  landmark: LandmarkId;
+  onClose: () => void;
+}) {
+  const d = LANDMARK_DATA[landmark];
+  const text = isAr ? d.ar : d.en;
+  const stats = [
+    { icon: TrendingUp, label: isAr ? "الإيرادات" : "Revenue",  value: d.revenue, tone: "text-emerald-300" },
+    { icon: Briefcase,   label: isAr ? "المشاريع" : "Projects", value: d.projects, tone: "text-amber-300" },
+    { icon: Bot,         label: isAr ? "وكلاء الذكاء" : "AI Agents", value: d.agents, tone: "text-fuchsia-300" },
+    { icon: ShieldAlert, label: isAr ? "المخاطر" : "Risk",      value: d.risk,    tone: "text-cyan-300" },
+  ];
+
+  return (
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="pointer-events-auto absolute bottom-6 left-1/2 z-[9] w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-2xl border border-white/15 bg-[#04060d]/85 p-4 backdrop-blur-2xl"
+      style={{
+        animation: "lc-in 0.45s cubic-bezier(.22,.61,.36,1) both",
+        boxShadow:
+          "0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 60px -10px rgba(245,180,84,0.4)",
+      }}
+    >
+      {/* top scan line */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/70 to-transparent"
+        style={{ animation: "hero-scan 3s linear infinite" }}
+      />
+      {/* corner ticks */}
+      <span className="pointer-events-none absolute left-1 top-1 h-2 w-2 border-l border-t border-amber-300/60" />
+      <span className="pointer-events-none absolute right-1 top-1 h-2 w-2 border-r border-t border-amber-300/60" />
+      <span className="pointer-events-none absolute left-1 bottom-1 h-2 w-2 border-l border-b border-amber-300/60" />
+      <span className="pointer-events-none absolute right-1 bottom-1 h-2 w-2 border-r border-b border-amber-300/60" />
+
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${d.tone} text-black shadow-lg`}>
+            <Building2 className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[9px] uppercase tracking-[0.3em] text-amber-200/80">
+              {isAr ? "حي تنفيذي · حيّ" : "Executive District · Live"}
+            </div>
+            <div className="truncate text-base font-bold text-white">{text.name}</div>
+            <div className="truncate text-[11px] text-white/55">{text.district}</div>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          aria-label={isAr ? "إغلاق" : "Close"}
+          className="shrink-0 rounded-full border border-white/15 bg-white/5 p-1 text-white/65 transition hover:bg-white/10 hover:text-white"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {stats.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={i} className="rounded-lg border border-white/10 bg-white/[0.04] p-2.5">
+              <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-white/45">
+                <Icon className="h-3 w-3" />
+                {s.label}
+              </div>
+              <div className={`mt-1 text-base font-bold tabular-nums ${s.tone}`}>{s.value}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between text-[9px] uppercase tracking-[0.24em] text-white/40">
+        <span className="flex items-center gap-1.5">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          </span>
+          {isAr ? "متصل بأريا" : "ARIA · linked"}
+        </span>
+        <span>{isAr ? "محدّث · الآن" : "updated · now"}</span>
+      </div>
+
+      <style>{`@keyframes lc-in { from { opacity: 0; transform: translate(-50%, 12px) scale(0.98); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }`}</style>
+    </div>
+  );
+}
+
 export default HeroSkyline;
+
