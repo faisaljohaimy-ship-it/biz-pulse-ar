@@ -886,3 +886,101 @@ function FinalRevealScene({ isAr }: { isAr: boolean }) {
     </section>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════
+   HERO HOLO PANELS — Reference B side dashboards as holograms
+   ═════════════════════════════════════════════════════════ */
+function HeroHoloPanels({ isAr }: { isAr: boolean }) {
+  const left = isAr
+    ? [
+        { label: "الإيرادات الكلية", value: "SAR 45.2M", delta: "+12.5%", tone: "amber" as const },
+        { label: "كفاءة العمليات", value: "88%", delta: "+3.4%", tone: "cyan" as const },
+      ]
+    : [
+        { label: "Total Revenue", value: "SAR 45.2M", delta: "+12.5%", tone: "amber" as const },
+        { label: "Operational Efficiency", value: "88%", delta: "+3.4%", tone: "cyan" as const },
+      ];
+  const right = isAr
+    ? [
+        { label: "صافي الربح", value: "SAR 11.7M", delta: "+8.3%", tone: "amber" as const },
+        { label: "تنبيهات المخاطر", value: "23", delta: isAr ? "نشطة" : "Active", tone: "red" as const },
+      ]
+    : [
+        { label: "Net Profit", value: "SAR 11.7M", delta: "+8.3%", tone: "amber" as const },
+        { label: "Risk Alerts", value: "23", delta: "Active", tone: "red" as const },
+      ];
+  return (
+    <div className="pointer-events-none absolute inset-0 z-[5] hidden lg:block">
+      <div className="absolute left-6 top-1/2 flex -translate-y-1/2 flex-col gap-5 xl:left-12">
+        {left.map((p, i) => <HoloPanel key={i} {...p} side="left" delay={i * 150} />)}
+      </div>
+      <div className="absolute right-6 top-1/2 flex -translate-y-1/2 flex-col gap-5 xl:right-12">
+        {right.map((p, i) => <HoloPanel key={i} {...p} side="right" delay={i * 150 + 80} />)}
+      </div>
+    </div>
+  );
+}
+
+function HoloPanel({
+  label, value, delta, tone, side, delay,
+}: {
+  label: string; value: string; delta: string; tone: "amber" | "cyan" | "red"; side: "left" | "right"; delay: number;
+}) {
+  const toneRing = { amber: "border-amber-300/40 shadow-[0_0_60px_-15px_rgba(245,180,84,0.6)]", cyan: "border-cyan-300/40 shadow-[0_0_60px_-15px_rgba(58,142,255,0.6)]", red: "border-red-400/40 shadow-[0_0_60px_-15px_rgba(255,80,80,0.55)]" }[tone];
+  const toneText = { amber: "text-amber-300", cyan: "text-cyan-300", red: "text-red-400" }[tone];
+  return (
+    <div
+      className={`w-[220px] animate-fade-in rounded-2xl border ${toneRing} bg-white/[0.04] px-4 py-3 backdrop-blur-xl ${side === "left" ? "" : "text-right"}`}
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
+    >
+      <div className="text-[9px] uppercase tracking-[0.28em] text-white/55">{label}</div>
+      <div className="mt-1 text-2xl font-bold tracking-tight text-white">{value}</div>
+      <div className={`mt-1 text-[11px] font-semibold ${toneText}`}>{delta}</div>
+      <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+        <div className={`h-full w-2/3 rounded-full ${tone === "amber" ? "bg-gradient-to-r from-amber-300 to-amber-500" : tone === "cyan" ? "bg-gradient-to-r from-cyan-300 to-blue-500" : "bg-gradient-to-r from-red-400 to-red-600"}`} />
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TWIN HOLO LABELS — Reference A floating district chips
+   ═════════════════════════════════════════════════════════ */
+export function TwinHoloLabels({ isAr }: { isAr: boolean }) {
+  const labels = isAr
+    ? [
+        { t: "بحيرة البيانات", v: "1.4 تيرابايت", dot: "bg-emerald-400", pos: "top-[14%] left-[8%]" },
+        { t: "الأقسام", v: "24 نشط", dot: "bg-cyan-400", pos: "top-[22%] right-[10%]" },
+        { t: "وكلاء الذكاء", v: "48 نشط", dot: "bg-violet-400", pos: "top-[52%] left-[6%]" },
+        { t: "الأتمتة", v: "342 تشغيل", dot: "bg-amber-400", pos: "bottom-[22%] right-[8%]" },
+        { t: "إشارة فرصة", v: "صفقة 2.4M ريال", dot: "bg-amber-300", pos: "bottom-[14%] left-[12%]" },
+      ]
+    : [
+        { t: "Data Lake", v: "1.4 TB", dot: "bg-emerald-400", pos: "top-[14%] left-[8%]" },
+        { t: "Districts", v: "24 active", dot: "bg-cyan-400", pos: "top-[22%] right-[10%]" },
+        { t: "AI Agents", v: "48 live", dot: "bg-violet-400", pos: "top-[52%] left-[6%]" },
+        { t: "Automations", v: "342 running", dot: "bg-amber-400", pos: "bottom-[22%] right-[8%]" },
+        { t: "Opportunity", v: "Deal · 2.4M SAR", dot: "bg-amber-300", pos: "bottom-[14%] left-[12%]" },
+      ];
+  return (
+    <div className="pointer-events-none absolute inset-0 z-[5] hidden md:block">
+      {labels.map((l, i) => (
+        <div
+          key={i}
+          className={`absolute ${l.pos} animate-fade-in rounded-full border border-white/15 bg-[#04060d]/70 px-4 py-2 backdrop-blur-xl shadow-[0_0_40px_-10px_rgba(58,142,255,0.5)]`}
+          style={{ animationDelay: `${i * 150}ms`, animationFillMode: "both" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <span className={`relative flex h-2 w-2 ${l.dot} rounded-full`}>
+              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${l.dot} opacity-70`} />
+            </span>
+            <div className="leading-tight">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-white/55">{l.t}</div>
+              <div className="text-xs font-semibold text-white">{l.v}</div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
