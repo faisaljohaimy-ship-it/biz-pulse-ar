@@ -136,12 +136,15 @@ function CinematicHome() {
                 {isAr ? "EN" : "AR"}
               </button>
             </nav>
-            <Link
-              to={user ? "/dashboard" : "/login"}
-              className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
-            >
-              {user ? (isAr ? "غرفة القيادة" : "Command Center") : (isAr ? "دخول" : "Sign in")}
-            </Link>
+            <div className="flex items-center gap-2">
+              <CinematicAudio isAr={isAr} />
+              <Link
+                to={user ? "/dashboard" : "/login"}
+                className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
+              >
+                {user ? (isAr ? "غرفة القيادة" : "Command Center") : (isAr ? "دخول" : "Sign in")}
+              </Link>
+            </div>
           </div>
         </div>
       </header>
