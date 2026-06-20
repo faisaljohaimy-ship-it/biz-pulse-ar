@@ -757,8 +757,7 @@ function Stat({ n, suffix, l }: { n: number; suffix?: string; l: string }) {
   return (
     <div>
       <div className="text-xl font-bold tracking-tight text-white">
-        <CountUp end={n} duration={1200} />
-        {suffix}
+        <CountUp value={`${n}${suffix ?? ""}`} duration={1200} />
       </div>
       <div className="text-[9px] uppercase tracking-[0.2em] text-white/45">{l}</div>
     </div>
