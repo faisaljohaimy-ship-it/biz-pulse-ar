@@ -70,11 +70,7 @@ function CinematicHome() {
   const ensureDemo = useServerFn(ensureDemoUser);
   const [demoLoading, setDemoLoading] = useState(false);
 
-  useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
-  }, [user, loading, navigate]);
-
-  if (loading || user) {
+  if (loading) {
     return (
       <div className="flex min-h-[100svh] items-center justify-center bg-[#04060d]">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
