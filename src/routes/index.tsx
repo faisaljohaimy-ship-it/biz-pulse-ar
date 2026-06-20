@@ -1186,6 +1186,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
   const [projects, setProjects] = useState(48);
   const [revenue, setRevenue] = useState(180); // SAR millions / year
   const [departments, setDepartments] = useState(12);
+  const [opCosts, setOpCosts] = useState(120); // SAR millions / year — operational baseline
 
   // Derived impact model — designed to feel responsive and grounded.
   const sim = useMemo(() => {
@@ -1193,16 +1194,18 @@ function RoiScene({ isAr }: { isAr: boolean }) {
     const projF = Math.min(projects / 80, 1.4);
     const deptF = Math.min(departments / 20, 1.3);
     const revF = Math.min(revenue / 500, 1.6);
+    const costF = Math.min(opCosts / Math.max(revenue, 1), 1.4); // cost intensity
     const scale = (empF + projF + deptF) / 3;
 
-    const costReduction = Math.min(0.42, 0.18 + scale * 0.22);                // %
-    const efficiency    = Math.min(0.78, 0.32 + scale * 0.42);                // %
-    const riskReduction = Math.min(0.71, 0.28 + scale * 0.36);                // %
-    const revenueGrowth = Math.min(0.46, 0.12 + scale * 0.22 + revF * 0.06);  // %
+    // The heavier the op-cost base, the larger the absolute savings opportunity.
+    const costReduction = Math.min(0.46, 0.18 + scale * 0.22 + costF * 0.05);
+    const efficiency    = Math.min(0.82, 0.32 + scale * 0.42 + costF * 0.05);
+    const riskReduction = Math.min(0.74, 0.28 + scale * 0.36);
+    const revenueGrowth = Math.min(0.46, 0.12 + scale * 0.22 + revF * 0.06);
 
-    const annualSavings  = revenue * costReduction * 0.55;     // SAR M
+    const annualSavings  = opCosts * costReduction;            // SAR M — applied to op-costs base
     const newRevenue     = revenue * revenueGrowth;            // SAR M
-    const hoursSaved     = Math.round(employees * 6.4 * efficiency); // hours / month
+    const hoursSaved     = Math.round(employees * 6.4 * efficiency);
     const decisionsAuto  = Math.round(projects * departments * 2.6);
 
     const investment = 2.4 + departments * 0.18 + employees * 0.0009; // SAR M / yr
@@ -1215,7 +1218,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
       annualSavings, newRevenue, hoursSaved, decisionsAuto,
       investment, totalImpact, roi, payback,
     };
-  }, [employees, projects, revenue, departments]);
+  }, [employees, projects, revenue, departments, opCosts]);
 
   const fmtPct = (n: number) => `${(n * 100).toFixed(1)}%`;
   const fmtM   = (n: number) => `SAR ${n.toFixed(1)}M`;
@@ -1225,10 +1228,11 @@ function RoiScene({ isAr }: { isAr: boolean }) {
     id: string; label: string; value: number; set: (v: number) => void;
     min: number; max: number; step: number; suffix?: string;
   }[] = [
-    { id: "emp", label: isAr ? "الموظفون"     : "Employees",   value: employees,   set: setEmployees,   min: 50,  max: 25000, step: 50 },
-    { id: "prj", label: isAr ? "المشاريع"      : "Projects",    value: projects,    set: setProjects,    min: 5,   max: 400,   step: 1  },
-    { id: "rev", label: isAr ? "الإيراد السنوي" : "Annual Revenue", value: revenue, set: setRevenue,     min: 10,  max: 2000,  step: 5, suffix: "M SAR" },
-    { id: "dep", label: isAr ? "الأقسام"      : "Departments", value: departments, set: setDepartments, min: 2,   max: 40,    step: 1  },
+    { id: "emp", label: isAr ? "الموظفون"        : "Employees",         value: employees,   set: setEmployees,   min: 50,  max: 25000, step: 50 },
+    { id: "prj", label: isAr ? "المشاريع"         : "Projects",          value: projects,    set: setProjects,    min: 5,   max: 400,   step: 1  },
+    { id: "dep", label: isAr ? "الأقسام"          : "Departments",       value: departments, set: setDepartments, min: 2,   max: 40,    step: 1  },
+    { id: "rev", label: isAr ? "الإيراد السنوي"    : "Annual Revenue",    value: revenue,     set: setRevenue,     min: 10,  max: 2000,  step: 5,  suffix: "M SAR" },
+    { id: "cst", label: isAr ? "التكاليف التشغيلية" : "Operational Costs", value: opCosts,     set: setOpCosts,     min: 5,   max: 1500,  step: 5,  suffix: "M SAR" },
   ];
 
   const impacts = [
