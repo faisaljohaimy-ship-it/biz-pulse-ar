@@ -98,6 +98,45 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/nexus-icon.png" },
       { rel: "shortcut icon", href: "/nexus-icon.png" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "NEEXIOS Technologies",
+          legalName: "NEEXIOS Technologies",
+          url: DOMAIN_URL,
+          logo: `${DOMAIN_URL}/nexus-icon.png`,
+          description:
+            "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
+          areaServed: ["SA", "AE", "KW", "QA", "BH", "OM"],
+          sameAs: [],
+          contactPoint: [
+            {
+              "@type": "ContactPoint",
+              email: "info@neexios.com",
+              contactType: "sales",
+              areaServed: "SA",
+              availableLanguage: ["Arabic", "English"],
+            },
+          ],
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "NEXUS AI OS",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          url: DOMAIN_URL,
+          publisher: { "@type": "Organization", name: "NEEXIOS Technologies" },
+          offers: { "@type": "Offer", priceCurrency: "USD" },
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
