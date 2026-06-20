@@ -20,6 +20,7 @@ import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as DpaRouteImport } from './routes/dpa'
@@ -127,6 +128,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GovernmentBriefRoute = GovernmentBriefRouteImport.update({
+  id: '/government-brief',
+  path: '/government-brief',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FilmsRoute = FilmsRouteImport.update({
@@ -415,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/dpa': typeof DpaRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
+  '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -480,6 +487,7 @@ export interface FileRoutesByTo {
   '/dpa': typeof DpaRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
+  '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -547,6 +555,7 @@ export interface FileRoutesById {
   '/dpa': typeof DpaRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
+  '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -614,6 +623,7 @@ export interface FileRouteTypes {
     | '/dpa'
     | '/executive-briefing'
     | '/films'
+    | '/government-brief'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -679,6 +689,7 @@ export interface FileRouteTypes {
     | '/dpa'
     | '/executive-briefing'
     | '/films'
+    | '/government-brief'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/dpa'
     | '/executive-briefing'
     | '/films'
+    | '/government-brief'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -812,6 +824,7 @@ export interface RootRouteChildren {
   DpaRoute: typeof DpaRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
+  GovernmentBriefRoute: typeof GovernmentBriefRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -905,6 +918,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/government-brief': {
+      id: '/government-brief'
+      path: '/government-brief'
+      fullPath: '/government-brief'
+      preLoaderRoute: typeof GovernmentBriefRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/films': {
@@ -1382,6 +1402,7 @@ const rootRouteChildren: RootRouteChildren = {
   DpaRoute: DpaRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
+  GovernmentBriefRoute: GovernmentBriefRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
