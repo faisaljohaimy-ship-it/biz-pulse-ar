@@ -255,6 +255,11 @@ function CinematicHome() {
       {/* ============ SCENE 07 — ROI TRANSFORMATION ============ */}
       <RoiScene isAr={isAr} />
 
+      {/* ============ EXECUTIVE WAR ROOM ============ */}
+      <Suspense fallback={null}>
+        <WarRoomScene isAr={isAr} />
+      </Suspense>
+
       {/* ============ SCENE 08 — GLOBAL EXPANSION ============ */}
       <GlobalScene isAr={isAr} />
 
