@@ -41,7 +41,11 @@ import {
   Compass,
   Keyboard,
   ChevronLeft,
+  MicOff,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
+import { useAriaVoice } from "@/lib/aria-voice";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
@@ -240,6 +244,8 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
   const { messages, sendMessage, status } = useChat({ id: "aria-console", transport });
   const isLoading = status === "submitted" || status === "streaming";
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [voiceMode, setVoiceMode] = useState(true);
+  const spokenIdRef = useRef<string | null>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading]);
@@ -256,6 +262,32 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
     sendMessage({ text: `${ctx}\n\n${text}` });
     setInput("");
   };
+
+  const voice = useAriaVoice({
+    onFinal: (txt) => send(txt),
+  });
+
+  // Auto-speak the last assistant message when streaming completes
+  useEffect(() => {
+    if (!voiceMode) return;
+    if (status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdRef.current === last.id) return;
+    const txt = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim();
+    if (!txt) return;
+    spokenIdRef.current = last.id;
+    voice.speak(txt);
+  }, [messages, status, voiceMode, voice]);
+
+  // Stop voice when console closes
+  useEffect(() => {
+    if (!open) {
+      voice.stopListening();
+      voice.stopSpeaking();
+    }
+  }, [open, voice]);
+
 
   if (!open) return null;
 
@@ -285,15 +317,34 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="absolute end-3 top-3 rounded-lg p-1 text-slate-300 hover:bg-white/10">
-            <X className="h-4 w-4" />
-          </button>
+          <div className="absolute end-3 top-3 flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                const next = !voiceMode;
+                setVoiceMode(next);
+                if (!next) voice.stopSpeaking();
+              }}
+              title={voiceMode ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تشغيل الصوت" : "Unmute")}
+              className={cn(
+                "rounded-lg p-1.5 transition",
+                voiceMode ? "bg-cyan-400/15 text-cyan-200 hover:bg-cyan-400/25" : "text-slate-400 hover:bg-white/10",
+              )}
+            >
+              {voiceMode ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            </button>
+            <button onClick={onClose} className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+
+
 
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 && (
             <div className="space-y-3">
               <p className="text-sm text-slate-300">
+
                 {ar
                   ? `مرحباً. الصحة العامة ${pulse.health}، الحالة "${pulse.status === "healthy" ? "صحية" : pulse.status === "warning" ? "تحذير" : "حرجة"}". اسألني عن أي مؤشر أو خطر أو فرصة.`
                   : `Hi. Overall health ${pulse.health}, status "${pulse.status}". Ask me about any KPI, risk or opportunity.`}
@@ -346,13 +397,32 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
           onSubmit={(e) => { e.preventDefault(); send(input); }}
           className="shrink-0 border-t border-white/5 p-3"
         >
-          <div className="relative">
+          {voice.partial && (
+            <div className="mb-2 rounded-lg border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-[11px] text-cyan-200/80">
+              {voice.partial}
+            </div>
+          )}
+          <div className="relative flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => voice.toggleListening()}
+              disabled={isLoading}
+              title={voice.listening ? (ar ? "إيقاف" : "Stop") : (ar ? "تحدث" : "Speak")}
+              className={cn(
+                "shrink-0 rounded-full p-2.5 transition",
+                voice.listening
+                  ? "bg-red-500/20 text-red-300 ring-2 ring-red-400/40 animate-pulse"
+                  : "bg-cyan-400/20 text-cyan-200 hover:bg-cyan-400/30",
+              )}
+            >
+              {voice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
-              placeholder={ar ? "تحدث مع ARIA..." : "Talk to ARIA..."}
-              className="w-full rounded-2xl border border-cyan-400/20 bg-[#06101f]/80 py-3 ps-4 pe-12 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-300/50 focus:outline-none disabled:opacity-50"
+              placeholder={ar ? "تحدث مع ARIA أو اضغط الميكروفون..." : "Talk to ARIA or tap the mic..."}
+              className="flex-1 rounded-2xl border border-cyan-400/20 bg-[#06101f]/80 py-3 ps-4 pe-12 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-300/50 focus:outline-none disabled:opacity-50"
             />
             <button
               type="submit"
@@ -362,6 +432,10 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
               <Zap className="h-4 w-4" />
             </button>
           </div>
+          {voice.error && (
+            <div className="mt-2 text-[10px] text-red-300/80">{voice.error}</div>
+          )}
+
         </form>
       </div>
     </div>
