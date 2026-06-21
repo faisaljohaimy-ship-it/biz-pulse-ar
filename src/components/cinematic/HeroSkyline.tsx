@@ -238,7 +238,7 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
 
           {/* ground glow strip */}
           <rect x="0" y="416" width="1600" height="4" fill="url(#kingdomGlow)" opacity="0.5" />
-        </svg>
+        </SafeSvg>
 
         {/* ============ INTERACTIVE LANDMARK HOTSPOTS ============ */}
         {/* Coordinates are percentages matching the SVG viewBox 1600×420.
