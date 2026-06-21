@@ -116,18 +116,21 @@ function useSecOps() {
   const allSites = (sites.data ?? []) as Site[];
   const westSites = allSites.filter(s => WEST_CODES.has(s.code));
   const westIds = new Set(westSites.map(s => s.id));
-  const byWest = <T extends { site_id: string | null }>(rows: T[] | undefined) =>
-    (rows ?? []).filter(r => r.site_id && westIds.has(r.site_id));
+  const byWest = <T,>(rows: T[] | undefined): T[] =>
+    (rows ?? []).filter((r) => {
+      const sid = (r as { site_id?: string | null } | null)?.site_id;
+      return !!sid && westIds.has(sid);
+    });
 
   return {
-    sites: { ...sites, data: westSites as Site[] },
-    incidents: { ...incidents, data: byWest((incidents.data ?? []) as Incident[]) as Incident[] },
-    patrols: { ...patrols, data: byWest((patrols.data ?? []) as Patrol[]) as Patrol[] },
-    permits: { ...permits, data: byWest((permits.data ?? []) as Permit[]) as Permit[] },
-    visitors: { ...visitors, data: byWest((visitors.data ?? []) as Visitor[]) as Visitor[] },
-    contractors: { ...contractors, data: byWest((contractors.data ?? []) as Contractor[]) as Contractor[] },
-    cctv: { ...cctv, data: byWest((cctv.data ?? []) as CctvAlert[]) as CctvAlert[] },
-    assets: { ...assets, data: byWest((assets.data ?? []) as Asset[]) as Asset[] },
+    sites: { ...sites, data: westSites },
+    incidents: { ...incidents, data: byWest<Incident>(incidents.data as Incident[] | undefined) },
+    patrols: { ...patrols, data: byWest<Patrol>(patrols.data as Patrol[] | undefined) },
+    permits: { ...permits, data: byWest<Permit>(permits.data as Permit[] | undefined) },
+    visitors: { ...visitors, data: byWest<Visitor>(visitors.data as Visitor[] | undefined) },
+    contractors: { ...contractors, data: byWest<Contractor>(contractors.data as Contractor[] | undefined) },
+    cctv: { ...cctv, data: byWest<CctvAlert>(cctv.data as CctvAlert[] | undefined) },
+    assets: { ...assets, data: byWest<Asset>(assets.data as Asset[] | undefined) },
   };
 }
 
