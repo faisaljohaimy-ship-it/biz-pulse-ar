@@ -76,6 +76,17 @@ function useOverlayState(): OverlayState {
   const [avatarOpen, setAvatar] = useState(false);
   const [shortcutsOpen, setShortcuts] = useState(false);
 
+  // Cinematic auto-greet: open ARIA once per session on first entry
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (sessionStorage.getItem("aria-greeted") === "1") return;
+      sessionStorage.setItem("aria-greeted", "1");
+      const t = setTimeout(() => setAvatar(true), 900);
+      return () => clearTimeout(t);
+    } catch { /* noop */ }
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
