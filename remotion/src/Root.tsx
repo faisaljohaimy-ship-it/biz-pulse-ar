@@ -14,6 +14,7 @@ import { NeexiosCinematic, NX_DURATION, NX_FPS } from "./NeexiosCinematic";
 import { ExecutiveDemo, DX_DURATION, DX_FPS } from "./ExecutiveDemo";
 import { ExecutiveWalkthrough, WT_DURATION, WT_FPS } from "./ExecutiveWalkthrough";
 import { EnterpriseFilm, FILM_DURATION, FILM_FPS } from "./EnterpriseFilm";
+import { RoiFilmAR, ROI_DURATION, ROI_FPS } from "./RoiFilmAR";
 
 export const RemotionRoot = () => (
   <>
