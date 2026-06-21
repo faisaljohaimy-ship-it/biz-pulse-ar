@@ -9,6 +9,7 @@
     "build:dev": "NODE_OPTIONS=--max-old-space-size=8192 vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "check:svg": "node scripts/check-svg.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {
