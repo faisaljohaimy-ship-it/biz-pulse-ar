@@ -5,12 +5,13 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Shield, Radio, AlertOctagon, Activity, MapPin, Camera, FileCheck2,
   UserCheck, HardHat, Cpu, Radar, Sparkles, Flame, ShieldAlert, Eye,
-  FileDown, Mail, Inbox, Loader2, X,
+  FileDown, Mail, Inbox, Loader2, X, MessageSquare, Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { sendOutlookReport, listOutlookInbox } from "@/lib/outlook.functions";
+import { listTeamsChannels, sendTeamsAlert } from "@/lib/teams.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
@@ -558,6 +559,7 @@ function CommandCenterPage() {
 
   const [mailOpen, setMailOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(false);
+  const [teamsOpen, setTeamsOpen] = useState(false);
 
   return (
     <NexusPage
@@ -571,6 +573,9 @@ function CommandCenterPage() {
           </button>
           <button onClick={() => setMailOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-violet-400/40 bg-violet-500/15 px-2.5 py-1 text-xs font-semibold text-violet-100 hover:bg-violet-500/25 transition">
             <Mail className="h-3.5 w-3.5" /> {ar ? "إرسال للقيادة" : "Email Leadership"}
+          </button>
+          <button onClick={() => setTeamsOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-100 hover:bg-indigo-500/25 transition">
+            <MessageSquare className="h-3.5 w-3.5" /> {ar ? "بث Teams" : "Teams Broadcast"}
           </button>
           <button onClick={() => setInboxOpen(v => !v)} className="inline-flex items-center gap-1.5 rounded-md border border-slate-500/40 bg-slate-700/30 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700/50 transition">
             <Inbox className="h-3.5 w-3.5" /> {ar ? "البريد الوارد" : "Inbox"}
@@ -647,6 +652,13 @@ function CommandCenterPage() {
           defaultSubject={ar ? `تقرير غرفة القيادة — ${new Date().toLocaleDateString("ar-SA")}` : `Command Center Report — ${new Date().toLocaleDateString("en-US")}`}
           html={reportHtml}
           onClose={() => setMailOpen(false)}
+        />
+      )}
+      {teamsOpen && (
+        <TeamsBroadcastModal
+          ar={ar}
+          html={reportHtml}
+          onClose={() => setTeamsOpen(false)}
         />
       )}
     </NexusPage>
@@ -872,4 +884,95 @@ function buildReportHTML(args: {
     <div>${esc(now)}</div>
   </div>
 </body></html>`;
+}
+
+/* ────────────────── Teams Broadcast ────────────────── */
+function TeamsBroadcastModal({ ar, html, onClose }: { ar: boolean; html: string; onClose: () => void }) {
+  const listFn = useServerFn(listTeamsChannels);
+  const sendFn = useServerFn(sendTeamsAlert);
+  const [channelKey, setChannelKey] = useState("");
+  const [note, setNote] = useState(ar ? "تحديث تشغيلي من غرفة القيادة" : "Operational update from Command Center");
+  const [busy, setBusy] = useState(false);
+
+  const channels = useQuery({
+    queryKey: ["teams-channels"],
+    queryFn: () => listFn({}),
+    staleTime: 60_000,
+  });
+
+  const submit = async () => {
+    if (!channelKey) { toast.error(ar ? "اختر قناة" : "Pick a channel"); return; }
+    const [teamId, channelId] = channelKey.split("|");
+    setBusy(true);
+    try {
+      const body = `<h2>${note}</h2>${html}`;
+      await sendFn({ data: { teamId, channelId, html: body } });
+      toast.success(ar ? "تم البث إلى Teams" : "Broadcast sent to Teams");
+      onClose();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-2xl border border-indigo-400/30 bg-slate-900/95 p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-indigo-200">
+            <MessageSquare className="h-4 w-4" />
+            <h3 className="text-sm font-semibold">{ar ? "بث إلى Microsoft Teams" : "Broadcast to Microsoft Teams"}</h3>
+          </div>
+          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-800"><X className="h-4 w-4" /></button>
+        </div>
+
+        <label className="mb-1 block text-xs text-slate-400">{ar ? "القناة" : "Channel"}</label>
+        {channels.isLoading ? (
+          <div className="flex items-center gap-2 rounded border border-slate-700 bg-slate-800/50 px-3 py-2 text-xs text-slate-400">
+            <Loader2 className="h-3 w-3 animate-spin" /> {ar ? "جلب القنوات..." : "Loading channels..."}
+          </div>
+        ) : channels.isError ? (
+          <div className="rounded border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+            {ar ? "تعذّر جلب قنوات Teams" : "Could not load Teams channels"}
+          </div>
+        ) : (
+          <select
+            value={channelKey}
+            onChange={(e) => setChannelKey(e.target.value)}
+            className="w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+          >
+            <option value="">— {ar ? "اختر قناة" : "Select a channel"} —</option>
+            {channels.data?.channels?.map((c) => {
+              const t = channels.data?.teams?.find((tt) => tt.id === c.teamId);
+              return (
+                <option key={`${c.teamId}|${c.id}`} value={`${c.teamId}|${c.id}`}>
+                  {t?.displayName ?? "Team"} › {c.displayName}
+                </option>
+              );
+            })}
+          </select>
+        )}
+
+        <label className="mb-1 mt-3 block text-xs text-slate-400">{ar ? "ملاحظة العنوان" : "Headline"}</label>
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className="w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+        />
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800">
+            {ar ? "إلغاء" : "Cancel"}
+          </button>
+          <button
+            onClick={submit}
+            disabled={busy || !channelKey}
+            className="inline-flex items-center gap-1.5 rounded bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-400 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            {ar ? "بث الآن" : "Broadcast"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
