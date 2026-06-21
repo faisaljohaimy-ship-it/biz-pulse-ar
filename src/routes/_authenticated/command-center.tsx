@@ -654,6 +654,13 @@ function CommandCenterPage() {
           onClose={() => setMailOpen(false)}
         />
       )}
+      {teamsOpen && (
+        <TeamsBroadcastModal
+          ar={ar}
+          html={reportHtml}
+          onClose={() => setTeamsOpen(false)}
+        />
+      )}
     </NexusPage>
   );
 }
