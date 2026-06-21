@@ -666,6 +666,14 @@ function CommandCenterPage() {
           onClose={() => setTeamsOpen(false)}
         />
       )}
+      {spOpen && (
+        <SharePointUploadModal
+          ar={ar}
+          html={reportHtml}
+          kpis={kpis}
+          onClose={() => setSpOpen(false)}
+        />
+      )}
     </NexusPage>
   );
 }
