@@ -244,6 +244,8 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
   const { messages, sendMessage, status } = useChat({ id: "aria-console", transport });
   const isLoading = status === "submitted" || status === "streaming";
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [voiceMode, setVoiceMode] = useState(true);
+  const spokenIdRef = useRef<string | null>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading]);
@@ -260,6 +262,32 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
     sendMessage({ text: `${ctx}\n\n${text}` });
     setInput("");
   };
+
+  const voice = useAriaVoice({
+    onFinal: (txt) => send(txt),
+  });
+
+  // Auto-speak the last assistant message when streaming completes
+  useEffect(() => {
+    if (!voiceMode) return;
+    if (status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdRef.current === last.id) return;
+    const txt = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim();
+    if (!txt) return;
+    spokenIdRef.current = last.id;
+    voice.speak(txt);
+  }, [messages, status, voiceMode, voice]);
+
+  // Stop voice when console closes
+  useEffect(() => {
+    if (!open) {
+      voice.stopListening();
+      voice.stopSpeaking();
+    }
+  }, [open, voice]);
+
 
   if (!open) return null;
 
