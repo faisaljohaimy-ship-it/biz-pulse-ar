@@ -7,7 +7,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { createThread, deleteThread, getThreadMessages, listThreads } from "@/lib/threads.functions";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, MessageSquare, Sparkles, Send } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Sparkles, Send, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { useAriaVoice } from "@/lib/aria-voice";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -151,6 +152,27 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
   });
 
   const isLoading = status === "submitted" || status === "streaming";
+
+  // Voice I/O — ElevenLabs STT (auto-detect AR/EN) + TTS playback
+  const voice = useAriaVoice({
+    onFinal: (text) => {
+      if (!text.trim() || isLoading) return;
+      sendMessage({ text });
+    },
+  });
+
+  // Auto-speak the latest assistant message when voice mode is engaged
+  const lastSpokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!voice.listening && !voice.speaking) return;
+    if (status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant" || last.id === lastSpokenRef.current) return;
+    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join(" ").trim();
+    if (text.length < 4) return;
+    lastSpokenRef.current = last.id;
+    voice.speak(text);
+  }, [messages, status, voice]);
 
   // Realtime subscription for live message sync across devices
   useEffect(() => {
@@ -299,7 +321,43 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         onSubmit={onSubmit}
         className="border-t border-border bg-background/80 p-3 backdrop-blur md:p-4"
       >
+        {voice.partial && (
+          <div className="mb-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs text-primary/90">
+            🎙 {voice.partial}
+          </div>
+        )}
+        {voice.error && (
+          <div className="mb-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
+            {voice.error}
+          </div>
+        )}
         <div className="flex items-end gap-2 rounded-2xl border border-border bg-card p-2 focus-within:border-primary/60 focus-within:shadow-glow">
+          <Button
+            type="button"
+            size="icon"
+            variant={voice.listening ? "default" : "ghost"}
+            onClick={voice.toggleListening}
+            className={cn(voice.listening && "animate-pulse bg-destructive hover:bg-destructive/90")}
+            title={voice.listening ? t("assistant.stop_listening") ?? "Stop" : t("assistant.start_listening") ?? "Speak"}
+          >
+            {voice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
+          {voice.speaking && (
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={voice.stopSpeaking}
+              title="Stop voice"
+            >
+              <VolumeX className="h-4 w-4" />
+            </Button>
+          )}
+          {!voice.speaking && voice.listening && (
+            <span className="flex h-9 w-9 items-center justify-center text-primary/60">
+              <Volume2 className="h-4 w-4" />
+            </span>
+          )}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
