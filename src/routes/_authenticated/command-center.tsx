@@ -12,7 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { sendOutlookReport, listOutlookInbox } from "@/lib/outlook.functions";
 import { listTeamsChannels, sendTeamsAlert } from "@/lib/teams.functions";
-import { listSharePointSites, uploadReportToSharePoint } from "@/lib/sharepoint.functions";
+import { SharePointUploadModal } from "@/components/sharepoint-upload-modal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
