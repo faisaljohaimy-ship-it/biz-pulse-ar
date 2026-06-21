@@ -13,7 +13,7 @@ function AuthLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/", replace: true });
+    if (!loading && !user) navigate({ to: "/auth", replace: true });
   }, [user, loading, navigate]);
 
   if (loading || !user) {
