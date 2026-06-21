@@ -885,3 +885,94 @@ function buildReportHTML(args: {
   </div>
 </body></html>`;
 }
+
+/* ────────────────── Teams Broadcast ────────────────── */
+function TeamsBroadcastModal({ ar, html, onClose }: { ar: boolean; html: string; onClose: () => void }) {
+  const listFn = useServerFn(listTeamsChannels);
+  const sendFn = useServerFn(sendTeamsAlert);
+  const [channelKey, setChannelKey] = useState("");
+  const [note, setNote] = useState(ar ? "تحديث تشغيلي من غرفة القيادة" : "Operational update from Command Center");
+  const [busy, setBusy] = useState(false);
+
+  const channels = useQuery({
+    queryKey: ["teams-channels"],
+    queryFn: () => listFn({}),
+    staleTime: 60_000,
+  });
+
+  const submit = async () => {
+    if (!channelKey) { toast.error(ar ? "اختر قناة" : "Pick a channel"); return; }
+    const [teamId, channelId] = channelKey.split("|");
+    setBusy(true);
+    try {
+      const body = `<h2>${note}</h2>${html}`;
+      await sendFn({ data: { teamId, channelId, html: body } });
+      toast.success(ar ? "تم البث إلى Teams" : "Broadcast sent to Teams");
+      onClose();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-2xl border border-indigo-400/30 bg-slate-900/95 p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-indigo-200">
+            <MessageSquare className="h-4 w-4" />
+            <h3 className="text-sm font-semibold">{ar ? "بث إلى Microsoft Teams" : "Broadcast to Microsoft Teams"}</h3>
+          </div>
+          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-800"><X className="h-4 w-4" /></button>
+        </div>
+
+        <label className="mb-1 block text-xs text-slate-400">{ar ? "القناة" : "Channel"}</label>
+        {channels.isLoading ? (
+          <div className="flex items-center gap-2 rounded border border-slate-700 bg-slate-800/50 px-3 py-2 text-xs text-slate-400">
+            <Loader2 className="h-3 w-3 animate-spin" /> {ar ? "جلب القنوات..." : "Loading channels..."}
+          </div>
+        ) : channels.isError ? (
+          <div className="rounded border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+            {ar ? "تعذّر جلب قنوات Teams" : "Could not load Teams channels"}
+          </div>
+        ) : (
+          <select
+            value={channelKey}
+            onChange={(e) => setChannelKey(e.target.value)}
+            className="w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+          >
+            <option value="">— {ar ? "اختر قناة" : "Select a channel"} —</option>
+            {channels.data?.channels?.map((c) => {
+              const t = channels.data?.teams?.find((tt) => tt.id === c.teamId);
+              return (
+                <option key={`${c.teamId}|${c.id}`} value={`${c.teamId}|${c.id}`}>
+                  {t?.displayName ?? "Team"} › {c.displayName}
+                </option>
+              );
+            })}
+          </select>
+        )}
+
+        <label className="mb-1 mt-3 block text-xs text-slate-400">{ar ? "ملاحظة العنوان" : "Headline"}</label>
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className="w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+        />
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800">
+            {ar ? "إلغاء" : "Cancel"}
+          </button>
+          <button
+            onClick={submit}
+            disabled={busy || !channelKey}
+            className="inline-flex items-center gap-1.5 rounded bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-400 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            {ar ? "بث الآن" : "Broadcast"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
