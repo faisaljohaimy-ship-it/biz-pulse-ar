@@ -953,6 +953,417 @@ export type Database = {
         }
         Relationships: []
       }
+      sec_assets: {
+        Row: {
+          code: string
+          created_at: string
+          health: number
+          id: string
+          kind: string
+          last_seen_at: string
+          name_ar: string
+          name_en: string
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          health?: number
+          id?: string
+          kind: string
+          last_seen_at?: string
+          name_ar: string
+          name_en: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          health?: number
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          name_ar?: string
+          name_en?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_assets_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_cctv_alerts: {
+        Row: {
+          acknowledged_by: string | null
+          alert_type: string
+          camera_code: string
+          confidence: number
+          created_at: string
+          detected_at: string
+          id: string
+          notes: string | null
+          ref: string
+          site_id: string | null
+          status: string
+        }
+        Insert: {
+          acknowledged_by?: string | null
+          alert_type: string
+          camera_code: string
+          confidence?: number
+          created_at?: string
+          detected_at?: string
+          id?: string
+          notes?: string | null
+          ref: string
+          site_id?: string | null
+          status?: string
+        }
+        Update: {
+          acknowledged_by?: string | null
+          alert_type?: string
+          camera_code?: string
+          confidence?: number
+          created_at?: string
+          detected_at?: string
+          id?: string
+          notes?: string | null
+          ref?: string
+          site_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_cctv_alerts_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_contractors: {
+        Row: {
+          compliance_score: number
+          contract_no: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          name: string
+          ref: string
+          status: string
+          updated_at: string
+          workers_count: number
+        }
+        Insert: {
+          compliance_score?: number
+          contract_no: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name: string
+          ref: string
+          status?: string
+          updated_at?: string
+          workers_count?: number
+        }
+        Update: {
+          compliance_score?: number
+          contract_no?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name?: string
+          ref?: string
+          status?: string
+          updated_at?: string
+          workers_count?: number
+        }
+        Relationships: []
+      }
+      sec_incidents: {
+        Row: {
+          ai_summary: string | null
+          category: string
+          created_at: string
+          id: string
+          owner: string | null
+          ref: string
+          reported_at: string
+          resolved_at: string | null
+          response_minutes: number | null
+          root_cause: string | null
+          severity: string
+          site_id: string | null
+          status: string
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          owner?: string | null
+          ref: string
+          reported_at?: string
+          resolved_at?: string | null
+          response_minutes?: number | null
+          root_cause?: string | null
+          severity: string
+          site_id?: string | null
+          status?: string
+          title_ar: string
+          title_en: string
+          updated_at?: string
+        }
+        Update: {
+          ai_summary?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          owner?: string | null
+          ref?: string
+          reported_at?: string
+          resolved_at?: string | null
+          response_minutes?: number | null
+          root_cause?: string | null
+          severity?: string
+          site_id?: string | null
+          status?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_incidents_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_patrols: {
+        Row: {
+          checkpoints_done: number
+          checkpoints_total: number
+          created_at: string
+          ended_at: string | null
+          id: string
+          ref: string
+          route: string
+          site_id: string | null
+          started_at: string | null
+          status: string
+          team: string
+          updated_at: string
+        }
+        Insert: {
+          checkpoints_done?: number
+          checkpoints_total?: number
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          ref: string
+          route: string
+          site_id?: string | null
+          started_at?: string | null
+          status?: string
+          team: string
+          updated_at?: string
+        }
+        Update: {
+          checkpoints_done?: number
+          checkpoints_total?: number
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          ref?: string
+          route?: string
+          site_id?: string | null
+          started_at?: string | null
+          status?: string
+          team?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_patrols_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_permits: {
+        Row: {
+          approver: string | null
+          contractor: string
+          created_at: string
+          ends_at: string
+          id: string
+          notes: string | null
+          ref: string
+          risk_level: string
+          site_id: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+          work_type: string
+        }
+        Insert: {
+          approver?: string | null
+          contractor: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          notes?: string | null
+          ref: string
+          risk_level?: string
+          site_id?: string | null
+          starts_at: string
+          status?: string
+          updated_at?: string
+          work_type: string
+        }
+        Update: {
+          approver?: string | null
+          contractor?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          notes?: string | null
+          ref?: string
+          risk_level?: string
+          site_id?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          work_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_permits_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_sites: {
+        Row: {
+          code: string
+          created_at: string
+          guards_count: number
+          id: string
+          lat: number | null
+          lng: number | null
+          name_ar: string
+          name_en: string
+          notes: string | null
+          sensitivity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          guards_count?: number
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name_ar: string
+          name_en: string
+          notes?: string | null
+          sensitivity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          guards_count?: number
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name_ar?: string
+          name_en?: string
+          notes?: string | null
+          sensitivity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sec_visitors: {
+        Row: {
+          badge_no: string | null
+          check_in_at: string
+          check_out_at: string | null
+          created_at: string
+          full_name: string
+          host: string
+          id: string
+          organization: string | null
+          purpose: string | null
+          ref: string
+          site_id: string | null
+          status: string
+        }
+        Insert: {
+          badge_no?: string | null
+          check_in_at?: string
+          check_out_at?: string | null
+          created_at?: string
+          full_name: string
+          host: string
+          id?: string
+          organization?: string | null
+          purpose?: string | null
+          ref: string
+          site_id?: string | null
+          status?: string
+        }
+        Update: {
+          badge_no?: string | null
+          check_in_at?: string
+          check_out_at?: string | null
+          created_at?: string
+          full_name?: string
+          host?: string
+          id?: string
+          organization?: string | null
+          purpose?: string | null
+          ref?: string
+          site_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_visitors_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_agent: string | null
