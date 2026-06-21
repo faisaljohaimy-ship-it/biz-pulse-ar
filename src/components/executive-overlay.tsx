@@ -335,9 +335,13 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
             <button onClick={onClose} className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
               <X className="h-4 w-4" />
             </button>
-          </div>
+        </div>
 
+        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+          {messages.length === 0 && (
+            <div className="space-y-3">
               <p className="text-sm text-slate-300">
+
                 {ar
                   ? `مرحباً. الصحة العامة ${pulse.health}، الحالة "${pulse.status === "healthy" ? "صحية" : pulse.status === "warning" ? "تحذير" : "حرجة"}". اسألني عن أي مؤشر أو خطر أو فرصة.`
                   : `Hi. Overall health ${pulse.health}, status "${pulse.status}". Ask me about any KPI, risk or opportunity.`}
