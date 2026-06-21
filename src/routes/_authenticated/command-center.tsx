@@ -559,6 +559,7 @@ function CommandCenterPage() {
 
   const [mailOpen, setMailOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(false);
+  const [teamsOpen, setTeamsOpen] = useState(false);
 
   return (
     <NexusPage
@@ -572,6 +573,9 @@ function CommandCenterPage() {
           </button>
           <button onClick={() => setMailOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-violet-400/40 bg-violet-500/15 px-2.5 py-1 text-xs font-semibold text-violet-100 hover:bg-violet-500/25 transition">
             <Mail className="h-3.5 w-3.5" /> {ar ? "إرسال للقيادة" : "Email Leadership"}
+          </button>
+          <button onClick={() => setTeamsOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-100 hover:bg-indigo-500/25 transition">
+            <MessageSquare className="h-3.5 w-3.5" /> {ar ? "بث Teams" : "Teams Broadcast"}
           </button>
           <button onClick={() => setInboxOpen(v => !v)} className="inline-flex items-center gap-1.5 rounded-md border border-slate-500/40 bg-slate-700/30 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700/50 transition">
             <Inbox className="h-3.5 w-3.5" /> {ar ? "البريد الوارد" : "Inbox"}
