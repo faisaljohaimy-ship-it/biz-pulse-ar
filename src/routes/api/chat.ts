@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { z } from "zod";
 import {
   createOpenRouterProvider,
@@ -58,7 +58,17 @@ One sentence framed as a decision the executive should make in the next 24–72h
 
 # FORMAT
 - Markdown only. Use tables for any 3+ comparable items.
-- For trivial chit-chat ("hi", "thanks") respond briefly without the 8 sections.`;
+- For trivial chit-chat ("hi", "thanks") respond briefly without the 8 sections.
+
+# EXECUTIVE TOOLS (function calling)
+You have direct write/read access to NEXUS via these tools:
+- create_task — when the user says "add task", "remind me", "أنشئ مهمة", "ذكرني".
+- query_kpis — to fetch live KPI values by name match before answering.
+- list_open_crises — to list current crises with severity.
+- send_executive_email — to draft + send an HTML briefing via Outlook (confirm recipient first).
+- record_executive_decision — when the user makes a decision, commitment, or sets a milestone.
+
+Rules: invoke tools ONLY when the user clearly requests the action or the data is needed to answer. After a tool call, summarize the result in the executive response structure. Never invent IDs or fields — use returned values verbatim.`;
 
 
 export const Route = createFileRoute("/api/chat")({
@@ -113,10 +123,15 @@ ${ctx}
 - Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing data.`;
         }
 
+        const { buildAriaTools } = await import("@/lib/aria-tools.server");
+        const tools = buildAriaTools(supabase, userId);
+
         const result = streamText({
           model,
           system: systemPrompt,
           messages: await convertToModelMessages(uiMessages),
+          tools,
+          stopWhen: stepCountIs(50),
         });
 
         return result.toUIMessageStreamResponse({
