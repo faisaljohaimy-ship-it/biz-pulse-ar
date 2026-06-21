@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, TrendingUp, Briefcase, Bot, ShieldAlert, Building2 } from "lucide-react";
+import { SafeSvg } from "@/components/SafeSvg";
 
 
 /**
@@ -75,7 +76,7 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
         <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-[#04060d] via-[#04060d]/85 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_at_50%_100%,rgba(245,180,84,0.18),transparent_70%)]" />
 
-        <svg
+        <SafeSvg
           viewBox="0 0 1600 420"
           preserveAspectRatio="xMidYMax slice"
           className="absolute inset-x-0 bottom-0 h-full w-full"
