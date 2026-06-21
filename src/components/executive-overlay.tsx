@@ -52,6 +52,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEnterprisePulse, type PulseAlert } from "@/lib/enterprise-pulse";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
+import { AriaOrb } from "@/components/cinematic/AriaOrb";
 
 /* ─────────────────────────── Public Hook ─────────────────────────── */
 
@@ -74,6 +75,17 @@ function useOverlayState(): OverlayState {
   const [presenting, setPresenting] = useState(false);
   const [avatarOpen, setAvatar] = useState(false);
   const [shortcutsOpen, setShortcuts] = useState(false);
+
+  // Cinematic auto-greet: open ARIA once per session on first entry
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (sessionStorage.getItem("aria-greeted") === "1") return;
+      sessionStorage.setItem("aria-greeted", "1");
+      const t = setTimeout(() => setAvatar(true), 900);
+      return () => clearTimeout(t);
+    } catch { /* noop */ }
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -199,17 +211,8 @@ function ExecutiveAvatar({ state }: { state: OverlayState }) {
       )}
       style={{ boxShadow: "0 20px 60px -15px rgba(34,211,238,0.55)" }}
     >
-      <div className="relative h-11 w-11">
-        <span className="absolute inset-[-6px] rounded-full bg-cyan-400/30 blur-xl animate-pulse" />
-        <span className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700" />
-        <span className="absolute inset-[3px] rounded-full bg-[#040816]/70 backdrop-blur" />
-        <span
-          className="absolute inset-[3px] rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 30%, rgba(186,230,253,0.85), rgba(56,189,248,0.3) 45%, transparent 70%)",
-          }}
-        />
+      <div className="relative h-12 w-12">
+        <AriaOrb size={48} state="idle" />
         <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80" />
           <span className="relative inline-flex h-3 w-3 rounded-full border border-[#040816] bg-emerald-400" />
@@ -287,7 +290,18 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
       voice.stopSpeaking();
     }
   }, [open, voice]);
-
+  // Cinematic greeting once when console first opens
+  const greetedRef = useRef(false);
+  useEffect(() => {
+    if (!open || greetedRef.current) return;
+    if (!voiceMode) { greetedRef.current = true; return; }
+    greetedRef.current = true;
+    const greet = ar
+      ? "أهلاً قائد، أنا أريا. جاهزة للإحاطة، اسأل أو تحدث وسأتولى الأمر."
+      : "Welcome, commander. I'm ARIA — your copilot. Ask anything or just speak, I'm listening.";
+    const t = setTimeout(() => voice.speak(greet), 350);
+    return () => clearTimeout(t);
+  }, [open, voiceMode, voice, ar]);
 
   if (!open) return null;
 
@@ -306,10 +320,7 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
             maskImage: "radial-gradient(ellipse at center,black,transparent 80%)",
           }}/>
           <div className="absolute start-5 bottom-3 flex items-center gap-3">
-            <div className="relative h-12 w-12">
-              <span className="absolute inset-[-6px] rounded-full bg-cyan-400/40 blur-xl animate-pulse" />
-              <span className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700" />
-            </div>
+            <AriaOrb size={52} state={voice.listening ? "listening" : voice.speaking ? "speaking" : isLoading ? "thinking" : "idle"} />
             <div>
               <div className="text-sm font-bold text-white">ARIA</div>
               <div className="text-[10px] tracking-[0.25em] text-cyan-200/90">
