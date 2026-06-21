@@ -15,6 +15,7 @@ import { ExecutiveDemo, DX_DURATION, DX_FPS } from "./ExecutiveDemo";
 import { ExecutiveWalkthrough, WT_DURATION, WT_FPS } from "./ExecutiveWalkthrough";
 import { EnterpriseFilm, FILM_DURATION, FILM_FPS } from "./EnterpriseFilm";
 import { RoiFilmAR, ROI_DURATION, ROI_FPS } from "./RoiFilmAR";
+import { SaudiFinal, SAUDI_DURATION, SAUDI_FPS } from "./SaudiFinal";
 
 export const RemotionRoot = () => (
   <>
@@ -34,5 +35,6 @@ export const RemotionRoot = () => (
     <Composition id="walkthrough" component={ExecutiveWalkthrough} durationInFrames={WT_DURATION} fps={WT_FPS} width={1920} height={1080} />
     <Composition id="film" component={EnterpriseFilm} durationInFrames={FILM_DURATION} fps={FILM_FPS} width={1920} height={1080} />
     <Composition id="roiar" component={RoiFilmAR} durationInFrames={ROI_DURATION} fps={ROI_FPS} width={1920} height={1080} />
+    <Composition id="saudi" component={SaudiFinal} durationInFrames={SAUDI_DURATION} fps={SAUDI_FPS} width={1920} height={1080} />
   </>
 );
