@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "9800b104-db2e-4d52-9cef-9c3e14e2ee75",
+  "asset_id": "df772583-3b9e-4a6f-9b05-a69dd05bfee8",
   "project_id": "6f092c67-70c5-400b-9a7e-8c068475864f",
-  "url": "/__l5e/assets-v1/9800b104-db2e-4d52-9cef-9c3e14e2ee75/neexios-roi.mp4",
-  "r2_key": "a/v1/6f092c67-70c5-400b-9a7e-8c068475864f/9800b104-db2e-4d52-9cef-9c3e14e2ee75/neexios-roi.mp4",
-  "original_filename": "neexios-roi.mp4",
-  "size": 12311269,
+  "url": "/__l5e/assets-v1/df772583-3b9e-4a6f-9b05-a69dd05bfee8/neexios-roi-ar.mp4",
+  "r2_key": "a/v1/6f092c67-70c5-400b-9a7e-8c068475864f/df772583-3b9e-4a6f-9b05-a69dd05bfee8/neexios-roi-ar.mp4",
+  "original_filename": "neexios-roi-ar.mp4",
+  "size": 35460723,
   "content_type": "video/mp4",
-  "created_at": "2026-06-21T11:40:25Z"
+  "created_at": "2026-06-21T12:43:14Z"
 }
