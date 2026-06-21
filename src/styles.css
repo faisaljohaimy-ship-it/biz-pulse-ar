@@ -419,3 +419,30 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
   .nexus-orbit-ring,
   .nexus-orbit-ring-rev { animation: none !important; }
 }
+
+/* ── ARIA cinematic orb ───────────────────────────────────── */
+@keyframes aria-orb-halo {
+  0%,100% { transform: scale(1); opacity: 0.55; }
+  50%     { transform: scale(1.18); opacity: 0.9; }
+}
+@keyframes aria-orb-spin   { to { transform: rotate(360deg); } }
+@keyframes aria-orb-spin-r { to { transform: rotate(-360deg); } }
+@keyframes aria-orb-scan   {
+  0%,100% { transform: rotateX(0deg); }
+  50%     { transform: rotateX(180deg); }
+}
+.aria-orb-halo {
+  position: absolute; inset: -14%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, var(--aria-halo) 0%, transparent 65%);
+  filter: blur(8px);
+  animation: aria-orb-halo var(--aria-speed) ease-in-out infinite;
+  pointer-events: none;
+}
+.aria-orb-ring-a { animation: aria-orb-spin   12s linear infinite; transform-box: fill-box; }
+.aria-orb-ring-b { animation: aria-orb-spin-r 18s linear infinite; transform-box: fill-box; }
+.aria-orb-scan   { animation: aria-orb-scan   var(--aria-speed) ease-in-out infinite; transform-box: fill-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aria-orb-halo, .aria-orb-ring-a, .aria-orb-ring-b, .aria-orb-scan { animation: none !important; }
+}
