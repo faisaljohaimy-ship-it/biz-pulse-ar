@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Shield, Radio, AlertOctagon, Activity, MapPin, Camera, FileCheck2,
   UserCheck, HardHat, Cpu, Radar, Sparkles, Flame, ShieldAlert, Eye,
+  FileDown, Mail, Inbox, Loader2, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { sendOutlookReport, listOutlookInbox } from "@/lib/outlook.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
