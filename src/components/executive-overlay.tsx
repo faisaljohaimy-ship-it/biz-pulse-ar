@@ -52,6 +52,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEnterprisePulse, type PulseAlert } from "@/lib/enterprise-pulse";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
+import { AriaOrb } from "@/components/cinematic/AriaOrb";
 
 /* ─────────────────────────── Public Hook ─────────────────────────── */
 
