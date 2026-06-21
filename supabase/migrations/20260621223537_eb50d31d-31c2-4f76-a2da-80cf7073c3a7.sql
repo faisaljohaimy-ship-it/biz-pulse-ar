@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS sec_cctv_select_auth ON public.sec_cctv_alerts;
