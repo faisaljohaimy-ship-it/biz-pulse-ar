@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { z } from "zod";
 import {
   createOpenRouterProvider,
@@ -113,10 +113,15 @@ ${ctx}
 - Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing data.`;
         }
 
+        const { buildAriaTools } = await import("@/lib/aria-tools.server");
+        const tools = buildAriaTools(supabase, userId);
+
         const result = streamText({
           model,
           system: systemPrompt,
           messages: await convertToModelMessages(uiMessages),
+          tools,
+          stopWhen: stepCountIs(50),
         });
 
         return result.toUIMessageStreamResponse({
