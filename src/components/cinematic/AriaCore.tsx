@@ -201,7 +201,24 @@ function Halo() {
   );
 }
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 export default function AriaCore() {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div aria-hidden style={{ position: "absolute", inset: 0 }} className="flex items-center justify-center">
+        <div
+          className="h-48 w-48 rounded-full animate-pulse"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(167,139,250,0.6) 0%, rgba(245,180,84,0.25) 45%, transparent 70%)",
+            filter: "blur(8px)",
+          }}
+        />
+      </div>
+    );
+  }
   return (
     <Canvas
       camera={{ position: [0, 0, 6.5], fov: 45 }}

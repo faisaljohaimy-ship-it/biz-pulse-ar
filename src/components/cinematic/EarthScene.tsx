@@ -216,7 +216,20 @@ function CameraOrbit() {
   return null;
 }
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 export default function EarthScene({ intensity = "normal" }: { intensity?: Intensity }) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    // Lightweight CSS fallback to avoid WebGL OOM crashes on mobile Safari
+    return (
+      <div
+        aria-hidden
+        style={{ position: "absolute", inset: 0 }}
+        className="bg-[radial-gradient(circle_at_50%_50%,rgba(58,142,255,0.35),rgba(4,6,13,0.95)_60%,#04060d_100%)]"
+      />
+    );
+  }
   return (
     <Canvas
       camera={{ position: [0, 0, 7], fov: 45 }}

@@ -431,7 +431,19 @@ function CameraDrift() {
   return null;
 }
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 export default function CityScene() {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div
+        aria-hidden
+        style={{ position: "absolute", inset: 0 }}
+        className="bg-[linear-gradient(180deg,#04060d_0%,#0a1530_45%,#1a0a1f_100%)]"
+      />
+    );
+  }
   return (
     <Canvas
       camera={{ position: [0, 4.5, 16], fov: 55 }}
