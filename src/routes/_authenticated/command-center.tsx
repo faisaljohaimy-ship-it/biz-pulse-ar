@@ -111,7 +111,27 @@ function useSecOps() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { sites, incidents, patrols, permits, visitors, contractors, cctv, assets };
+  // ── Scope: Western Region only (جدة، مكة، ينبع، رابغ) ──
+  const WEST_CODES = new Set(["SITE-JED-02","SITE-MEC-07","SITE-YAN-04","SITE-RAB-08"]);
+  const allSites = (sites.data ?? []) as Site[];
+  const westSites = allSites.filter(s => WEST_CODES.has(s.code));
+  const westIds = new Set(westSites.map(s => s.id));
+  const byWest = <T extends { site_id: string | null }>(rows: T[] | undefined) =>
+    (rows ?? []).filter(r => r.site_id && westIds.has(r.site_id));
+
+  return {
+    sites: { ...sites, data: westSites },
+    incidents: { ...incidents, data: byWest(incidents.data as any) },
+    patrols: { ...patrols, data: byWest(patrols.data as any) },
+    permits: { ...permits, data: byWest(permits.data as any) },
+    visitors: { ...visitors, data: byWest(visitors.data as any) },
+    contractors: { ...contractors, data: byWest(contractors.data as any) },
+    cctv: { ...cctv, data: byWest(cctv.data as any) },
+    assets: { ...assets, data: byWest(assets.data as any) },
+  } as ReturnType<typeof rawReturn>;
+}
+function rawReturn() {
+  return { sites: null as any, incidents: null as any, patrols: null as any, permits: null as any, visitors: null as any, contractors: null as any, cctv: null as any, assets: null as any };
 }
 
 /* ────────────────── Visual helpers ────────────────── */
@@ -128,8 +148,8 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 /* ────────────── Saudi Arabia Digital Twin Map ────────────── */
-// Bounds tuned for KSA
-const BOUNDS = { latMin: 16, latMax: 32, lngMin: 34, lngMax: 56 };
+// Bounds tuned for KSA Western Region (Yanbu/Rabigh/Jeddah/Makkah)
+const BOUNDS = { latMin: 20.5, latMax: 25.0, lngMin: 37.5, lngMax: 40.5 };
 function projectKSA(lat: number, lng: number) {
   const x = ((lng - BOUNDS.lngMin) / (BOUNDS.lngMax - BOUNDS.lngMin)) * 100;
   const y = (1 - (lat - BOUNDS.latMin) / (BOUNDS.latMax - BOUNDS.latMin)) * 100;
@@ -159,7 +179,7 @@ function DigitalTwinMap({ sites, incidents, cctv, ar }: {
         <div className="flex items-center gap-2">
           <Radar className="h-4 w-4 text-cyan-300" />
           <h3 className="text-sm font-semibold tracking-wide text-slate-100">
-            {ar ? "التوأم الرقمي — المملكة العربية السعودية" : "Digital Twin — Kingdom Operations"}
+            {ar ? "التوأم الرقمي — المنطقة الغربية" : "Digital Twin — Western Region"}
           </h3>
         </div>
         <NexusPill tone="cyan"><span className="relative flex h-2 w-2">
