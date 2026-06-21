@@ -77,7 +77,7 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
 
         <svg
           viewBox="0 0 1600 420"
-          preserveAspectRatio="xMidYEnd slice"
+          preserveAspectRatio="xMidYMax slice"
           className="absolute inset-x-0 bottom-0 h-full w-full"
         >
           <defs>
