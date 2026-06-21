@@ -561,6 +561,7 @@ function CommandCenterPage() {
   const [mailOpen, setMailOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
+  const [spOpen, setSpOpen] = useState(false);
 
   return (
     <NexusPage
@@ -577,6 +578,9 @@ function CommandCenterPage() {
           </button>
           <button onClick={() => setTeamsOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-100 hover:bg-indigo-500/25 transition">
             <MessageSquare className="h-3.5 w-3.5" /> {ar ? "بث Teams" : "Teams Broadcast"}
+          </button>
+          <button onClick={() => setSpOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-sky-400/40 bg-sky-500/15 px-2.5 py-1 text-xs font-semibold text-sky-100 hover:bg-sky-500/25 transition">
+            <Cloud className="h-3.5 w-3.5" /> {ar ? "رفع إلى SharePoint" : "Upload to SharePoint"}
           </button>
           <button onClick={() => setInboxOpen(v => !v)} className="inline-flex items-center gap-1.5 rounded-md border border-slate-500/40 bg-slate-700/30 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700/50 transition">
             <Inbox className="h-3.5 w-3.5" /> {ar ? "البريد الوارد" : "Inbox"}
