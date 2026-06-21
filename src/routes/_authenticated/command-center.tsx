@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Shield, Radio, AlertOctagon, Activity, MapPin, Camera, FileCheck2,
   UserCheck, HardHat, Cpu, Radar, Sparkles, Flame, ShieldAlert, Eye,
+  FileDown, Mail, Inbox, Loader2, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
+import { sendOutlookReport, listOutlookInbox } from "@/lib/outlook.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
@@ -531,13 +535,46 @@ function CommandCenterPage() {
     return Math.round(resolved.reduce((a, b) => a + (b.response_minutes ?? 0), 0) / resolved.length);
   })();
 
+  const kpis = {
+    operationalSites, totalSites: sitesData.length,
+    activeIncidents: activeIncidents.length, criticalCount,
+    newCctv, activePatrols, visitorsInside, activePermits, avgResponse,
+  };
+
+  const reportHtml = useMemo(() => buildReportHTML({
+    ar, kpis, sites: sitesData, incidents: incData, cctv: cctvData,
+    patrols: patrols.data ?? [], permits: permits.data ?? [],
+    visitors: visitors.data ?? [], contractors: contractors.data ?? [],
+  }), [ar, kpis, sitesData, incData, cctvData, patrols.data, permits.data, visitors.data, contractors.data]);
+
+  const handleExportPdf = () => {
+    const w = window.open("", "_blank", "noopener,noreferrer,width=1100,height=900");
+    if (!w) { toast.error(ar ? "افتح النوافذ المنبثقة" : "Allow pop-ups"); return; }
+    w.document.open();
+    w.document.write(reportHtml);
+    w.document.close();
+    setTimeout(() => { try { w.focus(); w.print(); } catch {} }, 500);
+  };
+
+  const [mailOpen, setMailOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
+
   return (
     <NexusPage
       eyebrow="UNIFIED COMMAND CENTER"
       title={ar ? "غرفة القيادة الموحدة — الأمن الصناعي" : "Unified Command Center — Industrial Security"}
       subtitle={ar ? "رؤية تشغيلية حية عبر 8 مواقع، 40+ كاميرا ذكية، 6 دوريات، و7 مقاولين." : "Live operational view across 8 sites, 40+ smart cameras, 6 patrols, and 7 contractors."}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={handleExportPdf} className="inline-flex items-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/25 transition">
+            <FileDown className="h-3.5 w-3.5" /> {ar ? "تصدير PDF" : "Export PDF"}
+          </button>
+          <button onClick={() => setMailOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-violet-400/40 bg-violet-500/15 px-2.5 py-1 text-xs font-semibold text-violet-100 hover:bg-violet-500/25 transition">
+            <Mail className="h-3.5 w-3.5" /> {ar ? "إرسال للقيادة" : "Email Leadership"}
+          </button>
+          <button onClick={() => setInboxOpen(v => !v)} className="inline-flex items-center gap-1.5 rounded-md border border-slate-500/40 bg-slate-700/30 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700/50 transition">
+            <Inbox className="h-3.5 w-3.5" /> {ar ? "البريد الوارد" : "Inbox"}
+          </button>
           <NexusPill tone="cyan"><Activity className="h-3 w-3" /> REALTIME</NexusPill>
           <NexusPill tone={criticalCount > 0 ? "rose" : "emerald"}>
             <Shield className="h-3 w-3" /> {criticalCount > 0 ? `${criticalCount} CRITICAL` : "STABLE"}
@@ -602,6 +639,237 @@ function CommandCenterPage() {
           <NexusPill tone="emerald"><Eye className="h-3 w-3" /> AUDIT-READY</NexusPill>
         </div>
       </NexusCard>
+
+      {inboxOpen && <OutlookInboxPanel ar={ar} onClose={() => setInboxOpen(false)} />}
+      {mailOpen && (
+        <SendMailModal
+          ar={ar}
+          defaultSubject={ar ? `تقرير غرفة القيادة — ${new Date().toLocaleDateString("ar-SA")}` : `Command Center Report — ${new Date().toLocaleDateString("en-US")}`}
+          html={reportHtml}
+          onClose={() => setMailOpen(false)}
+        />
+      )}
     </NexusPage>
   );
+}
+
+/* ────────────────── Outlook UI ────────────────── */
+function SendMailModal({ ar, defaultSubject, html, onClose }: { ar: boolean; defaultSubject: string; html: string; onClose: () => void }) {
+  const send = useServerFn(sendOutlookReport);
+  const [to, setTo] = useState("");
+  const [cc, setCc] = useState("");
+  const [subject, setSubject] = useState(defaultSubject);
+  const [sending, setSending] = useState(false);
+
+  const submit = async () => {
+    if (!to) { toast.error(ar ? "أدخل بريد المستلم" : "Recipient required"); return; }
+    setSending(true);
+    try {
+      await send({ data: { to, cc: cc || undefined, subject, html } });
+      toast.success(ar ? "تم الإرسال عبر Outlook" : "Sent via Outlook");
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed");
+    } finally { setSending(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-xl border border-violet-400/30 bg-slate-950 p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-sm font-bold text-violet-100">
+            <Mail className="h-4 w-4" /> {ar ? "إرسال التقرير عبر Outlook" : "Send Report via Outlook"}
+          </h3>
+          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-800"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="space-y-3">
+          <input value={to} onChange={e => setTo(e.target.value)} placeholder={ar ? "إلى (ceo@company.sa)" : "To (ceo@company.sa)"} className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-400" />
+          <input value={cc} onChange={e => setCc(e.target.value)} placeholder={ar ? "نسخة (اختياري)" : "Cc (optional)"} className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-400" />
+          <input value={subject} onChange={e => setSubject(e.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-400" />
+          <div className="rounded-md border border-slate-800 bg-slate-900/50 p-2 text-[11px] text-slate-400">
+            {ar ? "سيتم إرفاق تقرير KPIs الكامل (HTML) داخل البريد." : "Full KPI report (HTML) will be embedded in the message body."}
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">{ar ? "إلغاء" : "Cancel"}</button>
+          <button onClick={submit} disabled={sending} className="inline-flex items-center gap-1.5 rounded-md bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-600 disabled:opacity-60">
+            {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+            {ar ? "إرسال الآن" : "Send now"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OutlookInboxPanel({ ar, onClose }: { ar: boolean; onClose: () => void }) {
+  const fetcher = useServerFn(listOutlookInbox);
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ["outlook-inbox"],
+    queryFn: () => fetcher(),
+    staleTime: 30_000,
+  });
+
+  return (
+    <NexusCard>
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Inbox className="h-4 w-4 text-cyan-300" />
+          <h3 className="text-sm font-semibold text-slate-100">{ar ? "بريد Outlook الوارد" : "Outlook Inbox"}</h3>
+          <NexusPill tone="cyan">LIVE</NexusPill>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => refetch()} disabled={isFetching} className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300 hover:bg-slate-800 disabled:opacity-60">
+            {isFetching ? "..." : (ar ? "تحديث" : "Refresh")}
+          </button>
+          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-800"><X className="h-4 w-4" /></button>
+        </div>
+      </div>
+      {isLoading && <div className="py-6 text-center text-xs text-slate-400">{ar ? "جارٍ التحميل..." : "Loading..."}</div>}
+      {error && <div className="rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-200">{(error as Error).message}</div>}
+      {data && (
+        <div className="space-y-1.5 max-h-[420px] overflow-y-auto">
+          {data.messages.length === 0 && <div className="text-xs text-slate-500">{ar ? "لا توجد رسائل" : "No messages"}</div>}
+          {data.messages.map(m => (
+            <div key={m.id} className={`rounded-md border px-2.5 py-2 ${m.isRead ? "border-slate-800 bg-slate-900/40" : "border-cyan-500/40 bg-cyan-500/5"}`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-xs font-semibold text-slate-100">{m.subject || "(no subject)"}</div>
+                  <div className="truncate text-[10px] text-slate-500">
+                    {m.from?.emailAddress?.name ?? m.from?.emailAddress?.address ?? "—"} · {new Date(m.receivedDateTime).toLocaleString(ar ? "ar-SA" : "en-US")}
+                  </div>
+                </div>
+                {!m.isRead && <NexusPill tone="cyan">NEW</NexusPill>}
+              </div>
+              <div className="mt-1 line-clamp-2 text-[11px] text-slate-400">{m.bodyPreview}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </NexusCard>
+  );
+}
+
+/* ────────────────── Report HTML builder ────────────────── */
+function buildReportHTML(args: {
+  ar: boolean;
+  kpis: { operationalSites: number; totalSites: number; activeIncidents: number; criticalCount: number; newCctv: number; activePatrols: number; visitorsInside: number; activePermits: number; avgResponse: number };
+  sites: Site[]; incidents: Incident[]; cctv: CctvAlert[]; patrols: Patrol[]; permits: Permit[]; visitors: Visitor[]; contractors: Contractor[];
+}): string {
+  const { ar, kpis, sites, incidents, cctv, patrols, permits, visitors, contractors } = args;
+  const t = (a: string, e: string) => ar ? a : e;
+  const dir = ar ? "rtl" : "ltr";
+  const now = new Date().toLocaleString(ar ? "ar-SA" : "en-US");
+  const esc = (s: any) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+
+  const kpiCard = (label: string, value: string | number, tone: string) =>
+    `<div class="kpi" style="border-color:${tone}40;background:${tone}10"><div class="kv">${esc(value)}</div><div class="kl">${esc(label)}</div></div>`;
+
+  const incRows = incidents.slice(0, 25).map(i => `
+    <tr>
+      <td>${esc(i.ref)}</td>
+      <td>${esc(ar ? i.title_ar : i.title_en)}</td>
+      <td><span class="badge sev-${esc(i.severity)}">${esc(i.severity)}</span></td>
+      <td>${esc(i.status)}</td>
+      <td>${esc(i.response_minutes ?? "-")}m</td>
+      <td>${esc(new Date(i.reported_at).toLocaleString(ar ? "ar-SA" : "en-US"))}</td>
+    </tr>`).join("");
+
+  const siteRows = sites.map(s => `
+    <tr><td>${esc(s.code)}</td><td>${esc(ar ? s.name_ar : s.name_en)}</td><td>${esc(s.sensitivity)}</td><td>${esc(s.status)}</td><td>${esc(s.guards_count)}</td></tr>
+  `).join("");
+
+  const patrolRows = patrols.map(p => `
+    <tr><td>${esc(p.ref)}</td><td>${esc(p.team)}</td><td>${esc(p.route)}</td><td>${esc(p.status)}</td><td>${esc(p.checkpoints_done)}/${esc(p.checkpoints_total)}</td></tr>
+  `).join("");
+
+  const cctvRows = cctv.slice(0, 20).map(c => `
+    <tr><td>${esc(c.ref)}</td><td>${esc(c.camera_code)}</td><td>${esc(c.alert_type)}</td><td>${Math.round(c.confidence * 100)}%</td><td>${esc(c.status)}</td></tr>
+  `).join("");
+
+  const permitRows = permits.map(p => `
+    <tr><td>${esc(p.ref)}</td><td>${esc(p.work_type)}</td><td>${esc(p.contractor)}</td><td><span class="badge sev-${esc(p.risk_level)}">${esc(p.risk_level)}</span></td><td>${esc(p.status)}</td></tr>
+  `).join("");
+
+  const contRows = contractors.map(c => `
+    <tr><td>${esc(c.name)}</td><td>${esc(c.workers_count)}</td><td>${esc(c.compliance_score)}%</td><td>${esc(c.status)}</td></tr>
+  `).join("");
+
+  const visRows = visitors.slice(0, 15).map(v => `
+    <tr><td>${esc(v.ref)}</td><td>${esc(v.full_name)}</td><td>${esc(v.organization ?? "-")}</td><td>${esc(v.host)}</td><td>${esc(v.status)}</td></tr>
+  `).join("");
+
+  return `<!DOCTYPE html><html dir="${dir}" lang="${ar ? "ar" : "en"}"><head>
+<meta charset="utf-8"><title>${t("تقرير غرفة القيادة", "Command Center Report")}</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  *{box-sizing:border-box} body{font-family:${ar ? "'Tajawal','Cairo'" : "'Inter'"}, system-ui, -apple-system, sans-serif;color:#0f172a;margin:0;padding:24px;background:#fff}
+  .hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #06b6d4;padding-bottom:12px;margin-bottom:18px}
+  .brand{font-size:22px;font-weight:800;letter-spacing:.5px;color:#0e7490}
+  .sub{color:#475569;font-size:12px;margin-top:2px}
+  h2{font-size:14px;margin:22px 0 8px;color:#0e7490;border-${ar ? "right" : "left"}:4px solid #06b6d4;padding-${ar ? "right" : "left"}:10px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0 4px}
+  .kpi{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:#f8fafc}
+  .kv{font-size:22px;font-weight:800;color:#0f172a;line-height:1}
+  .kl{font-size:10px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+  table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+  th{background:#0f172a;color:#fff;text-align:${ar ? "right" : "left"};padding:7px 8px;font-weight:600}
+  td{border-bottom:1px solid #e2e8f0;padding:6px 8px;color:#334155}
+  tr:nth-child(even) td{background:#f8fafc}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase}
+  .sev-critical{background:#fee2e2;color:#991b1b} .sev-high{background:#ffedd5;color:#9a3412}
+  .sev-medium{background:#fef3c7;color:#92400e} .sev-low{background:#dcfce7;color:#166534}
+  .footer{margin-top:24px;border-top:1px solid #e2e8f0;padding-top:10px;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+  .stamp{display:inline-block;border:2px solid #0e7490;color:#0e7490;padding:4px 10px;border-radius:6px;font-weight:700;font-size:10px}
+  @media print { .noprint{display:none} }
+</style></head><body>
+  <div class="hdr">
+    <div>
+      <div class="brand">NEXIOS AI OS</div>
+      <div class="sub">${t("غرفة القيادة الموحدة — الأمن الصناعي (المنطقة الغربية)", "Unified Command Center — Industrial Security (Western Region)")}</div>
+    </div>
+    <div style="text-align:${ar ? "left" : "right"}">
+      <div class="stamp">${t("سري — للتداول الداخلي", "CONFIDENTIAL — INTERNAL")}</div>
+      <div class="sub">${esc(now)}</div>
+    </div>
+  </div>
+
+  <h2>${t("مؤشرات الأداء التشغيلية (KPIs)", "Operational KPIs")}</h2>
+  <div class="grid">
+    ${kpiCard(t("مواقع تشغيلية", "Operational sites"), `${kpis.operationalSites}/${kpis.totalSites}`, "#10b981")}
+    ${kpiCard(t("حوادث نشطة", "Active incidents"), kpis.activeIncidents, "#f59e0b")}
+    ${kpiCard(t("حرجة", "Critical"), kpis.criticalCount, "#ef4444")}
+    ${kpiCard(t("تنبيهات CCTV جديدة", "New CCTV alerts"), kpis.newCctv, "#8b5cf6")}
+    ${kpiCard(t("دوريات نشطة", "Active patrols"), kpis.activePatrols, "#06b6d4")}
+    ${kpiCard(t("زوار بالداخل", "Visitors inside"), kpis.visitorsInside, "#f59e0b")}
+    ${kpiCard(t("تصاريح نشطة", "Active permits"), kpis.activePermits, "#0ea5e9")}
+    ${kpiCard(t("متوسط الاستجابة", "Avg response"), `${kpis.avgResponse}m`, "#10b981")}
+  </div>
+
+  <h2>${t("الحوادث الأخيرة", "Recent Incidents")}</h2>
+  <table><thead><tr><th>Ref</th><th>${t("العنوان", "Title")}</th><th>${t("الخطورة", "Severity")}</th><th>${t("الحالة", "Status")}</th><th>${t("الاستجابة", "Response")}</th><th>${t("الوقت", "Reported")}</th></tr></thead><tbody>${incRows || `<tr><td colspan="6" style="text-align:center;color:#94a3b8">—</td></tr>`}</tbody></table>
+
+  <h2>${t("المواقع الصناعية", "Industrial Sites")}</h2>
+  <table><thead><tr><th>Code</th><th>${t("الاسم", "Name")}</th><th>${t("الحساسية", "Sensitivity")}</th><th>${t("الحالة", "Status")}</th><th>${t("الحراس", "Guards")}</th></tr></thead><tbody>${siteRows}</tbody></table>
+
+  <h2>${t("الدوريات الميدانية", "Field Patrols")}</h2>
+  <table><thead><tr><th>Ref</th><th>${t("الفريق", "Team")}</th><th>${t("المسار", "Route")}</th><th>${t("الحالة", "Status")}</th><th>${t("النقاط", "Checkpoints")}</th></tr></thead><tbody>${patrolRows || `<tr><td colspan="5" style="text-align:center;color:#94a3b8">—</td></tr>`}</tbody></table>
+
+  <h2>${t("تنبيهات الكاميرات الذكية", "Smart CCTV Alerts")}</h2>
+  <table><thead><tr><th>Ref</th><th>${t("الكاميرا", "Camera")}</th><th>${t("النوع", "Type")}</th><th>${t("الثقة", "Confidence")}</th><th>${t("الحالة", "Status")}</th></tr></thead><tbody>${cctvRows || `<tr><td colspan="5" style="text-align:center;color:#94a3b8">—</td></tr>`}</tbody></table>
+
+  <h2>${t("تصاريح العمل", "Work Permits")}</h2>
+  <table><thead><tr><th>Ref</th><th>${t("النوع", "Type")}</th><th>${t("المقاول", "Contractor")}</th><th>${t("الخطورة", "Risk")}</th><th>${t("الحالة", "Status")}</th></tr></thead><tbody>${permitRows || `<tr><td colspan="5" style="text-align:center;color:#94a3b8">—</td></tr>`}</tbody></table>
+
+  <h2>${t("الزوار", "Visitors")}</h2>
+  <table><thead><tr><th>Ref</th><th>${t("الاسم", "Name")}</th><th>${t("الجهة", "Organization")}</th><th>${t("المضيف", "Host")}</th><th>${t("الحالة", "Status")}</th></tr></thead><tbody>${visRows || `<tr><td colspan="5" style="text-align:center;color:#94a3b8">—</td></tr>`}</tbody></table>
+
+  <h2>${t("المقاولون والامتثال", "Contractors & Compliance")}</h2>
+  <table><thead><tr><th>${t("الاسم", "Name")}</th><th>${t("العمال", "Workers")}</th><th>${t("الامتثال", "Compliance")}</th><th>${t("الحالة", "Status")}</th></tr></thead><tbody>${contRows || `<tr><td colspan="4" style="text-align:center;color:#94a3b8">—</td></tr>`}</tbody></table>
+
+  <div class="footer">
+    <div>NEXIOS AI OS · ${t("تم التوليد بواسطة ARIA Executive Brain", "Generated by ARIA Executive Brain")}</div>
+    <div>${esc(now)}</div>
+  </div>
+</body></html>`;
 }
