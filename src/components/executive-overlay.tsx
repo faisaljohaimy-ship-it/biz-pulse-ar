@@ -41,7 +41,11 @@ import {
   Compass,
   Keyboard,
   ChevronLeft,
+  MicOff,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
+import { useAriaVoice } from "@/lib/aria-voice";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
