@@ -535,13 +535,46 @@ function CommandCenterPage() {
     return Math.round(resolved.reduce((a, b) => a + (b.response_minutes ?? 0), 0) / resolved.length);
   })();
 
+  const kpis = {
+    operationalSites, totalSites: sitesData.length,
+    activeIncidents: activeIncidents.length, criticalCount,
+    newCctv, activePatrols, visitorsInside, activePermits, avgResponse,
+  };
+
+  const reportHtml = useMemo(() => buildReportHTML({
+    ar, kpis, sites: sitesData, incidents: incData, cctv: cctvData,
+    patrols: patrols.data ?? [], permits: permits.data ?? [],
+    visitors: visitors.data ?? [], contractors: contractors.data ?? [],
+  }), [ar, kpis, sitesData, incData, cctvData, patrols.data, permits.data, visitors.data, contractors.data]);
+
+  const handleExportPdf = () => {
+    const w = window.open("", "_blank", "noopener,noreferrer,width=1100,height=900");
+    if (!w) { toast.error(ar ? "افتح النوافذ المنبثقة" : "Allow pop-ups"); return; }
+    w.document.open();
+    w.document.write(reportHtml);
+    w.document.close();
+    setTimeout(() => { try { w.focus(); w.print(); } catch {} }, 500);
+  };
+
+  const [mailOpen, setMailOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
+
   return (
     <NexusPage
       eyebrow="UNIFIED COMMAND CENTER"
       title={ar ? "غرفة القيادة الموحدة — الأمن الصناعي" : "Unified Command Center — Industrial Security"}
       subtitle={ar ? "رؤية تشغيلية حية عبر 8 مواقع، 40+ كاميرا ذكية، 6 دوريات، و7 مقاولين." : "Live operational view across 8 sites, 40+ smart cameras, 6 patrols, and 7 contractors."}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={handleExportPdf} className="inline-flex items-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/25 transition">
+            <FileDown className="h-3.5 w-3.5" /> {ar ? "تصدير PDF" : "Export PDF"}
+          </button>
+          <button onClick={() => setMailOpen(true)} className="inline-flex items-center gap-1.5 rounded-md border border-violet-400/40 bg-violet-500/15 px-2.5 py-1 text-xs font-semibold text-violet-100 hover:bg-violet-500/25 transition">
+            <Mail className="h-3.5 w-3.5" /> {ar ? "إرسال للقيادة" : "Email Leadership"}
+          </button>
+          <button onClick={() => setInboxOpen(v => !v)} className="inline-flex items-center gap-1.5 rounded-md border border-slate-500/40 bg-slate-700/30 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700/50 transition">
+            <Inbox className="h-3.5 w-3.5" /> {ar ? "البريد الوارد" : "Inbox"}
+          </button>
           <NexusPill tone="cyan"><Activity className="h-3 w-3" /> REALTIME</NexusPill>
           <NexusPill tone={criticalCount > 0 ? "rose" : "emerald"}>
             <Shield className="h-3 w-3" /> {criticalCount > 0 ? `${criticalCount} CRITICAL` : "STABLE"}
