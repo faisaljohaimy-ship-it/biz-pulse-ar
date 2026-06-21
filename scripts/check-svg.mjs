@@ -33,6 +33,8 @@ function walk(dir) {
       if (entry === "node_modules" || entry.startsWith(".")) continue;
       walk(full);
     } else if (EXTS.has(extname(entry))) {
+      // Skip the sanitizer itself (contains the literal string in a warning).
+      if (full.endsWith("svg-safe.ts")) continue;
       const text = readFileSync(full, "utf8");
       const re = /preserveAspectRatio\s*=\s*["'`]([^"'`]+)["'`]/g;
       let m;
