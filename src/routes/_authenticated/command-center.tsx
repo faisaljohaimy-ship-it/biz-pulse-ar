@@ -120,18 +120,15 @@ function useSecOps() {
     (rows ?? []).filter(r => r.site_id && westIds.has(r.site_id));
 
   return {
-    sites: { ...sites, data: westSites },
-    incidents: { ...incidents, data: byWest(incidents.data as any) },
-    patrols: { ...patrols, data: byWest(patrols.data as any) },
-    permits: { ...permits, data: byWest(permits.data as any) },
-    visitors: { ...visitors, data: byWest(visitors.data as any) },
-    contractors: { ...contractors, data: byWest(contractors.data as any) },
-    cctv: { ...cctv, data: byWest(cctv.data as any) },
-    assets: { ...assets, data: byWest(assets.data as any) },
-  } as ReturnType<typeof rawReturn>;
-}
-function rawReturn() {
-  return { sites: null as any, incidents: null as any, patrols: null as any, permits: null as any, visitors: null as any, contractors: null as any, cctv: null as any, assets: null as any };
+    sites: { ...sites, data: westSites as Site[] },
+    incidents: { ...incidents, data: byWest((incidents.data ?? []) as Incident[]) as Incident[] },
+    patrols: { ...patrols, data: byWest((patrols.data ?? []) as Patrol[]) as Patrol[] },
+    permits: { ...permits, data: byWest((permits.data ?? []) as Permit[]) as Permit[] },
+    visitors: { ...visitors, data: byWest((visitors.data ?? []) as Visitor[]) as Visitor[] },
+    contractors: { ...contractors, data: byWest((contractors.data ?? []) as Contractor[]) as Contractor[] },
+    cctv: { ...cctv, data: byWest((cctv.data ?? []) as CctvAlert[]) as CctvAlert[] },
+    assets: { ...assets, data: byWest((assets.data ?? []) as Asset[]) as Asset[] },
+  };
 }
 
 /* ────────────────── Visual helpers ────────────────── */
