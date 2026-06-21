@@ -54,6 +54,7 @@ type CctvAlert = {
   alert_type: string; confidence: number;
   status: "new"|"triaged"|"dispatched"|"resolved"|"false_positive";
   detected_at: string;
+  acknowledged_by: string|null;
 };
 type Asset = {
   id: string; code: string; name_ar: string; name_en: string; kind: string;

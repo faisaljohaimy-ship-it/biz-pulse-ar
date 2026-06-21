@@ -69,6 +69,7 @@ import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCrisisRouteImport } from './routes/_authenticated/crisis'
+import { Route as AuthenticatedCommandCenterRouteImport } from './routes/_authenticated/command-center'
 import { Route as AuthenticatedCockpitRouteImport } from './routes/_authenticated/cockpit'
 import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authenticated/chief-of-staff'
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
@@ -388,6 +389,12 @@ const AuthenticatedCrisisRoute = AuthenticatedCrisisRouteImport.update({
   path: '/crisis',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCommandCenterRoute =
+  AuthenticatedCommandCenterRouteImport.update({
+    id: '/command-center',
+    path: '/command-center',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCockpitRoute = AuthenticatedCockpitRouteImport.update({
   id: '/cockpit',
   path: '/cockpit',
@@ -484,6 +491,7 @@ export interface FileRoutesByFullPath {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
+  '/command-center': typeof AuthenticatedCommandCenterRoute
   '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
@@ -556,6 +564,7 @@ export interface FileRoutesByTo {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
+  '/command-center': typeof AuthenticatedCommandCenterRoute
   '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
@@ -630,6 +639,7 @@ export interface FileRoutesById {
   '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
   '/_authenticated/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/_authenticated/cockpit': typeof AuthenticatedCockpitRoute
+  '/_authenticated/command-center': typeof AuthenticatedCommandCenterRoute
   '/_authenticated/crisis': typeof AuthenticatedCrisisRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
@@ -704,6 +714,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
+    | '/command-center'
     | '/crisis'
     | '/dashboard'
     | '/decisions'
@@ -776,6 +787,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
+    | '/command-center'
     | '/crisis'
     | '/dashboard'
     | '/decisions'
@@ -849,6 +861,7 @@ export interface FileRouteTypes {
     | '/_authenticated/briefing'
     | '/_authenticated/chief-of-staff'
     | '/_authenticated/cockpit'
+    | '/_authenticated/command-center'
     | '/_authenticated/crisis'
     | '/_authenticated/dashboard'
     | '/_authenticated/decisions'
@@ -1341,6 +1354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCrisisRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/command-center': {
+      id: '/_authenticated/command-center'
+      path: '/command-center'
+      fullPath: '/command-center'
+      preLoaderRoute: typeof AuthenticatedCommandCenterRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cockpit': {
       id: '/_authenticated/cockpit'
       path: '/cockpit'
@@ -1431,6 +1451,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
   AuthenticatedChiefOfStaffRoute: typeof AuthenticatedChiefOfStaffRoute
   AuthenticatedCockpitRoute: typeof AuthenticatedCockpitRoute
+  AuthenticatedCommandCenterRoute: typeof AuthenticatedCommandCenterRoute
   AuthenticatedCrisisRoute: typeof AuthenticatedCrisisRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
@@ -1474,6 +1495,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
   AuthenticatedChiefOfStaffRoute: AuthenticatedChiefOfStaffRoute,
   AuthenticatedCockpitRoute: AuthenticatedCockpitRoute,
+  AuthenticatedCommandCenterRoute: AuthenticatedCommandCenterRoute,
   AuthenticatedCrisisRoute: AuthenticatedCrisisRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
