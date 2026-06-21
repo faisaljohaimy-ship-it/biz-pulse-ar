@@ -317,14 +317,26 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="absolute end-3 top-3 rounded-lg p-1 text-slate-300 hover:bg-white/10">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+          <div className="absolute end-3 top-3 flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                const next = !voiceMode;
+                setVoiceMode(next);
+                if (!next) voice.stopSpeaking();
+              }}
+              title={voiceMode ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تشغيل الصوت" : "Unmute")}
+              className={cn(
+                "rounded-lg p-1.5 transition",
+                voiceMode ? "bg-cyan-400/15 text-cyan-200 hover:bg-cyan-400/25" : "text-slate-400 hover:bg-white/10",
+              )}
+            >
+              {voiceMode ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            </button>
+            <button onClick={onClose} className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
 
-        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
-          {messages.length === 0 && (
-            <div className="space-y-3">
               <p className="text-sm text-slate-300">
                 {ar
                   ? `مرحباً. الصحة العامة ${pulse.health}، الحالة "${pulse.status === "healthy" ? "صحية" : pulse.status === "warning" ? "تحذير" : "حرجة"}". اسألني عن أي مؤشر أو خطر أو فرصة.`
