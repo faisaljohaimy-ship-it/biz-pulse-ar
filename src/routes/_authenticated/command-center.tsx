@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Shield, Radio, AlertOctagon, Activity, MapPin, Camera, FileCheck2,
   UserCheck, HardHat, Cpu, Radar, Sparkles, Flame, ShieldAlert, Eye,
-  FileDown, Mail, Inbox, Loader2, X, MessageSquare, Send, Cloud, Link2, Copy,
+  FileDown, Mail, Inbox, Loader2, X, MessageSquare, Send, Cloud,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
