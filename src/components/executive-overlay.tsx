@@ -335,7 +335,10 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
             <button onClick={onClose} className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
               <X className="h-4 w-4" />
             </button>
+          </div>
         </div>
+
+
 
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 && (
