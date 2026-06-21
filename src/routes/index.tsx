@@ -50,7 +50,7 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: DOMAIN_URL },
-      { rel: "preload", as: "image", href: cinematicCity, fetchpriority: "high" } as { rel: string; as: string; href: string; fetchpriority: string },
+      { rel: "preload", as: "image", href: cinematicCity, fetchPriority: "high" } as { rel: string; as: string; href: string; fetchPriority: string },
     ],
     scripts: [
       {
