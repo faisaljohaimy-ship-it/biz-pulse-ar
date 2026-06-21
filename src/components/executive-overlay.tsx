@@ -298,10 +298,7 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
             maskImage: "radial-gradient(ellipse at center,black,transparent 80%)",
           }}/>
           <div className="absolute start-5 bottom-3 flex items-center gap-3">
-            <div className="relative h-12 w-12">
-              <span className="absolute inset-[-6px] rounded-full bg-cyan-400/40 blur-xl animate-pulse" />
-              <span className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700" />
-            </div>
+            <AriaOrb size={52} state={voice.listening ? "listening" : voice.speaking ? "speaking" : isLoading ? "thinking" : "idle"} />
             <div>
               <div className="text-sm font-bold text-white">ARIA</div>
               <div className="text-[10px] tracking-[0.25em] text-cyan-200/90">
