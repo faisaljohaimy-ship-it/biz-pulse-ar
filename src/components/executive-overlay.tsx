@@ -290,7 +290,18 @@ function AvatarConsole({ open, onClose }: { open: boolean; onClose: () => void }
       voice.stopSpeaking();
     }
   }, [open, voice]);
-
+  // Cinematic greeting once when console first opens
+  const greetedRef = useRef(false);
+  useEffect(() => {
+    if (!open || greetedRef.current) return;
+    if (!voiceMode) { greetedRef.current = true; return; }
+    greetedRef.current = true;
+    const greet = ar
+      ? "أهلاً قائد، أنا أريا. جاهزة للإحاطة، اسأل أو تحدث وسأتولى الأمر."
+      : "Welcome, commander. I'm ARIA — your copilot. Ask anything or just speak, I'm listening.";
+    const t = setTimeout(() => voice.speak(greet), 350);
+    return () => clearTimeout(t);
+  }, [open, voiceMode, voice, ar]);
 
   if (!open) return null;
 
