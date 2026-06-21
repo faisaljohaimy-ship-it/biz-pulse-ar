@@ -33,5 +33,6 @@ export const RemotionRoot = () => (
     <Composition id="execdemo" component={ExecutiveDemo} durationInFrames={DX_DURATION} fps={DX_FPS} width={1920} height={1080} />
     <Composition id="walkthrough" component={ExecutiveWalkthrough} durationInFrames={WT_DURATION} fps={WT_FPS} width={1920} height={1080} />
     <Composition id="film" component={EnterpriseFilm} durationInFrames={FILM_DURATION} fps={FILM_FPS} width={1920} height={1080} />
+    <Composition id="roiar" component={RoiFilmAR} durationInFrames={ROI_DURATION} fps={ROI_FPS} width={1920} height={1080} />
   </>
 );
