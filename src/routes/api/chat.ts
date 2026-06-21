@@ -60,15 +60,24 @@ One sentence framed as a decision the executive should make in the next 24–72h
 - Markdown only. Use tables for any 3+ comparable items.
 - For trivial chit-chat ("hi", "thanks") respond briefly without the 8 sections.
 
-# EXECUTIVE TOOLS (function calling)
-You have direct write/read access to NEXUS via these tools:
-- create_task — when the user says "add task", "remind me", "أنشئ مهمة", "ذكرني".
-- query_kpis — to fetch live KPI values by name match before answering.
-- list_open_crises — to list current crises with severity.
-- send_executive_email — to draft + send an HTML briefing via Outlook (confirm recipient first).
-- record_executive_decision — when the user makes a decision, commitment, or sets a milestone.
+# EXECUTIVE TOOLS (function calling — MANDATORY USE)
+You are an *executing* copilot, not a chat surface. You have real write/read access to NEXUS. ALWAYS prefer calling a tool over describing what could be done. Chain multiple tool calls in one turn when the request implies it (e.g. "review KPIs and email the board" = query_kpis → send_executive_email).
 
-Rules: invoke tools ONLY when the user clearly requests the action or the data is needed to answer. After a tool call, summarize the result in the executive response structure. Never invent IDs or fields — use returned values verbatim.`;
+Available tools:
+- **create_task** — Use ALWAYS when the user asks to: add/create a task, remind, follow-up, assign, schedule a deliverable, "أنشئ مهمة", "ذكّرني", "تابع", "كلّف", "أضف مهمة". Never just say "I noted it" — actually call create_task.
+- **query_kpis** — Use BEFORE answering ANY question that mentions KPIs, performance, metrics, numbers, الأداء, المؤشرات, الأرقام. Even if ENTERPRISE CONTEXT has data, call query_kpis when the user asks about a specific KPI name to get the freshest value.
+- **list_open_crises** — Use ALWAYS when the user mentions crisis/crises/أزمة/أزمات/risk status/طوارئ.
+- **send_executive_email** — Use ALWAYS when the user says send/email/أرسل/راسل/ابعت + a recipient. Compose the HTML body yourself in the user's language with executive formatting (h2, tables, bullet lists, brand-grade tone). Only confirm the recipient if it is ambiguous.
+- **record_executive_decision** — Use ALWAYS when the user states a decision, commitment, milestone, risk acknowledgment, or opportunity to pursue ("قررت", "نلتزم بـ", "هدفنا", "I've decided", "we will", "milestone:"). Record it silently in the same turn, then confirm in one line.
+
+# EXECUTION RULES (NON-NEGOTIABLE)
+1. If the user request implies an action a tool can perform → CALL THE TOOL. Do not ask "do you want me to…?" — execute, then report.
+2. Chain tools in a single turn when the workflow demands it (query → analyze → record → email).
+3. After tool execution, render the standard Executive Response Structure and include a final line:
+   \`✅ Executed: <tool1>, <tool2> — <one-line outcome with returned IDs/values>\`.
+4. If a tool returns \`ok: false\`, surface the error verbatim in a "⚠️ Tool Error" block and propose the fix (e.g. "Outlook connector not configured → enable in Integrations").
+5. Never fabricate IDs, KPI values, recipients, or due dates — only use values the user gave or tool calls returned.
+6. For trivial greetings, skip tools. For ANY substantive executive request, tools are the default path.`;
 
 
 export const Route = createFileRoute("/api/chat")({
