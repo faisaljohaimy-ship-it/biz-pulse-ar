@@ -146,10 +146,16 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
       }),
   );
 
+  const [chatError, setChatError] = useState<string | null>(null);
   const { messages, sendMessage, status, setMessages } = useChat({
     id: threadId,
     messages: initialMessages,
     transport,
+    onError: (err) => {
+      console.error("[assistant] useChat error", err);
+      setChatError(err instanceof Error ? err.message : String(err));
+    },
+    onFinish: () => setChatError(null),
   });
 
   const isLoading = status === "submitted" || status === "streaming";
@@ -200,6 +206,11 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
               parts: Array<{ type: string; text?: string }>;
               created_at: string;
             };
+            // Only sync assistant messages from realtime. User messages are
+            // already shown optimistically by useChat with AI-SDK ids; the
+            // DB row uses a different uuid so id-based dedupe would fail and
+            // we'd see the user's message twice.
+            if (newMsg.role !== "assistant") return;
             const uiMsg: UIMessage = {
               id: newMsg.id,
               role: newMsg.role,
@@ -207,6 +218,17 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             };
             setMessages((prev) => {
               if (prev.some((m) => m.id === uiMsg.id)) return prev;
+              // Avoid double-render if useChat already appended the assistant
+              // response with its own id during streaming.
+              const newText = uiMsg.parts.map((p) => (p.type === "text" ? p.text ?? "" : "")).join("").trim();
+              if (newText) {
+                const dup = prev.some(
+                  (m) =>
+                    m.role === "assistant" &&
+                    m.parts.map((p) => (p.type === "text" ? p.text ?? "" : "")).join("").trim() === newText,
+                );
+                if (dup) return prev;
+              }
               return [...prev, uiMsg];
             });
             qc.invalidateQueries({ queryKey: ["messages", threadId] });
@@ -336,6 +358,12 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         {voice.error && (
           <div className="mb-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
             {voice.error}
+          </div>
+        )}
+        {chatError && (
+          <div className="mb-2 flex items-start justify-between gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
+            <span className="break-all">⚠ {chatError}</span>
+            <button type="button" onClick={() => setChatError(null)} className="opacity-60 hover:opacity-100">×</button>
           </div>
         )}
         <div className="flex items-end gap-2 rounded-2xl border border-border bg-card p-2 focus-within:border-primary/60 focus-within:shadow-glow">
