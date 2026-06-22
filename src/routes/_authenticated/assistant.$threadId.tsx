@@ -146,10 +146,16 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
       }),
   );
 
+  const [chatError, setChatError] = useState<string | null>(null);
   const { messages, sendMessage, status, setMessages } = useChat({
     id: threadId,
     messages: initialMessages,
     transport,
+    onError: (err) => {
+      console.error("[assistant] useChat error", err);
+      setChatError(err instanceof Error ? err.message : String(err));
+    },
+    onFinish: () => setChatError(null),
   });
 
   const isLoading = status === "submitted" || status === "streaming";
