@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { z } from "zod";
 import {
+  createLovableAiGatewayProvider,
   createOpenRouterProvider,
   DEFAULT_OPENROUTER_MODEL,
   OPENROUTER_MODELS,
