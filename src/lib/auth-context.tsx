@@ -18,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     installAuthDiagnostics();
+    installAuthTestHarness();
     let active = true;
     const startedAt = Date.now();
     authLog("provider:mount");
