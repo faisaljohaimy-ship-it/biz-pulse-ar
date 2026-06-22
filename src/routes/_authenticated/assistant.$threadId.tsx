@@ -206,6 +206,11 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
               parts: Array<{ type: string; text?: string }>;
               created_at: string;
             };
+            // Only sync assistant messages from realtime. User messages are
+            // already shown optimistically by useChat with AI-SDK ids; the
+            // DB row uses a different uuid so id-based dedupe would fail and
+            // we'd see the user's message twice.
+            if (newMsg.role !== "assistant") return;
             const uiMsg: UIMessage = {
               id: newMsg.id,
               role: newMsg.role,
@@ -213,6 +218,17 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             };
             setMessages((prev) => {
               if (prev.some((m) => m.id === uiMsg.id)) return prev;
+              // Avoid double-render if useChat already appended the assistant
+              // response with its own id during streaming.
+              const newText = uiMsg.parts.map((p) => (p.type === "text" ? p.text ?? "" : "")).join("").trim();
+              if (newText) {
+                const dup = prev.some(
+                  (m) =>
+                    m.role === "assistant" &&
+                    m.parts.map((p) => (p.type === "text" ? p.text ?? "" : "")).join("").trim() === newText,
+                );
+                if (dup) return prev;
+              }
               return [...prev, uiMsg];
             });
             qc.invalidateQueries({ queryKey: ["messages", threadId] });
