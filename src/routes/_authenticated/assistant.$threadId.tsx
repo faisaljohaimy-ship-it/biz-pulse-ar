@@ -360,6 +360,12 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             {voice.error}
           </div>
         )}
+        {chatError && (
+          <div className="mb-2 flex items-start justify-between gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
+            <span className="break-all">⚠ {chatError}</span>
+            <button type="button" onClick={() => setChatError(null)} className="opacity-60 hover:opacity-100">×</button>
+          </div>
+        )}
         <div className="flex items-end gap-2 rounded-2xl border border-border bg-card p-2 focus-within:border-primary/60 focus-within:shadow-glow">
           <Button
             type="button"
