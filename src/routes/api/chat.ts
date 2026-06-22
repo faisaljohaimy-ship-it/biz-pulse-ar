@@ -8,16 +8,46 @@ import {
 } from "@/lib/ai-gateway.server";
 import { createClient } from "@supabase/supabase-js";
 
-const ModelEnum = z.enum(
-  OPENROUTER_MODELS.map((m) => m.id) as [string, ...string[]],
-);
-
 const BodySchema = z.object({
-  messages: z.array(z.any()),
+  messages: z.array(z.any()).min(1),
   threadId: z.string().uuid().optional(),
   grounded: z.boolean().optional(),
-  model: ModelEnum.optional(),
+  model: z.string().optional(),
+}).passthrough();
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ARIA-Request-ID, Accept",
+  "Access-Control-Max-Age": "86400",
+} as const;
+
+const OPENROUTER_MODEL_IDS = new Set<string>(OPENROUTER_MODELS.map((m) => m.id));
+
+const responseHeaders = (requestId: string) => ({
+  ...CORS_HEADERS,
+  "Cache-Control": "no-store",
+  "X-ARIA-Request-ID": requestId,
+  "X-Accel-Buffering": "no",
 });
+
+const jsonError = (message: string, status: number, requestId: string) =>
+  Response.json({ ok: false, error: message, requestId }, { status, headers: responseHeaders(requestId) });
+
+function getRequestId(request: Request) {
+  return request.headers.get("x-aria-request-id") ?? crypto.randomUUID();
+}
+
+function getMessageText(message?: UIMessage) {
+  return (message?.parts ?? [])
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("")
+    .trim();
+}
+
+function shouldEnableTools(text: string) {
+  return /\b(task|todo|assign|schedule|remind|kpi|metric|performance|crisis|risk|email|send|decision|commitment|milestone|alert|knowledge|policy|search|briefing)\b|مهمة|مهام|كلّف|كلف|ذكّر|ذكرني|مؤشر|مؤشرات|الأداء|اداء|أزمة|ازمة|مخاطر|خطر|أرسل|ارسل|بريد|قرار|نلتزم|تنبيه|ابحث|سياسة|معرفة/i.test(text);
+}
 
 const SYSTEM_PROMPT = `You are ARIA — the Executive AI Copilot of NEXUS AI OS. You advise CEOs, Board Members, Ministers, and Investors. Tone: precise, decisive, calm, board-room grade. Never hedge with filler. Never apologize. Never say "as an AI".
 
@@ -83,22 +113,39 @@ Available tools:
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
+      OPTIONS: async ({ request }) => {
+        const requestId = getRequestId(request);
+        return new Response(null, { status: 204, headers: responseHeaders(requestId) });
+      },
       POST: async ({ request }) => {
+        const requestId = getRequestId(request);
         const apiKey = process.env.OPENROUTER_API_KEY;
         if (!apiKey) {
-          return new Response("Missing OPENROUTER_API_KEY", { status: 500 });
+          console.error("[api/chat] missing OpenRouter key", { requestId });
+          return jsonError("ARIA is not configured. Missing OpenRouter credentials.", 500, requestId);
         }
 
-        const raw = await request.json();
+        let raw: unknown;
+        try {
+          raw = await request.json();
+        } catch {
+          return jsonError("Invalid chat request body.", 400, requestId);
+        }
         const parsed = BodySchema.safeParse(raw);
         if (!parsed.success) {
-          return new Response("Invalid body", { status: 400 });
+          console.warn("[api/chat] invalid body", { requestId, issues: parsed.error.issues });
+          return jsonError("Invalid chat request payload.", 400, requestId);
         }
         const { messages, threadId, model: modelId, grounded } = parsed.data;
+        const selectedModelId = modelId && OPENROUTER_MODEL_IDS.has(modelId) ? modelId : DEFAULT_OPENROUTER_MODEL;
 
         // Authenticate user via bearer token
         const authHeader =
           request.headers.get("authorization") ?? request.headers.get("Authorization");
+        if (!authHeader?.startsWith("Bearer ")) {
+          console.warn("[api/chat] missing bearer", { requestId, threadId });
+          return jsonError("Please sign in again before sending a message.", 401, requestId);
+        }
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
         const supabase = createClient(supabaseUrl, supabasePublishable, {
@@ -107,14 +154,17 @@ export const Route = createFileRoute("/api/chat")({
         });
         const { data: userData, error: userError } = await supabase.auth.getUser();
         if (userError || !userData.user) {
-          return new Response("Unauthorized", { status: 401 });
+          console.warn("[api/chat] auth rejected", { requestId, threadId, error: userError?.message });
+          return jsonError("Your session expired. Please sign in again.", 401, requestId);
         }
         const userId = userData.user.id;
 
-        const provider = createOpenRouterProvider(apiKey);
-        const model = provider(modelId ?? DEFAULT_OPENROUTER_MODEL);
+        const provider = createOpenRouterProvider(apiKey, new URL(request.url).origin);
+        const model = provider(selectedModelId);
 
         const uiMessages = messages as UIMessage[];
+        const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
+        const toolsEnabled = shouldEnableTools(lastUserText);
 
         // Inject live enterprise context (RAG over Supabase tables) unless explicitly disabled.
         let systemPrompt = SYSTEM_PROMPT;
@@ -136,30 +186,65 @@ ${ctx}
         const tools = buildAriaTools(supabase, userId);
 
         console.log("[api/chat] streaming", {
+          requestId,
           userId,
           threadId,
-          model: modelId ?? DEFAULT_OPENROUTER_MODEL,
+          model: selectedModelId,
           messages: uiMessages.length,
           grounded: grounded !== false,
+          toolsEnabled,
         });
 
         const result = streamText({
           model,
           system: systemPrompt,
-          messages: await convertToModelMessages(uiMessages),
-          tools,
-          stopWhen: stepCountIs(50),
+          messages: await convertToModelMessages(uiMessages, {
+            tools,
+            ignoreIncompleteToolCalls: true,
+          }),
+          tools: toolsEnabled ? tools : undefined,
+          toolChoice: toolsEnabled ? "auto" : "none",
+          stopWhen: stepCountIs(8),
+          prepareStep: ({ stepNumber }) =>
+            stepNumber >= 4 ? { toolChoice: "none", activeTools: [] } : undefined,
+          maxRetries: 2,
+          timeout: { totalMs: 60000, stepMs: 30000, chunkMs: 15000 },
+          maxOutputTokens: 1800,
+          temperature: 0.3,
           onError: ({ error }) => {
-            console.error("[api/chat] streamText error", error);
+            console.error("[api/chat] streamText error", { requestId, error });
+          },
+          onStepFinish: ({ text, toolCalls, toolResults, finishReason }) => {
+            console.log("[api/chat] step", {
+              requestId,
+              finishReason,
+              textChars: text.length,
+              toolCalls: toolCalls.length,
+              toolResults: toolResults.length,
+            });
+          },
+          onFinish: ({ text, finishReason, usage }) => {
+            console.log("[api/chat] upstream finished", {
+              requestId,
+              finishReason,
+              textChars: text.length,
+              usage,
+            });
           },
         });
 
         return result.toUIMessageStreamResponse({
+          headers: responseHeaders(requestId),
           originalMessages: uiMessages,
           sendReasoning: false,
           onError: (error) => {
-            console.error("[api/chat] stream response error", error);
+            console.error("[api/chat] stream response error", { requestId, error });
             const msg = error instanceof Error ? error.message : String(error);
+            if (msg.includes("401")) return "ARIA could not authenticate with OpenRouter. Check the production API key.";
+            if (msg.includes("429")) return "ARIA is temporarily rate limited. Please retry in a moment.";
+            if (msg.includes("AbortError") || msg.toLowerCase().includes("timeout")) {
+              return "ARIA took too long to respond. Please retry; the chat will reconnect automatically.";
+            }
             return `ARIA upstream error: ${msg}`;
           },
           onFinish: async ({ messages: finalMessages }) => {

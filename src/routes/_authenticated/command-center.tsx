@@ -107,8 +107,9 @@ function useSecOps() {
 
   // Realtime: incidents + cctv + patrols
   useEffect(() => {
+    const topic = `command-center-live:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel("command-center-live")
+      .channel(topic)
       .on("postgres_changes", { event: "*", schema: "public", table: "sec_incidents" }, () => incidents.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "sec_cctv_alerts" }, () => cctv.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "sec_patrols" }, () => patrols.refetch())

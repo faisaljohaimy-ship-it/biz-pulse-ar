@@ -10,11 +10,17 @@ import { Presentation, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "l
 const boardroomQuery = queryOptions({
   queryKey: ["fabric-snapshot"],
   queryFn: () => getFabricSnapshot(),
+  staleTime: 60_000,
   refetchInterval: 30_000,
 });
 
 export const Route = createFileRoute("/_authenticated/boardroom")({
   loader: ({ context }) => context.queryClient.ensureQueryData(boardroomQuery),
+  pendingComponent: () => (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  ),
   component: BoardroomPage,
   errorComponent: ({ error }) => (
     <div className="p-8 text-rose-300" role="alert">Boardroom error: {error.message}</div>

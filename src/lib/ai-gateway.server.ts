@@ -11,14 +11,17 @@ export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
     },
   });
 
-export const createOpenRouterProvider = (apiKey: string) =>
+export const createOpenRouterProvider = (
+  apiKey: string,
+  siteUrl = "https://biz-pulse-ar.lovable.app",
+) =>
   createOpenAICompatible({
     name: "openrouter",
     baseURL: "https://openrouter.ai/api/v1",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://lovable.dev",
-      "X-Title": "Nexus AI OS",
+      "HTTP-Referer": siteUrl,
+      "X-Title": "NEXUS AI OS — ARIA",
     },
   });
 

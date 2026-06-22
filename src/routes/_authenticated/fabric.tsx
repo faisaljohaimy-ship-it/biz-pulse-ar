@@ -30,11 +30,17 @@ import {
 const fabricQuery = queryOptions({
   queryKey: ["fabric-snapshot"],
   queryFn: () => getFabricSnapshot(),
+  staleTime: 60_000,
   refetchInterval: 30_000,
 });
 
 export const Route = createFileRoute("/_authenticated/fabric")({
   loader: ({ context }) => context.queryClient.ensureQueryData(fabricQuery),
+  pendingComponent: () => (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  ),
   component: FabricPage,
   errorComponent: ({ error }) => (
     <div className="p-8 text-rose-300" role="alert">Fabric error: {error.message}</div>
