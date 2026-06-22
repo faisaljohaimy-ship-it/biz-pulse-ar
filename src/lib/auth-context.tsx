@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { authLog, installAuthDiagnostics } from "@/lib/auth-diagnostics";
+import { installAuthTestHarness } from "@/lib/auth-test-harness";
 
 type AuthCtx = {
   user: User | null;
