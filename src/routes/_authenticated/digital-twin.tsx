@@ -143,10 +143,11 @@ function DigitalTwinPage() {
 
   /* Positions: project each node onto an elliptical orbit */
   const positions = useMemo(() => {
+    const compact = typeof window !== "undefined" && window.innerWidth < 640;
     const rings = [
-      { rx: 18, ry: 11, speed: 0.10 }, // inner
-      { rx: 32, ry: 19, speed: 0.06 }, // mid
-      { rx: 44, ry: 26, speed: 0.04 }, // outer
+      { rx: compact ? 14 : 18, ry: compact ? 9 : 11, speed: 0.10 },
+      { rx: compact ? 25 : 32, ry: compact ? 15 : 19, speed: 0.06 },
+      { rx: compact ? 34 : 44, ry: compact ? 21 : 26, speed: 0.04 },
     ];
     return NODES.map((n) => {
       const r = rings[n.ring];
@@ -155,7 +156,12 @@ function DigitalTwinPage() {
       const y = 50 + Math.sin(a) * r.ry;
       // depth from y component for parallax shading
       const depth = (Math.sin(a) + 1) / 2; // 0..1 (front→back)
-      return { id: n.id, x, y, depth };
+      return {
+        id: n.id,
+        x: compact ? Math.min(82, Math.max(18, x)) : x,
+        y: compact ? Math.min(78, Math.max(24, y)) : y,
+        depth,
+      };
     });
   }, [t]);
 
@@ -177,7 +183,7 @@ function DigitalTwinPage() {
     <div
       ref={sceneRef}
       onMouseMove={onMouseMove}
-      className="relative h-[calc(100dvh-3.5rem)] min-h-[640px] w-full overflow-hidden rounded-2xl border border-white/5 bg-[#02030a] text-slate-100"
+      className="relative h-[calc(100dvh-3.5rem)] min-h-[640px] w-full overflow-hidden bg-[#02030a] text-slate-100 md:h-screen"
       style={{
         background:
           "radial-gradient(ellipse at 50% 35%, #0b2046 0%, #050816 55%, #02030a 100%)",
@@ -413,7 +419,7 @@ function DigitalTwinPage() {
       </button>
 
       {/* ARIA dock */}
-      <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} />
+        <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} threadId={signals?.generatedAt ?? "digital-twin"} />
 
       {/* Keyframes */}
       <style>{`
@@ -547,6 +553,7 @@ function AriaDock({
   signals,
   pulseHealth,
   pulseStatus,
+  threadId,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -554,6 +561,7 @@ function AriaDock({
   signals: TwinSignals | undefined;
   pulseHealth: number;
   pulseStatus: string;
+  threadId: string;
 }) {
   const navigate = useNavigate();
   const [input, setInput] = useState("");
@@ -567,16 +575,18 @@ function AriaDock({
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
+        body: () => ({ threadId: undefined, model: "google/gemini-3-flash-preview", agent: "digital_twin", twinSessionId: threadId }),
         fetch: async (url, init) => {
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
           const headers = new Headers(init?.headers);
+          headers.set("X-ARIA-Request-ID", `twin-${Date.now().toString(36)}`);
           if (token) headers.set("Authorization", `Bearer ${token}`);
           return fetch(url, { ...init, headers });
         },
       }),
   );
-  const { messages, sendMessage, status } = useChat({ id: "aria-digital-twin", transport });
+  const { messages, sendMessage, status, error } = useChat({ id: "aria-digital-twin", transport });
   const isLoading = status === "submitted" || status === "streaming";
 
   // Voice command routing — intercept navigation intents before sending to LLM
@@ -706,6 +716,11 @@ function AriaDock({
             )}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="inline-block rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200">…</div>
+            )}
+            {error && (
+              <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">
+                {ar ? "تعذّر رد ARIA: " : "ARIA error: "}{error.message}
+              </div>
             )}
             {voice.error && (
               <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">

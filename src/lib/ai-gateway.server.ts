@@ -11,6 +11,15 @@ export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
     },
   });
 
+export const LOVABLE_MODELS = [
+  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash" },
+  { id: "google/gemini-3-pro-preview", label: "Gemini 3 Pro" },
+  { id: "openai/gpt-5-mini", label: "GPT-5 mini" },
+  { id: "openai/gpt-5", label: "GPT-5" },
+] as const;
+
+export const DEFAULT_LOVABLE_MODEL = "google/gemini-3-flash-preview";
+
 export const createOpenRouterProvider = (
   apiKey: string,
   siteUrl = "https://biz-pulse-ar.lovable.app",
