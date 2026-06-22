@@ -217,13 +217,11 @@ ${ctx}
           }),
           tools: toolsEnabled ? tools : undefined,
           toolChoice: toolsEnabled ? "auto" : "none",
-          stopWhen: stepCountIs(50),
-          prepareStep: ({ stepNumber }) =>
-            stepNumber >= 6 ? { toolChoice: "none", activeTools: [] } : undefined,
+          stopWhen: stepCountIs(8),
           maxRetries: 2,
-          timeout: { totalMs: 90000, stepMs: 30000, chunkMs: 15000 },
-          maxOutputTokens: 1800,
+          maxOutputTokens: 2000,
           temperature: 0.3,
+
           onError: ({ error }) => {
             console.error("[api/chat] streamText error", { requestId, error });
           },
