@@ -45,7 +45,7 @@ export const getFabricSnapshot = createServerFn({ method: "GET" })
         .from("intelligence_events")
         .select("id,kind,status,impact,progress,due_at,last_update,created_at,title,title_en,owner,department,decision_route")
         .order("last_update", { ascending: false })
-        .limit(500),
+        .limit(200),
       supabase
         .from("intelligence_alerts")
         .select("id,severity,title,title_en,owner,route,source,business_impact_score,resolved_at,created_at")
@@ -54,7 +54,7 @@ export const getFabricSnapshot = createServerFn({ method: "GET" })
       supabase
         .from("tasks")
         .select("status,created_at,updated_at")
-        .limit(1000),
+        .limit(200),
     ]);
 
     const eventRows = events.data ?? [];

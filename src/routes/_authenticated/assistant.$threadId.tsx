@@ -99,6 +99,10 @@ function AssistantThread() {
       <div className="flex min-w-0 flex-1 flex-col">
         {messagesQ.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">...</div>
+        ) : messagesQ.error ? (
+          <div className="flex flex-1 items-center justify-center p-6 text-sm text-destructive" role="alert">
+            {messagesQ.error instanceof Error ? messagesQ.error.message : "ARIA messages could not load."}
+          </div>
         ) : (
           <ChatWindow key={threadId} threadId={threadId} initialMessages={(messagesQ.data ?? []) as unknown as UIMessage[]} />
         )}
@@ -115,6 +119,11 @@ const MODELS = [
   { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet" },
   { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
 ];
+
+const makeRequestId = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `aria-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
 function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMessages: UIMessage[] }) {
   const { t, locale } = useI18n();
@@ -137,17 +146,53 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         api: "/api/chat",
         body: () => ({ threadId, model: modelRef.current }),
         fetch: async (url, init) => {
+          const requestId = makeRequestId();
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
           const headers = new Headers(init?.headers);
+          headers.set("X-ARIA-Request-ID", requestId);
           if (token) headers.set("Authorization", `Bearer ${token}`);
-          return fetch(url, { ...init, headers });
+          const started = performance.now();
+          console.info("[assistant] request:start", { requestId, threadId, model: modelRef.current });
+          for (let attempt = 1; attempt <= 2; attempt += 1) {
+            try {
+              const res = await fetch(url, { ...init, headers });
+              console.info("[assistant] request:response", {
+                requestId,
+                attempt,
+                status: res.status,
+                ok: res.ok,
+                ms: Math.round(performance.now() - started),
+              });
+              if (!res.ok) {
+                const cloned = res.clone();
+                try {
+                  const payload = await cloned.json() as { error?: string; requestId?: string };
+                  if (payload.error) {
+                    return new Response(`${payload.error}${payload.requestId ? ` · ${payload.requestId}` : ""}`, {
+                      status: res.status,
+                      statusText: res.statusText,
+                      headers: res.headers,
+                    });
+                  }
+                } catch {
+                  // Fall back to the original response body below.
+                }
+              }
+              if (res.status >= 500 && attempt === 1) continue;
+              return res;
+            } catch (error) {
+              console.warn("[assistant] request:network-error", { requestId, attempt, error });
+              if (attempt === 2) throw error;
+            }
+          }
+          throw new Error("ARIA network request failed");
         },
       }),
   );
 
   const [chatError, setChatError] = useState<string | null>(null);
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const { messages, sendMessage, status, setMessages, regenerate, clearError } = useChat({
     id: threadId,
     messages: initialMessages,
     transport,
@@ -155,10 +200,29 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
       console.error("[assistant] useChat error", err);
       setChatError(err instanceof Error ? err.message : String(err));
     },
-    onFinish: () => setChatError(null),
+    onFinish: ({ message, isError, finishReason }) => {
+      console.info("[assistant] finish", { threadId, isError, finishReason, parts: message.parts.length });
+      if (!isError) setChatError(null);
+    },
   });
 
   const isLoading = status === "submitted" || status === "streaming";
+  const lastUserTextRef = useRef<string>("");
+
+  useEffect(() => {
+    const reconnect = () => {
+      if (status === "error") {
+        clearError();
+        void regenerate().catch((err) => console.warn("[assistant] reconnect retry failed", err));
+      }
+    };
+    window.addEventListener("online", reconnect);
+    document.addEventListener("visibilitychange", reconnect);
+    return () => {
+      window.removeEventListener("online", reconnect);
+      document.removeEventListener("visibilitychange", reconnect);
+    };
+  }, [status, clearError, regenerate]);
 
   // Voice I/O — ElevenLabs STT (auto-detect AR/EN) + TTS playback
   const voice = useAriaVoice({
@@ -254,8 +318,14 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     const text = input.trim();
+    lastUserTextRef.current = text;
     setInput("");
-    await sendMessage({ text });
+    try {
+      await sendMessage({ text });
+    } catch (err) {
+      console.error("[assistant] send failed", err);
+      setChatError(err instanceof Error ? err.message : String(err));
+    }
   };
 
   const suggestions = [
@@ -267,7 +337,25 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
 
   const sendSuggestion = async (text: string) => {
     if (isLoading) return;
-    await sendMessage({ text });
+    lastUserTextRef.current = text;
+    try {
+      await sendMessage({ text });
+    } catch (err) {
+      console.error("[assistant] suggestion failed", err);
+      setChatError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const retryLast = async () => {
+    if (isLoading) return;
+    clearError();
+    setChatError(null);
+    try {
+      await regenerate();
+    } catch (err) {
+      console.warn("[assistant] retry regenerate failed", err);
+      if (lastUserTextRef.current) await sendMessage({ text: lastUserTextRef.current });
+    }
   };
 
   return (
@@ -363,7 +451,12 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         {chatError && (
           <div className="mb-2 flex items-start justify-between gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
             <span className="break-all">⚠ {chatError}</span>
-            <button type="button" onClick={() => setChatError(null)} className="opacity-60 hover:opacity-100">×</button>
+            <div className="flex shrink-0 items-center gap-2">
+              <button type="button" onClick={retryLast} className="font-medium underline-offset-2 hover:underline">
+                {locale === "ar" ? "إعادة المحاولة" : "Retry"}
+              </button>
+              <button type="button" onClick={() => setChatError(null)} className="opacity-60 hover:opacity-100">×</button>
+            </div>
           </div>
         )}
         <div className="flex items-end gap-2 rounded-2xl border border-border bg-card p-2 focus-within:border-primary/60 focus-within:shadow-glow">
