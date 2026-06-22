@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { authLog, installAuthDiagnostics } from "@/lib/auth-diagnostics";
+import { installAuthTestHarness } from "@/lib/auth-test-harness";
 
 type AuthCtx = {
   user: User | null;
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     installAuthDiagnostics();
+    installAuthTestHarness();
     let active = true;
     const startedAt = Date.now();
     authLog("provider:mount");
