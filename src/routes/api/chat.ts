@@ -135,16 +135,33 @@ ${ctx}
         const { buildAriaTools } = await import("@/lib/aria-tools.server");
         const tools = buildAriaTools(supabase, userId);
 
+        console.log("[api/chat] streaming", {
+          userId,
+          threadId,
+          model: modelId ?? DEFAULT_OPENROUTER_MODEL,
+          messages: uiMessages.length,
+          grounded: grounded !== false,
+        });
+
         const result = streamText({
           model,
           system: systemPrompt,
           messages: await convertToModelMessages(uiMessages),
           tools,
           stopWhen: stepCountIs(50),
+          onError: ({ error }) => {
+            console.error("[api/chat] streamText error", error);
+          },
         });
 
         return result.toUIMessageStreamResponse({
           originalMessages: uiMessages,
+          sendReasoning: false,
+          onError: (error) => {
+            console.error("[api/chat] stream response error", error);
+            const msg = error instanceof Error ? error.message : String(error);
+            return `ARIA upstream error: ${msg}`;
+          },
           onFinish: async ({ messages: finalMessages }) => {
             if (!threadId) return;
             try {
