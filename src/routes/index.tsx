@@ -78,8 +78,15 @@ function CinematicHome() {
   const navigate = useNavigate();
   const ensureDemo = useServerFn(ensureDemoUser);
   const [demoLoading, setDemoLoading] = useState(false);
+  const [forcePublicHome, setForcePublicHome] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading) return;
+    const timer = window.setTimeout(() => setForcePublicHome(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [loading]);
+
+  if (loading && !forcePublicHome) {
     return (
       <div className="flex min-h-[100svh] items-center justify-center bg-[#04060d]">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
