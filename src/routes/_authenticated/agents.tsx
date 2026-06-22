@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bot, Sparkles, BarChart3, Megaphone, Shield, Code2, FileText, Headphones } from "lucide-react";
+import { Bot, Sparkles, BarChart3, Megaphone, Shield, Code2, FileText, Headphones, Rocket } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section, ModuleCard } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,15 @@ export const Route = createFileRoute("/_authenticated/agents")({
 });
 
 const AGENTS = [
-  { key: "executive", icon: Sparkles, model: "openai/gpt-5", tag: "Strategy" },
-  { key: "analyst", icon: BarChart3, model: "google/gemini-2.5-pro", tag: "Analytics" },
-  { key: "marketer", icon: Megaphone, model: "google/gemini-2.5-flash", tag: "Growth" },
-  { key: "security", icon: Shield, model: "openai/gpt-5-mini", tag: "Security" },
-  { key: "engineer", icon: Code2, model: "openai/gpt-5", tag: "Engineering" },
-  { key: "writer", icon: FileText, model: "google/gemini-2.5-pro", tag: "Content" },
-  { key: "support", icon: Headphones, model: "google/gemini-2.5-flash-lite", tag: "Support" },
-  { key: "research", icon: Bot, model: "openai/gpt-5-mini", tag: "Research" },
+  { key: "executive", icon: Sparkles, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "analyst", icon: BarChart3, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "marketer", icon: Megaphone, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "security", icon: Shield, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "engineer", icon: Code2, model: "GPT-5 mini", tag: "Active" },
+  { key: "writer", icon: FileText, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "support", icon: Headphones, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "research", icon: Bot, model: "Gemini 3 Flash", tag: "Active" },
+  { key: "pilot", icon: Rocket, model: "Gemini 3 Flash", tag: "Pilot" },
 ];
 
 const NAMES: Record<string, { ar: string; en: string; desc_ar: string; desc_en: string }> = {
@@ -28,6 +29,7 @@ const NAMES: Record<string, { ar: string; en: string; desc_ar: string; desc_en: 
   writer: { ar: "كاتب محترف", en: "Professional Writer", desc_ar: "وثائق ومقالات احترافية.", desc_en: "Polished documents and articles." },
   support: { ar: "دعم العملاء", en: "Customer Support", desc_ar: "ردود سريعة ومتعاطفة.", desc_en: "Fast, empathetic responses." },
   research: { ar: "باحث ذكي", en: "Research Agent", desc_ar: "جمع وتلخيص المعلومات.", desc_en: "Aggregate and summarize sources." },
+  pilot: { ar: "وكيل Pilot", en: "Pilot Agent", desc_ar: "تجربة تنفيذية جاهزة لتكوين السيناريوهات وتشغيلها عبر ARIA.", desc_en: "Production pilot orchestration ready for scenario setup through ARIA." },
 };
 
 function AgentsPage() {
@@ -45,6 +47,22 @@ function AgentsPage() {
           </Button>
         }
       />
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 shadow-glow">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm font-semibold">{locale === "ar" ? "Pilot مفعل للإطلاق" : "Pilot is ready to launch"}</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {locale === "ar"
+                ? "استخدم ARIA لتكوين تجربة Pilot، ربط الوكلاء، وفتح التوأم الرقمي كغرفة تشغيل مباشرة."
+                : "Use ARIA to configure a pilot, bind agents, and open the digital twin as a live operating room."}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline"><Link to="/digital-twin">{locale === "ar" ? "افتح التوأم" : "Open Twin"}</Link></Button>
+            <Button asChild><Link to="/assistant">{locale === "ar" ? "كوّن Pilot عبر ARIA" : "Configure Pilot in ARIA"}</Link></Button>
+          </div>
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {AGENTS.map((a) => {
           const n = NAMES[a.key];

@@ -4,7 +4,9 @@ import { z } from "zod";
 import {
   createLovableAiGatewayProvider,
   createOpenRouterProvider,
+  DEFAULT_LOVABLE_MODEL,
   DEFAULT_OPENROUTER_MODEL,
+  LOVABLE_MODELS,
   OPENROUTER_MODELS,
 } from "@/lib/ai-gateway.server";
 import { createClient } from "@supabase/supabase-js";
@@ -24,6 +26,7 @@ const CORS_HEADERS = {
 } as const;
 
 const OPENROUTER_MODEL_IDS = new Set<string>(OPENROUTER_MODELS.map((m) => m.id));
+const LOVABLE_MODEL_IDS = new Set<string>(LOVABLE_MODELS.map((m) => m.id));
 
 const responseHeaders = (requestId: string) => ({
   ...CORS_HEADERS,
@@ -141,7 +144,9 @@ export const Route = createFileRoute("/api/chat")({
           return jsonError("Invalid chat request payload.", 400, requestId);
         }
         const { messages, threadId, model: modelId, grounded } = parsed.data;
-        const selectedModelId = modelId && OPENROUTER_MODEL_IDS.has(modelId) ? modelId : DEFAULT_OPENROUTER_MODEL;
+        const selectedModelId = useLovable
+          ? modelId && LOVABLE_MODEL_IDS.has(modelId) ? modelId : DEFAULT_LOVABLE_MODEL
+          : modelId && OPENROUTER_MODEL_IDS.has(modelId) ? modelId : DEFAULT_OPENROUTER_MODEL;
 
         // Authenticate user via bearer token
         const authHeader =
@@ -212,11 +217,11 @@ ${ctx}
           }),
           tools: toolsEnabled ? tools : undefined,
           toolChoice: toolsEnabled ? "auto" : "none",
-          stopWhen: stepCountIs(8),
+          stopWhen: stepCountIs(50),
           prepareStep: ({ stepNumber }) =>
-            stepNumber >= 4 ? { toolChoice: "none", activeTools: [] } : undefined,
+            stepNumber >= 6 ? { toolChoice: "none", activeTools: [] } : undefined,
           maxRetries: 2,
-          timeout: { totalMs: 60000, stepMs: 30000, chunkMs: 15000 },
+          timeout: { totalMs: 90000, stepMs: 30000, chunkMs: 15000 },
           maxOutputTokens: 1800,
           temperature: 0.3,
           onError: ({ error }) => {

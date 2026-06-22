@@ -112,12 +112,10 @@ function AssistantThread() {
 }
 
 const MODELS = [
-  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-  { id: "openai/gpt-4o-mini", label: "GPT-4o mini" },
-  { id: "openai/gpt-4o", label: "GPT-4o" },
-  { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet" },
-  { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash" },
+  { id: "google/gemini-3-pro-preview", label: "Gemini 3 Pro" },
+  { id: "openai/gpt-5-mini", label: "GPT-5 mini" },
+  { id: "openai/gpt-5", label: "GPT-5" },
 ];
 
 const makeRequestId = () =>
@@ -131,7 +129,8 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(() => {
     if (typeof window === "undefined") return MODELS[0].id;
-    return localStorage.getItem("nexus.model") ?? MODELS[0].id;
+    const saved = localStorage.getItem("nexus.model");
+    return MODELS.some((m) => m.id === saved) ? saved! : MODELS[0].id;
   });
   const modelRef = useRef(model);
   useEffect(() => {
@@ -367,7 +366,7 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{t("assistant.title")}</div>
-          <div className="text-[11px] text-muted-foreground">{locale.toUpperCase()} · OpenRouter</div>
+          <div className="text-[11px] text-muted-foreground">{locale.toUpperCase()} · Lovable AI</div>
         </div>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="hidden sm:inline">{t("assistant.model")}</span>
