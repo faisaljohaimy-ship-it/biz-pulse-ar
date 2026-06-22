@@ -230,7 +230,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
             severity: args.severity,
             owner: args.owner ?? null,
             business_impact_score: args.business_impact_score,
-            summary: args.summary ?? null,
+            detail: args.summary ?? null,
             source: "ARIA",
           })
           .select("id,title,severity,business_impact_score")
