@@ -149,6 +149,96 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         return { ok: true, memory: data };
       },
     }),
+
+    query_tasks: tool({
+      description:
+        "List the current user's tasks. Filter by status and/or priority. Use when the user asks about their tasks, to-do list, deliverables, pending work, مهامي, قائمة المهام.",
+      inputSchema: z.object({
+        status: z.enum(["todo", "in_progress", "done", "blocked"]).optional(),
+        priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+        limit: z.number().int().min(1).max(50).default(15),
+      }),
+      execute: async (args) => {
+        let q = supabase
+          .from("tasks")
+          .select("id,title,status,priority,assigned_agent,due_at,created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(args.limit);
+        if (args.status) q = q.eq("status", args.status);
+        if (args.priority) q = q.eq("priority", args.priority);
+        const { data, error } = await q;
+        if (error) return { ok: false, error: error.message };
+        return { ok: true, tasks: data ?? [], count: data?.length ?? 0 };
+      },
+    }),
+
+    update_task_status: tool({
+      description:
+        "Update the status of an existing task. Use when the user says 'mark X as done', 'أنهي مهمة', 'علّم كمكتمل', 'block task'.",
+      inputSchema: z.object({
+        task_id: z.string().uuid(),
+        status: z.enum(["todo", "in_progress", "done", "blocked"]),
+      }),
+      execute: async (args) => {
+        const { data, error } = await supabase
+          .from("tasks")
+          .update({ status: args.status })
+          .eq("id", args.task_id)
+          .eq("user_id", userId)
+          .select("id,title,status")
+          .single();
+        if (error) return { ok: false, error: error.message };
+        return { ok: true, task: data };
+      },
+    }),
+
+    search_knowledge: tool({
+      description:
+        "Search the executive knowledge base (policies, briefings, documents). Use when the user asks 'what does our policy say about X', 'ابحث عن', 'ما السياسة في'.",
+      inputSchema: z.object({
+        query: z.string().min(2).max(200),
+        limit: z.number().int().min(1).max(10).default(5),
+      }),
+      execute: async (args) => {
+        const { data, error } = await supabase
+          .from("knowledge_docs")
+          .select("id,title,summary")
+          .or(`title.ilike.%${args.query}%,summary.ilike.%${args.query}%`)
+          .limit(args.limit);
+        if (error) return { ok: false, error: error.message };
+        return { ok: true, results: data ?? [], count: data?.length ?? 0 };
+      },
+    }),
+
+    create_intelligence_alert: tool({
+      description:
+        "Raise an intelligence alert (risk signal, market event, operational anomaly) so it appears on the Intelligence dashboard. Use when the user reports a new risk/threat/signal to track.",
+      inputSchema: z.object({
+        title: z.string().min(3).max(200),
+        severity: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+        owner: z.string().max(120).optional(),
+        business_impact_score: z.number().int().min(0).max(100).default(50),
+        summary: z.string().max(2000).optional(),
+      }),
+      execute: async (args) => {
+        const { data, error } = await supabase
+          .from("intelligence_alerts")
+          .insert({
+            user_id: userId,
+            title: args.title,
+            severity: args.severity,
+            owner: args.owner ?? null,
+            business_impact_score: args.business_impact_score,
+            detail: args.summary ?? null,
+            source: "ARIA",
+          })
+          .select("id,title,severity,business_impact_score")
+          .single();
+        if (error) return { ok: false, error: error.message };
+        return { ok: true, alert: data };
+      },
+    }),
   };
 }
 
