@@ -143,10 +143,11 @@ function DigitalTwinPage() {
 
   /* Positions: project each node onto an elliptical orbit */
   const positions = useMemo(() => {
+    const compact = typeof window !== "undefined" && window.innerWidth < 640;
     const rings = [
-      { rx: 18, ry: 11, speed: 0.10 }, // inner
-      { rx: 32, ry: 19, speed: 0.06 }, // mid
-      { rx: 44, ry: 26, speed: 0.04 }, // outer
+      { rx: compact ? 14 : 18, ry: compact ? 9 : 11, speed: 0.10 },
+      { rx: compact ? 25 : 32, ry: compact ? 15 : 19, speed: 0.06 },
+      { rx: compact ? 34 : 44, ry: compact ? 21 : 26, speed: 0.04 },
     ];
     return NODES.map((n) => {
       const r = rings[n.ring];
@@ -155,7 +156,12 @@ function DigitalTwinPage() {
       const y = 50 + Math.sin(a) * r.ry;
       // depth from y component for parallax shading
       const depth = (Math.sin(a) + 1) / 2; // 0..1 (front→back)
-      return { id: n.id, x, y, depth };
+      return {
+        id: n.id,
+        x: compact ? Math.min(82, Math.max(18, x)) : x,
+        y: compact ? Math.min(78, Math.max(24, y)) : y,
+        depth,
+      };
     });
   }, [t]);
 
