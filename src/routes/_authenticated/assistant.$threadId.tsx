@@ -19,6 +19,7 @@ import {
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 
 export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
   component: AssistantThread,
@@ -298,9 +299,15 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             messages.map((m) => (
               <Message from={m.role} key={m.id}>
                 <MessageContent>
-                  {m.parts.map((p, i) =>
-                    p.type === "text" ? <MessageResponse key={i}>{p.text}</MessageResponse> : null,
-                  )}
+                  {m.parts.map((p, i) => {
+                    if (p.type === "text") {
+                      return <MessageResponse key={i}>{p.text}</MessageResponse>;
+                    }
+                    if (p.type.startsWith("tool-") || p.type === "tool-invocation") {
+                      return <ToolInvocation key={i} part={p as Parameters<typeof ToolInvocation>[0]["part"]} />;
+                    }
+                    return null;
+                  })}
                 </MessageContent>
               </Message>
             ))
