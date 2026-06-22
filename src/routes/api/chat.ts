@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { z } from "zod";
 import {
+  createLovableAiGatewayProvider,
   createOpenRouterProvider,
   DEFAULT_OPENROUTER_MODEL,
   OPENROUTER_MODELS,
@@ -119,10 +120,13 @@ export const Route = createFileRoute("/api/chat")({
       },
       POST: async ({ request }) => {
         const requestId = getRequestId(request);
-        const apiKey = process.env.OPENROUTER_API_KEY;
-        if (!apiKey) {
-          console.error("[api/chat] missing OpenRouter key", { requestId });
-          return jsonError("ARIA is not configured. Missing OpenRouter credentials.", 500, requestId);
+        const lovableKey = process.env.LOVABLE_API_KEY;
+        const openrouterKey = process.env.OPENROUTER_API_KEY;
+        // Prefer Lovable AI Gateway (managed key, no quota issues). Fall back to OpenRouter only if present and looks valid.
+        const useLovable = !!lovableKey;
+        if (!useLovable && !openrouterKey) {
+          console.error("[api/chat] no AI provider key configured", { requestId });
+          return jsonError("ARIA is not configured. Missing AI provider credentials.", 500, requestId);
         }
 
         let raw: unknown;
@@ -159,8 +163,12 @@ export const Route = createFileRoute("/api/chat")({
         }
         const userId = userData.user.id;
 
-        const provider = createOpenRouterProvider(apiKey, new URL(request.url).origin);
+        const provider = useLovable
+          ? createLovableAiGatewayProvider(lovableKey!)
+          : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
         const model = provider(selectedModelId);
+        console.log("[api/chat] provider", { requestId, provider: useLovable ? "lovable-ai-gateway" : "openrouter", model: selectedModelId });
+
 
         const uiMessages = messages as UIMessage[];
         const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
@@ -240,7 +248,8 @@ ${ctx}
           onError: (error) => {
             console.error("[api/chat] stream response error", { requestId, error });
             const msg = error instanceof Error ? error.message : String(error);
-            if (msg.includes("401")) return "ARIA could not authenticate with OpenRouter. Check the production API key.";
+            if (msg.includes("401") || msg.includes("403")) return "ARIA could not authenticate with the AI gateway. Please contact support.";
+            if (msg.includes("402")) return "AI credits are exhausted on the workspace. Please add credits in Settings → Plans & credits.";
             if (msg.includes("429")) return "ARIA is temporarily rate limited. Please retry in a moment.";
             if (msg.includes("AbortError") || msg.toLowerCase().includes("timeout")) {
               return "ARIA took too long to respond. Please retry; the chat will reconnect automatically.";
