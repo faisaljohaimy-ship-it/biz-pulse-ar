@@ -709,10 +709,10 @@ function NodeChip({
           longPress.current = null;
         }
       }}
-      className="nexus-node group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-3xl outline-none transition-transform duration-300 will-change-transform hover:-translate-y-[6px] hover:scale-[1.03] focus-visible:scale-[1.03] focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+      className="nexus-node group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-3xl outline-none transition-transform duration-300 will-change-transform [--chip-half:88px] hover:-translate-y-[6px] hover:scale-[1.03] focus-visible:scale-[1.03] focus-visible:ring-2 focus-visible:ring-cyan-300/70 sm:[--chip-half:100px] md:[--chip-half:108px]"
       style={{
-        left: `${node.x}%`,
-        top: `${node.y}%`,
+        left: `clamp(var(--chip-half), ${node.x}%, calc(100% - var(--chip-half)))`,
+        top: `clamp(56px, ${node.y}%, calc(100% - 56px))`,
         animation: `float-y 6s ease-in-out ${delay}ms infinite`,
       }}
     >
@@ -738,7 +738,7 @@ function NodeChip({
         />
 
         {/* isometric district platform */}
-        <div className="relative h-[96px] w-[210px]">
+        <div className="relative h-[78px] w-[170px] sm:h-[88px] sm:w-[192px] md:h-[96px] md:w-[210px]">
           <div
             className="absolute left-1/2 top-[60px] h-7 w-[190px] -translate-x-1/2 rounded-[50%] blur-xl"
             style={{ background: `hsla(${node.hue},95%,60%,0.6)` }}
