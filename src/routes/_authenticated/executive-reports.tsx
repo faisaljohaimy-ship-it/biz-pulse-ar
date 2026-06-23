@@ -424,6 +424,30 @@ function ExecutiveReportsPage() {
             </Button>
           </div>
 
+          {/* ── Mock mode: preview Error Card without hitting Graph ───────── */}
+          <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <FlaskConical className="h-3.5 w-3.5" />
+              {isAr ? "وضع المحاكاة (Mock) — يحقن خطأ Graph دون اتصال فعلي" : "Mock mode — inject a Graph error without a live call"}
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <select
+                value={mockKey}
+                onChange={(e) => setMockKey(e.target.value)}
+                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs"
+              >
+                {MOCK_SCENARIOS.map((s) => (
+                  <option key={s.key} value={s.key}>{isAr ? s.label_ar : s.label_en}</option>
+                ))}
+              </select>
+              <Button size="sm" variant="outline" onClick={simulateMockError}>
+                <FlaskConical className="h-3.5 w-3.5" />
+                <span className="ms-2">{isAr ? "محاكاة الخطأ" : "Simulate error"}</span>
+              </Button>
+            </div>
+          </div>
+
+
           {lastError && (() => {
             const stageLabel = STAGE_LABEL[lastError.stage];
             let partialSharepointUrl: string | null = null;
