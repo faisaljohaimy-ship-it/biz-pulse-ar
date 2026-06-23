@@ -263,23 +263,71 @@
     color: transparent;
   }
 
-  /* Glassmorphism */
+  /* Glassmorphism — Executive Frosted */
   .glass {
-    background: color-mix(in oklab, var(--card) 55%, transparent);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--nx-surface) 55%, transparent),
+      color-mix(in srgb, var(--nx-bg-2) 45%, transparent));
+    backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid color-mix(in srgb, var(--nx-cyan) 16%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 8px 32px -12px rgba(2,8,20,0.55);
   }
   .glass-strong {
-    background: color-mix(in oklab, var(--card) 75%, transparent);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--nx-card) 72%, transparent),
+      color-mix(in srgb, var(--nx-surface) 60%, transparent));
+    backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid color-mix(in srgb, var(--nx-cyan) 22%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      0 20px 50px -20px rgba(2,8,20,0.7);
   }
   .glass-sidebar {
-    background: color-mix(in oklab, var(--sidebar) 80%, transparent);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    background: linear-gradient(180deg,
+      color-mix(in srgb, var(--nx-bg-1) 92%, transparent),
+      color-mix(in srgb, var(--nx-bg-2) 80%, transparent));
+    backdrop-filter: blur(32px) saturate(160%);
+    border-right: 1px solid color-mix(in srgb, var(--nx-cyan) 12%, transparent);
+  }
+  .glass-card {
+    background: var(--gradient-glass), color-mix(in srgb, var(--nx-card) 55%, var(--nx-bg-2));
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid color-mix(in srgb, var(--nx-cyan) 14%, transparent);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+                box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 0.35s ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--nx-cyan) 35%, transparent);
+    box-shadow:
+      0 20px 50px -20px rgba(0, 212, 255, 0.35),
+      0 6px 20px -8px rgba(2,8,20,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  /* Neon edge for premium KPI / executive cards */
+  .neon-edge {
+    position: relative;
+    isolation: isolate;
+  }
+  .neon-edge::after {
+    content: "";
+    position: absolute; inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg,
+      rgba(111,255,233,0.7), rgba(0,212,255,0.55) 40%,
+      transparent 70%, rgba(0,184,217,0.55));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
   }
 
   /* Animations */
@@ -288,9 +336,9 @@
     50% { transform: translateY(-8px) }
   }
   @keyframes pulse-ring {
-    0% { box-shadow: 0 0 0 0 oklch(0.62 0.17 235 / 45%) }
-    70% { box-shadow: 0 0 0 14px oklch(0.62 0.17 235 / 0%) }
-    100% { box-shadow: 0 0 0 0 oklch(0.62 0.17 235 / 0%) }
+    0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.55) }
+    70% { box-shadow: 0 0 0 14px rgba(0,212,255,0) }
+    100% { box-shadow: 0 0 0 0 rgba(0,212,255,0) }
   }
   @keyframes shimmer-x {
     0% { background-position: -200% 0 }
@@ -323,12 +371,17 @@
     0%, 100% { opacity: 0.45 }
     50% { opacity: 0.95 }
   }
+  @keyframes ambient-drift {
+    0%, 100% { transform: translate(0,0) scale(1) }
+    50% { transform: translate(2%, -2%) scale(1.05) }
+  }
   .animate-float-slow { animation: float-slow 6s ease-in-out infinite }
   .animate-pulse-ring { animation: pulse-ring 2.2s ease-out infinite }
-  .animate-rise { animation: rise 0.5s ease-out both }
+  .animate-rise { animation: rise 0.5s cubic-bezier(0.2,0.8,0.2,1) both }
   .animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite }
   .animate-radar-sweep { animation: radar-sweep 4s linear infinite; transform-origin: center }
   .animate-ticker-x { animation: ticker-x 40s linear infinite }
+  .animate-ambient { animation: ambient-drift 14s ease-in-out infinite }
   .delay-100 { animation-delay: 0.1s }
   .delay-200 { animation-delay: 0.2s }
   .delay-300 { animation-delay: 0.3s }
@@ -336,22 +389,24 @@
 
   .shadow-exec {
     box-shadow:
-      0 30px 80px -30px rgba(34, 211, 238, 0.35),
-      0 10px 30px -10px rgba(2, 6, 23, 0.8),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      0 30px 80px -30px rgba(0, 212, 255, 0.40),
+      0 10px 30px -10px rgba(2, 8, 20, 0.85),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
+  .shadow-neon { box-shadow: var(--shadow-neon); }
+
   .holo-edge { position: relative; }
   .holo-edge::before {
     content: "";
     position: absolute; inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(34,211,238,0.6), rgba(59,130,246,0) 30%, rgba(167,139,250,0) 70%, rgba(34,211,238,0.55));
+    background: linear-gradient(135deg, rgba(0,212,255,0.65), rgba(111,255,233,0) 35%, rgba(0,184,217,0) 70%, rgba(0,212,255,0.55));
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.8;
   }
   .scanlines {
     background-image: repeating-linear-gradient(
