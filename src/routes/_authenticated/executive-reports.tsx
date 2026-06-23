@@ -16,7 +16,7 @@ import { listSharePointSites } from "@/lib/sharepoint.functions";
 import { listTeamsChannels } from "@/lib/teams.functions";
 import { publishExecutiveReport } from "@/lib/exec-reports.functions";
 import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
-import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X } from "lucide-react";
+import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X, ClipboardCopy } from "lucide-react";
 
 const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: string }> = {
   config:           { en: "Connector configuration", ar: "إعداد الموصّل" },
@@ -159,6 +159,7 @@ function ExecutiveReportsPage() {
         setLastError({
           __publishError: true,
           stage: "unknown",
+          requestId: (typeof crypto !== "undefined" && "randomUUID" in crypto) ? crypto.randomUUID() : `err-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           message_en: msg,
           message_ar: msg,
         });
@@ -296,7 +297,6 @@ function ExecutiveReportsPage() {
 
           {lastError && (() => {
             const stageLabel = STAGE_LABEL[lastError.stage];
-            // Partial-success: teams_post stage carries the sharepoint URL in raw
             let partialSharepointUrl: string | null = null;
             if (lastError.stage === "teams_post" && lastError.raw) {
               try {
@@ -304,16 +304,24 @@ function ExecutiveReportsPage() {
                 if (typeof r?.sharepointUrl === "string") partialSharepointUrl = r.sharepointUrl;
               } catch { /* ignore */ }
             }
+            const copyRequestId = () => {
+              if (!lastError.requestId) return;
+              navigator.clipboard.writeText(lastError.requestId).then(() => toast.success(isAr ? "تم النسخ" : "Copied"));
+            };
             return (
               <Card className="p-4 border-destructive/40 bg-destructive/5">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex-1 min-w-0 space-y-3">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-destructive">
                         {isAr ? lastError.message_ar : lastError.message_en}
                       </span>
-                      <Badge variant="outline" className="text-[10px]">
+                    </div>
+
+                    {/* Diagnostic chips */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary" className="text-[10px]">
                         {isAr ? stageLabel.ar : stageLabel.en}
                       </Badge>
                       {lastError.status && (
@@ -323,11 +331,26 @@ function ExecutiveReportsPage() {
                         <Badge variant="outline" className="text-[10px] font-mono">{lastError.code}</Badge>
                       )}
                     </div>
+
+                    {/* Request ID bar */}
+                    {lastError.requestId && (
+                      <div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
+                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
+                          {isAr ? "معرّف الطلب" : "Request ID"}
+                        </span>
+                        <code className="text-[11px] font-mono text-foreground">{lastError.requestId}</code>
+                        <Button size="icon" variant="ghost" className="h-5 w-5 ml-auto" onClick={copyRequestId}>
+                          <ClipboardCopy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+
                     {(lastError.hint_en || lastError.hint_ar) && (
                       <div className="text-xs text-muted-foreground">
                         💡 {isAr ? lastError.hint_ar : lastError.hint_en}
                       </div>
                     )}
+
                     {partialSharepointUrl && (
                       <div className="text-xs">
                         <span className="text-muted-foreground">
@@ -343,6 +366,7 @@ function ExecutiveReportsPage() {
                         </a>
                       </div>
                     )}
+
                     {lastError.raw && lastError.stage !== "teams_post" && (
                       <details className="text-[11px] text-muted-foreground">
                         <summary className="cursor-pointer">{isAr ? "تفاصيل تقنية" : "Technical details"}</summary>

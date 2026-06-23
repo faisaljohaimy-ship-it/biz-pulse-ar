@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { randomUUID } from "crypto";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
@@ -21,6 +22,7 @@ export type PublishErrorEnvelope = {
   stage: PublishStage;
   status?: number;
   code?: string;
+  requestId: string;
   message_en: string;
   message_ar: string;
   hint_en?: string;
@@ -28,8 +30,8 @@ export type PublishErrorEnvelope = {
   raw?: string;
 };
 
-function fail(env: Omit<PublishErrorEnvelope, "__publishError">): never {
-  const payload: PublishErrorEnvelope = { __publishError: true, ...env };
+function fail(env: Omit<PublishErrorEnvelope, "__publishError" | "requestId">): never {
+  const payload: PublishErrorEnvelope = { __publishError: true, requestId: randomUUID(), ...env };
   throw new Error(JSON.stringify(payload));
 }
 
