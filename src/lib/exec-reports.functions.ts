@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { randomUUID } from "crypto";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
