@@ -738,7 +738,7 @@ function NodeChip({
         />
 
         {/* isometric district platform */}
-        <div className="relative h-[96px] w-[210px]">
+        <div className="relative h-[78px] w-[170px] sm:h-[88px] sm:w-[192px] md:h-[96px] md:w-[210px]">
           <div
             className="absolute left-1/2 top-[60px] h-7 w-[190px] -translate-x-1/2 rounded-[50%] blur-xl"
             style={{ background: `hsla(${node.hue},95%,60%,0.6)` }}
