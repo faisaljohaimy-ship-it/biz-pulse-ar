@@ -12,7 +12,7 @@ export type PublishStage =
   | "authorization"
   | "validation"
   | "sharepoint_upload"
-  | "sharepoint_link"
+  | "sharepoint_createLink"
   | "teams_post"
   | "unknown";
 
@@ -56,7 +56,7 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
     });
   }
   if (status === 403 || code === "accessDenied" || code === "Forbidden" || code === "authorizationRequestDenied") {
-    const isUpload = stage === "sharepoint_upload" || stage === "sharepoint_link";
+    const isUpload = stage === "sharepoint_upload" || stage === "sharepoint_createLink";
     fail({
       stage, status, code: code || "accessDenied",
       message_en: isUpload ? "Permission denied on this SharePoint site." : "Permission denied posting to this Teams channel.",
@@ -311,7 +311,7 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     let shareUrl: string | null = null;
     try {
       const link = (await spJson(
-        "sharepoint_link",
+        "sharepoint_createLink",
         `/sites/${encodeURIComponent(data.siteId)}/drive/items/${item.id}/createLink`,
         { method: "POST", body: JSON.stringify({ type: "view", scope: "organization" }) },
       )) as { link?: { webUrl?: string } };
