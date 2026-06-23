@@ -9,6 +9,7 @@ import { z } from "zod";
 // for every action to feed the timeline and KPI engine.
 // ============================================================================
 
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 export type ActivityEvent = {
   id: string;
   entity_type: string;
@@ -17,7 +18,7 @@ export type ActivityEvent = {
   event: string;
   actor_id: string | null;
   actor_name: string | null;
-  payload: Record<string, unknown>;
+  payload: JsonValue;
   occurred_at: string;
 };
 
