@@ -30,8 +30,8 @@ export type PublishErrorEnvelope = {
   raw?: string;
 };
 
-function fail(env: Omit<PublishErrorEnvelope, "__publishError">): never {
-  const payload: PublishErrorEnvelope = { __publishError: true, ...env };
+function fail(env: Omit<PublishErrorEnvelope, "__publishError" | "requestId">): never {
+  const payload: PublishErrorEnvelope = { __publishError: true, requestId: randomUUID(), ...env };
   throw new Error(JSON.stringify(payload));
 }
 
