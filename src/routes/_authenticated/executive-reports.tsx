@@ -480,15 +480,6 @@ function ExecutiveReportsPage() {
                 <span className="ms-2">{isAr ? "محاكاة النجاح" : "Simulate success"}</span>
               </Button>
             </div>
-                {MOCK_SCENARIOS.map((s) => (
-                  <option key={s.key} value={s.key}>{isAr ? s.label_ar : s.label_en}</option>
-                ))}
-              </select>
-              <Button size="sm" variant="outline" onClick={simulateMockError}>
-                <FlaskConical className="h-3.5 w-3.5" />
-                <span className="ms-2">{isAr ? "محاكاة الخطأ" : "Simulate error"}</span>
-              </Button>
-            </div>
           </div>
 
 
