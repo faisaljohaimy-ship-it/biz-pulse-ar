@@ -1,0 +1,50 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getSecOverview } from "@/lib/sec.functions";
+import { SecPageHeader, severityClass, statusClass } from "@/components/sec/sec-shell";
+
+export const Route = createFileRoute("/_authenticated/sec/permits")({
+  component: Permits,
+});
+
+function Permits() {
+  const fetchOverview = useServerFn(getSecOverview);
+  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const rows = data?.permits ?? [];
+  return (
+    <div className="space-y-4">
+      <SecPageHeader title="إدارة التصاريح (Permit to Work)" subtitle={`${rows.length} تصريح`} />
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <table className="min-w-full text-sm">
+          <thead className="bg-muted/40 text-xs text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 text-start">المرجع</th>
+              <th className="px-3 py-2 text-start">نوع العمل</th>
+              <th className="px-3 py-2 text-start">المقاول</th>
+              <th className="px-3 py-2 text-start">الخطورة</th>
+              <th className="px-3 py-2 text-start">الحالة</th>
+              <th className="px-3 py-2 text-start">من</th>
+              <th className="px-3 py-2 text-start">إلى</th>
+              <th className="px-3 py-2 text-start">المعتمِد</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p) => (
+              <tr key={p.id} className="border-t border-border">
+                <td className="px-3 py-2 font-mono text-xs">{p.ref}</td>
+                <td className="px-3 py-2">{p.work_type}</td>
+                <td className="px-3 py-2 text-muted-foreground">{p.contractor}</td>
+                <td className="px-3 py-2"><span className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(p.risk_level)}`}>{p.risk_level}</span></td>
+                <td className="px-3 py-2"><span className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}>{p.status}</span></td>
+                <td className="px-3 py-2 text-xs">{new Date(p.starts_at).toLocaleDateString("ar-SA")}</td>
+                <td className="px-3 py-2 text-xs">{new Date(p.ends_at).toLocaleDateString("ar-SA")}</td>
+                <td className="px-3 py-2 text-muted-foreground">{p.approver ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

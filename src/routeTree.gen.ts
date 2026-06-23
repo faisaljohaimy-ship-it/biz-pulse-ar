@@ -48,6 +48,7 @@ import { Route as AuthenticatedTransformationRouteImport } from './routes/_authe
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSecRouteImport } from './routes/_authenticated/sec'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
@@ -83,7 +84,28 @@ import { Route as AuthenticatedAnalystRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAiOpsRouteImport } from './routes/_authenticated/ai-ops'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticated/sec.index'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
+import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
+import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
+import { Route as AuthenticatedSecTimelineRouteImport } from './routes/_authenticated/sec.timeline'
+import { Route as AuthenticatedSecShiftsRouteImport } from './routes/_authenticated/sec.shifts'
+import { Route as AuthenticatedSecSafetyRouteImport } from './routes/_authenticated/sec.safety'
+import { Route as AuthenticatedSecRisksRouteImport } from './routes/_authenticated/sec.risks'
+import { Route as AuthenticatedSecReportsRouteImport } from './routes/_authenticated/sec.reports'
+import { Route as AuthenticatedSecPermitsRouteImport } from './routes/_authenticated/sec.permits'
+import { Route as AuthenticatedSecPatrolsRouteImport } from './routes/_authenticated/sec.patrols'
+import { Route as AuthenticatedSecKpiRouteImport } from './routes/_authenticated/sec.kpi'
+import { Route as AuthenticatedSecIntegrationsRouteImport } from './routes/_authenticated/sec.integrations'
+import { Route as AuthenticatedSecIncidentsRouteImport } from './routes/_authenticated/sec.incidents'
+import { Route as AuthenticatedSecFacilitiesRouteImport } from './routes/_authenticated/sec.facilities'
+import { Route as AuthenticatedSecExecRouteImport } from './routes/_authenticated/sec.exec'
+import { Route as AuthenticatedSecEmergencyRouteImport } from './routes/_authenticated/sec.emergency'
+import { Route as AuthenticatedSecContractorsRouteImport } from './routes/_authenticated/sec.contractors'
+import { Route as AuthenticatedSecCctvRouteImport } from './routes/_authenticated/sec.cctv'
+import { Route as AuthenticatedSecAssetsRouteImport } from './routes/_authenticated/sec.assets'
+import { Route as AuthenticatedSecAiRouteImport } from './routes/_authenticated/sec.ai'
+import { Route as AuthenticatedSecAccessRouteImport } from './routes/_authenticated/sec.access'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
 
 const TrustRoute = TrustRouteImport.update({
@@ -281,6 +303,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSecRoute = AuthenticatedSecRouteImport.update({
+  id: '/sec',
+  path: '/sec',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
   id: '/risk',
   path: '/risk',
@@ -467,12 +494,125 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSecIndexRoute = AuthenticatedSecIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
 const AuthenticatedAssistantIndexRoute =
   AuthenticatedAssistantIndexRouteImport.update({
     id: '/assistant/',
     path: '/assistant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedSecVisitorsRoute =
+  AuthenticatedSecVisitorsRouteImport.update({
+    id: '/visitors',
+    path: '/visitors',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecVehiclesRoute =
+  AuthenticatedSecVehiclesRouteImport.update({
+    id: '/vehicles',
+    path: '/vehicles',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecTimelineRoute =
+  AuthenticatedSecTimelineRouteImport.update({
+    id: '/timeline',
+    path: '/timeline',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecShiftsRoute = AuthenticatedSecShiftsRouteImport.update({
+  id: '/shifts',
+  path: '/shifts',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecSafetyRoute = AuthenticatedSecSafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecRisksRoute = AuthenticatedSecRisksRouteImport.update({
+  id: '/risks',
+  path: '/risks',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecReportsRoute = AuthenticatedSecReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecPermitsRoute = AuthenticatedSecPermitsRouteImport.update({
+  id: '/permits',
+  path: '/permits',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecPatrolsRoute = AuthenticatedSecPatrolsRouteImport.update({
+  id: '/patrols',
+  path: '/patrols',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecKpiRoute = AuthenticatedSecKpiRouteImport.update({
+  id: '/kpi',
+  path: '/kpi',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecIntegrationsRoute =
+  AuthenticatedSecIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecIncidentsRoute =
+  AuthenticatedSecIncidentsRouteImport.update({
+    id: '/incidents',
+    path: '/incidents',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecFacilitiesRoute =
+  AuthenticatedSecFacilitiesRouteImport.update({
+    id: '/facilities',
+    path: '/facilities',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecExecRoute = AuthenticatedSecExecRouteImport.update({
+  id: '/exec',
+  path: '/exec',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecEmergencyRoute =
+  AuthenticatedSecEmergencyRouteImport.update({
+    id: '/emergency',
+    path: '/emergency',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecContractorsRoute =
+  AuthenticatedSecContractorsRouteImport.update({
+    id: '/contractors',
+    path: '/contractors',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
+const AuthenticatedSecCctvRoute = AuthenticatedSecCctvRouteImport.update({
+  id: '/cctv',
+  path: '/cctv',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecAssetsRoute = AuthenticatedSecAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecAiRoute = AuthenticatedSecAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
+const AuthenticatedSecAccessRoute = AuthenticatedSecAccessRouteImport.update({
+  id: '/access',
+  path: '/access',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
 const AuthenticatedAssistantThreadIdRoute =
   AuthenticatedAssistantThreadIdRouteImport.update({
     id: '/assistant/$threadId',
@@ -544,6 +684,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/risk': typeof AuthenticatedRiskRoute
+  '/sec': typeof AuthenticatedSecRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -555,7 +696,28 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/sec/access': typeof AuthenticatedSecAccessRoute
+  '/sec/ai': typeof AuthenticatedSecAiRoute
+  '/sec/assets': typeof AuthenticatedSecAssetsRoute
+  '/sec/cctv': typeof AuthenticatedSecCctvRoute
+  '/sec/contractors': typeof AuthenticatedSecContractorsRoute
+  '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
+  '/sec/exec': typeof AuthenticatedSecExecRoute
+  '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
+  '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
+  '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
+  '/sec/kpi': typeof AuthenticatedSecKpiRoute
+  '/sec/patrols': typeof AuthenticatedSecPatrolsRoute
+  '/sec/permits': typeof AuthenticatedSecPermitsRoute
+  '/sec/reports': typeof AuthenticatedSecReportsRoute
+  '/sec/risks': typeof AuthenticatedSecRisksRoute
+  '/sec/safety': typeof AuthenticatedSecSafetyRoute
+  '/sec/shifts': typeof AuthenticatedSecShiftsRoute
+  '/sec/timeline': typeof AuthenticatedSecTimelineRoute
+  '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
+  '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
+  '/sec/': typeof AuthenticatedSecIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -632,7 +794,28 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/sec/access': typeof AuthenticatedSecAccessRoute
+  '/sec/ai': typeof AuthenticatedSecAiRoute
+  '/sec/assets': typeof AuthenticatedSecAssetsRoute
+  '/sec/cctv': typeof AuthenticatedSecCctvRoute
+  '/sec/contractors': typeof AuthenticatedSecContractorsRoute
+  '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
+  '/sec/exec': typeof AuthenticatedSecExecRoute
+  '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
+  '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
+  '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
+  '/sec/kpi': typeof AuthenticatedSecKpiRoute
+  '/sec/patrols': typeof AuthenticatedSecPatrolsRoute
+  '/sec/permits': typeof AuthenticatedSecPermitsRoute
+  '/sec/reports': typeof AuthenticatedSecReportsRoute
+  '/sec/risks': typeof AuthenticatedSecRisksRoute
+  '/sec/safety': typeof AuthenticatedSecSafetyRoute
+  '/sec/shifts': typeof AuthenticatedSecShiftsRoute
+  '/sec/timeline': typeof AuthenticatedSecTimelineRoute
+  '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
+  '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
+  '/sec': typeof AuthenticatedSecIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -700,6 +883,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
+  '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
@@ -711,7 +895,28 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
+  '/_authenticated/sec/ai': typeof AuthenticatedSecAiRoute
+  '/_authenticated/sec/assets': typeof AuthenticatedSecAssetsRoute
+  '/_authenticated/sec/cctv': typeof AuthenticatedSecCctvRoute
+  '/_authenticated/sec/contractors': typeof AuthenticatedSecContractorsRoute
+  '/_authenticated/sec/emergency': typeof AuthenticatedSecEmergencyRoute
+  '/_authenticated/sec/exec': typeof AuthenticatedSecExecRoute
+  '/_authenticated/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
+  '/_authenticated/sec/incidents': typeof AuthenticatedSecIncidentsRoute
+  '/_authenticated/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
+  '/_authenticated/sec/kpi': typeof AuthenticatedSecKpiRoute
+  '/_authenticated/sec/patrols': typeof AuthenticatedSecPatrolsRoute
+  '/_authenticated/sec/permits': typeof AuthenticatedSecPermitsRoute
+  '/_authenticated/sec/reports': typeof AuthenticatedSecReportsRoute
+  '/_authenticated/sec/risks': typeof AuthenticatedSecRisksRoute
+  '/_authenticated/sec/safety': typeof AuthenticatedSecSafetyRoute
+  '/_authenticated/sec/shifts': typeof AuthenticatedSecShiftsRoute
+  '/_authenticated/sec/timeline': typeof AuthenticatedSecTimelineRoute
+  '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
+  '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
+  '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -779,6 +984,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/prompts'
     | '/risk'
+    | '/sec'
     | '/settings'
     | '/tasks'
     | '/team'
@@ -790,7 +996,28 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/voice-token'
     | '/assistant/$threadId'
+    | '/sec/access'
+    | '/sec/ai'
+    | '/sec/assets'
+    | '/sec/cctv'
+    | '/sec/contractors'
+    | '/sec/emergency'
+    | '/sec/exec'
+    | '/sec/facilities'
+    | '/sec/incidents'
+    | '/sec/integrations'
+    | '/sec/kpi'
+    | '/sec/patrols'
+    | '/sec/permits'
+    | '/sec/reports'
+    | '/sec/risks'
+    | '/sec/safety'
+    | '/sec/shifts'
+    | '/sec/timeline'
+    | '/sec/vehicles'
+    | '/sec/visitors'
     | '/assistant/'
+    | '/sec/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -867,7 +1094,28 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/voice-token'
     | '/assistant/$threadId'
+    | '/sec/access'
+    | '/sec/ai'
+    | '/sec/assets'
+    | '/sec/cctv'
+    | '/sec/contractors'
+    | '/sec/emergency'
+    | '/sec/exec'
+    | '/sec/facilities'
+    | '/sec/incidents'
+    | '/sec/integrations'
+    | '/sec/kpi'
+    | '/sec/patrols'
+    | '/sec/permits'
+    | '/sec/reports'
+    | '/sec/risks'
+    | '/sec/safety'
+    | '/sec/shifts'
+    | '/sec/timeline'
+    | '/sec/vehicles'
+    | '/sec/visitors'
     | '/assistant'
+    | '/sec'
   id:
     | '__root__'
     | '/'
@@ -934,6 +1182,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio'
     | '/_authenticated/prompts'
     | '/_authenticated/risk'
+    | '/_authenticated/sec'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
     | '/_authenticated/team'
@@ -945,7 +1194,28 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/voice-token'
     | '/_authenticated/assistant/$threadId'
+    | '/_authenticated/sec/access'
+    | '/_authenticated/sec/ai'
+    | '/_authenticated/sec/assets'
+    | '/_authenticated/sec/cctv'
+    | '/_authenticated/sec/contractors'
+    | '/_authenticated/sec/emergency'
+    | '/_authenticated/sec/exec'
+    | '/_authenticated/sec/facilities'
+    | '/_authenticated/sec/incidents'
+    | '/_authenticated/sec/integrations'
+    | '/_authenticated/sec/kpi'
+    | '/_authenticated/sec/patrols'
+    | '/_authenticated/sec/permits'
+    | '/_authenticated/sec/reports'
+    | '/_authenticated/sec/risks'
+    | '/_authenticated/sec/safety'
+    | '/_authenticated/sec/shifts'
+    | '/_authenticated/sec/timeline'
+    | '/_authenticated/sec/vehicles'
+    | '/_authenticated/sec/visitors'
     | '/_authenticated/assistant/'
+    | '/_authenticated/sec/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1258,6 +1528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/sec': {
+      id: '/_authenticated/sec'
+      path: '/sec'
+      fullPath: '/sec'
+      preLoaderRoute: typeof AuthenticatedSecRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/risk': {
       id: '/_authenticated/risk'
       path: '/risk'
@@ -1503,12 +1780,159 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/sec/': {
+      id: '/_authenticated/sec/'
+      path: '/'
+      fullPath: '/sec/'
+      preLoaderRoute: typeof AuthenticatedSecIndexRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/assistant/': {
       id: '/_authenticated/assistant/'
       path: '/assistant'
       fullPath: '/assistant/'
       preLoaderRoute: typeof AuthenticatedAssistantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/sec/visitors': {
+      id: '/_authenticated/sec/visitors'
+      path: '/visitors'
+      fullPath: '/sec/visitors'
+      preLoaderRoute: typeof AuthenticatedSecVisitorsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/vehicles': {
+      id: '/_authenticated/sec/vehicles'
+      path: '/vehicles'
+      fullPath: '/sec/vehicles'
+      preLoaderRoute: typeof AuthenticatedSecVehiclesRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/timeline': {
+      id: '/_authenticated/sec/timeline'
+      path: '/timeline'
+      fullPath: '/sec/timeline'
+      preLoaderRoute: typeof AuthenticatedSecTimelineRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/shifts': {
+      id: '/_authenticated/sec/shifts'
+      path: '/shifts'
+      fullPath: '/sec/shifts'
+      preLoaderRoute: typeof AuthenticatedSecShiftsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/safety': {
+      id: '/_authenticated/sec/safety'
+      path: '/safety'
+      fullPath: '/sec/safety'
+      preLoaderRoute: typeof AuthenticatedSecSafetyRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/risks': {
+      id: '/_authenticated/sec/risks'
+      path: '/risks'
+      fullPath: '/sec/risks'
+      preLoaderRoute: typeof AuthenticatedSecRisksRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/reports': {
+      id: '/_authenticated/sec/reports'
+      path: '/reports'
+      fullPath: '/sec/reports'
+      preLoaderRoute: typeof AuthenticatedSecReportsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/permits': {
+      id: '/_authenticated/sec/permits'
+      path: '/permits'
+      fullPath: '/sec/permits'
+      preLoaderRoute: typeof AuthenticatedSecPermitsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/patrols': {
+      id: '/_authenticated/sec/patrols'
+      path: '/patrols'
+      fullPath: '/sec/patrols'
+      preLoaderRoute: typeof AuthenticatedSecPatrolsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/kpi': {
+      id: '/_authenticated/sec/kpi'
+      path: '/kpi'
+      fullPath: '/sec/kpi'
+      preLoaderRoute: typeof AuthenticatedSecKpiRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/integrations': {
+      id: '/_authenticated/sec/integrations'
+      path: '/integrations'
+      fullPath: '/sec/integrations'
+      preLoaderRoute: typeof AuthenticatedSecIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/incidents': {
+      id: '/_authenticated/sec/incidents'
+      path: '/incidents'
+      fullPath: '/sec/incidents'
+      preLoaderRoute: typeof AuthenticatedSecIncidentsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/facilities': {
+      id: '/_authenticated/sec/facilities'
+      path: '/facilities'
+      fullPath: '/sec/facilities'
+      preLoaderRoute: typeof AuthenticatedSecFacilitiesRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/exec': {
+      id: '/_authenticated/sec/exec'
+      path: '/exec'
+      fullPath: '/sec/exec'
+      preLoaderRoute: typeof AuthenticatedSecExecRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/emergency': {
+      id: '/_authenticated/sec/emergency'
+      path: '/emergency'
+      fullPath: '/sec/emergency'
+      preLoaderRoute: typeof AuthenticatedSecEmergencyRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/contractors': {
+      id: '/_authenticated/sec/contractors'
+      path: '/contractors'
+      fullPath: '/sec/contractors'
+      preLoaderRoute: typeof AuthenticatedSecContractorsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/cctv': {
+      id: '/_authenticated/sec/cctv'
+      path: '/cctv'
+      fullPath: '/sec/cctv'
+      preLoaderRoute: typeof AuthenticatedSecCctvRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/assets': {
+      id: '/_authenticated/sec/assets'
+      path: '/assets'
+      fullPath: '/sec/assets'
+      preLoaderRoute: typeof AuthenticatedSecAssetsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/ai': {
+      id: '/_authenticated/sec/ai'
+      path: '/ai'
+      fullPath: '/sec/ai'
+      preLoaderRoute: typeof AuthenticatedSecAiRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/access': {
+      id: '/_authenticated/sec/access'
+      path: '/access'
+      fullPath: '/sec/access'
+      preLoaderRoute: typeof AuthenticatedSecAccessRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
     }
     '/_authenticated/assistant/$threadId': {
       id: '/_authenticated/assistant/$threadId'
@@ -1519,6 +1943,57 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedSecRouteChildren {
+  AuthenticatedSecAccessRoute: typeof AuthenticatedSecAccessRoute
+  AuthenticatedSecAiRoute: typeof AuthenticatedSecAiRoute
+  AuthenticatedSecAssetsRoute: typeof AuthenticatedSecAssetsRoute
+  AuthenticatedSecCctvRoute: typeof AuthenticatedSecCctvRoute
+  AuthenticatedSecContractorsRoute: typeof AuthenticatedSecContractorsRoute
+  AuthenticatedSecEmergencyRoute: typeof AuthenticatedSecEmergencyRoute
+  AuthenticatedSecExecRoute: typeof AuthenticatedSecExecRoute
+  AuthenticatedSecFacilitiesRoute: typeof AuthenticatedSecFacilitiesRoute
+  AuthenticatedSecIncidentsRoute: typeof AuthenticatedSecIncidentsRoute
+  AuthenticatedSecIntegrationsRoute: typeof AuthenticatedSecIntegrationsRoute
+  AuthenticatedSecKpiRoute: typeof AuthenticatedSecKpiRoute
+  AuthenticatedSecPatrolsRoute: typeof AuthenticatedSecPatrolsRoute
+  AuthenticatedSecPermitsRoute: typeof AuthenticatedSecPermitsRoute
+  AuthenticatedSecReportsRoute: typeof AuthenticatedSecReportsRoute
+  AuthenticatedSecRisksRoute: typeof AuthenticatedSecRisksRoute
+  AuthenticatedSecSafetyRoute: typeof AuthenticatedSecSafetyRoute
+  AuthenticatedSecShiftsRoute: typeof AuthenticatedSecShiftsRoute
+  AuthenticatedSecTimelineRoute: typeof AuthenticatedSecTimelineRoute
+  AuthenticatedSecVehiclesRoute: typeof AuthenticatedSecVehiclesRoute
+  AuthenticatedSecVisitorsRoute: typeof AuthenticatedSecVisitorsRoute
+  AuthenticatedSecIndexRoute: typeof AuthenticatedSecIndexRoute
+}
+
+const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
+  AuthenticatedSecAccessRoute: AuthenticatedSecAccessRoute,
+  AuthenticatedSecAiRoute: AuthenticatedSecAiRoute,
+  AuthenticatedSecAssetsRoute: AuthenticatedSecAssetsRoute,
+  AuthenticatedSecCctvRoute: AuthenticatedSecCctvRoute,
+  AuthenticatedSecContractorsRoute: AuthenticatedSecContractorsRoute,
+  AuthenticatedSecEmergencyRoute: AuthenticatedSecEmergencyRoute,
+  AuthenticatedSecExecRoute: AuthenticatedSecExecRoute,
+  AuthenticatedSecFacilitiesRoute: AuthenticatedSecFacilitiesRoute,
+  AuthenticatedSecIncidentsRoute: AuthenticatedSecIncidentsRoute,
+  AuthenticatedSecIntegrationsRoute: AuthenticatedSecIntegrationsRoute,
+  AuthenticatedSecKpiRoute: AuthenticatedSecKpiRoute,
+  AuthenticatedSecPatrolsRoute: AuthenticatedSecPatrolsRoute,
+  AuthenticatedSecPermitsRoute: AuthenticatedSecPermitsRoute,
+  AuthenticatedSecReportsRoute: AuthenticatedSecReportsRoute,
+  AuthenticatedSecRisksRoute: AuthenticatedSecRisksRoute,
+  AuthenticatedSecSafetyRoute: AuthenticatedSecSafetyRoute,
+  AuthenticatedSecShiftsRoute: AuthenticatedSecShiftsRoute,
+  AuthenticatedSecTimelineRoute: AuthenticatedSecTimelineRoute,
+  AuthenticatedSecVehiclesRoute: AuthenticatedSecVehiclesRoute,
+  AuthenticatedSecVisitorsRoute: AuthenticatedSecVisitorsRoute,
+  AuthenticatedSecIndexRoute: AuthenticatedSecIndexRoute,
+}
+
+const AuthenticatedSecRouteWithChildren =
+  AuthenticatedSecRoute._addFileChildren(AuthenticatedSecRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
@@ -1556,6 +2031,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
+  AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
@@ -1603,6 +2079,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
+  AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
