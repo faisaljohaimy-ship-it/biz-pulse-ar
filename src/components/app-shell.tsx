@@ -38,6 +38,7 @@ import {
   GitBranch,
   Volume2,
   Layers,
+  MapPin,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -125,6 +126,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/crisis", icon: Zap, label: ar(locale, "تنبؤ الأزمات", "Crisis") },
         { to: "/execution", icon: GitBranch, label: ar(locale, "ذكاء التنفيذ", "Execution") },
         { to: "/forgotten", icon: Ghost, label: ar(locale, "ما الذي نُسي؟", "Forgotten") },
+        { to: "/executive-map", icon: MapPin, label: ar(locale, "الخريطة التنفيذية", "Executive Map") },
       ],
     },
     {
