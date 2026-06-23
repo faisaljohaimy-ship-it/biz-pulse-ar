@@ -1,8 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, LayersControl } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +7,8 @@ import { PageHeader } from "@/components/page-header";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { Activity, AlertTriangle, Building2, MapPin, Radio, Shield } from "lucide-react";
+import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
+
 
 export const Route = createFileRoute("/_authenticated/executive-map")({
   component: ExecutiveMapPage,
