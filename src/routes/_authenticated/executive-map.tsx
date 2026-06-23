@@ -46,19 +46,6 @@ const SEED_SITES: Site[] = [
   { id: "asset-redsea", name: "Red Sea Project", name_ar: "مشروع البحر الأحمر", type: "asset", lat: 25.5, lng: 36.5, status: "ok" },
 ];
 
-const STATUS_COLOR: Record<Site["status"], string> = {
-  ok: "hsl(var(--primary))",
-  warn: "hsl(var(--warning, 38 92% 50%))",
-  critical: "hsl(var(--destructive))",
-};
-
-const TYPE_RADIUS: Record<Site["type"], number> = {
-  hq: 14,
-  branch: 10,
-  site: 9,
-  asset: 8,
-  incident: 11,
-};
 
 function ExecutiveMapPage() {
   const { locale } = useI18n();
