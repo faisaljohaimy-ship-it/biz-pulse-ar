@@ -64,6 +64,7 @@ import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedFabricRouteImport } from './routes/_authenticated/fabric'
+import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authenticated/executive'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
@@ -363,6 +364,11 @@ const AuthenticatedFabricRoute = AuthenticatedFabricRouteImport.update({
   path: '/fabric',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedExecutiveRoute = AuthenticatedExecutiveRouteImport.update({
+  id: '/executive',
+  path: '/executive',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
   id: '/execution',
   path: '/execution',
@@ -505,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/execution': typeof AuthenticatedExecutionRoute
+  '/executive': typeof AuthenticatedExecutiveRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
@@ -579,6 +586,7 @@ export interface FileRoutesByTo {
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/execution': typeof AuthenticatedExecutionRoute
+  '/executive': typeof AuthenticatedExecutiveRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
@@ -655,6 +663,7 @@ export interface FileRoutesById {
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
+  '/_authenticated/executive': typeof AuthenticatedExecutiveRoute
   '/_authenticated/fabric': typeof AuthenticatedFabricRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
@@ -731,6 +740,7 @@ export interface FileRouteTypes {
     | '/departments'
     | '/digital-twin'
     | '/execution'
+    | '/executive'
     | '/fabric'
     | '/files'
     | '/forgotten'
@@ -805,6 +815,7 @@ export interface FileRouteTypes {
     | '/departments'
     | '/digital-twin'
     | '/execution'
+    | '/executive'
     | '/fabric'
     | '/files'
     | '/forgotten'
@@ -880,6 +891,7 @@ export interface FileRouteTypes {
     | '/_authenticated/departments'
     | '/_authenticated/digital-twin'
     | '/_authenticated/execution'
+    | '/_authenticated/executive'
     | '/_authenticated/fabric'
     | '/_authenticated/files'
     | '/_authenticated/forgotten'
@@ -1332,6 +1344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFabricRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/executive': {
+      id: '/_authenticated/executive'
+      path: '/executive'
+      fullPath: '/executive'
+      preLoaderRoute: typeof AuthenticatedExecutiveRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/execution': {
       id: '/_authenticated/execution'
       path: '/execution'
@@ -1478,6 +1497,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
+  AuthenticatedExecutiveRoute: typeof AuthenticatedExecutiveRoute
   AuthenticatedFabricRoute: typeof AuthenticatedFabricRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
@@ -1522,6 +1542,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
+  AuthenticatedExecutiveRoute: AuthenticatedExecutiveRoute,
   AuthenticatedFabricRoute: AuthenticatedFabricRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
@@ -1590,13 +1611,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
