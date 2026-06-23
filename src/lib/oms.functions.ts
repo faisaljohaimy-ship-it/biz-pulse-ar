@@ -633,3 +633,43 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
 
     return { summary, risk_score: risk, recommendations: recs };
   });
+
+// ============================================================================
+// LIST QUERIES — fresh reads with operational fields
+// ============================================================================
+
+export const listIncidents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("sec_incidents")
+      .select("*")
+      .order("reported_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const listWorkOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("sec_work_orders")
+      .select("*")
+      .order("opened_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const listPermits = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("sec_permits")
+      .select("*")
+      .order("starts_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
