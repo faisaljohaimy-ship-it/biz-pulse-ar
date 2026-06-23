@@ -175,7 +175,7 @@ export const addCorrectiveAction = createServerFn({ method: "POST" })
       actor_name: actorName,
       payload: { action: data.action, owner: data.owner ?? actorName },
     });
-    return { ok: true, corrective_actions: next };
+    return { ok: true };
   });
 
 export const escalateIncident = createServerFn({ method: "POST" })
