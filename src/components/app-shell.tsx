@@ -127,6 +127,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/execution", icon: GitBranch, label: ar(locale, "ذكاء التنفيذ", "Execution") },
         { to: "/forgotten", icon: Ghost, label: ar(locale, "ما الذي نُسي؟", "Forgotten") },
         { to: "/executive-map", icon: MapPin, label: ar(locale, "الخريطة التنفيذية", "Executive Map") },
+        { to: "/executive-reports", icon: FileText, label: ar(locale, "التقارير التنفيذية", "Executive Reports") },
       ],
     },
     {
