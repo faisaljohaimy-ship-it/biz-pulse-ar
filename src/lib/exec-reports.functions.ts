@@ -22,6 +22,7 @@ export type PublishErrorEnvelope = {
   stage: PublishStage;
   status?: number;
   code?: string;
+  requestId: string;
   message_en: string;
   message_ar: string;
   hint_en?: string;
