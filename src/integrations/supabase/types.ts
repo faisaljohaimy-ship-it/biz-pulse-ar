@@ -1003,6 +1003,107 @@ export type Database = {
           },
         ]
       }
+      sec_buildings: {
+        Row: {
+          code: string
+          created_at: string
+          floors: number
+          id: string
+          name_ar: string
+          name_en: string
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          floors?: number
+          id?: string
+          name_ar: string
+          name_en: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          floors?: number
+          id?: string
+          name_ar?: string
+          name_en?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_buildings_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_cameras: {
+        Row: {
+          building_id: string | null
+          code: string
+          created_at: string
+          health: number
+          id: string
+          kind: string
+          last_seen_at: string
+          resolution: string | null
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          building_id?: string | null
+          code: string
+          created_at?: string
+          health?: number
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          resolution?: string | null
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string | null
+          code?: string
+          created_at?: string
+          health?: number
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          resolution?: string | null
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_cameras_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "sec_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_cameras_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sec_cctv_alerts: {
         Row: {
           acknowledged_by: string | null
@@ -1053,6 +1154,45 @@ export type Database = {
           },
         ]
       }
+      sec_circles: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          manager: string | null
+          name_ar: string
+          name_en: string
+          staff_count: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          manager?: string | null
+          name_ar: string
+          name_en: string
+          staff_count?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          manager?: string | null
+          name_ar?: string
+          name_en?: string
+          staff_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sec_contractors: {
         Row: {
           compliance_score: number
@@ -1091,6 +1231,113 @@ export type Database = {
           workers_count?: number
         }
         Relationships: []
+      }
+      sec_control_rooms: {
+        Row: {
+          circle_id: string | null
+          code: string
+          created_at: string
+          id: string
+          name_ar: string
+          name_en: string
+          operators_count: number
+          screens_count: number
+          shift_lead: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          circle_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          name_ar: string
+          name_en: string
+          operators_count?: number
+          screens_count?: number
+          shift_lead?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          circle_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          name_ar?: string
+          name_en?: string
+          operators_count?: number
+          screens_count?: number
+          shift_lead?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_control_rooms_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "sec_circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_gates: {
+        Row: {
+          building_id: string | null
+          code: string
+          created_at: string
+          events_today: number
+          health: number
+          id: string
+          kind: string
+          last_event_at: string
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          building_id?: string | null
+          code: string
+          created_at?: string
+          events_today?: number
+          health?: number
+          id?: string
+          kind?: string
+          last_event_at?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string | null
+          code?: string
+          created_at?: string
+          events_today?: number
+          health?: number
+          id?: string
+          kind?: string
+          last_event_at?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_gates_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "sec_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_gates_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sec_incidents: {
         Row: {
@@ -1153,6 +1400,53 @@ export type Database = {
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_patrol_teams: {
+        Row: {
+          circle_id: string | null
+          code: string
+          created_at: string
+          id: string
+          leader: string | null
+          members_count: number
+          name_ar: string
+          status: string
+          updated_at: string
+          vehicle_plate: string | null
+        }
+        Insert: {
+          circle_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          leader?: string | null
+          members_count?: number
+          name_ar: string
+          status?: string
+          updated_at?: string
+          vehicle_plate?: string | null
+        }
+        Update: {
+          circle_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          leader?: string | null
+          members_count?: number
+          name_ar?: string
+          status?: string
+          updated_at?: string
+          vehicle_plate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_patrol_teams_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "sec_circles"
             referencedColumns: ["id"]
           },
         ]
@@ -1266,8 +1560,173 @@ export type Database = {
           },
         ]
       }
+      sec_projects: {
+        Row: {
+          budget_sar: number
+          circle_id: string | null
+          contractor: string | null
+          created_at: string
+          ends_at: string | null
+          health: string
+          id: string
+          kind: string
+          manager: string | null
+          name_ar: string
+          name_en: string
+          notes: string | null
+          progress: number
+          ref: string
+          spent_sar: number
+          starts_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget_sar?: number
+          circle_id?: string | null
+          contractor?: string | null
+          created_at?: string
+          ends_at?: string | null
+          health?: string
+          id?: string
+          kind: string
+          manager?: string | null
+          name_ar: string
+          name_en: string
+          notes?: string | null
+          progress?: number
+          ref: string
+          spent_sar?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget_sar?: number
+          circle_id?: string | null
+          contractor?: string | null
+          created_at?: string
+          ends_at?: string | null
+          health?: string
+          id?: string
+          kind?: string
+          manager?: string | null
+          name_ar?: string
+          name_en?: string
+          notes?: string | null
+          progress?: number
+          ref?: string
+          spent_sar?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_projects_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "sec_circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_sections: {
+        Row: {
+          code: string
+          created_at: string
+          head: string | null
+          id: string
+          name_ar: string
+          name_en: string
+          staff_count: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          head?: string | null
+          id?: string
+          name_ar: string
+          name_en: string
+          staff_count?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          head?: string | null
+          id?: string
+          name_ar?: string
+          name_en?: string
+          staff_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sec_sensors: {
+        Row: {
+          building_id: string | null
+          code: string
+          created_at: string
+          id: string
+          last_reading_at: string
+          reading: number | null
+          sensor_type: string
+          site_id: string | null
+          status: string
+          threshold: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          building_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          last_reading_at?: string
+          reading?: number | null
+          sensor_type: string
+          site_id?: string | null
+          status?: string
+          threshold?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          last_reading_at?: string
+          reading?: number | null
+          sensor_type?: string
+          site_id?: string | null
+          status?: string
+          threshold?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_sensors_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "sec_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_sensors_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sec_sites: {
         Row: {
+          circle_id: string | null
           code: string
           created_at: string
           guards_count: number
@@ -1282,6 +1741,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          circle_id?: string | null
           code: string
           created_at?: string
           guards_count?: number
@@ -1296,6 +1756,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          circle_id?: string | null
           code?: string
           created_at?: string
           guards_count?: number
@@ -1309,7 +1770,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sec_sites_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "sec_circles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sec_visitors: {
         Row: {
@@ -1357,6 +1826,87 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sec_visitors_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_work_orders: {
+        Row: {
+          asset_code: string | null
+          asset_kind: string
+          assigned_to: string | null
+          building_id: string | null
+          closed_at: string | null
+          contractor: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          kind: string
+          notes: string | null
+          opened_at: string
+          priority: string
+          ref: string
+          site_id: string | null
+          status: string
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          asset_code?: string | null
+          asset_kind: string
+          assigned_to?: string | null
+          building_id?: string | null
+          closed_at?: string | null
+          contractor?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          kind: string
+          notes?: string | null
+          opened_at?: string
+          priority?: string
+          ref: string
+          site_id?: string | null
+          status?: string
+          title_ar: string
+          title_en: string
+          updated_at?: string
+        }
+        Update: {
+          asset_code?: string | null
+          asset_kind?: string
+          assigned_to?: string | null
+          building_id?: string | null
+          closed_at?: string | null
+          contractor?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          opened_at?: string
+          priority?: string
+          ref?: string
+          site_id?: string | null
+          status?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_work_orders_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "sec_buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_work_orders_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sec_sites"
