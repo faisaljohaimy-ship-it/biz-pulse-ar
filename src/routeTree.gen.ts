@@ -88,13 +88,17 @@ import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
+import { Route as AuthenticatedSecTwinRouteImport } from './routes/_authenticated/sec.twin'
 import { Route as AuthenticatedSecTimelineRouteImport } from './routes/_authenticated/sec.timeline'
 import { Route as AuthenticatedSecShiftsRouteImport } from './routes/_authenticated/sec.shifts'
+import { Route as AuthenticatedSecSectionsRouteImport } from './routes/_authenticated/sec.sections'
 import { Route as AuthenticatedSecSafetyRouteImport } from './routes/_authenticated/sec.safety'
 import { Route as AuthenticatedSecRisksRouteImport } from './routes/_authenticated/sec.risks'
 import { Route as AuthenticatedSecReportsRouteImport } from './routes/_authenticated/sec.reports'
+import { Route as AuthenticatedSecProjectsRouteImport } from './routes/_authenticated/sec.projects'
 import { Route as AuthenticatedSecPermitsRouteImport } from './routes/_authenticated/sec.permits'
 import { Route as AuthenticatedSecPatrolsRouteImport } from './routes/_authenticated/sec.patrols'
+import { Route as AuthenticatedSecMaintenanceRouteImport } from './routes/_authenticated/sec.maintenance'
 import { Route as AuthenticatedSecKpiRouteImport } from './routes/_authenticated/sec.kpi'
 import { Route as AuthenticatedSecIntegrationsRouteImport } from './routes/_authenticated/sec.integrations'
 import { Route as AuthenticatedSecIncidentsRouteImport } from './routes/_authenticated/sec.incidents'
@@ -102,6 +106,7 @@ import { Route as AuthenticatedSecFacilitiesRouteImport } from './routes/_authen
 import { Route as AuthenticatedSecExecRouteImport } from './routes/_authenticated/sec.exec'
 import { Route as AuthenticatedSecEmergencyRouteImport } from './routes/_authenticated/sec.emergency'
 import { Route as AuthenticatedSecContractorsRouteImport } from './routes/_authenticated/sec.contractors'
+import { Route as AuthenticatedSecCirclesRouteImport } from './routes/_authenticated/sec.circles'
 import { Route as AuthenticatedSecCctvRouteImport } from './routes/_authenticated/sec.cctv'
 import { Route as AuthenticatedSecAssetsRouteImport } from './routes/_authenticated/sec.assets'
 import { Route as AuthenticatedSecAiRouteImport } from './routes/_authenticated/sec.ai'
@@ -517,6 +522,11 @@ const AuthenticatedSecVehiclesRoute =
     path: '/vehicles',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
+const AuthenticatedSecTwinRoute = AuthenticatedSecTwinRouteImport.update({
+  id: '/twin',
+  path: '/twin',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
 const AuthenticatedSecTimelineRoute =
   AuthenticatedSecTimelineRouteImport.update({
     id: '/timeline',
@@ -528,6 +538,12 @@ const AuthenticatedSecShiftsRoute = AuthenticatedSecShiftsRouteImport.update({
   path: '/shifts',
   getParentRoute: () => AuthenticatedSecRoute,
 } as any)
+const AuthenticatedSecSectionsRoute =
+  AuthenticatedSecSectionsRouteImport.update({
+    id: '/sections',
+    path: '/sections',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const AuthenticatedSecSafetyRoute = AuthenticatedSecSafetyRouteImport.update({
   id: '/safety',
   path: '/safety',
@@ -543,6 +559,12 @@ const AuthenticatedSecReportsRoute = AuthenticatedSecReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedSecRoute,
 } as any)
+const AuthenticatedSecProjectsRoute =
+  AuthenticatedSecProjectsRouteImport.update({
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const AuthenticatedSecPermitsRoute = AuthenticatedSecPermitsRouteImport.update({
   id: '/permits',
   path: '/permits',
@@ -553,6 +575,12 @@ const AuthenticatedSecPatrolsRoute = AuthenticatedSecPatrolsRouteImport.update({
   path: '/patrols',
   getParentRoute: () => AuthenticatedSecRoute,
 } as any)
+const AuthenticatedSecMaintenanceRoute =
+  AuthenticatedSecMaintenanceRouteImport.update({
+    id: '/maintenance',
+    path: '/maintenance',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const AuthenticatedSecKpiRoute = AuthenticatedSecKpiRouteImport.update({
   id: '/kpi',
   path: '/kpi',
@@ -593,6 +621,11 @@ const AuthenticatedSecContractorsRoute =
     path: '/contractors',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
+const AuthenticatedSecCirclesRoute = AuthenticatedSecCirclesRouteImport.update({
+  id: '/circles',
+  path: '/circles',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
 const AuthenticatedSecCctvRoute = AuthenticatedSecCctvRouteImport.update({
   id: '/cctv',
   path: '/cctv',
@@ -700,6 +733,7 @@ export interface FileRoutesByFullPath {
   '/sec/ai': typeof AuthenticatedSecAiRoute
   '/sec/assets': typeof AuthenticatedSecAssetsRoute
   '/sec/cctv': typeof AuthenticatedSecCctvRoute
+  '/sec/circles': typeof AuthenticatedSecCirclesRoute
   '/sec/contractors': typeof AuthenticatedSecContractorsRoute
   '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/sec/exec': typeof AuthenticatedSecExecRoute
@@ -707,13 +741,17 @@ export interface FileRoutesByFullPath {
   '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
   '/sec/kpi': typeof AuthenticatedSecKpiRoute
+  '/sec/maintenance': typeof AuthenticatedSecMaintenanceRoute
   '/sec/patrols': typeof AuthenticatedSecPatrolsRoute
   '/sec/permits': typeof AuthenticatedSecPermitsRoute
+  '/sec/projects': typeof AuthenticatedSecProjectsRoute
   '/sec/reports': typeof AuthenticatedSecReportsRoute
   '/sec/risks': typeof AuthenticatedSecRisksRoute
   '/sec/safety': typeof AuthenticatedSecSafetyRoute
+  '/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/sec/shifts': typeof AuthenticatedSecShiftsRoute
   '/sec/timeline': typeof AuthenticatedSecTimelineRoute
+  '/sec/twin': typeof AuthenticatedSecTwinRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -798,6 +836,7 @@ export interface FileRoutesByTo {
   '/sec/ai': typeof AuthenticatedSecAiRoute
   '/sec/assets': typeof AuthenticatedSecAssetsRoute
   '/sec/cctv': typeof AuthenticatedSecCctvRoute
+  '/sec/circles': typeof AuthenticatedSecCirclesRoute
   '/sec/contractors': typeof AuthenticatedSecContractorsRoute
   '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/sec/exec': typeof AuthenticatedSecExecRoute
@@ -805,13 +844,17 @@ export interface FileRoutesByTo {
   '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
   '/sec/kpi': typeof AuthenticatedSecKpiRoute
+  '/sec/maintenance': typeof AuthenticatedSecMaintenanceRoute
   '/sec/patrols': typeof AuthenticatedSecPatrolsRoute
   '/sec/permits': typeof AuthenticatedSecPermitsRoute
+  '/sec/projects': typeof AuthenticatedSecProjectsRoute
   '/sec/reports': typeof AuthenticatedSecReportsRoute
   '/sec/risks': typeof AuthenticatedSecRisksRoute
   '/sec/safety': typeof AuthenticatedSecSafetyRoute
+  '/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/sec/shifts': typeof AuthenticatedSecShiftsRoute
   '/sec/timeline': typeof AuthenticatedSecTimelineRoute
+  '/sec/twin': typeof AuthenticatedSecTwinRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
@@ -899,6 +942,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/ai': typeof AuthenticatedSecAiRoute
   '/_authenticated/sec/assets': typeof AuthenticatedSecAssetsRoute
   '/_authenticated/sec/cctv': typeof AuthenticatedSecCctvRoute
+  '/_authenticated/sec/circles': typeof AuthenticatedSecCirclesRoute
   '/_authenticated/sec/contractors': typeof AuthenticatedSecContractorsRoute
   '/_authenticated/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/_authenticated/sec/exec': typeof AuthenticatedSecExecRoute
@@ -906,13 +950,17 @@ export interface FileRoutesById {
   '/_authenticated/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/_authenticated/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
   '/_authenticated/sec/kpi': typeof AuthenticatedSecKpiRoute
+  '/_authenticated/sec/maintenance': typeof AuthenticatedSecMaintenanceRoute
   '/_authenticated/sec/patrols': typeof AuthenticatedSecPatrolsRoute
   '/_authenticated/sec/permits': typeof AuthenticatedSecPermitsRoute
+  '/_authenticated/sec/projects': typeof AuthenticatedSecProjectsRoute
   '/_authenticated/sec/reports': typeof AuthenticatedSecReportsRoute
   '/_authenticated/sec/risks': typeof AuthenticatedSecRisksRoute
   '/_authenticated/sec/safety': typeof AuthenticatedSecSafetyRoute
+  '/_authenticated/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/_authenticated/sec/shifts': typeof AuthenticatedSecShiftsRoute
   '/_authenticated/sec/timeline': typeof AuthenticatedSecTimelineRoute
+  '/_authenticated/sec/twin': typeof AuthenticatedSecTwinRoute
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -1000,6 +1048,7 @@ export interface FileRouteTypes {
     | '/sec/ai'
     | '/sec/assets'
     | '/sec/cctv'
+    | '/sec/circles'
     | '/sec/contractors'
     | '/sec/emergency'
     | '/sec/exec'
@@ -1007,13 +1056,17 @@ export interface FileRouteTypes {
     | '/sec/incidents'
     | '/sec/integrations'
     | '/sec/kpi'
+    | '/sec/maintenance'
     | '/sec/patrols'
     | '/sec/permits'
+    | '/sec/projects'
     | '/sec/reports'
     | '/sec/risks'
     | '/sec/safety'
+    | '/sec/sections'
     | '/sec/shifts'
     | '/sec/timeline'
+    | '/sec/twin'
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/assistant/'
@@ -1098,6 +1151,7 @@ export interface FileRouteTypes {
     | '/sec/ai'
     | '/sec/assets'
     | '/sec/cctv'
+    | '/sec/circles'
     | '/sec/contractors'
     | '/sec/emergency'
     | '/sec/exec'
@@ -1105,13 +1159,17 @@ export interface FileRouteTypes {
     | '/sec/incidents'
     | '/sec/integrations'
     | '/sec/kpi'
+    | '/sec/maintenance'
     | '/sec/patrols'
     | '/sec/permits'
+    | '/sec/projects'
     | '/sec/reports'
     | '/sec/risks'
     | '/sec/safety'
+    | '/sec/sections'
     | '/sec/shifts'
     | '/sec/timeline'
+    | '/sec/twin'
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/assistant'
@@ -1198,6 +1256,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/ai'
     | '/_authenticated/sec/assets'
     | '/_authenticated/sec/cctv'
+    | '/_authenticated/sec/circles'
     | '/_authenticated/sec/contractors'
     | '/_authenticated/sec/emergency'
     | '/_authenticated/sec/exec'
@@ -1205,13 +1264,17 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/incidents'
     | '/_authenticated/sec/integrations'
     | '/_authenticated/sec/kpi'
+    | '/_authenticated/sec/maintenance'
     | '/_authenticated/sec/patrols'
     | '/_authenticated/sec/permits'
+    | '/_authenticated/sec/projects'
     | '/_authenticated/sec/reports'
     | '/_authenticated/sec/risks'
     | '/_authenticated/sec/safety'
+    | '/_authenticated/sec/sections'
     | '/_authenticated/sec/shifts'
     | '/_authenticated/sec/timeline'
+    | '/_authenticated/sec/twin'
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/assistant/'
@@ -1808,6 +1871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecVehiclesRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/twin': {
+      id: '/_authenticated/sec/twin'
+      path: '/twin'
+      fullPath: '/sec/twin'
+      preLoaderRoute: typeof AuthenticatedSecTwinRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/timeline': {
       id: '/_authenticated/sec/timeline'
       path: '/timeline'
@@ -1820,6 +1890,13 @@ declare module '@tanstack/react-router' {
       path: '/shifts'
       fullPath: '/sec/shifts'
       preLoaderRoute: typeof AuthenticatedSecShiftsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/sections': {
+      id: '/_authenticated/sec/sections'
+      path: '/sections'
+      fullPath: '/sec/sections'
+      preLoaderRoute: typeof AuthenticatedSecSectionsRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
     '/_authenticated/sec/safety': {
@@ -1843,6 +1920,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecReportsRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/projects': {
+      id: '/_authenticated/sec/projects'
+      path: '/projects'
+      fullPath: '/sec/projects'
+      preLoaderRoute: typeof AuthenticatedSecProjectsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/permits': {
       id: '/_authenticated/sec/permits'
       path: '/permits'
@@ -1855,6 +1939,13 @@ declare module '@tanstack/react-router' {
       path: '/patrols'
       fullPath: '/sec/patrols'
       preLoaderRoute: typeof AuthenticatedSecPatrolsRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/maintenance': {
+      id: '/_authenticated/sec/maintenance'
+      path: '/maintenance'
+      fullPath: '/sec/maintenance'
+      preLoaderRoute: typeof AuthenticatedSecMaintenanceRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
     '/_authenticated/sec/kpi': {
@@ -1906,6 +1997,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecContractorsRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/circles': {
+      id: '/_authenticated/sec/circles'
+      path: '/circles'
+      fullPath: '/sec/circles'
+      preLoaderRoute: typeof AuthenticatedSecCirclesRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/cctv': {
       id: '/_authenticated/sec/cctv'
       path: '/cctv'
@@ -1949,6 +2047,7 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecAiRoute: typeof AuthenticatedSecAiRoute
   AuthenticatedSecAssetsRoute: typeof AuthenticatedSecAssetsRoute
   AuthenticatedSecCctvRoute: typeof AuthenticatedSecCctvRoute
+  AuthenticatedSecCirclesRoute: typeof AuthenticatedSecCirclesRoute
   AuthenticatedSecContractorsRoute: typeof AuthenticatedSecContractorsRoute
   AuthenticatedSecEmergencyRoute: typeof AuthenticatedSecEmergencyRoute
   AuthenticatedSecExecRoute: typeof AuthenticatedSecExecRoute
@@ -1956,13 +2055,17 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecIncidentsRoute: typeof AuthenticatedSecIncidentsRoute
   AuthenticatedSecIntegrationsRoute: typeof AuthenticatedSecIntegrationsRoute
   AuthenticatedSecKpiRoute: typeof AuthenticatedSecKpiRoute
+  AuthenticatedSecMaintenanceRoute: typeof AuthenticatedSecMaintenanceRoute
   AuthenticatedSecPatrolsRoute: typeof AuthenticatedSecPatrolsRoute
   AuthenticatedSecPermitsRoute: typeof AuthenticatedSecPermitsRoute
+  AuthenticatedSecProjectsRoute: typeof AuthenticatedSecProjectsRoute
   AuthenticatedSecReportsRoute: typeof AuthenticatedSecReportsRoute
   AuthenticatedSecRisksRoute: typeof AuthenticatedSecRisksRoute
   AuthenticatedSecSafetyRoute: typeof AuthenticatedSecSafetyRoute
+  AuthenticatedSecSectionsRoute: typeof AuthenticatedSecSectionsRoute
   AuthenticatedSecShiftsRoute: typeof AuthenticatedSecShiftsRoute
   AuthenticatedSecTimelineRoute: typeof AuthenticatedSecTimelineRoute
+  AuthenticatedSecTwinRoute: typeof AuthenticatedSecTwinRoute
   AuthenticatedSecVehiclesRoute: typeof AuthenticatedSecVehiclesRoute
   AuthenticatedSecVisitorsRoute: typeof AuthenticatedSecVisitorsRoute
   AuthenticatedSecIndexRoute: typeof AuthenticatedSecIndexRoute
@@ -1973,6 +2076,7 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecAiRoute: AuthenticatedSecAiRoute,
   AuthenticatedSecAssetsRoute: AuthenticatedSecAssetsRoute,
   AuthenticatedSecCctvRoute: AuthenticatedSecCctvRoute,
+  AuthenticatedSecCirclesRoute: AuthenticatedSecCirclesRoute,
   AuthenticatedSecContractorsRoute: AuthenticatedSecContractorsRoute,
   AuthenticatedSecEmergencyRoute: AuthenticatedSecEmergencyRoute,
   AuthenticatedSecExecRoute: AuthenticatedSecExecRoute,
@@ -1980,13 +2084,17 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecIncidentsRoute: AuthenticatedSecIncidentsRoute,
   AuthenticatedSecIntegrationsRoute: AuthenticatedSecIntegrationsRoute,
   AuthenticatedSecKpiRoute: AuthenticatedSecKpiRoute,
+  AuthenticatedSecMaintenanceRoute: AuthenticatedSecMaintenanceRoute,
   AuthenticatedSecPatrolsRoute: AuthenticatedSecPatrolsRoute,
   AuthenticatedSecPermitsRoute: AuthenticatedSecPermitsRoute,
+  AuthenticatedSecProjectsRoute: AuthenticatedSecProjectsRoute,
   AuthenticatedSecReportsRoute: AuthenticatedSecReportsRoute,
   AuthenticatedSecRisksRoute: AuthenticatedSecRisksRoute,
   AuthenticatedSecSafetyRoute: AuthenticatedSecSafetyRoute,
+  AuthenticatedSecSectionsRoute: AuthenticatedSecSectionsRoute,
   AuthenticatedSecShiftsRoute: AuthenticatedSecShiftsRoute,
   AuthenticatedSecTimelineRoute: AuthenticatedSecTimelineRoute,
+  AuthenticatedSecTwinRoute: AuthenticatedSecTwinRoute,
   AuthenticatedSecVehiclesRoute: AuthenticatedSecVehiclesRoute,
   AuthenticatedSecVisitorsRoute: AuthenticatedSecVisitorsRoute,
   AuthenticatedSecIndexRoute: AuthenticatedSecIndexRoute,

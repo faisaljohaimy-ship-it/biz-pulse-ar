@@ -3,13 +3,18 @@ import { cn } from "@/lib/utils";
 import {
   Activity, AlertTriangle, ShieldAlert, Radar, KeyRound, UserCheck, HardHat,
   Car, FileBadge, Siren, Camera, Eye, ListChecks, BarChart3, FileText,
-  Clock, Boxes, Building2, Timeline, Brain, ShieldCheck, Plug,
+  Clock, Boxes, Building2, Brain, ShieldCheck, Plug, Network, Wrench, Rocket, Crown, Building,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
 const ITEMS: Item[] = [
   { to: "/sec", label: "غرفة العمليات", icon: Activity },
-  { to: "/sec/exec", label: "اللوحة التنفيذية", icon: ShieldCheck },
+  { to: "/sec/exec", label: "اللوحة التنفيذية", icon: Crown },
+  { to: "/sec/twin", label: "التوأم الرقمي", icon: Network },
+  { to: "/sec/circles", label: "الدوائر", icon: Building },
+  { to: "/sec/sections", label: "الأقسام", icon: ShieldCheck },
+  { to: "/sec/projects", label: "المشاريع", icon: Rocket },
+  { to: "/sec/maintenance", label: "أوامر العمل", icon: Wrench },
   { to: "/sec/incidents", label: "البلاغات", icon: AlertTriangle },
   { to: "/sec/patrols", label: "الدوريات", icon: Radar },
   { to: "/sec/access", label: "التحكم بالدخول", icon: KeyRound },
@@ -22,12 +27,12 @@ const ITEMS: Item[] = [
   { to: "/sec/safety", label: "ملاحظات السلامة", icon: Eye },
   { to: "/sec/risks", label: "سجل المخاطر", icon: ShieldAlert },
   { to: "/sec/kpi", label: "مؤشرات الأداء", icon: BarChart3 },
-  { to: "/sec/reports", label: "التقارير التنفيذية", icon: FileText },
+  { to: "/sec/reports", label: "التقارير", icon: FileText },
   { to: "/sec/shifts", label: "الورديات", icon: Clock },
   { to: "/sec/assets", label: "حماية الأصول", icon: Boxes },
   { to: "/sec/facilities", label: "حالة المواقع", icon: Building2 },
   { to: "/sec/timeline", label: "الخط الزمني", icon: ListChecks },
-  { to: "/sec/ai", label: "التوصيات الذكية", icon: Brain },
+  { to: "/sec/ai", label: "توصيات ARIA", icon: Brain },
   { to: "/sec/integrations", label: "التكاملات", icon: Plug },
 ];
 

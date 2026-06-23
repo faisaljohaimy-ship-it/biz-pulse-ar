@@ -114,14 +114,19 @@ function useNavGroups(): NavGroup[] {
       ],
     },
     {
-      label: ar(locale, "الأمن الصناعي", "Industrial Security"),
+      label: ar(locale, "الأمن الصناعي - المنطقة الغربية", "Industrial Security - Western Region"),
       items: [
         { to: "/sec", icon: ShieldCheck, label: ar(locale, "غرفة العمليات", "Ops Room") },
         { to: "/sec/exec", icon: Crown, label: ar(locale, "اللوحة التنفيذية", "Exec Dashboard") },
+        { to: "/sec/twin", icon: Network, label: ar(locale, "التوأم الرقمي", "Digital Twin") },
+        { to: "/sec/circles", icon: Building2, label: ar(locale, "الدوائر", "Circles") },
+        { to: "/sec/sections", icon: Shield, label: ar(locale, "الأقسام", "Sections") },
+        { to: "/sec/projects", icon: Rocket, label: ar(locale, "المشاريع", "Projects") },
+        { to: "/sec/maintenance", icon: Workflow, label: ar(locale, "أوامر العمل", "Work Orders") },
         { to: "/sec/incidents", icon: ShieldAlert, label: ar(locale, "البلاغات", "Incidents") },
         { to: "/sec/cctv", icon: Layers, label: ar(locale, "CCTV", "CCTV") },
         { to: "/sec/kpi", icon: BarChart3, label: ar(locale, "مؤشرات الأداء", "KPIs") },
-        { to: "/sec/ai", icon: Brain, label: ar(locale, "التوصيات الذكية", "AI Recos") },
+        { to: "/sec/ai", icon: Brain, label: ar(locale, "توصيات ARIA", "ARIA Recos") },
       ],
     },
     {
