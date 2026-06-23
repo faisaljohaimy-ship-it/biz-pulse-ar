@@ -64,6 +64,7 @@ import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedFabricRouteImport } from './routes/_authenticated/fabric'
+import { Route as AuthenticatedExecutiveReportsRouteImport } from './routes/_authenticated/executive-reports'
 import { Route as AuthenticatedExecutiveMapRouteImport } from './routes/_authenticated/executive-map'
 import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authenticated/executive'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
@@ -365,6 +366,12 @@ const AuthenticatedFabricRoute = AuthenticatedFabricRouteImport.update({
   path: '/fabric',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedExecutiveReportsRoute =
+  AuthenticatedExecutiveReportsRouteImport.update({
+    id: '/executive-reports',
+    path: '/executive-reports',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedExecutiveMapRoute =
   AuthenticatedExecutiveMapRouteImport.update({
     id: '/executive-map',
@@ -520,6 +527,7 @@ export interface FileRoutesByFullPath {
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
+  '/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
@@ -596,6 +604,7 @@ export interface FileRoutesByTo {
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
+  '/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
@@ -674,6 +683,7 @@ export interface FileRoutesById {
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
   '/_authenticated/executive': typeof AuthenticatedExecutiveRoute
   '/_authenticated/executive-map': typeof AuthenticatedExecutiveMapRoute
+  '/_authenticated/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/_authenticated/fabric': typeof AuthenticatedFabricRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
@@ -752,6 +762,7 @@ export interface FileRouteTypes {
     | '/execution'
     | '/executive'
     | '/executive-map'
+    | '/executive-reports'
     | '/fabric'
     | '/files'
     | '/forgotten'
@@ -828,6 +839,7 @@ export interface FileRouteTypes {
     | '/execution'
     | '/executive'
     | '/executive-map'
+    | '/executive-reports'
     | '/fabric'
     | '/files'
     | '/forgotten'
@@ -905,6 +917,7 @@ export interface FileRouteTypes {
     | '/_authenticated/execution'
     | '/_authenticated/executive'
     | '/_authenticated/executive-map'
+    | '/_authenticated/executive-reports'
     | '/_authenticated/fabric'
     | '/_authenticated/files'
     | '/_authenticated/forgotten'
@@ -1357,6 +1370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFabricRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/executive-reports': {
+      id: '/_authenticated/executive-reports'
+      path: '/executive-reports'
+      fullPath: '/executive-reports'
+      preLoaderRoute: typeof AuthenticatedExecutiveReportsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/executive-map': {
       id: '/_authenticated/executive-map'
       path: '/executive-map'
@@ -1519,6 +1539,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
   AuthenticatedExecutiveRoute: typeof AuthenticatedExecutiveRoute
   AuthenticatedExecutiveMapRoute: typeof AuthenticatedExecutiveMapRoute
+  AuthenticatedExecutiveReportsRoute: typeof AuthenticatedExecutiveReportsRoute
   AuthenticatedFabricRoute: typeof AuthenticatedFabricRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
@@ -1565,6 +1586,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
   AuthenticatedExecutiveRoute: AuthenticatedExecutiveRoute,
   AuthenticatedExecutiveMapRoute: AuthenticatedExecutiveMapRoute,
+  AuthenticatedExecutiveReportsRoute: AuthenticatedExecutiveReportsRoute,
   AuthenticatedFabricRoute: AuthenticatedFabricRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
