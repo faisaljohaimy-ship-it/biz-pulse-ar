@@ -245,11 +245,11 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       filename?: string;
       briefingId?: string;
     }) => {
-      if (!d?.siteId) throw new Error("Missing siteId");
-      if (!d?.teamId || !d?.channelId) throw new Error("Missing Teams channel");
-      if (!d?.title || d.title.length > 240) throw new Error("Invalid title");
-      if (d.summary && d.summary.length > 20000) throw new Error("Summary too long");
-      if (d.sections && d.sections.length > 30) throw new Error("Too many sections");
+      if (!d?.siteId) fail({ stage: "validation", message_en: "Missing SharePoint site.", message_ar: "موقع SharePoint مفقود." });
+      if (!d?.teamId || !d?.channelId) fail({ stage: "validation", message_en: "Missing Teams channel.", message_ar: "قناة Teams مفقودة." });
+      if (!d?.title || d.title.length > 240) fail({ stage: "validation", message_en: "Invalid title.", message_ar: "العنوان غير صالح." });
+      if (d.summary && d.summary.length > 20000) fail({ stage: "validation", message_en: "Summary too long (max 20k chars).", message_ar: "الملخص طويل جداً (الحد 20 ألف حرف)." });
+      if (d.sections && d.sections.length > 30) fail({ stage: "validation", message_en: "Too many sections (max 30).", message_ar: "عدد الأقسام كبير جداً (الحد 30)." });
       return d;
     },
   )
@@ -261,8 +261,26 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       _user_id: userId,
       _role: "admin",
     });
-    if (roleErr) throw new Error(`Authorization check failed: ${roleErr.message}`);
-    if (!isAdmin) throw new Error("Forbidden: executive report publishing requires admin role");
+    if (roleErr) {
+      fail({
+        stage: "authorization",
+        message_en: "Could not verify your role.",
+        message_ar: "تعذّر التحقق من صلاحياتك.",
+        hint_en: roleErr.message,
+        hint_ar: roleErr.message,
+      });
+    }
+    if (!isAdmin) {
+      fail({
+        stage: "authorization",
+        status: 403,
+        code: "role_required",
+        message_en: "Admin role is required to publish executive reports.",
+        message_ar: "نشر التقارير التنفيذية يتطلب صلاحية المسؤول (admin).",
+        hint_en: "Ask a workspace administrator to grant you the 'admin' role.",
+        hint_ar: "اطلب من مسؤول مساحة العمل منحك دور admin.",
+      });
+    }
 
     const generatedAt = new Date().toISOString();
     const authorEmail = (claims?.email as string | undefined) ?? undefined;
@@ -286,19 +304,20 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       headers: { ...spHeaders(), "Content-Type": "text/html; charset=utf-8" },
       body: html,
     });
-    if (!up.ok) throw new Error(`SharePoint upload ${up.status}: ${(await up.text()).slice(0, 300)}`);
+    if (!up.ok) await failFromResponse("sharepoint_upload", up);
     const item = (await up.json()) as { id: string; name: string; webUrl: string; size: number };
 
-    // ── 2. Org-scoped view link ──────────────────────────────────────────────
+    // ── 2. Org-scoped view link (non-fatal: fall back to webUrl) ─────────────
     let shareUrl: string | null = null;
     try {
       const link = (await spJson(
+        "sharepoint_link",
         `/sites/${encodeURIComponent(data.siteId)}/drive/items/${item.id}/createLink`,
         { method: "POST", body: JSON.stringify({ type: "view", scope: "organization" }) },
       )) as { link?: { webUrl?: string } };
       shareUrl = link.link?.webUrl ?? null;
     } catch {
-      /* fall back to item.webUrl */
+      /* link creation can be blocked by tenant sharing policy — fall back */
     }
     const finalUrl = shareUrl ?? item.webUrl;
 
@@ -322,7 +341,33 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       },
     );
     if (!teamsRes.ok) {
-      throw new Error(`Teams post ${teamsRes.status}: ${(await teamsRes.text()).slice(0, 300)}`);
+      // SharePoint succeeded — surface a partial-success error so the UI can
+      // still show the uploaded report link even when Teams posting failed.
+      let raw = "";
+      let code = "";
+      let providerMsg = "";
+      try {
+        raw = await teamsRes.text();
+        const j = raw ? JSON.parse(raw) : null;
+        code = j?.error?.code ?? "";
+        providerMsg = j?.error?.message ?? "";
+      } catch { /* keep raw */ }
+      fail({
+        stage: "teams_post",
+        status: teamsRes.status,
+        code: code || `http_${teamsRes.status}`,
+        message_en: "Report uploaded to SharePoint, but posting to Teams failed.",
+        message_ar: "تم رفع التقرير إلى SharePoint، لكن فشل النشر إلى Teams.",
+        hint_en:
+          teamsRes.status === 403
+            ? "The connected account isn't a member of this team or lacks ChannelMessage.Send."
+            : providerMsg || "Open the SharePoint link below and share it manually, or retry.",
+        hint_ar:
+          teamsRes.status === 403
+            ? "الحساب الموصّل ليس عضواً في هذا الفريق أو يفتقر لصلاحية ChannelMessage.Send."
+            : providerMsg || "افتح رابط SharePoint أدناه وشاركه يدوياً، أو أعد المحاولة.",
+        raw: JSON.stringify({ sharepointUrl: finalUrl, providerRaw: raw.slice(0, 300) }),
+      });
     }
     const teamsMsg = (await teamsRes.json()) as { id?: string; webUrl?: string };
 
