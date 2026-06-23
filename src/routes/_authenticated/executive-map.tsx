@@ -24,17 +24,8 @@ export const Route = createFileRoute("/_authenticated/executive-map")({
   notFoundComponent: () => <div className="p-6">Not found</div>,
 });
 
-type Site = {
-  id: string;
-  name: string;
-  name_ar?: string;
-  type: "hq" | "branch" | "site" | "asset" | "incident";
-  lat: number;
-  lng: number;
-  status: "ok" | "warn" | "critical";
-  metric?: string;
-  detail?: string;
-};
+type Site = MapSite;
+
 
 // Seed of strategic locations in MENA + key global hubs. Augmented at runtime
 // by sec_incidents / pulse_crises so the map reflects real signals.
