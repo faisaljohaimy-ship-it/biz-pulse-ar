@@ -709,10 +709,10 @@ function NodeChip({
           longPress.current = null;
         }
       }}
-      className="nexus-node group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-3xl outline-none transition-transform duration-300 will-change-transform hover:-translate-y-[6px] hover:scale-[1.03] focus-visible:scale-[1.03] focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+      className="nexus-node group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-3xl outline-none transition-transform duration-300 will-change-transform [--chip-half:88px] hover:-translate-y-[6px] hover:scale-[1.03] focus-visible:scale-[1.03] focus-visible:ring-2 focus-visible:ring-cyan-300/70 sm:[--chip-half:100px] md:[--chip-half:108px]"
       style={{
-        left: `${node.x}%`,
-        top: `${node.y}%`,
+        left: `clamp(var(--chip-half), ${node.x}%, calc(100% - var(--chip-half)))`,
+        top: `clamp(56px, ${node.y}%, calc(100% - 56px))`,
         animation: `float-y 6s ease-in-out ${delay}ms infinite`,
       }}
     >
