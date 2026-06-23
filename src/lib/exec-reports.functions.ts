@@ -56,7 +56,7 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
     });
   }
   if (status === 403 || code === "accessDenied" || code === "Forbidden" || code === "authorizationRequestDenied") {
-    const isUpload = stage === "sharepoint_upload" || stage === "sharepoint_link";
+    const isUpload = stage === "sharepoint_upload" || stage === "sharepoint_createLink";
     fail({
       stage, status, code: code || "accessDenied",
       message_en: isUpload ? "Permission denied on this SharePoint site." : "Permission denied posting to this Teams channel.",
