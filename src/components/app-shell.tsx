@@ -271,12 +271,13 @@ function LangToggle() {
 function UserChip() {
   const { user, signOut } = useAuth();
   const { t } = useI18n();
+  const displayName = "إدارة الأمن الصناعي بالمنطقة الغربية";
   return (
-    <div className="nexus-user-meta flex min-w-0 items-center gap-2">
+    <div className="nexus-user-meta flex min-w-0 items-center gap-2" title={user?.email ?? undefined}>
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
-        {user?.email?.[0]?.toUpperCase() ?? "?"}
+        أ
       </div>
-      <div className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{user?.email}</div>
+      <div className="min-w-0 flex-1 truncate text-xs text-muted-foreground" dir="rtl">{displayName}</div>
       <Button variant="ghost" size="icon-sm" onClick={() => signOut()} title={t("auth.signout")}>
         <LogOut className="h-3.5 w-3.5" data-flip-rtl />
       </Button>
