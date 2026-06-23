@@ -290,6 +290,15 @@ function ExecutiveReportsPage() {
     }
   };
 
+  const [mockKey, setMockKey] = useState<string>(MOCK_SCENARIOS[0].key);
+  const simulateMockError = () => {
+    const scenario = MOCK_SCENARIOS.find((s) => s.key === mockKey) ?? MOCK_SCENARIOS[0];
+    const env: PublishErrorEnvelope = { __publishError: true, requestId: newRequestId(), ...scenario.build() };
+    setLastResult(null);
+    setLastError(env);
+    toast.error(isAr ? env.message_ar : env.message_en);
+  };
+
   if (isAdmin === false) {
     return (
       <div className="p-6">
