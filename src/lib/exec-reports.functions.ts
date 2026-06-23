@@ -190,8 +190,9 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       await supabase.from("audit_logs").insert({
         user_id: userId,
         action: "executive_report.publish",
-        resource_type: "sharepoint_item",
-        resource_id: item.id,
+        entity: "sharepoint_item",
+        entity_id: item.id,
+        route: "/executive-reports",
         metadata: {
           title: data.title,
           filename,
