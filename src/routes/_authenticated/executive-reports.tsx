@@ -15,7 +15,28 @@ import { toast } from "sonner";
 import { listSharePointSites } from "@/lib/sharepoint.functions";
 import { listTeamsChannels } from "@/lib/teams.functions";
 import { publishExecutiveReport } from "@/lib/exec-reports.functions";
-import { FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2 } from "lucide-react";
+import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
+import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X } from "lucide-react";
+
+const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: string }> = {
+  config:           { en: "Connector configuration", ar: "إعداد الموصّل" },
+  authorization:    { en: "Authorization",           ar: "الصلاحيات" },
+  validation:       { en: "Input validation",        ar: "التحقق من المدخلات" },
+  sharepoint_upload:{ en: "SharePoint upload",       ar: "رفع SharePoint" },
+  sharepoint_link:  { en: "SharePoint share link",   ar: "رابط مشاركة SharePoint" },
+  teams_post:       { en: "Teams post",              ar: "نشر Teams" },
+  unknown:          { en: "Unknown",                 ar: "غير معروف" },
+};
+
+function parsePublishError(e: unknown): PublishErrorEnvelope | null {
+  const msg = (e as { message?: string })?.message;
+  if (!msg) return null;
+  try {
+    const j = JSON.parse(msg);
+    if (j && j.__publishError) return j as PublishErrorEnvelope;
+  } catch { /* not a structured error */ }
+  return null;
+}
 
 export const Route = createFileRoute("/_authenticated/executive-reports")({
   component: ExecutiveReportsPage,
@@ -55,6 +76,7 @@ function ExecutiveReportsPage() {
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [lastResult, setLastResult] = useState<Awaited<ReturnType<typeof publishExecutiveReport>> | null>(null);
+  const [lastError, setLastError] = useState<PublishErrorEnvelope | null>(null);
 
   // Check admin role
   useEffect(() => {
@@ -120,14 +142,28 @@ function ExecutiveReportsPage() {
     }
     const [teamId, channelId] = channelKey.split("|");
     setPublishing(true);
+    setLastError(null);
     try {
       const result = await publish({
         data: { siteId, teamId, channelId, title, subtitle: subtitle || undefined, summary: summary || undefined },
       });
       setLastResult(result);
       toast.success(isAr ? "تم النشر إلى SharePoint وإرساله إلى Teams" : "Published to SharePoint and posted to Teams");
-    } catch (e: any) {
-      toast.error(e?.message ?? (isAr ? "فشل النشر" : "Publish failed"));
+    } catch (e: unknown) {
+      const env = parsePublishError(e);
+      if (env) {
+        setLastError(env);
+        toast.error(isAr ? env.message_ar : env.message_en);
+      } else {
+        const msg = (e as { message?: string })?.message ?? (isAr ? "فشل النشر" : "Publish failed");
+        setLastError({
+          __publishError: true,
+          stage: "unknown",
+          message_en: msg,
+          message_ar: msg,
+        });
+        toast.error(msg);
+      }
     } finally {
       setPublishing(false);
     }
