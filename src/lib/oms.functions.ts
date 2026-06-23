@@ -124,7 +124,7 @@ export const updateIncident = createServerFn({ method: "POST" })
       event: "updated",
       actor_id: userId,
       actor_name: actorName,
-      payload: patch as Record<string, unknown>,
+      payload: patch as unknown as JsonValue,
     });
     return row;
   });
@@ -148,8 +148,8 @@ export const addCorrectiveAction = createServerFn({ method: "POST" })
       .eq("id", data.incident_id)
       .single();
     if (e1) throw new Error(e1.message);
-    const prev = Array.isArray(cur.corrective_actions) ? (cur.corrective_actions as unknown[]) : [];
-    const next = [
+    const prev = Array.isArray(cur.corrective_actions) ? (cur.corrective_actions as JsonValue[]) : [];
+    const next: JsonValue[] = [
       ...prev,
       {
         id: crypto.randomUUID(),
@@ -163,7 +163,7 @@ export const addCorrectiveAction = createServerFn({ method: "POST" })
     ];
     const { error: e2 } = await supabase
       .from("sec_incidents")
-      .update({ corrective_actions: next })
+      .update({ corrective_actions: next as never })
       .eq("id", data.incident_id);
     if (e2) throw new Error(e2.message);
     await supabase.from("sec_activity_events").insert({
