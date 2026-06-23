@@ -159,6 +159,7 @@ function ExecutiveReportsPage() {
         setLastError({
           __publishError: true,
           stage: "unknown",
+          requestId: (typeof crypto !== "undefined" && "randomUUID" in crypto) ? crypto.randomUUID() : `err-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           message_en: msg,
           message_ar: msg,
         });
