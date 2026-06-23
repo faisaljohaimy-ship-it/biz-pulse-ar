@@ -114,6 +114,17 @@ function useNavGroups(): NavGroup[] {
       ],
     },
     {
+      label: ar(locale, "الأمن الصناعي", "Industrial Security"),
+      items: [
+        { to: "/sec", icon: ShieldCheck, label: ar(locale, "غرفة العمليات", "Ops Room") },
+        { to: "/sec/exec", icon: Crown, label: ar(locale, "اللوحة التنفيذية", "Exec Dashboard") },
+        { to: "/sec/incidents", icon: ShieldAlert, label: ar(locale, "البلاغات", "Incidents") },
+        { to: "/sec/cctv", icon: Layers, label: ar(locale, "CCTV", "CCTV") },
+        { to: "/sec/kpi", icon: BarChart3, label: ar(locale, "مؤشرات الأداء", "KPIs") },
+        { to: "/sec/ai", icon: Brain, label: ar(locale, "التوصيات الذكية", "AI Recos") },
+      ],
+    },
+    {
       label: t("nav.group.executive"),
       items: [
         { to: "/executive", icon: Crown, label: ar(locale, "غرفة القيادة التنفيذية", "Executive HQ") },
