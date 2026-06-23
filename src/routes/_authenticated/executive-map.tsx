@@ -157,7 +157,7 @@ function ExecutiveMapPage() {
       <PageHeader
         icon={MapPin}
         title={isAr ? "الخريطة التنفيذية" : "Executive Map"}
-        description={
+        subtitle={
           isAr
             ? "خريطة حية لمواقع المؤسسة وأصولها وحوادثها — مدعومة بـ OpenStreetMap"
             : "Live map of organizational sites, assets and incidents — powered by OpenStreetMap"
