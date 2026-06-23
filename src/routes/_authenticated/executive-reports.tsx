@@ -15,7 +15,28 @@ import { toast } from "sonner";
 import { listSharePointSites } from "@/lib/sharepoint.functions";
 import { listTeamsChannels } from "@/lib/teams.functions";
 import { publishExecutiveReport } from "@/lib/exec-reports.functions";
-import { FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2 } from "lucide-react";
+import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
+import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X } from "lucide-react";
+
+const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: string }> = {
+  config:           { en: "Connector configuration", ar: "إعداد الموصّل" },
+  authorization:    { en: "Authorization",           ar: "الصلاحيات" },
+  validation:       { en: "Input validation",        ar: "التحقق من المدخلات" },
+  sharepoint_upload:{ en: "SharePoint upload",       ar: "رفع SharePoint" },
+  sharepoint_link:  { en: "SharePoint share link",   ar: "رابط مشاركة SharePoint" },
+  teams_post:       { en: "Teams post",              ar: "نشر Teams" },
+  unknown:          { en: "Unknown",                 ar: "غير معروف" },
+};
+
+function parsePublishError(e: unknown): PublishErrorEnvelope | null {
+  const msg = (e as { message?: string })?.message;
+  if (!msg) return null;
+  try {
+    const j = JSON.parse(msg);
+    if (j && j.__publishError) return j as PublishErrorEnvelope;
+  } catch { /* not a structured error */ }
+  return null;
+}
 
 export const Route = createFileRoute("/_authenticated/executive-reports")({
   component: ExecutiveReportsPage,
@@ -55,6 +76,7 @@ function ExecutiveReportsPage() {
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [lastResult, setLastResult] = useState<Awaited<ReturnType<typeof publishExecutiveReport>> | null>(null);
+  const [lastError, setLastError] = useState<PublishErrorEnvelope | null>(null);
 
   // Check admin role
   useEffect(() => {
@@ -120,14 +142,28 @@ function ExecutiveReportsPage() {
     }
     const [teamId, channelId] = channelKey.split("|");
     setPublishing(true);
+    setLastError(null);
     try {
       const result = await publish({
         data: { siteId, teamId, channelId, title, subtitle: subtitle || undefined, summary: summary || undefined },
       });
       setLastResult(result);
       toast.success(isAr ? "تم النشر إلى SharePoint وإرساله إلى Teams" : "Published to SharePoint and posted to Teams");
-    } catch (e: any) {
-      toast.error(e?.message ?? (isAr ? "فشل النشر" : "Publish failed"));
+    } catch (e: unknown) {
+      const env = parsePublishError(e);
+      if (env) {
+        setLastError(env);
+        toast.error(isAr ? env.message_ar : env.message_en);
+      } else {
+        const msg = (e as { message?: string })?.message ?? (isAr ? "فشل النشر" : "Publish failed");
+        setLastError({
+          __publishError: true,
+          stage: "unknown",
+          message_en: msg,
+          message_ar: msg,
+        });
+        toast.error(msg);
+      }
     } finally {
       setPublishing(false);
     }
@@ -257,6 +293,72 @@ function ExecutiveReportsPage() {
               <span className="ms-2">{isAr ? "نشر إلى SharePoint + Teams" : "Publish to SharePoint + Teams"}</span>
             </Button>
           </div>
+
+          {lastError && (() => {
+            const stageLabel = STAGE_LABEL[lastError.stage];
+            // Partial-success: teams_post stage carries the sharepoint URL in raw
+            let partialSharepointUrl: string | null = null;
+            if (lastError.stage === "teams_post" && lastError.raw) {
+              try {
+                const r = JSON.parse(lastError.raw);
+                if (typeof r?.sharepointUrl === "string") partialSharepointUrl = r.sharepointUrl;
+              } catch { /* ignore */ }
+            }
+            return (
+              <Card className="p-4 border-destructive/40 bg-destructive/5">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-destructive">
+                        {isAr ? lastError.message_ar : lastError.message_en}
+                      </span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {isAr ? stageLabel.ar : stageLabel.en}
+                      </Badge>
+                      {lastError.status && (
+                        <Badge variant="outline" className="text-[10px]">HTTP {lastError.status}</Badge>
+                      )}
+                      {lastError.code && (
+                        <Badge variant="outline" className="text-[10px] font-mono">{lastError.code}</Badge>
+                      )}
+                    </div>
+                    {(lastError.hint_en || lastError.hint_ar) && (
+                      <div className="text-xs text-muted-foreground">
+                        💡 {isAr ? lastError.hint_ar : lastError.hint_en}
+                      </div>
+                    )}
+                    {partialSharepointUrl && (
+                      <div className="text-xs">
+                        <span className="text-muted-foreground">
+                          {isAr ? "تم رفع التقرير. افتحه يدوياً:" : "Report was uploaded. Open it manually:"}
+                        </span>{" "}
+                        <a
+                          href={partialSharepointUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" /> SharePoint
+                        </a>
+                      </div>
+                    )}
+                    {lastError.raw && lastError.stage !== "teams_post" && (
+                      <details className="text-[11px] text-muted-foreground">
+                        <summary className="cursor-pointer">{isAr ? "تفاصيل تقنية" : "Technical details"}</summary>
+                        <pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/50 p-2">
+                          {lastError.raw}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setLastError(null)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </Card>
+            );
+          })()}
 
           {lastResult && (
             <Card className="p-3 bg-muted/40 border-primary/30">

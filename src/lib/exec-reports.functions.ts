@@ -4,25 +4,166 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
 
+// ─── Structured error envelope ────────────────────────────────────────────
+// We serialize a JSON envelope into Error.message so the client can parse it
+// and render a precise, localized message + remediation hint per stage.
+export type PublishStage =
+  | "config"
+  | "authorization"
+  | "validation"
+  | "sharepoint_upload"
+  | "sharepoint_link"
+  | "teams_post"
+  | "unknown";
+
+export type PublishErrorEnvelope = {
+  __publishError: true;
+  stage: PublishStage;
+  status?: number;
+  code?: string;
+  message_en: string;
+  message_ar: string;
+  hint_en?: string;
+  hint_ar?: string;
+  raw?: string;
+};
+
+function fail(env: Omit<PublishErrorEnvelope, "__publishError">): never {
+  const payload: PublishErrorEnvelope = { __publishError: true, ...env };
+  throw new Error(JSON.stringify(payload));
+}
+
+async function failFromResponse(stage: PublishStage, res: Response): Promise<never> {
+  const status = res.status;
+  let raw = "";
+  let code = "";
+  let providerMsg = "";
+  try {
+    raw = await res.text();
+    const j = raw ? JSON.parse(raw) : null;
+    code = j?.error?.code ?? j?.code ?? "";
+    providerMsg = j?.error?.message ?? j?.message ?? "";
+  } catch { /* keep raw as text */ }
+
+  if (status === 401 || code === "unauthorized" || code === "lovable_api_key_not_registered") {
+    fail({
+      stage, status, code: code || "unauthorized",
+      message_en: "Microsoft 365 connection rejected the request (401).",
+      message_ar: "رفض اتصال Microsoft 365 الطلب (401).",
+      hint_en: "Reconnect the Microsoft connector (SharePoint/Teams) from Project → Connectors and try again.",
+      hint_ar: "أعد توصيل موصّل Microsoft (SharePoint/Teams) من إعدادات المشروع ثم أعد المحاولة.",
+      raw: raw.slice(0, 400),
+    });
+  }
+  if (status === 403 || code === "accessDenied" || code === "Forbidden" || code === "authorizationRequestDenied") {
+    const isUpload = stage === "sharepoint_upload" || stage === "sharepoint_link";
+    fail({
+      stage, status, code: code || "accessDenied",
+      message_en: isUpload ? "Permission denied on this SharePoint site." : "Permission denied posting to this Teams channel.",
+      message_ar: isUpload ? "صلاحية غير كافية على موقع SharePoint هذا." : "صلاحية غير كافية للنشر في قناة Teams هذه.",
+      hint_en: isUpload
+        ? "The connected Microsoft account needs Edit/Contribute permission on the chosen site (Sites.ReadWrite.All scope)."
+        : "The connected Microsoft account must be a member of this team with ChannelMessage.Send permission.",
+      hint_ar: isUpload
+        ? "يحتاج حساب Microsoft الموصّل صلاحية Edit/Contribute على الموقع المختار (Sites.ReadWrite.All)."
+        : "يجب أن يكون حساب Microsoft الموصّل عضواً في الفريق مع صلاحية ChannelMessage.Send.",
+      raw: raw.slice(0, 400),
+    });
+  }
+  if (status === 404 || code === "itemNotFound" || code === "ResourceNotFound") {
+    fail({
+      stage, status, code: code || "itemNotFound",
+      message_en: stage === "teams_post" ? "Team or channel not found." : "SharePoint site or folder not found.",
+      message_ar: stage === "teams_post" ? "لم يتم العثور على الفريق أو القناة." : "لم يتم العثور على موقع SharePoint أو المجلد.",
+      hint_en: "Refresh the list and pick a destination the connected account still has access to.",
+      hint_ar: "حدّث القائمة واختر وجهة لا يزال الحساب الموصّل يملك صلاحية الوصول إليها.",
+      raw: raw.slice(0, 400),
+    });
+  }
+  if (status === 413 || code === "maxRequestLengthExceeded" || code === "EntityTooLarge") {
+    fail({
+      stage, status, code: code || "maxRequestLengthExceeded",
+      message_en: "Report is too large to upload in a single request.",
+      message_ar: "حجم التقرير كبير جداً للرفع في طلب واحد.",
+      hint_en: "Trim the summary/sections to under ~4 MB or split it into multiple reports.",
+      hint_ar: "قلّل حجم الملخص/الأقسام إلى أقل من 4 ميجابايت أو قسّم التقرير.",
+      raw: raw.slice(0, 400),
+    });
+  }
+  if (status === 429 || code === "TooManyRequests" || code === "activityLimitReached") {
+    fail({
+      stage, status, code: code || "TooManyRequests",
+      message_en: "Microsoft Graph rate limit reached.",
+      message_ar: "تم بلوغ حد الطلبات في Microsoft Graph.",
+      hint_en: "Wait a minute and retry — repeated bursts trigger throttling per Microsoft 365 tenant.",
+      hint_ar: "انتظر دقيقة ثم أعد المحاولة — تكرار الطلبات السريع يسبب الحد من قبل Microsoft 365.",
+      raw: raw.slice(0, 400),
+    });
+  }
+  if (status === 507 || code === "quotaLimitReached" || code === "insufficientStorage") {
+    fail({
+      stage, status, code: code || "quotaLimitReached",
+      message_en: "SharePoint storage quota exceeded.",
+      message_ar: "تم تجاوز حصة التخزين في SharePoint.",
+      hint_en: "Free up space on the destination site or pick another site.",
+      hint_ar: "حرّر مساحة على الموقع المختار أو اختر موقعاً آخر.",
+      raw: raw.slice(0, 400),
+    });
+  }
+  if (status >= 500) {
+    fail({
+      stage, status, code: code || "serverError",
+      message_en: "Microsoft Graph is temporarily unavailable.",
+      message_ar: "خدمة Microsoft Graph غير متاحة مؤقتاً.",
+      hint_en: "Retry in a few seconds. If it persists, check the Microsoft 365 service health dashboard.",
+      hint_ar: "أعد المحاولة بعد ثوانٍ. إذا استمر، راجع لوحة حالة خدمة Microsoft 365.",
+      raw: raw.slice(0, 400),
+    });
+  }
+
+  fail({
+    stage, status, code: code || `http_${status}`,
+    message_en: providerMsg || `Microsoft Graph request failed (${status}).`,
+    message_ar: providerMsg || `فشل طلب Microsoft Graph (${status}).`,
+    raw: raw.slice(0, 400),
+  });
+}
+
 function spHeaders() {
   const k = process.env.LOVABLE_API_KEY;
   const sp = process.env.MICROSOFT_SHAREPOINT_API_KEY;
-  if (!k || !sp) throw new Error("SharePoint connector not configured");
+  if (!k || !sp) {
+    fail({
+      stage: "config",
+      message_en: "SharePoint connector is not configured.",
+      message_ar: "موصّل SharePoint غير مُهيّأ.",
+      hint_en: "Link Microsoft SharePoint under Project → Connectors.",
+      hint_ar: "اربط موصّل Microsoft SharePoint من إعدادات المشروع.",
+    });
+  }
   return { Authorization: `Bearer ${k}`, "X-Connection-Api-Key": sp };
 }
 function teamsHeaders() {
   const k = process.env.LOVABLE_API_KEY;
   const t = process.env.MICROSOFT_TEAMS_API_KEY;
-  if (!k || !t) throw new Error("Teams connector not configured");
+  if (!k || !t) {
+    fail({
+      stage: "config",
+      message_en: "Microsoft Teams connector is not configured.",
+      message_ar: "موصّل Microsoft Teams غير مُهيّأ.",
+      hint_en: "Link Microsoft Teams under Project → Connectors.",
+      hint_ar: "اربط موصّل Microsoft Teams من إعدادات المشروع.",
+    });
+  }
   return { Authorization: `Bearer ${k}`, "X-Connection-Api-Key": t };
 }
 
-async function spJson(path: string, init?: RequestInit) {
+async function spJson(stage: PublishStage, path: string, init?: RequestInit) {
   const r = await fetch(`${SP_GW}${path}`, {
     ...init,
     headers: { ...spHeaders(), "Content-Type": "application/json", ...(init?.headers || {}) },
   });
-  if (!r.ok) throw new Error(`SharePoint ${r.status}: ${(await r.text()).slice(0, 300)}`);
+  if (!r.ok) await failFromResponse(stage, r);
   return r.json();
 }
 
@@ -104,11 +245,11 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       filename?: string;
       briefingId?: string;
     }) => {
-      if (!d?.siteId) throw new Error("Missing siteId");
-      if (!d?.teamId || !d?.channelId) throw new Error("Missing Teams channel");
-      if (!d?.title || d.title.length > 240) throw new Error("Invalid title");
-      if (d.summary && d.summary.length > 20000) throw new Error("Summary too long");
-      if (d.sections && d.sections.length > 30) throw new Error("Too many sections");
+      if (!d?.siteId) fail({ stage: "validation", message_en: "Missing SharePoint site.", message_ar: "موقع SharePoint مفقود." });
+      if (!d?.teamId || !d?.channelId) fail({ stage: "validation", message_en: "Missing Teams channel.", message_ar: "قناة Teams مفقودة." });
+      if (!d?.title || d.title.length > 240) fail({ stage: "validation", message_en: "Invalid title.", message_ar: "العنوان غير صالح." });
+      if (d.summary && d.summary.length > 20000) fail({ stage: "validation", message_en: "Summary too long (max 20k chars).", message_ar: "الملخص طويل جداً (الحد 20 ألف حرف)." });
+      if (d.sections && d.sections.length > 30) fail({ stage: "validation", message_en: "Too many sections (max 30).", message_ar: "عدد الأقسام كبير جداً (الحد 30)." });
       return d;
     },
   )
@@ -120,8 +261,26 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       _user_id: userId,
       _role: "admin",
     });
-    if (roleErr) throw new Error(`Authorization check failed: ${roleErr.message}`);
-    if (!isAdmin) throw new Error("Forbidden: executive report publishing requires admin role");
+    if (roleErr) {
+      fail({
+        stage: "authorization",
+        message_en: "Could not verify your role.",
+        message_ar: "تعذّر التحقق من صلاحياتك.",
+        hint_en: roleErr.message,
+        hint_ar: roleErr.message,
+      });
+    }
+    if (!isAdmin) {
+      fail({
+        stage: "authorization",
+        status: 403,
+        code: "role_required",
+        message_en: "Admin role is required to publish executive reports.",
+        message_ar: "نشر التقارير التنفيذية يتطلب صلاحية المسؤول (admin).",
+        hint_en: "Ask a workspace administrator to grant you the 'admin' role.",
+        hint_ar: "اطلب من مسؤول مساحة العمل منحك دور admin.",
+      });
+    }
 
     const generatedAt = new Date().toISOString();
     const authorEmail = (claims?.email as string | undefined) ?? undefined;
@@ -145,19 +304,20 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       headers: { ...spHeaders(), "Content-Type": "text/html; charset=utf-8" },
       body: html,
     });
-    if (!up.ok) throw new Error(`SharePoint upload ${up.status}: ${(await up.text()).slice(0, 300)}`);
+    if (!up.ok) await failFromResponse("sharepoint_upload", up);
     const item = (await up.json()) as { id: string; name: string; webUrl: string; size: number };
 
-    // ── 2. Org-scoped view link ──────────────────────────────────────────────
+    // ── 2. Org-scoped view link (non-fatal: fall back to webUrl) ─────────────
     let shareUrl: string | null = null;
     try {
       const link = (await spJson(
+        "sharepoint_link",
         `/sites/${encodeURIComponent(data.siteId)}/drive/items/${item.id}/createLink`,
         { method: "POST", body: JSON.stringify({ type: "view", scope: "organization" }) },
       )) as { link?: { webUrl?: string } };
       shareUrl = link.link?.webUrl ?? null;
     } catch {
-      /* fall back to item.webUrl */
+      /* link creation can be blocked by tenant sharing policy — fall back */
     }
     const finalUrl = shareUrl ?? item.webUrl;
 
@@ -181,7 +341,33 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       },
     );
     if (!teamsRes.ok) {
-      throw new Error(`Teams post ${teamsRes.status}: ${(await teamsRes.text()).slice(0, 300)}`);
+      // SharePoint succeeded — surface a partial-success error so the UI can
+      // still show the uploaded report link even when Teams posting failed.
+      let raw = "";
+      let code = "";
+      let providerMsg = "";
+      try {
+        raw = await teamsRes.text();
+        const j = raw ? JSON.parse(raw) : null;
+        code = j?.error?.code ?? "";
+        providerMsg = j?.error?.message ?? "";
+      } catch { /* keep raw */ }
+      fail({
+        stage: "teams_post",
+        status: teamsRes.status,
+        code: code || `http_${teamsRes.status}`,
+        message_en: "Report uploaded to SharePoint, but posting to Teams failed.",
+        message_ar: "تم رفع التقرير إلى SharePoint، لكن فشل النشر إلى Teams.",
+        hint_en:
+          teamsRes.status === 403
+            ? "The connected account isn't a member of this team or lacks ChannelMessage.Send."
+            : providerMsg || "Open the SharePoint link below and share it manually, or retry.",
+        hint_ar:
+          teamsRes.status === 403
+            ? "الحساب الموصّل ليس عضواً في هذا الفريق أو يفتقر لصلاحية ChannelMessage.Send."
+            : providerMsg || "افتح رابط SharePoint أدناه وشاركه يدوياً، أو أعد المحاولة.",
+        raw: JSON.stringify({ sharepointUrl: finalUrl, providerRaw: raw.slice(0, 300) }),
+      });
     }
     const teamsMsg = (await teamsRes.json()) as { id?: string; webUrl?: string };
 
