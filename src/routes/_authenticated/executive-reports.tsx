@@ -16,7 +16,7 @@ import { listSharePointSites } from "@/lib/sharepoint.functions";
 import { listTeamsChannels } from "@/lib/teams.functions";
 import { publishExecutiveReport } from "@/lib/exec-reports.functions";
 import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
-import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X } from "lucide-react";
+import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X, ClipboardCopy } from "lucide-react";
 
 const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: string }> = {
   config:           { en: "Connector configuration", ar: "إعداد الموصّل" },
