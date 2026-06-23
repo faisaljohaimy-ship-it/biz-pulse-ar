@@ -12,7 +12,7 @@ export type PublishStage =
   | "authorization"
   | "validation"
   | "sharepoint_upload"
-  | "sharepoint_link"
+  | "sharepoint_createLink"
   | "teams_post"
   | "unknown";
 
