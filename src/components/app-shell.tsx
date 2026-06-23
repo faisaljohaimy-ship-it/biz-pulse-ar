@@ -115,6 +115,7 @@ function useNavGroups(): NavGroup[] {
     {
       label: t("nav.group.executive"),
       items: [
+        { to: "/executive", icon: Crown, label: ar(locale, "غرفة القيادة التنفيذية", "Executive HQ") },
         { to: "/fabric", icon: Layers, label: ar(locale, "النسيج الذكي", "Intelligence Fabric") },
         { to: "/briefing", icon: FileText, label: t("nav.briefing") },
         { to: "/chief-of-staff", icon: Crown, label: t("nav.chief") },
