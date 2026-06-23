@@ -311,7 +311,7 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     let shareUrl: string | null = null;
     try {
       const link = (await spJson(
-        "sharepoint_link",
+        "sharepoint_createLink",
         `/sites/${encodeURIComponent(data.siteId)}/drive/items/${item.id}/createLink`,
         { method: "POST", body: JSON.stringify({ type: "view", scope: "organization" }) },
       )) as { link?: { webUrl?: string } };

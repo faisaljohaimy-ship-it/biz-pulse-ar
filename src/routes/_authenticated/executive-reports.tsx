@@ -23,7 +23,7 @@ const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: strin
   authorization:    { en: "Authorization",           ar: "الصلاحيات" },
   validation:       { en: "Input validation",        ar: "التحقق من المدخلات" },
   sharepoint_upload:{ en: "SharePoint upload",       ar: "رفع SharePoint" },
-  sharepoint_link:  { en: "SharePoint share link",   ar: "رابط مشاركة SharePoint" },
+  sharepoint_createLink: { en: "SharePoint share link", ar: "رابط مشاركة SharePoint" },
   teams_post:       { en: "Teams post",              ar: "نشر Teams" },
   unknown:          { en: "Unknown",                 ar: "غير معروف" },
 };
