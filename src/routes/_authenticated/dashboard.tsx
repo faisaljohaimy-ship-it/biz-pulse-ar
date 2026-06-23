@@ -460,7 +460,10 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
   };
   return (
     <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
-      <div className="relative h-56 w-56 md:h-64 md:w-64">
+      <div
+        className="relative aspect-square"
+        style={{ width: "clamp(160px, 38vw, 280px)" }}
+      >
         {/* ambient halos */}
         <div className="absolute inset-[-35%] rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="absolute inset-[-12%] rounded-full bg-[#00B8D9]/25 blur-2xl animate-pulse" />
