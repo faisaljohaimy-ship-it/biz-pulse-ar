@@ -294,6 +294,72 @@ function ExecutiveReportsPage() {
             </Button>
           </div>
 
+          {lastError && (() => {
+            const stageLabel = STAGE_LABEL[lastError.stage];
+            // Partial-success: teams_post stage carries the sharepoint URL in raw
+            let partialSharepointUrl: string | null = null;
+            if (lastError.stage === "teams_post" && lastError.raw) {
+              try {
+                const r = JSON.parse(lastError.raw);
+                if (typeof r?.sharepointUrl === "string") partialSharepointUrl = r.sharepointUrl;
+              } catch { /* ignore */ }
+            }
+            return (
+              <Card className="p-4 border-destructive/40 bg-destructive/5">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-destructive">
+                        {isAr ? lastError.message_ar : lastError.message_en}
+                      </span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {isAr ? stageLabel.ar : stageLabel.en}
+                      </Badge>
+                      {lastError.status && (
+                        <Badge variant="outline" className="text-[10px]">HTTP {lastError.status}</Badge>
+                      )}
+                      {lastError.code && (
+                        <Badge variant="outline" className="text-[10px] font-mono">{lastError.code}</Badge>
+                      )}
+                    </div>
+                    {(lastError.hint_en || lastError.hint_ar) && (
+                      <div className="text-xs text-muted-foreground">
+                        💡 {isAr ? lastError.hint_ar : lastError.hint_en}
+                      </div>
+                    )}
+                    {partialSharepointUrl && (
+                      <div className="text-xs">
+                        <span className="text-muted-foreground">
+                          {isAr ? "تم رفع التقرير. افتحه يدوياً:" : "Report was uploaded. Open it manually:"}
+                        </span>{" "}
+                        <a
+                          href={partialSharepointUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" /> SharePoint
+                        </a>
+                      </div>
+                    )}
+                    {lastError.raw && lastError.stage !== "teams_post" && (
+                      <details className="text-[11px] text-muted-foreground">
+                        <summary className="cursor-pointer">{isAr ? "تفاصيل تقنية" : "Technical details"}</summary>
+                        <pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/50 p-2">
+                          {lastError.raw}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setLastError(null)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </Card>
+            );
+          })()}
+
           {lastResult && (
             <Card className="p-3 bg-muted/40 border-primary/30">
               <div className="text-sm font-semibold mb-2">{isAr ? "تم النشر بنجاح" : "Published successfully"}</div>
