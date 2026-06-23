@@ -1,51 +1,120 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Build a compact, executive-grounded context block from live Supabase data
- * for the ARIA assistant. Read-only; uses the request-scoped supabase client
- * so RLS is enforced as the calling user.
+ * Build a compact, executive-grounded context block from live data for ARIA —
+ * the Executive AI for Western Region Industrial Security. Read-only;
+ * uses the request-scoped Supabase client so RLS is enforced as the calling user.
  */
 export async function buildAriaContext(supabase: SupabaseClient): Promise<string> {
   try {
-    const [kpisQ, crisesQ, alertsQ, eventsQ, outcomesQ, decisionsQ, knowledgeQ] = await Promise.all([
-      supabase.from("pulse_kpis").select("name,value,target,unit,trend,status,domain").limit(20),
-      supabase.from("pulse_crises").select("title,severity,status,owner,impact").eq("status", "open").limit(10),
-      supabase.from("intelligence_alerts").select("title,severity,owner,business_impact_score").is("resolved_at", null).order("business_impact_score", { ascending: false }).limit(10),
-      supabase.from("intelligence_events").select("title,kind,status,impact,owner,due_at").order("last_update", { ascending: false }).limit(10),
-      supabase.from("business_outcomes").select("title,status,owner,progress,target_date").limit(10),
-      supabase.from("pulse_memory").select("title,kind,owner,status").order("created_at", { ascending: false }).limit(8),
-      supabase.from("knowledge_docs").select("title,summary").order("created_at", { ascending: false }).limit(6),
+    const [
+      sectionsQ, circlesQ, sitesQ, incidentsQ, patrolsQ, visitorsQ,
+      permitsQ, contractorsQ, assetsQ, cctvQ, camerasQ, gatesQ,
+      sensorsQ, workOrdersQ, projectsQ,
+    ] = await Promise.all([
+      supabase.from("sec_sections").select("name_ar,head,staff_count"),
+      supabase.from("sec_circles").select("name_ar,manager,staff_count"),
+      supabase.from("sec_sites").select("code,name_ar,sensitivity,status,guards_count"),
+      supabase.from("sec_incidents").select("ref,title_ar,category,severity,status,response_minutes,reported_at").order("reported_at", { ascending: false }).limit(20),
+      supabase.from("sec_patrols").select("ref,team,route,status,checkpoints_done,checkpoints_total").order("started_at", { ascending: false, nullsFirst: false }).limit(15),
+      supabase.from("sec_visitors").select("status"),
+      supabase.from("sec_permits").select("work_type,contractor,risk_level,status,ends_at"),
+      supabase.from("sec_contractors").select("name,workers_count,compliance_score,status"),
+      supabase.from("sec_assets").select("name_ar,kind,status,health"),
+      supabase.from("sec_cctv_alerts").select("camera_code,alert_type,confidence,status,detected_at").order("detected_at", { ascending: false }).limit(15),
+      supabase.from("sec_cameras").select("status,health"),
+      supabase.from("sec_gates").select("status,health"),
+      supabase.from("sec_sensors").select("status,sensor_type"),
+      supabase.from("sec_work_orders").select("ref,title_ar,kind,priority,status,assigned_to,due_at").order("opened_at", { ascending: false }).limit(15),
+      supabase.from("sec_projects").select("ref,name_ar,kind,status,progress,budget_sar,spent_sar,health,ends_at").order("ends_at", { ascending: true }),
     ]);
 
     const sections: string[] = [];
 
-    if (kpisQ.data?.length) {
-      sections.push("## Live KPIs\n" + kpisQ.data.map((k) => `- ${k.name}: ${k.value}${k.unit ?? ""} (target ${k.target ?? "?"}, ${k.status ?? "?"}, ${k.trend ?? "?"})`).join("\n"));
+    sections.push("## الهيكل التنظيمي");
+    sections.push("- إدارة الأمن الصناعي بالمنطقة الغربية");
+    if (sectionsQ.data?.length) {
+      sections.push("### الأقسام");
+      sections.push(sectionsQ.data.map((s) => `- ${s.name_ar} — رئيس القسم: ${s.head ?? "—"} — موظفون: ${s.staff_count}`).join("\n"));
     }
-    if (crisesQ.data?.length) {
-      sections.push("## Open Crises\n" + crisesQ.data.map((c) => `- [${c.severity}] ${c.title} — owner ${c.owner ?? "?"}`).join("\n"));
-    }
-    if (alertsQ.data?.length) {
-      sections.push("## Top Open Alerts\n" + alertsQ.data.map((a) => `- [${a.severity}] ${a.title} (impact ${a.business_impact_score})`).join("\n"));
-    }
-    if (eventsQ.data?.length) {
-      sections.push("## Recent Intelligence Events\n" + eventsQ.data.map((e) => `- ${e.title} [${e.kind}/${e.status}]`).join("\n"));
-    }
-    if (outcomesQ.data?.length) {
-      sections.push("## Business Outcomes\n" + outcomesQ.data.map((o) => `- ${o.title} — ${o.status} ${o.progress ?? 0}% (${o.owner ?? "?"})`).join("\n"));
-    }
-    if (decisionsQ.data?.length) {
-      sections.push("## Executive Memory\n" + decisionsQ.data.map((m) => `- [${m.kind}] ${m.title} (${m.status})`).join("\n"));
-    }
-    if (knowledgeQ.data?.length) {
-      sections.push("## Knowledge Base Excerpts\n" + knowledgeQ.data.map((k) => `- ${k.title}: ${(k.summary ?? "").slice(0, 220)}`).join("\n"));
+    if (circlesQ.data?.length) {
+      sections.push("### الدوائر التشغيلية");
+      sections.push(circlesQ.data.map((c) => `- ${c.name_ar} — المدير: ${c.manager ?? "—"} — موظفون: ${c.staff_count}`).join("\n"));
     }
 
-    if (!sections.length) {
-      return "NO_ENTERPRISE_DATA_AVAILABLE";
+    if (sitesQ.data?.length) {
+      const ops = sitesQ.data.filter(s => s.status === "operational").length;
+      sections.push(`## المواقع\nإجمالي: ${sitesQ.data.length} — تشغيلية: ${ops} — حساسية حرجة: ${sitesQ.data.filter(s => s.sensitivity === "critical").length}`);
     }
+
+    if (incidentsQ.data?.length) {
+      const open = incidentsQ.data.filter(i => i.status !== "resolved" && i.status !== "closed").length;
+      const critical = incidentsQ.data.filter(i => i.severity === "critical" && i.status !== "closed").length;
+      sections.push(`## البلاغات\nمفتوحة: ${open} — حرجة: ${critical} — إجمالي مرصود: ${incidentsQ.data.length}`);
+      sections.push("### آخر البلاغات");
+      sections.push(incidentsQ.data.slice(0, 8).map(i => `- [${i.severity}] ${i.title_ar} (${i.ref} · ${i.category} · ${i.status})`).join("\n"));
+    }
+
+    if (patrolsQ.data?.length) {
+      const active = patrolsQ.data.filter(p => p.status === "active").length;
+      sections.push(`## الدوريات\nنشطة: ${active} — مجدولة: ${patrolsQ.data.filter(p => p.status === "scheduled").length}`);
+    }
+
+    if (workOrdersQ.data?.length) {
+      const open = workOrdersQ.data.filter(w => w.status !== "closed" && w.status !== "cancelled").length;
+      const preventive = workOrdersQ.data.filter(w => w.kind === "preventive").length;
+      const corrective = workOrdersQ.data.filter(w => w.kind === "corrective").length;
+      sections.push(`## أوامر العمل (الصيانة)\nمفتوحة: ${open} — وقائية: ${preventive} — تصحيحية: ${corrective}`);
+      sections.push("### أهم أوامر العمل النشطة");
+      sections.push(workOrdersQ.data.filter(w => w.status !== "closed").slice(0, 6).map(w => `- ${w.title_ar} [${w.kind}/${w.priority}] (${w.ref}) — ${w.assigned_to ?? "غير موكَّل"}`).join("\n"));
+    }
+
+    if (projectsQ.data?.length) {
+      const totalBudget = projectsQ.data.reduce((s, p) => s + Number(p.budget_sar), 0);
+      const totalSpent = projectsQ.data.reduce((s, p) => s + Number(p.spent_sar), 0);
+      sections.push(`## المشاريع\nجارية: ${projectsQ.data.filter(p => p.status === "in-progress").length} — مكتملة: ${projectsQ.data.filter(p => p.status === "completed").length} — مخطّطة: ${projectsQ.data.filter(p => p.status === "planned").length}\nإجمالي الميزانية: ${totalBudget.toLocaleString("ar-SA")} ر.س — المصروف: ${totalSpent.toLocaleString("ar-SA")} ر.س`);
+      sections.push("### المشاريع الجارية");
+      sections.push(projectsQ.data.filter(p => p.status === "in-progress").slice(0, 6).map(p => `- ${p.name_ar} [${p.kind}] — ${p.progress}% — صحة: ${p.health} (${p.ref})`).join("\n"));
+    }
+
+    if (camerasQ.data?.length) {
+      const online = camerasQ.data.filter(c => c.status === "online").length;
+      const avgHealth = camerasQ.data.reduce((s, c) => s + c.health, 0) / camerasQ.data.length;
+      sections.push(`## أنظمة CCTV\nكاميرات: ${camerasQ.data.length} — متصلة: ${online} — متوسط الصحة: ${Math.round(avgHealth)}%`);
+    }
+    if (gatesQ.data?.length) {
+      const online = gatesQ.data.filter(g => g.status === "online").length;
+      sections.push(`## التحكم بالدخول\nبوابات: ${gatesQ.data.length} — متصلة: ${online}`);
+    }
+    if (sensorsQ.data?.length) {
+      const alarming = sensorsQ.data.filter(s => s.status === "alarm").length;
+      sections.push(`## الحساسات\nإجمالي: ${sensorsQ.data.length} — في حالة إنذار: ${alarming}`);
+    }
+
+    if (cctvQ.data?.length) {
+      const newAlerts = cctvQ.data.filter(c => c.status === "new").length;
+      sections.push(`## تنبيهات CCTV\nجديدة: ${newAlerts}`);
+      sections.push(cctvQ.data.slice(0, 5).map(c => `- ${c.alert_type} (${c.camera_code}) ثقة ${Math.round(c.confidence*100)}% — ${c.status}`).join("\n"));
+    }
+
+    if (visitorsQ.data?.length) {
+      sections.push(`## الزوار\nبالداخل الآن: ${visitorsQ.data.filter(v => v.status === "inside").length}`);
+    }
+    if (permitsQ.data?.length) {
+      sections.push(`## التصاريح\nفعّالة: ${permitsQ.data.filter(p => p.status === "active" || p.status === "approved").length}`);
+    }
+    if (contractorsQ.data?.length) {
+      const avg = Math.round(contractorsQ.data.reduce((s, c) => s + c.compliance_score, 0) / contractorsQ.data.length);
+      sections.push(`## المقاولون\nنشطون: ${contractorsQ.data.filter(c => c.status === "active").length} — متوسط الامتثال: ${avg}%`);
+    }
+    if (assetsQ.data?.length) {
+      const avg = Math.round(assetsQ.data.reduce((s, a) => s + a.health, 0) / assetsQ.data.length);
+      sections.push(`## الأصول الأمنية\nمتصلة: ${assetsQ.data.filter(a => a.status === "online").length} — متوسط الصحة: ${avg}%`);
+    }
+
+    if (sections.length === 0) return "NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE";
     return sections.join("\n\n");
   } catch {
-    return "ENTERPRISE_DATA_FETCH_FAILED";
+    return "INDUSTRIAL_SECURITY_DATA_FETCH_FAILED";
   }
 }

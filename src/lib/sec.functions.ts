@@ -1,10 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// ============= TYPES =============
 export type SecSite = {
   id: string; code: string; name_ar: string; name_en: string;
   lat: number | null; lng: number | null; sensitivity: string; status: string;
   guards_count: number; notes: string | null; updated_at: string;
+  circle_id: string | null;
 };
 export type SecIncident = {
   id: string; ref: string; site_id: string | null; category: string;
@@ -40,6 +42,53 @@ export type SecCctvAlert = {
   alert_type: string; confidence: number; status: string; detected_at: string;
   acknowledged_by: string | null;
 };
+export type SecSection = {
+  id: string; code: string; name_ar: string; name_en: string;
+  head: string | null; staff_count: number;
+};
+export type SecCircle = {
+  id: string; code: string; name_ar: string; name_en: string;
+  manager: string | null; lat: number | null; lng: number | null; staff_count: number;
+};
+export type SecBuilding = {
+  id: string; site_id: string | null; code: string; name_ar: string; name_en: string;
+  floors: number; status: string;
+};
+export type SecCamera = {
+  id: string; building_id: string | null; site_id: string | null; code: string;
+  kind: string; status: string; health: number; resolution: string | null; last_seen_at: string;
+};
+export type SecGate = {
+  id: string; building_id: string | null; site_id: string | null; code: string;
+  kind: string; status: string; health: number; events_today: number; last_event_at: string;
+};
+export type SecSensor = {
+  id: string; building_id: string | null; site_id: string | null; code: string;
+  sensor_type: string; status: string; reading: number | null; threshold: number | null;
+  unit: string | null; last_reading_at: string;
+};
+export type SecControlRoom = {
+  id: string; circle_id: string | null; code: string; name_ar: string; name_en: string;
+  operators_count: number; screens_count: number; shift_lead: string | null; status: string;
+};
+export type SecPatrolTeam = {
+  id: string; circle_id: string | null; code: string; name_ar: string;
+  leader: string | null; members_count: number; vehicle_plate: string | null; status: string;
+};
+export type SecWorkOrder = {
+  id: string; ref: string; site_id: string | null; building_id: string | null;
+  asset_kind: string; asset_code: string | null; kind: "preventive" | "corrective";
+  title_ar: string; title_en: string; priority: string; status: string;
+  assigned_to: string | null; contractor: string | null;
+  opened_at: string; due_at: string | null; closed_at: string | null; notes: string | null;
+};
+export type SecProject = {
+  id: string; ref: string; circle_id: string | null; name_ar: string; name_en: string;
+  kind: string; status: string; progress: number;
+  budget_sar: number; spent_sar: number;
+  starts_at: string | null; ends_at: string | null;
+  manager: string | null; contractor: string | null; health: "green" | "amber" | "red";
+};
 
 export type SecOverview = {
   sites: SecSite[];
@@ -71,7 +120,6 @@ export const getSecOverview = createServerFn({ method: "GET" })
       supabase.from("sec_assets").select("*").order("code"),
       supabase.from("sec_cctv_alerts").select("*").order("detected_at", { ascending: false }).limit(200),
     ]);
-
     const I = (incidents.data ?? []) as SecIncident[];
     const P = (patrols.data ?? []) as SecPatrol[];
     const V = (visitors.data ?? []) as SecVisitor[];
@@ -79,7 +127,6 @@ export const getSecOverview = createServerFn({ method: "GET" })
     const PM = (permits.data ?? []) as SecPermit[];
     const A = (assets.data ?? []) as SecAsset[];
     const CCTV = (cctv.data ?? []) as SecCctvAlert[];
-
     return {
       sites: (sites.data ?? []) as SecSite[],
       incidents: I, patrols: P, visitors: V, contractors: C,
@@ -95,5 +142,243 @@ export const getSecOverview = createServerFn({ method: "GET" })
         assets_offline: A.filter(a => a.status === "offline" || a.status === "degraded").length,
         contractors_active: C.filter(c => c.status === "active").length,
       },
+    };
+  });
+
+// ============= TWIN TREE =============
+export type TwinTree = {
+  region: { name_ar: string; name_en: string };
+  sections: SecSection[];
+  circles: (SecCircle & {
+    sites: (SecSite & {
+      buildings: (SecBuilding & {
+        cameras: SecCamera[];
+        gates: SecGate[];
+        sensors: SecSensor[];
+      })[];
+    })[];
+    control_rooms: SecControlRoom[];
+    patrol_teams: SecPatrolTeam[];
+  })[];
+};
+
+export const getTwinTree = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<TwinTree> => {
+    const { supabase } = context;
+    const [sections, circles, sites, buildings, cameras, gates, sensors, controlRooms, patrolTeams] = await Promise.all([
+      supabase.from("sec_sections").select("*").order("code"),
+      supabase.from("sec_circles").select("*").order("code"),
+      supabase.from("sec_sites").select("*").order("code"),
+      supabase.from("sec_buildings").select("*").order("code"),
+      supabase.from("sec_cameras").select("*").order("code"),
+      supabase.from("sec_gates").select("*").order("code"),
+      supabase.from("sec_sensors").select("*").order("code"),
+      supabase.from("sec_control_rooms").select("*").order("code"),
+      supabase.from("sec_patrol_teams").select("*").order("code"),
+    ]);
+
+    const camerasByBuilding = new Map<string, SecCamera[]>();
+    for (const c of (cameras.data ?? []) as SecCamera[]) {
+      if (!c.building_id) continue;
+      (camerasByBuilding.get(c.building_id) ?? camerasByBuilding.set(c.building_id, []).get(c.building_id)!).push(c);
+    }
+    const gatesByBuilding = new Map<string, SecGate[]>();
+    for (const g of (gates.data ?? []) as SecGate[]) {
+      if (!g.building_id) continue;
+      (gatesByBuilding.get(g.building_id) ?? gatesByBuilding.set(g.building_id, []).get(g.building_id)!).push(g);
+    }
+    const sensorsByBuilding = new Map<string, SecSensor[]>();
+    for (const s of (sensors.data ?? []) as SecSensor[]) {
+      if (!s.building_id) continue;
+      (sensorsByBuilding.get(s.building_id) ?? sensorsByBuilding.set(s.building_id, []).get(s.building_id)!).push(s);
+    }
+    const buildingsBySite = new Map<string, SecBuilding[]>();
+    for (const b of (buildings.data ?? []) as SecBuilding[]) {
+      if (!b.site_id) continue;
+      (buildingsBySite.get(b.site_id) ?? buildingsBySite.set(b.site_id, []).get(b.site_id)!).push(b);
+    }
+    const sitesByCircle = new Map<string, SecSite[]>();
+    for (const s of (sites.data ?? []) as SecSite[]) {
+      if (!s.circle_id) continue;
+      (sitesByCircle.get(s.circle_id) ?? sitesByCircle.set(s.circle_id, []).get(s.circle_id)!).push(s);
+    }
+    const controlRoomsByCircle = new Map<string, SecControlRoom[]>();
+    for (const cr of (controlRooms.data ?? []) as SecControlRoom[]) {
+      if (!cr.circle_id) continue;
+      (controlRoomsByCircle.get(cr.circle_id) ?? controlRoomsByCircle.set(cr.circle_id, []).get(cr.circle_id)!).push(cr);
+    }
+    const teamsByCircle = new Map<string, SecPatrolTeam[]>();
+    for (const t of (patrolTeams.data ?? []) as SecPatrolTeam[]) {
+      if (!t.circle_id) continue;
+      (teamsByCircle.get(t.circle_id) ?? teamsByCircle.set(t.circle_id, []).get(t.circle_id)!).push(t);
+    }
+
+    return {
+      region: { name_ar: "إدارة الأمن الصناعي بالمنطقة الغربية", name_en: "Western Region Industrial Security" },
+      sections: (sections.data ?? []) as SecSection[],
+      circles: ((circles.data ?? []) as SecCircle[]).map((c) => ({
+        ...c,
+        sites: (sitesByCircle.get(c.id) ?? []).map((s) => ({
+          ...s,
+          buildings: (buildingsBySite.get(s.id) ?? []).map((b) => ({
+            ...b,
+            cameras: camerasByBuilding.get(b.id) ?? [],
+            gates: gatesByBuilding.get(b.id) ?? [],
+            sensors: sensorsByBuilding.get(b.id) ?? [],
+          })),
+        })),
+        control_rooms: controlRoomsByCircle.get(c.id) ?? [],
+        patrol_teams: teamsByCircle.get(c.id) ?? [],
+      })),
+    };
+  });
+
+// ============= PROJECTS & MAINTENANCE =============
+export const getProjects = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SecProject[]> => {
+    const { data } = await context.supabase.from("sec_projects").select("*").order("ends_at", { ascending: true });
+    return (data ?? []) as SecProject[];
+  });
+
+export const getWorkOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SecWorkOrder[]> => {
+    const { data } = await context.supabase.from("sec_work_orders").select("*").order("opened_at", { ascending: false });
+    return (data ?? []) as SecWorkOrder[];
+  });
+
+export const getSections = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SecSection[]> => {
+    const { data } = await context.supabase.from("sec_sections").select("*").order("code");
+    return (data ?? []) as SecSection[];
+  });
+
+export const getCircles = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SecCircle[]> => {
+    const { data } = await context.supabase.from("sec_circles").select("*").order("code");
+    return (data ?? []) as SecCircle[];
+  });
+
+// ============= EXECUTIVE KPIs =============
+export type ExecKpis = {
+  incidents_total: number;
+  incidents_open: number;
+  incidents_critical: number;
+  incidents_resolution_rate: number;
+  mttr_minutes: number;
+  preventive_wo: number;
+  corrective_wo: number;
+  wo_open: number;
+  wo_closed: number;
+  projects_in_progress: number;
+  projects_completed: number;
+  projects_budget_total: number;
+  projects_spent_total: number;
+  cameras_total: number;
+  cameras_online: number;
+  cctv_health: number;
+  gates_total: number;
+  gates_online: number;
+  access_health: number;
+  sensors_total: number;
+  sensors_alarming: number;
+  sites_operational: number;
+  sites_total: number;
+  patrols_active: number;
+  patrol_completion: number;
+  visitors_inside: number;
+  permits_active: number;
+  contractors_active: number;
+  contractors_compliance: number;
+  risk_index: number;
+  safety_index: number;
+  executive_readiness: number;
+};
+
+export const getExecKpis = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<ExecKpis> => {
+    const { supabase } = context;
+    const [incidents, patrols, visitors, permits, contractors, sites, cameras, gates, sensors, workOrders, projects] = await Promise.all([
+      supabase.from("sec_incidents").select("severity,status,response_minutes"),
+      supabase.from("sec_patrols").select("status,checkpoints_done,checkpoints_total"),
+      supabase.from("sec_visitors").select("status"),
+      supabase.from("sec_permits").select("status"),
+      supabase.from("sec_contractors").select("status,compliance_score"),
+      supabase.from("sec_sites").select("status"),
+      supabase.from("sec_cameras").select("status,health"),
+      supabase.from("sec_gates").select("status,health"),
+      supabase.from("sec_sensors").select("status"),
+      supabase.from("sec_work_orders").select("kind,status"),
+      supabase.from("sec_projects").select("status,progress,budget_sar,spent_sar,health"),
+    ]);
+    const I = (incidents.data ?? []) as { severity: string; status: string; response_minutes: number | null }[];
+    const P = (patrols.data ?? []) as { status: string; checkpoints_done: number; checkpoints_total: number }[];
+    const V = (visitors.data ?? []) as { status: string }[];
+    const PM = (permits.data ?? []) as { status: string }[];
+    const C = (contractors.data ?? []) as { status: string; compliance_score: number }[];
+    const S = (sites.data ?? []) as { status: string }[];
+    const CAM = (cameras.data ?? []) as { status: string; health: number }[];
+    const G = (gates.data ?? []) as { status: string; health: number }[];
+    const SEN = (sensors.data ?? []) as { status: string }[];
+    const WO = (workOrders.data ?? []) as { kind: string; status: string }[];
+    const PRJ = (projects.data ?? []) as { status: string; progress: number; budget_sar: number; spent_sar: number; health: string }[];
+
+    const incTotal = I.length || 1;
+    const incOpen = I.filter(i => i.status !== "resolved" && i.status !== "closed").length;
+    const incClosed = I.length - incOpen;
+    const incCritical = I.filter(i => i.severity === "critical" && i.status !== "closed").length;
+    const mttr = I.filter(i => i.response_minutes != null).reduce((s, i, _, a) => s + (i.response_minutes ?? 0) / (a.length || 1), 0);
+    const camOnline = CAM.filter(c => c.status === "online").length;
+    const gateOnline = G.filter(g => g.status === "online").length;
+    const cctvHealth = CAM.length ? Math.round(CAM.reduce((s, c) => s + c.health, 0) / CAM.length) : 0;
+    const accessHealth = G.length ? Math.round(G.reduce((s, g) => s + g.health, 0) / G.length) : 0;
+    const sensorsAlarming = SEN.filter(s => s.status === "alarm" || s.status === "offline").length;
+    const patrolCompletion = P.length
+      ? Math.round(P.reduce((s, p) => s + (p.checkpoints_total ? (p.checkpoints_done / p.checkpoints_total) : 0), 0) / P.length * 100)
+      : 0;
+    const compliance = C.length ? Math.round(C.reduce((s, c) => s + c.compliance_score, 0) / C.length) : 0;
+    const resolutionRate = Math.round((incClosed / incTotal) * 100);
+    const riskIndex = Math.min(100, incCritical * 15 + sensorsAlarming * 5 + (100 - cctvHealth) / 2);
+    const safetyIndex = Math.max(0, 100 - riskIndex);
+    const executiveReadiness = Math.round((cctvHealth + accessHealth + compliance + patrolCompletion + safetyIndex) / 5);
+
+    return {
+      incidents_total: I.length,
+      incidents_open: incOpen,
+      incidents_critical: incCritical,
+      incidents_resolution_rate: resolutionRate,
+      mttr_minutes: Math.round(mttr),
+      preventive_wo: WO.filter(w => w.kind === "preventive").length,
+      corrective_wo: WO.filter(w => w.kind === "corrective").length,
+      wo_open: WO.filter(w => w.status !== "closed" && w.status !== "cancelled").length,
+      wo_closed: WO.filter(w => w.status === "closed").length,
+      projects_in_progress: PRJ.filter(p => p.status === "in-progress").length,
+      projects_completed: PRJ.filter(p => p.status === "completed").length,
+      projects_budget_total: PRJ.reduce((s, p) => s + Number(p.budget_sar), 0),
+      projects_spent_total: PRJ.reduce((s, p) => s + Number(p.spent_sar), 0),
+      cameras_total: CAM.length,
+      cameras_online: camOnline,
+      cctv_health: cctvHealth,
+      gates_total: G.length,
+      gates_online: gateOnline,
+      access_health: accessHealth,
+      sensors_total: SEN.length,
+      sensors_alarming: sensorsAlarming,
+      sites_operational: S.filter(s => s.status === "operational").length,
+      sites_total: S.length,
+      patrols_active: P.filter(p => p.status === "active").length,
+      patrol_completion: patrolCompletion,
+      visitors_inside: V.filter(v => v.status === "inside" || v.status === "overdue").length,
+      permits_active: PM.filter(p => p.status === "active" || p.status === "approved").length,
+      contractors_active: C.filter(c => c.status === "active").length,
+      contractors_compliance: compliance,
+      risk_index: Math.round(riskIndex),
+      safety_index: Math.round(safetyIndex),
+      executive_readiness: executiveReadiness,
     };
   });
