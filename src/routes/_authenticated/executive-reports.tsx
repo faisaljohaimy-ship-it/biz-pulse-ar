@@ -299,6 +299,37 @@ function ExecutiveReportsPage() {
     toast.error(isAr ? env.message_ar : env.message_en);
   };
 
+  const simulateMockSuccess = () => {
+    const now = new Date();
+    const stamp = now.toISOString();
+    const safeTitle = (title || (isAr ? "تقرير-تنفيذي-تجريبي" : "executive-report-mock")).replace(/\s+/g, "-");
+    const filename = `${safeTitle}-${stamp.slice(0, 10)}.html`;
+    const siteHost = "contoso.sharepoint.com";
+    const sitePath = "/sites/exec";
+    const webUrl = `https://${siteHost}${sitePath}/Shared%20Documents/NEXIOS%20Reports/${encodeURIComponent(filename)}`;
+    const shareUrl = `https://${siteHost}/:b:/s/exec/${newRequestId().replace(/-/g, "").slice(0, 22)}`;
+    const teamsMessageId = `${Date.now()}`;
+    const teamsMessageUrl = `https://teams.microsoft.com/l/message/19%3Amock-channel%40thread.tacv2/${teamsMessageId}?tenantId=mock-tenant&groupId=mock-group&parentMessageId=${teamsMessageId}`;
+    const mockResult: Awaited<ReturnType<typeof publishExecutiveReport>> = {
+      ok: true,
+      generatedAt: stamp,
+      sharepoint: {
+        itemId: `mock-${newRequestId()}`,
+        name: filename,
+        webUrl,
+        size: 4096,
+        shareUrl,
+      },
+      teams: {
+        messageId: teamsMessageId,
+        messageUrl: teamsMessageUrl,
+      },
+    };
+    setLastError(null);
+    setLastResult(mockResult);
+    toast.success(isAr ? "محاكاة نجاح — لم يتم استدعاء Microsoft Graph" : "Mock success — Microsoft Graph was not called");
+  };
+
   if (isAdmin === false) {
     return (
       <div className="p-6">
