@@ -953,6 +953,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sec_activity_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          entity_id: string
+          entity_ref: string | null
+          entity_type: string
+          event: string
+          id: string
+          occurred_at: string
+          payload: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          entity_id: string
+          entity_ref?: string | null
+          entity_type: string
+          event: string
+          id?: string
+          occurred_at?: string
+          payload?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          entity_id?: string
+          entity_ref?: string | null
+          entity_type?: string
+          event?: string
+          id?: string
+          occurred_at?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       sec_assets: {
         Row: {
           code: string
@@ -1341,11 +1377,18 @@ export type Database = {
       }
       sec_incidents: {
         Row: {
+          ai_risk_score: number | null
           ai_summary: string | null
+          assigned_to: string | null
+          attachments: Json
           category: string
+          corrective_actions: Json
           created_at: string
+          created_by: string | null
+          escalated: boolean
           id: string
           owner: string | null
+          priority: string
           ref: string
           reported_at: string
           resolved_at: string | null
@@ -1359,11 +1402,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_risk_score?: number | null
           ai_summary?: string | null
+          assigned_to?: string | null
+          attachments?: Json
           category: string
+          corrective_actions?: Json
           created_at?: string
+          created_by?: string | null
+          escalated?: boolean
           id?: string
           owner?: string | null
+          priority?: string
           ref: string
           reported_at?: string
           resolved_at?: string | null
@@ -1377,11 +1427,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_risk_score?: number | null
           ai_summary?: string | null
+          assigned_to?: string | null
+          attachments?: Json
           category?: string
+          corrective_actions?: Json
           created_at?: string
+          created_by?: string | null
+          escalated?: boolean
           id?: string
           owner?: string | null
+          priority?: string
           ref?: string
           reported_at?: string
           resolved_at?: string | null
@@ -1506,9 +1563,13 @@ export type Database = {
       }
       sec_permits: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           approver: string | null
+          attachments: Json
           contractor: string
           created_at: string
+          created_by: string | null
           ends_at: string
           id: string
           notes: string | null
@@ -1521,9 +1582,13 @@ export type Database = {
           work_type: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           approver?: string | null
+          attachments?: Json
           contractor: string
           created_at?: string
+          created_by?: string | null
           ends_at: string
           id?: string
           notes?: string | null
@@ -1536,9 +1601,13 @@ export type Database = {
           work_type: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           approver?: string | null
+          attachments?: Json
           contractor?: string
           created_at?: string
+          created_by?: string | null
           ends_at?: string
           id?: string
           notes?: string | null
@@ -1835,13 +1904,18 @@ export type Database = {
       }
       sec_work_orders: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           asset_code: string | null
           asset_kind: string
           assigned_to: string | null
+          attachments: Json
           building_id: string | null
           closed_at: string | null
+          completion_notes: string | null
           contractor: string | null
           created_at: string
+          created_by: string | null
           due_at: string | null
           id: string
           kind: string
@@ -1850,19 +1924,25 @@ export type Database = {
           priority: string
           ref: string
           site_id: string | null
+          source_incident_id: string | null
           status: string
           title_ar: string
           title_en: string
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           asset_code?: string | null
           asset_kind: string
           assigned_to?: string | null
+          attachments?: Json
           building_id?: string | null
           closed_at?: string | null
+          completion_notes?: string | null
           contractor?: string | null
           created_at?: string
+          created_by?: string | null
           due_at?: string | null
           id?: string
           kind: string
@@ -1871,19 +1951,25 @@ export type Database = {
           priority?: string
           ref: string
           site_id?: string | null
+          source_incident_id?: string | null
           status?: string
           title_ar: string
           title_en: string
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           asset_code?: string | null
           asset_kind?: string
           assigned_to?: string | null
+          attachments?: Json
           building_id?: string | null
           closed_at?: string | null
+          completion_notes?: string | null
           contractor?: string | null
           created_at?: string
+          created_by?: string | null
           due_at?: string | null
           id?: string
           kind?: string
@@ -1892,6 +1978,7 @@ export type Database = {
           priority?: string
           ref?: string
           site_id?: string | null
+          source_incident_id?: string | null
           status?: string
           title_ar?: string
           title_en?: string
@@ -1910,6 +1997,13 @@ export type Database = {
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_work_orders_source_incident_id_fkey"
+            columns: ["source_incident_id"]
+            isOneToOne: false
+            referencedRelation: "sec_incidents"
             referencedColumns: ["id"]
           },
         ]
