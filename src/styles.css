@@ -553,3 +553,50 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .aria-orb-halo, .aria-orb-ring-a, .aria-orb-ring-b, .aria-orb-scan { animation: none !important; }
 }
+
+/* ============ ARIA Executive Hero (Scene 01) ============ */
+:root {
+  --aria-bg: #061A2E;
+  --aria-bg-2: #0B2742;
+  --aria-surface: #123B57;
+  --aria-card: #184E77;
+  --aria-cyan: #00D4FF;
+  --aria-cyan-bright: #3AE8FF;
+  --aria-aqua: #6FFFE9;
+  --aria-glow: #00B8D9;
+  --aria-text: #FFFFFF;
+  --aria-text-soft: #D7EAF4;
+}
+@keyframes aria-float-y { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+@keyframes aria-float-x { 0%,100% { transform: translateX(0) } 50% { transform: translateX(8px) } }
+@keyframes aria-spin-slow { to { transform: rotate(360deg) } }
+@keyframes aria-spin-rev  { to { transform: rotate(-360deg) } }
+@keyframes aria-pulse-core { 0%,100% { transform: scale(1); filter: brightness(1) } 50% { transform: scale(1.04); filter: brightness(1.25) } }
+@keyframes aria-ray-sweep { 0%,100% { opacity: .25; transform: translateX(-4%) } 50% { opacity: .55; transform: translateX(4%) } }
+@keyframes aria-tick { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+@keyframes aria-bar { 0%,100% { transform: scaleY(.5) } 50% { transform: scaleY(1) } }
+
+.aria-hero-bg { background:
+  radial-gradient(ellipse at 50% 30%, color-mix(in oklab, var(--aria-cyan) 18%, transparent) 0%, transparent 55%),
+  radial-gradient(ellipse at 20% 80%, color-mix(in oklab, var(--aria-glow) 14%, transparent) 0%, transparent 55%),
+  radial-gradient(ellipse at 80% 70%, color-mix(in oklab, var(--aria-cyan-bright) 10%, transparent) 0%, transparent 55%),
+  linear-gradient(180deg, var(--aria-bg) 0%, var(--aria-bg-2) 60%, var(--aria-bg) 100%);
+}
+.aria-grid {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--aria-cyan) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--aria-cyan) 8%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 75%);
+}
+.aria-ray { animation: aria-ray-sweep 9s ease-in-out infinite; }
+.aria-glass-card {
+  background: linear-gradient(135deg, color-mix(in oklab, var(--aria-cyan) 10%, transparent), color-mix(in oklab, var(--aria-card) 35%, transparent));
+  border: 1px solid color-mix(in oklab, var(--aria-cyan) 35%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 8px 40px -10px color-mix(in oklab, var(--aria-cyan) 40%, transparent), inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
+}
+.aria-mini-bar { transform-origin: bottom; animation: aria-bar 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .aria-ray, .aria-mini-bar, [class*="aria-float"], [class*="aria-spin"], [class*="aria-pulse"], [class*="aria-tick"] { animation: none !important; }
+}
