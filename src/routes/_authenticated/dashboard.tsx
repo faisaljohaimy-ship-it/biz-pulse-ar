@@ -21,7 +21,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import aiRobotAsset from "@/assets/ai-robot.png.asset.json";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CommandCenter,
@@ -63,7 +63,7 @@ const NODES: OrbitNode[] = [
     icon: Building2,
     route: "/departments",
     status: "healthy",
-    x: 18, y: 22, hue: 210,
+    x: 24, y: 24, hue: 210,
     kpis: [
       { label_ar: "الكفاءة", label_en: "Efficiency", value: "92%", delta: "+3.4%", trend: "up" },
       { label_ar: "الإشغال", label_en: "Utilization", value: "87%", delta: "+1.1%", trend: "up" },
@@ -85,7 +85,7 @@ const NODES: OrbitNode[] = [
     icon: Database,
     route: "/analytics",
     status: "healthy",
-    x: 78, y: 22, hue: 195,
+    x: 76, y: 24, hue: 195,
     kpis: [
       { label_ar: "الإنتاجية", label_en: "Throughput", value: "12.4k/s", delta: "+8.7%", trend: "up" },
       { label_ar: "جودة البيانات", label_en: "Data Quality", value: "98.2%", delta: "+0.3%", trend: "up" },
@@ -107,7 +107,7 @@ const NODES: OrbitNode[] = [
     icon: GitBranch,
     route: "/integrations",
     status: "warning",
-    x: 10, y: 62, hue: 220,
+    x: 16, y: 50, hue: 220,
     kpis: [
       { label_ar: "اتصالات نشطة", label_en: "Active Links", value: "18/20", delta: "+2", trend: "up" },
       { label_ar: "معدل الفشل", label_en: "Failure Rate", value: "1.3%", delta: "+0.4%", trend: "down" },
@@ -129,7 +129,7 @@ const NODES: OrbitNode[] = [
     icon: Bot,
     route: "/agents",
     status: "healthy",
-    x: 86, y: 62, hue: 175,
+    x: 84, y: 50, hue: 175,
     kpis: [
       { label_ar: "المهام/اليوم", label_en: "Tasks / day", value: "8,932", delta: "+23.8%", trend: "up" },
       { label_ar: "الدقة", label_en: "Accuracy", value: "96.4%", delta: "+1.2%", trend: "up" },
@@ -151,7 +151,7 @@ const NODES: OrbitNode[] = [
     icon: Workflow,
     route: "/workflows",
     status: "healthy",
-    x: 50, y: 82, hue: 200,
+    x: 50, y: 70, hue: 200,
     kpis: [
       { label_ar: "تشغيلات/الساعة", label_en: "Runs / hr", value: "1,247", delta: "+15.3%", trend: "up" },
       { label_ar: "نسبة النجاح", label_en: "Success Rate", value: "99.4%", delta: "+0.1%", trend: "up" },
