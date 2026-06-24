@@ -453,136 +453,156 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
     <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
       <div
         className="relative aspect-square"
-        style={{ width: "clamp(160px, 38vw, 280px)" }}
+        style={{ width: "clamp(180px, 42vw, 320px)" }}
       >
-        {/* ambient halos */}
-        <div className="absolute inset-[-35%] rounded-full bg-cyan-400/15 blur-3xl" />
-        <div className="absolute inset-[-12%] rounded-full bg-[#00B8D9]/25 blur-2xl animate-pulse" />
+        {/* ambient volumetric halos */}
+        <div className="absolute inset-[-45%] rounded-full bg-cyan-400/20 blur-[60px]" />
+        <div className="absolute inset-[-25%] rounded-full bg-[#00B8D9]/30 blur-3xl animate-pulse" />
+        <div
+          className="absolute inset-[-15%] rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(110,231,255,0.35) 0%, rgba(34,211,238,0.12) 40%, transparent 70%)",
+            animation: "pulse 4s ease-in-out infinite",
+          }}
+        />
 
-        {/* AI Robot image with futuristic frame */}
-        <div className="absolute inset-0 rounded-2xl border border-cyan-400/30 bg-[#06101f]/60 p-1 shadow-[0_0_40px_rgba(34,211,238,0.25)]">
+        {/* outer rotating dashed ring */}
+        <svg
+          className="absolute inset-[-8%] h-[116%] w-[116%]"
+          viewBox="0 0 200 200"
+          style={{ animation: "spin 40s linear infinite" }}
+        >
+          <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(110,231,255,0.35)" strokeWidth="0.5" strokeDasharray="1 4" />
+          {Array.from({ length: 12 }).map((_, i) => {
+            const a = (i / 12) * Math.PI * 2;
+            const x = 100 + Math.cos(a) * 96;
+            const y = 100 + Math.sin(a) * 96;
+            return <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 1.6 : 0.8} fill="rgba(110,231,255,0.7)" />;
+          })}
+        </svg>
+        {/* counter-rotating inner ring */}
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 200 200"
+          style={{ animation: "spin 28s linear infinite reverse" }}
+        >
+          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(34,211,238,0.45)" strokeWidth="0.8" />
+          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(110,231,255,0.6)" strokeWidth="0.8" strokeDasharray="6 90" />
+        </svg>
+
+        {/* the image — blended holographic display, no hard rectangle */}
+        <div
+          className="absolute inset-[8%] overflow-hidden"
+          style={{
+            WebkitMaskImage:
+              "radial-gradient(circle at 50% 50%, black 55%, rgba(0,0,0,0.7) 70%, transparent 92%)",
+            maskImage:
+              "radial-gradient(circle at 50% 50%, black 55%, rgba(0,0,0,0.7) 70%, transparent 92%)",
+          }}
+        >
           {!imgError ? (
             <img
               src={aiRobotAsset.url}
-              alt={isAr ? "الروبوت الذكي" : "AI Robot"}
-              className="h-full w-full rounded-xl object-cover"
+              alt={isAr ? "نواة ARIA التنفيذية" : "ARIA Executive Core"}
+              className="h-full w-full object-cover"
               draggable={false}
               onError={() => setImgError(true)}
+              style={{
+                filter:
+                  "brightness(1.05) contrast(1.05) saturate(1.15) hue-rotate(-6deg) drop-shadow(0 0 30px rgba(34,211,238,0.45))",
+              }}
             />
           ) : (
-            <div className="relative flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#040c18]/80">
-              {/* HUD grid background */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(rgba(34,211,238,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.15) 1px, transparent 1px)",
-                  backgroundSize: "20px 20px",
-                }}
-              />
-              {/* HUD radial rings */}
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="absolute h-[70%] w-[70%] rounded-full border border-cyan-400/10" />
-                <div className="absolute h-[50%] w-[50%] rounded-full border border-dashed border-cyan-400/15" />
-                <div className="absolute h-[30%] w-[30%] rounded-full border border-cyan-400/20" />
-              </div>
-              {/* HUD crosshair */}
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="absolute h-full w-px bg-cyan-400/10" />
-                <div className="absolute h-px w-full bg-cyan-400/10" />
-              </div>
-              {/* HUD rotating sweep */}
-              <div
-                className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                style={{ animation: "spin 4s linear infinite" }}
-              >
-                <div
-                  className="absolute h-[55%] w-[55%] rounded-full"
-                  style={{
-                    background:
-                      "conic-gradient(from 0deg, transparent 0deg, rgba(34,211,238,0.12) 60deg, transparent 61deg)",
-                  }}
-                />
-              </div>
-              {/* HUD hexagon frame */}
-              <svg
-                className="pointer-events-none absolute inset-0 h-full w-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <polygon
-                  points="50,8 85,28 85,72 50,92 15,72 15,28"
-                  fill="none"
-                  stroke="rgba(34,211,238,0.12)"
-                  strokeWidth="0.5"
-                />
-                <polygon
-                  points="50,18 75,33 75,67 50,82 25,67 25,33"
-                  fill="none"
-                  stroke="rgba(34,211,238,0.08)"
-                  strokeWidth="0.3"
-                />
-              </svg>
-              {/* HUD corner triangles */}
-              <div className="pointer-events-none absolute left-3 top-3 h-3 w-3 border-l border-t border-cyan-400/30" />
-              <div className="pointer-events-none absolute right-3 top-3 h-3 w-3 border-r border-t border-cyan-400/30" />
-              <div className="pointer-events-none absolute left-3 bottom-3 h-3 w-3 border-l border-b border-cyan-400/30" />
-              <div className="pointer-events-none absolute right-3 bottom-3 h-3 w-3 border-r border-b border-cyan-400/30" />
-              {/* HUD top/bottom bars */}
-              <div className="pointer-events-none absolute left-[15%] right-[15%] top-2 h-px bg-cyan-400/20" />
-              <div className="pointer-events-none absolute bottom-2 left-[15%] right-[15%] h-px bg-cyan-400/20" />
-              {/* HUD data bars left */}
-              <div className="pointer-events-none absolute left-2 top-1/2 flex -translate-y-1/2 flex-col gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-1 bg-cyan-400/30"
-                    style={{ width: `${12 + i * 4}px` }}
-                  />
-                ))}
-              </div>
-              {/* HUD data bars right */}
-              <div className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 flex-col gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-1 bg-cyan-400/30"
-                    style={{ width: `${12 + i * 4}px` }}
-                  />
-                ))}
-              </div>
-              {/* Content */}
-              <Cpu className="relative z-10 h-10 w-10 text-cyan-400/70" />
-              <div className="relative z-10 text-[10px] font-semibold tracking-widest text-cyan-300/80">
-                {isAr ? "النواة الذكية" : "AI CORE"}
-              </div>
-              <div className="relative z-10 text-[8px] tracking-wider text-slate-400">
-                {isAr ? "الصورة غير متوفرة" : "Image unavailable"}
-              </div>
+            <div className="flex h-full w-full items-center justify-center bg-[#040c18]/80">
+              <Cpu className="h-12 w-12 text-cyan-300/70" />
             </div>
           )}
-          {/* scan-line overlay */}
+          {/* cyan color wash to bond with the OS palette */}
           <div
-            className="pointer-events-none absolute inset-0 rounded-xl"
+            className="absolute inset-0"
             style={{
-              background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.03) 2px, rgba(34,211,238,0.03) 4px)",
+              background:
+                "radial-gradient(circle at 50% 40%, transparent 0%, rgba(6,16,31,0.15) 55%, rgba(6,16,31,0.85) 100%), linear-gradient(180deg, rgba(0,184,217,0.10), rgba(110,231,255,0.06) 50%, rgba(6,16,31,0.55))",
+              mixBlendMode: "screen",
+            }}
+          />
+          {/* scanlines */}
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              background:
+                "repeating-linear-gradient(0deg, transparent 0 2px, rgba(110,231,255,0.08) 2px 3px)",
               mixBlendMode: "overlay",
             }}
           />
-          {/* corner brackets */}
-          <div className="pointer-events-none absolute inset-0 rounded-xl">
-            <div className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-cyan-400/60" />
-            <div className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-cyan-400/60" />
-            <div className="absolute left-0 bottom-0 h-4 w-4 border-l-2 border-b-2 border-cyan-400/60" />
-            <div className="absolute right-0 bottom-0 h-4 w-4 border-r-2 border-b-2 border-cyan-400/60" />
-          </div>
+          {/* travelling holographic scanner */}
+          <div
+            className="absolute inset-x-0 h-12"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent, rgba(110,231,255,0.45), transparent)",
+              animation: "core-scan 4.2s ease-in-out infinite",
+              mixBlendMode: "screen",
+            }}
+          />
         </div>
 
-        {/* label band */}
-        <div className="absolute inset-x-0 bottom-[-6px] flex flex-col items-center text-center">
-          <div className="text-[10px] font-bold tracking-[0.5em] text-cyan-200">NEXUS</div>
-          <div className="text-[8px] tracking-[0.4em] text-cyan-300/70">
-            {isAr ? "نواة الذكاء الاصطناعي" : "AI CORE"}
+        {/* edge glow ring to fuse image with UI */}
+        <div
+          className="pointer-events-none absolute inset-[6%] rounded-full"
+          style={{
+            boxShadow:
+              "0 0 60px 6px rgba(34,211,238,0.35), inset 0 0 40px rgba(110,231,255,0.25)",
+          }}
+        />
+
+        {/* orbiting micro-nodes */}
+        <div className="absolute inset-0" style={{ animation: "spin 22s linear infinite" }}>
+          {Array.from({ length: 4 }).map((_, i) => {
+            const a = (i / 4) * Math.PI * 2;
+            const r = 48; // %
+            const x = 50 + Math.cos(a) * r;
+            const y = 50 + Math.sin(a) * r;
+            return (
+              <span
+                key={i}
+                className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-200"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  boxShadow: "0 0 12px rgba(110,231,255,0.95), 0 0 30px rgba(34,211,238,0.6)",
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* particles */}
+        <svg className="absolute inset-[-10%] h-[120%] w-[120%]" viewBox="0 0 100 100">
+          {Array.from({ length: 18 }).map((_, i) => {
+            const x = (i * 37) % 100;
+            const y = (i * 53) % 100;
+            return (
+              <circle
+                key={i}
+                cx={x}
+                cy={y}
+                r={((i % 3) + 1) * 0.25}
+                fill="rgba(110,231,255,0.7)"
+                style={{ animation: `pulse ${2 + (i % 4)}s ease-in-out ${i * 0.15}s infinite` }}
+              />
+            );
+          })}
+        </svg>
+
+        {/* ARIA label band */}
+        <div className="absolute inset-x-0 -bottom-1 flex flex-col items-center text-center">
+          <div className="rounded-full border border-cyan-300/30 bg-[#06101f]/80 px-3 py-0.5 text-[9px] font-bold tracking-[0.5em] text-cyan-200 backdrop-blur">
+            ARIA · NEXUS
+          </div>
+          <div className="mt-1 text-[8px] tracking-[0.4em] text-cyan-300/70">
+            {isAr ? "النواة التنفيذية" : "EXECUTIVE CORE"}
           </div>
         </div>
       </div>
