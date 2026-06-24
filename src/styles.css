@@ -600,3 +600,10 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .aria-ray, .aria-mini-bar, [class*="aria-float"], [class*="aria-spin"], [class*="aria-pulse"], [class*="aria-tick"] { animation: none !important; }
 }
+
+@keyframes core-scan {
+  0% { transform: translateY(-110%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
