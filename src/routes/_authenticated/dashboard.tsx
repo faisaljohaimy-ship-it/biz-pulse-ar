@@ -21,6 +21,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import aiRobotAsset from "@/assets/ai-robot.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CommandCenter,
