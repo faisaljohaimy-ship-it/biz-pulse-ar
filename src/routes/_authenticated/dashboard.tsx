@@ -470,12 +470,93 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
               onError={() => setImgError(true)}
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl bg-[#040c18]/80">
-              <Cpu className="h-10 w-10 text-cyan-400/60" />
-              <div className="text-[10px] font-semibold tracking-widest text-cyan-300/70">
+            <div className="relative flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#040c18]/80">
+              {/* HUD grid background */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(rgba(34,211,238,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.15) 1px, transparent 1px)",
+                  backgroundSize: "20px 20px",
+                }}
+              />
+              {/* HUD radial rings */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="absolute h-[70%] w-[70%] rounded-full border border-cyan-400/10" />
+                <div className="absolute h-[50%] w-[50%] rounded-full border border-dashed border-cyan-400/15" />
+                <div className="absolute h-[30%] w-[30%] rounded-full border border-cyan-400/20" />
+              </div>
+              {/* HUD crosshair */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="absolute h-full w-px bg-cyan-400/10" />
+                <div className="absolute h-px w-full bg-cyan-400/10" />
+              </div>
+              {/* HUD rotating sweep */}
+              <div
+                className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                style={{ animation: "spin 4s linear infinite" }}
+              >
+                <div
+                  className="absolute h-[55%] w-[55%] rounded-full"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, transparent 0deg, rgba(34,211,238,0.12) 60deg, transparent 61deg)",
+                  }}
+                />
+              </div>
+              {/* HUD hexagon frame */}
+              <svg
+                className="pointer-events-none absolute inset-0 h-full w-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <polygon
+                  points="50,8 85,28 85,72 50,92 15,72 15,28"
+                  fill="none"
+                  stroke="rgba(34,211,238,0.12)"
+                  strokeWidth="0.5"
+                />
+                <polygon
+                  points="50,18 75,33 75,67 50,82 25,67 25,33"
+                  fill="none"
+                  stroke="rgba(34,211,238,0.08)"
+                  strokeWidth="0.3"
+                />
+              </svg>
+              {/* HUD corner triangles */}
+              <div className="pointer-events-none absolute left-3 top-3 h-3 w-3 border-l border-t border-cyan-400/30" />
+              <div className="pointer-events-none absolute right-3 top-3 h-3 w-3 border-r border-t border-cyan-400/30" />
+              <div className="pointer-events-none absolute left-3 bottom-3 h-3 w-3 border-l border-b border-cyan-400/30" />
+              <div className="pointer-events-none absolute right-3 bottom-3 h-3 w-3 border-r border-b border-cyan-400/30" />
+              {/* HUD top/bottom bars */}
+              <div className="pointer-events-none absolute left-[15%] right-[15%] top-2 h-px bg-cyan-400/20" />
+              <div className="pointer-events-none absolute bottom-2 left-[15%] right-[15%] h-px bg-cyan-400/20" />
+              {/* HUD data bars left */}
+              <div className="pointer-events-none absolute left-2 top-1/2 flex -translate-y-1/2 flex-col gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-1 bg-cyan-400/30"
+                    style={{ width: `${12 + i * 4}px` }}
+                  />
+                ))}
+              </div>
+              {/* HUD data bars right */}
+              <div className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 flex-col gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-1 bg-cyan-400/30"
+                    style={{ width: `${12 + i * 4}px` }}
+                  />
+                ))}
+              </div>
+              {/* Content */}
+              <Cpu className="relative z-10 h-10 w-10 text-cyan-400/70" />
+              <div className="relative z-10 text-[10px] font-semibold tracking-widest text-cyan-300/80">
                 {isAr ? "النواة الذكية" : "AI CORE"}
               </div>
-              <div className="text-[8px] tracking-wider text-slate-500">
+              <div className="relative z-10 text-[8px] tracking-wider text-slate-400">
                 {isAr ? "الصورة غير متوفرة" : "Image unavailable"}
               </div>
             </div>
