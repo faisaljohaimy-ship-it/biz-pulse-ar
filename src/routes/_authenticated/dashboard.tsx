@@ -607,7 +607,7 @@ function BeamsLayer() {
         <line
           key={n.id}
           x1={50}
-          y1={42}
+          y1={50}
           x2={n.x}
           y2={n.y + 4}
           stroke="url(#beam)"
