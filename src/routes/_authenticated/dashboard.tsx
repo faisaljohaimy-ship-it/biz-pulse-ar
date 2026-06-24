@@ -448,6 +448,7 @@ function OrbitRings() {
 }
 
 function CoreOrb({ isAr }: { isAr: boolean }) {
+  const [imgError, setImgError] = useState(false);
   return (
     <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
       <div
@@ -460,12 +461,25 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
 
         {/* AI Robot image with futuristic frame */}
         <div className="absolute inset-0 rounded-2xl border border-cyan-400/30 bg-[#06101f]/60 p-1 shadow-[0_0_40px_rgba(34,211,238,0.25)]">
-          <img
-            src={aiRobotAsset.url}
-            alt={isAr ? "الروبوت الذكي" : "AI Robot"}
-            className="h-full w-full rounded-xl object-cover"
-            draggable={false}
-          />
+          {!imgError ? (
+            <img
+              src={aiRobotAsset.url}
+              alt={isAr ? "الروبوت الذكي" : "AI Robot"}
+              className="h-full w-full rounded-xl object-cover"
+              draggable={false}
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl bg-[#040c18]/80">
+              <Cpu className="h-10 w-10 text-cyan-400/60" />
+              <div className="text-[10px] font-semibold tracking-widest text-cyan-300/70">
+                {isAr ? "النواة الذكية" : "AI CORE"}
+              </div>
+              <div className="text-[8px] tracking-wider text-slate-500">
+                {isAr ? "الصورة غير متوفرة" : "Image unavailable"}
+              </div>
+            </div>
+          )}
           {/* scan-line overlay */}
           <div
             className="pointer-events-none absolute inset-0 rounded-xl"
