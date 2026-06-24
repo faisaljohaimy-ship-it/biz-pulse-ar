@@ -87,8 +87,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
       { name: "description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/4oFn87w5GiXP8JBD99DtcazaWOB2/social-images/social-1782318115628-9b755cc8-417c-4d68-bf87-54462596c45a.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/4oFn87w5GiXP8JBD99DtcazaWOB2/social-images/social-1782318115628-9b755cc8-417c-4d68-bf87-54462596c45a.webp" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49f3a999-e9d9-4d66-9a7b-7e493f37262b" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49f3a999-e9d9-4d66-9a7b-7e493f37262b" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
