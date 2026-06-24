@@ -27,6 +27,7 @@ const EarthScene = lazy(() => import("@/components/cinematic/EarthScene"));
 const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
+import { AriaExecutiveCore, ExecutiveOfficeBackdrop, HoloWidgetRing } from "@/components/cinematic/AriaHeroStage";
 import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
 import { TrustBar } from "@/components/cinematic/TrustBar";
 import { CinematicAudio } from "@/components/cinematic/CinematicAudio";
@@ -163,57 +164,64 @@ function CinematicHome() {
       <section
         data-scene="1"
         className="relative flex min-h-[100svh] items-center justify-center overflow-hidden"
+        style={{ background: "var(--aria-bg)" }}
       >
-        <img
-          src={cinematicEarth}
-          alt=""
-          width={1920}
-          height={1080}
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-55"
-          fetchPriority="high"
-        />
-        <div className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen">
-          <Suspense fallback={null}><EarthScene intensity="network" /></Suspense>
-        </div>
-        <ParticleField density={0.00012} />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(58,142,255,0.28),transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-[#04060d]" />
-
-        {/* Riyadh skyline · executive holograms · volumetric beams */}
-        <HeroSkyline isAr={isAr} />
+        <ExecutiveOfficeBackdrop />
 
         {/* corner telemetry HUD */}
-        <div className="pointer-events-none absolute inset-x-5 top-24 z-[5] hidden justify-between text-[10px] uppercase tracking-[0.28em] text-white/45 md:flex">
-          <div>{isAr ? "إحداثيات · 24.7°N 46.6°E" : "Coord · 24.7°N 46.6°E"}</div>
+        <div className="pointer-events-none absolute inset-x-5 top-24 z-[5] hidden justify-between text-[10px] uppercase tracking-[0.28em] text-[var(--aria-text-soft)]/55 md:flex">
+          <div>{isAr ? "ARIA · العقل التنفيذي" : "ARIA · Executive Mind"}</div>
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--aria-aqua)]" />
             {isAr ? "الشبكة · مباشرة" : "Network · Live"}
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pt-32 text-center sm:pt-40">
+        {/* ARIA stage — core + orbiting holographic widgets */}
+        <div className="pointer-events-none absolute inset-0 z-[2] hidden items-center justify-center md:flex">
+          <div className="relative" style={{ width: "min(880px, 86vw)", height: "min(560px, 70vh)" }}>
+            <HoloWidgetRing
+              isAr={isAr}
+              radiusX={Math.min(380, typeof window !== "undefined" ? window.innerWidth * 0.34 : 360)}
+              radiusY={220}
+            />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <AriaExecutiveCore size={360} />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center px-5 pt-28 pb-12 text-center sm:pt-36">
+          {/* Mobile ARIA core (centered above text) */}
+          <div className="md:hidden">
+            <AriaExecutiveCore size={Math.min(260, typeof window !== "undefined" ? window.innerWidth * 0.62 : 240)} />
+          </div>
+
           <ScrollReveal direction="scale">
-            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] text-amber-300 backdrop-blur-md">
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--aria-cyan)]/40 bg-[var(--aria-cyan)]/10 px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] text-[var(--aria-aqua)] backdrop-blur-md">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-80" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-400" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--aria-aqua)] opacity-80" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--aria-aqua)]" />
               </span>
-              {isAr ? "شبكة ذكاء عالمية" : "A Global Intelligence Network"}
+              {isAr ? "ذكاء تنفيذي حي" : "Executive Intelligence · Live"}
             </div>
           </ScrollReveal>
 
           <ScrollReveal delay={200}>
             <h1 className="mt-8 text-5xl font-bold leading-[0.95] tracking-tight sm:text-7xl lg:text-[112px]">
-              <span className="block bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent">
+              <span
+                className="block bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #FFFFFF 0%, #D7EAF4 40%, #3AE8FF 100%)" }}
+              >
                 NEXUS AI OS
               </span>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={400}>
-            <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-white/80 sm:text-2xl">
+            <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-[var(--aria-text-soft)]/85 sm:text-2xl">
               {isAr
-                ? "نظام التشغيل الذكي للمؤسسات — ملايين الإشارات. قرار واحد."
-                : "The Operating System for Intelligent Enterprises — millions of signals. One decision."}
+                ? "العقل التنفيذي للمؤسسات — ARIA في مركز كل قرار."
+                : "The Executive Mind for the Enterprise — ARIA at the center of every decision."}
             </p>
           </ScrollReveal>
 
@@ -221,14 +229,18 @@ function CinematicHome() {
             <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/request-demo"
-                className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-7 py-3.5 text-sm font-semibold text-black shadow-[0_10px_60px_-10px_rgba(245,180,84,0.9)] transition hover:scale-[1.03]"
+                className="group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-[#04121f] transition hover:scale-[1.03]"
+                style={{
+                  backgroundImage: "linear-gradient(135deg, var(--aria-aqua), var(--aria-cyan-bright) 55%, var(--aria-cyan))",
+                  boxShadow: "0 10px 60px -10px color-mix(in oklab, var(--aria-cyan) 80%, transparent)",
+                }}
               >
                 {isAr ? "طلب عرض تنفيذي" : "Request Executive Demo"}
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link
                 to="/films"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--aria-cyan)]/40 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10"
               >
                 <Play className="h-4 w-4 fill-white" />
                 {isAr ? "شاهد الفيلم الاستثماري" : "Watch Investor Film"}
@@ -237,17 +249,23 @@ function CinematicHome() {
             <button
               onClick={enterDemo}
               disabled={demoLoading}
-              className="mt-5 text-xs text-white/55 underline-offset-4 transition hover:text-white hover:underline disabled:opacity-50"
+              className="mt-5 text-xs text-[var(--aria-text-soft)]/60 underline-offset-4 transition hover:text-[var(--aria-aqua)] hover:underline disabled:opacity-50"
             >
               {demoLoading ? (isAr ? "جارٍ..." : "Loading...") : isAr ? "أو افتح بيئة تجريبية مباشرة ←" : "Or enter live demo →"}
             </button>
           </ScrollReveal>
+
+          {/* Mobile widget grid */}
+          <div className="w-full max-w-md md:hidden">
+            <HoloWidgetRing isAr={isAr} />
+          </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-1 text-white/40">
+        <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-1 text-[var(--aria-text-soft)]/50">
           <ChevronDown className="h-4 w-4 animate-bounce" />
           <span className="text-[10px] uppercase tracking-[0.35em]">{isAr ? "اكتشف القصة" : "Discover the story"}</span>
         </div>
+
       </section>
 
       {/* ============ MOBILE EXECUTIVE STRIP (mobile only) ============ */}
