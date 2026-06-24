@@ -652,11 +652,7 @@ function NodeChip({
 }) {
   const Icon = node.icon;
   const seed = node.id.charCodeAt(0) + node.id.charCodeAt(node.id.length - 1);
-  const buildings = Array.from({ length: 6 }).map((_, i) => ({
-    h: 28 + ((seed * (i + 2)) % 58),
-    w: 9 + ((seed + i * 3) % 7),
-    o: 0.5 + ((i % 3) * 0.18),
-  }));
+  void seed;
   const longPress = useRef<number | null>(null);
   const statusColor =
     node.status === "healthy"
