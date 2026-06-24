@@ -448,17 +448,6 @@ function OrbitRings() {
 }
 
 function CoreOrb({ isAr }: { isAr: boolean }) {
-  // Industrial Security Command Core — a complete hexagonal shield polyhedron
-  // (icosahedral silhouette + faceted hex shield + rotating perimeter ring).
-  // Built from pure geometric primitives so it reads as engineered, not organic.
-  const hexPath = (cx: number, cy: number, r: number) => {
-    const pts: string[] = [];
-    for (let i = 0; i < 6; i++) {
-      const a = (Math.PI / 3) * i - Math.PI / 2;
-      pts.push(`${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`);
-    }
-    return pts.join(" ");
-  };
   return (
     <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
       <div
@@ -469,155 +458,36 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
         <div className="absolute inset-[-35%] rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="absolute inset-[-12%] rounded-full bg-[#00B8D9]/25 blur-2xl animate-pulse" />
 
-        {/* outer rotating perimeter — gear-like tick ring (industrial) */}
-        <svg
-          className="absolute inset-0"
-          viewBox="0 0 200 200"
-          style={{ animation: "spin 60s linear infinite" }}
-        >
-          {Array.from({ length: 48 }).map((_, i) => {
-            const a = (Math.PI * 2 * i) / 48;
-            const r1 = 96;
-            const r2 = i % 4 === 0 ? 88 : 92;
-            const x1 = 100 + r1 * Math.cos(a);
-            const y1 = 100 + r1 * Math.sin(a);
-            const x2 = 100 + r2 * Math.cos(a);
-            const y2 = 100 + r2 * Math.sin(a);
-            return (
-              <line
-                key={i}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke={i % 4 === 0 ? "rgba(0,212,255,0.85)" : "rgba(0,212,255,0.35)"}
-                strokeWidth={i % 4 === 0 ? 1.2 : 0.6}
-                strokeLinecap="round"
-              />
-            );
-          })}
-          <circle cx={100} cy={100} r={97} fill="none" stroke="rgba(0,212,255,0.25)" strokeWidth={0.6} />
-        </svg>
-
-        {/* counter-rotating inner ring with cardinal markers */}
-        <svg
-          className="absolute inset-0"
-          viewBox="0 0 200 200"
-          style={{ animation: "spin 90s linear infinite reverse" }}
-        >
-          <circle cx={100} cy={100} r={82} fill="none" stroke="rgba(0,184,217,0.35)" strokeWidth={0.8} strokeDasharray="2 6" />
-          {[0, 90, 180, 270].map((deg) => {
-            const a = (deg * Math.PI) / 180;
-            const x = 100 + 82 * Math.cos(a);
-            const y = 100 + 82 * Math.sin(a);
-            return <circle key={deg} cx={x} cy={y} r={2.4} fill="#20E3B2" />;
-          })}
-        </svg>
-
-        {/* radar sweep wedge */}
-        <svg className="absolute inset-0" viewBox="0 0 200 200">
-          <defs>
-            <linearGradient id="radarSweep" x1="0.5" y1="0.5" x2="1" y2="0.5">
-              <stop offset="0%" stopColor="rgba(0,212,255,0.55)" />
-              <stop offset="100%" stopColor="rgba(0,212,255,0)" />
-            </linearGradient>
-          </defs>
-          <g style={{ transformOrigin: "100px 100px", animation: "spin 6s linear infinite" }}>
-            <path d="M100 100 L100 22 A78 78 0 0 1 168 60 Z" fill="url(#radarSweep)" opacity={0.65} />
-          </g>
-        </svg>
-
-        {/* MAIN GEOMETRIC SHIELD — faceted hexagon polyhedron */}
-        <svg className="absolute inset-0" viewBox="0 0 200 200">
-          <defs>
-            <radialGradient id="shieldFace" cx="0.35" cy="0.3" r="0.9">
-              <stop offset="0%" stopColor="#7FF3FF" stopOpacity={0.95} />
-              <stop offset="40%" stopColor="#00D4FF" stopOpacity={0.55} />
-              <stop offset="100%" stopColor="#031827" stopOpacity={0.95} />
-            </radialGradient>
-            <linearGradient id="facetA" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="rgba(0,212,255,0.55)" />
-              <stop offset="100%" stopColor="rgba(0,184,217,0.05)" />
-            </linearGradient>
-            <linearGradient id="facetB" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(32,227,178,0.35)" />
-              <stop offset="100%" stopColor="rgba(0,212,255,0.05)" />
-            </linearGradient>
-            <filter id="shieldGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2" />
-            </filter>
-          </defs>
-
-          {/* outer hex frame */}
-          <polygon
-            points={hexPath(100, 100, 72)}
-            fill="url(#shieldFace)"
-            stroke="rgba(0,212,255,0.9)"
-            strokeWidth={1.4}
+        {/* AI Robot image with futuristic frame */}
+        <div className="absolute inset-0 rounded-2xl border border-cyan-400/30 bg-[#06101f]/60 p-1 shadow-[0_0_40px_rgba(34,211,238,0.25)]">
+          <img
+            src={aiRobotAsset.url}
+            alt={isAr ? "الروبوت الذكي" : "AI Robot"}
+            className="h-full w-full rounded-xl object-cover"
+            draggable={false}
           />
-          {/* inner hex frame */}
-          <polygon
-            points={hexPath(100, 100, 58)}
-            fill="none"
-            stroke="rgba(127,243,255,0.55)"
-            strokeWidth={0.7}
+          {/* scan-line overlay */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-xl"
+            style={{
+              background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.03) 2px, rgba(34,211,238,0.03) 4px)",
+              mixBlendMode: "overlay",
+            }}
           />
-          {/* triangular facets from center to each vertex — gives 3D faceted polyhedron look */}
-          {Array.from({ length: 6 }).map((_, i) => {
-            const a1 = (Math.PI / 3) * i - Math.PI / 2;
-            const a2 = (Math.PI / 3) * (i + 1) - Math.PI / 2;
-            const x1 = 100 + 72 * Math.cos(a1);
-            const y1 = 100 + 72 * Math.sin(a1);
-            const x2 = 100 + 72 * Math.cos(a2);
-            const y2 = 100 + 72 * Math.sin(a2);
-            return (
-              <polygon
-                key={i}
-                points={`100,100 ${x1.toFixed(2)},${y1.toFixed(2)} ${x2.toFixed(2)},${y2.toFixed(2)}`}
-                fill={i % 2 === 0 ? "url(#facetA)" : "url(#facetB)"}
-                stroke="rgba(0,212,255,0.4)"
-                strokeWidth={0.5}
-              />
-            );
-          })}
-          {/* vertex nodes */}
-          {Array.from({ length: 6 }).map((_, i) => {
-            const a = (Math.PI / 3) * i - Math.PI / 2;
-            const x = 100 + 72 * Math.cos(a);
-            const y = 100 + 72 * Math.sin(a);
-            return (
-              <g key={i}>
-                <circle cx={x} cy={y} r={4} fill="#7FF3FF" filter="url(#shieldGlow)" />
-                <circle cx={x} cy={y} r={2} fill="#ffffff" />
-              </g>
-            );
-          })}
-
-          {/* central security crest — chevron + shield motif */}
-          <g transform="translate(100 100)">
-            <polygon
-              points="0,-28 24,-16 24,14 0,28 -24,14 -24,-16"
-              fill="rgba(3,24,39,0.85)"
-              stroke="rgba(0,212,255,0.9)"
-              strokeWidth={1}
-            />
-            <polygon
-              points="0,-18 16,-10 16,8 0,18 -16,8 -16,-10"
-              fill="none"
-              stroke="rgba(32,227,178,0.85)"
-              strokeWidth={0.8}
-            />
-            {/* chevron */}
-            <path d="M-10 -2 L0 -10 L10 -2" fill="none" stroke="#7FF3FF" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M-10 6 L0 -2 L10 6" fill="none" stroke="#20E3B2" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
-          </g>
-        </svg>
+          {/* corner brackets */}
+          <div className="pointer-events-none absolute inset-0 rounded-xl">
+            <div className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-cyan-400/60" />
+            <div className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-cyan-400/60" />
+            <div className="absolute left-0 bottom-0 h-4 w-4 border-l-2 border-b-2 border-cyan-400/60" />
+            <div className="absolute right-0 bottom-0 h-4 w-4 border-r-2 border-b-2 border-cyan-400/60" />
+          </div>
+        </div>
 
         {/* label band */}
         <div className="absolute inset-x-0 bottom-[-6px] flex flex-col items-center text-center">
           <div className="text-[10px] font-bold tracking-[0.5em] text-cyan-200">NEXUS</div>
           <div className="text-[8px] tracking-[0.4em] text-cyan-300/70">
-            {isAr ? "نواة القيادة الأمنية" : "SECURITY CORE"}
+            {isAr ? "نواة الذكاء الاصطناعي" : "AI CORE"}
           </div>
         </div>
       </div>
