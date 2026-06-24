@@ -723,51 +723,40 @@ function NodeChip({
           style={{ background: `hsla(${node.hue},95%,75%,0.9)` }}
         />
 
-        {/* isometric district platform */}
-        <div className="relative h-[78px] w-[170px] sm:h-[88px] sm:w-[192px] md:h-[96px] md:w-[210px]">
+        {/* holographic platform — clean glass disc, no building clutter */}
+        <div className="relative h-[56px] w-[150px] sm:h-[64px] sm:w-[172px] md:h-[72px] md:w-[190px]">
           <div
-            className="absolute left-1/2 top-[60px] h-7 w-[190px] -translate-x-1/2 rounded-[50%] blur-xl"
-            style={{ background: `hsla(${node.hue},95%,60%,0.6)` }}
+            className="absolute left-1/2 top-[44px] h-6 w-[170px] -translate-x-1/2 rounded-[50%] blur-xl"
+            style={{ background: `hsla(${node.hue},95%,60%,0.55)` }}
           />
           <svg viewBox="0 0 210 96" className="absolute inset-0 h-full w-full">
             <defs>
-              <radialGradient id={`pad-${node.id}`} cx="50%" cy="60%" r="60%">
-                <stop offset="0%" stopColor={`hsla(${node.hue},95%,65%,0.55)`} />
-                <stop offset="60%" stopColor={`hsla(${node.hue},85%,40%,0.25)`} />
+              <radialGradient id={`pad-${node.id}`} cx="50%" cy="55%" r="55%">
+                <stop offset="0%" stopColor={`hsla(${node.hue},95%,68%,0.5)`} />
+                <stop offset="60%" stopColor={`hsla(${node.hue},85%,42%,0.22)`} />
                 <stop offset="100%" stopColor="rgba(2,8,23,0)" />
               </radialGradient>
             </defs>
-            <ellipse cx="105" cy="66" rx="98" ry="22" fill={`url(#pad-${node.id})`} />
-            <ellipse cx="105" cy="66" rx="98" ry="22" fill="none" stroke={`hsla(${node.hue},95%,75%,0.75)`} strokeWidth="1" />
-            <ellipse cx="105" cy="66" rx="76" ry="15" fill="none" stroke={`hsla(${node.hue},95%,75%,0.4)`} strokeWidth="0.6" strokeDasharray="2 3" />
+            <ellipse cx="105" cy="60" rx="98" ry="20" fill={`url(#pad-${node.id})`} />
+            <ellipse cx="105" cy="60" rx="98" ry="20" fill="none" stroke={`hsla(${node.hue},95%,75%,0.7)`} strokeWidth="1" />
+            <ellipse cx="105" cy="60" rx="76" ry="14" fill="none" stroke={`hsla(${node.hue},95%,75%,0.35)`} strokeWidth="0.6" strokeDasharray="2 3" />
           </svg>
-
-          {/* 3D building cluster */}
-          <div className="absolute inset-x-0 bottom-[30px] flex items-end justify-center gap-[3px]">
-            {buildings.map((b, i) => (
-              <div
-                key={i}
-                className="relative rounded-t-sm"
-                style={{
-                  width: b.w,
-                  height: b.h,
-                  background: `linear-gradient(to top, hsla(${node.hue},60%,10%,0.95), hsla(${node.hue},70%,20%,0.9))`,
-                  border: `1px solid hsla(${node.hue},90%,55%,0.55)`,
-                  boxShadow: `0 0 10px hsla(${node.hue},95%,55%,${b.o * 0.55}), inset 0 -10px 14px hsla(${node.hue},95%,55%,${b.o * 0.45})`,
-                }}
-              >
-                <div
-                  className="absolute inset-x-0.5 top-1 bottom-1 opacity-90"
-                  style={{
-                    backgroundImage: `repeating-linear-gradient(to bottom, hsla(${node.hue},95%,78%,${b.o}) 0 1px, transparent 1px 4px)`,
-                  }}
-                />
-                <div
-                  className="absolute -top-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
-                  style={{ background: `hsl(${node.hue},95%,82%)`, boxShadow: `0 0 6px hsl(${node.hue},95%,75%)` }}
-                />
-              </div>
-            ))}
+          {/* floating glyph */}
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{ animation: "float-y 5s ease-in-out infinite" }}
+          >
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur"
+              style={{
+                background: `hsla(${node.hue},90%,55%,0.18)`,
+                borderColor: `hsla(${node.hue},90%,70%,0.5)`,
+                boxShadow: `0 0 24px hsla(${node.hue},95%,60%,0.55), inset 0 0 12px hsla(${node.hue},95%,70%,0.25)`,
+                color: `hsl(${node.hue},95%,82%)`,
+              }}
+            >
+              <Icon className="h-5 w-5" />
+            </div>
           </div>
         </div>
 
