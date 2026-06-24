@@ -428,7 +428,7 @@ function FloorGrid() {
 
 function OrbitRings() {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
+    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
       {[260, 360, 480].map((size, i) => (
         <div
           key={size}
@@ -448,9 +448,9 @@ function OrbitRings() {
 }
 
 function CoreOrb({ isAr }: { isAr: boolean }) {
-  const [imgError, setImgError] = useState(false);
+  
   return (
-    <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
+    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
       <div
         className="relative aspect-square"
         style={{ width: "clamp(180px, 42vw, 320px)" }}
@@ -491,42 +491,25 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
           <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(110,231,255,0.6)" strokeWidth="0.8" strokeDasharray="6 90" />
         </svg>
 
-        {/* the image — blended holographic display, no hard rectangle */}
-        <div
-          className="absolute inset-[8%] overflow-hidden"
-          style={{
-            WebkitMaskImage:
-              "radial-gradient(circle at 50% 50%, black 55%, rgba(0,0,0,0.7) 70%, transparent 92%)",
-            maskImage:
-              "radial-gradient(circle at 50% 50%, black 55%, rgba(0,0,0,0.7) 70%, transparent 92%)",
-          }}
-        >
-          {!imgError ? (
-            <img
-              src={aiRobotAsset.url}
-              alt={isAr ? "نواة ARIA التنفيذية" : "ARIA Executive Core"}
-              className="h-full w-full object-cover"
-              draggable={false}
-              onError={() => setImgError(true)}
-              style={{
-                filter:
-                  "brightness(1.05) contrast(1.05) saturate(1.15) hue-rotate(-6deg) drop-shadow(0 0 30px rgba(34,211,238,0.45))",
-              }}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[#040c18]/80">
-              <Cpu className="h-12 w-12 text-cyan-300/70" />
-            </div>
-          )}
-          {/* cyan color wash to bond with the OS palette */}
+        {/* holographic ARIA core — no image, pure energy */}
+        <div className="absolute inset-[8%] overflow-hidden rounded-full">
+          {/* plasma sphere */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 rounded-full"
             style={{
               background:
-                "radial-gradient(circle at 50% 40%, transparent 0%, rgba(6,16,31,0.15) 55%, rgba(6,16,31,0.85) 100%), linear-gradient(180deg, rgba(0,184,217,0.10), rgba(110,231,255,0.06) 50%, rgba(6,16,31,0.55))",
-              mixBlendMode: "screen",
+                "radial-gradient(circle at 35% 30%, rgba(110,231,255,0.9) 0%, rgba(34,211,238,0.6) 35%, rgba(6,182,212,0.4) 60%, rgba(8,145,178,0.25) 90%)",
+              boxShadow:
+                "0 0 60px rgba(34,211,238,0.5), inset 0 0 40px rgba(255,255,255,0.15), inset 0 -20px 40px rgba(6,16,31,0.6)",
+              animation: "pulse 4s ease-in-out infinite",
             }}
           />
+          {/* core glyph rings */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full opacity-60">
+            <circle cx="50" cy="50" r="8" fill="white" />
+            <circle cx="50" cy="50" r="22" fill="none" stroke="white" strokeOpacity="0.5" strokeWidth="0.8" strokeDasharray="2 3" />
+            <circle cx="50" cy="50" r="32" fill="none" stroke="white" strokeOpacity="0.3" strokeWidth="0.6" />
+          </svg>
           {/* scanlines */}
           <div
             className="absolute inset-0 opacity-40"
