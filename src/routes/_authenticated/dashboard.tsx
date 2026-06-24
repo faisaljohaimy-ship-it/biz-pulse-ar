@@ -21,7 +21,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import aiRobotAsset from "@/assets/ai-robot.png.asset.json";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CommandCenter,
@@ -63,7 +63,7 @@ const NODES: OrbitNode[] = [
     icon: Building2,
     route: "/departments",
     status: "healthy",
-    x: 18, y: 22, hue: 210,
+    x: 24, y: 24, hue: 210,
     kpis: [
       { label_ar: "الكفاءة", label_en: "Efficiency", value: "92%", delta: "+3.4%", trend: "up" },
       { label_ar: "الإشغال", label_en: "Utilization", value: "87%", delta: "+1.1%", trend: "up" },
@@ -85,7 +85,7 @@ const NODES: OrbitNode[] = [
     icon: Database,
     route: "/analytics",
     status: "healthy",
-    x: 78, y: 22, hue: 195,
+    x: 76, y: 24, hue: 195,
     kpis: [
       { label_ar: "الإنتاجية", label_en: "Throughput", value: "12.4k/s", delta: "+8.7%", trend: "up" },
       { label_ar: "جودة البيانات", label_en: "Data Quality", value: "98.2%", delta: "+0.3%", trend: "up" },
@@ -107,7 +107,7 @@ const NODES: OrbitNode[] = [
     icon: GitBranch,
     route: "/integrations",
     status: "warning",
-    x: 10, y: 62, hue: 220,
+    x: 16, y: 50, hue: 220,
     kpis: [
       { label_ar: "اتصالات نشطة", label_en: "Active Links", value: "18/20", delta: "+2", trend: "up" },
       { label_ar: "معدل الفشل", label_en: "Failure Rate", value: "1.3%", delta: "+0.4%", trend: "down" },
@@ -129,7 +129,7 @@ const NODES: OrbitNode[] = [
     icon: Bot,
     route: "/agents",
     status: "healthy",
-    x: 86, y: 62, hue: 175,
+    x: 84, y: 50, hue: 175,
     kpis: [
       { label_ar: "المهام/اليوم", label_en: "Tasks / day", value: "8,932", delta: "+23.8%", trend: "up" },
       { label_ar: "الدقة", label_en: "Accuracy", value: "96.4%", delta: "+1.2%", trend: "up" },
@@ -151,7 +151,7 @@ const NODES: OrbitNode[] = [
     icon: Workflow,
     route: "/workflows",
     status: "healthy",
-    x: 50, y: 82, hue: 200,
+    x: 50, y: 70, hue: 200,
     kpis: [
       { label_ar: "تشغيلات/الساعة", label_en: "Runs / hr", value: "1,247", delta: "+15.3%", trend: "up" },
       { label_ar: "نسبة النجاح", label_en: "Success Rate", value: "99.4%", delta: "+0.1%", trend: "up" },
@@ -428,7 +428,7 @@ function FloorGrid() {
 
 function OrbitRings() {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
+    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
       {[260, 360, 480].map((size, i) => (
         <div
           key={size}
@@ -448,9 +448,9 @@ function OrbitRings() {
 }
 
 function CoreOrb({ isAr }: { isAr: boolean }) {
-  const [imgError, setImgError] = useState(false);
+  
   return (
-    <div className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
+    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
       <div
         className="relative aspect-square"
         style={{ width: "clamp(180px, 42vw, 320px)" }}
@@ -491,42 +491,25 @@ function CoreOrb({ isAr }: { isAr: boolean }) {
           <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(110,231,255,0.6)" strokeWidth="0.8" strokeDasharray="6 90" />
         </svg>
 
-        {/* the image — blended holographic display, no hard rectangle */}
-        <div
-          className="absolute inset-[8%] overflow-hidden"
-          style={{
-            WebkitMaskImage:
-              "radial-gradient(circle at 50% 50%, black 55%, rgba(0,0,0,0.7) 70%, transparent 92%)",
-            maskImage:
-              "radial-gradient(circle at 50% 50%, black 55%, rgba(0,0,0,0.7) 70%, transparent 92%)",
-          }}
-        >
-          {!imgError ? (
-            <img
-              src={aiRobotAsset.url}
-              alt={isAr ? "نواة ARIA التنفيذية" : "ARIA Executive Core"}
-              className="h-full w-full object-cover"
-              draggable={false}
-              onError={() => setImgError(true)}
-              style={{
-                filter:
-                  "brightness(1.05) contrast(1.05) saturate(1.15) hue-rotate(-6deg) drop-shadow(0 0 30px rgba(34,211,238,0.45))",
-              }}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[#040c18]/80">
-              <Cpu className="h-12 w-12 text-cyan-300/70" />
-            </div>
-          )}
-          {/* cyan color wash to bond with the OS palette */}
+        {/* holographic ARIA core — no image, pure energy */}
+        <div className="absolute inset-[8%] overflow-hidden rounded-full">
+          {/* plasma sphere */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 rounded-full"
             style={{
               background:
-                "radial-gradient(circle at 50% 40%, transparent 0%, rgba(6,16,31,0.15) 55%, rgba(6,16,31,0.85) 100%), linear-gradient(180deg, rgba(0,184,217,0.10), rgba(110,231,255,0.06) 50%, rgba(6,16,31,0.55))",
-              mixBlendMode: "screen",
+                "radial-gradient(circle at 35% 30%, rgba(110,231,255,0.9) 0%, rgba(34,211,238,0.6) 35%, rgba(6,182,212,0.4) 60%, rgba(8,145,178,0.25) 90%)",
+              boxShadow:
+                "0 0 60px rgba(34,211,238,0.5), inset 0 0 40px rgba(255,255,255,0.15), inset 0 -20px 40px rgba(6,16,31,0.6)",
+              animation: "pulse 4s ease-in-out infinite",
             }}
           />
+          {/* core glyph rings */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full opacity-60">
+            <circle cx="50" cy="50" r="8" fill="white" />
+            <circle cx="50" cy="50" r="22" fill="none" stroke="white" strokeOpacity="0.5" strokeWidth="0.8" strokeDasharray="2 3" />
+            <circle cx="50" cy="50" r="32" fill="none" stroke="white" strokeOpacity="0.3" strokeWidth="0.6" />
+          </svg>
           {/* scanlines */}
           <div
             className="absolute inset-0 opacity-40"
@@ -624,7 +607,7 @@ function BeamsLayer() {
         <line
           key={n.id}
           x1={50}
-          y1={42}
+          y1={50}
           x2={n.x}
           y2={n.y + 4}
           stroke="url(#beam)"
