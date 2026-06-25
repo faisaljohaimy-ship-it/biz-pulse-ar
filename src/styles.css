@@ -575,6 +575,9 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
 @keyframes aria-ray-sweep { 0%,100% { opacity: .25; transform: translateX(-4%) } 50% { opacity: .55; transform: translateX(4%) } }
 @keyframes aria-tick { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
 @keyframes aria-bar { 0%,100% { transform: scaleY(.5) } 50% { transform: scaleY(1) } }
+@keyframes aria-holo-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
+@keyframes aria-holo-scan { 0% { transform: translateY(-10%); opacity:0 } 15%,85% { opacity:1 } 100% { transform: translateY(110%); opacity:0 } }
+
 
 .aria-hero-bg { background:
   radial-gradient(ellipse at 50% 30%, color-mix(in oklab, var(--aria-cyan) 18%, transparent) 0%, transparent 55%),

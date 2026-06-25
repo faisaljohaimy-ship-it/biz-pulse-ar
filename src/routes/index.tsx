@@ -28,6 +28,7 @@ const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
 import { AriaExecutiveCore, ExecutiveOfficeBackdrop, HoloWidgetRing } from "@/components/cinematic/AriaHeroStage";
+import { HoloAriaStage } from "@/components/cinematic/HoloAriaStage";
 import { AriaInteractiveHero } from "@/components/cinematic/AriaInteractiveHero";
 import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
 import { TrustBar } from "@/components/cinematic/TrustBar";
@@ -178,19 +179,9 @@ function CinematicHome() {
           </div>
         </div>
 
-        {/* Ambient orbiting widgets behind the interactive hero */}
-        <div className="pointer-events-none absolute inset-0 z-[1] hidden items-center justify-center opacity-60 md:flex">
-          <div className="relative" style={{ width: "min(1100px, 94vw)", height: "min(620px, 78vh)" }}>
-            <HoloWidgetRing
-              isAr={isAr}
-              radiusX={Math.min(460, typeof window !== "undefined" ? window.innerWidth * 0.4 : 420)}
-              radiusY={260}
-            />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30 blur-[1px]">
-              <AriaExecutiveCore size={420} />
-            </div>
-          </div>
-        </div>
+        {/* Holographic AI executive stage — cinematic backdrop */}
+        <HoloAriaStage isAr={isAr} />
+
 
         {/* Interactive ARIA hero — agentic prompt + live tool-call demo */}
         <div className="relative z-10 w-full pt-28 pb-12 sm:pt-32">
