@@ -299,86 +299,121 @@ export type ExecKpis = {
   executive_readiness: number;
 };
 
+export type ExecKpiSources = {
+  incidents: { severity: string; status: string; response_minutes: number | null }[];
+  patrols: { status: string; checkpoints_done: number; checkpoints_total: number }[];
+  visitors: { status: string }[];
+  permits: { status: string }[];
+  contractors: { status: string; compliance_score: number }[];
+  sites: { status: string }[];
+  cameras: { status: string; health: number }[];
+  gates: { status: string; health: number }[];
+  sensors: { status: string }[];
+  workOrders: { kind: string; status: string }[];
+  projects: { status: string; progress: number; budget_sar: number; spent_sar: number; health: string }[];
+};
+
+// Minimal shape of the authed Supabase client used by fetchExecKpiSources.
+// Kept structural so tests can pass an in-memory stub without pulling the full
+// supabase-js types — the real client (from `requireSupabaseAuth`) satisfies it.
+type ExecKpiSupabase = {
+  from: (table: string) => { select: (cols: string) => Promise<{ data: unknown }> };
+};
+
+export async function fetchExecKpiSources(supabase: ExecKpiSupabase): Promise<ExecKpiSources> {
+  const [incidents, patrols, visitors, permits, contractors, sites, cameras, gates, sensors, workOrders, projects] = await Promise.all([
+    supabase.from("sec_incidents").select("severity,status,response_minutes"),
+    supabase.from("sec_patrols").select("status,checkpoints_done,checkpoints_total"),
+    supabase.from("sec_visitors").select("status"),
+    supabase.from("sec_permits").select("status"),
+    supabase.from("sec_contractors").select("status,compliance_score"),
+    supabase.from("sec_sites").select("status"),
+    supabase.from("sec_cameras").select("status,health"),
+    supabase.from("sec_gates").select("status,health"),
+    supabase.from("sec_sensors").select("status"),
+    supabase.from("sec_work_orders").select("kind,status"),
+    supabase.from("sec_projects").select("status,progress,budget_sar,spent_sar,health"),
+  ]);
+  return {
+    incidents: (incidents.data ?? []) as ExecKpiSources["incidents"],
+    patrols: (patrols.data ?? []) as ExecKpiSources["patrols"],
+    visitors: (visitors.data ?? []) as ExecKpiSources["visitors"],
+    permits: (permits.data ?? []) as ExecKpiSources["permits"],
+    contractors: (contractors.data ?? []) as ExecKpiSources["contractors"],
+    sites: (sites.data ?? []) as ExecKpiSources["sites"],
+    cameras: (cameras.data ?? []) as ExecKpiSources["cameras"],
+    gates: (gates.data ?? []) as ExecKpiSources["gates"],
+    sensors: (sensors.data ?? []) as ExecKpiSources["sensors"],
+    workOrders: (workOrders.data ?? []) as ExecKpiSources["workOrders"],
+    projects: (projects.data ?? []) as ExecKpiSources["projects"],
+  };
+}
+
+export function computeExecKpis(src: ExecKpiSources): ExecKpis {
+  const { incidents: I, patrols: P, visitors: V, permits: PM, contractors: C, sites: S, cameras: CAM, gates: G, sensors: SEN, workOrders: WO, projects: PRJ } = src;
+
+  const incTotal = I.length || 1;
+  const incOpen = I.filter(i => i.status !== "resolved" && i.status !== "closed").length;
+  const incClosed = I.length - incOpen;
+  const incCritical = I.filter(i => i.severity === "critical" && i.status !== "closed").length;
+  const mttr = I.filter(i => i.response_minutes != null).reduce((s, i, _, a) => s + (i.response_minutes ?? 0) / (a.length || 1), 0);
+  const camOnline = CAM.filter(c => c.status === "online").length;
+  const gateOnline = G.filter(g => g.status === "online").length;
+  const cctvHealth = CAM.length ? Math.round(CAM.reduce((s, c) => s + c.health, 0) / CAM.length) : 0;
+  const accessHealth = G.length ? Math.round(G.reduce((s, g) => s + g.health, 0) / G.length) : 0;
+  const sensorsAlarming = SEN.filter(s => s.status === "alarm" || s.status === "offline").length;
+  const patrolCompletion = P.length
+    ? Math.round(P.reduce((s, p) => s + (p.checkpoints_total ? (p.checkpoints_done / p.checkpoints_total) : 0), 0) / P.length * 100)
+    : 0;
+  const compliance = C.length ? Math.round(C.reduce((s, c) => s + c.compliance_score, 0) / C.length) : 0;
+  const resolutionRate = Math.round((incClosed / incTotal) * 100);
+  const riskIndex = Math.min(100, incCritical * 15 + sensorsAlarming * 5 + (100 - cctvHealth) / 2);
+  const safetyIndex = Math.max(0, 100 - riskIndex);
+  const executiveReadiness = Math.round((cctvHealth + accessHealth + compliance + patrolCompletion + safetyIndex) / 5);
+
+  return {
+    incidents_total: I.length,
+    incidents_open: incOpen,
+    incidents_critical: incCritical,
+    incidents_resolution_rate: resolutionRate,
+    mttr_minutes: Math.round(mttr),
+    preventive_wo: WO.filter(w => w.kind === "preventive").length,
+    corrective_wo: WO.filter(w => w.kind === "corrective").length,
+    wo_open: WO.filter(w => w.status !== "closed" && w.status !== "cancelled").length,
+    wo_closed: WO.filter(w => w.status === "closed").length,
+    projects_in_progress: PRJ.filter(p => p.status === "in-progress").length,
+    projects_completed: PRJ.filter(p => p.status === "completed").length,
+    projects_budget_total: PRJ.reduce((s, p) => s + Number(p.budget_sar), 0),
+    projects_spent_total: PRJ.reduce((s, p) => s + Number(p.spent_sar), 0),
+    cameras_total: CAM.length,
+    cameras_online: camOnline,
+    cctv_health: cctvHealth,
+    gates_total: G.length,
+    gates_online: gateOnline,
+    access_health: accessHealth,
+    sensors_total: SEN.length,
+    sensors_alarming: sensorsAlarming,
+    sites_operational: S.filter(s => s.status === "operational").length,
+    sites_total: S.length,
+    patrols_active: P.filter(p => p.status === "active").length,
+    patrol_completion: patrolCompletion,
+    visitors_inside: V.filter(v => v.status === "inside" || v.status === "overdue").length,
+    permits_active: PM.filter(p => p.status === "active" || p.status === "approved").length,
+    contractors_active: C.filter(c => c.status === "active").length,
+    contractors_compliance: compliance,
+    risk_index: Math.round(riskIndex),
+    safety_index: Math.round(safetyIndex),
+    executive_readiness: executiveReadiness,
+  };
+}
+
 export const getExecKpis = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ExecKpis> => {
-    const { supabase } = context;
-    const [incidents, patrols, visitors, permits, contractors, sites, cameras, gates, sensors, workOrders, projects] = await Promise.all([
-      supabase.from("sec_incidents").select("severity,status,response_minutes"),
-      supabase.from("sec_patrols").select("status,checkpoints_done,checkpoints_total"),
-      supabase.from("sec_visitors").select("status"),
-      supabase.from("sec_permits").select("status"),
-      supabase.from("sec_contractors").select("status,compliance_score"),
-      supabase.from("sec_sites").select("status"),
-      supabase.from("sec_cameras").select("status,health"),
-      supabase.from("sec_gates").select("status,health"),
-      supabase.from("sec_sensors").select("status"),
-      supabase.from("sec_work_orders").select("kind,status"),
-      supabase.from("sec_projects").select("status,progress,budget_sar,spent_sar,health"),
-    ]);
-    const I = (incidents.data ?? []) as { severity: string; status: string; response_minutes: number | null }[];
-    const P = (patrols.data ?? []) as { status: string; checkpoints_done: number; checkpoints_total: number }[];
-    const V = (visitors.data ?? []) as { status: string }[];
-    const PM = (permits.data ?? []) as { status: string }[];
-    const C = (contractors.data ?? []) as { status: string; compliance_score: number }[];
-    const S = (sites.data ?? []) as { status: string }[];
-    const CAM = (cameras.data ?? []) as { status: string; health: number }[];
-    const G = (gates.data ?? []) as { status: string; health: number }[];
-    const SEN = (sensors.data ?? []) as { status: string }[];
-    const WO = (workOrders.data ?? []) as { kind: string; status: string }[];
-    const PRJ = (projects.data ?? []) as { status: string; progress: number; budget_sar: number; spent_sar: number; health: string }[];
-
-    const incTotal = I.length || 1;
-    const incOpen = I.filter(i => i.status !== "resolved" && i.status !== "closed").length;
-    const incClosed = I.length - incOpen;
-    const incCritical = I.filter(i => i.severity === "critical" && i.status !== "closed").length;
-    const mttr = I.filter(i => i.response_minutes != null).reduce((s, i, _, a) => s + (i.response_minutes ?? 0) / (a.length || 1), 0);
-    const camOnline = CAM.filter(c => c.status === "online").length;
-    const gateOnline = G.filter(g => g.status === "online").length;
-    const cctvHealth = CAM.length ? Math.round(CAM.reduce((s, c) => s + c.health, 0) / CAM.length) : 0;
-    const accessHealth = G.length ? Math.round(G.reduce((s, g) => s + g.health, 0) / G.length) : 0;
-    const sensorsAlarming = SEN.filter(s => s.status === "alarm" || s.status === "offline").length;
-    const patrolCompletion = P.length
-      ? Math.round(P.reduce((s, p) => s + (p.checkpoints_total ? (p.checkpoints_done / p.checkpoints_total) : 0), 0) / P.length * 100)
-      : 0;
-    const compliance = C.length ? Math.round(C.reduce((s, c) => s + c.compliance_score, 0) / C.length) : 0;
-    const resolutionRate = Math.round((incClosed / incTotal) * 100);
-    const riskIndex = Math.min(100, incCritical * 15 + sensorsAlarming * 5 + (100 - cctvHealth) / 2);
-    const safetyIndex = Math.max(0, 100 - riskIndex);
-    const executiveReadiness = Math.round((cctvHealth + accessHealth + compliance + patrolCompletion + safetyIndex) / 5);
-
-    return {
-      incidents_total: I.length,
-      incidents_open: incOpen,
-      incidents_critical: incCritical,
-      incidents_resolution_rate: resolutionRate,
-      mttr_minutes: Math.round(mttr),
-      preventive_wo: WO.filter(w => w.kind === "preventive").length,
-      corrective_wo: WO.filter(w => w.kind === "corrective").length,
-      wo_open: WO.filter(w => w.status !== "closed" && w.status !== "cancelled").length,
-      wo_closed: WO.filter(w => w.status === "closed").length,
-      projects_in_progress: PRJ.filter(p => p.status === "in-progress").length,
-      projects_completed: PRJ.filter(p => p.status === "completed").length,
-      projects_budget_total: PRJ.reduce((s, p) => s + Number(p.budget_sar), 0),
-      projects_spent_total: PRJ.reduce((s, p) => s + Number(p.spent_sar), 0),
-      cameras_total: CAM.length,
-      cameras_online: camOnline,
-      cctv_health: cctvHealth,
-      gates_total: G.length,
-      gates_online: gateOnline,
-      access_health: accessHealth,
-      sensors_total: SEN.length,
-      sensors_alarming: sensorsAlarming,
-      sites_operational: S.filter(s => s.status === "operational").length,
-      sites_total: S.length,
-      patrols_active: P.filter(p => p.status === "active").length,
-      patrol_completion: patrolCompletion,
-      visitors_inside: V.filter(v => v.status === "inside" || v.status === "overdue").length,
-      permits_active: PM.filter(p => p.status === "active" || p.status === "approved").length,
-      contractors_active: C.filter(c => c.status === "active").length,
-      contractors_compliance: compliance,
-      risk_index: Math.round(riskIndex),
-      safety_index: Math.round(safetyIndex),
-      executive_readiness: executiveReadiness,
-    };
+    // RLS applies: context.supabase is the authed user's client (publishable key
+    // + bearer token) injected by requireSupabaseAuth. Service role is never
+    // used here, so policies on sec_* tables filter rows as the caller.
+    const sources = await fetchExecKpiSources(context.supabase as unknown as ExecKpiSupabase);
+    return computeExecKpis(sources);
   });
+
