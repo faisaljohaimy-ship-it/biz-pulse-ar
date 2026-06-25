@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
-import { z } from "zod";
 import {
   createLovableAiGatewayProvider,
   createOpenRouterProvider,
@@ -10,37 +9,26 @@ import {
   OPENROUTER_MODELS,
 } from "@/lib/ai-gateway.server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  chatJsonError,
+  chatResponseHeaders,
+  getChatRequestId,
+  validateChatRequest,
+} from "./chat-guard";
 
-const BodySchema = z.object({
-  messages: z.array(z.any()).min(1),
-  threadId: z.string().uuid().optional(),
-  grounded: z.boolean().optional(),
-  model: z.string().optional(),
-}).passthrough();
-
-const CORS_HEADERS = {
+const CORS_HEADERS_OPTIONS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ARIA-Request-ID, Accept",
   "Access-Control-Max-Age": "86400",
 } as const;
+void CORS_HEADERS_OPTIONS;
 
 const OPENROUTER_MODEL_IDS = new Set<string>(OPENROUTER_MODELS.map((m) => m.id));
 const LOVABLE_MODEL_IDS = new Set<string>(LOVABLE_MODELS.map((m) => m.id));
 
-const responseHeaders = (requestId: string) => ({
-  ...CORS_HEADERS,
-  "Cache-Control": "no-store",
-  "X-ARIA-Request-ID": requestId,
-  "X-Accel-Buffering": "no",
-});
-
-const jsonError = (message: string, status: number, requestId: string) =>
-  Response.json({ ok: false, error: message, requestId }, { status, headers: responseHeaders(requestId) });
-
-function getRequestId(request: Request) {
-  return request.headers.get("x-aria-request-id") ?? crypto.randomUUID();
-}
+const responseHeaders = chatResponseHeaders;
+const jsonError = chatJsonError;
 
 function getMessageText(message?: UIMessage) {
   return (message?.parts ?? [])
@@ -48,6 +36,7 @@ function getMessageText(message?: UIMessage) {
     .join("")
     .trim();
 }
+
 
 // Agentic mode: tools are ALWAYS enabled. ARIA decides whether to call.
 
