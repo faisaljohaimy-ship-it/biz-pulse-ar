@@ -123,7 +123,8 @@ export function AriaCommandBar() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 end-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow hover:scale-105 transition-transform"
+        className="fixed bottom-4 end-4 sm:bottom-6 sm:end-6 z-40 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow hover:scale-105 transition-transform"
+        style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         aria-label="ARIA"
         title="ARIA  ⌘K"
       >
@@ -132,21 +133,21 @@ export function AriaCommandBar() {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-background/60 backdrop-blur-sm p-4 pt-[10vh]"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-background/60 backdrop-blur-sm p-2 pt-[6vh] sm:p-4 sm:pt-[10vh]"
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-2xl glass-strong rounded-2xl border border-border shadow-2xl overflow-hidden"
+            className="flex w-full max-w-2xl max-h-[88vh] sm:max-h-[80vh] flex-col glass-strong rounded-2xl border border-border shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
             dir={locale === "ar" ? "rtl" : "ltr"}
           >
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/60">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span>ARIA — {locale === "ar" ? "شريط الأوامر" : "Command Bar"}</span>
-                <kbd className="ms-2 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">⌘K</kbd>
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-border/60">
+              <div className="flex items-center gap-2 text-sm font-semibold min-w-0">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                <span className="truncate">ARIA — {locale === "ar" ? "شريط الأوامر" : "Command Bar"}</span>
+                <kbd className="ms-2 hidden sm:inline rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">⌘K</kbd>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 {messages.length > 0 && (
                   <button
                     type="button"
@@ -167,7 +168,8 @@ export function AriaCommandBar() {
               </div>
             </div>
 
-            <div className="max-h-[55vh] overflow-y-auto px-4 py-3 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-3">
+
               {messages.length === 0 && (
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p>{locale === "ar"
@@ -209,7 +211,7 @@ export function AriaCommandBar() {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="border-t border-border/60 p-2 flex items-end gap-2">
+            <form onSubmit={handleSubmit} className="border-t border-border/60 p-2 flex items-end gap-2" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
               <textarea
                 ref={inputRef}
                 value={input}
