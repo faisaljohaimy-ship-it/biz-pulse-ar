@@ -85,32 +85,33 @@ export function HoloAriaStage({ isAr }: { isAr: boolean }) {
         </svg>
       </div>
 
-      {/* the holographic figure */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[48%]">
+      {/* the holographic HUD disk */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[42%] w-[min(1200px,120vw)]">
         <div className="relative">
-          <div className="absolute inset-[-8%] rounded-full bg-[#00B8D9]/30 blur-3xl" />
+          <div className="absolute inset-[-6%] rounded-full bg-[#00B8D9]/25 blur-3xl" />
           <img
-            src={ariaHolo}
-            alt="ARIA holographic executive"
-            width={1024}
-            height={1280}
-            className="relative h-[min(720px,82vh)] w-auto select-none object-contain opacity-90 mix-blend-screen"
+            src={ariaDisk}
+            alt="ARIA holographic command disk"
+            width={1600}
+            height={1024}
+            className="relative w-full h-auto select-none object-contain opacity-95 mix-blend-screen"
             style={{
-              filter: "drop-shadow(0 0 60px rgba(58,232,255,0.55)) drop-shadow(0 0 120px rgba(0,184,217,0.4))",
-              animation: "aria-holo-float 8s ease-in-out infinite",
+              filter: "drop-shadow(0 30px 80px rgba(58,232,255,0.45)) drop-shadow(0 0 120px rgba(255,63,164,0.25))",
+              animation: "aria-holo-float 9s ease-in-out infinite",
             }}
             draggable={false}
           />
           {/* travelling scanline */}
           <div
-            className="absolute inset-x-0 h-16 mix-blend-screen"
+            className="absolute inset-x-0 h-24 mix-blend-screen pointer-events-none"
             style={{
-              background: "linear-gradient(180deg, transparent, rgba(110,231,255,0.45), transparent)",
-              animation: "aria-holo-scan 5s ease-in-out infinite",
+              background: "linear-gradient(180deg, transparent, rgba(110,231,255,0.35), transparent)",
+              animation: "aria-holo-scan 6s ease-in-out infinite",
             }}
           />
         </div>
       </div>
+
 
       {/* floating widget cards — desktop only to avoid clutter on mobile */}
       <div className="absolute inset-0 hidden md:block">
