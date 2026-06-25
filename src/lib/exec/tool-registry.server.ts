@@ -67,10 +67,10 @@ const outlookSendMail: ToolExecutor = {
     const message: Record<string, unknown> = {
       subject: data.subject,
       body: { contentType: "HTML", content: data.body },
-      toRecipients: data.to.map((a) => ({ emailAddress: { address: a } })),
+      toRecipients: data.to.map((a: string) => ({ emailAddress: { address: a } })),
     };
     if (data.cc?.length) {
-      message.ccRecipients = data.cc.map((a) => ({
+      message.ccRecipients = data.cc.map((a: string) => ({
         emailAddress: { address: a },
       }));
     }

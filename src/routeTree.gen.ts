@@ -69,6 +69,7 @@ import { Route as AuthenticatedExecutiveReportsRouteImport } from './routes/_aut
 import { Route as AuthenticatedExecutiveMapRouteImport } from './routes/_authenticated/executive-map'
 import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authenticated/executive'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
+import { Route as AuthenticatedExecRouteImport } from './routes/_authenticated/exec'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
@@ -421,6 +422,11 @@ const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
   path: '/execution',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedExecRoute = AuthenticatedExecRouteImport.update({
+  id: '/exec',
+  path: '/exec',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDigitalTwinRoute =
   AuthenticatedDigitalTwinRouteImport.update({
     id: '/digital-twin',
@@ -704,6 +710,7 @@ export interface FileRoutesByFullPath {
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -809,6 +816,7 @@ export interface FileRoutesByTo {
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -915,6 +923,7 @@ export interface FileRoutesById {
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/_authenticated/exec': typeof AuthenticatedExecRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
   '/_authenticated/executive': typeof AuthenticatedExecutiveRoute
   '/_authenticated/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1022,6 +1031,7 @@ export interface FileRouteTypes {
     | '/decisions'
     | '/departments'
     | '/digital-twin'
+    | '/exec'
     | '/execution'
     | '/executive'
     | '/executive-map'
@@ -1127,6 +1137,7 @@ export interface FileRouteTypes {
     | '/decisions'
     | '/departments'
     | '/digital-twin'
+    | '/exec'
     | '/execution'
     | '/executive'
     | '/executive-map'
@@ -1232,6 +1243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/decisions'
     | '/_authenticated/departments'
     | '/_authenticated/digital-twin'
+    | '/_authenticated/exec'
     | '/_authenticated/execution'
     | '/_authenticated/executive'
     | '/_authenticated/executive-map'
@@ -1750,6 +1762,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExecutionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/exec': {
+      id: '/_authenticated/exec'
+      path: '/exec'
+      fullPath: '/exec'
+      preLoaderRoute: typeof AuthenticatedExecRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/digital-twin': {
       id: '/_authenticated/digital-twin'
       path: '/digital-twin'
@@ -2139,6 +2158,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
+  AuthenticatedExecRoute: typeof AuthenticatedExecRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
   AuthenticatedExecutiveRoute: typeof AuthenticatedExecutiveRoute
   AuthenticatedExecutiveMapRoute: typeof AuthenticatedExecutiveMapRoute
@@ -2188,6 +2208,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
+  AuthenticatedExecRoute: AuthenticatedExecRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
   AuthenticatedExecutiveRoute: AuthenticatedExecutiveRoute,
   AuthenticatedExecutiveMapRoute: AuthenticatedExecutiveMapRoute,
