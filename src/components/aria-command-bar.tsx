@@ -169,6 +169,28 @@ export function AriaCommandBar() {
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-3">
+              {!bearer && (
+                <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-200 flex items-center justify-between gap-3">
+                  <span>
+                    {locale === "ar"
+                      ? "يلزم تسجيل الدخول لاستخدام ARIA — وإلا ستفشل الطلبات بـ 401."
+                      : "Sign in to use ARIA — otherwise requests fail with 401."}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const back = window.location.pathname + window.location.search;
+                      setOpen(false);
+                      navigate({ to: "/auth", search: { redirect: back } as never });
+                    }}
+                    className="shrink-0 rounded-md bg-amber-500 px-3 py-1.5 text-[11px] font-semibold text-amber-950 hover:bg-amber-400"
+                  >
+                    {locale === "ar" ? "تسجيل الدخول" : "Sign in"}
+                  </button>
+                </div>
+              )}
+
+
 
               {messages.length === 0 && (
                 <div className="text-sm text-muted-foreground space-y-2">
