@@ -110,10 +110,41 @@ function ExecConsole() {
     queryFn: () => listRecentEvents(),
     refetchInterval: 5000,
   });
+  const agents = useQuery({
+    queryKey: ["exec", "agents"],
+    queryFn: () => listAgents(),
+  });
+  const agentRuns = useQuery({
+    queryKey: ["exec", "agentRuns"],
+    queryFn: () => listAgentRuns(),
+    refetchInterval: 5000,
+  });
 
   const runFn = useServerFn(runTool);
   const approveFn = useServerFn(approveToolExecution);
   const triggerFn = useServerFn(triggerWorkflowFn);
+  const runAgentSF = useServerFn(runAgentFn);
+
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [agentGoal, setAgentGoal] = useState("");
+
+  const runAgentMut = useMutation({
+    mutationFn: async () => {
+      if (!selectedAgentId) throw new Error("Select an agent first");
+      return runAgentSF({
+        data: {
+          agentId: selectedAgentId,
+          goalOverride: agentGoal.trim() || undefined,
+        },
+      });
+    },
+    onSuccess: (res: unknown) => {
+      const r = res as { status?: string; steps?: number };
+      toast.success(`Agent ${String(r.status ?? "")} (${r.steps ?? 0} steps)`);
+      void agentRuns.refetch();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   const runMut = useMutation({
     mutationFn: async () => {
