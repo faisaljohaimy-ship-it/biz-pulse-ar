@@ -46,10 +46,24 @@ export function AriaCommandBar() {
     });
   }, [bearer]);
 
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const [chatError, setChatError] = useState<string | null>(null);
+  const { messages, sendMessage, status, setMessages, error } = useChat({
     id: "aria-command-bar",
     transport: transport.current,
+    onError: async (err: unknown) => {
+      // Try to surface server-provided JSON error message (e.g. 401 from /api/chat guard)
+      const anyErr = err as { response?: Response; message?: string };
+      let msg = anyErr?.message ?? "تعذّر الاتصال بـ ARIA.";
+      try {
+        if (anyErr?.response && typeof anyErr.response.clone === "function") {
+          const body = await anyErr.response.clone().json();
+          if (body?.error) msg = body.error;
+        }
+      } catch { /* ignore */ }
+      setChatError(msg);
+    },
   });
+
 
   // ⌘K / Ctrl+K to toggle, Esc to close, plus global "aria:open" event
   useEffect(() => {
@@ -113,9 +127,11 @@ export function AriaCommandBar() {
     e?.preventDefault();
     const text = input.trim();
     if (!text || busy) return;
+    setChatError(null);
     setInput("");
     void sendMessage({ text });
   }
+
 
   return (
     <>
@@ -225,12 +241,18 @@ export function AriaCommandBar() {
               {messages.map((m) => (
                 <MessageBubble key={m.id} message={m} />
               ))}
+              {(chatError || error) && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                  {chatError ?? (error as Error)?.message}
+                </div>
+              )}
               {busy && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   ARIA…
                 </div>
               )}
+
             </div>
 
             <form onSubmit={handleSubmit} className="border-t border-border/60 p-2 flex items-end gap-2" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
