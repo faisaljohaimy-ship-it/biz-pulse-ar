@@ -7,6 +7,18 @@ import {
   WorkflowDefinitionSchema,
 } from "./exec/workflow-engine.server";
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [k: string]: JsonValue };
+
+function toJson<T>(v: T): JsonValue {
+  return JSON.parse(JSON.stringify(v)) as JsonValue;
+}
+
 /* ------------------------------- Tool API ------------------------------- */
 
 const RunToolSchema = z.object({
