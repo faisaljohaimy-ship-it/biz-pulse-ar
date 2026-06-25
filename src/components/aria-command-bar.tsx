@@ -239,12 +239,18 @@ export function AriaCommandBar() {
               {messages.map((m) => (
                 <MessageBubble key={m.id} message={m} />
               ))}
+              {(chatError || error) && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                  {chatError ?? (error as Error)?.message}
+                </div>
+              )}
               {busy && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   ARIA…
                 </div>
               )}
+
             </div>
 
             <form onSubmit={handleSubmit} className="border-t border-border/60 p-2 flex items-end gap-2" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
