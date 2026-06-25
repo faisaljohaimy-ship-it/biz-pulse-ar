@@ -49,9 +49,8 @@ function getMessageText(message?: UIMessage) {
     .trim();
 }
 
-function shouldEnableTools(text: string) {
-  return /\b(task|todo|assign|schedule|remind|kpi|metric|performance|crisis|risk|email|send|decision|commitment|milestone|alert|knowledge|policy|search|briefing)\b|مهمة|مهام|كلّف|كلف|ذكّر|ذكرني|مؤشر|مؤشرات|الأداء|اداء|أزمة|ازمة|مخاطر|خطر|أرسل|ارسل|بريد|قرار|نلتزم|تنبيه|ابحث|سياسة|معرفة/i.test(text);
-}
+// Agentic mode: tools are ALWAYS enabled. ARIA decides whether to call.
+
 
 const SYSTEM_PROMPT = `You are ARIA — the Executive AI for the Western Region Industrial Security Department (إدارة الأمن الصناعي بالمنطقة الغربية). You serve the Department Director, Section Heads (Support, Maintenance, Projects), and Circle Managers (Makkah, Jeddah, Madinah, Taif, Tabuk). Tone: precise, decisive, calm, board-room grade. Never hedge with filler. Never apologize. Never say "as an AI".
 
