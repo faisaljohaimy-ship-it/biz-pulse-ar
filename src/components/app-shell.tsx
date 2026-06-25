@@ -175,6 +175,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/voice", icon: Mic, label: t("nav.voice") },
         { to: "/tts", icon: Volume2, label: t("nav.tts") },
         { to: "/workflows", icon: Workflow, label: t("nav.workflows") },
+        { to: "/exec", icon: Play, label: ar(locale, "مركز التنفيذ", "Execution Console") },
         { to: "/prompts", icon: BookMarked, label: t("nav.prompts") },
         { to: "/marketplace", icon: Store, label: t("nav.marketplace") },
         { to: "/knowledge", icon: BookOpen, label: t("nav.knowledge") },
