@@ -1,116 +1,64 @@
-# Stage 3 — Enterprise Execution Engine
+# NEXIOS AI OS — Enterprise Activation Plan
 
-Build the execution layer underneath ARIA. The pipeline brain (Stage 2) already does Intent → Memory → RAG → KPI → Risk → Decision → Reasoning → Reports. This stage adds **real execution**: tools that actually run, workflows that orchestrate them, agents that delegate, events that propagate, predictions, and full observability.
+The request spans 40+ AI agents, 40+ integrations, RAG/vector DB, voice I/O, document intelligence, SSO/MFA, digital twin, and an ultra-premium UX redesign. That is 8–12 weeks of disciplined engineering, not one turn. To honor the Engineering Charter (no placeholders, production-grade only), I'll deliver this in 6 focused waves. Each wave ships **fully functional**, not mocked.
 
-Existing foundations to reuse (do **not** rebuild):
-- `sec_activity_events` (audit trail), `audit_logs` (cross-cutting audit), `aria_decisions`, `aria_memory`, `aria_knowledge` (pgvector), `aria_reports`, `user_roles` + `has_role`, RLS on every `sec_*` table.
-- Existing tools in `src/lib/aria-tools.server.ts` (sec_*, create_task, etc.).
-- Existing connector wrappers: `src/lib/sharepoint.functions.ts`, `outlook.functions.ts`, `teams.functions.ts` + the `MICROSOFT_*` connector keys.
+## Current Foundation (already live)
+- ARIA Executive Engine (`openai/gpt-5` via Lovable AI Gateway) + 17 agent tools
+- Execution Engine: `tool_registry`, `workflows`, `workflow_runs`, `agent_runs`, `tool_executions`
+- 17 `sec_*` operational tables with RLS hardened, KPI engine, Digital Twin tree
+- Operations Cockpit dashboard with live Supabase KPIs (30s refresh), Alerts Panel
+- Microsoft connectors linked (Outlook, Teams, SharePoint)
+- Luxury Executive design system (Deep Midnight Cyan + glassmorphism)
 
-This scope is multi-day. I'll ship in **3 incremental phases**; each phase ends with passing tests and a usable surface. Confirm phase order or stop me mid-way.
+## Wave 1 — ARIA Cognitive Core (this wave)
+Make ARIA a true Executive Brain, not a chat.
+- **Long-term memory**: activate `aria_memory` + `aria_match_memory` with embeddings (`google/gemini-embedding-2`), auto-write decisions/conversations
+- **RAG / Knowledge Graph**: enable `aria_knowledge` ingestion pipeline + `aria_match_knowledge` semantic retrieval
+- **Document intelligence**: PDF/Word/Excel/image upload → parse → embed → searchable (server fn `ingestDocument`)
+- **Voice I/O**: ElevenLabs TTS (key present) + Whisper STT via Gateway
+- **Reasoning loop**: multi-step agent runtime with tool approval gates, persisted to `agent_runs`/`workflow_step_runs`
+- **ARIA Console** route `/aria` with: thread history, doc upload, voice button, reasoning trace, recommendation cards
 
----
+## Wave 2 — Agent Network (40 agents)
+- Seed `agent_definitions` with all 40 specialized agents (system prompt, allowed tools, RBAC scope)
+- **Orchestrator agent** routes user intent → specialist(s) → consolidates
+- Agent-to-agent messaging via `enterprise_events` bus
+- `/agents` page: live agent status, current task, last decision, handoff graph
 
-## Phase A — Foundation (Tool Orchestrator + Audit + Workflow Engine)
+## Wave 3 — Command Center & Digital Twin
+- `/command-center`: full-screen ops wall (incidents map, CCTV grid, patrol live tracks, KPI rail, ARIA briefing)
+- Digital Twin 3D site tree with real-time asset/sensor state
+- Predictive AI: incident forecasting (time-series on `sec_incidents`), risk heat-map
+- Smart Alerts engine: rules in `governance_policies`, evaluated on Supabase Realtime
 
-Everything else depends on this. Ship first.
+## Wave 4 — Workflow & Automation
+- Visual workflow builder (`workflows` DAG editor)
+- Approval engine with multi-level routing (`briefing_actions`)
+- Scheduled tasks (pg_cron → server route `/api/public/cron/run-workflows`)
+- Full audit trail UI from `audit_logs` + `tool_executions`
 
-### Data layer (one migration)
-- `tool_registry` — declarative tool catalog: `id`, `category` (sap/m365/outlook/teams/sharepoint/azure_ad/oracle/rest/graph/n8n/webhook/sql/edge/internal), `schema_json`, `permissions text[]`, `requires_approval`, `rollback_kind` (none/inverse/compensating), `rollback_tool_id`, `enabled`, `version`.
-- `tool_executions` — every invocation: `tool_id`, `actor_id`, `workflow_run_id?`, `input_json`, `output_json`, `status` (queued/running/succeeded/failed/rolled_back), `duration_ms`, `error`, `correlation_id`, `started_at`, `finished_at`.
-- `workflows` — definition: `id`, `name`, `description`, `definition_json` (steps DAG), `version`, `enabled`, `owner_id`.
-- `workflow_runs` — execution: `workflow_id`, `status`, `triggered_by`, `trigger_event`, `context_json`, `current_step`, `error`, timing.
-- `workflow_step_runs` — per-step: `run_id`, `step_id`, `kind` (tool/condition/loop/approval/parallel/wait), `status`, `attempt`, `input/output_json`, `error`, timing.
-- `enterprise_events` — event bus: `id`, `topic`, `payload_json`, `source`, `correlation_id`, `occurred_at`, `processed_at`, `status` (pending/processed/dead).
-- `agent_definitions` — `id`, `name`, `goal`, `system_prompt`, `permissions text[]`, `tool_allowlist text[]`, `memory_scope`, `owner_id`, `enabled`.
-- `agent_runs` — `agent_id`, `triggered_by`, `goal_override`, `context_json`, `status`, `summary`, timing, `audit_json`.
+## Wave 5 — Enterprise Integrations (production wiring)
+- **M365 live**: Outlook send/read, Teams post, SharePoint document sync via connector gateway
+- **Power BI** embed, **Azure AD SSO** (SAML)
+- Webhook inbox `/api/public/webhooks/{source}` for SAP/SCADA/CCTV/IoT/Biometric
+- Integration registry UI showing health, last sync, throughput
 
-All tables: GRANTs, RLS scoped to admin/owner via `has_role`, service_role full access. `enterprise_events` and `tool_executions` enabled for Supabase Realtime.
+## Wave 6 — Security, Compliance, Polish
+- MFA (TOTP), RBAC matrix UI, ABAC policies on `governance_policies`
+- Security dashboard, threat detection rules
+- PDPL/ISO27001/SOC2 evidence pack auto-generation
+- Final UX pass: Apple-grade motion, Arabic typography (IBM Plex Sans Arabic), perfect RTL audit
 
-### Code (`src/lib/exec/`)
-- `tool-registry.server.ts` — typed registry. Each entry: `permission` check (via `has_role` + ABAC predicate), `execute(input, ctx)`, optional `rollback(execId, ctx)`. Wraps existing ARIA tools + adds first-class connector tools:
-  - `m365.outlook.send_mail`, `m365.teams.post_message`, `m365.sharepoint.upload_file`, `m365.graph.get_user` (via gateway, real).
-  - `rest.http` (signed/allowlisted), `webhook.dispatch`, `sql.exec` (read-only by default, write requires admin role + approval).
-  - `supabase.invoke_edge_function`.
-  - SAP / Oracle / Azure AD: stub entries with `enabled: false` + clear "connector required" doc strings (production-honest, no fake calls).
-- `tool-orchestrator.server.ts` — `executeTool({toolId, input, actor, workflowRunId?})`: validate input via Zod schema from registry, check permissions, queue audit row, run with timeout + retry, persist output, emit `enterprise_event`, return execution id. Approval gate: if `requires_approval` and not pre-approved, return `pending_approval` and create `aria_decisions` row.
-- `workflow-engine.server.ts` — interprets `definition_json` (steps DAG with kinds: `tool`, `parallel`, `condition`, `loop`, `approval`, `wait`, `subworkflow`). Executes step-by-step with `workflow_step_runs` persistence, retries with exponential backoff, rollback on failure (compensating action chain), pause/resume on approvals.
-- `event-bus.server.ts` — `publish(topic, payload, correlationId?)`. Insert + Supabase Realtime channel `enterprise_events`. `subscribe(topic, handler)` server-side for workflow triggers; client side reads via Realtime for live observability.
-- `audit.server.ts` — single `audit(...)` helper writing to `audit_logs` with actor, action, resource, before/after.
+## Technical Notes
+- Models: GPT-5 (reasoning), Gemini 3 Flash (fast classification), Gemini Embedding 2 (vectors), Gemini 3 Pro Image (visuals), ElevenLabs (voice)
+- All AI calls server-side via `src/lib/*.functions.ts` with `requireSupabaseAuth`
+- New tables this wave: `aria_threads`, `aria_thread_messages`, `aria_documents` (with pgvector embeddings), `aria_voice_sessions`
+- Storage bucket `aria-documents` (private, RLS-scoped)
 
-### API (server functions)
-- `runTool({toolId, input})` — uses the orchestrator.
-- `approveToolExecution({executionId, decision})`.
-- `createWorkflow`, `updateWorkflow`, `enableWorkflow`, `triggerWorkflow({workflowId, payload})`.
-- `listToolRegistry`, `listToolExecutions`, `listWorkflowRuns`.
+## What I Need From You
+1. **Confirm Wave 1 scope** — should I start immediately with the ARIA Cognitive Core (memory + RAG + docs + voice + reasoning console)?
+2. **Pilot department user**: do you want pilot accounts seeded for "إدارة الأمن الصناعي - المنطقة الغربية" with roles (Director, Ops Manager, Patrol Lead, Analyst)?
+3. **Voice**: ElevenLabs voice ID preference (default: bilingual AR/EN Adam) or pick later?
+4. **SSO**: defer Azure AD SAML to Wave 5, or need it earlier for board demo?
 
-### UI (light, one new route)
-`/_authenticated/exec` — Operations Console:
-- Left: tool registry (filter by category) with run button + permission badge.
-- Center: live execution feed (Realtime), expandable to input/output/audit.
-- Right: workflows list with trigger / pause / step-by-step view of latest run.
-
-ARIA's command bar gains a "تنفيذ" tab that lists pending approvals.
-
-### Tests
-- Vitest: tool-orchestrator permission checks, retry/rollback, workflow engine (condition + parallel + approval pause/resume), event bus publish/subscribe contract.
-
----
-
-## Phase B — Agent Runtime + Predictive Engine
-
-Depends on Phase A.
-
-### Data
-- `agent_messages` — per-run trace (role, content, tool_calls JSON).
-- `predictions` — `id`, `kind` (kpi/incident/asset/maintenance/risk/project_delay), `subject_id`, `subject_type`, `horizon_hours`, `forecast_json`, `confidence`, `generated_at`, `model_id`.
-
-### Code (`src/lib/exec/`)
-- `agent-runtime.server.ts` — spawn agent run: load identity (system prompt + tool allowlist + memory scope), inject ARIA pipeline context + recalled memory, run AI SDK agent loop (`stopWhen: stepCountIs(50)`) where each tool call goes through `tool-orchestrator` (so audit/permission/rollback apply uniformly). Agent uses only its allowlisted tools.
-- `predictions.server.ts` — scheduled & on-demand predictors using `openai/gpt-5` + `Output.object` Zod schemas:
-  - KPI 24h/7d forecast (uses last 30d of `sec_*` data).
-  - Asset failure risk (current health trend + work-order history).
-  - Incident escalation likelihood (severity/age/category).
-  - Project delay forecast (sec_projects budget/progress).
-  Persists to `predictions`. Surfaced inline in `/aria` next-decision panel.
-
-### API & UI
-- `spawnAgent`, `getAgentRun`, `listAgents`, `seedDefaultAgents` (Compliance Auditor, Incident Triager, Maintenance Planner, Executive Briefer — all real, scoped, audit-trailed).
-- `/agents` route gains a live console.
-
----
-
-## Phase C — Digital Twin Runtime + Exports + Observability dashboard
-
-### Twin runtime
-- Extend `sec_assets`, `sec_cameras`, `sec_gates`, `sec_sensors` with computed runtime view (`twin_objects` view) exposing: state, health, last_telemetry, dependencies (parent site/building), predictions (join), recommended_action (tool_id), executable boolean.
-- `twin.execute_action({objectId, action})` — wraps `tool-orchestrator`; logs to twin history view.
-
-### Reports exports
-- Markdown ships today. Add XLSX (real `xlsx` package — Worker-compatible), DOCX (`docx` package), HTML→PDF (print-ready route `/_print/reports/$id` user prints to PDF; native PDF generation in Workers is unreliable without external service). PPTX: structured slide JSON export with documented import path (real PPTX generation requires headless conversion service the platform doesn't host).
-
-### Observability
-- `/observability` route: live `tool_executions` p50/p95, success rate by tool, top errors, top correlation traces. Driven by Supabase queries on real exec data — no synthetic metrics.
-
-### Security hardening
-- `audit_logs` indexed and queryable by admin.
-- Rate-limit middleware on `runTool` (per-user sliding window in `enterprise_events`).
-- Per-tool ABAC predicates documented and enforced.
-
----
-
-## Out of scope (call out honestly)
-- **SAP / Oracle / Azure AD live calls**: no connectors are linked. Registry entries exist as `enabled: false` with clear "Connect via Settings → Connectors" copy. I will not fake responses.
-- **Native PDF/PPTX rendering inside Cloudflare Workers**: not supported reliably. Print-ready HTML + XLSX + DOCX + Markdown will ship; PPTX is a structured outline JSON.
-- **n8n MCP**: requires user to enable MCP per workflow in n8n. Webhook dispatch tool will work end-to-end today.
-
----
-
-## Confirm before I build
-
-1. **Order OK?** Phase A first (foundation), then B, then C — each shippable on its own.
-2. **OK to add 8 new tables + enable Realtime on `enterprise_events` and `tool_executions`?**
-3. **For SAP/Oracle/Azure AD**, accept the "registered but disabled until connector linked" approach (no fake clients)?
-4. **For exports**, accept Markdown + XLSX + DOCX + print-to-PDF now, with PPTX as structured outline?
-
-Say "go" or correct any of the four, and I'll start Phase A in the next turn.
+Approve and I start Wave 1 immediately — full implementation, no mocks.

@@ -1,8 +1,10 @@
 // Lovable AI Gateway embeddings helper. Server-only.
-// Uses google/gemini-embedding-001 (768 dims) — must match aria_memory.embedding vector(768).
+// Uses openai/text-embedding-3-small with dimensions:768 to match the
+// project's existing vector(768) columns (aria_knowledge, aria_memory, aria_documents).
+// NOTE: google/gemini-embedding-* rejects the `dimensions` field, so we use OpenAI here.
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/embeddings";
-const MODEL = "google/gemini-embedding-001";
+const MODEL = "openai/text-embedding-3-small";
 
 export async function embedText(input: string): Promise<number[] | null> {
   const key = process.env.LOVABLE_API_KEY;

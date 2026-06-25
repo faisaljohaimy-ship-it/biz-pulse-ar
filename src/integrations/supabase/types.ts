@@ -196,6 +196,101 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_document_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          id: string
+          metadata: Json
+          user_id: string
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          user_id: string
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "aria_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_documents: {
+        Row: {
+          chunk_count: number | null
+          created_at: string
+          error: string | null
+          id: string
+          mime_type: string | null
+          page_count: number | null
+          size_bytes: number | null
+          source: string
+          status: string
+          storage_path: string | null
+          summary: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chunk_count?: number | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          mime_type?: string | null
+          page_count?: number | null
+          size_bytes?: number | null
+          source?: string
+          status?: string
+          storage_path?: string | null
+          summary?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chunk_count?: number | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          mime_type?: string | null
+          page_count?: number | null
+          size_bytes?: number | null
+          source?: string
+          status?: string
+          storage_path?: string | null
+          summary?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       aria_knowledge: {
         Row: {
           content: string
@@ -2775,6 +2870,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aria_match_documents: {
+        Args: { _limit?: number; _query: string; _user_id: string }
+        Returns: {
+          chunk_id: string
+          content: string
+          document_id: string
+          similarity: number
+          title: string
+        }[]
+      }
       aria_match_knowledge: {
         Args: { _limit?: number; _query: string; _tags?: string[] }
         Returns: {
