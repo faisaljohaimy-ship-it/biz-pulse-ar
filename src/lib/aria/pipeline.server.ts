@@ -358,25 +358,25 @@ export async function runPipeline(args: {
 
   const intentR = await timed("intent", () => detectIntent(args.message));
   const intent = intentR.value;
-  trace.push({ stage: "intent", status: "ok", duration_ms: intentR.ms, summary: `${intent.intent} (${Math.round(intent.confidence * 100)}%)`, data: intent });
+  trace.push({ stage: "intent", status: "ok", duration_ms: intentR.ms, summary: `${intent.intent} (${Math.round(intent.confidence * 100)}%)`, data_json: JSON.stringify(intent) });
 
   const memR = await timed("memory", () => recallMemory(args.supabase, args.userId, args.message));
-  trace.push({ stage: "memory", status: "ok", duration_ms: memR.ms, summary: `${memR.value.memories.length} memories`, data: memR.value.memories });
+  trace.push({ stage: "memory", status: "ok", duration_ms: memR.ms, summary: `${memR.value.memories.length} memories`, data_json: JSON.stringify(memR.value.memories) });
 
   const ragR = await timed("knowledge", () => retrieveKnowledge(args.supabase, memR.value.embedding));
-  trace.push({ stage: "knowledge", status: "ok", duration_ms: ragR.ms, summary: `${ragR.value.chunks.length} chunks`, data: ragR.value.citations });
+  trace.push({ stage: "knowledge", status: "ok", duration_ms: ragR.ms, summary: `${ragR.value.chunks.length} chunks`, data_json: JSON.stringify(ragR.value.citations) });
 
   const ctxR = await timed("context", () => loadEnterpriseContext(args.supabase));
   trace.push({ stage: "context", status: ctxR.value.startsWith("NO_") || ctxR.value.startsWith("INDUSTRIAL_") ? "skipped" : "ok", duration_ms: ctxR.ms, summary: `${ctxR.value.length} chars` });
 
   const kpiR = await timed("kpi", () => runKpiEngine(args.supabase));
-  trace.push({ stage: "kpi", status: "ok", duration_ms: kpiR.ms, summary: `readiness ${kpiR.value.kpis.executive_readiness} · breaches ${kpiR.value.breaches.length}`, data: kpiR.value.breaches });
+  trace.push({ stage: "kpi", status: "ok", duration_ms: kpiR.ms, summary: `readiness ${kpiR.value.kpis.executive_readiness} · breaches ${kpiR.value.breaches.length}`, data_json: JSON.stringify(kpiR.value.breaches) });
 
   const riskR = await timed("risk", () => runRiskEngine(args.supabase, kpiR.value.kpis));
-  trace.push({ stage: "risk", status: "ok", duration_ms: riskR.ms, summary: `${riskR.value.length} ranked risks`, data: riskR.value.slice(0, 3) });
+  trace.push({ stage: "risk", status: "ok", duration_ms: riskR.ms, summary: `${riskR.value.length} ranked risks`, data_json: JSON.stringify(riskR.value.slice(0, 3)) });
 
   const decR = await timed("decision", async () => runDecisionEngine(riskR.value, kpiR.value.kpis));
-  trace.push({ stage: "decision", status: "ok", duration_ms: decR.ms, summary: `${decR.value.length} decisions`, data: decR.value });
+  trace.push({ stage: "decision", status: "ok", duration_ms: decR.ms, summary: `${decR.value.length} decisions`, data_json: JSON.stringify(decR.value) });
 
   // Persist decisions (best-effort)
   if (decR.value.length) {
@@ -406,7 +406,7 @@ export async function runPipeline(args: {
       knowledge: ragR.value.chunks,
     }),
   );
-  trace.push({ stage: "reasoning", status: "ok", duration_ms: reasonR.ms, summary: `${reasonR.value.text.length} chars`, data: { tokens: reasonR.value.tokens } });
+  trace.push({ stage: "reasoning", status: "ok", duration_ms: reasonR.ms, summary: `${reasonR.value.text.length} chars`, data_json: JSON.stringify({ tokens: reasonR.value.tokens }) });
 
   // Tools stage — agentic tools live in /api/chat; here we surface what would be called.
   trace.push({
@@ -432,7 +432,7 @@ export async function runPipeline(args: {
         language: intent.language,
       });
     });
-    trace.push({ stage: "report", status: "ok", duration_ms: reportR.ms, summary: `${reportR.value.kind} report saved`, data: { id: reportR.value.id } });
+    trace.push({ stage: "report", status: "ok", duration_ms: reportR.ms, summary: `${reportR.value.kind} report saved`, data_json: JSON.stringify({ id: reportR.value.id }) });
     report = reportR.value;
   } else {
     trace.push({ stage: "report", status: "skipped", duration_ms: 0, summary: "not requested" });
