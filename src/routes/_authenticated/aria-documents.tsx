@@ -242,10 +242,10 @@ function AriaDocumentsConsole() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium truncate">{d.title}</span>
                     <StatusBadge status={d.status} />
-                    {d.chunk_count > 0 && (
+                    {(d.chunk_count ?? 0) > 0 && (
                       <span className="text-[10px] text-muted-foreground">{d.chunk_count} مقطع</span>
                     )}
-                    {d.page_count > 0 && (
+                    {(d.page_count ?? 0) > 0 && (
                       <span className="text-[10px] text-muted-foreground">{d.page_count} صفحة</span>
                     )}
                   </div>
