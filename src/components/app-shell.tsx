@@ -169,6 +169,7 @@ function useNavGroups(): NavGroup[] {
     {
       label: t("nav.group.intelligence"),
       items: [
+        { to: "/aria", icon: Brain, label: ar(locale, "ARIA — مركز الذكاء", "ARIA Console") },
         { to: "/assistant", icon: Sparkles, label: t("nav.assistant") },
         { to: "/agents", icon: Bot, label: t("nav.agents") },
         { to: "/voice", icon: Mic, label: t("nav.voice") },

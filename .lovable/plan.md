@@ -1,58 +1,81 @@
-# NEXUS — Executive AI Hero Redesign (Scene 01)
+# ARIA Executive Intelligence — Production Pipeline
 
-Replace the current Earth + Riyadh-skyline hero on `/` with an ARIA-centric cinematic command center inspired by the reference image (atmosphere only, not copied).
+Scope: upgrade ARIA from a chat surface to a deterministic Executive Intelligence pipeline backed by real Supabase data, persistent memory, RAG, KPI/Risk engines, tool orchestration, and report generation. Build incrementally on the existing stack (TanStack Start + `sec_*` tables + `src/lib/sec.functions.ts` + `src/lib/aria-tools.server.ts` + `src/routes/api/chat.ts`).
 
-## Scope (this plan only touches the homepage hero)
+This plan does **not** rebuild the UI from scratch. It hardens the brain behind ARIA and exposes it through the existing command bar and a new `/aria` workspace.
 
-- **File touched**: `src/routes/index.tsx` — Scene 01 block (≈ lines 162–250) + `HeroHoloPanels` helper (≈ 1980+).
-- **New components**:
-  - `src/components/cinematic/AriaExecutiveCore.tsx` — premium holographic AI core (SVG + CSS, no humanoid, no robot).
-  - `src/components/cinematic/ExecutiveOfficeBackdrop.tsx` — dark glass office with depth-of-field, light rays, particles, neural lines, glass reflections.
-  - `src/components/cinematic/HoloWidgetRing.tsx` — orbiting glass holographic widgets (Mail/AI Responses, KPI, Reports, Alerts, Risk, Predictions, Workflow, Agents, Decision Intel, Search, Twin, Health, Ops, Charts, Timeline, Recommendations) — auto-positioned in an elliptical orbit around ARIA with live tick animations.
-- **Removed from Scene 01**: `cinematicEarth` image, `<EarthScene>`, `<HeroSkyline>` usage (component file kept, just unused here so other scenes aren't affected).
-- **Palette added** to `src/styles.css` under `@theme` as semantic tokens:
-  `--aria-bg #061A2E`, `--aria-bg-2 #0B2742`, `--aria-surface #123B57`, `--aria-card #184E77`, `--aria-cyan #00D4FF`, `--aria-cyan-bright #3AE8FF`, `--aria-aqua #6FFFE9`, `--aria-glow #00B8D9`, `--aria-text #FFFFFF`, `--aria-text-soft #D7EAF4`. Used via `bg-[var(--aria-*)]` / arbitrary `text-[var(--aria-text-soft)]` to keep dark-mode safe.
+---
 
-## Visual composition
+## Phase 1 — Pipeline Core (deterministic orchestrator)
 
-```text
-┌──────────────────────────────────────────────────────────┐
-│  glass-office backdrop · blurred · cyan volumetric rays  │
-│                                                          │
-│   ◐ Mail        ◐ KPI        ◐ Alerts      ◐ Agents      │
-│         ╲          ╲           ╱             ╱           │
-│            ┌──────────────────────────┐                  │
-│            │     ARIA  EXECUTIVE CORE │  ← center        │
-│            │  plasma · rings · halo   │                  │
-│            └──────────────────────────┘                  │
-│         ╱          ╱           ╲             ╲           │
-│   ◐ Reports   ◐ Risk     ◐ Predict     ◐ Twin            │
-│                                                          │
-│  H1 "NEXUS AI OS"  ·  sub  ·  CTAs (unchanged)           │
-└──────────────────────────────────────────────────────────┘
-```
+Create `src/lib/aria/` with one module per pipeline stage. Each stage is a pure async function returning a typed slice; the orchestrator composes them and streams stage events to the UI.
 
-- ARIA core: layered SVG — outer dashed ring (slow rotate), mid neural-line ring (counter-rotate), inner plasma sphere (radial gradient `--aria-cyan` → `--aria-aqua` with breathing pulse), soft halo blur `--aria-glow`. No face, no humanoid silhouette.
-- HoloWidgetRing: 8 cards mobile (compact, 2 visible + auto-rotate carousel), 12–16 cards on `md+` arranged on an ellipse with `position: absolute` + transforms. Each card = frosted glass (`backdrop-blur-xl bg-white/5 border border-[var(--aria-cyan)]/25`), tiny icon, label, animated mini-bar/spark, subtle float (CSS keyframes, staggered delays).
-- Backdrop: full-bleed CSS — base `--aria-bg`, layered radial gradients, faint grid SVG, animated diagonal light rays, particle field (reuse existing `ParticleField` with cyan tint via prop or wrap), out-of-focus glass-wall silhouettes (CSS shapes blurred 40px).
+1. `intent.server.ts` — classifier (fast model, JSON schema): `{intent, entities, language, requires_tools, requires_report, confidence}`. Categories: `kpi_query | risk_query | incident_lookup | report_request | tool_action | conversational`.
+2. `memory.server.ts` — read/write persistent memory from new `aria_memory` table (semantic key + content + embedding). Auto-recall top-K by embedding similarity + recency.
+3. `rag.server.ts` — embed query (`google/gemini-embedding-001`), pgvector search on `aria_knowledge`. Returns chunks + citations.
+4. `enterprise-context.server.ts` — loads compact enterprise snapshot from `sec_*` (sites, open incidents, active patrols/permits, asset health) scoped by user role via RLS.
+5. `kpi-engine.server.ts` — wraps existing `computeExecKpis` + diff vs prior 24h/7d window; outputs deltas and threshold breaches.
+6. `risk-engine.server.ts` — weighted scoring across open incidents (severity, age), permits expiring, asset health <60, cctv offline. Returns ranked risks with reasoning trace.
+7. `decision.server.ts` — rule layer: maps risks → recommended actions (tool names + params) with confidence and alternatives.
+8. `reasoner.server.ts` — calls `openai/gpt-5` via Lovable Gateway with full assembled context as a structured system block. Streams text + tool calls.
+9. `tools.server.ts` — extends `aria-tools.server.ts` registry; adds `needsApproval` for mutations. Tools run after reasoner emits calls; results fed back (AI SDK `stopWhen: stepCountIs(50)`).
+10. `reports.server.ts` — generates Executive / Daily / Weekly / Monthly / Incident / Risk / Operations / Board reports as structured JSON → renders to Markdown, HTML, and downloadable XLSX (xlsx) + PDF (via print-ready HTML route).
+11. `orchestrator.server.ts` — runs the full pipeline, emits stage events `{stage, status, durationMs, summary}` over SSE.
 
-## Responsive
+## Phase 2 — Data layer (migrations)
 
-- Mobile (≤ 640): ARIA core ~ `clamp(180px, 55vw, 260px)`, widgets reduced to a 4-up grid below the core instead of orbiting (prevents clipping). Text sizes preserved.
-- Tablet/desktop: full orbit. Container caps at `max-w-6xl`, ARIA `clamp(280px, 28vw, 440px)`.
-- Uses `prefers-reduced-motion` to pause rotation/float.
+New tables (all with GRANTs + RLS scoped to `auth.uid()` + admin via `has_role`):
 
-## Preserved
+- `aria_threads` (already exists as `threads`; reuse, add `summary`, `pinned`).
+- `aria_messages` — add `stage_trace jsonb`, `tool_calls jsonb`, `citations jsonb`, `confidence numeric`, `tokens int`.
+- `aria_memory(id, user_id, scope, key, content, embedding vector(768), importance, created_at, last_used_at)`.
+- `aria_knowledge(id, title, source, content, embedding vector(768), tags text[], updated_at)` — seeded from `knowledge_docs` + `sec_*` summaries by a server function (not fake data).
+- `aria_reports(id, user_id, kind, period_start, period_end, payload jsonb, markdown text, created_at)`.
+- `aria_decisions(id, user_id, thread_id, recommendation, rationale, confidence, executed_tool, status)`.
 
-- H1 "NEXUS AI OS", subtitle, two CTAs (Request Demo, Watch Film), demo button, scroll-down chevron, scene progress indicator.
-- Other scenes (2–10), header, sidebar — untouched.
+Enable `pgvector`; add IVFFlat indexes on embeddings.
 
-## Out of scope
+## Phase 3 — API surface
 
-- No backend changes, no new dependencies, no Three.js additions (pure CSS + SVG for performance and to avoid the current 3D heaviness the user already flagged).
-- Dashboard route's robot image (recently added) is left as-is.
+- `src/routes/api/aria.stream.ts` — POST, SSE. Body: `{threadId, message, mode}`. Runs orchestrator, streams `event: stage` + `event: token` + `event: tool` + `event: report` + `event: done`. Uses `requireSupabaseAuth` equivalent via bearer.
+- `createServerFn`s in `src/lib/aria/*.functions.ts`: `listThreads`, `getThread`, `pinMemory`, `forgetMemory`, `listReports`, `downloadReport`, `ingestKnowledge`.
+- Integration stubs documented disabled: SAP, n8n webhook out, Teams/Outlook/SharePoint (reuse existing connectors).
 
-## Verification
+## Phase 4 — UI (`/aria` workspace + command bar upgrade)
 
-- `bunx tsgo --noEmit`.
-- Playwright screenshot at 440×799 (mobile, current viewport) and 1440×900 (desktop) to confirm no clipping and ARIA reads as the focal point.
+`src/routes/_authenticated/aria.tsx` — three-pane executive console:
+
+- Left: threads + pinned memories.
+- Center: message stream with **stage timeline** (Intent → Memory → RAG → Context → KPI → Risk → Decision → Reasoning → Tools → Report), each stage expandable to show trace, citations, tool I/O. Tool approvals inline.
+- Right: live KPI + Risk + Decisions panels bound to the same engines (single source of truth).
+
+Reports tab renders generated reports with Download (MD / XLSX / Print-PDF) buttons. No PowerPoint generation server-side — produce a structured slide outline (JSON) that the user can paste/import; documented.
+
+Upgrade `aria-command-bar.tsx` to call the new SSE endpoint and render compact stage chips.
+
+## Phase 5 — Quality gates
+
+- Vitest: orchestrator stage contracts, intent classifier schema, KPI/Risk determinism, report shape (Zod), RAG ranker.
+- Playwright: open `/aria`, send a KPI question, assert stage timeline reaches `done`, assert a citation chip rendered.
+- Typecheck + `tsgo` clean. No new console errors verified via dev server logs.
+
+---
+
+## Technical notes (for engineers)
+
+- Models: classifier `google/gemini-3-flash-preview`; reasoner `openai/gpt-5` (omit `temperature`); embeddings `google/gemini-embedding-001`.
+- All secrets server-only; `supabaseAdmin` only inside handlers via `await import`.
+- SSE response uses `withLovableAiGatewayRunIdHeader` to propagate run id.
+- Strict Zod contracts at every stage boundary; failures surface as typed pipeline errors, never silent fallbacks.
+- No mock data anywhere — empty states render real "no data" UI tied to the underlying query.
+
+---
+
+## Confirm before I build
+
+This is multi-day scope. Please confirm:
+
+1. Build **all five phases** end-to-end, or start with **Phases 1+2+3** (brain + data + API) and ship UI in a follow-up?
+2. OK to enable the `pgvector` extension and add the 5 new tables listed above?
+3. Reports: ship **Markdown + XLSX + print-ready HTML for PDF** now, defer native PDF/PPTX generation (Workers can't run headless chromium / pptxgen reliably)?
+4. Keep existing `/api/chat` route working during migration, then deprecate once `/api/aria.stream` is stable?

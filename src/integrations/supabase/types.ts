@@ -53,6 +53,156 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_decisions: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          executed_tool: string | null
+          id: string
+          rationale: string | null
+          recommendation: string
+          status: string
+          thread_id: string | null
+          tool_payload: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          executed_tool?: string | null
+          id?: string
+          rationale?: string | null
+          recommendation: string
+          status?: string
+          thread_id?: string | null
+          tool_payload?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          executed_tool?: string | null
+          id?: string
+          rationale?: string | null
+          recommendation?: string
+          status?: string
+          thread_id?: string | null
+          tool_payload?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      aria_knowledge: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          id: string
+          source: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          source: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          source?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      aria_memory: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          id: string
+          importance: number
+          key: string
+          last_used_at: string
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          importance?: number
+          key: string
+          last_used_at?: string
+          scope?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          importance?: number
+          key?: string
+          last_used_at?: string
+          scope?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      aria_reports: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          kind: string
+          markdown: string
+          payload: Json
+          period_end: string | null
+          period_start: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          kind: string
+          markdown?: string
+          payload?: Json
+          period_end?: string | null
+          period_start?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          markdown?: string
+          payload?: Json
+          period_end?: string | null
+          period_start?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -576,27 +726,42 @@ export type Database = {
       }
       messages: {
         Row: {
+          citations: Json | null
+          confidence: number | null
           created_at: string
           id: string
           parts: Json
           role: string
+          stage_trace: Json | null
           thread_id: string
+          tokens: number | null
+          tool_calls: Json | null
           user_id: string
         }
         Insert: {
+          citations?: Json | null
+          confidence?: number | null
           created_at?: string
           id?: string
           parts: Json
           role: string
+          stage_trace?: Json | null
           thread_id: string
+          tokens?: number | null
+          tool_calls?: Json | null
           user_id: string
         }
         Update: {
+          citations?: Json | null
+          confidence?: number | null
           created_at?: string
           id?: string
           parts?: Json
           role?: string
+          stage_trace?: Json | null
           thread_id?: string
+          tokens?: number | null
+          tool_calls?: Json | null
           user_id?: string
         }
         Relationships: [
@@ -2051,6 +2216,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          pinned: boolean
+          summary: string | null
           title: string
           updated_at: string
           user_id: string
@@ -2058,6 +2225,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          pinned?: boolean
+          summary?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -2065,6 +2234,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          pinned?: boolean
+          summary?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -2180,6 +2351,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aria_match_knowledge: {
+        Args: { _limit?: number; _query: string; _tags?: string[] }
+        Returns: {
+          content: string
+          id: string
+          similarity: number
+          source: string
+          tags: string[]
+          title: string
+        }[]
+      }
+      aria_match_memory: {
+        Args: {
+          _limit?: number
+          _query: string
+          _scope?: string
+          _user_id: string
+        }
+        Returns: {
+          content: string
+          id: string
+          importance: number
+          key: string
+          scope: string
+          similarity: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
