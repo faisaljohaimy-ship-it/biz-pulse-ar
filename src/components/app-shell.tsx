@@ -99,8 +99,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <ExecutiveOverlay />
-      <AriaCommandBar />
     </div>
+
   );
 }
 
