@@ -463,6 +463,169 @@ function ExecConsole() {
           </div>
         </TabsContent>
 
+        <TabsContent value="agents">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Card className="lg:col-span-2 p-3">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <Bot className="size-4" /> Agent definitions
+              </h3>
+              <ul className="space-y-2">
+                {(agents.data ?? []).map(
+                  (a: {
+                    id: string;
+                    name: string;
+                    goal: string;
+                    model: string | null;
+                    tool_allowlist: string[] | null;
+                    enabled: boolean;
+                  }) => (
+                    <li key={a.id}>
+                      <button
+                        onClick={() => setSelectedAgentId(a.id)}
+                        className={`w-full text-start p-3 rounded-md border transition ${
+                          selectedAgentId === a.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <div className="font-medium text-sm">{a.name}</div>
+                            <div className="text-xs text-muted-foreground font-mono">
+                              {a.id}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {a.model ?? "default"}
+                            </Badge>
+                            {!a.enabled && (
+                              <Badge variant="outline" className="text-xs">
+                                disabled
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {a.goal}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {(a.tool_allowlist ?? []).map((t) => (
+                            <span
+                              key={t}
+                              className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </button>
+                    </li>
+                  ),
+                )}
+                {!agents.data?.length && (
+                  <li className="text-sm text-muted-foreground text-center p-4">
+                    No agents defined.
+                  </li>
+                )}
+              </ul>
+            </Card>
+
+            <Card className="p-4 space-y-3">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <Sparkles className="size-4" /> Run agent
+              </h3>
+              {selectedAgentId ? (
+                <>
+                  <div className="text-xs text-muted-foreground">
+                    Optional goal override (leave empty to use the agent's default mission):
+                  </div>
+                  <Textarea
+                    value={agentGoal}
+                    onChange={(e) => setAgentGoal(e.target.value)}
+                    rows={6}
+                    placeholder="e.g. Review last 24h incidents in Jeddah and propose response actions."
+                    className="text-xs"
+                  />
+                  <Button
+                    disabled={runAgentMut.isPending}
+                    onClick={() => runAgentMut.mutate()}
+                    className="w-full gap-2"
+                  >
+                    <Play className="size-4" />
+                    {runAgentMut.isPending ? "Running…" : "Run agent"}
+                  </Button>
+                </>
+              ) : (
+                <div className="text-xs text-muted-foreground">
+                  Select an agent to run.
+                </div>
+              )}
+            </Card>
+
+            <Card className="lg:col-span-3 p-3">
+              <h3 className="font-semibold text-sm mb-2">Recent agent runs</h3>
+              <ScrollArea className="h-[40vh]">
+                <ul className="space-y-2">
+                  {(agentRuns.data ?? []).map(
+                    (r: {
+                      id: string;
+                      agent_id: string;
+                      status: string;
+                      summary: string | null;
+                      steps: number | null;
+                      error: string | null;
+                      started_at: string;
+                      goal_override: string | null;
+                    }) => (
+                      <li
+                        key={r.id}
+                        className="p-3 rounded-md border space-y-1"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Bot className="size-3 text-cyan-300" />
+                            <span className="text-xs font-medium">
+                              {r.agent_id}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(r.started_at).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[10px]">
+                              {r.steps ?? 0} steps
+                            </Badge>
+                            {statusBadge(r.status)}
+                          </div>
+                        </div>
+                        {r.goal_override && (
+                          <div className="text-[11px] text-muted-foreground italic">
+                            goal: {r.goal_override}
+                          </div>
+                        )}
+                        {r.summary && (
+                          <p className="text-xs whitespace-pre-wrap">
+                            {r.summary}
+                          </p>
+                        )}
+                        {r.error && (
+                          <div className="text-xs text-red-300">{r.error}</div>
+                        )}
+                      </li>
+                    ),
+                  )}
+                  {!agentRuns.data?.length && (
+                    <li className="text-sm text-muted-foreground text-center p-4">
+                      No agent runs yet.
+                    </li>
+                  )}
+                </ul>
+              </ScrollArea>
+            </Card>
+          </div>
+        </TabsContent>
+
         <TabsContent value="events">
           <Card className="p-3">
             <ScrollArea className="h-[60vh]">
