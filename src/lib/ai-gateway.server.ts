@@ -18,7 +18,7 @@ export const LOVABLE_MODELS = [
   { id: "openai/gpt-5", label: "GPT-5" },
 ] as const;
 
-export const DEFAULT_LOVABLE_MODEL = "google/gemini-3-flash-preview";
+export const DEFAULT_LOVABLE_MODEL = "openai/gpt-5";
 
 export const createOpenRouterProvider = (
   apiKey: string,
