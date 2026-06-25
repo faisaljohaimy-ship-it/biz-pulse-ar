@@ -233,7 +233,8 @@ ${ctx}
           stopWhen: stepCountIs(50),
           maxRetries: 2,
           maxOutputTokens: 2000,
-          temperature: 0.3,
+          // GPT-5 only accepts the default temperature (1); omit for that family.
+          ...(selectedModelId.startsWith("openai/gpt-5") ? {} : { temperature: 0.3 }),
 
 
           onError: ({ error }) => {
