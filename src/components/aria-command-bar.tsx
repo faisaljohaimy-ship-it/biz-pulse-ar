@@ -51,7 +51,7 @@ export function AriaCommandBar() {
     transport: transport.current,
   });
 
-  // ⌘K / Ctrl+K to toggle, Esc to close
+  // ⌘K / Ctrl+K to toggle, Esc to close, plus global "aria:open" event
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -61,9 +61,24 @@ export function AriaCommandBar() {
         setOpen(false);
       }
     }
+    function onOpenEvent(e: Event) {
+      const detail = (e as CustomEvent<{ prompt?: string; autosend?: boolean }>).detail;
+      setOpen(true);
+      if (detail?.prompt) {
+        setInput(detail.prompt);
+        if (detail.autosend) {
+          const p = detail.prompt;
+          setTimeout(() => void sendMessage({ text: p }), 30);
+        }
+      }
+    }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+    window.addEventListener("aria:open", onOpenEvent as EventListener);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("aria:open", onOpenEvent as EventListener);
+    };
+  }, [open, sendMessage]);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
