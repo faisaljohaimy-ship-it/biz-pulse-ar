@@ -236,21 +236,22 @@ function OperationsCockpit() {
         <KpiStat
           label="Active Patrols"
           value={fmt(k?.patrols_active)}
-          sub={``patrol completion ${Math.round(k?.patrol_completion ?? 0)}%``}
+          sub={`completion ${Math.round(k?.patrol_completion ?? 0)}%`}
           tone="secondary"
         />
         <KpiStat
           label="Work Orders"
           value={fmt(k?.wo_open)}
-          sub={`${k?.wo_open ?? 0} overdue`}
+          sub="open"
           tone="amber"
         />
         <KpiStat
           label="Active Permits"
           value={fmt(k?.permits_active)}
-          sub={`${k?.permits_pending ?? 0} pending`}
+          sub={`${k?.contractors_active ?? 0} contractors`}
           tone="primary"
         />
+
         <KpiStat
           label="Sites Online"
           value={`${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`}
