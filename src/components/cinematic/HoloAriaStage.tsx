@@ -127,8 +127,15 @@ export function HoloAriaStage({ isAr }: { isAr: boolean }) {
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-300/30 bg-[#04121f]/70">
                 <Icon className={`h-4 w-4 ${w.text}`} />
               </div>
-              <div className="min-w-0 leading-tight">
-                <div className="truncate text-[9px] uppercase tracking-[0.22em] text-white/55">{w.label}</div>
+              <div className="min-w-0 leading-tight text-start">
+                <div
+                  className={cn(
+                    "truncate text-[9px] text-white/55",
+                    isAr ? "font-medium" : "uppercase tracking-[0.22em]",
+                  )}
+                >
+                  {w.label}
+                </div>
                 <div className={`truncate text-[12px] font-semibold ${w.text}`}>{w.value}</div>
               </div>
               {/* corner brackets */}
