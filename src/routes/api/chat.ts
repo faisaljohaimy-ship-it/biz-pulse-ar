@@ -179,7 +179,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const uiMessages = messages as UIMessage[];
         const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
-        const toolsEnabled = shouldEnableTools(lastUserText);
+        void lastUserText;
 
         // Inject live enterprise context (RAG over Supabase tables) unless explicitly disabled.
         let systemPrompt = SYSTEM_PROMPT;
@@ -207,7 +207,7 @@ ${ctx}
           model: selectedModelId,
           messages: uiMessages.length,
           grounded: grounded !== false,
-          toolsEnabled,
+          toolsEnabled: true,
         });
 
         const result = streamText({
@@ -217,12 +217,13 @@ ${ctx}
             tools,
             ignoreIncompleteToolCalls: true,
           }),
-          tools: toolsEnabled ? tools : undefined,
-          toolChoice: toolsEnabled ? "auto" : "none",
-          stopWhen: stepCountIs(8),
+          tools,
+          toolChoice: "auto",
+          stopWhen: stepCountIs(50),
           maxRetries: 2,
           maxOutputTokens: 2000,
           temperature: 0.3,
+
 
           onError: ({ error }) => {
             console.error("[api/chat] streamText error", { requestId, error });
