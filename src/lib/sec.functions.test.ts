@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { computeExecKpis, fetchExecKpiSources, type ExecKpiSources } from "./sec.functions";
+import { computeExecKpis, fetchExecKpiSources, ExecKpisSchema, type ExecKpiSources } from "./sec.functions";
+
 
 const empty: ExecKpiSources = {
   incidents: [],
