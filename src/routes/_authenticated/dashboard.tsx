@@ -11,6 +11,7 @@ import {
   Database,
   GitBranch,
   Heart,
+  Loader2,
   Radar,
   Search,
   ShieldCheck,
@@ -448,144 +449,192 @@ function OrbitRings() {
 }
 
 function CoreOrb({ isAr }: { isAr: boolean }) {
-  
+  const scenarios = isAr
+    ? [
+        {
+          prompt: "لخّص الحوادث المفتوحة في جدة الآن",
+          tools: ["sec_list_incidents", "sec_risk_score"],
+          reply: "٣ حوادث مفتوحة · واحد حرج في مستودع الميناء. أوصي بإرسال دورية فورية.",
+        },
+        {
+          prompt: "أنشئ تصريح عمل ساخن لمنطقة الخزانات",
+          tools: ["sec_create_permit", "sec_notify"],
+          reply: "تم إصدار التصريح PTW-2841 · صلاحية ٤ ساعات · تم إخطار قائد الورديّة.",
+        },
+        {
+          prompt: "اعرض مؤشرات الأداء التنفيذية لهذا الأسبوع",
+          tools: ["getExecKpis", "sec_compose_report"],
+          reply: "الاستجابة ↓ ١٨٪ · إغلاق أوامر العمل ↑ ٢٤٪ · مخاطر مرتفعة: ٢.",
+        },
+      ]
+    : [
+        {
+          prompt: "Summarize open incidents in Jeddah right now",
+          tools: ["sec_list_incidents", "sec_risk_score"],
+          reply: "3 open · 1 critical at Port Warehouse. Recommend dispatching patrol immediately.",
+        },
+        {
+          prompt: "Create a hot work permit for the tank farm zone",
+          tools: ["sec_create_permit", "sec_notify"],
+          reply: "Permit PTW-2841 issued · 4-hour validity · Shift lead notified.",
+        },
+        {
+          prompt: "Show executive KPIs for this week",
+          tools: ["getExecKpis", "sec_compose_report"],
+          reply: "Response ↓18% · WO closure ↑24% · High-risk: 2 sites.",
+        },
+      ];
+
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<"prompt" | "thinking" | "tool" | "reply">("prompt");
+  const [typed, setTyped] = useState("");
+  const scene = scenarios[idx];
+
+  useEffect(() => {
+    setTyped("");
+    setPhase("prompt");
+    const t1 = setTimeout(() => setPhase("thinking"), 1400);
+    const t2 = setTimeout(() => setPhase("tool"), 2400);
+    const t3 = setTimeout(() => setPhase("reply"), 3600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [idx]);
+
+  useEffect(() => {
+    if (phase !== "reply") return;
+    let i = 0;
+    const iv = setInterval(() => {
+      i += 2;
+      setTyped(scene.reply.slice(0, i));
+      if (i >= scene.reply.length) {
+        clearInterval(iv);
+        setTimeout(() => setIdx((p) => (p + 1) % scenarios.length), 2800);
+      }
+    }, 28);
+    return () => clearInterval(iv);
+  }, [phase, scene.reply, scenarios.length]);
+
+  function openAria(prompt?: string) {
+    window.dispatchEvent(new CustomEvent("aria:open", { detail: { prompt, autosend: !!prompt } }));
+  }
+
   return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-      <div
-        className="relative aspect-square"
-        style={{ width: "clamp(180px, 42vw, 320px)" }}
+    <div className="pointer-events-none absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2">
+      {/* ambient glow rings */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="h-[360px] w-[360px] rounded-full bg-cyan-400/20 blur-[80px]" />
+      </div>
+      <svg
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 opacity-50"
+        viewBox="0 0 200 200"
+        style={{ animation: "spin 60s linear infinite" }}
       >
-        {/* ambient volumetric halos */}
-        <div className="absolute inset-[-45%] rounded-full bg-cyan-400/20 blur-[60px]" />
-        <div className="absolute inset-[-25%] rounded-full bg-[#00B8D9]/30 blur-3xl animate-pulse" />
-        <div
-          className="absolute inset-[-15%] rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(110,231,255,0.35) 0%, rgba(34,211,238,0.12) 40%, transparent 70%)",
-            animation: "pulse 4s ease-in-out infinite",
-          }}
-        />
+        <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(110,231,255,0.35)" strokeWidth="0.5" strokeDasharray="1 5" />
+        {Array.from({ length: 16 }).map((_, i) => {
+          const a = (i / 16) * Math.PI * 2;
+          return <circle key={i} cx={100 + Math.cos(a) * 92} cy={100 + Math.sin(a) * 92} r={i % 4 === 0 ? 1.6 : 0.7} fill="rgba(110,231,255,0.7)" />;
+        })}
+      </svg>
 
-        {/* outer rotating dashed ring */}
-        <svg
-          className="absolute inset-[-8%] h-[116%] w-[116%]"
-          viewBox="0 0 200 200"
-          style={{ animation: "spin 40s linear infinite" }}
-        >
-          <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(110,231,255,0.35)" strokeWidth="0.5" strokeDasharray="1 4" />
-          {Array.from({ length: 12 }).map((_, i) => {
-            const a = (i / 12) * Math.PI * 2;
-            const x = 100 + Math.cos(a) * 96;
-            const y = 100 + Math.sin(a) * 96;
-            return <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 1.6 : 0.8} fill="rgba(110,231,255,0.7)" />;
-          })}
-        </svg>
-        {/* counter-rotating inner ring */}
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 200 200"
-          style={{ animation: "spin 28s linear infinite reverse" }}
-        >
-          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(34,211,238,0.45)" strokeWidth="0.8" />
-          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(110,231,255,0.6)" strokeWidth="0.8" strokeDasharray="6 90" />
-        </svg>
-
-        {/* holographic ARIA core — no image, pure energy */}
-        <div className="absolute inset-[8%] overflow-hidden rounded-full">
-          {/* plasma sphere */}
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 35% 30%, rgba(110,231,255,0.9) 0%, rgba(34,211,238,0.6) 35%, rgba(6,182,212,0.4) 60%, rgba(8,145,178,0.25) 90%)",
-              boxShadow:
-                "0 0 60px rgba(34,211,238,0.5), inset 0 0 40px rgba(255,255,255,0.15), inset 0 -20px 40px rgba(6,16,31,0.6)",
-              animation: "pulse 4s ease-in-out infinite",
-            }}
-          />
-          {/* core glyph rings */}
-          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full opacity-60">
-            <circle cx="50" cy="50" r="8" fill="white" />
-            <circle cx="50" cy="50" r="22" fill="none" stroke="white" strokeOpacity="0.5" strokeWidth="0.8" strokeDasharray="2 3" />
-            <circle cx="50" cy="50" r="32" fill="none" stroke="white" strokeOpacity="0.3" strokeWidth="0.6" />
-          </svg>
-          {/* scanlines */}
-          <div
-            className="absolute inset-0 opacity-40"
-            style={{
-              background:
-                "repeating-linear-gradient(0deg, transparent 0 2px, rgba(110,231,255,0.08) 2px 3px)",
-              mixBlendMode: "overlay",
-            }}
-          />
-          {/* travelling holographic scanner */}
-          <div
-            className="absolute inset-x-0 h-12"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent, rgba(110,231,255,0.45), transparent)",
-              animation: "core-scan 4.2s ease-in-out infinite",
-              mixBlendMode: "screen",
-            }}
-          />
-        </div>
-
-        {/* edge glow ring to fuse image with UI */}
-        <div
-          className="pointer-events-none absolute inset-[6%] rounded-full"
-          style={{
-            boxShadow:
-              "0 0 60px 6px rgba(34,211,238,0.35), inset 0 0 40px rgba(110,231,255,0.25)",
-          }}
-        />
-
-        {/* orbiting micro-nodes */}
-        <div className="absolute inset-0" style={{ animation: "spin 22s linear infinite" }}>
-          {Array.from({ length: 4 }).map((_, i) => {
-            const a = (i / 4) * Math.PI * 2;
-            const r = 48; // %
-            const x = 50 + Math.cos(a) * r;
-            const y = 50 + Math.sin(a) * r;
-            return (
-              <span
-                key={i}
-                className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-200"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  boxShadow: "0 0 12px rgba(110,231,255,0.95), 0 0 30px rgba(34,211,238,0.6)",
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {/* particles */}
-        <svg className="absolute inset-[-10%] h-[120%] w-[120%]" viewBox="0 0 100 100">
-          {Array.from({ length: 18 }).map((_, i) => {
-            const x = (i * 37) % 100;
-            const y = (i * 53) % 100;
-            return (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r={((i % 3) + 1) * 0.25}
-                fill="rgba(110,231,255,0.7)"
-                style={{ animation: `pulse ${2 + (i % 4)}s ease-in-out ${i * 0.15}s infinite` }}
-              />
-            );
-          })}
-        </svg>
-
-        {/* ARIA label band */}
-        <div className="absolute inset-x-0 -bottom-1 flex flex-col items-center text-center">
-          <div className="rounded-full border border-cyan-300/30 bg-[#06101f]/80 px-3 py-0.5 text-[9px] font-bold tracking-[0.5em] text-cyan-200 backdrop-blur">
-            ARIA · NEXUS
+      {/* Live AI console card */}
+      <div
+        className="pointer-events-auto relative w-[min(86vw,440px)] overflow-hidden rounded-3xl border border-cyan-300/30 bg-[#04101e]/85 p-[1px] shadow-[0_30px_120px_-20px_rgba(34,211,238,0.55)] backdrop-blur-2xl"
+        style={{
+          backgroundImage:
+            "linear-gradient(135deg, rgba(110,231,255,0.5), rgba(34,211,238,0.15) 35%, rgba(8,145,178,0.35) 70%, rgba(110,231,255,0.5))",
+        }}
+      >
+        <div className="rounded-[calc(1.5rem-1px)] bg-[#04101e]/95 p-4 sm:p-5">
+          {/* header */}
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-300/40 bg-gradient-to-br from-cyan-400/30 to-blue-600/20">
+                <span className="absolute inset-0 animate-ping rounded-xl bg-cyan-400/20" />
+                <Sparkles className="relative h-4 w-4 text-cyan-200" />
+              </div>
+              <div className="leading-tight">
+                <div className="text-[12px] font-bold tracking-[0.22em] text-white">ARIA · GPT-5</div>
+                <div className="text-[9px] uppercase tracking-[0.32em] text-cyan-300/70">
+                  {isAr ? "نواة الذكاء التنفيذية" : "Executive AI Core"}
+                </div>
+              </div>
+            </div>
+            <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              {isAr ? "حيّ" : "Live"}
+            </span>
           </div>
-          <div className="mt-1 text-[8px] tracking-[0.4em] text-cyan-300/70">
-            {isAr ? "النواة التنفيذية" : "EXECUTIVE CORE"}
+
+          {/* simulated transcript */}
+          <div className="space-y-2.5 text-[12.5px] leading-relaxed">
+            {/* user prompt bubble */}
+            <div className="flex justify-end">
+              <div className="max-w-[88%] rounded-2xl rounded-tr-sm border border-cyan-300/25 bg-gradient-to-br from-cyan-400/15 to-blue-500/10 px-3 py-2 text-cyan-50">
+                {scene.prompt}
+              </div>
+            </div>
+
+            {/* thinking */}
+            {phase === "thinking" && (
+              <div className="flex items-center gap-2 text-[11px] text-cyan-200/80">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {isAr ? "أحلّل البيانات الحيّة…" : "Reasoning over live data…"}
+              </div>
+            )}
+
+            {/* tool badges */}
+            {(phase === "tool" || phase === "reply") && (
+              <div className="flex flex-wrap gap-1.5">
+                {scene.tools.map((t, i) => (
+                  <span
+                    key={t}
+                    className="inline-flex items-center gap-1 rounded-md border border-cyan-300/30 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-200"
+                    style={{ animation: `pulse 1.6s ease-in-out ${i * 0.2}s infinite` }}
+                  >
+                    {phase === "reply" ? (
+                      <span className="text-emerald-300">●</span>
+                    ) : (
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                    )}
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* assistant reply */}
+            {phase === "reply" && (
+              <div className="rounded-2xl rounded-tl-sm border border-white/10 bg-white/[0.03] px-3 py-2 text-slate-100">
+                {typed}
+                <span className="ms-0.5 inline-block h-3 w-[2px] animate-pulse bg-cyan-300 align-middle" />
+              </div>
+            )}
+          </div>
+
+          {/* prompt launcher */}
+          <button
+            type="button"
+            onClick={() => openAria()}
+            className="mt-4 flex w-full items-center gap-2 rounded-2xl border border-cyan-300/25 bg-[#06101f]/80 px-3 py-2.5 text-start text-[12px] text-slate-300 transition hover:border-cyan-300/50 hover:bg-[#081a2e]/90"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+            <span className="flex-1 truncate">
+              {isAr ? "اطلب من ARIA أي شيء… حوادث، تصاريح، تقارير" : "Ask ARIA anything… incidents, permits, reports"}
+            </span>
+            <kbd className="hidden rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[9px] text-slate-400 sm:inline">⌘K</kbd>
+          </button>
+
+          {/* quick suggestions */}
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {scenarios.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => openAria(s.prompt)}
+                className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[10px] text-slate-300 transition hover:border-cyan-300/40 hover:bg-cyan-400/10 hover:text-cyan-100"
+              >
+                {s.prompt.length > 34 ? s.prompt.slice(0, 34) + "…" : s.prompt}
+              </button>
+            ))}
           </div>
         </div>
       </div>
