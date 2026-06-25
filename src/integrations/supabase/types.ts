@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_definitions: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          goal: string
+          id: string
+          memory_scope: string
+          metadata: Json
+          model: string
+          name: string
+          owner_id: string | null
+          permissions: string[]
+          system_prompt: string
+          tool_allowlist: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          goal: string
+          id: string
+          memory_scope?: string
+          metadata?: Json
+          model?: string
+          name: string
+          owner_id?: string | null
+          permissions?: string[]
+          system_prompt: string
+          tool_allowlist?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          goal?: string
+          id?: string
+          memory_scope?: string
+          metadata?: Json
+          model?: string
+          name?: string
+          owner_id?: string | null
+          permissions?: string[]
+          system_prompt?: string
+          tool_allowlist?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      agent_runs: {
+        Row: {
+          agent_id: string
+          audit_json: Json
+          context_json: Json
+          error: string | null
+          finished_at: string | null
+          goal_override: string | null
+          id: string
+          started_at: string
+          status: string
+          steps: number
+          summary: string | null
+          triggered_by: string | null
+        }
+        Insert: {
+          agent_id: string
+          audit_json?: Json
+          context_json?: Json
+          error?: string | null
+          finished_at?: string | null
+          goal_override?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          steps?: number
+          summary?: string | null
+          triggered_by?: string | null
+        }
+        Update: {
+          agent_id?: string
+          audit_json?: Json
+          context_json?: Json
+          error?: string | null
+          finished_at?: string | null
+          goal_override?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          steps?: number
+          summary?: string | null
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage: {
         Row: {
           completion_tokens: number
@@ -392,6 +493,48 @@ export type Database = {
           updated_at?: string
           user_id?: string
           value?: string
+        }
+        Relationships: []
+      }
+      enterprise_events: {
+        Row: {
+          actor_id: string | null
+          correlation_id: string | null
+          error: string | null
+          id: string
+          occurred_at: string
+          payload_json: Json
+          processed_at: string | null
+          retry_count: number
+          source: string
+          status: string
+          topic: string
+        }
+        Insert: {
+          actor_id?: string | null
+          correlation_id?: string | null
+          error?: string | null
+          id?: string
+          occurred_at?: string
+          payload_json?: Json
+          processed_at?: string | null
+          retry_count?: number
+          source?: string
+          status?: string
+          topic: string
+        }
+        Update: {
+          actor_id?: string | null
+          correlation_id?: string | null
+          error?: string | null
+          id?: string
+          occurred_at?: string
+          payload_json?: Json
+          processed_at?: string | null
+          retry_count?: number
+          source?: string
+          status?: string
+          topic?: string
         }
         Relationships: []
       }
@@ -2242,6 +2385,135 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_executions: {
+        Row: {
+          actor_id: string | null
+          agent_run_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          attempt: number
+          correlation_id: string
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          input_json: Json
+          output_json: Json | null
+          parent_execution_id: string | null
+          started_at: string | null
+          status: string
+          tool_id: string
+          workflow_run_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          agent_run_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          attempt?: number
+          correlation_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          input_json?: Json
+          output_json?: Json | null
+          parent_execution_id?: string | null
+          started_at?: string | null
+          status?: string
+          tool_id: string
+          workflow_run_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          agent_run_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          attempt?: number
+          correlation_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          input_json?: Json
+          output_json?: Json | null
+          parent_execution_id?: string | null
+          started_at?: string | null
+          status?: string
+          tool_id?: string
+          workflow_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_executions_parent_execution_id_fkey"
+            columns: ["parent_execution_id"]
+            isOneToOne: false
+            referencedRelation: "tool_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_executions_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tool_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tool_registry: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          metadata: Json
+          name: string
+          permissions: string[]
+          requires_approval: boolean
+          rollback_kind: string
+          rollback_tool_id: string | null
+          schema_json: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id: string
+          metadata?: Json
+          name: string
+          permissions?: string[]
+          requires_approval?: boolean
+          rollback_kind?: string
+          rollback_tool_id?: string | null
+          schema_json?: Json
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          metadata?: Json
+          name?: string
+          permissions?: string[]
+          requires_approval?: boolean
+          rollback_kind?: string
+          rollback_tool_id?: string | null
+          schema_json?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       transformation_milestones: {
         Row: {
           created_at: string
@@ -2343,6 +2615,158 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      workflow_runs: {
+        Row: {
+          context_json: Json
+          current_step: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          started_at: string
+          status: string
+          trigger_event: string | null
+          trigger_payload: Json
+          triggered_by: string | null
+          workflow_id: string
+        }
+        Insert: {
+          context_json?: Json
+          current_step?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          trigger_event?: string | null
+          trigger_payload?: Json
+          triggered_by?: string | null
+          workflow_id: string
+        }
+        Update: {
+          context_json?: Json
+          current_step?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          trigger_event?: string | null
+          trigger_payload?: Json
+          triggered_by?: string | null
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_runs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_step_runs: {
+        Row: {
+          attempt: number
+          error: string | null
+          finished_at: string | null
+          id: string
+          input_json: Json
+          kind: string
+          output_json: Json | null
+          run_id: string
+          started_at: string | null
+          status: string
+          step_id: string
+          tool_execution_id: string | null
+        }
+        Insert: {
+          attempt?: number
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          input_json?: Json
+          kind: string
+          output_json?: Json | null
+          run_id: string
+          started_at?: string | null
+          status?: string
+          step_id: string
+          tool_execution_id?: string | null
+        }
+        Update: {
+          attempt?: number
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          input_json?: Json
+          kind?: string
+          output_json?: Json | null
+          run_id?: string
+          started_at?: string | null
+          status?: string
+          step_id?: string
+          tool_execution_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_step_runs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_step_runs_tool_execution_id_fkey"
+            columns: ["tool_execution_id"]
+            isOneToOne: false
+            referencedRelation: "tool_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflows: {
+        Row: {
+          created_at: string
+          definition_json: Json
+          description: string | null
+          enabled: boolean
+          id: string
+          name: string
+          owner_id: string | null
+          tags: string[]
+          trigger_topic: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          definition_json: Json
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name: string
+          owner_id?: string | null
+          tags?: string[]
+          trigger_topic?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          definition_json?: Json
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name?: string
+          owner_id?: string | null
+          tags?: string[]
+          trigger_topic?: string | null
+          updated_at?: string
+          version?: number
         }
         Relationships: []
       }
