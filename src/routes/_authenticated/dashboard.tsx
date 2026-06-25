@@ -53,6 +53,7 @@ const PRIMARY_MODULES: Module[] = [
   { to: "/sec/twin", icon: Hexagon, ar: "التوأم الرقمي", en: "Digital Twin", tone: "secondary" },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل والصيانة", en: "Work Orders", tone: "amber",
     hint: (k) => `${k?.wo_open ?? 0} open` },
+
   { to: "/sec/permits", icon: KeyRound, ar: "تصاريح العمل", en: "Access Permits", tone: "secondary",
     hint: (k) => `${k?.permits_active ?? 0} active` },
   { to: "/sec/visitors", icon: Users, ar: "إدارة الزوار", en: "Visitor Management", tone: "secondary" },
