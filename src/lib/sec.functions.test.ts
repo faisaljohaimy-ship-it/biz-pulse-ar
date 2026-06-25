@@ -120,9 +120,10 @@ describe("computeExecKpis", () => {
       permits_active: 2,
       contractors_active: 2,
       contractors_compliance: 70, // round((80+90+40)/3)
-      risk_index: 49, // min(100, 1*15 + 2*5 + (100-53)/2) = 15+10+23.5 = 48.5 → 49
-      safety_index: 51,
-      executive_readiness: 63, // round((53+90+70+50+51)/5) = round(62.8)
+      risk_index: 49, // round(min(100, 1*15 + 2*5 + (100-53)/2)) = round(48.5)
+      safety_index: 52, // round(100 - 48.5)
+      executive_readiness: 63, // round((53+90+70+50+51.5)/5)
+
     });
   });
 
