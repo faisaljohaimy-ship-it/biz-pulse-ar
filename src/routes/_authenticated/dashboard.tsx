@@ -197,21 +197,21 @@ function CockpitDashboard() {
             </span>
           </div>
 
-          {/* Floating telemetry */}
+          {/* Floating live telemetry */}
           <div className="absolute top-6 right-2 md:right-6 p-2 border-l border-primary bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed">
-            SECTOR_ALPHA: ACTIVE<br />
-            NODES: 1,429<br />
-            UPLINK: STABLE
+            SITES: {operationalSites}<br />
+            NODES: {fmt(totalNodes)}<br />
+            UPLINK: {uplink}
           </div>
           <div className="absolute bottom-6 left-2 md:left-6 p-2 border-r border-secondary bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed">
-            LAT: 21.4858 N<br />
-            LNG: 39.1925 E<br />
-            TZ: GMT+3
+            CCTV: {fmt(k?.cameras_online)}/{fmt(k?.cameras_total)}<br />
+            GATES: {fmt(k?.gates_online)}/{fmt(k?.gates_total)}<br />
+            SENSORS_ALARM: {fmt(k?.sensors_alarming)}
           </div>
           <div className="absolute top-1/2 -translate-y-1/2 right-0 md:-right-2 p-2 border-r border-primary/60 bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed hidden md:block">
-            INCIDENTS: 03 OPEN<br />
-            PATROLS: 18 LIVE<br />
-            PERMITS: 27 ACTIVE
+            INCIDENTS: {fmt(k?.incidents_open)} OPEN<br />
+            PATROLS: {fmt(k?.patrols_active)} LIVE<br />
+            PERMITS: {fmt(k?.permits_active)} ACTIVE
           </div>
           <div className="absolute -bottom-2 right-1/2 translate-x-1/2 flex items-center gap-2 text-[10px] font-mono text-primary/70">
             <Radio className="w-3 h-3 animate-pulse" /> ENCRYPTED CHANNEL — JED-MKK-YBU
