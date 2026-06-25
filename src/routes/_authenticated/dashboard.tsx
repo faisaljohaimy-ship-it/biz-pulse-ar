@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
@@ -23,6 +24,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+import { getExecKpis } from "@/lib/sec.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CockpitDashboard,
