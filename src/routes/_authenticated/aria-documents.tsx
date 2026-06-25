@@ -23,34 +23,32 @@ const BUCKET = "aria-documents";
 
 async function extractText(file: File): Promise<{ text: string; pages: number }> {
   const name = file.name.toLowerCase();
-  // Plain text / CSV / markdown / JSON
   if (file.type.startsWith("text/") || /\.(txt|md|csv|json|log|xml|html)$/.test(name)) {
     return { text: await file.text(), pages: 0 };
   }
-  // PDF via pdfjs (lazy-loaded only in browser)
   if (file.type === "application/pdf" || name.endsWith(".pdf")) {
-    const pdfjs: typeof import("pdfjs-dist") = await import("pdfjs-dist");
-    // @ts-expect-error worker URL handled by Vite
-    const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+    const pdfjs = await import("pdfjs-dist");
+    const workerMod = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+    pdfjs.GlobalWorkerOptions.workerSrc = (workerMod as { default: string }).default;
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({ data: buf }).promise;
     let out = "";
     for (let p = 1; p <= doc.numPages; p++) {
       const page = await doc.getPage(p);
       const content = await page.getTextContent();
-      out += content.items.map((i) => ("str" in i ? i.str : "")).join(" ") + "\n\n";
+      out += content.items.map((i: unknown) => {
+        const it = i as { str?: string };
+        return typeof it.str === "string" ? it.str : "";
+      }).join(" ") + "\n\n";
     }
     return { text: out, pages: doc.numPages };
   }
-  // Word .docx via mammoth
   if (name.endsWith(".docx") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
     const mammoth = await import("mammoth/mammoth.browser");
     const buf = await file.arrayBuffer();
     const res = await mammoth.extractRawText({ arrayBuffer: buf });
     return { text: res.value, pages: 0 };
   }
-  // Excel via xlsx
   if (/\.(xlsx|xls)$/.test(name) || file.type.includes("spreadsheetml")) {
     const XLSX = await import("xlsx");
     const buf = await file.arrayBuffer();
