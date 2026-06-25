@@ -45,7 +45,7 @@ const LEFT_TILES: Tile[] = [
 ];
 
 const RIGHT_TILES: Tile[] = [
-  { to: "/sec/work-orders", icon: Wrench, ar: "أوامر العمل", en: "Work Orders", accent: "secondary" },
+  { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل والصيانة", en: "Work Orders", accent: "secondary" },
   { to: "/sec/permits", icon: KeyRound, ar: "تصاريح العمل", en: "Access Permits", accent: "secondary" },
   { to: "/sec/visitors", icon: Users, ar: "إدارة الزوار", en: "Visitor Management", accent: "secondary" },
   { to: "/executive-reports", icon: FileBarChart2, ar: "التقارير التنفيذية", en: "Executive Reports", accent: "secondary" },
