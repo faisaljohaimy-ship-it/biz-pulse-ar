@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
@@ -23,6 +24,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+import { getExecKpis } from "@/lib/sec.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CockpitDashboard,
@@ -106,6 +108,30 @@ function TileCard({ t, side }: { t: Tile; side: "left" | "right" }) {
 function CockpitDashboard() {
   const now = useClock();
   const time = now.toLocaleTimeString("en-GB", { hour12: false });
+  const kpisQ = useQuery({
+    queryKey: ["exec-kpis"],
+    queryFn: () => getExecKpis(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
+  const k = kpisQ.data;
+  const fmt = (v: number | undefined, suffix = "") =>
+    v === undefined ? "—" : `${v.toLocaleString("en-US")}${suffix}`;
+  const pct = (v: number | undefined) => (v === undefined ? 0 : Math.max(0, Math.min(100, v)));
+  const totalNodes =
+    (k?.cameras_total ?? 0) + (k?.gates_total ?? 0) + (k?.sensors_total ?? 0);
+  const uplink = k
+    ? k.cctv_health >= 80 && k.access_health >= 80
+      ? "STABLE"
+      : k.cctv_health >= 60
+        ? "DEGRADED"
+        : "CRITICAL"
+    : "…";
+  const sysStatus =
+    !k ? "INITIALIZING" : k.executive_readiness >= 75 ? "OPTIMAL" : k.executive_readiness >= 50 ? "ELEVATED" : "ALERT";
+  const operationalSites = `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`;
+
 
   return (
     <div
@@ -128,7 +154,10 @@ function CockpitDashboard() {
           </h1>
           <div className="flex items-center gap-4 mt-2">
             <span className="text-[10px] tracking-[0.3em] uppercase text-primary/60 font-mono">
-              SYSTEM STATUS: OPTIMAL
+              SYSTEM STATUS: {sysStatus}
+            </span>
+            <span className={`text-[10px] font-mono ${kpisQ.isFetching ? "text-primary animate-pulse" : "text-primary/40"}`}>
+              {kpisQ.isFetching ? "● SYNCING" : "● LIVE"}
             </span>
             <div className="h-px w-24 bg-gradient-to-l from-primary/50 to-transparent" />
           </div>
@@ -168,21 +197,21 @@ function CockpitDashboard() {
             </span>
           </div>
 
-          {/* Floating telemetry */}
+          {/* Floating live telemetry */}
           <div className="absolute top-6 right-2 md:right-6 p-2 border-l border-primary bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed">
-            SECTOR_ALPHA: ACTIVE<br />
-            NODES: 1,429<br />
-            UPLINK: STABLE
+            SITES: {operationalSites}<br />
+            NODES: {fmt(totalNodes)}<br />
+            UPLINK: {uplink}
           </div>
           <div className="absolute bottom-6 left-2 md:left-6 p-2 border-r border-secondary bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed">
-            LAT: 21.4858 N<br />
-            LNG: 39.1925 E<br />
-            TZ: GMT+3
+            CCTV: {fmt(k?.cameras_online)}/{fmt(k?.cameras_total)}<br />
+            GATES: {fmt(k?.gates_online)}/{fmt(k?.gates_total)}<br />
+            SENSORS_ALARM: {fmt(k?.sensors_alarming)}
           </div>
           <div className="absolute top-1/2 -translate-y-1/2 right-0 md:-right-2 p-2 border-r border-primary/60 bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed hidden md:block">
-            INCIDENTS: 03 OPEN<br />
-            PATROLS: 18 LIVE<br />
-            PERMITS: 27 ACTIVE
+            INCIDENTS: {fmt(k?.incidents_open)} OPEN<br />
+            PATROLS: {fmt(k?.patrols_active)} LIVE<br />
+            PERMITS: {fmt(k?.permits_active)} ACTIVE
           </div>
           <div className="absolute -bottom-2 right-1/2 translate-x-1/2 flex items-center gap-2 text-[10px] font-mono text-primary/70">
             <Radio className="w-3 h-3 animate-pulse" /> ENCRYPTED CHANNEL — JED-MKK-YBU
@@ -221,20 +250,24 @@ function CockpitDashboard() {
         </div>
       </section>
 
-      {/* Status bar */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-10 grid grid-cols-4 gap-4">
+      {/* Live status bars from real KPIs */}
+      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Threat Level", w: "w-2/3", color: "bg-primary" },
-          { label: "Readiness", w: "w-1/2", color: "bg-secondary" },
-          { label: "Coverage", w: "w-4/5", color: "bg-primary" },
-          { label: "Alerts", w: "w-1/4", color: "bg-red-500" },
+          { label: "Threat Level", value: pct(k?.risk_index), color: "bg-red-500", suffix: "%" },
+          { label: "Readiness", value: pct(k?.executive_readiness), color: "bg-secondary", suffix: "%" },
+          { label: "CCTV Coverage", value: pct(k?.cctv_health), color: "bg-primary", suffix: "%" },
+          { label: "Open Incidents", value: pct(k?.incidents_open ? Math.min(100, k.incidents_open * 10) : 0), color: "bg-amber-500", suffix: ` · ${k?.incidents_open ?? 0}` },
         ].map((s) => (
           <div key={s.label}>
             <div className="flex justify-between text-[9px] font-mono text-primary/60 uppercase tracking-widest mb-1">
               <span>{s.label}</span>
+              <span className="text-primary/80">{Math.round(s.value)}{s.suffix}</span>
             </div>
             <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div className={`h-full ${s.w} ${s.color} shadow-[0_0_10px_currentColor]`} />
+              <div
+                className={`h-full ${s.color} shadow-[0_0_10px_currentColor] transition-[width] duration-700`}
+                style={{ width: `${s.value}%` }}
+              />
             </div>
           </div>
         ))}
