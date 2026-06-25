@@ -28,6 +28,7 @@ const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 const CityToBoardroomTransition = lazy(() => import("@/components/cinematic/CityToBoardroomTransition"));
 import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
 import { AriaExecutiveCore, ExecutiveOfficeBackdrop, HoloWidgetRing } from "@/components/cinematic/AriaHeroStage";
+import { AriaInteractiveHero } from "@/components/cinematic/AriaInteractiveHero";
 import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
 import { TrustBar } from "@/components/cinematic/TrustBar";
 import { CinematicAudio } from "@/components/cinematic/CinematicAudio";
