@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 
 // ============= TYPES =============
 export type SecSite = {
@@ -264,40 +266,55 @@ export const getCircles = createServerFn({ method: "GET" })
   });
 
 // ============= EXECUTIVE KPIs =============
-export type ExecKpis = {
-  incidents_total: number;
-  incidents_open: number;
-  incidents_critical: number;
-  incidents_resolution_rate: number;
-  mttr_minutes: number;
-  preventive_wo: number;
-  corrective_wo: number;
-  wo_open: number;
-  wo_closed: number;
-  projects_in_progress: number;
-  projects_completed: number;
-  projects_budget_total: number;
-  projects_spent_total: number;
-  cameras_total: number;
-  cameras_online: number;
-  cctv_health: number;
-  gates_total: number;
-  gates_online: number;
-  access_health: number;
-  sensors_total: number;
-  sensors_alarming: number;
-  sites_operational: number;
-  sites_total: number;
-  patrols_active: number;
-  patrol_completion: number;
-  visitors_inside: number;
-  permits_active: number;
-  contractors_active: number;
-  contractors_compliance: number;
-  risk_index: number;
-  safety_index: number;
-  executive_readiness: number;
-};
+// Zod schema is the canonical contract for the API output. The TS type below
+// is inferred from it so the runtime and compile-time shapes never drift.
+// All fields are required, finite, non-negative integers. Percentage/index
+// fields (resolution_rate, health, completion, compliance, risk, safety,
+// readiness) must also stay within 0..100. Money totals can grow large but
+// must remain safe integers.
+const nonNegInt = z.number().int().nonnegative().finite();
+const pctInt = nonNegInt.max(100);
+const moneyInt = z.number().int().nonnegative().finite()
+  .refine((n) => Number.isSafeInteger(n), { message: "must be a safe integer" });
+
+export const ExecKpisSchema = z.object({
+  incidents_total: nonNegInt,
+  incidents_open: nonNegInt,
+  incidents_critical: nonNegInt,
+  incidents_resolution_rate: pctInt,
+  mttr_minutes: nonNegInt,
+  preventive_wo: nonNegInt,
+  corrective_wo: nonNegInt,
+  wo_open: nonNegInt,
+  wo_closed: nonNegInt,
+  projects_in_progress: nonNegInt,
+  projects_completed: nonNegInt,
+  projects_budget_total: moneyInt,
+  projects_spent_total: moneyInt,
+  cameras_total: nonNegInt,
+  cameras_online: nonNegInt,
+  cctv_health: pctInt,
+  gates_total: nonNegInt,
+  gates_online: nonNegInt,
+  access_health: pctInt,
+  sensors_total: nonNegInt,
+  sensors_alarming: nonNegInt,
+  sites_operational: nonNegInt,
+  sites_total: nonNegInt,
+  patrols_active: nonNegInt,
+  patrol_completion: pctInt,
+  visitors_inside: nonNegInt,
+  permits_active: nonNegInt,
+  contractors_active: nonNegInt,
+  contractors_compliance: pctInt,
+  risk_index: pctInt,
+  safety_index: pctInt,
+  executive_readiness: pctInt,
+}).strict();
+
+export type ExecKpis = z.infer<typeof ExecKpisSchema>;
+
+
 
 export type ExecKpiSources = {
   incidents: { severity: string; status: string; response_minutes: number | null }[];
