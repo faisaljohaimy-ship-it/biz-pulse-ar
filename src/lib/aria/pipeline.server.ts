@@ -261,7 +261,7 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       rationale: criticalIncidents.map((r) => `${r.ref ?? r.id} (score ${r.score})`).join("، "),
       confidence: 0.92,
       suggested_tool: "sec_list_incidents",
-      tool_payload: { severity: "critical", status: "open" },
+      tool_payload_json: JSON.stringify({ severity: "critical", status: "open" }),
       alternatives: ["تصعيد إلى رئيس القسم", "تحويل إلى غرفة العمليات المركزية"],
     });
   }
@@ -272,7 +272,7 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       rationale: expiredPermits.map((r) => r.ref ?? r.id).join("، "),
       confidence: 0.85,
       suggested_tool: "sec_list_permits",
-      tool_payload: { status: "expired" },
+      tool_payload_json: JSON.stringify({ status: "expired" }),
       alternatives: ["تمديد التصريح بعد المراجعة"],
     });
   }
@@ -282,7 +282,7 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       rationale: `cctv_health < 80%؛ ${kpis.cameras_total - kpis.cameras_online} كاميرا غير متصلة`,
       confidence: 0.8,
       suggested_tool: "sec_create_work_order",
-      tool_payload: { kind: "preventive", asset_kind: "cctv", priority: "high" },
+      tool_payload_json: JSON.stringify({ kind: "preventive", asset_kind: "cctv", priority: "high" }),
       alternatives: ["إعادة فحص الشبكة قبل فتح أمر صيانة"],
     });
   }
@@ -292,7 +292,7 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       rationale: "patrol_completion دون الهدف 90%",
       confidence: 0.75,
       suggested_tool: "sec_schedule_patrol",
-      tool_payload: null,
+      tool_payload_json: null,
       alternatives: ["مراجعة جداول الورديات", "إضافة فرقة مساندة"],
     });
   }
@@ -387,7 +387,7 @@ export async function runPipeline(args: {
       rationale: d.rationale,
       confidence: d.confidence,
       executed_tool: d.suggested_tool,
-      tool_payload: d.tool_payload,
+      tool_payload: d.tool_payload_json ? JSON.parse(d.tool_payload_json) : null,
       status: "pending" as const,
     }));
     const { error } = await args.supabase.from("aria_decisions").insert(rows);
