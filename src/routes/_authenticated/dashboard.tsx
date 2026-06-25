@@ -4,22 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
+  ArrowUpRight,
   Boxes,
   Building2,
   Camera,
   ClipboardList,
-  Cpu,
   FileBarChart2,
   Flame,
+  Gauge,
   Hexagon,
   KeyRound,
   Layers,
   LifeBuoy,
   Map,
-  Radar,
   Radio,
   ShieldCheck,
-  SquareStack,
+  SignalHigh,
   Truck,
   Users,
   Wrench,
@@ -27,42 +27,49 @@ import {
 import { getExecKpis } from "@/lib/sec.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  component: CockpitDashboard,
+  component: OperationsCockpit,
 });
 
-type Tile = {
+type Module = {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
   ar: string;
   en: string;
-  accent: "primary" | "secondary";
+  hint?: (k: ExecKpiData | undefined) => string;
+  tone?: "primary" | "secondary" | "amber" | "rose";
 };
 
-const LEFT_TILES: Tile[] = [
-  { to: "/sec", icon: Layers, ar: "نظرة العمليات", en: "Operations Hub", accent: "primary" },
-  { to: "/sec/incidents", icon: AlertTriangle, ar: "البلاغات والحوادث", en: "Incidents & Alerts", accent: "secondary" },
-  { to: "/sec/patrols", icon: ShieldCheck, ar: "دوريات الأمن", en: "Security Patrols", accent: "secondary" },
-  { to: "/sec/twin", icon: Hexagon, ar: "التوأم الرقمي", en: "Digital Twin 3D", accent: "secondary" },
-  { to: "/sec/cctv", icon: Camera, ar: "المراقبة المرئية", en: "CCTV Grid", accent: "secondary" },
+type ExecKpiData = Awaited<ReturnType<typeof getExecKpis>>;
+
+const PRIMARY_MODULES: Module[] = [
+  { to: "/sec", icon: Layers, ar: "مركز العمليات", en: "Operations Hub", tone: "primary",
+    hint: (k) => `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0} sites live` },
+  { to: "/sec/incidents", icon: AlertTriangle, ar: "البلاغات والحوادث", en: "Incidents & Alerts", tone: "rose",
+    hint: (k) => `${k?.incidents_open ?? 0} open · ${k?.incidents_critical ?? 0} critical` },
+  { to: "/sec/patrols", icon: ShieldCheck, ar: "الدوريات الأمنية", en: "Security Patrols", tone: "secondary",
+    hint: (k) => `${k?.patrols_active ?? 0} active patrols` },
+  { to: "/sec/cctv", icon: Camera, ar: "المراقبة المرئية", en: "CCTV Grid", tone: "primary",
+    hint: (k) => `${k?.cameras_online ?? 0}/${k?.cameras_total ?? 0} online` },
+  { to: "/sec/twin", icon: Hexagon, ar: "التوأم الرقمي", en: "Digital Twin", tone: "secondary" },
+  { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل والصيانة", en: "Work Orders", tone: "amber",
+    hint: (k) => `${k?.wo_open ?? 0} open` },
+
+  { to: "/sec/permits", icon: KeyRound, ar: "تصاريح العمل", en: "Access Permits", tone: "secondary",
+    hint: (k) => `${k?.permits_active ?? 0} active` },
+  { to: "/sec/visitors", icon: Users, ar: "إدارة الزوار", en: "Visitor Management", tone: "secondary" },
+  { to: "/executive-reports", icon: FileBarChart2, ar: "التقارير التنفيذية", en: "Executive Reports", tone: "primary" },
+  { to: "/sec/kpi", icon: Activity, ar: "مؤشرات الأداء", en: "Live KPIs", tone: "primary" },
 ];
 
-const RIGHT_TILES: Tile[] = [
-  { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل والصيانة", en: "Work Orders", accent: "secondary" },
-  { to: "/sec/permits", icon: KeyRound, ar: "تصاريح العمل", en: "Access Permits", accent: "secondary" },
-  { to: "/sec/visitors", icon: Users, ar: "إدارة الزوار", en: "Visitor Management", accent: "secondary" },
-  { to: "/executive-reports", icon: FileBarChart2, ar: "التقارير التنفيذية", en: "Executive Reports", accent: "secondary" },
-  { to: "/sec/kpi", icon: Activity, ar: "مؤشرات الأداء", en: "Live KPIs", accent: "secondary" },
-];
-
-const QUICK_LAUNCH: Tile[] = [
-  { to: "/sec/emergency", icon: LifeBuoy, ar: "الطوارئ", en: "Emergency", accent: "primary" },
-  { to: "/sec/risks", icon: Flame, ar: "المخاطر", en: "Risks", accent: "secondary" },
-  { to: "/sec/assets", icon: Boxes, ar: "الأصول", en: "Assets", accent: "secondary" },
-  { to: "/sec/facilities", icon: Building2, ar: "المنشآت", en: "Facilities", accent: "secondary" },
-  { to: "/sec/contractors", icon: Truck, ar: "المقاولون", en: "Contractors", accent: "secondary" },
-  { to: "/sec/shifts", icon: ClipboardList, ar: "الورديات", en: "Shifts", accent: "secondary" },
-  { to: "/sec/ai", icon: Cpu, ar: "محرك الذكاء", en: "AI Engine", accent: "primary" },
-  { to: "/executive-map", icon: Map, ar: "الخريطة التنفيذية", en: "Executive Map", accent: "secondary" },
+const QUICK_LAUNCH: Module[] = [
+  { to: "/sec/emergency", icon: LifeBuoy, ar: "الطوارئ", en: "Emergency", tone: "rose" },
+  { to: "/sec/risks", icon: Flame, ar: "المخاطر", en: "Risks", tone: "amber" },
+  { to: "/sec/assets", icon: Boxes, ar: "الأصول", en: "Assets", tone: "secondary" },
+  { to: "/sec/facilities", icon: Building2, ar: "المنشآت", en: "Facilities", tone: "secondary" },
+  { to: "/sec/contractors", icon: Truck, ar: "المقاولون", en: "Contractors", tone: "secondary" },
+  { to: "/sec/shifts", icon: ClipboardList, ar: "الورديات", en: "Shifts", tone: "secondary" },
+  { to: "/executive-map", icon: Map, ar: "الخريطة التنفيذية", en: "Executive Map", tone: "primary" },
+  { to: "/exec", icon: Gauge, ar: "محرك التنفيذ", en: "Execution Engine", tone: "primary" },
 ];
 
 function useClock() {
@@ -74,30 +81,48 @@ function useClock() {
   return now;
 }
 
-function TileCard({ t, side }: { t: Tile; side: "left" | "right" }) {
-  const Icon = t.icon;
-  const accentText = t.accent === "primary" ? "text-primary" : "text-secondary";
-  const accentBorder = t.accent === "primary" ? "border-primary" : "border-secondary/40 group-hover:border-secondary";
-  const sideBorder = side === "left" ? "border-r-4" : "border-l-4";
+const TONE_TEXT = {
+  primary: "text-primary",
+  secondary: "text-secondary",
+  amber: "text-amber-400",
+  rose: "text-rose-400",
+} as const;
+
+const TONE_BORDER = {
+  primary: "border-primary/40",
+  secondary: "border-secondary/40",
+  amber: "border-amber-400/40",
+  rose: "border-rose-400/40",
+} as const;
+
+const TONE_GLOW = {
+  primary: "shadow-[0_0_24px_-8px_rgba(0,212,255,0.55)]",
+  secondary: "shadow-[0_0_24px_-8px_rgba(58,232,255,0.55)]",
+  amber: "shadow-[0_0_24px_-8px_rgba(251,191,36,0.55)]",
+  rose: "shadow-[0_0_24px_-8px_rgba(251,113,133,0.55)]",
+} as const;
+
+function ModuleCard({ m, k }: { m: Module; k: ExecKpiData | undefined }) {
+  const Icon = m.icon;
+  const tone = m.tone ?? "secondary";
   return (
     <Link
-      to={t.to}
-      className={`group block p-4 rounded-lg bg-background/40 ${sideBorder} ${accentBorder} border-t border-b border-l border-r border-white/5 backdrop-blur-xl hover:bg-primary/10 transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}
+      to={m.to}
+      className={`group relative flex flex-col gap-3 p-4 rounded-xl bg-background/40 backdrop-blur-xl border border-white/5 hover:border-white/15 hover:bg-background/60 transition-all duration-300 overflow-hidden ${TONE_GLOW[tone]}`}
     >
-      <div className={`flex items-center gap-4 ${side === "right" ? "text-right" : ""}`}>
-        {side === "right" && (
-          <div className="flex-1">
-            <div className="text-sm font-semibold text-foreground">{t.ar}</div>
-            <div className="text-[10px] text-primary/50">{t.en}</div>
-          </div>
-        )}
-        <div className={`w-10 h-10 rounded border ${t.accent === "primary" ? "border-primary/40 bg-primary/10" : "border-secondary/30 bg-secondary/5"} flex items-center justify-center shrink-0`}>
-          <Icon className={`w-5 h-5 ${accentText}`} />
+      <div className={`absolute -top-px right-0 left-0 h-px bg-gradient-to-r from-transparent via-current to-transparent ${TONE_TEXT[tone]} opacity-50`} />
+      <div className="flex items-start justify-between">
+        <div className={`w-10 h-10 rounded-lg border ${TONE_BORDER[tone]} bg-background/60 flex items-center justify-center`}>
+          <Icon className={`w-5 h-5 ${TONE_TEXT[tone]}`} />
         </div>
-        {side === "left" && (
-          <div>
-            <div className="text-sm font-semibold text-foreground">{t.ar}</div>
-            <div className="text-[10px] text-primary/50">{t.en}</div>
+        <ArrowUpRight className="w-4 h-4 text-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+      </div>
+      <div>
+        <div className="text-sm font-semibold text-foreground leading-tight">{m.ar}</div>
+        <div className="text-[10px] text-foreground/40 uppercase tracking-wider mt-0.5">{m.en}</div>
+        {m.hint && (
+          <div className={`text-[10px] font-mono mt-2 ${TONE_TEXT[tone]} opacity-80`}>
+            {m.hint(k)}
           </div>
         )}
       </div>
@@ -105,9 +130,44 @@ function TileCard({ t, side }: { t: Tile; side: "left" | "right" }) {
   );
 }
 
-function CockpitDashboard() {
+function KpiStat({
+  label,
+  value,
+  sub,
+  tone = "primary",
+}: { label: string; value: string; sub?: string; tone?: keyof typeof TONE_TEXT }) {
+  return (
+    <div className="relative p-4 rounded-xl bg-background/40 backdrop-blur-xl border border-white/5 overflow-hidden">
+      <div className={`absolute inset-y-0 right-0 w-px ${TONE_TEXT[tone]} opacity-60 bg-current`} />
+      <div className="text-[10px] uppercase tracking-[0.25em] text-foreground/50 font-mono">{label}</div>
+      <div className={`mt-2 text-3xl font-bold tabular-nums ${TONE_TEXT[tone]}`}>{value}</div>
+      {sub && <div className="text-[11px] text-foreground/40 font-mono mt-1">{sub}</div>}
+    </div>
+  );
+}
+
+function ProgressBar({ label, value, suffix = "%", color }: { label: string; value: number; suffix?: string; color: string }) {
+  const v = Math.max(0, Math.min(100, value));
+  return (
+    <div>
+      <div className="flex justify-between text-[10px] font-mono text-foreground/60 uppercase tracking-widest mb-1.5">
+        <span>{label}</span>
+        <span className="text-foreground/90">{Math.round(value)}{suffix}</span>
+      </div>
+      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${color} shadow-[0_0_10px_currentColor] transition-[width] duration-700`}
+          style={{ width: `${v}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function OperationsCockpit() {
   const now = useClock();
   const time = now.toLocaleTimeString("en-GB", { hour12: false });
+  const date = now.toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" });
   const kpisQ = useQuery({
     queryKey: ["exec-kpis"],
     queryFn: () => getExecKpis(),
@@ -116,162 +176,176 @@ function CockpitDashboard() {
     staleTime: 15_000,
   });
   const k = kpisQ.data;
-  const fmt = (v: number | undefined, suffix = "") =>
-    v === undefined ? "—" : `${v.toLocaleString("en-US")}${suffix}`;
-  const pct = (v: number | undefined) => (v === undefined ? 0 : Math.max(0, Math.min(100, v)));
-  const totalNodes =
-    (k?.cameras_total ?? 0) + (k?.gates_total ?? 0) + (k?.sensors_total ?? 0);
-  const uplink = k
-    ? k.cctv_health >= 80 && k.access_health >= 80
-      ? "STABLE"
-      : k.cctv_health >= 60
-        ? "DEGRADED"
-        : "CRITICAL"
-    : "…";
-  const sysStatus =
-    !k ? "INITIALIZING" : k.executive_readiness >= 75 ? "OPTIMAL" : k.executive_readiness >= 50 ? "ELEVATED" : "ALERT";
-  const operationalSites = `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`;
-
+  const fmt = (v: number | undefined) => (v === undefined ? "—" : v.toLocaleString("en-US"));
+  const sysStatus = !k
+    ? "INITIALIZING"
+    : k.executive_readiness >= 75
+      ? "OPTIMAL"
+      : k.executive_readiness >= 50
+        ? "ELEVATED"
+        : "ALERT";
+  const sysTone =
+    sysStatus === "OPTIMAL" ? "text-emerald-400"
+    : sysStatus === "ELEVATED" ? "text-amber-400"
+    : sysStatus === "ALERT" ? "text-rose-400"
+    : "text-primary";
 
   return (
     <div
-      className="relative min-h-[calc(100vh-3rem)] w-full bg-[#061A2E] text-slate-100 flex flex-col items-stretch p-6 md:p-8 overflow-hidden"
+      className="relative min-h-[calc(100vh-3rem)] w-full bg-[#061A2E] text-slate-100 p-5 md:p-8 overflow-hidden"
       dir="rtl"
     >
-      {/* Ambient glow layers */}
+      {/* Ambient grid + glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/10 blur-[120px] rounded-full" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,212,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,212,255,0.05)_1px,transparent_1px)] bg-[size:60px_60px] opacity-40" />
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/8 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/8 blur-[120px] rounded-full" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,212,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,212,255,0.04)_1px,transparent_1px)] bg-[size:60px_60px] opacity-50" />
       </div>
 
       {/* Header */}
-      <header className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10 border-b border-primary/20 pb-6">
+      <header className="relative z-20 w-full max-w-[1680px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 pb-5 border-b border-primary/15">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]">
-            نظام الأمن الصناعي بالمنطقة الغربية
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <span className="text-[10px] tracking-[0.3em] uppercase text-primary/60 font-mono">
-              SYSTEM STATUS: {sysStatus}
+          <div className="flex items-center gap-3 mb-2">
+            <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase ${sysTone}`}>
+              <span className={`w-1.5 h-1.5 rounded-full bg-current ${kpisQ.isFetching ? "animate-pulse" : ""}`} />
+              SYSTEM · {sysStatus}
             </span>
-            <span className={`text-[10px] font-mono ${kpisQ.isFetching ? "text-primary animate-pulse" : "text-primary/40"}`}>
-              {kpisQ.isFetching ? "● SYNCING" : "● LIVE"}
-            </span>
-            <div className="h-px w-24 bg-gradient-to-l from-primary/50 to-transparent" />
+            <span className="text-[10px] text-foreground/40 font-mono">{kpisQ.isFetching ? "SYNCING" : "LIVE"}</span>
           </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary">
+            مركز عمليات الأمن الصناعي
+          </h1>
+          <div className="text-xs text-foreground/50 mt-1">إدارة الأمن الصناعي · المنطقة الغربية · {date}</div>
         </div>
         <div className="text-left">
-          <div className="text-2xl font-mono text-primary tracking-widest">{time}</div>
-          <div className="text-xs text-primary/40 uppercase tracking-widest">Digital Twin Core v2.4</div>
+          <div className="text-3xl font-mono text-primary tracking-widest tabular-nums">{time}</div>
+          <div className="flex items-center gap-2 justify-end text-[10px] text-foreground/40 uppercase tracking-widest font-mono mt-1">
+            <Radio className="w-3 h-3 text-primary animate-pulse" />
+            JED · MKK · YBU
+          </div>
         </div>
       </header>
 
-      {/* Main cockpit */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-        {/* Left column */}
-        <div className="lg:col-span-3 space-y-3">
-          {LEFT_TILES.map((t) => (
-            <TileCard key={t.to} t={t} side="left" />
-          ))}
-        </div>
+      {/* Live KPI strip */}
+      <section className="relative z-10 w-full max-w-[1680px] mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <KpiStat
+          label="Open Incidents"
+          value={fmt(k?.incidents_open)}
+          sub={`${k?.incidents_critical ?? 0} critical`}
+          tone="rose"
+        />
+        <KpiStat
+          label="Active Patrols"
+          value={fmt(k?.patrols_active)}
+          sub={`completion ${Math.round(k?.patrol_completion ?? 0)}%`}
+          tone="secondary"
+        />
+        <KpiStat
+          label="Work Orders"
+          value={fmt(k?.wo_open)}
+          sub="open"
+          tone="amber"
+        />
+        <KpiStat
+          label="Active Permits"
+          value={fmt(k?.permits_active)}
+          sub={`${k?.contractors_active ?? 0} contractors`}
+          tone="primary"
+        />
 
-        {/* Center holographic core */}
-        <div className="lg:col-span-6 relative flex items-center justify-center min-h-[520px]">
-          {/* Rotating rings */}
-          <div className="absolute w-[460px] h-[460px] max-w-[90vw] max-h-[90vw] border-2 border-dashed border-primary/20 rounded-full animate-[spin_40s_linear_infinite]" />
-          <div className="absolute w-[380px] h-[380px] max-w-[78vw] max-h-[78vw] border border-secondary/30 rounded-full animate-[spin_25s_linear_infinite_reverse]" />
-          <div className="absolute w-[300px] h-[300px] max-w-[64vw] max-h-[64vw] border-4 border-double border-primary/40 rounded-full shadow-[0_0_40px_rgba(0,212,255,0.15)]" />
+        <KpiStat
+          label="Sites Online"
+          value={`${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`}
+          sub="Western Region"
+          tone="secondary"
+        />
+        <KpiStat
+          label="Readiness"
+          value={`${Math.round(k?.executive_readiness ?? 0)}%`}
+          sub={`risk ${Math.round(k?.risk_index ?? 0)}%`}
+          tone="primary"
+        />
+      </section>
 
-          {/* Core */}
-          <div className="relative w-64 h-64 max-w-[60vw] max-h-[60vw] rounded-full bg-gradient-to-br from-primary/20 to-transparent backdrop-blur-2xl border border-white/20 flex flex-col items-center justify-center shadow-[inset_0_0_50px_rgba(255,255,255,0.1)]">
-            <Radar className="w-24 h-24 text-primary animate-pulse" strokeWidth={1.2} />
-            <div className="mt-3 text-center">
-              <span className="block text-xs uppercase tracking-[0.3em] text-primary">AI Core Active</span>
-              <span className="text-[10px] text-primary/50 font-mono">Scanning infrastructure…</span>
+      {/* Main grid: modules + ops telemetry */}
+      <main className="relative z-10 w-full max-w-[1680px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Modules grid */}
+        <section className="lg:col-span-9">
+          <div className="flex items-center gap-3 mb-3">
+            <Layers className="w-4 h-4 text-primary" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">Operational Modules</span>
+            <div className="flex-1 h-px bg-gradient-to-l from-primary/30 to-transparent" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+            {PRIMARY_MODULES.map((m) => (
+              <ModuleCard key={m.to} m={m} k={k} />
+            ))}
+          </div>
+        </section>
+
+        {/* Side telemetry */}
+        <aside className="lg:col-span-3 space-y-4">
+          <div className="p-4 rounded-xl bg-background/40 backdrop-blur-xl border border-white/5">
+            <div className="flex items-center gap-2 mb-4">
+              <SignalHigh className="w-4 h-4 text-primary" />
+              <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">Live Telemetry</span>
             </div>
-            {/* Scan sweep */}
-            <span className="pointer-events-none absolute inset-0 rounded-full overflow-hidden">
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent animate-[spin_6s_linear_infinite] origin-center" />
-            </span>
+            <div className="space-y-3">
+              <ProgressBar label="CCTV Coverage" value={k?.cctv_health ?? 0} color="bg-primary" />
+              <ProgressBar label="Access Control" value={k?.access_health ?? 0} color="bg-secondary" />
+              <ProgressBar label="Patrol Completion" value={k?.patrol_completion ?? 0} color="bg-emerald-400" />
+              <ProgressBar label="Readiness" value={k?.executive_readiness ?? 0} color="bg-secondary" />
+              <ProgressBar label="Risk Index" value={k?.risk_index ?? 0} color="bg-rose-500" />
+            </div>
           </div>
 
-          {/* Floating live telemetry */}
-          <div className="absolute top-6 right-2 md:right-6 p-2 border-l border-primary bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed">
-            SITES: {operationalSites}<br />
-            NODES: {fmt(totalNodes)}<br />
-            UPLINK: {uplink}
+          <div className="p-4 rounded-xl bg-background/40 backdrop-blur-xl border border-white/5 font-mono text-[11px] leading-relaxed">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="w-4 h-4 text-secondary" />
+              <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60">Edge Nodes</span>
+            </div>
+            <div className="grid grid-cols-2 gap-y-2 gap-x-3">
+              <span className="text-foreground/50">CAMERAS</span>
+              <span className="text-primary text-right">{fmt(k?.cameras_online)}/{fmt(k?.cameras_total)}</span>
+              <span className="text-foreground/50">GATES</span>
+              <span className="text-secondary text-right">{fmt(k?.gates_online)}/{fmt(k?.gates_total)}</span>
+              <span className="text-foreground/50">SENSORS</span>
+              <span className="text-emerald-400 text-right">{fmt(k?.sensors_total)}</span>
+              <span className="text-foreground/50">ALARMING</span>
+              <span className="text-rose-400 text-right">{fmt(k?.sensors_alarming)}</span>
+              <span className="text-foreground/50">VISITORS</span>
+              <span className="text-foreground/80 text-right">{fmt(k?.visitors_inside)}</span>
+              <span className="text-foreground/50">CONTRACTORS</span>
+              <span className="text-foreground/80 text-right">{fmt(k?.contractors_active)}</span>
+            </div>
           </div>
-          <div className="absolute bottom-6 left-2 md:left-6 p-2 border-r border-secondary bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed">
-            CCTV: {fmt(k?.cameras_online)}/{fmt(k?.cameras_total)}<br />
-            GATES: {fmt(k?.gates_online)}/{fmt(k?.gates_total)}<br />
-            SENSORS_ALARM: {fmt(k?.sensors_alarming)}
-          </div>
-          <div className="absolute top-1/2 -translate-y-1/2 right-0 md:-right-2 p-2 border-r border-primary/60 bg-background/60 text-[9px] font-mono backdrop-blur leading-relaxed hidden md:block">
-            INCIDENTS: {fmt(k?.incidents_open)} OPEN<br />
-            PATROLS: {fmt(k?.patrols_active)} LIVE<br />
-            PERMITS: {fmt(k?.permits_active)} ACTIVE
-          </div>
-          <div className="absolute -bottom-2 right-1/2 translate-x-1/2 flex items-center gap-2 text-[10px] font-mono text-primary/70">
-            <Radio className="w-3 h-3 animate-pulse" /> ENCRYPTED CHANNEL — JED-MKK-YBU
-          </div>
-        </div>
-
-        {/* Right column */}
-        <div className="lg:col-span-3 space-y-3">
-          {RIGHT_TILES.map((t) => (
-            <TileCard key={t.to} t={t} side="right" />
-          ))}
-        </div>
+        </aside>
       </main>
 
-      {/* Quick launcher grid */}
-      <section className="relative z-10 w-full max-w-7xl mx-auto mt-10">
+      {/* Quick launcher */}
+      <section className="relative z-10 w-full max-w-[1680px] mx-auto mt-8">
         <div className="flex items-center gap-3 mb-3">
-          <SquareStack className="w-4 h-4 text-primary" />
-          <span className="text-[10px] tracking-[0.3em] uppercase text-primary/70 font-mono">Quick Launch</span>
+          <Gauge className="w-4 h-4 text-primary" />
+          <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">Quick Launch</span>
           <div className="flex-1 h-px bg-gradient-to-l from-primary/30 to-transparent" />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {QUICK_LAUNCH.map((t) => {
             const Icon = t.icon;
+            const tone = t.tone ?? "secondary";
             return (
               <Link
                 key={t.to}
                 to={t.to}
                 className="group flex flex-col items-center justify-center gap-2 p-3 rounded-lg border border-white/5 bg-background/40 backdrop-blur-xl hover:border-primary/60 hover:bg-primary/10 transition-all duration-300"
               >
-                <Icon className={`w-5 h-5 ${t.accent === "primary" ? "text-primary" : "text-secondary"} group-hover:scale-110 transition-transform`} />
+                <Icon className={`w-5 h-5 ${TONE_TEXT[tone]} group-hover:scale-110 transition-transform`} />
                 <span className="text-[11px] text-foreground/80 text-center">{t.ar}</span>
               </Link>
             );
           })}
         </div>
       </section>
-
-      {/* Live status bars from real KPIs */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Threat Level", value: pct(k?.risk_index), color: "bg-red-500", suffix: "%" },
-          { label: "Readiness", value: pct(k?.executive_readiness), color: "bg-secondary", suffix: "%" },
-          { label: "CCTV Coverage", value: pct(k?.cctv_health), color: "bg-primary", suffix: "%" },
-          { label: "Open Incidents", value: pct(k?.incidents_open ? Math.min(100, k.incidents_open * 10) : 0), color: "bg-amber-500", suffix: ` · ${k?.incidents_open ?? 0}` },
-        ].map((s) => (
-          <div key={s.label}>
-            <div className="flex justify-between text-[9px] font-mono text-primary/60 uppercase tracking-widest mb-1">
-              <span>{s.label}</span>
-              <span className="text-primary/80">{Math.round(s.value)}{s.suffix}</span>
-            </div>
-            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${s.color} shadow-[0_0_10px_currentColor] transition-[width] duration-700`}
-                style={{ width: `${s.value}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </footer>
     </div>
   );
 }

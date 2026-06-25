@@ -49,7 +49,7 @@ import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ExecutiveOverlay } from "@/components/executive-overlay";
-import { AriaCommandBar } from "@/components/aria-command-bar";
+
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
@@ -99,8 +99,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <ExecutiveOverlay />
-      <AriaCommandBar />
     </div>
+
   );
 }
 
