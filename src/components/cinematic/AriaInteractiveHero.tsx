@@ -131,16 +131,6 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
       className="relative z-10 mx-auto w-full max-w-3xl px-4"
       dir={isAr ? "rtl" : "ltr"}
     >
-      {/* Badge */}
-      <div className="flex justify-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--aria-cyan)]/40 bg-[var(--aria-cyan)]/10 px-3.5 py-1 text-[10px] uppercase tracking-[0.3em] text-[var(--aria-aqua)] backdrop-blur-md">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--aria-aqua)] opacity-80" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--aria-aqua)]" />
-          </span>
-          {isAr ? "ARIA · وكيل تنفيذي حي" : "ARIA · Live Agentic Copilot"}
-        </div>
-      </div>
 
       {/* Headline */}
       <h1 className="mt-6 text-center text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
