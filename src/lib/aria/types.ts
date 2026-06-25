@@ -46,12 +46,15 @@ export const RiskItemSchema = z.object({
 });
 export type RiskItem = z.infer<typeof RiskItemSchema>;
 
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
 export const DecisionItemSchema = z.object({
   recommendation: z.string(),
   rationale: z.string(),
   confidence: z.number().min(0).max(1),
   suggested_tool: z.string().nullable(),
-  tool_payload: z.record(z.string(), z.unknown()).nullable(),
+  // tool_payload is JSON-encoded so the type stays serializable across server-fn boundary.
+  tool_payload_json: z.string().nullable(),
   alternatives: z.array(z.string()).default([]),
 });
 export type DecisionItem = z.infer<typeof DecisionItemSchema>;
