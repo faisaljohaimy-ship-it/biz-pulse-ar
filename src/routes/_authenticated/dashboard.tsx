@@ -52,7 +52,7 @@ const PRIMARY_MODULES: Module[] = [
     hint: (k) => `${k?.cameras_online ?? 0}/${k?.cameras_total ?? 0} online` },
   { to: "/sec/twin", icon: Hexagon, ar: "التوأم الرقمي", en: "Digital Twin", tone: "secondary" },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل والصيانة", en: "Work Orders", tone: "amber",
-    hint: (k) => `${k?.work_orders_open ?? 0} open` },
+    hint: (k) => `${k?.wo_open ?? 0} open` },
   { to: "/sec/permits", icon: KeyRound, ar: "تصاريح العمل", en: "Access Permits", tone: "secondary",
     hint: (k) => `${k?.permits_active ?? 0} active` },
   { to: "/sec/visitors", icon: Users, ar: "إدارة الزوار", en: "Visitor Management", tone: "secondary" },
@@ -236,13 +236,13 @@ function OperationsCockpit() {
         <KpiStat
           label="Active Patrols"
           value={fmt(k?.patrols_active)}
-          sub={`${k?.patrols_checkpoints_today ?? 0} checkpoints today`}
+          sub={``patrol completion ${Math.round(k?.patrol_completion ?? 0)}%``}
           tone="secondary"
         />
         <KpiStat
           label="Work Orders"
-          value={fmt(k?.work_orders_open)}
-          sub={`${k?.work_orders_overdue ?? 0} overdue`}
+          value={fmt(k?.wo_open)}
+          sub={`${k?.wo_open ?? 0} overdue`}
           tone="amber"
         />
         <KpiStat
