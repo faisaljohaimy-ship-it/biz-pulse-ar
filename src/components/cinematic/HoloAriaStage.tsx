@@ -1,6 +1,6 @@
 import { Mail, BarChart3, Search, Heart, ShieldAlert, Radio, Workflow, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ariaHolo from "@/assets/aria-holo-executive.png";
+import ariaDisk from "@/assets/aria-holo-disk.jpg";
 
 /**
  * Holographic ARIA stage — cinematic AI executive figure with concentric halo
