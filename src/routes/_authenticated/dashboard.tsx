@@ -276,6 +276,7 @@ function OperationsCockpit() {
 
         {/* Side telemetry */}
         <aside className="lg:col-span-3 space-y-4">
+          <AlertsPanel />
           <div className="p-4 rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-white/5">
             <div className="flex items-center gap-2 mb-4">
               <SignalHigh className="w-4 h-4 text-primary" />
