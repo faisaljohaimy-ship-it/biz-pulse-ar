@@ -127,9 +127,11 @@ export function AriaCommandBar() {
     e?.preventDefault();
     const text = input.trim();
     if (!text || busy) return;
+    setChatError(null);
     setInput("");
     void sendMessage({ text });
   }
+
 
   return (
     <>
