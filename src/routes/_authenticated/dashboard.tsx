@@ -292,7 +292,7 @@ function OperationsCockpit() {
             <div className="space-y-3">
               <ProgressBar label="CCTV Coverage" value={k?.cctv_health ?? 0} color="bg-primary" />
               <ProgressBar label="Access Control" value={k?.access_health ?? 0} color="bg-secondary" />
-              <ProgressBar label="Sensor Network" value={k?.sensors_health ?? 0} color="bg-emerald-400" />
+              <ProgressBar label="Patrol Completion" value={k?.patrol_completion ?? 0} color="bg-emerald-400" />
               <ProgressBar label="Readiness" value={k?.executive_readiness ?? 0} color="bg-secondary" />
               <ProgressBar label="Risk Index" value={k?.risk_index ?? 0} color="bg-rose-500" />
             </div>
