@@ -35,14 +35,14 @@ export function AriaCommandBar() {
   const transport = useRef(
     new DefaultChatTransport({
       api: "/api/chat",
-      headers: () => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+      headers: (): Record<string, string> => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
     }),
   );
   // refresh transport headers when bearer changes
   useEffect(() => {
     transport.current = new DefaultChatTransport({
       api: "/api/chat",
-      headers: () => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+      headers: (): Record<string, string> => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
     });
   }, [bearer]);
 
