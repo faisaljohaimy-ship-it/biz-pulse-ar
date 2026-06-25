@@ -1,4 +1,5 @@
 import { Mail, BarChart3, Search, Heart, ShieldAlert, Radio, Workflow, Activity } from "lucide-react";
+import { cn } from "@/lib/utils";
 import ariaHolo from "@/assets/aria-holo-executive.png";
 
 /**
