@@ -211,7 +211,7 @@ export function AriaCommandBar() {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="border-t border-border/60 p-2 flex items-end gap-2">
+            <form onSubmit={handleSubmit} className="border-t border-border/60 p-2 flex items-end gap-2" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
               <textarea
                 ref={inputRef}
                 value={input}
