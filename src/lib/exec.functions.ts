@@ -182,3 +182,53 @@ export const listRecentEvents = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+
+/* ------------------------------ Agents API ------------------------------ */
+
+export const listAgents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (context.supabase as any)
+      .from("agent_definitions")
+      .select(
+        "id, name, goal, model, tool_allowlist, permissions, enabled, updated_at",
+      )
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const listAgentRuns = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (context.supabase as any)
+      .from("agent_runs")
+      .select(
+        "id, agent_id, status, summary, steps, error, started_at, finished_at, triggered_by, goal_override, audit_json",
+      )
+      .order("started_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+const RunAgentSchema = z.object({
+  agentId: z.string().min(1),
+  goalOverride: z.string().max(4000).optional(),
+  context: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const runAgentFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => RunAgentSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const res = await runAgent(context.supabase, {
+      agentId: data.agentId,
+      actorId: context.userId,
+      goalOverride: data.goalOverride ?? null,
+      context: data.context ?? null,
+    });
+    return toJson(res);
+  });
