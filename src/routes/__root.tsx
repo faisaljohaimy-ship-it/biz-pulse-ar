@@ -68,13 +68,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NEEXIOS | NEXUS AI OS" },
+      { title: "NEEXIOS |  AI OS" },
       {
         name: "description",
         content:
           "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
       },
-      { property: "og:title", content: "NEEXIOS | NEXUS AI OS" },
+      { property: "og:title", content: "NEEXIOS |  AI OS" },
       { property: "og:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:height", content: "630" },
       { property: "og:site_name", content: "NEEXIOS" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "NEEXIOS | NEXUS AI OS" },
+      { name: "twitter:title", content: "NEEXIOS |  AI OS" },
       { name: "twitter:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
       { name: "description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
