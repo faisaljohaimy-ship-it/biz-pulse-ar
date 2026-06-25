@@ -123,8 +123,8 @@ function ExecConsole() {
       }
       return runFn({ data: { toolId: selected.id, input: parsed } });
     },
-    onSuccess: (res) => {
-      toast.success(`Execution ${res.status}`);
+    onSuccess: (res: Record<string, unknown>) => {
+      toast.success(`Execution ${String(res.status ?? "")}`);
       void execs.refetch();
       void events.refetch();
     },
@@ -142,8 +142,8 @@ function ExecConsole() {
 
   const triggerMut = useMutation({
     mutationFn: (id: string) => triggerFn({ data: { workflowId: id } }),
-    onSuccess: (res) => {
-      toast.success(`Workflow ${res.status}`);
+    onSuccess: (res: Record<string, unknown>) => {
+      toast.success(`Workflow ${String(res.status ?? "")}`);
       void runs.refetch();
     },
     onError: (err: Error) => toast.error(err.message),

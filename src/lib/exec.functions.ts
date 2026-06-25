@@ -18,11 +18,12 @@ export const runTool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RunToolSchema.parse(d))
   .handler(async ({ data, context }) => {
-    return executeTool(context.supabase, {
+    const res = await executeTool(context.supabase, {
       toolId: data.toolId,
       input: data.input,
       actorId: context.userId,
     });
+    return JSON.parse(JSON.stringify(res)) as Record<string, unknown>;
   });
 
 const ApproveSchema = z.object({
@@ -41,12 +42,13 @@ export const approveToolExecution = createServerFn({ method: "POST" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Forbidden: admin role required");
-    return decideApproval(
+    const res = await decideApproval(
       context.supabase,
       context.userId,
       data.executionId,
       data.decision,
     );
+    return JSON.parse(JSON.stringify(res)) as Record<string, unknown>;
   });
 
 export const listToolRegistry = createServerFn({ method: "GET" })
@@ -144,12 +146,13 @@ export const triggerWorkflowFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => TriggerSchema.parse(d))
   .handler(async ({ data, context }) => {
-    return triggerWorkflow(context.supabase, {
+    const res = await triggerWorkflow(context.supabase, {
       workflowId: data.workflowId,
       triggeredBy: context.userId,
       triggerEvent: "manual",
       payload: data.payload,
     });
+    return JSON.parse(JSON.stringify(res)) as Record<string, unknown>;
   });
 
 /* ------------------------------ Events API ------------------------------ */
