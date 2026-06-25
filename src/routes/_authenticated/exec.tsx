@@ -11,6 +11,9 @@ import {
   runTool,
   approveToolExecution,
   triggerWorkflowFn,
+  listAgents,
+  listAgentRuns,
+  runAgentFn,
 } from "@/lib/exec.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow } from "lucide-react";
+import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/exec")({
