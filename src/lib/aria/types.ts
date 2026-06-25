@@ -56,12 +56,14 @@ export const DecisionItemSchema = z.object({
 });
 export type DecisionItem = z.infer<typeof DecisionItemSchema>;
 
+// `data` is a JSON-encoded string so the trace stays serializable across the
+// TanStack server-fn boundary (which rejects `unknown`/non-JSON-safe values).
 export const StageTraceSchema = z.object({
   stage: z.enum(PIPELINE_STAGES),
   status: z.enum(["ok", "skipped", "error"]),
   duration_ms: z.number().int().nonnegative(),
   summary: z.string(),
-  data: z.unknown().optional(),
+  data_json: z.string().optional(),
 });
 export type StageTrace = z.infer<typeof StageTraceSchema>;
 
