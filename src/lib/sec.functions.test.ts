@@ -347,3 +347,74 @@ describe("fetchExecKpiSources", () => {
     expect(computeExecKpis(sources)).toEqual(computeExecKpis(empty));
   });
 });
+
+describe("ExecKpisSchema (API contract)", () => {
+  const validCases: Record<string, ExecKpiSources> = {
+    empty,
+    sample,
+    perfect: {
+      ...empty,
+      cameras: [{ status: "online", health: 100 }],
+      gates: [{ status: "online", health: 100 }],
+      patrols: [{ status: "active", checkpoints_done: 10, checkpoints_total: 10 }],
+      contractors: [{ status: "active", compliance_score: 100 }],
+    },
+    maxLoad: {
+      ...empty,
+      incidents: Array.from({ length: 50 }, () => ({ severity: "critical", status: "open", response_minutes: 5 })),
+      sensors: Array.from({ length: 30 }, () => ({ status: "alarm" })),
+      cameras: [{ status: "offline", health: 0 }],
+    },
+  };
+
+  for (const [name, src] of Object.entries(validCases)) {
+    it(`passes strict schema for "${name}" sources`, () => {
+      const k = computeExecKpis(src);
+      const parsed = ExecKpisSchema.parse(k);
+      expect(parsed).toEqual(k);
+    });
+  }
+
+  it("rejects null / undefined fields in any KPI", () => {
+    const k = computeExecKpis(sample) as Record<string, unknown>;
+    for (const key of Object.keys(k)) {
+      const broken = { ...k, [key]: null };
+      expect(() => ExecKpisSchema.parse(broken)).toThrow();
+      const broken2 = { ...k };
+      delete broken2[key];
+      expect(() => ExecKpisSchema.parse(broken2)).toThrow();
+    }
+  });
+
+  it("rejects NaN, Infinity, negatives, and non-integers", () => {
+    const base = computeExecKpis(sample);
+    const variants = [
+      { ...base, incidents_total: Number.NaN },
+      { ...base, mttr_minutes: Number.POSITIVE_INFINITY },
+      { ...base, cameras_online: -1 },
+      { ...base, cctv_health: 50.5 },
+      { ...base, risk_index: 101 },
+      { ...base, executive_readiness: 150 },
+      { ...base, safety_index: -0.0001 },
+    ];
+    for (const v of variants) {
+      expect(() => ExecKpisSchema.parse(v)).toThrow();
+    }
+  });
+
+  it("rejects unknown / extra fields (strict)", () => {
+    const k = computeExecKpis(sample);
+    expect(() => ExecKpisSchema.parse({ ...k, unknown_field: 1 })).toThrow();
+  });
+
+  it("rejects unsafe-integer money totals", () => {
+    const k = computeExecKpis(sample);
+    expect(() => ExecKpisSchema.parse({ ...k, projects_budget_total: Number.MAX_SAFE_INTEGER + 2 })).toThrow();
+  });
+
+  it("schema-validated output matches the same keys as compute output", () => {
+    const k = computeExecKpis(sample);
+    const parsed = ExecKpisSchema.parse(k);
+    expect(Object.keys(parsed).sort()).toEqual(Object.keys(k).sort());
+  });
+});
