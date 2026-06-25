@@ -108,6 +108,30 @@ function TileCard({ t, side }: { t: Tile; side: "left" | "right" }) {
 function CockpitDashboard() {
   const now = useClock();
   const time = now.toLocaleTimeString("en-GB", { hour12: false });
+  const kpisQ = useQuery({
+    queryKey: ["exec-kpis"],
+    queryFn: () => getExecKpis(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
+  const k = kpisQ.data;
+  const fmt = (v: number | undefined, suffix = "") =>
+    v === undefined ? "—" : `${v.toLocaleString("en-US")}${suffix}`;
+  const pct = (v: number | undefined) => (v === undefined ? 0 : Math.max(0, Math.min(100, v)));
+  const totalNodes =
+    (k?.cameras_total ?? 0) + (k?.gates_total ?? 0) + (k?.sensors_total ?? 0);
+  const uplink = k
+    ? k.cctv_health >= 80 && k.access_health >= 80
+      ? "STABLE"
+      : k.cctv_health >= 60
+        ? "DEGRADED"
+        : "CRITICAL"
+    : "…";
+  const sysStatus =
+    !k ? "INITIALIZING" : k.executive_readiness >= 75 ? "OPTIMAL" : k.executive_readiness >= 50 ? "ELEVATED" : "ALERT";
+  const operationalSites = `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`;
+
 
   return (
     <div
