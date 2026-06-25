@@ -44,7 +44,9 @@ async function extractText(file: File): Promise<{ text: string; pages: number }>
     return { text: out, pages: doc.numPages };
   }
   if (name.endsWith(".docx") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-    const mammoth = await import("mammoth/mammoth.browser");
+    const mammoth = (await import("mammoth/mammoth.browser" as string)) as {
+      extractRawText: (input: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string }>;
+    };
     const buf = await file.arrayBuffer();
     const res = await mammoth.extractRawText({ arrayBuffer: buf });
     return { text: res.value, pages: 0 };
