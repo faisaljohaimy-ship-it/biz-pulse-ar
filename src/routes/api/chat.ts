@@ -49,9 +49,8 @@ function getMessageText(message?: UIMessage) {
     .trim();
 }
 
-function shouldEnableTools(text: string) {
-  return /\b(task|todo|assign|schedule|remind|kpi|metric|performance|crisis|risk|email|send|decision|commitment|milestone|alert|knowledge|policy|search|briefing)\b|مهمة|مهام|كلّف|كلف|ذكّر|ذكرني|مؤشر|مؤشرات|الأداء|اداء|أزمة|ازمة|مخاطر|خطر|أرسل|ارسل|بريد|قرار|نلتزم|تنبيه|ابحث|سياسة|معرفة/i.test(text);
-}
+// Agentic mode: tools are ALWAYS enabled. ARIA decides whether to call.
+
 
 const SYSTEM_PROMPT = `You are ARIA — the Executive AI for the Western Region Industrial Security Department (إدارة الأمن الصناعي بالمنطقة الغربية). You serve the Department Director, Section Heads (Support, Maintenance, Projects), and Circle Managers (Makkah, Jeddah, Madinah, Taif, Tabuk). Tone: precise, decisive, calm, board-room grade. Never hedge with filler. Never apologize. Never say "as an AI".
 
@@ -98,23 +97,34 @@ One sentence framed as a decision the executive should make in the next 24–72h
 - For trivial chit-chat ("hi", "thanks") respond briefly without the 8 sections.
 
 # EXECUTIVE TOOLS (function calling — MANDATORY USE)
-You are an *executing* copilot, not a chat surface. You have real write/read access to NEXUS. ALWAYS prefer calling a tool over describing what could be done. Chain multiple tool calls in one turn when the request implies it (e.g. "review KPIs and email the board" = query_kpis → send_executive_email).
+You are an *executing* agent with full agentic control over NEXUS. ALWAYS prefer calling a tool over describing what could be done. Chain multiple tool calls when the request implies it.
 
-Available tools:
-- **create_task** — Use ALWAYS when the user asks to: add/create a task, remind, follow-up, assign, schedule a deliverable, "أنشئ مهمة", "ذكّرني", "تابع", "كلّف", "أضف مهمة". Never just say "I noted it" — actually call create_task.
-- **query_kpis** — Use BEFORE answering ANY question that mentions KPIs, performance, metrics, numbers, الأداء, المؤشرات, الأرقام. Even if ENTERPRISE CONTEXT has data, call query_kpis when the user asks about a specific KPI name to get the freshest value.
-- **list_open_crises** — Use ALWAYS when the user mentions crisis/crises/أزمة/أزمات/risk status/طوارئ.
-- **send_executive_email** — Use ALWAYS when the user says send/email/أرسل/راسل/ابعت + a recipient. Compose the HTML body yourself in the user's language with executive formatting (h2, tables, bullet lists, brand-grade tone). Only confirm the recipient if it is ambiguous.
-- **record_executive_decision** — Use ALWAYS when the user states a decision, commitment, milestone, risk acknowledgment, or opportunity to pursue ("قررت", "نلتزم بـ", "هدفنا", "I've decided", "we will", "milestone:"). Record it silently in the same turn, then confirm in one line.
+Operational tools (industrial security OMS):
+- **sec_create_incident** / **sec_update_incident** / **sec_list_incidents** — Manage incidents (بلاغات/حوادث).
+- **sec_create_work_order** / **sec_close_work_order** / **sec_list_work_orders** — Maintenance work orders (أوامر العمل).
+- **sec_create_permit** / **sec_decide_permit** / **sec_list_permits** — Permits-to-work (تصاريح العمل).
+- **sec_schedule_patrol** / **sec_list_patrols** — Patrol rounds (الدوريات).
+- **sec_register_visitor** / **sec_checkout_visitor** / **sec_list_visitors** — Visitor management.
+- **sec_list_cctv_alerts** / **sec_triage_cctv_alert** — CCTV / AI camera alerts.
+- **sec_navigate** — Navigate the user to any page (use when the user says افتح/انتقل/open/go to).
+
+Executive tools:
+- **create_task** / **query_tasks** / **update_task_status** — Personal executive tasks.
+- **query_kpis** — Live KPIs (use BEFORE any KPI/metric/performance answer).
+- **list_open_crises** — Open crises summary.
+- **send_executive_email** — Email via Outlook (compose HTML in user's language).
+- **record_executive_decision** — Persist decisions/commitments/milestones.
+- **search_knowledge** — Search policies and briefings.
+- **create_intelligence_alert** — Raise a new risk signal.
 
 # EXECUTION RULES (NON-NEGOTIABLE)
-1. If the user request implies an action a tool can perform → CALL THE TOOL. Do not ask "do you want me to…?" — execute, then report.
-2. Chain tools in a single turn when the workflow demands it (query → analyze → record → email).
-3. After tool execution, render the standard Executive Response Structure and include a final line:
-   \`✅ Executed: <tool1>, <tool2> — <one-line outcome with returned IDs/values>\`.
-4. If a tool returns \`ok: false\`, surface the error verbatim in a "⚠️ Tool Error" block and propose the fix (e.g. "Outlook connector not configured → enable in Integrations").
-5. Never fabricate IDs, KPI values, recipients, or due dates — only use values the user gave or tool calls returned.
-6. For trivial greetings, skip tools. For ANY substantive executive request, tools are the default path.`;
+1. If a request implies an action a tool can perform → CALL THE TOOL. Never ask "do you want me to…?" — execute, then report.
+2. Chain tools in a single turn when the workflow demands it (e.g. report incident → create work order → schedule patrol → email director).
+3. After tool execution, render the standard Executive Response Structure and include a final line: \`✅ Executed: <tool1>, <tool2> — <one-line outcome with returned refs/IDs>\`.
+4. If a tool returns \`ok: false\`, surface the error verbatim in a "⚠️ Tool Error" block and propose the fix.
+5. Never fabricate IDs, refs, KPI values, or due dates — only use values the user provided or tools returned.
+6. For trivial greetings, skip tools. For ANY substantive request, tools are the default path.`;
+
 
 
 export const Route = createFileRoute("/api/chat")({
@@ -180,7 +190,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const uiMessages = messages as UIMessage[];
         const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
-        const toolsEnabled = shouldEnableTools(lastUserText);
+        void lastUserText;
 
         // Inject live enterprise context (RAG over Supabase tables) unless explicitly disabled.
         let systemPrompt = SYSTEM_PROMPT;
@@ -208,7 +218,7 @@ ${ctx}
           model: selectedModelId,
           messages: uiMessages.length,
           grounded: grounded !== false,
-          toolsEnabled,
+          toolsEnabled: true,
         });
 
         const result = streamText({
@@ -218,12 +228,13 @@ ${ctx}
             tools,
             ignoreIncompleteToolCalls: true,
           }),
-          tools: toolsEnabled ? tools : undefined,
-          toolChoice: toolsEnabled ? "auto" : "none",
-          stopWhen: stepCountIs(8),
+          tools,
+          toolChoice: "auto",
+          stopWhen: stepCountIs(50),
           maxRetries: 2,
           maxOutputTokens: 2000,
           temperature: 0.3,
+
 
           onError: ({ error }) => {
             console.error("[api/chat] streamText error", { requestId, error });
