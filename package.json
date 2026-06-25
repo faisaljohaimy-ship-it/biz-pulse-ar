@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "check:svg": "node scripts/check-svg.mjs",
+    "test": "vitest run",
+
     "format": "prettier --write ."
   },
   "dependencies": {
