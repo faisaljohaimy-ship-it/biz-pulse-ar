@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateChatRequest } from "./chat-guard";
+import { validateChatRequest } from "./-chat-guard";
 
 function makeRequest(init: { body?: unknown; auth?: string | null }) {
   const headers = new Headers({ "content-type": "application/json" });

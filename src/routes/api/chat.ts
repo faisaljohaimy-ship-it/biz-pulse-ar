@@ -14,7 +14,7 @@ import {
   chatResponseHeaders,
   getChatRequestId,
   validateChatRequest,
-} from "./chat-guard";
+} from "./-chat-guard";
 
 const CORS_HEADERS_OPTIONS = {
   "Access-Control-Allow-Origin": "*",
