@@ -35,7 +35,7 @@ export const runTool = createServerFn({ method: "POST" })
       input: data.input,
       actorId: context.userId,
     });
-    return JSON.parse(JSON.stringify(res)) as Record<string, unknown>;
+    return toJson(res);
   });
 
 const ApproveSchema = z.object({
@@ -60,7 +60,7 @@ export const approveToolExecution = createServerFn({ method: "POST" })
       data.executionId,
       data.decision,
     );
-    return JSON.parse(JSON.stringify(res)) as Record<string, unknown>;
+    return toJson(res);
   });
 
 export const listToolRegistry = createServerFn({ method: "GET" })
@@ -164,7 +164,7 @@ export const triggerWorkflowFn = createServerFn({ method: "POST" })
       triggerEvent: "manual",
       payload: data.payload,
     });
-    return JSON.parse(JSON.stringify(res)) as Record<string, unknown>;
+    return toJson(res);
   });
 
 /* ------------------------------ Events API ------------------------------ */
