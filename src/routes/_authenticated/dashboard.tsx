@@ -154,7 +154,10 @@ function CockpitDashboard() {
           </h1>
           <div className="flex items-center gap-4 mt-2">
             <span className="text-[10px] tracking-[0.3em] uppercase text-primary/60 font-mono">
-              SYSTEM STATUS: OPTIMAL
+              SYSTEM STATUS: {sysStatus}
+            </span>
+            <span className={`text-[10px] font-mono ${kpisQ.isFetching ? "text-primary animate-pulse" : "text-primary/40"}`}>
+              {kpisQ.isFetching ? "● SYNCING" : "● LIVE"}
             </span>
             <div className="h-px w-24 bg-gradient-to-l from-primary/50 to-transparent" />
           </div>
