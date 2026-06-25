@@ -26,6 +26,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
+import { AlertsPanel } from "@/components/sec/alerts-panel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: OperationsCockpit,
