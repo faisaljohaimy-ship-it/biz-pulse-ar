@@ -46,10 +46,24 @@ export function AriaCommandBar() {
     });
   }, [bearer]);
 
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const [chatError, setChatError] = useState<string | null>(null);
+  const { messages, sendMessage, status, setMessages, error } = useChat({
     id: "aria-command-bar",
     transport: transport.current,
+    onError: async (err: unknown) => {
+      // Try to surface server-provided JSON error message (e.g. 401 from /api/chat guard)
+      const anyErr = err as { response?: Response; message?: string };
+      let msg = anyErr?.message ?? "تعذّر الاتصال بـ ARIA.";
+      try {
+        if (anyErr?.response && typeof anyErr.response.clone === "function") {
+          const body = await anyErr.response.clone().json();
+          if (body?.error) msg = body.error;
+        }
+      } catch { /* ignore */ }
+      setChatError(msg);
+    },
   });
+
 
   // ⌘K / Ctrl+K to toggle, Esc to close, plus global "aria:open" event
   useEffect(() => {
