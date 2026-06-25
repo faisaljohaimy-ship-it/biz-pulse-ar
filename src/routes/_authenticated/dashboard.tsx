@@ -250,20 +250,24 @@ function CockpitDashboard() {
         </div>
       </section>
 
-      {/* Status bar */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-10 grid grid-cols-4 gap-4">
+      {/* Live status bars from real KPIs */}
+      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Threat Level", w: "w-2/3", color: "bg-primary" },
-          { label: "Readiness", w: "w-1/2", color: "bg-secondary" },
-          { label: "Coverage", w: "w-4/5", color: "bg-primary" },
-          { label: "Alerts", w: "w-1/4", color: "bg-red-500" },
+          { label: "Threat Level", value: pct(k?.risk_index), color: "bg-red-500", suffix: "%" },
+          { label: "Readiness", value: pct(k?.executive_readiness), color: "bg-secondary", suffix: "%" },
+          { label: "CCTV Coverage", value: pct(k?.cctv_health), color: "bg-primary", suffix: "%" },
+          { label: "Open Incidents", value: pct(k?.incidents_open ? Math.min(100, k.incidents_open * 10) : 0), color: "bg-amber-500", suffix: ` · ${k?.incidents_open ?? 0}` },
         ].map((s) => (
           <div key={s.label}>
             <div className="flex justify-between text-[9px] font-mono text-primary/60 uppercase tracking-widest mb-1">
               <span>{s.label}</span>
+              <span className="text-primary/80">{Math.round(s.value)}{s.suffix}</span>
             </div>
             <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div className={`h-full ${s.w} ${s.color} shadow-[0_0_10px_currentColor]`} />
+              <div
+                className={`h-full ${s.color} shadow-[0_0_10px_currentColor] transition-[width] duration-700`}
+                style={{ width: `${s.value}%` }}
+              />
             </div>
           </div>
         ))}
