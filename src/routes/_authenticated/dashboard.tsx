@@ -11,6 +11,7 @@ import {
   Database,
   GitBranch,
   Heart,
+  Loader2,
   Radar,
   Search,
   ShieldCheck,
