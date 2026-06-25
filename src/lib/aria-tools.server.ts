@@ -15,6 +15,35 @@ function connectorHeaders(connectionKeyEnv: string) {
   } as Record<string, string>;
 }
 
+function genRef(prefix: string) {
+  const d = new Date();
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `${prefix}-${ymd}-${rand}`;
+}
+
+function scoreRisk(severity: string, priority: string, category: string): number {
+  const sevMap: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
+  const prioMap: Record<string, number> = { low: 0, medium: 5, high: 10, critical: 15 };
+  const catBoost = ["intrusion", "fire", "explosion", "weapon"].some((k) => category.toLowerCase().includes(k)) ? 10 : 0;
+  return Math.min(100, (sevMap[severity] ?? 40) + (prioMap[priority] ?? 5) + catBoost);
+}
+
+async function logEvent(
+  supabase: SupabaseClient,
+  userId: string,
+  entity_type: string,
+  entity_id: string,
+  entity_ref: string | null,
+  event: string,
+  payload: Record<string, unknown> = {},
+) {
+  await supabase.from("sec_activity_events").insert({
+    entity_type, entity_id, entity_ref, event,
+    actor_id: userId, actor_name: "ARIA", payload,
+  });
+}
+
 /**
  * Build the ARIA executive toolbelt. All tools are RLS-scoped via the
  * request supabase client and gated by connector availability.
