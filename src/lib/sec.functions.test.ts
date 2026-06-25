@@ -85,7 +85,7 @@ describe("computeExecKpis", () => {
     expect(k.contractors_compliance).toBe(0);
     expect(k.risk_index).toBe(50); // (100 - 0) / 2
     expect(k.safety_index).toBe(50);
-    expect(k.executive_readiness).toBe(20); // (0+0+0+0+50)/5
+    expect(k.executive_readiness).toBe(10); // round((0+0+0+0+50)/5)
   });
 
   it("computes exact KPI values from sample sources (snapshot of the contract)", () => {
