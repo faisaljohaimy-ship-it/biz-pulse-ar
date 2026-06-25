@@ -120,47 +120,31 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       OPTIONS: async ({ request }) => {
-        const requestId = getRequestId(request);
+        const requestId = getChatRequestId(request);
         return new Response(null, { status: 204, headers: responseHeaders(requestId) });
       },
       POST: async ({ request }) => {
-        const requestId = getRequestId(request);
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openrouterKey = process.env.OPENROUTER_API_KEY;
-        // Prefer Lovable AI Gateway (managed key, no quota issues). Fall back to OpenRouter only if present and looks valid.
         const useLovable = !!lovableKey;
         if (!useLovable && !openrouterKey) {
-          console.error("[api/chat] no AI provider key configured", { requestId });
-          return jsonError("ARIA is not configured. Missing AI provider credentials.", 500, requestId);
+          const rid = getChatRequestId(request);
+          console.error("[api/chat] no AI provider key configured", { requestId: rid });
+          return jsonError("ARIA is not configured. Missing AI provider credentials.", 500, rid);
         }
 
-        let raw: unknown;
-        try {
-          raw = await request.json();
-        } catch {
-          return jsonError("Invalid chat request body.", 400, requestId);
-        }
-        const parsed = BodySchema.safeParse(raw);
-        if (!parsed.success) {
-          console.warn("[api/chat] invalid body", { requestId, issues: parsed.error.issues });
-          return jsonError("Invalid chat request payload.", 400, requestId);
-        }
-        const { messages, threadId, model: modelId, grounded } = parsed.data;
+        const guard = await validateChatRequest(request);
+        if (!guard.ok) return guard.response;
+        const { data: parsedData, authHeader, requestId } = guard;
+        const { messages, threadId, model: modelId, grounded } = parsedData;
         const selectedModelId = useLovable
           ? modelId && LOVABLE_MODEL_IDS.has(modelId) ? modelId : DEFAULT_LOVABLE_MODEL
           : modelId && OPENROUTER_MODEL_IDS.has(modelId) ? modelId : DEFAULT_OPENROUTER_MODEL;
 
-        // Authenticate user via bearer token
-        const authHeader =
-          request.headers.get("authorization") ?? request.headers.get("Authorization");
-        if (!authHeader?.startsWith("Bearer ")) {
-          console.warn("[api/chat] missing bearer", { requestId, threadId });
-          return jsonError("Please sign in again before sending a message.", 401, requestId);
-        }
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
         const supabase = createClient(supabaseUrl, supabasePublishable, {
-          global: authHeader ? { headers: { Authorization: authHeader } } : undefined,
+          global: { headers: { Authorization: authHeader } },
           auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -169,6 +153,8 @@ export const Route = createFileRoute("/api/chat")({
           return jsonError("Your session expired. Please sign in again.", 401, requestId);
         }
         const userId = userData.user.id;
+
+
 
         const provider = useLovable
           ? createLovableAiGatewayProvider(lovableKey!)
