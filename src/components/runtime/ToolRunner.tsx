@@ -75,7 +75,8 @@ function applySmartDefaults(
     if (next[key] !== undefined && next[key] !== "" && next[key] !== null) continue;
     const k = key.toLowerCase();
     if (sub.type === "object" && sub.properties) {
-      next[key] = applySmartDefaults(sub, (next[key] as Record<string, unknown>) ?? {}, ctx);
+      const child = (typeof next[key] === "object" && next[key] !== null ? next[key] : {}) as Record<string, unknown>;
+      next[key] = applySmartDefaults(sub, child, ctx);
       continue;
     }
     if ((k === "org_id" || k === "organization_id" || k === "tenant_id") && ctx.org_id) next[key] = ctx.org_id;
