@@ -145,21 +145,38 @@ function advance(frequency: string, hour: number, weekday: number | null): strin
 }
 
 async function spUpload(GW: string, lov: string, sp: string, siteId: string, folder: string, filename: string, body: Uint8Array, contentType: string) {
-  const r = await fetch(`${GW}/sites/${encodeURIComponent(siteId)}/drive/root:/${encodeURI(folder)}/${encodeURIComponent(filename)}:/content`, {
-    method: "PUT",
-    headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": sp, "Content-Type": contentType },
-    body: body as unknown as BodyInit,
-  });
+  let r: Response;
+  try {
+    r = await httpFetch(`${GW}/sites/${encodeURIComponent(siteId)}/drive/root:/${encodeURI(folder)}/${encodeURIComponent(filename)}:/content`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": sp, "Content-Type": contentType },
+      body: body as unknown as BodyInit,
+      label: "cron/sharepoint-upload",
+      timeoutMs: 60_000,
+      retries: 1,
+    });
+  } catch (e) {
+    const msg = isApiError(e) ? `${e.code}:${e.message}` : String(e);
+    throw new Error(`sharepoint_network: ${msg}`);
+  }
   if (!r.ok) throw new Error(`sharepoint_${r.status}: ${(await r.text()).slice(0, 200)}`);
   return (await r.json()) as { id: string; name: string; webUrl: string; size: number };
 }
 
 async function createLink(GW: string, lov: string, sp: string, siteId: string, itemId: string): Promise<string | null> {
-  const r = await fetch(`${GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": sp, "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "view", scope: "organization" }),
-  });
+  let r: Response;
+  try {
+    r = await httpFetch(`${GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": sp, "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "view", scope: "organization" }),
+      label: "cron/sharepoint-link",
+      timeoutMs: 15_000,
+      retries: 1,
+    });
+  } catch {
+    return null;
+  }
   if (!r.ok) return null;
   const j = (await r.json()) as { link?: { webUrl?: string } };
   return j.link?.webUrl ?? null;
