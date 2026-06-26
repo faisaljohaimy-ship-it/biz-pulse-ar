@@ -165,22 +165,31 @@ export const Route = createFileRoute("/api/chat")({
 
         const uiMessages = messages as UIMessage[];
         const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
-        void lastUserText;
 
-        // Inject live enterprise context (RAG over Supabase tables) unless explicitly disabled.
+        // Inject live enterprise context + semantic RAG (memory / knowledge / documents) unless explicitly disabled.
         let systemPrompt = SYSTEM_PROMPT;
+        let ragCounts = { memories: 0, knowledge: 0, documents: 0 };
         if (grounded !== false) {
-          const { buildAriaContext } = await import("@/lib/aria-context.server");
-          const ctx = await buildAriaContext(supabase);
+          const [{ buildAriaContext }, { gatherRagContext }] = await Promise.all([
+            import("@/lib/aria-context.server"),
+            import("@/lib/aria/rag.server"),
+          ]);
+          const [ctx, rag] = await Promise.all([
+            buildAriaContext(supabase),
+            lastUserText ? gatherRagContext(supabase, userId, lastUserText) : Promise.resolve({ contextBlock: "", citations: [], counts: { memories: 0, knowledge: 0, documents: 0 }, embedding: null }),
+          ]);
+          ragCounts = rag.counts;
           systemPrompt = `${SYSTEM_PROMPT}
 
 # ENTERPRISE CONTEXT (LIVE — source of truth)
 ${ctx}
 
+${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.contextBlock}\n` : ""}
 # RULES
-- Ground every numerical or factual claim in the ENTERPRISE CONTEXT block above.
-- If the context is "NO_ENTERPRISE_DATA_AVAILABLE" or the user asks something not covered, say so explicitly and ask the user for clarification — do NOT fabricate KPIs, owners, or financials.
-- Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing data.`;
+- Ground every numerical or factual claim in ENTERPRISE CONTEXT, RELEVANT DOCUMENTS, KNOWLEDGE BASE, or PERSISTENT MEMORY above.
+- When you use a document/KB excerpt, cite inline using the supplied [DOC:title] or [KB:title] tag.
+- If a needed datum is missing, say "بيانات غير متوفرة" / "Data unavailable" — never fabricate.
+- Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing enterprise data.`;
         }
 
         const { buildAriaTools } = await import("@/lib/aria-tools.server");
@@ -194,6 +203,7 @@ ${ctx}
           messages: uiMessages.length,
           grounded: grounded !== false,
           toolsEnabled: true,
+          rag: ragCounts,
         });
 
         const result = streamText({
@@ -301,6 +311,27 @@ ${ctx}
                   ...(isDefault && firstText ? { title: firstText } : {}),
                 })
                 .eq("id", threadId);
+
+              // Persist conversation memory for future RAG recall (best-effort).
+              try {
+                const userText = (lastUser?.parts ?? [])
+                  .map((p) => (p.type === "text" ? p.text : ""))
+                  .join("")
+                  .trim();
+                const assistantText =
+                  newAssistant && newAssistant.role === "assistant"
+                    ? (newAssistant.parts ?? [])
+                        .map((p) => (p.type === "text" ? p.text : ""))
+                        .join("")
+                        .trim()
+                    : "";
+                if (userText && assistantText) {
+                  const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
+                  await rememberConversationTurn(supabase, userId, threadId, userText, assistantText);
+                }
+              } catch (memErr) {
+                console.warn("[api/chat] memory persistence skipped", memErr);
+              }
             } catch (e) {
               console.error("onFinish persistence error", e);
             }
