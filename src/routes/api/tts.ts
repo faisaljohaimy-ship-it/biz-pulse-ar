@@ -48,36 +48,45 @@ export const Route = createFileRoute("/api/tts")({
           : text.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
 
         const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
-        const r = await fetch(url, {
-          method: "POST",
-          headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: cleanText,
-            model_id: "eleven_multilingual_v2",
-            voice_settings: {
-              stability,
-              similarity_boost: similarityBoost,
-              style,
-              use_speaker_boost: true,
-              speed,
+        try {
+          const r = await httpFetch(url, {
+            method: "POST",
+            headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: cleanText,
+              model_id: "eleven_multilingual_v2",
+              voice_settings: {
+                stability,
+                similarity_boost: similarityBoost,
+                style,
+                use_speaker_boost: true,
+                speed,
+              },
+            }),
+            label: "elevenlabs/tts",
+            timeoutMs: 30_000,
+            retries: 1,
+          });
+
+          if (!r.ok) {
+            const err = await r.text();
+            return Response.json({ error: err || `TTS failed: ${r.status}` }, { status: r.status });
+          }
+
+          const audio = await r.arrayBuffer();
+          return new Response(audio, {
+            status: 200,
+            headers: {
+              "Content-Type": "audio/mpeg",
+              "Content-Length": String(audio.byteLength),
+              "Cache-Control": "no-store",
             },
-          }),
-        });
-
-        if (!r.ok) {
-          const err = await r.text();
-          return Response.json({ error: err || `TTS failed: ${r.status}` }, { status: r.status });
+          });
+        } catch (err) {
+          const shape = isApiError(err) ? err.toJSON() : toApiErrorShape(err);
+          console.error("[api/tts]", shape.code, shape.message);
+          return Response.json({ error: shape.message, code: shape.code }, { status: shape.status });
         }
-
-        const audio = await r.arrayBuffer();
-        return new Response(audio, {
-          status: 200,
-          headers: {
-            "Content-Type": "audio/mpeg",
-            "Content-Length": String(audio.byteLength),
-            "Cache-Control": "no-store",
-          },
-        });
       },
     },
   },
