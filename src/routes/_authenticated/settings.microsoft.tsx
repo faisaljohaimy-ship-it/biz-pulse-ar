@@ -38,6 +38,15 @@ function MicrosoftSettingsPage() {
   const [forbidden, setForbidden] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [savingSync, setSavingSync] = useState(false);
+  const [outlookSync, setOutlookSync] = useState(false);
+  const [sharepointSync, setSharepointSync] = useState(false);
+  const [intervalMin, setIntervalMin] = useState<number>(15);
+  const [logs, setLogs] = useState<MicrosoftSyncLogRow[]>([]);
+  const saveSyncFn = useServerFn(updateMicrosoftSyncSettings);
+  const listLogFn = useServerFn(listMicrosoftSyncLog);
+  const triggerFn = useServerFn(triggerMicrosoftSyncNow);
 
   const [tenantId, setTenantId] = useState("");
   const [clientId, setClientId] = useState("");
