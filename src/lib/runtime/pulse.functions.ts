@@ -9,20 +9,45 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
 
 const EVENT_TOPICS: Array<{ topic: string; severity: "info" | "notice" | "warn" | "error" | "critical"; source: string }> = [
+  // Security ops — physical
+  { topic: "permit.approved", severity: "notice", source: "sec.permits" },
+  { topic: "permit.expired", severity: "warn", source: "sec.permits" },
+  { topic: "patrol.completed", severity: "info", source: "sec.patrols" },
+  { topic: "patrol.checkpoint", severity: "info", source: "sec.patrols" },
+  { topic: "vehicle.entered", severity: "info", source: "sec.access" },
+  { topic: "vehicle.exited", severity: "info", source: "sec.access" },
+  { topic: "gate.opened", severity: "info", source: "sec.gates" },
+  { topic: "badge.verified", severity: "info", source: "sec.access" },
+  { topic: "visitor.checked_in", severity: "info", source: "sec.visitors" },
+  { topic: "visitor.checked_out", severity: "info", source: "sec.visitors" },
+  { topic: "contractor.arrived", severity: "info", source: "sec.contractors" },
+  { topic: "contractor.expired", severity: "warn", source: "sec.contractors" },
+  { topic: "cctv.alert", severity: "warn", source: "sec.cctv" },
+  { topic: "sensor.triggered", severity: "warn", source: "sec.sensors" },
+  { topic: "fire.alarm.restored", severity: "notice", source: "sec.fire" },
+  { topic: "emergency.drill", severity: "notice", source: "sec.ops" },
+  { topic: "maintenance.completed", severity: "info", source: "sec.work_orders" },
+  // Risk / incidents
   { topic: "incident.created", severity: "warn", source: "sec.incidents" },
   { topic: "incident.closed", severity: "info", source: "sec.incidents" },
-  { topic: "workflow.approved", severity: "notice", source: "exec.workflow" },
+  { topic: "risk.increased", severity: "error", source: "risk.engine" },
+  { topic: "risk.resolved", severity: "notice", source: "risk.engine" },
   { topic: "risk.escalated", severity: "error", source: "risk.engine" },
-  { topic: "sensor.alert", severity: "warn", source: "sec.sensors" },
-  { topic: "report.generated", severity: "info", source: "exec.reports" },
+  // Workflows / approvals
+  { topic: "workflow.approved", severity: "notice", source: "exec.workflow" },
   { topic: "audit.completed", severity: "notice", source: "compliance" },
-  { topic: "prediction.updated", severity: "info", source: "kpi.intel" },
-  { topic: "integration.sync", severity: "info", source: "integration.sap" },
-  { topic: "teams.message", severity: "info", source: "integration.teams" },
+  // Integrations
+  { topic: "sap.synchronized", severity: "info", source: "integration.sap" },
+  { topic: "outlook.email.sent", severity: "info", source: "integration.outlook" },
+  { topic: "teams.notification", severity: "info", source: "integration.teams" },
   { topic: "sharepoint.upload", severity: "info", source: "integration.sharepoint" },
-  { topic: "email.delivered", severity: "info", source: "comms.email" },
-  { topic: "patrol.checkpoint", severity: "info", source: "sec.patrols" },
+  // Exec / AI
+  { topic: "report.generated", severity: "info", source: "exec.reports" },
+  { topic: "briefing.published", severity: "notice", source: "exec.briefings" },
+  { topic: "ai.recommendation", severity: "info", source: "aria.engine" },
+  { topic: "prediction.updated", severity: "info", source: "kpi.intel" },
   { topic: "kpi.refreshed", severity: "info", source: "kpi.intel" },
+  { topic: "notification.delivered", severity: "info", source: "comms.notifications" },
 ];
 
 function pick<T>(arr: T[]): T {
@@ -202,6 +227,113 @@ export const runtimePulse = createServerFn({ method: "POST" })
           latency_ms: 40 + Math.floor(Math.random() * 220),
           cost_usd: +(Math.random() * 0.03).toFixed(4),
         },
+      });
+      eventsPublished++;
+    }
+
+    // 5) Simulate tool executions (close stale running, start a few new).
+    const toolCutoff = new Date(Date.now() - 20_000).toISOString();
+    const { data: staleTools } = await supabaseAdmin
+      .from("tool_executions")
+      .select("id, tool_id, started_at")
+      .eq("org_id", orgId)
+      .eq("status", "running")
+      .lt("started_at", toolCutoff)
+      .limit(6);
+    if (staleTools) {
+      for (const t of staleTools) {
+        const ok = Math.random() > 0.1;
+        const dur = Date.now() - new Date(t.started_at as string).getTime();
+        await supabaseAdmin
+          .from("tool_executions")
+          .update({
+            status: ok ? "succeeded" : "failed",
+            finished_at: new Date().toISOString(),
+            duration_ms: dur,
+            output_json: ok ? { ok: true } : null,
+            error: ok ? null : "Transient downstream error",
+          })
+          .eq("id", t.id);
+        await publishEvent(supabase, {
+          topic: ok ? "tool.succeeded" : "tool.failed",
+          source: "tool.runtime",
+          severity: ok ? "info" : "warn",
+          subject_type: "tool_execution",
+          subject_id: t.id,
+          org_id: orgId,
+          actor_id: userId,
+          duration_ms: dur,
+          payload: { tool_id: t.tool_id },
+          metrics: { duration_ms: dur },
+        });
+        eventsPublished++;
+      }
+    }
+    const { data: tools } = await supabaseAdmin
+      .from("tool_registry")
+      .select("id, requires_approval")
+      .eq("enabled", true)
+      .eq("requires_approval", false)
+      .limit(40);
+    if (tools && tools.length > 0) {
+      const toRun = pickN(tools, 1 + Math.floor(Math.random() * 3));
+      for (const tool of toRun) {
+        const { data: ins } = await supabaseAdmin
+          .from("tool_executions")
+          .insert({
+            tool_id: tool.id,
+            actor_id: userId,
+            status: "running",
+            input_json: { autonomous: true, cycle: Date.now() },
+            started_at: new Date().toISOString(),
+            attempt: 1,
+            org_id: orgId,
+          })
+          .select("id")
+          .single();
+        if (ins?.id) {
+          await publishEvent(supabase, {
+            topic: "tool.started",
+            source: "tool.runtime",
+            severity: "info",
+            subject_type: "tool_execution",
+            subject_id: ins.id,
+            org_id: orgId,
+            actor_id: userId,
+            payload: { tool_id: tool.id },
+          });
+          eventsPublished++;
+        }
+      }
+    }
+
+    // 6) Occasionally publish an executive briefing (~ every ~10 cycles).
+    if (Math.random() < 0.1) {
+      const titles = [
+        "Western Region — Operational Pulse",
+        "Cross-Site Risk Outlook",
+        "Compliance & Permit Posture",
+        "Maintenance Backlog Review",
+        "Incident Response Effectiveness",
+      ];
+      const t = pick(titles);
+      await supabaseAdmin.from("executive_briefings").insert({
+        org_id: orgId,
+        user_id: userId,
+        title: t,
+        title_en: t,
+        summary: "Autonomous runtime summary: KPIs stable, residual risks under active mitigation.",
+        summary_en: "Autonomous runtime summary: KPIs stable, residual risks under active mitigation.",
+        generated_at: new Date().toISOString(),
+      });
+      await publishEvent(supabase, {
+        topic: "briefing.published",
+        source: "exec.briefings",
+        severity: "notice",
+        org_id: orgId,
+        actor_id: userId,
+        subject_type: "briefing",
+        payload: { title: t },
       });
       eventsPublished++;
     }
