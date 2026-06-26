@@ -69,7 +69,7 @@ function OpsRoom() {
                     </span>
                   </li>
                 ))}
-                {data.incidents.length === 0 && <li className="py-4 text-center text-sm text-muted-foreground">لا توجد بلاغات</li>}
+                {data.incidents.length === 0 && <li className="py-4 text-center"><LiveStatus variant="monitoring" hint="قنوات البلاغات متصلة" size="sm" /></li>}
               </ul>
             </Panel>
 
