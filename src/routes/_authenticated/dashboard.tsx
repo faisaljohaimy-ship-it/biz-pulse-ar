@@ -29,6 +29,7 @@ import { getExecKpis } from "@/lib/sec.functions";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
 import { HoloCommandStage } from "@/components/cinematic/HoloCommandStage";
 import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
+import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: OperationsCockpit,
