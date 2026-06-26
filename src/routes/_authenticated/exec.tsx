@@ -11,7 +11,6 @@ import {
   runTool,
   approveToolExecution,
   rollbackToolExecution,
-  triggerWorkflowFn,
   triggerWorkflowWithDefaultsFn,
   triggerAllWorkflowsFn,
   listAgents,
