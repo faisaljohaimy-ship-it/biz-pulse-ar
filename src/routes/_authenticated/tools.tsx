@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle, Eye } from "lucide-react";
+import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle, Eye, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
@@ -50,15 +51,22 @@ function ToolsRuntime() {
     return m;
   }, [execs]);
 
+  const [query, setQuery] = useState("");
   const grouped = useMemo(() => {
     const m = new Map<string, Tool[]>();
+    const q = query.trim().toLowerCase();
     for (const t of (tools as Tool[] | undefined) ?? []) {
+      if (q) {
+        const hay = `${t.name} ${t.id} ${t.category} ${t.description ?? ""} ${(t.permissions ?? []).join(" ")}`.toLowerCase();
+        if (!hay.includes(q)) continue;
+      }
       const arr = m.get(t.category) ?? [];
       arr.push(t);
       m.set(t.category, arr);
     }
     return Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [tools]);
+  }, [tools, query]);
+
 
   const totals = useMemo(() => {
     const all = (tools as Tool[] | undefined) ?? [];
@@ -84,6 +92,17 @@ function ToolsRuntime() {
         <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "مفعّل" : "Enabled"}</div><div className="text-2xl font-bold text-emerald-300">{totals.enabled}</div></Card>
         <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "نشِط الآن" : "Running"}</div><div className="text-2xl font-bold text-cyan-300">{totals.running}</div></Card>
         <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "فشل (24س)" : "Failed (24h)"}</div><div className="text-2xl font-bold text-rose-300">{totals.failed24h}</div></Card>
+      </div>
+
+      <div className="relative">
+        <Search className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={ar ? "بحث: الاسم، الوصف، الفئة، الصلاحية…" : "Search by name, description, category, capability…"}
+          className="h-9 ps-9 text-xs"
+          aria-label={ar ? "بحث الأدوات" : "Search tools"}
+        />
       </div>
 
       {isLoading ? (

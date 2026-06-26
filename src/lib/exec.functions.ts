@@ -675,3 +675,63 @@ export const retryAgentRun = createServerFn({ method: "POST" })
     });
     return toJson(res);
   });
+
+/* --------------------------- Tool Sample Context ------------------------ */
+// Provides real IDs from the user's tenant so the Tool Runner can populate
+// "Load Sample" with non-fabricated values (org, user, site, workflow,
+// incident, asset, tool ids). Never returns secrets.
+
+export type ToolSampleContext = {
+  user_id: string;
+  org_id: string | null;
+  now_iso: string;
+  site_id: string | null;
+  workflow_id: string | null;
+  incident_id: string | null;
+  asset_id: string | null;
+  tool_id: string | null;
+  agent_id: string | null;
+  has_real_data: boolean;
+};
+
+export const getToolSampleContext = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<ToolSampleContext> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sb = context.supabase as any;
+    const pick = async (table: string, col = "id"): Promise<string | null> => {
+      try {
+        const { data } = await sb.from(table).select(col).limit(1).maybeSingle();
+        return (data?.[col] as string | undefined) ?? null;
+      } catch {
+        return null;
+      }
+    };
+    const [org_id, site_id, workflow_id, incident_id, asset_id, tool_id, agent_id] =
+      await Promise.all([
+        sb.rpc("current_org_id").then(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (r: any) => (r?.data as string | null) ?? null,
+          () => null,
+        ),
+        pick("sec_sites"),
+        pick("workflows"),
+        pick("sec_incidents"),
+        pick("sec_assets"),
+        pick("tool_registry"),
+        pick("agent_definitions"),
+      ]);
+    const has_real_data = Boolean(org_id || site_id || workflow_id || incident_id);
+    return {
+      user_id: context.userId,
+      org_id,
+      now_iso: new Date().toISOString(),
+      site_id,
+      workflow_id,
+      incident_id,
+      asset_id,
+      tool_id,
+      agent_id,
+      has_real_data,
+    };
+  });
