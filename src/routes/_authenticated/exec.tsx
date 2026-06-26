@@ -493,32 +493,46 @@ function ExecConsole() {
                       started_at: string;
                       error: string | null;
                     }) => (
-                      <li
-                        key={r.id}
-                        className="p-3 rounded-md border space-y-1"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs">
-                            {r.workflow_id.slice(0, 8)}…
-                          </span>
-                          {statusBadge(r.status)}
-                        </div>
-                        {r.current_step && (
-                          <div className="text-xs text-muted-foreground">
-                            step: {r.current_step}
+                      <li key={r.id}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenRunId(r.id)}
+                          className="w-full text-start p-3 rounded-md border space-y-1 hover:bg-accent/30 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs">
+                              {r.workflow_id.slice(0, 8)}…
+                            </span>
+                            {statusBadge(r.status)}
                           </div>
-                        )}
-                        {r.error && (
-                          <div className="text-xs text-red-300">{r.error}</div>
-                        )}
+                          <div className="text-[11px] text-muted-foreground font-mono">
+                            {new Date(r.started_at).toLocaleString()}
+                          </div>
+                          {r.current_step && (
+                            <div className="text-xs text-muted-foreground">
+                              step: {r.current_step}
+                            </div>
+                          )}
+                          {r.error && (
+                            <div className="text-xs text-red-300 line-clamp-2">
+                              {r.error}
+                            </div>
+                          )}
+                        </button>
                       </li>
                     ),
+                  )}
+                  {!runs.data?.length && (
+                    <li className="text-sm text-muted-foreground text-center p-4">
+                      No runs yet.
+                    </li>
                   )}
                 </ul>
               </ScrollArea>
             </Card>
           </div>
         </TabsContent>
+
 
         <TabsContent value="agents">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
