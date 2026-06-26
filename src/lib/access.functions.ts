@@ -385,16 +385,13 @@ export const denyVehicleAccess = createServerFn({ method: "POST" })
     const actor = actorOf(claims);
     await supabase.from("sec_activity_events").insert({
       entity_type: "access_attempt",
-      entity_id: null,
+      entity_id: crypto.randomUUID(),
       entity_ref: data.plate,
       event: "access_denied",
       actor_id: userId,
       actor_name: actor,
       payload: { plate: data.plate, gate_id: data.gate_id ?? null, reason: data.reason, target: "vehicle" } as JsonValue,
     });
-    if (data.gate_id) {
-      await supabase.rpc("noop_to_silence_lint" as never).then(() => null).catch(() => null);
-    }
     return { ok: true };
   });
 
@@ -415,11 +412,13 @@ export const setGateStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
-    const patch: Record<string, unknown> = { status: data.status, last_event_at: new Date().toISOString() };
-    if (typeof data.health === "number") patch.health = data.health;
     const { data: row, error } = await supabase
       .from("sec_gates")
-      .update(patch)
+      .update({
+        status: data.status,
+        last_event_at: new Date().toISOString(),
+        ...(typeof data.health === "number" ? { health: data.health } : {}),
+      })
       .eq("id", data.gate_id)
       .select("code")
       .single();
