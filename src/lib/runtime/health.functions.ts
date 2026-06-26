@@ -240,25 +240,31 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
           : undefined,
     });
 
-    // Microsoft Integration
+    // Microsoft Integration — uses last_sync_status / last_test_status.
     const { data: ms } = await supabaseAdmin
       .from("integration_microsoft")
-      .select("status, last_sync_at, last_error")
+      .select("tenant_id, client_id, last_sync_at, last_sync_status, last_sync_error, last_test_status")
       .eq("org_id", orgId)
       .limit(1)
       .maybeSingle();
     let msStatus: HealthStatus = "offline";
-    let msReason: string | undefined = "Not connected";
+    let msReason: string | undefined = "Not configured";
     if (ms) {
-      if (ms.status === "connected") {
+      const configured = Boolean(ms.tenant_id && ms.client_id);
+      const sync = ms.last_sync_status;
+      const test = ms.last_test_status;
+      if (!configured) {
+        msStatus = "blocked";
+        msReason = "Waiting for credentials (tenant_id / client_id)";
+      } else if (sync === "success" || test === "success") {
         msStatus = "healthy";
         msReason = undefined;
-      } else if (ms.status === "error") {
+      } else if (sync === "error" || test === "error") {
         msStatus = "warning";
-        msReason = (ms as { last_error?: string }).last_error ?? "Last sync failed";
+        msReason = ms.last_sync_error ?? "Last sync failed";
       } else {
-        msStatus = "offline";
-        msReason = `Status: ${ms.status}`;
+        msStatus = "unknown";
+        msReason = "Configured but never synced";
       }
     }
     subs.push({
@@ -266,13 +272,14 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       label: "Microsoft 365 Integration",
       status: msStatus,
       evidence: {
-        connected: ms?.status === "connected",
+        configured: Boolean(ms?.tenant_id && ms?.client_id),
         last_sync_at: ms?.last_sync_at ?? null,
+        last_sync_status: ms?.last_sync_status ?? null,
       },
       reason: msReason,
     });
 
-    // SAP / Oracle / n8n adapters — driven by tool_registry enabled flag only.
+    // SAP / Oracle / n8n adapters — driven by tool_registry enabled flag + metadata.
     for (const [tid, label] of [
       ["sap.execute", "SAP Adapter"],
       ["oracle.execute", "Oracle Adapter"],
@@ -280,12 +287,14 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     ] as const) {
       const { data: tool } = await supabaseAdmin
         .from("tool_registry")
-        .select("enabled, config_json")
+        .select("enabled, metadata")
         .eq("id", tid)
         .maybeSingle();
       const enabled = Boolean(tool?.enabled);
-      const cfg = (tool?.config_json ?? {}) as Record<string, unknown>;
-      const hasCreds = Object.keys(cfg).length > 0;
+      const meta = (tool?.metadata ?? {}) as Record<string, unknown>;
+      const hasCreds = Object.keys(meta).some(
+        (k) => k.includes("endpoint") || k.includes("url") || k.includes("base_url"),
+      );
       subs.push({
         id: tid,
         label,
