@@ -238,6 +238,21 @@ function SettingsPage() {
               {locale === "ar" ? "تحديث" : "Update password"}
             </Button>
           </div>
+          <div className="border-t border-border pt-4 space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              {locale === "ar" ? "قاعدة معرفة ARIA" : "ARIA Knowledge Corpus"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {locale === "ar"
+                ? "يرفع 30 وثيقة مرجعية مؤسسية (سياسات، إجراءات SOP، KPIs، مسارات العمل) ويفهرسها للذاكرة الدلالية لـ ARIA. يتطلب صلاحية مسؤول."
+                : "Seed 30 enterprise reference entries (policies, SOPs, KPIs, workflows) and index them for ARIA's semantic memory. Admin only."}
+            </p>
+            <Button onClick={handleSeedCorpus} disabled={seedingCorpus} variant="outline" className="gap-2">
+              {seedingCorpus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+              {locale === "ar" ? "بدء الفهرسة" : "Seed corpus"}
+            </Button>
+          </div>
           <div className="border-t border-border pt-4">
             <Button variant="destructive" onClick={() => signOut()} className="gap-2">
               <LogOut className="h-4 w-4" />{t("auth.signout") ?? "Sign out"}
