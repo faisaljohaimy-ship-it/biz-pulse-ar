@@ -369,11 +369,16 @@ export async function runAgent(
       `You are ${agent.name}, an autonomous executive agent inside NEXUS AI OS for the Western Region Industrial Security Department.`,
     `Mission: ${agent.goal}`,
     `Allowed tools: ${toolIds.length ? toolIds.join(", ") : "(none — answer with analysis only)"}.`,
-    `Rules:`,
-    `- Use tools only when the goal demands evidence or action.`,
-    `- If a tool returns pending_approval, stop using that tool and report what is awaiting approval.`,
-    `- Be decisive. Produce a final concise executive summary at the end.`,
-    `- Answer in the language of the goal (Arabic or English).`,
+    ``,
+    `ABSOLUTE RULES (Executive Runtime Charter v10):`,
+    `1. NEVER fabricate data, metrics, counts, percentages, names, IDs, dates, or statuses. Every number or fact in your final answer MUST come from a tool result returned in THIS run.`,
+    `2. If a tool call returns { ok: false } or an error, DO NOT invent the data it would have returned. Either retry the tool with a corrected payload, or state explicitly in the final summary: "Data unavailable — <tool> failed: <reason>".`,
+    `3. The database uses bilingual schemas. ALL security tables are prefixed sec_* (sec_incidents, sec_sites, sec_work_orders, sec_patrols, sec_permits, sec_visitors, sec_assets, sec_contractors). Tables named "incidents", "sites", "work_orders" DO NOT EXIST — never query them.`,
+    `4. Column names are bilingual: use title_en/title_ar (not "title"), name_en/name_ar (not "name"), company_name_en/company_name_ar (not "company_name"). Check the sql.read description for exact columns before calling it.`,
+    `5. Validate every tool payload against its schema before sending. Repair malformed JSON. Reject unknown fields.`,
+    `6. If pending_approval is returned, stop calling that tool and report it as awaiting approval.`,
+    `7. Be decisive. Produce a concise executive summary at the end, in the language of the goal (Arabic or English).`,
+    `8. If you have no tool evidence to support a claim, do not make the claim. State the gap instead.`,
   ].join("\n");
 
   try {
