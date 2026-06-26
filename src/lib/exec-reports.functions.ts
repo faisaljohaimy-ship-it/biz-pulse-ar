@@ -357,16 +357,31 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       }</p>
       <p>🔗 <a href="${escapeHtml(finalUrl)}">Open report in SharePoint</a></p>
     </div>`;
-    const teamsRes = await fetch(
-      `${TEAMS_GW}/teams/${encodeURIComponent(data.teamId)}/channels/${encodeURIComponent(
-        data.channelId,
-      )}/messages`,
-      {
-        method: "POST",
-        headers: { ...teamsHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ body: { contentType: "html", content: teamsHtml } }),
-      },
-    );
+    let teamsRes: Response;
+    try {
+      teamsRes = await httpFetch(
+        `${TEAMS_GW}/teams/${encodeURIComponent(data.teamId)}/channels/${encodeURIComponent(
+          data.channelId,
+        )}/messages`,
+        {
+          method: "POST",
+          headers: { ...teamsHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ body: { contentType: "html", content: teamsHtml } }),
+          label: "teams/post",
+          timeoutMs: 20_000,
+          retries: 1,
+        },
+      );
+    } catch (e) {
+      const msg = isApiError(e) ? e.message : String(e);
+      fail({
+        stage: "teams_post",
+        code: isApiError(e) ? e.code : "upstream_failed",
+        message_en: `Report archived to SharePoint, but Teams network failed: ${msg}`,
+        message_ar: `تمت الأرشفة، لكن فشل اتصال Teams: ${msg}`,
+        raw: JSON.stringify({ shareUrl: finalUrl }),
+      });
+    }
     if (!teamsRes.ok) {
       // SharePoint succeeded — surface a partial-success error so the UI can
       // still show the uploaded report link even when Teams posting failed.
