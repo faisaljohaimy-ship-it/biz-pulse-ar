@@ -49,6 +49,7 @@ import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ExecutiveOverlay } from "@/components/executive-overlay";
+import { OrgSwitcher } from "@/components/org/org-switcher";
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
@@ -90,7 +91,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <span className="text-sm font-bold tracking-tight">Nexus</span>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <OrgSwitcher compact />
+            <ThemeToggle />
+          </div>
         </header>
         <main className="nexus-main min-w-0 flex-1">
           <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
@@ -214,7 +218,12 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
+      <div className="border-b border-sidebar-border px-3 py-3">
+        <OrgSwitcher />
+      </div>
+
       <nav className="flex-1 overflow-y-auto p-3">
+
 
         {groups.map((g) => (
           <div key={g.label} className="mb-4">

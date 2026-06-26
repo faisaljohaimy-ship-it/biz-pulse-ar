@@ -1,64 +1,79 @@
-# NEXIOS AI OS — Enterprise Activation Plan
+# NEXUS AI OS — Stage 4 Execution Plan
+**Goal:** Transform NEXUS from a technical project into a production-grade, procurement-ready Enterprise AI OS. No UI redesign, no demos, no mock data.
 
-The request spans 40+ AI agents, 40+ integrations, RAG/vector DB, voice I/O, document intelligence, SSO/MFA, digital twin, and an ultra-premium UX redesign. That is 8–12 weeks of disciplined engineering, not one turn. To honor the Engineering Charter (no placeholders, production-grade only), I'll deliver this in 6 focused waves. Each wave ships **fully functional**, not mocked.
+## Scope Reality Check
+This charter is ~6 months of work for a full team. To deliver real value (not surface scaffolding), I will execute in **6 sequential waves**, each ending in a testable, production-grade slice. After each wave you confirm before I proceed. This prevents the anti-pattern of "60 half-built features" and matches the charter's own rule: *no unfinished implementations*.
 
-## Current Foundation (already live)
-- ARIA Executive Engine (`openai/gpt-5` via Lovable AI Gateway) + 17 agent tools
-- Execution Engine: `tool_registry`, `workflows`, `workflow_runs`, `agent_runs`, `tool_executions`
-- 17 `sec_*` operational tables with RLS hardened, KPI engine, Digital Twin tree
-- Operations Cockpit dashboard with live Supabase KPIs (30s refresh), Alerts Panel
-- Microsoft connectors linked (Outlook, Teams, SharePoint)
-- Luxury Executive design system (Deep Midnight Cyan + glassmorphism)
+---
 
-## Wave 1 — ARIA Cognitive Core (this wave)
-Make ARIA a true Executive Brain, not a chat.
-- **Long-term memory**: activate `aria_memory` + `aria_match_memory` with embeddings (`google/gemini-embedding-2`), auto-write decisions/conversations
-- **RAG / Knowledge Graph**: enable `aria_knowledge` ingestion pipeline + `aria_match_knowledge` semantic retrieval
-- **Document intelligence**: PDF/Word/Excel/image upload → parse → embed → searchable (server fn `ingestDocument`)
-- **Voice I/O**: ElevenLabs TTS (key present) + Whisper STT via Gateway
-- **Reasoning loop**: multi-step agent runtime with tool approval gates, persisted to `agent_runs`/`workflow_step_runs`
-- **ARIA Console** route `/aria` with: thread history, doc upload, voice button, reasoning trace, recommendation cards
+## Wave 1 — Multi-Tenancy Foundation (this turn)
+The single highest-leverage change. Every later wave depends on it.
 
-## Wave 2 — Agent Network (40 agents)
-- Seed `agent_definitions` with all 40 specialized agents (system prompt, allowed tools, RBAC scope)
-- **Orchestrator agent** routes user intent → specialist(s) → consolidates
-- Agent-to-agent messaging via `enterprise_events` bus
-- `/agents` page: live agent status, current task, last decision, handoff graph
+1. **Schema migration:**
+   - `organizations` (id, name, slug, plan, status, settings jsonb, created_at)
+   - `org_members` (org_id, user_id, role, invited_at, joined_at) — unique(org_id, user_id)
+   - `org_invitations` (token, email, role, expires_at)
+   - Add `org_id uuid` to all 17 `sec_*` tables + `aria_documents`, `aria_memory`, `aria_reports`, `agent_runs`, `workflow_runs`, `tool_executions`, `audit_logs`. Backfill with a default "Western Region Industrial Security" org.
+   - Indexes on every `org_id`.
+2. **RLS rewrite:** New SECURITY DEFINER helpers `current_org_id()` and `is_org_member(_org, _role)`. Rewrite every policy to scope by `org_id` AND existing user/role rules. Keep `service_role` bypass.
+3. **GRANTs** preserved per Charter.
+4. **Server context:** Extend `requireSupabaseAuth` middleware to resolve & inject `orgId` from JWT claim (`app_metadata.current_org`) or fall back to first membership. Add `requireOrgRole(role)` middleware.
+5. **App shell:** Org switcher in header; persists choice to `auth.users.app_metadata` via admin RPC.
+6. **Tests:** Vitest suite proving cross-org isolation on `sec_incidents`, `aria_documents`, `agent_runs`.
 
-## Wave 3 — Command Center & Digital Twin
-- `/command-center`: full-screen ops wall (incidents map, CCTV grid, patrol live tracks, KPI rail, ARIA briefing)
-- Digital Twin 3D site tree with real-time asset/sensor state
-- Predictive AI: incident forecasting (time-series on `sec_incidents`), risk heat-map
-- Smart Alerts engine: rules in `governance_policies`, evaluated on Supabase Realtime
+## Wave 2 — Enterprise Security Hardening
+- MFA enforcement flag per org; AAL2 gate middleware for admin routes.
+- Audit log expansion: every privileged server fn writes to `audit_logs` (actor, org, action, resource, before, after, ip, ua). Append-only RLS.
+- Session management UI (list, revoke).
+- API keys table (hashed, scoped, rotatable) + `requireApiKey` middleware for `/api/public/v1/*`.
+- Webhook signing helper (HMAC-SHA256, timing-safe) — already partially present, formalize.
+- Secrets inventory doc auto-generated from `fetch_secrets`.
 
-## Wave 4 — Workflow & Automation
-- Visual workflow builder (`workflows` DAG editor)
-- Approval engine with multi-level routing (`briefing_actions`)
-- Scheduled tasks (pg_cron → server route `/api/public/cron/run-workflows`)
-- Full audit trail UI from `audit_logs` + `tool_executions`
+## Wave 3 — SSO (Azure AD / Entra ID) + RBAC/ABAC
+- `supabase--configure_saml_sso` for Entra ID with domain-restricted auto-provisioning into orgs.
+- Formal `permissions` + `role_permissions` tables (ABAC attributes: resource, action, condition jsonb).
+- `can(user, action, resource, ctx)` SECURITY DEFINER function used across server fns.
+- Migration of existing `has_role` callsites.
 
-## Wave 5 — Enterprise Integrations (production wiring)
-- **M365 live**: Outlook send/read, Teams post, SharePoint document sync via connector gateway
-- **Power BI** embed, **Azure AD SSO** (SAML)
-- Webhook inbox `/api/public/webhooks/{source}` for SAP/SCADA/CCTV/IoT/Biometric
-- Integration registry UI showing health, last sync, throughput
+## Wave 4 — Observability, Reliability & DR
+- Structured logging helper (`src/lib/obs/logger.server.ts`) emitting JSON to console (Cloudflare Workers tail-compatible) with trace_id, org_id, user_id, latency.
+- `/api/public/health` (DB ping, AI Gateway ping, version) — already partial, harden.
+- `/api/public/metrics` (Prometheus exposition) — counts, p95 latencies pulled from `audit_logs`.
+- Daily DB export server fn → Cloudflare R2 (requires `R2_*` secrets — will request).
+- Documented DR runbook (`docs/dr-runbook.md`) with RTO 4h / RPO 1h.
 
-## Wave 6 — Security, Compliance, Polish
-- MFA (TOTP), RBAC matrix UI, ABAC policies on `governance_policies`
-- Security dashboard, threat detection rules
-- PDPL/ISO27001/SOC2 evidence pack auto-generation
-- Final UX pass: Apple-grade motion, Arabic typography (IBM Plex Sans Arabic), perfect RTL audit
+## Wave 5 — Commercial Layer
+- `subscription_plans`, `org_subscriptions`, `feature_flags`, `usage_meters` (events, ai_tokens, storage_mb).
+- Metering middleware that records usage on every AI Gateway + storage call.
+- Per-plan feature gating via `hasFeature(org, key)` helper.
+- Billing-ready: Stripe wiring deferred until you confirm; tables align with Stripe customer/subscription IDs.
 
-## Technical Notes
-- Models: GPT-5 (reasoning), Gemini 3 Flash (fast classification), Gemini Embedding 2 (vectors), Gemini 3 Pro Image (visuals), ElevenLabs (voice)
-- All AI calls server-side via `src/lib/*.functions.ts` with `requireSupabaseAuth`
-- New tables this wave: `aria_threads`, `aria_thread_messages`, `aria_documents` (with pgvector embeddings), `aria_voice_sessions`
-- Storage bucket `aria-documents` (private, RLS-scoped)
+## Wave 6 — Compliance Evidence & Production Connectors
+- Evidence collectors mapped to NCA ECC, PDPL, ISO 27001, SOC 2 (auto-generated JSON pack from `audit_logs` + config snapshot).
+- Privacy: DSAR server fns (export, erase) per org member.
+- Production connector hardening: M365 (Outlook/Teams/SharePoint) already linked — wrap in resilient gateway client (retry, circuit breaker, rate-limit aware), real Outlook send, real Teams channel post, real SharePoint upload. SAP/Oracle: thin OData/REST adapter scaffolding (documented as connector-ready, disabled until customer credentials supplied).
+
+---
+
+## Quality Gates per Wave
+- `tsgo` clean
+- `vitest run` passes (new tests authored each wave)
+- Supabase linter clean
+- Security scanner clean
+- Zero new console errors in Playwright smoke
+
+## Technical Notes (engineering)
+- All new server logic via `createServerFn` + `requireSupabaseAuth` + new `requireOrgContext`.
+- `service_role` only inside `.server.ts` helpers, loaded via dynamic `await import` in `.functions.ts` handlers.
+- No edge functions; everything in TanStack server functions per project charter.
+- RLS rewrite is the only irreversible step — done in one transactional migration with backfill verified before policy swap.
+
+---
 
 ## What I Need From You
-1. **Confirm Wave 1 scope** — should I start immediately with the ARIA Cognitive Core (memory + RAG + docs + voice + reasoning console)?
-2. **Pilot department user**: do you want pilot accounts seeded for "إدارة الأمن الصناعي - المنطقة الغربية" with roles (Director, Ops Manager, Patrol Lead, Analyst)?
-3. **Voice**: ElevenLabs voice ID preference (default: bilingual AR/EN Adam) or pick later?
-4. **SSO**: defer Azure AD SAML to Wave 5, or need it earlier for board demo?
+1. **Confirm Wave 1 starts now** (multi-tenancy is foundational and will touch every existing table — safe but unavoidable).
+2. Default org name for backfill — proposed: **"Western Region Industrial Security"** (matches current memory).
+3. Permission to request `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` secrets in Wave 4 (off-site backups).
+4. Stripe vs Paddle for Wave 5 commercial layer, or defer billing wiring entirely until a paying customer is in sight?
 
-Approve and I start Wave 1 immediately — full implementation, no mocks.
+On your **"GO Wave 1"** I execute the full multi-tenancy migration + middleware + tests in this turn.
