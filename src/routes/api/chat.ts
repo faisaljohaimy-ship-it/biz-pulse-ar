@@ -207,7 +207,8 @@ ${ctx}
           toolChoice: "auto",
           stopWhen: stepCountIs(50),
           maxRetries: 2,
-          maxOutputTokens: 2000,
+          // Reasoning models (gpt-5*) count reasoning tokens toward output; keep headroom.
+          maxOutputTokens: selectedModelId.startsWith("openai/gpt-5") ? 8000 : 4000,
           // GPT-5 only accepts the default temperature (1); omit for that family.
           ...(selectedModelId.startsWith("openai/gpt-5") ? {} : { temperature: 0.3 }),
 
