@@ -116,6 +116,7 @@ function useNavGroups(): NavGroup[] {
       label: t("nav.group.workspace"),
       items: [
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
+        { to: "/investor", icon: Presentation, label: ar(locale, "مركز القيادة الاستثماري", "Investor Command Center") },
         { to: "/tasks", icon: ListChecks, label: t("nav.tasks") },
         { to: "/files", icon: FolderUp, label: t("nav.files") },
       ],

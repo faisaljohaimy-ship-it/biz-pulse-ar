@@ -61,6 +61,7 @@ import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
+import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticated/investor'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
@@ -388,6 +389,11 @@ const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
 const AuthenticatedKnowledgeRoute = AuthenticatedKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedInvestorRoute = AuthenticatedInvestorRouteImport.update({
+  id: '/investor',
+  path: '/investor',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedIntelligenceRoute =
@@ -802,6 +808,7 @@ export interface FileRoutesByFullPath {
   '/governance': typeof AuthenticatedGovernanceRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
+  '/investor': typeof AuthenticatedInvestorRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
@@ -920,6 +927,7 @@ export interface FileRoutesByTo {
   '/governance': typeof AuthenticatedGovernanceRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
+  '/investor': typeof AuthenticatedInvestorRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
@@ -1039,6 +1047,7 @@ export interface FileRoutesById {
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
+  '/_authenticated/investor': typeof AuthenticatedInvestorRoute
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
@@ -1159,6 +1168,7 @@ export interface FileRouteTypes {
     | '/governance'
     | '/integrations'
     | '/intelligence'
+    | '/investor'
     | '/knowledge'
     | '/leads'
     | '/marketplace'
@@ -1277,6 +1287,7 @@ export interface FileRouteTypes {
     | '/governance'
     | '/integrations'
     | '/intelligence'
+    | '/investor'
     | '/knowledge'
     | '/leads'
     | '/marketplace'
@@ -1395,6 +1406,7 @@ export interface FileRouteTypes {
     | '/_authenticated/governance'
     | '/_authenticated/integrations'
     | '/_authenticated/intelligence'
+    | '/_authenticated/investor'
     | '/_authenticated/knowledge'
     | '/_authenticated/leads'
     | '/_authenticated/marketplace'
@@ -1865,6 +1877,13 @@ declare module '@tanstack/react-router' {
       path: '/knowledge'
       fullPath: '/knowledge'
       preLoaderRoute: typeof AuthenticatedKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/investor': {
+      id: '/_authenticated/investor'
+      path: '/investor'
+      fullPath: '/investor'
+      preLoaderRoute: typeof AuthenticatedInvestorRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/intelligence': {
@@ -2428,6 +2447,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
+  AuthenticatedInvestorRoute: typeof AuthenticatedInvestorRoute
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
@@ -2479,6 +2499,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
+  AuthenticatedInvestorRoute: AuthenticatedInvestorRoute,
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
