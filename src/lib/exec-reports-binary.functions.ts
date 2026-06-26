@@ -71,24 +71,43 @@ function toBase64(bytes: Uint8Array): string {
 
 async function spUploadBinary(stage: PublishStage, siteId: string, folderPath: string, filename: string, body: Uint8Array, contentType: string) {
   const path = `/sites/${encodeURIComponent(siteId)}/drive/root:/${encodeURI(folderPath)}/${encodeURIComponent(filename)}:/content`;
-  const r = await fetch(`${SP_GW}${path}`, {
-    method: "PUT",
-    headers: { ...spHeaders(), "Content-Type": contentType },
-    body: body as unknown as BodyInit,
-  });
+  let r: Response;
+  try {
+    r = await httpFetch(`${SP_GW}${path}`, {
+      method: "PUT",
+      headers: { ...spHeaders(), "Content-Type": contentType },
+      body: body as unknown as BodyInit,
+      label: "sharepoint/upload",
+      timeoutMs: 60_000,
+      retries: 1,
+    });
+  } catch (e) {
+    const msg = isApiError(e) ? e.message : String(e);
+    fail({ stage, code: isApiError(e) ? e.code : "upstream_failed",
+      message_en: `SharePoint upload network failure: ${msg}`,
+      message_ar: `فشل اتصال SharePoint: ${msg}` });
+  }
   if (!r.ok) await failFromResponse(stage, r);
   return (await r.json()) as { id: string; name: string; webUrl: string; size: number };
 }
 
 async function spCreateLink(siteId: string, itemId: string): Promise<string | null> {
-  const r = await fetch(
-    `${SP_GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`,
-    {
-      method: "POST",
-      headers: { ...spHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "view", scope: "organization" }),
-    },
-  );
+  let r: Response;
+  try {
+    r = await httpFetch(
+      `${SP_GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`,
+      {
+        method: "POST",
+        headers: { ...spHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "view", scope: "organization" }),
+        label: "sharepoint/createLink",
+        timeoutMs: 15_000,
+        retries: 1,
+      },
+    );
+  } catch {
+    return null;
+  }
   if (!r.ok) return null;
   const j = (await r.json()) as { link?: { webUrl?: string } };
   return j.link?.webUrl ?? null;
