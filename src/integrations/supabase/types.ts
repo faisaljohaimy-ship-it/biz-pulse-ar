@@ -4401,6 +4401,7 @@ export type Database = {
           similarity: number
         }[]
       }
+      cleanup_email_unsubscribe_tokens: { Args: never; Returns: number }
       current_org_id: { Args: never; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
