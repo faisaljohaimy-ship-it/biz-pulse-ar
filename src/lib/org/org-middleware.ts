@@ -30,7 +30,7 @@ export interface OrgContext {
  */
 export const requireOrgContext = createMiddleware({ type: "function" })
   .middleware([requireSupabaseAuth])
-  .server(async ({ next, context }): Promise<{ context: OrgContext }> => {
+  .server(async ({ next, context }) => {
     const { supabase, userId, claims } = context;
     const claimed =
       (claims as { app_metadata?: { current_org?: string } } | undefined)?.app_metadata
@@ -53,7 +53,7 @@ export const requireOrgContext = createMiddleware({ type: "function" })
       context: {
         orgId: chosen.org_id as string,
         orgRole: chosen.role as OrgRole,
-      },
+      } satisfies OrgContext,
     });
   });
 
