@@ -52,9 +52,12 @@ export const updateHajjTaskStatus = createServerFn({ method: "POST" })
     status: z.enum(["pending", "in_progress", "done", "cancelled"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = { status: data.status };
-    if (data.status === "in_progress") patch.started_at = new Date().toISOString();
-    if (data.status === "done") patch.completed_at = new Date().toISOString();
+    const now = new Date().toISOString();
+    const patch = {
+      status: data.status,
+      started_at: data.status === "in_progress" ? now : undefined,
+      completed_at: data.status === "done" ? now : undefined,
+    };
     const { error } = await context.supabase.from("hajj_tasks").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
