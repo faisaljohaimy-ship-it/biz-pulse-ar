@@ -4444,6 +4444,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      runtime_cleanup_stale_executions: { Args: never; Returns: Json }
       set_microsoft_sync_secret: {
         Args: { _secret: string }
         Returns: undefined
