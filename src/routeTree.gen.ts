@@ -124,6 +124,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -730,6 +731,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksMicrosoftSyncRoute =
+  ApiPublicHooksMicrosoftSyncRouteImport.update({
+    id: '/api/public/hooks/microsoft-sync',
+    path: '/api/public/hooks/microsoft-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksExecutiveReportsRunRoute =
   ApiPublicHooksExecutiveReportsRunRouteImport.update({
     id: '/api/public/hooks/executive-reports-run',
@@ -848,6 +855,7 @@ export interface FileRoutesByFullPath {
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
+  '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -964,6 +972,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
+  '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1083,6 +1092,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
+  '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1202,6 +1212,7 @@ export interface FileRouteTypes {
     | '/assistant/'
     | '/sec/'
     | '/api/public/hooks/executive-reports-run'
+    | '/api/public/hooks/microsoft-sync'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -1318,6 +1329,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/sec'
     | '/api/public/hooks/executive-reports-run'
+    | '/api/public/hooks/microsoft-sync'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -1436,6 +1448,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant/'
     | '/_authenticated/sec/'
     | '/api/public/hooks/executive-reports-run'
+    | '/api/public/hooks/microsoft-sync'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -1480,6 +1493,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
+  ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -2294,6 +2308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/microsoft-sync': {
+      id: '/api/public/hooks/microsoft-sync'
+      path: '/api/public/hooks/microsoft-sync'
+      fullPath: '/api/public/hooks/microsoft-sync'
+      preLoaderRoute: typeof ApiPublicHooksMicrosoftSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/executive-reports-run': {
       id: '/api/public/hooks/executive-reports-run'
       path: '/api/public/hooks/executive-reports-run'
@@ -2522,6 +2543,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
+  ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,

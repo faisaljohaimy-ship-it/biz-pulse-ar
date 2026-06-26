@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      _microsoft_sync_config: {
+        Row: {
+          hook_secret: string | null
+          hook_url: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          hook_secret?: string | null
+          hook_url?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          hook_secret?: string | null
+          hook_url?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agent_definitions: {
         Row: {
           created_at: string
@@ -1024,13 +1045,21 @@ export type Database = {
           default_site_id: string | null
           default_team_id: string | null
           id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_status: string | null
           last_test_error: string | null
           last_test_status: string | null
           last_test_user: string | null
           last_tested_at: string | null
           notes: string | null
           org_id: string
+          outlook_delta_link: string | null
           redirect_uris: string[]
+          sharepoint_delta_link: string | null
+          sync_interval_minutes: number
+          sync_outlook_enabled: boolean
+          sync_sharepoint_enabled: boolean
           tenant_id: string | null
           updated_at: string
           updated_by: string | null
@@ -1042,13 +1071,21 @@ export type Database = {
           default_site_id?: string | null
           default_team_id?: string | null
           id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
           last_test_error?: string | null
           last_test_status?: string | null
           last_test_user?: string | null
           last_tested_at?: string | null
           notes?: string | null
           org_id?: string
+          outlook_delta_link?: string | null
           redirect_uris?: string[]
+          sharepoint_delta_link?: string | null
+          sync_interval_minutes?: number
+          sync_outlook_enabled?: boolean
+          sync_sharepoint_enabled?: boolean
           tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -1060,16 +1097,63 @@ export type Database = {
           default_site_id?: string | null
           default_team_id?: string | null
           id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
           last_test_error?: string | null
           last_test_status?: string | null
           last_test_user?: string | null
           last_tested_at?: string | null
           notes?: string | null
           org_id?: string
+          outlook_delta_link?: string | null
           redirect_uris?: string[]
+          sharepoint_delta_link?: string | null
+          sync_interval_minutes?: number
+          sync_outlook_enabled?: boolean
+          sync_sharepoint_enabled?: boolean
           tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      integration_microsoft_sync_log: {
+        Row: {
+          created_at: string
+          details: Json
+          duration_ms: number | null
+          error: string | null
+          id: string
+          items_count: number
+          kind: string
+          org_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          items_count?: number
+          kind: string
+          org_id: string
+          started_at?: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          items_count?: number
+          kind?: string
+          org_id?: string
+          started_at?: string
+          status?: string
         }
         Relationships: []
       }
@@ -4078,6 +4162,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      microsoft_sync_dispatch: { Args: never; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -4094,6 +4179,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      set_microsoft_sync_secret: {
+        Args: { _secret: string }
+        Returns: undefined
       }
     }
     Enums: {
