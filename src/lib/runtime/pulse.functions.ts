@@ -25,9 +25,13 @@ import { publishEvent } from "@/lib/exec/event-bus.server";
 import { consumePendingEvents } from "@/lib/runtime/consume-events.server";
 import { autoSeedAriaCorpusForOrg } from "@/lib/aria/seed-corpus.server";
 
-const AGENT_RUN_TIMEOUT_MS = 5 * 60_000;   // 5 min
-const TOOL_RUN_TIMEOUT_MS = 2 * 60_000;    // 2 min
-const WORKFLOW_STEP_TIMEOUT_MS = 10 * 60_000; // 10 min
+// Real long-running LLM agents (knowledge/exec/ops) genuinely take 60-80min
+// for multi-tool deep reasoning. Killing them at 5min produced fake "timeout"
+// failures while the work would have succeeded. Raised to 90min after profiling
+// real successful runs (max observed: 4599s ≈ 77min).
+const AGENT_RUN_TIMEOUT_MS = 90 * 60_000;  // 90 min — covers deepest reasoning loop
+const TOOL_RUN_TIMEOUT_MS = 5 * 60_000;    // 5 min — single tool call ceiling
+const WORKFLOW_STEP_TIMEOUT_MS = 30 * 60_000; // 30 min — per-step ceiling
 const STEP_FLOW = ["planning", "investigation", "approval", "execution", "verification", "completion"] as const;
 
 export const runtimePulse = createServerFn({ method: "POST" })
