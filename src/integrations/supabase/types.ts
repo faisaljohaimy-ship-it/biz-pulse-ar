@@ -1016,6 +1016,63 @@ export type Database = {
           },
         ]
       }
+      integration_microsoft: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          default_channel_id: string | null
+          default_site_id: string | null
+          default_team_id: string | null
+          id: string
+          last_test_error: string | null
+          last_test_status: string | null
+          last_test_user: string | null
+          last_tested_at: string | null
+          notes: string | null
+          org_id: string
+          redirect_uris: string[]
+          tenant_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          default_channel_id?: string | null
+          default_site_id?: string | null
+          default_team_id?: string | null
+          id?: string
+          last_test_error?: string | null
+          last_test_status?: string | null
+          last_test_user?: string | null
+          last_tested_at?: string | null
+          notes?: string | null
+          org_id?: string
+          redirect_uris?: string[]
+          tenant_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          default_channel_id?: string | null
+          default_site_id?: string | null
+          default_team_id?: string | null
+          id?: string
+          last_test_error?: string | null
+          last_test_status?: string | null
+          last_test_user?: string | null
+          last_tested_at?: string | null
+          notes?: string | null
+          org_id?: string
+          redirect_uris?: string[]
+          tenant_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       intelligence_alerts: {
         Row: {
           acknowledged_at: string | null
