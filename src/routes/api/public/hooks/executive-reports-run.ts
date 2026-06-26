@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
             const html = htmlSummaryFromSnapshot(snap, { title })
               + `<p style="font:12px/1.6 system-ui;color:#334155;text-align:center"><a href="${pdfShare ?? pdfItem.webUrl}">Open PDF</a> · <a href="${xlsxShare ?? xlsxItem.webUrl}">Open Excel</a></p>`;
 
-            const mailRes = await fetch(`${OUT_GW}/me/sendMail`, {
+            const mailRes = await httpFetch(`${OUT_GW}/me/sendMail`, {
               method: "POST",
               headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": out, "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -84,6 +84,9 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
                 },
                 saveToSentItems: true,
               }),
+              label: "cron/outlook-sendMail",
+              timeoutMs: 30_000,
+              retries: 1,
             });
             if (!mailRes.ok) throw new Error(`outlook_${mailRes.status}: ${(await mailRes.text()).slice(0, 200)}`);
 
