@@ -387,11 +387,8 @@ export async function runAgent(
       toolChoice: "auto",
       stopWhen: stepCountIs(50),
       maxRetries: 1,
-      // GPT-5 family rejects max_tokens — let the gateway translate via
-      // providerOptions instead; for others keep the AI SDK shorthand.
-      ...(isGpt5Family
-        ? { providerOptions: { openai: { max_completion_tokens: 1500 } } }
-        : { maxOutputTokens: 1500, temperature: 0.3 }),
+      // GPT-5 family rejects max_tokens entirely; omit any output-token cap.
+      ...(isGpt5Family ? {} : { maxOutputTokens: 1500, temperature: 0.3 }),
       onStepFinish: ({ text, finishReason }) => {
         stepRecords.push({
           index: stepRecords.length,
