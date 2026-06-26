@@ -36,14 +36,17 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/aria")({
+  validateSearch: z.object({ prompt: z.string().optional() }),
   component: AriaConsole,
 });
 
 type Turn = { id: string; question: string; result: PipelineResult | null; error?: string };
 
 function AriaConsole() {
+  const { prompt: prefill } = Route.useSearch();
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(prefill ?? "");
+  useEffect(() => { if (prefill) setDraft(prefill); }, [prefill]);
   const qc = useQueryClient();
   const runFn = useServerFn(runAriaPipeline);
   const generateFn = useServerFn(generateAriaReport);
