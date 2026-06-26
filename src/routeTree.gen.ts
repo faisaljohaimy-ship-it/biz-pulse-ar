@@ -133,6 +133,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api/public/hooks/runtime-bootstrap'
+import { Route as ApiPublicHooksRunAgentRouteImport } from './routes/api/public/hooks/run-agent'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
@@ -788,6 +789,11 @@ const ApiPublicHooksRuntimeBootstrapRoute =
     path: '/api/public/hooks/runtime-bootstrap',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRunAgentRoute = ApiPublicHooksRunAgentRouteImport.update({
+  id: '/api/public/hooks/run-agent',
+  path: '/api/public/hooks/run-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksMicrosoftSyncRoute =
   ApiPublicHooksMicrosoftSyncRouteImport.update({
     id: '/api/public/hooks/microsoft-sync',
@@ -928,6 +934,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
+  '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1055,6 +1062,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
+  '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1185,6 +1193,7 @@ export interface FileRoutesById {
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
+  '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1315,6 +1324,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
+    | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1442,6 +1452,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
+    | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1571,6 +1582,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
+    | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1618,6 +1630,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
+  ApiPublicHooksRunAgentRoute: typeof ApiPublicHooksRunAgentRoute
   ApiPublicHooksRuntimeBootstrapRoute: typeof ApiPublicHooksRuntimeBootstrapRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -2496,6 +2509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRuntimeBootstrapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/run-agent': {
+      id: '/api/public/hooks/run-agent'
+      path: '/api/public/hooks/run-agent'
+      fullPath: '/api/public/hooks/run-agent'
+      preLoaderRoute: typeof ApiPublicHooksRunAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/microsoft-sync': {
       id: '/api/public/hooks/microsoft-sync'
       path: '/api/public/hooks/microsoft-sync'
@@ -2756,6 +2776,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
+  ApiPublicHooksRunAgentRoute: ApiPublicHooksRunAgentRoute,
   ApiPublicHooksRuntimeBootstrapRoute: ApiPublicHooksRuntimeBootstrapRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
