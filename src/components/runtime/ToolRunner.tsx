@@ -96,7 +96,8 @@ function applySampleData(
   for (const [key, sub] of Object.entries(schema.properties ?? {})) {
     const k = key.toLowerCase();
     if (sub.type === "object" && sub.properties) {
-      next[key] = applySampleData(sub, (next[key] as Record<string, unknown>) ?? {}, ctx);
+      const child = (typeof next[key] === "object" && next[key] !== null ? next[key] : {}) as Record<string, unknown>;
+      next[key] = applySampleData(sub, child, ctx);
       continue;
     }
     if (next[key] !== undefined && next[key] !== "" && next[key] !== null) continue;
