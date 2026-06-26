@@ -2266,13 +2266,18 @@ export type Database = {
         Row: {
           ai_risk_score: number | null
           ai_summary: string | null
+          aria_auto_analyzed: boolean
           assigned_to: string | null
           attachments: Json
+          attachments_count: number
           category: string
           corrective_actions: Json
           created_at: string
           created_by: string | null
           escalated: boolean
+          executive_review: string | null
+          executive_reviewed_at: string | null
+          executive_reviewed_by: string | null
           id: string
           org_id: string
           owner: string | null
@@ -2292,13 +2297,18 @@ export type Database = {
         Insert: {
           ai_risk_score?: number | null
           ai_summary?: string | null
+          aria_auto_analyzed?: boolean
           assigned_to?: string | null
           attachments?: Json
+          attachments_count?: number
           category: string
           corrective_actions?: Json
           created_at?: string
           created_by?: string | null
           escalated?: boolean
+          executive_review?: string | null
+          executive_reviewed_at?: string | null
+          executive_reviewed_by?: string | null
           id?: string
           org_id?: string
           owner?: string | null
@@ -2318,13 +2328,18 @@ export type Database = {
         Update: {
           ai_risk_score?: number | null
           ai_summary?: string | null
+          aria_auto_analyzed?: boolean
           assigned_to?: string | null
           attachments?: Json
+          attachments_count?: number
           category?: string
           corrective_actions?: Json
           created_at?: string
           created_by?: string | null
           escalated?: boolean
+          executive_review?: string | null
+          executive_reviewed_at?: string | null
+          executive_reviewed_by?: string | null
           id?: string
           org_id?: string
           owner?: string | null
@@ -2633,6 +2648,71 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "sec_circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_reports: {
+        Row: {
+          created_at: string
+          format: string
+          generated_by: string | null
+          generated_by_name: string | null
+          id: string
+          kind: string
+          meta: Json
+          org_id: string
+          range_from: string | null
+          range_to: string | null
+          related_entity_id: string | null
+          related_entity_ref: string | null
+          related_entity_type: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          format: string
+          generated_by?: string | null
+          generated_by_name?: string | null
+          id?: string
+          kind: string
+          meta?: Json
+          org_id?: string
+          range_from?: string | null
+          range_to?: string | null
+          related_entity_id?: string | null
+          related_entity_ref?: string | null
+          related_entity_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          format?: string
+          generated_by?: string | null
+          generated_by_name?: string | null
+          id?: string
+          kind?: string
+          meta?: Json
+          org_id?: string
+          range_from?: string | null
+          range_to?: string | null
+          related_entity_id?: string | null
+          related_entity_ref?: string | null
+          related_entity_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
