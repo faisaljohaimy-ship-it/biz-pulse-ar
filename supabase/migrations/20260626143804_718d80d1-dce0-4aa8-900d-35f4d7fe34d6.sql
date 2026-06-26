@@ -1,0 +1,1 @@
+CREATE POLICY sec_reports_tenant_isolation ON public.sec_reports AS RESTRICTIVE FOR ALL TO authenticated USING (is_org_member(org_id, 'viewer'::org_role)) WITH CHECK (is_org_member(org_id, 'operator'::org_role));
