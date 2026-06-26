@@ -210,6 +210,38 @@ export async function runAgent(
               input,
             };
             currentToolCalls.push(callRecord);
+            const stepStartedAt = new Date().toISOString();
+            // workflow_step_runs (running)
+            let stepRowId: string | null = null;
+            if (workflowRunId) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const { data: stepRow } = await (supabase as any)
+                .from("workflow_step_runs")
+                .insert({
+                  run_id: workflowRunId,
+                  org_id: orgId,
+                  step_id: toolId,
+                  kind: "tool",
+                  status: "running",
+                  attempt: 1,
+                  input_json: (input as Record<string, unknown>) ?? {},
+                  started_at: stepStartedAt,
+                })
+                .select("id")
+                .single();
+              stepRowId = (stepRow?.id as string | undefined) ?? null;
+            }
+            await publishEvent(supabase, {
+              topic: "workflow.step.started",
+              payload: { workflowRunId, toolId, input },
+              source: "agent.runtime",
+              actor_id: actorId,
+              org_id: orgId,
+              correlation_id: correlationId,
+              subject_type: "workflow_step_run",
+              subject_id: stepRowId,
+            });
+
             try {
               const res = await executeTool(supabase, {
                 toolId,
@@ -220,6 +252,47 @@ export async function runAgent(
               });
               callRecord.executionId = res.executionId;
               callRecord.approvalStatus = res.status;
+
+              const stepStatus =
+                res.status === "succeeded"
+                  ? "succeeded"
+                  : res.status === "pending_approval"
+                    ? "waiting"
+                    : "failed";
+              if (stepRowId) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (supabase as any)
+                  .from("workflow_step_runs")
+                  .update({
+                    status: stepStatus,
+                    output_json:
+                      res.status === "succeeded"
+                        ? ({ output: res.output } as Record<string, unknown>)
+                        : null,
+                    error:
+                      res.status === "succeeded" ? null : (res.error ?? res.status),
+                    tool_execution_id: res.executionId ?? null,
+                    finished_at: new Date().toISOString(),
+                  })
+                  .eq("id", stepRowId);
+              }
+              await publishEvent(supabase, {
+                topic:
+                  res.status === "succeeded"
+                    ? "workflow.step.completed"
+                    : res.status === "pending_approval"
+                      ? "workflow.step.waiting"
+                      : "workflow.step.failed",
+                payload: { workflowRunId, toolId, executionId: res.executionId, status: res.status },
+                source: "agent.runtime",
+                severity: res.status === "succeeded" ? "info" : "warn",
+                actor_id: actorId,
+                org_id: orgId,
+                correlation_id: correlationId,
+                subject_type: "workflow_step_run",
+                subject_id: stepRowId,
+              });
+
               if (res.status === "succeeded") {
                 callRecord.output = res.output;
                 return { ok: true, output: res.output };
@@ -239,6 +312,28 @@ export async function runAgent(
             } catch (err) {
               const msg = err instanceof Error ? err.message : String(err);
               callRecord.error = msg;
+              if (stepRowId) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (supabase as any)
+                  .from("workflow_step_runs")
+                  .update({
+                    status: "failed",
+                    error: msg,
+                    finished_at: new Date().toISOString(),
+                  })
+                  .eq("id", stepRowId);
+              }
+              await publishEvent(supabase, {
+                topic: "workflow.step.failed",
+                payload: { workflowRunId, toolId, error: msg },
+                source: "agent.runtime",
+                severity: "error",
+                actor_id: actorId,
+                org_id: orgId,
+                correlation_id: correlationId,
+                subject_type: "workflow_step_run",
+                subject_id: stepRowId,
+              });
               return { ok: false, error: msg };
             }
           },
