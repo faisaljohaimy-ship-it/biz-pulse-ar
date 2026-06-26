@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError } from "@/lib/api";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev";
 
@@ -13,16 +15,24 @@ type IntegrationRow = {
 };
 
 async function callGraph(connector: string, path: string, lovableKey: string, connectorKey: string) {
-  const r = await fetch(`${GATEWAY_URL}/${connector}${path}`, {
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": connectorKey,
-    },
-  });
-  const text = await r.text();
-  let body: unknown = null;
-  try { body = JSON.parse(text); } catch { /* non-JSON */ }
-  return { ok: r.ok, status: r.status, body, text };
+  try {
+    const r = await httpFetch(`${GATEWAY_URL}/${connector}${path}`, {
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": connectorKey,
+      },
+      label: `graph/${connector}`,
+      timeoutMs: 20_000,
+      retries: 2,
+    });
+    const text = await r.text();
+    let body: unknown = null;
+    try { body = JSON.parse(text); } catch { /* non-JSON */ }
+    return { ok: r.ok, status: r.status, body, text };
+  } catch (err) {
+    const msg = isApiError(err) ? `${err.code}:${err.message}` : String(err);
+    return { ok: false, status: 0, body: null, text: msg };
+  }
 }
 
 export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({

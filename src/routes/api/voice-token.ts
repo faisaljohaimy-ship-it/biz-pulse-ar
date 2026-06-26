@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError, toApiErrorShape } from "@/lib/api";
 
 export const Route = createFileRoute("/api/voice-token")({
   server: {
@@ -6,53 +8,42 @@ export const Route = createFileRoute("/api/voice-token")({
       POST: async () => {
         const apiKey = process.env.ELEVENLABS_API_KEY;
         if (!apiKey) {
-          return new Response(JSON.stringify({ error: "ELEVENLABS_API_KEY not configured" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
+          return Response.json({ error: "ELEVENLABS_API_KEY not configured" }, { status: 500 });
         }
 
         // Request a single-use realtime scribe token (no agent required for STT).
-        // For full conversational voice agents the user must create an agent in ElevenLabs
-        // and supply ELEVENLABS_AGENT_ID; we then issue a conversation token.
+        // For full conversational voice agents the user must create an agent in
+        // ElevenLabs and supply ELEVENLABS_AGENT_ID; we then issue a conversation token.
         const agentId = process.env.ELEVENLABS_AGENT_ID;
 
         try {
           if (agentId) {
-            const r = await fetch(
+            const r = await httpFetch(
               `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${agentId}`,
-              { headers: { "xi-api-key": apiKey } },
+              { headers: { "xi-api-key": apiKey }, label: "elevenlabs/convai-token", timeoutMs: 10_000 },
             );
             if (!r.ok) {
               const text = await r.text();
-              return new Response(JSON.stringify({ error: text }), {
-                status: r.status,
-                headers: { "Content-Type": "application/json" },
-              });
+              return Response.json({ error: text }, { status: r.status });
             }
             const data = (await r.json()) as { token: string };
             return Response.json({ kind: "conversation", token: data.token, agentId });
           }
 
-          // Fallback: realtime STT token so the page still has something to demo.
-          const r = await fetch(
+          const r = await httpFetch(
             "https://api.elevenlabs.io/v1/single-use-token/realtime_scribe",
-            { method: "POST", headers: { "xi-api-key": apiKey } },
+            { method: "POST", headers: { "xi-api-key": apiKey }, label: "elevenlabs/scribe-token", timeoutMs: 10_000 },
           );
           if (!r.ok) {
             const text = await r.text();
-            return new Response(JSON.stringify({ error: text }), {
-              status: r.status,
-              headers: { "Content-Type": "application/json" },
-            });
+            return Response.json({ error: text }, { status: r.status });
           }
           const data = (await r.json()) as { token: string };
           return Response.json({ kind: "scribe", token: data.token });
         } catch (err) {
-          return new Response(
-            JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
+          const shape = isApiError(err) ? err.toJSON() : toApiErrorShape(err);
+          console.error("[api/voice-token]", shape.code, shape.message);
+          return Response.json({ error: shape.message, code: shape.code }, { status: shape.status });
         }
       },
     },

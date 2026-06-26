@@ -6,6 +6,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { randomUUID } from "crypto";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError } from "@/lib/api";
 import type { PublishErrorEnvelope, PublishStage } from "./exec-reports.functions";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
@@ -69,24 +71,43 @@ function toBase64(bytes: Uint8Array): string {
 
 async function spUploadBinary(stage: PublishStage, siteId: string, folderPath: string, filename: string, body: Uint8Array, contentType: string) {
   const path = `/sites/${encodeURIComponent(siteId)}/drive/root:/${encodeURI(folderPath)}/${encodeURIComponent(filename)}:/content`;
-  const r = await fetch(`${SP_GW}${path}`, {
-    method: "PUT",
-    headers: { ...spHeaders(), "Content-Type": contentType },
-    body: body as unknown as BodyInit,
-  });
+  let r: Response;
+  try {
+    r = await httpFetch(`${SP_GW}${path}`, {
+      method: "PUT",
+      headers: { ...spHeaders(), "Content-Type": contentType },
+      body: body as unknown as BodyInit,
+      label: "sharepoint/upload",
+      timeoutMs: 60_000,
+      retries: 1,
+    });
+  } catch (e) {
+    const msg = isApiError(e) ? e.message : String(e);
+    fail({ stage, code: isApiError(e) ? e.code : "upstream_failed",
+      message_en: `SharePoint upload network failure: ${msg}`,
+      message_ar: `فشل اتصال SharePoint: ${msg}` });
+  }
   if (!r.ok) await failFromResponse(stage, r);
   return (await r.json()) as { id: string; name: string; webUrl: string; size: number };
 }
 
 async function spCreateLink(siteId: string, itemId: string): Promise<string | null> {
-  const r = await fetch(
-    `${SP_GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`,
-    {
-      method: "POST",
-      headers: { ...spHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "view", scope: "organization" }),
-    },
-  );
+  let r: Response;
+  try {
+    r = await httpFetch(
+      `${SP_GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`,
+      {
+        method: "POST",
+        headers: { ...spHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "view", scope: "organization" }),
+        label: "sharepoint/createLink",
+        timeoutMs: 15_000,
+        retries: 1,
+      },
+    );
+  } catch {
+    return null;
+  }
   if (!r.ok) return null;
   const j = (await r.json()) as { link?: { webUrl?: string } };
   return j.link?.webUrl ?? null;
@@ -193,11 +214,26 @@ export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
       saveToSentItems: true,
     };
 
-    const mr = await fetch(`${OUT_GW}/me/sendMail`, {
-      method: "POST",
-      headers: { ...outlookHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify(message),
-    });
+    let mr: Response;
+    try {
+      mr = await httpFetch(`${OUT_GW}/me/sendMail`, {
+        method: "POST",
+        headers: { ...outlookHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(message),
+        label: "outlook/sendMail",
+        timeoutMs: 30_000,
+        retries: 1,
+      });
+    } catch (e) {
+      const msg = isApiError(e) ? e.message : String(e);
+      fail({
+        stage: "teams_post" as PublishStage,
+        code: isApiError(e) ? e.code : "upstream_failed",
+        message_en: `Report archived to SharePoint, but Outlook network failed: ${msg}`,
+        message_ar: `تمت الأرشفة، لكن فشل اتصال Outlook: ${msg}`,
+        raw: JSON.stringify({ pdf: pdfShare ?? pdfItem.webUrl, xlsx: xlsxShare ?? xlsxItem.webUrl }),
+      });
+    }
     if (!mr.ok) {
       // Partial success: SharePoint succeeded; surface error with the share URLs
       let raw = "", code = "", providerMsg = "";

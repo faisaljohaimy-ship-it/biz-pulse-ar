@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { randomUUID } from "crypto";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError } from "@/lib/api";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
@@ -160,11 +162,23 @@ function teamsHeaders() {
   return { Authorization: `Bearer ${k}`, "X-Connection-Api-Key": t };
 }
 
-async function spJson(stage: PublishStage, path: string, init?: RequestInit) {
-  const r = await fetch(`${SP_GW}${path}`, {
-    ...init,
-    headers: { ...spHeaders(), "Content-Type": "application/json", ...(init?.headers || {}) },
-  });
+async function spJson(stage: PublishStage, path: string, init?: { method?: string; body?: BodyInit; headers?: Record<string, string> }) {
+  let r: Response;
+  try {
+    r = await httpFetch(`${SP_GW}${path}`, {
+      method: init?.method,
+      body: init?.body,
+      headers: { ...spHeaders(), "Content-Type": "application/json", ...(init?.headers || {}) },
+      label: `sharepoint${path}`,
+      timeoutMs: 20_000,
+      retries: 1,
+    });
+  } catch (e) {
+    const msg = isApiError(e) ? e.message : String(e);
+    fail({ stage, code: isApiError(e) ? e.code : "upstream_failed",
+      message_en: `SharePoint network failure: ${msg}`,
+      message_ar: `فشل اتصال SharePoint: ${msg}` });
+  }
   if (!r.ok) await failFromResponse(stage, r);
   return r.json();
 }
@@ -301,11 +315,22 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     const uploadPath = `/sites/${encodeURIComponent(
       data.siteId,
     )}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(filename)}:/content`;
-    const up = await fetch(`${SP_GW}${uploadPath}`, {
-      method: "PUT",
-      headers: { ...spHeaders(), "Content-Type": "text/html; charset=utf-8" },
-      body: html,
-    });
+    let up: Response;
+    try {
+      up = await httpFetch(`${SP_GW}${uploadPath}`, {
+        method: "PUT",
+        headers: { ...spHeaders(), "Content-Type": "text/html; charset=utf-8" },
+        body: html,
+        label: "sharepoint/upload-html",
+        timeoutMs: 30_000,
+        retries: 1,
+      });
+    } catch (e) {
+      const msg = isApiError(e) ? e.message : String(e);
+      fail({ stage: "sharepoint_upload", code: isApiError(e) ? e.code : "upstream_failed",
+        message_en: `SharePoint upload network failure: ${msg}`,
+        message_ar: `فشل اتصال SharePoint أثناء الرفع: ${msg}` });
+    }
     if (!up.ok) await failFromResponse("sharepoint_upload", up);
     const item = (await up.json()) as { id: string; name: string; webUrl: string; size: number };
 
@@ -332,16 +357,31 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       }</p>
       <p>🔗 <a href="${escapeHtml(finalUrl)}">Open report in SharePoint</a></p>
     </div>`;
-    const teamsRes = await fetch(
-      `${TEAMS_GW}/teams/${encodeURIComponent(data.teamId)}/channels/${encodeURIComponent(
-        data.channelId,
-      )}/messages`,
-      {
-        method: "POST",
-        headers: { ...teamsHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ body: { contentType: "html", content: teamsHtml } }),
-      },
-    );
+    let teamsRes: Response;
+    try {
+      teamsRes = await httpFetch(
+        `${TEAMS_GW}/teams/${encodeURIComponent(data.teamId)}/channels/${encodeURIComponent(
+          data.channelId,
+        )}/messages`,
+        {
+          method: "POST",
+          headers: { ...teamsHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ body: { contentType: "html", content: teamsHtml } }),
+          label: "teams/post",
+          timeoutMs: 20_000,
+          retries: 1,
+        },
+      );
+    } catch (e) {
+      const msg = isApiError(e) ? e.message : String(e);
+      fail({
+        stage: "teams_post",
+        code: isApiError(e) ? e.code : "upstream_failed",
+        message_en: `Report archived to SharePoint, but Teams network failed: ${msg}`,
+        message_ar: `تمت الأرشفة، لكن فشل اتصال Teams: ${msg}`,
+        raw: JSON.stringify({ shareUrl: finalUrl }),
+      });
+    }
     if (!teamsRes.ok) {
       // SharePoint succeeded — surface a partial-success error so the UI can
       // still show the uploaded report link even when Teams posting failed.
