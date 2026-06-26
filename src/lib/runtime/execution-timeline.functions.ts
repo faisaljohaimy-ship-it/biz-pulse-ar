@@ -17,6 +17,8 @@ export type TimelinePhase =
   | "failed"
   | "rolled_back";
 
+type JsonVal = string | number | boolean | null | { [k: string]: JsonVal } | JsonVal[];
+
 export type TimelineEntry = {
   id: string;
   phase: TimelinePhase;
@@ -27,9 +29,14 @@ export type TimelineEntry = {
   duration_ms: number | null;
   trace_id: string | null;
   error: string | null;
-  request: unknown | null;
-  response: unknown | null;
+  request: JsonVal;
+  response: JsonVal;
   raw_kind: "workflow_run" | "step_run" | "tool_exec" | "audit_log" | "event";
+};
+
+export type ExecutionTimelineResult = {
+  entries: TimelineEntry[];
+  summary: { total: number; failed: number; completed: boolean; duration_ms: number | null };
 };
 
 const Input = z.object({
@@ -38,10 +45,19 @@ const Input = z.object({
   traceId: z.string().min(4).optional(),
 });
 
+function asJson(v: unknown): JsonVal {
+  if (v === undefined) return null;
+  try {
+    return JSON.parse(JSON.stringify(v)) as JsonVal;
+  } catch {
+    return null;
+  }
+}
+
 export const getExecutionTimeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
-  .handler(async ({ data, context }): Promise<{ entries: TimelineEntry[]; summary: { total: number; failed: number; completed: boolean; duration_ms: number | null } }> => {
+  .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = context.supabase as any;
     const entries: TimelineEntry[] = [];
