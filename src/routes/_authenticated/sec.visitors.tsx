@@ -74,7 +74,7 @@ function VisitorsPage() {
           <tbody>
             {isLoading && (<tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">جارٍ التحميل…</td></tr>)}
             {!isLoading && visitors.length === 0 && (
-              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">لا يوجد زوار مسجلون. ابدأ بإضافة زائر.</td></tr>
+              <tr><td colSpan={10} className="px-3 py-6 text-center"><LiveStatus variant="monitoring" hint="استقبال الزوار جاهز — لا زيارات نشطة" size="sm" /></td></tr>
             )}
             {visitors.map((v) => (
               <tr key={v.id} className="border-t border-border">
