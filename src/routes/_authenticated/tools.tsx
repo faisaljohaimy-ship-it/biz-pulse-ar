@@ -94,6 +94,17 @@ function ToolsRuntime() {
         <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "فشل (24س)" : "Failed (24h)"}</div><div className="text-2xl font-bold text-rose-300">{totals.failed24h}</div></Card>
       </div>
 
+      <div className="relative">
+        <Search className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={ar ? "بحث: الاسم، الوصف، الفئة، الصلاحية…" : "Search by name, description, category, capability…"}
+          className="h-9 ps-9 text-xs"
+          aria-label={ar ? "بحث الأدوات" : "Search tools"}
+        />
+      </div>
+
       {isLoading ? (
         <Card className="p-6 glass-card"><LiveStatus variant="initializing" label={ar ? "تحميل السجل..." : "Loading registry..."} /></Card>
       ) : grouped.length === 0 ? (
