@@ -214,11 +214,26 @@ export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
       saveToSentItems: true,
     };
 
-    const mr = await fetch(`${OUT_GW}/me/sendMail`, {
-      method: "POST",
-      headers: { ...outlookHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify(message),
-    });
+    let mr: Response;
+    try {
+      mr = await httpFetch(`${OUT_GW}/me/sendMail`, {
+        method: "POST",
+        headers: { ...outlookHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(message),
+        label: "outlook/sendMail",
+        timeoutMs: 30_000,
+        retries: 1,
+      });
+    } catch (e) {
+      const msg = isApiError(e) ? e.message : String(e);
+      fail({
+        stage: "teams_post" as PublishStage,
+        code: isApiError(e) ? e.code : "upstream_failed",
+        message_en: `Report archived to SharePoint, but Outlook network failed: ${msg}`,
+        message_ar: `تمت الأرشفة، لكن فشل اتصال Outlook: ${msg}`,
+        raw: JSON.stringify({ pdf: pdfShare ?? pdfItem.webUrl, xlsx: xlsxShare ?? xlsxItem.webUrl }),
+      });
+    }
     if (!mr.ok) {
       // Partial success: SharePoint succeeded; surface error with the share URLs
       let raw = "", code = "", providerMsg = "";
