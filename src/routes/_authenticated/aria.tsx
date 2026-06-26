@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -34,14 +36,17 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/aria")({
+  validateSearch: z.object({ prompt: z.string().optional() }),
   component: AriaConsole,
 });
 
 type Turn = { id: string; question: string; result: PipelineResult | null; error?: string };
 
 function AriaConsole() {
+  const { prompt: prefill } = Route.useSearch();
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(prefill ?? "");
+  useEffect(() => { if (prefill) setDraft(prefill); }, [prefill]);
   const qc = useQueryClient();
   const runFn = useServerFn(runAriaPipeline);
   const generateFn = useServerFn(generateAriaReport);

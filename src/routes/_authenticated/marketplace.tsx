@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Store, Sparkles, Image, FileText, Languages, Calculator, Brain, Code2, Mic, BarChart3, Search, Wand2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section, ModuleCard } from "@/components/page-header";
@@ -10,18 +10,25 @@ export const Route = createFileRoute("/_authenticated/marketplace")({
   component: MarketplacePage,
 });
 
-const TOOLS = [
-  { icon: Sparkles, key: "summarize", cat: "text" },
-  { icon: Image, key: "image_gen", cat: "media" },
-  { icon: FileText, key: "doc_qa", cat: "docs" },
-  { icon: Languages, key: "translate", cat: "text" },
-  { icon: Calculator, key: "spreadsheet", cat: "data" },
-  { icon: Brain, key: "research", cat: "research" },
-  { icon: Code2, key: "code_review", cat: "dev" },
-  { icon: Mic, key: "transcribe", cat: "media" },
-  { icon: BarChart3, key: "data_viz", cat: "data" },
-  { icon: Search, key: "web_search", cat: "research" },
-  { icon: Wand2, key: "rewrite", cat: "text" },
+// Each tool routes to a real working workspace. /aria accepts ?prompt= to prefill.
+const TOOLS: Array<{
+  icon: typeof Sparkles;
+  key: string;
+  cat: string;
+  to: string;
+  prompt?: string;
+}> = [
+  { icon: Sparkles, key: "summarize", cat: "text", to: "/aria", prompt: "لخّص الوثيقة التالية بأهم النقاط التنفيذية:" },
+  { icon: Image, key: "image_gen", cat: "media", to: "/aria", prompt: "أنشئ صورة احترافية بمواصفات:" },
+  { icon: FileText, key: "doc_qa", cat: "docs", to: "/aria-documents" },
+  { icon: Languages, key: "translate", cat: "text", to: "/aria", prompt: "ترجم النص التالي بدقة وسياق احترافي:" },
+  { icon: Calculator, key: "spreadsheet", cat: "data", to: "/aria-documents" },
+  { icon: Brain, key: "research", cat: "research", to: "/aria", prompt: "أجرِ بحثاً عميقاً متعدد المصادر حول:" },
+  { icon: Code2, key: "code_review", cat: "dev", to: "/aria", prompt: "راجع الكود التالي واقترح تحسينات:" },
+  { icon: Mic, key: "transcribe", cat: "media", to: "/voice" },
+  { icon: BarChart3, key: "data_viz", cat: "data", to: "/analytics" },
+  { icon: Search, key: "web_search", cat: "research", to: "/aria", prompt: "ابحث في الإنترنت عن أحدث المعلومات حول:" },
+  { icon: Wand2, key: "rewrite", cat: "text", to: "/aria", prompt: "أعد صياغة النص التالي بأسلوب احترافي:" },
 ];
 
 const NAMES: Record<string, { ar: string; en: string; d_ar: string; d_en: string }> = {
@@ -41,8 +48,8 @@ const NAMES: Record<string, { ar: string; en: string; d_ar: string; d_en: string
 function MarketplacePage() {
   const { t, locale } = useI18n();
   const [q, setQ] = useState("");
-  const filtered = TOOLS.filter((t) =>
-    !q || NAMES[t.key].ar.includes(q) || NAMES[t.key].en.toLowerCase().includes(q.toLowerCase()),
+  const filtered = TOOLS.filter((tool) =>
+    !q || NAMES[tool.key].ar.includes(q) || NAMES[tool.key].en.toLowerCase().includes(q.toLowerCase()),
   );
 
   return (
@@ -62,6 +69,7 @@ function MarketplacePage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((tool) => {
           const n = NAMES[tool.key];
+          const search = tool.prompt ? { prompt: tool.prompt } : undefined;
           return (
             <ModuleCard
               key={tool.key}
@@ -70,8 +78,10 @@ function MarketplacePage() {
               description={locale === "ar" ? n.d_ar : n.d_en}
               tag={tool.cat}
             >
-              <Button size="sm" variant="outline" className="w-full">
-                {locale === "ar" ? "تفعيل" : "Activate"}
+              <Button size="sm" variant="outline" className="w-full" asChild>
+                <Link to={tool.to} search={search as never}>
+                  {locale === "ar" ? "تفعيل" : "Activate"}
+                </Link>
               </Button>
             </ModuleCard>
           );
@@ -80,3 +90,4 @@ function MarketplacePage() {
     </Section>
   );
 }
+
