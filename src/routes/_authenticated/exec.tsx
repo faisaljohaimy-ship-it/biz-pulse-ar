@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import {
   listToolRegistry,
   listToolExecutions,
@@ -10,19 +10,23 @@ import {
   listRecentEvents,
   runTool,
   approveToolExecution,
+  rollbackToolExecution,
   triggerWorkflowFn,
   listAgents,
   listAgentRuns,
   runAgentFn,
 } from "@/lib/exec.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { WorkflowRunDetail } from "@/components/exec/workflow-run-detail";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles } from "lucide-react";
+import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/exec")({
   component: ExecConsole,
@@ -84,8 +88,36 @@ function statusBadge(status: string) {
 }
 
 function ExecConsole() {
+  const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
   const [inputText, setInputText] = useState("{}");
+  const [openRunId, setOpenRunId] = useState<string | null>(null);
+
+  // Realtime: invalidate queries on workflow_runs / tool_executions changes
+  useEffect(() => {
+    const ch = supabase
+      .channel("exec-console")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "workflow_runs" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "runs"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tool_executions" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "execs"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "enterprise_events" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "events"] }),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [qc]);
+
 
   const tools = useQuery({
     queryKey: ["exec", "tools"],
@@ -122,8 +154,10 @@ function ExecConsole() {
 
   const runFn = useServerFn(runTool);
   const approveFn = useServerFn(approveToolExecution);
+  const rollbackFn = useServerFn(rollbackToolExecution);
   const triggerFn = useServerFn(triggerWorkflowFn);
   const runAgentSF = useServerFn(runAgentFn);
+
 
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentGoal, setAgentGoal] = useState("");
@@ -174,6 +208,16 @@ function ExecConsole() {
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  const rollbackMut = useMutation({
+    mutationFn: (id: string) => rollbackFn({ data: { executionId: id } }),
+    onSuccess: () => {
+      toast.success("Execution rolled back");
+      void execs.refetch();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
 
   const triggerMut = useMutation({
     mutationFn: (id: string) => triggerFn({ data: { workflowId: id } }),
@@ -364,6 +408,19 @@ function ExecConsole() {
                         </Button>
                       </div>
                     )}
+                    {e.status === "succeeded" && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1 text-orange-300"
+                        disabled={rollbackMut.isPending}
+                        onClick={() => rollbackMut.mutate(e.id)}
+                      >
+                        <RotateCcw className="size-3" />
+                        Rollback
+                      </Button>
+                    )}
+
                     <details className="text-xs">
                       <summary className="cursor-pointer text-muted-foreground">
                         I/O
@@ -436,32 +493,46 @@ function ExecConsole() {
                       started_at: string;
                       error: string | null;
                     }) => (
-                      <li
-                        key={r.id}
-                        className="p-3 rounded-md border space-y-1"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs">
-                            {r.workflow_id.slice(0, 8)}…
-                          </span>
-                          {statusBadge(r.status)}
-                        </div>
-                        {r.current_step && (
-                          <div className="text-xs text-muted-foreground">
-                            step: {r.current_step}
+                      <li key={r.id}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenRunId(r.id)}
+                          className="w-full text-start p-3 rounded-md border space-y-1 hover:bg-accent/30 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs">
+                              {r.workflow_id.slice(0, 8)}…
+                            </span>
+                            {statusBadge(r.status)}
                           </div>
-                        )}
-                        {r.error && (
-                          <div className="text-xs text-red-300">{r.error}</div>
-                        )}
+                          <div className="text-[11px] text-muted-foreground font-mono">
+                            {new Date(r.started_at).toLocaleString()}
+                          </div>
+                          {r.current_step && (
+                            <div className="text-xs text-muted-foreground">
+                              step: {r.current_step}
+                            </div>
+                          )}
+                          {r.error && (
+                            <div className="text-xs text-red-300 line-clamp-2">
+                              {r.error}
+                            </div>
+                          )}
+                        </button>
                       </li>
                     ),
+                  )}
+                  {!runs.data?.length && (
+                    <li className="text-sm text-muted-foreground text-center p-4">
+                      No runs yet.
+                    </li>
                   )}
                 </ul>
               </ScrollArea>
             </Card>
           </div>
         </TabsContent>
+
 
         <TabsContent value="agents">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -658,6 +729,12 @@ function ExecConsole() {
           </Card>
         </TabsContent>
       </Tabs>
+      <WorkflowRunDetail
+        runId={openRunId}
+        open={!!openRunId}
+        onOpenChange={(v) => !v && setOpenRunId(null)}
+      />
     </div>
   );
 }
+
