@@ -326,6 +326,8 @@ function OperationsCockpit() {
               <span className="text-foreground/80 text-right">{fmt(k?.contractors_active)}</span>
             </div>
           </div>
+
+          <EnterpriseActivityFeed height="h-[360px]" compact filter={{ limit: 40 }} />
         </aside>
       </main>
       </div>
