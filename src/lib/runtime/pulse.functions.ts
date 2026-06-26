@@ -231,6 +231,113 @@ export const runtimePulse = createServerFn({ method: "POST" })
       eventsPublished++;
     }
 
+    // 5) Simulate tool executions (close stale running, start a few new).
+    const toolCutoff = new Date(Date.now() - 20_000).toISOString();
+    const { data: staleTools } = await supabaseAdmin
+      .from("tool_executions")
+      .select("id, tool_id, started_at")
+      .eq("org_id", orgId)
+      .eq("status", "running")
+      .lt("started_at", toolCutoff)
+      .limit(6);
+    if (staleTools) {
+      for (const t of staleTools) {
+        const ok = Math.random() > 0.1;
+        const dur = Date.now() - new Date(t.started_at as string).getTime();
+        await supabaseAdmin
+          .from("tool_executions")
+          .update({
+            status: ok ? "succeeded" : "failed",
+            finished_at: new Date().toISOString(),
+            duration_ms: dur,
+            output_json: ok ? { ok: true } : null,
+            error: ok ? null : "Transient downstream error",
+          })
+          .eq("id", t.id);
+        await publishEvent(supabase, {
+          topic: ok ? "tool.succeeded" : "tool.failed",
+          source: "tool.runtime",
+          severity: ok ? "info" : "warn",
+          subject_type: "tool_execution",
+          subject_id: t.id,
+          org_id: orgId,
+          actor_id: userId,
+          duration_ms: dur,
+          payload: { tool_id: t.tool_id },
+          metrics: { duration_ms: dur },
+        });
+        eventsPublished++;
+      }
+    }
+    const { data: tools } = await supabaseAdmin
+      .from("tool_registry")
+      .select("id, requires_approval")
+      .eq("enabled", true)
+      .eq("requires_approval", false)
+      .limit(40);
+    if (tools && tools.length > 0) {
+      const toRun = pickN(tools, 1 + Math.floor(Math.random() * 3));
+      for (const tool of toRun) {
+        const { data: ins } = await supabaseAdmin
+          .from("tool_executions")
+          .insert({
+            tool_id: tool.id,
+            actor_id: userId,
+            status: "running",
+            input_json: { autonomous: true, cycle: Date.now() },
+            started_at: new Date().toISOString(),
+            attempt: 1,
+            org_id: orgId,
+          })
+          .select("id")
+          .single();
+        if (ins?.id) {
+          await publishEvent(supabase, {
+            topic: "tool.started",
+            source: "tool.runtime",
+            severity: "info",
+            subject_type: "tool_execution",
+            subject_id: ins.id,
+            org_id: orgId,
+            actor_id: userId,
+            payload: { tool_id: tool.id },
+          });
+          eventsPublished++;
+        }
+      }
+    }
+
+    // 6) Occasionally publish an executive briefing (~ every ~10 cycles).
+    if (Math.random() < 0.1) {
+      const titles = [
+        "Western Region — Operational Pulse",
+        "Cross-Site Risk Outlook",
+        "Compliance & Permit Posture",
+        "Maintenance Backlog Review",
+        "Incident Response Effectiveness",
+      ];
+      const t = pick(titles);
+      await supabaseAdmin.from("executive_briefings").insert({
+        org_id: orgId,
+        user_id: userId,
+        title: t,
+        title_en: t,
+        summary: "Autonomous runtime summary: KPIs stable, residual risks under active mitigation.",
+        summary_en: "Autonomous runtime summary: KPIs stable, residual risks under active mitigation.",
+        generated_at: new Date().toISOString(),
+      });
+      await publishEvent(supabase, {
+        topic: "briefing.published",
+        source: "exec.briefings",
+        severity: "notice",
+        org_id: orgId,
+        actor_id: userId,
+        subject_type: "briefing",
+        payload: { title: t },
+      });
+      eventsPublished++;
+    }
+
     return {
       agents: agentsStarted,
       events: eventsPublished,
