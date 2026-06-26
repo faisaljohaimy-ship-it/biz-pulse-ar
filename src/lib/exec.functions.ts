@@ -321,3 +321,270 @@ export const runAgentFn = createServerFn({ method: "POST" })
     });
     return toJson(res);
   });
+
+/* ---------------------------- Agent Operations -------------------------- */
+
+type AgentDefRow = {
+  id: string;
+  name: string;
+  goal: string;
+  model: string;
+  enabled: boolean;
+  tool_allowlist: string[] | null;
+  permissions: string[] | null;
+  metadata: Record<string, unknown> | null;
+  updated_at: string;
+};
+
+type AgentRunAgg = {
+  agent_id: string;
+  status: string;
+  started_at: string;
+  finished_at: string | null;
+};
+
+export type AgentOpsRecord = {
+  id: string;
+  name: string;
+  goal: string;
+  model: string;
+  enabled: boolean;
+  tool_allowlist: string[];
+  permissions: string[];
+  metadata: JsonValue;
+  updated_at: string;
+  state: "running" | "queued" | "failed" | "idle" | "ready" | "disabled";
+  total_runs: number;
+  succeeded: number;
+  failed: number;
+  cancelled: number;
+  running: number;
+  success_rate: number;
+  avg_duration_ms: number | null;
+  last_status: string | null;
+  last_run_at: string | null;
+  last_finished_at: string | null;
+};
+
+export type AgentOpsOverview = {
+  agents: AgentOpsRecord[];
+  system: {
+    agents_total: number;
+    agents_enabled: number;
+    agents_running: number;
+    agents_failed: number;
+    agents_idle: number;
+    agents_ready: number;
+    agents_disabled: number;
+    runs_window_total: number;
+    runs_today: number;
+    avg_duration_ms: number | null;
+    queue_length: number;
+    window_days: number;
+  };
+};
+
+export const getAgentOpsOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const windowDays = 30;
+    const since = new Date(
+      Date.now() - windowDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const defsRes = await (context.supabase as any)
+      .from("agent_definitions")
+      .select(
+        "id, name, goal, model, enabled, tool_allowlist, permissions, metadata, updated_at",
+      )
+      .order("name", { ascending: true });
+    if (defsRes.error) throw new Error(defsRes.error.message);
+    const defs = (defsRes.data ?? []) as AgentDefRow[];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const runsRes = await (context.supabase as any)
+      .from("agent_runs")
+      .select("agent_id, status, started_at, finished_at")
+      .gte("started_at", since)
+      .order("started_at", { ascending: false })
+      .limit(5000);
+    if (runsRes.error) throw new Error(runsRes.error.message);
+    const runs = (runsRes.data ?? []) as AgentRunAgg[];
+
+    const byAgent = new Map<string, AgentRunAgg[]>();
+    for (const r of runs) {
+      const list = byAgent.get(r.agent_id) ?? [];
+      list.push(r);
+      byAgent.set(r.agent_id, list);
+    }
+
+    const todayCutoff = new Date();
+    todayCutoff.setHours(0, 0, 0, 0);
+    const todayIso = todayCutoff.toISOString();
+
+    const agents: AgentOpsRecord[] = defs.map((d) => {
+      const list = byAgent.get(d.id) ?? [];
+      const succeeded = list.filter((r) => r.status === "succeeded").length;
+      const failed = list.filter((r) => r.status === "failed").length;
+      const cancelled = list.filter((r) => r.status === "cancelled").length;
+      const queued = list.filter((r) => r.status === "queued").length;
+      const runningOnly = list.filter((r) => r.status === "running").length;
+      const running = queued + runningOnly;
+      const finished = succeeded + failed + cancelled;
+      const success_rate = finished
+        ? Math.round((succeeded / finished) * 100)
+        : 0;
+
+      const durations = list
+        .filter((r) => r.finished_at)
+        .map(
+          (r) =>
+            new Date(r.finished_at as string).getTime() -
+            new Date(r.started_at).getTime(),
+        )
+        .filter((ms) => ms >= 0 && ms < 60 * 60 * 1000);
+      const avg_duration_ms = durations.length
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+        : null;
+
+      const last = list[0] ?? null;
+      const lastFinished = list.find((r) => r.finished_at) ?? null;
+
+      let state: AgentOpsRecord["state"];
+      if (!d.enabled) state = "disabled";
+      else if (runningOnly > 0) state = "running";
+      else if (queued > 0) state = "queued";
+      else if (last?.status === "failed") state = "failed";
+      else if (lastFinished) state = "idle";
+      else state = "ready";
+
+      return {
+        id: d.id,
+        name: d.name,
+        goal: d.goal,
+        model: d.model,
+        enabled: d.enabled,
+        tool_allowlist: d.tool_allowlist ?? [],
+        permissions: d.permissions ?? [],
+        metadata: toJson(d.metadata ?? {}),
+        updated_at: d.updated_at,
+        state,
+        total_runs: list.length,
+        succeeded,
+        failed,
+        cancelled,
+        running,
+        success_rate,
+        avg_duration_ms,
+        last_status: last?.status ?? null,
+        last_run_at: last?.started_at ?? null,
+        last_finished_at: lastFinished?.finished_at ?? null,
+      };
+    });
+
+    const runs_today = runs.filter((r) => r.started_at >= todayIso).length;
+    const allDurations = runs
+      .filter((r) => r.finished_at)
+      .map(
+        (r) =>
+          new Date(r.finished_at as string).getTime() -
+          new Date(r.started_at).getTime(),
+      )
+      .filter((ms) => ms >= 0 && ms < 60 * 60 * 1000);
+
+    return {
+      agents,
+      system: {
+        agents_total: agents.length,
+        agents_enabled: agents.filter((a) => a.enabled).length,
+        agents_running: agents.filter((a) => a.state === "running").length,
+        agents_failed: agents.filter((a) => a.state === "failed").length,
+        agents_idle: agents.filter((a) => a.state === "idle").length,
+        agents_ready: agents.filter((a) => a.state === "ready").length,
+        agents_disabled: agents.filter((a) => a.state === "disabled").length,
+        runs_window_total: runs.length,
+        runs_today,
+        avg_duration_ms: allDurations.length
+          ? Math.round(
+              allDurations.reduce((a, b) => a + b, 0) / allDurations.length,
+            )
+          : null,
+        queue_length: runs.filter(
+          (r) => r.status === "running" || r.status === "queued",
+        ).length,
+        window_days: windowDays,
+      },
+    };
+  });
+
+const SetEnabledSchema = z.object({
+  agentId: z.string().min(1),
+  enabled: z.boolean(),
+});
+
+export const setAgentEnabled = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => SetEnabledSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (context.supabase as any)
+      .from("agent_definitions")
+      .update({ enabled: data.enabled, updated_at: new Date().toISOString() })
+      .eq("id", data.agentId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const AgentRunIdSchema = z.object({ runId: z.string().uuid() });
+
+export const cancelAgentRun = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AgentRunIdSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: row, error: e1 } = await (context.supabase as any)
+      .from("agent_runs")
+      .select("status")
+      .eq("id", data.runId)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!row) throw new Error("Run not found");
+    if (row.status !== "running" && row.status !== "queued") {
+      throw new Error(`Cannot cancel run in state: ${row.status}`);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (context.supabase as any)
+      .from("agent_runs")
+      .update({
+        status: "cancelled",
+        error: "Cancelled by operator",
+        finished_at: new Date().toISOString(),
+      })
+      .eq("id", data.runId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const retryAgentRun = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AgentRunIdSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: row, error } = await (context.supabase as any)
+      .from("agent_runs")
+      .select("agent_id, goal_override, context_json")
+      .eq("id", data.runId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Run not found");
+    const res = await runAgent(context.supabase, {
+      agentId: row.agent_id as string,
+      actorId: context.userId,
+      goalOverride: (row.goal_override as string | null) ?? null,
+      context: (row.context_json as Record<string, unknown> | null) ?? null,
+    });
+    return toJson(res);
+  });
