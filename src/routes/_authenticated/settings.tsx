@@ -123,6 +123,20 @@ function SettingsPage() {
         </p>
       </header>
 
+      <Link
+        to="/settings/microsoft"
+        className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 hover:bg-muted/40 transition"
+      >
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg border border-border/60 bg-background p-2"><Plug className="h-4 w-4" /></div>
+          <div>
+            <div className="text-sm font-medium">{locale === "ar" ? "تكامل Microsoft Identity" : "Microsoft Identity Integration"}</div>
+            <div className="text-xs text-muted-foreground">{locale === "ar" ? "Tenant، Client ID، عناوين إعادة التوجيه، واختبار Microsoft Graph" : "Tenant, client ID, redirect URIs, and Microsoft Graph test"}</div>
+          </div>
+        </div>
+        <span className="text-xs text-muted-foreground">{locale === "ar" ? "للمسؤولين" : "Admin"}</span>
+      </Link>
+
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           <TabsTrigger value="profile" className="gap-2"><User className="h-4 w-4" />{locale === "ar" ? "الملف" : "Profile"}</TabsTrigger>
