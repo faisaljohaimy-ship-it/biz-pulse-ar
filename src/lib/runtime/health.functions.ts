@@ -69,25 +69,20 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     }
 
     // Workflow Engine
-    const [{ data: wfDefs }, { data: lastWfRun }] = await Promise.all([
-      supabaseAdmin
-        .from("workflows")
-        .select("id", { count: "exact", head: false })
-        .eq("org_id", orgId)
-        .eq("enabled", true),
-      supabaseAdmin
-        .from("workflow_runs")
-        .select("id, status, started_at, error")
-        .eq("org_id", orgId)
-        .order("started_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-        .then((r) => ({ data: r.data })),
-    ]);
+    const { data: wfDefs } = await supabaseAdmin
+      .from("workflows")
+      .select("id")
+      .eq("org_id", orgId)
+      .eq("enabled", true);
+    const { data: lastWfRun } = await supabaseAdmin
+      .from("workflow_runs")
+      .select("id, status, started_at, error")
+      .eq("org_id", orgId)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     const wfCount = wfDefs?.length ?? 0;
-    const lastWfMin = minutesAgo(
-      (lastWfRun?.data as { started_at?: string } | null)?.started_at ?? null,
-    );
+    const lastWfMin = minutesAgo(lastWfRun?.started_at ?? null);
     subs.push({
       id: "workflow_engine",
       label: "Workflow Engine",
@@ -102,11 +97,9 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       evidence: {
         workflows_enabled: wfCount,
         last_run_minutes_ago: lastWfMin,
-        last_run_status:
-          (lastWfRun?.data as { status?: string } | null)?.status ?? null,
+        last_run_status: lastWfRun?.status ?? null,
       },
-      reason:
-        wfCount === 0 ? "No enabled workflows for this org." : undefined,
+      reason: wfCount === 0 ? "No enabled workflows for this org." : undefined,
     });
 
     // Agent Runtime
