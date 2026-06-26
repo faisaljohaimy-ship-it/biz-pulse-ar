@@ -1,17 +1,29 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
+export type EventSeverity = "debug" | "info" | "notice" | "warn" | "error" | "critical";
+
 export type EnterpriseEvent = {
   topic: string;
-  payload: Record<string, unknown>;
+  payload?: Record<string, unknown>;
   source?: string;
+  severity?: EventSeverity;
   actor_id?: string | null;
+  org_id?: string | null;
   correlation_id?: string | null;
+  subject_type?: string | null;
+  subject_id?: string | null;
+  duration_ms?: number | null;
+  inputs?: Record<string, unknown> | null;
+  outputs?: Record<string, unknown> | null;
+  metrics?: Record<string, unknown> | null;
+  status?: "pending" | "processed" | "dead";
 };
 
 /**
  * Publish a single enterprise event. Insert into enterprise_events; Supabase
- * Realtime fans out to subscribers (workflow triggers + UI observers).
+ * Realtime fans out to subscribers (workflow triggers + UI observers). A
+ * server trigger mirrors every insert into audit_logs (immutable trail).
  * Returns the event id, or null on failure (logged, never thrown).
  */
 export async function publishEvent(
@@ -19,16 +31,26 @@ export async function publishEvent(
   ev: EnterpriseEvent,
 ): Promise<string | null> {
   try {
+    const row: Record<string, unknown> = {
+      topic: ev.topic,
+      payload_json: ev.payload ?? {},
+      source: ev.source ?? "system",
+      severity: ev.severity ?? "info",
+      actor_id: ev.actor_id ?? null,
+      correlation_id: ev.correlation_id ?? null,
+      subject_type: ev.subject_type ?? null,
+      subject_id: ev.subject_id ?? null,
+      duration_ms: ev.duration_ms ?? null,
+      inputs_json: ev.inputs ?? {},
+      outputs_json: ev.outputs ?? {},
+      metrics_json: ev.metrics ?? {},
+      status: ev.status ?? "processed",
+    };
+    if (ev.org_id) row.org_id = ev.org_id;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
       .from("enterprise_events")
-      .insert({
-        topic: ev.topic,
-        payload_json: ev.payload,
-        source: ev.source ?? "system",
-        actor_id: ev.actor_id ?? null,
-        correlation_id: ev.correlation_id ?? null,
-      })
+      .insert(row)
       .select("id")
       .single();
     if (error) {
@@ -40,6 +62,14 @@ export async function publishEvent(
     console.error("[event-bus] publish threw", err);
     return null;
   }
+}
+
+/** Fire-and-forget variant — never awaits, never throws. */
+export function publishEventAsync(
+  supabase: SupabaseClient<Database>,
+  ev: EnterpriseEvent,
+): void {
+  void publishEvent(supabase, ev).catch(() => undefined);
 }
 
 /**
