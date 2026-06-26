@@ -2087,39 +2087,57 @@ export type Database = {
       }
       sec_contractors: {
         Row: {
+          allowed_site_ids: string[]
           compliance_score: number
           contract_no: string
           created_at: string
+          created_by: string | null
+          email: string | null
           expires_at: string | null
           id: string
+          insurance_expiry: string | null
           name: string
           org_id: string
+          permit_types: string[]
+          phone: string | null
           ref: string
           status: string
           updated_at: string
           workers_count: number
         }
         Insert: {
+          allowed_site_ids?: string[]
           compliance_score?: number
           contract_no: string
           created_at?: string
+          created_by?: string | null
+          email?: string | null
           expires_at?: string | null
           id?: string
+          insurance_expiry?: string | null
           name: string
           org_id?: string
+          permit_types?: string[]
+          phone?: string | null
           ref: string
           status?: string
           updated_at?: string
           workers_count?: number
         }
         Update: {
+          allowed_site_ids?: string[]
           compliance_score?: number
           contract_no?: string
           created_at?: string
+          created_by?: string | null
+          email?: string | null
           expires_at?: string | null
           id?: string
+          insurance_expiry?: string | null
           name?: string
           org_id?: string
+          permit_types?: string[]
+          phone?: string | null
           ref?: string
           status?: string
           updated_at?: string
@@ -2897,51 +2915,173 @@ export type Database = {
           },
         ]
       }
+      sec_vehicles: {
+        Row: {
+          check_in_at: string | null
+          check_out_at: string | null
+          company: string | null
+          contractor_id: string | null
+          created_at: string
+          created_by: string | null
+          driver_id_number: string | null
+          driver_name: string
+          driver_phone: string | null
+          gate_id: string | null
+          id: string
+          notes: string | null
+          org_id: string
+          permit_expires_at: string | null
+          permit_no: string | null
+          plate: string
+          ref: string
+          site_id: string | null
+          status: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          company?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          driver_id_number?: string | null
+          driver_name: string
+          driver_phone?: string | null
+          gate_id?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          permit_expires_at?: string | null
+          permit_no?: string | null
+          plate: string
+          ref: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          company?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          driver_id_number?: string | null
+          driver_name?: string
+          driver_phone?: string | null
+          gate_id?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          permit_expires_at?: string | null
+          permit_no?: string | null
+          plate?: string
+          ref?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_vehicles_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "sec_contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_vehicles_gate_id_fkey"
+            columns: ["gate_id"]
+            isOneToOne: false
+            referencedRelation: "sec_gates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_vehicles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_vehicles_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sec_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sec_visitors: {
         Row: {
           badge_no: string | null
           check_in_at: string
           check_out_at: string | null
           created_at: string
+          created_by: string | null
+          expected_at: string | null
           full_name: string
+          gate_id: string | null
           host: string
           id: string
+          id_number: string | null
           org_id: string
           organization: string | null
+          phone: string | null
           purpose: string | null
+          qr_token: string | null
           ref: string
           site_id: string | null
           status: string
+          vehicle_plate: string | null
         }
         Insert: {
           badge_no?: string | null
           check_in_at?: string
           check_out_at?: string | null
           created_at?: string
+          created_by?: string | null
+          expected_at?: string | null
           full_name: string
+          gate_id?: string | null
           host: string
           id?: string
+          id_number?: string | null
           org_id?: string
           organization?: string | null
+          phone?: string | null
           purpose?: string | null
+          qr_token?: string | null
           ref: string
           site_id?: string | null
           status?: string
+          vehicle_plate?: string | null
         }
         Update: {
           badge_no?: string | null
           check_in_at?: string
           check_out_at?: string | null
           created_at?: string
+          created_by?: string | null
+          expected_at?: string | null
           full_name?: string
+          gate_id?: string | null
           host?: string
           id?: string
+          id_number?: string | null
           org_id?: string
           organization?: string | null
+          phone?: string | null
           purpose?: string | null
+          qr_token?: string | null
           ref?: string
           site_id?: string | null
           status?: string
+          vehicle_plate?: string | null
         }
         Relationships: [
           {
@@ -2949,6 +3089,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sec_visitors_gate_id_fkey"
+            columns: ["gate_id"]
+            isOneToOne: false
+            referencedRelation: "sec_gates"
             referencedColumns: ["id"]
           },
           {
