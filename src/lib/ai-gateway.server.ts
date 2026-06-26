@@ -18,7 +18,9 @@ export const LOVABLE_MODELS = [
   { id: "openai/gpt-5", label: "GPT-5" },
 ] as const;
 
-export const DEFAULT_LOVABLE_MODEL = "openai/gpt-5";
+// Default to Gemini 3 Flash — gpt-5 upstream returns 400 with current tool/system payload size.
+// Keep gpt-5 selectable, but not the default until upstream accepts the shape.
+export const DEFAULT_LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 export const createOpenRouterProvider = (
   apiKey: string,
