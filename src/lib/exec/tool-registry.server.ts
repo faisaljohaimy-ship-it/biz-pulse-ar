@@ -1,6 +1,8 @@
 import { z, type ZodTypeAny } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { apiError } from "@/lib/api";
+import { httpFetch, httpJson } from "@/lib/api/http.server";
 
 /**
  * Tool execution context passed to every executor. Supabase client is
@@ -36,16 +38,16 @@ async function lovableConnector(connectorKeyEnv: string, gateway: string) {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const connKey = process.env[connectorKeyEnv];
   if (!lovableKey || !connKey) {
-    throw new Error(
-      `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`,
-    );
+    throw apiError("forbidden", `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`, {
+      details: { connectorKeyEnv },
+    });
   }
   return {
     headers: {
       Authorization: `Bearer ${lovableKey}`,
       "X-Connection-Api-Key": connKey,
       "Content-Type": "application/json",
-    },
+    } as Record<string, string>,
     gateway,
   };
 }
@@ -74,16 +76,12 @@ const outlookSendMail: ToolExecutor = {
         emailAddress: { address: a },
       }));
     }
-    const res = await fetch(`${c.gateway}/me/sendMail`, {
+    await httpJson(`${c.gateway}/me/sendMail`, {
       method: "POST",
       headers: c.headers,
       body: JSON.stringify({ message, saveToSentItems: true }),
+      label: "tool outlook sendMail",
     });
-    if (!res.ok) {
-      throw new Error(
-        `Outlook send failed (${res.status}): ${(await res.text()).slice(0, 300)}`,
-      );
-    }
     return { output: { sent: true, recipients: data.to.length } };
   },
 };
@@ -101,22 +99,15 @@ const teamsPost: ToolExecutor = {
       "MICROSOFT_TEAMS_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_teams",
     );
-    const res = await fetch(
+    const json = await httpJson<{ id?: string }>(
       `${c.gateway}/teams/${encodeURIComponent(data.teamId)}/channels/${encodeURIComponent(data.channelId)}/messages`,
       {
         method: "POST",
         headers: c.headers,
-        body: JSON.stringify({
-          body: { contentType: "html", content: data.content },
-        }),
+        body: JSON.stringify({ body: { contentType: "html", content: data.content } }),
+        label: "tool teams post",
       },
     );
-    if (!res.ok) {
-      throw new Error(
-        `Teams post failed (${res.status}): ${(await res.text()).slice(0, 300)}`,
-      );
-    }
-    const json = (await res.json()) as { id?: string };
     return { output: { messageId: json.id ?? null } };
   },
 };
@@ -139,9 +130,9 @@ const sharepointUpload: ToolExecutor = {
       ch.charCodeAt(0),
     );
     if (bin.byteLength > 4 * 1024 * 1024) {
-      throw new Error("File exceeds 4MB single-shot upload limit");
+      throw apiError("validation_failed", "File exceeds 4MB single-shot upload limit");
     }
-    const res = await fetch(
+    const res = await httpFetch(
       `${c.gateway}/sites/${encodeURIComponent(data.siteId)}/drive/root:/${encodeURIComponent(data.filename)}:/content`,
       {
         method: "PUT",
@@ -151,12 +142,14 @@ const sharepointUpload: ToolExecutor = {
           "Content-Type": "application/octet-stream",
         },
         body: bin,
+        label: "tool sharepoint upload",
       },
     );
     if (!res.ok) {
-      throw new Error(
-        `SharePoint upload failed (${res.status}): ${(await res.text()).slice(0, 300)}`,
-      );
+      throw apiError("upstream_failed", `SharePoint upload failed (${res.status})`, {
+        status: res.status,
+        details: { body: (await res.text().catch(() => "")).slice(0, 300) },
+      });
     }
     const json = (await res.json()) as { id?: string; webUrl?: string };
     return {
@@ -175,16 +168,11 @@ const graphGetUser: ToolExecutor = {
       "MICROSOFT_OUTLOOK_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_outlook",
     );
-    const res = await fetch(
+    const json = await httpJson(
       `${c.gateway}/users/${encodeURIComponent(data.userId)}`,
-      { headers: c.headers },
+      { headers: c.headers, label: "tool graph get_user" },
     );
-    if (!res.ok) {
-      throw new Error(
-        `Graph get_user failed (${res.status}): ${(await res.text()).slice(0, 200)}`,
-      );
-    }
-    return { output: await res.json() };
+    return { output: json };
   },
 };
 
@@ -208,14 +196,15 @@ const restHttp: ToolExecutor = {
     const data = input as z.infer<typeof restHttp.input>;
     const url = new URL(data.url);
     if (!ALLOWED_HOSTS.has(url.hostname)) {
-      throw new Error(
-        `Host ${url.hostname} not in REST allowlist. Add it in tool-registry ALLOWED_HOSTS.`,
-      );
+      throw apiError("forbidden", `Host ${url.hostname} not in REST allowlist. Add it in tool-registry ALLOWED_HOSTS.`, {
+        details: { host: url.hostname },
+      });
     }
-    const res = await fetch(url, {
+    const res = await httpFetch(url, {
       method: data.method,
       headers: data.headers,
       body: data.body == null ? undefined : JSON.stringify(data.body),
+      label: `tool rest ${data.method}`,
     });
     const text = await res.text();
     let parsed: unknown = text;
@@ -225,9 +214,10 @@ const restHttp: ToolExecutor = {
       // keep raw
     }
     if (!res.ok) {
-      throw new Error(
-        `REST ${data.method} ${url.host} failed (${res.status})`,
-      );
+      throw apiError("upstream_failed", `REST ${data.method} ${url.host} failed (${res.status})`, {
+        status: res.status,
+        details: { body: parsed },
+      });
     }
     return { output: { status: res.status, body: parsed } };
   },
@@ -241,13 +231,14 @@ const webhookDispatch: ToolExecutor = {
   }),
   async execute(input) {
     const data = input as z.infer<typeof webhookDispatch.input>;
-    const res = await fetch(data.url, {
+    const res = await httpFetch(data.url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data.payload),
+      label: "tool webhook dispatch",
     });
     if (!res.ok) {
-      throw new Error(`Webhook dispatch failed (${res.status})`);
+      throw apiError("upstream_failed", `Webhook dispatch failed (${res.status})`, { status: res.status });
     }
     return { output: { status: res.status } };
   },

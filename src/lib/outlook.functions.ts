@@ -1,28 +1,38 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { apiError, input, z } from "@/lib/api";
+import { httpJson } from "@/lib/api/http.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
 
-type SendInput = {
-  to: string;
-  subject: string;
-  html: string;
-  cc?: string;
-};
+function outlookHeaders(): Record<string, string> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
+  if (!lovableKey || !outlookKey) {
+    throw apiError("forbidden", "Outlook connector not configured", {
+      details: { connector: "microsoft_outlook" },
+    });
+  }
+  return {
+    Authorization: `Bearer ${lovableKey}`,
+    "X-Connection-Api-Key": outlookKey,
+    "Content-Type": "application/json",
+  };
+}
 
 export const sendOutlookReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: SendInput) => {
-    if (!d?.to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.to)) throw new Error("Invalid recipient");
-    if (!d.subject || d.subject.length > 300) throw new Error("Invalid subject");
-    if (!d.html || d.html.length > 200000) throw new Error("Invalid body");
-    return d;
-  })
+  .inputValidator(
+    input(
+      z.object({
+        to: z.string().email().max(254),
+        subject: z.string().min(1).max(300),
+        html: z.string().min(1).max(200_000),
+        cc: z.string().email().max(254).optional(),
+      }),
+    ),
+  )
   .handler(async ({ data }) => {
-    const lovableKey = process.env.LOVABLE_API_KEY;
-    const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
-    if (!lovableKey || !outlookKey) throw new Error("Outlook connector not configured");
-
     const message: Record<string, unknown> = {
       subject: data.subject,
       body: { contentType: "HTML", content: data.html },
@@ -31,45 +41,19 @@ export const sendOutlookReport = createServerFn({ method: "POST" })
     if (data.cc) {
       message.ccRecipients = [{ emailAddress: { address: data.cc } }];
     }
-
-    const res = await fetch(`${GATEWAY_URL}/me/sendMail`, {
+    await httpJson(`${GATEWAY_URL}/me/sendMail`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        "X-Connection-Api-Key": outlookKey,
-        "Content-Type": "application/json",
-      },
+      headers: outlookHeaders(),
       body: JSON.stringify({ message, saveToSentItems: true }),
+      label: "outlook sendMail",
     });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Outlook send failed (${res.status}): ${txt.slice(0, 300)}`);
-    }
     return { ok: true, sentAt: new Date().toISOString() };
   });
 
 export const listOutlookInbox = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const lovableKey = process.env.LOVABLE_API_KEY;
-    const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
-    if (!lovableKey || !outlookKey) throw new Error("Outlook connector not configured");
-
-    const res = await fetch(
-      `${GATEWAY_URL}/me/messages?$top=10&$select=id,subject,from,receivedDateTime,isRead,bodyPreview&$orderby=receivedDateTime desc`,
-      {
-        headers: {
-          Authorization: `Bearer ${lovableKey}`,
-          "X-Connection-Api-Key": outlookKey,
-        },
-      },
-    );
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Outlook inbox failed (${res.status}): ${txt.slice(0, 300)}`);
-    }
-    const json = (await res.json()) as {
+    const json = await httpJson<{
       value?: Array<{
         id: string;
         subject: string;
@@ -78,6 +62,9 @@ export const listOutlookInbox = createServerFn({ method: "GET" })
         isRead: boolean;
         bodyPreview: string;
       }>;
-    };
+    }>(
+      `${GATEWAY_URL}/me/messages?$top=10&$select=id,subject,from,receivedDateTime,isRead,bodyPreview&$orderby=receivedDateTime desc`,
+      { headers: outlookHeaders(), label: "outlook list inbox" },
+    );
     return { messages: json.value ?? [] };
   });

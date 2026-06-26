@@ -130,14 +130,17 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           toRecipients: [{ emailAddress: { address: args.to } }],
         };
         if (args.cc) message.ccRecipients = [{ emailAddress: { address: args.cc } }];
-        const res = await fetch(`${GW}/microsoft_outlook/me/sendMail`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ message, saveToSentItems: true }),
-        });
-        if (!res.ok) {
-          const txt = await res.text();
-          return { ok: false, error: `Outlook ${res.status}: ${txt.slice(0, 240)}` };
+        try {
+          const { httpJson } = await import("@/lib/api/http.server");
+          await httpJson(`${GW}/microsoft_outlook/me/sendMail`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ message, saveToSentItems: true }),
+            label: "aria-tools outlook sendMail",
+          });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          return { ok: false, error: `Outlook send failed: ${msg.slice(0, 240)}` };
         }
         return { ok: true, sentAt: new Date().toISOString() };
       },
