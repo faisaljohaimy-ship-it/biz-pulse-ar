@@ -1,12 +1,31 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { executeTool, decideApproval } from "./exec/tool-orchestrator.server";
+import {
+  executeTool,
+  decideApproval,
+  rollbackExecution,
+  reapStaleExecutions,
+} from "./exec/tool-orchestrator.server";
 import {
   triggerWorkflow,
+  resumeWorkflowRun,
+  cancelWorkflowRun,
   WorkflowDefinitionSchema,
 } from "./exec/workflow-engine.server";
 import { runAgent } from "./exec/agent-runtime.server";
+
+async function requireAdmin(
+  supabase: unknown,
+  userId: string,
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: isAdmin } = await (supabase as any).rpc("has_role", {
+    _user_id: userId,
+    _role: "admin",
+  });
+  if (!isAdmin) throw new Error("Forbidden: admin role required");
+}
 
 export type JsonValue =
   | string
