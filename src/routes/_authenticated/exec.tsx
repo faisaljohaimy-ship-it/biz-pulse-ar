@@ -438,8 +438,8 @@ function ExecConsole() {
                   </li>
                 ))}
                 {!execs.data?.length && (
-                  <li className="text-sm text-muted-foreground p-4 text-center">
-                    No executions yet.
+                  <li className="p-4 text-center">
+                    <LiveStatus variant="monitoring" hint="Tool runtime online · awaiting executions" size="sm" />
                   </li>
                 )}
               </ul>
