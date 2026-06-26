@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { bootstrapEnterprise, type RuntimeBootstrap } from "./bootstrap.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { InitializingShell } from "./InitializingShell";
+import { useRuntimeScheduler } from "./useRuntimeScheduler";
 
 type RuntimeContextValue = RuntimeBootstrap & {
   refresh: () => Promise<unknown>;
@@ -53,6 +54,9 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
       supabase.removeChannel(channel);
     };
   }, [data, qc]);
+
+  // Autonomous runtime scheduler — enabled once bootstrap data is hydrated.
+  useRuntimeScheduler(!!data);
 
   if (isLoading || !data) {
     return <InitializingShell error={null} />;
