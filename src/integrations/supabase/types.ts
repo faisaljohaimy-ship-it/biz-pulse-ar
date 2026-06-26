@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      _microsoft_sync_config: {
+        Row: {
+          hook_secret: string | null
+          hook_url: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          hook_secret?: string | null
+          hook_url?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          hook_secret?: string | null
+          hook_url?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agent_definitions: {
         Row: {
           created_at: string
@@ -4141,6 +4162,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      microsoft_sync_dispatch: { Args: never; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -4157,6 +4179,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      set_microsoft_sync_secret: {
+        Args: { _secret: string }
+        Returns: undefined
       }
     }
     Enums: {
