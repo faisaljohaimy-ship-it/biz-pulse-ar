@@ -1,100 +1,70 @@
-# NEXUS AI OS — Stabilization Audit (Wave 0)
+# NEXUS AI OS — Stabilization Audit + Ω-003 Wave Progress
 
-_Read-only baseline. No code changed in this wave._
+_Last updated: 2026-06-26 (Ω-003 — Waves 1 + 3 partial)._
 
-Generated: 2026-06-26
-
-## Headline Health
+## Headline Health (current)
 
 | Gate | Result |
 | --- | --- |
 | TypeScript (`tsgo --noEmit`) | **0 errors** |
 | `any` / `as any` in source | **0** |
-| `react-router-dom` imports | **0** (TanStack-only — clean) |
-| `supabase.functions.invoke` calls | **0** (no Edge Functions for app logic — clean) |
-| `NodeJS.Timeout` misuse | **0** |
-| Supabase linter | 12 issues (1 INFO, 11 WARN) — none ERROR |
+| `react-router-dom` imports | **0** |
+| `supabase.functions.invoke` | **0** |
+| Supabase linter | **5 warnings — all accepted** (see `@security-memory`) |
 | Public API routes | 2 (both secret-guarded) |
-| Server functions | 112 (`inputValidator` on 67 → **40% missing validators on input-bearing fns**) |
-| `console.*` statements in `src/` | 94 — must triage |
+| Server functions | 112 (Wave 1 baseline) |
 
-## Inventory
+## Ω-003 Wave 1 — API hardening (foundational primitives shipped)
 
-- **120 route files** total, **76 under `_authenticated/`** (gated by managed `ssr:false` layout — correct pattern).
-- **2 public API routes** (`microsoft-sync`, `executive-reports-run`) — both verify `MICROSOFT_SYNC_HOOK_SECRET` / equivalent bearer.
-- **70+ Supabase tables**, all with RLS policies declared (per project memory). 1 INFO flag = table with RLS enabled but no policy → locks data; investigate.
+New canonical API layer under `src/lib/api/`:
 
-## Hotspots (files > 500 LOC)
+- **`errors.ts`** — `ApiError` class + `apiError(code, message, …)` factory with stable codes (`validation_failed`, `unauthorized`, `forbidden`, `not_found`, `conflict`, `rate_limited`, `upstream_failed`, `upstream_timeout`, `internal_error`). `toApiErrorShape(err)` normalises any thrown value into a serialisable envelope for log + UI consumption.
+- **`validate.ts`** — `input(schema)` and `output(schema, value)` wrappers around Zod that throw the standard `validation_failed` envelope. `emptyInput` for zero-arg server functions.
+- **`http.server.ts`** — `httpFetch` / `httpJson` with hard 15 s timeout, exponential-backoff retries (default 2, honours `Retry-After`), and structured `upstream_timeout` / `upstream_failed` errors.
+- **`index.ts`** — barrel re-export for client-safe pieces only (http stays server-only).
 
-| File | LOC | Risk | Action |
-| --- | --- | --- | --- |
-| `src/routes/index.tsx` | 2104 | Landing hero composes 20+ cinematic components inline | Wave 2: extract sub-sections |
-| `src/components/ai-elements/prompt-input.tsx` | 1463 | Vendored AI elements lib | Leave (third-party shape) |
-| `src/components/executive-overlay.tsx` | 1213 | Floating overlay with many panels | Wave 2: split panels |
-| `src/routes/_authenticated/command-center.tsx` | 993 | Mixed query + view logic | Wave 2: extract hooks |
-| `src/lib/oms.functions.ts` | 878 | 20+ server fns in one file | Wave 3: split by domain (incidents/work-orders/permits) |
-| `src/routes/_authenticated/digital-twin.tsx` | 780 | Heavy three.js scene | Wave 1: memoize geometry |
-| `src/components/ui/sidebar.tsx` | 744 | shadcn vendored | Leave |
-| `src/routes/_authenticated/exec.tsx` | 740 | Exec dashboard with 12 panels | Wave 2: split panels |
-| `src/routes/cinematic-demo.tsx` | 679 | Marketing-only | Wave 2 low-priority |
-| `src/components/sec/oms-dialogs.tsx` | 669 | Six dialogs in one file | Wave 2: split per dialog |
-| `src/routes/_authenticated/executive-reports.tsx` | 618 | Mixed publish + schedule UI | Wave 2: tab files |
-| `src/lib/aria-tools.server.ts` | 616 | 17 tool definitions | Wave 3: split by tool family |
-| `src/lib/exec/workflow-engine.server.ts` | 595 | Core engine — keep cohesive | Leave; add tests |
+### Adoption rules going forward
 
-## Code Quality Findings
+1. Every new `createServerFn` MUST use `input(schema)` instead of inline `z.object(...).parse(...)`.
+2. Every outbound `fetch(...)` from server code MUST be migrated to `httpFetch` / `httpJson` (rolling migration — large-radius refactor deferred to keep diffs small and behaviour-preserving).
+3. Every `throw new Error(...)` in the API layer SHOULD become `throw apiError(...)` so the UI gets a stable `code`.
 
-- **45 of 112 server functions ship without `.inputValidator`** — these accept `data` (or `{}`) without schema validation. Wave 3 must add Zod validators (`z.object({}).strict()` at minimum for empty inputs).
-- **94 `console.*` statements** in client + server code. Wave 1: replace with a single `src/lib/observability.ts` logger (already exists) and gate `console.log` behind dev flag; keep `console.error`.
-- **No duplicate utility files detected** — `src/lib/utils.ts` is the sole canonical home.
-- **No circular dependency report yet** — Wave 1 will run `madge --circular src/`.
+### Wave 1 deferred items (tracked, not yet implemented)
 
-## API Layer
+- 45 server functions still missing `.inputValidator`. Migration to `input(schema)` will happen file-by-file in subsequent passes (high-risk-of-regression files require behavioural tests first).
+- 94 `console.*` statements. Plan: gate `console.log` behind `import.meta.env.DEV`, keep `console.error`, route structured events through `src/lib/observability.ts`.
 
-- All `createServerFn` fns checked use `requireSupabaseAuth` middleware for user data ✓
-- Admin gating via `has_role('admin')` present in `integration-microsoft.functions.ts` ✓
-- **Gap**: no shared `withTimeout()` wrapper around outbound `fetch` calls to Microsoft Graph / Lovable AI Gateway. A hung upstream stalls the request. Wave 3: introduce `AbortSignal.timeout(15000)` helper.
-- **Gap**: error envelopes are inconsistent — `exec-reports.functions.ts` uses `failFromResponse`, others throw raw `Error`. Wave 3: extract to `src/lib/errors.ts`.
+## Ω-003 Wave 3 — DB hygiene (applied)
 
-## Database
+Migration `wave3_db_hardening`:
 
-Supabase linter output (12 items, none ERROR):
+- Revoked `EXECUTE` on `current_org_id()` and `is_org_member(uuid, org_role)` from `anon` and `PUBLIC`. Granted explicitly to `authenticated` + `service_role` (required for RLS evaluation in user-context queries).
+- Added explicit deny-all RLS policy `_microsoft_sync_config_deny_all` so the singleton's lock-down is documented in `pg_policies`.
+- Added table comment recording the access pattern (SECURITY DEFINER helpers only).
 
-| # | Level | Issue | Wave |
-| --- | --- | --- | --- |
-| 1 | INFO | RLS enabled without any policy on 1 table | Wave 4 (identify + add policy or remove RLS) |
-| 2–5 | WARN | 4 functions with mutable `search_path` | Wave 4 (`SET search_path = public` on each) |
-| 6 | WARN | Extension in `public` schema (pgvector / pgmq) | Document as accepted (move = breaking) |
-| 7 | WARN | One RLS policy using `USING (true)` for write op | Wave 4 (tighten) |
-| 8–9 | WARN | 2 SECURITY DEFINER fns callable by `anon` | Wave 4 (REVOKE EXECUTE FROM anon) |
-| 10–12 | WARN | 3 SECURITY DEFINER fns callable by `authenticated` | Wave 4 (REVOKE EXECUTE FROM authenticated where caller isn't user) |
+### Remaining linter output — all accepted
 
-No missing indexes flagged yet — Wave 4 will rerun `supabase--slow_queries` to confirm.
+See `@security-memory` for the rationale per finding:
 
-## Error & Loading
+1. `leads` permissive INSERT (public demo form).
+2. `pgvector` / `pgmq` extensions in `public` (breaking change to move).
+3. `has_role` / `current_org_id` / `is_org_member` executable by `authenticated` (required by RLS policy evaluation).
+4. `_microsoft_sync_config` had RLS without policy (now resolved with deny-all).
 
-- Root route has `notFoundComponent` ✓ (verified earlier).
-- **Gap**: not every authenticated route with a loader sets `errorComponent`. Wave 2 will audit per-route and add a shared `<RouteErrorState/>`.
+## Ω-003 Wave 4 — Component refactoring (not yet started)
 
-## Realtime
+Largest hotspots still standing (no behavioural change yet):
 
-- Per project memory, `workflow_runs` was added to realtime publication. No other subscriptions found in this scan. Wave 1 will grep for `.channel(` and audit cleanup.
+| File | LOC | Planned split |
+| --- | --- | --- |
+| `src/routes/index.tsx` | 2104 | Extract cinematic sections to `src/components/cinematic/sections/*` |
+| `src/components/executive-overlay.tsx` | 1213 | One file per panel under `src/components/exec/overlay/` |
+| `src/routes/_authenticated/command-center.tsx` | 993 | Extract data hooks into `src/lib/command-center/*` |
+| `src/lib/oms.functions.ts` | 878 | Split per domain: `oms/incidents.functions.ts`, `oms/work-orders.functions.ts`, `oms/permits.functions.ts` |
+| `src/routes/_authenticated/digital-twin.tsx` | 780 | Memoise three.js geometry + extract scene components |
 
-## Performance
+Refactoring requires per-file regression checks; deferred to a focused wave so each file can ship with its own verification.
 
-- Largest route bundle: `index.tsx` 2104 LOC + cinematic scenes — Wave 5 candidate for `React.lazy` on below-the-fold sections.
-- `digital-twin.tsx` runs three.js without explicit memoization of geometry — Wave 1 candidate.
+## Next concrete step
 
-## Recommended Wave Order (revised from plan)
-
-Given the very clean TS baseline, accelerate:
-
-1. **Wave 1 (code quality)** — small, mechanical, high-confidence.
-2. **Wave 3 (API hardening: validators + timeout + error envelope)** — biggest risk reduction.
-3. **Wave 4 (DB hygiene)** — pin search_path, revoke EXECUTE, identify policyless table.
-4. **Wave 2 (component standardization)** — largest diff, lowest urgency.
-5. **Wave 5 / 6 (UX + quality gates)** — final pass.
-
-## Next Step
-
-Approve to begin **Wave 1 (Code Quality Sweep)** — mechanical fixes, behavior-preserving, single commit.
+Begin file-by-file migration of existing `createServerFn` definitions onto `input(schema)` + `httpJson(...)` starting with the highest-traffic surfaces (`exec-reports.functions.ts`, `integration-microsoft.functions.ts`, `oms.functions.ts`).
