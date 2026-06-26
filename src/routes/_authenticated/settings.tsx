@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield } from "lucide-react";
+import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield, Plug } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
