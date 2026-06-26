@@ -146,3 +146,63 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
     }).gte("id", "00000000-0000-0000-0000-000000000000");
     return result;
   });
+
+const syncSettingsSchema = z.object({
+  sync_outlook_enabled: z.boolean(),
+  sync_sharepoint_enabled: z.boolean(),
+  sync_interval_minutes: z.number().int().min(5).max(1440),
+});
+
+export const updateMicrosoftSyncSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => syncSettingsSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: existing, error: selErr } = await context.supabase
+      .from("integration_microsoft")
+      .select("id")
+      .maybeSingle();
+    if (selErr && selErr.code !== "PGRST116") throw new Error(selErr.message);
+    if (!existing?.id) throw new Error("Save the integration settings first");
+
+    const { data: updated, error } = await context.supabase
+      .from("integration_microsoft")
+      .update(data)
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return updated as MicrosoftIntegrationRow;
+  });
+
+export const listMicrosoftSyncLog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { data, error } = await context.supabase
+      .from("integration_microsoft_sync_log")
+      .select("*")
+      .order("started_at", { ascending: false })
+      .limit(25);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as MicrosoftSyncLogRow[];
+  });
+
+export const triggerMicrosoftSyncNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ request }): Promise<{ ok: boolean; status: number; body: unknown }> => {
+    // Admin assertion via the auth-middleware client below — actual sync runs in the public hook.
+    const secret = process.env.MICROSOFT_SYNC_HOOK_SECRET;
+    if (!secret) throw new Error("Sync hook not configured");
+    const origin = new URL(request.url).origin;
+    const r = await fetch(`${origin}/api/public/hooks/microsoft-sync`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+      body: "{}",
+    });
+    const text = await r.text();
+    let body: unknown = text;
+    try { body = JSON.parse(text); } catch { /* non-JSON */ }
+    return { ok: r.ok, status: r.status, body };
+  });
+
