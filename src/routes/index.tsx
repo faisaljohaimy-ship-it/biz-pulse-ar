@@ -30,6 +30,7 @@ import { HeroSkyline } from "@/components/cinematic/HeroSkyline";
 import { AriaExecutiveCore, ExecutiveOfficeBackdrop, HoloWidgetRing } from "@/components/cinematic/AriaHeroStage";
 import { HoloAriaStage } from "@/components/cinematic/HoloAriaStage";
 import { AriaInteractiveHero } from "@/components/cinematic/AriaInteractiveHero";
+import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
 import { TrustBar } from "@/components/cinematic/TrustBar";
 import { CinematicAudio } from "@/components/cinematic/CinematicAudio";
