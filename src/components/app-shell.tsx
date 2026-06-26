@@ -41,7 +41,7 @@ import {
   MapPin,
   Play,
   Activity,
-  Wrench, Radio,
+  Wrench, Radio, Stethoscope,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -189,6 +189,9 @@ function useNavGroups(): NavGroup[] {
         { to: "/events", icon: Radio, label: ar(locale, "بث الأحداث", "Event Stream") },
         { to: "/exec", icon: Play, label: ar(locale, "وحدة تحكم التنفيذ", "Execution Console") },
         { to: "/operations", icon: Activity, label: ar(locale, "مركز العمليات الحي", "Operations Center") },
+        { to: "/health", icon: ShieldCheck, label: ar(locale, "صحة المنظومة", "Enterprise Health") },
+        { to: "/diagnostics", icon: Stethoscope, label: ar(locale, "تشخيصات التشغيل", "Runtime Diagnostics") },
+        { to: "/readiness", icon: ShieldCheck, label: ar(locale, "جاهزية الإنتاج", "Production Readiness") },
         { to: "/prompts", icon: BookMarked, label: t("nav.prompts") },
         { to: "/marketplace", icon: Store, label: t("nav.marketplace") },
         { to: "/knowledge", icon: BookOpen, label: t("nav.knowledge") },
