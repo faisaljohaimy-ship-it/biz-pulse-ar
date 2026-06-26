@@ -525,8 +525,8 @@ function ExecConsole() {
                     ),
                   )}
                   {!runs.data?.length && (
-                    <li className="text-sm text-muted-foreground text-center p-4">
-                      No runs yet.
+                    <li className="text-center p-4">
+                      <LiveStatus variant="monitoring" hint="Scheduler online · awaiting first run" size="sm" />
                     </li>
                   )}
                 </ul>
