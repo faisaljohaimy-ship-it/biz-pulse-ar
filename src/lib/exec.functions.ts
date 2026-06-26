@@ -67,13 +67,7 @@ export const approveToolExecution = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ApproveSchema.parse(d))
   .handler(async ({ data, context }) => {
-    // Permission: only admin may approve.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: isAdmin } = await (context.supabase as any).rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden: admin role required");
+    await requireAdmin(context.supabase, context.userId);
     const res = await decideApproval(
       context.supabase,
       context.userId,
@@ -81,6 +75,28 @@ export const approveToolExecution = createServerFn({ method: "POST" })
       data.decision,
     );
     return toJson(res);
+  });
+
+const RollbackSchema = z.object({ executionId: z.string().uuid() });
+
+export const rollbackToolExecution = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => RollbackSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    const res = await rollbackExecution(
+      context.supabase,
+      data.executionId,
+      context.userId,
+    );
+    return toJson(res);
+  });
+
+export const reapStaleToolExecutions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    return reapStaleExecutions(context.supabase);
   });
 
 export const listToolRegistry = createServerFn({ method: "GET" })
