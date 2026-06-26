@@ -173,11 +173,13 @@ export const checkInExpectedVisitor = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
-    const patch: Record<string, unknown> = { status: "inside", check_in_at: new Date().toISOString() };
-    if (data.badge_no) patch.badge_no = data.badge_no;
     const { data: row, error } = await supabase
       .from("sec_visitors")
-      .update(patch)
+      .update({
+        status: "inside",
+        check_in_at: new Date().toISOString(),
+        ...(data.badge_no ? { badge_no: data.badge_no } : {}),
+      })
       .eq("id", data.visitor_id)
       .select("ref")
       .single();
