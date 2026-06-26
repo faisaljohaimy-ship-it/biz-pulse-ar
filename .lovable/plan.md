@@ -1,108 +1,54 @@
-# خطة الوصول إلى 100% — تنفيذ متسلسل لخمس موجات
+# Final Enterprise Polish — Execution Plan
 
-الهدف: رفع نسبة الإنجاز من **45% → 100%** عبر خمس موجات متتالية، كل موجة تُسلَّم كاملة قبل بدء التالية.
+Scope is large. Executing in 5 sequential waves, each independently shippable. No new features, no redesign — only hardening of what exists.
 
----
+## Wave 1 — Schema-Driven Tool Runner (items 1, 2, 3)
 
-## 🌊 الموجة 1 — Workflow Engine الحي (الأولوية القصوى) — يرفع +15%
+**Goal**: replace every raw `{}` JSON textarea with auto-generated forms.
 
-**المشكلة:** `workflows` = 0، Event Bus بلا producers حقيقيين.
+- New `src/components/runtime/JsonSchemaForm.tsx` — recursive renderer for JSON Schema (object/array/string/number/boolean/enum/format). Inline Zod validation, error surfacing, RTL-safe.
+- New `src/components/runtime/ToolRunner.tsx` — reads `tool_registry.input_schema`, renders form, validates, calls `executeToolFn`, streams result.
+- Developer Mode toggle (per-user, localStorage) reveals raw JSON editor as fallback.
+- Replace JSON `<textarea>` panels in `src/routes/_authenticated/tools.tsx` and any agent/workflow trigger dialog with `<ToolRunner>`.
 
-**ما سأبنيه:**
-1. **Seed 5 workflows إنتاجية** في جدول `workflows`:
-   - `incident_response_v1` — حادث P1/P2 → إخطار + work_order تلقائي + ARIA analysis
-   - `permit_approval_v1` — تصريح جديد → فحص contractor → موافقة/رفض
-   - `patrol_overdue_v1` — دورية متأخرة → تنبيه قائد القطاع
-   - `visitor_checkin_v1` — زائر → فحص → تسجيل دخول
-   - `daily_kpi_rollup_v1` — تجميع KPIs يومياً 06:00
-2. **Database triggers** على `sec_incidents`, `sec_permits`, `sec_patrols`, `sec_visitors` تنشر events إلى `enterprise_events` ⇒ تستهلكها pulse وتُنشئ `workflow_runs` حقيقية.
-3. **Workflow executor** يقرأ workflow definition من DB ويُنفّذ steps واقعية (call tool, update record, emit event).
+## Wave 2 — Execution Timeline + Per-Run Detail (items 4, 5, 11)
 
-**Deliverable:** فتح `/workflows` يُظهر 5 templates، إنشاء حادث يُولّد workflow_run مرئي في `/execution`.
+- New `src/lib/runtime/execution-timeline.functions.ts` — server fn that joins `workflow_runs` + `workflow_step_runs` + `tool_executions` + `audit_logs` + `enterprise_events` for one trace_id/run_id; returns ordered timeline with phases: `queued → running → tool → database → workflow → audit → completed | failed | rolled_back`.
+- New `src/components/runtime/ExecutionTimeline.tsx` — vertical stepper with duration, request/response, logs, error, trace id, retry button (calls existing retry server fn).
+- Wire into `src/routes/_authenticated/workflows.tsx` run drawer and tool execution detail.
+- Harden `workflow-engine.server.ts` so every workflow start writes: `workflow_runs` + initial `workflow_step_runs` + `audit_logs` + `enterprise_events` (notifications via existing email queue) in one transaction-equivalent flow.
 
----
+## Wave 3 — Health Dashboard + Runtime Diagnostics (items 6, 7, 14)
 
-## 🌊 الموجة 2 — ARIA RAG + Corpus مؤسسي — يرفع +10%
+- Extend existing `getRuntimeHealth` to include per-connector evidence (last call, error, latency). Already covers most subsystems.
+- New route `src/routes/_authenticated/health.tsx` — grid of subsystem cards (status pill + evidence + reason + "open diagnostics" drawer).
+- New `src/routes/_authenticated/diagnostics.tsx` — live tail of `enterprise_events`, `workflow_runs`, `tool_executions`, `audit_logs` with filters by trace_id/status/topic. Realtime via existing `useLiveRows`.
+- Connector status normalised to `healthy | warning | blocked | offline` with evidence object.
 
-**المشكلة:** `aria_documents` = 0، ARIA بلا ذاكرة طويلة.
+## Wave 4 — Loading/Timeout/Error Hardening (items 8, 9, 10, 12, 13)
 
-**ما سأبنيه:**
-1. **بذر 12 وثيقة مرجعية** في `aria_knowledge` (سياسات الأمن الصناعي، إجراءات الإخلاء، دليل التصاريح، معايير الدوريات، SLA الحوادث... بالعربية).
-2. **توليد embeddings** للوثائق عبر Lovable AI Gateway.
-3. **تفعيل RAG pipeline** في `src/lib/aria/rag.server.ts` ليبحث في `aria_knowledge` + `aria_memory` + `aria_documents` ويحقن السياق في كل محادثة.
-4. **زر "ارفع وثيقة"** في `/aria` للأدمن لإضافة PDF/text بشكل دائم.
+- `useQuery` global defaults: `staleTime`, `retry: 2`, `meta.onError` → toast with root cause from `ApiError`.
+- New `<EmptyState reason=...>` component — every empty list passes a reason from the loader (no rows / org missing / filtered out / waiting for first run).
+- New `src/lib/runtime/timeout-guard.ts` — wraps any inflight `useQuery` with 30s timeout, surfaces `TimeoutError` with subsystem hint.
+- Audit every screen for indefinite spinners; replace with `<LiveStatus />` lifecycle states already in repo.
+- ApiError mapping: surface `error.code + cause + remediation` instead of "Something went wrong".
 
-**Deliverable:** سؤال ARIA "ما إجراء الإخلاء في موقع جدة؟" يُرجع إجابة مستندة لوثيقة مرفقة بالمصدر.
+## Wave 5 — Production Readiness Report (item 15)
 
----
+- New `src/lib/runtime/readiness.functions.ts` — server fn that scores Architecture / Runtime / Security / Reliability / Scalability / Maintainability based on real DB facts (RLS coverage, workflow success rate last 24h, error rate, connector health, audit coverage, RAG corpus size, cron job presence).
+- New route `src/routes/_authenticated/readiness.tsx` — printable report with scores, blockers list, evidence, Enterprise Score, Production Score.
+- Adds a "Generate Report" button that snapshots the report into `aria_reports` for historical tracking.
 
-## 🌊 الموجة 3 — Microsoft 365 Integration حقيقي — يرفع +12%
+## Technical Notes
 
-**المشكلة:** 0 tenants متصلة فعلياً، sync job معطّل.
+- All new server fns use `requireSupabaseAuth` + org middleware; admin client only inside handlers.
+- All new tables: none — every wave reuses existing tables (`workflow_runs`, `tool_executions`, `audit_logs`, `enterprise_events`, `tool_registry`, `aria_reports`).
+- No design tokens added; reuse existing HUD palette in `src/styles.css`.
+- Each wave ends with a typecheck + a manual smoke against `/health`, `/diagnostics`, `/tools`, `/workflows`, `/readiness`.
 
-**ما سأبنيه:**
-1. **OAuth flow كامل** لربط tenant عبر `/settings/microsoft` (Client ID/Secret + Redirect URI جاهزة).
-2. **Token storage آمن** في `integration_microsoft` مع refresh تلقائي.
-3. **Sync فعلي عبر Graph API**: Outlook messages, SharePoint files, Teams channels → يُخزّن المرجع في `integration_microsoft_sync_log`.
-4. **زر "إرسال تقرير لـ Outlook"** في `/exec` يستخدم الاتصال الحقيقي.
+## Confirm before I start
 
-**ملاحظة:** يتطلب من المستخدم إدخال Microsoft App credentials (سيتم توضيح خطوات الحصول عليها).
-
----
-
-## 🌊 الموجة 4 — تقارير تنفيذية مجدولة — يرفع +8%
-
-**المشكلة:** `report_schedules` = 0 جداول نشطة.
-
-**ما سأبنيه:**
-1. **Seed 3 جداول إنتاجية**:
-   - تقرير يومي تنفيذي 07:00 (PDF + Excel)
-   - تقرير أسبوعي شامل (الأحد 06:00)
-   - تقرير شهري للمدير العام (1 من كل شهر)
-2. **pg_cron job** ينادي `/api/public/hooks/executive-reports-run` كل 15 دقيقة لتنفيذ الجداول المستحقة.
-3. **توليد فعلي** عبر `src/lib/reports/builder.server.ts` (يعمل أصلاً) + تخزين في bucket `uploads` + إرسال بالبريد.
-4. **لوحة "آخر التقارير"** في `/exec` تعرض ملفات قابلة للتنزيل.
-
----
-
-## 🌊 الموجة 5 — تشغيل Agents تلقائياً على أحداث حقيقية — يرفع +10%
-
-**المشكلة:** 14 agent معرّفين بلا تشغيل تلقائي.
-
-**ما سأبنيه:**
-1. **Agent triggers** في `pulse.functions.ts`: عند حدث `incident.created` بشدة P1 → تشغيل `risk_intelligence_agent` تلقائياً.
-2. **3 agents فعّالين بالكامل**:
-   - **Risk Intelligence** — يحلّل كل حادث جديد ويُنتج risk_score + توصيات (يكتب في `aria_decisions`)
-   - **Operations Monitor** — يفحص kpis كل 5 دقائق ويُنبّه عند انحراف
-   - **Executive Reporting** — يولّد briefing تلقائياً في نهاية الوردية
-3. **عرض agent_runs الحية** في `/agents` مع stream output (يعمل أصلاً، نُغذّيه بتشغيل حقيقي).
-4. **Audit trail كامل** عبر mirror trigger الموجود.
-
-**Deliverable:** إنشاء حادث P1 يدوياً ⇒ بعد 6 ثواني يظهر agent_run بتحليل ARIA حقيقي + workflow_run + audit_log.
-
----
-
-## 📐 تفاصيل تقنية
-
-**Stack المستخدم:** TanStack Start + Supabase (Lovable Cloud) + Lovable AI Gateway (gpt-5/gemini)، كل الكود ضمن المعمارية الحالية:
-- Migrations للـ schema + seed data
-- `createServerFn` للأعمال الجديدة
-- `pulse.functions.ts` للـ triggers
-- `useLiveRows` للعرض الفوري
-- Zero-Demo Policy: لا أحداث وهمية، كل شيء من DB فعلي
-
-**التحقق بعد كل موجة:**
-- typecheck
-- فتح المسار في الواجهة والتأكد من ظهور بيانات حقيقية
-- تشغيل سيناريو end-to-end واحد
-- تقرير نسبة الإنجاز الجديدة قبل بدء الموجة التالية
-
-**المدة المتوقعة:** ~26 ساعة عمل موزّعة. سأنفّذ موجة كاملة ثم أنتظر إذنك للموجة التالية، أو أتابع تلقائياً إن طلبت ذلك.
-
-## ❓ قرار مطلوب قبل البدء
-
-- **الموجة 3 (Microsoft 365)** تتطلب منك تسجيل تطبيق في Azure Portal والحصول على `Client ID` + `Client Secret` + `Tenant ID`. هل تريد:
-  - (أ) أتابع وأطلب منك القيم عند الوصول للموجة 3، أو
-  - (ب) أؤجّل الموجة 3 إلى الأخير وأنفّذ 1→2→4→5 ثم نعود لـ 3؟
-
-ابدأ الموجة 1 الآن؟
+This is a multi-hour execution. Do you want me to:
+- **(A)** Execute all 5 waves back-to-back without stopping (recommended).
+- **(B)** Ship Wave 1 first for review, then continue.
+- **(C)** Reorder — e.g. start with Wave 5 (Readiness Report) to see the current baseline.

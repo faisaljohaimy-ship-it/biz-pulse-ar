@@ -1,19 +1,21 @@
-// Tools registry — live status with one-click execution. No placeholders.
+// Tools registry — live status with schema-driven execution. No raw JSON.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle, Eye } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
-import { listToolRegistry, runTool } from "@/lib/exec.functions";
-import { toast } from "sonner";
+import { listToolRegistry } from "@/lib/exec.functions";
+import { ToolRunner } from "@/components/runtime/ToolRunner";
+import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 
 export const Route = createFileRoute("/_authenticated/tools")({
   component: ToolsRuntime,
@@ -110,24 +112,11 @@ function ToolsRuntime() {
 }
 
 function ToolCard({ tool, history, ar }: { tool: Tool; history: ToolExec[]; ar: boolean }) {
-  const run = useServerFn(runTool);
-  const [pending, setPending] = useState(false);
+  const [open, setOpen] = useState(false);
   const last = history[0];
   const running = history.filter((h) => h.status === "running" || h.status === "pending").length;
   const last24 = history.filter((h) => Date.now() - new Date(h.created_at).getTime() < 86_400_000);
   const successRate = last24.length ? Math.round((last24.filter((h) => h.status === "succeeded" || h.status === "completed").length / last24.length) * 100) : null;
-
-  const onRun = async () => {
-    setPending(true);
-    try {
-      const res = await run({ data: { toolId: tool.id, input: {} } });
-      toast.success(ar ? "تم التنفيذ" : "Executed", { description: typeof res === "object" && res && "status" in res ? String((res as { status: unknown }).status) : undefined });
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setPending(false);
-    }
-  };
 
   const healthIcon = !last ? Activity : (last.status === "succeeded" || last.status === "completed") ? CheckCircle2 : last.status === "failed" ? AlertTriangle : Loader2;
   const HC = healthIcon;
@@ -165,10 +154,30 @@ function ToolCard({ tool, history, ar }: { tool: Tool; history: ToolExec[]; ar: 
             ))}
           </div>
         </ScrollArea>
-        <Button size="sm" disabled={!tool.enabled || pending} onClick={onRun}>
-          {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
-          <span className="ms-1">{ar ? "تشغيل" : "Run"}</span>
-        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" disabled={!tool.enabled}>
+              <Play className="h-3 w-3" />
+              <span className="ms-1">{ar ? "تشغيل" : "Run"}</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-cyan-300" />
+                {tool.name}
+              </DialogTitle>
+            </DialogHeader>
+            <ToolRunner
+              toolId={tool.id}
+              toolName={tool.name}
+              schema={tool.schema_json as JsonSchema | null | undefined}
+              requiresApproval={tool.requires_approval}
+              enabled={tool.enabled}
+              ar={ar}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

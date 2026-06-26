@@ -53,6 +53,7 @@ import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSecRouteImport } from './routes/_authenticated/sec'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
+import { Route as AuthenticatedReadinessRouteImport } from './routes/_authenticated/readiness'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticated/outcomes'
@@ -66,6 +67,7 @@ import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticated/investor'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
 import { Route as AuthenticatedHajjRouteImport } from './routes/_authenticated/hajj'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
@@ -78,6 +80,7 @@ import { Route as AuthenticatedExecutionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedExecRouteImport } from './routes/_authenticated/exec'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
+import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -353,6 +356,11 @@ const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
   path: '/risk',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedReadinessRoute = AuthenticatedReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
   id: '/prompts',
   path: '/prompts',
@@ -423,6 +431,11 @@ const AuthenticatedIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHajjRoute = AuthenticatedHajjRouteImport.update({
   id: '/hajj',
   path: '/hajj',
@@ -484,6 +497,12 @@ const AuthenticatedDigitalTwinRoute =
   AuthenticatedDigitalTwinRouteImport.update({
     id: '/digital-twin',
     path: '/digital-twin',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDiagnosticsRoute =
+  AuthenticatedDiagnosticsRouteImport.update({
+    id: '/diagnostics',
+    path: '/diagnostics',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDepartmentsRoute =
@@ -827,6 +846,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
+  '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/events': typeof AuthenticatedEventsRoute
   '/exec': typeof AuthenticatedExecRoute
@@ -839,6 +859,7 @@ export interface FileRoutesByFullPath {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/hajj': typeof AuthenticatedHajjRoute
+  '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
@@ -852,6 +873,7 @@ export interface FileRoutesByFullPath {
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/sec': typeof AuthenticatedSecRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
@@ -951,6 +973,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
+  '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/events': typeof AuthenticatedEventsRoute
   '/exec': typeof AuthenticatedExecRoute
@@ -963,6 +986,7 @@ export interface FileRoutesByTo {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/hajj': typeof AuthenticatedHajjRoute
+  '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
@@ -976,6 +1000,7 @@ export interface FileRoutesByTo {
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/tasks': typeof AuthenticatedTasksRoute
@@ -1076,6 +1101,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
+  '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/exec': typeof AuthenticatedExecRoute
@@ -1088,6 +1114,7 @@ export interface FileRoutesById {
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/hajj': typeof AuthenticatedHajjRoute
+  '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/investor': typeof AuthenticatedInvestorRoute
@@ -1101,6 +1128,7 @@ export interface FileRoutesById {
   '/_authenticated/outcomes': typeof AuthenticatedOutcomesRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
+  '/_authenticated/readiness': typeof AuthenticatedReadinessRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
@@ -1202,6 +1230,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decisions'
     | '/departments'
+    | '/diagnostics'
     | '/digital-twin'
     | '/events'
     | '/exec'
@@ -1214,6 +1243,7 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/hajj'
+    | '/health'
     | '/integrations'
     | '/intelligence'
     | '/investor'
@@ -1227,6 +1257,7 @@ export interface FileRouteTypes {
     | '/outcomes'
     | '/portfolio'
     | '/prompts'
+    | '/readiness'
     | '/risk'
     | '/sec'
     | '/settings'
@@ -1326,6 +1357,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decisions'
     | '/departments'
+    | '/diagnostics'
     | '/digital-twin'
     | '/events'
     | '/exec'
@@ -1338,6 +1370,7 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/hajj'
+    | '/health'
     | '/integrations'
     | '/intelligence'
     | '/investor'
@@ -1351,6 +1384,7 @@ export interface FileRouteTypes {
     | '/outcomes'
     | '/portfolio'
     | '/prompts'
+    | '/readiness'
     | '/risk'
     | '/settings'
     | '/tasks'
@@ -1450,6 +1484,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/decisions'
     | '/_authenticated/departments'
+    | '/_authenticated/diagnostics'
     | '/_authenticated/digital-twin'
     | '/_authenticated/events'
     | '/_authenticated/exec'
@@ -1462,6 +1497,7 @@ export interface FileRouteTypes {
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/hajj'
+    | '/_authenticated/health'
     | '/_authenticated/integrations'
     | '/_authenticated/intelligence'
     | '/_authenticated/investor'
@@ -1475,6 +1511,7 @@ export interface FileRouteTypes {
     | '/_authenticated/outcomes'
     | '/_authenticated/portfolio'
     | '/_authenticated/prompts'
+    | '/_authenticated/readiness'
     | '/_authenticated/risk'
     | '/_authenticated/sec'
     | '/_authenticated/settings'
@@ -1885,6 +1922,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRiskRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/readiness': {
+      id: '/_authenticated/readiness'
+      path: '/readiness'
+      fullPath: '/readiness'
+      preLoaderRoute: typeof AuthenticatedReadinessRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/prompts': {
       id: '/_authenticated/prompts'
       path: '/prompts'
@@ -1976,6 +2020,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/health': {
+      id: '/_authenticated/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof AuthenticatedHealthRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/hajj': {
       id: '/_authenticated/hajj'
       path: '/hajj'
@@ -2058,6 +2109,13 @@ declare module '@tanstack/react-router' {
       path: '/digital-twin'
       fullPath: '/digital-twin'
       preLoaderRoute: typeof AuthenticatedDigitalTwinRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/diagnostics': {
+      id: '/_authenticated/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/diagnostics'
+      preLoaderRoute: typeof AuthenticatedDiagnosticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/departments': {
@@ -2532,6 +2590,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
+  AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedExecRoute: typeof AuthenticatedExecRoute
@@ -2544,6 +2603,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedHajjRoute: typeof AuthenticatedHajjRoute
+  AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedInvestorRoute: typeof AuthenticatedInvestorRoute
@@ -2557,6 +2617,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOutcomesRoute: typeof AuthenticatedOutcomesRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
+  AuthenticatedReadinessRoute: typeof AuthenticatedReadinessRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
@@ -2588,6 +2649,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
+  AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedExecRoute: AuthenticatedExecRoute,
@@ -2600,6 +2662,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedHajjRoute: AuthenticatedHajjRoute,
+  AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedInvestorRoute: AuthenticatedInvestorRoute,
@@ -2613,6 +2676,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOutcomesRoute: AuthenticatedOutcomesRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
+  AuthenticatedReadinessRoute: AuthenticatedReadinessRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
