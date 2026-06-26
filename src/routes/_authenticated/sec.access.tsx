@@ -6,6 +6,7 @@ import { getAccessOverview, setGateStatus } from "@/lib/access.functions";
 import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShieldAlert, ShieldCheck, Users, HardHat, Car, DoorOpen } from "lucide-react";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/access")({
   component: AccessControlPage,
