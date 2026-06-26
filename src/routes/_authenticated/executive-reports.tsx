@@ -17,6 +17,7 @@ import { listTeamsChannels } from "@/lib/teams.functions";
 import { publishExecutiveReport } from "@/lib/exec-reports.functions";
 import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
 import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X, ClipboardCopy, FlaskConical } from "lucide-react";
+import { BinaryReportsPanel } from "@/components/exec/binary-reports-panel";
 
 const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: string }> = {
   config:           { en: "Connector configuration", ar: "إعداد الموصّل" },
