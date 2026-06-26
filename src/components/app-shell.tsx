@@ -218,7 +218,12 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
+      <div className="border-b border-sidebar-border px-3 py-3">
+        <OrgSwitcher />
+      </div>
+
       <nav className="flex-1 overflow-y-auto p-3">
+
 
         {groups.map((g) => (
           <div key={g.label} className="mb-4">
