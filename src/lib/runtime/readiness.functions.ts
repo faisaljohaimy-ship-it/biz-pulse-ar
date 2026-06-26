@@ -47,7 +47,8 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     const archSignals: ReadinessDimension["signals"] = [];
     let presentTables = 0;
     for (const t of coreTables) {
-      const { error } = await supabaseAdmin.from(t).select("*", { count: "exact", head: true }).limit(1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabaseAdmin as any).from(t).select("*", { count: "exact", head: true }).limit(1);
       const ok = !error;
       if (ok) presentTables++;
       archSignals.push({ key: `table.${t}`, value: ok ? "present" : "missing", ok });
