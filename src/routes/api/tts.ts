@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError, toApiErrorShape } from "@/lib/api";
 
 const BodySchema = z.object({
   text: z.string().min(1).max(5000),
