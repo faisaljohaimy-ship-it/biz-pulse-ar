@@ -28,6 +28,7 @@ import {
 import { getExecKpis } from "@/lib/sec.functions";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
 import { HoloCommandStage } from "@/components/cinematic/HoloCommandStage";
+import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: OperationsCockpit,
@@ -202,8 +203,18 @@ function OperationsCockpit() {
     : sysStatus === "ELEVATED" ? "text-amber-400"
     : sysStatus === "ALERT" ? "text-rose-400" : "text-primary";
 
+  const scrollToOps = () => {
+    if (typeof document === "undefined") return;
+    document.getElementById("ops-cockpit")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="relative min-h-[calc(100vh-3rem)] w-full bg-[#04060d] text-slate-100 p-5 md:p-8 overflow-hidden" dir="rtl">
+    <div className="relative w-full bg-[#04060d] text-slate-100">
+      {/* SCREEN 01 — NEXUS Reveal hero (cinematic holographic identity) */}
+      <NexusRevealHero onEnterOps={scrollToOps} />
+
+      {/* SCREEN 02 — Operations cockpit */}
+      <div id="ops-cockpit" className="relative min-h-[calc(100vh-3rem)] w-full p-5 md:p-8 overflow-hidden" dir="rtl">
       {/* Holographic Executive Command backdrop — live KPI-driven, GPU animated */}
       <HoloCommandStage isAr k={k} status={sysStatus} />
 
@@ -316,6 +327,7 @@ function OperationsCockpit() {
           </div>
         </aside>
       </main>
+      </div>
     </div>
   );
 }
