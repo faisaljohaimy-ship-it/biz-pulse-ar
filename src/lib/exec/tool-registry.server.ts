@@ -1,6 +1,8 @@
 import { z, type ZodTypeAny } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { apiError } from "@/lib/api";
+import { httpFetch, httpJson } from "@/lib/api/http.server";
 
 /**
  * Tool execution context passed to every executor. Supabase client is
@@ -36,16 +38,16 @@ async function lovableConnector(connectorKeyEnv: string, gateway: string) {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const connKey = process.env[connectorKeyEnv];
   if (!lovableKey || !connKey) {
-    throw new Error(
-      `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`,
-    );
+    throw apiError("forbidden", `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`, {
+      details: { connectorKeyEnv },
+    });
   }
   return {
     headers: {
       Authorization: `Bearer ${lovableKey}`,
       "X-Connection-Api-Key": connKey,
       "Content-Type": "application/json",
-    },
+    } as Record<string, string>,
     gateway,
   };
 }
@@ -74,16 +76,12 @@ const outlookSendMail: ToolExecutor = {
         emailAddress: { address: a },
       }));
     }
-    const res = await fetch(`${c.gateway}/me/sendMail`, {
+    await httpJson(`${c.gateway}/me/sendMail`, {
       method: "POST",
       headers: c.headers,
       body: JSON.stringify({ message, saveToSentItems: true }),
+      label: "tool outlook sendMail",
     });
-    if (!res.ok) {
-      throw new Error(
-        `Outlook send failed (${res.status}): ${(await res.text()).slice(0, 300)}`,
-      );
-    }
     return { output: { sent: true, recipients: data.to.length } };
   },
 };
