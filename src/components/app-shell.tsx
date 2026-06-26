@@ -91,8 +91,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <span className="text-sm font-bold tracking-tight">Nexus</span>
           </div>
-          <ThemeToggle />
-        </header>
+          <div className="flex items-center gap-2">
+            <OrgSwitcher compact />
+            <ThemeToggle />
+          </div>
         <main className="nexus-main min-w-0 flex-1">
           <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
             {children}
