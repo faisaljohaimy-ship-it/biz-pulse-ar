@@ -20,7 +20,7 @@ export function useRuntimeScheduler(enabled: boolean = true) {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       inflight.current = true;
       try {
-        await pulse({ data: undefined as never });
+        await pulse();
       } catch {
         // never throw from the scheduler; pulse logs internally
       } finally {
