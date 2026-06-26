@@ -182,4 +182,3 @@ function ToolCard({ tool, history, ar }: { tool: Tool; history: ToolExec[]; ar: 
     </div>
   );
 }
-}
