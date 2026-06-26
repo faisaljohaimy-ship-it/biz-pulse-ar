@@ -32,6 +32,17 @@ import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "AI Command Center — Nexus AI OS" },
+      { name: "description", content: "Live executive cockpit: KPIs, incidents, patrols, work orders, and digital twin telemetry for the Western Region Industrial Security operations." },
+      { property: "og:title", content: "AI Command Center — Nexus AI OS" },
+      { property: "og:description", content: "Live executive cockpit and operations telemetry." },
+      { property: "og:url", content: "https://neexios.com/dashboard" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+    links: [{ rel: "canonical", href: "https://neexios.com/dashboard" }],
+  }),
   component: OperationsCockpit,
 });
 
