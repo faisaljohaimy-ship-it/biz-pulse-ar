@@ -56,9 +56,16 @@ export async function runAgent(
 ): Promise<RunAgentResult> {
   const { agentId, actorId, goalOverride, context: ctxData } = params;
 
-  // 1) Load agent definition (RLS scoped).
+  // ALL orchestration writes go through the service-role admin client so RLS
+  // RESTRICTIVE policies on workflows/workflow_runs/workflow_step_runs cannot
+  // silently drop the wrapper trail. This is the production contract: every
+  // Run Agent click produces a complete evidence chain regardless of caller.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: def, error: defErr } = await (supabase as any)
+  const admin = supabaseAdmin as any;
+
+  // 1) Load agent definition (admin — wrapper runs as system).
+  const { data: def, error: defErr } = await admin
     .from("agent_definitions")
     .select(
       "id, name, goal, system_prompt, permissions, tool_allowlist, model, enabled",
@@ -72,9 +79,8 @@ export async function runAgent(
   const goal = (goalOverride?.trim() || agent.goal).trim();
   const correlationId = crypto.randomUUID();
 
-  // Resolve org_id for this actor (first membership) — RLS requires it.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: memb } = await (supabase as any)
+  // Resolve org_id for this actor (first membership).
+  const { data: memb } = await admin
     .from("org_members")
     .select("org_id")
     .eq("user_id", actorId)
