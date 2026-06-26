@@ -467,7 +467,7 @@ export const getAgentOpsOverview = createServerFn({ method: "GET" })
         enabled: d.enabled,
         tool_allowlist: d.tool_allowlist ?? [],
         permissions: d.permissions ?? [],
-        metadata: (d.metadata ?? {}) as Record<string, unknown>,
+        metadata: toJson(d.metadata ?? {}),
         updated_at: d.updated_at,
         state,
         total_runs: list.length,
