@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
+import { HoloCommandStage } from "@/components/cinematic/HoloCommandStage";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: OperationsCockpit,
