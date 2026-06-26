@@ -553,7 +553,7 @@ export async function runAgent(
 }
 
 async function failRun(
-  supabase: SupabaseClient<Database>,
+  _supabase: SupabaseClient<Database>,
   runId: string,
   actorId: string,
   error: string,
@@ -562,7 +562,9 @@ async function failRun(
   correlationId?: string,
   startedAt?: string,
 ) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = supabaseAdmin as any;
   await admin
     .from("agent_runs")
     .update({
