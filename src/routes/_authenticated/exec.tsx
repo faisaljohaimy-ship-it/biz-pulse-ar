@@ -209,6 +209,16 @@ function ExecConsole() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const rollbackMut = useMutation({
+    mutationFn: (id: string) => rollbackFn({ data: { executionId: id } }),
+    onSuccess: () => {
+      toast.success("Execution rolled back");
+      void execs.refetch();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+
   const triggerMut = useMutation({
     mutationFn: (id: string) => triggerFn({ data: { workflowId: id } }),
     onSuccess: (res: unknown) => {
