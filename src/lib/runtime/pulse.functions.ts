@@ -169,8 +169,8 @@ export const runtimePulse = createServerFn({ method: "POST" })
       workflowsAdvanced++;
     }
 
-    // 4) Emit a single heartbeat ONLY if maintenance work actually happened.
-    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced;
+    // 4) Emit a single heartbeat ONLY if real work happened (consumption or timeouts).
+    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced + consumed.workflows_started;
     if (did > 0) {
       await publishEvent(supabase, {
         topic: "runtime.heartbeat",
@@ -183,6 +183,8 @@ export const runtimePulse = createServerFn({ method: "POST" })
           agents_timed_out: agentsTimedOut,
           tools_timed_out: toolsTimedOut,
           workflows_advanced: workflowsAdvanced,
+          events_consumed: consumed.events_processed,
+          workflows_started: consumed.workflows_started,
         },
       });
       eventsPublished++;
@@ -193,6 +195,8 @@ export const runtimePulse = createServerFn({ method: "POST" })
       tools_timed_out: toolsTimedOut,
       workflows_advanced: workflowsAdvanced,
       events: eventsPublished,
+      events_consumed: consumed.events_processed,
+      workflows_started: consumed.workflows_started,
       at: new Date().toISOString(),
     };
   });
