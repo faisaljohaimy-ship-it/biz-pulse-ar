@@ -40,6 +40,7 @@ import {
   Layers,
   MapPin,
   Play,
+  Activity,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
