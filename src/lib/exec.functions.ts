@@ -205,6 +205,93 @@ export const triggerWorkflowFn = createServerFn({ method: "POST" })
     return toJson(res);
   });
 
+/**
+ * Topic-aware default payload — gives each workflow a reasonable starting
+ * context when triggered manually from the console without typing JSON.
+ */
+function defaultPayloadForTopic(topic: string | null | undefined): Record<string, unknown> {
+  const now = new Date().toISOString();
+  const base = { source: "console.manual_trigger", triggered_at: now } as Record<string, unknown>;
+  switch (topic) {
+    case "sec.incident.created":
+    case "sec.incident.p1":
+      return { ...base, severity: topic === "sec.incident.p1" ? "P1" : "P3", category: "security", site: "jeddah-hq" };
+    case "sec.contractor.created":
+      return { ...base, contractor: { name: "Manual Trigger Test", company: "N/A" } };
+    case "sec.permit.created":
+      return { ...base, permit_type: "hot_work", site: "jeddah-hq", duration_hours: 4 };
+    case "sec.work_order.created":
+      return { ...base, priority: "medium", category: "preventive" };
+    case "sec.patrol.overdue":
+      return { ...base, route: "perimeter-north", overdue_minutes: 15 };
+    case "sec.visitor.created":
+      return { ...base, visitor: { name: "Manual Trigger Test" }, host: "operations" };
+    case "sec.inspection.requested":
+      return { ...base, scope: "monthly", site: "jeddah-hq" };
+    case "risk.assessment.requested":
+      return { ...base, scope: "western-region" };
+    case "exec.brief.requested":
+      return { ...base, period: "24h", audience: "executive" };
+    case "schedule.daily.kpi":
+      return { ...base, window: "rolling_24h" };
+    default:
+      return base;
+  }
+}
+
+export const triggerAllWorkflowsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: rows, error } = await (context.supabase as any)
+      .from("workflows")
+      .select("id, name, trigger_topic, enabled")
+      .eq("enabled", true);
+    if (error) throw new Error(error.message);
+
+    const results: Array<{ workflowId: string; name: string; status: string; error?: string }> = [];
+    for (const w of (rows ?? []) as Array<{ id: string; name: string; trigger_topic: string | null }>) {
+      try {
+        const res = await triggerWorkflow(context.supabase, {
+          workflowId: w.id,
+          triggeredBy: context.userId,
+          triggerEvent: "console.manual",
+          payload: defaultPayloadForTopic(w.trigger_topic),
+          idempotencyKey: `console-${w.id}-${Date.now()}`,
+        });
+        results.push({ workflowId: w.id, name: w.name, status: res.status });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        results.push({ workflowId: w.id, name: w.name, status: "failed", error: msg });
+      }
+    }
+    return toJson({ total: results.length, results });
+  });
+
+const TriggerWithDefaultsSchema = z.object({ workflowId: z.string().uuid() });
+
+export const triggerWorkflowWithDefaultsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => TriggerWithDefaultsSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: row, error } = await (context.supabase as any)
+      .from("workflows")
+      .select("trigger_topic")
+      .eq("id", data.workflowId)
+      .single();
+    if (error) throw new Error(error.message);
+    const res = await triggerWorkflow(context.supabase, {
+      workflowId: data.workflowId,
+      triggeredBy: context.userId,
+      triggerEvent: "console.manual",
+      payload: defaultPayloadForTopic(row?.trigger_topic ?? null),
+      idempotencyKey: `console-${data.workflowId}-${Date.now()}`,
+    });
+    return toJson(res);
+  });
+
 const RunIdSchema = z.object({ runId: z.string().uuid() });
 
 export const resumeWorkflowRunFn = createServerFn({ method: "POST" })
