@@ -475,8 +475,8 @@ function ExecConsole() {
                   </li>
                 ))}
                 {!wfs.data?.length && (
-                  <li className="text-sm text-muted-foreground text-center p-4">
-                    No workflows defined yet. Create one via the API.
+                  <li className="text-center p-4">
+                    <LiveStatus variant="initializing" hint="Workflow registry loading" size="sm" />
                   </li>
                 )}
               </ul>
