@@ -291,13 +291,28 @@ function AgentsOps() {
   });
 
   const runM = useMutation({
-    mutationFn: async (p: { agentId: string; goalOverride?: string }) =>
-      callRun({
-        data: {
+    // Per CTO order: Run Agent button MUST route through the public hook,
+    // which invokes the production wrapper (agent-runtime.server.ts) with the
+    // service-role admin client. Never call the agent directly.
+    mutationFn: async (p: { agentId: string; goalOverride?: string }) => {
+      const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+      const resp = await fetch("/api/public/hooks/run-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey },
+        body: JSON.stringify({
           agentId: p.agentId,
           goalOverride: p.goalOverride?.trim() || undefined,
-        },
-      }),
+        }),
+      });
+      const json = (await resp.json()) as {
+        ok?: boolean;
+        result?: { status: string; error?: string };
+        error?: string;
+      };
+      if (!resp.ok || json.ok === false)
+        throw new Error(json.error ?? `HTTP ${resp.status}`);
+      return json.result ?? { status: "succeeded" };
+    },
     onSuccess: (res) => {
       const r = res as { status: string; error?: string };
       if (r.status === "succeeded")
