@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import {
   listToolRegistry,
   listToolExecutions,
@@ -10,19 +10,23 @@ import {
   listRecentEvents,
   runTool,
   approveToolExecution,
+  rollbackToolExecution,
   triggerWorkflowFn,
   listAgents,
   listAgentRuns,
   runAgentFn,
 } from "@/lib/exec.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { WorkflowRunDetail } from "@/components/exec/workflow-run-detail";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles } from "lucide-react";
+import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/exec")({
   component: ExecConsole,
