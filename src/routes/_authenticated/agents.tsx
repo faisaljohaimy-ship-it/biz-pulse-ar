@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
   listAgentRuns,
-  runAgentFn,
   getAgentOpsOverview,
   setAgentEnabled,
   cancelAgentRun,
