@@ -6,6 +6,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { randomUUID } from "crypto";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError } from "@/lib/api";
 import type { PublishErrorEnvelope, PublishStage } from "./exec-reports.functions";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
