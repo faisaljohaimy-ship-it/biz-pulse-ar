@@ -311,6 +311,27 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
                   ...(isDefault && firstText ? { title: firstText } : {}),
                 })
                 .eq("id", threadId);
+
+              // Persist conversation memory for future RAG recall (best-effort).
+              try {
+                const userText = (lastUser?.parts ?? [])
+                  .map((p) => (p.type === "text" ? p.text : ""))
+                  .join("")
+                  .trim();
+                const assistantText =
+                  newAssistant && newAssistant.role === "assistant"
+                    ? (newAssistant.parts ?? [])
+                        .map((p) => (p.type === "text" ? p.text : ""))
+                        .join("")
+                        .trim()
+                    : "";
+                if (userText && assistantText) {
+                  const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
+                  await rememberConversationTurn(supabase, userId, threadId, userText, assistantText);
+                }
+              } catch (memErr) {
+                console.warn("[api/chat] memory persistence skipped", memErr);
+              }
             } catch (e) {
               console.error("onFinish persistence error", e);
             }
