@@ -327,6 +327,7 @@ function OperationsCockpit() {
           </div>
         </aside>
       </main>
+      </div>
     </div>
   );
 }
