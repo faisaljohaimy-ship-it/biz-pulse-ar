@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
             continue;
           }
           try {
-            const snap = await buildExecutiveSnapshot(supabaseAdmin, { range: s.range_window });
+            const snap = await buildExecutiveSnapshot(supabaseAdmin, { range: s.range_window as "24h" | "7d" | "30d" });
             const title = s.name;
             const stamp = nowIso.slice(0, 10);
             const ym = nowIso.slice(0, 7);
