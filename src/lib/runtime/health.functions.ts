@@ -17,7 +17,7 @@ export type SubsystemHealth = {
   id: string;
   label: string;
   status: HealthStatus;
-  evidence: Record<string, unknown>;
+  evidence: Record<string, string | number | boolean | null>;
   reason?: string;
 };
 
