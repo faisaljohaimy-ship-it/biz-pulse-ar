@@ -597,8 +597,8 @@ function ExecConsole() {
                   ),
                 )}
                 {!agents.data?.length && (
-                  <li className="text-sm text-muted-foreground text-center p-4">
-                    No agents defined.
+                  <li className="text-center p-4">
+                    <LiveStatus variant="initializing" hint="Agent registry loading" size="sm" />
                   </li>
                 )}
               </ul>
