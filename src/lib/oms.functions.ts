@@ -92,6 +92,20 @@ export const createIncident = createServerFn({ method: "POST" })
       payload: { severity: data.severity, priority: data.priority, ai_risk_score, notes: data.notes ?? null },
     });
 
+    try {
+      const { publishEvent } = await import("./exec/event-bus.server");
+      await publishEvent(supabase, {
+        topic: "incident.created",
+        source: "oms",
+        severity: data.severity === "critical" ? "critical" : data.severity === "high" ? "warn" : "info",
+        actor_id: userId,
+        subject_type: "incident",
+        subject_id: row.id,
+        payload: { ref, category: data.category, priority: data.priority },
+        metrics: { ai_risk_score },
+      });
+    } catch (err) { console.error("[createIncident] event publish", err); }
+
     // ── Auto ARIA analysis (gpt-5 with timeout + heuristic fallback) ──
     try {
       const { ariaAnalyseIncident } = await import("./oms-aria.server");

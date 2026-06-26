@@ -29,6 +29,7 @@ import { getExecKpis } from "@/lib/sec.functions";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
 import { HoloCommandStage } from "@/components/cinematic/HoloCommandStage";
 import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
+import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: OperationsCockpit,
@@ -325,6 +326,8 @@ function OperationsCockpit() {
               <span className="text-foreground/80 text-right">{fmt(k?.contractors_active)}</span>
             </div>
           </div>
+
+          <EnterpriseActivityFeed height="h-[360px]" compact filter={{ limit: 40 }} />
         </aside>
       </main>
       </div>

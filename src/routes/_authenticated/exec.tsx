@@ -18,6 +18,7 @@ import {
 } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkflowRunDetail } from "@/components/exec/workflow-run-detail";
+import { EventTimeline } from "@/components/events/EventTimeline";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -698,35 +699,7 @@ function ExecConsole() {
         </TabsContent>
 
         <TabsContent value="events">
-          <Card className="p-3">
-            <ScrollArea className="h-[60vh]">
-              <ul className="space-y-1">
-                {(events.data ?? []).map(
-                  (ev: {
-                    id: string;
-                    topic: string;
-                    source: string;
-                    status: string;
-                    occurred_at: string;
-                    payload_json: unknown;
-                  }) => (
-                    <li
-                      key={ev.id}
-                      className="text-xs p-2 rounded border font-mono flex items-center gap-2"
-                    >
-                      <span className="text-muted-foreground">
-                        {new Date(ev.occurred_at).toLocaleTimeString()}
-                      </span>
-                      <Badge variant="outline" className="text-[10px]">
-                        {ev.source}
-                      </Badge>
-                      <span className="text-cyan-300">{ev.topic}</span>
-                    </li>
-                  ),
-                )}
-              </ul>
-            </ScrollArea>
-          </Card>
+          <EventTimeline title="Enterprise Event Stream" height="h-[60vh]" filter={{ limit: 200 }} />
         </TabsContent>
       </Tabs>
       <WorkflowRunDetail
