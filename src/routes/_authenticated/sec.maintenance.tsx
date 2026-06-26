@@ -88,7 +88,7 @@ function Maintenance() {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">لا توجد أوامر عمل</td></tr>
+              <tr><td colSpan={8} className="py-8 text-center"><LiveStatus variant="monitoring" hint="قائمة الصيانة محدثة — لا أوامر معلقة" size="sm" /></td></tr>
             )}
           </tbody>
         </table>
