@@ -135,6 +135,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api/public/hooks/runtime-bootstrap'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
+import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -799,6 +800,12 @@ const ApiPublicHooksExecutiveReportsRunRoute =
     path: '/api/public/hooks/executive-reports-run',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAriaDocsIngestRoute =
+  ApiPublicHooksAriaDocsIngestRouteImport.update({
+    id: '/api/public/hooks/aria-docs-ingest',
+    path: '/api/public/hooks/aria-docs-ingest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -918,6 +925,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
+  '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
@@ -1044,6 +1052,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
+  '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
@@ -1173,6 +1182,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
+  '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
@@ -1302,6 +1312,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/assistant/'
     | '/sec/'
+    | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/runtime-bootstrap'
@@ -1428,6 +1439,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/assistant'
     | '/sec'
+    | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/runtime-bootstrap'
@@ -1556,6 +1568,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/_authenticated/assistant/'
     | '/_authenticated/sec/'
+    | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/runtime-bootstrap'
@@ -1602,6 +1615,7 @@ export interface RootRouteChildren {
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
   ApiPublicHooksRuntimeBootstrapRoute: typeof ApiPublicHooksRuntimeBootstrapRoute
@@ -2496,6 +2510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksExecutiveReportsRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/aria-docs-ingest': {
+      id: '/api/public/hooks/aria-docs-ingest'
+      path: '/api/public/hooks/aria-docs-ingest'
+      fullPath: '/api/public/hooks/aria-docs-ingest'
+      preLoaderRoute: typeof ApiPublicHooksAriaDocsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -2731,6 +2752,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
@@ -2744,13 +2766,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
