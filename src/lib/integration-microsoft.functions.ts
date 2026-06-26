@@ -33,7 +33,7 @@ export type MicrosoftSyncLogRow = {
   items_count: number;
   duration_ms: number | null;
   error: string | null;
-  details: Record<string, unknown>;
+  details: string;
   started_at: string;
 };
 
