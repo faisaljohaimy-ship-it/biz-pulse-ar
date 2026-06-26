@@ -86,9 +86,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "NEEXIOS |  AI OS" },
       { name: "twitter:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
-      { name: "description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49f3a999-e9d9-4d66-9a7b-7e493f37262b" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49f3a999-e9d9-4d66-9a7b-7e493f37262b" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
