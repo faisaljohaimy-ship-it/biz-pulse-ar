@@ -106,7 +106,7 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
             trace_id: (s.tool_execution_id as string) ?? null,
             error: (s.error as string) ?? null,
             request: null,
-            response: s.output_json ?? null,
+            response: asJson(s.output_json),
             raw_kind: "step_run",
           });
         }
@@ -131,8 +131,8 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
           duration_ms: ex.duration_ms ?? null,
           trace_id: ex.correlation_id ?? ex.id,
           error: ex.error ?? null,
-          request: ex.input_json ?? null,
-          response: ex.output_json ?? null,
+          request: asJson(ex.input_json),
+          response: asJson(ex.output_json),
           raw_kind: "tool_exec",
         });
       }
@@ -159,7 +159,7 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
           trace_id: (a.correlation_id as string) ?? null,
           error: null,
           request: null,
-          response: a.changes ?? null,
+          response: asJson(a.changes),
           raw_kind: "audit_log",
         });
       }
@@ -193,8 +193,8 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
           duration_ms: (e.duration_ms as number) ?? null,
           trace_id: (e.correlation_id as string) ?? null,
           error: null,
-          request: e.inputs_json ?? e.payload_json ?? null,
-          response: e.outputs_json ?? null,
+          request: asJson(e.inputs_json ?? e.payload_json),
+          response: asJson(e.outputs_json),
           raw_kind: "event",
         });
       }
