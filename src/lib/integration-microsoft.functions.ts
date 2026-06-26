@@ -17,6 +17,24 @@ export type MicrosoftIntegrationRow = {
   last_test_error: string | null;
   last_test_user: string | null;
   updated_at: string;
+  sync_outlook_enabled: boolean;
+  sync_sharepoint_enabled: boolean;
+  sync_interval_minutes: number;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  last_sync_error: string | null;
+};
+
+export type MicrosoftSyncLogRow = {
+  id: string;
+  org_id: string;
+  kind: "outlook" | "sharepoint" | "manual";
+  status: "ok" | "error" | "skipped";
+  items_count: number;
+  duration_ms: number | null;
+  error: string | null;
+  details: Record<string, unknown>;
+  started_at: string;
 };
 
 async function assertAdmin(ctx: { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => PromiseLike<{ data: boolean | null }> }; userId: string }) {
