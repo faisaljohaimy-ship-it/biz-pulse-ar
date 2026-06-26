@@ -188,6 +188,7 @@ export const listWorkflowRuns = createServerFn({ method: "GET" })
 const TriggerSchema = z.object({
   workflowId: z.string().uuid(),
   payload: z.record(z.string(), z.unknown()).optional(),
+  idempotencyKey: z.string().min(8).max(120).optional(),
 });
 
 export const triggerWorkflowFn = createServerFn({ method: "POST" })
@@ -199,8 +200,61 @@ export const triggerWorkflowFn = createServerFn({ method: "POST" })
       triggeredBy: context.userId,
       triggerEvent: "manual",
       payload: data.payload,
+      idempotencyKey: data.idempotencyKey,
     });
     return toJson(res);
+  });
+
+const RunIdSchema = z.object({ runId: z.string().uuid() });
+
+export const resumeWorkflowRunFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => RunIdSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.supabase, context.userId);
+    const res = await resumeWorkflowRun(
+      context.supabase,
+      data.runId,
+      context.userId,
+    );
+    return toJson(res);
+  });
+
+export const cancelWorkflowRunFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => RunIdSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const res = await cancelWorkflowRun(
+      context.supabase,
+      data.runId,
+      context.userId,
+    );
+    return toJson(res);
+  });
+
+export const getWorkflowRunDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => RunIdSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: run, error } = await (context.supabase as any)
+      .from("workflow_runs")
+      .select(
+        "id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by, trigger_event, context_json",
+      )
+      .eq("id", data.runId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!run) throw new Error("Run not found");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: steps } = await (context.supabase as any)
+      .from("workflow_step_runs")
+      .select(
+        "id, step_id, kind, status, attempt, started_at, finished_at, error, tool_execution_id, output_json",
+      )
+      .eq("run_id", data.runId)
+      .order("started_at", { ascending: true });
+    return { run, steps: steps ?? [] };
   });
 
 /* ------------------------------ Events API ------------------------------ */
