@@ -509,12 +509,12 @@ function ExecConsole() {
                     </Button>
                   </li>
                 ))}
-                {wfs.isLoading && !wfs.data?.length && (
+                {wfs.isLoading && !(wfs.data as unknown[] | undefined)?.length && (
                   <li className="text-center p-4">
                     <LiveStatus variant="initializing" hint="Workflow registry loading" size="sm" />
                   </li>
                 )}
-                {!wfs.isLoading && !wfs.data?.length && (
+                {!wfs.isLoading && !(wfs.data as unknown[] | undefined)?.length && (
                   <li className="text-center p-4 text-xs text-muted-foreground">
                     No workflows defined yet.
                   </li>
