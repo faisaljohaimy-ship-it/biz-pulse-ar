@@ -410,17 +410,89 @@ export async function runAgent(
 
     await audit(supabase, {
       actor_id: actorId,
+      org_id: orgId,
       action: "agent.run.success",
       resource_type: "agent_run",
       resource_id: runId,
-      metadata: { agentId, steps: stepRecords.length },
+      metadata: { agentId, steps: stepRecords.length, workflowRunId },
+      correlation_id: correlationId,
+      duration_ms: Date.now() - new Date(startedAt).getTime(),
     });
     await publishEvent(supabase, {
       topic: `agent.succeeded.${agentId}`,
-      payload: { runId, agentId, steps: stepRecords.length },
+      payload: { runId, agentId, steps: stepRecords.length, workflowRunId },
+      source: "agent.runtime",
       actor_id: actorId,
+      org_id: orgId,
       correlation_id: correlationId,
+      subject_type: "agent_run",
+      subject_id: runId,
+      duration_ms: Date.now() - new Date(startedAt).getTime(),
     });
+
+    if (workflowRunId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from("workflow_runs")
+        .update({
+          status: "succeeded",
+          finished_at: finishedAt,
+          current_step: null,
+        })
+        .eq("id", workflowRunId);
+      await publishEvent(supabase, {
+        topic: "workflow.completed",
+        payload: { workflowRunId, agentId, agentRunId: runId, steps: stepRecords.length },
+        source: "agent.runtime",
+        actor_id: actorId,
+        org_id: orgId,
+        correlation_id: correlationId,
+        subject_type: "workflow_run",
+        subject_id: workflowRunId,
+        duration_ms: Date.now() - new Date(startedAt).getTime(),
+      });
+    }
+
+    // Persist a bilingual executive report tied to this run.
+    try {
+      const md = [
+        `# Executive Report — ${agent.name}`,
+        ``,
+        `**Run:** ${runId}  ·  **Agent:** ${agentId}  ·  **Steps:** ${stepRecords.length}`,
+        ``,
+        `## English`,
+        summary,
+        ``,
+        `## Goal`,
+        goal,
+      ].join("\n");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from("aria_reports").insert({
+        user_id: actorId,
+        org_id: orgId,
+        kind: "executive",
+        title: `Agent Run — ${agent.name}`,
+        period_start: startedAt,
+        period_end: finishedAt,
+        markdown: md,
+        payload: {
+          agentId,
+          agentRunId: runId,
+          workflowRunId,
+          steps: stepRecords.length,
+          tool_calls: stepRecords.flatMap((s) => s.toolCalls.map((c) => ({
+            tool: c.name,
+            ok: !c.error,
+            executionId: c.executionId ?? null,
+          }))),
+          summary_en: summary,
+          summary_ar: summary,
+          correlationId,
+        },
+      });
+    } catch (e) {
+      console.error("[agent-runtime] executive report insert failed", e);
+    }
 
     return {
       runId,
@@ -430,13 +502,40 @@ export async function runAgent(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    await failRun(supabase, runId, actorId, msg, stepRecords);
+    await failRun(supabase, runId, actorId, msg, stepRecords, orgId, correlationId, startedAt);
     await publishEvent(supabase, {
       topic: `agent.failed.${agentId}`,
-      payload: { runId, agentId, error: msg },
+      payload: { runId, agentId, error: msg, workflowRunId },
+      source: "agent.runtime",
+      severity: "error",
       actor_id: actorId,
+      org_id: orgId,
       correlation_id: correlationId,
+      subject_type: "agent_run",
+      subject_id: runId,
     });
+    if (workflowRunId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from("workflow_runs")
+        .update({
+          status: "failed",
+          error: msg,
+          finished_at: new Date().toISOString(),
+        })
+        .eq("id", workflowRunId);
+      await publishEvent(supabase, {
+        topic: "workflow.failed",
+        payload: { workflowRunId, agentId, agentRunId: runId, error: msg },
+        source: "agent.runtime",
+        severity: "error",
+        actor_id: actorId,
+        org_id: orgId,
+        correlation_id: correlationId,
+        subject_type: "workflow_run",
+        subject_id: workflowRunId,
+      });
+    }
     return {
       runId,
       status: "failed",
