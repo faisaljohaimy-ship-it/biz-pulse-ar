@@ -180,6 +180,97 @@ export function IncidentDrawer({ incident, onOpenChange }: { incident: IncRow | 
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // ── Executive Review ──
+  const [execReview, setExecReview] = useState("");
+  const er = useServerFn(setExecutiveReview);
+  const mER = useMutation({
+    mutationFn: () => er({ data: { incident_id: incident!.id, review: execReview } }),
+    onSuccess: () => { toast.success("سُجِّلت المراجعة التنفيذية"); setExecReview(""); qc.invalidateQueries({ queryKey: ["oms-incidents"] }); qc.invalidateQueries({ queryKey: ["oms-incident-detail", incident!.id] }); qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // ── Detail (refresh attachments/executive review) ──
+  const fetchDetail = useServerFn(getIncidentDetail);
+  const { data: detail } = useQuery({
+    queryKey: ["oms-incident-detail", incident?.id],
+    queryFn: () => fetchDetail({ data: { incident_id: incident!.id } }),
+    enabled: open,
+    refetchInterval: open ? 15_000 : false,
+  });
+  const liveAttachments = Array.isArray((detail as { attachments?: unknown } | undefined)?.attachments) ? (detail as { attachments: Array<{ id: string; file_name: string; storage_path: string; uploaded_at: string; uploaded_by: string; mime_type?: string | null; size_bytes?: number | null }> }).attachments : [];
+  const liveExecReview = (detail as { executive_review?: string | null } | undefined)?.executive_review ?? null;
+  const liveExecReviewedAt = (detail as { executive_reviewed_at?: string | null } | undefined)?.executive_reviewed_at ?? null;
+
+  // ── Attachments ──
+  const addAttach = useServerFn(addIncidentAttachment);
+  const removeAttach = useServerFn(removeIncidentAttachment);
+  const getAttachUrl = useServerFn(getIncidentAttachmentUrl);
+  const [uploading, setUploading] = useState(false);
+  const onPickFile = async (file: File) => {
+    if (!incident) return;
+    setUploading(true);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `incident-attachments/${incident.id}/${Date.now()}-${safeName}`;
+      const { error: upErr } = await supabase.storage.from("uploads").upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
+      if (upErr) throw upErr;
+      await addAttach({ data: {
+        incident_id: incident.id,
+        storage_path: path,
+        file_name: file.name,
+        mime_type: file.type || undefined,
+        size_bytes: file.size,
+      } });
+      toast.success("أُرفق الملف");
+      qc.invalidateQueries({ queryKey: ["oms-incident-detail", incident.id] });
+      qc.invalidateQueries({ queryKey: ["oms-timeline", incident.id] });
+      qc.invalidateQueries({ queryKey: ["oms-incidents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
+  const openAttachment = async (storage_path: string) => {
+    try {
+      const r = await getAttachUrl({ data: { storage_path } });
+      if (r.url) window.open(r.url, "_blank", "noopener");
+    } catch (e) { toast.error((e as Error).message); }
+  };
+  const mRemoveAttach = useMutation({
+    mutationFn: (attachment_id: string) => removeAttach({ data: { incident_id: incident!.id, attachment_id } }),
+    onSuccess: () => { toast.success("أُزيل المرفق"); qc.invalidateQueries({ queryKey: ["oms-incident-detail", incident!.id] }); qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] }); qc.invalidateQueries({ queryKey: ["oms-incidents"] }); },
+  });
+
+  // ── Report download ──
+  const genReport = useServerFn(generateIncidentReport);
+  const mReport = useMutation({
+    mutationFn: (format: "pdf" | "xlsx") => genReport({ data: { incident_id: incident!.id, format } }),
+    onSuccess: (res) => {
+      try {
+        const bin = atob(res.base64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const blob = new Blob([bytes], { type: res.mime_type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = res.file_name; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        toast.success(`تم توليد ${res.file_name}`);
+        qc.invalidateQueries({ queryKey: ["oms-reports"] });
+        qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
+      } catch (e) { toast.error((e as Error).message); }
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Latest ARIA event for recommendations
+  const latestAria = (timeline ?? []).find((e) => e.event === "aria_analyzed" || e.event === "aria_auto_analyzed");
+  const ariaRecs = (latestAria?.payload as { recommendations?: string[]; immediate_actions?: string[] } | undefined) ?? {};
+
   const actions = Array.isArray(incident?.corrective_actions) ? incident!.corrective_actions as Array<{id:string;action:string;owner?:string;added_at:string;done:boolean}> : [];
 
   return (
@@ -213,17 +304,33 @@ export function IncidentDrawer({ incident, onOpenChange }: { incident: IncRow | 
                 </div>
               </div>
 
-              {/* ARIA summary */}
+              {/* ARIA summary + recommendations */}
               <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 dark:text-violet-400">
-                    <Sparkles className="h-3.5 w-3.5" /> تحليل ARIA
+                    <Sparkles className="h-3.5 w-3.5" /> تحليل ARIA (gpt-5)
                   </div>
                   <Button size="sm" variant="outline" onClick={() => mAria.mutate()} disabled={mAria.isPending}>
-                    {mAria.isPending ? "جارٍ التحليل…" : "تشغيل التحليل"}
+                    {mAria.isPending ? "جارٍ التحليل…" : "إعادة التحليل"}
                   </Button>
                 </div>
                 <p className="text-xs text-foreground">{incident.ai_summary ?? "لم يُشغَّل التحليل بعد."}</p>
+                {Array.isArray(ariaRecs.immediate_actions) && ariaRecs.immediate_actions.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">إجراءات فورية</div>
+                    <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[11px] text-foreground">
+                      {ariaRecs.immediate_actions.map((a, i) => <li key={i}>{a}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {Array.isArray(ariaRecs.recommendations) && ariaRecs.recommendations.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">توصيات</div>
+                    <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[11px] text-foreground">
+                      {ariaRecs.recommendations.map((a, i) => <li key={i}>{a}</li>)}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Quick actions */}
@@ -236,6 +343,38 @@ export function IncidentDrawer({ incident, onOpenChange }: { incident: IncRow | 
                 <Button size="sm" variant="outline" onClick={() => mWO.mutate()} disabled={mWO.isPending}>
                   <Wrench className="ml-1 h-3.5 w-3.5" /> أمر عمل
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => mReport.mutate("pdf")} disabled={mReport.isPending}>
+                  <FileText className="ml-1 h-3.5 w-3.5" /> PDF
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => mReport.mutate("xlsx")} disabled={mReport.isPending}>
+                  <FileSpreadsheet className="ml-1 h-3.5 w-3.5" /> Excel
+                </Button>
+              </div>
+
+              {/* Attachments */}
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-xs font-semibold text-foreground">المرفقات ({liveAttachments.length})</div>
+                  <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-muted">
+                    <Paperclip className="h-3 w-3" /> {uploading ? "جارٍ الرفع…" : "إرفاق ملف"}
+                    <input type="file" className="hidden" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) onPickFile(f); e.target.value = ""; }} />
+                  </label>
+                </div>
+                <ul className="space-y-1 text-xs">
+                  {liveAttachments.map((a) => (
+                    <li key={a.id} className="flex items-center justify-between gap-2 rounded-md border border-border bg-card px-2 py-1.5">
+                      <button type="button" onClick={() => openAttachment(a.storage_path)} className="flex min-w-0 flex-1 items-center gap-1.5 text-start hover:text-primary">
+                        <Download className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{a.file_name}</span>
+                        {a.size_bytes != null && <span className="shrink-0 text-[10px] text-muted-foreground">({Math.max(1, Math.round(a.size_bytes / 1024))} KB)</span>}
+                      </button>
+                      <button type="button" onClick={() => mRemoveAttach.mutate(a.id)} className="rounded p-1 text-muted-foreground hover:bg-red-500/10 hover:text-red-600" aria-label="حذف المرفق">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </li>
+                  ))}
+                  {liveAttachments.length === 0 && <li className="text-[11px] text-muted-foreground">لا توجد مرفقات.</li>}
+                </ul>
               </div>
 
               {/* Corrective actions */}
@@ -254,6 +393,23 @@ export function IncidentDrawer({ incident, onOpenChange }: { incident: IncRow | 
                   <Input value={actionText} onChange={(e) => setActionText(e.target.value)} placeholder="إجراء تصحيحي جديد…" />
                   <Button size="sm" onClick={() => mAct.mutate()} disabled={actionText.length < 3 || mAct.isPending}>إضافة</Button>
                 </div>
+              </div>
+
+              {/* Executive Review */}
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+                <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  <ShieldAlert className="h-3.5 w-3.5" /> المراجعة التنفيذية
+                </div>
+                {liveExecReview ? (
+                  <div className="rounded-md border border-border bg-card p-2 text-xs">
+                    <p>{liveExecReview}</p>
+                    {liveExecReviewedAt && <div className="mt-1 text-[10px] text-muted-foreground">{new Date(liveExecReviewedAt).toLocaleString("ar-SA")}</div>}
+                  </div>
+                ) : <p className="text-[11px] text-muted-foreground">لم تُسجَّل مراجعة تنفيذية بعد.</p>}
+                <Textarea rows={2} value={execReview} onChange={(e) => setExecReview(e.target.value)} placeholder="ملاحظات القائد/المدير التنفيذي…" className="mt-2" />
+                <Button size="sm" className="mt-2" onClick={() => mER.mutate()} disabled={execReview.length < 5 || mER.isPending}>
+                  {liveExecReview ? "تحديث المراجعة" : "حفظ المراجعة"}
+                </Button>
               </div>
 
               {/* Close */}
