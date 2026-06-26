@@ -197,7 +197,7 @@ export function IncidentDrawer({ incident, onOpenChange }: { incident: IncRow | 
     enabled: open,
     refetchInterval: open ? 15_000 : false,
   });
-  const liveAttachments = Array.isArray((detail as { attachments?: unknown } | undefined)?.attachments) ? (detail as { attachments: Array<{ id: string; file_name: string; storage_path: string; uploaded_at: string; uploaded_by: string; mime_type?: string | null; size_bytes?: number | null }> }).attachments : [];
+  const liveAttachments = Array.isArray((detail as { attachments?: unknown } | undefined)?.attachments) ? ((detail as unknown as { attachments: Array<{ id: string; file_name: string; storage_path: string; uploaded_at: string; uploaded_by: string; mime_type?: string | null; size_bytes?: number | null }> }).attachments) : [];
   const liveExecReview = (detail as { executive_review?: string | null } | undefined)?.executive_review ?? null;
   const liveExecReviewedAt = (detail as { executive_reviewed_at?: string | null } | undefined)?.executive_reviewed_at ?? null;
 
