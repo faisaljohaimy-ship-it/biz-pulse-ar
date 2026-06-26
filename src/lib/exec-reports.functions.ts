@@ -315,11 +315,22 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     const uploadPath = `/sites/${encodeURIComponent(
       data.siteId,
     )}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(filename)}:/content`;
-    const up = await fetch(`${SP_GW}${uploadPath}`, {
-      method: "PUT",
-      headers: { ...spHeaders(), "Content-Type": "text/html; charset=utf-8" },
-      body: html,
-    });
+    let up: Response;
+    try {
+      up = await httpFetch(`${SP_GW}${uploadPath}`, {
+        method: "PUT",
+        headers: { ...spHeaders(), "Content-Type": "text/html; charset=utf-8" },
+        body: html,
+        label: "sharepoint/upload-html",
+        timeoutMs: 30_000,
+        retries: 1,
+      });
+    } catch (e) {
+      const msg = isApiError(e) ? e.message : String(e);
+      fail({ stage: "sharepoint_upload", code: isApiError(e) ? e.code : "upstream_failed",
+        message_en: `SharePoint upload network failure: ${msg}`,
+        message_ar: `فشل اتصال SharePoint أثناء الرفع: ${msg}` });
+    }
     if (!up.ok) await failFromResponse("sharepoint_upload", up);
     const item = (await up.json()) as { id: string; name: string; webUrl: string; size: number };
 
