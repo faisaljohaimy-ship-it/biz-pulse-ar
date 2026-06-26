@@ -91,7 +91,49 @@ export const createIncident = createServerFn({ method: "POST" })
       actor_name: actorName,
       payload: { severity: data.severity, priority: data.priority, ai_risk_score, notes: data.notes ?? null },
     });
-    return row;
+
+    // ── Auto ARIA analysis (gpt-5 with timeout + heuristic fallback) ──
+    try {
+      const { ariaAnalyseIncident } = await import("./oms-aria.server");
+      const analysis = await ariaAnalyseIncident({
+        ref,
+        category: data.category,
+        title_ar: data.title_ar,
+        title_en: data.title_en || data.title_ar,
+        severity: data.severity,
+        priority: data.priority,
+        status: "open",
+        assigned_to: data.assigned_to ?? null,
+        owner: data.owner ?? null,
+        notes: data.notes ?? null,
+      });
+      await supabase
+        .from("sec_incidents")
+        .update({
+          ai_summary: analysis.summary_ar,
+          ai_risk_score: analysis.risk_score,
+          aria_auto_analyzed: analysis.source === "gpt-5",
+        })
+        .eq("id", row.id);
+      await supabase.from("sec_activity_events").insert({
+        entity_type: "incident",
+        entity_id: row.id,
+        entity_ref: ref,
+        event: "aria_auto_analyzed",
+        actor_id: userId,
+        actor_name: `ARIA (${analysis.source})`,
+        payload: {
+          risk_score: analysis.risk_score,
+          recommendations: analysis.recommendations,
+          immediate_actions: analysis.immediate_actions,
+          summary_en: analysis.summary_en,
+        },
+      });
+      return { ...row, ai_summary: analysis.summary_ar, ai_risk_score: analysis.risk_score, aria_auto_analyzed: analysis.source === "gpt-5" };
+    } catch (err) {
+      console.error("[createIncident] auto-aria failed", err);
+      return row;
+    }
   });
 
 const updateIncidentSchema = z.object({
