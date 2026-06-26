@@ -602,6 +602,16 @@ function ExecutiveReportsPage() {
           )}
         </Card>
       </div>
+
+      {/* PDF + Excel + Outlook + Scheduling (production wave) */}
+      <BinaryReportsPanel
+        sites={sites}
+        isAr={isAr}
+        defaultSiteId={siteId}
+        defaultTitle={title}
+        defaultSubtitle={subtitle}
+      />
     </div>
   );
 }
+
