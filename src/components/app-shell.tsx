@@ -40,6 +40,7 @@ import {
   Layers,
   MapPin,
   Play,
+  Activity,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -182,6 +183,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/tts", icon: Volume2, label: t("nav.tts") },
         { to: "/workflows", icon: Workflow, label: t("nav.workflows") },
         { to: "/exec", icon: Play, label: ar(locale, "مركز التنفيذ", "Execution Console") },
+        { to: "/operations", icon: Activity, label: ar(locale, "مركز العمليات الحي", "Operations Center") },
         { to: "/prompts", icon: BookMarked, label: t("nav.prompts") },
         { to: "/marketplace", icon: Store, label: t("nav.marketplace") },
         { to: "/knowledge", icon: BookOpen, label: t("nav.knowledge") },
