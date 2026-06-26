@@ -1088,6 +1088,217 @@ export type Database = {
           },
         ]
       }
+      hajj_kpi_snapshots: {
+        Row: {
+          active_alerts: number
+          compliance_pct: number
+          created_at: string
+          field_staff: number
+          id: string
+          notes: string | null
+          open_incidents: number
+          org_id: string
+          risk_level: string
+          snapshot_at: string
+          stations_online: number
+          stations_total: number
+          tasks_done: number
+        }
+        Insert: {
+          active_alerts?: number
+          compliance_pct?: number
+          created_at?: string
+          field_staff?: number
+          id?: string
+          notes?: string | null
+          open_incidents?: number
+          org_id?: string
+          risk_level?: string
+          snapshot_at?: string
+          stations_online?: number
+          stations_total?: number
+          tasks_done?: number
+        }
+        Update: {
+          active_alerts?: number
+          compliance_pct?: number
+          created_at?: string
+          field_staff?: number
+          id?: string
+          notes?: string | null
+          open_incidents?: number
+          org_id?: string
+          risk_level?: string
+          snapshot_at?: string
+          stations_online?: number
+          stations_total?: number
+          tasks_done?: number
+        }
+        Relationships: []
+      }
+      hajj_sites: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name_ar: string
+          name_en: string
+          notes: string | null
+          org_id: string
+          staff_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name_ar: string
+          name_en: string
+          notes?: string | null
+          org_id?: string
+          staff_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name_ar?: string
+          name_en?: string
+          notes?: string | null
+          org_id?: string
+          staff_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hajj_stations: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          incidents_count: number
+          kind: string
+          name_ar: string
+          name_en: string
+          network: string
+          org_id: string
+          reports_count: number
+          site_id: string
+          staff_count: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          incidents_count?: number
+          kind?: string
+          name_ar: string
+          name_en: string
+          network?: string
+          org_id?: string
+          reports_count?: number
+          site_id: string
+          staff_count?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          incidents_count?: number
+          kind?: string
+          name_ar?: string
+          name_en?: string
+          network?: string
+          org_id?: string
+          reports_count?: number
+          site_id?: string
+          staff_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hajj_stations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "hajj_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hajj_tasks: {
+        Row: {
+          assignee: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          org_id: string
+          priority: string
+          reported_at: string
+          started_at: string | null
+          station_id: string | null
+          status: string
+          title_ar: string
+          title_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          assignee?: string | null
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          priority?: string
+          reported_at?: string
+          started_at?: string | null
+          station_id?: string | null
+          status?: string
+          title_ar: string
+          title_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assignee?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          priority?: string
+          reported_at?: string
+          started_at?: string | null
+          station_id?: string | null
+          status?: string
+          title_ar?: string
+          title_en?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hajj_tasks_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "hajj_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_microsoft: {
         Row: {
           client_id: string | null
