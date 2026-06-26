@@ -88,8 +88,36 @@ function statusBadge(status: string) {
 }
 
 function ExecConsole() {
+  const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
   const [inputText, setInputText] = useState("{}");
+  const [openRunId, setOpenRunId] = useState<string | null>(null);
+
+  // Realtime: invalidate queries on workflow_runs / tool_executions changes
+  useEffect(() => {
+    const ch = supabase
+      .channel("exec-console")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "workflow_runs" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "runs"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tool_executions" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "execs"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "enterprise_events" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "events"] }),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [qc]);
+
 
   const tools = useQuery({
     queryKey: ["exec", "tools"],
