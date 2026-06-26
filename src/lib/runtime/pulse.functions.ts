@@ -128,10 +128,10 @@ export const runtimePulse = createServerFn({ method: "POST" })
     const wfCutoff = new Date(Date.now() - WORKFLOW_STEP_TIMEOUT_MS).toISOString();
     const { data: activeWf } = await supabaseAdmin
       .from("workflow_runs")
-      .select("id, current_step, status, updated_at, started_at")
+      .select("id, current_step, status, started_at")
       .eq("org_id", orgId)
       .eq("status", "running")
-      .or(`updated_at.lt.${wfCutoff},updated_at.is.null`)
+      .lt("started_at", wfCutoff)
       .limit(20);
     for (const wf of activeWf ?? []) {
       const idx = STEP_FLOW.indexOf((wf.current_step as typeof STEP_FLOW[number]) ?? "planning");
@@ -143,7 +143,6 @@ export const runtimePulse = createServerFn({ method: "POST" })
           current_step: next,
           status: done ? "succeeded" : "running",
           finished_at: done ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString(),
         })
         .eq("id", wf.id);
       await publishEvent(supabase, {
