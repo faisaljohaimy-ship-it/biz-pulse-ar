@@ -552,6 +552,9 @@ async function failRun(
   actorId: string,
   error: string,
   stepRecords: StepRecord[] = [],
+  orgId?: string,
+  correlationId?: string,
+  startedAt?: string,
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any)
@@ -566,9 +569,12 @@ async function failRun(
     .eq("id", runId);
   await audit(supabase, {
     actor_id: actorId,
+    org_id: orgId ?? null,
     action: "agent.run.fail",
     resource_type: "agent_run",
     resource_id: runId,
     metadata: { error },
+    correlation_id: correlationId ?? null,
+    duration_ms: startedAt ? Date.now() - new Date(startedAt).getTime() : null,
   });
 }
