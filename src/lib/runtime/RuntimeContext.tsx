@@ -55,6 +55,9 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
     };
   }, [data, qc]);
 
+  // Autonomous runtime scheduler — enabled once bootstrap data is hydrated.
+  useRuntimeScheduler(!!data);
+
   if (isLoading || !data) {
     return <InitializingShell error={null} />;
   }
