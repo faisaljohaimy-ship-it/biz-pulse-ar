@@ -79,7 +79,7 @@ export const Route = createFileRoute("/api/public/hooks/runtime-bootstrap")({
               triggeredBy: triggeredBy as string,
               triggerEvent: "runtime.bootstrap",
               payload: defaultPayloadForTopic(w.trigger_topic as string | null),
-              idempotencyKey: `bootstrap-${w.id}-${new Date().toISOString().slice(0, 13)}`,
+              idempotencyKey: `bootstrap-${w.id}-${Date.now()}`,
             });
             results.push({ workflowId: w.id as string, name: w.name as string, status: res.status, runId: res.runId });
           } catch (e) {
