@@ -56,9 +56,16 @@ export async function runAgent(
 ): Promise<RunAgentResult> {
   const { agentId, actorId, goalOverride, context: ctxData } = params;
 
-  // 1) Load agent definition (RLS scoped).
+  // ALL orchestration writes go through the service-role admin client so RLS
+  // RESTRICTIVE policies on workflows/workflow_runs/workflow_step_runs cannot
+  // silently drop the wrapper trail. This is the production contract: every
+  // Run Agent click produces a complete evidence chain regardless of caller.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: def, error: defErr } = await (supabase as any)
+  const admin = supabaseAdmin as any;
+
+  // 1) Load agent definition (admin — wrapper runs as system).
+  const { data: def, error: defErr } = await admin
     .from("agent_definitions")
     .select(
       "id, name, goal, system_prompt, permissions, tool_allowlist, model, enabled",
@@ -72,9 +79,8 @@ export async function runAgent(
   const goal = (goalOverride?.trim() || agent.goal).trim();
   const correlationId = crypto.randomUUID();
 
-  // Resolve org_id for this actor (first membership) — RLS requires it.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: memb } = await (supabase as any)
+  // Resolve org_id for this actor (first membership).
+  const { data: memb } = await admin
     .from("org_members")
     .select("org_id")
     .eq("user_id", actorId)
@@ -88,7 +94,7 @@ export async function runAgent(
   // Run Agent press produces a real workflow_runs / workflow_step_runs trail.
   const WF_NAME = "__agent.run__";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let { data: wfRow } = await (supabase as any)
+  let { data: wfRow } = await admin
     .from("workflows")
     .select("id")
     .eq("org_id", orgId)
@@ -97,7 +103,7 @@ export async function runAgent(
     .maybeSingle();
   if (!wfRow) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: created } = await (supabase as any)
+    const { data: created } = await admin
       .from("workflows")
       .insert({
         org_id: orgId,
@@ -117,7 +123,7 @@ export async function runAgent(
   // 2) Create agent_runs row (running).
   const startedAt = new Date().toISOString();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: runRow, error: runErr } = await (supabase as any)
+  const { data: runRow, error: runErr } = await admin
     .from("agent_runs")
     .insert({
       agent_id: agentId,
@@ -139,7 +145,7 @@ export async function runAgent(
   let workflowRunId: string | null = null;
   if (workflowId) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: wfRunRow } = await (supabase as any)
+    const { data: wfRunRow } = await admin
       .from("workflow_runs")
       .insert({
         workflow_id: workflowId,
@@ -156,7 +162,7 @@ export async function runAgent(
     workflowRunId = (wfRunRow?.id as string | undefined) ?? null;
   }
 
-  await audit(supabase, {
+  await audit(admin, {
     actor_id: actorId,
     org_id: orgId,
     action: "agent.run.start",
@@ -165,7 +171,7 @@ export async function runAgent(
     metadata: { agentId, correlationId, workflowRunId },
     correlation_id: correlationId,
   });
-  await publishEvent(supabase, {
+  await publishEvent(admin, {
     topic: "workflow.started",
     payload: { workflowRunId, agentId, agentRunId: runId, goal },
     source: "agent.runtime",
@@ -175,7 +181,7 @@ export async function runAgent(
     subject_type: "workflow_run",
     subject_id: workflowRunId,
   });
-  await publishEvent(supabase, {
+  await publishEvent(admin, {
     topic: `agent.started.${agentId}`,
     payload: { runId, agentId, goal, workflowRunId },
     source: "agent.runtime",
@@ -215,7 +221,7 @@ export async function runAgent(
             let stepRowId: string | null = null;
             if (workflowRunId) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const { data: stepRow } = await (supabase as any)
+              const { data: stepRow } = await admin
                 .from("workflow_step_runs")
                 .insert({
                   run_id: workflowRunId,
@@ -231,7 +237,7 @@ export async function runAgent(
                 .single();
               stepRowId = (stepRow?.id as string | undefined) ?? null;
             }
-            await publishEvent(supabase, {
+            await publishEvent(admin, {
               topic: "workflow.step.started",
               payload: { workflowRunId, toolId, input },
               source: "agent.runtime",
@@ -261,7 +267,7 @@ export async function runAgent(
                     : "failed";
               if (stepRowId) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await (supabase as any)
+                await admin
                   .from("workflow_step_runs")
                   .update({
                     status: stepStatus,
@@ -276,7 +282,7 @@ export async function runAgent(
                   })
                   .eq("id", stepRowId);
               }
-              await publishEvent(supabase, {
+              await publishEvent(admin, {
                 topic:
                   res.status === "succeeded"
                     ? "workflow.step.completed"
@@ -314,7 +320,7 @@ export async function runAgent(
               callRecord.error = msg;
               if (stepRowId) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await (supabase as any)
+                await admin
                   .from("workflow_step_runs")
                   .update({
                     status: "failed",
@@ -323,7 +329,7 @@ export async function runAgent(
                   })
                   .eq("id", stepRowId);
               }
-              await publishEvent(supabase, {
+              await publishEvent(admin, {
                 topic: "workflow.step.failed",
                 payload: { workflowRunId, toolId, error: msg },
                 source: "agent.runtime",
@@ -381,8 +387,8 @@ export async function runAgent(
       toolChoice: "auto",
       stopWhen: stepCountIs(50),
       maxRetries: 1,
-      maxOutputTokens: 1500,
-      ...(isGpt5Family ? {} : { temperature: 0.3 }),
+      // GPT-5 family rejects max_tokens entirely; omit any output-token cap.
+      ...(isGpt5Family ? {} : { maxOutputTokens: 1500, temperature: 0.3 }),
       onStepFinish: ({ text, finishReason }) => {
         stepRecords.push({
           index: stepRecords.length,
@@ -397,7 +403,7 @@ export async function runAgent(
     const finishedAt = new Date().toISOString();
     const summary = result.text?.trim() || "(no summary produced)";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    await admin
       .from("agent_runs")
       .update({
         status: "succeeded",
@@ -408,7 +414,7 @@ export async function runAgent(
       })
       .eq("id", runId);
 
-    await audit(supabase, {
+    await audit(admin, {
       actor_id: actorId,
       org_id: orgId,
       action: "agent.run.success",
@@ -418,7 +424,7 @@ export async function runAgent(
       correlation_id: correlationId,
       duration_ms: Date.now() - new Date(startedAt).getTime(),
     });
-    await publishEvent(supabase, {
+    await publishEvent(admin, {
       topic: `agent.succeeded.${agentId}`,
       payload: { runId, agentId, steps: stepRecords.length, workflowRunId },
       source: "agent.runtime",
@@ -432,7 +438,7 @@ export async function runAgent(
 
     if (workflowRunId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      await admin
         .from("workflow_runs")
         .update({
           status: "succeeded",
@@ -440,7 +446,7 @@ export async function runAgent(
           current_step: null,
         })
         .eq("id", workflowRunId);
-      await publishEvent(supabase, {
+      await publishEvent(admin, {
         topic: "workflow.completed",
         payload: { workflowRunId, agentId, agentRunId: runId, steps: stepRecords.length },
         source: "agent.runtime",
@@ -467,7 +473,7 @@ export async function runAgent(
         goal,
       ].join("\n");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from("aria_reports").insert({
+      await admin.from("aria_reports").insert({
         user_id: actorId,
         org_id: orgId,
         kind: "executive",
@@ -503,7 +509,7 @@ export async function runAgent(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     await failRun(supabase, runId, actorId, msg, stepRecords, orgId, correlationId, startedAt);
-    await publishEvent(supabase, {
+    await publishEvent(admin, {
       topic: `agent.failed.${agentId}`,
       payload: { runId, agentId, error: msg, workflowRunId },
       source: "agent.runtime",
@@ -516,7 +522,7 @@ export async function runAgent(
     });
     if (workflowRunId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      await admin
         .from("workflow_runs")
         .update({
           status: "failed",
@@ -524,7 +530,7 @@ export async function runAgent(
           finished_at: new Date().toISOString(),
         })
         .eq("id", workflowRunId);
-      await publishEvent(supabase, {
+      await publishEvent(admin, {
         topic: "workflow.failed",
         payload: { workflowRunId, agentId, agentRunId: runId, error: msg },
         source: "agent.runtime",
@@ -547,7 +553,7 @@ export async function runAgent(
 }
 
 async function failRun(
-  supabase: SupabaseClient<Database>,
+  _supabase: SupabaseClient<Database>,
   runId: string,
   actorId: string,
   error: string,
@@ -556,8 +562,10 @@ async function failRun(
   correlationId?: string,
   startedAt?: string,
 ) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  const admin = supabaseAdmin as any;
+  await admin
     .from("agent_runs")
     .update({
       status: "failed",
@@ -567,7 +575,7 @@ async function failRun(
       finished_at: new Date().toISOString(),
     })
     .eq("id", runId);
-  await audit(supabase, {
+  await audit(admin, {
     actor_id: actorId,
     org_id: orgId ?? null,
     action: "agent.run.fail",

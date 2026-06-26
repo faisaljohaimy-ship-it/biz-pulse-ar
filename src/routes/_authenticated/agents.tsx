@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
   listAgentRuns,
-  runAgentFn,
   getAgentOpsOverview,
   setAgentEnabled,
   cancelAgentRun,
@@ -242,7 +241,7 @@ function AgentsOps() {
   const qc = useQueryClient();
   const callOverview = useServerFn(getAgentOpsOverview);
   const callListRuns = useServerFn(listAgentRuns);
-  const callRun = useServerFn(runAgentFn);
+  // Run Agent routes through the public hook below; no direct server-fn call.
   const callToggle = useServerFn(setAgentEnabled);
   const callCancel = useServerFn(cancelAgentRun);
   const callRetry = useServerFn(retryAgentRun);
@@ -291,13 +290,28 @@ function AgentsOps() {
   });
 
   const runM = useMutation({
-    mutationFn: async (p: { agentId: string; goalOverride?: string }) =>
-      callRun({
-        data: {
+    // Per CTO order: Run Agent button MUST route through the public hook,
+    // which invokes the production wrapper (agent-runtime.server.ts) with the
+    // service-role admin client. Never call the agent directly.
+    mutationFn: async (p: { agentId: string; goalOverride?: string }) => {
+      const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+      const resp = await fetch("/api/public/hooks/run-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey },
+        body: JSON.stringify({
           agentId: p.agentId,
           goalOverride: p.goalOverride?.trim() || undefined,
-        },
-      }),
+        }),
+      });
+      const json = (await resp.json()) as {
+        ok?: boolean;
+        result?: { status: string; error?: string };
+        error?: string;
+      };
+      if (!resp.ok || json.ok === false)
+        throw new Error(json.error ?? `HTTP ${resp.status}`);
+      return json.result ?? { status: "succeeded" };
+    },
     onSuccess: (res) => {
       const r = res as { status: string; error?: string };
       if (r.status === "succeeded")
