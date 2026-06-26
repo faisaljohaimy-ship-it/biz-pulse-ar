@@ -3,6 +3,9 @@
 // project's existing vector(768) columns (aria_knowledge, aria_memory, aria_documents).
 // NOTE: google/gemini-embedding-* rejects the `dimensions` field, so we use OpenAI here.
 
+import { httpJson } from "@/lib/api/http.server";
+import { isApiError } from "@/lib/api";
+
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/embeddings";
 const MODEL = "openai/text-embedding-3-small";
 
@@ -12,7 +15,7 @@ export async function embedText(input: string): Promise<number[] | null> {
   const trimmed = input.trim().slice(0, 8000);
   if (!trimmed) return null;
   try {
-    const res = await fetch(GATEWAY, {
+    const json = await httpJson<{ data?: { embedding: number[] }[] }>(GATEWAY, {
       method: "POST",
       headers: {
         "Lovable-API-Key": key,
@@ -20,16 +23,18 @@ export async function embedText(input: string): Promise<number[] | null> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ model: MODEL, input: trimmed, dimensions: 768 }),
+      label: "aria/embed",
+      retries: 1,
+      timeoutMs: 12_000,
     });
-    if (!res.ok) {
-      console.error("[aria/embed] gateway error", res.status, await res.text().catch(() => ""));
-      return null;
-    }
-    const json = (await res.json()) as { data?: { embedding: number[] }[] };
     const vec = json.data?.[0]?.embedding;
     return Array.isArray(vec) && vec.length === 768 ? vec : null;
   } catch (e) {
-    console.error("[aria/embed] fetch failed", e);
+    if (isApiError(e)) {
+      console.error("[aria/embed]", e.code, e.message, e.details);
+    } else {
+      console.error("[aria/embed] fetch failed", e);
+    }
     return null;
   }
 }

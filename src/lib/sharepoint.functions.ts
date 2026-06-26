@@ -1,28 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { apiError, input, z } from "@/lib/api";
+import { httpFetch, httpJson } from "@/lib/api/http.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 
-function authHeaders() {
+function authHeaders(): Record<string, string> {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const spKey = process.env.MICROSOFT_SHAREPOINT_API_KEY;
-  if (!lovableKey || !spKey) throw new Error("SharePoint connector not configured");
+  if (!lovableKey || !spKey) {
+    throw apiError("forbidden", "SharePoint connector not configured", {
+      details: { connector: "microsoft_sharepoint" },
+    });
+  }
   return {
     Authorization: `Bearer ${lovableKey}`,
     "X-Connection-Api-Key": spKey,
   };
 }
 
-async function spJson(path: string, init?: RequestInit) {
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
+async function spJson<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  return httpJson<T>(`${GATEWAY_URL}${path}`, {
     ...init,
-    headers: { ...authHeaders(), "Content-Type": "application/json", ...(init?.headers || {}) },
+    headers: { ...authHeaders(), "Content-Type": "application/json", ...(init?.headers as Record<string, string> | undefined) },
+    label: `sharepoint ${init?.method ?? "GET"} ${path}`,
   });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`SharePoint ${res.status}: ${txt.slice(0, 300)}`);
-  }
-  return res.json();
 }
 
 type SiteLite = { id: string; displayName: string; webUrl: string };
@@ -30,10 +32,12 @@ type SiteLite = { id: string; displayName: string; webUrl: string };
 export const listSharePointSites = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const root = (await spJson("/sites/root?$select=id,displayName,webUrl")) as SiteLite;
+    const root = await spJson<SiteLite>("/sites/root?$select=id,displayName,webUrl");
     let extra: SiteLite[] = [];
     try {
-      const r = (await spJson("/sites?search=*&$select=id,displayName,webUrl&$top=20")) as { value?: SiteLite[] };
+      const r = await spJson<{ value?: SiteLite[] }>(
+        "/sites?search=*&$select=id,displayName,webUrl&$top=20",
+      );
       extra = r.value ?? [];
     } catch { /* ignore */ }
     const all = [root, ...extra.filter((s) => s.id !== root.id)];
@@ -42,37 +46,49 @@ export const listSharePointSites = createServerFn({ method: "GET" })
 
 export const uploadReportToSharePoint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { siteId: string; filename: string; contentType: string; base64: string; createShareLink?: boolean }) => {
-    if (!d?.siteId) throw new Error("Missing siteId");
-    if (!/^[\w\-. ()\u0600-\u06FF]+\.(pdf|html|csv|xlsx|json)$/i.test(d.filename)) throw new Error("Invalid filename");
-    if (!d.contentType || d.contentType.length > 120) throw new Error("Invalid contentType");
-    if (!d.base64 || d.base64.length > 12_000_000) throw new Error("File too large (max ~9MB)");
-    return d;
-  })
+  .inputValidator(
+    input(
+      z.object({
+        siteId: z.string().min(1),
+        filename: z
+          .string()
+          .min(1)
+          .max(200)
+          .regex(/^[\w\-. ()\u0600-\u06FF]+\.(pdf|html|csv|xlsx|json)$/i, "Invalid filename"),
+        contentType: z.string().min(1).max(120),
+        base64: z.string().min(1).max(12_000_000),
+        createShareLink: z.boolean().optional(),
+      }),
+    ),
+  )
   .handler(async ({ data }) => {
-    // decode base64 to bytes
     const bin = Buffer.from(data.base64, "base64");
     const safeName = data.filename.replace(/[/\\]/g, "_");
     const uploadPath = `/sites/${encodeURIComponent(data.siteId)}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(safeName)}:/content`;
 
-    const up = await fetch(`${GATEWAY_URL}${uploadPath}`, {
+    const up = await httpFetch(`${GATEWAY_URL}${uploadPath}`, {
       method: "PUT",
       headers: { ...authHeaders(), "Content-Type": data.contentType },
       body: bin,
+      label: "sharepoint upload",
     });
     if (!up.ok) {
-      const txt = await up.text();
-      throw new Error(`SharePoint upload ${up.status}: ${txt.slice(0, 300)}`);
+      const txt = await up.text().catch(() => "");
+      throw apiError("upstream_failed", `SharePoint upload ${up.status}`, {
+        status: up.status,
+        requestId: up.headers.get("request-id") ?? undefined,
+        details: { body: txt.slice(0, 300) },
+      });
     }
     const item = (await up.json()) as { id: string; name: string; webUrl: string; size: number };
 
     let shareUrl: string | null = null;
     if (data.createShareLink !== false) {
       try {
-        const link = (await spJson(`/sites/${encodeURIComponent(data.siteId)}/drive/items/${item.id}/createLink`, {
-          method: "POST",
-          body: JSON.stringify({ type: "view", scope: "organization" }),
-        })) as { link?: { webUrl?: string } };
+        const link = await spJson<{ link?: { webUrl?: string } }>(
+          `/sites/${encodeURIComponent(data.siteId)}/drive/items/${item.id}/createLink`,
+          { method: "POST", body: JSON.stringify({ type: "view", scope: "organization" }) },
+        );
         shareUrl = link.link?.webUrl ?? null;
       } catch { /* keep null */ }
     }
