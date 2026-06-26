@@ -73,7 +73,14 @@ function MicrosoftSettingsPage() {
           setTeamId(data.default_team_id ?? "");
           setChannelId(data.default_channel_id ?? "");
           setNotes(data.notes ?? "");
+          setOutlookSync(data.sync_outlook_enabled);
+          setSharepointSync(data.sync_sharepoint_enabled);
+          setIntervalMin(data.sync_interval_minutes ?? 15);
         }
+        try {
+          const l = await listLogFn();
+          if (alive) setLogs(l);
+        } catch { /* non-fatal */ }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         if (/forbidden/i.test(msg)) setForbidden(true);
@@ -83,7 +90,7 @@ function MicrosoftSettingsPage() {
       }
     })();
     return () => { alive = false; };
-  }, [fetchFn]);
+  }, [fetchFn, listLogFn]);
 
   function addUri() {
     const v = uriDraft.trim();
