@@ -117,9 +117,14 @@ export const submitLead = createServerFn({ method: "POST" })
     if (error || !inserted) throw new Error(error?.message || "Failed to save request");
     const requestId = inserted.request_id ?? inserted.id;
 
-    // Fire-and-forget emails with retry; never fail the submission on email errors.
-    let emailStatus: { provider: string; internal_ok: boolean; confirm_ok: boolean; error?: string } = {
-      provider: "none", internal_ok: false, confirm_ok: false,
+    // Enqueue both confirmation + internal notification via Lovable Email
+    // queue. The queue dispatcher handles provider sending + retry/backoff on
+    // 429/5xx (5 attempts, then DLQ). We additionally retry the *enqueue*
+    // call up to 3 times in case of transient DB errors so a submission is
+    // never lost.
+    let emailStatus: Awaited<ReturnType<typeof sendNotificationEmails>> & { error?: string } = {
+      provider: "lovable-email", internal_ok: false, confirm_ok: false,
+      internal_error: undefined, confirm_error: undefined,
     };
     let attempt = 0;
     const maxAttempts = 3;
@@ -127,7 +132,6 @@ export const submitLead = createServerFn({ method: "POST" })
       attempt++;
       try {
         emailStatus = await sendNotificationEmails({ requestId, data, country, ip });
-        if (emailStatus.provider === "none") break; // no provider configured — exit retry loop
         if (emailStatus.internal_ok && emailStatus.confirm_ok) break;
       } catch (err) {
         emailStatus.error = err instanceof Error ? err.message : String(err);
@@ -150,10 +154,8 @@ export const submitLead = createServerFn({ method: "POST" })
         .eq("id", inserted.id);
     } catch { /* metadata write failure must not break flow */ }
 
-    if (emailStatus.provider === "none") {
-      console.warn("[leads] No email provider configured (set RESEND_API_KEY). Submission stored:", requestId);
-    } else if (!emailStatus.internal_ok || !emailStatus.confirm_ok) {
-      console.error("[leads] Email delivery partial/failed", { requestId, ...emailStatus });
+    if (!emailStatus.internal_ok || !emailStatus.confirm_ok) {
+      console.error("[leads] Email enqueue partial/failed", { requestId, ...emailStatus });
     }
 
     return {
