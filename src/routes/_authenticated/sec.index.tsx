@@ -5,6 +5,7 @@ import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { Activity, AlertTriangle, Radar, UserCheck, Camera, FileBadge, ShieldAlert, Boxes, HardHat } from "lucide-react";
 import { RefreshCw } from "lucide-react";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   component: OpsRoom,
