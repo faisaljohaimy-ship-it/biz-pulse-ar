@@ -9,12 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, Loader2, Plus, Save, ShieldCheck, TestTube2, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Plus, RefreshCw, Save, ShieldCheck, TestTube2, Trash2, XCircle, Zap } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import {
   getMicrosoftIntegration,
   upsertMicrosoftIntegration,
   testMicrosoftConnection,
+  updateMicrosoftSyncSettings,
+  listMicrosoftSyncLog,
+  triggerMicrosoftSyncNow,
   type MicrosoftIntegrationRow,
+  type MicrosoftSyncLogRow,
 } from "@/lib/integration-microsoft.functions";
 
 export const Route = createFileRoute("/_authenticated/settings/microsoft")({
