@@ -647,20 +647,26 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    const risk = inc.ai_risk_score ?? scoreRisk(inc.severity, inc.priority ?? "medium", inc.category);
-    const recs: string[] = [];
-    if (risk >= 75) recs.push("تصعيد فوري للقيادة + تفعيل غرفة العمليات");
-    if (inc.severity === "critical" || inc.severity === "high") recs.push("إنشاء أمر عمل تصحيحي بأولوية حرجة");
-    if (!inc.assigned_to) recs.push("تعيين مسؤول مباشر خلال 15 دقيقة");
-    if (inc.category?.toLowerCase().includes("fire")) recs.push("إخطار الدفاع المدني وفريق السلامة");
-    if (recs.length === 0) recs.push("متابعة دورية + توثيق الإجراءات التصحيحية");
-
-    const summary = `بلاغ ${inc.ref} — فئة ${inc.category}، خطورة ${inc.severity}، نقاط مخاطر ${risk}/100. ` +
-      `الحالة: ${inc.status}. ${inc.assigned_to ? `موكَّل إلى ${inc.assigned_to}.` : "لم يُعيَّن مسؤول بعد."}`;
+    const { ariaAnalyseIncident } = await import("./oms-aria.server");
+    const analysis = await ariaAnalyseIncident({
+      ref: inc.ref,
+      category: inc.category,
+      title_ar: inc.title_ar,
+      title_en: inc.title_en,
+      severity: inc.severity,
+      priority: inc.priority ?? "medium",
+      status: inc.status,
+      assigned_to: inc.assigned_to,
+      owner: inc.owner,
+    });
 
     await context.supabase
       .from("sec_incidents")
-      .update({ ai_summary: summary, ai_risk_score: risk })
+      .update({
+        ai_summary: analysis.summary_ar,
+        ai_risk_score: analysis.risk_score,
+        aria_auto_analyzed: analysis.source === "gpt-5",
+      })
       .eq("id", data.incident_id);
 
     await context.supabase.from("sec_activity_events").insert({
@@ -669,11 +675,166 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
       entity_ref: inc.ref,
       event: "aria_analyzed",
       actor_id: context.userId,
-      actor_name: "ARIA",
-      payload: { risk_score: risk, recommendations: recs },
+      actor_name: `ARIA (${analysis.source})`,
+      payload: {
+        risk_score: analysis.risk_score,
+        recommendations: analysis.recommendations,
+        immediate_actions: analysis.immediate_actions,
+        summary_en: analysis.summary_en,
+      },
     });
 
-    return { summary, risk_score: risk, recommendations: recs };
+    return analysis;
+  });
+
+// ============================================================================
+// EXECUTIVE REVIEW & ATTACHMENTS
+// ============================================================================
+
+export const setExecutiveReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      incident_id: z.string().uuid(),
+      review: z.string().min(5).max(4000),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId, claims } = context;
+    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مراجع تنفيذي";
+    const { data: row, error } = await supabase
+      .from("sec_incidents")
+      .update({
+        executive_review: data.review,
+        executive_reviewed_by: userId,
+        executive_reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", data.incident_id)
+      .select("ref")
+      .single();
+    if (error) throw new Error(error.message);
+    await supabase.from("sec_activity_events").insert({
+      entity_type: "incident",
+      entity_id: data.incident_id,
+      entity_ref: row.ref,
+      event: "executive_reviewed",
+      actor_id: userId,
+      actor_name: actorName,
+      payload: { review_excerpt: data.review.slice(0, 200) },
+    });
+    return { ok: true };
+  });
+
+const attachmentSchema = z.object({
+  incident_id: z.string().uuid(),
+  storage_path: z.string().min(3).max(500),
+  file_name: z.string().min(1).max(255),
+  mime_type: z.string().max(120).optional(),
+  size_bytes: z.number().int().nonnegative().optional(),
+  caption: z.string().max(400).optional(),
+});
+
+export const addIncidentAttachment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => attachmentSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId, claims } = context;
+    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const { data: cur, error: e1 } = await supabase
+      .from("sec_incidents")
+      .select("ref, attachments")
+      .eq("id", data.incident_id)
+      .single();
+    if (e1) throw new Error(e1.message);
+    const prev = Array.isArray(cur.attachments) ? (cur.attachments as JsonValue[]) : [];
+    const next: JsonValue[] = [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        storage_path: data.storage_path,
+        file_name: data.file_name,
+        mime_type: data.mime_type ?? null,
+        size_bytes: data.size_bytes ?? null,
+        caption: data.caption ?? null,
+        uploaded_by: actorName,
+        uploaded_at: new Date().toISOString(),
+      },
+    ];
+    const { error: e2 } = await supabase
+      .from("sec_incidents")
+      .update({ attachments: next as never, attachments_count: next.length })
+      .eq("id", data.incident_id);
+    if (e2) throw new Error(e2.message);
+    await supabase.from("sec_activity_events").insert({
+      entity_type: "incident",
+      entity_id: data.incident_id,
+      entity_ref: cur.ref,
+      event: "attachment_added",
+      actor_id: userId,
+      actor_name: actorName,
+      payload: { file_name: data.file_name, mime_type: data.mime_type ?? null },
+    });
+    return { ok: true, count: next.length };
+  });
+
+export const removeIncidentAttachment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ incident_id: z.string().uuid(), attachment_id: z.string() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId, claims } = context;
+    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const { data: cur, error: e1 } = await supabase
+      .from("sec_incidents")
+      .select("ref, attachments")
+      .eq("id", data.incident_id)
+      .single();
+    if (e1) throw new Error(e1.message);
+    const prev = Array.isArray(cur.attachments) ? (cur.attachments as Array<{ id: string; storage_path: string }>) : [];
+    const target = prev.find((a) => a.id === data.attachment_id);
+    const next = prev.filter((a) => a.id !== data.attachment_id);
+    if (target?.storage_path) {
+      try { await supabase.storage.from("uploads").remove([target.storage_path]); } catch (e) { console.warn("[attachment remove] storage", e); }
+    }
+    const { error: e2 } = await supabase
+      .from("sec_incidents")
+      .update({ attachments: next as never, attachments_count: next.length })
+      .eq("id", data.incident_id);
+    if (e2) throw new Error(e2.message);
+    await supabase.from("sec_activity_events").insert({
+      entity_type: "incident",
+      entity_id: data.incident_id,
+      entity_ref: cur.ref,
+      event: "attachment_removed",
+      actor_id: userId,
+      actor_name: actorName,
+      payload: { attachment_id: data.attachment_id },
+    });
+    return { ok: true, count: next.length };
+  });
+
+export const getIncidentAttachmentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ storage_path: z.string() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: signed, error } = await context.supabase
+      .storage.from("uploads").createSignedUrl(data.storage_path, 600);
+    if (error) throw new Error(error.message);
+    return { url: signed.signedUrl };
+  });
+
+export const getIncidentDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: inc, error } = await context.supabase
+      .from("sec_incidents")
+      .select("*")
+      .eq("id", data.incident_id)
+      .single();
+    if (error) throw new Error(error.message);
+    return inc;
   });
 
 // ============================================================================
