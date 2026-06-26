@@ -75,7 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="nexus-mobile-header sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Open navigation menu">
                 <Menu />
               </Button>
             </SheetTrigger>
@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Sheet>
           <div className="flex items-center gap-2">
             <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
-              <img src="/nexus-icon.png" alt="Nexus" className="h-full w-full object-cover" />
+              <img src="/nexus-icon.png" alt="Nexus AI OS Logo" className="h-full w-full object-cover" />
               <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
             <span className="text-sm font-bold tracking-tight">Nexus</span>
