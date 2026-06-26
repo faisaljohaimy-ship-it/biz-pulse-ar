@@ -242,7 +242,7 @@ function AgentsOps() {
   const qc = useQueryClient();
   const callOverview = useServerFn(getAgentOpsOverview);
   const callListRuns = useServerFn(listAgentRuns);
-  const callRun = useServerFn(runAgentFn);
+  // runAgentFn intentionally not used — Run Agent routes through the public hook below.
   const callToggle = useServerFn(setAgentEnabled);
   const callCancel = useServerFn(cancelAgentRun);
   const callRetry = useServerFn(retryAgentRun);
