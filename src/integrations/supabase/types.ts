@@ -509,36 +509,66 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          actor_id: string | null
+          changes: Json
+          correlation_id: string | null
           created_at: string
+          duration_ms: number | null
           entity: string | null
           entity_id: string | null
+          event_id: string | null
           id: string
           metadata: Json
+          occurred_at: string
           org_id: string
+          resource_id: string | null
+          resource_type: string | null
           route: string | null
-          user_id: string
+          source: string
+          status: string
+          user_id: string | null
         }
         Insert: {
           action: string
+          actor_id?: string | null
+          changes?: Json
+          correlation_id?: string | null
           created_at?: string
+          duration_ms?: number | null
           entity?: string | null
           entity_id?: string | null
+          event_id?: string | null
           id?: string
           metadata?: Json
+          occurred_at?: string
           org_id?: string
+          resource_id?: string | null
+          resource_type?: string | null
           route?: string | null
-          user_id: string
+          source?: string
+          status?: string
+          user_id?: string | null
         }
         Update: {
           action?: string
+          actor_id?: string | null
+          changes?: Json
+          correlation_id?: string | null
           created_at?: string
+          duration_ms?: number | null
           entity?: string | null
           entity_id?: string | null
+          event_id?: string | null
           id?: string
           metadata?: Json
+          occurred_at?: string
           org_id?: string
+          resource_id?: string | null
+          resource_type?: string | null
           route?: string | null
-          user_id?: string
+          source?: string
+          status?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -841,43 +871,64 @@ export type Database = {
         Row: {
           actor_id: string | null
           correlation_id: string | null
+          duration_ms: number | null
           error: string | null
           id: string
+          inputs_json: Json
+          metrics_json: Json
           occurred_at: string
           org_id: string
+          outputs_json: Json
           payload_json: Json
           processed_at: string | null
           retry_count: number
+          severity: string
           source: string
           status: string
+          subject_id: string | null
+          subject_type: string | null
           topic: string
         }
         Insert: {
           actor_id?: string | null
           correlation_id?: string | null
+          duration_ms?: number | null
           error?: string | null
           id?: string
+          inputs_json?: Json
+          metrics_json?: Json
           occurred_at?: string
           org_id?: string
+          outputs_json?: Json
           payload_json?: Json
           processed_at?: string | null
           retry_count?: number
+          severity?: string
           source?: string
           status?: string
+          subject_id?: string | null
+          subject_type?: string | null
           topic: string
         }
         Update: {
           actor_id?: string | null
           correlation_id?: string | null
+          duration_ms?: number | null
           error?: string | null
           id?: string
+          inputs_json?: Json
+          metrics_json?: Json
           occurred_at?: string
           org_id?: string
+          outputs_json?: Json
           payload_json?: Json
           processed_at?: string | null
           retry_count?: number
+          severity?: string
           source?: string
           status?: string
+          subject_id?: string | null
+          subject_type?: string | null
           topic?: string
         }
         Relationships: [
