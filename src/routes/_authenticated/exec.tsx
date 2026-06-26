@@ -18,6 +18,7 @@ import {
 } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkflowRunDetail } from "@/components/exec/workflow-run-detail";
+import { EventTimeline } from "@/components/events/EventTimeline";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
