@@ -386,7 +386,7 @@ export type AgentOpsOverview = {
 
 export const getAgentOpsOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AgentOpsOverview> => {
+  .handler(async ({ context }) => {
     const windowDays = 30;
     const since = new Date(
       Date.now() - windowDays * 24 * 60 * 60 * 1000,
