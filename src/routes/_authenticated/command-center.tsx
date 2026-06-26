@@ -14,6 +14,7 @@ import { sendOutlookReport, listOutlookInbox } from "@/lib/outlook.functions";
 import { listTeamsChannels, sendTeamsAlert } from "@/lib/teams.functions";
 import { SharePointUploadModal } from "@/components/sharepoint-upload-modal";
 import { toast } from "sonner";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
