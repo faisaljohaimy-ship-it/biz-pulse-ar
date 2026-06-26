@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
+import { HoloCommandStage } from "@/components/cinematic/HoloCommandStage";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: OperationsCockpit,
@@ -202,12 +203,14 @@ function OperationsCockpit() {
     : sysStatus === "ALERT" ? "text-rose-400" : "text-primary";
 
   return (
-    <div className="relative min-h-[calc(100vh-3rem)] w-full bg-[#061A2E] text-slate-100 p-5 md:p-8 overflow-hidden" dir="rtl">
-      {/* Ambient grid + neural backdrop */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/8 blur-[120px] rounded-full" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/8 blur-[120px] rounded-full" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,212,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,212,255,0.04)_1px,transparent_1px)] bg-[size:60px_60px] opacity-50" />
+    <div className="relative min-h-[calc(100vh-3rem)] w-full bg-[#04060d] text-slate-100 p-5 md:p-8 overflow-hidden" dir="rtl">
+      {/* Holographic Executive Command backdrop — live KPI-driven, GPU animated */}
+      <HoloCommandStage isAr k={k} status={sysStatus} />
+
+      {/* Ambient grid + neural backdrop (above stage, below content) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/6 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/6 blur-[120px] rounded-full" />
       </div>
 
       {/* Header */}
