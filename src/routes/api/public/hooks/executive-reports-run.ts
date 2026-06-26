@@ -3,6 +3,8 @@
 // Public route — guard the handler ourselves.
 
 import { createFileRoute } from "@tanstack/react-router";
+import { httpFetch } from "@/lib/api/http.server";
+import { isApiError } from "@/lib/api";
 
 export const Route = createFileRoute("/api/public/hooks/executive-reports-run")({
   server: {
