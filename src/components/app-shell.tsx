@@ -137,6 +137,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/cctv", icon: Layers, label: ar(locale, "CCTV", "CCTV") },
         { to: "/sec/kpi", icon: BarChart3, label: ar(locale, "مؤشرات الأداء", "KPIs") },
         { to: "/sec/ai", icon: Brain, label: ar(locale, "توصيات ARIA", "ARIA Recos") },
+        { to: "/hajj", icon: MapPin, label: ar(locale, "عمليات الحج — مشاعر 1447", "Hajj Ops — Mashaer 1447") },
       ],
     },
     {

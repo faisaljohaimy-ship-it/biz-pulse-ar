@@ -66,6 +66,7 @@ import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticated/investor'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedHajjRouteImport } from './routes/_authenticated/hajj'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
@@ -421,6 +422,11 @@ const AuthenticatedIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedHajjRoute = AuthenticatedHajjRouteImport.update({
+  id: '/hajj',
+  path: '/hajj',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedGovernanceRoute = AuthenticatedGovernanceRouteImport.update({
   id: '/governance',
   path: '/governance',
@@ -825,6 +831,7 @@ export interface FileRoutesByFullPath {
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
+  '/hajj': typeof AuthenticatedHajjRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
@@ -947,6 +954,7 @@ export interface FileRoutesByTo {
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
+  '/hajj': typeof AuthenticatedHajjRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
@@ -1070,6 +1078,7 @@ export interface FileRoutesById {
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
+  '/_authenticated/hajj': typeof AuthenticatedHajjRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/investor': typeof AuthenticatedInvestorRoute
@@ -1194,6 +1203,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/forgotten'
     | '/governance'
+    | '/hajj'
     | '/integrations'
     | '/intelligence'
     | '/investor'
@@ -1316,6 +1326,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/forgotten'
     | '/governance'
+    | '/hajj'
     | '/integrations'
     | '/intelligence'
     | '/investor'
@@ -1438,6 +1449,7 @@ export interface FileRouteTypes {
     | '/_authenticated/files'
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
+    | '/_authenticated/hajj'
     | '/_authenticated/integrations'
     | '/_authenticated/intelligence'
     | '/_authenticated/investor'
@@ -1948,6 +1960,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/integrations'
       preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/hajj': {
+      id: '/_authenticated/hajj'
+      path: '/hajj'
+      fullPath: '/hajj'
+      preLoaderRoute: typeof AuthenticatedHajjRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/governance': {
@@ -2503,6 +2522,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
+  AuthenticatedHajjRoute: typeof AuthenticatedHajjRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedInvestorRoute: typeof AuthenticatedInvestorRoute
@@ -2558,6 +2578,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
+  AuthenticatedHajjRoute: AuthenticatedHajjRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedInvestorRoute: AuthenticatedInvestorRoute,
