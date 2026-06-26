@@ -519,10 +519,8 @@ function AgentsOps() {
               ))}
             </div>
           ) : filteredAgents.length === 0 ? (
-            <Card className="p-6 text-sm text-muted-foreground">
-              {locale === "ar"
-                ? "لا يوجد وكلاء يطابقون التصفية."
-                : "No agents match the current filter."}
+            <Card className="p-6 flex items-center justify-center">
+              <LiveStatus variant="discovering" hint={locale === "ar" ? "لا توجد مطابقة — وسّع التصفية" : "No matches — broaden the filter"} size="sm" />
             </Card>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
