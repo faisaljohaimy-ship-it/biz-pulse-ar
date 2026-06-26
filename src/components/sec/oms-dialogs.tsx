@@ -18,9 +18,13 @@ import {
   escalateIncident, ariaAnalyzeIncident, getEntityTimeline,
   createWorkOrder, approveWorkOrder, completeWorkOrder,
   createPermit, approvePermit, denyPermit,
+  setExecutiveReview, addIncidentAttachment, removeIncidentAttachment,
+  getIncidentAttachmentUrl, getIncidentDetail,
 } from "@/lib/oms.functions";
+import { generateIncidentReport } from "@/lib/oms-reports.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { severityClass, statusClass } from "./sec-shell";
-import { Sparkles, AlertTriangle, CheckCircle2, ShieldAlert, Wrench } from "lucide-react";
+import { Sparkles, AlertTriangle, CheckCircle2, ShieldAlert, Wrench, Paperclip, FileText, FileSpreadsheet, Trash2, Download } from "lucide-react";
 
 const SEV = ["low", "medium", "high", "critical"] as const;
 
