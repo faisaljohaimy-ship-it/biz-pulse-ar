@@ -190,19 +190,18 @@ export const listMicrosoftSyncLog = createServerFn({ method: "GET" })
 
 export const triggerMicrosoftSyncNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ request }): Promise<{ ok: boolean; status: number; body: unknown }> => {
-    // Admin assertion via the auth-middleware client below — actual sync runs in the public hook.
+  .handler(async ({ context }): Promise<{ ok: boolean; status: number; body: string }> => {
+    await assertAdmin(context);
     const secret = process.env.MICROSOFT_SYNC_HOOK_SECRET;
     if (!secret) throw new Error("Sync hook not configured");
-    const origin = new URL(request.url).origin;
-    const r = await fetch(`${origin}/api/public/hooks/microsoft-sync`, {
+    const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || "https://biz-pulse-ar.lovable.app";
+    const r = await fetch(`${base.replace(/\/$/, "")}/api/public/hooks/microsoft-sync`, {
       method: "POST",
       headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
       body: "{}",
     });
-    const text = await r.text();
-    let body: unknown = text;
-    try { body = JSON.parse(text); } catch { /* non-JSON */ }
-    return { ok: r.ok, status: r.status, body };
+    const body = await r.text();
+    return { ok: r.ok, status: r.status, body: body.slice(0, 2000) };
   });
+
 
