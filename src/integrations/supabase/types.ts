@@ -1124,16 +1124,21 @@ export type Database = {
       }
       leads: {
         Row: {
+          browser: string | null
           company: string | null
+          country: string | null
           created_at: string
+          device: string | null
           email: string
           id: string
           ip: string | null
           kind: string
+          language: string | null
           metadata: Json
           name: string
           notes: string | null
           org_id: string
+          request_id: string | null
           role: string | null
           source: string | null
           status: string
@@ -1142,16 +1147,21 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          browser?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string
+          device?: string | null
           email: string
           id?: string
           ip?: string | null
           kind: string
+          language?: string | null
           metadata?: Json
           name: string
           notes?: string | null
           org_id?: string
+          request_id?: string | null
           role?: string | null
           source?: string | null
           status?: string
@@ -1160,16 +1170,21 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          browser?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string
+          device?: string | null
           email?: string
           id?: string
           ip?: string | null
           kind?: string
+          language?: string | null
           metadata?: Json
           name?: string
           notes?: string | null
           org_id?: string
+          request_id?: string | null
           role?: string | null
           source?: string | null
           status?: string
