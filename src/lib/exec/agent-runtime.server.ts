@@ -72,6 +72,48 @@ export async function runAgent(
   const goal = (goalOverride?.trim() || agent.goal).trim();
   const correlationId = crypto.randomUUID();
 
+  // Resolve org_id for this actor (first membership) — RLS requires it.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: memb } = await (supabase as any)
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", actorId)
+    .limit(1)
+    .maybeSingle();
+  const orgId: string =
+    (memb?.org_id as string | undefined) ??
+    "00000000-0000-0000-0000-000000000001";
+
+  // Find or create the system "Agent Execution" workflow per org so every
+  // Run Agent press produces a real workflow_runs / workflow_step_runs trail.
+  const WF_NAME = "__agent.run__";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let { data: wfRow } = await (supabase as any)
+    .from("workflows")
+    .select("id")
+    .eq("org_id", orgId)
+    .eq("name", WF_NAME)
+    .limit(1)
+    .maybeSingle();
+  if (!wfRow) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: created } = await (supabase as any)
+      .from("workflows")
+      .insert({
+        org_id: orgId,
+        name: WF_NAME,
+        description: "System workflow wrapping agent executions",
+        definition_json: { kind: "agent-run", version: 1 },
+        enabled: true,
+        tags: ["system", "agent"],
+        owner_id: actorId,
+      })
+      .select("id")
+      .single();
+    wfRow = created;
+  }
+  const workflowId = (wfRow?.id as string | undefined) ?? null;
+
   // 2) Create agent_runs row (running).
   const startedAt = new Date().toISOString();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,6 +122,7 @@ export async function runAgent(
     .insert({
       agent_id: agentId,
       triggered_by: actorId,
+      org_id: orgId,
       goal_override: goalOverride ?? null,
       context_json: ctxData ?? {},
       status: "running",
@@ -92,18 +135,55 @@ export async function runAgent(
   if (runErr) throw new Error(runErr.message);
   const runId = runRow.id as string;
 
+  // 2b) Wrap the agent execution in a workflow_run for full lifecycle evidence.
+  let workflowRunId: string | null = null;
+  if (workflowId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: wfRunRow } = await (supabase as any)
+      .from("workflow_runs")
+      .insert({
+        workflow_id: workflowId,
+        org_id: orgId,
+        triggered_by: actorId,
+        trigger_event: "agent.invoke",
+        trigger_payload: { agentId, agentRunId: runId, goal },
+        context_json: { correlationId },
+        status: "running",
+        current_step: "agent.execute",
+      })
+      .select("id")
+      .single();
+    workflowRunId = (wfRunRow?.id as string | undefined) ?? null;
+  }
+
   await audit(supabase, {
     actor_id: actorId,
+    org_id: orgId,
     action: "agent.run.start",
     resource_type: "agent_run",
     resource_id: runId,
-    metadata: { agentId, correlationId },
+    metadata: { agentId, correlationId, workflowRunId },
+    correlation_id: correlationId,
+  });
+  await publishEvent(supabase, {
+    topic: "workflow.started",
+    payload: { workflowRunId, agentId, agentRunId: runId, goal },
+    source: "agent.runtime",
+    actor_id: actorId,
+    org_id: orgId,
+    correlation_id: correlationId,
+    subject_type: "workflow_run",
+    subject_id: workflowRunId,
   });
   await publishEvent(supabase, {
     topic: `agent.started.${agentId}`,
-    payload: { runId, agentId, goal },
+    payload: { runId, agentId, goal, workflowRunId },
+    source: "agent.runtime",
     actor_id: actorId,
+    org_id: orgId,
     correlation_id: correlationId,
+    subject_type: "agent_run",
+    subject_id: runId,
   });
 
   // 3) Build AI SDK tools from the allowlist, intersected with bound executors.
