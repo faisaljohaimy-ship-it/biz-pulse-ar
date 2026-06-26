@@ -153,6 +153,13 @@ const syncSettingsSchema = z.object({
   sync_interval_minutes: z.number().int().min(5).max(1440),
 });
 
+async function ensureSyncSecretSeeded() {
+  const secret = process.env.MICROSOFT_SYNC_HOOK_SECRET;
+  if (!secret) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin.rpc("set_microsoft_sync_secret", { _secret: secret });
+}
+
 export const updateMicrosoftSyncSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => syncSettingsSchema.parse(d))
@@ -172,6 +179,7 @@ export const updateMicrosoftSyncSettings = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
+    await ensureSyncSecretSeeded();
     return updated as MicrosoftIntegrationRow;
   });
 
