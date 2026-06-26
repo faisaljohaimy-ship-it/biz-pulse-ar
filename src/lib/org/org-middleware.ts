@@ -67,10 +67,11 @@ export function requireOrgRole(minRole: OrgRole) {
   return createMiddleware({ type: "function" })
     .middleware([requireOrgContext])
     .server(async ({ next, context }) => {
-      const have = ROLE_RANK[context.orgRole];
+      const ctx = context as unknown as OrgContext;
+      const have = ROLE_RANK[ctx.orgRole];
       const need = ROLE_RANK[minRole];
       if (have < need) {
-        throw new Error(`Forbidden: requires ${minRole} (have ${context.orgRole})`);
+        throw new Error(`Forbidden: requires ${minRole} (have ${ctx.orgRole})`);
       }
       return next();
     });
