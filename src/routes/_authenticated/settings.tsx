@@ -11,8 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield, Plug } from "lucide-react";
+import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield, Plug, Database } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { seedAriaCorpus } from "@/lib/aria/seed-corpus.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -35,6 +37,28 @@ function SettingsPage() {
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [pushAlerts, setPushAlerts] = useState(false);
   const [criticalOnly, setCriticalOnly] = useState(false);
+
+  const runSeedCorpus = useServerFn(seedAriaCorpus);
+  const [seedingCorpus, setSeedingCorpus] = useState(false);
+
+  async function handleSeedCorpus() {
+    setSeedingCorpus(true);
+    try {
+      const res = await runSeedCorpus();
+      toast.success(
+        locale === "ar"
+          ? `تم رفع ${res.inserted} وثيقة (تم تخطي ${res.skipped})`
+          : `Indexed ${res.inserted} entries (skipped ${res.skipped})`,
+      );
+      if (res.failures?.length) {
+        toast.warning(`${res.failures.length} ${locale === "ar" ? "إخفاقات" : "failures"}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Seed failed");
+    } finally {
+      setSeedingCorpus(false);
+    }
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -212,6 +236,21 @@ function SettingsPage() {
             <Button onClick={changePassword} disabled={updatingPassword} className="gap-2">
               {updatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
               {locale === "ar" ? "تحديث" : "Update password"}
+            </Button>
+          </div>
+          <div className="border-t border-border pt-4 space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              {locale === "ar" ? "قاعدة معرفة ARIA" : "ARIA Knowledge Corpus"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {locale === "ar"
+                ? "يرفع 30 وثيقة مرجعية مؤسسية (سياسات، إجراءات SOP، KPIs، مسارات العمل) ويفهرسها للذاكرة الدلالية لـ ARIA. يتطلب صلاحية مسؤول."
+                : "Seed 30 enterprise reference entries (policies, SOPs, KPIs, workflows) and index them for ARIA's semantic memory. Admin only."}
+            </p>
+            <Button onClick={handleSeedCorpus} disabled={seedingCorpus} variant="outline" className="gap-2">
+              {seedingCorpus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+              {locale === "ar" ? "بدء الفهرسة" : "Seed corpus"}
             </Button>
           </div>
           <div className="border-t border-border pt-4">
