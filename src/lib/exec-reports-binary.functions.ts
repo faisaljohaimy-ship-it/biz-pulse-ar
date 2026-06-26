@@ -72,7 +72,7 @@ async function spUploadBinary(stage: PublishStage, siteId: string, folderPath: s
   const r = await fetch(`${SP_GW}${path}`, {
     method: "PUT",
     headers: { ...spHeaders(), "Content-Type": contentType },
-    body,
+    body: body as unknown as BodyInit,
   });
   if (!r.ok) await failFromResponse(stage, r);
   return (await r.json()) as { id: string; name: string; webUrl: string; size: number };
