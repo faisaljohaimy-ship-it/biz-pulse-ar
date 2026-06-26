@@ -19,8 +19,8 @@ export type MicrosoftIntegrationRow = {
   updated_at: string;
 };
 
-async function assertAdmin(ctx: { supabase: { rpc: (n: string, p: unknown) => Promise<{ data: unknown }> }; userId: string }) {
-  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
+async function assertAdmin(ctx: { supabase: { rpc: typeof globalThis extends never ? never : any }; userId: string }) {
+  const { data } = await (ctx.supabase as { rpc: (n: "has_role", p: { _user_id: string; _role: "admin" }) => Promise<{ data: boolean | null }> }).rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
   if (!data) throw new Error("Forbidden: admin role required");
 }
 
