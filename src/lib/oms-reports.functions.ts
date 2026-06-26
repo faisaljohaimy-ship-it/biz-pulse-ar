@@ -54,7 +54,8 @@ async function buildIncidentPdf(inc: {
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   let page = pdf.addPage([595.28, 841.89]); // A4 portrait
-  const { width, height } = page.size();
+  const width = 595.28;
+  const height = 841.89;
   let y = height - 50;
 
   const ink = rgb(0.04, 0.1, 0.18);
