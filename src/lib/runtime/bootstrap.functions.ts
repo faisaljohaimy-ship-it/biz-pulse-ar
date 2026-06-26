@@ -79,7 +79,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
       supabase.from("sec_cctv_alerts").select("id, status"),
       supabase.from("agent_definitions").select("id, enabled"),
       supabase.from("workflows").select("id, enabled"),
-      supabase.from("integration_microsoft").select("id, is_connected").maybeSingle(),
+      supabase.from("integration_microsoft").select("id, last_test_status").maybeSingle(),
     ]);
 
     const profile = profileRes.data;
@@ -126,7 +126,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
         workflows_enabled: workflows.filter((w) => w.enabled).length,
       },
       integrations: {
-        microsoft_connected: Boolean(msRes.data?.is_connected),
+        microsoft_connected: msRes.data?.last_test_status === "success",
       },
       health: {
         realtime: "ready",
