@@ -223,12 +223,27 @@ function ExecConsole() {
   });
 
 
+  const triggerWithDefaultsSF = useServerFn(triggerWorkflowWithDefaultsFn);
+  const triggerAllSF = useServerFn(triggerAllWorkflowsFn);
+
   const triggerMut = useMutation({
-    mutationFn: (id: string) => triggerFn({ data: { workflowId: id } }),
+    mutationFn: (id: string) => triggerWithDefaultsSF({ data: { workflowId: id } }),
     onSuccess: (res: unknown) => {
       const r = res as { status?: string };
-      toast.success(`Workflow ${String(r.status ?? "")}`);
+      toast.success(`Workflow ${String(r.status ?? "started")}`);
       void runs.refetch();
+      void events.refetch();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const triggerAllMut = useMutation({
+    mutationFn: () => triggerAllSF({ data: undefined as never }),
+    onSuccess: (res: unknown) => {
+      const r = res as { total?: number };
+      toast.success(`Dispatched ${r.total ?? 0} workflows`);
+      void runs.refetch();
+      void events.refetch();
     },
     onError: (err: Error) => toast.error(err.message),
   });
