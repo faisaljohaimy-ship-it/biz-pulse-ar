@@ -1,19 +1,21 @@
-// Tools registry — live status with one-click execution. No placeholders.
+// Tools registry — live status with schema-driven execution. No raw JSON.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle, Eye } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
-import { listToolRegistry, runTool } from "@/lib/exec.functions";
-import { toast } from "sonner";
+import { listToolRegistry } from "@/lib/exec.functions";
+import { ToolRunner } from "@/components/runtime/ToolRunner";
+import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 
 export const Route = createFileRoute("/_authenticated/tools")({
   component: ToolsRuntime,
