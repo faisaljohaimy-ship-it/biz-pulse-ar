@@ -51,15 +51,22 @@ function ToolsRuntime() {
     return m;
   }, [execs]);
 
+  const [query, setQuery] = useState("");
   const grouped = useMemo(() => {
     const m = new Map<string, Tool[]>();
+    const q = query.trim().toLowerCase();
     for (const t of (tools as Tool[] | undefined) ?? []) {
+      if (q) {
+        const hay = `${t.name} ${t.id} ${t.category} ${t.description ?? ""} ${(t.permissions ?? []).join(" ")}`.toLowerCase();
+        if (!hay.includes(q)) continue;
+      }
       const arr = m.get(t.category) ?? [];
       arr.push(t);
       m.set(t.category, arr);
     }
     return Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [tools]);
+  }, [tools, query]);
+
 
   const totals = useMemo(() => {
     const all = (tools as Tool[] | undefined) ?? [];
