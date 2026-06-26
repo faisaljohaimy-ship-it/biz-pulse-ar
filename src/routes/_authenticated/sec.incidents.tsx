@@ -93,7 +93,7 @@ function Incidents() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">لا توجد بلاغات</td></tr>
+              <tr><td colSpan={8} className="py-8 text-center"><LiveStatus variant="monitoring" hint="قنوات البلاغات نشطة — لا حوادث مفتوحة" size="sm" /></td></tr>
             )}
           </tbody>
         </table>
