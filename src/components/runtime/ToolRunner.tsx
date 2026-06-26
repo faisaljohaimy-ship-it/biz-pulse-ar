@@ -1,19 +1,26 @@
-// Dynamic Tool Runner — renders a schema-driven form for any tool in
-// tool_registry. Validates before execution, serializes automatically, and
-// surfaces the resulting trace ID for the execution timeline. Falls back to
-// raw JSON only when Developer Mode is toggled on.
+// Enterprise Tool Runner v2 — strictly schema-driven. No raw JSON. No "{}"
+// submissions. Smart defaults from the authenticated session, "Load Sample"
+// using real tenant IDs, live read-only payload preview, and humanised
+// validation errors. Operators never type JSON.
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Play, Code2, FormInput, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  Play,
+  FormInput,
+  AlertTriangle,
+  CheckCircle2,
+  Sparkles,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { runTool } from "@/lib/exec.functions";
+import { runTool, getToolSampleContext } from "@/lib/exec.functions";
 import { JsonSchemaForm, useSchemaForm, type JsonSchema } from "./JsonSchemaForm";
 
 type ToolRunnerProps = {
@@ -26,18 +33,82 @@ type ToolRunnerProps = {
   onCompleted?: (result: unknown) => void;
 };
 
-function useDevMode() {
-  const [dev, setDev] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("nexus.devMode") === "1";
-  });
-  const toggle = (v: boolean) => {
-    setDev(v);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("nexus.devMode", v ? "1" : "0");
+type SampleCtx = Awaited<ReturnType<typeof getToolSampleContext>>;
+
+const FRIENDLY_ERROR_BY_KEY: Record<string, { en: string; ar: string }> = {
+  required: {
+    en: "This field is required.",
+    ar: "هذا الحقل مطلوب.",
+  },
+  invalid_email: { en: "Enter a valid email address.", ar: "أدخل بريداً إلكترونياً صالحاً." },
+  invalid_uuid: { en: "Enter a valid ID (UUID).", ar: "أدخل معرّفاً صالحاً (UUID)." },
+  invalid_url: { en: "Enter a full https:// URL.", ar: "أدخل رابطاً كاملاً https://." },
+  invalid_format: { en: "Value does not match the required format.", ar: "القيمة لا تطابق التنسيق المطلوب." },
+  out_of_range: { en: "Value is out of the allowed range.", ar: "القيمة خارج النطاق المسموح." },
+  not_integer: { en: "Enter a whole number.", ar: "أدخل عدداً صحيحاً." },
+  not_in_enum: { en: "Pick one of the available options.", ar: "اختر من القائمة المتاحة." },
+};
+
+function humaniseError(msg: string, ar: boolean): string {
+  const m = msg.toLowerCase();
+  if (m.includes("is required")) return FRIENDLY_ERROR_BY_KEY.required[ar ? "ar" : "en"];
+  if (m.includes("email")) return FRIENDLY_ERROR_BY_KEY.invalid_email[ar ? "ar" : "en"];
+  if (m.includes("uuid")) return FRIENDLY_ERROR_BY_KEY.invalid_uuid[ar ? "ar" : "en"];
+  if (m.includes("url") || m.includes("must be a url")) return FRIENDLY_ERROR_BY_KEY.invalid_url[ar ? "ar" : "en"];
+  if (m.includes("must be one of")) return FRIENDLY_ERROR_BY_KEY.not_in_enum[ar ? "ar" : "en"];
+  if (m.includes("integer")) return FRIENDLY_ERROR_BY_KEY.not_integer[ar ? "ar" : "en"];
+  if (m.startsWith("min ") || m.startsWith("max ") || m.includes("length")) return FRIENDLY_ERROR_BY_KEY.out_of_range[ar ? "ar" : "en"];
+  if (m.includes("invalid format")) return FRIENDLY_ERROR_BY_KEY.invalid_format[ar ? "ar" : "en"];
+  return msg;
+}
+
+/** Walk the schema and pre-fill any property whose name matches a known
+ *  contextual key (org_id, user_id, actor_id, now, timestamp, site_id…). */
+function applySmartDefaults(
+  schema: JsonSchema,
+  current: Record<string, unknown>,
+  ctx: SampleCtx | undefined,
+): Record<string, unknown> {
+  if (!ctx) return current;
+  const next = { ...current };
+  for (const [key, sub] of Object.entries(schema.properties ?? {})) {
+    if (next[key] !== undefined && next[key] !== "" && next[key] !== null) continue;
+    const k = key.toLowerCase();
+    if (sub.type === "object" && sub.properties) {
+      next[key] = applySmartDefaults(sub, (next[key] as Record<string, unknown>) ?? {}, ctx);
+      continue;
     }
-  };
-  return [dev, toggle] as const;
+    if ((k === "org_id" || k === "organization_id" || k === "tenant_id") && ctx.org_id) next[key] = ctx.org_id;
+    else if ((k === "user_id" || k === "actor_id" || k === "operator_id" || k === "created_by") && ctx.user_id) next[key] = ctx.user_id;
+    else if ((k === "now" || k === "timestamp" || k === "occurred_at" || k === "at" || k === "as_of") && (sub.type === "string" || !sub.type)) next[key] = ctx.now_iso;
+  }
+  return next;
+}
+
+/** Optionally fill in non-contextual fields with real tenant samples. */
+function applySampleData(
+  schema: JsonSchema,
+  current: Record<string, unknown>,
+  ctx: SampleCtx,
+): Record<string, unknown> {
+  const next = { ...current };
+  for (const [key, sub] of Object.entries(schema.properties ?? {})) {
+    const k = key.toLowerCase();
+    if (sub.type === "object" && sub.properties) {
+      next[key] = applySampleData(sub, (next[key] as Record<string, unknown>) ?? {}, ctx);
+      continue;
+    }
+    if (next[key] !== undefined && next[key] !== "" && next[key] !== null) continue;
+    if (k.includes("site") && ctx.site_id) next[key] = ctx.site_id;
+    else if (k.includes("workflow") && ctx.workflow_id) next[key] = ctx.workflow_id;
+    else if (k.includes("incident") && ctx.incident_id) next[key] = ctx.incident_id;
+    else if (k.includes("asset") && ctx.asset_id) next[key] = ctx.asset_id;
+    else if (k.includes("agent") && ctx.agent_id) next[key] = ctx.agent_id;
+    else if (k === "tool_id" && ctx.tool_id) next[key] = ctx.tool_id;
+    else if (sub.examples && sub.examples.length > 0) next[key] = sub.examples[0];
+    else if (sub.enum && sub.enum.length > 0 && (next[key] === undefined || next[key] === "")) next[key] = sub.enum[0];
+  }
+  return next;
 }
 
 export function ToolRunner({
@@ -50,36 +121,61 @@ export function ToolRunner({
   onCompleted,
 }: ToolRunnerProps) {
   const run = useServerFn(runTool);
+  const fetchSampleCtx = useServerFn(getToolSampleContext);
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; data?: unknown; error?: string; traceId?: string } | null>(null);
-  const [devMode, setDevMode] = useDevMode();
-  const [rawText, setRawText] = useState<string>("{}");
+  const [showPreview, setShowPreview] = useState(true);
 
   const safeSchema: JsonSchema = schema && typeof schema === "object" ? schema : { type: "object", properties: {} };
   const form = useSchemaForm(safeSchema);
 
+  const { data: sampleCtx } = useQuery({
+    queryKey: ["tool-sample-ctx"],
+    queryFn: () => fetchSampleCtx(),
+    staleTime: 60_000,
+  });
+
+  // Apply smart defaults once context loads
+  useEffect(() => {
+    if (!sampleCtx) return;
+    const filled = applySmartDefaults(safeSchema, (form.value as Record<string, unknown>) ?? {}, sampleCtx);
+    if (JSON.stringify(filled) !== JSON.stringify(form.value)) {
+      form.setValue(filled);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sampleCtx]);
+
+  const friendlyErrors = useMemo(
+    () => form.errors.map((e) => ({ ...e, message: humaniseError(e.message, !!ar) })),
+    [form.errors, ar],
+  );
+
+  const loadSample = () => {
+    if (!sampleCtx?.has_real_data) {
+      toast.error(ar ? "لا توجد بيانات حقيقية" : "No real tenant data available", {
+        description: ar
+          ? "أضف بيانات في المؤسسة أولاً لاستخدام العينة."
+          : "Add records to your tenant before using sample.",
+      });
+      return;
+    }
+    const filled = applySampleData(safeSchema, (form.value as Record<string, unknown>) ?? {}, sampleCtx);
+    form.setValue(filled);
+    toast.success(ar ? "تم تحميل عيّنة حقيقية" : "Loaded real-data sample");
+  };
+
   const submit = async () => {
-    let input: unknown;
-    if (devMode) {
-      try {
-        input = JSON.parse(rawText || "{}");
-      } catch (e) {
-        toast.error(ar ? "JSON غير صالح" : "Invalid JSON", { description: (e as Error).message });
-        return;
-      }
-    } else {
-      if (!form.isValid) {
-        toast.error(ar ? "تحقق من الحقول" : "Fix validation errors", {
-          description: form.errors.map((e) => `${e.path}: ${e.message}`).join("\n"),
-        });
-        return;
-      }
-      input = form.value;
+    if (!form.isValid) {
+      const first = friendlyErrors[0];
+      toast.error(ar ? "تحقّق من الحقول" : "Fix the highlighted fields", {
+        description: first ? `${first.path.replace(/^\$\.?/, "")} — ${first.message}` : undefined,
+      });
+      return;
     }
     setPending(true);
     setResult(null);
     try {
-      const res = (await run({ data: { toolId, input } })) as Record<string, unknown>;
+      const res = (await run({ data: { toolId, input: form.value } })) as Record<string, unknown>;
       const traceId = (res?.execution_id as string) || (res?.id as string) || (res?.correlation_id as string);
       setResult({ ok: true, data: res, traceId });
       toast.success(ar ? "تم التنفيذ" : "Executed", {
@@ -96,6 +192,13 @@ export function ToolRunner({
   };
 
   const propCount = Object.keys(safeSchema.properties ?? {}).length;
+  const previewJson = useMemo(() => {
+    try {
+      return JSON.stringify(form.value ?? {}, null, 2);
+    } catch {
+      return "{}";
+    }
+  }, [form.value]);
 
   return (
     <Card className="glass-card p-4 space-y-3">
@@ -112,45 +215,67 @@ export function ToolRunner({
           <p className="mt-0.5 text-[11px] text-muted-foreground">
             {propCount === 0
               ? (ar ? "لا توجد مدخلات مطلوبة." : "No inputs required.")
-              : (ar ? `${propCount} حقل مولّد تلقائياً` : `${propCount} auto-generated field${propCount === 1 ? "" : "s"}`)}
+              : (ar ? `${propCount} حقل — مولّد تلقائياً من المخطط` : `${propCount} field${propCount === 1 ? "" : "s"} — auto-generated from schema`)}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Label htmlFor={`dev-${toolId}`} className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Code2 className="h-3 w-3" /> {ar ? "وضع المطور" : "Dev"}
-          </Label>
-          <Switch id={`dev-${toolId}`} checked={devMode} onCheckedChange={setDevMode} />
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7"
+            disabled={!sampleCtx?.has_real_data || propCount === 0}
+            onClick={loadSample}
+            title={!sampleCtx?.has_real_data ? (ar ? "لا توجد بيانات حقيقية" : "No real tenant data") : undefined}
+          >
+            <Sparkles className="h-3 w-3" />
+            <span className="ms-1 text-[10px]">{ar ? "عيّنة حقيقية" : "Load Sample"}</span>
+          </Button>
         </div>
       </div>
 
-      {devMode ? (
-        <div className="space-y-1">
-          <Label className="text-[10px] text-muted-foreground">{ar ? "مدخلات JSON خام" : "Raw JSON input"}</Label>
-          <Textarea
-            className="min-h-[140px] font-mono text-xs"
-            value={rawText}
-            onChange={(e) => setRawText(e.target.value)}
-            placeholder="{}"
-          />
+      <JsonSchemaForm
+        schema={safeSchema}
+        value={form.value}
+        onChange={form.setValue}
+        errors={friendlyErrors}
+      />
+
+      {propCount > 0 && (
+        <div className="rounded-md border border-border/40 bg-background/30">
+          <button
+            type="button"
+            onClick={() => setShowPreview((v) => !v)}
+            className="flex w-full items-center justify-between gap-2 px-3 py-2 text-[11px] text-muted-foreground hover:text-foreground"
+          >
+            <span className="flex items-center gap-1.5">
+              {showPreview ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              {ar ? "معاينة الحمولة (للقراءة فقط)" : "Payload preview (read-only)"}
+            </span>
+            <Badge variant="outline" className="text-[10px]">
+              {form.isValid ? (ar ? "صالح" : "Valid") : `${friendlyErrors.length} ${ar ? "خطأ" : "issue" + (friendlyErrors.length === 1 ? "" : "s")}`}
+            </Badge>
+          </button>
+          {showPreview && (
+            <pre
+              className="max-h-40 overflow-auto border-t border-border/40 bg-background/50 px-3 py-2 font-mono text-[11px] text-cyan-200/90"
+              aria-readonly
+            >
+              {previewJson}
+            </pre>
+          )}
         </div>
-      ) : (
-        <JsonSchemaForm
-          schema={safeSchema}
-          value={form.value}
-          onChange={form.setValue}
-          errors={form.errors}
-        />
       )}
 
       <div className="flex items-center justify-between gap-2 pt-1">
         <div className="text-[10px] text-muted-foreground">
-          {!devMode && form.errors.length > 0 && (
+          {friendlyErrors.length > 0 && (
             <span className="text-rose-400">
-              {form.errors.length} {ar ? "خطأ" : "validation error" + (form.errors.length === 1 ? "" : "s")}
+              {friendlyErrors.length} {ar ? "حقل بحاجة لمراجعة" : "field" + (friendlyErrors.length === 1 ? "" : "s") + " need attention"}
             </span>
           )}
         </div>
-        <Button size="sm" disabled={!enabled || pending} onClick={submit}>
+        <Button size="sm" disabled={!enabled || pending || !form.isValid} onClick={submit}>
           {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
           <span className="ms-1">{pending ? (ar ? "جارٍ التنفيذ…" : "Running…") : (ar ? "تشغيل" : "Run")}</span>
         </Button>
@@ -174,7 +299,7 @@ export function ToolRunner({
             )}
           </div>
           {result.error ? (
-            <pre className="whitespace-pre-wrap text-[11px] text-rose-300">{result.error}</pre>
+            <pre className="whitespace-pre-wrap text-[11px] text-rose-300">{humaniseError(result.error, !!ar)}</pre>
           ) : (
             <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-[11px] text-muted-foreground">
               {JSON.stringify(result.data, null, 2)}
