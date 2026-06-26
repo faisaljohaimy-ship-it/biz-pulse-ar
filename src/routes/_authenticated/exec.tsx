@@ -154,8 +154,10 @@ function ExecConsole() {
 
   const runFn = useServerFn(runTool);
   const approveFn = useServerFn(approveToolExecution);
+  const rollbackFn = useServerFn(rollbackToolExecution);
   const triggerFn = useServerFn(triggerWorkflowFn);
   const runAgentSF = useServerFn(runAgentFn);
+
 
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentGoal, setAgentGoal] = useState("");
