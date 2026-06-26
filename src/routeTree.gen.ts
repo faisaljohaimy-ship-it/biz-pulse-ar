@@ -47,6 +47,7 @@ import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/voice'
 import { Route as AuthenticatedTtsRouteImport } from './routes/_authenticated/tts'
 import { Route as AuthenticatedTransformationRouteImport } from './routes/_authenticated/transformation'
+import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -74,6 +75,7 @@ import { Route as AuthenticatedExecutiveMapRouteImport } from './routes/_authent
 import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authenticated/executive'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
 import { Route as AuthenticatedExecRouteImport } from './routes/_authenticated/exec'
+import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
@@ -319,6 +321,11 @@ const AuthenticatedTransformationRoute =
     path: '/transformation',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -459,6 +466,11 @@ const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
 const AuthenticatedExecRoute = AuthenticatedExecRouteImport.update({
   id: '/exec',
   path: '/exec',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDigitalTwinRoute =
@@ -803,6 +815,7 @@ export interface FileRoutesByFullPath {
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/events': typeof AuthenticatedEventsRoute
   '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
@@ -830,6 +843,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
@@ -923,6 +937,7 @@ export interface FileRoutesByTo {
   '/decisions': typeof AuthenticatedDecisionsRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/events': typeof AuthenticatedEventsRoute
   '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
@@ -949,6 +964,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
@@ -1044,6 +1060,7 @@ export interface FileRoutesById {
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/exec': typeof AuthenticatedExecRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
   '/_authenticated/executive': typeof AuthenticatedExecutiveRoute
@@ -1071,6 +1088,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
   '/_authenticated/tts': typeof AuthenticatedTtsRoute
   '/_authenticated/voice': typeof AuthenticatedVoiceRoute
@@ -1166,6 +1184,7 @@ export interface FileRouteTypes {
     | '/decisions'
     | '/departments'
     | '/digital-twin'
+    | '/events'
     | '/exec'
     | '/execution'
     | '/executive'
@@ -1193,6 +1212,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/team'
+    | '/tools'
     | '/transformation'
     | '/tts'
     | '/voice'
@@ -1286,6 +1306,7 @@ export interface FileRouteTypes {
     | '/decisions'
     | '/departments'
     | '/digital-twin'
+    | '/events'
     | '/exec'
     | '/execution'
     | '/executive'
@@ -1312,6 +1333,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/team'
+    | '/tools'
     | '/transformation'
     | '/tts'
     | '/voice'
@@ -1406,6 +1428,7 @@ export interface FileRouteTypes {
     | '/_authenticated/decisions'
     | '/_authenticated/departments'
     | '/_authenticated/digital-twin'
+    | '/_authenticated/events'
     | '/_authenticated/exec'
     | '/_authenticated/execution'
     | '/_authenticated/executive'
@@ -1433,6 +1456,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
     | '/_authenticated/team'
+    | '/_authenticated/tools'
     | '/_authenticated/transformation'
     | '/_authenticated/tts'
     | '/_authenticated/voice'
@@ -1793,6 +1817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransformationRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tools': {
+      id: '/_authenticated/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/team': {
       id: '/_authenticated/team'
       path: '/team'
@@ -1980,6 +2011,13 @@ declare module '@tanstack/react-router' {
       path: '/exec'
       fullPath: '/exec'
       preLoaderRoute: typeof AuthenticatedExecRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/events': {
+      id: '/_authenticated/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof AuthenticatedEventsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/digital-twin': {
@@ -2455,6 +2493,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
+  AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedExecRoute: typeof AuthenticatedExecRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
   AuthenticatedExecutiveRoute: typeof AuthenticatedExecutiveRoute
@@ -2482,6 +2521,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
   AuthenticatedTtsRoute: typeof AuthenticatedTtsRoute
   AuthenticatedVoiceRoute: typeof AuthenticatedVoiceRoute
@@ -2508,6 +2548,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
+  AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedExecRoute: AuthenticatedExecRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
   AuthenticatedExecutiveRoute: AuthenticatedExecutiveRoute,
@@ -2535,6 +2576,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,
   AuthenticatedTtsRoute: AuthenticatedTtsRoute,
   AuthenticatedVoiceRoute: AuthenticatedVoiceRoute,
