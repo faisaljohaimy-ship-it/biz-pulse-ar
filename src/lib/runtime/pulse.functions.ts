@@ -22,6 +22,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
+import { consumePendingEvents } from "@/lib/runtime/consume-events.server";
 
 const AGENT_RUN_TIMEOUT_MS = 5 * 60_000;   // 5 min
 const TOOL_RUN_TIMEOUT_MS = 2 * 60_000;    // 2 min
@@ -43,13 +44,22 @@ export const runtimePulse = createServerFn({ method: "POST" })
       .maybeSingle();
     const orgId: string | null = member?.org_id ?? null;
     if (!orgId) {
-      return { agents_timed_out: 0, tools_timed_out: 0, workflows_advanced: 0, events: 0, at: new Date().toISOString() };
+      return { agents_timed_out: 0, tools_timed_out: 0, workflows_advanced: 0, events: 0, workflows_started: 0, at: new Date().toISOString() };
     }
 
     let agentsTimedOut = 0;
     let toolsTimedOut = 0;
     let workflowsAdvanced = 0;
     let eventsPublished = 0;
+
+    // 0) Consume pending enterprise_events → dispatch matching workflows.
+    //    Producers are real DB triggers on sec_incidents/sec_permits/sec_visitors.
+    let consumed = { events_processed: 0, workflows_started: 0, errors: 0 };
+    try {
+      consumed = await consumePendingEvents(supabaseAdmin, userId, orgId);
+    } catch (err) {
+      console.error("[pulse] consumePendingEvents failed", err);
+    }
 
     // 1) Time out agent_runs that exceeded their SLA. Real failure, real audit.
     const agentCutoff = new Date(Date.now() - AGENT_RUN_TIMEOUT_MS).toISOString();
@@ -159,8 +169,8 @@ export const runtimePulse = createServerFn({ method: "POST" })
       workflowsAdvanced++;
     }
 
-    // 4) Emit a single heartbeat ONLY if maintenance work actually happened.
-    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced;
+    // 4) Emit a single heartbeat ONLY if real work happened (consumption or timeouts).
+    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced + consumed.workflows_started;
     if (did > 0) {
       await publishEvent(supabase, {
         topic: "runtime.heartbeat",
@@ -173,6 +183,8 @@ export const runtimePulse = createServerFn({ method: "POST" })
           agents_timed_out: agentsTimedOut,
           tools_timed_out: toolsTimedOut,
           workflows_advanced: workflowsAdvanced,
+          events_consumed: consumed.events_processed,
+          workflows_started: consumed.workflows_started,
         },
       });
       eventsPublished++;
@@ -183,6 +195,8 @@ export const runtimePulse = createServerFn({ method: "POST" })
       tools_timed_out: toolsTimedOut,
       workflows_advanced: workflowsAdvanced,
       events: eventsPublished,
+      events_consumed: consumed.events_processed,
+      workflows_started: consumed.workflows_started,
       at: new Date().toISOString(),
     };
   });
