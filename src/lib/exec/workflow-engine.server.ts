@@ -484,6 +484,18 @@ export async function triggerWorkflow(
     resource_id: runId,
     metadata: { workflowId: params.workflowId },
   });
+  await publishEvent(supabase, {
+    topic: "workflow.started",
+    source: "exec.workflow",
+    severity: "info",
+    subject_type: "workflow_run",
+    subject_id: runId,
+    actor_id: params.triggeredBy,
+    payload: {
+      workflowId: params.workflowId,
+      triggerEvent: params.triggerEvent ?? "manual",
+    },
+  });
 
   const state: EngineState = {
     runId,
