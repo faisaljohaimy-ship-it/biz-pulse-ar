@@ -466,37 +466,63 @@ function ExecConsole() {
         <TabsContent value="workflows">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-3">
-              <h3 className="font-semibold text-sm mb-2">Definitions</h3>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <h3 className="font-semibold text-sm">
+                  Definitions
+                  {wfs.data?.length ? (
+                    <span className="text-xs text-muted-foreground font-normal ms-2">
+                      ({wfs.data.length})
+                    </span>
+                  ) : null}
+                </h3>
+                <Button
+                  size="sm"
+                  variant="default"
+                  disabled={!wfs.data?.length || triggerAllMut.isPending}
+                  onClick={() => triggerAllMut.mutate()}
+                  className="gap-1"
+                >
+                  <Play className="size-3" />
+                  {triggerAllMut.isPending ? "Dispatching…" : "Run all"}
+                </Button>
+              </div>
               <ul className="space-y-2">
-                {(wfs.data ?? []).map((w: { id: string; name: string; enabled: boolean }) => (
+                {(wfs.data ?? []).map((w: { id: string; name: string; enabled: boolean; trigger_topic?: string | null }) => (
                   <li
                     key={w.id}
                     className="flex items-center justify-between p-3 rounded-md border"
                   >
-                    <div>
-                      <div className="text-sm font-medium">{w.name}</div>
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {w.id.slice(0, 8)}…
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{w.name}</div>
+                      <div className="text-[11px] text-muted-foreground font-mono truncate">
+                        {w.trigger_topic ?? "manual"} · {w.id.slice(0, 8)}…
                       </div>
                     </div>
                     <Button
                       size="sm"
                       disabled={!w.enabled || triggerMut.isPending}
                       onClick={() => triggerMut.mutate(w.id)}
-                      className="gap-1"
+                      className="gap-1 shrink-0"
                     >
                       <Workflow className="size-3" />
                       Trigger
                     </Button>
                   </li>
                 ))}
-                {!wfs.data?.length && (
+                {wfs.isLoading && !wfs.data?.length && (
                   <li className="text-center p-4">
                     <LiveStatus variant="initializing" hint="Workflow registry loading" size="sm" />
                   </li>
                 )}
+                {!wfs.isLoading && !wfs.data?.length && (
+                  <li className="text-center p-4 text-xs text-muted-foreground">
+                    No workflows defined yet.
+                  </li>
+                )}
               </ul>
             </Card>
+
+
 
             <Card className="p-3">
               <h3 className="font-semibold text-sm mb-2">Recent runs</h3>
