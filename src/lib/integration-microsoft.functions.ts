@@ -121,11 +121,15 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
     }
     let result: ConnectionTestResult;
     try {
-      const r = await fetch("https://connector-gateway.lovable.dev/microsoft_outlook/me", {
+      const { httpFetch } = await import("@/lib/api/http.server");
+      const r = await httpFetch("https://connector-gateway.lovable.dev/microsoft_outlook/me", {
         headers: {
           Authorization: `Bearer ${lovableKey}`,
           "X-Connection-Api-Key": outlookKey,
         },
+        label: "microsoft connection test",
+        retries: 1,
+        timeoutMs: 12_000,
       });
       const text = await r.text();
       let body: { displayName?: string; userPrincipalName?: string; mail?: string; error?: { message?: string } } = {};
