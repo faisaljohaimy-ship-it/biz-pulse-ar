@@ -351,7 +351,7 @@ export type AgentOpsRecord = {
   enabled: boolean;
   tool_allowlist: string[];
   permissions: string[];
-  metadata: Record<string, unknown>;
+  metadata: JsonValue;
   updated_at: string;
   state: "running" | "queued" | "failed" | "idle" | "ready" | "disabled";
   total_runs: number;
