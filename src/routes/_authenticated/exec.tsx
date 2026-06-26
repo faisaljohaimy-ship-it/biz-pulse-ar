@@ -729,6 +729,12 @@ function ExecConsole() {
           </Card>
         </TabsContent>
       </Tabs>
+      <WorkflowRunDetail
+        runId={openRunId}
+        open={!!openRunId}
+        onOpenChange={(v) => !v && setOpenRunId(null)}
+      />
     </div>
   );
 }
+
