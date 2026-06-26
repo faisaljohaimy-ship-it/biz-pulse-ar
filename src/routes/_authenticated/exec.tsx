@@ -159,7 +159,7 @@ function ExecConsole() {
   const runFn = useServerFn(runTool);
   const approveFn = useServerFn(approveToolExecution);
   const rollbackFn = useServerFn(rollbackToolExecution);
-  const triggerFn = useServerFn(triggerWorkflowFn);
+  void triggerWorkflowFn; // kept exported for callers that need raw payload trigger
   const runAgentSF = useServerFn(runAgentFn);
 
 
