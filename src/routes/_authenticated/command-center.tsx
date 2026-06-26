@@ -340,7 +340,7 @@ function IncidentFeed({ items, sites, ar }: { items: Incident[]; sites: Site[]; 
             </div>
           </div>
         ))}
-        {items.length === 0 && <p className="text-xs text-slate-500">{ar ? "لا توجد حوادث." : "No incidents."}</p>}
+        {items.length === 0 && <LiveStatus variant="monitoring" hint={ar ? "قنوات الحوادث متصلة — لا حوادث مفتوحة" : "Incident channels online — no open incidents"} size="sm" />}
       </div>
     </NexusCard>
   );
