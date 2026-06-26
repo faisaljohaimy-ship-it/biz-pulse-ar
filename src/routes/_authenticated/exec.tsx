@@ -408,6 +408,19 @@ function ExecConsole() {
                         </Button>
                       </div>
                     )}
+                    {e.status === "succeeded" && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1 text-orange-300"
+                        disabled={rollbackMut.isPending}
+                        onClick={() => rollbackMut.mutate(e.id)}
+                      >
+                        <RotateCcw className="size-3" />
+                        Rollback
+                      </Button>
+                    )}
+
                     <details className="text-xs">
                       <summary className="cursor-pointer text-muted-foreground">
                         I/O
