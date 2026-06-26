@@ -469,16 +469,16 @@ function ExecConsole() {
               <div className="flex items-center justify-between mb-2 gap-2">
                 <h3 className="font-semibold text-sm">
                   Definitions
-                  {wfs.data?.length ? (
+                  {(wfs.data as unknown[] | undefined)?.length ? (
                     <span className="text-xs text-muted-foreground font-normal ms-2">
-                      ({wfs.data.length})
+                      ({(wfs.data as unknown[]).length})
                     </span>
                   ) : null}
                 </h3>
                 <Button
                   size="sm"
                   variant="default"
-                  disabled={!wfs.data?.length || triggerAllMut.isPending}
+                  disabled={!(wfs.data as unknown[] | undefined)?.length || triggerAllMut.isPending}
                   onClick={() => triggerAllMut.mutate()}
                   className="gap-1"
                 >
