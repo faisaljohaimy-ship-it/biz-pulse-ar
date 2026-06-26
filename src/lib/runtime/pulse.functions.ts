@@ -9,20 +9,45 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
 
 const EVENT_TOPICS: Array<{ topic: string; severity: "info" | "notice" | "warn" | "error" | "critical"; source: string }> = [
+  // Security ops — physical
+  { topic: "permit.approved", severity: "notice", source: "sec.permits" },
+  { topic: "permit.expired", severity: "warn", source: "sec.permits" },
+  { topic: "patrol.completed", severity: "info", source: "sec.patrols" },
+  { topic: "patrol.checkpoint", severity: "info", source: "sec.patrols" },
+  { topic: "vehicle.entered", severity: "info", source: "sec.access" },
+  { topic: "vehicle.exited", severity: "info", source: "sec.access" },
+  { topic: "gate.opened", severity: "info", source: "sec.gates" },
+  { topic: "badge.verified", severity: "info", source: "sec.access" },
+  { topic: "visitor.checked_in", severity: "info", source: "sec.visitors" },
+  { topic: "visitor.checked_out", severity: "info", source: "sec.visitors" },
+  { topic: "contractor.arrived", severity: "info", source: "sec.contractors" },
+  { topic: "contractor.expired", severity: "warn", source: "sec.contractors" },
+  { topic: "cctv.alert", severity: "warn", source: "sec.cctv" },
+  { topic: "sensor.triggered", severity: "warn", source: "sec.sensors" },
+  { topic: "fire.alarm.restored", severity: "notice", source: "sec.fire" },
+  { topic: "emergency.drill", severity: "notice", source: "sec.ops" },
+  { topic: "maintenance.completed", severity: "info", source: "sec.work_orders" },
+  // Risk / incidents
   { topic: "incident.created", severity: "warn", source: "sec.incidents" },
   { topic: "incident.closed", severity: "info", source: "sec.incidents" },
-  { topic: "workflow.approved", severity: "notice", source: "exec.workflow" },
+  { topic: "risk.increased", severity: "error", source: "risk.engine" },
+  { topic: "risk.resolved", severity: "notice", source: "risk.engine" },
   { topic: "risk.escalated", severity: "error", source: "risk.engine" },
-  { topic: "sensor.alert", severity: "warn", source: "sec.sensors" },
-  { topic: "report.generated", severity: "info", source: "exec.reports" },
+  // Workflows / approvals
+  { topic: "workflow.approved", severity: "notice", source: "exec.workflow" },
   { topic: "audit.completed", severity: "notice", source: "compliance" },
-  { topic: "prediction.updated", severity: "info", source: "kpi.intel" },
-  { topic: "integration.sync", severity: "info", source: "integration.sap" },
-  { topic: "teams.message", severity: "info", source: "integration.teams" },
+  // Integrations
+  { topic: "sap.synchronized", severity: "info", source: "integration.sap" },
+  { topic: "outlook.email.sent", severity: "info", source: "integration.outlook" },
+  { topic: "teams.notification", severity: "info", source: "integration.teams" },
   { topic: "sharepoint.upload", severity: "info", source: "integration.sharepoint" },
-  { topic: "email.delivered", severity: "info", source: "comms.email" },
-  { topic: "patrol.checkpoint", severity: "info", source: "sec.patrols" },
+  // Exec / AI
+  { topic: "report.generated", severity: "info", source: "exec.reports" },
+  { topic: "briefing.published", severity: "notice", source: "exec.briefings" },
+  { topic: "ai.recommendation", severity: "info", source: "aria.engine" },
+  { topic: "prediction.updated", severity: "info", source: "kpi.intel" },
   { topic: "kpi.refreshed", severity: "info", source: "kpi.intel" },
+  { topic: "notification.delivered", severity: "info", source: "comms.notifications" },
 ];
 
 function pick<T>(arr: T[]): T {
