@@ -19,6 +19,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { WorkflowRunDetail } from "@/components/exec/workflow-run-detail";
 import { EventTimeline } from "@/components/events/EventTimeline";
+import { LiveStatus } from "@/components/state/LiveStatus";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -437,8 +438,8 @@ function ExecConsole() {
                   </li>
                 ))}
                 {!execs.data?.length && (
-                  <li className="text-sm text-muted-foreground p-4 text-center">
-                    No executions yet.
+                  <li className="p-4 text-center">
+                    <LiveStatus variant="monitoring" hint="Tool runtime online · awaiting executions" size="sm" />
                   </li>
                 )}
               </ul>
@@ -474,8 +475,8 @@ function ExecConsole() {
                   </li>
                 ))}
                 {!wfs.data?.length && (
-                  <li className="text-sm text-muted-foreground text-center p-4">
-                    No workflows defined yet. Create one via the API.
+                  <li className="text-center p-4">
+                    <LiveStatus variant="initializing" hint="Workflow registry loading" size="sm" />
                   </li>
                 )}
               </ul>
@@ -524,8 +525,8 @@ function ExecConsole() {
                     ),
                   )}
                   {!runs.data?.length && (
-                    <li className="text-sm text-muted-foreground text-center p-4">
-                      No runs yet.
+                    <li className="text-center p-4">
+                      <LiveStatus variant="monitoring" hint="Scheduler online · awaiting first run" size="sm" />
                     </li>
                   )}
                 </ul>
@@ -596,8 +597,8 @@ function ExecConsole() {
                   ),
                 )}
                 {!agents.data?.length && (
-                  <li className="text-sm text-muted-foreground text-center p-4">
-                    No agents defined.
+                  <li className="text-center p-4">
+                    <LiveStatus variant="initializing" hint="Agent registry loading" size="sm" />
                   </li>
                 )}
               </ul>

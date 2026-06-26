@@ -14,6 +14,7 @@ import { sendOutlookReport, listOutlookInbox } from "@/lib/outlook.functions";
 import { listTeamsChannels, sendTeamsAlert } from "@/lib/teams.functions";
 import { SharePointUploadModal } from "@/components/sharepoint-upload-modal";
 import { toast } from "sonner";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
@@ -339,7 +340,7 @@ function IncidentFeed({ items, sites, ar }: { items: Incident[]; sites: Site[]; 
             </div>
           </div>
         ))}
-        {items.length === 0 && <p className="text-xs text-slate-500">{ar ? "لا توجد حوادث." : "No incidents."}</p>}
+        {items.length === 0 && <LiveStatus variant="monitoring" hint={ar ? "قنوات الحوادث متصلة — لا حوادث مفتوحة" : "Incident channels online — no open incidents"} size="sm" />}
       </div>
     </NexusCard>
   );

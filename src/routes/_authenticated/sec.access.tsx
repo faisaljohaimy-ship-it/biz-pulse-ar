@@ -6,6 +6,7 @@ import { getAccessOverview, setGateStatus } from "@/lib/access.functions";
 import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ShieldAlert, ShieldCheck, Users, HardHat, Car, DoorOpen } from "lucide-react";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/access")({
   component: AccessControlPage,
@@ -121,7 +122,7 @@ function AccessControlPage() {
             <ShieldAlert className="h-4 w-4 text-red-500" /> آخر محاولات الرفض
           </div>
           <div className="divide-y divide-border">
-            {denied.length === 0 && (<div className="px-4 py-6 text-center text-xs text-muted-foreground">لا توجد محاولات رفض حديثة</div>)}
+            {denied.length === 0 && (<div className="px-4 py-6 text-center"><LiveStatus variant="monitoring" hint="لا محاولات رفض حالياً — البوابات سليمة" size="sm" /></div>)}
             {denied.map((d) => {
               const p = d.payload as { plate?: string; reason?: string; target?: string };
               return (

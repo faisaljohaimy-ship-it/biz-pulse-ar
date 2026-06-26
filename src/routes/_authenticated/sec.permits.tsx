@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listPermits, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { NewPermitDialog, PermitActions } from "@/components/sec/oms-dialogs";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/permits")({
   component: Permits,
@@ -66,7 +67,7 @@ function Permits() {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={9} className="py-8 text-center text-sm text-muted-foreground">لا توجد تصاريح</td></tr>
+              <tr><td colSpan={9} className="py-8 text-center"><LiveStatus variant="monitoring" hint="نظام التصاريح متصل — لا تصاريح نشطة الآن" size="sm" /></td></tr>
             )}
           </tbody>
         </table>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { listIncidents, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { NewIncidentDialog, IncidentDrawer } from "@/components/sec/oms-dialogs";
+import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/incidents")({
   component: Incidents,
@@ -92,7 +93,7 @@ function Incidents() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">لا توجد بلاغات</td></tr>
+              <tr><td colSpan={8} className="py-8 text-center"><LiveStatus variant="monitoring" hint="قنوات البلاغات نشطة — لا حوادث مفتوحة" size="sm" /></td></tr>
             )}
           </tbody>
         </table>
