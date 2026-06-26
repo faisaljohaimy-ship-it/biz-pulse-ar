@@ -1849,6 +1849,75 @@ export type Database = {
           },
         ]
       }
+      report_schedules: {
+        Row: {
+          channel_id: string | null
+          created_at: string
+          created_by: string
+          enabled: boolean
+          frequency: string
+          hour_utc: number
+          id: string
+          last_error: string | null
+          last_run_at: string | null
+          last_share_url: string | null
+          last_status: string | null
+          name: string
+          next_run_at: string | null
+          org_id: string
+          range_window: string
+          recipients: string[]
+          site_id: string
+          team_id: string | null
+          updated_at: string
+          weekday: number | null
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string
+          created_by?: string
+          enabled?: boolean
+          frequency: string
+          hour_utc?: number
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_share_url?: string | null
+          last_status?: string | null
+          name: string
+          next_run_at?: string | null
+          org_id?: string
+          range_window?: string
+          recipients?: string[]
+          site_id: string
+          team_id?: string | null
+          updated_at?: string
+          weekday?: number | null
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string
+          created_by?: string
+          enabled?: boolean
+          frequency?: string
+          hour_utc?: number
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_share_url?: string | null
+          last_status?: string | null
+          name?: string
+          next_run_at?: string | null
+          org_id?: string
+          range_window?: string
+          recipients?: string[]
+          site_id?: string
+          team_id?: string | null
+          updated_at?: string
+          weekday?: number | null
+        }
+        Relationships: []
+      }
       sec_activity_events: {
         Row: {
           actor_id: string | null
