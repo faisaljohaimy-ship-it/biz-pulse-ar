@@ -23,6 +23,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
 import { consumePendingEvents } from "@/lib/runtime/consume-events.server";
+import { autoSeedAriaCorpusForOrg } from "@/lib/aria/seed-corpus.server";
 
 const AGENT_RUN_TIMEOUT_MS = 5 * 60_000;   // 5 min
 const TOOL_RUN_TIMEOUT_MS = 2 * 60_000;    // 2 min
@@ -169,8 +170,36 @@ export const runtimePulse = createServerFn({ method: "POST" })
       workflowsAdvanced++;
     }
 
-    // 4) Emit a single heartbeat ONLY if real work happened (consumption or timeouts).
-    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced + consumed.workflows_started;
+    // 4) Auto-seed ARIA corpus on first activation (once per org).
+    //    Cheap probe: skip if any knowledge already exists for this org.
+    let corpusInserted = 0;
+    try {
+      const { count } = await supabaseAdmin
+        .from("aria_knowledge")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId);
+      if ((count ?? 0) === 0) {
+        const r = await autoSeedAriaCorpusForOrg(supabaseAdmin as never, orgId);
+        corpusInserted = r.inserted;
+        if (r.inserted > 0) {
+          await publishEvent(supabase, {
+            topic: "aria.corpus.seeded",
+            source: "aria.runtime",
+            severity: "notice",
+            org_id: orgId,
+            actor_id: userId,
+            subject_type: "aria_knowledge",
+            payload: { inserted: r.inserted, mode: "auto" },
+          });
+          eventsPublished++;
+        }
+      }
+    } catch (err) {
+      console.error("[pulse] autoSeedAriaCorpusForOrg failed", err);
+    }
+
+    // 5) Emit a single heartbeat ONLY if real work happened.
+    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced + consumed.workflows_started + corpusInserted;
     if (did > 0) {
       await publishEvent(supabase, {
         topic: "runtime.heartbeat",
@@ -185,6 +214,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
           workflows_advanced: workflowsAdvanced,
           events_consumed: consumed.events_processed,
           workflows_started: consumed.workflows_started,
+          corpus_inserted: corpusInserted,
         },
       });
       eventsPublished++;
