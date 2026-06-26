@@ -53,7 +53,7 @@ function ContractorsPage() {
 
       {isLoading && <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">جارٍ التحميل…</div>}
       {!isLoading && contractors.length === 0 && (
-        <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">لا يوجد مقاولون مسجلون.</div>
+        <div className="rounded-xl border border-border bg-card p-6 text-center"><LiveStatus variant="monitoring" hint="سجل المقاولين متصل — بانتظار أول إدخال" size="sm" /></div>
       )}
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
