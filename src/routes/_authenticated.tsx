@@ -3,6 +3,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
+import { RuntimeProvider } from "@/lib/runtime/RuntimeContext";
+import { InitializingShell } from "@/lib/runtime/InitializingShell";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -16,17 +18,14 @@ function AuthLayout() {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
   }, [user, loading, navigate]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  if (loading) return <InitializingShell error={null} />;
   if (!user) return null;
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <RuntimeProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </RuntimeProvider>
   );
 }
+

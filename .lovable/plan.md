@@ -1,72 +1,63 @@
-# Ω-002 — Enterprise Architecture Stabilization Pack
 
-Goal: stabilize NEXUS AI OS without adding features or redesigning modules. Audit first, then apply surgical fixes in tight waves, each gated by typecheck + build.
+# Ω NEXUS Enterprise Production — 4-Wave Execution Plan
 
-## Wave 0 — Baseline & Audit (read-only)
-Produce an internal report under `docs/STABILIZATION_AUDIT.md` covering:
-- Folder + route map (count routes, layout gates, public vs `_authenticated`).
-- Component hierarchy hotspots (files > 400 LOC, > 5 levels nesting).
-- State management: React Query usage, context providers, unmounted-state writes.
-- DB schema: tables without RLS, missing indexes on FKs, nullable PII, naming drift (`sec_*` vs others).
-- API layer: server fns lacking `inputValidator`, missing admin gating, public routes missing signature/secret verification.
-- Realtime: publications + subscription cleanup.
-- Error/logging: missing `errorComponent`/`notFoundComponent`, swallowed errors.
-- Perf: heavy components without memoization, missing `React.lazy`, large bundles.
+Executes the Engineering Charter end-to-end. Each wave is self-contained, ships production code (no placeholders), and feeds the next.
 
-Tools: `tsgo`, `eslint`, `supabase--linter`, `security--run_security_scan`, ripgrep sweeps. No code changes in this wave.
+---
 
-## Wave 1 — Code Quality Sweep (behavior-preserving)
-- Remove unused imports, dead exports, duplicate utils (consolidate into `src/lib/utils.ts` where safe).
-- Fix `no-explicit-any` only where types are obvious; otherwise leave with TODO.
-- Replace `NodeJS.Timeout` → `ReturnType<typeof setTimeout>` per project rule.
-- Break circular deps detected by `madge` (install dev-only).
-- Resolve ESLint warnings; keep diff minimal per file.
+## Wave 1 — Enterprise Runtime Bootstrap (Foundation)
 
-Gate: `tsgo` clean, `eslint` clean, build succeeds.
+**Goal:** Single `EnterpriseRuntime` provider hydrates all critical context on login *before* the UI becomes interactive.
 
-## Wave 2 — Component Standardization (presentation only)
-Introduce `src/components/ui/state/` primitives:
-- `<LoadingState/>`, `<EmptyState/>`, `<ErrorState onRetry/>`.
-Refactor only the top 10 data-driven screens (Dashboard, Exec, Incidents, Patrols, Work Orders, Permits, Visitors, Vehicles, Reports, Settings) to use the primitives. Add `aria-*` labels on icon-only buttons, ensure RTL via `dir` already in `__root.tsx`.
+- `src/lib/runtime/bootstrap.functions.ts` — server fn `bootstrapEnterprise()` returns `{ org, user, departments, sites, assetsCount, kpis, agentsHealth, realtimeToken, integrations, scheduler }` in one round trip (parallel queries).
+- `src/lib/runtime/RuntimeContext.tsx` — React context + `useRuntime()` hook. Boots from `useSuspenseQuery`.
+- `src/lib/runtime/InitializingShell.tsx` — cinematic HUD initialization screen (uses existing cyan/HUD tokens) with per-step progress: Auth → Org → Twin → Operations → KPIs → Agents → Realtime → ARIA. Real check marks per resolved promise.
+- Wire into `src/routes/_authenticated/route.tsx`: gate `<Outlet />` behind `<RuntimeProvider>` Suspense fallback.
+- Realtime channel auto-subscribed on mount, torn down on unmount.
 
-No visual redesign — same tokens, same layout.
+## Wave 2 — Enterprise Event Bus + Audit Trail
 
-## Wave 3 — API Layer Hardening
-For every `createServerFn` under `src/lib/**`:
-- Ensure `.inputValidator(zod)` exists for any input.
-- Ensure admin-only fns call `has_role` check.
-- Wrap fetches with `AbortSignal.timeout(15000)` + single retry on 5xx (no retry on 4xx).
-- Standardize error envelope `{ code, message, requestId }` via a shared `failFrom()` helper (already exists for Microsoft — extract to `src/lib/errors.ts`).
+**Goal:** Every meaningful action publishes a typed event; every page can subscribe.
 
-For `src/routes/api/public/**`: verify each handler validates secret/signature and returns 401 on miss.
+- DB migration: extend `enterprise_events` with `(kind, severity, actor_id, org_id, subject_type, subject_id, payload jsonb, correlation_id)`, indices, RLS by org.
+- Realtime publication: `ALTER PUBLICATION supabase_realtime ADD TABLE enterprise_events`.
+- `src/lib/events/publish.server.ts` — `publishEvent({...})` helper; wired into workflow engine, agent runtime, incident lifecycle, report generation, permit approval.
+- `src/lib/events/useEventStream.ts` — client hook with filter API.
+- `src/components/events/EventTimeline.tsx` — reusable timeline (used by Agent runs, Workflow runs, Incident detail).
+- Audit derivation: every event mirrored into `audit_logs` via trigger.
 
-## Wave 4 — Database Hygiene
-Single migration:
-- Add missing indexes on common FK columns in `sec_*` tables identified by `supabase--slow_queries`.
-- Verify RLS enabled + GRANTs present on every public table (lint output drives the list).
-- No schema renames, no destructive changes.
+## Wave 3 — No-Empty-Screens Sweep
 
-## Wave 5 — UX Consistency Pass
-- Audit focus rings (`focus-visible:` tokens already in `styles.css`).
-- Ensure every interactive element is keyboard reachable.
-- Spacing/typography only adjusted where token usage was bypassed (hardcoded colors → semantic tokens).
+**Goal:** Zero blank states; every container shows a real operational status.
 
-## Wave 6 — Quality Gates
-- `tsgo` — 0 errors.
-- `bun run build` — 0 warnings (treat new warnings as errors).
-- `bunx vitest run` — existing tests green; add smoke tests only where a regression risk was introduced.
-- Playwright smoke on `/dashboard`, `/exec`, `/settings`, `/auth` (login flow with seeded session).
-- `supabase--linter` clean or each remaining flag has a tracked exception in `mem://security/`.
+- `src/components/state/LiveStatus.tsx` — variants: `initializing | monitoring | queued | discovering | syncing | processing | live | idle`. Animated, token-driven.
+- Audit every route under `src/routes/_authenticated/*`:
+  - Empty tables → `LiveStatus` + "Monitoring — no events in window" + last-sync timestamp.
+  - Empty cards → skeleton or live counter from runtime.
+- Replace dead `<div />` placeholders identified by `rg "TODO|placeholder|coming soon"`.
 
-## Scope Guardrails
-- No new tables, routes, or product features.
-- No visual redesign of existing screens.
-- No business-logic changes — only refactor, dedupe, harden, and validate.
-- Every wave shippable independently; rollback = revert the wave's commit.
+## Wave 4 — Executive Investor Pass
 
-## Deliverables
-- `docs/STABILIZATION_AUDIT.md` (Wave 0 report).
-- One PR-sized change per wave with summary in `.lovable/plan.md`.
-- Final `docs/STABILIZATION_REPORT.md` with before/after metrics (TS errors, lint warnings, lighthouse-ish bundle size, lint flags resolved).
+**Goal:** Visual polish + flow QA for demo readiness.
 
-Approve to start with **Wave 0 (audit only, no code changes)**? Or pick a different wave to start.
+- Dashboard hero: bind Wave 1 runtime + Wave 2 event stream into HoloCommandStage subtitle ticker.
+- Exec / Agents / Reports pages: consistent header (org badge, live clock, sync status, ARIA mini-button).
+- Motion: stagger fade-ins, glow on KPI deltas, route transitions.
+- Run Playwright smoke: login → dashboard → exec → agents → reports; capture screenshots for verification.
+- Final typecheck + security scan.
+
+---
+
+## Technical notes
+
+- All server fns under `src/lib/runtime/` use `requireSupabaseAuth` + `requireOrgContext`.
+- Bootstrap fans out queries in parallel (`Promise.all`); target P95 < 800ms.
+- `enterprise_events` insert wrapped to be non-blocking (`void publishEvent(...)`).
+- No hardcoded colors — use `--hud-cyan`, `--hud-bg`, etc. already in `src/styles.css`.
+- Backward compatible: existing pages keep working; `useRuntime()` is additive.
+
+---
+
+## Execution order this session
+
+I will execute **Wave 1 in full now** (it unblocks 2-4), then proceed to Wave 2, 3, 4 in subsequent turns — verifying typecheck and runtime after each wave. Reply "continue" between waves, or "go" to chain them all autonomously.
