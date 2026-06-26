@@ -87,7 +87,7 @@ function VehiclesPage() {
           <tbody>
             {isLoading && (<tr><td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">جارٍ التحميل…</td></tr>)}
             {!isLoading && vehicles.length === 0 && (
-              <tr><td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">لا يوجد مركبات مسجلة.</td></tr>
+              <tr><td colSpan={9} className="px-3 py-6 text-center"><LiveStatus variant="monitoring" hint="بوابات المركبات تراقب — لا حركة حالية" size="sm" /></td></tr>
             )}
             {vehicles.map((v) => (
               <tr key={v.id} className="border-t border-border">
