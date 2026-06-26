@@ -162,11 +162,23 @@ function teamsHeaders() {
   return { Authorization: `Bearer ${k}`, "X-Connection-Api-Key": t };
 }
 
-async function spJson(stage: PublishStage, path: string, init?: RequestInit) {
-  const r = await fetch(`${SP_GW}${path}`, {
-    ...init,
-    headers: { ...spHeaders(), "Content-Type": "application/json", ...(init?.headers || {}) },
-  });
+async function spJson(stage: PublishStage, path: string, init?: { method?: string; body?: BodyInit; headers?: Record<string, string> }) {
+  let r: Response;
+  try {
+    r = await httpFetch(`${SP_GW}${path}`, {
+      method: init?.method,
+      body: init?.body,
+      headers: { ...spHeaders(), "Content-Type": "application/json", ...(init?.headers || {}) },
+      label: `sharepoint${path}`,
+      timeoutMs: 20_000,
+      retries: 1,
+    });
+  } catch (e) {
+    const msg = isApiError(e) ? e.message : String(e);
+    fail({ stage, code: isApiError(e) ? e.code : "upstream_failed",
+      message_en: `SharePoint network failure: ${msg}`,
+      message_ar: `فشل اتصال SharePoint: ${msg}` });
+  }
   if (!r.ok) await failFromResponse(stage, r);
   return r.json();
 }
