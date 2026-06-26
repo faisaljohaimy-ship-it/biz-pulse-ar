@@ -56,6 +56,7 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticated/outcomes'
 import { Route as AuthenticatedOrchestrationRouteImport } from './routes/_authenticated/orchestration'
+import { Route as AuthenticatedOperationsRouteImport } from './routes/_authenticated/operations'
 import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authenticated/observability'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
@@ -364,6 +365,11 @@ const AuthenticatedOrchestrationRoute =
     path: '/orchestration',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedOperationsRoute = AuthenticatedOperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedObservabilityRoute =
   AuthenticatedObservabilityRouteImport.update({
     id: '/observability',
@@ -814,6 +820,7 @@ export interface FileRoutesByFullPath {
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/observability': typeof AuthenticatedObservabilityRoute
+  '/operations': typeof AuthenticatedOperationsRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -933,6 +940,7 @@ export interface FileRoutesByTo {
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/observability': typeof AuthenticatedObservabilityRoute
+  '/operations': typeof AuthenticatedOperationsRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
@@ -1053,6 +1061,7 @@ export interface FileRoutesById {
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/observability': typeof AuthenticatedObservabilityRoute
+  '/_authenticated/operations': typeof AuthenticatedOperationsRoute
   '/_authenticated/orchestration': typeof AuthenticatedOrchestrationRoute
   '/_authenticated/outcomes': typeof AuthenticatedOutcomesRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
@@ -1174,6 +1183,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/memory'
     | '/observability'
+    | '/operations'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -1293,6 +1303,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/memory'
     | '/observability'
+    | '/operations'
     | '/orchestration'
     | '/outcomes'
     | '/portfolio'
@@ -1412,6 +1423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/marketplace'
     | '/_authenticated/memory'
     | '/_authenticated/observability'
+    | '/_authenticated/operations'
     | '/_authenticated/orchestration'
     | '/_authenticated/outcomes'
     | '/_authenticated/portfolio'
@@ -1842,6 +1854,13 @@ declare module '@tanstack/react-router' {
       path: '/orchestration'
       fullPath: '/orchestration'
       preLoaderRoute: typeof AuthenticatedOrchestrationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/operations': {
+      id: '/_authenticated/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof AuthenticatedOperationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/observability': {
@@ -2453,6 +2472,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedObservabilityRoute: typeof AuthenticatedObservabilityRoute
+  AuthenticatedOperationsRoute: typeof AuthenticatedOperationsRoute
   AuthenticatedOrchestrationRoute: typeof AuthenticatedOrchestrationRoute
   AuthenticatedOutcomesRoute: typeof AuthenticatedOutcomesRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
@@ -2505,6 +2525,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedObservabilityRoute: AuthenticatedObservabilityRoute,
+  AuthenticatedOperationsRoute: AuthenticatedOperationsRoute,
   AuthenticatedOrchestrationRoute: AuthenticatedOrchestrationRoute,
   AuthenticatedOutcomesRoute: AuthenticatedOutcomesRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
