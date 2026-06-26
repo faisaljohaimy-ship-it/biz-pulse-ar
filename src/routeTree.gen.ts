@@ -92,6 +92,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticated/sec.index'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
 import { Route as AuthenticatedSecTwinRouteImport } from './routes/_authenticated/sec.twin'
@@ -553,6 +554,12 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsMicrosoftRoute =
+  AuthenticatedSettingsMicrosoftRouteImport.update({
+    id: '/microsoft',
+    path: '/microsoft',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedSecVisitorsRoute =
   AuthenticatedSecVisitorsRouteImport.update({
     id: '/visitors',
@@ -799,7 +806,7 @@ export interface FileRoutesByFullPath {
   '/prompts': typeof AuthenticatedPromptsRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/sec': typeof AuthenticatedSecRouteWithChildren
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/transformation': typeof AuthenticatedTransformationRoute
@@ -836,6 +843,7 @@ export interface FileRoutesByFullPath {
   '/sec/twin': typeof AuthenticatedSecTwinRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
+  '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
@@ -914,7 +922,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/risk': typeof AuthenticatedRiskRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/transformation': typeof AuthenticatedTransformationRoute
@@ -951,6 +959,7 @@ export interface FileRoutesByTo {
   '/sec/twin': typeof AuthenticatedSecTwinRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
+  '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
@@ -1032,7 +1041,7 @@ export interface FileRoutesById {
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
@@ -1069,6 +1078,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/twin': typeof AuthenticatedSecTwinRoute
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
+  '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
@@ -1187,6 +1197,7 @@ export interface FileRouteTypes {
     | '/sec/twin'
     | '/sec/vehicles'
     | '/sec/visitors'
+    | '/settings/microsoft'
     | '/lovable/email/suppression'
     | '/assistant/'
     | '/sec/'
@@ -1302,6 +1313,7 @@ export interface FileRouteTypes {
     | '/sec/twin'
     | '/sec/vehicles'
     | '/sec/visitors'
+    | '/settings/microsoft'
     | '/lovable/email/suppression'
     | '/assistant'
     | '/sec'
@@ -1419,6 +1431,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/twin'
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
+    | '/_authenticated/settings/microsoft'
     | '/lovable/email/suppression'
     | '/_authenticated/assistant/'
     | '/_authenticated/sec/'
@@ -2057,6 +2070,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings/microsoft': {
+      id: '/_authenticated/settings/microsoft'
+      path: '/microsoft'
+      fullPath: '/settings/microsoft'
+      preLoaderRoute: typeof AuthenticatedSettingsMicrosoftRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/sec/visitors': {
       id: '/_authenticated/sec/visitors'
       path: '/visitors'
@@ -2345,6 +2365,19 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
 const AuthenticatedSecRouteWithChildren =
   AuthenticatedSecRoute._addFileChildren(AuthenticatedSecRouteChildren)
 
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsMicrosoftRoute: typeof AuthenticatedSettingsMicrosoftRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsMicrosoftRoute: AuthenticatedSettingsMicrosoftRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
@@ -2385,7 +2418,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
@@ -2436,7 +2469,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,

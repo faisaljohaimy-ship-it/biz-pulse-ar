@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield } from "lucide-react";
+import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield, Plug } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -121,6 +122,20 @@ function SettingsPage() {
             : "Manage profile, appearance, language, notifications and security."}
         </p>
       </header>
+
+      <Link
+        to="/settings/microsoft"
+        className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 hover:bg-muted/40 transition"
+      >
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg border border-border/60 bg-background p-2"><Plug className="h-4 w-4" /></div>
+          <div>
+            <div className="text-sm font-medium">{locale === "ar" ? "تكامل Microsoft Identity" : "Microsoft Identity Integration"}</div>
+            <div className="text-xs text-muted-foreground">{locale === "ar" ? "Tenant، Client ID، عناوين إعادة التوجيه، واختبار Microsoft Graph" : "Tenant, client ID, redirect URIs, and Microsoft Graph test"}</div>
+          </div>
+        </div>
+        <span className="text-xs text-muted-foreground">{locale === "ar" ? "للمسؤولين" : "Admin"}</span>
+      </Link>
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
