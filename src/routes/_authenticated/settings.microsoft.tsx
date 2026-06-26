@@ -294,6 +294,105 @@ function MicrosoftSettingsPage() {
         </div>
       </Card>
 
+      <Card className="p-5 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" />
+              {isAr ? "المزامنة التلقائية مع Microsoft Graph" : "Automatic Microsoft Graph sync"}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {isAr
+                ? "بعد نجاح اختبار الاتصال، فعّل المزامنة الدورية لجلب رسائل Outlook ومحتوى SharePoint عبر Graph تلقائياً. تعمل المهمة كل 15 دقيقة وتحترم الفاصل الزمني المختار."
+                : "Once the connection test succeeds, enable periodic sync to pull Outlook messages and SharePoint content via Graph. The scheduler runs every 15 minutes and respects the chosen interval."}
+            </p>
+          </div>
+          <Badge variant={row?.last_sync_status === "ok" ? "default" : row?.last_sync_status === "error" ? "destructive" : "outline"}>
+            {row?.last_sync_status ?? (isAr ? "لم تبدأ" : "idle")}
+          </Badge>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="flex items-center justify-between rounded-md border border-border p-3">
+            <div>
+              <div className="text-sm font-medium">Outlook</div>
+              <div className="text-[11px] text-muted-foreground">{isAr ? "آخر 25 رسالة في الصندوق" : "Latest 25 inbox messages"}</div>
+            </div>
+            <Switch checked={outlookSync} onCheckedChange={setOutlookSync} />
+          </div>
+          <div className="flex items-center justify-between rounded-md border border-border p-3">
+            <div>
+              <div className="text-sm font-medium">SharePoint</div>
+              <div className="text-[11px] text-muted-foreground">{isAr ? "أحدث ملفات الموقع الافتراضي" : "Default site recent items"}</div>
+            </div>
+            <Switch checked={sharepointSync} onCheckedChange={setSharepointSync} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="interval">{isAr ? "الفاصل الزمني (دقائق)" : "Interval (minutes)"}</Label>
+            <Input id="interval" type="number" min={5} max={1440}
+              value={intervalMin}
+              onChange={e => setIntervalMin(Math.max(5, Math.min(1440, Number(e.target.value) || 15)))} />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={onSaveSync} disabled={savingSync} className="gap-2">
+            {savingSync ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isAr ? "حفظ المزامنة" : "Save sync"}
+          </Button>
+          <Button variant="outline" onClick={onSyncNow} disabled={syncing} className="gap-2">
+            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+            {isAr ? "تشغيل الآن" : "Sync now"}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={refreshLogs} className="gap-2">
+            <RefreshCw className="h-3.5 w-3.5" />
+            {isAr ? "تحديث السجل" : "Refresh log"}
+          </Button>
+          {row?.last_sync_at && (
+            <span className="text-xs text-muted-foreground">
+              {isAr ? "آخر مزامنة" : "Last sync"}: {new Date(row.last_sync_at).toLocaleString()}
+              {row.last_sync_error ? ` · ${row.last_sync_error}` : ""}
+            </span>
+          )}
+        </div>
+
+        <div className="rounded-md border border-border overflow-hidden">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40">
+              <tr>
+                <th className="px-2 py-1.5 text-start">{isAr ? "الوقت" : "Time"}</th>
+                <th className="px-2 py-1.5 text-start">{isAr ? "النوع" : "Kind"}</th>
+                <th className="px-2 py-1.5 text-start">{isAr ? "الحالة" : "Status"}</th>
+                <th className="px-2 py-1.5 text-start">{isAr ? "العناصر" : "Items"}</th>
+                <th className="px-2 py-1.5 text-start">{isAr ? "المدة" : "Duration"}</th>
+                <th className="px-2 py-1.5 text-start">{isAr ? "الخطأ" : "Error"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.length === 0 && (
+                <tr><td colSpan={6} className="px-2 py-4 text-center text-muted-foreground">{isAr ? "لا توجد عمليات بعد" : "No runs yet"}</td></tr>
+              )}
+              {logs.map(l => (
+                <tr key={l.id} className="border-t border-border/60">
+                  <td className="px-2 py-1.5 whitespace-nowrap">{new Date(l.started_at).toLocaleTimeString()}</td>
+                  <td className="px-2 py-1.5">{l.kind}</td>
+                  <td className="px-2 py-1.5">
+                    {l.status === "ok"
+                      ? <span className="inline-flex items-center gap-1 text-emerald-600"><CheckCircle2 className="h-3 w-3" />ok</span>
+                      : <span className="inline-flex items-center gap-1 text-destructive"><XCircle className="h-3 w-3" />{l.status}</span>}
+                  </td>
+                  <td className="px-2 py-1.5">{l.items_count}</td>
+                  <td className="px-2 py-1.5">{l.duration_ms != null ? `${l.duration_ms}ms` : "—"}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[18rem]" title={l.error ?? ""}>{l.error ?? ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+
+
       <Card className="p-4 text-xs text-muted-foreground space-y-1">
         <div className="font-medium text-foreground">{isAr ? "ملاحظة" : "Note"}</div>
         <p>
