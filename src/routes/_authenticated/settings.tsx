@@ -38,6 +38,28 @@ function SettingsPage() {
   const [pushAlerts, setPushAlerts] = useState(false);
   const [criticalOnly, setCriticalOnly] = useState(false);
 
+  const runSeedCorpus = useServerFn(seedAriaCorpus);
+  const [seedingCorpus, setSeedingCorpus] = useState(false);
+
+  async function handleSeedCorpus() {
+    setSeedingCorpus(true);
+    try {
+      const res = await runSeedCorpus();
+      toast.success(
+        locale === "ar"
+          ? `تم رفع ${res.inserted} وثيقة (تم تخطي ${res.skipped})`
+          : `Indexed ${res.inserted} entries (skipped ${res.skipped})`,
+      );
+      if (res.failures?.length) {
+        toast.warning(`${res.failures.length} ${locale === "ar" ? "إخفاقات" : "failures"}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Seed failed");
+    } finally {
+      setSeedingCorpus(false);
+    }
+  }
+
   useEffect(() => {
     if (!user) return;
     (async () => {
