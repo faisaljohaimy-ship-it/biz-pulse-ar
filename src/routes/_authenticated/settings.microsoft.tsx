@@ -139,6 +139,45 @@ function MicrosoftSettingsPage() {
     }
   }
 
+  async function refreshLogs() {
+    try { setLogs(await listLogFn()); } catch { /* ignore */ }
+  }
+
+  async function onSaveSync() {
+    setSavingSync(true);
+    try {
+      const saved = await saveSyncFn({ data: {
+        sync_outlook_enabled: outlookSync,
+        sync_sharepoint_enabled: sharepointSync,
+        sync_interval_minutes: intervalMin,
+      }});
+      setRow(saved);
+      toast.success(isAr ? "تم حفظ إعدادات المزامنة" : "Sync settings saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSavingSync(false);
+    }
+  }
+
+  async function onSyncNow() {
+    setSyncing(true);
+    try {
+      const r = await triggerFn();
+      if (r.ok) toast.success(isAr ? "بدأت المزامنة" : "Sync triggered");
+      else toast.error((isAr ? "فشل التشغيل: " : "Trigger failed: ") + `HTTP ${r.status}`);
+      // give the server a moment to write logs
+      setTimeout(refreshLogs, 1500);
+      const fresh = await fetchFn();
+      if (fresh) setRow(fresh);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+
   if (loading) return <div className="p-8 text-sm text-muted-foreground">{isAr ? "جاري التحميل..." : "Loading..."}</div>;
   if (forbidden) return (
     <div className="mx-auto max-w-2xl p-8">
