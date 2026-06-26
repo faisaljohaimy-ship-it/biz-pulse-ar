@@ -206,9 +206,9 @@ function HealthWall({ runtime, kpis, agentOps }: { runtime: RuntimeShape; kpis: 
       <HealthCard label="Enterprise" value={`${kpis?.executive_readiness ?? "—"}%`} tone="info" icon={Sparkles} hint="readiness index" />
       <HealthCard label="Agents" value={`${agentHealth}%`} tone={agentHealth >= 80 ? "ok" : "warn"} icon={Bot} hint={`${agentOps?.system.agents_running ?? 0} running`} />
       <HealthCard label="Workflows" value={`${wfHealth}%`} tone={wfHealth >= 80 ? "ok" : "warn"} icon={Workflow} hint={`${runtime.counts.workflows_enabled} enabled`} />
-      <HealthCard label="Integrations" value={runtime.health.realtime === "live" ? "Connected" : runtime.health.realtime} tone={runtime.health.realtime === "live" ? "ok" : "warn"} icon={Plug} hint="realtime channel" />
+      <HealthCard label="Integrations" value={runtime.health.realtime === "ready" ? "Connected" : "Degraded"} tone={runtime.health.realtime === "ready" ? "ok" : "warn"} icon={Plug} hint="realtime channel" />
       <HealthCard label="Security" value={`${securityHealth}%`} tone={securityHealth >= 70 ? "ok" : "crit"} icon={ShieldAlert} hint={`${kpis?.incidents_critical ?? 0} critical`} />
-      <HealthCard label="Database" value={runtime.health.scheduler === "active" ? "Healthy" : "Idle"} tone="ok" icon={Database} hint="rls enforced" />
+      <HealthCard label="Database" value={runtime.health.scheduler === "ready" ? "Healthy" : "Degraded"} tone={runtime.health.scheduler === "ready" ? "ok" : "warn"} icon={Database} hint="rls enforced" />
       <HealthCard label="Queue" value={queueDepth} tone={queueDepth > 20 ? "warn" : "ok"} icon={Layers} hint="pending + running" />
     </div>
   );
