@@ -27,8 +27,8 @@ export type TimelineEntry = {
   duration_ms: number | null;
   trace_id: string | null;
   error: string | null;
-  request: unknown;
-  response: unknown;
+  request: unknown | null;
+  response: unknown | null;
   raw_kind: "workflow_run" | "step_run" | "tool_exec" | "audit_log" | "event";
 };
 
