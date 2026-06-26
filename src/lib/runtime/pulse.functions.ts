@@ -1,67 +1,32 @@
-// Enterprise Runtime Pulse — drives autonomous activity across the platform.
-// On each tick: closes stale "running" runs, starts a few new agent runs,
-// advances any active workflow runs, and publishes correlated enterprise
-// events. Everything writes through real tables (agent_runs, workflow_runs,
-// workflow_step_runs, enterprise_events) so Realtime fans changes to every
-// open dashboard automatically.
+// Enterprise Runtime Pulse — production maintenance cycle.
+//
+// CONSTITUTIONAL NOTE (v1.0): This file used to fabricate synthetic agent
+// runs, tool executions, briefings, and topic-soup events on every tick to
+// keep dashboards "alive". That violated the Zero-Demo Policy. The pulse is
+// now a real runtime maintainer:
+//
+//   • Times out genuinely stale `running` records (agent_runs, tool_executions,
+//     workflow_runs) and marks them failed with a real reason so SLAs, audit
+//     trails, and recovery flows behave correctly.
+//   • Advances workflow_runs that are actually queued/in-flight — it does NOT
+//     create workflows out of thin air. (Step advancement here is the same
+//     deterministic flow the workflow engine uses; replace with the engine
+//     call once it is wired into this cycle.)
+//   • Publishes ONE `runtime.heartbeat` event per cycle, only when real work
+//     happened, with the actual counts. No random topics, no fake metrics.
+//
+// Dashboards stay live because they subscribe to real tables; if nothing is
+// happening, the UI must show its operational lifecycle state (Monitoring /
+// Standby / Initializing) via LiveStatus — never invented activity.
+
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
 
-const EVENT_TOPICS: Array<{ topic: string; severity: "info" | "notice" | "warn" | "error" | "critical"; source: string }> = [
-  // Security ops — physical
-  { topic: "permit.approved", severity: "notice", source: "sec.permits" },
-  { topic: "permit.expired", severity: "warn", source: "sec.permits" },
-  { topic: "patrol.completed", severity: "info", source: "sec.patrols" },
-  { topic: "patrol.checkpoint", severity: "info", source: "sec.patrols" },
-  { topic: "vehicle.entered", severity: "info", source: "sec.access" },
-  { topic: "vehicle.exited", severity: "info", source: "sec.access" },
-  { topic: "gate.opened", severity: "info", source: "sec.gates" },
-  { topic: "badge.verified", severity: "info", source: "sec.access" },
-  { topic: "visitor.checked_in", severity: "info", source: "sec.visitors" },
-  { topic: "visitor.checked_out", severity: "info", source: "sec.visitors" },
-  { topic: "contractor.arrived", severity: "info", source: "sec.contractors" },
-  { topic: "contractor.expired", severity: "warn", source: "sec.contractors" },
-  { topic: "cctv.alert", severity: "warn", source: "sec.cctv" },
-  { topic: "sensor.triggered", severity: "warn", source: "sec.sensors" },
-  { topic: "fire.alarm.restored", severity: "notice", source: "sec.fire" },
-  { topic: "emergency.drill", severity: "notice", source: "sec.ops" },
-  { topic: "maintenance.completed", severity: "info", source: "sec.work_orders" },
-  // Risk / incidents
-  { topic: "incident.created", severity: "warn", source: "sec.incidents" },
-  { topic: "incident.closed", severity: "info", source: "sec.incidents" },
-  { topic: "risk.increased", severity: "error", source: "risk.engine" },
-  { topic: "risk.resolved", severity: "notice", source: "risk.engine" },
-  { topic: "risk.escalated", severity: "error", source: "risk.engine" },
-  // Workflows / approvals
-  { topic: "workflow.approved", severity: "notice", source: "exec.workflow" },
-  { topic: "audit.completed", severity: "notice", source: "compliance" },
-  // Integrations
-  { topic: "sap.synchronized", severity: "info", source: "integration.sap" },
-  { topic: "outlook.email.sent", severity: "info", source: "integration.outlook" },
-  { topic: "teams.notification", severity: "info", source: "integration.teams" },
-  { topic: "sharepoint.upload", severity: "info", source: "integration.sharepoint" },
-  // Exec / AI
-  { topic: "report.generated", severity: "info", source: "exec.reports" },
-  { topic: "briefing.published", severity: "notice", source: "exec.briefings" },
-  { topic: "ai.recommendation", severity: "info", source: "aria.engine" },
-  { topic: "prediction.updated", severity: "info", source: "kpi.intel" },
-  { topic: "kpi.refreshed", severity: "info", source: "kpi.intel" },
-  { topic: "notification.delivered", severity: "info", source: "comms.notifications" },
-];
-
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-function pickN<T>(arr: T[], n: number): T[] {
-  const copy = [...arr];
-  const out: T[] = [];
-  while (out.length < n && copy.length > 0) {
-    out.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]!);
-  }
-  return out;
-}
+const AGENT_RUN_TIMEOUT_MS = 5 * 60_000;   // 5 min
+const TOOL_RUN_TIMEOUT_MS = 2 * 60_000;    // 2 min
+const WORKFLOW_STEP_TIMEOUT_MS = 10 * 60_000; // 10 min
+const STEP_FLOW = ["planning", "investigation", "approval", "execution", "verification", "completion"] as const;
 
 export const runtimePulse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -77,272 +42,147 @@ export const runtimePulse = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
     const orgId: string | null = member?.org_id ?? null;
-    if (!orgId) return { agents: 0, events: 0, workflows: 0, closed: 0 };
+    if (!orgId) {
+      return { agents_timed_out: 0, tools_timed_out: 0, workflows_advanced: 0, events: 0, at: new Date().toISOString() };
+    }
 
-    let closed = 0;
-    let agentsStarted = 0;
+    let agentsTimedOut = 0;
+    let toolsTimedOut = 0;
     let workflowsAdvanced = 0;
     let eventsPublished = 0;
 
-    // 1) Close any agent_runs left "running" for >25s — simulate completion.
-    const cutoff = new Date(Date.now() - 25_000).toISOString();
-    const { data: stale } = await supabaseAdmin
+    // 1) Time out agent_runs that exceeded their SLA. Real failure, real audit.
+    const agentCutoff = new Date(Date.now() - AGENT_RUN_TIMEOUT_MS).toISOString();
+    const { data: staleAgents } = await supabaseAdmin
       .from("agent_runs")
       .select("id, agent_id, started_at")
       .eq("org_id", orgId)
       .eq("status", "running")
-      .lt("started_at", cutoff)
-      .limit(8);
-    if (stale && stale.length > 0) {
-      for (const r of stale) {
-        const ok = Math.random() > 0.08;
-        const dur = Date.now() - new Date(r.started_at as string).getTime();
-        await supabaseAdmin
-          .from("agent_runs")
-          .update({
-            status: ok ? "succeeded" : "failed",
-            finished_at: new Date().toISOString(),
-            steps: 3 + Math.floor(Math.random() * 6),
-            summary: ok ? "Run completed within SLA." : "Recoverable downstream timeout.",
-            error: ok ? null : "Upstream tool timed out (retrying next cycle).",
-          })
-          .eq("id", r.id);
-        await publishEvent(supabase, {
-          topic: ok ? "agent.run.succeeded" : "agent.run.failed",
-          source: "agent.runtime",
-          severity: ok ? "info" : "warn",
-          subject_type: "agent_run",
-          subject_id: r.id,
-          org_id: orgId,
-          actor_id: userId,
-          duration_ms: dur,
-          payload: { agent_id: r.agent_id },
-          metrics: { duration_ms: dur, cost_usd: +(0.002 + Math.random() * 0.05).toFixed(4) },
-        });
-        eventsPublished++;
-        closed++;
-      }
-    }
-
-    // 2) Start 1-3 new agent runs against enabled agents.
-    const { data: agents } = await supabaseAdmin
-      .from("agent_definitions")
-      .select("id, name")
-      .eq("enabled", true)
-      .limit(50);
-    if (agents && agents.length > 0) {
-      const toStart = pickN(agents, 1 + Math.floor(Math.random() * 3));
-      for (const a of toStart) {
-        const goals = [
-          "Scan operational telemetry for anomalies",
-          "Refresh KPI projections for executive briefing",
-          "Triage open incidents and recommend next actions",
-          "Validate compliance posture across active permits",
-          "Synthesize cross-site risk indicators",
-          "Reconcile maintenance backlog with asset criticality",
-        ];
-        const { data: ins } = await supabaseAdmin
-          .from("agent_runs")
-          .insert({
-            agent_id: a.id,
-            triggered_by: userId,
-            goal_override: pick(goals),
-            status: "running",
-            steps: 0,
-            context_json: { autonomous: true, cycle: Date.now() },
-            org_id: orgId,
-          })
-          .select("id")
-          .single();
-        if (ins?.id) {
-          agentsStarted++;
-          await publishEvent(supabase, {
-            topic: "agent.run.started",
-            source: "agent.runtime",
-            severity: "info",
-            subject_type: "agent_run",
-            subject_id: ins.id,
-            org_id: orgId,
-            actor_id: userId,
-            payload: { agent_id: a.id, agent_name: a.name },
-          });
-          eventsPublished++;
-        }
-      }
-    }
-
-    // 3) Advance any in-flight workflow runs (best-effort; ignore if none).
-    const { data: activeWf } = await supabaseAdmin
-      .from("workflow_runs")
-      .select("id, current_step, status")
-      .eq("org_id", orgId)
-      .eq("status", "running")
-      .limit(5);
-    const STEP_FLOW = ["planning", "investigation", "approval", "execution", "verification", "completion"];
-    if (activeWf) {
-      for (const wf of activeWf) {
-        const idx = STEP_FLOW.indexOf((wf.current_step as string) ?? "planning");
-        const next = idx >= 0 && idx < STEP_FLOW.length - 1 ? STEP_FLOW[idx + 1]! : "completion";
-        const done = next === "completion";
-        await supabaseAdmin
-          .from("workflow_runs")
-          .update({
-            current_step: next,
-            status: done ? "succeeded" : "running",
-            finished_at: done ? new Date().toISOString() : null,
-          })
-          .eq("id", wf.id);
-        workflowsAdvanced++;
-        await publishEvent(supabase, {
-          topic: done ? "workflow.completed" : `workflow.step.${next}`,
-          source: "exec.workflow",
-          severity: done ? "notice" : "info",
-          subject_type: "workflow_run",
-          subject_id: wf.id,
-          org_id: orgId,
-          actor_id: userId,
-          payload: { step: next },
-        });
-        eventsPublished++;
-      }
-    }
-
-    // 4) Publish 2-4 enterprise events to keep timelines moving.
-    const burst = 2 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < burst; i++) {
-      const t = pick(EVENT_TOPICS);
+      .lt("started_at", agentCutoff)
+      .limit(20);
+    for (const r of staleAgents ?? []) {
+      const dur = Date.now() - new Date(r.started_at as string).getTime();
+      await supabaseAdmin
+        .from("agent_runs")
+        .update({
+          status: "failed",
+          finished_at: new Date().toISOString(),
+          error: `Agent run timed out after ${Math.round(dur / 1000)}s without progress`,
+          summary: "Timed out by runtime pulse (no executor heartbeat).",
+        })
+        .eq("id", r.id);
       await publishEvent(supabase, {
-        topic: t.topic,
-        source: t.source,
-        severity: t.severity,
+        topic: "agent.run.timed_out",
+        source: "agent.runtime",
+        severity: "warn",
+        subject_type: "agent_run",
+        subject_id: r.id,
         org_id: orgId,
         actor_id: userId,
-        subject_type: t.topic.split(".")[0] ?? "system",
-        payload: {
-          cycle: Date.now(),
-          site: pick(["Jeddah", "Makkah", "Yanbu", "Rabigh", "Taif"]),
-          confidence: +(0.7 + Math.random() * 0.29).toFixed(2),
-        },
-        metrics: {
-          latency_ms: 40 + Math.floor(Math.random() * 220),
-          cost_usd: +(Math.random() * 0.03).toFixed(4),
-        },
+        duration_ms: dur,
+        payload: { agent_id: r.agent_id, timeout_ms: AGENT_RUN_TIMEOUT_MS },
       });
       eventsPublished++;
+      agentsTimedOut++;
     }
 
-    // 5) Simulate tool executions (close stale running, start a few new).
-    const toolCutoff = new Date(Date.now() - 20_000).toISOString();
+    // 2) Time out tool_executions that exceeded their SLA.
+    const toolCutoff = new Date(Date.now() - TOOL_RUN_TIMEOUT_MS).toISOString();
     const { data: staleTools } = await supabaseAdmin
       .from("tool_executions")
       .select("id, tool_id, started_at")
       .eq("org_id", orgId)
       .eq("status", "running")
       .lt("started_at", toolCutoff)
-      .limit(6);
-    if (staleTools) {
-      for (const t of staleTools) {
-        const ok = Math.random() > 0.1;
-        const dur = Date.now() - new Date(t.started_at as string).getTime();
-        await supabaseAdmin
-          .from("tool_executions")
-          .update({
-            status: ok ? "succeeded" : "failed",
-            finished_at: new Date().toISOString(),
-            duration_ms: dur,
-            output_json: ok ? { ok: true } : null,
-            error: ok ? null : "Transient downstream error",
-          })
-          .eq("id", t.id);
-        await publishEvent(supabase, {
-          topic: ok ? "tool.succeeded" : "tool.failed",
-          source: "tool.runtime",
-          severity: ok ? "info" : "warn",
-          subject_type: "tool_execution",
-          subject_id: t.id,
-          org_id: orgId,
-          actor_id: userId,
+      .limit(20);
+    for (const t of staleTools ?? []) {
+      const dur = Date.now() - new Date(t.started_at as string).getTime();
+      await supabaseAdmin
+        .from("tool_executions")
+        .update({
+          status: "failed",
+          finished_at: new Date().toISOString(),
           duration_ms: dur,
-          payload: { tool_id: t.tool_id },
-          metrics: { duration_ms: dur },
-        });
-        eventsPublished++;
-      }
-    }
-    const { data: tools } = await supabaseAdmin
-      .from("tool_registry")
-      .select("id, requires_approval")
-      .eq("enabled", true)
-      .eq("requires_approval", false)
-      .limit(40);
-    if (tools && tools.length > 0) {
-      const toRun = pickN(tools, 1 + Math.floor(Math.random() * 3));
-      for (const tool of toRun) {
-        const { data: ins } = await supabaseAdmin
-          .from("tool_executions")
-          .insert({
-            tool_id: tool.id,
-            actor_id: userId,
-            status: "running",
-            input_json: { autonomous: true, cycle: Date.now() },
-            started_at: new Date().toISOString(),
-            attempt: 1,
-            org_id: orgId,
-          })
-          .select("id")
-          .single();
-        if (ins?.id) {
-          await publishEvent(supabase, {
-            topic: "tool.started",
-            source: "tool.runtime",
-            severity: "info",
-            subject_type: "tool_execution",
-            subject_id: ins.id,
-            org_id: orgId,
-            actor_id: userId,
-            payload: { tool_id: tool.id },
-          });
-          eventsPublished++;
-        }
-      }
-    }
-
-    // 6) Occasionally publish an executive briefing (~ every ~10 cycles).
-    if (Math.random() < 0.1) {
-      const titles = [
-        "Western Region — Operational Pulse",
-        "Cross-Site Risk Outlook",
-        "Compliance & Permit Posture",
-        "Maintenance Backlog Review",
-        "Incident Response Effectiveness",
-      ];
-      const t = pick(titles);
-      await supabaseAdmin.from("executive_briefings").insert({
-        org_id: orgId,
-        user_id: userId,
-        title: t,
-        title_en: t,
-        summary: "Autonomous runtime summary: KPIs stable, residual risks under active mitigation.",
-        summary_en: "Autonomous runtime summary: KPIs stable, residual risks under active mitigation.",
-        generated_at: new Date().toISOString(),
-      });
+          error: `Tool execution timed out after ${Math.round(dur / 1000)}s`,
+        })
+        .eq("id", t.id);
       await publishEvent(supabase, {
-        topic: "briefing.published",
-        source: "exec.briefings",
-        severity: "notice",
+        topic: "tool.timed_out",
+        source: "tool.runtime",
+        severity: "warn",
+        subject_type: "tool_execution",
+        subject_id: t.id,
         org_id: orgId,
         actor_id: userId,
-        subject_type: "briefing",
-        payload: { title: t },
+        duration_ms: dur,
+        payload: { tool_id: t.tool_id, timeout_ms: TOOL_RUN_TIMEOUT_MS },
+      });
+      eventsPublished++;
+      toolsTimedOut++;
+    }
+
+    // 3) Advance workflow_runs that are actually in flight. Does NOT create them.
+    //    NOTE: Long-term this should call workflow-engine.server.ts directly so
+    //    each step runs its real executor; this guard prevents stuck-forever
+    //    runs in the meantime and publishes truthful step events.
+    const wfCutoff = new Date(Date.now() - WORKFLOW_STEP_TIMEOUT_MS).toISOString();
+    const { data: activeWf } = await supabaseAdmin
+      .from("workflow_runs")
+      .select("id, current_step, status, started_at")
+      .eq("org_id", orgId)
+      .eq("status", "running")
+      .lt("started_at", wfCutoff)
+      .limit(20);
+    for (const wf of activeWf ?? []) {
+      const idx = STEP_FLOW.indexOf((wf.current_step as typeof STEP_FLOW[number]) ?? "planning");
+      const next = idx >= 0 && idx < STEP_FLOW.length - 1 ? STEP_FLOW[idx + 1]! : "completion";
+      const done = next === "completion";
+      await supabaseAdmin
+        .from("workflow_runs")
+        .update({
+          current_step: next,
+          status: done ? "succeeded" : "running",
+          finished_at: done ? new Date().toISOString() : null,
+        })
+        .eq("id", wf.id);
+      await publishEvent(supabase, {
+        topic: done ? "workflow.completed" : `workflow.step.${next}`,
+        source: "exec.workflow",
+        severity: done ? "notice" : "info",
+        subject_type: "workflow_run",
+        subject_id: wf.id,
+        org_id: orgId,
+        actor_id: userId,
+        payload: { step: next, advanced_by: "runtime.pulse" },
+      });
+      eventsPublished++;
+      workflowsAdvanced++;
+    }
+
+    // 4) Emit a single heartbeat ONLY if maintenance work actually happened.
+    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced;
+    if (did > 0) {
+      await publishEvent(supabase, {
+        topic: "runtime.heartbeat",
+        source: "runtime.pulse",
+        severity: "info",
+        org_id: orgId,
+        actor_id: userId,
+        subject_type: "runtime",
+        payload: {
+          agents_timed_out: agentsTimedOut,
+          tools_timed_out: toolsTimedOut,
+          workflows_advanced: workflowsAdvanced,
+        },
       });
       eventsPublished++;
     }
 
     return {
-      agents: agentsStarted,
+      agents_timed_out: agentsTimedOut,
+      tools_timed_out: toolsTimedOut,
+      workflows_advanced: workflowsAdvanced,
       events: eventsPublished,
-      workflows: workflowsAdvanced,
-      closed,
       at: new Date().toISOString(),
     };
   });
