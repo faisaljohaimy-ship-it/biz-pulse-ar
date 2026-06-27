@@ -208,7 +208,9 @@ export async function runAgent(
       return [
         fnName,
         tool({
-          description: `Invoke registry tool ${toolId}. Permission and approval are enforced server-side.`,
+          description:
+            exec!.description ??
+            `Invoke registry tool ${toolId}. Permission and approval are enforced server-side.`,
           inputSchema: exec!.input,
           execute: async (input: unknown) => {
             const callRecord: StepRecord["toolCalls"][number] = {
