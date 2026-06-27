@@ -8,7 +8,7 @@ import {
   listWorkflows,
   listWorkflowRuns,
   listRecentEvents,
-  runTool,
+  
   approveToolExecution,
   rollbackToolExecution,
   triggerWorkflowWithDefaultsFn,
@@ -25,6 +25,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { ToolRunner } from "@/components/runtime/ToolRunner";
+import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles, RotateCcw } from "lucide-react";
@@ -93,7 +95,7 @@ function statusBadge(status: string) {
 function ExecConsole() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
-  const [inputText, setInputText] = useState("{}");
+  
   const [openRunId, setOpenRunId] = useState<string | null>(null);
 
   // Realtime: invalidate queries on workflow_runs / tool_executions changes
@@ -155,7 +157,7 @@ function ExecConsole() {
     refetchInterval: 5000,
   });
 
-  const runFn = useServerFn(runTool);
+  
   const approveFn = useServerFn(approveToolExecution);
   const rollbackFn = useServerFn(rollbackToolExecution);
   
@@ -183,25 +185,6 @@ function ExecConsole() {
     onError: (err: Error) => toast.error(err.message),
   });
 
-  const runMut = useMutation({
-    mutationFn: async () => {
-      if (!selected) throw new Error("Select a tool first");
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(inputText);
-      } catch {
-        throw new Error("Input is not valid JSON");
-      }
-      return runFn({ data: { toolId: selected.id, input: parsed } });
-    },
-    onSuccess: (res: unknown) => {
-      const r = res as { status?: string };
-      toast.success(`Execution ${String(r.status ?? "")}`);
-      void execs.refetch();
-      void events.refetch();
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
 
   const approveMut = useMutation({
     mutationFn: (vars: { id: string; decision: "approve" | "reject" }) =>
@@ -281,18 +264,7 @@ function ExecConsole() {
                   {(tools.data ?? []).map((t: ToolRow) => (
                     <li key={t.id}>
                       <button
-                        onClick={() => {
-                          setSelected(t);
-                          setInputText(
-                            JSON.stringify(
-                              (t.schema_json as { properties?: object })?.properties
-                                ? {}
-                                : {},
-                              null,
-                              2,
-                            ),
-                          );
-                        }}
+                        onClick={() => setSelected(t)}
                         className={`w-full text-start p-3 rounded-md border transition ${
                           selected?.id === t.id
                             ? "border-primary bg-primary/10"
@@ -335,41 +307,25 @@ function ExecConsole() {
               </ScrollArea>
             </Card>
 
-            <Card className="p-4 space-y-3">
-              <h3 className="font-semibold text-sm">
-                Run {selected ? selected.name : "—"}
-              </h3>
-              {selected ? (
-                <>
-                  <div className="text-xs text-muted-foreground">
-                    Input JSON (validated against the tool schema):
-                  </div>
-                  <Textarea
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    rows={10}
-                    className="font-mono text-xs"
-                  />
-                  <Button
-                    disabled={!selected.enabled || runMut.isPending}
-                    onClick={() => runMut.mutate()}
-                    className="w-full gap-2"
-                  >
-                    <Play className="size-4" />
-                    {runMut.isPending ? "Running…" : "Execute"}
-                  </Button>
-                  {selected.requires_approval && (
-                    <p className="text-xs text-amber-300">
-                      This tool requires admin approval before execution.
-                    </p>
-                  )}
-                </>
-              ) : (
+            {selected ? (
+              <ToolRunner
+                toolId={selected.id}
+                toolName={selected.name}
+                schema={selected.schema_json as JsonSchema | null | undefined}
+                requiresApproval={selected.requires_approval}
+                enabled={selected.enabled}
+                onCompleted={() => {
+                  void execs.refetch();
+                  void events.refetch();
+                }}
+              />
+            ) : (
+              <Card className="p-4">
                 <p className="text-xs text-muted-foreground">
                   Pick a tool from the left to configure & run.
                 </p>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
