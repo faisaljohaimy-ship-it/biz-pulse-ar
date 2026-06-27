@@ -246,51 +246,149 @@ const webhookDispatch: ToolExecutor = {
 
 /* --------------------------------- SQL ---------------------------------- */
 
-const ALLOWED_TABLES = new Set<string>([
-  "sec_incidents",
-  "sec_work_orders",
-  "sec_patrols",
-  "sec_permits",
-  "sec_visitors",
-  "sec_assets",
-  "sec_sites",
-  "sec_cameras",
-  "sec_gates",
-  "sec_sensors",
-  "sec_activity_events",
-  "sec_buildings",
-  "sec_circles",
-  "sec_sections",
-  "sec_projects",
-  "sec_cctv_alerts",
-  "sec_patrol_teams",
-  "sec_contractors",
-  "sec_control_rooms",
-]);
+// Schema ground-truth pulled from information_schema. Embedding columns here
+// (a) feeds the LLM via the tool description so it stops guessing names, and
+// (b) lets us validate column tokens before talking to PostgREST.
+const TABLE_COLUMNS: Record<string, readonly string[]> = {
+  sec_incidents: ["id","ref","site_id","category","title_ar","title_en","severity","status","owner","reported_at","resolved_at","response_minutes","root_cause","ai_summary","created_at","updated_at","priority","assigned_to","escalated","ai_risk_score","org_id"],
+  sec_work_orders: ["id","ref","site_id","building_id","asset_kind","asset_code","kind","title_ar","title_en","priority","status","assigned_to","contractor","opened_at","due_at","closed_at","notes","created_at","updated_at","source_incident_id","org_id"],
+  sec_patrols: ["id","ref","site_id","team","route","status","checkpoints_total","checkpoints_done","started_at","ended_at","created_at","updated_at","org_id"],
+  sec_permits: ["id","ref","site_id","work_type","contractor","risk_level","status","starts_at","ends_at","approver","notes","approved_by","approved_at","created_at","updated_at","org_id"],
+  sec_visitors: ["id","ref","site_id","full_name","organization","host","purpose","badge_no","check_in_at","check_out_at","status","vehicle_plate","expected_at","gate_id","created_at","org_id"],
+  sec_assets: ["id","code","name_ar","name_en","kind","site_id","health","status","last_seen_at","created_at","updated_at","org_id"],
+  sec_sites: ["id","code","name_ar","name_en","lat","lng","sensitivity","status","guards_count","notes","circle_id","created_at","updated_at","org_id"],
+  sec_cameras: ["id","building_id","site_id","code","kind","status","health","resolution","last_seen_at","created_at","updated_at","org_id"],
+  sec_gates: ["id","building_id","site_id","code","kind","status","health","last_event_at","events_today","created_at","updated_at","org_id"],
+  sec_sensors: ["id","building_id","site_id","code","sensor_type","status","reading","threshold","unit","last_reading_at","created_at","updated_at","org_id"],
+  sec_activity_events: ["id","entity_type","entity_id","entity_ref","event","actor_id","actor_name","occurred_at","org_id"],
+  sec_buildings: ["id","site_id","code","name_ar","name_en","floors","status","created_at","updated_at","org_id"],
+  sec_circles: ["id","code","name_ar","name_en","manager","lat","lng","staff_count","created_at","updated_at","org_id"],
+  sec_sections: ["id","code","name_ar","name_en","head","staff_count","created_at","updated_at","org_id"],
+  sec_projects: ["id","ref","circle_id","name_ar","name_en","kind","status","progress","budget_sar","spent_sar","starts_at","ends_at","manager","contractor","health","created_at","updated_at","org_id"],
+  sec_cctv_alerts: ["id","ref","site_id","camera_code","alert_type","confidence","status","detected_at","acknowledged_by","notes","created_at","org_id"],
+  sec_patrol_teams: ["id","circle_id","code","name_ar","leader","members_count","vehicle_plate","status","created_at","updated_at","org_id"],
+  sec_contractors: ["id","ref","name","contract_no","workers_count","compliance_score","status","expires_at","permit_types","insurance_expiry","created_at","updated_at","org_id"],
+  sec_control_rooms: ["id","circle_id","code","name_ar","name_en","operators_count","status","shift_lead","screens_count","created_at","updated_at","org_id"],
+} as const;
+
+const ALLOWED_TABLE_NAMES = Object.keys(TABLE_COLUMNS) as [string, ...string[]];
+
+// Compact schema hint embedded in the tool description so the model has the
+// full column catalog at decode time (kills schema drift on column names).
+const SCHEMA_HINT = ALLOWED_TABLE_NAMES
+  .map((t) => `${t}(${TABLE_COLUMNS[t].join(",")})`)
+  .join(" | ");
+
+const filterValue = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+const filterOp = z.object({
+  op: z.enum(["eq", "neq", "gt", "gte", "lt", "lte", "like", "ilike", "in", "is"]),
+  value: z.union([filterValue, z.array(filterValue)]),
+});
 
 const sqlRead: ToolExecutor = {
   id: "sql.read",
   input: z.object({
-    table: z.string().min(1),
-    columns: z.array(z.string().regex(/^[a-zA-Z0-9_,*]+$/)).min(1),
-    filters: z.record(z.string(), z.unknown()).optional(),
-    limit: z.number().int().positive().max(500).optional(),
+    table: z.enum(ALLOWED_TABLE_NAMES),
+    // "*" selects every column. Otherwise must be valid identifier tokens.
+    columns: z
+      .array(z.string().regex(/^(\*|[a-zA-Z_][a-zA-Z0-9_]*)$/))
+      .min(1)
+      .default(["*"]),
+    // Plain value => eq. Object { op, value } => any supported operator.
+    filters: z.record(z.string(), z.union([filterValue, filterOp])).optional(),
+    order_by: z
+      .object({
+        column: z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/),
+        ascending: z.boolean().default(false),
+      })
+      .optional(),
+    limit: z.number().int().positive().max(500).default(50),
+    count_only: z.boolean().default(false),
   }),
   async execute(input, ctx) {
     const data = input as z.infer<typeof sqlRead.input>;
-    if (!ALLOWED_TABLES.has(data.table)) {
+    const cols = TABLE_COLUMNS[data.table];
+    if (!cols) {
       throw new Error(`Table ${data.table} not in sql.read allowlist`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = (ctx.supabase as any).from(data.table).select(data.columns.join(","));
-    for (const [k, v] of Object.entries(data.filters ?? {})) {
-      q = q.eq(k, v);
+
+    // Validate referenced columns against the real schema. Reject unknowns
+    // BEFORE hitting PostgREST so the agent gets an actionable error.
+    const knownCols = new Set<string>(cols);
+    const selected = data.columns.includes("*") ? ["*"] : data.columns;
+    for (const c of selected) {
+      if (c !== "*" && !knownCols.has(c)) {
+        throw new Error(
+          `Unknown column "${c}" on ${data.table}. Valid columns: ${cols.join(",")}`,
+        );
+      }
     }
-    q = q.limit(data.limit ?? 50);
-    const { data: rows, error } = await q;
+    for (const k of Object.keys(data.filters ?? {})) {
+      if (!knownCols.has(k)) {
+        throw new Error(
+          `Unknown filter column "${k}" on ${data.table}. Valid columns: ${cols.join(",")}`,
+        );
+      }
+    }
+    if (data.order_by && !knownCols.has(data.order_by.column)) {
+      throw new Error(
+        `Unknown order_by column "${data.order_by.column}" on ${data.table}.`,
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client: any = ctx.supabase as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q: any;
+    if (data.count_only) {
+      q = client.from(data.table).select("id", { count: "exact", head: true });
+    } else {
+      q = client.from(data.table).select(selected.join(","));
+    }
+
+    for (const [k, raw] of Object.entries(data.filters ?? {})) {
+      if (raw !== null && typeof raw === "object" && "op" in (raw as object)) {
+        const spec = raw as z.infer<typeof filterOp>;
+        switch (spec.op) {
+          case "eq":  q = q.eq(k, spec.value); break;
+          case "neq": q = q.neq(k, spec.value); break;
+          case "gt":  q = q.gt(k, spec.value); break;
+          case "gte": q = q.gte(k, spec.value); break;
+          case "lt":  q = q.lt(k, spec.value); break;
+          case "lte": q = q.lte(k, spec.value); break;
+          case "like":  q = q.like(k, String(spec.value)); break;
+          case "ilike": q = q.ilike(k, String(spec.value)); break;
+          case "in":    q = q.in(k, Array.isArray(spec.value) ? spec.value : [spec.value]); break;
+          case "is":    q = q.is(k, spec.value as null | boolean); break;
+        }
+      } else {
+        q = q.eq(k, raw);
+      }
+    }
+
+    if (data.order_by) {
+      q = q.order(data.order_by.column, { ascending: data.order_by.ascending });
+    }
+    if (!data.count_only) {
+      q = q.limit(data.limit);
+    }
+
+    const { data: rows, error, count } = await q;
     if (error) throw new Error(`sql.read failed: ${error.message}`);
-    return { output: { rows, count: Array.isArray(rows) ? rows.length : 0 } };
+    if (data.count_only) {
+      return { output: { count: count ?? 0, rows: [] } };
+    }
+    return {
+      output: { rows: rows ?? [], count: Array.isArray(rows) ? rows.length : 0 },
+    };
   },
+  description:
+    `Read rows from a whitelisted public.sec_* table via PostgREST. ` +
+    `Use enum 'table' (must be exact). Columns must exist on that table; use ["*"] to fetch all. ` +
+    `Filters accept either plain values (= equality) or {op,value} with op in [eq,neq,gt,gte,lt,lte,like,ilike,in,is]. ` +
+    `Bilingual columns are name_ar/name_en, title_ar/title_en — there is no "name" or "title". ` +
+    `For counts set count_only=true (returns {count}). ` +
+    `Schema: ${SCHEMA_HINT}`,
 };
 
 /* ----------------------------- Edge Function ---------------------------- */
