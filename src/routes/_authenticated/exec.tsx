@@ -8,7 +8,7 @@ import {
   listWorkflows,
   listWorkflowRuns,
   listRecentEvents,
-  runTool,
+  
   approveToolExecution,
   rollbackToolExecution,
   triggerWorkflowWithDefaultsFn,
@@ -95,7 +95,7 @@ function statusBadge(status: string) {
 function ExecConsole() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
-  const [inputText, setInputText] = useState("{}");
+  
   const [openRunId, setOpenRunId] = useState<string | null>(null);
 
   // Realtime: invalidate queries on workflow_runs / tool_executions changes
@@ -157,7 +157,7 @@ function ExecConsole() {
     refetchInterval: 5000,
   });
 
-  const runFn = useServerFn(runTool);
+  
   const approveFn = useServerFn(approveToolExecution);
   const rollbackFn = useServerFn(rollbackToolExecution);
   
@@ -185,25 +185,6 @@ function ExecConsole() {
     onError: (err: Error) => toast.error(err.message),
   });
 
-  const runMut = useMutation({
-    mutationFn: async () => {
-      if (!selected) throw new Error("Select a tool first");
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(inputText);
-      } catch {
-        throw new Error("Input is not valid JSON");
-      }
-      return runFn({ data: { toolId: selected.id, input: parsed } });
-    },
-    onSuccess: (res: unknown) => {
-      const r = res as { status?: string };
-      toast.success(`Execution ${String(r.status ?? "")}`);
-      void execs.refetch();
-      void events.refetch();
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
 
   const approveMut = useMutation({
     mutationFn: (vars: { id: string; decision: "approve" | "reject" }) =>
