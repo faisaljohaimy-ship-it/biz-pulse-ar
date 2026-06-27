@@ -24,6 +24,7 @@ import { LiveStatus } from "@/components/state/LiveStatus";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { ToolRunner } from "@/components/runtime/ToolRunner";
 import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
