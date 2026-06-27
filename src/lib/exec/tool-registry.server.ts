@@ -25,6 +25,8 @@ export type ToolResult = {
 export type ToolExecutor = {
   id: string;
   input: ZodTypeAny;
+  /** Optional rich description; surfaced to the LLM via the AI SDK tool. */
+  description?: string;
   execute: (input: unknown, ctx: ToolContext) => Promise<ToolResult>;
   rollback?: (
     rollbackPayload: Record<string, unknown> | null,
