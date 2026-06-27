@@ -281,18 +281,7 @@ function ExecConsole() {
                   {(tools.data ?? []).map((t: ToolRow) => (
                     <li key={t.id}>
                       <button
-                        onClick={() => {
-                          setSelected(t);
-                          setInputText(
-                            JSON.stringify(
-                              (t.schema_json as { properties?: object })?.properties
-                                ? {}
-                                : {},
-                              null,
-                              2,
-                            ),
-                          );
-                        }}
+                        onClick={() => setSelected(t)}
                         className={`w-full text-start p-3 rounded-md border transition ${
                           selected?.id === t.id
                             ? "border-primary bg-primary/10"
@@ -335,41 +324,25 @@ function ExecConsole() {
               </ScrollArea>
             </Card>
 
-            <Card className="p-4 space-y-3">
-              <h3 className="font-semibold text-sm">
-                Run {selected ? selected.name : "—"}
-              </h3>
-              {selected ? (
-                <>
-                  <div className="text-xs text-muted-foreground">
-                    Input JSON (validated against the tool schema):
-                  </div>
-                  <Textarea
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    rows={10}
-                    className="font-mono text-xs"
-                  />
-                  <Button
-                    disabled={!selected.enabled || runMut.isPending}
-                    onClick={() => runMut.mutate()}
-                    className="w-full gap-2"
-                  >
-                    <Play className="size-4" />
-                    {runMut.isPending ? "Running…" : "Execute"}
-                  </Button>
-                  {selected.requires_approval && (
-                    <p className="text-xs text-amber-300">
-                      This tool requires admin approval before execution.
-                    </p>
-                  )}
-                </>
-              ) : (
+            {selected ? (
+              <ToolRunner
+                toolId={selected.id}
+                toolName={selected.name}
+                schema={selected.schema_json as JsonSchema | null | undefined}
+                requiresApproval={selected.requires_approval}
+                enabled={selected.enabled}
+                onCompleted={() => {
+                  void execs.refetch();
+                  void events.refetch();
+                }}
+              />
+            ) : (
+              <Card className="p-4">
                 <p className="text-xs text-muted-foreground">
                   Pick a tool from the left to configure & run.
                 </p>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
