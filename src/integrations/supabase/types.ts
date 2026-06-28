@@ -780,6 +780,50 @@ export type Database = {
           },
         ]
       }
+      cost_budgets: {
+        Row: {
+          alert_threshold_pct: number
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          monthly_cap_usd: number
+          org_id: string
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold_pct?: number
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          monthly_cap_usd: number
+          org_id: string
+          scope?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold_pct?: number
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          monthly_cap_usd?: number
+          org_id?: string
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_budgets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -2251,6 +2295,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rate_limit_buckets: {
+        Row: {
+          bucket_key: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          bucket_key?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
       }
       report_schedules: {
         Row: {
@@ -3797,6 +3862,36 @@ export type Database = {
           },
         ]
       }
+      secrets_rotation_log: {
+        Row: {
+          created_at: string
+          id: string
+          next_due_at: string | null
+          notes: string | null
+          rotated_at: string
+          rotated_by: string | null
+          secret_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          next_due_at?: string | null
+          notes?: string | null
+          rotated_at?: string
+          rotated_by?: string | null
+          secret_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          next_due_at?: string | null
+          notes?: string | null
+          rotated_at?: string
+          rotated_by?: string | null
+          secret_name?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -4400,6 +4495,14 @@ export type Database = {
           scope: string
           similarity: number
         }[]
+      }
+      check_rate_limit: {
+        Args: {
+          _bucket_key: string
+          _max_requests: number
+          _window_seconds?: number
+        }
+        Returns: boolean
       }
       cleanup_email_unsubscribe_tokens: { Args: never; Returns: number }
       current_org_id: { Args: never; Returns: string }
