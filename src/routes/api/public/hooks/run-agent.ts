@@ -1,7 +1,12 @@
 // One-shot hook to execute a single agent via the production agent runtime.
-// Guarded by SUPABASE_PUBLISHABLE_KEY apikey header.
+// Guarded by SUPABASE_PUBLISHABLE_KEY apikey header + per-IP rate limit.
 
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  enforceRateLimit,
+  clientBucketKey,
+  rateLimitResponse,
+} from "@/lib/governance/rate-limit.server";
 
 export const Route = createFileRoute("/api/public/hooks/run-agent")({
   server: {
@@ -16,6 +21,14 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
             headers: { "Content-Type": "application/json" },
           });
         }
+
+        // Cap per-IP at 10 agent runs / minute.
+        const { allowed } = await enforceRateLimit(
+          clientBucketKey(request, "run-agent"),
+          10,
+          60,
+        );
+        if (!allowed) return rateLimitResponse();
 
         let body: { agentId?: string; goalOverride?: string } = {};
         try {
