@@ -41,7 +41,6 @@ export const getCostBudgetStatus = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("ai_usage")
         .select("cost_usd")
-        .eq("org_id", orgId)
         .gte("created_at", monthStart.toISOString()),
     ]);
 
