@@ -110,7 +110,7 @@ function CinematicHome() {
       await ensureDemo({});
       const { error } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
       if (error) throw error;
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/mission-control" });
     } catch (e) {
       toast.error(isAr ? "تعذّر فتح العرض" : "Could not start demo");
       console.error(e);
