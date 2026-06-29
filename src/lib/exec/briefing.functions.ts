@@ -209,19 +209,11 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       if (org_id) {
         const { data: inserted } = await sb.from("executive_briefings").insert({
           org_id,
+          user_id: context.userId,
           title: recommendation.title_en,
+          title_en: recommendation.title_en,
           summary: recommendation.rationale_en,
-          generated_by: context.userId,
-          metadata: {
-            segments,
-            recommendation,
-            snapshot: {
-              open_incidents: open.length,
-              critical_incidents: critical.length,
-              active_patrols: activePatrols,
-              high_risk_permits: openHighRiskPermits,
-            },
-          },
+          summary_en: recommendation.rationale_en,
         }).select("id").maybeSingle();
         briefing_id = (inserted as { id?: string } | null)?.id ?? null;
       }
