@@ -15,12 +15,13 @@
  * are untouched.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ARIA } from "@/lib/digital-humans/registry";
+import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
 import { getAvatarProvider } from "@/lib/digital-humans/avatar-provider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
-import { speakAria, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X } from "lucide-react";
@@ -30,8 +31,8 @@ interface QueuedLine {
   id: string;
   text_ar: string;
   text_en: string;
-  agent_ar: string;
-  agent_en: string;
+  /** Resolved Digital Human spec for the speaker (always non-null). */
+  speaker: DigitalHumanSpec;
 }
 
 export function AriaDock() {
