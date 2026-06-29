@@ -47,7 +47,16 @@ const RISK_COLORS: Record<string, string> = {
 };
 
 function KbPage() {
-  const { isAdmin } = useAuth();
+  const { user } = useAuth();
+  const adminQ = useQuery({
+    queryKey: ["kb", "isAdmin", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
+      return !!data;
+    },
+  });
+  const isAdmin = !!adminQ.data;
   const qc = useQueryClient();
   const listCats = useServerFn(kbListCategories);
   const listArts = useServerFn(kbListArticles);
