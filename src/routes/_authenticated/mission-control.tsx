@@ -62,10 +62,10 @@ function buildAgentScript(ov: Awaited<ReturnType<typeof getSecOverview>> | undef
       icon: ShieldAlert, tone: "rose",
       status_ar: "مراجعة الحوادث الحية…", status_en: "Reviewing live incidents…",
       finding_ar: c.incidents_critical > 0
-        ? `${c.incidents_critical} حادث حرج يتطلب اهتمامًا فوريًا${criticalIncident ? ` — ${criticalIncident.title_ar ?? criticalIncident.title ?? ""}` : ""}.`
+        ? `${c.incidents_critical} حادث حرج يتطلب اهتمامًا فوريًا${criticalIncident ? ` — ${criticalIncident.title_ar ?? ""}` : ""}.`
         : `${c.incidents_open} حادث مفتوح، لا حالات حرجة.`,
       finding_en: c.incidents_critical > 0
-        ? `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""} requires immediate attention${criticalIncident ? ` — ${criticalIncident.title_en ?? criticalIncident.title ?? ""}` : ""}.`
+        ? `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""} requires immediate attention${criticalIncident ? ` — ${criticalIncident.title_en ?? ""}` : ""}.`
         : `${c.incidents_open} open incidents, no critical cases.`,
     },
     {
