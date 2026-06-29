@@ -144,8 +144,7 @@ export function AriaDock() {
       id: "aria-welcome",
       text_ar: "مرحبًا. أنا آريا، المساعد التنفيذي. أراقب العمليات الحية الآن.",
       text_en: "Welcome. I am ARIA, your Executive AI. Monitoring live operations now.",
-      agent_ar: ARIA.name_ar,
-      agent_en: ARIA.name_en,
+      speaker: ARIA,
     });
   }, [enqueue]);
 
