@@ -34,6 +34,7 @@ import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
 import { TrustBar } from "@/components/cinematic/TrustBar";
 import { CinematicAudio } from "@/components/cinematic/CinematicAudio";
+import { AgentLineup } from "@/components/cinematic/AgentLineup";
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
 const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
