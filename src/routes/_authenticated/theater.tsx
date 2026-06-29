@@ -134,11 +134,32 @@ function TheaterPage() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
-      {/* Ambient executive backdrop */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#0b2540_0%,#04101e_55%,#020812_100%)]" />
+      {/* Ambient executive backdrop — tints subtly with mission tone */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 transition-colors duration-[1500ms]">
+        <div
+          className="absolute inset-0 transition-[background] duration-[1500ms]"
+          style={{
+            background:
+              tone === "rose"
+                ? "radial-gradient(ellipse at top, #2a0a18 0%, #08101e 55%, #020812 100%)"
+                : tone === "amber"
+                ? "radial-gradient(ellipse at top, #2a1a08 0%, #08101e 55%, #020812 100%)"
+                : tone === "emerald"
+                ? "radial-gradient(ellipse at top, #062a20 0%, #04101e 55%, #020812 100%)"
+                : "radial-gradient(ellipse at top, #0b2540 0%, #04101e 55%, #020812 100%)",
+          }}
+        />
         <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(rgba(0,212,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.4)_1px,transparent_1px)] bg-[size:60px_60px]" />
-        <div className="absolute -top-32 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[120px]" />
+        <div
+          className="absolute -top-32 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full blur-[120px] transition-colors duration-[1500ms]"
+          style={{
+            background:
+              tone === "rose" ? "rgba(244,63,94,0.10)"
+              : tone === "amber" ? "rgba(245,158,11,0.10)"
+              : tone === "emerald" ? "rgba(16,185,129,0.10)"
+              : "rgba(0,212,255,0.10)",
+          }}
+        />
       </div>
 
       <div className="relative mx-auto max-w-[1480px] px-4 py-6 lg:px-8 lg:py-10">
