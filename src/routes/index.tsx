@@ -34,6 +34,7 @@ import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { MobileExecutiveStrip } from "@/components/cinematic/MobileExecutiveStrip";
 import { TrustBar } from "@/components/cinematic/TrustBar";
 import { CinematicAudio } from "@/components/cinematic/CinematicAudio";
+import { AgentLineup } from "@/components/cinematic/AgentLineup";
 const WarRoomScene = lazy(() => import("@/components/cinematic/WarRoomScene"));
 const AutonomousEnterpriseScene = lazy(() => import("@/components/cinematic/AutonomousEnterpriseScene"));
 
@@ -934,7 +935,13 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
           </div>
         </div>
 
+        {/* Sequential agent lineup — every Digital Human boots in order */}
+        <ScrollReveal delay={150}>
+          <AgentLineup isAr={isAr} />
+        </ScrollReveal>
+
         {/* Future Scenarios + Board Meeting Mode */}
+
         <ScrollReveal delay={200}>
           <div className={`mx-auto mt-10 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-2xl transition-all duration-500 ${boardMode ? "ring-1 ring-cyan-300/40 shadow-[0_0_120px_-30px_rgba(96,165,250,0.55)]" : ""}`}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-3">
