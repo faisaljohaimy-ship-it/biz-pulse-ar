@@ -579,6 +579,7 @@ const REGISTRY: Record<string, ToolExecutor> = Object.fromEntries(
     edgeInvoke,
     secCreateIncident,
     secUpdateWorkOrder,
+    kbSearch,
     disabledExecutor("sap.execute", "SAP connector not linked"),
     disabledExecutor("oracle.execute", "Oracle connector not linked"),
     disabledExecutor("azure_ad.execute", "Azure AD admin grant not configured"),
