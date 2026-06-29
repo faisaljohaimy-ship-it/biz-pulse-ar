@@ -115,6 +115,16 @@ function TheaterPage() {
     return agents.find((a) => a.name.toLowerCase().includes(first))?.id ?? null;
   }, [agents, conductor.currentSpeaker]);
 
+  // ARIA gaze — looks toward the active speaking agent's position on the ring,
+  // or softly toward the camera when she is speaking herself.
+  const ariaGaze = useMemo<{ x: number; y: number } | null>(() => {
+    if (!speakerAgentId) return conductor.state === "speaking" ? { x: 0, y: -0.05 } : null;
+    const idx = agents.findIndex((a) => a.id === speakerAgentId);
+    if (idx < 0 || agents.length === 0) return null;
+    const angle = -Math.PI / 2 + (idx * 2 * Math.PI) / agents.length;
+    return { x: Math.cos(angle) * 0.85, y: Math.sin(angle) * 0.55 };
+  }, [agents, speakerAgentId, conductor.state]);
+
   const [explainLine, setExplainLine] = useState<NarratorLine | null>(null);
   const explainAgent = useMemo(() => {
     if (!explainLine) return null;
