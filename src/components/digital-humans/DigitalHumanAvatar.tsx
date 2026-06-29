@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { DigitalHumanSpec, DigitalHumanState } from "@/lib/digital-humans/registry";
+import { registerAvatarProvider, type AvatarRenderProps } from "@/lib/digital-humans/avatar-provider";
 
 interface Props {
   spec: DigitalHumanSpec;
@@ -20,6 +21,8 @@ interface Props {
   /** When true, render a name + status badge under the avatar. */
   showLabel?: boolean;
   ar?: boolean;
+  /** Optional 0..1 amplitude from a real audio stream (drives lip-sync). */
+  mouthAmplitude?: number;
 }
 
 const STATE_LABEL: Record<DigitalHumanState, { ar: string; en: string }> = {
@@ -83,17 +86,21 @@ function useLipFrame(active: boolean) {
 }
 
 export function DigitalHumanAvatar({
-  spec, state, size = 96, ambient = true, className, showLabel = false, ar = false,
+  spec, state, size = 96, ambient = true, className, showLabel = false, ar = false, mouthAmplitude,
 }: Props) {
   const blink = useBlink();
   const gaze = useGaze();
   const speaking = state === "speaking";
-  const lip = useLipFrame(speaking);
+  const lip = useLipFrame(speaking && mouthAmplitude === undefined);
   const p = spec.palette;
   const f = spec.features;
 
-  // mouth shape by lip frame (closed → open → wide → mid)
-  const mouthH = speaking ? [1.5, 5, 4, 3][lip] : 1.5;
+  // Audio-driven mouth: amplitude (0..1) → 1.2..6.5 height; falls back to
+  // synthetic lip frames when no audio analyser is attached.
+  const ampMouth = mouthAmplitude !== undefined
+    ? 1.2 + Math.max(0, Math.min(1, mouthAmplitude)) * 5.3
+    : null;
+  const mouthH = ampMouth ?? (speaking ? [1.5, 5, 4, 3][lip] : 1.5);
 
   const stateRing =
     state === "speaking"  ? p.accent
@@ -279,3 +286,18 @@ export function DigitalHumanAvatar({
     </div>
   );
 }
+
+// Register the built-in SVG provider exactly once. Future providers
+// (Azure AI Avatar, HeyGen, D-ID, Synthesia, Ready Player Me + WebGL)
+// register themselves the same way and the dock picks them by id.
+registerAvatarProvider({
+  id: "svg",
+  label: "Built-in SVG portrait",
+  capabilities: {
+    realtimeLipSync: true,
+    photorealistic: false,
+    streamingVideo: false,
+    requiresNetwork: false,
+  },
+  Render: (props: AvatarRenderProps) => <DigitalHumanAvatar {...props} />,
+});
