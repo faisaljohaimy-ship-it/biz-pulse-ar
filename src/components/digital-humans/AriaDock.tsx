@@ -15,12 +15,13 @@
  * are untouched.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ARIA } from "@/lib/digital-humans/registry";
+import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
 import { getAvatarProvider } from "@/lib/digital-humans/avatar-provider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
-import { speakAria, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X } from "lucide-react";
@@ -30,8 +31,8 @@ interface QueuedLine {
   id: string;
   text_ar: string;
   text_en: string;
-  agent_ar: string;
-  agent_en: string;
+  /** Resolved Digital Human spec for the speaker (always non-null). */
+  speaker: DigitalHumanSpec;
 }
 
 export function AriaDock() {
@@ -89,13 +90,14 @@ export function AriaDock() {
     }
 
     setState("thinking");
-    handleRef.current = speakAria({
+    const handle = speakAs(next.speaker, {
       text,
       lang: detectLang(text),
       onStart: () => setState("speaking"),
       onAmplitude: setAmp,
     });
-    handleRef.current.promise
+    handleRef.current = handle;
+    handle.promise
       .catch(() => { /* swallow — fall through to next */ })
       .finally(() => { playNext(); });
   }, [ar, voiceOn]);
@@ -122,12 +124,13 @@ export function AriaDock() {
         const result = lang === "ar" ? line.result_ar : line.result_en;
         return [action, body, result].filter(Boolean).join(" — ");
       };
+      const humanId = narratorAgentToHumanId(line.agent);
+      const speaker = findHuman(humanId) ?? ARIA;
       enqueue({
         id: row.id,
         text_ar: compose("ar"),
         text_en: compose("en"),
-        agent_ar: line.agent_name_ar,
-        agent_en: line.agent_name_en,
+        speaker,
       });
     }
   }, [events, enqueue]);
@@ -141,8 +144,7 @@ export function AriaDock() {
       id: "aria-welcome",
       text_ar: "مرحبًا. أنا آريا، المساعد التنفيذي. أراقب العمليات الحية الآن.",
       text_en: "Welcome. I am ARIA, your Executive AI. Monitoring live operations now.",
-      agent_ar: ARIA.name_ar,
-      agent_en: ARIA.name_en,
+      speaker: ARIA,
     });
   }, [enqueue]);
 
@@ -194,7 +196,7 @@ export function AriaDock() {
     >
       <div className="flex items-start gap-3">
         <Render
-          spec={ARIA}
+          spec={current?.speaker ?? ARIA}
           state={state}
           size={minimized ? 44 : 72}
           mouthAmplitude={amp}
@@ -206,10 +208,10 @@ export function AriaDock() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300/80 truncate">
-                  {ar ? ARIA.title_ar : ARIA.title_en}
+                  {ar ? (current?.speaker.title_ar ?? ARIA.title_ar) : (current?.speaker.title_en ?? ARIA.title_en)}
                 </div>
                 <div className="text-sm text-white font-medium leading-tight truncate">
-                  {ar ? ARIA.name_ar : ARIA.name_en}
+                  {ar ? (current?.speaker.name_ar ?? ARIA.name_ar) : (current?.speaker.name_en ?? ARIA.name_en)}
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -253,7 +255,7 @@ export function AriaDock() {
             {current && (
               <div className="mt-1.5 flex items-center justify-between text-[10px] text-white/55">
                 <span className="truncate">
-                  {ar ? "بصوت" : "Voiced by"}: {ar ? current.agent_ar : current.agent_en}
+                  {ar ? "بصوت" : "Voiced by"}: {ar ? current.speaker.name_ar : current.speaker.name_en}
                 </span>
                 <button
                   type="button"

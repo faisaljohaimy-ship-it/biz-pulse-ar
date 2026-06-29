@@ -9,9 +9,10 @@
  * caller already loaded for Mission Control.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PlayCircle, StopCircle, Sparkles } from "lucide-react";
-import { ARIA, SPECIALISTS, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import { PlayCircle, StopCircle, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import { useDigitalHuman, type SpokenTurn } from "@/lib/digital-humans/engine";
+import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
 import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
 import { cn } from "@/lib/utils";
 
@@ -145,10 +146,14 @@ interface Props {
 
 export function PresentationMode({ ar, overview, displayName }: Props) {
   const [running, setRunning] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const stepIdxRef = useRef(0);
+  const voiceHandleRef = useRef<SpeakHandle | null>(null);
+  const ampMapRef = useRef<Record<string, number>>({});
+  const [, forceTick] = useState(0);
 
-  // ARIA + the 6 most-used specialists are rendered live on the stage
+  // ARIA + the 8 most-used specialists are rendered live on the stage
   const stageSpecs = useMemo<DigitalHumanSpec[]>(() => [
     ARIA,
     ...["incident_commander","risk_intelligence","compliance_auditor","cctv_intelligence","patrol_commander","emergency_coordinator","knowledge_ai","executive_reporter"]
@@ -198,8 +203,35 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
     };
     speaker.enqueue(turn);
 
-    // Advance after the estimated speak time + small gap
-    const len = (ar ? step.text_ar : step.text_en).length;
+    const text = ar ? step.text_ar : step.text_en;
+
+    // Voice mode: real TTS with per-agent voice + live lip-sync.
+    // Advance precisely when audio playback ends.
+    if (voiceOn) {
+      voiceHandleRef.current?.stop();
+      const handle = speakAs(speaker.spec, {
+        text,
+        lang: detectLang(text),
+        onAmplitude: (a) => {
+          ampMapRef.current[speaker.spec.id] = a;
+          forceTick(x => (x + 1) & 0xffff);
+        },
+      });
+      voiceHandleRef.current = handle;
+      let cancelled = false;
+      handle.promise
+        .catch(() => { /* fall through */ })
+        .finally(() => {
+          if (cancelled) return;
+          ampMapRef.current[speaker.spec.id] = 0;
+          stepIdxRef.current = stepIdx + 1;
+          setStepIdx(stepIdxRef.current);
+        });
+      return () => { cancelled = true; handle.stop(); };
+    }
+
+    // Silent fallback: advance after the estimated speak time + small gap
+    const len = text.length;
     const speak = Math.max(1800, Math.min(7500, Math.round((len / 13) * 1000)));
     const total = 600 /* pre */ + speak + 600 /* gap */;
     const t = setTimeout(() => {
@@ -208,11 +240,13 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
     }, total);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, stepIdx, script]);
+  }, [running, stepIdx, script, voiceOn]);
 
   const start = useCallback(() => {
     if (!overview) return;
     Object.values(runtimes).forEach(r => r.interrupt());
+    voiceHandleRef.current?.stop();
+    ampMapRef.current = {};
     stepIdxRef.current = 0;
     setStepIdx(0);
     setRunning(true);
@@ -220,8 +254,13 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
 
   const stop = useCallback(() => {
     setRunning(false);
+    voiceHandleRef.current?.stop();
+    voiceHandleRef.current = null;
+    ampMapRef.current = {};
     Object.values(runtimes).forEach(r => r.interrupt());
   }, [runtimes]);
+
+  useEffect(() => () => { voiceHandleRef.current?.stop(); }, []);
 
   const currentSpeakerId = running && script[stepIdx] ? script[stepIdx].speakerId : null;
   const currentSpeaker = currentSpeakerId
@@ -244,31 +283,47 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
             </div>
           </div>
         </div>
-        {!running ? (
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={start}
-            disabled={!overview}
+            onClick={() => setVoiceOn(v => !v)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition",
-              overview
-                ? "border-cyan-400/40 bg-cyan-400/15 text-cyan-100 hover:bg-cyan-400/25"
-                : "border-white/10 bg-white/[0.03] text-white/40 cursor-not-allowed",
+              "inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs transition",
+              voiceOn
+                ? "border-cyan-400/50 bg-cyan-400/15 text-cyan-100"
+                : "border-white/15 bg-white/[0.04] text-white/70 hover:text-white",
             )}
+            title={voiceOn ? (ar ? "كتم" : "Mute voices") : (ar ? "تفعيل أصوات الوكلاء" : "Enable agent voices")}
           >
-            <PlayCircle className="h-4 w-4" />
-            {ar ? "ابدأ العرض" : "Start Presentation"}
+            {voiceOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            {ar ? (voiceOn ? "صوت مفعل" : "بدون صوت") : (voiceOn ? "Voices On" : "Silent")}
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={stop}
-            className="inline-flex items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-400/10 px-4 py-2 text-sm text-rose-100 hover:bg-rose-400/20 transition"
-          >
-            <StopCircle className="h-4 w-4" />
-            {ar ? "إيقاف" : "Stop"}
-          </button>
-        )}
+          {!running ? (
+            <button
+              type="button"
+              onClick={start}
+              disabled={!overview}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition",
+                overview
+                  ? "border-cyan-400/40 bg-cyan-400/15 text-cyan-100 hover:bg-cyan-400/25"
+                  : "border-white/10 bg-white/[0.03] text-white/40 cursor-not-allowed",
+              )}
+            >
+              <PlayCircle className="h-4 w-4" />
+              {ar ? "ابدأ العرض" : "Start Presentation"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={stop}
+              className="inline-flex items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-400/10 px-4 py-2 text-sm text-rose-100 hover:bg-rose-400/20 transition"
+            >
+              <StopCircle className="h-4 w-4" />
+              {ar ? "إيقاف" : "Stop"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Live stage */}
@@ -276,6 +331,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
         {stageSpecs.map((s, i) => {
           const r = [aria, ic, ri, ca, cv, pt, em, kb, rp][i];
           const isActive = currentSpeakerId === s.id;
+          const liveAmp = voiceOn ? (ampMapRef.current[s.id] ?? 0) : undefined;
           return (
             <div
               key={s.id}
@@ -284,7 +340,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
                 isActive ? "bg-cyan-400/10 ring-1 ring-cyan-400/30 scale-105" : "bg-white/[0.02]",
               )}
             >
-              <DigitalHumanAvatar spec={s} state={r.state} size={56} ar={ar} showLabel />
+              <DigitalHumanAvatar spec={s} state={r.state} size={56} ar={ar} showLabel mouthAmplitude={liveAmp} />
             </div>
           );
         })}

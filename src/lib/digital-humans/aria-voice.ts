@@ -15,8 +15,10 @@
  * audio synthesis entirely — only this file changes.
  */
 import { ariaSpeak } from "@/lib/narrator/tts.functions";
+import { resolveVoice, type VoiceLang } from "./voice-profiles";
+import type { DigitalHumanSpec } from "./registry";
 
-export type VoiceLang = "ar" | "en";
+export type { VoiceLang } from "./voice-profiles";
 
 export interface SpeakHandle {
   promise: Promise<void>;
@@ -26,6 +28,8 @@ export interface SpeakHandle {
 export interface SpeakOptions {
   text: string;
   lang?: VoiceLang;
+  /** Optional persona — picks voice + instructions for that Digital Human. */
+  voiceProfileId?: string;
   /** Called continuously with 0..1 mouth amplitude. */
   onAmplitude?: (a: number) => void;
   /** Called once when audio actually begins. */
@@ -37,13 +41,6 @@ export interface SpeakOptions {
 const ARABIC_RANGE = /[\u0600-\u06FF]/;
 export function detectLang(text: string): VoiceLang {
   return ARABIC_RANGE.test(text) ? "ar" : "en";
-}
-
-// Map ARIA's persona to OpenAI TTS voices. `shimmer` reads Arabic
-// cleanly; `nova` is the executive English voice. Both stay within the
-// supported voice set of openai/gpt-4o-mini-tts.
-function voiceFor(lang: VoiceLang): string {
-  return lang === "ar" ? "shimmer" : "nova";
 }
 
 let sharedCtx: AudioContext | null = null;
@@ -71,7 +68,7 @@ function base64ToBytes(b64: string): Uint8Array {
  */
 export function speakAria(opts: SpeakOptions): SpeakHandle {
   const lang = opts.lang ?? detectLang(opts.text);
-  const voice = voiceFor(lang);
+  const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
   let raf = 0;
@@ -90,7 +87,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   const promise = (async () => {
     try {
-      const res = await ariaSpeak({ data: { text: opts.text, voice } });
+      const res = await ariaSpeak({ data: { text: opts.text, voice, instructions } });
       if (stopped) return;
       const ctx = getAudioContext();
       if (ctx.state === "suspended") await ctx.resume().catch(() => {});
@@ -146,4 +143,16 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
   })();
 
   return { promise, stop };
+}
+
+/**
+ * Speak `text` in the voice of a specific Digital Human persona.
+ * Thin convenience over `speakAria` — picks the persona's voice and
+ * tone instructions. The lip-sync amplitude contract is identical.
+ */
+export function speakAs(
+  spec: Pick<DigitalHumanSpec, "voiceProfileId">,
+  opts: Omit<SpeakOptions, "voiceProfileId">,
+): SpeakHandle {
+  return speakAria({ ...opts, voiceProfileId: spec.voiceProfileId });
 }
