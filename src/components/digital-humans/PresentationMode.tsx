@@ -283,31 +283,47 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
             </div>
           </div>
         </div>
-        {!running ? (
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={start}
-            disabled={!overview}
+            onClick={() => setVoiceOn(v => !v)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition",
-              overview
-                ? "border-cyan-400/40 bg-cyan-400/15 text-cyan-100 hover:bg-cyan-400/25"
-                : "border-white/10 bg-white/[0.03] text-white/40 cursor-not-allowed",
+              "inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs transition",
+              voiceOn
+                ? "border-cyan-400/50 bg-cyan-400/15 text-cyan-100"
+                : "border-white/15 bg-white/[0.04] text-white/70 hover:text-white",
             )}
+            title={voiceOn ? (ar ? "كتم" : "Mute voices") : (ar ? "تفعيل أصوات الوكلاء" : "Enable agent voices")}
           >
-            <PlayCircle className="h-4 w-4" />
-            {ar ? "ابدأ العرض" : "Start Presentation"}
+            {voiceOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            {ar ? (voiceOn ? "صوت مفعل" : "بدون صوت") : (voiceOn ? "Voices On" : "Silent")}
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={stop}
-            className="inline-flex items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-400/10 px-4 py-2 text-sm text-rose-100 hover:bg-rose-400/20 transition"
-          >
-            <StopCircle className="h-4 w-4" />
-            {ar ? "إيقاف" : "Stop"}
-          </button>
-        )}
+          {!running ? (
+            <button
+              type="button"
+              onClick={start}
+              disabled={!overview}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition",
+                overview
+                  ? "border-cyan-400/40 bg-cyan-400/15 text-cyan-100 hover:bg-cyan-400/25"
+                  : "border-white/10 bg-white/[0.03] text-white/40 cursor-not-allowed",
+              )}
+            >
+              <PlayCircle className="h-4 w-4" />
+              {ar ? "ابدأ العرض" : "Start Presentation"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={stop}
+              className="inline-flex items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-400/10 px-4 py-2 text-sm text-rose-100 hover:bg-rose-400/20 transition"
+            >
+              <StopCircle className="h-4 w-4" />
+              {ar ? "إيقاف" : "Stop"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Live stage */}
