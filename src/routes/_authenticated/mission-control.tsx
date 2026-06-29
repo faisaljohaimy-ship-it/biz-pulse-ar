@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
 import { ExecutiveNarrator } from "@/components/mission-control/ExecutiveNarrator";
+import { AmbientParticles } from "@/components/mission-control/AmbientParticles";
 
 export const Route = createFileRoute("/_authenticated/mission-control")({
   head: () => ({
