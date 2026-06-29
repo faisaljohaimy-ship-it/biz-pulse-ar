@@ -52,23 +52,31 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
 
   useFrame((_, dt) => {
     const t = performance.now() / 1000;
+    const speakingBoost = THREE.MathUtils.clamp(mouthAmplitude * 3, 0, 1);
+
     // Breathing — chest scale + tiny vertical body bob
     if (chest.current) {
       const s = 1 + Math.sin(t * preset.breathHz * Math.PI * 2) * 0.025;
       chest.current.scale.set(s, s, s);
+      // Subtle shoulder lift while speaking — executive presence cue
+      const lift = 0.18 + speakingBoost * 0.015;
+      chest.current.position.y = THREE.MathUtils.damp(chest.current.position.y, lift, 6, dt);
     }
     if (group.current) {
       group.current.position.y = Math.sin(t * preset.breathHz * Math.PI * 2) * 0.015;
+      // Body weight shifting — slow lateral sway, calm and executive
+      group.current.position.x = Math.sin(t * 0.18) * 0.025;
       const sway = THREE.MathUtils.degToRad(preset.swayDeg);
       group.current.rotation.z = Math.sin(t * 0.4) * sway * 0.3;
     }
 
-    // Head tracking — easing toward pointer
+    // Head tracking — easing toward pointer/gaze; adds a tiny nod while speaking
     if (head.current) {
       const targetY = THREE.MathUtils.clamp(pointer.x, -1, 1) * 0.35;
-      const targetX = THREE.MathUtils.clamp(-pointer.y, -1, 1) * 0.2;
+      const baseX = THREE.MathUtils.clamp(-pointer.y, -1, 1) * 0.2;
+      const nod = speakingBoost > 0.05 ? Math.sin(t * 2.4) * 0.04 : 0;
       head.current.rotation.y = THREE.MathUtils.damp(head.current.rotation.y, targetY, 4, dt);
-      head.current.rotation.x = THREE.MathUtils.damp(head.current.rotation.x, targetX, 4, dt);
+      head.current.rotation.x = THREE.MathUtils.damp(head.current.rotation.x, baseX + nod, 4, dt);
     }
 
     // Jaw viseme — driven by audio amplitude with smoothing
