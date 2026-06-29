@@ -19,17 +19,27 @@ interface Props {
 }
 
 const STATUS_COLOR: Record<BridgeAgentStatus, string> = {
-  offline: "rgba(255,255,255,0.06)",
+  offline: "rgba(255,255,255,0.05)",
+  idle: "rgba(255,255,255,0.08)",
   monitoring: "rgba(0,212,255,0.18)",
+  waiting: "rgba(251,191,36,0.40)",
   thinking: "rgba(251,191,36,0.55)",
+  searching: "rgba(56,189,248,0.55)",
+  analyzing: "rgba(167,139,250,0.55)",
+  consulting: "rgba(232,121,249,0.55)",
+  executing: "rgba(167,139,250,0.70)",
   speaking: "rgba(0,212,255,0.85)",
-  working: "rgba(167,139,250,0.55)",
   completed: "rgba(52,211,153,0.45)",
-  failed: "rgba(244,114,182,0.55)",
-  waiting_approval: "rgba(251,191,36,0.55)",
+  escalated: "rgba(244,114,182,0.60)",
+  warning: "rgba(251,191,36,0.65)",
+  error: "rgba(244,63,94,0.65)",
+  recovery: "rgba(167,139,250,0.55)",
 };
 
-const ACTIVE: BridgeAgentStatus[] = ["thinking", "speaking", "working", "waiting_approval"];
+const ACTIVE: BridgeAgentStatus[] = [
+  "thinking", "speaking", "searching", "analyzing",
+  "consulting", "executing", "waiting", "warning", "recovery",
+];
 
 export function ConnectionLines({ agents, radius, speakerId, size }: Props) {
   const beams = useMemo(() => {
