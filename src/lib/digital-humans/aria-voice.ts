@@ -144,3 +144,15 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   return { promise, stop };
 }
+
+/**
+ * Speak `text` in the voice of a specific Digital Human persona.
+ * Thin convenience over `speakAria` — picks the persona's voice and
+ * tone instructions. The lip-sync amplitude contract is identical.
+ */
+export function speakAs(
+  spec: Pick<DigitalHumanSpec, "voiceProfileId">,
+  opts: Omit<SpeakOptions, "voiceProfileId">,
+): SpeakHandle {
+  return speakAria({ ...opts, voiceProfileId: spec.voiceProfileId });
+}
