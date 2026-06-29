@@ -132,9 +132,11 @@ function WarRoomPage() {
             radius={260}
             centerSize={240}
             spotlightId={spotlightAgentId}
+            onAgentClick={(a) => speakAgent(a, ar)}
           >
             <CenterStage ar={ar} speaking={spotlightSegment?.speaker_id === "aria"} aria={aria} />
           </AgentRing>
+
 
           <button
             onClick={() => startBriefing.mutate(undefined)}
