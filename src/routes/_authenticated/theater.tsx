@@ -26,6 +26,10 @@ import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { AriaScene } from "@/components/digital-humans/r3f/AriaScene";
 import { StoryCard } from "@/components/theater/StoryCard";
+import { ConnectionLines } from "@/components/theater/ConnectionLines";
+import { Storyboard } from "@/components/theater/Storyboard";
+import { ExplainPanel } from "@/components/theater/ExplainPanel";
+import type { NarratorLine } from "@/lib/narrator/event-narrator";
 import { useConductor } from "@/lib/exec/conductor";
 
 export const Route = createFileRoute("/_authenticated/theater")({
@@ -97,6 +101,26 @@ function TheaterPage() {
   }, [conductor.state, conductor.presenting]);
 
   const recentLines = conductor.feed.slice(0, 8);
+  const narratorLines = useMemo(
+    () => conductor.feed.map((l) => l.narrator).filter(Boolean) as NarratorLine[],
+    [conductor.feed],
+  );
+
+  // Match the conductor's current speaker (NarratorAgent) to a real
+  // BridgeAgent in the ring, so connection-line highlight and
+  // explainability lookups stay in sync.
+  const speakerAgentId = useMemo(() => {
+    if (conductor.currentSpeaker.id === "aria") return null;
+    const first = conductor.currentSpeaker.name_en.split(" ")[0].toLowerCase();
+    return agents.find((a) => a.name.toLowerCase().includes(first))?.id ?? null;
+  }, [agents, conductor.currentSpeaker]);
+
+  const [explainLine, setExplainLine] = useState<NarratorLine | null>(null);
+  const explainAgent = useMemo(() => {
+    if (!explainLine) return null;
+    const first = explainLine.agent_name_en.split(" ")[0].toLowerCase();
+    return agents.find((a) => a.name.toLowerCase().includes(first)) ?? null;
+  }, [explainLine, agents]);
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
@@ -179,8 +203,13 @@ function TheaterPage() {
           <HealthChip icon={Brain} label={ar ? "ثقة الذكاء" : "AI Confidence"} value={`${Math.round((health?.ai_confidence ?? 0) * 100)}%`} tone={(health?.ai_confidence ?? 0) > 0.75 ? "emerald" : "cyan"} />
         </section>
 
+        {/* Executive Storyboard — 9-stage lifecycle of the latest event */}
+        <section className="mt-6">
+          <Storyboard lines={narratorLines} ar={ar} />
+        </section>
+
         {/* Main stage */}
-        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
+        <section className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
           <div className="relative rounded-3xl border border-cyan-400/15 bg-white/[0.02] backdrop-blur-xl p-4 md:p-6 min-h-[620px] overflow-hidden">
             {/* Live caption banner */}
             {conductor.currentLine && (
@@ -195,15 +224,20 @@ function TheaterPage() {
               </div>
             )}
 
+            {/* Animated collaboration beams — each agent → ARIA */}
+            <ConnectionLines
+              agents={agents}
+              radius={240}
+              speakerId={speakerAgentId}
+              size={640}
+            />
+
             <AgentRing
               agents={agents}
               ar={ar}
               radius={240}
               centerSize={300}
-              spotlightId={conductor.currentSpeaker.id !== "aria" ? agents.find(a => {
-                const n = a.name.toLowerCase();
-                return n.includes(conductor.currentSpeaker.name_en.split(" ")[0].toLowerCase());
-              })?.id ?? null : null}
+              spotlightId={speakerAgentId}
             >
               <AriaScene
                 spec={conductor.currentSpeaker}
@@ -228,7 +262,7 @@ function TheaterPage() {
             </div>
           </div>
 
-          {/* Story feed */}
+          {/* Story feed — click any story to open the Explainability Panel */}
           <aside className="space-y-3 lg:max-h-[760px] lg:overflow-y-auto pr-1">
             <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/80 px-1">
               {ar ? "سجلّ القصص التنفيذي" : "Executive Story Feed"}
@@ -247,12 +281,21 @@ function TheaterPage() {
                   line={line.narrator}
                   ar={ar}
                   active={conductor.currentLine?.id === line.id}
+                  onClick={() => setExplainLine(line.narrator!)}
                 />
               ) : null
             ))}
           </aside>
         </section>
       </div>
+
+      <ExplainPanel
+        line={explainLine}
+        agent={explainAgent}
+        ar={ar}
+        onClose={() => setExplainLine(null)}
+      />
     </div>
+
   );
 }

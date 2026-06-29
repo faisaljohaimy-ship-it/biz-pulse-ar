@@ -20,6 +20,7 @@ interface Props {
   line: NarratorLine;
   ar: boolean;
   active?: boolean;
+  onClick?: () => void;
 }
 
 function elapsed(ts: number, ar: boolean): string {
@@ -32,16 +33,20 @@ function elapsed(ts: number, ar: boolean): string {
   return ar ? `قبل ${h} س` : `${h}h ago`;
 }
 
-export function StoryCard({ line, ar, active }: Props) {
+export function StoryCard({ line, ar, active, onClick }: Props) {
   const tone = TONE[line.tone];
   const Icon = tone.Icon;
+  const Tag = onClick ? "button" : "article";
   return (
-    <article
+    <Tag
+      onClick={onClick}
+      type={onClick ? "button" : undefined}
       className={cn(
-        "rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl",
+        "w-full text-start rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl",
         "p-4 ring-1 transition-all duration-300",
         tone.ring,
         active && "scale-[1.01] shadow-[0_0_40px_rgba(0,212,255,0.18)] border-cyan-300/40",
+        onClick && "cursor-pointer hover:bg-white/[0.06] hover:border-cyan-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-300/60",
       )}
       dir={ar ? "rtl" : "ltr"}
     >
@@ -102,6 +107,6 @@ export function StoryCard({ line, ar, active }: Props) {
             : line.tone === "critical" ? "Immediate escalation" : line.tone === "warn" ? "Preventive review" : "Routine follow-up"}
         </span>
       </footer>
-    </article>
+    </Tag>
   );
 }
