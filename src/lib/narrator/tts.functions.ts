@@ -11,6 +11,7 @@ import { z } from "zod";
 const Input = z.object({
   text: z.string().min(1).max(4000),
   voice: z.string().default("alloy"),
+  instructions: z.string().max(500).optional(),
 });
 
 export const ariaSpeak = createServerFn({ method: "POST" })
@@ -30,6 +31,7 @@ export const ariaSpeak = createServerFn({ method: "POST" })
         input: data.text,
         voice: data.voice,
         response_format: "mp3",
+        ...(data.instructions ? { instructions: data.instructions } : {}),
       }),
     });
 
