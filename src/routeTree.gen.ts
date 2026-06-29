@@ -50,6 +50,7 @@ import { Route as AuthenticatedTransformationRouteImport } from './routes/_authe
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
+import { Route as AuthenticatedSituationRoomRouteImport } from './routes/_authenticated/situation-room'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSecRouteImport } from './routes/_authenticated/sec'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
@@ -346,6 +347,12 @@ const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSituationRoomRoute =
+  AuthenticatedSituationRoomRouteImport.update({
+    id: '/situation-room',
+    path: '/situation-room',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -912,6 +919,7 @@ export interface FileRoutesByFullPath {
   '/risk': typeof AuthenticatedRiskRoute
   '/sec': typeof AuthenticatedSecRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/situation-room': typeof AuthenticatedSituationRoomRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/tools': typeof AuthenticatedToolsRoute
@@ -1043,6 +1051,7 @@ export interface FileRoutesByTo {
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/situation-room': typeof AuthenticatedSituationRoomRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/tools': typeof AuthenticatedToolsRoute
@@ -1177,6 +1186,7 @@ export interface FileRoutesById {
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/_authenticated/situation-room': typeof AuthenticatedSituationRoomRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
@@ -1311,6 +1321,7 @@ export interface FileRouteTypes {
     | '/risk'
     | '/sec'
     | '/settings'
+    | '/situation-room'
     | '/tasks'
     | '/team'
     | '/tools'
@@ -1442,6 +1453,7 @@ export interface FileRouteTypes {
     | '/readiness'
     | '/risk'
     | '/settings'
+    | '/situation-room'
     | '/tasks'
     | '/team'
     | '/tools'
@@ -1575,6 +1587,7 @@ export interface FileRouteTypes {
     | '/_authenticated/risk'
     | '/_authenticated/sec'
     | '/_authenticated/settings'
+    | '/_authenticated/situation-room'
     | '/_authenticated/tasks'
     | '/_authenticated/team'
     | '/_authenticated/tools'
@@ -1964,6 +1977,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof AuthenticatedTasksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/situation-room': {
+      id: '/_authenticated/situation-room'
+      path: '/situation-room'
+      fullPath: '/situation-room'
+      preLoaderRoute: typeof AuthenticatedSituationRoomRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -2725,6 +2745,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
+  AuthenticatedSituationRoomRoute: typeof AuthenticatedSituationRoomRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
@@ -2786,6 +2807,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
+  AuthenticatedSituationRoomRoute: AuthenticatedSituationRoomRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,

@@ -117,6 +117,7 @@ function useNavGroups(): NavGroup[] {
     {
       label: t("nav.group.workspace"),
       items: [
+        { to: "/situation-room", icon: Crown, label: ar(locale, "غرفة الموقف التنفيذية", "Executive Situation Room") },
         { to: "/bridge", icon: Crown, label: ar(locale, "جسر القيادة التنفيذي", "Executive Command Bridge") },
         { to: "/mission-control", icon: ShieldCheck, label: ar(locale, "مركز القيادة التنفيذي", "Mission Control") },
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
