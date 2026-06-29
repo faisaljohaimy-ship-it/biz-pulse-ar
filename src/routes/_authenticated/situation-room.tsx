@@ -26,6 +26,7 @@ import { AgentRing } from "@/components/bridge/AgentRing";
 import { BriefingStage } from "@/components/bridge/BriefingStage";
 import { MissionTimeline } from "@/components/bridge/MissionTimeline";
 import { DecisionEngine } from "@/components/situation-room/DecisionEngine";
+import { AgentConversation } from "@/components/situation-room/AgentConversation";
 import { findHuman } from "@/lib/digital-humans/registry";
 import { DigitalHumanAvatar } from "@/components/digital-humans/DigitalHumanAvatar";
 
