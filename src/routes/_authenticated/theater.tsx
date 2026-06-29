@@ -26,6 +26,10 @@ import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { AriaScene } from "@/components/digital-humans/r3f/AriaScene";
 import { StoryCard } from "@/components/theater/StoryCard";
+import { ConnectionLines } from "@/components/theater/ConnectionLines";
+import { Storyboard } from "@/components/theater/Storyboard";
+import { ExplainPanel } from "@/components/theater/ExplainPanel";
+import type { NarratorLine } from "@/lib/narrator/event-narrator";
 import { useConductor } from "@/lib/exec/conductor";
 
 export const Route = createFileRoute("/_authenticated/theater")({
