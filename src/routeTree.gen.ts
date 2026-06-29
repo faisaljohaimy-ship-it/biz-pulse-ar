@@ -48,6 +48,7 @@ import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTtsRouteImport } from './routes/_authenticated/tts'
 import { Route as AuthenticatedTransformationRouteImport } from './routes/_authenticated/transformation'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
+import { Route as AuthenticatedTheaterRouteImport } from './routes/_authenticated/theater'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSituationRoomRouteImport } from './routes/_authenticated/situation-room'
@@ -335,6 +336,11 @@ const AuthenticatedTransformationRoute =
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTheaterRoute = AuthenticatedTheaterRouteImport.update({
+  id: '/theater',
+  path: '/theater',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
@@ -922,6 +928,7 @@ export interface FileRoutesByFullPath {
   '/situation-room': typeof AuthenticatedSituationRoomRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/theater': typeof AuthenticatedTheaterRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
@@ -1054,6 +1061,7 @@ export interface FileRoutesByTo {
   '/situation-room': typeof AuthenticatedSituationRoomRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/theater': typeof AuthenticatedTheaterRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
@@ -1189,6 +1197,7 @@ export interface FileRoutesById {
   '/_authenticated/situation-room': typeof AuthenticatedSituationRoomRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/theater': typeof AuthenticatedTheaterRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
   '/_authenticated/tts': typeof AuthenticatedTtsRoute
@@ -1324,6 +1333,7 @@ export interface FileRouteTypes {
     | '/situation-room'
     | '/tasks'
     | '/team'
+    | '/theater'
     | '/tools'
     | '/transformation'
     | '/tts'
@@ -1456,6 +1466,7 @@ export interface FileRouteTypes {
     | '/situation-room'
     | '/tasks'
     | '/team'
+    | '/theater'
     | '/tools'
     | '/transformation'
     | '/tts'
@@ -1590,6 +1601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/situation-room'
     | '/_authenticated/tasks'
     | '/_authenticated/team'
+    | '/_authenticated/theater'
     | '/_authenticated/tools'
     | '/_authenticated/transformation'
     | '/_authenticated/tts'
@@ -1963,6 +1975,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/theater': {
+      id: '/_authenticated/theater'
+      path: '/theater'
+      fullPath: '/theater'
+      preLoaderRoute: typeof AuthenticatedTheaterRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/team': {
@@ -2748,6 +2767,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSituationRoomRoute: typeof AuthenticatedSituationRoomRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedTheaterRoute: typeof AuthenticatedTheaterRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
   AuthenticatedTtsRoute: typeof AuthenticatedTtsRoute
@@ -2810,6 +2830,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSituationRoomRoute: AuthenticatedSituationRoomRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedTheaterRoute: AuthenticatedTheaterRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,
   AuthenticatedTtsRoute: AuthenticatedTtsRoute,
