@@ -116,6 +116,7 @@ import { Route as AuthenticatedSecPermitsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSecPatrolsRouteImport } from './routes/_authenticated/sec.patrols'
 import { Route as AuthenticatedSecMaintenanceRouteImport } from './routes/_authenticated/sec.maintenance'
 import { Route as AuthenticatedSecKpiRouteImport } from './routes/_authenticated/sec.kpi'
+import { Route as AuthenticatedSecKnowledgeRouteImport } from './routes/_authenticated/sec.knowledge'
 import { Route as AuthenticatedSecIntegrationsRouteImport } from './routes/_authenticated/sec.integrations'
 import { Route as AuthenticatedSecIncidentsRouteImport } from './routes/_authenticated/sec.incidents'
 import { Route as AuthenticatedSecFacilitiesRouteImport } from './routes/_authenticated/sec.facilities'
@@ -696,6 +697,12 @@ const AuthenticatedSecKpiRoute = AuthenticatedSecKpiRouteImport.update({
   path: '/kpi',
   getParentRoute: () => AuthenticatedSecRoute,
 } as any)
+const AuthenticatedSecKnowledgeRoute =
+  AuthenticatedSecKnowledgeRouteImport.update({
+    id: '/knowledge',
+    path: '/knowledge',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const AuthenticatedSecIntegrationsRoute =
   AuthenticatedSecIntegrationsRouteImport.update({
     id: '/integrations',
@@ -921,6 +928,7 @@ export interface FileRoutesByFullPath {
   '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
   '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
+  '/sec/knowledge': typeof AuthenticatedSecKnowledgeRoute
   '/sec/kpi': typeof AuthenticatedSecKpiRoute
   '/sec/maintenance': typeof AuthenticatedSecMaintenanceRoute
   '/sec/patrols': typeof AuthenticatedSecPatrolsRoute
@@ -1050,6 +1058,7 @@ export interface FileRoutesByTo {
   '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
   '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
+  '/sec/knowledge': typeof AuthenticatedSecKnowledgeRoute
   '/sec/kpi': typeof AuthenticatedSecKpiRoute
   '/sec/maintenance': typeof AuthenticatedSecMaintenanceRoute
   '/sec/patrols': typeof AuthenticatedSecPatrolsRoute
@@ -1182,6 +1191,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
   '/_authenticated/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/_authenticated/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
+  '/_authenticated/sec/knowledge': typeof AuthenticatedSecKnowledgeRoute
   '/_authenticated/sec/kpi': typeof AuthenticatedSecKpiRoute
   '/_authenticated/sec/maintenance': typeof AuthenticatedSecMaintenanceRoute
   '/_authenticated/sec/patrols': typeof AuthenticatedSecPatrolsRoute
@@ -1314,6 +1324,7 @@ export interface FileRouteTypes {
     | '/sec/facilities'
     | '/sec/incidents'
     | '/sec/integrations'
+    | '/sec/knowledge'
     | '/sec/kpi'
     | '/sec/maintenance'
     | '/sec/patrols'
@@ -1443,6 +1454,7 @@ export interface FileRouteTypes {
     | '/sec/facilities'
     | '/sec/incidents'
     | '/sec/integrations'
+    | '/sec/knowledge'
     | '/sec/kpi'
     | '/sec/maintenance'
     | '/sec/patrols'
@@ -1574,6 +1586,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/facilities'
     | '/_authenticated/sec/incidents'
     | '/_authenticated/sec/integrations'
+    | '/_authenticated/sec/knowledge'
     | '/_authenticated/sec/kpi'
     | '/_authenticated/sec/maintenance'
     | '/_authenticated/sec/patrols'
@@ -2403,6 +2416,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecKpiRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/knowledge': {
+      id: '/_authenticated/sec/knowledge'
+      path: '/knowledge'
+      fullPath: '/sec/knowledge'
+      preLoaderRoute: typeof AuthenticatedSecKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/integrations': {
       id: '/_authenticated/sec/integrations'
       path: '/integrations'
@@ -2572,6 +2592,7 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecFacilitiesRoute: typeof AuthenticatedSecFacilitiesRoute
   AuthenticatedSecIncidentsRoute: typeof AuthenticatedSecIncidentsRoute
   AuthenticatedSecIntegrationsRoute: typeof AuthenticatedSecIntegrationsRoute
+  AuthenticatedSecKnowledgeRoute: typeof AuthenticatedSecKnowledgeRoute
   AuthenticatedSecKpiRoute: typeof AuthenticatedSecKpiRoute
   AuthenticatedSecMaintenanceRoute: typeof AuthenticatedSecMaintenanceRoute
   AuthenticatedSecPatrolsRoute: typeof AuthenticatedSecPatrolsRoute
@@ -2601,6 +2622,7 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecFacilitiesRoute: AuthenticatedSecFacilitiesRoute,
   AuthenticatedSecIncidentsRoute: AuthenticatedSecIncidentsRoute,
   AuthenticatedSecIntegrationsRoute: AuthenticatedSecIntegrationsRoute,
+  AuthenticatedSecKnowledgeRoute: AuthenticatedSecKnowledgeRoute,
   AuthenticatedSecKpiRoute: AuthenticatedSecKpiRoute,
   AuthenticatedSecMaintenanceRoute: AuthenticatedSecMaintenanceRoute,
   AuthenticatedSecPatrolsRoute: AuthenticatedSecPatrolsRoute,

@@ -3030,6 +3030,217 @@ export type Database = {
           },
         ]
       }
+      sec_knowledge_articles: {
+        Row: {
+          body_ar: string | null
+          body_en: string | null
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          description_ar: string | null
+          description_en: string | null
+          doc_code: string
+          embedding: string | null
+          embedding_model: string | null
+          escalation_level: string | null
+          id: string
+          keywords_ar: string[]
+          keywords_en: string[]
+          metadata: Json
+          org_id: string | null
+          owner: string | null
+          priority: string | null
+          procedure_ar: string | null
+          procedure_en: string | null
+          purpose_ar: string | null
+          purpose_en: string | null
+          related_agents: string[]
+          related_forms: string[]
+          related_policies: string[]
+          related_workflows: string[]
+          requirements_ar: string | null
+          requirements_en: string | null
+          responsibilities_ar: string | null
+          responsibilities_en: string | null
+          review_date: string | null
+          risk_level: string | null
+          scope_ar: string | null
+          scope_en: string | null
+          status: string
+          summary_ar: string | null
+          summary_en: string | null
+          title_ar: string
+          title_en: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          body_ar?: string | null
+          body_en?: string | null
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description_ar?: string | null
+          description_en?: string | null
+          doc_code: string
+          embedding?: string | null
+          embedding_model?: string | null
+          escalation_level?: string | null
+          id?: string
+          keywords_ar?: string[]
+          keywords_en?: string[]
+          metadata?: Json
+          org_id?: string | null
+          owner?: string | null
+          priority?: string | null
+          procedure_ar?: string | null
+          procedure_en?: string | null
+          purpose_ar?: string | null
+          purpose_en?: string | null
+          related_agents?: string[]
+          related_forms?: string[]
+          related_policies?: string[]
+          related_workflows?: string[]
+          requirements_ar?: string | null
+          requirements_en?: string | null
+          responsibilities_ar?: string | null
+          responsibilities_en?: string | null
+          review_date?: string | null
+          risk_level?: string | null
+          scope_ar?: string | null
+          scope_en?: string | null
+          status?: string
+          summary_ar?: string | null
+          summary_en?: string | null
+          title_ar: string
+          title_en: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          body_ar?: string | null
+          body_en?: string | null
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description_ar?: string | null
+          description_en?: string | null
+          doc_code?: string
+          embedding?: string | null
+          embedding_model?: string | null
+          escalation_level?: string | null
+          id?: string
+          keywords_ar?: string[]
+          keywords_en?: string[]
+          metadata?: Json
+          org_id?: string | null
+          owner?: string | null
+          priority?: string | null
+          procedure_ar?: string | null
+          procedure_en?: string | null
+          purpose_ar?: string | null
+          purpose_en?: string | null
+          related_agents?: string[]
+          related_forms?: string[]
+          related_policies?: string[]
+          related_workflows?: string[]
+          requirements_ar?: string | null
+          requirements_en?: string | null
+          responsibilities_ar?: string | null
+          responsibilities_en?: string | null
+          review_date?: string | null
+          risk_level?: string | null
+          scope_ar?: string | null
+          scope_en?: string | null
+          status?: string
+          summary_ar?: string | null
+          summary_en?: string | null
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_knowledge_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "sec_knowledge_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_knowledge_categories: {
+        Row: {
+          code: string
+          created_at: string
+          description_ar: string | null
+          description_en: string | null
+          icon: string | null
+          id: string
+          name_ar: string
+          name_en: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          icon?: string | null
+          id?: string
+          name_ar: string
+          name_en: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          icon?: string | null
+          id?: string
+          name_ar?: string
+          name_en?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      sec_knowledge_links: {
+        Row: {
+          article_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          relation: string
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          relation?: string
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          relation?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_knowledge_links_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "sec_knowledge_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sec_patrol_teams: {
         Row: {
           circle_id: string | null
@@ -4548,6 +4759,21 @@ export type Database = {
         }[]
       }
       runtime_cleanup_stale_executions: { Args: never; Returns: Json }
+      sec_kb_search: {
+        Args: { _category_code?: string; _limit?: number; _query: string }
+        Returns: {
+          category_code: string
+          doc_code: string
+          id: string
+          priority: string
+          risk_level: string
+          similarity: number
+          summary_ar: string
+          summary_en: string
+          title_ar: string
+          title_en: string
+        }[]
+      }
       set_microsoft_sync_secret: {
         Args: { _secret: string }
         Returns: undefined
