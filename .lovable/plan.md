@@ -1,58 +1,44 @@
-## الهدف
-رفع تغطية NEXUS من 22 وكيلاً إلى 32 وكيلاً (+10) مع 8 سكلز جديدة لسد الفجوات التشغيلية والحَوْكَمية بدون أي محاكاة.
+## Executive AI Command Center — Upgrade Plan
 
-## الفجوات المُكتشَفة (بناءً على الجداول الموجودة)
-| الجدول | بدون وكيل مخصص |
-|---|---|
-| `sec_cctv_alerts` | ✗ |
-| `sec_contractors` | ✗ |
-| `sec_vehicles` | ✗ |
-| `sec_assets` + `sec_sensors` | ✗ |
-| `pulse_crises` | ✗ |
-| `cost_budgets` + `ai_usage` | ✗ |
-| `governance_policies` (استعلام) | ✗ |
-| تسليم الورديات | ✗ |
-| جودة البيانات | ✗ |
-| التدريب التشغيلي عبر RAG | ✗ |
+The directive spans 12 phases. To preserve every existing workflow and ship measurable value per round, I'll execute in **4 incremental rounds**. Each round is self-contained, typechecks clean, and adds polish without touching business logic. No data, server functions, or RLS change.
 
-## الوكلاء الـ10 الجدد (يُحقنون في `agent_definitions` عبر `supabase--insert`)
+---
 
-| # | id | الدور | الأدوات |
-|---|---|---|---|
-| 1 | `cctv_intelligence` | ربط تنبيهات CCTV بالحوادث | `sql.read`, `aria.report.write` |
-| 2 | `contractor_compliance` | تدقيق `sec_contractors` (CR/التأمين/الشهادات) | `sql.read`, `aria.report.write` |
-| 3 | `vehicle_access_controller` | فحص `sec_vehicles` والقائمة السوداء | `sql.read`, `aria.report.write` |
-| 4 | `asset_health_monitor` | كشف شذوذ `sec_sensors`/`sec_assets` | `sql.read`, `aria.report.write` |
-| 5 | `crisis_commander` | تنسيق `pulse_crises` P0/P1 | `sql.read`, `aria.report.write`, `m365.teams.post_message` |
-| 6 | `shift_handover` | تقرير تسليم وردية | `sql.read`, `aria.report.write` |
-| 7 | `policy_advisor` | استعلام `governance_policies` + RAG | `sql.read`, `aria.kb.search` |
-| 8 | `training_coach` | تدريب تشغيلي بـ RAG | `aria.kb.search`, `aria.report.write` |
-| 9 | `data_quality_steward` | كشف صفوف ناقصة/قديمة | `sql.read`, `aria.report.write` |
-| 10 | `cost_governance_agent` | مراقبة `cost_budgets` + `ai_usage` | `sql.read`, `aria.report.write` |
+### Round 1 — Foundations (Phases 1, 8, 11, 12)
+Premium shell + motion vocabulary the rest of the rounds rely on.
 
-كل وكيل: نموذج `openai/gpt-5`، system prompt عربي يلتزم Charter v10.0 (صفر تلفيق، fallback "البيانات غير متوفرة")، `enabled=true`.
+- Install `framer-motion` (if missing) and a tiny `ExecutiveMotion` primitives file: `<FadeIn>`, `<SlidePanel>`, `<PulseOnChange>`, `<NumberFlow>`. Used everywhere.
+- New `MissionControlShell` 4-zone grid (Left nav+org+agents · Center timeline · Right KPIs+recommendations+incidents · Bottom live feed). The current `mission-control.tsx` body becomes the **Center** zone — zero logic change.
+- Larger executive type scale (`text-2xl` headlines, `text-base` body, tabular-nums on every KPI), high-contrast tokens already in `styles.css`.
+- Add `prefers-reduced-motion` guard in the motion primitives → Phase 11 covered.
+- Tailwind `@utility glass-card` consolidating the existing glassmorphism (no `-webkit-backdrop-filter` duplication, per stack rule).
 
-## الـ8 سكلز الجديدة (`.agents/skills/`)
-1. `cctv-incident-correlator` — مُصفوفة ربط Camera↔Incident
-2. `contractor-vetting-matrix` — قواعد قبول/رفض المقاول
-3. `vehicle-blacklist-check` — منطق فحص اللوحة والسائق
-4. `asset-anomaly-detection` — نوافذ z-score/IQR لقراءات الحساسات
-5. `crisis-decision-matrix` — مصفوفة قرار P0–P4 لأزمات `pulse_crises`
-6. `shift-handover-report` — قالب تسليم وردية (Pending / Critical / Hot)
-7. `data-quality-audit` — قائمة فحوصات (nulls/staleness/orphans)
-8. `cost-anomaly-scan` — كشف انحراف `ai_usage` عن `cost_budgets`
+### Round 2 — Living Agents + Vertical Conversation (Phases 2, 3, 9)
+- Extract the current agent script renderer into `AgentChoirPanel` (Left zone) with animated avatars: status ring per state (`active`/`thinking`/`waiting`/`collaborating`/`error`/`idle`), Framer Motion ring rotation + dot bounce.
+- Center zone gets `AgentConversationStream` — vertical timeline of agent turns with smooth `AnimatePresence` enter/exit and ChevronDown connector animation.
+- Each agent line shows: avatar · name · current task · last-execution timestamp · live state pill. State derives from the existing `buildAgentScript()` output + `getSecOverview()` data — no new server calls.
 
-ثم `skills--apply_draft` لكل سكل.
+### Round 3 — KPI Cards + Live Timeline + Command Palette (Phases 5, 6, 7)
+- `ExecutiveKpiCard` with `<PulseOnChange>` + `<NumberFlow>` for 10 metrics already aggregated by `getSecOverview()` (readiness, incidents, patrols, work orders, visitors, permits, response time, risk, compliance, AI confidence). Cards pulse cyan when value changes.
+- `LiveOperationsTimeline` (Bottom zone) — animated vertical/horizontal feed sourced from `enterprise_events` (existing query). Smooth `AnimatePresence` row insertion.
+- Global `CommandPalette` using existing `src/components/ui/command.tsx` (cmdk) bound to `⌘K` / `Ctrl+K`. Bilingual commands (AR + EN) route via TanStack `useNavigate` to existing routes (incidents, patrols, permits, reports, run-agent). No fake actions — every command maps to a real route or existing server fn.
 
-## التحقق (E2E، بدون محاكاة)
-- تشغيل وكيل عيّنة `data_quality_steward` عبر `/api/public/hooks/run-agent`.
-- التحقق من سلسلة الأدلة: `agent_runs` + `workflow_runs` + `tool_executions` + `audit_logs` + `aria_reports`.
-- تقرير ختامي بنسبة الإنجاز.
+### Round 4 — Digital Twin Map + Polish (Phases 4, 10)
+- `DigitalTwinMap` component: SVG-based site map (no Mapbox per stack constraints) plotting facilities/patrols/visitors/vehicles/incidents/assets from `getSecOverview()` site rows. Color coded by status. Lazy-loaded via `React.lazy` + Suspense fallback to satisfy Phase 10.
+- Memoize heavy children (`React.memo` on agent rows, KPI cards), virtualize the activity feed beyond 50 rows using a tiny windowing pattern.
+- Final pass: dead-button audit, empty-state guidance copy (bilingual), keyboard shortcuts cheat-sheet dialog (`?` opens it).
 
-## ما لن أفعله
-- لا تعديل جداول/RLS (يكفي `supabase--insert` على `agent_definitions`).
-- لا تغييرات UI.
-- لا إعادة كتابة `tool_registry` (الأدوات موجودة).
+---
 
-## النتيجة النهائية
-32 وكيلاً نشطاً + 8 سكلز جديدة + سلسلة أدلة حية لوكيل واحد على الأقل = تغطية تشغيلية وحوكمية شاملة.
+### Technical guardrails
+
+- Zero changes to `src/lib/sec.functions.ts`, `agent-runtime.server.ts`, DB schema, or RLS.
+- Every new component lives under `src/components/mission-control/` — easy to revert.
+- All colors via semantic tokens; no hardcoded hex outside `styles.css`.
+- Each round ends with a typecheck + a smoke screenshot via Playwright.
+
+---
+
+### Confirm before I start
+
+This will take ~4 successive turns to land cleanly. **Should I proceed with Round 1 now**, or would you prefer a different ordering (e.g. start with the Command Palette + KPI cards for fastest demo impact)?
