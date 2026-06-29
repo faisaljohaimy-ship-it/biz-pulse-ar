@@ -52,23 +52,31 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
 
   useFrame((_, dt) => {
     const t = performance.now() / 1000;
+    const speakingBoost = THREE.MathUtils.clamp(mouthAmplitude * 3, 0, 1);
+
     // Breathing — chest scale + tiny vertical body bob
     if (chest.current) {
       const s = 1 + Math.sin(t * preset.breathHz * Math.PI * 2) * 0.025;
       chest.current.scale.set(s, s, s);
+      // Subtle shoulder lift while speaking — executive presence cue
+      const lift = 0.18 + speakingBoost * 0.015;
+      chest.current.position.y = THREE.MathUtils.damp(chest.current.position.y, lift, 6, dt);
     }
     if (group.current) {
       group.current.position.y = Math.sin(t * preset.breathHz * Math.PI * 2) * 0.015;
+      // Body weight shifting — slow lateral sway, calm and executive
+      group.current.position.x = Math.sin(t * 0.18) * 0.025;
       const sway = THREE.MathUtils.degToRad(preset.swayDeg);
       group.current.rotation.z = Math.sin(t * 0.4) * sway * 0.3;
     }
 
-    // Head tracking — easing toward pointer
+    // Head tracking — easing toward pointer/gaze; adds a tiny nod while speaking
     if (head.current) {
       const targetY = THREE.MathUtils.clamp(pointer.x, -1, 1) * 0.35;
-      const targetX = THREE.MathUtils.clamp(-pointer.y, -1, 1) * 0.2;
+      const baseX = THREE.MathUtils.clamp(-pointer.y, -1, 1) * 0.2;
+      const nod = speakingBoost > 0.05 ? Math.sin(t * 2.4) * 0.04 : 0;
       head.current.rotation.y = THREE.MathUtils.damp(head.current.rotation.y, targetY, 4, dt);
-      head.current.rotation.x = THREE.MathUtils.damp(head.current.rotation.x, targetX, 4, dt);
+      head.current.rotation.x = THREE.MathUtils.damp(head.current.rotation.x, baseX + nod, 4, dt);
     }
 
     // Jaw viseme — driven by audio amplitude with smoothing
@@ -119,10 +127,22 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
 
         {/* Hair / hijab cap */}
         {spec.features.hasHijab ? (
-          <mesh position={[0, 0.05, -0.02]}>
-            <sphereGeometry args={[0.48, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.72]} />
-            <primitive object={hair} attach="material" />
-          </mesh>
+          <group>
+            <mesh position={[0, 0.05, -0.02]}>
+              <sphereGeometry args={[0.48, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.72]} />
+              <primitive object={hair} attach="material" />
+            </mesh>
+            {/* Forehead accent trim — subtle executive band */}
+            <mesh position={[0, 0.32, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[0.4, 0.012, 8, 32, Math.PI * 1.1]} />
+              <primitive object={accent} attach="material" />
+            </mesh>
+            {/* Drape over shoulders */}
+            <mesh position={[0, -0.35, -0.08]} rotation={[0.1, 0, 0]}>
+              <sphereGeometry args={[0.55, 24, 24, 0, Math.PI * 2, Math.PI * 0.45, Math.PI * 0.35]} />
+              <primitive object={hair} attach="material" />
+            </mesh>
+          </group>
         ) : (
           <mesh position={[0, 0.12, -0.02]}>
             <sphereGeometry args={[0.44, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
