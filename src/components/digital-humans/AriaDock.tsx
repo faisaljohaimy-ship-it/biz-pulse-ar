@@ -17,7 +17,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
-import { getAvatarProvider } from "@/lib/digital-humans/avatar-provider";
+import { getAvatarProvider, type AvatarProvider } from "@/lib/digital-humans/avatar-provider";
+// Side-effect imports — register both providers so getAvatarProvider can resolve them.
+import "@/components/digital-humans/DigitalHumanAvatar";
+import "@/components/digital-humans/r3f/R3FAvatarProvider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
@@ -49,7 +52,18 @@ export function AriaDock() {
   const handleRef = useRef<SpeakHandle | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
 
-  const provider = useMemo(() => getAvatarProvider("svg"), []);
+  // Choose the 3D R3F provider when WebGL is available and reduced-motion is off;
+  // otherwise fall back to the SVG portrait. Resolved once per session.
+  const provider = useMemo<AvatarProvider>(() => {
+    if (typeof window === "undefined") return getAvatarProvider("svg");
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    let webgl = false;
+    try {
+      const c = document.createElement("canvas");
+      webgl = !!(c.getContext("webgl2") || c.getContext("webgl"));
+    } catch { webgl = false; }
+    return reduced || !webgl ? getAvatarProvider("svg") : getAvatarProvider("readyplayerme");
+  }, []);
   const { events } = useEventStream({ limit: 25 });
 
   const playNext = useCallback(() => {

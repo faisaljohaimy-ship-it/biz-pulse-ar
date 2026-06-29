@@ -1,44 +1,65 @@
-## Executive AI Command Center — Upgrade Plan
+# Phase 4 — Executive Digital Human Runtime
 
-The directive spans 12 phases. To preserve every existing workflow and ship measurable value per round, I'll execute in **4 incremental rounds**. Each round is self-contained, typechecks clean, and adds polish without touching business logic. No data, server functions, or RLS change.
+Upgrade ARIA from a 2D SVG avatar into a 3D, alive, provider-abstracted Executive Digital Human, integrated into the existing AriaDock and Mission Control without breaking current runtime, workflows, or narration.
 
----
+## Scope (this round)
 
-### Round 1 — Foundations (Phases 1, 8, 11, 12)
-Premium shell + motion vocabulary the rest of the rounds rely on.
+Round A — Foundation + ARIA 3D (this PR):
+1. **Dependencies**: add `three`, `@react-three/fiber`, `@react-three/drei`, `gsap` (framer-motion + Web Audio already present).
+2. **Provider abstraction** (`src/lib/digital-humans/avatar-engine.ts`):
+   - `AvatarEngine` interface: `mount(el)`, `setState(AliveState)`, `setViseme(level)`, `lookAt(x,y)`, `dispose()`.
+   - Providers: `R3FAvatarEngine` (default, in-repo), stubs for `ReadyPlayerMeEngine`, `AzureAvatarEngine`, `HeyGenEngine`, `DIDEngine` — all behind one factory `createAvatarEngine(provider, persona)`.
+3. **R3F ARIA scene** (`src/components/digital-humans/r3f/AriaScene.tsx`):
+   - GLTF loader with graceful fallback to a stylized procedural bust if no model URL configured (`VITE_ARIA_AVATAR_URL`).
+   - HDR environment via drei `Environment preset="city"`, soft executive 3-point lighting, depth-of-field-lite via fog.
+   - Idle breathing (sin wave on chest scale), eye blink loop, head tracking to pointer, GSAP transitions between AliveStates, viseme-driven jaw blendshape (fallback: subtle mouth scale when morphTargets missing).
+   - Suspense + lazy-loaded; canvas uses `frameloop="demand"` when idle to stay near 60 FPS.
+4. **Alive state machine** (`src/lib/digital-humans/alive-states.ts`):
+   - `idle | listening | thinking | analyzing | speaking | presenting | warning | critical | success | waiting | offline`.
+   - Hook `useAliveState(persona)` subscribes to: TTS amplitude (existing `aria-voice.ts`), latest `enterprise_events` severity, narrator queue.
+5. **AriaDock upgrade**: swap the SVG `DigitalHumanAvatar` for the new `AriaScene` inside the existing dock; keep the 2D fallback when `prefers-reduced-motion` or WebGL unavailable.
+6. **Live Executive Mode trigger**: when a `high|critical` event arrives, dock auto-expands, ARIA transitions to `speaking`, narrator speaks the bilingual brief — wiring already exists via `ExecutiveNarrator` + `tts.functions.ts`; we only add the state hookup.
 
-- Install `framer-motion` (if missing) and a tiny `ExecutiveMotion` primitives file: `<FadeIn>`, `<SlidePanel>`, `<PulseOnChange>`, `<NumberFlow>`. Used everywhere.
-- New `MissionControlShell` 4-zone grid (Left nav+org+agents · Center timeline · Right KPIs+recommendations+incidents · Bottom live feed). The current `mission-control.tsx` body becomes the **Center** zone — zero logic change.
-- Larger executive type scale (`text-2xl` headlines, `text-base` body, tabular-nums on every KPI), high-contrast tokens already in `styles.css`.
-- Add `prefers-reduced-motion` guard in the motion primitives → Phase 11 covered.
-- Tailwind `@utility glass-card` consolidating the existing glassmorphism (no `-webkit-backdrop-filter` duplication, per stack rule).
+Round B (follow-up PR, after A ships):
+- Mission Control "Executive Theater" stage (full-viewport R3F canvas, particle field, camera rig, animated connection graph between agent avatars).
+- Agent Orchestra: render the 10 specialist personas as smaller R3F busts in a semicircle, each driven by the same engine + their `voice-profiles.ts` entry.
+- "Start Executive Briefing" button: scripted sequence ARIA → Incident → Risk → Compliance → Digital Twin → Reporter → ARIA summary, sourced strictly from real `sec_*` data via existing `sec.functions.ts` (no fabrication).
+- Presentation Mode camera choreography (GSAP timelines), KPI cards fly-in.
 
-### Round 2 — Living Agents + Vertical Conversation (Phases 2, 3, 9)
-- Extract the current agent script renderer into `AgentChoirPanel` (Left zone) with animated avatars: status ring per state (`active`/`thinking`/`waiting`/`collaborating`/`error`/`idle`), Framer Motion ring rotation + dot bounce.
-- Center zone gets `AgentConversationStream` — vertical timeline of agent turns with smooth `AnimatePresence` enter/exit and ChevronDown connector animation.
-- Each agent line shows: avatar · name · current task · last-execution timestamp · live state pill. State derives from the existing `buildAgentScript()` output + `getSecOverview()` data — no new server calls.
+Round C (follow-up):
+- Ready Player Me model pipeline (env-configured avatar URL per persona), Azure Speech SDK abstraction wrapper around current TTS, automatic AR/EN language detection on user input.
 
-### Round 3 — KPI Cards + Live Timeline + Command Palette (Phases 5, 6, 7)
-- `ExecutiveKpiCard` with `<PulseOnChange>` + `<NumberFlow>` for 10 metrics already aggregated by `getSecOverview()` (readiness, incidents, patrols, work orders, visitors, permits, response time, risk, compliance, AI confidence). Cards pulse cyan when value changes.
-- `LiveOperationsTimeline` (Bottom zone) — animated vertical/horizontal feed sourced from `enterprise_events` (existing query). Smooth `AnimatePresence` row insertion.
-- Global `CommandPalette` using existing `src/components/ui/command.tsx` (cmdk) bound to `⌘K` / `Ctrl+K`. Bilingual commands (AR + EN) route via TanStack `useNavigate` to existing routes (incidents, patrols, permits, reports, run-agent). No fake actions — every command maps to a real route or existing server fn.
+## Non-goals / Guardrails
 
-### Round 4 — Digital Twin Map + Polish (Phases 4, 10)
-- `DigitalTwinMap` component: SVG-based site map (no Mapbox per stack constraints) plotting facilities/patrols/visitors/vehicles/incidents/assets from `getSecOverview()` site rows. Color coded by status. Lazy-loaded via `React.lazy` + Suspense fallback to satisfy Phase 10.
-- Memoize heavy children (`React.memo` on agent rows, KPI cards), virtualize the activity feed beyond 50 rows using a tiny windowing pattern.
-- Final pass: dead-button audit, empty-state guidance copy (bilingual), keyboard shortcuts cheat-sheet dialog (`?` opens it).
+- No changes to `sec_*` schema, workflow engine, tool registry, RLS, or RBAC.
+- No fabricated incidents — narration stays sourced from `enterprise_events` + `sec_*` reads.
+- No vendor lock-in: every avatar/voice call goes through the provider interface.
+- Existing 2D `DigitalHumanAvatar` stays as fallback (reduced-motion, no-WebGL, SSR).
+- Gateway model rule: TTS continues via `openai/gpt-4o-mini-tts`; ARIA reasoning continues on `openai/gpt-5` (no `temperature` for gpt-5 family).
+- SSR safety: all R3F code under `Suspense` + dynamic import; no `window` at module scope.
 
----
+## Technical notes
 
-### Technical guardrails
+```text
+src/
+  lib/digital-humans/
+    avatar-engine.ts         # interface + factory
+    providers/
+      r3f-engine.ts          # default
+      readyplayerme-engine.ts# stub
+      azure-engine.ts        # stub
+      heygen-engine.ts       # stub
+      did-engine.ts          # stub
+    alive-states.ts          # state machine + useAliveState
+  components/digital-humans/
+    AriaDock.tsx             # upgraded to mount AvatarEngine
+    r3f/
+      AriaScene.tsx          # Canvas + lighting + camera
+      AriaModel.tsx          # GLTF + morph/viseme + blink/breath
+      ProceduralBust.tsx     # fallback when no GLTF URL
+      PointerTracker.tsx     # head/eye lookAt
+```
 
-- Zero changes to `src/lib/sec.functions.ts`, `agent-runtime.server.ts`, DB schema, or RLS.
-- Every new component lives under `src/components/mission-control/` — easy to revert.
-- All colors via semantic tokens; no hardcoded hex outside `styles.css`.
-- Each round ends with a typecheck + a smoke screenshot via Playwright.
+Env: optional `VITE_ARIA_AVATAR_URL` (GLTF/GLB). Absent → procedural fallback (still 3D, still alive).
 
----
-
-### Confirm before I start
-
-This will take ~4 successive turns to land cleanly. **Should I proceed with Round 1 now**, or would you prefer a different ordering (e.g. start with the Command Palette + KPI cards for fastest demo impact)?
+Deliverable for this round: working 3D ARIA in the dock with alive states + viseme lip-sync driven by the existing TTS amplitude stream, behind the provider interface, with the 2D fallback preserved. Rounds B and C land in follow-up PRs once you approve A.
