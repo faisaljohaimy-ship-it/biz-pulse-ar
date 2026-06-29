@@ -126,11 +126,11 @@ export function AriaDock() {
     if (!playingRef.current && !paused) playNext();
   }, [playNext, paused]);
 
-  // MULTI-VOICE ORCHESTRA: every agent narrates its own runtime events
-  // with its own voice profile (resolved via narratorAgentToHumanId →
-  // DigitalHumanSpec → voice-profiles). Heartbeats and tick noise are
-  // still suppressed; history present at mount is marked seen so page
-  // loads stay quiet. Critical events keep priority (jump the queue).
+  // SILENCE BY DEFAULT: agents never speak unprompted. They speak ONLY
+  // when the executive taps an agent avatar, presses the Briefing button,
+  // or invokes the imperative `window.aria.speak(...)` API. Critical
+  // incidents still escalate to ARIA herself so safety alerts are never
+  // missed.
   useEffect(() => {
     if (!events.length) return;
     if (!hydratedRef.current) {
@@ -143,6 +143,8 @@ export function AriaDock() {
       seenRef.current.add(row.id);
       if (row.topic.startsWith("system.heartbeat") || row.topic.startsWith("runtime.tick")) continue;
       const line = narrateEvent(row);
+      if (line.tone !== "critical") continue; // only critical incidents speak unprompted
+
 
       const compose = (lang: "ar" | "en") => {
         const action = lang === "ar" ? line.action_ar : line.action_en;

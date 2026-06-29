@@ -23,6 +23,8 @@ import { getBridgeState, getMissionTimeline, type BridgeHealth } from "@/lib/exe
 import { generateExecutiveBriefing, type BriefingSegment, type ExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { getPredictedRisks } from "@/lib/exec/predictive.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
+import { speakAgent } from "@/lib/digital-humans/speak-agent";
+
 import { BriefingStage } from "@/components/bridge/BriefingStage";
 import { MissionTimeline } from "@/components/bridge/MissionTimeline";
 import { DecisionEngine } from "@/components/situation-room/DecisionEngine";
@@ -141,9 +143,11 @@ function SituationRoomPage() {
             radius={270}
             centerSize={260}
             spotlightId={spotlightAgentId}
+            onAgentClick={(a) => speakAgent(a, ar)}
           >
             <CenterStage ar={ar} speaking={spotlightSegment?.speaker_id === "aria"} aria={aria} />
           </AgentRing>
+
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button

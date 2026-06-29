@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { getBridgeState } from "@/lib/exec/bridge.functions";
 import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
+import { speakAgent } from "@/lib/digital-humans/speak-agent";
+
 import { AriaScene } from "@/components/digital-humans/r3f/AriaScene";
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";
@@ -271,7 +273,9 @@ function TheaterPage() {
               radius={240}
               centerSize={300}
               spotlightId={speakerAgentId}
+              onAgentClick={(a) => speakAgent(a, ar)}
             >
+
               <AriaScene
                 spec={conductor.currentSpeaker}
                 state={aliveState}
