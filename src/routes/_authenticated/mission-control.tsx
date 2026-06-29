@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
 import { ExecutiveNarrator } from "@/components/mission-control/ExecutiveNarrator";
+import { AmbientParticles } from "@/components/mission-control/AmbientParticles";
 
 export const Route = createFileRoute("/_authenticated/mission-control")({
   head: () => ({
@@ -535,6 +536,7 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
       "fixed inset-0 z-50 flex items-center justify-center bg-[#061A2E] transition-opacity duration-500",
       phase === 2 ? "opacity-0 pointer-events-none" : "opacity-100"
     )}>
+      <AmbientParticles count={28} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,212,255,0.18),transparent_60%)]" />
       <div className="relative text-center px-6">
         <div className="mx-auto mb-6 h-16 w-16 rounded-full border border-cyan-400/40 grid place-items-center animate-pulse">
@@ -638,8 +640,9 @@ function MissionControl() {
       {!welcomeDone && <WelcomeOverlay ar={ar} onDone={() => setWelcomeDone(true)} name={displayName} />}
 
       {/* Ambient backdrop */}
+      <AmbientParticles count={48} />
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full bg-cyan-400/10 blur-[120px]" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full bg-cyan-400/10 blur-[120px] animate-pulse" />
         <div className="absolute bottom-0 right-0 h-[420px] w-[700px] rounded-full bg-[#3AE8FF]/5 blur-[120px]" />
       </div>
 
