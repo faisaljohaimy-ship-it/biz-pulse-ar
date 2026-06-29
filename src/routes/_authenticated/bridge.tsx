@@ -151,7 +151,7 @@ function BridgePage() {
               {ar ? "السرد التنفيذي الحي" : "Live Executive Storytelling"}
             </div>
             <div className="max-h-[420px] overflow-hidden">
-              <ExecutiveNarrator />
+              <ExecutiveNarrator ar={ar} />
             </div>
           </div>
         </div>
