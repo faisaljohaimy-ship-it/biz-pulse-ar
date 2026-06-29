@@ -640,8 +640,9 @@ function MissionControl() {
       {!welcomeDone && <WelcomeOverlay ar={ar} onDone={() => setWelcomeDone(true)} name={displayName} />}
 
       {/* Ambient backdrop */}
+      <AmbientParticles count={48} />
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full bg-cyan-400/10 blur-[120px]" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full bg-cyan-400/10 blur-[120px] animate-pulse" />
         <div className="absolute bottom-0 right-0 h-[420px] w-[700px] rounded-full bg-[#3AE8FF]/5 blur-[120px]" />
       </div>
 
