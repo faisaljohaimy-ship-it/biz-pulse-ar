@@ -86,17 +86,21 @@ function useLipFrame(active: boolean) {
 }
 
 export function DigitalHumanAvatar({
-  spec, state, size = 96, ambient = true, className, showLabel = false, ar = false,
+  spec, state, size = 96, ambient = true, className, showLabel = false, ar = false, mouthAmplitude,
 }: Props) {
   const blink = useBlink();
   const gaze = useGaze();
   const speaking = state === "speaking";
-  const lip = useLipFrame(speaking);
+  const lip = useLipFrame(speaking && mouthAmplitude === undefined);
   const p = spec.palette;
   const f = spec.features;
 
-  // mouth shape by lip frame (closed → open → wide → mid)
-  const mouthH = speaking ? [1.5, 5, 4, 3][lip] : 1.5;
+  // Audio-driven mouth: amplitude (0..1) → 1.2..6.5 height; falls back to
+  // synthetic lip frames when no audio analyser is attached.
+  const ampMouth = mouthAmplitude !== undefined
+    ? 1.2 + Math.max(0, Math.min(1, mouthAmplitude)) * 5.3
+    : null;
+  const mouthH = ampMouth ?? (speaking ? [1.5, 5, 4, 3][lip] : 1.5);
 
   const stateRing =
     state === "speaking"  ? p.accent
