@@ -64,32 +64,32 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
 
     const [incidentsRes, briefRisksRes, briefOppsRes, briefActionsRes] = await Promise.all([
       sb.from("sec_incidents")
-        .select("id, title, description, severity, status, category, reported_at, site_id")
+        .select("id, title_ar, title_en, ai_summary, severity, status, category, reported_at, site_id")
         .gte("reported_at", since)
         .order("reported_at", { ascending: false })
         .limit(50),
       sb.from("briefing_risks")
-        .select("id, title, title_en, level, probability, detail")
+        .select("id, title, title_en, level, probability")
         .order("probability", { ascending: false, nullsFirst: false })
         .limit(20),
       sb.from("briefing_opportunities")
-        .select("id, title, title_en, potential, detail")
+        .select("id, title, title_en, potential")
         .order("potential", { ascending: false, nullsFirst: false })
         .limit(20),
       sb.from("briefing_actions")
-        .select("id, title, title_en, priority, detail, owner")
+        .select("id, title, title_en, priority")
         .order("priority", { ascending: false, nullsFirst: false })
         .limit(20),
     ]);
 
     type Incident = {
-      id: string; title: string | null; description: string | null;
+      id: string; title_ar: string | null; title_en: string | null; ai_summary: string | null;
       severity: string | null; status: string | null; category: string | null;
       reported_at: string; site_id: string | null;
     };
-    type BriefRisk = { id: string; title: string | null; title_en: string | null; level: string | null; probability: number | null; detail: string | null };
-    type BriefOpp = { id: string; title: string | null; title_en: string | null; potential: number | null; detail: string | null };
-    type BriefAction = { id: string; title: string | null; title_en: string | null; priority: number | null; detail: string | null; owner: string | null };
+    type BriefRisk = { id: string; title: string | null; title_en: string | null; level: string | null; probability: number | null };
+    type BriefOpp = { id: string; title: string | null; title_en: string | null; potential: number | null };
+    type BriefAction = { id: string; title: string | null; title_en: string | null; priority: number | null };
 
     const incidents = (incidentsRes.data ?? []) as Incident[];
     const briefRisks = (briefRisksRes.data ?? []) as BriefRisk[];
@@ -104,10 +104,10 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
         const score = SEV_SCORE[sev] ?? 50;
         return {
           id: `inc-${i.id}`,
-          title_ar: i.title ?? "بلاغ تشغيلي",
-          title_en: i.title ?? "Operational incident",
-          detail_ar: i.description,
-          detail_en: i.description,
+          title_ar: i.title_ar ?? i.title_en ?? "بلاغ تشغيلي",
+          title_en: i.title_en ?? i.title_ar ?? "Operational incident",
+          detail_ar: i.ai_summary,
+          detail_en: i.ai_summary,
           score,
           confidence: 0.9,
           priority: SEV_PRIORITY[sev] ?? "medium",
@@ -123,8 +123,8 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
         id: `brisk-${r.id}`,
         title_ar: r.title ?? "مخاطرة",
         title_en: r.title_en ?? r.title ?? "Risk",
-        detail_ar: r.detail,
-        detail_en: r.detail,
+        detail_ar: null,
+        detail_en: null,
         score,
         confidence: Math.max(0.5, score / 100),
         priority: (r.level as DecisionItem["priority"]) ?? priorityFromScore(score),
@@ -137,6 +137,49 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
     const risks = [...incidentRisks, ...execRisks]
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
+
+    // ----- Opportunities -----
+    const opportunities: DecisionItem[] = briefOpps
+      .map((o) => {
+        const score = Math.max(0, Math.min(100, o.potential ?? 50));
+        return {
+          id: `bopp-${o.id}`,
+          title_ar: o.title ?? "فرصة",
+          title_en: o.title_en ?? o.title ?? "Opportunity",
+          detail_ar: null,
+          detail_en: null,
+          score,
+          confidence: Math.max(0.5, score / 100),
+          priority: priorityFromScore(score),
+          business_impact: null,
+          operational_impact: null,
+          source: "briefing" as const,
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+
+    // ----- Recommended actions -----
+    const actions: DecisionItem[] = briefActions
+      .map((a) => {
+        const score = Math.max(0, Math.min(100, a.priority ?? 50));
+        return {
+          id: `bact-${a.id}`,
+          title_ar: a.title ?? "إجراء",
+          title_en: a.title_en ?? a.title ?? "Action",
+          detail_ar: null,
+          detail_en: null,
+          score,
+          confidence: Math.max(0.55, score / 100),
+          priority: priorityFromScore(score),
+          business_impact: null,
+          operational_impact: null,
+          source: "briefing" as const,
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+
 
     // ----- Opportunities -----
     const opportunities: DecisionItem[] = briefOpps
