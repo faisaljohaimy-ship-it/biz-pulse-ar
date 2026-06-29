@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import {
   Activity, AlertTriangle, ShieldAlert, Radar, KeyRound, UserCheck, HardHat,
   Car, FileBadge, Siren, Camera, Eye, ListChecks, BarChart3, FileText,
-  Clock, Boxes, Building2, Brain, ShieldCheck, Plug, Network, Wrench, Rocket, Crown, Building,
+  Clock, Boxes, Building2, Brain, ShieldCheck, Plug, Network, Wrench, Rocket, Crown, Building, BookOpen,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -33,6 +33,7 @@ const ITEMS: Item[] = [
   { to: "/sec/facilities", label: "حالة المواقع", icon: Building2 },
   { to: "/sec/timeline", label: "الخط الزمني", icon: ListChecks },
   { to: "/sec/ai", label: "توصيات ARIA", icon: Brain },
+  { to: "/sec/knowledge", label: "مستودع المعرفة", icon: BookOpen },
   { to: "/sec/integrations", label: "التكاملات", icon: Plug },
 ];
 
