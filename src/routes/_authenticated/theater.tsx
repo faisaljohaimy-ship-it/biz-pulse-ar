@@ -101,6 +101,26 @@ function TheaterPage() {
   }, [conductor.state, conductor.presenting]);
 
   const recentLines = conductor.feed.slice(0, 8);
+  const narratorLines = useMemo(
+    () => conductor.feed.map((l) => l.narrator).filter(Boolean) as NarratorLine[],
+    [conductor.feed],
+  );
+
+  // Match the conductor's current speaker (NarratorAgent) to a real
+  // BridgeAgent in the ring, so connection-line highlight and
+  // explainability lookups stay in sync.
+  const speakerAgentId = useMemo(() => {
+    if (conductor.currentSpeaker.id === "aria") return null;
+    const first = conductor.currentSpeaker.name_en.split(" ")[0].toLowerCase();
+    return agents.find((a) => a.name.toLowerCase().includes(first))?.id ?? null;
+  }, [agents, conductor.currentSpeaker]);
+
+  const [explainLine, setExplainLine] = useState<NarratorLine | null>(null);
+  const explainAgent = useMemo(() => {
+    if (!explainLine) return null;
+    const first = explainLine.agent_name_en.split(" ")[0].toLowerCase();
+    return agents.find((a) => a.name.toLowerCase().includes(first)) ?? null;
+  }, [explainLine, agents]);
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
