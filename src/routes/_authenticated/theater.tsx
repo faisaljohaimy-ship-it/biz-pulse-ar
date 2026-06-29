@@ -273,7 +273,9 @@ function TheaterPage() {
               radius={240}
               centerSize={300}
               spotlightId={speakerAgentId}
+              onAgentClick={(a) => speakAgent(a, ar)}
             >
+
               <AriaScene
                 spec={conductor.currentSpeaker}
                 state={aliveState}
