@@ -241,27 +241,29 @@ function TheaterPage() {
 
         {/* Main stage */}
         <section className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
-          <div className="relative rounded-3xl border border-cyan-400/15 bg-white/[0.02] backdrop-blur-xl p-4 md:p-6 min-h-[620px] overflow-hidden">
+          <div className="relative rounded-3xl border border-cyan-400/15 bg-white/[0.02] backdrop-blur-xl p-3 md:p-6 min-h-[460px] sm:min-h-[560px] lg:min-h-[620px] overflow-hidden">
             {/* Live caption banner */}
             {conductor.currentLine && (
-              <div className="absolute left-1/2 top-4 z-20 -translate-x-1/2 max-w-[88%] rounded-full border border-cyan-300/40 bg-[#04111f]/85 px-4 py-2 backdrop-blur shadow-[0_0_30px_rgba(0,212,255,0.25)]">
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-cyan-200/85">
+              <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 max-w-[92%] rounded-full border border-cyan-300/40 bg-[#04111f]/85 px-3 py-1.5 sm:px-4 sm:py-2 backdrop-blur shadow-[0_0_30px_rgba(0,212,255,0.25)]">
+                <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wider text-cyan-200/85">
                   <Sparkles className="h-3.5 w-3.5" />
-                  {ar ? conductor.currentSpeaker.name_ar : conductor.currentSpeaker.name_en}
+                  <span className="truncate">{ar ? conductor.currentSpeaker.name_ar : conductor.currentSpeaker.name_en}</span>
                 </div>
-                <div className="text-sm text-white/90 leading-snug mt-0.5">
+                <div className="text-xs sm:text-sm text-white/90 leading-snug mt-0.5 line-clamp-2">
                   {ar ? conductor.currentLine.text_ar : conductor.currentLine.text_en}
                 </div>
               </div>
             )}
 
-            {/* Animated collaboration beams — each agent → ARIA */}
-            <ConnectionLines
-              agents={agents}
-              radius={240}
-              speakerId={speakerAgentId}
-              size={640}
-            />
+            {/* Animated collaboration beams — each agent → ARIA (ring mode only) */}
+            <div className="hidden sm:block">
+              <ConnectionLines
+                agents={agents}
+                radius={240}
+                speakerId={speakerAgentId}
+                size={640}
+              />
+            </div>
 
             <AgentRing
               agents={agents}
@@ -280,7 +282,7 @@ function TheaterPage() {
             </AgentRing>
 
             {/* Status footer */}
-            <div className="mt-2 flex items-center justify-between text-[11px] text-white/55">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px] text-white/55">
               <span>
                 {ar
                   ? conductor.presenting ? "وضع العرض التنفيذي" : conductor.state === "speaking" ? "جارٍ التحدث" : "وضع المراقبة"
@@ -295,7 +297,7 @@ function TheaterPage() {
           </div>
 
           {/* Story feed — click any story to open the Explainability Panel */}
-          <aside className="space-y-3 lg:max-h-[760px] lg:overflow-y-auto pr-1">
+          <aside className="space-y-3 xl:max-h-[760px] xl:overflow-y-auto pr-1">
             <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/80 px-1">
               {ar ? "سجلّ القصص التنفيذي" : "Executive Story Feed"}
             </div>
@@ -320,6 +322,9 @@ function TheaterPage() {
           </aside>
         </section>
       </div>
+
+      {/* Spacer so AriaDock (mobile, bottom-center) doesn't overlap last card */}
+      <div className="h-32 sm:h-0" aria-hidden />
 
       <ExplainPanel
         line={explainLine}
