@@ -60,6 +60,7 @@ import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedOrchestrationRouteImport } from './routes/_authenticated/orchestration'
 import { Route as AuthenticatedOperationsRouteImport } from './routes/_authenticated/operations'
 import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authenticated/observability'
+import { Route as AuthenticatedMissionControlRouteImport } from './routes/_authenticated/mission-control'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
@@ -393,6 +394,12 @@ const AuthenticatedObservabilityRoute =
   AuthenticatedObservabilityRouteImport.update({
     id: '/observability',
     path: '/observability',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMissionControlRoute =
+  AuthenticatedMissionControlRouteImport.update({
+    id: '/mission-control',
+    path: '/mission-control',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
@@ -880,6 +887,7 @@ export interface FileRoutesByFullPath {
   '/leads': typeof AuthenticatedLeadsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
+  '/mission-control': typeof AuthenticatedMissionControlRoute
   '/observability': typeof AuthenticatedObservabilityRoute
   '/operations': typeof AuthenticatedOperationsRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
@@ -1009,6 +1017,7 @@ export interface FileRoutesByTo {
   '/leads': typeof AuthenticatedLeadsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
+  '/mission-control': typeof AuthenticatedMissionControlRoute
   '/observability': typeof AuthenticatedObservabilityRoute
   '/operations': typeof AuthenticatedOperationsRoute
   '/orchestration': typeof AuthenticatedOrchestrationRoute
@@ -1139,6 +1148,7 @@ export interface FileRoutesById {
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
+  '/_authenticated/mission-control': typeof AuthenticatedMissionControlRoute
   '/_authenticated/observability': typeof AuthenticatedObservabilityRoute
   '/_authenticated/operations': typeof AuthenticatedOperationsRoute
   '/_authenticated/orchestration': typeof AuthenticatedOrchestrationRoute
@@ -1270,6 +1280,7 @@ export interface FileRouteTypes {
     | '/leads'
     | '/marketplace'
     | '/memory'
+    | '/mission-control'
     | '/observability'
     | '/operations'
     | '/orchestration'
@@ -1399,6 +1410,7 @@ export interface FileRouteTypes {
     | '/leads'
     | '/marketplace'
     | '/memory'
+    | '/mission-control'
     | '/observability'
     | '/operations'
     | '/orchestration'
@@ -1528,6 +1540,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leads'
     | '/_authenticated/marketplace'
     | '/_authenticated/memory'
+    | '/_authenticated/mission-control'
     | '/_authenticated/observability'
     | '/_authenticated/operations'
     | '/_authenticated/orchestration'
@@ -1996,6 +2009,13 @@ declare module '@tanstack/react-router' {
       path: '/observability'
       fullPath: '/observability'
       preLoaderRoute: typeof AuthenticatedObservabilityRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mission-control': {
+      id: '/_authenticated/mission-control'
+      path: '/mission-control'
+      fullPath: '/mission-control'
+      preLoaderRoute: typeof AuthenticatedMissionControlRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/memory': {
@@ -2652,6 +2672,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
+  AuthenticatedMissionControlRoute: typeof AuthenticatedMissionControlRoute
   AuthenticatedObservabilityRoute: typeof AuthenticatedObservabilityRoute
   AuthenticatedOperationsRoute: typeof AuthenticatedOperationsRoute
   AuthenticatedOrchestrationRoute: typeof AuthenticatedOrchestrationRoute
@@ -2711,6 +2732,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
+  AuthenticatedMissionControlRoute: AuthenticatedMissionControlRoute,
   AuthenticatedObservabilityRoute: AuthenticatedObservabilityRoute,
   AuthenticatedOperationsRoute: AuthenticatedOperationsRoute,
   AuthenticatedOrchestrationRoute: AuthenticatedOrchestrationRoute,
