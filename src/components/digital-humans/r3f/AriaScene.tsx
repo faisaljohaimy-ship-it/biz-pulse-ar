@@ -20,6 +20,8 @@ interface Props {
   mouthAmplitude?: number;
   size: number;
   severity?: "low" | "medium" | "high" | "critical" | null;
+  /** When set, ARIA gazes toward this normalised target (-1..1) instead of the pointer. */
+  gaze?: { x: number; y: number } | null;
 }
 
 function HaloRing({ color, intensity }: { color: string; intensity: number }) {
@@ -37,12 +39,13 @@ function HaloRing({ color, intensity }: { color: string; intensity: number }) {
   );
 }
 
-export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity }: Props) {
+export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaze }: Props) {
   const alive: AliveState = useMemo(() => toAliveState(state, severity), [state, severity]);
   const preset = ALIVE_PRESETS[alive];
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (gaze) return; // gaze override takes priority over pointer
     const onMove = (e: PointerEvent) => {
       setPointer({
         x: (e.clientX / window.innerWidth) * 2 - 1,
@@ -51,7 +54,9 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity }: P
     };
     window.addEventListener("pointermove", onMove);
     return () => window.removeEventListener("pointermove", onMove);
-  }, []);
+  }, [gaze]);
+
+  const effectivePointer = gaze ?? pointer;
 
   return (
     <div
