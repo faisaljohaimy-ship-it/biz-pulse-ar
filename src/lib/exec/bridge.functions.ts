@@ -29,6 +29,11 @@ export type BridgeHealth = {
   open_incidents: number;
   critical_incidents: number;
   active_patrols: number;
+  visitors_onsite: number;
+  active_permits: number;
+  open_work_orders: number;
+  compliance_score: number;
+  ai_confidence: number;
   agents_online: number;
   agents_total: number;
 };
@@ -38,6 +43,7 @@ export type BridgeState = {
   agents: BridgeAgent[];
   generated_at: string;
 };
+
 
 export const getBridgeState = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
