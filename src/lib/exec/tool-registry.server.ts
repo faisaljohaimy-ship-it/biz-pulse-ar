@@ -455,6 +455,56 @@ const secCreateIncident: ToolExecutor = {
   },
 };
 
+const kbSearch: ToolExecutor = {
+  id: "kb.search",
+  description:
+    "Search the Industrial Security Knowledge Repository (sec_knowledge_articles). Returns the top matching bilingual SOPs/policies/procedures with doc_code and summary. Use whenever the user asks 'what is the procedure for X', 'which SOP applies', or needs official policy guidance.",
+  input: z.object({
+    query: z.string().min(2).max(500),
+    category_code: z
+      .enum([
+        "IS-POL","IS-REG","IS-SOP","IS-WI","IS-INC","IS-INV","IS-ERP","IS-RSK","IS-CRS",
+        "IS-VIS","IS-CON","IS-PTW","IS-GAT","IS-ACS","IS-PAT","IS-CCT","IS-AST","IS-CIP",
+        "IS-FLS","IS-HAZ","IS-EXE","IS-EVT","IS-HAJ","IS-BCM","IS-DRP","IS-AUD","IS-KPI",
+        "IS-FRM","IS-TPL","IS-CHK",
+      ])
+      .optional(),
+    limit: z.number().int().min(1).max(10).default(5),
+  }),
+  async execute(input, ctx) {
+    const data = input as { query: string; category_code?: string; limit: number };
+    const { embedText } = await import("@/lib/kb-embed.server");
+    let vec: number[] | null = null;
+    try { vec = await embedText(data.query); } catch { vec = null; }
+
+    if (vec) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: rows, error } = await (ctx.supabase as any).rpc("sec_kb_search", {
+        _query: vec,
+        _category_code: data.category_code ?? null,
+        _limit: data.limit,
+      });
+      if (error) throw new Error(`kb.search failed: ${error.message}`);
+      return { output: { mode: "semantic", hits: rows ?? [] } };
+    }
+
+    // Keyword fallback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const q = (ctx.supabase as any)
+      .from("sec_knowledge_articles")
+      .select("doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority")
+      .eq("status", "published")
+      .or(
+        [`title_ar.ilike.%${data.query}%`, `title_en.ilike.%${data.query}%`,
+         `summary_ar.ilike.%${data.query}%`, `summary_en.ilike.%${data.query}%`].join(","),
+      )
+      .limit(data.limit);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`kb.search keyword failed: ${error.message}`);
+    return { output: { mode: "keyword", hits: rows ?? [] } };
+  },
+};
+
 const secUpdateWorkOrder: ToolExecutor = {
   id: "sec.update_work_order",
   input: z.object({
