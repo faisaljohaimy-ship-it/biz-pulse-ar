@@ -762,13 +762,31 @@ function MissionControl() {
           </div>
         </div>
 
+        {/* ARIA — permanent Digital Human */}
+        <div className="mt-6">
+          <AriaStage ar={ar} line_ar={ariaLine.ar} line_en={ariaLine.en} />
+        </div>
+
         {/* Status */}
-        <OverallStatusBanner status={status} ar={ar} narrative={narrative} />
+        <div className="mt-6">
+          <OverallStatusBanner status={status} ar={ar} narrative={narrative} />
+        </div>
+
+        {/* Executive Presentation Mode — one-click full briefing */}
+        <div className="mt-6">
+          <PresentationMode ar={ar} overview={presentationOverview} displayName={displayName} />
+        </div>
 
         {/* Living Executive Narrator — real enterprise_events stream */}
         <div className="mt-6">
           <ExecutiveNarrator ar={ar} />
         </div>
+
+        {/* Specialist Digital Human roster */}
+        <div className="mt-6">
+          <AgentRoster ar={ar} signals={rosterSignals} />
+        </div>
+
 
         {/* Cards */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
