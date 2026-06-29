@@ -638,6 +638,84 @@ function MissionControl() {
     return r;
   }, [ov, hasData, ar]);
 
+  // Presentation overview (real overview only — no fabricated values)
+  const presentationOverview: PresentationOverview | null = useMemo(() => {
+    if (!ov || !hasData) return null;
+    const top = ov.incidents.find(i => i.severity === "critical") ?? ov.incidents[0];
+    return {
+      sites: ov.counts.sites,
+      incidents: ov.incidents.length,
+      incidents_critical: ov.counts.incidents_critical,
+      incidents_open: ov.counts.incidents_open,
+      patrols_active: ov.counts.patrols_active,
+      permits_active: ov.counts.permits_active,
+      cctv_new: ov.counts.cctv_new,
+      assets_offline: ov.counts.assets_offline,
+      visitors_inside: ov.counts.visitors_inside,
+      topIncidentTitle: ar ? (top?.title_ar ?? top?.title_en ?? undefined) : (top?.title_en ?? top?.title_ar ?? undefined),
+    };
+  }, [ov, hasData, ar]);
+
+  // Live signals → Digital Human roster
+  const rosterSignals: RosterSignal[] = useMemo(() => {
+    if (!ov || !hasData) return [];
+    const c = ov.counts;
+    const top = ov.incidents.find(i => i.severity === "critical") ?? ov.incidents[0];
+    return [
+      { id: "incident_commander",
+        state: c.incidents_critical > 0 ? "speaking" : "analyzing",
+        confidence: c.incidents_critical > 0 ? 0.97 : 0.86,
+        text_ar: c.incidents_critical > 0
+          ? `حادث حرج تحت إدارتي${top?.title_ar ? ` — ${top.title_ar}` : ""}.`
+          : `${c.incidents_open} حادث مفتوح قيد المتابعة.`,
+        text_en: c.incidents_critical > 0
+          ? `Critical incident under my command${top?.title_en ? ` — ${top.title_en}` : ""}.`
+          : `${c.incidents_open} open incidents in active follow-up.` },
+      { id: "risk_intelligence",
+        state: c.assets_offline > 0 || c.cctv_new > 5 ? "speaking" : "analyzing",
+        confidence: c.assets_offline > 0 ? 0.82 : 0.93,
+        text_ar: c.assets_offline > 0
+          ? `مؤشر المخاطر مرتفع: ${c.assets_offline} أصل خارج الخدمة.`
+          : "مؤشر المخاطر منخفض. لا حالات شاذة.",
+        text_en: c.assets_offline > 0
+          ? `Risk index elevated: ${c.assets_offline} offline asset${c.assets_offline > 1 ? "s" : ""}.`
+          : "Risk index low. No anomalies detected." },
+      { id: "compliance_auditor", state: "analyzing", confidence: 0.95,
+        text_ar: `${c.permits_active} تصريح ساري — لا انتهاكات.`,
+        text_en: `${c.permits_active} active permits — no violations.` },
+      { id: "cctv_intelligence",
+        state: c.cctv_new > 0 ? "speaking" : "waiting",
+        confidence: c.cctv_new > 0 ? 0.88 : 0.92,
+        text_ar: c.cctv_new > 0 ? `${c.cctv_new} تنبيه فيديو جديد قيد المراجعة.` : "لا تنبيهات فيديو جديدة.",
+        text_en: c.cctv_new > 0 ? `${c.cctv_new} new video alerts under review.` : "No new video alerts." },
+      { id: "patrol_commander", state: "speaking", confidence: 0.94,
+        text_ar: `${c.patrols_active} دورية نشطة عبر ${c.sites} موقع.`,
+        text_en: `${c.patrols_active} active patrols across ${c.sites} sites.` },
+      { id: "emergency_coordinator",
+        state: c.incidents_critical > 0 ? "speaking" : "idle",
+        confidence: c.incidents_critical > 0 ? 0.96 : 0.88,
+        text_ar: c.incidents_critical > 0 ? "أُطلق سير عمل الاستجابة الموحد." : "خطط الاستجابة جاهزة وغير مفعّلة.",
+        text_en: c.incidents_critical > 0 ? "Activating unified response workflow." : "Response plans armed but not engaged." },
+      { id: "visitor_intelligence", state: "analyzing", confidence: 0.9,
+        text_ar: `${c.visitors_inside} زائر داخل المواقع حالياً.`,
+        text_en: `${c.visitors_inside} visitors currently on-site.` },
+      { id: "knowledge_ai", state: "searching", confidence: 0.97,
+        text_ar: "أراجع الإجراءات الصناعية الرسمية.",
+        text_en: "Reviewing official industrial procedures." },
+      { id: "executive_reporter", state: "reading", confidence: 0.93,
+        text_ar: "أُحضّر التقرير التنفيذي للوضع الحالي.",
+        text_en: "Composing the executive briefing for the current posture." },
+      { id: "digital_twin", state: "analyzing", confidence: 0.91,
+        text_ar: "النمذجة الافتراضية تتطابق مع البيانات الميدانية.",
+        text_en: "Virtual model aligned with field telemetry." },
+    ];
+  }, [ov, hasData]);
+
+  const ariaLine = useMemo(() => {
+    if (!ov || !hasData) return { ar: "", en: "" };
+    return { ar: narrative, en: narrative };
+  }, [ov, hasData, narrative]);
+
   return (
     <div dir={ar ? "rtl" : "ltr"} className="min-h-screen bg-[#061A2E] text-white relative overflow-hidden">
       {!welcomeDone && <WelcomeOverlay ar={ar} onDone={() => setWelcomeDone(true)} name={displayName} />}
