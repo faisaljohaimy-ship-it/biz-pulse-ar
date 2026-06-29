@@ -20,6 +20,7 @@ import {
   kbSemanticSearch, kbSeedFoundational, kbEmbedMissing, kbStats,
   type KbArticleSummary,
 } from "@/lib/kb.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/sec/knowledge")({
