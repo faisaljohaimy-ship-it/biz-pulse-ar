@@ -4,7 +4,7 @@
  * Room. Pure reads, no fabrication.
  *
  * Sources:
- *   - sec_incidents              (operational risks, ranked by severity + recency)
+ *   - sec_incidents              (operational risks, ranked by severity)
  *   - briefing_risks             (executive risks from latest briefing)
  *   - briefing_opportunities     (executive opportunities)
  *   - briefing_actions           (recommended actions)
@@ -138,7 +138,6 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
 
-    // ----- Opportunities -----
     const opportunities: DecisionItem[] = briefOpps
       .map((o) => {
         const score = Math.max(0, Math.min(100, o.potential ?? 50));
@@ -159,7 +158,6 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
 
-    // ----- Recommended actions -----
     const actions: DecisionItem[] = briefActions
       .map((a) => {
         const score = Math.max(0, Math.min(100, a.priority ?? 50));
@@ -173,49 +171,6 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
           confidence: Math.max(0.55, score / 100),
           priority: priorityFromScore(score),
           business_impact: null,
-          operational_impact: null,
-          source: "briefing" as const,
-        };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-
-
-    // ----- Opportunities -----
-    const opportunities: DecisionItem[] = briefOpps
-      .map((o) => {
-        const score = Math.max(0, Math.min(100, o.potential ?? 50));
-        return {
-          id: `bopp-${o.id}`,
-          title_ar: o.title ?? "فرصة",
-          title_en: o.title_en ?? o.title ?? "Opportunity",
-          detail_ar: o.detail,
-          detail_en: o.detail,
-          score,
-          confidence: Math.max(0.5, score / 100),
-          priority: priorityFromScore(score),
-          business_impact: null,
-          operational_impact: null,
-          source: "briefing" as const,
-        };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-
-    // ----- Recommended actions -----
-    const actions: DecisionItem[] = briefActions
-      .map((a) => {
-        const score = Math.max(0, Math.min(100, a.priority ?? 50));
-        return {
-          id: `bact-${a.id}`,
-          title_ar: a.title ?? "إجراء",
-          title_en: a.title_en ?? a.title ?? "Action",
-          detail_ar: a.detail,
-          detail_en: a.detail,
-          score,
-          confidence: Math.max(0.55, score / 100),
-          priority: priorityFromScore(score),
-          business_impact: a.owner,
           operational_impact: null,
           source: "briefing" as const,
         };
