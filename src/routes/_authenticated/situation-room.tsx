@@ -143,9 +143,11 @@ function SituationRoomPage() {
             radius={270}
             centerSize={260}
             spotlightId={spotlightAgentId}
+            onAgentClick={(a) => speakAgent(a, ar)}
           >
             <CenterStage ar={ar} speaking={spotlightSegment?.speaker_id === "aria"} aria={aria} />
           </AgentRing>
+
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
