@@ -1,123 +1,77 @@
-# Executive Command Bridge — Production Build Plan
+## Executive Situation Room — Phase 5
 
-Target: senior, non-technical executives. Apple/Palantir/Anduril visual register. All data wired to the real `sec_*` runtime, `agent_definitions`, `enterprise_events`, `aria_reports`, `agent_runs`, `workflow_runs`. No placeholders.
+Transform the existing `/bridge` War Room into a calmer, more cinematic **Executive Situation Room** without touching DB schema, workflows, or agent logic. All work is presentation-layer on top of the existing `bridge.functions.ts`, `briefing.functions.ts`, `predictive.functions.ts`, `event-narrator`, `AriaScene` (R3F), narrator TTS, and `enterprise_events` stream.
 
-## 1. New route — `/_authenticated/bridge` (Executive Command Bridge)
+### New route
+- `/_authenticated/situation-room.tsx` — primary executive surface. Keep `/bridge` for backwards compatibility (re-exports the same components).
+- Add nav entry "Situation Room" in `app-shell.tsx`, promoted above "Bridge".
 
-Becomes the default post-login landing (replaces `/mission-control` as the executive surface; mission-control stays accessible for operators).
+### Layout (calm grid, 80% static)
+````text
+┌─ TopBar: Mission Status | Threat Level | Org/Shift | Time | Sys Health | Agent Health | AI Conf ─┐
+│                                                                                                  │
+│   ┌─ Left: Operational Health column ─┐   ┌── Center stage ──┐   ┌─ Right: Decision Engine ─┐  │
+│   │ Visitors / Permits / WOs /        │   │  ARIA 3D bust    │   │ Top 3 Risks              │  │
+│   │ Compliance / Patrols / Incidents  │   │  on holo table   │   │ Top Opportunities        │  │
+│   │ (compact KPI pulses)              │   │  Agent ring      │   │ Recommended Actions      │  │
+│   └───────────────────────────────────┘   │  around ARIA     │   │ (priority + confidence)  │  │
+│                                            └──────────────────┘   └──────────────────────────┘  │
+│                                                                                                  │
+│   ┌─ Bottom: Live Executive Story feed (storytelling, no SQL/tool names) ────────────────────┐  │
+│   │ [time]  What happened · Where · Impact · Response · Recommendation · ETA                 │  │
+│   └──────────────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                                  │
+│   [ BEGIN EXECUTIVE BRIEFING ]   [ PRESENTATION MODE ]   [ DIGITAL TWIN ]                        │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+````
+Animations only fire when an `enterprise_events` row arrives (new incident → red ring pulse on related agent; new permit → soft cyan; etc.). Idle = motionless.
 
-Layout: full-bleed, single screen, no scroll on desktop.
+### Components (new, presentation only)
+- `components/situation-room/TopStatusBar.tsx` — pulls `getBridgeHealth` + agent health from `getAgents`; computes Threat Level (`Secure / Normal / Elevated / Critical`) from composite score.
+- `components/situation-room/OperationalHealthColumn.tsx` — compact KPI pulses (reuses values already in `BridgeHealth`).
+- `components/situation-room/AgentCommandTable.tsx` — replaces `AgentRing` with a curved "console" layout; each `AgentConsole` shows avatar, status, confidence bar, current task, risk dot, last activity, speaking/thinking/connection indicators (data already on `agent_runs`).
+- `components/situation-room/DecisionEngine.tsx` — calls existing `getPredictiveRisks` + new server fn `getExecutiveDecisions` (composes Top 3 risks / opportunities / actions from `sec_incidents`, `briefing_risks`, `briefing_opportunities`, `briefing_actions`).
+- `components/situation-room/LiveEventStory.tsx` — wraps `MissionTimeline` with the executive-story formatter (`event-narrator` already strips SQL/tool names); adds Impact / Response / ETA fields derived from event payload.
+- `components/situation-room/PresentationMode.tsx` — full-screen takeover that orchestrates the existing `BriefingStage` + `AriaScene` camera dolly + bilingual TTS sequence (ARIA → Incident Commander → Risk → Compliance → Digital Twin → Knowledge → Reporter → ARIA close), 30–60s total. Reuses `tts.functions.ts` and `voice-profiles.ts`.
+- `components/situation-room/DigitalTwinPanel.tsx` — embed of existing `executive-map-client.tsx` in a modal sheet, hydrated from `sec_sites`, `sec_patrols`, `sec_incidents`, `sec_visitors`, `sec_permits`, `sec_assets`, `sec_cameras`, `sec_vehicles`.
 
-```text
-┌──────────────────────────────────────────────────────────┐
-│  NEXUS · Western Region · Industrial Security           │  ← Executive header
-│  Operational Health: 94%  |  Live · 14:32:08            │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│         ╭───────── Circular Agent Table ─────────╮      │
-│        Agent7         Agent1         Agent2             │
-│      Agent6        ┌──────────┐        Agent3           │
-│                    │   ARIA   │                          │
-│      Agent5        │  3D Bust │        Agent4           │
-│        Agent9         Agent8        Agent10             │
-│         ╰──────────────────────────────────────╯        │
-│                                                          │
-│   [ ▶ Begin Executive Briefing — 60s ]                  │
-├──────────────────────────────────────────────────────────┤
-│  Live Narrator: "Patrol Bravo cleared Gate 4..."        │
-└──────────────────────────────────────────────────────────┘
-```
+### Server functions (additive, no schema changes)
+- `lib/exec/decisions.functions.ts` → `getExecutiveDecisions()`: aggregates last-24h `sec_incidents` (severity ranking) + `briefing_risks` + `briefing_opportunities` + `briefing_actions` for current org; returns `{ risks[3], opportunities[3], actions[3] }` with priority + confidence + business/operational impact strings already stored on those rows.
+- Extend `bridge.functions.ts` with `getThreatLevel()` derived from existing health composite (pure function, no DB write).
 
-### Components (new)
-- `src/components/bridge/CommandBridge.tsx` — orchestrator, layout, briefing state machine.
-- `src/components/bridge/AgentRing.tsx` — circular arrangement around ARIA. Positions computed via trig (cos/sin) from agent count. Re-uses existing `DigitalHumanAvatar` (SVG) for ring portraits and `AriaDock` 3D for center.
-- `src/components/bridge/AgentNode.tsx` — per-agent: avatar, name, role, **confidence %**, **current task**, status pill (`idle`/`thinking`/`speaking`/`done`), animated halo ring.
-- `src/components/bridge/ExecutiveHeader.tsx` — Operational Health score, live clock, environment chip.
-- `src/components/bridge/BriefingStage.tsx` — full-screen takeover during briefing.
-- `src/components/bridge/StorytellingFeed.tsx` — translated event stream (extends existing `ExecutiveNarrator`).
+### Design tokens
+Reuse Deep Midnight Cyan palette already in `styles.css` (`--background #061A2E`, accent `#00D4FF`, glow `#3AE8FF`). Add two semantic tokens:
+- `--threat-elevated: oklch(...)` amber
+- `--threat-critical: oklch(...)` red
+Typography: bump base to `text-[15px]` in Situation Room scope, headings `text-2xl/3xl tracking-tight` — executive-friendly for 45+ readers. High-contrast `text-foreground` on glass surfaces (no `text-gray-*`).
 
-### Data wiring (no mocks)
-- `agent_definitions` → ring members (sorted by `priority`, capped at 10).
-- `agent_runs` (latest per agent) → status + confidence (derived from `outputs.confidence` or computed from success ratio over last 5 runs).
-- `enterprise_events` (last 60s, subscribed via existing realtime) → narrator stream + node "current task".
-- `sec_incidents` + `sec_patrols` + `sec_kpi_*` → Operational Health score (existing `pulse.functions.ts`).
+### Performance
+- All R3F (`AriaScene`) already lazy-loaded; keep it.
+- `LiveEventStory` virtualizes with `react-window` (already in deps if not, install `bun add react-window`).
+- `useQuery` 6s refetch only when tab visible (`refetchIntervalInBackground: false`).
+- No animation libraries beyond existing motion primitives in `components/mission-control/motion.tsx`.
 
-## 2. Executive Briefing Mode (≤60s)
+### Accessibility
+- Single `<main>` per route, semantic landmarks.
+- Every icon-only button has `aria-label`.
+- Reduced-motion respected (already wired in `AriaDock` fallback).
+- Minimum 44×44 tap targets on the briefing/presentation/twin actions.
 
-New server fn: `src/lib/briefing/executive-briefing.functions.ts` (callable from a single button).
+### Engineering invariants (respected)
+- No migrations.
+- No edits to `agent-runtime.server.ts`, workflow engine, tool registry, or `enterprise_events` triggers.
+- No changes to existing routes other than adding the new one and a nav link.
 
-Pipeline:
-1. **T+0s** ARIA welcome — bilingual TTS via existing `tts.functions.ts`, voice profile `aria`.
-2. **T+5s** Operational health summary — pulled from `pulse_kpis` + `sec_incidents` aggregates.
-3. **T+10–45s** For each top-N agent (5–7 selected by priority): brief intro + their latest finding from `aria_reports` / `agent_runs.outputs` translated to executive language by `translateToExecutive()` (see §3).
-4. **T+45–55s** ARIA merge — calls `openai/gpt-5` once with all findings; returns one recommendation + confidence.
-5. **T+55–60s** Final recommendation card with [Approve] / [Defer] / [Drill in] buttons writing to `briefing_actions`.
+### Out of scope (will not do)
+- Photorealistic ARIA (current R3F bust is procedural; swapping to GLTF/Ready Player Me requires assets the user hasn't supplied — flagged as follow-up).
+- Weather widget (no provider connected; leave optional placeholder slot).
 
-Persistence: each briefing run = row in `executive_briefings` (existing table); items → `briefing_actions`, `briefing_risks`, `briefing_opportunities`.
+### Files to create
+- `src/routes/_authenticated/situation-room.tsx`
+- `src/components/situation-room/{TopStatusBar,OperationalHealthColumn,AgentCommandTable,AgentConsole,DecisionEngine,LiveEventStory,PresentationMode,DigitalTwinPanel}.tsx`
+- `src/lib/exec/decisions.functions.ts`
 
-UI: `BriefingStage.tsx` runs a timeline player; spotlight rotates around the ring to the currently-speaking agent; `AriaDock` swaps voice profile per persona via existing `speakAs` API.
-
-## 3. Executive Storytelling layer
-
-`src/lib/narrator/executive-translator.ts` — pure mapper, deterministic + LLM-assisted fallback.
-
-For every `enterprise_events` row, produces:
-```ts
-{ what: string; why: string; impact: 'low'|'med'|'high'; action?: string }
-```
-
-Rules:
-- Strip `sql.read`, `tool.exec`, table names, IDs — replace with human nouns ("incident", "patrol team", "permit").
-- Topic map covers existing topics: `sec.incident.created`, `sec.work_order.created`, `sec.permit.created`, `sec.visitor.created`, `sec.contractor.created`, plus runtime topics. Unknown topics fall through to LLM polishing (gpt-5, cached by topic+severity).
-- Extends current `event-narrator.ts`; old narrator delegates to translator so existing `ExecutiveNarrator` UI inherits behavior everywhere.
-
-## 4. Digital Twin Mode — `/_authenticated/twin`
-
-Interactive operational map (2.5D, not full 3D — to stay 60fps on meeting-room screens). MapLibre GL with a custom dark Midnight Cyan style; sites/patrols/cameras/visitors/permits/incidents as live layers.
-
-- `src/components/twin/DigitalTwin.tsx` — MapLibre canvas + layer toggles.
-- Layers fed by `sec_sites` (base), realtime channels on `sec_patrols`, `sec_cameras`, `sec_visitors`, `sec_permits`, `sec_incidents` (already RLS-scoped).
-- Hover → executive card (uses translator). Click incident → opens drill-in panel.
-- Fallback: if `maplibre-gl` not yet installed, install it via bun.
-
-## 5. Predictive insights
-
-`src/lib/insights/predictive.functions.ts` server fn:
-- Pulls last 7d of incidents, permits, patrol gaps; computes simple anomaly signals (z-score on hourly counts per site) — no external ML.
-- Sends compressed signal table to `openai/gpt-5` with strict JSON schema: `{ risks: [{title, why, confidence, recommendation, horizon_hours}] }`.
-- Renders in a "Predicted Risks" rail on the Bridge; each card shows confidence bar + Explain button (expands `why`).
-
-## 6. Executive UX system
-
-Add to `src/styles.css`:
-- `--font-display`, `--text-exec-xl: 4rem`, `--text-exec-lg: 2.5rem` (semantic, large for meeting-room legibility).
-- New utilities: `@utility exec-card` (glass + ambient glow), `@utility exec-headline`.
-
-`src/components/exec/Stat.tsx`, `Button.tsx` wrappers enforcing the large-type system.
-
-## 7. Routing & default landing
-
-- `_authenticated.tsx`: redirect `index` to `/bridge` for users with role `executive` (via `has_role`); operators still land on `/mission-control`.
-- Side nav adds Bridge + Twin entries.
-
-## 8. Production discipline
-
-- Every component reads via existing `createServerFn` modules — no direct supabase calls in components except realtime subscriptions.
-- All copy bilingual via `src/lib/i18n.tsx`.
-- Loading: skeletons only (no spinners). Errors: executive-language error cards (re-use existing pattern).
-- Verification: typecheck; Playwright run against `/bridge` to capture screenshot at 1920×1080 (meeting-room target).
-
-## Out of scope (this PR)
-- Full photorealistic 3D agents (ring uses existing animated SVG portraits; only ARIA center uses R3F bust already built).
-- Voice-driven commands (briefing is button-triggered).
-- Mobile layout for `/bridge` (executive screens are large-format; mobile falls back to existing mission-control).
-
-## Deliverables
-1. `/bridge` route — Command Bridge with circular agent table, live data.
-2. One-click Executive Briefing ≤60s end-to-end with TTS + persisted briefing row.
-3. Executive translator wired into existing narrator.
-4. `/twin` route — live MapLibre operational twin.
-5. Predictive risks rail wired to gpt-5.
-6. Executive type/utility tokens in `styles.css`.
-
-Approve to build.
+### Files to edit
+- `src/components/app-shell.tsx` — add nav item.
+- `src/lib/exec/bridge.functions.ts` — add `getThreatLevel` helper export.
+- `src/styles.css` — add threat-level semantic tokens.
