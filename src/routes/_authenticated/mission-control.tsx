@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ShieldCheck, AlertTriangle, Activity, MessageSquare, FileBarChart2, Wrench,
-  Sparkles, ArrowRight, Radar, CheckCircle2, Brain, ShieldAlert, Gauge,
-  Map as MapIcon, Clock, Camera, Users, BadgeCheck, Mic,
+  Sparkles, ArrowRight, Radar, CheckCircle2, Brain, ShieldAlert,
+  Map as MapIcon, Clock, Camera, Users, BadgeCheck, Mic, ChevronDown,
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useI18n } from "@/lib/i18n";
