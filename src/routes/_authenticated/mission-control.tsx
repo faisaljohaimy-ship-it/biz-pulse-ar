@@ -13,6 +13,9 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
 import { ExecutiveNarrator } from "@/components/mission-control/ExecutiveNarrator";
 import { AmbientParticles } from "@/components/mission-control/AmbientParticles";
+import { AriaStage } from "@/components/digital-humans/AriaStage";
+import { AgentRoster, type RosterSignal } from "@/components/digital-humans/AgentRoster";
+import { PresentationMode, type PresentationOverview } from "@/components/digital-humans/PresentationMode";
 
 export const Route = createFileRoute("/_authenticated/mission-control")({
   head: () => ({
