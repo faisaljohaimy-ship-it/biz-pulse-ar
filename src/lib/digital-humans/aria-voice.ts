@@ -68,7 +68,7 @@ function base64ToBytes(b64: string): Uint8Array {
  */
 export function speakAria(opts: SpeakOptions): SpeakHandle {
   const lang = opts.lang ?? detectLang(opts.text);
-  const voice = voiceFor(lang);
+  const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
   let raf = 0;
@@ -87,7 +87,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   const promise = (async () => {
     try {
-      const res = await ariaSpeak({ data: { text: opts.text, voice } });
+      const res = await ariaSpeak({ data: { text: opts.text, voice, instructions } });
       if (stopped) return;
       const ctx = getAudioContext();
       if (ctx.state === "suspended") await ctx.resume().catch(() => {});
