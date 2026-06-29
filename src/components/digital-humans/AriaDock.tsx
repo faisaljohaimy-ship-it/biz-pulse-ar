@@ -124,12 +124,13 @@ export function AriaDock() {
         const result = lang === "ar" ? line.result_ar : line.result_en;
         return [action, body, result].filter(Boolean).join(" — ");
       };
+      const humanId = narratorAgentToHumanId(line.agent);
+      const speaker = findHuman(humanId) ?? ARIA;
       enqueue({
         id: row.id,
         text_ar: compose("ar"),
         text_en: compose("en"),
-        agent_ar: line.agent_name_ar,
-        agent_en: line.agent_name_en,
+        speaker,
       });
     }
   }, [events, enqueue]);
