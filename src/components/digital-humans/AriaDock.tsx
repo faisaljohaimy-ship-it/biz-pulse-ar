@@ -70,6 +70,7 @@ export function AriaDock() {
   const { events } = useEventStream({ limit: 25 });
 
   const playNext = useCallback(() => {
+    if (paused) { playingRef.current = false; return; }
     const next = queueRef.current.shift();
     if (!next) {
       playingRef.current = false;
@@ -79,6 +80,7 @@ export function AriaDock() {
     }
     playingRef.current = true;
     setCurrent(next);
+    lastLineRef.current = next;
     const text = ar ? next.text_ar : next.text_en;
 
     if (!voiceOn) {
@@ -117,24 +119,33 @@ export function AriaDock() {
     handle.promise
       .catch(() => { /* swallow — fall through to next */ })
       .finally(() => { playNext(); });
-  }, [ar, voiceOn]);
+  }, [ar, voiceOn, paused]);
 
   const enqueue = useCallback((line: QueuedLine) => {
     queueRef.current.push(line);
-    if (!playingRef.current) playNext();
-  }, [playNext]);
+    if (!playingRef.current && !paused) playNext();
+  }, [playNext, paused]);
 
-  // Narrate new events as they arrive. Skip rows already narrated this
-  // session and skip noisy housekeeping topics.
+  // SILENCE BY DEFAULT (Phase 8 Rule 1+2):
+  // Do not narrate background events automatically. Only escalate to ARIA
+  // when an event reaches CRITICAL severity. All other speech must be
+  // explicitly invoked by the user (briefing button, mic, agent selection)
+  // through the imperative window.aria API exposed below.
   useEffect(() => {
     if (!events.length) return;
-    // events is newest-first; replay in chronological order.
+    // First mount: mark every existing event as "seen" so we never narrate
+    // history on page load.
+    if (!hydratedRef.current) {
+      hydratedRef.current = true;
+      for (const row of events) seenRef.current.add(row.id);
+      return;
+    }
     for (const row of [...events].reverse()) {
       if (seenRef.current.has(row.id)) continue;
       seenRef.current.add(row.id);
       if (row.topic.startsWith("system.heartbeat") || row.topic.startsWith("runtime.tick")) continue;
       const line = narrateEvent(row);
-      // Compose action + result in plain language; never expose raw topic.
+      if (line.tone !== "critical") continue; // only critical incidents speak unprompted
       const compose = (lang: "ar" | "en") => {
         const action = lang === "ar" ? line.action_ar : line.action_en;
         const body = lang === "ar" ? line.text_ar : line.text_en;
@@ -152,17 +163,29 @@ export function AriaDock() {
     }
   }, [events, enqueue]);
 
-  // Welcome on first mount (only when voice is enabled mid-session).
-  const greeted = useRef(false);
+  // Imperative API for user-initiated speech (Executive Briefing button,
+  // agent selection, mic answer, presentation mode). No auto-greeting.
   useEffect(() => {
-    if (greeted.current) return;
-    greeted.current = true;
-    enqueue({
-      id: "aria-welcome",
-      text_ar: "مرحبًا. أنا آريا، المساعد التنفيذي. أراقب العمليات الحية الآن.",
-      text_en: "Welcome. I am ARIA, your Executive AI. Monitoring live operations now.",
-      speaker: ARIA,
-    });
+    const api = {
+      speak: (turn: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => {
+        enqueue({
+          id: turn.id ?? `manual-${Date.now()}`,
+          text_ar: turn.text_ar,
+          text_en: turn.text_en,
+          speaker: turn.speaker ?? ARIA,
+        });
+      },
+      stop: () => {
+        handleRef.current?.stop();
+        handleRef.current = null;
+        queueRef.current = [];
+        setCurrent(null);
+        setState("idle");
+        setAmp(0);
+      },
+    };
+    (window as unknown as { aria?: typeof api }).aria = api;
+    return () => { delete (window as unknown as { aria?: typeof api }).aria; };
   }, [enqueue]);
 
   const toggleVoice = () => {
@@ -179,6 +202,41 @@ export function AriaDock() {
   const skip = () => {
     handleRef.current?.stop();
     handleRef.current = null;
+  };
+
+  const togglePause = () => {
+    setPaused(p => {
+      const np = !p;
+      if (np) {
+        // pause: stop current playback but keep queue + current line
+        handleRef.current?.stop();
+        handleRef.current = null;
+        setState("idle");
+      } else {
+        // resume: re-enqueue current line at the head if it exists
+        if (current) queueRef.current.unshift(current);
+        setTimeout(() => playNext(), 0);
+      }
+      return np;
+    });
+  };
+
+  const replay = () => {
+    const last = lastLineRef.current;
+    if (!last) return;
+    handleRef.current?.stop();
+    handleRef.current = null;
+    queueRef.current.unshift(last);
+    if (!playingRef.current && !paused) playNext();
+  };
+
+  const stopAll = () => {
+    handleRef.current?.stop();
+    handleRef.current = null;
+    queueRef.current = [];
+    setCurrent(null);
+    setState("idle");
+    setAmp(0);
   };
 
   useEffect(() => () => handleRef.current?.stop(), []);
