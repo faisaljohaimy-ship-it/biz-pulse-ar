@@ -33,6 +33,7 @@ const ITEMS: Item[] = [
   { to: "/sec/facilities", label: "حالة المواقع", icon: Building2 },
   { to: "/sec/timeline", label: "الخط الزمني", icon: ListChecks },
   { to: "/sec/ai", label: "توصيات ARIA", icon: Brain },
+  { to: "/sec/knowledge", label: "مستودع المعرفة", icon: BookOpen },
   { to: "/sec/integrations", label: "التكاملات", icon: Plug },
 ];
 
