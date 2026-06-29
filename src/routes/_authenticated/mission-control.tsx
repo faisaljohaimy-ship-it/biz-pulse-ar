@@ -242,42 +242,73 @@ function AgentAvatar({ initials, tone, alive, speaking }: { initials: string; to
 
 type TurnState = "queued" | "thinking" | "speaking" | "done";
 
-function AgentMessage({ line, state, ar }: { line: AgentLine; state: TurnState; ar: boolean }) {
+/**
+ * One step in the vertical agent narrative.
+ * Renders: live dot + agent name on one line, status line beneath,
+ * and (once spoken) a check + finding bullet.
+ */
+function AgentStep({ line, state, ar, isAria }: { line: AgentLine; state: TurnState; ar: boolean; isAria?: boolean }) {
   const t = TONE[line.tone];
+  const visible = state !== "queued";
+  const spoken = state === "speaking" || state === "done";
+
   return (
     <div className={cn(
-      "flex gap-3 transition-all duration-500",
-      state === "queued" ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+      "transition-all duration-500",
+      visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
     )}>
-      <AgentAvatar initials={line.initials} tone={line.tone} alive={state !== "queued"} speaking={state === "speaking"} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <div className="text-sm text-white/90 font-medium truncate">{ar ? line.name_ar : line.name_en}</div>
-          <span className={cn("text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full border", t.ring, t.text, t.bg)}>
-            {state === "thinking" ? (ar ? "يفكر" : "thinking")
-              : state === "speaking" ? (ar ? "يتحدث" : "speaking")
-              : state === "done" ? (ar ? "تم" : "done")
-              : (ar ? "بالانتظار" : "queued")}
-          </span>
+      <div className="flex items-start gap-3">
+        <div className="relative shrink-0 mt-1">
+          <span className={cn("block h-2.5 w-2.5 rounded-full", t.dot, visible && "shadow-[0_0_12px_currentColor]")} />
+          {state === "speaking" && (
+            <span className={cn("absolute inset-0 rounded-full animate-ping", t.dot, "opacity-60")} />
+          )}
         </div>
-        <div className="text-[11px] text-white/50 mt-0.5">{ar ? line.status_ar : line.status_en}</div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={cn("text-sm font-medium", isAria ? "text-cyan-200" : "text-white/90")}>
+              {ar ? line.name_ar : line.name_en}
+            </span>
+            {state === "done" && (
+              <CheckCircle2 className={cn("h-3.5 w-3.5", t.text)} aria-hidden />
+            )}
+          </div>
+          <div className="text-[12px] text-white/55 mt-0.5">
+            {ar ? line.status_ar : line.status_en}
+          </div>
 
-        {state === "thinking" ? (
-          <div className={cn("mt-2 inline-flex items-center gap-1 rounded-xl px-3 py-2 border", t.ring, t.soft)}>
-            <span className={cn("h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.2s]", t.dot)} />
-            <span className={cn("h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.1s]", t.dot)} />
-            <span className={cn("h-1.5 w-1.5 rounded-full animate-bounce", t.dot)} />
-          </div>
-        ) : state !== "queued" && (
-          <div className={cn(
-            "mt-2 rounded-xl px-3 py-2 text-sm text-white/90 border",
-            t.ring, t.soft,
-            state === "speaking" ? "ring-1 ring-white/10" : ""
-          )}>
-            {ar ? line.finding_ar : line.finding_en}
-          </div>
-        )}
+          {state === "thinking" && (
+            <div className={cn("mt-2 inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 border", t.ring, t.soft)}>
+              <span className={cn("h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.2s]", t.dot)} />
+              <span className={cn("h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.1s]", t.dot)} />
+              <span className={cn("h-1.5 w-1.5 rounded-full animate-bounce", t.dot)} />
+            </div>
+          )}
+
+          {spoken && (
+            <div className={cn(
+              "mt-2 text-sm leading-relaxed",
+              isAria ? "text-white/95" : "text-white/85"
+            )}>
+              {ar ? line.finding_ar : line.finding_en}
+            </div>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
+
+function StepConnector({ active }: { active: boolean }) {
+  return (
+    <div className="flex justify-start ps-1 my-1.5">
+      <ChevronDown
+        className={cn(
+          "h-3.5 w-3.5 transition-all duration-500",
+          active ? "text-cyan-300/70 opacity-100" : "text-white/15 opacity-50"
+        )}
+        aria-hidden
+      />
     </div>
   );
 }
@@ -302,6 +333,8 @@ function CollaborationStream({ opener, agents, closer, ar }: { opener: AgentLine
     return "done";
   }
 
+  const lastIdx = seq.length - 1;
+
   return (
     <div className="rounded-2xl border border-cyan-400/15 bg-white/[0.02] backdrop-blur-xl p-5 md:p-7">
       <div className="flex items-center justify-between mb-5">
@@ -320,10 +353,28 @@ function CollaborationStream({ opener, agents, closer, ar }: { opener: AgentLine
         </div>
       </div>
 
-      <div className="space-y-5">
-        {seq.map((line, i) => (
-          <AgentMessage key={`${line.id}-${i}`} line={line} state={stateFor(i)} ar={ar} />
-        ))}
+      <div>
+        {seq.map((line, i) => {
+          const isLast = i === lastIdx;
+          const isAria = i === 0 || isLast;
+          const isClosingSynthesis = isLast;
+          const state = stateFor(i);
+          return (
+            <div key={`${line.id}-${i}`}>
+              {isClosingSynthesis && state !== "queued" ? (
+                <div className={cn(
+                  "mt-3 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-4 transition-all duration-500",
+                  state !== "queued" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                )}>
+                  <AgentStep line={line} state={state} ar={ar} isAria />
+                </div>
+              ) : (
+                <AgentStep line={line} state={state} ar={ar} isAria={isAria} />
+              )}
+              {!isLast && <StepConnector active={stateFor(i + 1) !== "queued"} />}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
