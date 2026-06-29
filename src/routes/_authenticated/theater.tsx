@@ -254,6 +254,7 @@ function TheaterPage() {
                 state={aliveState}
                 mouthAmplitude={conductor.mouthAmplitude}
                 size={300}
+                gaze={ariaGaze}
               />
             </AgentRing>
 
