@@ -9,9 +9,10 @@
  * caller already loaded for Mission Control.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PlayCircle, StopCircle, Sparkles } from "lucide-react";
-import { ARIA, SPECIALISTS, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import { PlayCircle, StopCircle, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import { useDigitalHuman, type SpokenTurn } from "@/lib/digital-humans/engine";
+import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
 import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
 import { cn } from "@/lib/utils";
 
