@@ -90,13 +90,14 @@ export function AriaDock() {
     }
 
     setState("thinking");
-    handleRef.current = speakAria({
+    const handle = speakAs(next.speaker, {
       text,
       lang: detectLang(text),
       onStart: () => setState("speaking"),
       onAmplitude: setAmp,
     });
-    handleRef.current.promise
+    handleRef.current = handle;
+    handle.promise
       .catch(() => { /* swallow — fall through to next */ })
       .finally(() => { playNext(); });
   }, [ar, voiceOn]);
