@@ -17,7 +17,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
-import { getAvatarProvider } from "@/lib/digital-humans/avatar-provider";
+import { getAvatarProvider, type AvatarProvider } from "@/lib/digital-humans/avatar-provider";
+// Side-effect imports — register both providers so getAvatarProvider can resolve them.
+import "@/components/digital-humans/DigitalHumanAvatar";
+import "@/components/digital-humans/r3f/R3FAvatarProvider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
