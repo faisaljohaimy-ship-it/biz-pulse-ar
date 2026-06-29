@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { DigitalHumanSpec, DigitalHumanState } from "@/lib/digital-humans/registry";
+import { registerAvatarProvider, type AvatarRenderProps } from "@/lib/digital-humans/avatar-provider";
 
 interface Props {
   spec: DigitalHumanSpec;
@@ -20,6 +21,8 @@ interface Props {
   /** When true, render a name + status badge under the avatar. */
   showLabel?: boolean;
   ar?: boolean;
+  /** Optional 0..1 amplitude from a real audio stream (drives lip-sync). */
+  mouthAmplitude?: number;
 }
 
 const STATE_LABEL: Record<DigitalHumanState, { ar: string; en: string }> = {
