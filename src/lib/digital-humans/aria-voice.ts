@@ -15,8 +15,10 @@
  * audio synthesis entirely — only this file changes.
  */
 import { ariaSpeak } from "@/lib/narrator/tts.functions";
+import { resolveVoice, type VoiceLang } from "./voice-profiles";
+import type { DigitalHumanSpec } from "./registry";
 
-export type VoiceLang = "ar" | "en";
+export type { VoiceLang } from "./voice-profiles";
 
 export interface SpeakHandle {
   promise: Promise<void>;
@@ -26,6 +28,8 @@ export interface SpeakHandle {
 export interface SpeakOptions {
   text: string;
   lang?: VoiceLang;
+  /** Optional persona — picks voice + instructions for that Digital Human. */
+  voiceProfileId?: string;
   /** Called continuously with 0..1 mouth amplitude. */
   onAmplitude?: (a: number) => void;
   /** Called once when audio actually begins. */
@@ -37,13 +41,6 @@ export interface SpeakOptions {
 const ARABIC_RANGE = /[\u0600-\u06FF]/;
 export function detectLang(text: string): VoiceLang {
   return ARABIC_RANGE.test(text) ? "ar" : "en";
-}
-
-// Map ARIA's persona to OpenAI TTS voices. `shimmer` reads Arabic
-// cleanly; `nova` is the executive English voice. Both stay within the
-// supported voice set of openai/gpt-4o-mini-tts.
-function voiceFor(lang: VoiceLang): string {
-  return lang === "ar" ? "shimmer" : "nova";
 }
 
 let sharedCtx: AudioContext | null = null;
