@@ -362,10 +362,7 @@ function CollaborationStream({ opener, agents, closer, ar }: { opener: AgentLine
           return (
             <div key={`${line.id}-${i}`}>
               {isClosingSynthesis && state !== "queued" ? (
-                <div className={cn(
-                  "mt-3 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-4 transition-all duration-500",
-                  state !== "queued" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-                )}>
+                <div className="mt-3 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-4 transition-all duration-500 opacity-100 translate-y-0">
                   <AgentStep line={line} state={state} ar={ar} isAria />
                 </div>
               ) : (
