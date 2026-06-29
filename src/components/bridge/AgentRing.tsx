@@ -30,10 +30,14 @@ export function AgentRing({
 }: Props) {
   const positions = useMemo(() => {
     const n = Math.max(1, agents.length);
-    // Start at top (-PI/2) and distribute evenly.
     return agents.map((a, i) => {
       const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-      return { agent: a, x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+      return {
+        agent: a,
+        angle,
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+      };
     });
   }, [agents, radius]);
 
@@ -59,21 +63,27 @@ export function AgentRing({
         {children}
       </div>
 
-      {/* Agent nodes */}
-      {positions.map(({ agent, x, y }) => (
-        <div
-          key={agent.id}
-          className="absolute left-1/2 top-1/2"
-          style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
-        >
-          <AgentNode
-            agent={agent}
-            ar={ar}
-            spotlight={spotlightId === agent.id}
-            onClick={() => onAgentClick?.(agent)}
-          />
-        </div>
-      ))}
+      {/* Agent nodes — active speaker glides ~22px toward ARIA */}
+      {positions.map(({ agent, x, y, angle }) => {
+        const isSpot = spotlightId === agent.id;
+        const push = isSpot ? 22 : 0;
+        const fx = x - Math.cos(angle) * push;
+        const fy = y - Math.sin(angle) * push;
+        return (
+          <div
+            key={agent.id}
+            className="absolute left-1/2 top-1/2 transition-transform duration-700 ease-out"
+            style={{ transform: `translate(calc(-50% + ${fx}px), calc(-50% + ${fy}px))` }}
+          >
+            <AgentNode
+              agent={agent}
+              ar={ar}
+              spotlight={isSpot}
+              onClick={() => onAgentClick?.(agent)}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
