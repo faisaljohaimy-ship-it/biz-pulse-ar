@@ -126,15 +126,13 @@ export function AriaDock() {
     if (!playingRef.current && !paused) playNext();
   }, [playNext, paused]);
 
-  // SILENCE BY DEFAULT (Phase 8 Rule 1+2):
-  // Do not narrate background events automatically. Only escalate to ARIA
-  // when an event reaches CRITICAL severity. All other speech must be
-  // explicitly invoked by the user (briefing button, mic, agent selection)
-  // through the imperative window.aria API exposed below.
+  // MULTI-VOICE ORCHESTRA: every agent narrates its own runtime events
+  // with its own voice profile (resolved via narratorAgentToHumanId →
+  // DigitalHumanSpec → voice-profiles). Heartbeats and tick noise are
+  // still suppressed; history present at mount is marked seen so page
+  // loads stay quiet. Critical events keep priority (jump the queue).
   useEffect(() => {
     if (!events.length) return;
-    // First mount: mark every existing event as "seen" so we never narrate
-    // history on page load.
     if (!hydratedRef.current) {
       hydratedRef.current = true;
       for (const row of events) seenRef.current.add(row.id);
@@ -145,7 +143,7 @@ export function AriaDock() {
       seenRef.current.add(row.id);
       if (row.topic.startsWith("system.heartbeat") || row.topic.startsWith("runtime.tick")) continue;
       const line = narrateEvent(row);
-      if (line.tone !== "critical") continue; // only critical incidents speak unprompted
+
       const compose = (lang: "ar" | "en") => {
         const action = lang === "ar" ? line.action_ar : line.action_en;
         const body = lang === "ar" ? line.text_ar : line.text_en;
