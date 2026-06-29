@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { RuntimeProvider } from "@/lib/runtime/RuntimeContext";
 import { InitializingShell } from "@/lib/runtime/InitializingShell";
+import { AriaDock } from "@/components/digital-humans/AriaDock";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -25,6 +26,7 @@ function AuthLayout() {
       <AppShell>
         <Outlet />
       </AppShell>
+      <AriaDock />
     </RuntimeProvider>
   );
 }
