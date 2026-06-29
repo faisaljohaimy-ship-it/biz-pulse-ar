@@ -255,7 +255,7 @@ export function AriaDock() {
             {current && (
               <div className="mt-1.5 flex items-center justify-between text-[10px] text-white/55">
                 <span className="truncate">
-                  {ar ? "بصوت" : "Voiced by"}: {ar ? current.agent_ar : current.agent_en}
+                  {ar ? "بصوت" : "Voiced by"}: {ar ? current.speaker.name_ar : current.speaker.name_en}
                 </span>
                 <button
                   type="button"
