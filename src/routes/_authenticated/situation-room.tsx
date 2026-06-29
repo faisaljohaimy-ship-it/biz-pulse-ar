@@ -199,8 +199,9 @@ function SituationRoomPage() {
         </div>
       </div>
 
-      {/* BOTTOM — Mission Timeline / Live Event Story */}
-      <div className="relative px-5 pb-8">
+      {/* BOTTOM — Living Executive Conversation + Mission Timeline */}
+      <div className="relative grid grid-cols-1 gap-5 px-5 pb-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+        <AgentConversation ar={ar} />
         <MissionTimeline
           entries={timeline.data ?? []}
           ar={ar}
