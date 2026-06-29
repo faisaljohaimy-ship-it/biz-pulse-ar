@@ -11,6 +11,7 @@ import { getSecOverview } from "@/lib/sec.functions";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
+import { ExecutiveNarrator } from "@/components/mission-control/ExecutiveNarrator";
 
 export const Route = createFileRoute("/_authenticated/mission-control")({
   head: () => ({
@@ -679,6 +680,11 @@ function MissionControl() {
 
         {/* Status */}
         <OverallStatusBanner status={status} ar={ar} narrative={narrative} />
+
+        {/* Living Executive Narrator — real enterprise_events stream */}
+        <div className="mt-6">
+          <ExecutiveNarrator ar={ar} />
+        </div>
 
         {/* Cards */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
