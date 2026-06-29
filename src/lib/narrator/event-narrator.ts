@@ -5,6 +5,11 @@
  *
  * Used by the Mission Control Executive Narrator panel and by the TTS
  * speech queue. Pure function — safe on client and server.
+ *
+ * Phase 3 (Executive Theater): adds an executive-friendly Human
+ * Explanation Layer (`action_*`, `result_*`) so technical topics like
+ * `sql.read`, `tool.executed`, `workflow.execute`, `kb.search` never
+ * surface as raw strings in the UI.
  */
 import type { EnterpriseEventRow } from "@/lib/events/useEventStream";
 
@@ -44,6 +49,14 @@ export interface NarratorLine {
   /** Optional one-line "why this matters" follow-up. */
   reason_ar?: string;
   reason_en?: string;
+  /** Executive-friendly verb for what is happening (no raw tech terms). */
+  action_ar: string;
+  action_en: string;
+  /** Outcome line; empty when still in-flight. */
+  result_ar?: string;
+  result_en?: string;
+  duration_ms: number | null;
+  workflow_id: string | null;
   correlation_id: string | null;
 }
 
@@ -81,7 +94,8 @@ function routeAgent(topic: string, subjectType: string | null): NarratorAgent {
   if (t.startsWith("report") || t.startsWith("brief")) return "executive_reporter";
   if (t.startsWith("twin")) return "digital_twin";
   if (t.startsWith("forecast") || t.startsWith("predict")) return "predictive_analytics";
-  if (t.startsWith("kb") || t.startsWith("knowledge")) return "knowledge_ai";
+  if (t.startsWith("kb") || t.startsWith("knowledge") || t.startsWith("sop")) return "knowledge_ai";
+  if (t.startsWith("sql") || t.startsWith("db.")) return "workflow_supervisor";
   if (t.startsWith("workflow") || t.startsWith("tool") || t.startsWith("step")) return "workflow_supervisor";
   return "aria";
 }
@@ -95,37 +109,85 @@ function toneFor(severity: string, status: string): NarratorTone {
   return "info";
 }
 
-/* ── Topic verb dictionary (technical → human, AR/EN) ── */
-const TOPIC_VERBS: Array<{ match: RegExp; ar: string; en: string }> = [
-  { match: /incident\.created/i,         ar: "بلاغ حادث جديد",                en: "New incident reported" },
-  { match: /incident\.updated/i,         ar: "تحديث حالة الحادث",            en: "Incident updated" },
-  { match: /incident\.closed/i,          ar: "إغلاق حادث",                    en: "Incident closed" },
-  { match: /patrol\.started/i,           ar: "بدء دورية",                     en: "Patrol started" },
-  { match: /patrol\.completed/i,         ar: "إكمال دورية",                   en: "Patrol completed" },
-  { match: /permit\.requested/i,         ar: "طلب تصريح جديد",                en: "Permit requested" },
-  { match: /permit\.approved/i,          ar: "اعتماد تصريح",                  en: "Permit approved" },
-  { match: /permit\.expired/i,           ar: "انتهاء تصريح",                  en: "Permit expired" },
-  { match: /visitor\.checkin/i,          ar: "دخول زائر",                     en: "Visitor checked in" },
-  { match: /visitor\.checkout/i,         ar: "خروج زائر",                     en: "Visitor checked out" },
-  { match: /workflow\.run\.started/i,    ar: "بدء تنفيذ سير عمل",            en: "Workflow execution started" },
-  { match: /workflow\.run\.succeeded/i,  ar: "اكتمال سير العمل بنجاح",        en: "Workflow completed successfully" },
-  { match: /workflow\.run\.failed/i,     ar: "فشل تنفيذ سير عمل",            en: "Workflow execution failed" },
-  { match: /workflow\.step/i,            ar: "خطوة في سير العمل",            en: "Workflow step update" },
-  { match: /tool\.executed/i,            ar: "تنفيذ أداة تشغيلية",            en: "Operational tool executed" },
-  { match: /tool\.failed/i,              ar: "فشل تنفيذ أداة",                en: "Tool execution failed" },
-  { match: /agent\.run\.started/i,       ar: "بدء وكيل تنفيذي",               en: "Agent run started" },
-  { match: /agent\.run\.succeeded/i,     ar: "اكتمال تنفيذ وكيل",             en: "Agent run completed" },
-  { match: /agent\.run\.failed/i,        ar: "فشل تنفيذ وكيل",                en: "Agent run failed" },
-  { match: /report\./i,                  ar: "تحديث تقرير تنفيذي",           en: "Executive report update" },
-  { match: /risk\./i,                    ar: "تقييم مخاطر",                   en: "Risk assessment" },
-  { match: /compliance\./i,              ar: "تدقيق امتثال",                  en: "Compliance check" },
+/* ── Topic verb dictionary (technical → human, AR/EN) ──
+ *
+ * Each entry covers BOTH the headline verb and an executive-friendly
+ * action label so a board-level viewer never sees "sql.read" or
+ * "tool.executed" — they see "Reading operational records." */
+type Verb = {
+  match: RegExp;
+  ar: string;
+  en: string;
+  action_ar: string;
+  action_en: string;
+};
+const TOPIC_VERBS: Verb[] = [
+  { match: /incident\.created/i,         ar: "بلاغ حادث جديد",                en: "New incident reported",
+    action_ar: "تسجيل بلاغ حادث جديد.",  action_en: "Logging a new incident report." },
+  { match: /incident\.updated/i,         ar: "تحديث حالة الحادث",            en: "Incident updated",
+    action_ar: "تحديث حالة الحادث.",     action_en: "Updating the incident state." },
+  { match: /incident\.closed/i,          ar: "إغلاق حادث",                    en: "Incident closed",
+    action_ar: "إغلاق سجل الحادث.",      action_en: "Closing the incident record." },
+  { match: /patrol\.started/i,           ar: "بدء دورية",                     en: "Patrol started",
+    action_ar: "إطلاق دورية ميدانية.",   action_en: "Dispatching a field patrol." },
+  { match: /patrol\.completed/i,         ar: "إكمال دورية",                   en: "Patrol completed",
+    action_ar: "إنهاء الدورية الميدانية.", action_en: "Closing out the field patrol." },
+  { match: /permit\.requested/i,         ar: "طلب تصريح جديد",                en: "Permit requested",
+    action_ar: "استلام طلب تصريح عمل.",  action_en: "Receiving a work permit request." },
+  { match: /permit\.approved/i,          ar: "اعتماد تصريح",                  en: "Permit approved",
+    action_ar: "اعتماد تصريح عمل.",      action_en: "Approving a work permit." },
+  { match: /permit\.expired/i,           ar: "انتهاء تصريح",                  en: "Permit expired",
+    action_ar: "انتهاء سريان تصريح.",     action_en: "A work permit has expired." },
+  { match: /visitor\.checkin/i,          ar: "دخول زائر",                     en: "Visitor checked in",
+    action_ar: "تسجيل دخول زائر.",       action_en: "Checking a visitor on-site." },
+  { match: /visitor\.checkout/i,         ar: "خروج زائر",                     en: "Visitor checked out",
+    action_ar: "تسجيل خروج زائر.",       action_en: "Checking a visitor off-site." },
+  { match: /workflow\.run\.started/i,    ar: "بدء تنفيذ سير عمل",            en: "Workflow execution started",
+    action_ar: "إطلاق عملية تشغيلية.",   action_en: "Launching an operational process." },
+  { match: /workflow\.run\.succeeded/i,  ar: "اكتمال سير العمل بنجاح",        en: "Workflow completed successfully",
+    action_ar: "اكتمال العملية بنجاح.",  action_en: "Operational process completed successfully." },
+  { match: /workflow\.run\.failed/i,     ar: "فشل تنفيذ سير عمل",            en: "Workflow execution failed",
+    action_ar: "تعثّر العملية التشغيلية.", action_en: "Operational process failed." },
+  { match: /workflow\.step/i,            ar: "خطوة في سير العمل",            en: "Workflow step update",
+    action_ar: "تقدّم في خطوات العملية.", action_en: "Advancing a step in the process." },
+  { match: /workflow\.execute/i,         ar: "تشغيل عملية تنفيذية",          en: "Launching operational process",
+    action_ar: "إطلاق عملية الاستجابة.", action_en: "Launching the response process." },
+  { match: /tool\.executed/i,            ar: "تنفيذ أداة تشغيلية",            en: "Operational tool executed",
+    action_ar: "تنفيذ خطوة تشغيلية.",    action_en: "Executing an operational step." },
+  { match: /tool\.failed/i,              ar: "فشل تنفيذ أداة",                en: "Tool execution failed",
+    action_ar: "تعثّر خطوة تشغيلية.",    action_en: "An operational step failed." },
+  { match: /agent\.run\.started/i,       ar: "بدء وكيل تنفيذي",               en: "Agent run started",
+    action_ar: "بدء عمل وكيل ذكاء.",     action_en: "An AI agent has started working." },
+  { match: /agent\.run\.succeeded/i,     ar: "اكتمال تنفيذ وكيل",             en: "Agent run completed",
+    action_ar: "اكتمل عمل وكيل الذكاء.", action_en: "AI agent finished its assignment." },
+  { match: /agent\.run\.failed/i,        ar: "فشل تنفيذ وكيل",                en: "Agent run failed",
+    action_ar: "تعثّر وكيل الذكاء.",     action_en: "AI agent run failed." },
+  { match: /report\./i,                  ar: "تحديث تقرير تنفيذي",           en: "Executive report update",
+    action_ar: "إعداد تقرير تنفيذي.",    action_en: "Preparing the executive report." },
+  { match: /risk\./i,                    ar: "تقييم مخاطر",                   en: "Risk assessment",
+    action_ar: "تشغيل تقييم مخاطر.",     action_en: "Running a risk assessment." },
+  { match: /compliance\./i,              ar: "تدقيق امتثال",                  en: "Compliance check",
+    action_ar: "تنفيذ تدقيق امتثال.",    action_en: "Running a compliance check." },
+  { match: /sql\.read|db\.read|sql\.query/i, ar: "قراءة سجلات تشغيلية",     en: "Reading operational records",
+    action_ar: "قراءة السجلات التشغيلية.", action_en: "Reading the operational records." },
+  { match: /sql\.write|db\.write|sql\.update/i, ar: "تحديث سجلات تشغيلية", en: "Updating operational records",
+    action_ar: "تحديث السجلات التشغيلية.", action_en: "Updating the operational records." },
+  { match: /kb\.search|knowledge\.search|sop\.search/i, ar: "مراجعة إجراءات الأمن الصناعي", en: "Reviewing industrial security procedures",
+    action_ar: "مراجعة الإجراءات الرسمية للأمن الصناعي.", action_en: "Reviewing the official industrial security procedures." },
+  { match: /cctv\.alert|cctv\.detected/i, ar: "تنبيه كاميرا مراقبة",         en: "CCTV alert",
+    action_ar: "رصد تنبيه من كاميرات المراقبة.", action_en: "A CCTV camera raised an alert." },
 ];
 
-function humaniseTopic(topic: string): { ar: string; en: string } {
-  for (const v of TOPIC_VERBS) if (v.match.test(topic)) return { ar: v.ar, en: v.en };
+function humaniseTopic(topic: string): { ar: string; en: string; action_ar: string; action_en: string } {
+  for (const v of TOPIC_VERBS) if (v.match.test(topic)) return v;
   // Fallback: convert "foo.bar.baz" into "Foo bar baz" / Arabic loose translation.
   const en = topic.replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  return { ar: `حدث تشغيلي: ${en}`, en };
+  return {
+    ar: `حدث تشغيلي: ${en}`,
+    en,
+    action_ar: "نشاط تشغيلي مسجّل.",
+    action_en: "Operational activity recorded.",
+  };
 }
 
 function pickSubjectLabel(row: EnterpriseEventRow): { ar: string; en: string } | null {
@@ -157,6 +219,36 @@ function severityLabel(s: string): { ar: string; en: string } {
   return map[s.toLowerCase()] ?? { ar: s, en: s };
 }
 
+function pickWorkflowId(row: EnterpriseEventRow): string | null {
+  const candidates: unknown[] = [
+    (row.payload_json as Record<string, unknown> | null)?.workflow_id,
+    (row.inputs_json as Record<string, unknown> | null)?.workflow_id,
+    (row.outputs_json as Record<string, unknown> | null)?.workflow_id,
+  ];
+  for (const c of candidates) if (typeof c === "string" && c.length > 0) return c;
+  return null;
+}
+
+function buildResult(row: EnterpriseEventRow): { ar?: string; en?: string } {
+  const st = row.status.toLowerCase();
+  if (row.error) {
+    return {
+      ar: `النتيجة: فشل — ${row.error}`,
+      en: `Result: failed — ${row.error}`,
+    };
+  }
+  if (st === "succeeded" || st === "completed" || st === "ok") {
+    return { ar: "النتيجة: اكتمل بنجاح.", en: "Result: completed successfully." };
+  }
+  if (st === "running" || st === "in_progress") {
+    return { ar: "النتيجة: قيد التنفيذ.", en: "Result: in progress." };
+  }
+  if (st === "queued" || st === "pending") {
+    return { ar: "النتيجة: في قائمة الانتظار.", en: "Result: queued." };
+  }
+  return {};
+}
+
 /**
  * Pure mapper: enterprise_events row → executive narration line.
  * Faithful to the row — no synthesis, no fabricated numbers.
@@ -185,6 +277,8 @@ export function narrateEvent(row: EnterpriseEventRow): NarratorLine {
       ? `Processed in ${row.duration_ms} ms.`
       : undefined;
 
+  const result = buildResult(row);
+
   return {
     id: row.id,
     ts: new Date(row.occurred_at).getTime(),
@@ -199,6 +293,12 @@ export function narrateEvent(row: EnterpriseEventRow): NarratorLine {
     text_en,
     reason_ar,
     reason_en,
+    action_ar: verb.action_ar,
+    action_en: verb.action_en,
+    result_ar: result.ar,
+    result_en: result.en,
+    duration_ms: row.duration_ms,
+    workflow_id: pickWorkflowId(row),
     correlation_id: row.correlation_id,
   };
 }
