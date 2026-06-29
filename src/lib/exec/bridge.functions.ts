@@ -147,6 +147,11 @@ export const getBridgeState = createServerFn({ method: "GET" })
         status = "idle";
       }
 
+      const current_task =
+        last?.status === "running"
+          ? (last.goal_override?.slice(0, 120) ?? "Working")
+          : last?.summary?.slice(0, 120) ?? null;
+
       return {
         id: d.id,
         name: d.name,
