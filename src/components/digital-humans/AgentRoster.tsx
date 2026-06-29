@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 export type RosterSignal = {
   id: string;             // digital human id
-  state: "analyzing" | "speaking" | "completed" | "waiting" | "idle";
+  state: "analyzing" | "speaking" | "completed" | "waiting" | "idle" | "searching" | "reading" | "thinking";
   text_ar?: string;
   text_en?: string;
   confidence?: number;    // 0-1
