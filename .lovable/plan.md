@@ -1,54 +1,58 @@
-# Final Enterprise Polish — Execution Plan
+## الهدف
+رفع تغطية NEXUS من 22 وكيلاً إلى 32 وكيلاً (+10) مع 8 سكلز جديدة لسد الفجوات التشغيلية والحَوْكَمية بدون أي محاكاة.
 
-Scope is large. Executing in 5 sequential waves, each independently shippable. No new features, no redesign — only hardening of what exists.
+## الفجوات المُكتشَفة (بناءً على الجداول الموجودة)
+| الجدول | بدون وكيل مخصص |
+|---|---|
+| `sec_cctv_alerts` | ✗ |
+| `sec_contractors` | ✗ |
+| `sec_vehicles` | ✗ |
+| `sec_assets` + `sec_sensors` | ✗ |
+| `pulse_crises` | ✗ |
+| `cost_budgets` + `ai_usage` | ✗ |
+| `governance_policies` (استعلام) | ✗ |
+| تسليم الورديات | ✗ |
+| جودة البيانات | ✗ |
+| التدريب التشغيلي عبر RAG | ✗ |
 
-## Wave 1 — Schema-Driven Tool Runner (items 1, 2, 3)
+## الوكلاء الـ10 الجدد (يُحقنون في `agent_definitions` عبر `supabase--insert`)
 
-**Goal**: replace every raw `{}` JSON textarea with auto-generated forms.
+| # | id | الدور | الأدوات |
+|---|---|---|---|
+| 1 | `cctv_intelligence` | ربط تنبيهات CCTV بالحوادث | `sql.read`, `aria.report.write` |
+| 2 | `contractor_compliance` | تدقيق `sec_contractors` (CR/التأمين/الشهادات) | `sql.read`, `aria.report.write` |
+| 3 | `vehicle_access_controller` | فحص `sec_vehicles` والقائمة السوداء | `sql.read`, `aria.report.write` |
+| 4 | `asset_health_monitor` | كشف شذوذ `sec_sensors`/`sec_assets` | `sql.read`, `aria.report.write` |
+| 5 | `crisis_commander` | تنسيق `pulse_crises` P0/P1 | `sql.read`, `aria.report.write`, `m365.teams.post_message` |
+| 6 | `shift_handover` | تقرير تسليم وردية | `sql.read`, `aria.report.write` |
+| 7 | `policy_advisor` | استعلام `governance_policies` + RAG | `sql.read`, `aria.kb.search` |
+| 8 | `training_coach` | تدريب تشغيلي بـ RAG | `aria.kb.search`, `aria.report.write` |
+| 9 | `data_quality_steward` | كشف صفوف ناقصة/قديمة | `sql.read`, `aria.report.write` |
+| 10 | `cost_governance_agent` | مراقبة `cost_budgets` + `ai_usage` | `sql.read`, `aria.report.write` |
 
-- New `src/components/runtime/JsonSchemaForm.tsx` — recursive renderer for JSON Schema (object/array/string/number/boolean/enum/format). Inline Zod validation, error surfacing, RTL-safe.
-- New `src/components/runtime/ToolRunner.tsx` — reads `tool_registry.input_schema`, renders form, validates, calls `executeToolFn`, streams result.
-- Developer Mode toggle (per-user, localStorage) reveals raw JSON editor as fallback.
-- Replace JSON `<textarea>` panels in `src/routes/_authenticated/tools.tsx` and any agent/workflow trigger dialog with `<ToolRunner>`.
+كل وكيل: نموذج `openai/gpt-5`، system prompt عربي يلتزم Charter v10.0 (صفر تلفيق، fallback "البيانات غير متوفرة")، `enabled=true`.
 
-## Wave 2 — Execution Timeline + Per-Run Detail (items 4, 5, 11)
+## الـ8 سكلز الجديدة (`.agents/skills/`)
+1. `cctv-incident-correlator` — مُصفوفة ربط Camera↔Incident
+2. `contractor-vetting-matrix` — قواعد قبول/رفض المقاول
+3. `vehicle-blacklist-check` — منطق فحص اللوحة والسائق
+4. `asset-anomaly-detection` — نوافذ z-score/IQR لقراءات الحساسات
+5. `crisis-decision-matrix` — مصفوفة قرار P0–P4 لأزمات `pulse_crises`
+6. `shift-handover-report` — قالب تسليم وردية (Pending / Critical / Hot)
+7. `data-quality-audit` — قائمة فحوصات (nulls/staleness/orphans)
+8. `cost-anomaly-scan` — كشف انحراف `ai_usage` عن `cost_budgets`
 
-- New `src/lib/runtime/execution-timeline.functions.ts` — server fn that joins `workflow_runs` + `workflow_step_runs` + `tool_executions` + `audit_logs` + `enterprise_events` for one trace_id/run_id; returns ordered timeline with phases: `queued → running → tool → database → workflow → audit → completed | failed | rolled_back`.
-- New `src/components/runtime/ExecutionTimeline.tsx` — vertical stepper with duration, request/response, logs, error, trace id, retry button (calls existing retry server fn).
-- Wire into `src/routes/_authenticated/workflows.tsx` run drawer and tool execution detail.
-- Harden `workflow-engine.server.ts` so every workflow start writes: `workflow_runs` + initial `workflow_step_runs` + `audit_logs` + `enterprise_events` (notifications via existing email queue) in one transaction-equivalent flow.
+ثم `skills--apply_draft` لكل سكل.
 
-## Wave 3 — Health Dashboard + Runtime Diagnostics (items 6, 7, 14)
+## التحقق (E2E، بدون محاكاة)
+- تشغيل وكيل عيّنة `data_quality_steward` عبر `/api/public/hooks/run-agent`.
+- التحقق من سلسلة الأدلة: `agent_runs` + `workflow_runs` + `tool_executions` + `audit_logs` + `aria_reports`.
+- تقرير ختامي بنسبة الإنجاز.
 
-- Extend existing `getRuntimeHealth` to include per-connector evidence (last call, error, latency). Already covers most subsystems.
-- New route `src/routes/_authenticated/health.tsx` — grid of subsystem cards (status pill + evidence + reason + "open diagnostics" drawer).
-- New `src/routes/_authenticated/diagnostics.tsx` — live tail of `enterprise_events`, `workflow_runs`, `tool_executions`, `audit_logs` with filters by trace_id/status/topic. Realtime via existing `useLiveRows`.
-- Connector status normalised to `healthy | warning | blocked | offline` with evidence object.
+## ما لن أفعله
+- لا تعديل جداول/RLS (يكفي `supabase--insert` على `agent_definitions`).
+- لا تغييرات UI.
+- لا إعادة كتابة `tool_registry` (الأدوات موجودة).
 
-## Wave 4 — Loading/Timeout/Error Hardening (items 8, 9, 10, 12, 13)
-
-- `useQuery` global defaults: `staleTime`, `retry: 2`, `meta.onError` → toast with root cause from `ApiError`.
-- New `<EmptyState reason=...>` component — every empty list passes a reason from the loader (no rows / org missing / filtered out / waiting for first run).
-- New `src/lib/runtime/timeout-guard.ts` — wraps any inflight `useQuery` with 30s timeout, surfaces `TimeoutError` with subsystem hint.
-- Audit every screen for indefinite spinners; replace with `<LiveStatus />` lifecycle states already in repo.
-- ApiError mapping: surface `error.code + cause + remediation` instead of "Something went wrong".
-
-## Wave 5 — Production Readiness Report (item 15)
-
-- New `src/lib/runtime/readiness.functions.ts` — server fn that scores Architecture / Runtime / Security / Reliability / Scalability / Maintainability based on real DB facts (RLS coverage, workflow success rate last 24h, error rate, connector health, audit coverage, RAG corpus size, cron job presence).
-- New route `src/routes/_authenticated/readiness.tsx` — printable report with scores, blockers list, evidence, Enterprise Score, Production Score.
-- Adds a "Generate Report" button that snapshots the report into `aria_reports` for historical tracking.
-
-## Technical Notes
-
-- All new server fns use `requireSupabaseAuth` + org middleware; admin client only inside handlers.
-- All new tables: none — every wave reuses existing tables (`workflow_runs`, `tool_executions`, `audit_logs`, `enterprise_events`, `tool_registry`, `aria_reports`).
-- No design tokens added; reuse existing HUD palette in `src/styles.css`.
-- Each wave ends with a typecheck + a manual smoke against `/health`, `/diagnostics`, `/tools`, `/workflows`, `/readiness`.
-
-## Confirm before I start
-
-This is a multi-hour execution. Do you want me to:
-- **(A)** Execute all 5 waves back-to-back without stopping (recommended).
-- **(B)** Ship Wave 1 first for review, then continue.
-- **(C)** Reorder — e.g. start with Wave 5 (Readiness Report) to see the current baseline.
+## النتيجة النهائية
+32 وكيلاً نشطاً + 8 سكلز جديدة + سلسلة أدلة حية لوكيل واحد على الأقل = تغطية تشغيلية وحوكمية شاملة.
