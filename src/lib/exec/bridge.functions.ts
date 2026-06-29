@@ -7,7 +7,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type BridgeAgentStatus = "idle" | "thinking" | "speaking" | "completed" | "error";
+export type BridgeAgentStatus =
+  | "offline"
+  | "idle"
+  | "monitoring"
+  | "waiting"
+  | "thinking"
+  | "searching"
+  | "analyzing"
+  | "consulting"
+  | "executing"
+  | "speaking"
+  | "completed"
+  | "escalated"
+  | "warning"
+  | "error"
+  | "recovery";
 
 export type BridgeAgent = {
   id: string;
