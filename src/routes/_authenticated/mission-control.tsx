@@ -536,6 +536,7 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
       "fixed inset-0 z-50 flex items-center justify-center bg-[#061A2E] transition-opacity duration-500",
       phase === 2 ? "opacity-0 pointer-events-none" : "opacity-100"
     )}>
+      <AmbientParticles count={28} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,212,255,0.18),transparent_60%)]" />
       <div className="relative text-center px-6">
         <div className="mx-auto mb-6 h-16 w-16 rounded-full border border-cyan-400/40 grid place-items-center animate-pulse">
