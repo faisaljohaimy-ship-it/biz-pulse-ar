@@ -94,7 +94,7 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
           spec={spec}
           preset={preset}
           mouthAmplitude={mouthAmplitude}
-          pointer={pointer}
+          pointer={effectivePointer}
         />
 
         <HaloRing color={spec.palette.accent} intensity={preset.ringIntensity} />
