@@ -44,13 +44,16 @@ export function AriaDock() {
   const [minimized, setMinimized] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [voiceOn, setVoiceOn] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [state, setState] = useState<DigitalHumanState>("idle");
   const [amp, setAmp] = useState(0);
   const [current, setCurrent] = useState<QueuedLine | null>(null);
+  const lastLineRef = useRef<QueuedLine | null>(null);
   const queueRef = useRef<QueuedLine[]>([]);
   const playingRef = useRef(false);
   const handleRef = useRef<SpeakHandle | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
+  const hydratedRef = useRef(false);
 
   // Choose the 3D R3F provider when WebGL is available and reduced-motion is off;
   // otherwise fall back to the SVG portrait. Resolved once per session.
