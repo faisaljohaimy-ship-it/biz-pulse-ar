@@ -127,10 +127,22 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
 
         {/* Hair / hijab cap */}
         {spec.features.hasHijab ? (
-          <mesh position={[0, 0.05, -0.02]}>
-            <sphereGeometry args={[0.48, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.72]} />
-            <primitive object={hair} attach="material" />
-          </mesh>
+          <group>
+            <mesh position={[0, 0.05, -0.02]}>
+              <sphereGeometry args={[0.48, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.72]} />
+              <primitive object={hair} attach="material" />
+            </mesh>
+            {/* Forehead accent trim — subtle executive band */}
+            <mesh position={[0, 0.32, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[0.4, 0.012, 8, 32, Math.PI * 1.1]} />
+              <primitive object={accent} attach="material" />
+            </mesh>
+            {/* Drape over shoulders */}
+            <mesh position={[0, -0.35, -0.08]} rotation={[0.1, 0, 0]}>
+              <sphereGeometry args={[0.55, 24, 24, 0, Math.PI * 2, Math.PI * 0.45, Math.PI * 0.35]} />
+              <primitive object={hair} attach="material" />
+            </mesh>
+          </group>
         ) : (
           <mesh position={[0, 0.12, -0.02]}>
             <sphereGeometry args={[0.44, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
