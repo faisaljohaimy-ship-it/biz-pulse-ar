@@ -118,17 +118,34 @@ export const getBridgeState = createServerFn({ method: "GET" })
         ? 0.85 // baseline when no history
         : Math.max(0.4, completed / total);
 
-      let status: BridgeAgentStatus = "idle";
+      let status: BridgeAgentStatus = d.enabled ? "monitoring" : "offline";
       if (last) {
-        if (last.status === "running") status = "thinking";
-        else if (last.status === "completed") status = "completed";
-        else if (last.status === "failed") status = "error";
+        const ageMs = Date.now() - new Date(last.started_at).getTime();
+        const goal = (last.goal_override ?? "").toLowerCase();
+        const summary = (last.summary ?? "").toLowerCase();
+        const haystack = `${goal} ${summary}`;
+        if (last.status === "running") {
+          if (/search|بحث|قاعدة المعرفة|knowledge|kb\./.test(haystack)) status = "searching";
+          else if (/analy|تحلي|risk|خطر|score/.test(haystack)) status = "analyzing";
+          else if (/consult|coordinate|تنسيق|تشاور|delegat/.test(haystack)) status = "consulting";
+          else if (/dispatch|execute|تنفيذ|أمر عمل|teams\.post|email\.send/.test(haystack)) status = "executing";
+          else status = "thinking";
+        } else if (last.status === "completed" || last.status === "succeeded") {
+          // recently completed within 90s reads as "speaking" to highlight latest voice
+          if (ageMs < 90_000) status = "speaking";
+          else if (/escalat|تصعيد|critical|حرج/.test(summary)) status = "escalated";
+          else if (/warn|تحذير|risk/.test(summary)) status = "warning";
+          else status = "completed";
+        } else if (last.status === "failed") {
+          status = "error";
+        } else if (last.status === "waiting" || last.status === "pending") {
+          status = "waiting";
+        }
+      } else if (!d.enabled) {
+        status = "offline";
+      } else {
+        status = "idle";
       }
-
-      const current_task =
-        last?.status === "running"
-          ? (last.goal_override?.slice(0, 120) ?? "Working")
-          : last?.summary?.slice(0, 120) ?? null;
 
       return {
         id: d.id,
