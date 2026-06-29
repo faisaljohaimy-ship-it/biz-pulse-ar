@@ -433,7 +433,7 @@ function MissionControl() {
               {ov.sites.slice(0, 6).map(s => (
                 <div key={s.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
                   <div className="text-sm text-white">{ar ? (s.name_ar ?? s.name_en) : (s.name_en ?? s.name_ar)}</div>
-                  <div className="text-xs text-white/50 mt-1">{s.city_en ?? s.city_ar ?? "—"} · {s.code}</div>
+                  <div className="text-xs text-white/50 mt-1">{s.code} · {s.sensitivity}</div>
                 </div>
               ))}
             </div>
