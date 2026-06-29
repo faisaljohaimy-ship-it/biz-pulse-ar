@@ -10,7 +10,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Sparkles, ShieldCheck, Activity, AlertTriangle, Loader2, PlayCircle, TrendingUp, Languages } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -243,7 +243,7 @@ function HeaderStat({
 
 function LiveClock() {
   const [now, setNow] = useState(() => new Date());
-  useMemo(() => {
+  useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
