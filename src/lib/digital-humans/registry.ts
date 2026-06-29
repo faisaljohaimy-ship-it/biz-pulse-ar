@@ -100,7 +100,7 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     title_ar: "المساعد التنفيذي الرئيسي", title_en: "Chief Executive AI",
     initials: "AI", voiceProfileId: "aria",
     palette: PAL.cyan,
-    features: { hairStyle: "tied", hairColor: "#1F2937", hasGlasses: false, hasBeard: false, hasHeadset: true, hasHijab: false },
+    features: { hairStyle: "tied", hairColor: "#0B1220", hasGlasses: false, hasBeard: false, hasHeadset: true, hasHijab: true },
     baselineConfidence: 0.96,
   },
   {
