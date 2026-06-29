@@ -331,6 +331,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
         {stageSpecs.map((s, i) => {
           const r = [aria, ic, ri, ca, cv, pt, em, kb, rp][i];
           const isActive = currentSpeakerId === s.id;
+          const liveAmp = voiceOn ? (ampMapRef.current[s.id] ?? 0) : undefined;
           return (
             <div
               key={s.id}
@@ -339,7 +340,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
                 isActive ? "bg-cyan-400/10 ring-1 ring-cyan-400/30 scale-105" : "bg-white/[0.02]",
               )}
             >
-              <DigitalHumanAvatar spec={s} state={r.state} size={56} ar={ar} showLabel />
+              <DigitalHumanAvatar spec={s} state={r.state} size={56} ar={ar} showLabel mouthAmplitude={liveAmp} />
             </div>
           );
         })}
