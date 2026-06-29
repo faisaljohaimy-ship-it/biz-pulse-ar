@@ -196,7 +196,7 @@ export function AriaDock() {
     >
       <div className="flex items-start gap-3">
         <Render
-          spec={ARIA}
+          spec={current?.speaker ?? ARIA}
           state={state}
           size={minimized ? 44 : 72}
           mouthAmplitude={amp}
@@ -208,10 +208,10 @@ export function AriaDock() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300/80 truncate">
-                  {ar ? ARIA.title_ar : ARIA.title_en}
+                  {ar ? (current?.speaker.title_ar ?? ARIA.title_ar) : (current?.speaker.title_en ?? ARIA.title_en)}
                 </div>
                 <div className="text-sm text-white font-medium leading-tight truncate">
-                  {ar ? ARIA.name_ar : ARIA.name_en}
+                  {ar ? (current?.speaker.name_ar ?? ARIA.name_ar) : (current?.speaker.name_en ?? ARIA.name_en)}
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
