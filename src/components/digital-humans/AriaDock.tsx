@@ -324,23 +324,59 @@ export function AriaDock() {
             <div className="mt-2 text-[13px] leading-relaxed text-white/85 min-h-[2.6em]">
               {current
                 ? (ar ? current.text_ar : current.text_en)
-                : (ar ? "جاهزة. أستمع لأحداث العمليات الحية." : "Standing by. Listening to live operations.")}
+                : (ar ? "في وضع الصمت. لن أتحدث إلا عند الطلب أو عند حدث حرج." : "Silent by default. I speak only on request or on a critical incident.")}
             </div>
 
-            {current && (
-              <div className="mt-1.5 flex items-center justify-between text-[10px] text-white/55">
-                <span className="truncate">
-                  {ar ? "بصوت" : "Voiced by"}: {ar ? current.speaker.name_ar : current.speaker.name_en}
+            <div className="mt-2 flex items-center gap-1 text-white/70">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 hover:bg-white/10"
+                onClick={togglePause}
+                aria-label={paused ? (ar ? "استئناف" : "Resume") : (ar ? "إيقاف مؤقت" : "Pause")}
+                title={paused ? (ar ? "استئناف" : "Resume") : (ar ? "إيقاف مؤقت" : "Pause")}
+              >
+                {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 hover:bg-white/10 disabled:opacity-40"
+                onClick={replay}
+                disabled={!lastLineRef.current}
+                aria-label={ar ? "إعادة التشغيل" : "Replay"}
+                title={ar ? "إعادة التشغيل" : "Replay"}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 hover:bg-white/10 disabled:opacity-40"
+                onClick={skip}
+                disabled={!current}
+                aria-label={ar ? "تخطي المتحدث" : "Skip speaker"}
+                title={ar ? "تخطي" : "Skip"}
+              >
+                <SkipForward className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 hover:bg-white/10 disabled:opacity-40"
+                onClick={stopAll}
+                disabled={!current && queueRef.current.length === 0}
+                aria-label={ar ? "إيقاف" : "Stop"}
+                title={ar ? "إيقاف" : "Stop"}
+              >
+                <Square className="h-3.5 w-3.5" />
+              </Button>
+              {current && (
+                <span className="ms-auto truncate text-[10px] text-white/55">
+                  {ar ? current.speaker.name_ar : current.speaker.name_en}
                 </span>
-                <button
-                  type="button"
-                  onClick={skip}
-                  className="text-cyan-300/80 hover:text-cyan-200 underline-offset-2 hover:underline"
-                >
-                  {ar ? "تخطي" : "Skip"}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
