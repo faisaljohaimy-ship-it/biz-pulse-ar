@@ -146,10 +146,14 @@ interface Props {
 
 export function PresentationMode({ ar, overview, displayName }: Props) {
   const [running, setRunning] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const stepIdxRef = useRef(0);
+  const voiceHandleRef = useRef<SpeakHandle | null>(null);
+  const ampMapRef = useRef<Record<string, number>>({});
+  const [, forceTick] = useState(0);
 
-  // ARIA + the 6 most-used specialists are rendered live on the stage
+  // ARIA + the 8 most-used specialists are rendered live on the stage
   const stageSpecs = useMemo<DigitalHumanSpec[]>(() => [
     ARIA,
     ...["incident_commander","risk_intelligence","compliance_auditor","cctv_intelligence","patrol_commander","emergency_coordinator","knowledge_ai","executive_reporter"]
@@ -199,8 +203,35 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
     };
     speaker.enqueue(turn);
 
-    // Advance after the estimated speak time + small gap
-    const len = (ar ? step.text_ar : step.text_en).length;
+    const text = ar ? step.text_ar : step.text_en;
+
+    // Voice mode: real TTS with per-agent voice + live lip-sync.
+    // Advance precisely when audio playback ends.
+    if (voiceOn) {
+      voiceHandleRef.current?.stop();
+      const handle = speakAs(speaker.spec, {
+        text,
+        lang: detectLang(text),
+        onAmplitude: (a) => {
+          ampMapRef.current[speaker.spec.id] = a;
+          forceTick(x => (x + 1) & 0xffff);
+        },
+      });
+      voiceHandleRef.current = handle;
+      let cancelled = false;
+      handle.promise
+        .catch(() => { /* fall through */ })
+        .finally(() => {
+          if (cancelled) return;
+          ampMapRef.current[speaker.spec.id] = 0;
+          stepIdxRef.current = stepIdx + 1;
+          setStepIdx(stepIdxRef.current);
+        });
+      return () => { cancelled = true; handle.stop(); };
+    }
+
+    // Silent fallback: advance after the estimated speak time + small gap
+    const len = text.length;
     const speak = Math.max(1800, Math.min(7500, Math.round((len / 13) * 1000)));
     const total = 600 /* pre */ + speak + 600 /* gap */;
     const t = setTimeout(() => {
@@ -209,11 +240,13 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
     }, total);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, stepIdx, script]);
+  }, [running, stepIdx, script, voiceOn]);
 
   const start = useCallback(() => {
     if (!overview) return;
     Object.values(runtimes).forEach(r => r.interrupt());
+    voiceHandleRef.current?.stop();
+    ampMapRef.current = {};
     stepIdxRef.current = 0;
     setStepIdx(0);
     setRunning(true);
@@ -221,8 +254,13 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
 
   const stop = useCallback(() => {
     setRunning(false);
+    voiceHandleRef.current?.stop();
+    voiceHandleRef.current = null;
+    ampMapRef.current = {};
     Object.values(runtimes).forEach(r => r.interrupt());
   }, [runtimes]);
+
+  useEffect(() => () => { voiceHandleRef.current?.stop(); }, []);
 
   const currentSpeakerId = running && script[stepIdx] ? script[stepIdx].speakerId : null;
   const currentSpeaker = currentSpeakerId
