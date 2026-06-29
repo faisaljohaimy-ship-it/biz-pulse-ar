@@ -24,6 +24,8 @@ import { getBridgeState, getMissionTimeline } from "@/lib/exec/bridge.functions"
 import { generateExecutiveBriefing, type BriefingSegment, type ExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { getPredictedRisks } from "@/lib/exec/predictive.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
+import { speakAgent } from "@/lib/digital-humans/speak-agent";
+
 import { BriefingStage } from "@/components/bridge/BriefingStage";
 import { MissionTimeline } from "@/components/bridge/MissionTimeline";
 import { findHuman } from "@/lib/digital-humans/registry";
