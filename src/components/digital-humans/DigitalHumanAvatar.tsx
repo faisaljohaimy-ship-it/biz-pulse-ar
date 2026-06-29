@@ -286,3 +286,18 @@ export function DigitalHumanAvatar({
     </div>
   );
 }
+
+// Register the built-in SVG provider exactly once. Future providers
+// (Azure AI Avatar, HeyGen, D-ID, Synthesia, Ready Player Me + WebGL)
+// register themselves the same way and the dock picks them by id.
+registerAvatarProvider({
+  id: "svg",
+  label: "Built-in SVG portrait",
+  capabilities: {
+    realtimeLipSync: true,
+    photorealistic: false,
+    streamingVideo: false,
+    requiresNetwork: false,
+  },
+  Render: (props: AvatarRenderProps) => <DigitalHumanAvatar {...props} />,
+});
