@@ -107,6 +107,6 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
             : line.tone === "critical" ? "Immediate escalation" : line.tone === "warn" ? "Preventive review" : "Routine follow-up"}
         </span>
       </footer>
-    </article>
+    </Tag>
   );
 }
