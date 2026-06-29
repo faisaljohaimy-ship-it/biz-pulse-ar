@@ -52,7 +52,18 @@ export function AriaDock() {
   const handleRef = useRef<SpeakHandle | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
 
-  const provider = useMemo(() => getAvatarProvider("svg"), []);
+  // Choose the 3D R3F provider when WebGL is available and reduced-motion is off;
+  // otherwise fall back to the SVG portrait. Resolved once per session.
+  const provider = useMemo<AvatarProvider>(() => {
+    if (typeof window === "undefined") return getAvatarProvider("svg");
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    let webgl = false;
+    try {
+      const c = document.createElement("canvas");
+      webgl = !!(c.getContext("webgl2") || c.getContext("webgl"));
+    } catch { webgl = false; }
+    return reduced || !webgl ? getAvatarProvider("svg") : getAvatarProvider("readyplayerme");
+  }, []);
   const { events } = useEventStream({ limit: 25 });
 
   const playNext = useCallback(() => {
