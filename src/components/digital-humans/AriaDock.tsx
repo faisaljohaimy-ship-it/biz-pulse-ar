@@ -263,30 +263,42 @@ export function AriaDock() {
     };
     (window as unknown as { aria?: typeof api }).aria = api;
 
-    // First-visit welcome — shows ARIA greeting the executive in the dock.
-    // Silent by default (browser autoplay policy + the existing "silent unless asked"
-    // rule). If voice is later enabled, replay button speaks it.
-    try {
-      const hour = new Date().getHours();
-      const greet_ar = hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
-      const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-      // Enable voice immediately so the greeting is audible and ARIA is ready
-      // to listen as soon as the executive speaks — no buttons, no codes.
+    // First-gesture unlock — browsers block both TTS audio playback and
+    // getUserMedia() before a user interaction. We attach a one-shot
+    // pointer/keyboard listener so the *first* tap anywhere triggers the
+    // greeting AND opens the mic. From that moment ARIA listens continuously.
+    const hour = new Date().getHours();
+    const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
+    const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    let unlocked = false;
+    const unlock = () => {
+      if (unlocked) return;
+      unlocked = true;
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+      window.removeEventListener("touchstart", unlock, true);
       setVoiceOn(true);
-      setTimeout(() => {
-        api.speak({
-          id: `welcome-${Date.now()}`,
-          text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
-          text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
-          speaker: ARIA,
-        });
-        // Open the mic right after the greeting so the user can speak naturally.
-        try { listener.start(ARIA); } catch { /* mic unavailable — silent */ }
-      }, 600);
-    } catch { /* storage unavailable — skip welcome */ }
+      api.speak({
+        id: `welcome-${Date.now()}`,
+        text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
+        text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
+        speaker: ARIA,
+      });
+      // Open mic ~1.2s after greeting starts so playback isn't cut by the
+      // listener's `aria.stop()`. The listener pauses recording during TTS
+      // because echo/feedback would otherwise re-trigger STT.
+      setTimeout(() => { try { listener.start(ARIA); } catch { /* mic unavailable */ } }, 1200);
+    };
+    window.addEventListener("pointerdown", unlock, true);
+    window.addEventListener("keydown", unlock, true);
+    window.addEventListener("touchstart", unlock, true);
 
-
-    return () => { delete (window as unknown as { aria?: typeof api }).aria; };
+    return () => {
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+      window.removeEventListener("touchstart", unlock, true);
+      delete (window as unknown as { aria?: typeof api }).aria;
+    };
   }, [enqueue, listener]);
 
   const toggleVoice = () => {
