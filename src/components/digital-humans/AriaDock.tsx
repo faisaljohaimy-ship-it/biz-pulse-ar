@@ -498,26 +498,8 @@ export function AriaDock() {
                       ? <MicOff className="h-3.5 w-3.5" />
                       : <Mic className="h-3.5 w-3.5" />}
                 </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-cyan-200 hover:text-white hover:bg-white/10"
-                  onClick={toggleVoice}
-                  aria-label={voiceOn ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تفعيل الصوت" : "Enable voice")}
-                  title={voiceOn ? (ar ? "كتم" : "Mute") : (ar ? "تشغيل الصوت" : "Voice on")}
-                >
-                  {voiceOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-amber-200 hover:text-white hover:bg-white/10"
-                  onClick={playWelcome}
-                  aria-label={ar ? "إعادة الترحيب" : "Replay welcome"}
-                  title={ar ? "تشغيل الترحيب" : "Play welcome"}
-                >
-                  <Megaphone className="h-3.5 w-3.5" />
-                </Button>
+                {/* Audio controls intentionally removed for executive minimalism.
+                    Voice playback is auto-managed by the listener pipeline. */}
                 <Button
                   size="icon"
                   variant="ghost"
