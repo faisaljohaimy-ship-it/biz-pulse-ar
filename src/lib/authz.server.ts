@@ -36,3 +36,17 @@ export async function requirePlatformAdmin(userId: string): Promise<void> {
     throw new Error("Forbidden: admin role required");
   }
 }
+
+export async function getCurrentOrgIdForUser(userId: string): Promise<string | null> {
+  if (!userId) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", userId)
+    .order("joined_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return (data?.org_id as string | undefined) ?? null;
+}
