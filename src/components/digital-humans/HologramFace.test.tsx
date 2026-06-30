@@ -9,14 +9,15 @@ import { HologramFace } from "./HologramFace";
 
 describe("HologramFace — ARIA semantics", () => {
   it("exposes a labelled image role in English", () => {
-    const { getByRole } = render(<HologramFace state="idle" />);
-    const region = getByRole("img");
+    const { getAllByRole } = render(<HologramFace state="idle" />);
+    // wrapper (role=img + aria-label) + inner portrait <img>; the wrapper is first.
+    const region = getAllByRole("img")[0];
     expect(region).toHaveAttribute("aria-label", expect.stringMatching(/ARIA/i));
   });
 
   it("uses the Arabic accessible name when ar=true", () => {
-    const { getByRole } = render(<HologramFace state="idle" ar />);
-    const region = getByRole("img");
+    const { getAllByRole } = render(<HologramFace state="idle" ar />);
+    const region = getAllByRole("img")[0];
     expect(region.getAttribute("aria-label") ?? "").toMatch(/آريا/);
   });
 
