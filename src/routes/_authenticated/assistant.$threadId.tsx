@@ -407,14 +407,30 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
               </div>
             </div>
           ) : (
-            messages.map((m) => {
+            messages.map((m, idx) => {
               const meta = (m as unknown as { metadata?: { citations?: CitationItem[]; coverage?: CoverageInfo } }).metadata;
+              const isLast = idx === messages.length - 1;
+              const isStreamingThis = isLast && m.role === "assistant" && status === "streaming";
+              const textLen = m.parts.reduce((n, p) => n + (p.type === "text" ? (p.text?.length ?? 0) : 0), 0);
+              const toolCount = m.parts.filter((p) => p.type.startsWith("tool-") || p.type === "tool-invocation").length;
               return (
-                <Message from={m.role} key={m.id}>
+                <Message from={m.role} key={m.id} className="animate-fade-in">
                   <MessageContent>
                     {m.parts.map((p, i) => {
                       if (p.type === "text") {
-                        return <MessageResponse key={i}>{p.text}</MessageResponse>;
+                        const isLastText = isStreamingThis && i === m.parts.length - 1;
+                        return (
+                          <span key={i} className="relative inline">
+                            <MessageResponse>{p.text}</MessageResponse>
+                            {isLastText && (
+                              <span
+                                aria-hidden
+                                className="inline-block h-[1em] w-[2px] -mb-[2px] ms-0.5 bg-primary align-middle"
+                                style={{ animation: "aria-caret-blink 1s steps(2) infinite" }}
+                              />
+                            )}
+                          </span>
+                        );
                       }
                       if (p.type.startsWith("tool-") || p.type === "tool-invocation") {
                         return <ToolInvocation key={i} part={p as Parameters<typeof ToolInvocation>[0]["part"]} />;
@@ -428,6 +444,33 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
                         locale={locale as "ar" | "en"}
                       />
                     )}
+                    {m.role === "assistant" && (textLen > 0 || toolCount > 0 || isStreamingThis) && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/80">
+                        {isStreamingThis ? (
+                          <span className="inline-flex items-center gap-1 text-primary">
+                            <span className="inline-flex gap-0.5" aria-hidden>
+                              <span className="h-1 w-1 rounded-full bg-current" style={{ animation: "aria-dot 1.2s -0.32s infinite" }} />
+                              <span className="h-1 w-1 rounded-full bg-current" style={{ animation: "aria-dot 1.2s -0.16s infinite" }} />
+                              <span className="h-1 w-1 rounded-full bg-current" style={{ animation: "aria-dot 1.2s infinite" }} />
+                            </span>
+                            {locale === "ar" ? "يبثّ…" : "Streaming…"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
+                        )}
+                        <span className="rounded bg-muted/60 px-1.5 py-0.5 tabular-nums">{model.split("/").pop()}</span>
+                        {textLen > 0 && (
+                          <span className="tabular-nums" title={locale === "ar" ? "عدد المحارف" : "Characters"}>
+                            {textLen.toLocaleString()} {locale === "ar" ? "حرف" : "chars"}
+                          </span>
+                        )}
+                        {toolCount > 0 && (
+                          <span className="tabular-nums">
+                            {toolCount} {locale === "ar" ? "أداة" : toolCount === 1 ? "tool" : "tools"}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </MessageContent>
                 </Message>
               );
@@ -435,12 +478,16 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
 
           )}
           {status === "submitted" && (
-            <Message from="assistant">
+            <Message from="assistant" className="animate-fade-in">
               <MessageContent>
                 <Shimmer>{t("common.loading")}</Shimmer>
               </MessageContent>
             </Message>
           )}
+          <style>{`
+            @keyframes aria-caret-blink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+            @keyframes aria-dot { 0%,80%,100% { transform: scale(0.6); opacity: .4 } 40% { transform: scale(1); opacity: 1 } }
+          `}</style>
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
