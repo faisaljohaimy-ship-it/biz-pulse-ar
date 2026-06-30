@@ -452,7 +452,7 @@ export function MiniAriaHeroBadge() {
       </form>
 
       {/* Suggestions */}
-      {!answer && !loading && (
+      {turns.length === 0 && !loading && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {suggestions.map((s) => (
             <button
