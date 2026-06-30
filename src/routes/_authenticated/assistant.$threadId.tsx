@@ -20,6 +20,8 @@ import {
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
+import { CitationsPanel, type CitationItem, type CoverageInfo } from "@/components/aria/CitationsPanel";
+
 
 export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
   component: AssistantThread,
