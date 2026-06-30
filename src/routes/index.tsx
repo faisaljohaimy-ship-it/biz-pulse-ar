@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command } from "lucide-react";
+import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
 import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
@@ -9,6 +9,9 @@ import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
+import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
+import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
+import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,13 +38,21 @@ function IntroLanding() {
   const navigate = useNavigate();
   const [bootDone, setBootDone] = useState(false);
   const [cinemaOpen, setCinemaOpen] = useState(false);
+  const [deptsOpen, setDeptsOpen] = useState(false);
   return (
     <div dir="rtl" className="relative min-h-screen overflow-hidden bg-black text-white">
+      <AriaWelcomeCurtain />
       <CinematicBoot onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
+      <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
       <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/runtime-hub" })} />
+
+      {/* Mini ARIA presence inside the hero */}
+      <div className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+        <MiniAriaHeroBadge />
+      </div>
 
       {/* Executive toolbar */}
       <div className={`relative z-20 mx-auto mt-4 flex w-full max-w-6xl items-center justify-center gap-2 px-4 sm:gap-3 sm:px-6 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
