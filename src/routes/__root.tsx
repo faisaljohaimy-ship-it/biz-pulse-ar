@@ -176,6 +176,7 @@ function RootComponent() {
           <I18nProvider>
             <BetaMarqueeBar />
             <Outlet />
+            <GlobalAriaCopilot />
             <Toaster />
           </I18nProvider>
         </ThemeProvider>
