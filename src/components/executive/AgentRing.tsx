@@ -110,6 +110,20 @@ export function AgentRing() {
   const fetchAgents = useServerFn(listAgents);
   const fetchRuns = useServerFn(listAgentRuns);
 
+  // Only call protected server fns when a Supabase session exists.
+  // Public/landing visitors have no bearer token → would 401.
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setHasSession(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setHasSession(!!s);
+    });
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
+
   const agentsQ = useQuery({
     queryKey: ["exec", "agents", "ring"],
     queryFn: async () => {
