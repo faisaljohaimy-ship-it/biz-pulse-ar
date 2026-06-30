@@ -93,7 +93,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: clean.slice(0, 1800),
-          voiceId: isArabic(clean) ? ARABIC_VOICE_ID : ENGLISH_VOICE_ID,
+          voiceId: ARIA_VOICE_ID,
           stability: 0.55,
           similarityBoost: 0.85,
           style: 0.35,
