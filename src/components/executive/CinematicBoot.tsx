@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const STAGES = [
-  { t: 0,    label_ar: "تهيئة النواة",          label_en: "Initializing core" },
-  { t: 900,  label_ar: "تجميع الجزيئات العصبية", label_en: "Assembling neural particles" },
-  { t: 2100, label_ar: "تفعيل ARIA",            label_en: "Materializing ARIA" },
-  { t: 3600, label_ar: "ربط مركز القيادة",       label_en: "Linking Command Center" },
-  { t: 5200, label_ar: "بث المؤشرات التنفيذية",  label_en: "Streaming executive KPIs" },
-  { t: 6500, label_ar: "جاهز",                  label_en: "Ready" },
+  { t: 0,      label_ar: "تهيئة النواة",              label_en: "Initializing core" },
+  { t: 5_000,  label_ar: "تجميع الجزيئات العصبية",     label_en: "Assembling neural particles" },
+  { t: 12_000, label_ar: "تفعيل ARIA · GPT-5",         label_en: "Materializing ARIA · GPT-5" },
+  { t: 22_000, label_ar: "ترحيب آريا التنفيذي",        label_en: "ARIA executive greeting" },
+  { t: 34_000, label_ar: "ربط مركز القيادة",            label_en: "Linking Command Center" },
+  { t: 46_000, label_ar: "بث المؤشرات التنفيذية",       label_en: "Streaming executive KPIs" },
+  { t: 56_000, label_ar: "جاهز للدخول",                 label_en: "Ready for entry" },
 ] as const;
 
-const TOTAL_MS = 7200;
+const TOTAL_MS = 60_000;
 const SESSION_KEY = "nexios.boot-seen";
 
 export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
@@ -18,6 +19,7 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
     try { return sessionStorage.getItem(SESSION_KEY) !== "1"; } catch { return true; }
   });
   const [elapsed, setElapsed] = useState(0);
+  const spokeRef = useRef(false);
 
   useEffect(() => {
     if (!visible) { onComplete(); return; }
@@ -26,13 +28,22 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
     const tick = (now: number) => {
       const e = now - start;
       setElapsed(e);
+      // ARIA executive greeting at scene-2 start (~1.2s after mount, once audio context likely unlocked by curtain tap)
+      if (!spokeRef.current && e >= 1200) {
+        spokeRef.current = true;
+        speakAriaGreeting();
+      }
       if (e >= TOTAL_MS) finish();
       else raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     const onKey = (ev: KeyboardEvent) => { if (ev.key === "Escape" || ev.key === "Enter") finish(); };
     window.addEventListener("keydown", onKey);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("keydown", onKey); };
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onKey);
+      try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -54,7 +65,7 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
       aria-modal="true"
       aria-label="NEXIOS startup sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020A14] text-white"
-      style={{ animation: "nx-boot-fade-out 600ms ease 6600ms forwards" }}
+      style={{ animation: "nx-boot-fade-out 600ms ease 59400ms forwards" }}
     >
       {/* Ambient aurora */}
       <div className="pointer-events-none absolute inset-0 opacity-70"
@@ -129,4 +140,52 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
       `}</style>
     </div>
   );
+}
+
+/**
+ * ARIA executive greeting — bilingual, voice-only.
+ *
+ * Uses the browser Web Speech API so the public landing has zero
+ * server dependencies. Picks an Arabic voice when available, falls
+ * back gracefully when not. Silent (no throw) if speech is blocked
+ * by autoplay policy.
+ */
+function speakAriaGreeting() {
+  if (typeof window === "undefined") return;
+  const synth = window.speechSynthesis;
+  if (!synth || typeof SpeechSynthesisUtterance === "undefined") return;
+
+  const phrases: { text: string; lang: string }[] = [
+    { text: "أهلاً بك في منصة إنجاز الأعمال التنفيذية. أنا آريا، عقلك التنفيذي.", lang: "ar-SA" },
+    { text: "Welcome to NEXIOS. I am ARIA, your executive AI — powered by GPT-5.", lang: "en-US" },
+    { text: "بماذا يمكنني مساعدتك اليوم؟", lang: "ar-SA" },
+  ];
+
+  const run = () => {
+    try { synth.cancel(); } catch { /* noop */ }
+    const voices = synth.getVoices();
+    const pick = (lang: string) =>
+      voices.find((v) => v.lang?.toLowerCase().startsWith(lang.toLowerCase())) ?? null;
+
+    phrases.forEach((p, i) => {
+      const u = new SpeechSynthesisUtterance(p.text);
+      u.lang = p.lang;
+      u.rate = 0.95;
+      u.pitch = 1.0;
+      u.volume = 1.0;
+      const v = pick(p.lang) ?? pick(p.lang.split("-")[0]);
+      if (v) u.voice = v;
+      // Slight pause between phrases
+      window.setTimeout(() => { try { synth.speak(u); } catch { /* noop */ } }, i * 150);
+    });
+  };
+
+  if (synth.getVoices().length === 0) {
+    const onVoices = () => { synth.removeEventListener("voiceschanged", onVoices); run(); };
+    synth.addEventListener("voiceschanged", onVoices);
+    // Safety: if voiceschanged never fires, run anyway after 600ms
+    window.setTimeout(run, 600);
+  } else {
+    run();
+  }
 }

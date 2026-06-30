@@ -17,19 +17,24 @@ export function AriaWelcomeCurtain() {
   const [show, setShow] = useState(false);
   const [fade, setFade] = useState(false);
 
+  const [remaining, setRemaining] = useState(60);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       if (sessionStorage.getItem(SESSION_KEY)) return;
     } catch { /* noop */ }
     setShow(true);
-    // Begin fade-out at 3.6s, fully dismiss at 4.4s
-    const fadeT = window.setTimeout(() => setFade(true), 3600);
+    // 60s curtain. Begin fade-out at 59.2s, fully dismiss at 60s.
+    const fadeT = window.setTimeout(() => setFade(true), 59_200);
     const offT = window.setTimeout(() => {
       setShow(false);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-    }, 4400);
-    return () => { window.clearTimeout(fadeT); window.clearTimeout(offT); };
+    }, 60_000);
+    const tickT = window.setInterval(() => {
+      setRemaining((r) => (r > 0 ? r - 1 : 0));
+    }, 1000);
+    return () => { window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT); };
   }, []);
 
   const dismiss = () => {
@@ -116,10 +121,17 @@ export function AriaWelcomeCurtain() {
         </p>
 
         <div
-          className="mt-8 text-[10px] uppercase tracking-[0.32em] text-white/40"
+          className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-white/40"
           style={{ animation: "awc-rise 900ms ease-out 900ms backwards" }}
         >
-          انقر للمتابعة · Tap to continue
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); dismiss(); }}
+            className="rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/90 transition hover:border-[#3AE8FF] hover:bg-[#3AE8FF]/20"
+          >
+            تخطي · Skip
+          </button>
+          <span className="font-mono text-white/35">{String(remaining).padStart(2, "0")}s</span>
         </div>
       </div>
     </div>
