@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const STAGES = [
-  { t: 0,    label_ar: "تهيئة النواة",          label_en: "Initializing core" },
-  { t: 900,  label_ar: "تجميع الجزيئات العصبية", label_en: "Assembling neural particles" },
-  { t: 2100, label_ar: "تفعيل ARIA",            label_en: "Materializing ARIA" },
-  { t: 3600, label_ar: "ربط مركز القيادة",       label_en: "Linking Command Center" },
-  { t: 5200, label_ar: "بث المؤشرات التنفيذية",  label_en: "Streaming executive KPIs" },
-  { t: 6500, label_ar: "جاهز",                  label_en: "Ready" },
+  { t: 0,      label_ar: "تهيئة النواة",              label_en: "Initializing core" },
+  { t: 5_000,  label_ar: "تجميع الجزيئات العصبية",     label_en: "Assembling neural particles" },
+  { t: 12_000, label_ar: "تفعيل ARIA · GPT-5",         label_en: "Materializing ARIA · GPT-5" },
+  { t: 22_000, label_ar: "ترحيب آريا التنفيذي",        label_en: "ARIA executive greeting" },
+  { t: 34_000, label_ar: "ربط مركز القيادة",            label_en: "Linking Command Center" },
+  { t: 46_000, label_ar: "بث المؤشرات التنفيذية",       label_en: "Streaming executive KPIs" },
+  { t: 56_000, label_ar: "جاهز للدخول",                 label_en: "Ready for entry" },
 ] as const;
 
-const TOTAL_MS = 7200;
+const TOTAL_MS = 60_000;
 const SESSION_KEY = "nexios.boot-seen";
 
 export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
