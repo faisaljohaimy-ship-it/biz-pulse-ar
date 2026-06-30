@@ -255,26 +255,25 @@ function AgentsOps() {
   >("all");
   const [search, setSearch] = useState("");
 
-  // Realtime: refresh on agent_runs changes
+  // Realtime: refresh on agent_runs changes (best-effort)
   useEffect(() => {
-    const ch = supabase
-      .channel("agents-ops")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "agent_runs" },
-        () => {
-          void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
-          void qc.invalidateQueries({ queryKey: ["agents", "runs"] });
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "agent_definitions" },
-        () => void qc.invalidateQueries({ queryKey: ["agents", "ops"] }),
-      )
-      .subscribe();
+    const topic = `agents-ops:${Math.random().toString(36).slice(2, 10)}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let ch: any = null;
+    try {
+      ch = supabase.channel(topic);
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, () => {
+        void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
+        void qc.invalidateQueries({ queryKey: ["agents", "runs"] });
+      });
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "agent_definitions" },
+        () => void qc.invalidateQueries({ queryKey: ["agents", "ops"] }));
+      ch.subscribe();
+    } catch (err) {
+      console.warn("[agents] realtime unavailable", err);
+    }
     return () => {
-      void supabase.removeChannel(ch);
+      if (ch) { try { void supabase.removeChannel(ch); } catch { /* noop */ } }
     };
   }, [qc]);
 
