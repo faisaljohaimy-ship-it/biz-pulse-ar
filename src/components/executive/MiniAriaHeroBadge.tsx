@@ -10,6 +10,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Loader2, MessageSquare, Sparkles, User, Volume2, VolumeX, X } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
 
 type AskResult = { text_ar: string; text_en: string };
 type Turn = {
@@ -47,6 +49,7 @@ function cleanForVoice(s: string) {
 }
 
 export function MiniAriaHeroBadge() {
+  const { locale } = useI18n();
   const [open, setOpen] = useState(true);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,8 +58,9 @@ export function MiniAriaHeroBadge() {
   const [voiceError, setVoiceError] = useState<{ kind: "rate" | "network" | "blocked" | "generic"; status?: number } | null>(null);
   const [answer, setAnswer] = useState<AskResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lang, setLang] = useState<"ar" | "en">("ar");
+  const [lang, setLang] = useState<"ar" | "en">(locale);
   const [turns, setTurns] = useState<Turn[]>([]);
+
   const currentTurnIdRef = useRef<string | null>(null);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
