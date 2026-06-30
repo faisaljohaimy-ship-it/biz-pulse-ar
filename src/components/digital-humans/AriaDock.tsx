@@ -270,15 +270,21 @@ export function AriaDock() {
       const hour = new Date().getHours();
       const greet_ar = hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
       const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+      // Enable voice immediately so the greeting is audible and ARIA is ready
+      // to listen as soon as the executive speaks — no buttons, no codes.
+      setVoiceOn(true);
       setTimeout(() => {
         api.speak({
           id: `welcome-${Date.now()}`,
-          text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. كيف يمكنني مساعدتك اليوم؟`,
-          text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. How can I help you today?`,
+          text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
+          text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
           speaker: ARIA,
         });
+        // Open the mic right after the greeting so the user can speak naturally.
+        try { listener.start(ARIA); } catch { /* mic unavailable — silent */ }
       }, 600);
     } catch { /* storage unavailable — skip welcome */ }
+
 
     return () => { delete (window as unknown as { aria?: typeof api }).aria; };
   }, [enqueue, listener]);
