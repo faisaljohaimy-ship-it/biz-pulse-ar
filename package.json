@@ -129,5 +129,8 @@
     "overrides": {
       "entities": "4.5.0"
     }
+  },
+  "overrides": {
+    "protobufjs": "^7.5.3"
   }
 }
