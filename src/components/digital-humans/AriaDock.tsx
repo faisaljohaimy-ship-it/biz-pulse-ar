@@ -466,7 +466,7 @@ export function AriaDock() {
           <Render
             spec={current?.speaker ?? ARIA}
             state={state}
-            size={minimized ? 72 : 288}
+            size={minimized ? 36 : 144}
             mouthAmplitude={amp}
             ambient
             ar={ar}
@@ -475,7 +475,7 @@ export function AriaDock() {
             onSpeechError={handleHeygenErr}
           />
         ) : (
-          <HologramFace state={state} amp={amp} size={minimized ? 72 : 288} ar={ar} />
+          <HologramFace state={state} amp={amp} size={minimized ? 36 : 144} ar={ar} />
         )}
         {!minimized && (
           <div className="min-w-0 flex-1">
