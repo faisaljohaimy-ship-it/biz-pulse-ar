@@ -476,6 +476,16 @@ export function AriaDock() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className="h-7 w-7 text-amber-200 hover:text-white hover:bg-white/10"
+                  onClick={playWelcome}
+                  aria-label={ar ? "إعادة الترحيب" : "Replay welcome"}
+                  title={ar ? "تشغيل الترحيب" : "Play welcome"}
+                >
+                  <Megaphone className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
                   className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10"
                   onClick={() => setMinimized(true)}
                   aria-label={ar ? "تصغير" : "Minimize"}
