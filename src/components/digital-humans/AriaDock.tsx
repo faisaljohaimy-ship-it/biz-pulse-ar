@@ -34,6 +34,7 @@ import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, Rot
 import { cn } from "@/lib/utils";
 import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gateway-listener";
 import { HologramFace } from "@/components/digital-humans/HologramFace";
+import { AriaStatusStrip } from "@/components/digital-humans/AriaStatusStrip";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
 
