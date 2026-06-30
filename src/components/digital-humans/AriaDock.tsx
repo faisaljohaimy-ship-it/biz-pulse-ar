@@ -55,6 +55,7 @@ export function AriaDock() {
   const handleRef = useRef<SpeakHandle | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
+  const listener = useAgentListener();
 
   // Choose the 3D R3F provider when WebGL is available and reduced-motion is off;
   // otherwise fall back to the SVG portrait. Resolved once per session.
