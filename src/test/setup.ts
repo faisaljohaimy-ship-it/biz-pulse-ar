@@ -31,5 +31,4 @@ class ROStub {
   unobserve() {}
   disconnect() {}
 }
-// @ts-expect-error — assign stub when missing
-window.ResizeObserver ||= ROStub;
+(window as unknown as { ResizeObserver: typeof ROStub }).ResizeObserver ||= ROStub;
