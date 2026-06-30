@@ -475,6 +475,7 @@ export function AriaDock() {
 }
 
   const Render = provider.Render;
+  const displayLine = current ?? lastLineRef.current;
 
   return (
     <div
@@ -496,7 +497,7 @@ export function AriaDock() {
       <div className="flex items-center gap-4">
         {usingHeygen ? (
           <Render
-            spec={current?.speaker ?? ARIA}
+            spec={displayLine?.speaker ?? ARIA}
             state={state}
             size={minimized ? 36 : 144}
             mouthAmplitude={amp}
@@ -514,10 +515,10 @@ export function AriaDock() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300/80 truncate">
-                  {ar ? (current?.speaker.title_ar ?? ARIA.title_ar) : (current?.speaker.title_en ?? ARIA.title_en)}
+                  {ar ? (displayLine?.speaker.title_ar ?? ARIA.title_ar) : (displayLine?.speaker.title_en ?? ARIA.title_en)}
                 </div>
                 <div className="text-sm text-white font-medium leading-tight truncate">
-                  {ar ? (current?.speaker.name_ar ?? ARIA.name_ar) : (current?.speaker.name_en ?? ARIA.name_en)}
+                  {ar ? (displayLine?.speaker.name_ar ?? ARIA.name_ar) : (displayLine?.speaker.name_en ?? ARIA.name_en)}
                 </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -530,7 +531,7 @@ export function AriaDock() {
                   )}
                   onClick={() => {
                     if (!listener.listening) setVoiceOn(true);
-                    listener.toggle(current?.speaker ?? ARIA);
+                    listener.toggle(displayLine?.speaker ?? ARIA);
                   }}
                   aria-label={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل الوكيل" : "Ask agent")}
                   title={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل" : "Ask")}
@@ -590,6 +591,8 @@ export function AriaDock() {
                 )
                 : current
                   ? (ar ? current.text_ar : current.text_en)
+                  : displayLine
+                    ? (ar ? displayLine.text_ar : displayLine.text_en)
                   : listener.error
                     ? <span className="text-rose-300/90">{listener.error}</span>
                     : (ar ? "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب." : "Tap the mic to ask me or any agent. Silent until asked.")}
@@ -636,9 +639,9 @@ export function AriaDock() {
               </div>
             )}
 
-            {current && (
+            {displayLine && (
               <div className="mt-2 truncate text-[10px] text-white/55">
-                {ar ? current.speaker.name_ar : current.speaker.name_en}
+                {ar ? displayLine.speaker.name_ar : displayLine.speaker.name_en}
               </div>
             )}
           </div>
