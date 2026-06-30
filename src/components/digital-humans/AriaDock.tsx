@@ -32,7 +32,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, RotateCcw, SkipForward, Square, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAgentListener } from "@/lib/digital-humans/gateway-listener";
+import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gateway-listener";
 import { HologramFace } from "@/components/digital-humans/HologramFace";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
