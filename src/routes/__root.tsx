@@ -15,6 +15,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
+import { GlobalAriaCopilot } from "@/components/executive/GlobalAriaCopilot";
 
 function NotFoundComponent() {
   return (
