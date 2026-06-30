@@ -64,6 +64,13 @@ function IntroLanding() {
           <Play className="h-4 w-4" />
           <span>التجربة التنفيذية · Executive Experience</span>
         </button>
+        <button
+          type="button"
+          onClick={() => setDeptsOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/40 bg-[#00D4FF]/[0.06] px-4 py-2 text-xs font-semibold text-white shadow-[0_0_20px_rgba(0,212,255,0.25)] transition hover:-translate-y-0.5 hover:bg-[#00D4FF]/15 sm:text-sm"
+        >
+          <LayoutGrid className="h-4 w-4" />
+          <span>نوافذ الإدارات</span>
         <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
           <Command className="h-3 w-3" /> K
         </kbd>
