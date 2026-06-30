@@ -108,15 +108,12 @@ export function AriaDock() {
     return () => { cancelled = true; };
   }, []);
 
-  // Probe HeyGen availability once. When configured + voice is on, HeyGen
-  // owns audio + lip-sync. Otherwise we keep the existing R3F/SVG + TTS path.
+  // Stability-first voice mode: ARIA must always answer through the proven
+  // gateway TTS path. Streaming-video providers are kept registered for future
+  // use, but are not allowed to own speech because provider/session failures
+  // can make ARIA appear to listen and think without replying.
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/heygen/status")
-      .then((r) => r.json() as Promise<{ configured?: boolean }>)
-      .then((j) => { if (!cancelled) setHeygenAvailable(!!j.configured); })
-      .catch(() => { if (!cancelled) setHeygenAvailable(false); });
-    return () => { cancelled = true; };
+    setHeygenAvailable(false);
   }, []);
 
   // Provider selection:

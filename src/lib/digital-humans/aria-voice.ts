@@ -66,11 +66,13 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
   const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
+  let utterance: SpeechSynthesisUtterance | null = null;
   let raf = 0;
 
   const stop = () => {
     stopped = true;
     try { source?.stop(); } catch { /* already stopped */ }
+    try { if (utterance && "speechSynthesis" in window) window.speechSynthesis.cancel(); } catch { /* noop */ }
     cancelAnimationFrame(raf);
     opts.onAmplitude?.(0);
   };
@@ -140,6 +142,36 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
     } catch (err) {
       cancelAnimationFrame(raf);
       opts.onAmplitude?.(0);
+      if (!stopped && typeof window !== "undefined" && "speechSynthesis" in window) {
+        await new Promise<void>((resolve) => {
+          let ampTimer: ReturnType<typeof window.setInterval> | null = null;
+          const clean = () => {
+            if (ampTimer) window.clearInterval(ampTimer);
+            opts.onAmplitude?.(0);
+            utterance = null;
+            resolve();
+          };
+          utterance = new SpeechSynthesisUtterance(opts.text);
+          utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
+          utterance.rate = 0.94;
+          utterance.pitch = 1.02;
+          utterance.onstart = () => {
+            opts.onStart?.();
+            ampTimer = window.setInterval(() => {
+              opts.onAmplitude?.(0.22 + 0.28 * Math.abs(Math.sin(Date.now() / 120)));
+            }, 90);
+          };
+          utterance.onend = clean;
+          utterance.onerror = clean;
+          try {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+          } catch {
+            clean();
+          }
+        });
+        return;
+      }
       if (!stopped) throw err;
     }
   })();
