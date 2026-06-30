@@ -293,6 +293,38 @@ export function MiniAriaHeroBadge() {
               <p className="whitespace-pre-wrap">
                 {ar ? answer.text_ar : answer.text_en}
               </p>
+              {voiceError && (() => {
+                const msg = ar
+                  ? voiceError.kind === "rate"
+                    ? "تعذّر تشغيل الصوت — تجاوزنا حد طلبات النطق. النص متاح أعلاه، أعد المحاولة بعد قليل."
+                    : voiceError.kind === "blocked"
+                      ? "المتصفح حظر التشغيل التلقائي — اضغط زر التشغيل لسماع آريا."
+                      : voiceError.kind === "network"
+                        ? "تعذّر الاتصال بخدمة الصوت — النص متاح للقراءة، أعد المحاولة."
+                        : "تعذّر توليد الصوت الآن — النص متاح أعلاه، أعد المحاولة."
+                  : voiceError.kind === "rate"
+                    ? "Voice playback unavailable — TTS rate limit reached. The reply is shown above; please retry shortly."
+                    : voiceError.kind === "blocked"
+                      ? "Browser blocked autoplay — tap the play button to hear ARIA."
+                      : voiceError.kind === "network"
+                        ? "Couldn't reach the voice service — the reply is shown above. Please retry."
+                        : "Couldn't generate audio right now — the reply is shown above. Please retry.";
+                return (
+                  <div
+                    role="status"
+                    className="flex items-start justify-between gap-2 rounded-lg border border-amber-300/30 bg-amber-300/[0.06] px-2.5 py-2 text-[11.5px] text-amber-100/95"
+                  >
+                    <span className="flex-1">{msg}</span>
+                    <button
+                      type="button"
+                      onClick={replayVoice}
+                      className="shrink-0 rounded-md border border-amber-300/40 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-amber-100 transition hover:bg-amber-300/10"
+                    >
+                      {ar ? "إعادة" : "Retry"}
+                    </button>
+                  </div>
+                );
+              })()}
               <div className="flex items-center justify-between pt-1">
                 <button
                   type="button"
