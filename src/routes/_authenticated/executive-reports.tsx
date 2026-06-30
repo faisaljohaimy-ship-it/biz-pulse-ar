@@ -565,7 +565,7 @@ function ExecutiveReportsPage() {
                       </details>
                     )}
                   </div>
-                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setLastError(null)}>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setLastError(null)} aria-label={isAr ? "إغلاق" : "Dismiss"}>
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
