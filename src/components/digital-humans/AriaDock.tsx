@@ -527,15 +527,16 @@ export function AriaDock() {
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-white/60 hover:text-white hover:bg-white/10"
+                <button
+                  type="button"
                   onClick={() => setHidden(true)}
-                  aria-label={ar ? "إخفاء" : "Hide"}
+                  aria-label={ar ? "إخفاء آريا" : "Dismiss ARIA"}
+                  title={ar ? "إخفاء" : "Dismiss"}
+                  className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/40 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
                 >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
+                  <span aria-hidden className="absolute inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.85),rgba(58,232,255,0.05)_60%,transparent_72%)]" />
+                  <X className="relative h-3.5 w-3.5 text-white drop-shadow-[0_0_4px_rgba(255,255,255,0.9)]" />
+                </button>
               </div>
             </div>
 

@@ -8,6 +8,7 @@ import { CinematicBoot } from "@/components/executive/CinematicBoot";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
+import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,7 +61,8 @@ function IntroLanding() {
       {/* Live system showcase — embed of the full platform */}
       <LiveSystemShowcase />
 
-
+      {/* منصة إنجاز الأعمال التنفيذية — Hajj + integrations */}
+      <HajjExecutiveStage />
 
       <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
