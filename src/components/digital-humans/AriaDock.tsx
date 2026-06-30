@@ -197,6 +197,7 @@ export function AriaDock() {
 
   const enqueue = useCallback((line: QueuedLine) => {
     queueRef.current.push(line);
+    setQueueDepth(queueRef.current.length);
     if (!playingRef.current && !paused) playNext();
   }, [playNext, paused]);
 
