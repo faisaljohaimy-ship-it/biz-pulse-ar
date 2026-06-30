@@ -86,6 +86,7 @@ import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authentica
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
 import { Route as AuthenticatedExecRouteImport } from './routes/_authenticated/exec'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
+import { Route as AuthenticatedElevenlabsStatusRouteImport } from './routes/_authenticated/elevenlabs-status'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
 import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
@@ -546,6 +547,12 @@ const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
   path: '/events',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedElevenlabsStatusRoute =
+  AuthenticatedElevenlabsStatusRouteImport.update({
+    id: '/elevenlabs-status',
+    path: '/elevenlabs-status',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDigitalTwinRoute =
   AuthenticatedDigitalTwinRouteImport.update({
     id: '/digital-twin',
@@ -949,6 +956,7 @@ export interface FileRoutesByFullPath {
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/events': typeof AuthenticatedEventsRoute
   '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
@@ -1092,6 +1100,7 @@ export interface FileRoutesByTo {
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/events': typeof AuthenticatedEventsRoute
   '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
@@ -1236,6 +1245,7 @@ export interface FileRoutesById {
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
+  '/_authenticated/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/exec': typeof AuthenticatedExecRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
@@ -1381,6 +1391,7 @@ export interface FileRouteTypes {
     | '/departments'
     | '/diagnostics'
     | '/digital-twin'
+    | '/elevenlabs-status'
     | '/events'
     | '/exec'
     | '/execution'
@@ -1524,6 +1535,7 @@ export interface FileRouteTypes {
     | '/departments'
     | '/diagnostics'
     | '/digital-twin'
+    | '/elevenlabs-status'
     | '/events'
     | '/exec'
     | '/execution'
@@ -1667,6 +1679,7 @@ export interface FileRouteTypes {
     | '/_authenticated/departments'
     | '/_authenticated/diagnostics'
     | '/_authenticated/digital-twin'
+    | '/_authenticated/elevenlabs-status'
     | '/_authenticated/events'
     | '/_authenticated/exec'
     | '/_authenticated/execution'
@@ -2358,6 +2371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEventsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/elevenlabs-status': {
+      id: '/_authenticated/elevenlabs-status'
+      path: '/elevenlabs-status'
+      fullPath: '/elevenlabs-status'
+      preLoaderRoute: typeof AuthenticatedElevenlabsStatusRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/digital-twin': {
       id: '/_authenticated/digital-twin'
       path: '/digital-twin'
@@ -2912,6 +2932,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
+  AuthenticatedElevenlabsStatusRoute: typeof AuthenticatedElevenlabsStatusRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedExecRoute: typeof AuthenticatedExecRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
@@ -2977,6 +2998,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
+  AuthenticatedElevenlabsStatusRoute: AuthenticatedElevenlabsStatusRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedExecRoute: AuthenticatedExecRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
