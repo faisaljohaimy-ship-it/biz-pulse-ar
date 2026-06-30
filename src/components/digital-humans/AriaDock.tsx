@@ -381,6 +381,7 @@ export function AriaDock() {
     handleRef.current?.stop();
     handleRef.current = null;
     queueRef.current = [];
+    setQueueDepth(0);
     setCurrent(null);
     setState("idle");
     setAmp(0);
