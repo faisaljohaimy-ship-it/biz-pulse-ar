@@ -118,43 +118,33 @@ export function WorkflowRunDetail({
     refetchInterval: 3000,
   });
 
-  // Realtime: subscribe to step changes for this run
+  // Realtime: subscribe to step changes for this run (best-effort)
   useEffect(() => {
     if (!runId || !open) return;
-    const channel = supabase
-      .channel(`wf-run-${runId}`)
-      .on(
+    const topic = `wf-run-${runId}:${Math.random().toString(36).slice(2, 8)}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let channel: any = null;
+    try {
+      channel = supabase.channel(topic);
+      channel.on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "workflow_step_runs",
-          filter: `run_id=eq.${runId}`,
-        },
-        () => {
-          void qc.invalidateQueries({
-            queryKey: ["exec", "run-detail", runId],
-          });
-        },
-      )
-      .on(
+        { event: "*", schema: "public", table: "workflow_step_runs", filter: `run_id=eq.${runId}` },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "run-detail", runId] }),
+      );
+      channel.on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "workflow_runs",
-          filter: `id=eq.${runId}`,
-        },
+        { event: "UPDATE", schema: "public", table: "workflow_runs", filter: `id=eq.${runId}` },
         () => {
-          void qc.invalidateQueries({
-            queryKey: ["exec", "run-detail", runId],
-          });
+          void qc.invalidateQueries({ queryKey: ["exec", "run-detail", runId] });
           void qc.invalidateQueries({ queryKey: ["exec", "runs"] });
         },
-      )
-      .subscribe();
+      );
+      channel.subscribe();
+    } catch (err) {
+      console.warn("[workflow-run-detail] realtime unavailable", err);
+    }
     return () => {
-      void supabase.removeChannel(channel);
+      if (channel) { try { void supabase.removeChannel(channel); } catch { /* noop */ } }
     };
   }, [runId, open, qc]);
 
