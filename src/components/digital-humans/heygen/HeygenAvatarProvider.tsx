@@ -1,31 +1,32 @@
 /**
- * LiveAvatar (official next-generation HeyGen Streaming Avatar) provider —
- * production Digital Human presentation layer for ARIA and every executive
- * specialist. Owns audio + lip-sync end-to-end; the dock simply hands over
- * a `speakTurn` and waits for `onSpeechEnd`.
+ * HeyGen Interactive Avatar provider — production Digital Human presentation
+ * layer for ARIA and every executive specialist. Owns audio + lip-sync
+ * end-to-end; the dock simply hands over a `speakTurn` and waits for
+ * `onSpeechEnd`.
+ *
+ * Uses the official `@heygen/streaming-avatar` SDK (v2.1.1). Per the
+ * official HeyGen v3 migration guide, v1/v2 streaming endpoints remain
+ * fully supported through October 31, 2026, and this SDK is the current
+ * officially recommended path for Interactive Avatar.
  *
  * Architecture (provider-independent):
  *   Intelligence + Decision Making  → already exists (askAgent, ARIA agents)
  *   Orchestration                   → AriaDock + agent-listener
- *   Visual Presentation             → THIS provider (LiveAvatar FULL mode)
+ *   Visual Presentation             → THIS provider (HeyGen streaming video)
  *
- * Importing this module registers `heygen` (kept as the provider id for
- * UI continuity) with the avatar provider registry. AriaDock selects it
- * automatically when `/api/heygen/status` reports configured.
- *
- * The LiveAvatar API key never reaches the browser — we exchange a
- * short-lived session token from `/api/heygen/token` instead. Persona
- * swaps tear down the current session and mint a new token bound to the
- * next persona's avatar / voice. Migration follows the official LiveAvatar
- * Web SDK demo at github.com/heygen-com/liveavatar-web-sdk.
+ * Importing this module registers `heygen` with the avatar provider registry.
+ * AriaDock selects it automatically when `/api/heygen/status` reports
+ * configured. The HeyGen API key never reaches the browser — we exchange a
+ * short-lived session token from `/api/heygen/token` instead.
  */
 import { useEffect, useRef, useState } from "react";
-import {
-  LiveAvatarSession,
-  SessionEvent,
-  SessionState,
-  AgentEventsEnum,
-} from "@heygen/liveavatar-web-sdk";
+import StreamingAvatar, {
+  AvatarQuality,
+  StreamingEvents,
+  TaskMode,
+  TaskType,
+  VoiceChatTransport,
+} from "@heygen/streaming-avatar";
 import {
   registerAvatarProvider,
   type AvatarRenderProps,
@@ -51,30 +52,17 @@ async function fetchSession(req: TokenRequest): Promise<HeygenSession> {
   });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
-    throw new Error(`liveavatar token ${res.status} ${t.slice(0, 200)}`);
+    throw new Error(`heygen token ${res.status} ${t.slice(0, 200)}`);
   }
   return (await res.json()) as HeygenSession;
-}
-
-async function stopRemote(sessionToken: string | undefined) {
-  if (!sessionToken) return;
-  try {
-    await fetch("/api/heygen/stop", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionToken }),
-    });
-  } catch {
-    /* best-effort */
-  }
 }
 
 function HeygenRender(props: AvatarRenderProps) {
   const { spec, size = 96, speakTurn, onSpeechEnd, onSpeechError, ar } = props;
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const sessionRef = useRef<LiveAvatarSession | null>(null);
-  const sessionInfoRef = useRef<HeygenSession | null>(null);
+  const avatarRef = useRef<StreamingAvatar | null>(null);
   const handledTurnsRef = useRef<Set<string>>(new Set());
+  const pendingTurnRef = useRef<string | null>(null);
   const speakTurnRef = useRef(speakTurn);
   const onSpeechEndRef = useRef(onSpeechEnd);
   const onSpeechErrorRef = useRef(onSpeechError);
@@ -86,13 +74,13 @@ function HeygenRender(props: AvatarRenderProps) {
   useEffect(() => { onSpeechEndRef.current = onSpeechEnd; }, [onSpeechEnd]);
   useEffect(() => { onSpeechErrorRef.current = onSpeechError; }, [onSpeechError]);
 
-  // Boot / re-boot whenever the persona or language changes. LiveAvatar
-  // binds a session token to a single avatar_id, so a persona swap
-  // requires tearing down and reopening the streaming session.
+  // Boot / re-boot whenever the persona or language changes. HeyGen binds
+  // a session token to a single avatar_id, so a persona swap requires
+  // tearing down the current streaming session and creating a new one.
   useEffect(() => {
     const language: "ar" | "en" = ar ? "ar" : "en";
     const personaKey = `${spec.id}|${language}`;
-    if (personaKeyRef.current === personaKey && sessionRef.current) return;
+    if (personaKeyRef.current === personaKey && avatarRef.current) return;
     personaKeyRef.current = personaKey;
 
     let cancelled = false;
@@ -100,54 +88,48 @@ function HeygenRender(props: AvatarRenderProps) {
     setErr(null);
 
     // Tear down the previous session first.
-    const prev = sessionRef.current;
-    const prevInfo = sessionInfoRef.current;
-    sessionRef.current = null;
-    sessionInfoRef.current = null;
+    const prev = avatarRef.current;
+    avatarRef.current = null;
     if (prev) {
-      try { prev.removeAllListeners(); } catch { /* noop */ }
-      void prev.stop().catch(() => undefined);
+      try { prev.stopAvatar(); } catch { /* noop */ }
     }
-    if (prevInfo) void stopRemote(prevInfo.sessionToken);
 
     (async () => {
       try {
         const info = await fetchSession({ personaId: spec.id, language });
-        if (cancelled) {
-          void stopRemote(info.sessionToken);
-          return;
-        }
-        sessionInfoRef.current = info;
-        const session = new LiveAvatarSession(info.sessionToken, {
-          apiUrl: info.apiUrl,
-          voiceChat: true,
-        });
-        sessionRef.current = session;
+        if (cancelled) return;
+        const avatar = new StreamingAvatar({ token: info.sessionToken });
+        avatarRef.current = avatar;
 
-        session.on(SessionEvent.SESSION_STATE_CHANGED, (state) => {
-          if (state === SessionState.DISCONNECTED) {
-            setReady(false);
-          }
-        });
-        session.on(SessionEvent.SESSION_STREAM_READY, () => {
+        avatar.on(StreamingEvents.STREAM_READY, (event: { detail: MediaStream }) => {
           if (cancelled || !videoRef.current) return;
-          try { session.attach(videoRef.current); } catch (e) {
-            console.warn("[liveavatar] attach failed", e);
-          }
+          videoRef.current.srcObject = event.detail;
+          videoRef.current.play().catch(() => undefined);
           setReady(true);
         });
-        session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, () => {
-          const t = speakTurnRef.current;
-          if (t && !handledTurnsRef.current.has(t.id)) {
-            handledTurnsRef.current.add(t.id);
-            onSpeechEndRef.current?.(t.id);
+        avatar.on(StreamingEvents.STREAM_DISCONNECTED, () => {
+          setReady(false);
+        });
+        avatar.on(StreamingEvents.AVATAR_STOP_TALKING, () => {
+          const turnId = pendingTurnRef.current;
+          if (turnId && !handledTurnsRef.current.has(turnId)) {
+            handledTurnsRef.current.add(turnId);
+            pendingTurnRef.current = null;
+            onSpeechEndRef.current?.(turnId);
           }
         });
 
-        await session.start();
+        await avatar.createStartAvatar({
+          quality: AvatarQuality.Low,
+          avatarName: info.avatarId,
+          ...(info.voiceId ? { voice: { voiceId: info.voiceId } } : {}),
+          language,
+          voiceChatTransport: VoiceChatTransport.WEBSOCKET,
+          activityIdleTimeout: 300,
+        });
       } catch (e) {
         if (cancelled) return;
-        const msg = e instanceof Error ? e.message : "liveavatar boot failed";
+        const msg = e instanceof Error ? e.message : "heygen boot failed";
         setErr(msg);
         onSpeechErrorRef.current?.("boot", msg);
       }
@@ -161,35 +143,37 @@ function HeygenRender(props: AvatarRenderProps) {
   // Tear down on unmount.
   useEffect(() => {
     return () => {
-      const s = sessionRef.current;
-      const info = sessionInfoRef.current;
-      sessionRef.current = null;
-      sessionInfoRef.current = null;
-      if (s) {
-        try { s.removeAllListeners(); } catch { /* noop */ }
-        void s.stop().catch(() => undefined);
+      const a = avatarRef.current;
+      avatarRef.current = null;
+      if (a) {
+        try { a.stopAvatar(); } catch { /* noop */ }
       }
-      if (info) void stopRemote(info.sessionToken);
     };
   }, []);
 
-  // Dispatch a new spoken turn. FULL-mode `repeat()` makes the avatar say
-  // the exact text the orchestrator produced (ARIA / specialist response).
-  // Audio + lip-sync are handled by LiveAvatar; we resolve the turn from
-  // the AVATAR_SPEAK_ENDED event registered above.
+  // Dispatch a new spoken turn. REPEAT task makes the avatar say the
+  // exact text the orchestrator produced (ARIA / specialist response).
+  // Audio + lip-sync are handled by HeyGen; we resolve the turn from the
+  // AVATAR_STOP_TALKING event registered above.
   useEffect(() => {
-    const session = sessionRef.current;
-    if (!session || !speakTurn) return;
+    const avatar = avatarRef.current;
+    if (!avatar || !speakTurn) return;
     if (handledTurnsRef.current.has(speakTurn.id)) return;
     void (async () => {
       try {
         // Barge-in: cancel any current speech before the new turn.
-        try { await session.interrupt(); } catch { /* noop */ }
-        await session.repeat(speakTurn.text);
+        try { await avatar.interrupt(); } catch { /* noop */ }
+        pendingTurnRef.current = speakTurn.id;
+        await avatar.speak({
+          text: speakTurn.text,
+          taskType: TaskType.REPEAT,
+          taskMode: TaskMode.SYNC,
+        });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "liveavatar speak failed";
+        const msg = e instanceof Error ? e.message : "heygen speak failed";
         if (!handledTurnsRef.current.has(speakTurn.id)) {
           handledTurnsRef.current.add(speakTurn.id);
+          pendingTurnRef.current = null;
           onSpeechErrorRef.current?.(speakTurn.id, msg);
         }
       }
@@ -224,7 +208,7 @@ function HeygenRender(props: AvatarRenderProps) {
 
 registerAvatarProvider({
   id: "heygen",
-  label: "HeyGen LiveAvatar",
+  label: "HeyGen Streaming Avatar",
   capabilities: {
     realtimeLipSync: true,
     photorealistic: true,

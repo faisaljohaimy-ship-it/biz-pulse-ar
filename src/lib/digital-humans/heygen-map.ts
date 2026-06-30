@@ -1,14 +1,16 @@
 /**
- * LiveAvatar persona map — single source of truth for which LiveAvatar
- * `avatar_id` / `voice_id` represents each Digital Human persona.
+ * HeyGen Interactive Avatar persona map — single source of truth for which
+ * HeyGen `avatar_id` / `voice_id` represents each Digital Human persona.
  *
- * LiveAvatar (https://liveavatar.com) is the official next-generation
- * HeyGen Streaming Avatar platform. IDs live in backend env
- * (`LIVEAVATAR_AVATAR_<HUMAN_ID>` / `LIVEAVATAR_VOICE_<HUMAN_ID>`, or
- * legacy `HEYGEN_AVATAR_*` / `HEYGEN_VOICE_*` for compat) so the
- * frontend never sees secrets.
+ * Uses the official HeyGen Streaming Avatar SDK
+ * (https://github.com/HeyGen-Official/StreamingAvatarSDK) at @heygen/streaming-avatar 2.1.1.
+ * Per HeyGen's official migration guide, v1/v2 streaming endpoints remain
+ * fully supported through October 31, 2026; this SDK is the current
+ * officially recommended path for Interactive Avatar.
  *
- * Pure client-safe types and the list of expected persona IDs.
+ * IDs live in backend env (`HEYGEN_AVATAR_<HUMAN_ID>` / `HEYGEN_VOICE_<HUMAN_ID>`)
+ * so the frontend never sees secrets. `LIVEAVATAR_*` names are accepted as
+ * fallbacks for backward compat with previous deployments.
  */
 import { DIGITAL_HUMANS } from "./registry";
 
@@ -17,24 +19,22 @@ export type HeygenPersonaMap = Record<string, { avatarId: string; voiceId?: stri
 export const HEYGEN_PERSONA_IDS: readonly string[] = DIGITAL_HUMANS.map(h => h.id);
 
 /**
- * LiveAvatar public default — Wayne, the public showcase avatar exposed
- * in the official @heygen/liveavatar-web-sdk demo. Works without any
- * extra account setup.
+ * HeyGen public Interactive Avatar default — Anna_public_3_20240108, a
+ * free public avatar from labs.heygen.com that ships in the official demo.
  */
-export const HEYGEN_DEFAULT_AVATAR_ID = "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a";
+export const HEYGEN_DEFAULT_AVATAR_ID = "Anna_public_3_20240108";
 
-/** Public Wayne voice that pairs with the default avatar. */
-export const HEYGEN_DEFAULT_VOICE_ID = "c2527536-6d1f-4412-a643-53a3497dada9";
+/** Default voice id — empty lets HeyGen pick the avatar's native voice. */
+export const HEYGEN_DEFAULT_VOICE_ID = "";
 
-export const LIVEAVATAR_API_URL = "https://api.liveavatar.com";
+export const HEYGEN_API_URL = "https://api.heygen.com";
 
-/** Returned by /api/heygen/token. Token is bound to a single avatar/persona. */
+/** Returned by /api/heygen/token. Token is short-lived (one-time use). */
 export interface HeygenSession {
+  /** Short-lived access token to bootstrap the browser SDK. */
   sessionToken: string;
-  sessionId: string;
   personaId: string;
   avatarId: string;
   voiceId?: string;
   language: "ar" | "en";
-  apiUrl: string;
 }
