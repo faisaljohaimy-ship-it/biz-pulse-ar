@@ -9,8 +9,11 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, ContactShadows } from "@react-three/drei";
+import { EffectComposer, Bloom, Vignette, ToneMapping } from "@react-three/postprocessing";
+import { BlendFunction, ToneMappingMode } from "postprocessing";
 import * as THREE from "three";
 import { ProceduralBust } from "./ProceduralBust";
+import { HologramShell, NeuralParticles, ScanRing } from "./HologramFX";
 import type { DigitalHumanSpec, DigitalHumanState } from "@/lib/digital-humans/registry";
 import { ALIVE_PRESETS, toAliveState, type AliveState } from "@/lib/digital-humans/alive-states";
 
