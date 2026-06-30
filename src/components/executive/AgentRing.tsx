@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Bot, Activity, ShieldCheck, Cpu, Sparkles, MessageSquare } from "lucide-react";
 import { listAgents, listAgentRuns } from "@/lib/exec.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * AgentRing — Executive AI Command Center surface.
@@ -109,6 +110,20 @@ export function AgentRing() {
   const fetchAgents = useServerFn(listAgents);
   const fetchRuns = useServerFn(listAgentRuns);
 
+  // Only call protected server fns when a Supabase session exists.
+  // Public/landing visitors have no bearer token → would 401.
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setHasSession(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setHasSession(!!s);
+    });
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
+
   const agentsQ = useQuery({
     queryKey: ["exec", "agents", "ring"],
     queryFn: async () => {
@@ -121,6 +136,7 @@ export function AgentRing() {
     refetchInterval: 30_000,
     staleTime: 15_000,
     retry: false,
+    enabled: hasSession,
   });
 
   const runsQ = useQuery({
@@ -135,6 +151,7 @@ export function AgentRing() {
     refetchInterval: 15_000,
     staleTime: 10_000,
     retry: false,
+    enabled: hasSession,
   });
 
   const agents: AgentVM[] = useMemo(() => {

@@ -1,20 +1,20 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Activity, AlertTriangle, ShieldCheck, Siren, Wrench, Bot } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { KpiTile, type KpiTone } from "./KpiTile";
 
-/**
- * Mission Control Strip — six live executive tiles pinned under the hero.
- *
- * Data: live `sec_*` rows aggregated by `getExecKpis` (RLS-scoped). The
- * server fn requires auth; on a public-route mount where the visitor is
- * unauthenticated the query stays in a loading state and tiles render as
- * "—" instead of fabricating numbers (Charter v10.0).
- */
 export function MissionControlStrip() {
   const fetchKpis = useServerFn(getExecKpis);
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => alive && setHasSession(!!data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setHasSession(!!s));
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
 
   const q = useQuery({
     queryKey: ["exec-kpis", "mission-strip"],
@@ -25,6 +25,7 @@ export function MissionControlStrip() {
     refetchOnWindowFocus: true,
     retry: false,
     staleTime: 5_000,
+    enabled: hasSession,
   });
 
   const k = q.data;

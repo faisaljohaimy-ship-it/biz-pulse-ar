@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { KpiTile, type KpiTone } from "./KpiTile";
 import { getExecKpis } from "@/lib/sec.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * ExecutiveHeroStage — Wave 1 cinematic wrapper.
@@ -38,6 +39,13 @@ const MOTES = Array.from({ length: 24 }, (_, i) => {
 
 export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
   const fetchKpis = useServerFn(getExecKpis);
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => alive && setHasSession(!!data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setHasSession(!!s));
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
   const q = useQuery({
     queryKey: ["exec-kpis", "hero"],
     queryFn: async () => {
@@ -46,6 +54,7 @@ export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
     refetchInterval: 15_000,
     retry: false,
     staleTime: 10_000,
+    enabled: hasSession,
   });
 
   const k = q.data;
