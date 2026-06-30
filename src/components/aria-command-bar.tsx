@@ -21,6 +21,7 @@ export function AriaCommandBar() {
   const [bearer, setBearer] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const navHandledRef = useRef<Set<string>>(new Set());
+  const bearerRef = useRef<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -32,24 +33,23 @@ export function AriaCommandBar() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const transport = useRef(
-    new DefaultChatTransport({
+  useEffect(() => {
+    bearerRef.current = bearer;
+  }, [bearer]);
+
+  const [transport] = useState(
+    () => new DefaultChatTransport({
       api: "/api/chat",
-      headers: (): Record<string, string> => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+      headers: (): Record<string, string> =>
+        bearerRef.current ? { Authorization: `Bearer ${bearerRef.current}` } : {},
+      body: () => ({ model: "google/gemini-3-flash-preview", agent: "aria-command-bar" }),
     }),
   );
-  // refresh transport headers when bearer changes
-  useEffect(() => {
-    transport.current = new DefaultChatTransport({
-      api: "/api/chat",
-      headers: (): Record<string, string> => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
-    });
-  }, [bearer]);
 
   const [chatError, setChatError] = useState<string | null>(null);
   const { messages, sendMessage, status, setMessages, error } = useChat({
     id: "aria-command-bar",
-    transport: transport.current,
+    transport,
     onError: async (err: unknown) => {
       // Try to surface server-provided JSON error message (e.g. 401 from /api/chat guard)
       const anyErr = err as { response?: Response; message?: string };
