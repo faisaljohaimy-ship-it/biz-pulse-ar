@@ -1,10 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { useAuth } from "@/lib/auth-context";
-import { useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { RuntimeProvider } from "@/lib/runtime/RuntimeContext";
-import { InitializingShell } from "@/lib/runtime/InitializingShell";
 import { AriaDock } from "@/components/digital-humans/AriaDock";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -12,15 +8,7 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthLayout() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", replace: true });
-  }, [user, loading, navigate]);
-
-  if (loading) return <InitializingShell error={null} />;
-  if (!user) return null;
+  // Open access mode — no login gate. Executive surfaces render directly.
   return (
     <RuntimeProvider>
       <AppShell>
@@ -30,4 +18,3 @@ function AuthLayout() {
     </RuntimeProvider>
   );
 }
-
