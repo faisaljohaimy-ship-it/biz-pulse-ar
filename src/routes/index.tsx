@@ -1,8 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command } from "lucide-react";
 import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
+import { CinematicBoot } from "@/components/executive/CinematicBoot";
+import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
+import { CommandPalette } from "@/components/executive/CommandPalette";
 
 export const Route = createFileRoute("/")({
   head: () => ({
