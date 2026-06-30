@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
 
 // Always force dark/night theme — the live Hajj system renders in night mode permanently.
 const LIVE_URL = "https://hajj-nexus-prime.lovable.app/?theme=dark&forceDark=1&mode=night#dark";
@@ -17,13 +19,16 @@ const INTERNAL_URL = "/hajj-prime";
  */
 export function LiveSystemShowcase() {
   const [expanded, setExpanded] = useState(false);
+  const { locale } = useI18n();
+  const ar = locale === "ar";
 
   return (
     <section
-      dir="rtl"
+      dir={ar ? "rtl" : "ltr"}
       className="relative z-10 mx-auto mt-8 w-full max-w-7xl px-4 sm:mt-12 sm:px-6"
-      aria-label="نافذة نظام الحج المباشرة"
+      aria-label={ar ? "نافذة نظام الحج المباشرة" : "Live Hajj system window"}
     >
+
       {/* Right-aligned flex wrapper so the window sits on the right side (RTL = visual right). */}
       <div className="flex w-full justify-center lg:justify-start">
         {/* Ambient halo behind the small window only */}
@@ -62,14 +67,14 @@ export function LiveSystemShowcase() {
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
                 className="rounded-md border border-white/10 bg-white/5 p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
-                aria-label={expanded ? "تصغير" : "تكبير"}
+                aria-label={expanded ? (ar ? "تصغير" : "Minimize") : (ar ? "تكبير" : "Maximize")}
               >
                 {expanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
               </button>
               <Link
                 to={INTERNAL_URL}
                 className="inline-flex items-center gap-1 rounded-md border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-[#3AE8FF]/20"
-                aria-label="فتح كامل"
+                aria-label={ar ? "فتح كامل" : "Open full screen"}
               >
                 <Expand className="h-2.5 w-2.5" />
               </Link>
@@ -78,10 +83,11 @@ export function LiveSystemShowcase() {
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 py-1 text-[10px] font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-                aria-label="فتح بنافذة خارجية"
+                aria-label={ar ? "فتح بنافذة خارجية" : "Open in new tab"}
               >
                 <ExternalLink className="h-2.5 w-2.5" />
               </a>
+
             </div>
           </div>
 
@@ -105,8 +111,9 @@ export function LiveSystemShowcase() {
           <div dir="ltr" className="relative flex items-center justify-between gap-2 border-t border-white/10 bg-black/40 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] text-white/55">
             <div className="flex items-center gap-1.5">
               <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-400" />
-              <span>LIVE · بث مباشر</span>
+              <span>LIVE · {ar ? "بث مباشر" : "Streaming"}</span>
             </div>
+
             <div className="hidden sm:block">TLS 1.3</div>
             <div>UPTIME 99.97%</div>
           </div>
