@@ -15,8 +15,7 @@ type Opts = {
   onFinal?: (text: string) => void;
 };
 
-const ARABIC_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // multilingual male, deep
-const ENGLISH_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Bella, multilingual
+const ARIA_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual executive female, AR/EN bilingual
 
 function isArabic(t: string) {
   return /[\u0600-\u06FF]/.test(t);
