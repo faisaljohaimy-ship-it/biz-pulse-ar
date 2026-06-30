@@ -97,7 +97,8 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       if (ctx.state === "suspended") await ctx.resume().catch(() => {});
       const bytes = base64ToBytes(res.audio_base64);
       // decodeAudioData requires a plain ArrayBuffer, not a SharedArrayBuffer view.
-      const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      const buf = new ArrayBuffer(bytes.byteLength);
+      new Uint8Array(buf).set(bytes);
       const audio = await ctx.decodeAudioData(buf);
       if (stopped) return;
 
