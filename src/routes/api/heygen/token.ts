@@ -1,14 +1,12 @@
 /**
  * POST /api/heygen/token — mints a short-lived HeyGen Streaming Avatar
- * session token for the signed-in executive and returns the per-persona
- * avatar/voice map assembled from server env. The HeyGen API key NEVER
- * leaves the worker.
+ * session token and returns the per-persona avatar/voice map assembled
+ * from server env. The HeyGen API key NEVER leaves the worker.
  *
- * Authenticated route — only sits behind a Lovable session. We do not
- * gate on a role because every authenticated executive may use ARIA.
+ * Non-public `/api/*` — Lovable's published-site auth gate applies, so
+ * only signed-in executives reach this handler.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import {
   HEYGEN_DEFAULT_AVATAR_ID,
   HEYGEN_PERSONA_IDS,
@@ -30,64 +28,42 @@ function buildPersonaMap(): HeygenPersonaMap {
   return map;
 }
 
-async function requireAuthedUser(request: Request): Promise<string | null> {
-  const auth = request.headers.get("authorization") ?? "";
-  const m = /^Bearer\s+(.+)$/i.exec(auth);
-  if (!m) return null;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
-  const sb = createClient(url, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${m[1]}` } },
-  });
-  const { data } = await sb.auth.getUser();
-  return data.user?.id ?? null;
-}
-
 export const Route = createFileRoute("/api/heygen/token")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async () => {
         const apiKey = process.env.HEYGEN_API_KEY;
         if (!apiKey) {
-          return new Response(JSON.stringify({ error: "heygen_not_configured" }), {
-            status: 503,
-            headers: { "content-type": "application/json" },
-          });
+          return Response.json({ error: "heygen_not_configured" }, { status: 503 });
         }
-        const userId = await requireAuthedUser(request);
-        if (!userId) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401,
-            headers: { "content-type": "application/json" },
+        try {
+          const res = await fetch(HEYGEN_TOKEN_URL, {
+            method: "POST",
+            headers: { "x-api-key": apiKey, "content-type": "application/json" },
           });
-        }
-        const res = await fetch(HEYGEN_TOKEN_URL, {
-          method: "POST",
-          headers: { "x-api-key": apiKey, "content-type": "application/json" },
-        });
-        if (!res.ok) {
-          const body = await res.text().catch(() => "");
-          return new Response(JSON.stringify({ error: "heygen_token_failed", status: res.status, body: body.slice(0, 500) }), {
-            status: 502,
-            headers: { "content-type": "application/json" },
+          if (!res.ok) {
+            const body = await res.text().catch(() => "");
+            console.error("[heygen/token]", res.status, body.slice(0, 300));
+            return Response.json(
+              { error: "heygen_token_failed", status: res.status },
+              { status: 502 },
+            );
+          }
+          const json = (await res.json()) as { data?: { token?: string } };
+          const token = json.data?.token;
+          if (!token) {
+            return Response.json({ error: "heygen_token_missing" }, { status: 502 });
+          }
+          return Response.json({
+            token,
+            avatars: buildPersonaMap(),
+            defaultAvatarId: process.env.HEYGEN_DEFAULT_AVATAR_ID ?? HEYGEN_DEFAULT_AVATAR_ID,
+            serverUrl: process.env.HEYGEN_SERVER_URL,
           });
+        } catch (err) {
+          console.error("[heygen/token] fatal", err);
+          return Response.json({ error: "heygen_token_exception" }, { status: 500 });
         }
-        const json = (await res.json()) as { data?: { token?: string } };
-        const token = json.data?.token;
-        if (!token) {
-          return new Response(JSON.stringify({ error: "heygen_token_missing" }), {
-            status: 502,
-            headers: { "content-type": "application/json" },
-          });
-        }
-        return Response.json({
-          token,
-          avatars: buildPersonaMap(),
-          defaultAvatarId: process.env.HEYGEN_DEFAULT_AVATAR_ID ?? HEYGEN_DEFAULT_AVATAR_ID,
-          serverUrl: process.env.HEYGEN_SERVER_URL,
-        });
       },
     },
   },
