@@ -19,6 +19,7 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
     try { return sessionStorage.getItem(SESSION_KEY) !== "1"; } catch { return true; }
   });
   const [elapsed, setElapsed] = useState(0);
+  const spokeRef = useRef(false);
 
   useEffect(() => {
     if (!visible) { onComplete(); return; }
@@ -27,13 +28,22 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
     const tick = (now: number) => {
       const e = now - start;
       setElapsed(e);
+      // ARIA executive greeting at scene-2 start (~1.2s after mount, once audio context likely unlocked by curtain tap)
+      if (!spokeRef.current && e >= 1200) {
+        spokeRef.current = true;
+        speakAriaGreeting();
+      }
       if (e >= TOTAL_MS) finish();
       else raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     const onKey = (ev: KeyboardEvent) => { if (ev.key === "Escape" || ev.key === "Enter") finish(); };
     window.addEventListener("keydown", onKey);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("keydown", onKey); };
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onKey);
+      try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
