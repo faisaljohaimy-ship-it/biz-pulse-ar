@@ -84,18 +84,18 @@ export function AgentRing() {
 
   const agentsQ = useQuery({
     queryKey: ["exec", "agents", "ring"],
-    queryFn: () => fetchAgents(),
+    queryFn: async () => { try { return await fetchAgents(); } catch { return null; } },
     refetchInterval: 30_000,
     staleTime: 15_000,
-    retry: 1,
+    retry: false,
   });
 
   const runsQ = useQuery({
     queryKey: ["exec", "agent-runs", "ring"],
-    queryFn: () => fetchRuns(),
+    queryFn: async () => { try { return await fetchRuns(); } catch { return null; } },
     refetchInterval: 15_000,
     staleTime: 10_000,
-    retry: 1,
+    retry: false,
   });
 
   const agents: AgentVM[] = useMemo(() => {

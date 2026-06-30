@@ -18,10 +18,12 @@ export function MissionControlStrip() {
 
   const q = useQuery({
     queryKey: ["exec-kpis", "mission-strip"],
-    queryFn: () => fetchKpis(),
+    queryFn: async () => {
+      try { return await fetchKpis(); } catch { return null; }
+    },
     refetchInterval: 10_000,
     refetchOnWindowFocus: true,
-    retry: 1,
+    retry: false,
     staleTime: 5_000,
   });
 
