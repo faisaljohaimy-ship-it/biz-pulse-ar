@@ -14,7 +14,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import {
   PlayCircle, Loader2, Volume2, VolumeX, StopCircle, Sparkles, ShieldCheck,
   AlertTriangle, Activity, Users, FileCheck2, Brain, Radio,
@@ -26,7 +26,10 @@ import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { speakAgent } from "@/lib/digital-humans/speak-agent";
 
-import { AriaScene } from "@/components/digital-humans/r3f/AriaScene";
+// Lazy: react-three-fiber + three.js (~870KB) only loads when Theater renders
+const AriaScene = lazy(() =>
+  import("@/components/digital-humans/r3f/AriaScene").then((m) => ({ default: m.AriaScene }))
+);
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";
 import { Storyboard } from "@/components/theater/Storyboard";
@@ -276,13 +279,15 @@ function TheaterPage() {
               onAgentClick={(a) => speakAgent(a, ar)}
             >
 
-              <AriaScene
-                spec={conductor.currentSpeaker}
-                state={aliveState}
-                mouthAmplitude={conductor.mouthAmplitude}
-                size={300}
-                gaze={ariaGaze}
-              />
+              <Suspense fallback={<div className="h-[300px] w-[300px] rounded-full bg-gradient-to-b from-cyan-500/10 to-transparent" aria-hidden />}>
+                <AriaScene
+                  spec={conductor.currentSpeaker}
+                  state={aliveState}
+                  mouthAmplitude={conductor.mouthAmplitude}
+                  size={300}
+                  gaze={ariaGaze}
+                />
+              </Suspense>
             </AgentRing>
 
             {/* Status footer */}
