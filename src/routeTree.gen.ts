@@ -104,6 +104,8 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticated/sec.index'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
+import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
@@ -634,6 +636,16 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHeygenTokenRoute = ApiHeygenTokenRouteImport.update({
+  id: '/api/heygen/token',
+  path: '/api/heygen/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHeygenStatusRoute = ApiHeygenStatusRouteImport.update({
+  id: '/api/heygen/status',
+  path: '/api/heygen/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsMicrosoftRoute =
   AuthenticatedSettingsMicrosoftRouteImport.update({
     id: '/microsoft',
@@ -966,6 +978,8 @@ export interface FileRoutesByFullPath {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/heygen/status': typeof ApiHeygenStatusRoute
+  '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
@@ -1099,6 +1113,8 @@ export interface FileRoutesByTo {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/heygen/status': typeof ApiHeygenStatusRoute
+  '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
@@ -1235,6 +1251,8 @@ export interface FileRoutesById {
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/heygen/status': typeof ApiHeygenStatusRoute
+  '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
@@ -1371,6 +1389,8 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/heygen/status'
+    | '/api/heygen/token'
     | '/lovable/email/suppression'
     | '/assistant/'
     | '/sec/'
@@ -1504,6 +1524,8 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/heygen/status'
+    | '/api/heygen/token'
     | '/lovable/email/suppression'
     | '/assistant'
     | '/sec'
@@ -1639,6 +1661,8 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
+    | '/api/heygen/status'
+    | '/api/heygen/token'
     | '/lovable/email/suppression'
     | '/_authenticated/assistant/'
     | '/_authenticated/sec/'
@@ -1689,6 +1713,8 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
+  ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
@@ -2369,6 +2395,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/heygen/token': {
+      id: '/api/heygen/token'
+      path: '/api/heygen/token'
+      fullPath: '/api/heygen/token'
+      preLoaderRoute: typeof ApiHeygenTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/heygen/status': {
+      id: '/api/heygen/status'
+      path: '/api/heygen/status'
+      fullPath: '/api/heygen/status'
+      preLoaderRoute: typeof ApiHeygenStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/settings/microsoft': {
       id: '/_authenticated/settings/microsoft'
       path: '/microsoft'
@@ -2879,6 +2919,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  ApiHeygenStatusRoute: ApiHeygenStatusRoute,
+  ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
