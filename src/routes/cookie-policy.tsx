@@ -7,9 +7,9 @@ import { Cookie, Shield, Settings2 } from "lucide-react";
 export const Route = createFileRoute("/cookie-policy")({
   head: () => ({
     meta: [
-      { title: "Cookie Policy — NEEXIOS | NEXUS AI OS" },
-      { name: "description", content: "How NEEXIOS uses cookies and similar technologies — categories, purposes, retention, and your choices. PDPL & GDPR-aligned." },
-      { property: "og:title", content: "Cookie Policy — NEEXIOS" },
+      { title: "Cookie Policy — NEXIOS | NEXUS AI OS" },
+      { name: "description", content: "How NEXIOS uses cookies and similar technologies — categories, purposes, retention, and your choices. PDPL & GDPR-aligned." },
+      { property: "og:title", content: "Cookie Policy — NEXIOS" },
       { property: "og:description", content: "Cookie categories, retention, and user choices for neexios.com and the NEXUS AI OS platform." },
       { property: "og:url", content: `${DOMAIN_URL}/cookie-policy` },
       { property: "og:type", content: "article" },
