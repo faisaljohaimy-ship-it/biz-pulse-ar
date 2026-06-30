@@ -275,6 +275,7 @@ export function AgentRing() {
             </radialGradient>
           </defs>
           <circle cx="50" cy="50" r="44" fill="url(#ring-core-glow)" />
+          {/* Spoke lines: each agent → ARIA core */}
           {pips.map(({ i, x, y }) => {
             const a = agents[i];
             const tone = a ? TONE[a.status] : TONE.unknown;
@@ -299,6 +300,33 @@ export function AgentRing() {
               />
             );
           })}
+          {/* Inter-agent red dashed chords — neural mesh between agents.
+              Connects every pip to a few siblings (skip 3, 5, 7) so the
+              network reads as woven without becoming visual noise. */}
+          {pips.map(({ i, x, y }) =>
+            [3, 5, 7].map((skip) => {
+              const j = (i + skip) % pips.length;
+              if (j <= i) return null;
+              const b = pips[j];
+              return (
+                <line
+                  key={`chord-${i}-${j}`}
+                  x1={x}
+                  y1={y}
+                  x2={b.x}
+                  y2={b.y}
+                  stroke="rgba(244,63,94,0.55)"
+                  strokeWidth="0.22"
+                  strokeDasharray="1.4 2.2"
+                  style={{
+                    animation: `ring-energy-flow ${3.6 + (i % 3) * 0.6}s linear infinite`,
+                    filter: "drop-shadow(0 0 1.2px rgba(244,63,94,0.85))",
+                  }}
+                  opacity={0.75}
+                />
+              );
+            }),
+          )}
         </svg>
 
         {/* Central ARIA core — breathing, scan ray, only interactive AI. */}
