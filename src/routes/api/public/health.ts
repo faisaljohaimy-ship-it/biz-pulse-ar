@@ -50,10 +50,14 @@ export const Route = createFileRoute("/api/public/health")({
 
         const aiGateway: Subsystem = process.env.LOVABLE_API_KEY
           ? await probe(async () => {
-              const r = await fetch("https://ai.gateway.lovable.dev/v1/models", {
-                headers: { "Lovable-API-Key": process.env.LOVABLE_API_KEY! },
+              // DNS-level reachability probe; avoids consuming credits and tolerates
+              // gateway endpoints that don't expose an unauthenticated catalogue.
+              const r = await fetch("https://ai.gateway.lovable.dev/", {
+                method: "HEAD",
+                headers: { "Authorization": `Bearer ${process.env.LOVABLE_API_KEY!}` },
               });
-              if (!r.ok) throw new Error(`HTTP ${r.status}`);
+              // Any HTTP response (including 401/404) proves the gateway is reachable.
+              if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
             })
           : { status: "unknown", detail: "missing LOVABLE_API_KEY" };
 
