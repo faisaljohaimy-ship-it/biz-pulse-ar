@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
+import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,44 +24,13 @@ const PILLARS = [
 ] as const;
 
 function IntroLanding() {
+  const navigate = useNavigate();
   return (
-    <div dir="rtl" className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
-      {/* Ambient layers */}
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(0,212,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.08)_1px,transparent_1px)] [background-size:48px_48px]" />
-      <div className="pointer-events-none absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-[#00D4FF]/10 blur-[140px] animate-pulse" />
-      <div className="pointer-events-none absolute -bottom-40 right-1/4 h-[520px] w-[520px] rounded-full bg-[#3AE8FF]/10 blur-[140px] animate-pulse" />
+    <div dir="rtl" className="relative min-h-screen overflow-hidden bg-black text-white">
+      <NexusRevealHero onEnterOps={() => navigate({ to: "/runtime-hub" })} />
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
-        {/* Hero */}
-        <section className="text-center">
-          <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-[#00D4FF]/40 bg-[#00D4FF]/10 shadow-[0_0_50px_rgba(0,212,255,0.5)]">
-            <Sparkles className="h-8 w-8 text-[#3AE8FF]" />
-          </div>
-          <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-            NEXUS AI OS
-          </h1>
-          <p className="mt-3 text-lg text-[#3AE8FF]/90">نظام التشغيل التنفيذي للأمن الصناعي</p>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
-            منصة ذكاء اصطناعي مؤسسية موحّدة تدير العمليات الأمنية، التوأم الرقمي، التقارير التنفيذية،
-            ونظام الحج — بقيادة المحرّك التنفيذي <span className="text-[#3AE8FF]">ARIA</span>.
-          </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              to="/runtime-hub"
-              className="group inline-flex items-center gap-2 rounded-xl border border-[#3AE8FF]/60 bg-gradient-to-r from-[#00D4FF]/20 to-[#3AE8FF]/15 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_40px_rgba(58,232,255,0.45)] transition hover:scale-[1.02] hover:shadow-[0_0_60px_rgba(58,232,255,0.7)]"
-            >
-              <span>الدخول إلى النظام</span>
-              <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" />
-            </Link>
-            <Link
-              to="/request-demo"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-6 py-3 text-sm font-medium text-white/80 transition hover:border-white/30 hover:bg-white/[0.08]"
-            >
-              طلب عرض تجريبي
-            </Link>
-          </div>
-        </section>
 
         {/* Pillars */}
         <section className="mt-16">
