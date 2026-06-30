@@ -12,7 +12,7 @@ import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
 
 const RunAgentParamsSchema = z.object({
-  agentId: z.string().uuid(),
+  agentId: z.string().trim().min(1).max(80).regex(/^[A-Za-z0-9_-]+$/),
   actorId: z.string().uuid(),
   goalOverride: z.string().trim().max(4000).optional().nullable(),
   context: z.record(z.string(), z.unknown()).optional().nullable(),
@@ -91,8 +91,8 @@ export async function runAgent(
     .limit(1)
     .maybeSingle();
   const orgId: string =
-    (memb?.org_id as string | undefined) ??
-    "00000000-0000-0000-0000-000000000001";
+    (memb?.org_id as string | undefined) ?? "";
+  if (!orgId) throw new Error("Actor is not assigned to an organization");
 
   // Find or create the system "Agent Execution" workflow per org so every
   // Run Agent press produces a real workflow_runs / workflow_step_runs trail.

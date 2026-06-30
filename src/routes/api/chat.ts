@@ -267,10 +267,33 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             if (msg.includes("AbortError") || msg.toLowerCase().includes("timeout")) {
               return "ARIA took too long to respond. Please retry; the chat will reconnect automatically.";
             }
-            return `ARIA upstream error: ${msg}`;
+            return "ARIA could not complete this response. Please retry or open the diagnostics panel with the request ID.";
           },
           onFinish: async ({ messages: finalMessages }) => {
-            if (!threadId) return;
+            if (!threadId) {
+              try {
+                const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
+                const newAssistant = finalMessages[finalMessages.length - 1];
+                const userText = (lastUser?.parts ?? [])
+                  .map((p) => (p.type === "text" ? p.text : ""))
+                  .join("")
+                  .trim();
+                const assistantText =
+                  newAssistant && newAssistant.role === "assistant"
+                    ? (newAssistant.parts ?? [])
+                        .map((p) => (p.type === "text" ? p.text : ""))
+                        .join("")
+                        .trim()
+                    : "";
+                if (userText && assistantText) {
+                  const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
+                  await rememberConversationTurn(supabase, userId, null, userText, assistantText);
+                }
+              } catch (memErr) {
+                console.warn("[api/chat] ad-hoc memory persistence skipped", memErr);
+              }
+              return;
+            }
             try {
               const { data: thread } = await supabase
                 .from("threads")
