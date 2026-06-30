@@ -117,6 +117,8 @@ export function MiniAriaHeroBadge() {
   const ask = useCallback(async (q: string) => {
     const qt = q.trim();
     if (!qt) return;
+    // Barge-in: cut any in-flight ARIA speech the moment a new question is sent.
+    stopSpeaking();
     setError(null);
     setLoading(true);
     setAnswer(null);
