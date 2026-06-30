@@ -62,6 +62,7 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         if (!parsed.success) {
           return Response.json({ error: "invalid_input", detail: parsed.error.flatten() }, { status: 400 });
         }
+        const data = parsed.data;
 
         const ip = clientIp(request);
         const rate = await enforceRateLimit(`pub-aria-ask:${ip}`, 12, 60);
