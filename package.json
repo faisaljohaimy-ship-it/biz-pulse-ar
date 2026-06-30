@@ -1,5 +1,6 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "nexios-ai-os",
+  "version": "1.0.0-rc.1",
   "private": true,
   "sideEffects": false,
   "type": "module",
