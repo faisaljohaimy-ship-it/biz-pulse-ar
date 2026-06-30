@@ -36,7 +36,7 @@ import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gat
 import { HologramFace } from "@/components/digital-humans/HologramFace";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
-const WELCOME_KEY = "nexios:aria:welcomed:v1";
+
 
 interface QueuedLine {
   id: string;
@@ -267,21 +267,18 @@ export function AriaDock() {
     // Silent by default (browser autoplay policy + the existing "silent unless asked"
     // rule). If voice is later enabled, replay button speaks it.
     try {
-      if (typeof window !== "undefined" && !window.sessionStorage.getItem(WELCOME_KEY)) {
-        window.sessionStorage.setItem(WELCOME_KEY, "1");
-        const hour = new Date().getHours();
-        const greet_ar = hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
-        const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-        setTimeout(() => {
-          api.speak({
-            id: `welcome-${Date.now()}`,
-            text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. كيف يمكنني مساعدتك اليوم؟`,
-            text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. How can I help you today?`,
-            speaker: ARIA,
-          });
-        }, 600);
-      }
-    } catch { /* sessionStorage unavailable — skip welcome */ }
+      const hour = new Date().getHours();
+      const greet_ar = hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
+      const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+      setTimeout(() => {
+        api.speak({
+          id: `welcome-${Date.now()}`,
+          text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. كيف يمكنني مساعدتك اليوم؟`,
+          text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. How can I help you today?`,
+          speaker: ARIA,
+        });
+      }, 600);
+    } catch { /* storage unavailable — skip welcome */ }
 
     return () => { delete (window as unknown as { aria?: typeof api }).aria; };
   }, [enqueue, listener]);
@@ -369,12 +366,12 @@ export function AriaDock() {
       role="complementary"
       aria-label={ar ? "آريا — المساعد التنفيذي" : "ARIA — Executive AI"}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-4">
         {usingHeygen ? (
           <Render
             spec={current?.speaker ?? ARIA}
             state={state}
-            size={minimized ? 44 : 72}
+            size={minimized ? 60 : 144}
             mouthAmplitude={amp}
             ambient
             ar={ar}
@@ -383,7 +380,7 @@ export function AriaDock() {
             onSpeechError={handleHeygenErr}
           />
         ) : (
-          <HologramFace state={state} amp={amp} size={minimized ? 44 : 72} ar={ar} />
+          <HologramFace state={state} amp={amp} size={minimized ? 60 : 144} ar={ar} />
         )}
         {!minimized && (
           <div className="min-w-0 flex-1">

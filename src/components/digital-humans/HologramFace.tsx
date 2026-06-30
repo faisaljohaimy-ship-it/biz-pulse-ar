@@ -26,17 +26,10 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props
 
   return (
     <div
-      className={cn("relative shrink-0 rounded-full overflow-hidden", className)}
+      className={cn("relative shrink-0 overflow-hidden", className)}
       style={{ width: size, height: size }}
       aria-label={ar ? "آريا" : "ARIA"}
     >
-      {/* Outer ambient ring */}
-      <div
-        className="absolute inset-0 rounded-full pointer-events-none transition-all duration-300"
-        style={{
-          boxShadow: `0 0 ${glow}px ${glow / 2}px rgba(0,212,255,${ringOpacity}), inset 0 0 ${glow / 1.5}px rgba(58,232,255,${ringOpacity * 0.7})`,
-        }}
-      />
       {/* Image */}
       <img
         src={ariaHologram.url}
