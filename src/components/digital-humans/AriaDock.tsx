@@ -326,6 +326,24 @@ export function AriaDock() {
     });
   };
 
+  const playWelcome = useCallback(() => {
+    const api = (window as unknown as { aria?: { speak: (t: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => void } }).aria;
+    if (!api) return;
+    // Stop any current line so the welcome plays cleanly.
+    handleRef.current?.stop();
+    handleRef.current = null;
+    setVoiceOn(true);
+    const hour = new Date().getHours();
+    const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
+    const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    api.speak({
+      id: `welcome-${Date.now()}`,
+      text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
+      text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
+      speaker: ARIA,
+    });
+  }, []);
+
   const skip = () => {
     handleRef.current?.stop();
     handleRef.current = null;
