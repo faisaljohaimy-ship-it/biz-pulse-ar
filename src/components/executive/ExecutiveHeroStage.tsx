@@ -40,9 +40,11 @@ export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
   const fetchKpis = useServerFn(getExecKpis);
   const q = useQuery({
     queryKey: ["exec-kpis", "hero"],
-    queryFn: () => fetchKpis(),
+    queryFn: async () => {
+      try { return await fetchKpis(); } catch { return null; }
+    },
     refetchInterval: 15_000,
-    retry: 1,
+    retry: false,
     staleTime: 10_000,
   });
 
