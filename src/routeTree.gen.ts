@@ -41,6 +41,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
+import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
 import { Route as ApiVoiceDiagnosticsRouteImport } from './routes/api/voice-diagnostics'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -308,6 +309,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const ApiVoiceTokenRoute = ApiVoiceTokenRouteImport.update({
   id: '/api/voice-token',
   path: '/api/voice-token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVoiceSttRoute = ApiVoiceSttRouteImport.update({
+  id: '/api/voice-stt',
+  path: '/api/voice-stt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVoiceDiagnosticsRoute = ApiVoiceDiagnosticsRouteImport.update({
@@ -987,6 +993,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
+  '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1128,6 +1135,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
+  '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1272,6 +1280,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
+  '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1416,6 +1425,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/tts'
     | '/api/voice-diagnostics'
+    | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/assistant/$threadId'
@@ -1557,6 +1567,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/tts'
     | '/api/voice-diagnostics'
+    | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/assistant/$threadId'
@@ -1700,6 +1711,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/tts'
     | '/api/voice-diagnostics'
+    | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/_authenticated/assistant/$threadId'
@@ -1784,6 +1796,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
+  ApiVoiceSttRoute: typeof ApiVoiceSttRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
@@ -2028,6 +2041,13 @@ declare module '@tanstack/react-router' {
       path: '/api/voice-token'
       fullPath: '/api/voice-token'
       preLoaderRoute: typeof ApiVoiceTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice-stt': {
+      id: '/api/voice-stt'
+      path: '/api/voice-stt'
+      fullPath: '/api/voice-stt'
+      preLoaderRoute: typeof ApiVoiceSttRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/voice-diagnostics': {
@@ -3040,6 +3060,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,
+  ApiVoiceSttRoute: ApiVoiceSttRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,

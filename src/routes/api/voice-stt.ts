@@ -41,10 +41,11 @@ export const Route = createFileRoute("/api/voice-stt")({
           return Response.json({ error: "invalid_form_data" }, { status: 400 });
         }
         const audio = form.get("audio");
-        if (!(audio instanceof File) && !(audio instanceof Blob)) {
+        if (!audio || typeof audio === "string" || typeof (audio as Blob).size !== "number") {
           return Response.json({ error: "audio_required" }, { status: 400 });
         }
-        const sizeBytes = (audio as Blob).size;
+        const blob = audio as Blob;
+        const sizeBytes = blob.size;
         if (!sizeBytes || sizeBytes < 300) {
           return Response.json({ error: "audio_too_short" }, { status: 400 });
         }
