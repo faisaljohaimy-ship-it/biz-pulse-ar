@@ -379,6 +379,64 @@ export function DigitalHumanAvatar({
                 <circle cx="78" cy="80" r="1.0" fill={p.accent} opacity="0.6" className="animate-ping" />
               </g>
             )}
+
+            {/* ── Holographic overlay layer ────────────────────────────
+                Neural rim glow, scan line, floating particles and iris
+                aura — driven by state. Additive look via screen blend. */}
+            <g style={{ mixBlendMode: "screen" }}>
+              {/* Outer Fresnel rim glow */}
+              <circle cx="50" cy="50" r="47" fill="none"
+                stroke={p.accent} strokeWidth="0.6" opacity="0.55"
+                strokeDasharray="2 3"
+                style={{
+                  transformOrigin: "50% 50%",
+                  animation: "dh-spin 14s linear infinite",
+                }}
+              />
+              <circle cx="50" cy="50" r="44" fill="none"
+                stroke={p.accent} strokeWidth="0.35" opacity="0.4"
+                strokeDasharray="1 6"
+                style={{
+                  transformOrigin: "50% 50%",
+                  animation: "dh-spin-rev 22s linear infinite",
+                }}
+              />
+              {/* Listening scan band */}
+              {state === "listening" && (
+                <rect x="0" y="48" width="100" height="0.6" fill={p.accent} opacity="0.85"
+                  style={{ animation: "dh-scan 2.4s ease-in-out infinite" }}
+                />
+              )}
+              {/* Iris aura when speaking */}
+              {speaking && !blink && (
+                <>
+                  <circle cx={41 + gaze.x} cy={50.4 + gaze.y} r="3.6" fill="none"
+                    stroke={p.accent} strokeWidth="0.45" opacity="0.85"
+                    style={{ animation: "dh-iris 1.6s ease-in-out infinite" }} />
+                  <circle cx={59 + gaze.x} cy={50.4 + gaze.y} r="3.6" fill="none"
+                    stroke={p.accent} strokeWidth="0.45" opacity="0.85"
+                    style={{ animation: "dh-iris 1.6s ease-in-out infinite" }} />
+                </>
+              )}
+              {/* Floating neural particles */}
+              {[14, 86, 22, 78, 50, 32, 68].map((cx, i) => (
+                <circle key={i}
+                  cx={cx}
+                  cy={18 + (i * 11) % 70}
+                  r={0.5 + (i % 3) * 0.25}
+                  fill={p.accent}
+                  opacity={0.55}
+                  style={{
+                    animation: `dh-float ${4 + i % 3}s ease-in-out ${i * 0.3}s infinite`,
+                  }}
+                />
+              ))}
+              {/* Glowing collar seam */}
+              <path d="M28,92 Q50,82 72,92" fill="none"
+                stroke={p.accent} strokeWidth="0.9" opacity="0.85"
+                style={{ filter: `drop-shadow(0 0 1.2px ${p.accent})` }}
+              />
+            </g>
           </g>
         </svg>
 
@@ -401,7 +459,14 @@ export function DigitalHumanAvatar({
       )}
 
       {/* keyframes (scoped via global animation name) */}
-      <style>{`@keyframes dh-breath { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.5px) scale(1.005); } }`}</style>
+      <style>{`
+        @keyframes dh-breath { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.5px) scale(1.005); } }
+        @keyframes dh-spin { to { transform: rotate(360deg); } }
+        @keyframes dh-spin-rev { to { transform: rotate(-360deg); } }
+        @keyframes dh-scan { 0% { transform: translateY(-26px); opacity: 0; } 50% { opacity: 0.9; } 100% { transform: translateY(26px); opacity: 0; } }
+        @keyframes dh-iris { 0%,100% { opacity: 0.85; transform: scale(1); } 50% { opacity: 0.35; transform: scale(1.25); } transform-box: fill-box; transform-origin: center; }
+        @keyframes dh-float { 0%,100% { transform: translateY(0); opacity: 0.35; } 50% { transform: translateY(-2px); opacity: 0.95; } }
+      `}</style>
     </div>
   );
 }

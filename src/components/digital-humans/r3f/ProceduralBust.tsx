@@ -34,21 +34,34 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
   const blinkT = useRef({ closing: false, t: 0, next: 2.5 });
 
   const skin = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.palette.base, roughness: 0.55, metalness: 0.05,
-  }), [spec.palette.base]);
+    color: spec.palette.base, roughness: 0.42, metalness: 0.04,
+    // faux subsurface — accent tint glows softly through skin
+    emissive: new THREE.Color(spec.palette.accent),
+    emissiveIntensity: 0.06,
+  }), [spec.palette.base, spec.palette.accent]);
   const suit = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.palette.suit, roughness: 0.7, metalness: 0.15,
+    color: spec.palette.suit, roughness: 0.55, metalness: 0.35,
   }), [spec.palette.suit]);
   const accent = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.palette.accent, roughness: 0.3, metalness: 0.4,
-    emissive: spec.palette.accent, emissiveIntensity: 0.35,
+    color: spec.palette.accent, roughness: 0.25, metalness: 0.5,
+    emissive: spec.palette.accent, emissiveIntensity: 0.9,
+  }), [spec.palette.accent]);
+  // Bright additive seam material — for the glowing executive collar seam
+  const seamMat = useMemo(() => new THREE.MeshBasicMaterial({
+    color: spec.palette.accent, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthWrite: false,
   }), [spec.palette.accent]);
   const hair = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.features.hairColor, roughness: 0.85, metalness: 0.05,
+    color: spec.features.hairColor, roughness: 0.78, metalness: 0.08,
   }), [spec.features.hairColor]);
   const lidMat = useMemo(() => new THREE.MeshStandardMaterial({
     color: spec.palette.base, roughness: 0.55,
   }), [spec.palette.base]);
+  // Crystal iris — emissive ring around the pupil
+  const irisRingMat = useMemo(() => new THREE.MeshBasicMaterial({
+    color: spec.palette.accent, transparent: true, opacity: 0.85,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  }), [spec.palette.accent]);
 
   useFrame((_, dt) => {
     const t = performance.now() / 1000;
@@ -117,6 +130,16 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
         <torusGeometry args={[0.13, 0.025, 8, 24]} />
         <primitive object={accent} attach="material" />
       </mesh>
+      {/* Glowing executive collar seam — additive, no shadow */}
+      <mesh position={[0, 0.42, 0.18]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.4, 0.008, 8, 64, Math.PI]} />
+        <primitive object={seamMat} attach="material" />
+      </mesh>
+      {/* Lapel light line */}
+      <mesh position={[0, 0.32, 0.34]} rotation={[0, 0, Math.PI / 6]}>
+        <boxGeometry args={[0.32, 0.006, 0.004]} />
+        <primitive object={seamMat} attach="material" />
+      </mesh>
 
       {/* Head */}
       <group ref={head} position={[0, 0.95, 0]}>
@@ -162,11 +185,29 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
         {/* Irises (accent color for personality cue) */}
         <mesh position={[-0.13, 0.04, 0.405]}>
           <sphereGeometry args={[0.025, 12, 12]} />
-          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.4} />
+          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.9} />
         </mesh>
         <mesh position={[0.13, 0.04, 0.405]}>
           <sphereGeometry args={[0.025, 12, 12]} />
-          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.4} />
+          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.9} />
+        </mesh>
+        {/* Crystal neural rings around each iris — additive emissive */}
+        <mesh position={[-0.13, 0.04, 0.415]} rotation={[0, 0, 0]}>
+          <torusGeometry args={[0.042, 0.0035, 6, 32]} />
+          <primitive object={irisRingMat} attach="material" />
+        </mesh>
+        <mesh position={[0.13, 0.04, 0.415]} rotation={[0, 0, 0]}>
+          <torusGeometry args={[0.042, 0.0035, 6, 32]} />
+          <primitive object={irisRingMat} attach="material" />
+        </mesh>
+        {/* Catchlight specks */}
+        <mesh position={[-0.118, 0.052, 0.418]}>
+          <sphereGeometry args={[0.008, 8, 8]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+        <mesh position={[0.142, 0.052, 0.418]}>
+          <sphereGeometry args={[0.008, 8, 8]} />
+          <meshBasicMaterial color="#ffffff" />
         </mesh>
         {/* Eyelids (close on blink) */}
         <mesh ref={lidL} position={[-0.13, 0.04, 0.37]}>
