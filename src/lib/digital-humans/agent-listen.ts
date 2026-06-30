@@ -80,6 +80,9 @@ export function useAgentListener() {
   const start = useCallback(async (speaker?: DigitalHumanSpec) => {
     setError(null);
     speakerRef.current = speaker ?? ARIA;
+    // Silence any in-flight narration the moment the mic opens.
+    const w = window as unknown as { aria?: { stop?: () => void } };
+    w.aria?.stop?.();
     try {
       const r = await fetch("/api/voice-token", { method: "POST" });
       if (!r.ok) throw new Error(`token ${r.status}`);
