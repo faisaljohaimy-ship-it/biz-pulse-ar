@@ -68,6 +68,11 @@ export function AriaDock() {
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
+  // The opening greeting is audio-only: ARIA speaks the welcome line before
+  // the dock UI (avatar, transcript, controls) becomes visible. We reveal
+  // the dock when the welcome turn finishes (or after a safety timeout).
+  const [revealed, setRevealed] = useState(false);
+  const welcomeStartedRef = useRef(false);
 
   // Lazy-register the HeyGen provider only on the client and only when
   // WebRTC media APIs are available. Any import / boot failure is swallowed
@@ -284,12 +289,15 @@ export function AriaDock() {
       window.removeEventListener("keydown", unlock, true);
       window.removeEventListener("touchstart", unlock, true);
       setVoiceOn(true);
+      welcomeStartedRef.current = true;
       api.speak({
         id: `welcome-${Date.now()}`,
         text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
         text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
         speaker: ARIA,
       });
+      // Safety net: even if TTS stalls, reveal the dock so controls stay reachable.
+      window.setTimeout(() => setRevealed(true), 9000);
       // Open mic ~1.2s after greeting starts so playback isn't cut by the
       // listener's `aria.stop()`. The listener pauses recording during TTS
       // because echo/feedback would otherwise re-trigger STT.
@@ -388,6 +396,27 @@ export function AriaDock() {
   };
 
   useEffect(() => () => handleRef.current?.stop(), []);
+
+  // Reveal the dock UI once the opening welcome line has finished playing.
+  // Until then ARIA's voice is heard but no avatar / transcript is shown,
+  // keeping the hero visually pristine on first load.
+  useEffect(() => {
+    if (revealed) return;
+    if (welcomeStartedRef.current && state === "idle" && current === null) {
+      // Tiny delay so the speaking → idle transition doesn't flash.
+      const t = window.setTimeout(() => setRevealed(true), 250);
+      return () => window.clearTimeout(t);
+    }
+  }, [state, current, revealed]);
+
+  if (!revealed) {
+    // Audio-only intro: render the live region for screen readers but no UI.
+    return (
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {ariaLiveText}
+      </div>
+    );
+  }
 
   if (hidden) {
   return (
