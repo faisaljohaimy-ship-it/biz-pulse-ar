@@ -498,26 +498,8 @@ export function AriaDock() {
                       ? <MicOff className="h-3.5 w-3.5" />
                       : <Mic className="h-3.5 w-3.5" />}
                 </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-cyan-200 hover:text-white hover:bg-white/10"
-                  onClick={toggleVoice}
-                  aria-label={voiceOn ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تفعيل الصوت" : "Enable voice")}
-                  title={voiceOn ? (ar ? "كتم" : "Mute") : (ar ? "تشغيل الصوت" : "Voice on")}
-                >
-                  {voiceOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-amber-200 hover:text-white hover:bg-white/10"
-                  onClick={playWelcome}
-                  aria-label={ar ? "إعادة الترحيب" : "Replay welcome"}
-                  title={ar ? "تشغيل الترحيب" : "Play welcome"}
-                >
-                  <Megaphone className="h-3.5 w-3.5" />
-                </Button>
+                {/* Audio controls intentionally removed for executive minimalism.
+                    Voice playback is auto-managed by the listener pipeline. */}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -570,56 +552,11 @@ export function AriaDock() {
                     : (ar ? "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب." : "Tap the mic to ask me or any agent. Silent until asked.")}
             </div>
 
-            <div className="mt-2 flex items-center gap-1 text-white/70">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 hover:bg-white/10"
-                onClick={togglePause}
-                aria-label={paused ? (ar ? "استئناف" : "Resume") : (ar ? "إيقاف مؤقت" : "Pause")}
-                title={paused ? (ar ? "استئناف" : "Resume") : (ar ? "إيقاف مؤقت" : "Pause")}
-              >
-                {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 hover:bg-white/10 disabled:opacity-40"
-                onClick={replay}
-                disabled={!lastLineRef.current}
-                aria-label={ar ? "إعادة التشغيل" : "Replay"}
-                title={ar ? "إعادة التشغيل" : "Replay"}
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 hover:bg-white/10 disabled:opacity-40"
-                onClick={skip}
-                disabled={!current}
-                aria-label={ar ? "تخطي المتحدث" : "Skip speaker"}
-                title={ar ? "تخطي" : "Skip"}
-              >
-                <SkipForward className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 hover:bg-white/10 disabled:opacity-40"
-                onClick={stopAll}
-                disabled={!current && queueRef.current.length === 0}
-                aria-label={ar ? "إيقاف" : "Stop"}
-                title={ar ? "إيقاف" : "Stop"}
-              >
-                <Square className="h-3.5 w-3.5" />
-              </Button>
-              {current && (
-                <span className="ms-auto truncate text-[10px] text-white/55">
-                  {ar ? current.speaker.name_ar : current.speaker.name_en}
-                </span>
-              )}
-            </div>
+            {current && (
+              <div className="mt-2 truncate text-[10px] text-white/55">
+                {ar ? current.speaker.name_ar : current.speaker.name_en}
+              </div>
+            )}
           </div>
         )}
 
