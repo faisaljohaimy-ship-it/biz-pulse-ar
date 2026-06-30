@@ -329,6 +329,7 @@ export function AriaDock() {
     handleRef.current?.stop();
     handleRef.current = null;
     setVoiceOn(true);
+    setAriaLiveText(ar ? "جارٍ تشغيل الترحيب" : "Playing welcome");
     const hour = new Date().getHours();
     const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
     const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -338,7 +339,7 @@ export function AriaDock() {
       text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
       speaker: ARIA,
     });
-  }, []);
+  }, [ar]);
 
   const skip = () => {
     handleRef.current?.stop();
