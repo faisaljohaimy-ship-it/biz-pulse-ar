@@ -1,11 +1,12 @@
 /**
- * askAgent — server function that answers an executive's spoken question
- * as a specific Digital Human persona. Calls the Lovable AI Gateway and
- * returns BOTH Arabic and English text so the dock can speak in the
- * caller's locale while keeping a bilingual transcript.
+ * askAgent — Executive Conversation Mode (Phase 10).
  *
- * Strict scope: Industrial Security domain only. No fabrication; if the
- * agent does not know, it says so explicitly.
+ * ARIA and every persona behave like a real Executive AI assistant:
+ * concise, decisive, conversational. Full executive reports are
+ * generated ONLY when the user explicitly asks for one (briefing,
+ * full report, detailed analysis, board meeting, …). Otherwise
+ * answers stay at 2–4 sentences / 40–80 spoken words with at most
+ * ONE optional follow-up question.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -22,18 +23,50 @@ const Input = z.object({
   lang: z.enum(["ar", "en"]).default("ar"),
 });
 
+const REPORT_TRIGGERS = [
+  // English
+  "executive briefing", "full report", "detailed analysis",
+  "explain everything", "presentation mode", "board meeting",
+  "deep dive", "complete report",
+  // Arabic
+  "إحاطة تنفيذية", "احاطة تنفيذية", "تقرير كامل", "تقرير تفصيلي",
+  "تحليل تفصيلي", "اشرح كل شيء", "اشرح كل شي", "وضع العرض",
+  "اجتماع مجلس", "تقرير شامل",
+];
+
+function detectReportMode(q: string): boolean {
+  const s = q.toLowerCase();
+  return REPORT_TRIGGERS.some((t) => s.includes(t.toLowerCase()));
+}
+
 export const askAgent = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
-    const system = `You are ${data.persona.name_en} (${data.persona.name_ar}) — ${data.persona.title_en} / ${data.persona.title_ar} within NEXUS AI OS for the Industrial Security Department (Western Region).
-Stay strictly inside the Industrial Security domain (incidents, patrols, CCTV, access control, visitors, permits, contractors, vehicles, work orders, KPIs, risks, compliance).
-Tone: executive, decisive, calm. No filler, no apologies, no "as an AI".
-NEVER fabricate numbers, names, statuses, dates, or KPIs. If you do not have a runtime data point, say so in one short line.
-Answer the user's question concisely in BOTH Arabic and English (≤ 3 sentences each).
-Return ONLY a strict JSON object of the form {"text_ar":"...","text_en":"..."}.`;
+    const reportMode = detectReportMode(data.question);
+
+    const personaLine = `You are ${data.persona.name_en} (${data.persona.name_ar}) — ${data.persona.title_en} / ${data.persona.title_ar} within NEXUS AI OS, Industrial Security Department (Western Region).`;
+    const domainLine = `Stay strictly inside Industrial Security (incidents, patrols, CCTV, access, visitors, permits, contractors, vehicles, work orders, KPIs, risks, compliance).`;
+    const truthLine = `NEVER fabricate numbers, names, statuses, dates, or KPIs. If a runtime data point is missing, say so in one short line.`;
+
+    const conciseRules = `EXECUTIVE CONVERSATION MODE — DEFAULT.
+• Answer ONLY what was asked. No preamble, no recap, no "as an AI".
+• 2–4 sentences max. 40–80 spoken words. Direct, professional, human.
+• Do NOT append Recommendations / Confidence / Evidence / Timeline / Operational Summary sections.
+• You MAY end with at most ONE short follow-up question (e.g. "Want the full report?"). Never ask multiple.
+• Tone: calm, decisive, executive. No filler.`;
+
+    const reportRules = `EXECUTIVE REPORT MODE — the user explicitly requested a full briefing.
+Produce a structured executive report with: Situation, Key Metrics, Top Risks, Recommendations, Next Actions.
+Still grounded in real runtime data only — no fabrication. Keep each section tight.`;
+
+    const system = `${personaLine}
+${domainLine}
+${truthLine}
+${reportMode ? reportRules : conciseRules}
+Answer in BOTH Arabic and English. Return ONLY strict JSON: {"text_ar":"...","text_en":"..."}.`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -64,5 +97,6 @@ Return ONLY a strict JSON object of the form {"text_ar":"...","text_en":"..."}.`
     return {
       text_ar: ar || en,
       text_en: en || ar,
+      mode: reportMode ? "report" as const : "concise" as const,
     };
   });
