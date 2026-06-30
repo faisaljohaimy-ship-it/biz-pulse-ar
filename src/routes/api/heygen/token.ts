@@ -26,20 +26,16 @@ function envKey(personaId: string) {
   return personaId.toUpperCase().replace(/[^A-Z0-9]/g, "_");
 }
 
-/** Read avatar/voice for a persona from env, with LIVEAVATAR_* fallbacks. */
+/** Read avatar/voice for a persona from env (HeyGen-only). */
 function resolvePersona(personaId: string): { avatarId: string; voiceId?: string } {
   const key = envKey(personaId);
   const avatarId =
     process.env[`HEYGEN_AVATAR_${key}`] ??
-    process.env[`LIVEAVATAR_AVATAR_${key}`] ??
     process.env.HEYGEN_DEFAULT_AVATAR_ID ??
-    process.env.LIVEAVATAR_DEFAULT_AVATAR_ID ??
     HEYGEN_DEFAULT_AVATAR_ID;
   const voiceId =
     process.env[`HEYGEN_VOICE_${key}`] ??
-    process.env[`LIVEAVATAR_VOICE_${key}`] ??
     process.env.HEYGEN_DEFAULT_VOICE_ID ??
-    process.env.LIVEAVATAR_DEFAULT_VOICE_ID ??
     HEYGEN_DEFAULT_VOICE_ID;
   return { avatarId, voiceId: voiceId || undefined };
 }
@@ -48,7 +44,7 @@ export const Route = createFileRoute("/api/heygen/token")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.HEYGEN_API_KEY ?? process.env.LIVEAVATAR_API_KEY;
+        const apiKey = process.env.HEYGEN_API_KEY;
         if (!apiKey) {
           return Response.json({ error: "heygen_not_configured" }, { status: 503 });
         }

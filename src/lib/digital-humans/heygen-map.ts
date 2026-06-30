@@ -9,8 +9,7 @@
  * officially recommended path for Interactive Avatar.
  *
  * IDs live in backend env (`HEYGEN_AVATAR_<HUMAN_ID>` / `HEYGEN_VOICE_<HUMAN_ID>`)
- * so the frontend never sees secrets. `LIVEAVATAR_*` names are accepted as
- * fallbacks for backward compat with previous deployments.
+ * so the frontend never sees secrets. HeyGen-only — no other providers.
  */
 import { DIGITAL_HUMANS } from "./registry";
 
