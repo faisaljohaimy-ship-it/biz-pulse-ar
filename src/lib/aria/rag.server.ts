@@ -12,6 +12,20 @@ export type RagCitation = {
   title: string;
   source?: string | null;
   similarity: number;
+  /** Citation tag the model is instructed to use, e.g. `[DOC:Policy 01]`. */
+  tag: string;
+  /** Verified raw excerpt from the underlying chunk (already truncated). */
+  excerpt: string;
+};
+
+export type RagCoverage = {
+  available: number;
+  cited: number;
+  citedTags: string[];
+  uncitedTags: string[];
+  coverageRatio: number;
+  /** grounded = ≥1 cited; partial = <50% cited; uncited = sources existed but none cited. */
+  status: "grounded" | "partial" | "uncited" | "no-sources";
 };
 
 export type RagContext = {
@@ -20,6 +34,31 @@ export type RagContext = {
   citations: RagCitation[];
   counts: { memories: number; knowledge: number; documents: number };
 };
+
+/** Scan an assistant message for [DOC:…] / [KB:…] markers and report coverage. */
+export function evaluateRagCoverage(answer: string, citations: RagCitation[]): RagCoverage {
+  const available = citations.filter((c) => c.kind !== "memory").length;
+  if (!available) {
+    return { available: 0, cited: 0, citedTags: [], uncitedTags: [], coverageRatio: 0, status: "no-sources" };
+  }
+  const text = (answer || "").toLowerCase();
+  const citedTags: string[] = [];
+  const uncitedTags: string[] = [];
+  for (const c of citations) {
+    if (c.kind === "memory") continue;
+    const prefix = c.kind === "document" ? "[doc:" : "[kb:";
+    const titleFrag = c.title.toLowerCase().slice(0, 24);
+    const hit = text.includes(prefix) && text.includes(titleFrag);
+    if (hit) citedTags.push(c.tag);
+    else uncitedTags.push(c.tag);
+  }
+  const cited = citedTags.length;
+  const coverageRatio = cited / available;
+  const status: RagCoverage["status"] =
+    cited === 0 ? "uncited" : coverageRatio < 0.5 ? "partial" : "grounded";
+  return { available, cited, citedTags, uncitedTags, coverageRatio, status };
+}
+
 
 const MIN_SIM_MEMORY = 0.45;
 const MIN_SIM_KNOWLEDGE = 0.4;
