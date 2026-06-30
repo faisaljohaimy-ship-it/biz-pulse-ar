@@ -17,6 +17,10 @@ export function NexusRevealHero({
   const handleLaunch = () => {
     if (launching) return;
     setLaunching(true);
+    // Mark this click as a fresh user gesture so the AriaDock on the next
+    // route can legally start TTS playback and request mic access without
+    // being blocked by the browser's autoplay policy.
+    try { sessionStorage.setItem("nexus.audio-gesture", "1"); } catch { /* noop */ }
     window.setTimeout(() => {
       onEnterOps?.();
     }, 900);
