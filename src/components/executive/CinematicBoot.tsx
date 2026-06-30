@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from "react";
 
 const STAGES = [
   { t: 0,      label_ar: "تهيئة النواة",              label_en: "Initializing core" },
-  { t: 5_000,  label_ar: "تجميع الجزيئات العصبية",     label_en: "Assembling neural particles" },
-  { t: 12_000, label_ar: "تفعيل ARIA · GPT-5",         label_en: "Materializing ARIA · GPT-5" },
-  { t: 22_000, label_ar: "ترحيب آريا التنفيذي",        label_en: "ARIA executive greeting" },
-  { t: 34_000, label_ar: "ربط مركز القيادة",            label_en: "Linking Command Center" },
-  { t: 46_000, label_ar: "بث المؤشرات التنفيذية",       label_en: "Streaming executive KPIs" },
-  { t: 56_000, label_ar: "جاهز للدخول",                 label_en: "Ready for entry" },
+  { t: 2_500,  label_ar: "تجميع الجزيئات العصبية",     label_en: "Assembling neural particles" },
+  { t: 6_000, label_ar: "تفعيل ARIA · GPT-5",         label_en: "Materializing ARIA · GPT-5" },
+  { t: 10_000, label_ar: "ترحيب آريا التنفيذي",        label_en: "ARIA executive greeting" },
+  { t: 14_500, label_ar: "ربط مركز القيادة",            label_en: "Linking Command Center" },
+  { t: 19_000, label_ar: "بث المؤشرات التنفيذية",       label_en: "Streaming executive KPIs" },
+  { t: 23_000, label_ar: "جاهز للدخول",                 label_en: "Ready for entry" },
 ] as const;
 
-const TOTAL_MS = 60_000;
+const TOTAL_MS = 25_000;
 const SESSION_KEY = "nexios.boot-seen";
 
 export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
@@ -65,7 +65,7 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
       aria-modal="true"
       aria-label="NEXIOS startup sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020A14] text-white"
-      style={{ animation: "nx-boot-fade-out 600ms ease 59400ms forwards" }}
+      style={{ animation: "nx-boot-fade-out 600ms ease 24400ms forwards" }}
     >
       {/* Ambient aurora */}
       <div className="pointer-events-none absolute inset-0 opacity-70"

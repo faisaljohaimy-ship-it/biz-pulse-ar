@@ -17,7 +17,7 @@ export function AriaWelcomeCurtain() {
   const [show, setShow] = useState(false);
   const [fade, setFade] = useState(false);
 
-  const [remaining, setRemaining] = useState(60);
+  const [remaining, setRemaining] = useState(25);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -25,20 +25,30 @@ export function AriaWelcomeCurtain() {
       if (sessionStorage.getItem(SESSION_KEY)) return;
     } catch { /* noop */ }
     setShow(true);
-    // 60s curtain. Begin fade-out at 59.2s, fully dismiss at 60s.
-    const fadeT = window.setTimeout(() => setFade(true), 59_200);
+    // Attempt voice greeting immediately; browser autoplay may defer until first gesture.
+    speakWelcome();
+    // 25s curtain. Begin fade-out at 24.4s, fully dismiss at 25s.
+    const fadeT = window.setTimeout(() => setFade(true), 24_400);
     const offT = window.setTimeout(() => {
       setShow(false);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-    }, 60_000);
+    }, 25_000);
     const tickT = window.setInterval(() => {
       setRemaining((r) => (r > 0 ? r - 1 : 0));
     }, 1000);
-    return () => { window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT); };
+    // First user gesture also triggers the greeting (covers autoplay-blocked browsers).
+    const onGesture = () => { speakWelcome(); window.removeEventListener("pointerdown", onGesture); };
+    window.addEventListener("pointerdown", onGesture, { once: true });
+    return () => {
+      window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT);
+      window.removeEventListener("pointerdown", onGesture);
+      try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    };
   }, []);
 
   const dismiss = () => {
     setFade(true);
+    try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
     window.setTimeout(() => {
       setShow(false);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
@@ -136,4 +146,46 @@ export function AriaWelcomeCurtain() {
       </div>
     </div>
   );
+}
+
+/**
+ * Bilingual welcome — voice-only, Web Speech API. Silent on autoplay block.
+ */
+let __ariaWelcomeSpoken = false;
+function speakWelcome() {
+  if (typeof window === "undefined") return;
+  if (__ariaWelcomeSpoken) return;
+  const synth = window.speechSynthesis;
+  if (!synth || typeof SpeechSynthesisUtterance === "undefined") return;
+  __ariaWelcomeSpoken = true;
+
+  const phrases: { text: string; lang: string }[] = [
+    { text: "أهلاً بك في منصة إنجاز الأعمال التنفيذية. أنا آريا، عقلك التنفيذي.", lang: "ar-SA" },
+    { text: "Welcome to NEXIOS. I am ARIA, your executive AI — powered by GPT-5.", lang: "en-US" },
+  ];
+
+  const run = () => {
+    try { synth.cancel(); } catch { /* noop */ }
+    const voices = synth.getVoices();
+    const pick = (lang: string) =>
+      voices.find((v) => v.lang?.toLowerCase().startsWith(lang.toLowerCase())) ?? null;
+    phrases.forEach((p, i) => {
+      const u = new SpeechSynthesisUtterance(p.text);
+      u.lang = p.lang;
+      u.rate = 0.95;
+      u.pitch = 1.0;
+      u.volume = 1.0;
+      const v = pick(p.lang) ?? pick(p.lang.split("-")[0]);
+      if (v) u.voice = v;
+      window.setTimeout(() => { try { synth.speak(u); } catch { /* noop */ } }, i * 180);
+    });
+  };
+
+  if (synth.getVoices().length === 0) {
+    const onVoices = () => { synth.removeEventListener("voiceschanged", onVoices); run(); };
+    synth.addEventListener("voiceschanged", onVoices);
+    window.setTimeout(run, 600);
+  } else {
+    run();
+  }
 }
