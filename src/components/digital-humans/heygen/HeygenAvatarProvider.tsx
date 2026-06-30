@@ -73,12 +73,12 @@ function HeygenRender(props: AvatarRenderProps) {
         sessionInfoRef.current = session;
         const avatar = new StreamingAvatar({ token: session.token });
         avatarRef.current = avatar;
-        avatar.on(StreamingEvents.STREAM_READY, (evt) => {
+        avatar.on(StreamingEvents.STREAM_READY, (evt: { detail?: MediaStream } | MediaStream) => {
           if (cancelled || !videoRef.current) return;
-          const stream = (evt as unknown as { detail?: MediaStream }).detail;
-          if (stream) {
-            videoRef.current.srcObject = stream;
-            void videoRef.current.play().catch(() => {/* user-gesture autoplay handled by UI */});
+          const stream = (evt as { detail?: MediaStream }).detail ?? (evt as MediaStream);
+          if (stream && typeof (stream as MediaStream).getTracks === "function") {
+            videoRef.current.srcObject = stream as MediaStream;
+            void videoRef.current.play().catch(() => {/* autoplay needs user gesture; UI handles */});
           }
           setReady(true);
         });
