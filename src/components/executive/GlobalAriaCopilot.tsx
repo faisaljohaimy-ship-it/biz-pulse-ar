@@ -32,6 +32,7 @@ import {
   Minus,
   X,
 } from "lucide-react";
+import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
 type AskResult = { text_ar: string; text_en: string };
 type Turn = {
@@ -361,13 +362,16 @@ export function GlobalAriaCopilot() {
           {/* Header */}
           <div className="flex items-center gap-3">
             <span
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/60 bg-gradient-to-br from-[#00D4FF]/35 via-[#0a2a44] to-[#061A2E]"
+              className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
               style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
             >
+              <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-[#3AE8FF]" />
+                <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#3AE8FF]" />
+                </span>
               ) : speaking ? (
-                <span className="flex items-end gap-[2px] h-4">
+                <span className="absolute bottom-1 left-1/2 flex h-4 -translate-x-1/2 items-end gap-[2px] rounded-full bg-[#061A2E]/65 px-1.5 py-0.5">
                   {[0, 0.1, 0.2, 0.15].map((d, i) => (
                     <span
                       key={i}
@@ -376,9 +380,7 @@ export function GlobalAriaCopilot() {
                     />
                   ))}
                 </span>
-              ) : (
-                <Sparkles className="h-4 w-4 text-[#3AE8FF] drop-shadow-[0_0_6px_rgba(58,232,255,0.9)]" />
-              )}
+              ) : null}
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
@@ -510,7 +512,8 @@ export function GlobalAriaCopilot() {
           className="pointer-events-auto group relative grid h-14 w-14 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/40 via-[#0a2a44] to-[#061A2E] text-[#3AE8FF] transition hover:scale-110"
           style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
         >
-          <Sparkles className="h-6 w-6 drop-shadow-[0_0_10px_rgba(58,232,255,0.95)]" />
+          <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full rounded-full object-cover object-top" draggable={false} />
+          <Sparkles className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-[#061A2E]/85 p-0.5 drop-shadow-[0_0_10px_rgba(58,232,255,0.95)]" />
           <span className="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#061A2E] text-[8px] font-bold text-[#3AE8FF]">
             5
           </span>

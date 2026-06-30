@@ -71,7 +71,7 @@ export function AriaDock() {
   // The opening greeting is audio-only: ARIA speaks the welcome line before
   // the dock UI (avatar, transcript, controls) becomes visible. We reveal
   // the dock when the welcome turn finishes (or after a safety timeout).
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(true);
   const welcomeStartedRef = useRef(false);
 
   // Advertise this dock to the global copilot so it can step aside while the
@@ -283,10 +283,8 @@ export function AriaDock() {
     };
     (window as unknown as { aria?: typeof api }).aria = api;
 
-    // First-gesture unlock — browsers block both TTS audio playback and
-    // getUserMedia() before a user interaction. We attach a one-shot
-    // pointer/keyboard listener so the *first* tap anywhere triggers the
-    // greeting AND opens the mic. From that moment ARIA listens continuously.
+    // First-gesture unlock — browsers block audio playback before a user
+    // interaction. Keep the dock visible immediately; first tap only unlocks voice.
     const hour = new Date().getHours();
     const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
     const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -305,8 +303,7 @@ export function AriaDock() {
         text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
         speaker: ARIA,
       });
-      // Safety net: even if TTS stalls, reveal the dock so controls stay reachable.
-      window.setTimeout(() => setRevealed(true), 9000);
+      setRevealed(true);
       // NOTE: we do NOT auto-open the microphone here. Many runtimes (Lovable
       // preview iframe, embedded contexts without `allow="microphone"`,
       // mobile Safari before a tap on a mic affordance) reject getUserMedia
@@ -318,10 +315,7 @@ export function AriaDock() {
     window.addEventListener("keydown", unlock, true);
     window.addEventListener("touchstart", unlock, true);
 
-    // Auto-greet on mount: try immediately so ARIA welcomes the user the
-    // moment they enter the system. If the browser blocks autoplay (no prior
-    // user gesture), the pointer/key/touch listeners above will fire `unlock`
-    // on the very first interaction as a safety net.
+    // Auto-greet on mount: try immediately; if blocked, first gesture retries.
     try { sessionStorage.removeItem("nexus.audio-gesture"); } catch { /* noop */ }
     const autoTimer: number | undefined = window.setTimeout(() => unlock(), 250);
 
