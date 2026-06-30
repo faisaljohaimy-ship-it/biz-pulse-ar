@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Loader2, MessageSquare, Sparkles, User, Volume2, VolumeX, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
 
 type AskResult = { text_ar: string; text_en: string };
@@ -249,13 +250,16 @@ export function MiniAriaHeroBadge() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <span
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/60 bg-gradient-to-br from-[#00D4FF]/35 via-[#0a2a44] to-[#061A2E]"
+          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
           style={{ animation: "mab-core 3.2s ease-in-out infinite" }}
         >
+          <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
           {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin text-[#3AE8FF]" />
+            <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
+              <Loader2 className="h-5 w-5 animate-spin text-[#3AE8FF]" />
+            </span>
           ) : speaking ? (
-            <span className="flex items-end gap-[2px] h-4">
+            <span className="absolute bottom-1 left-1/2 flex h-4 -translate-x-1/2 items-end gap-[2px] rounded-full bg-[#061A2E]/65 px-1.5 py-0.5">
               {[0, 0.1, 0.2, 0.15].map((d, i) => (
                 <span
                   key={i}
@@ -264,9 +268,7 @@ export function MiniAriaHeroBadge() {
                 />
               ))}
             </span>
-          ) : (
-            <Sparkles className="h-5 w-5 text-[#3AE8FF] drop-shadow-[0_0_6px_rgba(58,232,255,0.9)]" />
-          )}
+          ) : null}
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/75">
