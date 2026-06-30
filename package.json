@@ -17,6 +17,7 @@
     "@ai-sdk/openai-compatible": "^2.0.48",
     "@ai-sdk/react": "^3.0.193",
     "@elevenlabs/react": "^1.6.3",
+    "@heygen/streaming-avatar": "2.0.17",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@lovable.dev/email-js": "^0.0.4",

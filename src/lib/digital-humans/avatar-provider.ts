@@ -17,6 +17,13 @@
 import type { ComponentType } from "react";
 import type { DigitalHumanSpec, DigitalHumanState } from "./registry";
 
+export interface AvatarSpeakTurn {
+  /** Stable id; provider uses it to dedupe and to fire `onSpeechEnd`. */
+  id: string;
+  text: string;
+  lang: "ar" | "en";
+}
+
 export interface AvatarRenderProps {
   spec: DigitalHumanSpec;
   state: DigitalHumanState;
@@ -27,6 +34,14 @@ export interface AvatarRenderProps {
   ar?: boolean;
   showLabel?: boolean;
   className?: string;
+  /**
+   * Streaming-video providers (HeyGen / D-ID / Azure) own audio + lip-sync.
+   * When set, the dock hands over the spoken turn and waits for `onSpeechEnd`.
+   * Built-in SVG / R3F providers ignore these props.
+   */
+  speakTurn?: AvatarSpeakTurn | null;
+  onSpeechEnd?: (id: string) => void;
+  onSpeechError?: (id: string, message: string) => void;
 }
 
 export interface AvatarProvider {

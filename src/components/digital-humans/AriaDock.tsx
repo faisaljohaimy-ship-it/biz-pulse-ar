@@ -17,10 +17,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
-import { getAvatarProvider, type AvatarProvider } from "@/lib/digital-humans/avatar-provider";
-// Side-effect imports — register both providers so getAvatarProvider can resolve them.
+import { getAvatarProvider, type AvatarProvider, type AvatarSpeakTurn } from "@/lib/digital-humans/avatar-provider";
+// Side-effect imports — register all providers so getAvatarProvider can resolve them.
 import "@/components/digital-humans/DigitalHumanAvatar";
 import "@/components/digital-humans/r3f/R3FAvatarProvider";
+import "@/components/digital-humans/heygen/HeygenAvatarProvider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
@@ -49,6 +50,8 @@ export function AriaDock() {
   const [state, setState] = useState<DigitalHumanState>("idle");
   const [amp, setAmp] = useState(0);
   const [current, setCurrent] = useState<QueuedLine | null>(null);
+  const [speakTurn, setSpeakTurn] = useState<AvatarSpeakTurn | null>(null);
+  const [heygenAvailable, setHeygenAvailable] = useState<boolean | null>(null);
   const lastLineRef = useRef<QueuedLine | null>(null);
   const queueRef = useRef<QueuedLine[]>([]);
   const playingRef = useRef(false);
@@ -57,10 +60,24 @@ export function AriaDock() {
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
 
-  // Choose the 3D R3F provider when WebGL is available and reduced-motion is off;
-  // otherwise fall back to the SVG portrait. Resolved once per session.
+  // Probe HeyGen availability once. When configured + voice is on, HeyGen
+  // owns audio + lip-sync. Otherwise we keep the existing R3F/SVG + TTS path.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/heygen/status")
+      .then((r) => r.json() as Promise<{ configured?: boolean }>)
+      .then((j) => { if (!cancelled) setHeygenAvailable(!!j.configured); })
+      .catch(() => { if (!cancelled) setHeygenAvailable(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Provider selection:
+  //  • HeyGen when configured AND voice is enabled (streaming-video provider owns audio).
+  //  • R3F when WebGL is available and reduced-motion is off.
+  //  • SVG otherwise.
   const provider = useMemo<AvatarProvider>(() => {
     if (typeof window === "undefined") return getAvatarProvider("svg");
+    if (voiceOn && heygenAvailable) return getAvatarProvider("heygen");
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     let webgl = false;
     try {
@@ -68,7 +85,8 @@ export function AriaDock() {
       webgl = !!(c.getContext("webgl2") || c.getContext("webgl"));
     } catch { webgl = false; }
     return reduced || !webgl ? getAvatarProvider("svg") : getAvatarProvider("readyplayerme");
-  }, []);
+  }, [voiceOn, heygenAvailable]);
+  const usingHeygen = provider.id === "heygen";
   const { events } = useEventStream({ limit: 25 });
 
   const playNext = useCallback(() => {
@@ -110,6 +128,18 @@ export function AriaDock() {
       return;
     }
 
+    if (usingHeygen) {
+      // HeyGen owns audio + lip-sync end-to-end. Hand off the turn and
+      // wait for `onSpeechEnd` from the provider before draining the queue.
+      setState("speaking");
+      setSpeakTurn({ id: next.id, text, lang: detectLang(text) });
+      handleRef.current = {
+        promise: Promise.resolve(),
+        stop: () => setSpeakTurn(null),
+      };
+      return;
+    }
+
     setState("thinking");
     const handle = speakAs(next.speaker, {
       text,
@@ -121,7 +151,17 @@ export function AriaDock() {
     handle.promise
       .catch(() => { /* swallow — fall through to next */ })
       .finally(() => { playNext(); });
-  }, [ar, voiceOn, paused]);
+  }, [ar, voiceOn, paused, usingHeygen]);
+
+  // HeyGen drain — when the streaming-video provider finishes a turn, advance.
+  const handleHeygenEnd = useCallback((id: string) => {
+    setSpeakTurn((cur) => (cur?.id === id ? null : cur));
+    playNext();
+  }, [playNext]);
+  const handleHeygenErr = useCallback((id: string, _msg: string) => {
+    setSpeakTurn((cur) => (cur?.id === id ? null : cur));
+    playNext();
+  }, [playNext]);
 
   const enqueue = useCallback((line: QueuedLine) => {
     queueRef.current.push(line);
@@ -288,6 +328,9 @@ export function AriaDock() {
           mouthAmplitude={amp}
           ambient
           ar={ar}
+          speakTurn={usingHeygen ? speakTurn : null}
+          onSpeechEnd={usingHeygen ? handleHeygenEnd : undefined}
+          onSpeechError={usingHeygen ? handleHeygenErr : undefined}
         />
         {!minimized && (
           <div className="min-w-0 flex-1">
