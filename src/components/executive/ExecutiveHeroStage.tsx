@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { KpiTile, type KpiTone } from "./KpiTile";
 import { getExecKpis } from "@/lib/sec.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * ExecutiveHeroStage — Wave 1 cinematic wrapper.
