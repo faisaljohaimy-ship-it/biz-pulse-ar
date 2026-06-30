@@ -35,7 +35,10 @@ function IntroLanding() {
         <MissionControlStrip />
       </div>
 
+      <AgentRing />
+
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+
         {/* Pillars */}
         <section className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
