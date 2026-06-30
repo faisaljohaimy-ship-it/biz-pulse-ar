@@ -9,6 +9,13 @@
  * cached in-memory for 5 minutes per worker so we don't burn quota.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
+
 
 type Probe = { configured: boolean; reason?: string; ts: number };
 let cached: Probe | null = null;
@@ -37,7 +44,13 @@ async function probe(): Promise<Probe> {
 export const Route = createFileRoute("/api/heygen/status")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const auth = await verifySupabaseUser(request);
+        if (auth instanceof Response) return auth;
+        const rl = await enforceRateLimit(`heygen-status:${auth.userId}`, 10, 60);
+        if (rl.unavailable) return rateLimitUnavailableResponse();
+        if (!rl.allowed) return rateLimitResponse();
+
         if (!cached || Date.now() - cached.ts > TTL_MS) {
           cached = await probe();
         }
@@ -50,3 +63,4 @@ export const Route = createFileRoute("/api/heygen/status")({
     },
   },
 });
+
