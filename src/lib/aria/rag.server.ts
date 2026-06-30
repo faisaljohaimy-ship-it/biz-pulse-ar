@@ -111,6 +111,7 @@ export async function gatherRagContext(
       .in("id", memories.map((m) => m.id));
   }
 
+  const cleanExcerpt = (s: string, n = 420) => (s || "").replace(/\s+/g, " ").trim().slice(0, n);
   const citations: RagCitation[] = [
     ...documents.map<RagCitation>((d) => ({
       kind: "document",
@@ -118,6 +119,8 @@ export async function gatherRagContext(
       title: d.title,
       source: "aria_documents",
       similarity: Number(d.similarity),
+      tag: `[DOC:${d.title}]`,
+      excerpt: cleanExcerpt(d.content, 600),
     })),
     ...knowledge.map<RagCitation>((k) => ({
       kind: "knowledge",
@@ -125,6 +128,8 @@ export async function gatherRagContext(
       title: k.title,
       source: k.source,
       similarity: Number(k.similarity),
+      tag: `[KB:${k.title}]`,
+      excerpt: cleanExcerpt(k.content, 500),
     })),
     ...memories.map<RagCitation>((m) => ({
       kind: "memory",
@@ -132,8 +137,11 @@ export async function gatherRagContext(
       title: m.key,
       source: "aria_memory",
       similarity: Number(m.similarity),
+      tag: `[MEM:${m.key}]`,
+      excerpt: cleanExcerpt(m.content, 400),
     })),
   ];
+
 
   const lines: string[] = [];
   if (documents.length) {
