@@ -353,9 +353,21 @@ export function AriaDock() {
             </div>
 
             <div className="mt-2 text-[13px] leading-relaxed text-white/85 min-h-[2.6em]">
-              {current
-                ? (ar ? current.text_ar : current.text_en)
-                : (ar ? "في وضع الصمت. لن أتحدث إلا عند الطلب أو عند حدث حرج." : "Silent by default. I speak only on request or on a critical incident.")}
+              {listener.listening || listener.thinking
+                ? (
+                  <span className="text-cyan-200/90">
+                    {listener.thinking
+                      ? (ar ? "أحلّل سؤالك…" : "Analyzing your question…")
+                      : listener.partial
+                        ? listener.partial
+                        : (ar ? "أستمع إليك…" : "Listening…")}
+                  </span>
+                )
+                : current
+                  ? (ar ? current.text_ar : current.text_en)
+                  : listener.error
+                    ? <span className="text-rose-300/90">{listener.error}</span>
+                    : (ar ? "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب." : "Tap the mic to ask me or any agent. Silent until asked.")}
             </div>
 
             <div className="mt-2 flex items-center gap-1 text-white/70">
