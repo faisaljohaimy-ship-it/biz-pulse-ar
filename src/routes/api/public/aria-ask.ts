@@ -73,7 +73,8 @@ export const Route = createFileRoute("/api/public/aria-ask")({
           const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${key}`,
+              "Lovable-API-Key": key,
+              "X-Lovable-AIG-SDK": "nexios-public-aria",
               "Content-Type": "application/json",
             },
             body: JSON.stringify({

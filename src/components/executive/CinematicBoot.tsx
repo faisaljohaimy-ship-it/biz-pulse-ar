@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 
 
@@ -19,15 +19,32 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
 
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try { return sessionStorage.getItem(SESSION_KEY) !== "1"; } catch { return true; }
-  });
+  const [visible, setVisible] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const spokeRef = useRef(false);
+  const completedRef = useRef(false);
+
+  const finish = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
+    setVisible(false);
+    onComplete();
+  }, [onComplete]);
 
   useEffect(() => {
-    if (!visible) { onComplete(); return; }
+    if (typeof window === "undefined") return;
+    let shouldShow = true;
+    try { shouldShow = sessionStorage.getItem(SESSION_KEY) !== "1"; } catch { shouldShow = true; }
+    if (!shouldShow) {
+      finish();
+      return;
+    }
+    setVisible(true);
+  }, [finish]);
+
+  useEffect(() => {
+    if (!visible) return;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -49,14 +66,7 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
       window.removeEventListener("keydown", onKey);
       try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
-
-  function finish() {
-    try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-    setVisible(false);
-    onComplete();
-  }
+  }, [visible, finish]);
 
   if (!visible) return null;
 

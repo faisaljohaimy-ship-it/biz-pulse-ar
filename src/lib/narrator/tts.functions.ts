@@ -23,7 +23,8 @@ export const ariaSpeak = createServerFn({ method: "POST" })
     const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${key}`,
+        "Lovable-API-Key": key,
+        "X-Lovable-AIG-SDK": "nexios-aria-tts",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
