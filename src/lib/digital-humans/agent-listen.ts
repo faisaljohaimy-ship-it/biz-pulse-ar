@@ -32,7 +32,14 @@ export function useAgentListener() {
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     commitStrategy: CommitStrategy.VAD,
-    onPartialTranscript: (d: { text: string }) => setPartial(d.text),
+    onPartialTranscript: (d: { text: string }) => {
+      // Barge-in: the moment the user speaks, silence ARIA / the agent.
+      if (d.text && d.text.trim().length > 0) {
+        const w = window as unknown as { aria?: { stop?: () => void } };
+        w.aria?.stop?.();
+      }
+      setPartial(d.text);
+    },
     onCommittedTranscript: async (d: { text: string }) => {
       const q = d.text.trim();
       setPartial("");
