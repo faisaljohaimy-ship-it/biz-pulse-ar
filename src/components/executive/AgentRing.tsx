@@ -136,6 +136,7 @@ export function AgentRing() {
     refetchInterval: 30_000,
     staleTime: 15_000,
     retry: false,
+    enabled: hasSession,
   });
 
   const runsQ = useQuery({
