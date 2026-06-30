@@ -173,6 +173,7 @@ function RootComponent() {
       <AuthProvider>
         <ThemeProvider>
           <I18nProvider>
+            <BetaMarqueeBar />
             <Outlet />
             <Toaster />
           </I18nProvider>
