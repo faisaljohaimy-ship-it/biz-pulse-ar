@@ -49,6 +49,16 @@ export const Route = createFileRoute("/api/heygen/token")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Auth: only signed-in executives may mint HeyGen avatar tokens.
+        const auth = await verifySupabaseUser(request);
+        if (auth instanceof Response) return auth;
+        const { allowed } = await enforceRateLimit(
+          `heygen-token:${auth.userId}`,
+          20,
+          60,
+        );
+        if (!allowed) return rateLimitResponse();
+
         const apiKey = process.env.HEYGEN_API_KEY;
         if (!apiKey) {
           return Response.json({ error: "heygen_not_configured" }, { status: 503 });
