@@ -8,7 +8,7 @@
         "@ai-sdk/openai-compatible": "^2.0.48",
         "@ai-sdk/react": "^3.0.193",
         "@elevenlabs/react": "^1.6.3",
-        "@heygen/streaming-avatar": "2.1.1",
+        "@heygen/streaming-avatar": "2.0.17",
         "@hookform/resolvers": "^5.2.2",
         "@lovable.dev/cloud-auth-js": "^1.1.2",
         "@lovable.dev/email-js": "^0.0.4",
@@ -275,7 +275,7 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
-    "@heygen/streaming-avatar": ["@heygen/streaming-avatar@2.1.1", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@heygen/streaming-avatar/-/streaming-avatar-2.1.1.tgz", { "dependencies": { "livekit-client": "2.11.3", "protobufjs": "7.5.0", "webrtc-issue-detector": "1.16.3" } }, "sha512-QsEtIQzW3jBCH+t7N3RV5LqbJ9ExRuFHRsIumAiLhOX+seAswDail0Xr/34HtxOfrmvSci9moeG6QS6+Oj3C/w=="],
+    "@heygen/streaming-avatar": ["@heygen/streaming-avatar@2.0.17", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@heygen/streaming-avatar/-/streaming-avatar-2.0.17.tgz", { "dependencies": { "livekit-client": "2.11.3", "protobufjs": "7.5.0", "webrtc-issue-detector": "1.16.3" } }, "sha512-jlu5k3+M+ciqFbib2UfXt4s5+TNF8ipdr49pwzBlPSMhFIFrI9R6nQrCzh4VZ5+hG50zysUUGoDE+tgh4WXCaQ=="],
 
     "@hookform/resolvers": ["@hookform/resolvers@5.2.2", "", { "dependencies": { "@standard-schema/utils": "^0.3.0" }, "peerDependencies": { "react-hook-form": "^7.55.0" } }, "sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA=="],
 
