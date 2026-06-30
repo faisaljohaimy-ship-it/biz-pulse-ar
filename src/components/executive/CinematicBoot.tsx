@@ -141,3 +141,51 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
     </div>
   );
 }
+
+/**
+ * ARIA executive greeting — bilingual, voice-only.
+ *
+ * Uses the browser Web Speech API so the public landing has zero
+ * server dependencies. Picks an Arabic voice when available, falls
+ * back gracefully when not. Silent (no throw) if speech is blocked
+ * by autoplay policy.
+ */
+function speakAriaGreeting() {
+  if (typeof window === "undefined") return;
+  const synth = window.speechSynthesis;
+  if (!synth || typeof SpeechSynthesisUtterance === "undefined") return;
+
+  const phrases: { text: string; lang: string }[] = [
+    { text: "أهلاً بك في منصة إنجاز الأعمال التنفيذية. أنا آريا، عقلك التنفيذي.", lang: "ar-SA" },
+    { text: "Welcome to NEXIOS. I am ARIA, your executive AI — powered by GPT-5.", lang: "en-US" },
+    { text: "بماذا يمكنني مساعدتك اليوم؟", lang: "ar-SA" },
+  ];
+
+  const run = () => {
+    try { synth.cancel(); } catch { /* noop */ }
+    const voices = synth.getVoices();
+    const pick = (lang: string) =>
+      voices.find((v) => v.lang?.toLowerCase().startsWith(lang.toLowerCase())) ?? null;
+
+    phrases.forEach((p, i) => {
+      const u = new SpeechSynthesisUtterance(p.text);
+      u.lang = p.lang;
+      u.rate = 0.95;
+      u.pitch = 1.0;
+      u.volume = 1.0;
+      const v = pick(p.lang) ?? pick(p.lang.split("-")[0]);
+      if (v) u.voice = v;
+      // Slight pause between phrases
+      window.setTimeout(() => { try { synth.speak(u); } catch { /* noop */ } }, i * 150);
+    });
+  };
+
+  if (synth.getVoices().length === 0) {
+    const onVoices = () => { synth.removeEventListener("voiceschanged", onVoices); run(); };
+    synth.addEventListener("voiceschanged", onVoices);
+    // Safety: if voiceschanged never fires, run anyway after 600ms
+    window.setTimeout(run, 600);
+  } else {
+    run();
+  }
+}
