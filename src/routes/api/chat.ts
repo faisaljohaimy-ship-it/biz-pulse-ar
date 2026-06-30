@@ -19,6 +19,8 @@ import {
   enforceRateLimit,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { evaluateRagCoverage } from "@/lib/aria/rag.server";
+
 
 const CORS_HEADERS_OPTIONS = {
   "Access-Control-Allow-Origin": "*",
