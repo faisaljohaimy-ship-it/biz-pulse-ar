@@ -45,40 +45,14 @@ import {
 } from "@/components/landing/scenes";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Nexus AI OS — The Operating System for Intelligent Enterprises" },
-      {
-        name: "description",
-        content:
-          "A cinematic enterprise experience: ARIA executive intelligence, a living digital twin city, and a Fortune-grade command room. Built for boards, investors, and governments.",
-      },
-      { property: "og:title", content: "Nexus AI OS — The Operating System for Intelligent Enterprises" },
-      { property: "og:description", content: "ARIA · Digital Twin · Boardroom · The cinematic enterprise OS." },
-      { property: "og:url", content: DOMAIN_URL },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
-      { property: "og:type", content: "website" },
-    ],
-    links: [
-      { rel: "canonical", href: DOMAIN_URL },
-      { rel: "preload", as: "image", href: cinematicCity, fetchPriority: "high" as const },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Nexus AI OS",
-          url: DOMAIN_URL,
-          logo: `${DOMAIN_URL}/nexus-icon.png`,
-          description: "The operating system for intelligent enterprises.",
-        }),
-      },
-    ],
-  }),
+  // Open access mode — skip the public landing and drop the executive straight
+  // into the command center. No login, no marketing intercept.
+  beforeLoad: () => {
+    throw redirect({ to: "/command-center" });
+  },
   component: CinematicHome,
 });
+
 
 /* ─────────────────────────────────────────────────────────────
    ROOT
