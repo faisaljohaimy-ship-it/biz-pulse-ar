@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS sec_contractors_select_viewer ON public.sec_contractors;
