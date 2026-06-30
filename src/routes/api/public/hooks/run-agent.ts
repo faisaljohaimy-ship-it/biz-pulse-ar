@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
         let authenticatedActorId: string | null = null;
         if (denied) {
           const auth = await verifySupabaseUser(request);
-          if (auth instanceof Response) return denied.status === 503 ? auth : denied;
+          if (auth instanceof Response) return auth;
           authenticatedActorId = auth.userId;
         }
 
