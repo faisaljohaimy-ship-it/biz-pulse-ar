@@ -45,7 +45,11 @@ export function detectLang(text: string): VoiceLang {
 
 let sharedCtx: AudioContext | null = null;
 function getAudioContext(): AudioContext {
-  if (sharedCtx && sharedCtx.state !== "closed") return sharedCtx;
+  try {
+    if (sharedCtx && sharedCtx.state !== "closed") return sharedCtx;
+  } catch {
+    sharedCtx = null;
+  }
   const Ctor: typeof AudioContext =
     (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
       .AudioContext ??
@@ -93,7 +97,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       if (ctx.state === "suspended") await ctx.resume().catch(() => {});
       const bytes = base64ToBytes(res.audio_base64);
       // decodeAudioData requires a plain ArrayBuffer, not a SharedArrayBuffer view.
-      const buf = bytes.slice().buffer;
+      const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
       const audio = await ctx.decodeAudioData(buf);
       if (stopped) return;
 
@@ -110,6 +114,10 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
       const sampleAmp = () => {
         if (stopped) return;
+        if (document.visibilityState === "hidden") {
+          opts.onAmplitude?.(0);
+          return;
+        }
         analyser.getByteTimeDomainData(data);
         // RMS around 128 baseline → 0..1 amplitude
         let sum = 0;

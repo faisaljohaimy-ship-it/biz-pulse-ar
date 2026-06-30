@@ -14,6 +14,7 @@ import { useCallback, useRef, useState } from "react";
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { askAgent } from "@/lib/narrator/ask-agent.functions";
 import { ARIA, type DigitalHumanSpec } from "./registry";
+import { authenticatedFetch } from "@/lib/auth-fetch";
 
 type WindowAria = {
   speak?: (t: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => void;
@@ -34,7 +35,7 @@ export function useAgentListener() {
     commitStrategy: CommitStrategy.VAD,
     onPartialTranscript: (d: { text: string }) => {
       // Barge-in: the moment the user speaks, silence ARIA / the agent.
-      if (d.text && d.text.trim().length > 0) {
+      if (d.text && d.text.trim().length >= 3) {
         const w = window as unknown as { aria?: { stop?: () => void } };
         w.aria?.stop?.();
       }
@@ -78,17 +79,18 @@ export function useAgentListener() {
   });
 
   const start = useCallback(async (speaker?: DigitalHumanSpec) => {
+    if (listening) return;
     setError(null);
     speakerRef.current = speaker ?? ARIA;
-    // Silence any in-flight narration the moment the mic opens.
-    const w = window as unknown as { aria?: { stop?: () => void } };
-    w.aria?.stop?.();
     try {
-      const r = await fetch("/api/voice-token", { method: "POST" });
+      const r = await authenticatedFetch("/api/voice-token", { method: "POST" });
       if (!r.ok) throw new Error(`token ${r.status}`);
       const j = (await r.json()) as { token?: string; kind?: string; error?: string };
       if (!j.token) throw new Error(j.error ?? "no token");
-      if (j.kind !== "scribe") throw new Error("expected scribe token");
+      if (j.kind !== "scribe") throw new Error("scribe voice mode unavailable");
+      // Silence any in-flight narration only after token is confirmed.
+      const w = window as unknown as { aria?: { stop?: () => void } };
+      w.aria?.stop?.();
       await scribe.connect({
         token: j.token,
         microphone: { echoCancellation: true, noiseSuppression: true },
@@ -98,7 +100,7 @@ export function useAgentListener() {
       setError(e instanceof Error ? e.message : "mic failed");
       setListening(false);
     }
-  }, [scribe]);
+  }, [listening, scribe]);
 
   const stop = useCallback(() => {
     try { scribe.disconnect(); } catch { /* noop */ }

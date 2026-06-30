@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "sonner";
+import { authenticatedFetch } from "@/lib/auth-fetch";
 
 const VOICES = [
   { id: "pNInz6obpgDQGcFmaJgB", label: "Adam — Deep male, فصيح" },
@@ -49,7 +50,7 @@ function TtsPage() {
     if (!text.trim()) return;
     setLoading(true);
     try {
-      const r = await fetch("/api/tts", {
+      const r = await authenticatedFetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
