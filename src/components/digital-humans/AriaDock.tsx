@@ -68,6 +68,11 @@ export function AriaDock() {
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
+  // The opening greeting is audio-only: ARIA speaks the welcome line before
+  // the dock UI (avatar, transcript, controls) becomes visible. We reveal
+  // the dock when the welcome turn finishes (or after a safety timeout).
+  const [revealed, setRevealed] = useState(false);
+  const welcomeStartedRef = useRef(false);
 
   // Lazy-register the HeyGen provider only on the client and only when
   // WebRTC media APIs are available. Any import / boot failure is swallowed
