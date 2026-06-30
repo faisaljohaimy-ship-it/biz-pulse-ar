@@ -31,9 +31,30 @@ const PILLARS = [
 
 function IntroLanding() {
   const navigate = useNavigate();
+  const [bootDone, setBootDone] = useState(false);
+  const [cinemaOpen, setCinemaOpen] = useState(false);
   return (
     <div dir="rtl" className="relative min-h-screen overflow-hidden bg-black text-white">
+      <CinematicBoot onComplete={() => setBootDone(true)} />
+      <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
+      <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
+
       <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/runtime-hub" })} />
+
+      {/* Executive toolbar */}
+      <div className={`relative z-20 mx-auto mt-4 flex w-full max-w-6xl items-center justify-center gap-2 px-4 sm:gap-3 sm:px-6 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+        <button
+          type="button"
+          onClick={() => setCinemaOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_24px_rgba(58,232,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3AE8FF]/20 sm:text-sm"
+        >
+          <Play className="h-4 w-4" />
+          <span>التجربة التنفيذية · Executive Experience</span>
+        </button>
+        <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
+          <Command className="h-3 w-3" /> K
+        </kbd>
+      </div>
 
       <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
