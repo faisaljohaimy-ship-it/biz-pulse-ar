@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Compass } from "lucide-react";
+import { ArrowLeft, Compass, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 /**
  * NexusRevealHero — the cinematic "Reveal" scene from the landing page,
