@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Json } from "@/integrations/supabase/types";
 
 const GW = "https://connector-gateway.lovable.dev";
 
@@ -53,7 +54,7 @@ async function logEvent(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin.from("sec_activity_events").insert({
     org_id, entity_type, entity_id, entity_ref, event,
-    actor_id: userId, actor_name: "ARIA", payload,
+    actor_id: userId, actor_name: "ARIA", payload: payload as Json,
   });
 }
 
