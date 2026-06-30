@@ -262,6 +262,27 @@ export function AriaDock() {
       stopListening: () => listener.stop(),
     };
     (window as unknown as { aria?: typeof api }).aria = api;
+
+    // First-visit welcome — shows ARIA greeting the executive in the dock.
+    // Silent by default (browser autoplay policy + the existing "silent unless asked"
+    // rule). If voice is later enabled, replay button speaks it.
+    try {
+      if (typeof window !== "undefined" && !window.sessionStorage.getItem(WELCOME_KEY)) {
+        window.sessionStorage.setItem(WELCOME_KEY, "1");
+        const hour = new Date().getHours();
+        const greet_ar = hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
+        const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+        setTimeout(() => {
+          api.speak({
+            id: `welcome-${Date.now()}`,
+            text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. كيف يمكنني مساعدتك اليوم؟`,
+            text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. How can I help you today?`,
+            speaker: ARIA,
+          });
+        }, 600);
+      }
+    } catch { /* sessionStorage unavailable — skip welcome */ }
+
     return () => { delete (window as unknown as { aria?: typeof api }).aria; };
   }, [enqueue, listener]);
 
@@ -319,17 +340,17 @@ export function AriaDock() {
   useEffect(() => () => handleRef.current?.stop(), []);
 
   if (hidden) {
-    return (
-      <button
+  return (
+    <button
         type="button"
         onClick={() => setHidden(false)}
-        className="fixed bottom-4 end-4 z-[60] h-12 w-12 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 backdrop-blur-xl shadow-[0_0_24px_rgba(0,212,255,0.35)] flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-4 end-4 z-[60] h-14 w-14 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 backdrop-blur-xl shadow-[0_0_24px_rgba(0,212,255,0.45)] overflow-hidden hover:scale-105 transition-transform"
         aria-label={ar ? "إظهار آريا" : "Show ARIA"}
       >
-        <Sparkles className="h-5 w-5 text-cyan-300" />
+        <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
       </button>
-    );
-  }
+  );
+}
 
   const Render = provider.Render;
 
