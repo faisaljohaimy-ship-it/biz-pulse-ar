@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { DOMAIN_URL } from "@/lib/domain";
+import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME } from "@/lib/domain";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
@@ -67,22 +67,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NEEXIOS |  AI OS" },
+      { title: SITE_NAME },
       {
         name: "description",
         content:
           "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
       },
-      { property: "og:title", content: "NEEXIOS |  AI OS" },
+      { property: "og:title", content: SITE_NAME },
       { property: "og:description", content: "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:site_name", content: "NEEXIOS" },
+      { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "NEEXIOS |  AI OS" },
+      { name: "twitter:title", content: SITE_NAME },
       { name: "twitter:description", content: "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -97,12 +97,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        children: `(function(){try{var l=localStorage.getItem('locale')==='en'?'en':'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';}catch(e){}})();`,
+      },
+      {
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "NEEXIOS Technologies",
-          legalName: "NEEXIOS Technologies",
+          name: COMPANY_NAME,
+          legalName: COMPANY_NAME,
           url: DOMAIN_URL,
           logo: `${DOMAIN_URL}/nexus-icon.png`,
           description:
@@ -125,11 +128,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          name: "NEXUS AI OS",
+          name: PRODUCT_NAME,
           applicationCategory: "BusinessApplication",
           operatingSystem: "Web",
           url: DOMAIN_URL,
-          publisher: { "@type": "Organization", name: "NEEXIOS Technologies" },
+          publisher: { "@type": "Organization", name: COMPANY_NAME },
           offers: { "@type": "Offer", priceCurrency: "USD" },
         }),
       },

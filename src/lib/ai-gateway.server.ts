@@ -1,5 +1,14 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
+function resolvePublicSiteUrl() {
+  return (
+    process.env.PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    process.env.VITE_PUBLIC_URL ||
+    "https://neexios.com"
+  );
+}
+
 // Kept for backwards compatibility (not used after OpenRouter migration).
 export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
   createOpenAICompatible({
@@ -24,7 +33,7 @@ export const DEFAULT_LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 export const createOpenRouterProvider = (
   apiKey: string,
-  siteUrl = "https://biz-pulse-ar.lovable.app",
+  siteUrl = resolvePublicSiteUrl(),
 ) =>
   createOpenAICompatible({
     name: "openrouter",
