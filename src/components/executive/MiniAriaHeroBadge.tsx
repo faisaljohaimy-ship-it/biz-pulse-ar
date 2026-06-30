@@ -9,9 +9,16 @@
  * ARIA replies in her own voice — fully professional, no auth needed.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Loader2, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUp, Loader2, MessageSquare, Sparkles, User, Volume2, VolumeX, X } from "lucide-react";
 
 type AskResult = { text_ar: string; text_en: string };
+type Turn = {
+  id: string;
+  question: string;
+  qLang: "ar" | "en";
+  answer?: AskResult;
+  error?: string;
+};
 
 const PROMPTS_AR = [
   "ما حالة العمليات الآن؟",
@@ -49,6 +56,9 @@ export function MiniAriaHeroBadge() {
   const [answer, setAnswer] = useState<AskResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lang, setLang] = useState<"ar" | "en">("ar");
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const currentTurnIdRef = useRef<string | null>(null);
+  const transcriptRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -143,6 +153,11 @@ export function MiniAriaHeroBadge() {
     setAnswer(null);
     const detected: "ar" | "en" = isArabic(qt) ? "ar" : "en";
     setLang(detected);
+    const turnId = (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? crypto.randomUUID()
+      : `t_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    currentTurnIdRef.current = turnId;
+    setTurns((prev) => [...prev, { id: turnId, question: qt, qLang: detected }]);
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -160,6 +175,7 @@ export function MiniAriaHeroBadge() {
         text_en: j.text_en ?? "",
       };
       setAnswer(result);
+      setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, answer: result } : t)));
       if (voiceOn) {
         const spoken = detected === "ar" ? result.text_ar : result.text_en;
         if (spoken) void speak(spoken);
@@ -167,19 +183,26 @@ export function MiniAriaHeroBadge() {
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       const msg = e instanceof Error ? e.message : "ask_failed";
-      setError(
-        msg.includes("429")
-          ? detected === "ar"
-            ? "الكثير من الطلبات — حاول بعد دقيقة."
-            : "Too many requests — try again shortly."
-          : detected === "ar"
-            ? "تعذّر الاتصال بآريا الآن — أعد المحاولة."
-            : "ARIA is unavailable right now — please retry.",
-      );
+      const friendly = msg.includes("429")
+        ? detected === "ar"
+          ? "الكثير من الطلبات — حاول بعد دقيقة."
+          : "Too many requests — try again shortly."
+        : detected === "ar"
+          ? "تعذّر الاتصال بآريا الآن — أعد المحاولة."
+          : "ARIA is unavailable right now — please retry.";
+      setError(friendly);
+      setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, error: friendly } : t)));
     } finally {
       setLoading(false);
     }
   }, [voiceOn, speak, stopSpeaking]);
+
+  // Auto-scroll transcript to the latest turn.
+  useEffect(() => {
+    const el = transcriptRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [turns, loading]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,81 +294,132 @@ export function MiniAriaHeroBadge() {
         </button>
       </div>
 
-      {/* Answer bubble */}
-      {(answer || error || loading) && (
+      {/* Transcript log: user questions + ARIA answers */}
+      {(turns.length > 0 || loading) && (
         <div
-          className="mt-3 rounded-xl border border-[#3AE8FF]/25 bg-[#04111F]/80 p-3 text-[13px] leading-relaxed text-white/95"
+          ref={transcriptRef}
           aria-live="polite"
+          aria-label={ar ? "سجل المحادثة مع آريا" : "Conversation log with ARIA"}
+          className="mt-3 max-h-[320px] space-y-2 overflow-y-auto pr-1"
         >
-          {loading && (
-            <div className="flex items-center gap-2 text-[#3AE8FF]/90">
-              <span className="inline-block h-2 w-2 rounded-full bg-[#3AE8FF]" style={{ animation: "mab-think 1.2s ease-in-out infinite" }} />
-              <span className="inline-block h-2 w-2 rounded-full bg-[#3AE8FF]" style={{ animation: "mab-think 1.2s ease-in-out infinite", animationDelay: "0.15s" }} />
-              <span className="inline-block h-2 w-2 rounded-full bg-[#3AE8FF]" style={{ animation: "mab-think 1.2s ease-in-out infinite", animationDelay: "0.3s" }} />
-              <span className="text-[12px] text-white/70">
-                {ar ? "آريا تفكّر…" : "ARIA is thinking…"}
-              </span>
-            </div>
-          )}
-          {!loading && error && <div className="text-rose-300">{error}</div>}
-          {!loading && answer && (
-            <div className="space-y-2">
-              <p className="whitespace-pre-wrap">
-                {ar ? answer.text_ar : answer.text_en}
-              </p>
-              {voiceError && (() => {
-                const msg = ar
-                  ? voiceError.kind === "rate"
-                    ? "تعذّر تشغيل الصوت — تجاوزنا حد طلبات النطق. النص متاح أعلاه، أعد المحاولة بعد قليل."
-                    : voiceError.kind === "blocked"
-                      ? "المتصفح حظر التشغيل التلقائي — اضغط زر التشغيل لسماع آريا."
-                      : voiceError.kind === "network"
-                        ? "تعذّر الاتصال بخدمة الصوت — النص متاح للقراءة، أعد المحاولة."
-                        : "تعذّر توليد الصوت الآن — النص متاح أعلاه، أعد المحاولة."
-                  : voiceError.kind === "rate"
-                    ? "Voice playback unavailable — TTS rate limit reached. The reply is shown above; please retry shortly."
-                    : voiceError.kind === "blocked"
-                      ? "Browser blocked autoplay — tap the play button to hear ARIA."
-                      : voiceError.kind === "network"
-                        ? "Couldn't reach the voice service — the reply is shown above. Please retry."
-                        : "Couldn't generate audio right now — the reply is shown above. Please retry.";
-                return (
-                  <div
-                    role="status"
-                    className="flex items-start justify-between gap-2 rounded-lg border border-amber-300/30 bg-amber-300/[0.06] px-2.5 py-2 text-[11.5px] text-amber-100/95"
-                  >
-                    <span className="flex-1">{msg}</span>
-                    <button
-                      type="button"
-                      onClick={replayVoice}
-                      className="shrink-0 rounded-md border border-amber-300/40 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-amber-100 transition hover:bg-amber-300/10"
-                    >
-                      {ar ? "إعادة" : "Retry"}
-                    </button>
+          {turns.map((t, idx) => {
+            const isLast = idx === turns.length - 1;
+            const a = t.answer;
+            const spokenText = a ? (ar ? a.text_ar : a.text_en) : "";
+            const hasAnswerText = Boolean(a && (ar ? a.text_ar : a.text_en));
+            return (
+              <div key={t.id} className="space-y-1.5">
+                {/* User question */}
+                <div className="flex items-start gap-2" dir={t.qLang === "ar" ? "rtl" : "ltr"}>
+                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/15 bg-white/5 text-white/70">
+                    <User className="h-3 w-3" />
+                  </span>
+                  <div className="rounded-xl rounded-tl-sm border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] leading-relaxed text-white/85">
+                    <div className="mb-0.5 text-[9.5px] uppercase tracking-[0.2em] text-white/45">
+                      {t.qLang === "ar" ? "أنت" : "You"}
+                    </div>
+                    <p className="whitespace-pre-wrap break-words">{t.question}</p>
                   </div>
-                );
-              })()}
-              <div className="flex items-center justify-between pt-1">
-                <button
-                  type="button"
-                  onClick={() => setLang(ar ? "en" : "ar")}
-                  className="text-[11px] uppercase tracking-wider text-[#3AE8FF]/80 hover:text-[#3AE8FF]"
-                >
-                  {ar ? "View in English" : "عرض بالعربية"}
-                </button>
-                <button
-                  type="button"
-                  onClick={speaking ? stopSpeaking : replayVoice}
-                  aria-label={speaking ? (ar ? "إيقاف الصوت" : "Stop voice") : (ar ? "تشغيل الصوت" : "Play voice")}
-                  className="grid h-7 w-7 place-items-center rounded-full border border-[#3AE8FF]/50 text-[#3AE8FF] hover:bg-[#3AE8FF]/15"
-                >
-                  {speaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-                </button>
+                </div>
+
+                {/* ARIA answer */}
+                <div className="flex items-start gap-2">
+                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-[#3AE8FF]">
+                    <MessageSquare className="h-3 w-3" />
+                  </span>
+                  <div className="flex-1 rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
+                    <div className="mb-0.5 flex items-center justify-between gap-2 text-[9.5px] uppercase tracking-[0.2em] text-[#3AE8FF]/75">
+                      <span>ARIA · GPT-5</span>
+                      {isLast && speaking && (
+                        <span className="text-[#3AE8FF]">{ar ? "يتحدث…" : "speaking…"}</span>
+                      )}
+                    </div>
+
+                    {!a && !t.error && isLast && loading && (
+                      <div className="flex items-center gap-2 text-[#3AE8FF]/90">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "mab-think 1.2s ease-in-out infinite" }} />
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "mab-think 1.2s ease-in-out infinite", animationDelay: "0.15s" }} />
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "mab-think 1.2s ease-in-out infinite", animationDelay: "0.3s" }} />
+                        <span className="text-[11.5px] text-white/70">
+                          {ar ? "آريا تفكّر…" : "ARIA is thinking…"}
+                        </span>
+                      </div>
+                    )}
+
+                    {t.error && <div className="text-rose-300">{t.error}</div>}
+
+                    {hasAnswerText && (
+                      <p className="whitespace-pre-wrap break-words" dir="auto">
+                        {spokenText}
+                      </p>
+                    )}
+
+                    {isLast && a && voiceError && (() => {
+                      const msg = ar
+                        ? voiceError.kind === "rate"
+                          ? "تعذّر تشغيل الصوت — تجاوزنا حد طلبات النطق. النص متاح أعلاه، أعد المحاولة بعد قليل."
+                          : voiceError.kind === "blocked"
+                            ? "المتصفح حظر التشغيل التلقائي — اضغط زر التشغيل لسماع آريا."
+                            : voiceError.kind === "network"
+                              ? "تعذّر الاتصال بخدمة الصوت — النص متاح للقراءة، أعد المحاولة."
+                              : "تعذّر توليد الصوت الآن — النص متاح أعلاه، أعد المحاولة."
+                        : voiceError.kind === "rate"
+                          ? "Voice playback unavailable — TTS rate limit reached. The reply is shown above; please retry shortly."
+                          : voiceError.kind === "blocked"
+                            ? "Browser blocked autoplay — tap the play button to hear ARIA."
+                            : voiceError.kind === "network"
+                              ? "Couldn't reach the voice service — the reply is shown above. Please retry."
+                              : "Couldn't generate audio right now — the reply is shown above. Please retry.";
+                      return (
+                        <div
+                          role="status"
+                          className="mt-2 flex items-start justify-between gap-2 rounded-lg border border-amber-300/30 bg-amber-300/[0.06] px-2.5 py-2 text-[11.5px] text-amber-100/95"
+                        >
+                          <span className="flex-1">{msg}</span>
+                          <button
+                            type="button"
+                            onClick={replayVoice}
+                            className="shrink-0 rounded-md border border-amber-300/40 px-2 py-0.5 text-[10.5px] uppercase tracking-wider text-amber-100 transition hover:bg-amber-300/10"
+                          >
+                            {ar ? "إعادة" : "Retry"}
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {hasAnswerText && (
+                      <div className="mt-1.5 flex items-center justify-between gap-2">
+                        {isLast ? (
+                          <button
+                            type="button"
+                            onClick={() => setLang(ar ? "en" : "ar")}
+                            className="text-[10.5px] uppercase tracking-wider text-[#3AE8FF]/80 hover:text-[#3AE8FF]"
+                          >
+                            {ar ? "View in English" : "عرض بالعربية"}
+                          </button>
+                        ) : <span />}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isLast && speaking) { stopSpeaking(); return; }
+                            if (spokenText) void speak(spokenText);
+                          }}
+                          aria-label={isLast && speaking ? (ar ? "إيقاف الصوت" : "Stop voice") : (ar ? "تشغيل الصوت" : "Play voice")}
+                          title={isLast && speaking ? (ar ? "إيقاف" : "Stop") : (ar ? "استمع" : "Listen")}
+                          className="grid h-7 w-7 place-items-center rounded-full border border-[#3AE8FF]/50 text-[#3AE8FF] hover:bg-[#3AE8FF]/15"
+                        >
+                          {isLast && speaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       )}
+
 
       {/* Composer */}
       <form onSubmit={onSubmit} className="mt-3 flex items-end gap-2">
@@ -378,7 +452,7 @@ export function MiniAriaHeroBadge() {
       </form>
 
       {/* Suggestions */}
-      {!answer && !loading && (
+      {turns.length === 0 && !loading && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {suggestions.map((s) => (
             <button
