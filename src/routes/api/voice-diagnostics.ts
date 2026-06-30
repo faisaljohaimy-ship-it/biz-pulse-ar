@@ -140,10 +140,23 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
               ? "scribe"
               : "unavailable";
 
+        const mask = (v: string | undefined) =>
+          !v ? null : v.length <= 6 ? "•".repeat(v.length) : `${v.slice(0, 3)}…${v.slice(-3)}`;
+
         return Response.json({
           ok: !hasFailure,
           mode,
           checks,
+          connector: {
+            present: Boolean(apiKey),
+            auth_type: "api_key",
+            scopes_note: "ElevenLabs uses API-key auth — permissions are derived from the key's plan/quota (no Lovable-managed OAuth scopes).",
+          },
+          agent: {
+            configured: Boolean(agentId),
+            id_masked: mask(agentId),
+          },
+          live_voice_ready: mode === "conversation",
           generated_at: new Date().toISOString(),
         });
       },
