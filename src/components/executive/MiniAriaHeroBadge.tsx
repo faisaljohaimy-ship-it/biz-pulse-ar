@@ -160,7 +160,7 @@ export function MiniAriaHeroBadge() {
     } finally {
       setLoading(false);
     }
-  }, [voiceOn, speak]);
+  }, [voiceOn, speak, stopSpeaking]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
