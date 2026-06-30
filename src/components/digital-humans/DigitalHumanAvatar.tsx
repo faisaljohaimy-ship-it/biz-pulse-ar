@@ -379,6 +379,64 @@ export function DigitalHumanAvatar({
                 <circle cx="78" cy="80" r="1.0" fill={p.accent} opacity="0.6" className="animate-ping" />
               </g>
             )}
+
+            {/* ── Holographic overlay layer ────────────────────────────
+                Neural rim glow, scan line, floating particles and iris
+                aura — driven by state. Additive look via screen blend. */}
+            <g style={{ mixBlendMode: "screen" }}>
+              {/* Outer Fresnel rim glow */}
+              <circle cx="50" cy="50" r="47" fill="none"
+                stroke={p.accent} strokeWidth="0.6" opacity="0.55"
+                strokeDasharray="2 3"
+                style={{
+                  transformOrigin: "50% 50%",
+                  animation: "dh-spin 14s linear infinite",
+                }}
+              />
+              <circle cx="50" cy="50" r="44" fill="none"
+                stroke={p.accent} strokeWidth="0.35" opacity="0.4"
+                strokeDasharray="1 6"
+                style={{
+                  transformOrigin: "50% 50%",
+                  animation: "dh-spin-rev 22s linear infinite",
+                }}
+              />
+              {/* Listening scan band */}
+              {state === "listening" && (
+                <rect x="0" y="48" width="100" height="0.6" fill={p.accent} opacity="0.85"
+                  style={{ animation: "dh-scan 2.4s ease-in-out infinite" }}
+                />
+              )}
+              {/* Iris aura when speaking */}
+              {speaking && !blink && (
+                <>
+                  <circle cx={41 + gaze.x} cy={50.4 + gaze.y} r="3.6" fill="none"
+                    stroke={p.accent} strokeWidth="0.45" opacity="0.85"
+                    style={{ animation: "dh-iris 1.6s ease-in-out infinite" }} />
+                  <circle cx={59 + gaze.x} cy={50.4 + gaze.y} r="3.6" fill="none"
+                    stroke={p.accent} strokeWidth="0.45" opacity="0.85"
+                    style={{ animation: "dh-iris 1.6s ease-in-out infinite" }} />
+                </>
+              )}
+              {/* Floating neural particles */}
+              {[14, 86, 22, 78, 50, 32, 68].map((cx, i) => (
+                <circle key={i}
+                  cx={cx}
+                  cy={18 + (i * 11) % 70}
+                  r={0.5 + (i % 3) * 0.25}
+                  fill={p.accent}
+                  opacity={0.55}
+                  style={{
+                    animation: `dh-float ${4 + i % 3}s ease-in-out ${i * 0.3}s infinite`,
+                  }}
+                />
+              ))}
+              {/* Glowing collar seam */}
+              <path d="M28,92 Q50,82 72,92" fill="none"
+                stroke={p.accent} strokeWidth="0.9" opacity="0.85"
+                style={{ filter: `drop-shadow(0 0 1.2px ${p.accent})` }}
+              />
+            </g>
           </g>
         </svg>
 
