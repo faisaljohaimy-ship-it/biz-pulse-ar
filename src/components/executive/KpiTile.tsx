@@ -1,5 +1,7 @@
 import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
+
 
 export type KpiTone = "cyan" | "emerald" | "amber" | "rose" | "violet";
 
@@ -38,7 +40,10 @@ export interface KpiTileProps {
 export function KpiTile({
   labelAr, labelEn, value, hint, tone = "cyan", loading, delta, className,
 }: KpiTileProps) {
+  const { locale } = useI18n();
   const displayValue = loading ? "—" : value;
+  const primary = locale === "ar" ? labelAr : labelEn;
+  const secondary = locale === "ar" ? labelEn : labelAr;
   return (
     <div
       className={cn(
@@ -52,14 +57,15 @@ export function KpiTile({
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-[11px] font-medium text-[color:var(--nx-text-soft)]/85">
-            {labelAr}
+            {primary}
           </div>
           <div className="truncate text-[9px] uppercase tracking-[0.18em] text-[color:var(--nx-text-muted)]">
-            {labelEn}
+            {secondary}
           </div>
         </div>
         <span className={cn("h-2 w-2 shrink-0 rounded-full", TONE_DOT[tone], "motion-safe:animate-pulse")} aria-hidden />
       </div>
+
       <div className="mt-2 flex items-end justify-between gap-2">
         <div
           aria-live="polite"
