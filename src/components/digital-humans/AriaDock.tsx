@@ -123,6 +123,7 @@ export function AriaDock() {
   const playNext = useCallback(() => {
     if (paused) { playingRef.current = false; return; }
     const next = queueRef.current.shift();
+    setQueueDepth(queueRef.current.length);
     if (!next) {
       playingRef.current = false;
       setCurrent(null);
