@@ -153,6 +153,11 @@ export function MiniAriaHeroBadge() {
     setAnswer(null);
     const detected: "ar" | "en" = isArabic(qt) ? "ar" : "en";
     setLang(detected);
+    const turnId = (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? crypto.randomUUID()
+      : `t_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    currentTurnIdRef.current = turnId;
+    setTurns((prev) => [...prev, { id: turnId, question: qt, qLang: detected }]);
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -170,6 +175,7 @@ export function MiniAriaHeroBadge() {
         text_en: j.text_en ?? "",
       };
       setAnswer(result);
+      setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, answer: result } : t)));
       if (voiceOn) {
         const spoken = detected === "ar" ? result.text_ar : result.text_en;
         if (spoken) void speak(spoken);
@@ -177,19 +183,26 @@ export function MiniAriaHeroBadge() {
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       const msg = e instanceof Error ? e.message : "ask_failed";
-      setError(
-        msg.includes("429")
-          ? detected === "ar"
-            ? "الكثير من الطلبات — حاول بعد دقيقة."
-            : "Too many requests — try again shortly."
-          : detected === "ar"
-            ? "تعذّر الاتصال بآريا الآن — أعد المحاولة."
-            : "ARIA is unavailable right now — please retry.",
-      );
+      const friendly = msg.includes("429")
+        ? detected === "ar"
+          ? "الكثير من الطلبات — حاول بعد دقيقة."
+          : "Too many requests — try again shortly."
+        : detected === "ar"
+          ? "تعذّر الاتصال بآريا الآن — أعد المحاولة."
+          : "ARIA is unavailable right now — please retry.";
+      setError(friendly);
+      setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, error: friendly } : t)));
     } finally {
       setLoading(false);
     }
   }, [voiceOn, speak, stopSpeaking]);
+
+  // Auto-scroll transcript to the latest turn.
+  useEffect(() => {
+    const el = transcriptRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [turns, loading]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
