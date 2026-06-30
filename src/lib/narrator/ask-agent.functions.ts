@@ -77,7 +77,8 @@ Answer in BOTH Arabic and English. Return ONLY strict JSON: {"text_ar":"...","te
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${key}`,
+        "Lovable-API-Key": key,
+        "X-Lovable-AIG-SDK": "nexios-ask-agent",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

@@ -2,7 +2,7 @@
  * AriaStatusStrip — always-visible live status row for the executive dock.
  *
  * Shows: Connected · State (Listening/Thinking/Speaking/Idle) · Queue depth
- *        · Latency (ms, measured against /api/heygen/status ping every 15s)
+ *        · Latency (ms, measured against a public health ping every 15s)
  *        · Voice (On/Muted).
  *
  * Pure presentational — all signals come in via props so it stays cheap
@@ -46,7 +46,7 @@ export function AriaStatusStrip({
   pingEndpoint = "/api/public/health",
   className,
 }: Props) {
-  const [conn, setConn] = useState<Conn>(typeof navigator !== "undefined" && navigator.onLine ? "online" : "offline");
+  const [conn, setConn] = useState<Conn>("online");
   const [latency, setLatency] = useState<number | null>(null);
   const aliveRef = useRef(true);
 
@@ -73,7 +73,7 @@ export function AriaStatusStrip({
         const dt = performance.now() - t0;
         if (!aliveRef.current) return;
         setLatency(dt);
-        setConn(r.ok ? "online" : "offline");
+        setConn(r.status < 500 ? "online" : "offline");
       } catch {
         if (!aliveRef.current) return;
         setLatency(null);

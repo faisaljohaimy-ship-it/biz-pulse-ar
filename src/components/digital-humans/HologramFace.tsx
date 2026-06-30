@@ -117,10 +117,10 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props
       aria-label={ar ? "آريا — مساعدة تنفيذية" : "ARIA — Executive AI"}
       role="img"
     >
-      {/* outer aura — pulse */}
+      {/* ambient aura — pulse, no enclosing face circle */}
       <div
         aria-hidden
-        className="absolute -inset-[18%] rounded-full pointer-events-none"
+        className="pointer-events-none absolute -inset-[18%]"
         style={{
           background: `radial-gradient(circle at 50% 45%, ${pal.glow} 0%, transparent 62%)`,
           filter: `blur(${size * 0.06}px)`,
@@ -129,30 +129,7 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props
         }}
       />
 
-      {/* orbiting ring */}
-      <div
-        aria-hidden
-        className="absolute -inset-[8%] rounded-full pointer-events-none"
-        style={{
-          border: `1px solid ${pal.ring}`,
-          boxShadow: `0 0 ${baseGlow}px ${pal.glow} inset, 0 0 ${baseGlow}px ${pal.glow}`,
-          animation: "aria-spin 22s linear infinite",
-          maskImage: "conic-gradient(from 0deg, black 0deg, black 220deg, transparent 360deg)",
-          WebkitMaskImage: "conic-gradient(from 0deg, black 0deg, black 220deg, transparent 360deg)",
-        }}
-      />
-      {/* counter ring */}
-      <div
-        aria-hidden
-        className="absolute -inset-[14%] rounded-full pointer-events-none"
-        style={{
-          border: `1px dashed ${pal.ring}`,
-          opacity: 0.55,
-          animation: "aria-spin-rev 36s linear infinite",
-        }}
-      />
-
-      {/* particle halo — 12 motes */}
+      {/* particle halo — 12 motes, free-floating around the portrait */}
       <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ animation: "aria-spin 18s linear infinite" }}>
         {Array.from({ length: 12 }).map((_, i) => {
           const a = (i / 12) * Math.PI * 2;
@@ -180,20 +157,20 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props
         })}
       </div>
 
-      {/* portrait (clipped circle) */}
+      {/* portrait — full photographic presence, deliberately not clipped into a circle */}
       <div
-        className="absolute inset-0 overflow-hidden rounded-full"
+        className="absolute inset-0 overflow-visible"
         style={{
           transform: `translate3d(${headTx}px, ${headTy}px, 0) scale(${scale})`,
           transition: "transform 220ms cubic-bezier(.22,.61,.36,1)",
-          boxShadow: `inset 0 0 ${size * 0.18}px ${pal.glow}`,
+          filter: `drop-shadow(0 0 ${baseGlow}px ${pal.glow})`,
         }}
       >
         <img
           src={ariaHologram.url}
           alt={ar ? "آريا" : "ARIA"}
           draggable={false}
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className="absolute inset-0 h-full w-full object-contain object-top"
           style={{
             filter: thinking
               ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"

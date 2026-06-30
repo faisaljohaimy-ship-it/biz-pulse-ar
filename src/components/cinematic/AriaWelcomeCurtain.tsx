@@ -42,7 +42,7 @@ export function AriaWelcomeCurtain() {
       setRemaining((r) => (r > 0 ? r - 1 : 0));
     }, 1000);
     // First user gesture also triggers the greeting (covers autoplay-blocked browsers).
-    const onGesture = () => { speakWelcome(); window.removeEventListener("pointerdown", onGesture); };
+    const onGesture = () => { speakWelcome(true); window.removeEventListener("pointerdown", onGesture); };
     window.addEventListener("pointerdown", onGesture, { once: true });
     return () => {
       window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT);
@@ -160,9 +160,9 @@ export function AriaWelcomeCurtain() {
  * Bilingual welcome — voice-only, Web Speech API. Silent on autoplay block.
  */
 let __ariaWelcomeSpoken = false;
-function speakWelcome() {
+function speakWelcome(force = false) {
   if (typeof window === "undefined") return;
-  if (__ariaWelcomeSpoken) return;
+  if (__ariaWelcomeSpoken && !force) return;
   const synth = window.speechSynthesis;
   if (!synth || typeof SpeechSynthesisUtterance === "undefined") return;
   __ariaWelcomeSpoken = true;

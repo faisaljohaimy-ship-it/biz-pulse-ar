@@ -30,7 +30,7 @@ import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria
 import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, RotateCcw, SkipForward, Square, Mic, MicOff, Loader2, Megaphone } from "lucide-react";
+import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, RotateCcw, SkipForward, Square, Mic, MicOff, Loader2, Megaphone, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gateway-listener";
 import { HologramFace } from "@/components/digital-humans/HologramFace";
@@ -61,6 +61,9 @@ export function AriaDock() {
   const [ariaLiveText, setAriaLiveText] = useState("");
   const [queueDepth, setQueueDepth] = useState(0);
   const [heygenAvailable, setHeygenAvailable] = useState<boolean | null>(null);
+  const [typedQuestion, setTypedQuestion] = useState("");
+  const [typedLoading, setTypedLoading] = useState(false);
+  const [typedError, setTypedError] = useState<string | null>(null);
   const lastLineRef = useRef<QueuedLine | null>(null);
   const queueRef = useRef<QueuedLine[]>([]);
   const playingRef = useRef(false);
@@ -71,7 +74,7 @@ export function AriaDock() {
   // The opening greeting is audio-only: ARIA speaks the welcome line before
   // the dock UI (avatar, transcript, controls) becomes visible. We reveal
   // the dock when the welcome turn finishes (or after a safety timeout).
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(true);
   const welcomeStartedRef = useRef(false);
 
   // Advertise this dock to the global copilot so it can step aside while the
@@ -283,10 +286,8 @@ export function AriaDock() {
     };
     (window as unknown as { aria?: typeof api }).aria = api;
 
-    // First-gesture unlock — browsers block both TTS audio playback and
-    // getUserMedia() before a user interaction. We attach a one-shot
-    // pointer/keyboard listener so the *first* tap anywhere triggers the
-    // greeting AND opens the mic. From that moment ARIA listens continuously.
+    // First-gesture unlock — browsers block audio playback before a user
+    // interaction. Keep the dock visible immediately; first tap only unlocks voice.
     const hour = new Date().getHours();
     const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
     const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -305,8 +306,7 @@ export function AriaDock() {
         text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
         speaker: ARIA,
       });
-      // Safety net: even if TTS stalls, reveal the dock so controls stay reachable.
-      window.setTimeout(() => setRevealed(true), 9000);
+      setRevealed(true);
       // NOTE: we do NOT auto-open the microphone here. Many runtimes (Lovable
       // preview iframe, embedded contexts without `allow="microphone"`,
       // mobile Safari before a tap on a mic affordance) reject getUserMedia
@@ -318,10 +318,7 @@ export function AriaDock() {
     window.addEventListener("keydown", unlock, true);
     window.addEventListener("touchstart", unlock, true);
 
-    // Auto-greet on mount: try immediately so ARIA welcomes the user the
-    // moment they enter the system. If the browser blocks autoplay (no prior
-    // user gesture), the pointer/key/touch listeners above will fire `unlock`
-    // on the very first interaction as a safety net.
+    // Auto-greet on mount: try immediately; if blocked, first gesture retries.
     try { sessionStorage.removeItem("nexus.audio-gesture"); } catch { /* noop */ }
     const autoTimer: number | undefined = window.setTimeout(() => unlock(), 250);
 
@@ -404,6 +401,41 @@ export function AriaDock() {
     setCurrent(null);
     setState("idle");
     setAmp(0);
+  };
+
+  const askTyped = async (question: string) => {
+    const q = question.trim();
+    if (!q || typedLoading) return;
+    setTypedQuestion("");
+    setTypedLoading(true);
+    setTypedError(null);
+    setVoiceOn(true);
+    handleRef.current?.stop();
+    handleRef.current = null;
+    queueRef.current = [];
+    setQueueDepth(0);
+    setState("thinking");
+    try {
+      const lang = /[\u0600-\u06FF]/.test(q) ? "ar" : "en";
+      const r = await fetch("/api/public/aria-ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, lang }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string; error?: string };
+      if (!r.ok) throw new Error(j.error || `ask_${r.status}`);
+      enqueue({
+        id: `typed-${Date.now()}`,
+        text_ar: j.text_ar || j.text_en || "تم استلام سؤالك، لكن لم يصل نص الرد. أعد المحاولة.",
+        text_en: j.text_en || j.text_ar || "I received your question, but the reply text was empty. Please retry.",
+        speaker: ARIA,
+      });
+    } catch {
+      setState("idle");
+      setTypedError(ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
+    } finally {
+      setTypedLoading(false);
+    }
   };
 
   useEffect(() => () => handleRef.current?.stop(), []);
@@ -562,6 +594,47 @@ export function AriaDock() {
                     ? <span className="text-rose-300/90">{listener.error}</span>
                     : (ar ? "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب." : "Tap the mic to ask me or any agent. Silent until asked.")}
             </div>
+
+            <form
+              className="mt-2 flex items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void askTyped(typedQuestion);
+              }}
+            >
+              <textarea
+                value={typedQuestion}
+                onChange={(e) => setTypedQuestion(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void askTyped(typedQuestion);
+                  }
+                }}
+                rows={1}
+                dir="auto"
+                disabled={typedLoading}
+                aria-label={ar ? "اكتب سؤالاً لآريا" : "Type a question for ARIA"}
+                placeholder={ar ? "اكتب سؤالك لآريا…" : "Type your question to ARIA…"}
+                className="min-h-9 max-h-24 flex-1 resize-none rounded-lg border border-cyan-300/25 bg-[#04111F]/80 px-3 py-2 text-[12px] text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300/70 focus:shadow-[0_0_16px_rgba(58,232,255,0.35)]"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                variant="ghost"
+                disabled={typedLoading || !typedQuestion.trim()}
+                className="h-9 w-9 shrink-0 border border-cyan-300/35 text-cyan-200 hover:bg-cyan-300/10 hover:text-white disabled:opacity-40"
+                aria-label={ar ? "إرسال السؤال" : "Send question"}
+              >
+                {typedLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowUp className="h-3.5 w-3.5" />}
+              </Button>
+            </form>
+
+            {typedError && (
+              <div className="mt-1.5 text-[11px] text-rose-300/90" role="status">
+                {typedError}
+              </div>
+            )}
 
             {current && (
               <div className="mt-2 truncate text-[10px] text-white/55">
