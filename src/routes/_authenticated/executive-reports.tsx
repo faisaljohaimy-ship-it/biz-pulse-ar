@@ -528,7 +528,7 @@ function ExecutiveReportsPage() {
                           {isAr ? "معرّف الطلب" : "Request ID"}
                         </span>
                         <code className="text-[11px] font-mono text-foreground">{lastError.requestId}</code>
-                        <Button size="icon" variant="ghost" className="h-5 w-5 ml-auto" onClick={copyRequestId}>
+                        <Button size="icon" variant="ghost" className="h-5 w-5 ml-auto" onClick={copyRequestId} aria-label={isAr ? "نسخ معرّف الطلب" : "Copy request ID"}>
                           <ClipboardCopy className="h-3 w-3" />
                         </Button>
                       </div>
