@@ -250,6 +250,7 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             });
           },
           onFinish: ({ text, finishReason, usage }) => {
+            finalAssistantText = text;
             console.log("[api/chat] upstream finished", {
               requestId,
               finishReason,
@@ -259,10 +260,31 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           },
         });
 
+        let finalAssistantText = "";
+
         return result.toUIMessageStreamResponse({
           headers: responseHeaders(requestId),
           originalMessages: uiMessages,
           sendReasoning: false,
+          messageMetadata: ({ part }) => {
+            if (part.type === "start") {
+              return {
+                requestId,
+                citations: ragCitations,
+                ragCounts,
+              };
+            }
+            if (part.type === "finish") {
+              const { evaluateRagCoverage } = require("@/lib/aria/rag.server") as typeof import("@/lib/aria/rag.server");
+              const coverage = evaluateRagCoverage(finalAssistantText, ragCitations);
+              if (coverage.status === "uncited" && coverage.available > 0) {
+                console.warn("[api/chat] uncited answer", { requestId, available: coverage.available });
+              }
+              return { coverage };
+            }
+            return undefined;
+          },
+
           onError: (error) => {
             console.error("[api/chat] stream response error", { requestId, error });
             const msg = error instanceof Error ? error.message : String(error);
