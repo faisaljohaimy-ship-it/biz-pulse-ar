@@ -7,6 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   enforceRateLimit,
   clientBucketKey,
+  rateLimitUnavailableResponse,
   rateLimitResponse,
 } from "@/lib/governance/rate-limit.server";
 import { verifyCronHookSecret } from "@/lib/hook-auth.server";
@@ -19,11 +20,12 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
         if (denied) return denied;
 
         // Cap per-IP at 10 agent runs / minute.
-        const { allowed } = await enforceRateLimit(
+        const { allowed, unavailable } = await enforceRateLimit(
           clientBucketKey(request, "run-agent"),
           10,
           60,
         );
+        if (unavailable) return rateLimitUnavailableResponse();
         if (!allowed) return rateLimitResponse();
 
         let body: { agentId?: string; goalOverride?: string } = {};

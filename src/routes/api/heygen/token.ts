@@ -17,6 +17,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
 import {
   enforceRateLimit,
+  rateLimitUnavailableResponse,
   rateLimitResponse,
 } from "@/lib/governance/rate-limit.server";
 import {
@@ -52,11 +53,12 @@ export const Route = createFileRoute("/api/heygen/token")({
         // Auth: only signed-in executives may mint HeyGen avatar tokens.
         const auth = await verifySupabaseUser(request);
         if (auth instanceof Response) return auth;
-        const { allowed } = await enforceRateLimit(
+        const { allowed, unavailable } = await enforceRateLimit(
           `heygen-token:${auth.userId}`,
           20,
           60,
         );
+        if (unavailable) return rateLimitUnavailableResponse();
         if (!allowed) return rateLimitResponse();
 
         const apiKey = process.env.HEYGEN_API_KEY;
@@ -86,7 +88,7 @@ export const Route = createFileRoute("/api/heygen/token")({
             const text = await res.text().catch(() => "");
             console.error("[heygen/token]", res.status, text.slice(0, 300));
             return Response.json(
-              { error: "heygen_token_failed", status: res.status, detail: text.slice(0, 300) },
+              { error: "heygen_token_failed", status: res.status },
               { status: 502 },
             );
           }
