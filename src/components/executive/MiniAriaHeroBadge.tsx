@@ -9,9 +9,16 @@
  * ARIA replies in her own voice — fully professional, no auth needed.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Loader2, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUp, Loader2, MessageSquare, Sparkles, User, Volume2, VolumeX, X } from "lucide-react";
 
 type AskResult = { text_ar: string; text_en: string };
+type Turn = {
+  id: string;
+  question: string;
+  qLang: "ar" | "en";
+  answer?: AskResult;
+  error?: string;
+};
 
 const PROMPTS_AR = [
   "ما حالة العمليات الآن؟",
