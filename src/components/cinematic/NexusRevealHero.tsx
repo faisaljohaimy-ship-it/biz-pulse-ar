@@ -127,9 +127,9 @@ export function NexusRevealHero({
           المشهد ١٠ · الكشف
         </p>
 
-        <div className="mt-10">
+        <div className="mt-8 sm:mt-10">
           <div
-            className="bg-gradient-to-br from-white via-amber-100 to-amber-400 bg-clip-text text-7xl font-bold leading-[0.92] tracking-[-0.04em] text-transparent sm:text-9xl"
+            className="bg-gradient-to-br from-white via-amber-100 to-amber-400 bg-clip-text text-[15vw] font-bold leading-[0.92] tracking-[-0.04em] text-transparent sm:text-9xl"
             style={{
               animation: "nxh-lockup 3.2s cubic-bezier(.22,.61,.36,1) both",
               textShadow: "0 0 60px rgba(245,180,84,0.35)",
@@ -139,52 +139,52 @@ export function NexusRevealHero({
             NEXUS
           </div>
           <div
-            className="mt-2 text-xs uppercase tracking-[0.7em] text-white/65 sm:text-sm"
+            className="mt-2 text-[11px] uppercase tracking-[0.4em] text-white/65 sm:text-sm sm:tracking-[0.7em]"
             style={{ animation: "nxh-fade 2s ease-out 1.4s both" }}
           >
             AI&nbsp;·&nbsp;OS
           </div>
           <div
-            className="mx-auto mt-6 h-px w-40 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent"
+            className="mx-auto mt-5 h-px w-32 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent sm:mt-6 sm:w-40"
             style={{ animation: "nxh-line 1.8s ease-out 1.2s both" }}
           />
         </div>
 
-        <h2 className="mt-10 text-3xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+        <h2 className="mt-8 text-2xl font-bold leading-[1.1] tracking-tight sm:mt-10 sm:text-5xl lg:text-6xl">
           <span className="block text-white/90">المستقبل ذكي.</span>
           <span className="mt-1 block bg-gradient-to-br from-amber-200 to-amber-500 bg-clip-text text-transparent">
             المستقبل نكسس.
           </span>
         </h2>
-        <p className="mx-auto mt-6 max-w-xl text-base text-white/65 sm:text-lg">
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-white/65 sm:mt-6 sm:text-lg">
           شبكة ذكاء عالمية · نظام تشغيل واحد · إدارة الأمن الصناعي · المنطقة الغربية
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <button
             type="button"
             onClick={onEnterOps}
-            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-7 py-3.5 text-sm font-semibold text-black shadow-[0_10px_60px_-10px_rgba(245,180,84,0.9)] transition hover:scale-[1.03]"
+            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-3.5 text-sm font-semibold text-black shadow-[0_10px_60px_-10px_rgba(245,180,84,0.9)] transition hover:scale-[1.03] sm:px-7"
           >
             ابدأ التشغيل
             <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5" />
           </button>
           <Link
             to="/exec"
-            className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10 sm:px-7"
           >
             <Compass className="h-4 w-4" />
             غرفة القيادة التنفيذية
           </Link>
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.35em] text-white/40">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[9px] uppercase tracking-[0.25em] text-white/40 sm:mt-12 sm:gap-x-6 sm:text-[10px] sm:tracking-[0.35em]">
           <span>المؤسسات</span>
-          <span>·</span>
+          <span aria-hidden>·</span>
           <span>الحكومات</span>
-          <span>·</span>
+          <span aria-hidden>·</span>
           <span>الأمن الصناعي</span>
-          <span>·</span>
+          <span aria-hidden>·</span>
           <span>Fortune 500</span>
         </div>
       </div>
