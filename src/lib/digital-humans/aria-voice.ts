@@ -144,7 +144,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       opts.onAmplitude?.(0);
       if (!stopped && typeof window !== "undefined" && "speechSynthesis" in window) {
         await new Promise<void>((resolve) => {
-          let ampTimer: ReturnType<typeof window.setInterval> | null = null;
+          let ampTimer: number | null = null;
           const clean = () => {
             if (ampTimer) window.clearInterval(ampTimer);
             opts.onAmplitude?.(0);
