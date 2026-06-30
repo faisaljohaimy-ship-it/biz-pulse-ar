@@ -19,7 +19,7 @@ const BodySchema = z.object({
   speed: z.number().min(0.7).max(1.2).optional(),
 });
 
-const DEFAULT_VOICE = "pNInz6obpgDQGcFmaJgB"; // Adam — deep multilingual male
+const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual executive female, AR/EN
 
 export const Route = createFileRoute("/api/tts")({
   server: {
