@@ -262,6 +262,10 @@ export function NexusRevealHero({
           0%   { opacity: 0.35; transform: translateX(-50%) rotate(var(--rot,0deg)) scaleY(0.95); }
           100% { opacity: 0.75; transform: translateX(-50%) rotate(var(--rot,0deg)) scaleY(1.05); }
         }
+        @keyframes nxh-launch-ring {
+          0%   { opacity: 0.9; transform: scale(0.6); }
+          100% { opacity: 0;   transform: scale(1.8); }
+        }
       `}</style>
     </section>
   );
