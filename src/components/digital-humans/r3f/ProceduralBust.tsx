@@ -34,21 +34,34 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
   const blinkT = useRef({ closing: false, t: 0, next: 2.5 });
 
   const skin = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.palette.base, roughness: 0.55, metalness: 0.05,
-  }), [spec.palette.base]);
+    color: spec.palette.base, roughness: 0.42, metalness: 0.04,
+    // faux subsurface — accent tint glows softly through skin
+    emissive: new THREE.Color(spec.palette.accent),
+    emissiveIntensity: 0.06,
+  }), [spec.palette.base, spec.palette.accent]);
   const suit = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.palette.suit, roughness: 0.7, metalness: 0.15,
+    color: spec.palette.suit, roughness: 0.55, metalness: 0.35,
   }), [spec.palette.suit]);
   const accent = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.palette.accent, roughness: 0.3, metalness: 0.4,
-    emissive: spec.palette.accent, emissiveIntensity: 0.35,
+    color: spec.palette.accent, roughness: 0.25, metalness: 0.5,
+    emissive: spec.palette.accent, emissiveIntensity: 0.9,
+  }), [spec.palette.accent]);
+  // Bright additive seam material — for the glowing executive collar seam
+  const seamMat = useMemo(() => new THREE.MeshBasicMaterial({
+    color: spec.palette.accent, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthWrite: false,
   }), [spec.palette.accent]);
   const hair = useMemo(() => new THREE.MeshStandardMaterial({
-    color: spec.features.hairColor, roughness: 0.85, metalness: 0.05,
+    color: spec.features.hairColor, roughness: 0.78, metalness: 0.08,
   }), [spec.features.hairColor]);
   const lidMat = useMemo(() => new THREE.MeshStandardMaterial({
     color: spec.palette.base, roughness: 0.55,
   }), [spec.palette.base]);
+  // Crystal iris — emissive ring around the pupil
+  const irisRingMat = useMemo(() => new THREE.MeshBasicMaterial({
+    color: spec.palette.accent, transparent: true, opacity: 0.85,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  }), [spec.palette.accent]);
 
   useFrame((_, dt) => {
     const t = performance.now() / 1000;
