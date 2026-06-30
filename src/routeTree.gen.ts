@@ -41,13 +41,16 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
+import { Route as ApiVoiceDiagnosticsRouteImport } from './routes/api/voice-diagnostics'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
+import { Route as AuthenticatedVoiceSetupRouteImport } from './routes/_authenticated/voice-setup'
 import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/voice'
 import { Route as AuthenticatedTtsRouteImport } from './routes/_authenticated/tts'
 import { Route as AuthenticatedTransformationRouteImport } from './routes/_authenticated/transformation'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
+import { Route as AuthenticatedToolHealthRouteImport } from './routes/_authenticated/tool-health'
 import { Route as AuthenticatedTheaterRouteImport } from './routes/_authenticated/theater'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
@@ -307,6 +310,11 @@ const ApiVoiceTokenRoute = ApiVoiceTokenRouteImport.update({
   path: '/api/voice-token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVoiceDiagnosticsRoute = ApiVoiceDiagnosticsRouteImport.update({
+  id: '/api/voice-diagnostics',
+  path: '/api/voice-diagnostics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
@@ -320,6 +328,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
 const AuthenticatedWorkflowsRoute = AuthenticatedWorkflowsRouteImport.update({
   id: '/workflows',
   path: '/workflows',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVoiceSetupRoute = AuthenticatedVoiceSetupRouteImport.update({
+  id: '/voice-setup',
+  path: '/voice-setup',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedVoiceRoute = AuthenticatedVoiceRouteImport.update({
@@ -341,6 +354,11 @@ const AuthenticatedTransformationRoute =
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedToolHealthRoute = AuthenticatedToolHealthRouteImport.update({
+  id: '/tool-health',
+  path: '/tool-health',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTheaterRoute = AuthenticatedTheaterRouteImport.update({
@@ -959,13 +977,16 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/theater': typeof AuthenticatedTheaterRoute
+  '/tool-health': typeof AuthenticatedToolHealthRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
+  '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1097,13 +1118,16 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/theater': typeof AuthenticatedTheaterRoute
+  '/tool-health': typeof AuthenticatedToolHealthRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
   '/voice': typeof AuthenticatedVoiceRoute
+  '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1238,13 +1262,16 @@ export interface FileRoutesById {
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/theater': typeof AuthenticatedTheaterRoute
+  '/_authenticated/tool-health': typeof AuthenticatedToolHealthRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
   '/_authenticated/tts': typeof AuthenticatedTtsRoute
   '/_authenticated/voice': typeof AuthenticatedVoiceRoute
+  '/_authenticated/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1379,13 +1406,16 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/theater'
+    | '/tool-health'
     | '/tools'
     | '/transformation'
     | '/tts'
     | '/voice'
+    | '/voice-setup'
     | '/workflows'
     | '/api/chat'
     | '/api/tts'
+    | '/api/voice-diagnostics'
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/assistant/$threadId'
@@ -1517,13 +1547,16 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/theater'
+    | '/tool-health'
     | '/tools'
     | '/transformation'
     | '/tts'
     | '/voice'
+    | '/voice-setup'
     | '/workflows'
     | '/api/chat'
     | '/api/tts'
+    | '/api/voice-diagnostics'
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/assistant/$threadId'
@@ -1657,13 +1690,16 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks'
     | '/_authenticated/team'
     | '/_authenticated/theater'
+    | '/_authenticated/tool-health'
     | '/_authenticated/tools'
     | '/_authenticated/transformation'
     | '/_authenticated/tts'
     | '/_authenticated/voice'
+    | '/_authenticated/voice-setup'
     | '/_authenticated/workflows'
     | '/api/chat'
     | '/api/tts'
+    | '/api/voice-diagnostics'
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/_authenticated/assistant/$threadId'
@@ -1747,6 +1783,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
@@ -1993,6 +2030,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVoiceTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/voice-diagnostics': {
+      id: '/api/voice-diagnostics'
+      path: '/api/voice-diagnostics'
+      fullPath: '/api/voice-diagnostics'
+      preLoaderRoute: typeof ApiVoiceDiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tts': {
       id: '/api/tts'
       path: '/api/tts'
@@ -2012,6 +2056,13 @@ declare module '@tanstack/react-router' {
       path: '/workflows'
       fullPath: '/workflows'
       preLoaderRoute: typeof AuthenticatedWorkflowsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/voice-setup': {
+      id: '/_authenticated/voice-setup'
+      path: '/voice-setup'
+      fullPath: '/voice-setup'
+      preLoaderRoute: typeof AuthenticatedVoiceSetupRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/voice': {
@@ -2040,6 +2091,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tool-health': {
+      id: '/_authenticated/tool-health'
+      path: '/tool-health'
+      fullPath: '/tool-health'
+      preLoaderRoute: typeof AuthenticatedToolHealthRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/theater': {
@@ -2868,10 +2926,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTheaterRoute: typeof AuthenticatedTheaterRoute
+  AuthenticatedToolHealthRoute: typeof AuthenticatedToolHealthRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
   AuthenticatedTtsRoute: typeof AuthenticatedTtsRoute
   AuthenticatedVoiceRoute: typeof AuthenticatedVoiceRoute
+  AuthenticatedVoiceSetupRoute: typeof AuthenticatedVoiceSetupRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
   AuthenticatedAssistantThreadIdRoute: typeof AuthenticatedAssistantThreadIdRoute
   AuthenticatedAssistantIndexRoute: typeof AuthenticatedAssistantIndexRoute
@@ -2931,10 +2991,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTheaterRoute: AuthenticatedTheaterRoute,
+  AuthenticatedToolHealthRoute: AuthenticatedToolHealthRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,
   AuthenticatedTtsRoute: AuthenticatedTtsRoute,
   AuthenticatedVoiceRoute: AuthenticatedVoiceRoute,
+  AuthenticatedVoiceSetupRoute: AuthenticatedVoiceSetupRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
   AuthenticatedAssistantThreadIdRoute: AuthenticatedAssistantThreadIdRoute,
   AuthenticatedAssistantIndexRoute: AuthenticatedAssistantIndexRoute,
@@ -2977,6 +3039,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   ApiChatRoute: ApiChatRoute,
   ApiTtsRoute: ApiTtsRoute,
+  ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
