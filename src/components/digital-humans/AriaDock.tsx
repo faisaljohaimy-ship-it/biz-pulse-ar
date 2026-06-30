@@ -65,7 +65,8 @@ export function AriaDock() {
   // Lazy-register the HeyGen provider only on the client and only when
   // WebRTC media APIs are available. Any import / boot failure is swallowed
   // so the dock (and the rest of the app) continues to render via the
-  // built-in SVG / R3F providers.
+  // built-in SVG / R3F providers. The `/api/heygen/status` effect below
+  // independently controls whether HeyGen is actually selected.
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return;
     const nav = typeof navigator !== "undefined" ? navigator : undefined;
@@ -74,9 +75,8 @@ export function AriaDock() {
     void (async () => {
       try {
         await import("@/components/digital-humans/heygen/HeygenAvatarProvider");
-        if (!cancelled) setHeygenAvailable(true);
       } catch (err) {
-        if (!cancelled) setHeygenAvailable(false);
+        if (cancelled) return;
         // eslint-disable-next-line no-console
         console.warn("[AriaDock] HeyGen provider unavailable", err);
       }
