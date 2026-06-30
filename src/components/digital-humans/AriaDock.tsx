@@ -317,6 +317,7 @@ export function AriaDock() {
         handleRef.current?.stop();
         handleRef.current = null;
       }
+      setAriaLiveText(nv ? (ar ? "الصوت مفعل" : "Voice on") : (ar ? "الصوت مكتوم" : "Voice muted"));
       return nv;
     });
   };
