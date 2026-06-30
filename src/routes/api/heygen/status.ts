@@ -14,7 +14,8 @@ import {
   enforceRateLimit,
   rateLimitResponse,
   rateLimitUnavailableResponse,
-} from "@/lib/rate-limit.server";
+} from "@/lib/governance/rate-limit.server";
+
 
 type Probe = { configured: boolean; reason?: string; ts: number };
 let cached: Probe | null = null;
