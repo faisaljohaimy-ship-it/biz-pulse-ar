@@ -29,8 +29,8 @@ const USER_SCOPED_TABLES = [
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
-async function requireAdmin(context: { supabase: { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: Error | null }> }; userId: string }) {
-  const { data, error } = await context.supabase.rpc("has_role", {
+async function requireAdmin(context: { supabase: unknown; userId: string }) {
+  const { data, error } = await (context.supabase as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: Error | null }> }).rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
   });
@@ -49,22 +49,22 @@ async function getDemoUserId(supabaseAdmin: AdminClient): Promise<string> {
 export const resetDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-  await requireAdmin(context);
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const userId = await getDemoUserId(supabaseAdmin);
-  for (const table of USER_SCOPED_TABLES) {
-    await supabaseAdmin.from(table).delete().eq("user_id", userId);
-  }
-  return { ok: true };
-});
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = await getDemoUserId(supabaseAdmin);
+    for (const table of USER_SCOPED_TABLES) {
+      await supabaseAdmin.from(table).delete().eq("user_id", userId);
+    }
+    return { ok: true };
+  });
 
 /** Seeds a realistic Fortune-500 snapshot for the demo account. Idempotent. */
 export const seedDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-  await requireAdmin(context);
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const userId = await getDemoUserId(supabaseAdmin);
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = await getDemoUserId(supabaseAdmin);
 
   // Wipe first so reseeding is clean
   for (const table of USER_SCOPED_TABLES) {
