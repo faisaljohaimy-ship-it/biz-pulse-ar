@@ -23,6 +23,7 @@ import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
@@ -223,6 +224,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HajjPrimeRoute = HajjPrimeRouteImport.update({
+  id: '/hajj-prime',
+  path: '/hajj-prime',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GovernmentBriefRoute = GovernmentBriefRouteImport.update({
@@ -937,6 +943,7 @@ export interface FileRoutesByFullPath {
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
+  '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1083,6 +1090,7 @@ export interface FileRoutesByTo {
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
+  '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1230,6 +1238,7 @@ export interface FileRoutesById {
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
+  '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1378,6 +1387,7 @@ export interface FileRouteTypes {
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
+    | '/hajj-prime'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -1524,6 +1534,7 @@ export interface FileRouteTypes {
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
+    | '/hajj-prime'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -1670,6 +1681,7 @@ export interface FileRouteTypes {
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
+    | '/hajj-prime'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -1818,6 +1830,7 @@ export interface RootRouteChildren {
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
+  HajjPrimeRoute: typeof HajjPrimeRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1954,6 +1967,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hajj-prime': {
+      id: '/hajj-prime'
+      path: '/hajj-prime'
+      fullPath: '/hajj-prime'
+      preLoaderRoute: typeof HajjPrimeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/government-brief': {
@@ -3108,6 +3128,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
+  HajjPrimeRoute: HajjPrimeRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
