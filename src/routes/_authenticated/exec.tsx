@@ -98,28 +98,27 @@ function ExecConsole() {
   
   const [openRunId, setOpenRunId] = useState<string | null>(null);
 
-  // Realtime: invalidate queries on workflow_runs / tool_executions changes
+  // Realtime: invalidate queries on workflow_runs / tool_executions changes.
+  // Unique channel topic + try/catch so the page never crashes if realtime
+  // is unavailable or the channel is recreated.
   useEffect(() => {
-    const ch = supabase
-      .channel("exec-console")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "workflow_runs" },
-        () => void qc.invalidateQueries({ queryKey: ["exec", "runs"] }),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tool_executions" },
-        () => void qc.invalidateQueries({ queryKey: ["exec", "execs"] }),
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "enterprise_events" },
-        () => void qc.invalidateQueries({ queryKey: ["exec", "events"] }),
-      )
-      .subscribe();
+    const topic = `exec-console:${Math.random().toString(36).slice(2, 10)}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let ch: any = null;
+    try {
+      ch = supabase.channel(topic);
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "workflow_runs" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "runs"] }));
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "tool_executions" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "execs"] }));
+      ch.on("postgres_changes", { event: "INSERT", schema: "public", table: "enterprise_events" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "events"] }));
+      ch.subscribe();
+    } catch (err) {
+      console.warn("[exec] realtime unavailable", err);
+    }
     return () => {
-      void supabase.removeChannel(ch);
+      if (ch) { try { void supabase.removeChannel(ch); } catch { /* noop */ } }
     };
   }, [qc]);
 
