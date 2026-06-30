@@ -55,8 +55,8 @@ export const Route = createFileRoute("/api/voice-stt")({
 
         // Forward to Lovable AI Gateway transcription endpoint.
         const upstream = new FormData();
-        const filename = audio instanceof File ? audio.name : "voice.webm";
-        upstream.append("file", audio, filename);
+        const filename = (audio as File).name ?? "voice.webm";
+        upstream.append("file", blob, filename);
         upstream.append("model", "openai/gpt-4o-mini-transcribe");
         upstream.append("response_format", "json");
 
