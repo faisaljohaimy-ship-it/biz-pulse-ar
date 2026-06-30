@@ -100,7 +100,7 @@ const MOCK_SCENARIOS: MockScenario[] = [
       hint_en: "The connected account isn't a member of this team or lacks ChannelMessage.Send.",
       hint_ar: "الحساب الموصّل ليس عضواً في هذا الفريق أو يفتقر لصلاحية ChannelMessage.Send.",
       raw: JSON.stringify({
-        sharepointUrl: "https://contoso.sharepoint.com/sites/exec/Shared%20Documents/NEXIOS%20Reports/mock-report.html",
+        sharepointUrl: "https://sharepoint.example.invalid/sites/exec/Shared%20Documents/NEXIOS%20Reports/simulation-report.html",
         providerRaw: '{"error":{"code":"Forbidden","message":"Caller is not a member of the team."}}',
       }),
     }),
@@ -114,7 +114,7 @@ const MOCK_SCENARIOS: MockScenario[] = [
       hint_en: "The selected Teams channel was deleted or renamed. Pick another channel.",
       hint_ar: "قناة Teams المختارة تم حذفها أو تغيير اسمها. اختر قناة أخرى.",
       raw: JSON.stringify({
-        sharepointUrl: "https://contoso.sharepoint.com/sites/exec/Shared%20Documents/NEXIOS%20Reports/mock-report.html",
+        sharepointUrl: "https://sharepoint.example.invalid/sites/exec/Shared%20Documents/NEXIOS%20Reports/simulation-report.html",
         providerRaw: '{"error":{"code":"itemNotFound","message":"Channel not found."}}',
       }),
     }),
@@ -142,6 +142,8 @@ const MOCK_SCENARIOS: MockScenario[] = [
     }),
   },
 ];
+
+const ENABLE_GRAPH_SIMULATION = import.meta.env.DEV;
 
 function newRequestId() {
   return (typeof crypto !== "undefined" && "randomUUID" in crypto)
@@ -293,6 +295,7 @@ function ExecutiveReportsPage() {
 
   const [mockKey, setMockKey] = useState<string>(MOCK_SCENARIOS[0].key);
   const simulateMockError = () => {
+    if (!ENABLE_GRAPH_SIMULATION) return;
     const scenario = MOCK_SCENARIOS.find((s) => s.key === mockKey) ?? MOCK_SCENARIOS[0];
     const env: PublishErrorEnvelope = { __publishError: true, requestId: newRequestId(), ...scenario.build() };
     setLastResult(null);
@@ -301,11 +304,12 @@ function ExecutiveReportsPage() {
   };
 
   const simulateMockSuccess = () => {
+    if (!ENABLE_GRAPH_SIMULATION) return;
     const now = new Date();
     const stamp = now.toISOString();
     const safeTitle = (title || (isAr ? "تقرير-تنفيذي-تجريبي" : "executive-report-mock")).replace(/\s+/g, "-");
     const filename = `${safeTitle}-${stamp.slice(0, 10)}.html`;
-    const siteHost = "contoso.sharepoint.com";
+    const siteHost = "sharepoint.example.invalid";
     const sitePath = "/sites/exec";
     const webUrl = `https://${siteHost}${sitePath}/Shared%20Documents/NEXIOS%20Reports/${encodeURIComponent(filename)}`;
     const shareUrl = `https://${siteHost}/:b:/s/exec/${newRequestId().replace(/-/g, "").slice(0, 22)}`;
@@ -456,32 +460,33 @@ function ExecutiveReportsPage() {
             </Button>
           </div>
 
-          {/* ── Mock mode: preview Error Card without hitting Graph ───────── */}
-          <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-3 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <FlaskConical className="h-3.5 w-3.5" />
-              {isAr ? "وضع المحاكاة (Mock) — يحقن خطأ Graph دون اتصال فعلي" : "Mock mode — inject a Graph error without a live call"}
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <select
-                value={mockKey}
-                onChange={(e) => setMockKey(e.target.value)}
-                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs"
-              >
-                {MOCK_SCENARIOS.map((s) => (
-                  <option key={s.key} value={s.key}>{isAr ? s.label_ar : s.label_en}</option>
-                ))}
-              </select>
-              <Button size="sm" variant="outline" onClick={simulateMockError}>
+          {ENABLE_GRAPH_SIMULATION && (
+            <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 <FlaskConical className="h-3.5 w-3.5" />
-                <span className="ms-2">{isAr ? "محاكاة الخطأ" : "Simulate error"}</span>
-              </Button>
-              <Button size="sm" variant="default" onClick={simulateMockSuccess}>
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span className="ms-2">{isAr ? "محاكاة النجاح" : "Simulate success"}</span>
-              </Button>
+                {isAr ? "وضع المحاكاة — متاح في بيئة التطوير فقط" : "Simulation mode — development only"}
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <select
+                  value={mockKey}
+                  onChange={(e) => setMockKey(e.target.value)}
+                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs"
+                >
+                  {MOCK_SCENARIOS.map((s) => (
+                    <option key={s.key} value={s.key}>{isAr ? s.label_ar : s.label_en}</option>
+                  ))}
+                </select>
+                <Button size="sm" variant="outline" onClick={simulateMockError}>
+                  <FlaskConical className="h-3.5 w-3.5" />
+                  <span className="ms-2">{isAr ? "محاكاة الخطأ" : "Simulate error"}</span>
+                </Button>
+                <Button size="sm" variant="default" onClick={simulateMockSuccess}>
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span className="ms-2">{isAr ? "محاكاة النجاح" : "Simulate success"}</span>
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
 
           {lastError && (() => {

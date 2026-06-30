@@ -207,7 +207,7 @@ function FilmsPage() {
               >
                 <img
                   src={f.poster}
-                  alt=""
+                  alt={isAr ? f.titleAr : f.titleEn}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full scale-105 object-cover opacity-80 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-100"
                 />

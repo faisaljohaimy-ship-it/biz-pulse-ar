@@ -578,7 +578,7 @@ function TwinCityScene({ isAr }: { isAr: boolean }) {
       <Parallax strength={140} className="absolute inset-0">
         <img
           src={cinematicCity}
-          alt=""
+          alt={isAr ? "توأم رقمي هولوغرافي لمدينة تشغيلية" : "Holographic digital twin of an operational city"}
           loading="lazy"
           width={1920}
           height={1080}
@@ -740,7 +740,7 @@ function CommandCenterScene({ isAr }: { isAr: boolean }) {
       <div className="absolute inset-0">
         <img
           src={cinematicBoardroom}
-          alt=""
+          alt={isAr ? "قاعة مجلس تنفيذية مع طبقات هولوغرافية" : "Executive boardroom with holographic intelligence layers"}
           loading="lazy"
           width={1920}
           height={1080}
@@ -1494,7 +1494,7 @@ function GlobalScene({ isAr }: { isAr: boolean }) {
       <Parallax strength={140} className="absolute inset-0">
         <img
           src={cinematicEarth}
-          alt=""
+          alt={isAr ? "شبكة توسع عالمية حول الأرض" : "Global expansion network around Earth"}
           loading="lazy"
           width={1920}
           height={1080}
@@ -1597,7 +1597,7 @@ function FilmsScene({ isAr }: { isAr: boolean }) {
               >
                 <img
                   src={f.img}
-                  alt=""
+                  alt={f.t}
                   loading="lazy"
                   width={1920}
                   height={2400}

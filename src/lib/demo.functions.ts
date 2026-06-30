@@ -2,7 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const DEMO_EMAIL = "demo@nexus.app";
-export const DEMO_PASSWORD = "Nexus2026!";
+
+function getDemoPassword() {
+  const password = process.env.NEXIOS_DEMO_PASSWORD || process.env.DEMO_PASSWORD;
+  if (!password) throw new Error("Demo password is not configured for this environment.");
+  return password;
+}
 
 async function requireAdmin(context: { supabase: unknown; userId: string }) {
   const { data, error } = await (context.supabase as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: Error | null }> }).rpc("has_role", {
@@ -31,7 +36,7 @@ export const ensureDemoUser = createServerFn({ method: "POST" })
       if (!existing.email_confirmed_at) {
         await supabaseAdmin.auth.admin.updateUserById(existing.id, {
           email_confirm: true,
-          password: DEMO_PASSWORD,
+          password: getDemoPassword(),
         });
       }
       return { ok: true, created: false };
@@ -39,7 +44,7 @@ export const ensureDemoUser = createServerFn({ method: "POST" })
 
     const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
       email: DEMO_EMAIL,
-      password: DEMO_PASSWORD,
+      password: getDemoPassword(),
       email_confirm: true,
       user_metadata: { name: "Demo Executive" },
     });
