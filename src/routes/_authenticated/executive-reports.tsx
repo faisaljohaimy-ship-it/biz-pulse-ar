@@ -9,13 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { listSharePointSites } from "@/lib/sharepoint.functions";
 import { listTeamsChannels } from "@/lib/teams.functions";
 import { publishExecutiveReport } from "@/lib/exec-reports.functions";
 import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
+import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
 import { AlertTriangle, FileText, Send, ShieldCheck, ShieldX, ExternalLink, Loader2, X, ClipboardCopy, FlaskConical } from "lucide-react";
 import { BinaryReportsPanel } from "@/components/exec/binary-reports-panel";
 
@@ -186,6 +186,7 @@ function ExecutiveReportsPage() {
   const fetchSites = useServerFn(listSharePointSites);
   const fetchChannels = useServerFn(listTeamsChannels);
   const publish = useServerFn(publishExecutiveReport);
+  const getIsAdmin = useServerFn(getCurrentUserIsAdmin);
 
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [sites, setSites] = useState<SiteOpt[]>([]);
@@ -206,11 +207,11 @@ function ExecutiveReportsPage() {
     if (!user) return;
     let alive = true;
     (async () => {
-      const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as never });
-      if (alive) setIsAdmin(Boolean(data));
+      const result = await getIsAdmin();
+      if (alive) setIsAdmin(Boolean(result.isAdmin));
     })();
     return () => { alive = false; };
-  }, [user]);
+  }, [getIsAdmin, user]);
 
   // Load sites, channels, briefings (only if admin)
   useEffect(() => {
