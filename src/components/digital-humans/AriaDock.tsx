@@ -510,6 +510,18 @@ export function AriaDock() {
               </div>
             </div>
 
+            <AriaStatusStrip
+              className="mt-2"
+              state={state}
+              voiceOn={voiceOn}
+              queueDepth={queueDepth}
+              listening={listener.listening}
+              thinking={listener.thinking}
+              ar={ar}
+            />
+
+
+
             <div className="mt-2 text-[13px] leading-relaxed text-white/85 min-h-[2.6em]">
               {listener.listening || listener.thinking
                 ? (
