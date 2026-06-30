@@ -84,6 +84,7 @@ export function MiniAriaHeroBadge() {
     const clean = cleanForVoice(text);
     if (!clean) return;
     stopSpeaking();
+    setVoiceError(null);
     // Fan out to AriaDock if mounted (authenticated routes share avatar lip-sync)
     try {
       const w = window as unknown as {
@@ -102,16 +103,33 @@ export function MiniAriaHeroBadge() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: clean }),
       });
-      if (!r.ok) throw new Error(`tts_${r.status}`);
+      if (!r.ok) {
+        const kind = r.status === 429 ? "rate" : "generic";
+        setVoiceError({ kind, status: r.status });
+        setSpeaking(false);
+        return;
+      }
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-      audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-      await audio.play().catch(() => { setSpeaking(false); URL.revokeObjectURL(url); });
+      audio.onerror = () => {
+        setSpeaking(false);
+        setVoiceError({ kind: "generic" });
+        URL.revokeObjectURL(url);
+      };
+      try {
+        await audio.play();
+      } catch {
+        // Browser blocked autoplay (no user gesture) — surface fallback.
+        setSpeaking(false);
+        setVoiceError({ kind: "blocked" });
+        URL.revokeObjectURL(url);
+      }
     } catch {
       setSpeaking(false);
+      setVoiceError({ kind: "network" });
     }
   }, [stopSpeaking]);
 
