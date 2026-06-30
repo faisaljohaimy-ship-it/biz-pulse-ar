@@ -17,19 +17,24 @@ export function AriaWelcomeCurtain() {
   const [show, setShow] = useState(false);
   const [fade, setFade] = useState(false);
 
+  const [remaining, setRemaining] = useState(60);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       if (sessionStorage.getItem(SESSION_KEY)) return;
     } catch { /* noop */ }
     setShow(true);
-    // Begin fade-out at 3.6s, fully dismiss at 4.4s
-    const fadeT = window.setTimeout(() => setFade(true), 3600);
+    // 60s curtain. Begin fade-out at 59.2s, fully dismiss at 60s.
+    const fadeT = window.setTimeout(() => setFade(true), 59_200);
     const offT = window.setTimeout(() => {
       setShow(false);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-    }, 4400);
-    return () => { window.clearTimeout(fadeT); window.clearTimeout(offT); };
+    }, 60_000);
+    const tickT = window.setInterval(() => {
+      setRemaining((r) => (r > 0 ? r - 1 : 0));
+    }, 1000);
+    return () => { window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT); };
   }, []);
 
   const dismiss = () => {
