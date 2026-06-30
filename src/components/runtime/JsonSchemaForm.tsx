@@ -247,6 +247,7 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
                   variant="ghost"
                   className="h-7 w-7 mt-1"
                   onClick={() => onChange(arr.filter((_, idx) => idx !== i))}
+                  aria-label="Remove item"
                 >
                   <Trash2 className="h-3 w-3 text-rose-400" />
                 </Button>
