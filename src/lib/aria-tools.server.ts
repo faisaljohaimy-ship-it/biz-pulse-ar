@@ -29,6 +29,16 @@ function scoreRisk(severity: string, priority: string, category: string): number
   return Math.min(100, (sevMap[severity] ?? 40) + (prioMap[priority] ?? 5) + catBoost);
 }
 
+async function getActorOrgId(supabase: SupabaseClient, userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+  return (data?.org_id as string | undefined) ?? null;
+}
+
 async function logEvent(
   supabase: SupabaseClient,
   userId: string,
@@ -290,10 +300,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         notes: z.string().max(2000).optional(),
       }),
       execute: async (args) => {
+        const org_id = await getActorOrgId(supabase, userId);
+        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("INC");
         const ai_risk_score = scoreRisk(args.severity, args.priority, args.category);
         const { data, error } = await supabase.from("sec_incidents").insert({
-          ref, category: args.category,
+          ref, org_id, category: args.category,
           title_ar: args.title_ar,
           title_en: args.title_en || args.title_ar,
           severity: args.severity, priority: args.priority, status: "open",
@@ -359,9 +371,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         source_incident_id: z.string().uuid().optional(),
       }),
       execute: async (args) => {
+        const org_id = await getActorOrgId(supabase, userId);
+        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("WO");
         const { data, error } = await supabase.from("sec_work_orders").insert({
-          ref, title_ar: args.title_ar, title_en: args.title_en || args.title_ar,
+          ref, org_id, title_ar: args.title_ar, title_en: args.title_en || args.title_ar,
           kind: args.kind, priority: args.priority, status: "open",
           asset_kind: args.asset_kind, asset_code: args.asset_code ?? null,
           assigned_to: args.assigned_to ?? null, contractor: args.contractor ?? null,
@@ -383,7 +397,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       }),
       execute: async ({ id, completion_notes }) => {
         const { data, error } = await supabase.from("sec_work_orders")
-          .update({ status: "closed", closed_at: new Date().toISOString(), completion_notes })
+          .update({ status: "closed", closed_at: new Date().toISOString(), completion_notes, notes: completion_notes })
           .eq("id", id).select("ref,source_incident_id").single();
         if (error) return { ok: false, error: error.message };
         await logEvent(supabase, userId, "work_order", id, data.ref, "completed", { completion_notes });
@@ -427,9 +441,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         notes: z.string().max(2000).optional(),
       }),
       execute: async (args) => {
+        const org_id = await getActorOrgId(supabase, userId);
+        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("PTW");
         const { data, error } = await supabase.from("sec_permits").insert({
-          ref, work_type: args.work_type, contractor: args.contractor,
+          ref, org_id, created_by: userId, work_type: args.work_type, contractor: args.contractor,
           risk_level: args.risk_level, status: "pending",
           starts_at: args.starts_at, ends_at: args.ends_at,
           notes: args.notes ?? null,
@@ -481,9 +497,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         checkpoints_total: z.number().int().min(1).max(100).default(10),
       }),
       execute: async (args) => {
+        const org_id = await getActorOrgId(supabase, userId);
+        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("PT");
         const { data, error } = await supabase.from("sec_patrols").insert({
-          ref, team: args.team, route: args.route,
+          ref, org_id, created_by: userId, team: args.team, route: args.route,
           checkpoints_total: args.checkpoints_total, checkpoints_done: 0,
           status: "scheduled",
         }).select("id,ref,team,route,status,checkpoints_total").single();
@@ -520,9 +538,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         badge_no: z.string().max(40).optional(),
       }),
       execute: async (args) => {
+        const org_id = await getActorOrgId(supabase, userId);
+        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("V");
         const { data, error } = await supabase.from("sec_visitors").insert({
-          ref, full_name: args.full_name, host: args.host,
+          ref, org_id, created_by: userId, full_name: args.full_name, host: args.host,
           organization: args.organization ?? null, purpose: args.purpose ?? null,
           badge_no: args.badge_no ?? ref, status: "inside",
           check_in_at: new Date().toISOString(),
