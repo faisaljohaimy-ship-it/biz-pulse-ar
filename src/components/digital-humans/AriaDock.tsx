@@ -18,10 +18,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
 import { getAvatarProvider, type AvatarProvider, type AvatarSpeakTurn } from "@/lib/digital-humans/avatar-provider";
-// Side-effect imports — register all providers so getAvatarProvider can resolve them.
+// Side-effect imports — register SSR-safe providers eagerly.
+// The HeyGen provider is loaded lazily on the client only (see useEffect below)
+// because its SDK touches WebRTC / mediaDevices and must never run during SSR
+// or in environments that lack `navigator.mediaDevices` (mobile preview iframes).
 import "@/components/digital-humans/DigitalHumanAvatar";
 import "@/components/digital-humans/r3f/R3FAvatarProvider";
-import "@/components/digital-humans/heygen/HeygenAvatarProvider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
