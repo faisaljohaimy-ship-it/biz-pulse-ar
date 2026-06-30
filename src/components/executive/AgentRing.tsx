@@ -151,6 +151,7 @@ export function AgentRing() {
     refetchInterval: 15_000,
     staleTime: 10_000,
     retry: false,
+    enabled: hasSession,
   });
 
   const agents: AgentVM[] = useMemo(() => {
