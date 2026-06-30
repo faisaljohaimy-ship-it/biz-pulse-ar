@@ -7,6 +7,7 @@ import { AgentRing } from "@/components/executive/AgentRing";
 import { CinematicBoot } from "@/components/executive/CinematicBoot";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
+import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,6 +56,11 @@ function IntroLanding() {
           <Command className="h-3 w-3" /> K
         </kbd>
       </div>
+
+      {/* Live system showcase — embed of the full platform */}
+      <LiveSystemShowcase />
+
+
 
       <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
