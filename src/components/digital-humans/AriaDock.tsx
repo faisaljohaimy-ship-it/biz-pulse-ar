@@ -62,6 +62,28 @@ export function AriaDock() {
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
 
+  // Lazy-register the HeyGen provider only on the client and only when
+  // WebRTC media APIs are available. Any import / boot failure is swallowed
+  // so the dock (and the rest of the app) continues to render via the
+  // built-in SVG / R3F providers.
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    const nav = typeof navigator !== "undefined" ? navigator : undefined;
+    if (!nav?.mediaDevices) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        await import("@/components/digital-humans/heygen/HeygenAvatarProvider");
+        if (!cancelled) setHeygenAvailable(true);
+      } catch (err) {
+        if (!cancelled) setHeygenAvailable(false);
+        // eslint-disable-next-line no-console
+        console.warn("[AriaDock] HeyGen provider unavailable", err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   // Probe HeyGen availability once. When configured + voice is on, HeyGen
   // owns audio + lip-sync. Otherwise we keep the existing R3F/SVG + TTS path.
   useEffect(() => {
