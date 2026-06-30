@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
 import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
+import { AgentRing } from "@/components/executive/AgentRing";
 
 export const Route = createFileRoute("/")({
   head: () => ({
