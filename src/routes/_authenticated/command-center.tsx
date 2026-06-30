@@ -106,16 +106,21 @@ function useSecOps() {
     queryFn: async () => (await supabase.from("sec_assets").select("*").order("code")).data as Asset[] ?? [],
   });
 
-  // Realtime: incidents + cctv + patrols
+  // Realtime: incidents + cctv + patrols (best-effort, never crashes the page)
   useEffect(() => {
-    const topic = `command-center-live:${Math.random().toString(36).slice(2)}`;
-    const ch = supabase
-      .channel(topic)
-      .on("postgres_changes", { event: "*", schema: "public", table: "sec_incidents" }, () => incidents.refetch())
-      .on("postgres_changes", { event: "*", schema: "public", table: "sec_cctv_alerts" }, () => cctv.refetch())
-      .on("postgres_changes", { event: "*", schema: "public", table: "sec_patrols" }, () => patrols.refetch())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const topic = `command-center-live:${Math.random().toString(36).slice(2, 10)}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let ch: any = null;
+    try {
+      ch = supabase.channel(topic);
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "sec_incidents" }, () => incidents.refetch());
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "sec_cctv_alerts" }, () => cctv.refetch());
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "sec_patrols" }, () => patrols.refetch());
+      ch.subscribe();
+    } catch (err) {
+      console.warn("[command-center] realtime unavailable", err);
+    }
+    return () => { if (ch) { try { void supabase.removeChannel(ch); } catch { /* noop */ } } };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
