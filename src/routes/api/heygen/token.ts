@@ -14,6 +14,11 @@
  * this handler.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/governance/rate-limit.server";
 import {
   HEYGEN_API_URL,
   HEYGEN_DEFAULT_AVATAR_ID,
