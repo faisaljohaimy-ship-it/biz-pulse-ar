@@ -18,10 +18,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
 import { getAvatarProvider, type AvatarProvider, type AvatarSpeakTurn } from "@/lib/digital-humans/avatar-provider";
-// Side-effect imports — register all providers so getAvatarProvider can resolve them.
+// Side-effect imports — register SSR-safe providers eagerly.
+// The HeyGen provider is loaded lazily on the client only (see useEffect below)
+// because its SDK touches WebRTC / mediaDevices and must never run during SSR
+// or in environments that lack `navigator.mediaDevices` (mobile preview iframes).
 import "@/components/digital-humans/DigitalHumanAvatar";
 import "@/components/digital-humans/r3f/R3FAvatarProvider";
-import "@/components/digital-humans/heygen/HeygenAvatarProvider";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent } from "@/lib/narrator/event-narrator";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
@@ -59,6 +61,28 @@ export function AriaDock() {
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
+
+  // Lazy-register the HeyGen provider only on the client and only when
+  // WebRTC media APIs are available. Any import / boot failure is swallowed
+  // so the dock (and the rest of the app) continues to render via the
+  // built-in SVG / R3F providers. The `/api/heygen/status` effect below
+  // independently controls whether HeyGen is actually selected.
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    const nav = typeof navigator !== "undefined" ? navigator : undefined;
+    if (!nav?.mediaDevices) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        await import("@/components/digital-humans/heygen/HeygenAvatarProvider");
+      } catch (err) {
+        if (cancelled) return;
+        // eslint-disable-next-line no-console
+        console.warn("[AriaDock] HeyGen provider unavailable", err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Probe HeyGen availability once. When configured + voice is on, HeyGen
   // owns audio + lip-sync. Otherwise we keep the existing R3F/SVG + TTS path.
