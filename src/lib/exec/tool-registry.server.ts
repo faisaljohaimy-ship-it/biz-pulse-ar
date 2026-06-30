@@ -455,10 +455,21 @@ const secCreateIncident: ToolExecutor = {
   async execute(input, ctx) {
     const data = input as z.infer<typeof secCreateIncident.input>;
     const orgId = await resolveActorOrgId(ctx);
+    const severityScore: Record<z.infer<typeof secCreateIncident.input>["severity"], number> = {
+      low: 20,
+      medium: 45,
+      high: 70,
+      critical: 90,
+    };
+    const priorityBoost: Record<z.infer<typeof secCreateIncident.input>["priority"], number> = {
+      low: 0,
+      medium: 5,
+      high: 10,
+      critical: 15,
+    };
     const riskScore = Math.min(
       100,
-      ({ low: 20, medium: 45, high: 70, critical: 90 }[data.severity] ?? 45) +
-        ({ low: 0, medium: 5, high: 10, critical: 15 }[data.priority] ?? 5),
+      severityScore[data.severity] + priorityBoost[data.priority],
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (ctx.supabase as any)
