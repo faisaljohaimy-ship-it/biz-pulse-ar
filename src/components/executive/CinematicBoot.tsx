@@ -65,7 +65,7 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
       aria-modal="true"
       aria-label="NEXIOS startup sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020A14] text-white"
-      style={{ animation: "nx-boot-fade-out 600ms ease 6600ms forwards" }}
+      style={{ animation: "nx-boot-fade-out 600ms ease 59400ms forwards" }}
     >
       {/* Ambient aurora */}
       <div className="pointer-events-none absolute inset-0 opacity-70"
