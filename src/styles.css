@@ -610,3 +610,44 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
   80% { opacity: 1; }
   100% { transform: translateY(110%); opacity: 0; }
 }
+
+/* ============================================================
+ * Executive surface utilities (Wave 1)
+ * Used by src/components/executive/* — pure tokens, no hex.
+ * ============================================================ */
+.executive-glass {
+  background:
+    linear-gradient(135deg,
+      color-mix(in oklab, var(--nx-cyan) 12%, transparent),
+      color-mix(in oklab, var(--nx-card) 28%, transparent));
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 10%, transparent),
+    0 18px 40px -22px color-mix(in oklab, var(--nx-cyan) 70%, transparent);
+}
+.executive-fog {
+  background:
+    radial-gradient(60% 50% at 50% 18%, color-mix(in oklab, var(--nx-cyan-2) 18%, transparent) 0%, transparent 70%),
+    radial-gradient(45% 40% at 18% 78%, color-mix(in oklab, var(--nx-cyan)   14%, transparent) 0%, transparent 70%),
+    radial-gradient(40% 38% at 82% 72%, color-mix(in oklab, var(--nx-exec)   10%, transparent) 0%, transparent 70%),
+    linear-gradient(180deg, var(--nx-bg-1) 0%, var(--nx-bg-2) 65%, var(--nx-bg-1) 100%);
+  animation: executive-fog-drift 18s ease-in-out infinite alternate;
+}
+@keyframes executive-fog-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1);   filter: hue-rotate(0deg); }
+  100% { transform: translate3d(0, -1.5%, 0) scale(1.04); filter: hue-rotate(8deg); }
+}
+@keyframes executive-mote-pulse {
+  0%, 100% { opacity: 0.15; transform: translate3d(0, 0, 0); }
+  50%      { opacity: 0.85; transform: translate3d(0, -1px, 0); }
+}
+.executive-mote {
+  animation: executive-mote-pulse 6s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .executive-fog { animation: none; }
+  .executive-mote { animation: none; opacity: 0.5; }
+}

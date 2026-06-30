@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
-import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
+import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
+import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +28,11 @@ function IntroLanding() {
   const navigate = useNavigate();
   return (
     <div dir="rtl" className="relative min-h-screen overflow-hidden bg-black text-white">
-      <NexusRevealHero onEnterOps={() => navigate({ to: "/runtime-hub" })} />
+      <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/runtime-hub" })} />
+
+      <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
+        <MissionControlStrip />
+      </div>
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
         {/* Pillars */}
