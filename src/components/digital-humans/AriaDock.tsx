@@ -57,6 +57,7 @@ export function AriaDock() {
   const [amp, setAmp] = useState(0);
   const [current, setCurrent] = useState<QueuedLine | null>(null);
   const [speakTurn, setSpeakTurn] = useState<AvatarSpeakTurn | null>(null);
+  const [ariaLiveText, setAriaLiveText] = useState("");
   const [heygenAvailable, setHeygenAvailable] = useState<boolean | null>(null);
   const lastLineRef = useRef<QueuedLine | null>(null);
   const queueRef = useRef<QueuedLine[]>([]);
