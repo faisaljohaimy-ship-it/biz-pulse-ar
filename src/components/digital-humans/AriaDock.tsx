@@ -292,8 +292,14 @@ export function AriaDock() {
     window.addEventListener("pointerdown", unlock, true);
     window.addEventListener("keydown", unlock, true);
     window.addEventListener("touchstart", unlock, true);
+    // Also attempt an immediate greeting on mount — the click that navigated
+    // here counts as a recent user gesture in most browsers, so TTS will play.
+    // If the browser blocks autoplay, the gesture listeners above still fire
+    // on the next tap.
+    const autoTimer = window.setTimeout(() => unlock(), 250);
 
     return () => {
+      window.clearTimeout(autoTimer);
       window.removeEventListener("pointerdown", unlock, true);
       window.removeEventListener("keydown", unlock, true);
       window.removeEventListener("touchstart", unlock, true);
@@ -373,9 +379,8 @@ export function AriaDock() {
     <div
       className={cn(
         "fixed z-[60] transition-all duration-300",
-        // Mobile: bottom-center, full-width minus gutter. Tablet+: anchored bottom-end.
-        "bottom-[max(0.75rem,env(safe-area-inset-bottom))] start-3 end-3 w-auto",
-        "sm:start-auto sm:end-4 sm:w-[480px] sm:max-w-[calc(100vw-1.5rem)]",
+        // Mobile: expanded → centered horizontally near bottom. Tablet+: same centered layout.
+        "bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[min(560px,calc(100vw-1.5rem))]",
         "rounded-2xl border border-cyan-400/25 bg-[#061A2E]/90 backdrop-blur-2xl",
         "shadow-[0_20px_60px_-20px_rgba(0,212,255,0.45)]",
         minimized ? "p-2.5" : "p-3.5",
