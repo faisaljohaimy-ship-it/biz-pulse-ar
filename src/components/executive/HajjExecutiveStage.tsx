@@ -151,7 +151,7 @@ export function HajjExecutiveStage() {
         {/* LEFT — Digital integration constellation */}
         <div
           className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-[#00D4FF]/30 bg-gradient-to-bl from-[#04243c] via-[#02101e] to-[#061A2E] shadow-[0_0_60px_-25px_rgba(0,212,255,0.5)]"
-          aria-label="حلقة التكامل الرقمي"
+          aria-label={ar ? "حلقة التكامل الرقمي" : "Digital integration ring"}
         >
           {/* Soft glow */}
           <div
@@ -216,8 +216,9 @@ export function HajjExecutiveStage() {
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: it.hue }} />
                 </span>
                 <span className="rounded-full border border-white/10 bg-black/50 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/85 sm:text-[10px]">
-                  {it.label_ar}
+                  {ar ? it.label_ar : it.label_en}
                 </span>
+
               </div>
             );
           })}
@@ -259,9 +260,10 @@ export function HajjExecutiveStage() {
                 <Icon className="h-4 w-4" style={{ color: it.hue }} />
               </span>
               <div className="min-w-0">
-                <div className="truncate text-xs font-semibold text-white sm:text-sm">{it.label_ar}</div>
-                <div className="truncate text-[10px] uppercase tracking-[0.18em] text-white/45">{it.label_en}</div>
+                <div className="truncate text-xs font-semibold text-white sm:text-sm">{ar ? it.label_ar : it.label_en}</div>
+                <div className="truncate text-[10px] uppercase tracking-[0.18em] text-white/45">{ar ? it.label_en : it.label_ar}</div>
               </div>
+
             </div>
           );
         })}
