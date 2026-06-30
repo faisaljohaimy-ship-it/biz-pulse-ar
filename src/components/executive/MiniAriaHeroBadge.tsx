@@ -4,13 +4,12 @@
  * A compact glass panel that lets a visitor (no auth required) ask
  * ARIA a question directly from the landing page. Routes through
  * `/api/public/aria-ask` (rate-limited, GPT-5 powered), renders the
- * answer in a chat bubble, and — if the AriaDock voice bridge is
- * available — speaks it through ARIA's voice for full presence.
- *
- * Pure presentation + a single fetch. No analytics, no PII.
+ * answer in a chat bubble, and speaks it back via
+ * `/api/public/aria-tts` (ElevenLabs multilingual, Sarah voice) so
+ * ARIA replies in her own voice — fully professional, no auth needed.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Loader2, Sparkles, Volume2, X } from "lucide-react";
+import { ArrowUp, Loader2, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 
 type AskResult = { text_ar: string; text_en: string };
 
@@ -25,23 +24,95 @@ const PROMPTS_EN = [
   "How does ARIA support industrial security?",
 ];
 
+const VOICE_PREF_KEY = "aria-hero-voice-enabled";
+
 function isArabic(s: string) {
   return /[\u0600-\u06FF]/.test(s);
+}
+
+function cleanForVoice(s: string) {
+  return s
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/[*_#`>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1100);
 }
 
 export function MiniAriaHeroBadge() {
   const [open, setOpen] = useState(true);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(true);
   const [answer, setAnswer] = useState<AskResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lang, setLang] = useState<"ar" | "en">("ar");
   const abortRef = useRef<AbortController | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const suggestions = useMemo(() => (lang === "ar" ? PROMPTS_AR : PROMPTS_EN), [lang]);
 
-  useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(VOICE_PREF_KEY);
+      if (v === "0") setVoiceOn(false);
+    } catch { /* noop */ }
+  }, []);
+
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    setSpeaking(false);
+  }, []);
+
+  const speak = useCallback(async (text: string) => {
+    const clean = cleanForVoice(text);
+    if (!clean) return;
+    stopSpeaking();
+    // Fan out to AriaDock if mounted (authenticated routes share avatar lip-sync)
+    try {
+      const w = window as unknown as {
+        aria?: { speak?: (t: { id?: string; text_ar: string; text_en: string }) => void };
+      };
+      w.aria?.speak?.({
+        id: `hero-ask-${Date.now()}`,
+        text_ar: isArabic(clean) ? clean : "",
+        text_en: isArabic(clean) ? "" : clean,
+      });
+    } catch { /* noop */ }
+    try {
+      setSpeaking(true);
+      const r = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clean }),
+      });
+      if (!r.ok) throw new Error(`tts_${r.status}`);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+      audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+      await audio.play().catch(() => { setSpeaking(false); URL.revokeObjectURL(url); });
+    } catch {
+      setSpeaking(false);
+    }
+  }, [stopSpeaking]);
 
   const ask = useCallback(async (q: string) => {
     const qt = q.trim();
@@ -62,27 +133,16 @@ export function MiniAriaHeroBadge() {
         signal: ctrl.signal,
       });
       const j = (await r.json().catch(() => ({}))) as Partial<AskResult> & { error?: string };
-      if (!r.ok) {
-        throw new Error(j.error || `http_${r.status}`);
-      }
+      if (!r.ok) throw new Error(j.error || `http_${r.status}`);
       const result: AskResult = {
         text_ar: j.text_ar ?? "",
         text_en: j.text_en ?? "",
       };
       setAnswer(result);
-      // Hand off to AriaDock voice if it's mounted (authenticated routes).
-      const w = window as unknown as {
-        aria?: {
-          speak?: (t: { id?: string; text_ar: string; text_en: string }) => void;
-        };
-      };
-      try {
-        w.aria?.speak?.({
-          id: `hero-ask-${Date.now()}`,
-          text_ar: result.text_ar,
-          text_en: result.text_en,
-        });
-      } catch { /* noop */ }
+      if (voiceOn) {
+        const spoken = detected === "ar" ? result.text_ar : result.text_en;
+        if (spoken) void speak(spoken);
+      }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       const msg = e instanceof Error ? e.message : "ask_failed";
@@ -98,7 +158,7 @@ export function MiniAriaHeroBadge() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [voiceOn, speak]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,13 +172,16 @@ export function MiniAriaHeroBadge() {
 
   const replayVoice = () => {
     if (!answer) return;
-    const w = window as unknown as {
-      aria?: { speak?: (t: { id?: string; text_ar: string; text_en: string }) => void };
-    };
-    w.aria?.speak?.({
-      id: `hero-ask-replay-${Date.now()}`,
-      text_ar: answer.text_ar,
-      text_en: answer.text_en,
+    const spoken = ar ? answer.text_ar : answer.text_en;
+    if (spoken) void speak(spoken);
+  };
+
+  const toggleVoice = () => {
+    setVoiceOn((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(VOICE_PREF_KEY, next ? "1" : "0"); } catch { /* noop */ }
+      if (!next) stopSpeaking();
+      return next;
     });
   };
 
@@ -132,6 +195,7 @@ export function MiniAriaHeroBadge() {
       <style>{`
         @keyframes mab-core { 0%,100% { box-shadow: 0 0 18px rgba(58,232,255,0.55), inset 0 0 10px rgba(58,232,255,0.3); } 50% { box-shadow: 0 0 28px rgba(58,232,255,0.85), inset 0 0 14px rgba(58,232,255,0.45); } }
         @keyframes mab-think { 0% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .85; } 100% { transform: scale(.85); opacity: .35; } }
+        @keyframes mab-speak { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
       `}</style>
 
       {/* Header */}
@@ -142,19 +206,41 @@ export function MiniAriaHeroBadge() {
         >
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin text-[#3AE8FF]" />
+          ) : speaking ? (
+            <span className="flex items-end gap-[2px] h-4">
+              {[0, 0.1, 0.2, 0.15].map((d, i) => (
+                <span
+                  key={i}
+                  className="w-[3px] rounded-sm bg-[#3AE8FF] shadow-[0_0_6px_rgba(58,232,255,0.9)]"
+                  style={{ height: "100%", transformOrigin: "bottom", animation: `mab-speak 0.6s ease-in-out ${d}s infinite` }}
+                />
+              ))}
+            </span>
           ) : (
             <Sparkles className="h-5 w-5 text-[#3AE8FF] drop-shadow-[0_0_6px_rgba(58,232,255,0.9)]" />
           )}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/75">ARIA · GPT-5</div>
+          <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/75">
+            ARIA · GPT-5 {speaking ? (ar ? "· يتحدث" : "· speaking") : ""}
+          </div>
           <div className="truncate text-sm font-medium text-white">
             {ar ? "بماذا يمكنني مساعدتك؟" : "How can I help you?"}
           </div>
         </div>
         <button
           type="button"
-          onClick={() => setOpen(false)}
+          onClick={toggleVoice}
+          aria-pressed={voiceOn}
+          aria-label={voiceOn ? (ar ? "كتم الصوت" : "Mute voice") : (ar ? "تشغيل الصوت" : "Unmute voice")}
+          title={voiceOn ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تشغيل الصوت" : "Unmute")}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/40 text-[#3AE8FF] transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/10"
+        >
+          {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => { stopSpeaking(); setOpen(false); }}
           aria-label={ar ? "إغلاق آريا" : "Dismiss ARIA"}
           title={ar ? "إغلاق" : "Dismiss"}
           className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/45 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
@@ -196,11 +282,11 @@ export function MiniAriaHeroBadge() {
                 </button>
                 <button
                   type="button"
-                  onClick={replayVoice}
-                  aria-label={ar ? "تشغيل الصوت" : "Play voice"}
+                  onClick={speaking ? stopSpeaking : replayVoice}
+                  aria-label={speaking ? (ar ? "إيقاف الصوت" : "Stop voice") : (ar ? "تشغيل الصوت" : "Play voice")}
                   className="grid h-7 w-7 place-items-center rounded-full border border-[#3AE8FF]/50 text-[#3AE8FF] hover:bg-[#3AE8FF]/15"
                 >
-                  <Volume2 className="h-3.5 w-3.5" />
+                  {speaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                 </button>
               </div>
             </div>
