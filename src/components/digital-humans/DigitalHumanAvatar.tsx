@@ -459,7 +459,14 @@ export function DigitalHumanAvatar({
       )}
 
       {/* keyframes (scoped via global animation name) */}
-      <style>{`@keyframes dh-breath { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.5px) scale(1.005); } }`}</style>
+      <style>{`
+        @keyframes dh-breath { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.5px) scale(1.005); } }
+        @keyframes dh-spin { to { transform: rotate(360deg); } }
+        @keyframes dh-spin-rev { to { transform: rotate(-360deg); } }
+        @keyframes dh-scan { 0% { transform: translateY(-26px); opacity: 0; } 50% { opacity: 0.9; } 100% { transform: translateY(26px); opacity: 0; } }
+        @keyframes dh-iris { 0%,100% { opacity: 0.85; transform: scale(1); } 50% { opacity: 0.35; transform: scale(1.25); } transform-box: fill-box; transform-origin: center; }
+        @keyframes dh-float { 0%,100% { transform: translateY(0); opacity: 0.35; } 50% { transform: translateY(-2px); opacity: 0.95; } }
+      `}</style>
     </div>
   );
 }
