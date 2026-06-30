@@ -16,6 +16,7 @@ import { Route as SubprocessorsRouteImport } from './routes/subprocessors'
 import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
+import { Route as RuntimeHubRouteImport } from './routes/runtime-hub'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
@@ -187,6 +188,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RuntimeHubRoute = RuntimeHubRouteImport.update({
+  id: '/runtime-hub',
+  path: '/runtime-hub',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoiRoute = RoiRouteImport.update({
@@ -937,6 +943,7 @@ export interface FileRoutesByFullPath {
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
+  '/runtime-hub': typeof RuntimeHubRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
@@ -1082,6 +1089,7 @@ export interface FileRoutesByTo {
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
+  '/runtime-hub': typeof RuntimeHubRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
@@ -1228,6 +1236,7 @@ export interface FileRoutesById {
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
+  '/runtime-hub': typeof RuntimeHubRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
@@ -1375,6 +1384,7 @@ export interface FileRouteTypes {
     | '/request-demo'
     | '/responsible-ai'
     | '/roi'
+    | '/runtime-hub'
     | '/security'
     | '/sitemap.xml'
     | '/sla'
@@ -1520,6 +1530,7 @@ export interface FileRouteTypes {
     | '/request-demo'
     | '/responsible-ai'
     | '/roi'
+    | '/runtime-hub'
     | '/security'
     | '/sitemap.xml'
     | '/sla'
@@ -1665,6 +1676,7 @@ export interface FileRouteTypes {
     | '/request-demo'
     | '/responsible-ai'
     | '/roi'
+    | '/runtime-hub'
     | '/security'
     | '/sitemap.xml'
     | '/sla'
@@ -1812,6 +1824,7 @@ export interface RootRouteChildren {
   RequestDemoRoute: typeof RequestDemoRoute
   ResponsibleAiRoute: typeof ResponsibleAiRoute
   RoiRoute: typeof RoiRoute
+  RuntimeHubRoute: typeof RuntimeHubRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SlaRoute: typeof SlaRoute
@@ -1892,6 +1905,13 @@ declare module '@tanstack/react-router' {
       path: '/security'
       fullPath: '/security'
       preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/runtime-hub': {
+      id: '/runtime-hub'
+      path: '/runtime-hub'
+      fullPath: '/runtime-hub'
+      preLoaderRoute: typeof RuntimeHubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roi': {
@@ -3094,6 +3114,7 @@ const rootRouteChildren: RootRouteChildren = {
   RequestDemoRoute: RequestDemoRoute,
   ResponsibleAiRoute: ResponsibleAiRoute,
   RoiRoute: RoiRoute,
+  RuntimeHubRoute: RuntimeHubRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SlaRoute: SlaRoute,
