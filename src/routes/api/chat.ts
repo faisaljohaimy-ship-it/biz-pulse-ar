@@ -15,6 +15,10 @@ import {
   getChatRequestId,
   validateChatRequest,
 } from "./-chat-guard";
+import {
+  enforceRateLimit,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 
 const CORS_HEADERS_OPTIONS = {
   "Access-Control-Allow-Origin": "*",
@@ -154,6 +158,11 @@ export const Route = createFileRoute("/api/chat")({
         }
         const userId = userData.user.id;
 
+        const rate = await enforceRateLimit(`chat:${userId}`, 60, 60);
+        if (rate.unavailable) return rateLimitUnavailableResponse();
+        if (!rate.allowed) {
+          return jsonError("ARIA is temporarily rate limited. Please retry shortly.", 429, requestId);
+        }
 
 
         const provider = useLovable
