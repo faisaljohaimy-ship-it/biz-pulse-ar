@@ -25,6 +25,8 @@ export type ToolResult = {
 export type ToolExecutor = {
   id: string;
   input: ZodTypeAny;
+  /** Disabled executors stay discoverable through getExecutor for DB rows, but are not exposed to agents. */
+  disabled?: boolean;
   /** Optional rich description; surfaced to the LLM via the AI SDK tool. */
   description?: string;
   execute: (input: unknown, ctx: ToolContext) => Promise<ToolResult>;
@@ -186,6 +188,20 @@ const ALLOWED_HOSTS = new Set<string>([
   // extend per deployment via env later
 ]);
 
+async function resolveActorOrgId(ctx: ToolContext): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (ctx.supabase as any)
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", ctx.actorId)
+    .limit(1)
+    .maybeSingle();
+  if (error || !data?.org_id) {
+    throw new Error("Actor is not assigned to an organization");
+  }
+  return data.org_id as string;
+}
+
 const restHttp: ToolExecutor = {
   id: "rest.http",
   input: z.object({
@@ -233,7 +249,13 @@ const webhookDispatch: ToolExecutor = {
   }),
   async execute(input) {
     const data = input as z.infer<typeof webhookDispatch.input>;
-    const res = await httpFetch(data.url, {
+    const url = new URL(data.url);
+    if (!ALLOWED_HOSTS.has(url.hostname)) {
+      throw apiError("forbidden", `Webhook host ${url.hostname} not in allowlist.`, {
+        details: { host: url.hostname },
+      });
+    }
+    const res = await httpFetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data.payload),
@@ -252,11 +274,12 @@ const webhookDispatch: ToolExecutor = {
 // (a) feeds the LLM via the tool description so it stops guessing names, and
 // (b) lets us validate column tokens before talking to PostgREST.
 const TABLE_COLUMNS: Record<string, readonly string[]> = {
-  sec_incidents: ["id","ref","site_id","category","title_ar","title_en","severity","status","owner","reported_at","resolved_at","response_minutes","root_cause","ai_summary","created_at","updated_at","priority","assigned_to","escalated","ai_risk_score","org_id"],
-  sec_work_orders: ["id","ref","site_id","building_id","asset_kind","asset_code","kind","title_ar","title_en","priority","status","assigned_to","contractor","opened_at","due_at","closed_at","notes","created_at","updated_at","source_incident_id","org_id"],
-  sec_patrols: ["id","ref","site_id","team","route","status","checkpoints_total","checkpoints_done","started_at","ended_at","created_at","updated_at","org_id"],
-  sec_permits: ["id","ref","site_id","work_type","contractor","risk_level","status","starts_at","ends_at","approver","notes","approved_by","approved_at","created_at","updated_at","org_id"],
-  sec_visitors: ["id","ref","site_id","full_name","organization","host","purpose","badge_no","check_in_at","check_out_at","status","vehicle_plate","expected_at","gate_id","created_at","org_id"],
+  sec_incidents: ["id","ref","site_id","category","title_ar","title_en","severity","status","owner","reported_at","resolved_at","response_minutes","root_cause","ai_summary","created_at","updated_at","priority","assigned_to","escalated","ai_risk_score","org_id","created_by","attachments_count","aria_auto_analyzed","executive_review"],
+  sec_work_orders: ["id","ref","site_id","building_id","asset_kind","asset_code","kind","title_ar","title_en","priority","status","assigned_to","contractor","opened_at","due_at","closed_at","notes","completion_notes","created_at","updated_at","source_incident_id","org_id","created_by","approved_by","approved_at"],
+  sec_patrols: ["id","ref","site_id","team","route","status","checkpoints_total","checkpoints_done","started_at","ended_at","created_at","updated_at","org_id","created_by"],
+  sec_permits: ["id","ref","site_id","work_type","contractor","risk_level","status","starts_at","ends_at","approver","notes","approved_by","approved_at","created_at","updated_at","org_id","created_by"],
+  sec_visitors: ["id","ref","site_id","full_name","organization","host","purpose","badge_no","check_in_at","check_out_at","status","vehicle_plate","expected_at","gate_id","created_at","org_id","created_by","id_number","phone","qr_token"],
+  sec_vehicles: ["id","ref","plate","vehicle_type","driver_name","driver_phone","driver_id_number","company","contractor_id","site_id","gate_id","status","check_in_at","check_out_at","permit_no","permit_expires_at","notes","created_at","updated_at","org_id","created_by"],
   sec_assets: ["id","code","name_ar","name_en","kind","site_id","health","status","last_seen_at","created_at","updated_at","org_id"],
   sec_sites: ["id","code","name_ar","name_en","lat","lng","sensitivity","status","guards_count","notes","circle_id","created_at","updated_at","org_id"],
   sec_cameras: ["id","building_id","site_id","code","kind","status","health","resolution","last_seen_at","created_at","updated_at","org_id"],
@@ -269,8 +292,9 @@ const TABLE_COLUMNS: Record<string, readonly string[]> = {
   sec_projects: ["id","ref","circle_id","name_ar","name_en","kind","status","progress","budget_sar","spent_sar","starts_at","ends_at","manager","contractor","health","created_at","updated_at","org_id"],
   sec_cctv_alerts: ["id","ref","site_id","camera_code","alert_type","confidence","status","detected_at","acknowledged_by","notes","created_at","org_id"],
   sec_patrol_teams: ["id","circle_id","code","name_ar","leader","members_count","vehicle_plate","status","created_at","updated_at","org_id"],
-  sec_contractors: ["id","ref","name","contract_no","workers_count","compliance_score","status","expires_at","permit_types","insurance_expiry","created_at","updated_at","org_id"],
+  sec_contractors: ["id","ref","name","contract_no","workers_count","compliance_score","status","expires_at","permit_types","insurance_expiry","allowed_site_ids","phone","email","created_at","updated_at","org_id","created_by"],
   sec_control_rooms: ["id","circle_id","code","name_ar","name_en","operators_count","status","shift_lead","screens_count","created_at","updated_at","org_id"],
+  sec_knowledge_articles: ["id","doc_code","category_id","title_ar","title_en","summary_ar","summary_en","body_ar","body_en","procedure_ar","procedure_en","requirements_ar","requirements_en","risk_level","priority","status","version","owner","review_date","created_at","updated_at","created_by","org_id"],
 } as const;
 
 const ALLOWED_TABLE_NAMES = Object.keys(TABLE_COLUMNS) as [string, ...string[]];
@@ -418,29 +442,49 @@ const edgeInvoke: ToolExecutor = {
 const secCreateIncident: ToolExecutor = {
   id: "sec.create_incident",
   input: z.object({
-    title: z.string().min(3).max(200),
+    category: z.string().min(2).max(80).default("other"),
+    title_ar: z.string().min(3).max(200),
+    title_en: z.string().max(200).optional(),
     severity: z.enum(["low", "medium", "high", "critical"]),
-    description: z.string().max(5000).optional(),
+    priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+    owner: z.string().max(120).optional(),
+    assigned_to: z.string().max(120).optional(),
+    notes: z.string().max(5000).optional(),
     site_id: z.string().uuid().optional(),
   }),
   async execute(input, ctx) {
     const data = input as z.infer<typeof secCreateIncident.input>;
+    const orgId = await resolveActorOrgId(ctx);
+    const riskScore = Math.min(
+      100,
+      ({ low: 20, medium: 45, high: 70, critical: 90 }[data.severity] ?? 45) +
+        ({ low: 0, medium: 5, high: 10, critical: 15 }[data.priority] ?? 5),
+    );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (ctx.supabase as any)
       .from("sec_incidents")
       .insert({
-        title: data.title,
+        ref: `INC-${Date.now().toString(36).toUpperCase()}`,
+        org_id: orgId,
+        category: data.category,
+        title_ar: data.title_ar,
+        title_en: data.title_en ?? data.title_ar,
         severity: data.severity,
-        description: data.description ?? null,
+        priority: data.priority,
+        owner: data.owner ?? ctx.actorId,
+        assigned_to: data.assigned_to ?? null,
+        root_cause: data.notes ?? null,
         site_id: data.site_id ?? null,
         status: "open",
-        reported_by: ctx.actorId,
+        reported_at: new Date().toISOString(),
+        ai_risk_score: riskScore,
+        created_by: ctx.actorId,
       })
-      .select("id")
+      .select("id,ref,title_ar,severity,priority,status,ai_risk_score")
       .single();
     if (error) throw new Error(`create_incident failed: ${error.message}`);
     return {
-      output: { incidentId: row.id },
+      output: { incident: row },
       rollbackPayload: { incidentId: row.id },
     };
   },
@@ -450,7 +494,7 @@ const secCreateIncident: ToolExecutor = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (ctx.supabase as any)
       .from("sec_incidents")
-      .update({ status: "cancelled" })
+      .update({ status: "closed", root_cause: "Rolled back by agent runtime" })
       .eq("id", id);
   },
 };
@@ -556,6 +600,7 @@ const secUpdateWorkOrder: ToolExecutor = {
 function disabledExecutor(id: string, reason: string): ToolExecutor {
   return {
     id,
+    disabled: true,
     input: z.unknown(),
     async execute() {
       throw new Error(
@@ -592,5 +637,7 @@ export function getExecutor(toolId: string): ToolExecutor | null {
 }
 
 export function listExecutorIds(): string[] {
-  return Object.keys(REGISTRY);
+  return Object.entries(REGISTRY)
+    .filter(([, executor]) => !executor.disabled)
+    .map(([id]) => id);
 }
