@@ -11,7 +11,9 @@
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
 import { Link } from "@tanstack/react-router";
-import { Moon, Gem, ArrowLeft, Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { Moon, Gem, ArrowLeft, ArrowRight, Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
 
 const INTEGRATIONS = [
   { icon: Mail,     label_ar: "Outlook",      label_en: "Microsoft Outlook", hue: "#22c1ff" },
@@ -20,10 +22,18 @@ const INTEGRATIONS = [
 ] as const;
 
 export function HajjExecutiveStage() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const Arrow = ar ? ArrowLeft : ArrowRight;
+  const heading = ar ? "منصة إنجاز الأعمال التنفيذية" : "Executive Delivery Platform";
+  const sub = ar
+    ? "تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط Outlook، SAP، و Windows 365 مع منظومة وكلاء آريا."
+    : "End-to-end digital integration between Hajj operations, enterprise systems, and executive intelligence — a single cockpit linking Outlook, SAP, and Windows 365 with ARIA's agent fabric.";
+
   return (
     <section
-      dir="rtl"
-      aria-label="منصة إنجاز الأعمال التنفيذية"
+      dir={ar ? "rtl" : "ltr"}
+      aria-label={heading}
       className="relative mx-auto mt-10 w-full max-w-6xl px-4 sm:mt-14 sm:px-6"
     >
       <style>{`
@@ -39,17 +49,10 @@ export function HajjExecutiveStage() {
         <div className="text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/80 sm:text-[11px]">
           Executive Delivery Platform · Vision 2030
         </div>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-          منصة إنجاز الأعمال التنفيذية
-        </h2>
-        <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">
-          تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط
-          <span className="px-1 font-semibold text-[#3AE8FF]">Outlook</span>·
-          <span className="px-1 font-semibold text-[#3AE8FF]">SAP</span>·
-          <span className="px-1 font-semibold text-[#3AE8FF]">Windows 365</span>
-          مع منظومة وكلاء آريا.
-        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{heading}</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">{sub}</p>
       </header>
+
 
       <div className="hes-anim grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
         {/* RIGHT (primary in RTL) — Hajj cinematic gateway */}
