@@ -90,7 +90,7 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
         <pointLight position={[0, -2, 2]} intensity={0.3} color={spec.palette.accent} />
 
         <Suspense fallback={null}>
-          <Environment preset="city" environmentIntensity={0.45} />
+          <Environment preset="city" environmentIntensity={0.55} />
         </Suspense>
 
         <ProceduralBust
@@ -99,6 +99,15 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
           mouthAmplitude={mouthAmplitude}
           pointer={effectivePointer}
         />
+
+        {/* Holographic crystal shell — Fresnel rim glow over the head */}
+        <HologramShell color={spec.palette.accent} intensity={0.6 + preset.ringIntensity * 0.8} />
+
+        {/* GPU neural particles — soft blue motes orbiting the bust */}
+        <NeuralParticles color={spec.palette.accent} count={200} radius={1.0} speed={0.6 + preset.ringIntensity} />
+
+        {/* Pulsing scan ring around the head — louder when listening / speaking */}
+        <ScanRing color={spec.palette.accent} intensity={preset.ringIntensity} />
 
         <HaloRing color={spec.palette.accent} intensity={preset.ringIntensity} />
 
@@ -110,6 +119,18 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
           far={1.2}
           color="#000000"
         />
+
+        {/* Post-processing: bloom + film tone mapping + soft vignette */}
+        <EffectComposer multisampling={0} enableNormalPass={false}>
+          <Bloom
+            intensity={0.85}
+            luminanceThreshold={0.18}
+            luminanceSmoothing={0.6}
+            mipmapBlur
+          />
+          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+          <Vignette eskil={false} offset={0.25} darkness={0.7} blendFunction={BlendFunction.NORMAL} />
+        </EffectComposer>
       </Canvas>
     </div>
   );
