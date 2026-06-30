@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n";
+
 
 const STAGES = [
   { t: 0,      label_ar: "تهيئة النواة",              label_en: "Initializing core" },
@@ -14,6 +16,9 @@ const TOTAL_MS = 25_000;
 const SESSION_KEY = "nexios.boot-seen";
 
 export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+
   const [visible, setVisible] = useState(() => {
     if (typeof window === "undefined") return false;
     try { return sessionStorage.getItem(SESSION_KEY) !== "1"; } catch { return true; }
@@ -60,13 +65,14 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div
-      dir="rtl"
+      dir={ar ? "rtl" : "ltr"}
       role="dialog"
       aria-modal="true"
       aria-label="NEXIOS startup sequence"
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020A14] text-white"
       style={{ animation: "nx-boot-fade-out 600ms ease 24400ms forwards" }}
     >
+
       {/* Ambient aurora */}
       <div className="pointer-events-none absolute inset-0 opacity-70"
         style={{
@@ -109,8 +115,9 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
           <span className="bg-gradient-to-r from-white via-[#3AE8FF] to-white bg-clip-text text-transparent">NEXIOS AI OS</span>
         </div>
         <div className="text-xs text-white/60 sm:text-sm">
-          {currentStage.label_ar} <span className="text-white/30">•</span> <span className="font-mono text-white/40">{currentStage.label_en}</span>
+          {ar ? currentStage.label_ar : currentStage.label_en} <span className="text-white/30">•</span> <span className="font-mono text-white/40">{ar ? currentStage.label_en : currentStage.label_ar}</span>
         </div>
+
 
         <div className="mt-4 h-[3px] w-72 max-w-[80vw] overflow-hidden rounded-full bg-white/10">
           <div
@@ -125,8 +132,9 @@ export function CinematicBoot({ onComplete }: { onComplete: () => void }) {
           onClick={finish}
           className="mt-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] uppercase tracking-[0.3em] text-white/70 transition hover:border-[#3AE8FF]/60 hover:text-white"
         >
-          تخطي · Skip
+          {ar ? "تخطي" : "Skip"}
         </button>
+
       </div>
 
       <style>{`
