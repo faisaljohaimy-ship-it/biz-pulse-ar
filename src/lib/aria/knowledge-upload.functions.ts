@@ -63,13 +63,13 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
         body: JSON.stringify({ document_id: doc.id, text: data.text }),
       });
       hookStatus = res.status;
-      hookBody = await res.json().catch(() => null);
+      hookBody = (await res.text().catch(() => "")) || null;
       if (!res.ok) {
         await supabase
           .from("aria_documents")
           .update({
             status: "failed",
-            error: `hook_${res.status}: ${typeof hookBody === "object" ? JSON.stringify(hookBody) : String(hookBody)}`.slice(0, 500),
+            error: `hook_${res.status}: ${hookBody ?? ""}`.slice(0, 500),
           })
           .eq("id", doc.id);
       }
