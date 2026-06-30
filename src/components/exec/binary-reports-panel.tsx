@@ -314,7 +314,7 @@ export function BinaryReportsPanel({
                 <div className="font-medium text-sm">{s.name}</div>
                 <div className="flex items-center gap-2">
                   <Switch checked={s.enabled} onCheckedChange={() => onToggle(s)} />
-                  <Button size="icon" variant="ghost" onClick={() => onDelete(s)}>
+                  <Button size="icon" variant="ghost" onClick={() => onDelete(s)} aria-label="Delete schedule">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
