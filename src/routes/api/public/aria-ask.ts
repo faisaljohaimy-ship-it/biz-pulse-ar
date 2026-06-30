@@ -81,7 +81,7 @@ export const Route = createFileRoute("/api/public/aria-ask")({
               max_completion_tokens: maxTokens,
               messages: [
                 { role: "system", content: SYSTEM },
-                { role: "user", content: parsed.data.question },
+                { role: "user", content: data.question },
               ],
               response_format: { type: "json_object" },
             }),
