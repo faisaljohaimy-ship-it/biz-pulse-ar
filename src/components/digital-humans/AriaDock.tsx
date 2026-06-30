@@ -397,6 +397,27 @@ export function AriaDock() {
 
   useEffect(() => () => handleRef.current?.stop(), []);
 
+  // Reveal the dock UI once the opening welcome line has finished playing.
+  // Until then ARIA's voice is heard but no avatar / transcript is shown,
+  // keeping the hero visually pristine on first load.
+  useEffect(() => {
+    if (revealed) return;
+    if (welcomeStartedRef.current && state === "idle" && current === null) {
+      // Tiny delay so the speaking → idle transition doesn't flash.
+      const t = window.setTimeout(() => setRevealed(true), 250);
+      return () => window.clearTimeout(t);
+    }
+  }, [state, current, revealed]);
+
+  if (!revealed) {
+    // Audio-only intro: render the live region for screen readers but no UI.
+    return (
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {ariaLiveText}
+      </div>
+    );
+  }
+
   if (hidden) {
   return (
     <button
