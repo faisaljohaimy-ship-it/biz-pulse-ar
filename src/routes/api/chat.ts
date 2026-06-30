@@ -178,6 +178,7 @@ export const Route = createFileRoute("/api/chat")({
         // Inject live enterprise context + semantic RAG (memory / knowledge / documents) unless explicitly disabled.
         let systemPrompt = SYSTEM_PROMPT;
         let ragCounts = { memories: 0, knowledge: 0, documents: 0 };
+        let ragCitations: import("@/lib/aria/rag.server").RagCitation[] = [];
         if (grounded !== false) {
           const [{ buildAriaContext }, { gatherRagContext }] = await Promise.all([
             import("@/lib/aria-context.server"),
@@ -185,9 +186,12 @@ export const Route = createFileRoute("/api/chat")({
           ]);
           const [ctx, rag] = await Promise.all([
             buildAriaContext(supabase),
-            lastUserText ? gatherRagContext(supabase, userId, lastUserText) : Promise.resolve({ contextBlock: "", citations: [], counts: { memories: 0, knowledge: 0, documents: 0 }, embedding: null }),
+            lastUserText
+              ? gatherRagContext(supabase, userId, lastUserText)
+              : Promise.resolve({ contextBlock: "", citations: [], counts: { memories: 0, knowledge: 0, documents: 0 }, embedding: null }),
           ]);
           ragCounts = rag.counts;
+          ragCitations = rag.citations;
           systemPrompt = `${SYSTEM_PROMPT}
 
 # ENTERPRISE CONTEXT (LIVE — source of truth)
@@ -196,10 +200,11 @@ ${ctx}
 ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.contextBlock}\n` : ""}
 # RULES
 - Ground every numerical or factual claim in ENTERPRISE CONTEXT, RELEVANT DOCUMENTS, KNOWLEDGE BASE, or PERSISTENT MEMORY above.
-- When you use a document/KB excerpt, cite inline using the supplied [DOC:title] or [KB:title] tag.
+- When you use a document/KB excerpt, you MUST cite it inline using the supplied tag verbatim — [DOC:title] or [KB:title]. At least one inline citation is required whenever RELEVANT DOCUMENTS or KNOWLEDGE BASE entries are present above.
 - If a needed datum is missing, say "بيانات غير متوفرة" / "Data unavailable" — never fabricate.
 - Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing enterprise data.`;
         }
+
 
         const { buildAriaTools } = await import("@/lib/aria-tools.server");
         const tools = buildAriaTools(supabase, userId);
