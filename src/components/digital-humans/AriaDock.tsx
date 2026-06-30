@@ -128,6 +128,18 @@ export function AriaDock() {
       return;
     }
 
+    if (usingHeygen) {
+      // HeyGen owns audio + lip-sync end-to-end. Hand off the turn and
+      // wait for `onSpeechEnd` from the provider before draining the queue.
+      setState("speaking");
+      setSpeakTurn({ id: next.id, text, lang: detectLang(text) });
+      handleRef.current = {
+        promise: Promise.resolve(),
+        stop: () => setSpeakTurn(null),
+      };
+      return;
+    }
+
     setState("thinking");
     const handle = speakAs(next.speaker, {
       text,
@@ -139,7 +151,17 @@ export function AriaDock() {
     handle.promise
       .catch(() => { /* swallow — fall through to next */ })
       .finally(() => { playNext(); });
-  }, [ar, voiceOn, paused]);
+  }, [ar, voiceOn, paused, usingHeygen]);
+
+  // HeyGen drain — when the streaming-video provider finishes a turn, advance.
+  const handleHeygenEnd = useCallback((id: string) => {
+    setSpeakTurn((cur) => (cur?.id === id ? null : cur));
+    playNext();
+  }, [playNext]);
+  const handleHeygenErr = useCallback((id: string, _msg: string) => {
+    setSpeakTurn((cur) => (cur?.id === id ? null : cur));
+    playNext();
+  }, [playNext]);
 
   const enqueue = useCallback((line: QueuedLine) => {
     queueRef.current.push(line);
