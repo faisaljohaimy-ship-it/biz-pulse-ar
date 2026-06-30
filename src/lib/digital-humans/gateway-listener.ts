@@ -184,7 +184,23 @@ export function useGatewayListener() {
     setError(null);
     speakerRef.current = speaker ?? ARIA;
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setError("microphone_unsupported");
+      setError("الميكروفون غير مدعوم في هذه البيئة · Microphone unavailable here");
+      return;
+    }
+    // Detect iframes that do NOT carry an `allow="microphone"` permission.
+    // getUserMedia silently rejects with NotAllowedError in that case; we
+    // surface a useful message instead of the raw browser string.
+    let iframeBlocked = false;
+    try {
+      if (typeof window !== "undefined" && window.self !== window.top) {
+        const fp = (document as unknown as { featurePolicy?: { allowsFeature: (f: string) => boolean } }).featurePolicy;
+        if (fp && typeof fp.allowsFeature === "function" && !fp.allowsFeature("microphone")) {
+          iframeBlocked = true;
+        }
+      }
+    } catch { /* cross-origin — assume allowed and let getUserMedia decide */ }
+    if (iframeBlocked) {
+      setError("الميكروفون معطّل داخل هذا الإطار — افتح الموقع في نافذة مستقلة · Mic is blocked in this embedded frame — open the site in its own tab.");
       return;
     }
     try {
@@ -210,10 +226,22 @@ export function useGatewayListener() {
       setListening(true);
       startSegment();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "mic_permission_denied");
+      const name = (e as { name?: string })?.name ?? "";
+      let msg: string;
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        msg = "صلاحية الميكروفون مرفوضة — فعّلها من إعدادات المتصفح · Microphone permission denied — enable it in browser settings.";
+      } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+        msg = "لم يتم العثور على ميكروفون متصل · No microphone detected on this device.";
+      } else if (name === "NotReadableError") {
+        msg = "الميكروفون مشغول بتطبيق آخر · Microphone is in use by another app.";
+      } else {
+        msg = e instanceof Error && e.message ? e.message : "mic_unavailable";
+      }
+      setError(msg);
       teardown();
     }
   }, [listening, startSegment, teardown]);
+
 
   const stop = useCallback(() => { teardown(); }, [teardown]);
   const toggle = useCallback((speaker?: DigitalHumanSpec) => {
