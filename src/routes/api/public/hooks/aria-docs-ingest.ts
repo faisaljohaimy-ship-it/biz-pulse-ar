@@ -325,71 +325,111 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { embedText, toPgVector } = await import("@/lib/aria/embeddings.server");
 
-        const results: Array<{ title: string; status: string; chunks?: number; error?: string }> = [];
+        // Optional single-document payload from the Knowledge Upload center.
+        // When `document_id` + `text` are present, ingest only that document.
+        let singleDoc: { document_id?: string; text?: string } = {};
+        try {
+          const ct = request.headers.get("content-type") ?? "";
+          if (ct.includes("application/json")) {
+            const body = await request.json().catch(() => null);
+            if (body && typeof body === "object") singleDoc = body as typeof singleDoc;
+          }
+        } catch { /* ignore */ }
 
+        async function ingestOne(
+          doc: { id: string; user_id: string; title: string },
+          text: string,
+        ) {
+          const chunks = chunkText(text);
+          if (chunks.length === 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabaseAdmin as any).from("aria_documents")
+              .update({ status: "failed", error: "no extractable text" })
+              .eq("id", doc.id);
+            return { title: doc.title, status: "empty" };
+          }
+          const rows: Array<{ document_id: string; user_id: string; chunk_index: number; content: string; embedding: string | null; metadata: Record<string, unknown> }> = [];
+          for (let i = 0; i < chunks.length; i++) {
+            const c = chunks[i];
+            const vec = await embedText(c);
+            const arabicChars = (c.match(/[\u0600-\u06FF]/g) ?? []).length;
+            const latinChars = (c.match(/[A-Za-z]/g) ?? []).length;
+            const lang = arabicChars > latinChars ? "ar" : latinChars > 0 ? "en" : "mixed";
+            rows.push({
+              document_id: doc.id, user_id: doc.user_id, chunk_index: i, content: c,
+              embedding: vec ? toPgVector(vec) : null,
+              metadata: { lang, ar_chars: arabicChars, en_chars: latinChars, len: c.length },
+            });
+          }
+          const embedded = rows.filter((r) => r.embedding !== null).length;
+          for (let i = 0; i < rows.length; i += 50) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { error: insErr } = await (supabaseAdmin as any)
+              .from("aria_document_chunks").insert(rows.slice(i, i + 50));
+            if (insErr) throw new Error(insErr.message);
+          }
+          const summary = text.slice(0, 500).replace(/\s+/g, " ").trim();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabaseAdmin as any).from("aria_documents").update({
+            chunk_count: rows.length,
+            summary,
+            status: embedded === rows.length ? "ready" : "partial",
+            error: null,
+          }).eq("id", doc.id);
+          return { title: doc.title, status: "ingested", chunks: rows.length, embedded };
+        }
+
+        // ── Single-document mode ────────────────────────────────────────────
+        if (singleDoc.document_id && typeof singleDoc.text === "string") {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: doc, error } = await (supabaseAdmin as any)
+            .from("aria_documents")
+            .select("id, user_id, title")
+            .eq("id", singleDoc.document_id)
+            .maybeSingle();
+          if (error || !doc) {
+            return new Response(JSON.stringify({ error: "document_not_found" }), {
+              status: 404, headers: { "Content-Type": "application/json" },
+            });
+          }
+          try {
+            const result = await ingestOne(doc, singleDoc.text);
+            return new Response(JSON.stringify({ mode: "single", result }), {
+              status: 200, headers: { "Content-Type": "application/json" },
+            });
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabaseAdmin as any).from("aria_documents")
+              .update({ status: "failed", error: msg }).eq("id", doc.id);
+            return new Response(JSON.stringify({ mode: "single", error: msg }), {
+              status: 500, headers: { "Content-Type": "application/json" },
+            });
+          }
+        }
+
+        // ── Seed-corpus mode (legacy / cron) ────────────────────────────────
+        const results: Array<{ title: string; status: string; chunks?: number; error?: string }> = [];
         for (const entry of DOC_BODIES) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const { data: doc } = await (supabaseAdmin as any)
             .from("aria_documents")
-            .select("id, user_id, chunk_count")
+            .select("id, user_id, title, chunk_count")
             .eq("title", entry.match)
             .maybeSingle();
-          if (!doc) {
-            results.push({ title: entry.match, status: "not_found" });
-            continue;
-          }
+          if (!doc) { results.push({ title: entry.match, status: "not_found" }); continue; }
           if ((doc.chunk_count ?? 0) > 0) {
             results.push({ title: entry.match, status: "already_chunked", chunks: doc.chunk_count });
             continue;
           }
-
           try {
-            const chunks = chunkText(entry.body);
-            if (chunks.length === 0) {
-              results.push({ title: entry.match, status: "empty" });
-              continue;
-            }
-            const rows: Array<{
-              document_id: string;
-              user_id: string;
-              chunk_index: number;
-              content: string;
-              embedding: string | null;
-            }> = [];
-            for (let i = 0; i < chunks.length; i++) {
-              const vec = await embedText(chunks[i]);
-              rows.push({
-                document_id: doc.id,
-                user_id: doc.user_id,
-                chunk_index: i,
-                content: chunks[i],
-                embedding: vec ? toPgVector(vec) : null,
-              });
-            }
-            const embedded = rows.filter((r) => r.embedding !== null).length;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: insErr } = await (supabaseAdmin as any)
-              .from("aria_document_chunks")
-              .insert(rows);
-            if (insErr) throw new Error(insErr.message);
-
-            const summary = entry.body.slice(0, 500).replace(/\s+/g, " ").trim();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabaseAdmin as any)
-              .from("aria_documents")
-              .update({
-                chunk_count: rows.length,
-                summary,
-                status: embedded === rows.length ? "ready" : "partial",
-              })
-              .eq("id", doc.id);
-            results.push({ title: entry.match, status: "ingested", chunks: rows.length });
+            const r = await ingestOne(doc, entry.body);
+            results.push(r);
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             results.push({ title: entry.match, status: "failed", error: msg });
           }
         }
-
         const summary = {
           total: results.length,
           ingested: results.filter((r) => r.status === "ingested").length,
@@ -404,3 +444,4 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
     },
   },
 });
+
