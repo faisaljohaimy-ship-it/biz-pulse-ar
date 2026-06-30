@@ -7,6 +7,9 @@
  * Three short bilingual messages cycle horizontally in an infinite,
  * professionally paced marquee with subtle neon glow.
  */
+import { LanguageToggle } from "./LanguageToggle";
+
+
 const MESSAGES = [
   "✦ نسخة تجريبية قابلة للتعديل",
   "✦ Beta Preview · Live Iteration",
@@ -71,7 +74,13 @@ export function BetaMarqueeBar() {
             </span>
           ))}
         </div>
+
+        {/* Language toggle (LTR-anchored right, above edge fade) */}
+        <div className="absolute right-3 z-20 flex items-center">
+          <LanguageToggle />
+        </div>
       </div>
+
     </div>
   );
 }
