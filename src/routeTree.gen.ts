@@ -105,6 +105,7 @@ import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
+import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
@@ -641,6 +642,11 @@ const ApiHeygenTokenRoute = ApiHeygenTokenRouteImport.update({
   path: '/api/heygen/token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHeygenStopRoute = ApiHeygenStopRouteImport.update({
+  id: '/api/heygen/stop',
+  path: '/api/heygen/stop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHeygenStatusRoute = ApiHeygenStatusRouteImport.update({
   id: '/api/heygen/status',
   path: '/api/heygen/status',
@@ -979,6 +985,7 @@ export interface FileRoutesByFullPath {
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
+  '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -1114,6 +1121,7 @@ export interface FileRoutesByTo {
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
+  '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
@@ -1252,6 +1260,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
+  '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -1390,6 +1399,7 @@ export interface FileRouteTypes {
     | '/sec/visitors'
     | '/settings/microsoft'
     | '/api/heygen/status'
+    | '/api/heygen/stop'
     | '/api/heygen/token'
     | '/lovable/email/suppression'
     | '/assistant/'
@@ -1525,6 +1535,7 @@ export interface FileRouteTypes {
     | '/sec/visitors'
     | '/settings/microsoft'
     | '/api/heygen/status'
+    | '/api/heygen/stop'
     | '/api/heygen/token'
     | '/lovable/email/suppression'
     | '/assistant'
@@ -1662,6 +1673,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
     | '/api/heygen/status'
+    | '/api/heygen/stop'
     | '/api/heygen/token'
     | '/lovable/email/suppression'
     | '/_authenticated/assistant/'
@@ -1714,6 +1726,7 @@ export interface RootRouteChildren {
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
+  ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
@@ -2402,6 +2415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHeygenTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/heygen/stop': {
+      id: '/api/heygen/stop'
+      path: '/api/heygen/stop'
+      fullPath: '/api/heygen/stop'
+      preLoaderRoute: typeof ApiHeygenStopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/heygen/status': {
       id: '/api/heygen/status'
       path: '/api/heygen/status'
@@ -2920,6 +2940,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
+  ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
@@ -2937,13 +2958,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
