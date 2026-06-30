@@ -328,6 +328,9 @@ export function AriaDock() {
           mouthAmplitude={amp}
           ambient
           ar={ar}
+          speakTurn={usingHeygen ? speakTurn : null}
+          onSpeechEnd={usingHeygen ? handleHeygenEnd : undefined}
+          onSpeechError={usingHeygen ? handleHeygenErr : undefined}
         />
         {!minimized && (
           <div className="min-w-0 flex-1">
