@@ -185,11 +185,29 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
         {/* Irises (accent color for personality cue) */}
         <mesh position={[-0.13, 0.04, 0.405]}>
           <sphereGeometry args={[0.025, 12, 12]} />
-          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.4} />
+          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.9} />
         </mesh>
         <mesh position={[0.13, 0.04, 0.405]}>
           <sphereGeometry args={[0.025, 12, 12]} />
-          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.4} />
+          <meshStandardMaterial color={spec.palette.accent} emissive={spec.palette.accent} emissiveIntensity={0.9} />
+        </mesh>
+        {/* Crystal neural rings around each iris — additive emissive */}
+        <mesh position={[-0.13, 0.04, 0.415]} rotation={[0, 0, 0]}>
+          <torusGeometry args={[0.042, 0.0035, 6, 32]} />
+          <primitive object={irisRingMat} attach="material" />
+        </mesh>
+        <mesh position={[0.13, 0.04, 0.415]} rotation={[0, 0, 0]}>
+          <torusGeometry args={[0.042, 0.0035, 6, 32]} />
+          <primitive object={irisRingMat} attach="material" />
+        </mesh>
+        {/* Catchlight specks */}
+        <mesh position={[-0.118, 0.052, 0.418]}>
+          <sphereGeometry args={[0.008, 8, 8]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+        <mesh position={[0.142, 0.052, 0.418]}>
+          <sphereGeometry args={[0.008, 8, 8]} />
+          <meshBasicMaterial color="#ffffff" />
         </mesh>
         {/* Eyelids (close on blink) */}
         <mesh ref={lidL} position={[-0.13, 0.04, 0.37]}>
