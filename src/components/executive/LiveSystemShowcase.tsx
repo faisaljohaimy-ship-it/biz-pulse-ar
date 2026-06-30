@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { ExternalLink, Maximize2, Minimize2, Radio } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ExternalLink, Maximize2, Minimize2, Radio, Expand } from "lucide-react";
 
-const LIVE_URL = "https://hajj-nexus-prime.lovable.app/";
+const LIVE_URL = "https://hajj-nexus-prime.lovable.app/?theme=dark&forceDark=1#dark";
+const INTERNAL_URL = "/hajj-prime";
 
 export function LiveSystemShowcase() {
   const [expanded, setExpanded] = useState(false);
+
 
   return (
     <section
@@ -53,9 +56,9 @@ export function LiveSystemShowcase() {
           <div className="hidden flex-1 items-center justify-center sm:flex">
             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-[11px] text-white/70">
               <Radio className="h-3 w-3 animate-pulse text-[#3AE8FF]" />
-              <span className="font-mono">hajj-nexus-prime.lovable.app</span>
+              <span className="font-mono">neexios.com / hajj-prime</span>
               <span className="ml-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300">
-                LIVE
+                LIVE · DARK
               </span>
             </div>
           </div>
@@ -69,11 +72,19 @@ export function LiveSystemShowcase() {
             >
               {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
             </button>
+            <Link
+              to={INTERNAL_URL}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#3AE8FF]/20"
+              aria-label="فتح في نافذة كاملة داخل المنصة"
+            >
+              <Expand className="h-3 w-3" />
+              <span className="hidden sm:inline">Full Window</span>
+            </Link>
             <a
               href={LIVE_URL}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#3AE8FF]/20"
+              className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
             >
               <ExternalLink className="h-3 w-3" />
               <span className="hidden sm:inline">Open</span>
@@ -93,6 +104,7 @@ export function LiveSystemShowcase() {
             title="NEXUS AI OS Live System"
             loading="lazy"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
             className="absolute left-1/2 top-1/2 h-[180%] w-[180%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.56] border-0 sm:h-[160%] sm:w-[160%] sm:scale-[0.62]"
           />
         </div>
