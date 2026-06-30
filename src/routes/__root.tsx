@@ -14,6 +14,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
+import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 
 function NotFoundComponent() {
   return (
@@ -172,6 +173,7 @@ function RootComponent() {
       <AuthProvider>
         <ThemeProvider>
           <I18nProvider>
+            <BetaMarqueeBar />
             <Outlet />
             <Toaster />
           </I18nProvider>
