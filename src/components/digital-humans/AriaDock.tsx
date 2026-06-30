@@ -412,6 +412,9 @@ export function AriaDock() {
       role="complementary"
       aria-label={ar ? "آريا — المساعد التنفيذي" : "ARIA — Executive AI"}
     >
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {ariaLiveText}
+      </div>
       <div className="flex items-center gap-4">
         {usingHeygen ? (
           <Render
