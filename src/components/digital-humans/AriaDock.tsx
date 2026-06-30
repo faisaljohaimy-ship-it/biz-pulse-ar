@@ -375,7 +375,7 @@ export function AriaDock() {
         "fixed z-[60] transition-all duration-300",
         // Mobile: bottom-center, full-width minus gutter. Tablet+: anchored bottom-end.
         "bottom-[max(0.75rem,env(safe-area-inset-bottom))] start-3 end-3 w-auto",
-        "sm:start-auto sm:end-4 sm:w-[360px] sm:max-w-[calc(100vw-1.5rem)]",
+        "sm:start-auto sm:end-4 sm:w-[480px] sm:max-w-[calc(100vw-1.5rem)]",
         "rounded-2xl border border-cyan-400/25 bg-[#061A2E]/90 backdrop-blur-2xl",
         "shadow-[0_20px_60px_-20px_rgba(0,212,255,0.45)]",
         minimized ? "p-2.5" : "p-3.5",
