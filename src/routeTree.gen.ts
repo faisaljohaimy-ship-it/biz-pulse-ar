@@ -114,6 +114,7 @@ import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authe
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicAriaAskRouteImport } from './routes/api/public/aria-ask'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
@@ -699,6 +700,11 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAriaAskRoute = ApiPublicAriaAskRouteImport.update({
+  id: '/api/public/aria-ask',
+  path: '/api/public/aria-ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHeygenTokenRoute = ApiHeygenTokenRouteImport.update({
   id: '/api/heygen/token',
   path: '/api/heygen/token',
@@ -1057,6 +1063,7 @@ export interface FileRoutesByFullPath {
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
+  '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1203,6 +1210,7 @@ export interface FileRoutesByTo {
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
+  '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1352,6 +1360,7 @@ export interface FileRoutesById {
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
+  '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -1501,6 +1510,7 @@ export interface FileRouteTypes {
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
+    | '/api/public/aria-ask'
     | '/api/public/health'
     | '/api/public/version'
     | '/lovable/email/suppression'
@@ -1647,6 +1657,7 @@ export interface FileRouteTypes {
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
+    | '/api/public/aria-ask'
     | '/api/public/health'
     | '/api/public/version'
     | '/lovable/email/suppression'
@@ -1795,6 +1806,7 @@ export interface FileRouteTypes {
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
+    | '/api/public/aria-ask'
     | '/api/public/health'
     | '/api/public/version'
     | '/lovable/email/suppression'
@@ -1854,6 +1866,7 @@ export interface RootRouteChildren {
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
+  ApiPublicAriaAskRoute: typeof ApiPublicAriaAskRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2606,6 +2619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/aria-ask': {
+      id: '/api/public/aria-ask'
+      path: '/api/public/aria-ask'
+      fullPath: '/api/public/aria-ask'
+      preLoaderRoute: typeof ApiPublicAriaAskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/heygen/token': {
       id: '/api/heygen/token'
       path: '/api/heygen/token'
@@ -3152,6 +3172,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
+  ApiPublicAriaAskRoute: ApiPublicAriaAskRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

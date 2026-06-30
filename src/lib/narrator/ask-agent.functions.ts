@@ -81,7 +81,11 @@ Answer in BOTH Arabic and English. Return ONLY strict JSON: {"text_ar":"...","te
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        // ARIA Engineering Charter: ARIA = GPT-5. gpt-5 family only accepts
+        // the default temperature, so we omit it. Reasoning tokens count
+        // toward output — keep headroom.
+        model: "openai/gpt-5",
+        max_completion_tokens: reportMode ? 1600 : 600,
         messages: [
           { role: "system", content: system },
           { role: "user", content: data.question },
