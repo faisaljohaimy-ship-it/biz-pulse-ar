@@ -52,7 +52,7 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
     const hookUrl = `${base.origin}/api/public/hooks/aria-docs-ingest`;
 
     let hookStatus = 0;
-    let hookBody: unknown = null;
+    let hookBody: Record<string, unknown> | null = null;
     try {
       const res = await fetch(hookUrl, {
         method: "POST",
