@@ -48,8 +48,11 @@ async function logEvent(
   event: string,
   payload: Record<string, unknown> = {},
 ) {
-  await supabase.from("sec_activity_events").insert({
-    entity_type, entity_id, entity_ref, event,
+  const org_id = await getActorOrgId(supabase, userId);
+  if (!org_id) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin.from("sec_activity_events").insert({
+    org_id, entity_type, entity_id, entity_ref, event,
     actor_id: userId, actor_name: "ARIA", payload,
   });
 }
@@ -501,7 +504,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("PT");
         const { data, error } = await supabase.from("sec_patrols").insert({
-          ref, org_id, created_by: userId, team: args.team, route: args.route,
+          ref, org_id, team: args.team, route: args.route,
           checkpoints_total: args.checkpoints_total, checkpoints_done: 0,
           status: "scheduled",
         }).select("id,ref,team,route,status,checkpoints_total").single();
