@@ -370,17 +370,21 @@ export function AriaDock() {
       aria-label={ar ? "آريا — المساعد التنفيذي" : "ARIA — Executive AI"}
     >
       <div className="flex items-start gap-3">
-        <Render
-          spec={current?.speaker ?? ARIA}
-          state={state}
-          size={minimized ? 44 : 72}
-          mouthAmplitude={amp}
-          ambient
-          ar={ar}
-          speakTurn={usingHeygen ? speakTurn : null}
-          onSpeechEnd={usingHeygen ? handleHeygenEnd : undefined}
-          onSpeechError={usingHeygen ? handleHeygenErr : undefined}
-        />
+        {usingHeygen ? (
+          <Render
+            spec={current?.speaker ?? ARIA}
+            state={state}
+            size={minimized ? 44 : 72}
+            mouthAmplitude={amp}
+            ambient
+            ar={ar}
+            speakTurn={speakTurn}
+            onSpeechEnd={handleHeygenEnd}
+            onSpeechError={handleHeygenErr}
+          />
+        ) : (
+          <HologramFace state={state} amp={amp} size={minimized ? 44 : 72} ar={ar} />
+        )}
         {!minimized && (
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
