@@ -17,7 +17,7 @@ export function AriaWelcomeCurtain() {
   const [show, setShow] = useState(false);
   const [fade, setFade] = useState(false);
 
-  const [remaining, setRemaining] = useState(60);
+  const [remaining, setRemaining] = useState(25);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -25,20 +25,30 @@ export function AriaWelcomeCurtain() {
       if (sessionStorage.getItem(SESSION_KEY)) return;
     } catch { /* noop */ }
     setShow(true);
-    // 60s curtain. Begin fade-out at 59.2s, fully dismiss at 60s.
-    const fadeT = window.setTimeout(() => setFade(true), 59_200);
+    // Attempt voice greeting immediately; browser autoplay may defer until first gesture.
+    speakWelcome();
+    // 25s curtain. Begin fade-out at 24.4s, fully dismiss at 25s.
+    const fadeT = window.setTimeout(() => setFade(true), 24_400);
     const offT = window.setTimeout(() => {
       setShow(false);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-    }, 60_000);
+    }, 25_000);
     const tickT = window.setInterval(() => {
       setRemaining((r) => (r > 0 ? r - 1 : 0));
     }, 1000);
-    return () => { window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT); };
+    // First user gesture also triggers the greeting (covers autoplay-blocked browsers).
+    const onGesture = () => { speakWelcome(); window.removeEventListener("pointerdown", onGesture); };
+    window.addEventListener("pointerdown", onGesture, { once: true });
+    return () => {
+      window.clearTimeout(fadeT); window.clearTimeout(offT); window.clearInterval(tickT);
+      window.removeEventListener("pointerdown", onGesture);
+      try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    };
   }, []);
 
   const dismiss = () => {
     setFade(true);
+    try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
     window.setTimeout(() => {
       setShow(false);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
