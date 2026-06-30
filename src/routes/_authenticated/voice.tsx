@@ -24,6 +24,16 @@ function VoicePage() {
     onMessage: (msg: { source?: string; message?: string }) => {
       if (msg?.message) setTranscript((t) => [...t, `${msg.source ?? "?"}: ${msg.message}`]);
     },
+    overrides: {
+      tts: { voiceId: "EXAVITQu4vr4xnSDxMaL" }, // Sarah — female bilingual AR/EN
+      agent: {
+        language: locale === "ar" ? "ar" : "en",
+        firstMessage:
+          locale === "ar"
+            ? "مرحباً، أنا آريا. كيف أستطيع مساعدتك اليوم؟"
+            : "Hello, I'm ARIA. How can I help you today?",
+      },
+    },
   });
 
   const start = useCallback(async () => {
