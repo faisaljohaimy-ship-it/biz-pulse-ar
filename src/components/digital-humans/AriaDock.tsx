@@ -293,18 +293,12 @@ export function AriaDock() {
     window.addEventListener("keydown", unlock, true);
     window.addEventListener("touchstart", unlock, true);
 
-    // Only auto-trigger the greeting if the user just clicked the
-    // "ابدأ التشغيل" launch button — that click is a fresh user gesture and
-    // browsers will allow TTS + mic. Otherwise we wait for the next real tap
-    // to avoid autoplay blocks and silent failures.
-    let autoTimer: number | undefined;
-    try {
-      const flag = sessionStorage.getItem("nexus.audio-gesture");
-      if (flag) {
-        sessionStorage.removeItem("nexus.audio-gesture");
-        autoTimer = window.setTimeout(() => unlock(), 200);
-      }
-    } catch { /* storage unavailable */ }
+    // Auto-greet on mount: try immediately so ARIA welcomes the user the
+    // moment they enter the system. If the browser blocks autoplay (no prior
+    // user gesture), the pointer/key/touch listeners above will fire `unlock`
+    // on the very first interaction as a safety net.
+    try { sessionStorage.removeItem("nexus.audio-gesture"); } catch { /* noop */ }
+    const autoTimer: number | undefined = window.setTimeout(() => unlock(), 250);
 
     return () => {
       if (autoTimer) window.clearTimeout(autoTimer);
