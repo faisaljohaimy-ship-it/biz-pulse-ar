@@ -106,7 +106,7 @@
   --chart-5: var(--nx-info);
 
   --sidebar: color-mix(in srgb, var(--nx-bg-1) 92%, #000);
-  --sidebar-foreground: var(--nx-text-soft);
+  --sidebar-foreground: var(--nx-white);
   --sidebar-primary: var(--nx-cyan);
   --sidebar-primary-foreground: #03131F;
   --sidebar-accent: color-mix(in srgb, var(--nx-surface) 70%, var(--nx-bg-2));
