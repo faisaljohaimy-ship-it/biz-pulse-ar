@@ -185,10 +185,17 @@ export function AriaDock() {
         setState("idle");
         setAmp(0);
       },
+      /** Open the mic for a Q&A directed at this Digital Human (defaults to ARIA). */
+      ask: (speaker?: DigitalHumanSpec) => {
+        // Enable voice playback so the spoken answer is audible.
+        setVoiceOn(true);
+        listener.start(speaker ?? ARIA);
+      },
+      stopListening: () => listener.stop(),
     };
     (window as unknown as { aria?: typeof api }).aria = api;
     return () => { delete (window as unknown as { aria?: typeof api }).aria; };
-  }, [enqueue]);
+  }, [enqueue, listener]);
 
   const toggleVoice = () => {
     setVoiceOn(v => {
