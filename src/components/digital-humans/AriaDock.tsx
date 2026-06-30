@@ -365,7 +365,7 @@ export function AriaDock() {
     <button
         type="button"
         onClick={() => setHidden(false)}
-        className="fixed bottom-4 end-4 z-[60] h-14 w-14 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 backdrop-blur-xl shadow-[0_0_24px_rgba(0,212,255,0.45)] overflow-hidden hover:scale-105 transition-transform"
+        className="fixed bottom-4 right-4 z-[60] h-14 w-14 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 backdrop-blur-xl shadow-[0_0_24px_rgba(0,212,255,0.45)] overflow-hidden hover:scale-105 transition-transform"
         aria-label={ar ? "إظهار آريا" : "Show ARIA"}
       >
         <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
