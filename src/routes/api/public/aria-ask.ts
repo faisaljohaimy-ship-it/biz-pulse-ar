@@ -62,13 +62,14 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         if (!parsed.success) {
           return Response.json({ error: "invalid_input", detail: parsed.error.flatten() }, { status: 400 });
         }
+        const data = parsed.data;
 
         const ip = clientIp(request);
         const rate = await enforceRateLimit(`pub-aria-ask:${ip}`, 12, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
-        try {
+        async function callModel(model: string, maxTokens: number) {
           const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -76,28 +77,50 @@ export const Route = createFileRoute("/api/public/aria-ask")({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: "openai/gpt-5",
-              max_completion_tokens: 600,
+              model,
+              max_completion_tokens: maxTokens,
               messages: [
                 { role: "system", content: SYSTEM },
-                { role: "user", content: parsed.data.question },
+                { role: "user", content: data.question },
               ],
               response_format: { type: "json_object" },
             }),
-            signal: AbortSignal.timeout(35_000),
+            signal: AbortSignal.timeout(40_000),
           });
-          if (!r.ok) {
-            const detail = (await r.text().catch(() => "")).slice(0, 240);
-            console.error("[public/aria-ask] gateway", r.status, detail);
-            const status = r.status === 429 ? 429 : r.status === 402 ? 402 : 502;
-            return Response.json({ error: "ask_failed", status: r.status }, { status });
-          }
+          return r;
+        }
+
+        async function extract(r: Response) {
           const j = (await r.json()) as { choices?: { message?: { content?: string } }[] };
-          const raw = j.choices?.[0]?.message?.content ?? "{}";
+          const raw = j.choices?.[0]?.message?.content ?? "";
           let p: { text_ar?: string; text_en?: string } = {};
           try { p = JSON.parse(raw); } catch { p = {}; }
-          const ar = (p.text_ar ?? "").trim();
-          const en = (p.text_en ?? "").trim();
+          return { ar: (p.text_ar ?? "").trim(), en: (p.text_en ?? "").trim() };
+        }
+
+        try {
+          // Primary: GPT-5 with enough budget for reasoning + JSON output.
+          let r = await callModel("openai/gpt-5", 2400);
+          if (!r.ok) {
+            const detail = (await r.text().catch(() => "")).slice(0, 240);
+            console.error("[public/aria-ask] gateway gpt-5", r.status, detail);
+            if (r.status === 429 || r.status === 402) {
+              return Response.json({ error: "ask_failed", status: r.status }, { status: r.status });
+            }
+            // Fall through to fallback model.
+            r = await callModel("openai/gpt-5-mini", 1200);
+            if (!r.ok) {
+              const d2 = (await r.text().catch(() => "")).slice(0, 240);
+              console.error("[public/aria-ask] gateway gpt-5-mini", r.status, d2);
+              return Response.json({ error: "ask_failed", status: r.status }, { status: 502 });
+            }
+          }
+          let { ar, en } = await extract(r);
+          if (!ar && !en) {
+            // Empty output (often: reasoning consumed budget). Retry on mini.
+            const r2 = await callModel("openai/gpt-5-mini", 1200);
+            if (r2.ok) ({ ar, en } = await extract(r2));
+          }
           if (!ar && !en) {
             return Response.json({ error: "empty_response" }, { status: 502 });
           }
