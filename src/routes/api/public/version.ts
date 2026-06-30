@@ -8,8 +8,8 @@ import { createFileRoute } from "@tanstack/react-router";
 const RELEASE = {
   product: "NEXIOS AI OS",
   edition: "Enterprise",
-  version: "1.0.0-rc.1",
-  release_channel: "release-candidate",
+  version: "1.0.0",
+  release_channel: "general-availability",
   schema: "1.0",
 };
 

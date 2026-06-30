@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { randomUUID } from "crypto";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
+import { hasPlatformRole } from "@/lib/authz.server";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
@@ -273,19 +274,7 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
 
     // ── Authorization: must be 'admin' ───────────────────────────────────────
-    const { data: isAdmin, error: roleErr } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    if (roleErr) {
-      fail({
-        stage: "authorization",
-        message_en: "Could not verify your role.",
-        message_ar: "تعذّر التحقق من صلاحياتك.",
-        hint_en: roleErr.message,
-        hint_ar: roleErr.message,
-      });
-    }
+    const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) {
       fail({
         stage: "authorization",

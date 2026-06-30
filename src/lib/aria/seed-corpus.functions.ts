@@ -4,6 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireOrgContext } from "@/lib/org/org-middleware";
+import { hasPlatformRole } from "@/lib/authz.server";
 import { embedText, toPgVector } from "./embeddings.server";
 
 type Entry = { title: string; source: string; tags: string[]; content: string };
@@ -212,10 +213,7 @@ export const seedAriaCorpus = createServerFn({ method: "POST" })
     const { supabase, userId, orgId } = context;
 
     // Admin gate
-    const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
+    const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) throw new Error("Forbidden: admin role required");
 
     // Skip titles already present in this org

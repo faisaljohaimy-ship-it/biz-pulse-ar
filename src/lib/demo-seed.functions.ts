@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DEMO_EMAIL } from "@/lib/demo.functions";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 /** Tables owned by a user that should be wiped on demo reset. */
 const USER_SCOPED_TABLES = [
@@ -27,7 +28,9 @@ const USER_SCOPED_TABLES = [
   "messages",
 ] as const;
 
-async function getDemoUserId(): Promise<string> {
+type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
+
+async function getDemoUserId(supabaseAdmin: AdminClient): Promise<string> {
   const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
   if (error) throw new Error(error.message);
   const u = list.users.find((u) => u.email?.toLowerCase() === DEMO_EMAIL);
@@ -36,17 +39,25 @@ async function getDemoUserId(): Promise<string> {
 }
 
 /** Wipes all sample data for the demo account. Safe to call repeatedly. */
-export const resetDemoData = createServerFn({ method: "POST" }).handler(async () => {
-  const userId = await getDemoUserId();
-  for (const table of USER_SCOPED_TABLES) {
-    await supabaseAdmin.from(table).delete().eq("user_id", userId);
-  }
-  return { ok: true };
-});
+export const resetDemoData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = await getDemoUserId(supabaseAdmin);
+    for (const table of USER_SCOPED_TABLES) {
+      await supabaseAdmin.from(table).delete().eq("user_id", userId);
+    }
+    return { ok: true };
+  });
 
 /** Seeds a realistic Fortune-500 snapshot for the demo account. Idempotent. */
-export const seedDemoData = createServerFn({ method: "POST" }).handler(async () => {
-  const userId = await getDemoUserId();
+export const seedDemoData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = await getDemoUserId(supabaseAdmin);
 
   // Wipe first so reseeding is clean
   for (const table of USER_SCOPED_TABLES) {

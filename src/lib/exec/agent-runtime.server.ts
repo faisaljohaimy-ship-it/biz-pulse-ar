@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { generateText, tool, stepCountIs, type ToolSet } from "ai";
+import { z } from "zod";
 import {
   createLovableAiGatewayProvider,
   DEFAULT_LOVABLE_MODEL,
@@ -10,12 +11,14 @@ import { executeTool } from "./tool-orchestrator.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
 
-export type RunAgentParams = {
-  agentId: string;
-  actorId: string;
-  goalOverride?: string | null;
-  context?: Record<string, unknown> | null;
-};
+const RunAgentParamsSchema = z.object({
+  agentId: z.string().uuid(),
+  actorId: z.string().uuid(),
+  goalOverride: z.string().trim().max(4000).optional().nullable(),
+  context: z.record(z.string(), z.unknown()).optional().nullable(),
+});
+
+export type RunAgentParams = z.infer<typeof RunAgentParamsSchema>;
 
 export type RunAgentResult = {
   runId: string;
@@ -54,7 +57,8 @@ export async function runAgent(
   supabase: SupabaseClient<Database>,
   params: RunAgentParams,
 ): Promise<RunAgentResult> {
-  const { agentId, actorId, goalOverride, context: ctxData } = params;
+  const { agentId, actorId, goalOverride, context: ctxData } =
+    RunAgentParamsSchema.parse(params);
 
   // ALL orchestration writes go through the service-role admin client so RLS
   // RESTRICTIVE policies on workflows/workflow_runs/workflow_step_runs cannot

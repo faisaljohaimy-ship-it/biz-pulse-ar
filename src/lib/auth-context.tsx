@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { authLog, installAuthDiagnostics } from "@/lib/auth-diagnostics";
-import { installAuthTestHarness } from "@/lib/auth-test-harness";
 
 type AuthCtx = {
   user: User | null;
@@ -17,8 +16,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    installAuthDiagnostics();
-    installAuthTestHarness();
+    if (import.meta.env.DEV) {
+      installAuthDiagnostics();
+      void import("@/lib/auth-test-harness").then(({ installAuthTestHarness }) => {
+        installAuthTestHarness();
+      });
+    }
     let active = true;
     const startedAt = Date.now();
     authLog("provider:mount");
@@ -36,19 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       releaseLoading("watchdog");
     }, 2500);
 
-    // Demo capture bypass: ?demo=1 → synthetic user so /_authenticated renders
-    // for product-tour screen recording. No real session is created.
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      if (sp.get("demo") === "1" || window.localStorage.getItem("nx_demo") === "1") {
-        window.localStorage.setItem("nx_demo", "1");
-        authLog("demo:bypass");
-        setUser({ id: "demo-user", email: "demo@neexios.com" } as unknown as User);
-        window.clearTimeout(authWatchdog);
-        releaseLoading("demo");
-        return;
-      }
-    }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       authLog("auth:event", {
         event,
@@ -73,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch((error) => {
         authLog("getSession:error", { message: String(error?.message ?? error) });
-        console.warn("Auth session lookup failed; continuing as visitor.", error);
       })
       .finally(() => {
         window.clearTimeout(authWatchdog);

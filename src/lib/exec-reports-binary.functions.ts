@@ -8,6 +8,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { randomUUID } from "crypto";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
+import { hasPlatformRole } from "@/lib/authz.server";
 import type { PublishErrorEnvelope, PublishStage } from "./exec-reports.functions";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
@@ -151,7 +152,7 @@ export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }): Promise<PublishBinaryResult> => {
     const { supabase, userId, claims } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) fail({
       stage: "authorization", status: 403, code: "role_required",
       message_en: "Admin role is required to publish executive reports.",
@@ -352,7 +353,7 @@ export const upsertReportSchedule = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) throw new Error("Admin role required");
 
     const next_run_at = computeNextRun({ frequency: data.frequency, hour_utc: data.hour_utc, weekday: data.weekday ?? null });
@@ -385,7 +386,7 @@ export const deleteReportSchedule = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) throw new Error("Admin role required");
     const { error } = await supabase.from("report_schedules").delete().eq("id", data.id);
     if (error) throw new Error(error.message);

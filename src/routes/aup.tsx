@@ -7,9 +7,9 @@ import { Ban, ShieldAlert, Scale } from "lucide-react";
 export const Route = createFileRoute("/aup")({
   head: () => ({
     meta: [
-      { title: "Acceptable Use Policy — NEEXIOS | NEXUS AI OS" },
+      { title: "Acceptable Use Policy — NEXIOS | NEXUS AI OS" },
       { name: "description", content: "Acceptable use rules for the NEXUS AI OS platform — prohibited content, prohibited activities, enforcement and reporting." },
-      { property: "og:title", content: "Acceptable Use Policy — NEEXIOS" },
+      { property: "og:title", content: "Acceptable Use Policy — NEXIOS" },
       { property: "og:description", content: "Prohibited content, prohibited activities, enforcement, and reporting for NEXUS AI OS." },
       { property: "og:url", content: `${DOMAIN_URL}/aup` },
       { property: "og:type", content: "article" },

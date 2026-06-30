@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 /* --------------------------------- Types --------------------------------- */
 
@@ -255,11 +256,8 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
 /* ------------------------------ Admin: seed ----------------------------- */
 
 async function assertAdmin(supabase: any, userId: string) {
-  const { data: isAdmin } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
-  if (!isAdmin) throw new Error("Forbidden — admin role required");
+  void supabase;
+  await requirePlatformAdmin(userId);
 }
 
 export const kbSeedFoundational = createServerFn({ method: "POST" })

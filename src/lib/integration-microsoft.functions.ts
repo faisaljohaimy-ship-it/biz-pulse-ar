@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 export type MicrosoftIntegrationRow = {
   id: string;
@@ -37,9 +38,8 @@ export type MicrosoftSyncLogRow = {
   started_at: string;
 };
 
-async function assertAdmin(ctx: { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => PromiseLike<{ data: boolean | null }> }; userId: string }) {
-  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
-  if (!data) throw new Error("Forbidden: admin role required");
+async function assertAdmin(ctx: { userId: string }) {
+  await requirePlatformAdmin(ctx.userId);
 }
 
 export const getMicrosoftIntegration = createServerFn({ method: "GET" })
@@ -207,7 +207,7 @@ export const triggerMicrosoftSyncNow = createServerFn({ method: "POST" })
     const secret = process.env.MICROSOFT_SYNC_HOOK_SECRET;
     if (!secret) throw new Error("Sync hook not configured");
     await ensureSyncSecretSeeded();
-    const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || "https://biz-pulse-ar.lovable.app";
+    const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || "https://neexios.com";
     const { httpFetch } = await import("@/lib/api/http.server");
     const r = await httpFetch(`${base.replace(/\/$/, "")}/api/public/hooks/microsoft-sync`, {
       method: "POST",

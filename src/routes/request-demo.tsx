@@ -8,6 +8,9 @@ import { DOMAIN_URL } from "@/lib/domain";
 import { Sparkles, ArrowLeft, Send, CheckCircle2, Copy } from "lucide-react";
 
 export const Route = createFileRoute("/request-demo")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    mode: search.mode === "investor" || search.mode === "enterprise" ? search.mode : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Request a Demo — Nexus AI OS" },

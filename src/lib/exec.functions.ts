@@ -14,17 +14,14 @@ import {
   WorkflowDefinitionSchema,
 } from "./exec/workflow-engine.server";
 import { runAgent } from "./exec/agent-runtime.server";
+import { getCurrentOrgIdForUser, requirePlatformAdmin } from "@/lib/authz.server";
 
 async function requireAdmin(
   supabase: unknown,
   userId: string,
 ): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: isAdmin } = await (supabase as any).rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
-  if (!isAdmin) throw new Error("Forbidden: admin role required");
+  void supabase;
+  await requirePlatformAdmin(userId);
 }
 
 export type JsonValue =
@@ -709,11 +706,7 @@ export const getToolSampleContext = createServerFn({ method: "GET" })
     };
     const [org_id, site_id, workflow_id, incident_id, asset_id, tool_id, agent_id] =
       await Promise.all([
-        sb.rpc("current_org_id").then(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (r: any) => (r?.data as string | null) ?? null,
-          () => null,
-        ),
+        getCurrentOrgIdForUser(context.userId),
         pick("sec_sites"),
         pick("workflows"),
         pick("sec_incidents"),

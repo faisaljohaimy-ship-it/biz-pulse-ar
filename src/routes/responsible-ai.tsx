@@ -7,9 +7,9 @@ import { Brain, Sparkles, ShieldCheck, Users } from "lucide-react";
 export const Route = createFileRoute("/responsible-ai")({
   head: () => ({
     meta: [
-      { title: "Responsible AI — NEEXIOS | NEXUS AI OS" },
-      { name: "description", content: "NEEXIOS Responsible AI commitments — human oversight, transparency, bias mitigation, safety, and SDAIA / EU AI Act alignment." },
-      { property: "og:title", content: "Responsible AI — NEEXIOS" },
+      { title: "Responsible AI — NEXIOS | NEXUS AI OS" },
+      { name: "description", content: "NEXIOS Responsible AI commitments — human oversight, transparency, bias mitigation, safety, and SDAIA / EU AI Act alignment." },
+      { property: "og:title", content: "Responsible AI — NEXIOS" },
       { property: "og:description", content: "Principles, controls, and accountability for AI inside NEXUS AI OS." },
       { property: "og:url", content: `${DOMAIN_URL}/responsible-ai` },
       { property: "og:type", content: "article" },
@@ -62,8 +62,8 @@ function RaiPage() {
       isAr={isAr} active="/responsible-ai"
       eyebrow="Policy" eyebrowAr="سياسة"
       title="Responsible AI" titleAr="الذكاء الاصطناعي المسؤول"
-      subtitle="How NEEXIOS designs, deploys, and governs AI inside NEXUS AI OS."
-      subtitleAr="كيف يصمّم NEEXIOS وينشر ويحوكم الذكاء الاصطناعي داخل NEXUS AI OS."
+      subtitle="How NEXIOS designs, deploys, and governs AI inside NEXUS AI OS."
+      subtitleAr="كيف يصمّم NEXIOS وينشر ويحوكم الذكاء الاصطناعي داخل NEXUS AI OS."
       qualifier="Aligned with SDAIA Generative AI Guidelines, EU AI Act, and OECD AI Principles."
       qualifierAr="متوافق مع إرشادات سدايا للذكاء التوليدي، قانون الذكاء الاصطناعي الأوروبي، ومبادئ OECD."
     >

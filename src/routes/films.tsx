@@ -19,9 +19,9 @@ import roiSrc from "@/assets/films/roi.mp4.asset.json";
 export const Route = createFileRoute("/films")({
   head: () => ({
     meta: [
-      { title: "Film Center — NEEXIOS AI OS" },
-      { name: "description", content: "Eight cinematic films showcasing NEEXIOS AI OS: investor story, full walkthrough, ARIA intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English." },
-      { property: "og:title", content: "Film Center — NEEXIOS AI OS" },
+      { title: "Film Center — NEXIOS AI OS" },
+      { name: "description", content: "Eight cinematic films showcasing NEXIOS AI OS: investor story, full walkthrough, ARIA intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English." },
+      { property: "og:title", content: "Film Center — NEXIOS AI OS" },
       { property: "og:url", content: `${DOMAIN_URL}/films` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -50,7 +50,7 @@ const FILMS: Film[] = [
     titleAr: "الفيلم الاستثماري — العربية",
     titleEn: "Investor Film — Arabic",
     descAr: "قصة نِكسيوس من فوضى البيانات إلى ذكاء القرار التنفيذي.",
-    descEn: "The NEEXIOS story — from data chaos to executive decision intelligence.",
+    descEn: "The NEXIOS story — from data chaos to executive decision intelligence.",
     duration: "3:43",
     poster: cinematicCity,
     badgeAr: "رئيسي",
@@ -63,7 +63,7 @@ const FILMS: Film[] = [
     titleAr: "الفيلم الاستثماري — الإنجليزية",
     titleEn: "Investor Film — English",
     descAr: "نِكسيوس كطبقة تشغيل المؤسسة الحديثة.",
-    descEn: "NEEXIOS AI OS as the operating layer of the modern enterprise.",
+    descEn: "NEXIOS AI OS as the operating layer of the modern enterprise.",
     duration: "4:32",
     poster: cinematicEarth,
     badgeAr: "رئيسي",
@@ -76,7 +76,7 @@ const FILMS: Film[] = [
     titleAr: "شرح النظام الكامل",
     titleEn: "Product Walkthrough",
     descAr: "جولة تنفيذية في كل وحدات نِكسيوس.",
-    descEn: "Executive tour across every NEEXIOS module.",
+    descEn: "Executive tour across every NEXIOS module.",
     duration: "7:18",
     poster: cinematicBoardroom,
     badgeAr: "تفصيلي",
@@ -141,7 +141,7 @@ const FILMS: Film[] = [
     titleAr: "العائد على الاستثمار",
     titleEn: "ROI",
     descAr: "كيف يُخفّض نِكسيوس ٣٥٪ من التكاليف ويُسرّع التقارير ٩٠٪.",
-    descEn: "How NEEXIOS removes 35% of cost and accelerates reporting 90%.",
+    descEn: "How NEXIOS removes 35% of cost and accelerates reporting 90%.",
     duration: "1:48",
     poster: cinematicCity,
     badgeAr: "أرقام",
@@ -189,7 +189,7 @@ function FilmsPage() {
           <p className="mt-4 text-base text-muted-foreground sm:text-lg">
             {isAr
               ? "نِكسيوس بعيون مجلس الإدارة، المستثمر، الفريق التنفيذي، وفرق التحول."
-              : "NEEXIOS through the eyes of the board, the investor, the executive team, and transformation leaders."}
+              : "NEXIOS through the eyes of the board, the investor, the executive team, and transformation leaders."}
           </p>
         </header>
 
@@ -207,7 +207,7 @@ function FilmsPage() {
               >
                 <img
                   src={f.poster}
-                  alt=""
+                  alt={isAr ? f.titleAr : f.titleEn}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full scale-105 object-cover opacity-80 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-100"
                 />
@@ -306,7 +306,7 @@ function PlayerModal({ film, isAr, onClose }: { film: Film; isAr: boolean; onClo
               {isAr ? film.titleAr : film.titleEn}
             </p>
             <p className="truncate text-[11px] uppercase tracking-[0.2em] text-amber-400/80">
-              NEEXIOS · Film Center · {film.duration}
+              NEXIOS · Film Center · {film.duration}
             </p>
           </div>
           <div className="flex items-center gap-2">
