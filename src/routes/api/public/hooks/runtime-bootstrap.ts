@@ -1,9 +1,11 @@
 // Stabilization hook: executes every enabled workflow once with topic-aware
 // default payloads so the engine, event bus, audit trail, and step runs are
-// observably populated. Guarded by SUPABASE_PUBLISHABLE_KEY apikey header,
-// matching the existing /api/public/hooks/* pattern.
+// observably populated. Guarded by CRON_HOOK_SECRET (timing-safe). The
+// legacy SUPABASE_PUBLISHABLE_KEY guard was removed because that key is
+// public and shipped to browsers.
 
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyCronHookSecret } from "@/lib/hook-auth.server";
 
 function defaultPayloadForTopic(topic: string | null | undefined): Record<string, unknown> {
   const base = { source: "runtime.bootstrap", triggered_at: new Date().toISOString() };
