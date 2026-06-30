@@ -13,7 +13,6 @@
  * AriaDock can swap providers without UI changes.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { askAgent } from "@/lib/narrator/ask-agent.functions";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { ARIA, type DigitalHumanSpec } from "./registry";
 
@@ -22,6 +21,12 @@ const isArabic = (s: string) => /[\u0600-\u06FF]/.test(s);
 type WindowAria = {
   speak?: (t: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => void;
   stop?: () => void;
+};
+
+type AriaAskResponse = {
+  text_ar?: string;
+  text_en?: string;
+  error?: string;
 };
 
 function pickMimeType(): string | undefined {
@@ -75,31 +80,50 @@ export function useGatewayListener() {
     if (busyRef.current) return;
     busyRef.current = true;
     setThinking(true);
+    setPartial(q);
+    setError(null);
     try {
       const sp = speakerRef.current;
-      const res = await askAgent({
-        data: {
+      const lang = isArabic(q) ? "ar" : "en";
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 45_000);
+      const r = await fetch("/api/public/aria-ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           question: q,
-          persona: {
-            id: sp.id,
-            name_ar: sp.name_ar, name_en: sp.name_en,
-            title_ar: sp.title_ar, title_en: sp.title_en,
-          },
-          lang: isArabic(q) ? "ar" : "en",
-        },
+          lang,
+        }),
+        signal: ctrl.signal,
       });
+      window.clearTimeout(timer);
+      const res = (await r.json().catch(() => ({}))) as AriaAskResponse;
+      if (!r.ok) throw new Error(res.error || `ask_${r.status}`);
+      const textAr = (res.text_ar || res.text_en || "").trim();
+      const textEn = (res.text_en || res.text_ar || "").trim();
+      if (!textAr && !textEn) throw new Error("empty_answer");
       const w = window as unknown as { aria?: WindowAria };
       w.aria?.speak?.({
         id: `gw-ask-${sp.id}-${Date.now()}`,
-        text_ar: res.text_ar,
-        text_en: res.text_en,
+        text_ar: textAr,
+        text_en: textEn,
         speaker: sp,
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ask_failed");
+      const arMsg = "سمعت سؤالك، لكن تعذّر توليد الرد الآن. أعد المحاولة أو اكتب السؤال في الخانة النصية.";
+      const enMsg = "I heard your question, but the answer engine did not complete. Please retry or type the question.";
+      setError(isArabic(q) ? arMsg : enMsg);
+      const w = window as unknown as { aria?: WindowAria };
+      w.aria?.speak?.({
+        id: `gw-ask-error-${Date.now()}`,
+        text_ar: arMsg,
+        text_en: enMsg,
+        speaker: speakerRef.current,
+      });
     } finally {
       busyRef.current = false;
       setThinking(false);
+      setPartial("");
     }
   }, []);
 

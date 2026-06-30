@@ -1,8 +1,7 @@
 /**
  * ARIA Voice — bilingual client-side speech for the Executive Digital
- * Human. Wraps the server-side `ariaSpeak` server function (Lovable AI
- * Gateway → OpenAI gpt-4o-mini-tts), plays the returned MP3 through a
- * Web Audio graph, and emits 0..1 amplitude samples so the SVG avatar
+ * Human. Calls the public ARIA TTS route (Lovable AI Gateway fallback),
+ * plays the returned MP3 through a Web Audio graph, and emits 0..1 amplitude samples so the SVG avatar
  * (or any future provider) can drive natural lip-sync.
  *
  * Voice profile selection is fully automatic: the engine inspects the
@@ -14,7 +13,6 @@
  * the same amplitude callback to drive its own lip-sync or take over
  * audio synthesis entirely — only this file changes.
  */
-import { ariaSpeak } from "@/lib/narrator/tts.functions";
 import { resolveVoice, type VoiceLang } from "./voice-profiles";
 import type { DigitalHumanSpec } from "./registry";
 
@@ -58,13 +56,6 @@ function getAudioContext(): AudioContext {
   return sharedCtx;
 }
 
-function base64ToBytes(b64: string): Uint8Array {
-  const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
 /**
  * Speak `text` using the ARIA voice. Returns a handle whose `promise`
  * resolves after playback completes or is stopped. Pure client runtime
@@ -75,11 +66,13 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
   const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
+  let utterance: SpeechSynthesisUtterance | null = null;
   let raf = 0;
 
   const stop = () => {
     stopped = true;
     try { source?.stop(); } catch { /* already stopped */ }
+    try { if (utterance && "speechSynthesis" in window) window.speechSynthesis.cancel(); } catch { /* noop */ }
     cancelAnimationFrame(raf);
     opts.onAmplitude?.(0);
   };
@@ -91,14 +84,16 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   const promise = (async () => {
     try {
-      const res = await ariaSpeak({ data: { text: opts.text, voice, instructions } });
+      const res = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: opts.text, voiceId: voice, instructions }),
+      });
+      if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       if (stopped) return;
       const ctx = getAudioContext();
       if (ctx.state === "suspended") await ctx.resume().catch(() => {});
-      const bytes = base64ToBytes(res.audio_base64);
-      // decodeAudioData requires a plain ArrayBuffer, not a SharedArrayBuffer view.
-      const buf = new ArrayBuffer(bytes.byteLength);
-      new Uint8Array(buf).set(bytes);
+      const buf = await res.arrayBuffer();
       const audio = await ctx.decodeAudioData(buf);
       if (stopped) return;
 
@@ -147,6 +142,36 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
     } catch (err) {
       cancelAnimationFrame(raf);
       opts.onAmplitude?.(0);
+      if (!stopped && typeof window !== "undefined" && "speechSynthesis" in window) {
+        await new Promise<void>((resolve) => {
+          let ampTimer: number | null = null;
+          const clean = () => {
+            if (ampTimer) window.clearInterval(ampTimer);
+            opts.onAmplitude?.(0);
+            utterance = null;
+            resolve();
+          };
+          utterance = new SpeechSynthesisUtterance(opts.text);
+          utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
+          utterance.rate = 0.94;
+          utterance.pitch = 1.02;
+          utterance.onstart = () => {
+            opts.onStart?.();
+            ampTimer = window.setInterval(() => {
+              opts.onAmplitude?.(0.22 + 0.28 * Math.abs(Math.sin(Date.now() / 120)));
+            }, 90);
+          };
+          utterance.onend = clean;
+          utterance.onerror = clean;
+          try {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+          } catch {
+            clean();
+          }
+        });
+        return;
+      }
       if (!stopped) throw err;
     }
   })();

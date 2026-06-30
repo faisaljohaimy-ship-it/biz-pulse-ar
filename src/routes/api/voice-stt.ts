@@ -63,7 +63,10 @@ export const Route = createFileRoute("/api/voice-stt")({
         try {
           const r = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
             method: "POST",
-            headers: { Authorization: `Bearer ${key}` },
+            headers: {
+              "Lovable-API-Key": key,
+              "X-Lovable-AIG-SDK": "nexios-voice-stt",
+            },
             body: upstream,
             signal: AbortSignal.timeout(45_000),
           });
