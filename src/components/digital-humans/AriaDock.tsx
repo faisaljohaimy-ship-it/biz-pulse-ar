@@ -594,15 +594,26 @@ export function AriaDock() {
         )}
 
         {minimized && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10 self-center ms-auto"
-            onClick={() => setMinimized(false)}
-            aria-label={ar ? "توسيع" : "Expand"}
-          >
-            <ChevronUp className="h-3.5 w-3.5" />
-          </Button>
+          <>
+            <AriaStatusStrip
+              className="flex-1 min-w-0 self-center"
+              state={state}
+              voiceOn={voiceOn}
+              queueDepth={queueDepth}
+              listening={listener.listening}
+              thinking={listener.thinking}
+              ar={ar}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10 self-center"
+              onClick={() => setMinimized(false)}
+              aria-label={ar ? "توسيع" : "Expand"}
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </Button>
+          </>
         )}
       </div>
     </div>
