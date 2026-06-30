@@ -307,10 +307,12 @@ export function AriaDock() {
       });
       // Safety net: even if TTS stalls, reveal the dock so controls stay reachable.
       window.setTimeout(() => setRevealed(true), 9000);
-      // Open mic ~1.2s after greeting starts so playback isn't cut by the
-      // listener's `aria.stop()`. The listener pauses recording during TTS
-      // because echo/feedback would otherwise re-trigger STT.
-      setTimeout(() => { try { listener.start(ARIA); } catch { /* mic unavailable */ } }, 1200);
+      // NOTE: we do NOT auto-open the microphone here. Many runtimes (Lovable
+      // preview iframe, embedded contexts without `allow="microphone"`,
+      // mobile Safari before a tap on a mic affordance) reject getUserMedia
+      // with NotAllowedError, which would surface a scary red error on the
+      // very first frame of the dock. The user opens the mic explicitly by
+      // tapping the mic button — `ask`/`speak` work without it.
     };
     window.addEventListener("pointerdown", unlock, true);
     window.addEventListener("keydown", unlock, true);
