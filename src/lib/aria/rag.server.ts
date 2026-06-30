@@ -69,7 +69,7 @@ export async function gatherRagContext(
       .from("aria_memory")
       .update({ last_used_at: new Date().toISOString() })
       .eq("user_id", userId)
-      .in("key", memories.map((m) => m.key));
+      .in("id", memories.map((m) => m.id));
   }
 
   const citations: RagCitation[] = [
@@ -132,7 +132,10 @@ export async function rememberConversationTurn(
   assistantText: string,
 ): Promise<void> {
   const content = `User: ${userText.slice(0, 600)}\nARIA: ${assistantText.slice(0, 1400)}`;
-  const key = `turn:${threadId ?? "ad-hoc"}:${Date.now()}`;
+  const suffix = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const key = `turn:${threadId ?? "ad-hoc"}:${suffix}`;
   const scope = threadId ? `thread:${threadId}` : "conversation";
   const embedding = await embedText(`${userText}\n${assistantText}`);
   const { error } = await supabase.from("aria_memory").upsert(
