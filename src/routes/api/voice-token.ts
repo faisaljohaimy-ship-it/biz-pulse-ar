@@ -1,11 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError, toApiErrorShape } from "@/lib/api";
+import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/governance/rate-limit.server";
 
 export const Route = createFileRoute("/api/voice-token")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        // Auth: only signed-in executives may mint ElevenLabs tokens.
+        const auth = await verifySupabaseUser(request);
+        if (auth instanceof Response) return auth;
+        // Per-user rate limit — cap token minting to 20/min.
+        const { allowed } = await enforceRateLimit(
+          `voice-token:${auth.userId}`,
+          20,
+          60,
+        );
+        if (!allowed) return rateLimitResponse();
+
         const apiKey = process.env.ELEVENLABS_API_KEY;
         if (!apiKey) {
           return Response.json({ error: "ELEVENLABS_API_KEY not configured" }, { status: 500 });

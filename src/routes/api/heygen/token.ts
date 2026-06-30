@@ -14,6 +14,11 @@
  * this handler.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/governance/rate-limit.server";
 import {
   HEYGEN_API_URL,
   HEYGEN_DEFAULT_AVATAR_ID,
@@ -44,6 +49,16 @@ export const Route = createFileRoute("/api/heygen/token")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Auth: only signed-in executives may mint HeyGen avatar tokens.
+        const auth = await verifySupabaseUser(request);
+        if (auth instanceof Response) return auth;
+        const { allowed } = await enforceRateLimit(
+          `heygen-token:${auth.userId}`,
+          20,
+          60,
+        );
+        if (!allowed) return rateLimitResponse();
+
         const apiKey = process.env.HEYGEN_API_KEY;
         if (!apiKey) {
           return Response.json({ error: "heygen_not_configured" }, { status: 503 });

@@ -1,10 +1,12 @@
 // One-shot ingest hook: populates aria_document_chunks for the 8 seeded
 // reference documents with real bilingual SOP / policy content, embeds via
 // the Lovable AI Gateway, and updates chunk_count + summary. Idempotent —
-// re-running skips documents that already have chunks. Guarded by the
-// SUPABASE_PUBLISHABLE_KEY apikey header (same pattern as runtime-bootstrap).
+// re-running skips documents that already have chunks. Guarded by
+// CRON_HOOK_SECRET (timing-safe). The legacy SUPABASE_PUBLISHABLE_KEY guard
+// was removed because that key is shipped to browsers.
 
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyCronHookSecret } from "@/lib/hook-auth.server";
 
 type DocBody = { match: string; body: string };
 
@@ -317,13 +319,8 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") ?? request.headers.get("x-api-key");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!apikey || !expected || apikey !== expected) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401, headers: { "Content-Type": "application/json" },
-          });
-        }
+        const denied = verifyCronHookSecret(request);
+        if (denied) return denied;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { embedText, toPgVector } = await import("@/lib/aria/embeddings.server");

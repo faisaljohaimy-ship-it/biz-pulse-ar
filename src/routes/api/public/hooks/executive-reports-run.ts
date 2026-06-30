@@ -1,22 +1,19 @@
 // Cron-triggered runner: processes due `report_schedules`.
-// Called by pg_cron with `apikey` header == SUPABASE_PUBLISHABLE_KEY.
+// Called by pg_cron with `x-cron-secret` header == CRON_HOOK_SECRET (the
+// legacy SUPABASE_PUBLISHABLE_KEY guard was removed — that key is public).
 // Public route — guard the handler ourselves.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
+import { verifyCronHookSecret } from "@/lib/hook-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/executive-reports-run")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") ?? request.headers.get("x-api-key");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!apikey || !expected || apikey !== expected) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401, headers: { "Content-Type": "application/json" },
-          });
-        }
+        const denied = verifyCronHookSecret(request);
+        if (denied) return denied;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { buildExecutiveSnapshot } = await import("@/lib/reports/snapshot.server");
