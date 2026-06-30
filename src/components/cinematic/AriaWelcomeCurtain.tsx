@@ -121,10 +121,17 @@ export function AriaWelcomeCurtain() {
         </p>
 
         <div
-          className="mt-8 text-[10px] uppercase tracking-[0.32em] text-white/40"
+          className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-white/40"
           style={{ animation: "awc-rise 900ms ease-out 900ms backwards" }}
         >
-          انقر للمتابعة · Tap to continue
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); dismiss(); }}
+            className="rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/90 transition hover:border-[#3AE8FF] hover:bg-[#3AE8FF]/20"
+          >
+            تخطي · Skip
+          </button>
+          <span className="font-mono text-white/35">{String(remaining).padStart(2, "0")}s</span>
         </div>
       </div>
     </div>
