@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { hasAnyPlatformRole } from "@/lib/authz.server";
 import { getExecutor } from "./tool-registry.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
@@ -68,16 +69,8 @@ async function hasAnyRole(
   userId: string,
   roles: string[],
 ): Promise<boolean> {
-  if (!roles.length) return true;
-  for (const role of roles) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc("has_role", {
-      _user_id: userId,
-      _role: role,
-    });
-    if (!error && data === true) return true;
-  }
-  return false;
+  void supabase;
+  return hasAnyPlatformRole(userId, roles);
 }
 
 export async function executeTool(

@@ -1,6 +1,7 @@
 // Cost budget + secrets rotation read APIs for the Observability dashboard.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasPlatformRole } from "@/lib/authz.server";
 
 export type BudgetStatus = {
   scope: string;
@@ -104,11 +105,8 @@ const TRACKED_SECRETS = [
 export const getSecretsRotationStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<RotationEntry[]> => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
+    const { userId } = context;
+    const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) return [];
 
     const { supabaseAdmin } = await import(

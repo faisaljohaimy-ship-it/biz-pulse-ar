@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 export const DEMO_EMAIL = "demo@nexus.app";
 
@@ -9,19 +10,11 @@ function getDemoPassword() {
   return password;
 }
 
-async function requireAdmin(context: { supabase: unknown; userId: string }) {
-  const { data, error } = await (context.supabase as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: Error | null }> }).rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error || data !== true) throw new Error("Forbidden");
-}
-
 /** Admin-only utility for preparing isolated demonstration accounts. */
 export const ensureDemoUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireAdmin(context);
+    await requirePlatformAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Check if the user already exists
     const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({

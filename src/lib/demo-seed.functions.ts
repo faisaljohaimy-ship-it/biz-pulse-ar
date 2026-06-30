@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DEMO_EMAIL } from "@/lib/demo.functions";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 /** Tables owned by a user that should be wiped on demo reset. */
 const USER_SCOPED_TABLES = [
@@ -29,14 +30,6 @@ const USER_SCOPED_TABLES = [
 
 type AdminClient = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
-async function requireAdmin(context: { supabase: unknown; userId: string }) {
-  const { data, error } = await (context.supabase as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: Error | null }> }).rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error || data !== true) throw new Error("Forbidden");
-}
-
 async function getDemoUserId(supabaseAdmin: AdminClient): Promise<string> {
   const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
   if (error) throw new Error(error.message);
@@ -49,7 +42,7 @@ async function getDemoUserId(supabaseAdmin: AdminClient): Promise<string> {
 export const resetDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireAdmin(context);
+    await requirePlatformAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = await getDemoUserId(supabaseAdmin);
     for (const table of USER_SCOPED_TABLES) {
@@ -62,7 +55,7 @@ export const resetDemoData = createServerFn({ method: "POST" })
 export const seedDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireAdmin(context);
+    await requirePlatformAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = await getDemoUserId(supabaseAdmin);
 

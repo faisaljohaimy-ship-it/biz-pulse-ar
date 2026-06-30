@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 export type MicrosoftIntegrationRow = {
   id: string;
@@ -37,9 +38,8 @@ export type MicrosoftSyncLogRow = {
   started_at: string;
 };
 
-async function assertAdmin(ctx: { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => PromiseLike<{ data: boolean | null }> }; userId: string }) {
-  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
-  if (!data) throw new Error("Forbidden: admin role required");
+async function assertAdmin(ctx: { userId: string }) {
+  await requirePlatformAdmin(ctx.userId);
 }
 
 export const getMicrosoftIntegration = createServerFn({ method: "GET" })
