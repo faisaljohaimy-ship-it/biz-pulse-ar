@@ -198,8 +198,8 @@ function HeygenRender(props: AvatarRenderProps) {
         </div>
       )}
       {err && (
-        <div className="absolute inset-0 grid place-items-center px-2 text-[9px] text-rose-300/80 text-center">
-          {err.slice(0, 80)}
+        <div className="absolute inset-0 grid place-items-center px-2 text-[10px] text-cyan-200/80 text-center">
+          {ar ? "البث المرئي غير متاح حالياً" : "Live avatar unavailable"}
         </div>
       )}
     </div>
