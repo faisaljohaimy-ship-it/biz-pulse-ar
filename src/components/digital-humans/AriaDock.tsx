@@ -27,8 +27,9 @@ import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria
 import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, RotateCcw, SkipForward, Square } from "lucide-react";
+import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, RotateCcw, SkipForward, Square, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAgentListener } from "@/lib/digital-humans/agent-listen";
 
 interface QueuedLine {
   id: string;
@@ -54,6 +55,7 @@ export function AriaDock() {
   const handleRef = useRef<SpeakHandle | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
+  const listener = useAgentListener();
 
   // Choose the 3D R3F provider when WebGL is available and reduced-motion is off;
   // otherwise fall back to the SVG portrait. Resolved once per session.
@@ -183,10 +185,17 @@ export function AriaDock() {
         setState("idle");
         setAmp(0);
       },
+      /** Open the mic for a Q&A directed at this Digital Human (defaults to ARIA). */
+      ask: (speaker?: DigitalHumanSpec) => {
+        // Enable voice playback so the spoken answer is audible.
+        setVoiceOn(true);
+        listener.start(speaker ?? ARIA);
+      },
+      stopListening: () => listener.stop(),
     };
     (window as unknown as { aria?: typeof api }).aria = api;
     return () => { delete (window as unknown as { aria?: typeof api }).aria; };
-  }, [enqueue]);
+  }, [enqueue, listener]);
 
   const toggleVoice = () => {
     setVoiceOn(v => {
@@ -295,6 +304,26 @@ export function AriaDock() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className={cn(
+                    "h-7 w-7 hover:bg-white/10",
+                    listener.listening ? "text-rose-300 hover:text-rose-200" : "text-cyan-200 hover:text-white",
+                  )}
+                  onClick={() => {
+                    if (!listener.listening) setVoiceOn(true);
+                    listener.toggle(current?.speaker ?? ARIA);
+                  }}
+                  aria-label={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل الوكيل" : "Ask agent")}
+                  title={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل" : "Ask")}
+                >
+                  {listener.thinking
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : listener.listening
+                      ? <MicOff className="h-3.5 w-3.5" />
+                      : <Mic className="h-3.5 w-3.5" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
                   className="h-7 w-7 text-cyan-200 hover:text-white hover:bg-white/10"
                   onClick={toggleVoice}
                   aria-label={voiceOn ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تفعيل الصوت" : "Enable voice")}
@@ -324,9 +353,21 @@ export function AriaDock() {
             </div>
 
             <div className="mt-2 text-[13px] leading-relaxed text-white/85 min-h-[2.6em]">
-              {current
-                ? (ar ? current.text_ar : current.text_en)
-                : (ar ? "في وضع الصمت. لن أتحدث إلا عند الطلب أو عند حدث حرج." : "Silent by default. I speak only on request or on a critical incident.")}
+              {listener.listening || listener.thinking
+                ? (
+                  <span className="text-cyan-200/90">
+                    {listener.thinking
+                      ? (ar ? "أحلّل سؤالك…" : "Analyzing your question…")
+                      : listener.partial
+                        ? listener.partial
+                        : (ar ? "أستمع إليك…" : "Listening…")}
+                  </span>
+                )
+                : current
+                  ? (ar ? current.text_ar : current.text_en)
+                  : listener.error
+                    ? <span className="text-rose-300/90">{listener.error}</span>
+                    : (ar ? "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب." : "Tap the mic to ask me or any agent. Silent until asked.")}
             </div>
 
             <div className="mt-2 flex items-center gap-1 text-white/70">
