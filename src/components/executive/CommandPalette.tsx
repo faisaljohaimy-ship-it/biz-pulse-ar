@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Search, ArrowLeft, Sparkles } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
 
 type Cmd = {
   id: string;
@@ -13,10 +15,14 @@ type Cmd = {
 };
 
 export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const Arrow = ar ? ArrowLeft : ArrowRight;
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -87,7 +93,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="Universal command"
-      dir="rtl"
+      dir={ar ? "rtl" : "ltr"}
       className="fixed inset-0 z-[95] flex items-start justify-center bg-black/60 px-4 pt-[12vh] backdrop-blur-md"
       onClick={() => setOpen(false)}
     >
@@ -101,7 +107,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث، انتقل، شغّل وكيلاً… · Search, navigate, run"
+            placeholder={ar ? "ابحث، انتقل، شغّل وكيلاً…" : "Search, navigate, run an agent…"}
             className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
             onKeyDown={(e) => {
               if (e.key === "Enter" && filtered[0]) run(filtered[0]);
@@ -109,6 +115,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
           />
           <kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/60">ESC</kbd>
         </div>
+
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {Object.entries(grouped).map(([group, items]) => (
             <div key={group} className="mb-2">
@@ -119,13 +126,13 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
                     <button
                       type="button"
                       onClick={() => run(c)}
-                      className="group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-right transition hover:bg-[#3AE8FF]/10 focus:bg-[#3AE8FF]/10 focus:outline-none"
+                      className={`group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 ${ar ? "text-right" : "text-left"} transition hover:bg-[#3AE8FF]/10 focus:bg-[#3AE8FF]/10 focus:outline-none`}
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-sm text-white">{c.title_ar}</div>
-                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{c.title_en}{c.hint ? ` · ${c.hint}` : ""}</div>
+                        <div className="truncate text-sm text-white">{ar ? c.title_ar : c.title_en}</div>
+                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{ar ? c.title_en : c.title_ar}{c.hint ? ` · ${c.hint}` : ""}</div>
                       </div>
-                      <ArrowLeft className="h-4 w-4 text-white/30 transition group-hover:text-[#3AE8FF]" />
+                      <Arrow className="h-4 w-4 text-white/30 transition group-hover:text-[#3AE8FF]" />
                     </button>
                   </li>
                 ))}
@@ -135,15 +142,16 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
           {filtered.length === 0 && (
             <div className="flex flex-col items-center gap-2 px-6 py-10 text-center text-white/50">
               <Sparkles className="h-5 w-5 text-[#3AE8FF]" />
-              <p className="text-sm">لا توجد نتائج · No matches</p>
+              <p className="text-sm">{ar ? "لا توجد نتائج" : "No matches"}</p>
             </div>
           )}
         </div>
         <div className="flex items-center justify-between border-t border-white/10 px-4 py-2 text-[10px] text-white/40">
-          <span>↵ تنفيذ · Enter</span>
-          <span>⌘/Ctrl + K للفتح</span>
+          <span>↵ {ar ? "تنفيذ" : "Enter"}</span>
+          <span>⌘/Ctrl + K</span>
         </div>
       </div>
     </div>
   );
 }
+
