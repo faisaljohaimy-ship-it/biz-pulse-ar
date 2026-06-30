@@ -289,12 +289,15 @@ export function AriaDock() {
       window.removeEventListener("keydown", unlock, true);
       window.removeEventListener("touchstart", unlock, true);
       setVoiceOn(true);
+      welcomeStartedRef.current = true;
       api.speak({
         id: `welcome-${Date.now()}`,
         text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
         text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
         speaker: ARIA,
       });
+      // Safety net: even if TTS stalls, reveal the dock so controls stay reachable.
+      window.setTimeout(() => setRevealed(true), 9000);
       // Open mic ~1.2s after greeting starts so playback isn't cut by the
       // listener's `aria.stop()`. The listener pauses recording during TTS
       // because echo/feedback would otherwise re-trigger STT.
