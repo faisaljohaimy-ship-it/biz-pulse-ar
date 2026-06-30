@@ -26,14 +26,15 @@ export interface ExecutiveHeroStageProps {
 
 // Deterministic mote positions so SSR / hydration match and animation phase
 // is consistent across reloads. Generated with a fixed seed (Math impl below).
+const round = (n: number, d = 3) => Math.round(n * 10 ** d) / 10 ** d;
 const MOTES = Array.from({ length: 24 }, (_, i) => {
   const a = (i * 137.508) * (Math.PI / 180); // golden-angle scatter
   const r = 12 + ((i * 53) % 38);             // radius %
   return {
-    cx: 50 + r * Math.cos(a),
-    cy: 50 + r * Math.sin(a) * 0.62,           // squash vertically
-    delay: (i * 0.31) % 6,
-    size: 1.2 + ((i * 7) % 9) / 10,
+    cx: round(50 + r * Math.cos(a)),
+    cy: round(50 + r * Math.sin(a) * 0.62),
+    delay: round((i * 0.31) % 6, 2),
+    size: round(1.2 + ((i * 7) % 9) / 10, 2),
   };
 });
 
