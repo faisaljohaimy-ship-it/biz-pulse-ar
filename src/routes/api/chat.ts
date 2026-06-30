@@ -277,8 +277,8 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
               };
             }
             if (part.type === "finish") {
-              const { evaluateRagCoverage } = require("@/lib/aria/rag.server") as typeof import("@/lib/aria/rag.server");
               const coverage = evaluateRagCoverage(finalAssistantText, ragCitations);
+
               if (coverage.status === "uncited" && coverage.available > 0) {
                 console.warn("[api/chat] uncited answer", { requestId, available: coverage.available });
               }
