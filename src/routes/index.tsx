@@ -71,6 +71,7 @@ function IntroLanding() {
         >
           <LayoutGrid className="h-4 w-4" />
           <span>نوافذ الإدارات</span>
+        </button>
         <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
           <Command className="h-3 w-3" /> K
         </kbd>
