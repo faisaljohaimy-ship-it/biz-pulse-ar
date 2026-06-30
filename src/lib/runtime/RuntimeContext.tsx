@@ -36,24 +36,32 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
   });
 
   // Realtime: refresh runtime counters when critical tables change.
+  // Subscribe ONCE on mount — never re-subscribe on data refetch (would
+  // collide with the existing joined channel and throw "cannot add
+  // postgres_changes callbacks after subscribe()").
+  const hasData = !!data;
   useEffect(() => {
-    if (!data) return;
-    const channel = supabase
-      .channel("enterprise-runtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "sec_incidents" }, () => {
+    if (!hasData) return;
+    const topic = `enterprise-runtime:${Math.random().toString(36).slice(2, 10)}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let channel: any = null;
+    try {
+      const invalidate = () =>
         qc.invalidateQueries({ queryKey: ["enterprise-runtime"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "sec_cctv_alerts" }, () => {
-        qc.invalidateQueries({ queryKey: ["enterprise-runtime"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, () => {
-        qc.invalidateQueries({ queryKey: ["enterprise-runtime"] });
-      })
-      .subscribe();
+      channel = supabase.channel(topic);
+      channel.on("postgres_changes", { event: "*", schema: "public", table: "sec_incidents" }, invalidate);
+      channel.on("postgres_changes", { event: "*", schema: "public", table: "sec_cctv_alerts" }, invalidate);
+      channel.on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, invalidate);
+      channel.subscribe();
+    } catch (err) {
+      console.warn("[runtime] realtime unavailable", err);
+    }
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try { void supabase.removeChannel(channel); } catch { /* noop */ }
+      }
     };
-  }, [data, qc]);
+  }, [hasData, qc]);
 
   // Autonomous runtime scheduler — enabled once bootstrap data is hydrated.
   useRuntimeScheduler(!!data);
