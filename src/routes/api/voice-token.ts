@@ -4,7 +4,6 @@ import { isApiError, toApiErrorShape } from "@/lib/api";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
 import {
   enforceRateLimit,
-  clientBucketKey,
   rateLimitResponse,
 } from "@/lib/governance/rate-limit.server";
 
