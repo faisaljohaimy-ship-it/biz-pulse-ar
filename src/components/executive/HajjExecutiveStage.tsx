@@ -11,7 +11,9 @@
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
 import { Link } from "@tanstack/react-router";
-import { Moon, Gem, ArrowLeft, Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { Moon, Gem, ArrowLeft, ArrowRight, Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
 
 const INTEGRATIONS = [
   { icon: Mail,     label_ar: "Outlook",      label_en: "Microsoft Outlook", hue: "#22c1ff" },
@@ -20,10 +22,18 @@ const INTEGRATIONS = [
 ] as const;
 
 export function HajjExecutiveStage() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const Arrow = ar ? ArrowLeft : ArrowRight;
+  const heading = ar ? "منصة إنجاز الأعمال التنفيذية" : "Executive Delivery Platform";
+  const sub = ar
+    ? "تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط Outlook، SAP، و Windows 365 مع منظومة وكلاء آريا."
+    : "End-to-end digital integration between Hajj operations, enterprise systems, and executive intelligence — a single cockpit linking Outlook, SAP, and Windows 365 with ARIA's agent fabric.";
+
   return (
     <section
-      dir="rtl"
-      aria-label="منصة إنجاز الأعمال التنفيذية"
+      dir={ar ? "rtl" : "ltr"}
+      aria-label={heading}
       className="relative mx-auto mt-10 w-full max-w-6xl px-4 sm:mt-14 sm:px-6"
     >
       <style>{`
@@ -39,25 +49,19 @@ export function HajjExecutiveStage() {
         <div className="text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/80 sm:text-[11px]">
           Executive Delivery Platform · Vision 2030
         </div>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-          منصة إنجاز الأعمال التنفيذية
-        </h2>
-        <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">
-          تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط
-          <span className="px-1 font-semibold text-[#3AE8FF]">Outlook</span>·
-          <span className="px-1 font-semibold text-[#3AE8FF]">SAP</span>·
-          <span className="px-1 font-semibold text-[#3AE8FF]">Windows 365</span>
-          مع منظومة وكلاء آريا.
-        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{heading}</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">{sub}</p>
       </header>
+
 
       <div className="hes-anim grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
         {/* RIGHT (primary in RTL) — Hajj cinematic gateway */}
         <Link
           to="/hajj-prime"
-          aria-label="افتح منصة الحج التنفيذية"
+          aria-label={ar ? "افتح منصة الحج التنفيذية" : "Open the Hajj Executive Platform"}
           className="group relative block aspect-[4/3] overflow-hidden rounded-3xl border border-[#00D4FF]/35 bg-gradient-to-br from-[#02101e] via-[#04243c] to-[#061A2E] shadow-[0_0_60px_-20px_rgba(0,212,255,0.55)] transition hover:border-[#3AE8FF]/70 hover:shadow-[0_0_80px_-15px_rgba(58,232,255,0.75)]"
         >
+
           {/* Volumetric backdrop — orbiting energy disc */}
           <div
             aria-hidden
@@ -118,7 +122,7 @@ export function HajjExecutiveStage() {
           <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
-              LIVE · مشاعر 1447
+              LIVE · {ar ? "مشاعر 1447" : "Mashaer 1447"}
             </span>
             <Moon className="h-6 w-6 text-[#3AE8FF] drop-shadow-[0_0_10px_rgba(58,232,255,0.8)]" />
           </div>
@@ -127,22 +131,27 @@ export function HajjExecutiveStage() {
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#02101e] via-[#02101e]/85 to-transparent p-5">
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-[0.28em] text-[#3AE8FF]/80">Hajj Operations</div>
-              <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">نظام الحج التنفيذي</h3>
+              <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">
+                {ar ? "نظام الحج التنفيذي" : "Hajj Executive Module"}
+              </h3>
               <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-white/65 sm:text-xs">
-                إدارة المشاعر، المخيمات، الحشود، والاستجابة الطارئة — مدعومة برؤية المملكة 2030.
+                {ar
+                  ? "إدارة المشاعر، المخيمات، الحشود، والاستجابة الطارئة — مدعومة برؤية المملكة 2030."
+                  : "Mashaer, camps, crowd-flow, and emergency response — backed by Saudi Vision 2030."}
               </p>
             </div>
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/15 px-3 py-2 text-[11px] font-semibold text-white shadow-[0_0_24px_rgba(58,232,255,0.35)] transition group-hover:bg-[#3AE8FF]/25">
-              <span>دخول</span>
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>{ar ? "دخول" : "Enter"}</span>
+              <Arrow className="h-3.5 w-3.5" />
             </span>
           </div>
+
         </Link>
 
         {/* LEFT — Digital integration constellation */}
         <div
           className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-[#00D4FF]/30 bg-gradient-to-bl from-[#04243c] via-[#02101e] to-[#061A2E] shadow-[0_0_60px_-25px_rgba(0,212,255,0.5)]"
-          aria-label="حلقة التكامل الرقمي"
+          aria-label={ar ? "حلقة التكامل الرقمي" : "Digital integration ring"}
         >
           {/* Soft glow */}
           <div
@@ -207,8 +216,9 @@ export function HajjExecutiveStage() {
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: it.hue }} />
                 </span>
                 <span className="rounded-full border border-white/10 bg-black/50 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/85 sm:text-[10px]">
-                  {it.label_ar}
+                  {ar ? it.label_ar : it.label_en}
                 </span>
+
               </div>
             );
           })}
@@ -250,9 +260,10 @@ export function HajjExecutiveStage() {
                 <Icon className="h-4 w-4" style={{ color: it.hue }} />
               </span>
               <div className="min-w-0">
-                <div className="truncate text-xs font-semibold text-white sm:text-sm">{it.label_ar}</div>
-                <div className="truncate text-[10px] uppercase tracking-[0.18em] text-white/45">{it.label_en}</div>
+                <div className="truncate text-xs font-semibold text-white sm:text-sm">{ar ? it.label_ar : it.label_en}</div>
+                <div className="truncate text-[10px] uppercase tracking-[0.18em] text-white/45">{ar ? it.label_en : it.label_ar}</div>
               </div>
+
             </div>
           );
         })}

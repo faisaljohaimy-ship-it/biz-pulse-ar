@@ -10,14 +10,19 @@
  */
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
 
 const SESSION_KEY = "nexus.welcome-curtain-shown";
 
 export function AriaWelcomeCurtain() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const [show, setShow] = useState(false);
   const [fade, setFade] = useState(false);
 
   const [remaining, setRemaining] = useState(25);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -59,10 +64,11 @@ export function AriaWelcomeCurtain() {
 
   return (
     <div
-      dir="rtl"
+      dir={ar ? "rtl" : "ltr"}
       role="dialog"
-      aria-label="ترحيب آريا"
+      aria-label={ar ? "ترحيب آريا" : "ARIA welcome"}
       onClick={dismiss}
+
       className={[
         "fixed inset-0 z-[120] flex items-center justify-center cursor-pointer",
         "bg-[radial-gradient(ellipse_at_center,rgba(6,26,46,0.92)_0%,rgba(2,8,18,0.98)_55%,#020812_100%)]",
@@ -120,14 +126,15 @@ export function AriaWelcomeCurtain() {
           className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-4xl"
           style={{ animation: "awc-rise 900ms ease-out 200ms backwards" }}
         >
-          أهلاً بك في منصة إنجاز الأعمال التنفيذية
+          {ar ? "أهلاً بك في منصة إنجاز الأعمال التنفيذية" : "Welcome to the Executive Delivery Platform"}
         </h1>
 
         <p
           className="mt-4 max-w-md text-sm leading-relaxed text-white/75 sm:text-base"
           style={{ animation: "awc-rise 900ms ease-out 500ms backwards" }}
         >
-          أنا <span className="font-semibold text-[#3AE8FF]">آريا</span> — عقلك التنفيذي. بماذا يمكنني مساعدتك اليوم؟
+          {ar ? <>أنا <span className="font-semibold text-[#3AE8FF]">آريا</span> — عقلك التنفيذي. بماذا يمكنني مساعدتك اليوم؟</> :
+                <>I am <span className="font-semibold text-[#3AE8FF]">ARIA</span> — your executive mind. How can I help you today?</>}
         </p>
 
         <div
@@ -139,9 +146,10 @@ export function AriaWelcomeCurtain() {
             onClick={(e) => { e.stopPropagation(); dismiss(); }}
             className="rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/90 transition hover:border-[#3AE8FF] hover:bg-[#3AE8FF]/20"
           >
-            تخطي · Skip
+            {ar ? "تخطي" : "Skip"}
           </button>
           <span className="font-mono text-white/35">{String(remaining).padStart(2, "0")}s</span>
+
         </div>
       </div>
     </div>

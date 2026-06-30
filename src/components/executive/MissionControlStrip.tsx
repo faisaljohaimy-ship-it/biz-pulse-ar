@@ -5,9 +5,14 @@ import { Activity, AlertTriangle, ShieldCheck, Siren, Wrench, Bot } from "lucide
 import { getExecKpis } from "@/lib/sec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { KpiTile, type KpiTone } from "./KpiTile";
+import { useI18n } from "@/lib/i18n";
+
 
 export function MissionControlStrip() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const fetchKpis = useServerFn(getExecKpis);
+
   const [hasSession, setHasSession] = useState(false);
   useEffect(() => {
     let alive = true;
@@ -46,8 +51,8 @@ export function MissionControlStrip() {
         Icon: AlertTriangle,
         labelAr: "مستوى المخاطر",
         labelEn: "Risk Level",
-        value: loading ? "—" : (k!.incidents_critical > 0 ? "حرج" : k!.incidents_open > 5 ? "متوسط" : "منخفض"),
-        hint: loading ? undefined : `${k!.incidents_critical} حرج · ${k!.incidents_open} مفتوح`,
+        value: loading ? "—" : (k!.incidents_critical > 0 ? (ar ? "حرج" : "Critical") : k!.incidents_open > 5 ? (ar ? "متوسط" : "Elevated") : (ar ? "منخفض" : "Low")),
+        hint: loading ? undefined : (ar ? `${k!.incidents_critical} حرج · ${k!.incidents_open} مفتوح` : `${k!.incidents_critical} critical · ${k!.incidents_open} open`),
         tone: riskTone,
       },
       {
@@ -65,7 +70,7 @@ export function MissionControlStrip() {
         labelAr: "حوادث مفتوحة",
         labelEn: "Open Incidents",
         value: loading ? "—" : k!.incidents_open,
-        hint: loading ? undefined : `إجمالي ${k!.incidents_total}`,
+        hint: loading ? undefined : (ar ? `إجمالي ${k!.incidents_total}` : `Total ${k!.incidents_total}`),
         tone: (k?.incidents_open ?? 0) > 5 ? "amber" as KpiTone : "cyan" as KpiTone,
       },
       {
@@ -74,7 +79,7 @@ export function MissionControlStrip() {
         labelAr: "أوامر عمل مفتوحة",
         labelEn: "Open Work Orders",
         value: loading ? "—" : k!.wo_open,
-        hint: loading ? undefined : `مغلق ${k!.wo_closed}`,
+        hint: loading ? undefined : (ar ? `مغلق ${k!.wo_closed}` : `Closed ${k!.wo_closed}`),
         tone: "cyan" as KpiTone,
       },
       {
@@ -83,7 +88,7 @@ export function MissionControlStrip() {
         labelAr: "صيانة وقائية",
         labelEn: "Preventive WO",
         value: loading ? "—" : k!.preventive_wo,
-        hint: loading ? undefined : `إصلاحي ${k!.corrective_wo}`,
+        hint: loading ? undefined : (ar ? `إصلاحي ${k!.corrective_wo}` : `Corrective ${k!.corrective_wo}`),
         tone: "violet" as KpiTone,
       },
       {
@@ -92,11 +97,12 @@ export function MissionControlStrip() {
         labelAr: "مشاريع جارية",
         labelEn: "Active Projects",
         value: loading ? "—" : k!.projects_in_progress,
-        hint: loading ? undefined : `مكتمل ${k!.projects_completed}`,
+        hint: loading ? undefined : (ar ? `مكتمل ${k!.projects_completed}` : `Completed ${k!.projects_completed}`),
         tone: "emerald" as KpiTone,
       },
     ] as const;
-  }, [k, loading]);
+  }, [k, loading, ar]);
+
 
   return (
     <section
@@ -108,16 +114,17 @@ export function MissionControlStrip() {
           <div className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
             Mission Control
           </div>
-          <h2 className="text-base font-semibold text-white">نبض العمليات الحي</h2>
+          <h2 className="text-base font-semibold text-white">{ar ? "نبض العمليات الحي" : "Live Operations Pulse"}</h2>
         </div>
         <span
           className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
           aria-live="polite"
         >
           <span className={`h-1.5 w-1.5 rounded-full ${q.isFetching ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`} aria-hidden />
-          {q.isFetching ? "تحديث…" : q.isError ? "غير متصل" : "حي"}
+          {q.isFetching ? (ar ? "تحديث…" : "Updating…") : q.isError ? (ar ? "غير متصل" : "Offline") : (ar ? "حي" : "Live")}
         </span>
       </div>
+
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
         {tiles.map((t) => (
           <li key={t.key}>
