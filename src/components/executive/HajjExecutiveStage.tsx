@@ -58,9 +58,10 @@ export function HajjExecutiveStage() {
         {/* RIGHT (primary in RTL) — Hajj cinematic gateway */}
         <Link
           to="/hajj-prime"
-          aria-label="افتح منصة الحج التنفيذية"
+          aria-label={ar ? "افتح منصة الحج التنفيذية" : "Open the Hajj Executive Platform"}
           className="group relative block aspect-[4/3] overflow-hidden rounded-3xl border border-[#00D4FF]/35 bg-gradient-to-br from-[#02101e] via-[#04243c] to-[#061A2E] shadow-[0_0_60px_-20px_rgba(0,212,255,0.55)] transition hover:border-[#3AE8FF]/70 hover:shadow-[0_0_80px_-15px_rgba(58,232,255,0.75)]"
         >
+
           {/* Volumetric backdrop — orbiting energy disc */}
           <div
             aria-hidden
@@ -121,7 +122,7 @@ export function HajjExecutiveStage() {
           <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
-              LIVE · مشاعر 1447
+              LIVE · {ar ? "مشاعر 1447" : "Mashaer 1447"}
             </span>
             <Moon className="h-6 w-6 text-[#3AE8FF] drop-shadow-[0_0_10px_rgba(58,232,255,0.8)]" />
           </div>
@@ -130,16 +131,21 @@ export function HajjExecutiveStage() {
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#02101e] via-[#02101e]/85 to-transparent p-5">
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-[0.28em] text-[#3AE8FF]/80">Hajj Operations</div>
-              <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">نظام الحج التنفيذي</h3>
+              <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">
+                {ar ? "نظام الحج التنفيذي" : "Hajj Executive Module"}
+              </h3>
               <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-white/65 sm:text-xs">
-                إدارة المشاعر، المخيمات، الحشود، والاستجابة الطارئة — مدعومة برؤية المملكة 2030.
+                {ar
+                  ? "إدارة المشاعر، المخيمات، الحشود، والاستجابة الطارئة — مدعومة برؤية المملكة 2030."
+                  : "Mashaer, camps, crowd-flow, and emergency response — backed by Saudi Vision 2030."}
               </p>
             </div>
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/15 px-3 py-2 text-[11px] font-semibold text-white shadow-[0_0_24px_rgba(58,232,255,0.35)] transition group-hover:bg-[#3AE8FF]/25">
-              <span>دخول</span>
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>{ar ? "دخول" : "Enter"}</span>
+              <Arrow className="h-3.5 w-3.5" />
             </span>
           </div>
+
         </Link>
 
         {/* LEFT — Digital integration constellation */}
