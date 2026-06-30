@@ -74,6 +74,15 @@ export function AriaDock() {
   const [revealed, setRevealed] = useState(false);
   const welcomeStartedRef = useRef(false);
 
+  // Advertise this dock to the global copilot so it can step aside while the
+  // authenticated Digital Human surface owns the screen.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as { __aria_dock?: boolean };
+    w.__aria_dock = true;
+    return () => { w.__aria_dock = false; };
+  }, []);
+
   // Lazy-register the HeyGen provider only on the client and only when
   // WebRTC media APIs are available. Any import / boot failure is swallowed
   // so the dock (and the rest of the app) continues to render via the
