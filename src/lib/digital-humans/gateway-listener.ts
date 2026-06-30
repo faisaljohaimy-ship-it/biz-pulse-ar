@@ -91,7 +91,7 @@ export function useGatewayListener() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question: `[Voice question to ${sp.name_en} / ${sp.name_ar}] ${q}`,
+          question: q,
           lang,
         }),
         signal: ctrl.signal,
