@@ -34,6 +34,7 @@ import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, Rot
 import { cn } from "@/lib/utils";
 import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gateway-listener";
 import { HologramFace } from "@/components/digital-humans/HologramFace";
+import { AriaStatusStrip } from "@/components/digital-humans/AriaStatusStrip";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
 
@@ -58,6 +59,7 @@ export function AriaDock() {
   const [current, setCurrent] = useState<QueuedLine | null>(null);
   const [speakTurn, setSpeakTurn] = useState<AvatarSpeakTurn | null>(null);
   const [ariaLiveText, setAriaLiveText] = useState("");
+  const [queueDepth, setQueueDepth] = useState(0);
   const [heygenAvailable, setHeygenAvailable] = useState<boolean | null>(null);
   const lastLineRef = useRef<QueuedLine | null>(null);
   const queueRef = useRef<QueuedLine[]>([]);
@@ -121,6 +123,7 @@ export function AriaDock() {
   const playNext = useCallback(() => {
     if (paused) { playingRef.current = false; return; }
     const next = queueRef.current.shift();
+    setQueueDepth(queueRef.current.length);
     if (!next) {
       playingRef.current = false;
       setCurrent(null);
@@ -194,6 +197,7 @@ export function AriaDock() {
 
   const enqueue = useCallback((line: QueuedLine) => {
     queueRef.current.push(line);
+    setQueueDepth(queueRef.current.length);
     if (!playingRef.current && !paused) playNext();
   }, [playNext, paused]);
 
@@ -250,6 +254,7 @@ export function AriaDock() {
         handleRef.current?.stop();
         handleRef.current = null;
         queueRef.current = [];
+        setQueueDepth(0);
         setCurrent(null);
         setState("idle");
         setAmp(0);
@@ -376,6 +381,7 @@ export function AriaDock() {
     handleRef.current?.stop();
     handleRef.current = null;
     queueRef.current = [];
+    setQueueDepth(0);
     setCurrent(null);
     setState("idle");
     setAmp(0);
@@ -504,6 +510,18 @@ export function AriaDock() {
               </div>
             </div>
 
+            <AriaStatusStrip
+              className="mt-2"
+              state={state}
+              voiceOn={voiceOn}
+              queueDepth={queueDepth}
+              listening={listener.listening}
+              thinking={listener.thinking}
+              ar={ar}
+            />
+
+
+
             <div className="mt-2 text-[13px] leading-relaxed text-white/85 min-h-[2.6em]">
               {listener.listening || listener.thinking
                 ? (
@@ -576,15 +594,26 @@ export function AriaDock() {
         )}
 
         {minimized && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10 self-center ms-auto"
-            onClick={() => setMinimized(false)}
-            aria-label={ar ? "توسيع" : "Expand"}
-          >
-            <ChevronUp className="h-3.5 w-3.5" />
-          </Button>
+          <>
+            <AriaStatusStrip
+              className="flex-1 min-w-0 self-center"
+              state={state}
+              voiceOn={voiceOn}
+              queueDepth={queueDepth}
+              listening={listener.listening}
+              thinking={listener.thinking}
+              ar={ar}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10 self-center"
+              onClick={() => setMinimized(false)}
+              aria-label={ar ? "توسيع" : "Expand"}
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </Button>
+          </>
         )}
       </div>
     </div>
