@@ -1,5 +1,7 @@
 // One-shot hook to execute a single agent via the production agent runtime.
-// Guarded by SUPABASE_PUBLISHABLE_KEY apikey header + per-IP rate limit.
+// Guarded by CRON_HOOK_SECRET (timing-safe) + per-IP rate limit.
+// The legacy SUPABASE_PUBLISHABLE_KEY guard was removed because that key
+// ships to browsers — anyone could trigger arbitrary agent runs.
 
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -7,20 +9,14 @@ import {
   clientBucketKey,
   rateLimitResponse,
 } from "@/lib/governance/rate-limit.server";
+import { verifyCronHookSecret } from "@/lib/hook-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/run-agent")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey =
-          request.headers.get("apikey") ?? request.headers.get("x-api-key");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!apikey || !expected || apikey !== expected) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
+        const denied = verifyCronHookSecret(request);
+        if (denied) return denied;
 
         // Cap per-IP at 10 agent runs / minute.
         const { allowed } = await enforceRateLimit(
