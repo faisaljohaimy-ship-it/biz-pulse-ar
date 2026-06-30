@@ -45,6 +45,7 @@ export function MiniAriaHeroBadge() {
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
+  const [voiceError, setVoiceError] = useState<{ kind: "rate" | "network" | "blocked" | "generic"; status?: number } | null>(null);
   const [answer, setAnswer] = useState<AskResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lang, setLang] = useState<"ar" | "en">("ar");
