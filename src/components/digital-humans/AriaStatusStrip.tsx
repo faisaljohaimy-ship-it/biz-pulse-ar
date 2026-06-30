@@ -43,7 +43,7 @@ export function AriaStatusStrip({
   listening,
   thinking,
   ar,
-  pingEndpoint = "/api/heygen/status",
+  pingEndpoint = "/api/public/health",
   className,
 }: Props) {
   const [conn, setConn] = useState<Conn>(typeof navigator !== "undefined" && navigator.onLine ? "online" : "offline");
