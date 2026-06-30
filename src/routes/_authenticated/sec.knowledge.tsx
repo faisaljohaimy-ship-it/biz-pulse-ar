@@ -20,7 +20,7 @@ import {
   kbSemanticSearch, kbSeedFoundational, kbEmbedMissing, kbStats,
   type KbArticleSummary,
 } from "@/lib/kb.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/sec/knowledge")({
@@ -48,12 +48,13 @@ const RISK_COLORS: Record<string, string> = {
 
 function KbPage() {
   const { user } = useAuth();
+  const getIsAdmin = useServerFn(getCurrentUserIsAdmin);
   const adminQ = useQuery({
     queryKey: ["kb", "isAdmin", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
-      return !!data;
+      const result = await getIsAdmin();
+      return !!result.isAdmin;
     },
   });
   const isAdmin = !!adminQ.data;
