@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
 import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
+import { AgentRing } from "@/components/executive/AgentRing";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,7 +35,10 @@ function IntroLanding() {
         <MissionControlStrip />
       </div>
 
+      <AgentRing />
+
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+
         {/* Pillars */}
         <section className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
