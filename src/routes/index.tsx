@@ -29,30 +29,28 @@ function IntroLanding() {
     <div dir="rtl" className="relative min-h-screen overflow-hidden bg-black text-white">
       <NexusRevealHero onEnterOps={() => navigate({ to: "/runtime-hub" })} />
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
-
-
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
         {/* Pillars */}
-        <section className="mt-16">
-          <div className="mb-6 text-center">
-            <div className="text-[11px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">Capabilities</div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">مكوّنات النظام</h2>
+        <section className="mt-6 sm:mt-16">
+          <div className="mb-5 text-center sm:mb-6">
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">Capabilities</div>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">مكوّنات النظام</h2>
           </div>
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {PILLARS.map((p) => {
               const Icon = p.icon;
               return (
                 <li
                   key={p.title_en}
-                  className="group rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-5 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)]"
+                  className="group rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-4 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)] sm:p-5"
                 >
-                  <div className="mb-3 flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#00D4FF]/20 text-[#3AE8FF] shadow-[0_0_18px_rgba(0,212,255,0.5)]">
+                  <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#00D4FF]/20 text-[#3AE8FF] shadow-[0_0_18px_rgba(0,212,255,0.5)]">
                       <Icon className="h-5 w-5" />
                     </span>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold">{p.title_ar}</div>
-                      <div className="text-[10px] uppercase tracking-[0.25em] text-white/40">{p.title_en}</div>
+                    <div className="min-w-0 text-right">
+                      <div className="truncate text-sm font-semibold">{p.title_ar}</div>
+                      <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{p.title_en}</div>
                     </div>
                   </div>
                   <p className="text-sm leading-relaxed text-white/65">{p.desc_ar}</p>
@@ -63,15 +61,15 @@ function IntroLanding() {
         </section>
 
         {/* Footer CTA */}
-        <section className="mt-16 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-8 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)]">
-          <h3 className="text-xl font-semibold">جاهز للدخول إلى مركز القيادة؟</h3>
+        <section className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
+          <h3 className="text-lg font-semibold sm:text-xl">جاهز للدخول إلى مركز القيادة؟</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">
             ادخل إلى Runtime Hub لرؤية جميع مراحل النظام مباشرة، مع وميض حي وروابط فعّالة لكل وحدة.
           </p>
           <div className="mt-5">
             <Link
               to="/runtime-hub"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(58,232,255,0.4)] transition hover:bg-[#3AE8FF]/20"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(58,232,255,0.4)] transition hover:bg-[#3AE8FF]/20 sm:w-auto"
             >
               <span>دخول النظام</span>
               <ArrowLeft className="h-4 w-4" />
@@ -79,7 +77,7 @@ function IntroLanding() {
           </div>
         </section>
 
-        <p className="mt-10 text-center text-[11px] uppercase tracking-[0.3em] text-white/30">
+        <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
           NEXUS AI OS · v1.0 GA
         </p>
       </div>
