@@ -7,6 +7,7 @@ import { AgentRing } from "@/components/executive/AgentRing";
 import { CinematicBoot } from "@/components/executive/CinematicBoot";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
+import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 
 export const Route = createFileRoute("/")({
   head: () => ({
