@@ -39,6 +39,13 @@ const MOTES = Array.from({ length: 24 }, (_, i) => {
 
 export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
   const fetchKpis = useServerFn(getExecKpis);
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => alive && setHasSession(!!data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setHasSession(!!s));
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
   const q = useQuery({
     queryKey: ["exec-kpis", "hero"],
     queryFn: async () => {
@@ -47,6 +54,7 @@ export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
     refetchInterval: 15_000,
     retry: false,
     staleTime: 10_000,
+    enabled: hasSession,
   });
 
   const k = q.data;
