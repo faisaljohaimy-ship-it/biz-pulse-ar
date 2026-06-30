@@ -70,6 +70,7 @@ import { Route as AuthenticatedMissionControlRouteImport } from './routes/_authe
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
+import { Route as AuthenticatedKnowledgeUploadRouteImport } from './routes/_authenticated/knowledge-upload'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
 import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticated/investor'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
@@ -463,6 +464,12 @@ const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedKnowledgeUploadRoute =
+  AuthenticatedKnowledgeUploadRouteImport.update({
+    id: '/knowledge-upload',
+    path: '/knowledge-upload',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedKnowledgeRoute = AuthenticatedKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -973,6 +980,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
@@ -1117,6 +1125,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
@@ -1262,6 +1271,7 @@ export interface FileRoutesById {
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/investor': typeof AuthenticatedInvestorRoute
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
+  '/_authenticated/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
@@ -1408,6 +1418,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/investor'
     | '/knowledge'
+    | '/knowledge-upload'
     | '/leads'
     | '/marketplace'
     | '/memory'
@@ -1552,6 +1563,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/investor'
     | '/knowledge'
+    | '/knowledge-upload'
     | '/leads'
     | '/marketplace'
     | '/memory'
@@ -1696,6 +1708,7 @@ export interface FileRouteTypes {
     | '/_authenticated/intelligence'
     | '/_authenticated/investor'
     | '/_authenticated/knowledge'
+    | '/_authenticated/knowledge-upload'
     | '/_authenticated/leads'
     | '/_authenticated/marketplace'
     | '/_authenticated/memory'
@@ -2257,6 +2270,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof AuthenticatedLeadsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/knowledge-upload': {
+      id: '/_authenticated/knowledge-upload'
+      path: '/knowledge-upload'
+      fullPath: '/knowledge-upload'
+      preLoaderRoute: typeof AuthenticatedKnowledgeUploadRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/knowledge': {
@@ -2949,6 +2969,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedInvestorRoute: typeof AuthenticatedInvestorRoute
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
+  AuthenticatedKnowledgeUploadRoute: typeof AuthenticatedKnowledgeUploadRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
@@ -3015,6 +3036,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedInvestorRoute: AuthenticatedInvestorRoute,
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
+  AuthenticatedKnowledgeUploadRoute: AuthenticatedKnowledgeUploadRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
