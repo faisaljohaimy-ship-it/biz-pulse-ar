@@ -57,6 +57,7 @@ export function AriaDock() {
   const [amp, setAmp] = useState(0);
   const [current, setCurrent] = useState<QueuedLine | null>(null);
   const [speakTurn, setSpeakTurn] = useState<AvatarSpeakTurn | null>(null);
+  const [ariaLiveText, setAriaLiveText] = useState("");
   const [heygenAvailable, setHeygenAvailable] = useState<boolean | null>(null);
   const lastLineRef = useRef<QueuedLine | null>(null);
   const queueRef = useRef<QueuedLine[]>([]);
@@ -316,6 +317,7 @@ export function AriaDock() {
         handleRef.current?.stop();
         handleRef.current = null;
       }
+      setAriaLiveText(nv ? (ar ? "الصوت مفعل" : "Voice on") : (ar ? "الصوت مكتوم" : "Voice muted"));
       return nv;
     });
   };
@@ -327,6 +329,7 @@ export function AriaDock() {
     handleRef.current?.stop();
     handleRef.current = null;
     setVoiceOn(true);
+    setAriaLiveText(ar ? "جارٍ تشغيل الترحيب" : "Playing welcome");
     const hour = new Date().getHours();
     const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
     const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -336,7 +339,7 @@ export function AriaDock() {
       text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
       speaker: ARIA,
     });
-  }, []);
+  }, [ar]);
 
   const skip = () => {
     handleRef.current?.stop();
@@ -409,6 +412,9 @@ export function AriaDock() {
       role="complementary"
       aria-label={ar ? "آريا — المساعد التنفيذي" : "ARIA — Executive AI"}
     >
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {ariaLiveText}
+      </div>
       <div className="flex items-center gap-4">
         {usingHeygen ? (
           <Render
