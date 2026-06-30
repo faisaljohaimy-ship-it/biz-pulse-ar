@@ -207,7 +207,7 @@ export const triggerMicrosoftSyncNow = createServerFn({ method: "POST" })
     const secret = process.env.MICROSOFT_SYNC_HOOK_SECRET;
     if (!secret) throw new Error("Sync hook not configured");
     await ensureSyncSecretSeeded();
-    const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || "https://biz-pulse-ar.lovable.app";
+    const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || "https://neexios.com";
     const { httpFetch } = await import("@/lib/api/http.server");
     const r = await httpFetch(`${base.replace(/\/$/, "")}/api/public/hooks/microsoft-sync`, {
       method: "POST",

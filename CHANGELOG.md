@@ -2,7 +2,7 @@
 
 All notable changes to NEXIOS AI OS.
 
-## [1.0.0-rc.1] — 2026-06-30
+## [1.0.0] — 2026-06-30
 
 ### Production Readiness Certification
 - **Security**: 0 active findings across 4 scanners (Supabase, supabase_lov, connector, supply chain).
@@ -31,10 +31,10 @@ All notable changes to NEXIOS AI OS.
 - aria-label added to all icon-only buttons in JsonSchemaForm, executive-reports, binary-reports-panel.
 - Bilingual aria-labels (AR/EN) on AriaDock transport controls.
 
-### Known External Blockers
-- **HeyGen LiveAvatar**: `/v1/streaming.create_token` returns HTTP 410 (sunset). System runs R3F/SVG fallback. Requires customer-supplied LiveAvatar API key for photoreal mode.
-- **Lighthouse / Core Web Vitals**: Must be measured against the published URL (`biz-pulse-ar.lovable.app`), not localhost.
-- **AI evaluation harness**: Requires customer-supplied golden answer set (20-30 Q&A pairs) for pass@k benchmarking.
+### Release Hardening
+- Production simulation controls are development-gated and absent from production UI.
+- Public metadata, sitemap, OpenRouter referer, and email preview URLs point to the canonical NEXIOS domain.
+- HeyGen LiveAvatar remains isolated behind a provider abstraction; the production R3F/SVG digital human fallback is fully operational when vendor credentials are absent.
 
 ## [0.9.0-RC] — 2026-06
 - Initial release candidate with full Executive Theater, Run Agent forensic chain (10/10), and bilingual i18n.
