@@ -1,37 +1,18 @@
 /**
- * POST /api/heygen/stop — terminates a LiveAvatar session using the
- * session token returned from /api/heygen/token. Called by the provider
- * when the persona swaps or the dock unmounts so we don't leak active
- * streaming sessions.
+ * POST /api/heygen/stop — no-op endpoint kept for API stability.
+ *
+ * The official HeyGen Streaming Avatar SDK (@heygen/streaming-avatar) closes
+ * sessions client-side via `streamingAvatar.stopAvatar()`. The browser SDK
+ * owns the session lifecycle once the access token is exchanged, so the
+ * server side has nothing to tear down. We keep this route so callers that
+ * still POST here during teardown receive a successful response.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { LIVEAVATAR_API_URL } from "@/lib/digital-humans/heygen-map";
 
 export const Route = createFileRoute("/api/heygen/stop")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
-        const body = (await request.json().catch(() => ({}))) as {
-          sessionToken?: string;
-        };
-        const sessionToken = body.sessionToken;
-        if (!sessionToken) {
-          return Response.json({ error: "session_token_required" }, { status: 400 });
-        }
-        try {
-          const res = await fetch(`${LIVEAVATAR_API_URL}/v1/sessions`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-              "Content-Type": "application/json",
-            },
-          });
-          return Response.json({ ok: res.ok, status: res.status });
-        } catch (err) {
-          console.error("[liveavatar/stop]", err);
-          return Response.json({ error: "liveavatar_stop_exception" }, { status: 500 });
-        }
-      },
+      POST: async () => Response.json({ ok: true }),
     },
   },
 });
