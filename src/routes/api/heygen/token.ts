@@ -1,68 +1,116 @@
 /**
- * POST /api/heygen/token — mints a short-lived HeyGen Streaming Avatar
- * session token and returns the per-persona avatar/voice map assembled
- * from server env. The HeyGen API key NEVER leaves the worker.
+ * POST /api/heygen/token — mints a LiveAvatar session token (FULL mode)
+ * bound to the requested executive persona. LiveAvatar is the official
+ * next-generation HeyGen Streaming Avatar platform.
  *
- * Non-public `/api/*` — Lovable's published-site auth gate applies, so
- * only signed-in executives reach this handler.
+ * Request:  { personaId?: string, language?: "ar" | "en" }
+ * Response: HeygenSession (see src/lib/digital-humans/heygen-map.ts)
+ *
+ * The LiveAvatar API key never leaves the worker. Non-public `/api/*`
+ * — Lovable's published-site auth gate applies, so only signed-in
+ * executives reach this handler.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import {
   HEYGEN_DEFAULT_AVATAR_ID,
+  HEYGEN_DEFAULT_VOICE_ID,
   HEYGEN_PERSONA_IDS,
-  type HeygenPersonaMap,
+  LIVEAVATAR_API_URL,
+  type HeygenSession,
 } from "@/lib/digital-humans/heygen-map";
 
-const HEYGEN_TOKEN_URL = "https://api.heygen.com/v1/streaming.create_token";
+function envKey(personaId: string) {
+  return personaId.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+}
 
-function buildPersonaMap(): HeygenPersonaMap {
-  const fallback = process.env.HEYGEN_DEFAULT_AVATAR_ID ?? HEYGEN_DEFAULT_AVATAR_ID;
-  const map: HeygenPersonaMap = {};
-  for (const id of HEYGEN_PERSONA_IDS) {
-    const envKey = id.toUpperCase().replace(/[^A-Z0-9]/g, "_");
-    map[id] = {
-      avatarId: process.env[`HEYGEN_AVATAR_${envKey}`] ?? fallback,
-      voiceId: process.env[`HEYGEN_VOICE_${envKey}`] ?? process.env.HEYGEN_DEFAULT_VOICE_ID,
-    };
-  }
-  return map;
+/**
+ * Read avatar/voice for a persona from env. Prefer LIVEAVATAR_* but
+ * fall back to legacy HEYGEN_* names so existing deployments keep
+ * working without re-keying every persona.
+ */
+function resolvePersona(personaId: string): { avatarId: string; voiceId?: string } {
+  const key = envKey(personaId);
+  const avatarId =
+    process.env[`LIVEAVATAR_AVATAR_${key}`] ??
+    process.env[`HEYGEN_AVATAR_${key}`] ??
+    process.env.LIVEAVATAR_DEFAULT_AVATAR_ID ??
+    process.env.HEYGEN_DEFAULT_AVATAR_ID ??
+    HEYGEN_DEFAULT_AVATAR_ID;
+  const voiceId =
+    process.env[`LIVEAVATAR_VOICE_${key}`] ??
+    process.env[`HEYGEN_VOICE_${key}`] ??
+    process.env.LIVEAVATAR_DEFAULT_VOICE_ID ??
+    process.env.HEYGEN_DEFAULT_VOICE_ID ??
+    HEYGEN_DEFAULT_VOICE_ID;
+  return { avatarId, voiceId };
 }
 
 export const Route = createFileRoute("/api/heygen/token")({
   server: {
     handlers: {
-      POST: async () => {
-        const apiKey = process.env.HEYGEN_API_KEY;
+      POST: async ({ request }) => {
+        const apiKey = process.env.LIVEAVATAR_API_KEY;
         if (!apiKey) {
-          return Response.json({ error: "heygen_not_configured" }, { status: 503 });
+          return Response.json({ error: "liveavatar_not_configured" }, { status: 503 });
         }
+        const body = (await request.json().catch(() => ({}))) as {
+          personaId?: string;
+          language?: "ar" | "en";
+        };
+        const personaId =
+          body.personaId && HEYGEN_PERSONA_IDS.includes(body.personaId)
+            ? body.personaId
+            : HEYGEN_PERSONA_IDS[0] ?? "aria";
+        const language: "ar" | "en" = body.language === "ar" ? "ar" : "en";
+        const { avatarId, voiceId } = resolvePersona(personaId);
+
         try {
-          const res = await fetch(HEYGEN_TOKEN_URL, {
+          const res = await fetch(`${LIVEAVATAR_API_URL}/v1/sessions/token`, {
             method: "POST",
-            headers: { "x-api-key": apiKey, "content-type": "application/json" },
+            headers: {
+              "X-API-KEY": apiKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              mode: "FULL",
+              avatar_id: avatarId,
+              is_sandbox: process.env.LIVEAVATAR_SANDBOX === "true",
+              avatar_persona: {
+                ...(voiceId ? { voice_id: voiceId } : {}),
+                language,
+              },
+              interactivity_type: "CONVERSATIONAL",
+            }),
           });
           if (!res.ok) {
-            const body = await res.text().catch(() => "");
-            console.error("[heygen/token]", res.status, body.slice(0, 300));
+            const text = await res.text().catch(() => "");
+            console.error("[liveavatar/token]", res.status, text.slice(0, 300));
             return Response.json(
-              { error: "heygen_token_failed", status: res.status },
+              { error: "liveavatar_token_failed", status: res.status, detail: text.slice(0, 300) },
               { status: 502 },
             );
           }
-          const json = (await res.json()) as { data?: { token?: string } };
-          const token = json.data?.token;
-          if (!token) {
-            return Response.json({ error: "heygen_token_missing" }, { status: 502 });
+          const json = (await res.json()) as {
+            data?: { session_token?: string; session_id?: string };
+          };
+          const sessionToken = json.data?.session_token;
+          const sessionId = json.data?.session_id ?? "";
+          if (!sessionToken) {
+            return Response.json({ error: "liveavatar_token_missing" }, { status: 502 });
           }
-          return Response.json({
-            token,
-            avatars: buildPersonaMap(),
-            defaultAvatarId: process.env.HEYGEN_DEFAULT_AVATAR_ID ?? HEYGEN_DEFAULT_AVATAR_ID,
-            serverUrl: process.env.HEYGEN_SERVER_URL,
-          });
+          const payload: HeygenSession = {
+            sessionToken,
+            sessionId,
+            personaId,
+            avatarId,
+            voiceId,
+            language,
+            apiUrl: LIVEAVATAR_API_URL,
+          };
+          return Response.json(payload);
         } catch (err) {
-          console.error("[heygen/token] fatal", err);
-          return Response.json({ error: "heygen_token_exception" }, { status: 500 });
+          console.error("[liveavatar/token] fatal", err);
+          return Response.json({ error: "liveavatar_token_exception" }, { status: 500 });
         }
       },
     },
