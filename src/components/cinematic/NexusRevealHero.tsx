@@ -13,6 +13,14 @@ export function NexusRevealHero({
 }: {
   onEnterOps?: () => void;
 }) {
+  const [launching, setLaunching] = useState(false);
+  const handleLaunch = () => {
+    if (launching) return;
+    setLaunching(true);
+    window.setTimeout(() => {
+      onEnterOps?.();
+    }, 900);
+  };
   const streams = Array.from({ length: 18 }, (_, i) => {
     const a = (i / 18) * Math.PI * 2;
     return { a, delay: (i % 6) * 0.18 };
