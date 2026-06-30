@@ -304,6 +304,26 @@ export function AriaDock() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className={cn(
+                    "h-7 w-7 hover:bg-white/10",
+                    listener.listening ? "text-rose-300 hover:text-rose-200" : "text-cyan-200 hover:text-white",
+                  )}
+                  onClick={() => {
+                    if (!listener.listening) setVoiceOn(true);
+                    listener.toggle(current?.speaker ?? ARIA);
+                  }}
+                  aria-label={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل الوكيل" : "Ask agent")}
+                  title={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل" : "Ask")}
+                >
+                  {listener.thinking
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : listener.listening
+                      ? <MicOff className="h-3.5 w-3.5" />
+                      : <Mic className="h-3.5 w-3.5" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
                   className="h-7 w-7 text-cyan-200 hover:text-white hover:bg-white/10"
                   onClick={toggleVoice}
                   aria-label={voiceOn ? (ar ? "كتم الصوت" : "Mute") : (ar ? "تفعيل الصوت" : "Enable voice")}
