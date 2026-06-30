@@ -130,6 +130,16 @@ export function ProceduralBust({ spec, preset, mouthAmplitude, pointer }: Props)
         <torusGeometry args={[0.13, 0.025, 8, 24]} />
         <primitive object={accent} attach="material" />
       </mesh>
+      {/* Glowing executive collar seam — additive, no shadow */}
+      <mesh position={[0, 0.42, 0.18]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.4, 0.008, 8, 64, Math.PI]} />
+        <primitive object={seamMat} attach="material" />
+      </mesh>
+      {/* Lapel light line */}
+      <mesh position={[0, 0.32, 0.34]} rotation={[0, 0, Math.PI / 6]}>
+        <boxGeometry args={[0.32, 0.006, 0.004]} />
+        <primitive object={seamMat} attach="material" />
+      </mesh>
 
       {/* Head */}
       <group ref={head} position={[0, 0.95, 0]}>
