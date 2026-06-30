@@ -17,7 +17,7 @@ const AriaCore = lazy(() => import("@/components/cinematic/AriaCore"));
 /* ═══════════════════════════════════════════════════════════
    SCENE 02 — DATA CHAOS
    ═════════════════════════════════════════════════════════ */
-function ChaosScene({ isAr }: { isAr: boolean }) {
+export function ChaosScene({ isAr }: { isAr: boolean }) {
   const systems = ["ERP", "SAP", "CRM", "Excel", "Emails", "BI", "Docs", "Slack", "SharePoint", "Oracle", "HRMS", "Finance"];
 
   const painsLeft = isAr
@@ -159,7 +159,7 @@ function ChaosScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 03 — ARIA AWAKENS
    ═════════════════════════════════════════════════════════ */
-function AriaAwakensScene({ isAr }: { isAr: boolean }) {
+export function AriaAwakensScene({ isAr }: { isAr: boolean }) {
   const thoughts = isAr
     ? [
         "تحليل ٢٤ قسماً مؤسسياً…",
@@ -345,7 +345,7 @@ function AriaAwakensScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 04 — DIGITAL TWIN CITY
    ═════════════════════════════════════════════════════════ */
-function TwinCityScene({ isAr }: { isAr: boolean }) {
+export function TwinCityScene({ isAr }: { isAr: boolean }) {
   const signals = isAr
     ? [
         { c: "bg-blue-400", t: "الإدارات", d: "أحياء ذكية" },
@@ -458,7 +458,7 @@ function TwinCityScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 05 — EXECUTIVE COMMAND CENTER (Boardroom)
    ═════════════════════════════════════════════════════════ */
-function CommandCenterScene({ isAr }: { isAr: boolean }) {
+export function CommandCenterScene({ isAr }: { isAr: boolean }) {
   const recs = isAr
     ? [
         { tag: "TActical", t: "إعادة تخصيص ٢.٤M ريال إلى قطاع الخدمات", c: "+11.2% ROI" },
@@ -998,7 +998,7 @@ function OpportunityRadar() {
 /* ═══════════════════════════════════════════════════════════
    SCENE 06 — PREDICTIVE INTELLIGENCE
    ═════════════════════════════════════════════════════════ */
-function PredictiveScene({ isAr }: { isAr: boolean }) {
+export function PredictiveScene({ isAr }: { isAr: boolean }) {
   const scenarios = isAr
     ? [
         { t: "إذا ارتفعت المخاطر", d: "تعيد المدينة الرسم خلال ثوانٍ." },
@@ -1053,7 +1053,7 @@ function PredictiveScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 07 — ROI TRANSFORMATION
    ═════════════════════════════════════════════════════════ */
-function RoiScene({ isAr }: { isAr: boolean }) {
+export function RoiScene({ isAr }: { isAr: boolean }) {
   // Live investor-grade business simulation.
   const [employees, setEmployees] = useState(1200);
   const [projects, setProjects] = useState(48);
@@ -1276,7 +1276,7 @@ function RoiScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 08 — GLOBAL EXPANSION
    ═════════════════════════════════════════════════════════ */
-function GlobalScene({ isAr }: { isAr: boolean }) {
+export function GlobalScene({ isAr }: { isAr: boolean }) {
   return (
     <section
       data-scene="8"
@@ -1342,7 +1342,7 @@ function GlobalScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 09 — INVESTOR FILMS
    ═════════════════════════════════════════════════════════ */
-function FilmsScene({ isAr }: { isAr: boolean }) {
+export function FilmsScene({ isAr }: { isAr: boolean }) {
   const films = isAr
     ? [
         { t: "الفيلم الاستثماري", d: "العربي + الإنجليزي · 4:32", img: cinematicCity },
@@ -1416,7 +1416,7 @@ function FilmsScene({ isAr }: { isAr: boolean }) {
 /* ═══════════════════════════════════════════════════════════
    SCENE 10 — FINAL REVEAL
    ═════════════════════════════════════════════════════════ */
-function FinalRevealScene({ isAr }: { isAr: boolean }) {
+export function FinalRevealScene({ isAr }: { isAr: boolean }) {
   // 18 light streams converging to the logo origin from every direction.
   const streams = Array.from({ length: 18 }, (_, i) => {
     const a = (i / 18) * Math.PI * 2;
