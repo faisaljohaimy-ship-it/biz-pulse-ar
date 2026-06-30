@@ -11,6 +11,7 @@ import {
   type AgentOpsRecord,
 } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { authenticatedFetch } from "@/lib/auth-fetch";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -294,10 +295,9 @@ function AgentsOps() {
     // which invokes the production wrapper (agent-runtime.server.ts) with the
     // service-role admin client. Never call the agent directly.
     mutationFn: async (p: { agentId: string; goalOverride?: string }) => {
-      const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-      const resp = await fetch("/api/public/hooks/run-agent", {
+      const resp = await authenticatedFetch("/api/public/hooks/run-agent", {
         method: "POST",
-        headers: { "Content-Type": "application/json", apikey },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           agentId: p.agentId,
           goalOverride: p.goalOverride?.trim() || undefined,

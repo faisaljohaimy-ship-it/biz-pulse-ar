@@ -18,7 +18,7 @@ import { fetchExecKpiSources, computeExecKpis, type ExecKpis } from "@/lib/sec.f
 import { buildAriaContext } from "@/lib/aria-context.server";
 import { embedText, toPgVector } from "./embeddings.server";
 
-const REASONING_MODEL = "openai/gpt-5";
+const REASONING_MODEL = "google/gemini-3-flash-preview";
 const FAST_MODEL = "google/gemini-3-flash-preview";
 
 function provider() {

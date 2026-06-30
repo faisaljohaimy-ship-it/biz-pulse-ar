@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { authenticatedFetch } from "@/lib/auth-fetch";
 
 export const Route = createFileRoute("/_authenticated/voice")({
   component: VoicePage,
@@ -28,10 +29,10 @@ function VoicePage() {
   const start = useCallback(async () => {
     setConnecting(true);
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      const r = await fetch("/api/voice-token", { method: "POST" });
+      const r = await authenticatedFetch("/api/voice-token", { method: "POST" });
       const data = await r.json();
       if (!r.ok || !data.token) throw new Error(data.error ?? "No token");
+      await navigator.mediaDevices.getUserMedia({ audio: true });
 
       if (data.kind === "conversation") {
         await conversation.startSession({

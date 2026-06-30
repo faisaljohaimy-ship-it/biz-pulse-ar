@@ -4,6 +4,7 @@ import { isApiError, toApiErrorShape } from "@/lib/api";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
 import {
   enforceRateLimit,
+  rateLimitUnavailableResponse,
   rateLimitResponse,
 } from "@/lib/governance/rate-limit.server";
 
@@ -15,11 +16,12 @@ export const Route = createFileRoute("/api/voice-token")({
         const auth = await verifySupabaseUser(request);
         if (auth instanceof Response) return auth;
         // Per-user rate limit — cap token minting to 20/min.
-        const { allowed } = await enforceRateLimit(
+        const { allowed, unavailable } = await enforceRateLimit(
           `voice-token:${auth.userId}`,
           20,
           60,
         );
+        if (unavailable) return rateLimitUnavailableResponse();
         if (!allowed) return rateLimitResponse();
 
         const apiKey = process.env.ELEVENLABS_API_KEY;
@@ -39,8 +41,9 @@ export const Route = createFileRoute("/api/voice-token")({
               { headers: { "xi-api-key": apiKey }, label: "elevenlabs/convai-token", timeoutMs: 10_000 },
             );
             if (!r.ok) {
-              const text = await r.text();
-              return Response.json({ error: text }, { status: r.status });
+              const text = await r.text().catch(() => "");
+              console.error("[api/voice-token] conversation token", r.status, text.slice(0, 240));
+              return Response.json({ error: "voice_token_failed", status: r.status }, { status: r.status });
             }
             const data = (await r.json()) as { token: string };
             return Response.json({ kind: "conversation", token: data.token, agentId });
@@ -51,8 +54,9 @@ export const Route = createFileRoute("/api/voice-token")({
             { method: "POST", headers: { "xi-api-key": apiKey }, label: "elevenlabs/scribe-token", timeoutMs: 10_000 },
           );
           if (!r.ok) {
-            const text = await r.text();
-            return Response.json({ error: text }, { status: r.status });
+            const text = await r.text().catch(() => "");
+            console.error("[api/voice-token] scribe token", r.status, text.slice(0, 240));
+            return Response.json({ error: "voice_token_failed", status: r.status }, { status: r.status });
           }
           const data = (await r.json()) as { token: string };
           return Response.json({ kind: "scribe", token: data.token });

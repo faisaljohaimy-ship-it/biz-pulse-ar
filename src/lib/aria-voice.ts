@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
+import { authenticatedFetch } from "@/lib/auth-fetch";
 
 /**
  * useAriaVoice — production voice I/O for the ARIA copilot.
@@ -28,6 +29,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastFinalRef = useRef("");
+  const mountedRef = useRef(true);
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
@@ -55,13 +57,15 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
   }, []);
 
   const startListening = useCallback(async () => {
+    if (listening) return;
     try {
       setError(null);
-      stopSpeaking(); // barge-in
-      const res = await fetch("/api/voice-token", { method: "POST" });
+      const res = await authenticatedFetch("/api/voice-token", { method: "POST" });
       if (!res.ok) throw new Error(`token ${res.status}`);
       const { token, kind } = (await res.json()) as { token: string; kind: string };
-      if (kind !== "scribe") throw new Error("expected scribe token");
+      if (!token) throw new Error("missing voice token");
+      if (kind !== "scribe") throw new Error("scribe voice mode unavailable");
+      stopSpeaking(); // barge-in only after token is confirmed
       await scribe.connect({
         token,
         microphone: { echoCancellation: true, noiseSuppression: true },
@@ -71,7 +75,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
       setError(e instanceof Error ? e.message : "mic failed");
       setListening(false);
     }
-  }, [scribe, stopSpeaking]);
+  }, [listening, scribe, stopSpeaking]);
 
   const stopListening = useCallback(() => {
     try { scribe.disconnect(); } catch { /* noop */ }
@@ -85,7 +89,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
     stopSpeaking();
     try {
       setSpeaking(true);
-      const res = await fetch("/api/tts", {
+      const res = await authenticatedFetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -102,21 +106,25 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onended = () => {
-        setSpeaking(false);
+        if (mountedRef.current) setSpeaking(false);
         URL.revokeObjectURL(url);
       };
       audio.onerror = () => {
-        setSpeaking(false);
+        if (mountedRef.current) setSpeaking(false);
         URL.revokeObjectURL(url);
       };
-      await audio.play();
+      await audio.play().catch((err) => {
+        URL.revokeObjectURL(url);
+        throw err;
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "tts failed");
-      setSpeaking(false);
+      if (mountedRef.current) setSpeaking(false);
     }
   }, [stopSpeaking]);
 
   useEffect(() => () => {
+    mountedRef.current = false;
     stopSpeaking();
     try { scribe.disconnect(); } catch { /* noop */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -16,8 +16,8 @@ describe("authz.server — short-circuit invariants", () => {
   });
 
   describe("hasAnyPlatformRole", () => {
-    it("returns true when the required roles list is empty (no requirement)", async () => {
-      await expect(hasAnyPlatformRole("any-user", [])).resolves.toBe(true);
+    it("returns false when the required roles list is empty (deny by default)", async () => {
+      await expect(hasAnyPlatformRole("any-user", [])).resolves.toBe(false);
     });
 
     it("returns false for an empty user id even when roles are requested", async () => {

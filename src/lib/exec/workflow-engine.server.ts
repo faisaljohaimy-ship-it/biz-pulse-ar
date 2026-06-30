@@ -118,6 +118,7 @@ type EngineState = {
   def: WorkflowDefinition;
   stepIndex: Map<string, WorkflowStep>;
   triggeredBy: string;
+  orgId: string | null;
   context: Record<string, unknown>;
 };
 
@@ -226,6 +227,7 @@ async function runEngine(
         .from("workflow_step_runs")
         .insert({
           run_id: state.runId,
+          org_id: state.orgId ?? undefined,
           step_id: step.id,
           kind: step.kind,
           status: "running",
@@ -460,11 +462,20 @@ export async function triggerWorkflow(
     triggerPayload.__idempotency_key = params.idempotencyKey;
   }
 
+  const { data: member } = await (supabase as any)
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", params.triggeredBy)
+    .limit(1)
+    .maybeSingle();
+  const orgId = (member?.org_id as string | undefined) ?? null;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: run, error: rErr } = await (supabase as any)
     .from("workflow_runs")
     .insert({
       workflow_id: params.workflowId,
+      org_id: orgId ?? undefined,
       status: "running",
       triggered_by: params.triggeredBy,
       trigger_event: params.triggerEvent ?? "manual",
@@ -502,6 +513,7 @@ export async function triggerWorkflow(
     def,
     stepIndex: new Map(def.steps.map((s) => [s.id, s])),
     triggeredBy: params.triggeredBy,
+    orgId,
     context: { trigger: params.payload ?? {}, steps: {} },
   };
   return runEngine(supabase, state, def.start);
@@ -515,7 +527,7 @@ export async function resumeWorkflowRun(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: run, error } = await (supabase as any)
     .from("workflow_runs")
-    .select("id, workflow_id, status, current_step, context_json, triggered_by")
+    .select("id, workflow_id, status, current_step, context_json, triggered_by, org_id")
     .eq("id", runId)
     .maybeSingle();
   if (error || !run) throw new Error("Run not found");
@@ -563,6 +575,7 @@ export async function resumeWorkflowRun(
     def,
     stepIndex: new Map(def.steps.map((s) => [s.id, s])),
     triggeredBy: run.triggered_by ?? resumedBy,
+    orgId: (run.org_id as string | undefined) ?? null,
     context: (run.context_json as Record<string, unknown>) ?? { steps: {} },
   };
   return runEngine(supabase, state, next);

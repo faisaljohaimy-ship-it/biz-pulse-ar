@@ -1,12 +1,12 @@
 /**
  * Server-only helpers for embedding text via Lovable AI Gateway.
- * Uses openai/text-embedding-3-small (1536 dims) to match the
- * sec_knowledge_articles HNSW index limit (max 2000 dims).
+ * Uses openai/text-embedding-3-small projected to 768 dims to match the
+ * ARIA/sec_knowledge pgvector indexes used by the production search RPCs.
  */
 
 const ENDPOINT = "https://ai.gateway.lovable.dev/v1/embeddings";
 const MODEL = "openai/text-embedding-3-small";
-const DIMS = 1536;
+const DIMS = 768;
 
 export async function embedText(text: string): Promise<number[]> {
   const key = process.env.LOVABLE_API_KEY;
@@ -19,7 +19,7 @@ export async function embedText(text: string): Promise<number[]> {
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ model: MODEL, input: cleaned }),
+    body: JSON.stringify({ model: MODEL, input: cleaned, dimensions: DIMS }),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");

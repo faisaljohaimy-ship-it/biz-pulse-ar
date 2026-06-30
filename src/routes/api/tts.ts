@@ -2,6 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError, toApiErrorShape } from "@/lib/api";
+import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 
 const BodySchema = z.object({
   text: z.string().min(1).max(5000),
@@ -19,12 +25,18 @@ export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const auth = await verifySupabaseUser(request);
+        if (auth instanceof Response) return auth;
+        const { allowed, unavailable } = await enforceRateLimit(`tts:${auth.userId}`, 30, 60);
+        if (unavailable) return rateLimitUnavailableResponse();
+        if (!allowed) return rateLimitResponse();
+
         const apiKey = process.env.ELEVENLABS_API_KEY;
         if (!apiKey) {
           return Response.json({ error: "ELEVENLABS_API_KEY not configured" }, { status: 500 });
         }
 
-        const parsed = BodySchema.safeParse(await request.json());
+        const parsed = BodySchema.safeParse(await request.json().catch(() => null));
         if (!parsed.success) {
           return Response.json({ error: parsed.error.message }, { status: 400 });
         }
@@ -69,8 +81,9 @@ export const Route = createFileRoute("/api/tts")({
           });
 
           if (!r.ok) {
-            const err = await r.text();
-            return Response.json({ error: err || `TTS failed: ${r.status}` }, { status: r.status });
+            const err = await r.text().catch(() => "");
+            console.error("[api/tts] provider", r.status, err.slice(0, 240));
+            return Response.json({ error: "tts_failed", status: r.status }, { status: r.status });
           }
 
           const audio = await r.arrayBuffer();

@@ -9,6 +9,7 @@
  * ONE optional follow-up question.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const Input = z.object({
@@ -40,10 +41,15 @@ function detectReportMode(q: string): boolean {
 }
 
 export const askAgent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
+    const rate = await enforceRateLimit(`ask-agent:${context.userId}`, 40, 60);
+    if (rate.unavailable) throw new Error("rate_limit_unavailable");
+    if (!rate.allowed) throw new Error("rate_limited");
 
     const reportMode = detectReportMode(data.question);
 
@@ -86,7 +92,8 @@ Answer in BOTH Arabic and English. Return ONLY strict JSON: {"text_ar":"...","te
 
     if (!res.ok) {
       const err = await res.text().catch(() => "");
-      throw new Error(`ask-agent ${res.status} ${err}`);
+      console.error("[ask-agent] gateway", res.status, err.slice(0, 240));
+      throw new Error(`ask-agent_failed_${res.status}`);
     }
     const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const raw = j.choices?.[0]?.message?.content ?? "{}";

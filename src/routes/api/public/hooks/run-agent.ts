@@ -7,23 +7,30 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   enforceRateLimit,
   clientBucketKey,
+  rateLimitUnavailableResponse,
   rateLimitResponse,
 } from "@/lib/governance/rate-limit.server";
-import { verifyCronHookSecret } from "@/lib/hook-auth.server";
+import { verifyCronHookSecret, verifySupabaseUser } from "@/lib/hook-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/run-agent")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const denied = verifyCronHookSecret(request);
-        if (denied) return denied;
+        let authenticatedActorId: string | null = null;
+        if (denied) {
+          const auth = await verifySupabaseUser(request);
+          if (auth instanceof Response) return auth;
+          authenticatedActorId = auth.userId;
+        }
 
         // Cap per-IP at 10 agent runs / minute.
-        const { allowed } = await enforceRateLimit(
+        const { allowed, unavailable } = await enforceRateLimit(
           clientBucketKey(request, "run-agent"),
           10,
           60,
         );
+        if (unavailable) return rateLimitUnavailableResponse();
         if (!allowed) return rateLimitResponse();
 
         let body: { agentId?: string; goalOverride?: string } = {};
@@ -39,13 +46,16 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
         );
         const { runAgent } = await import("@/lib/exec/agent-runtime.server");
 
-        const { data: member } = await supabaseAdmin
-          .from("org_members")
-          .select("user_id")
-          .in("role", ["admin", "owner"])
-          .limit(1)
-          .maybeSingle();
-        const actorId = member?.user_id;
+        let actorId = authenticatedActorId;
+        if (!actorId) {
+          const { data: member } = await supabaseAdmin
+            .from("org_members")
+            .select("user_id")
+            .in("role", ["admin", "owner"])
+            .limit(1)
+            .maybeSingle();
+          actorId = member?.user_id ?? null;
+        }
         if (!actorId) {
           return new Response(
             JSON.stringify({ error: "no_admin_org_member" }),

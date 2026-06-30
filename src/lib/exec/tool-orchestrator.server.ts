@@ -98,7 +98,9 @@ export async function executeTool(
   if (!reg.enabled) throw new Error(`Tool disabled: ${toolId}`);
 
   // 2) Permission check
-  const allowed = await hasAnyRole(supabase, actorId, reg.permissions ?? []);
+  const permissions = Array.isArray(reg.permissions) ? reg.permissions : [];
+  if (!permissions.length) throw new Error(`Tool ${toolId} has no permissions configured`);
+  const allowed = await hasAnyRole(supabase, actorId, permissions);
   if (!allowed) throw new Error(`Forbidden: missing role for ${toolId}`);
 
   // 3) Find executor + validate input
@@ -399,9 +401,13 @@ export async function reapStaleExecutions(
   supabase: SupabaseClient<Database>,
   maxAgeMs = 5 * 60_000,
 ): Promise<{ reaped: number }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // Maintenance reaping must not be limited by the caller's RLS visibility.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = supabaseAdmin as any;
   const cutoff = new Date(Date.now() - maxAgeMs).toISOString();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: stale } = await (supabase as any)
+  const { data: stale } = await admin
     .from("tool_executions")
     .select("id")
     .eq("status", "running")
@@ -409,7 +415,7 @@ export async function reapStaleExecutions(
   const ids = (stale ?? []).map((r: { id: string }) => r.id);
   if (!ids.length) return { reaped: 0 };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  await admin
     .from("tool_executions")
     .update({
       status: "failed",
