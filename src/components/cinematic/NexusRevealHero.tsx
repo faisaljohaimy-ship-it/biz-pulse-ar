@@ -172,11 +172,26 @@ export function NexusRevealHero({
         <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <button
             type="button"
-            onClick={onEnterOps}
-            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-3.5 text-sm font-semibold text-black shadow-[0_10px_60px_-10px_rgba(245,180,84,0.9)] transition hover:scale-[1.03] sm:px-7"
+            onClick={handleLaunch}
+            disabled={launching}
+            aria-busy={launching}
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-3.5 text-sm font-semibold text-black shadow-[0_10px_60px_-10px_rgba(245,180,84,0.9)] transition hover:scale-[1.03] disabled:cursor-wait disabled:opacity-95 sm:px-7"
           >
-            ابدأ التشغيل
-            <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5" />
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent transition-transform duration-700 ${launching ? "translate-x-full" : "group-hover:translate-x-full"}`}
+            />
+            {launching ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>جارٍ تشغيل النظام…</span>
+              </>
+            ) : (
+              <>
+                ابدأ التشغيل
+                <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5" />
+              </>
+            )}
           </button>
           <Link
             to="/exec"
@@ -185,6 +200,28 @@ export function NexusRevealHero({
             <Compass className="h-4 w-4" />
             غرفة القيادة التنفيذية
           </Link>
+        </div>
+
+        {/* LAUNCH OVERLAY — radial flash + boot text */}
+        <div
+          aria-hidden={!launching}
+          className={`pointer-events-none fixed inset-0 z-[80] flex items-center justify-center transition-opacity duration-700 ${launching ? "opacity-100" : "opacity-0"}`}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,180,84,0.35)_0%,rgba(2,3,10,0.85)_55%,#02030a_85%)]" />
+          <div className="absolute inset-0 backdrop-blur-md" />
+          <div className="relative flex flex-col items-center gap-4">
+            <div className="relative h-20 w-20">
+              <div className="absolute inset-0 rounded-full border border-amber-300/40" style={{ animation: "nxh-launch-ring 1.2s ease-out infinite" }} />
+              <div className="absolute inset-2 rounded-full border border-amber-300/30" style={{ animation: "nxh-launch-ring 1.2s ease-out 0.25s infinite" }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-amber-300" />
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-sm font-semibold tracking-[0.4em] text-amber-200">NEXUS · BOOT</div>
+              <div className="mt-1 text-xs text-white/70">تهيئة بيئة التشغيل…</div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[9px] uppercase tracking-[0.25em] text-white/40 sm:mt-12 sm:gap-x-6 sm:text-[10px] sm:tracking-[0.35em]">
