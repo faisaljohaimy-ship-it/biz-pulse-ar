@@ -1,11 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { ensureDemoUser, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo.functions";
-import { seedDemoData, resetDemoData } from "@/lib/demo-seed.functions";
 import { GuidedTour, type TourStep } from "@/components/guided-tour";
 import {
   PlayCircle, RotateCcw, Briefcase, TrendingUp, Users, Building2,
@@ -34,12 +29,6 @@ function DemoCenter() {
   const { locale } = useI18n();
   const isAr = locale === "ar";
   const navigate = useNavigate();
-
-  const ensure = useServerFn(ensureDemoUser);
-  const seed = useServerFn(seedDemoData);
-  const reset = useServerFn(resetDemoData);
-
-  const [busy, setBusy] = useState<null | "investor" | "enterprise" | "reset" | "seed">(null);
   const [tourOpen, setTourOpen] = useState(false);
 
   const tourSteps: TourStep[] = isAr
@@ -60,46 +49,8 @@ function DemoCenter() {
         { title: "You're ready", body: "Enter the live demo environment and explore it yourself." },
       ];
 
-  async function enterAs(mode: Mode) {
-    setBusy(mode);
-    try {
-      await ensure();
-      await seed();
-      const { error } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
-      if (error) throw error;
-      toast.success(isAr ? "تم تجهيز بيئة العرض" : "Demo environment ready");
-      // Investor jumps to boardroom; enterprise jumps to dashboard
-      navigate({ to: mode === "investor" ? "/boardroom" : "/dashboard" });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to enter demo");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleReset() {
-    setBusy("reset");
-    try {
-      await reset();
-      toast.success(isAr ? "تمت إعادة تعيين بيانات العرض" : "Demo data reset");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Reset failed");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleReseed() {
-    setBusy("seed");
-    try {
-      await ensure();
-      await seed();
-      toast.success(isAr ? "تم تحميل بيانات العرض الجديدة" : "Fresh demo data loaded");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Seed failed");
-    } finally {
-      setBusy(null);
-    }
+  function requestPersonalDemo(mode: Mode) {
+    navigate({ to: "/request-demo", search: { mode } });
   }
 
   return (
@@ -165,8 +116,7 @@ function DemoCenter() {
                 : ["Live KPI walls", "Risk & opportunity briefs", "Boardroom decisions", "Investor pitch simulation"]
             }
             cta={isAr ? "ادخل كمستثمر" : "Enter as Investor"}
-            loading={busy === "investor"}
-            onClick={() => enterAs("investor")}
+            onClick={() => requestPersonalDemo("investor")}
           />
           <ModeCard
             icon={Building2}
@@ -179,8 +129,7 @@ function DemoCenter() {
                 : ["All modules unlocked", "Full operational data", "Execution engine live", "Interactive AI agents"]
             }
             cta={isAr ? "ادخل كمدير تنفيذي" : "Enter as Executive"}
-            loading={busy === "enterprise"}
-            onClick={() => enterAs("enterprise")}
+            onClick={() => requestPersonalDemo("enterprise")}
           />
         </div>
 
@@ -199,27 +148,25 @@ function DemoCenter() {
           </button>
 
           <button
-            onClick={handleReseed}
-            disabled={busy !== null}
+            onClick={() => navigate({ to: "/request-demo", search: { mode: "enterprise" } })}
             className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-emerald-400/40 disabled:opacity-50"
           >
             <Database className="h-5 w-5 text-emerald-400" />
             <div className="flex-1">
-              <div className="text-sm font-semibold">{isAr ? "تحميل بيانات عرض جديدة" : "Load Fresh Demo Data"}</div>
-              <div className="text-[11px] text-muted-foreground">{busy === "seed" ? (isAr ? "جارٍ التحميل..." : "Loading...") : (isAr ? "Fortune-500 snapshot" : "Fortune-500 snapshot")}</div>
+              <div className="text-sm font-semibold">{isAr ? "اطلب بيئة مخصصة" : "Request a tailored environment"}</div>
+              <div className="text-[11px] text-muted-foreground">{isAr ? "مهيأة لقطاعك وبياناتك" : "Configured for your sector and data"}</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
           </button>
 
           <button
-            onClick={handleReset}
-            disabled={busy !== null}
+            onClick={() => navigate({ to: "/book" })}
             className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-amber-400/40 disabled:opacity-50"
           >
             <RotateCcw className="h-5 w-5 text-amber-400" />
             <div className="flex-1">
-              <div className="text-sm font-semibold">{isAr ? "إعادة تعيين بيانات العرض" : "Reset Demo Data"}</div>
-              <div className="text-[11px] text-muted-foreground">{busy === "reset" ? (isAr ? "جارٍ الحذف..." : "Resetting...") : (isAr ? "مسح آمن وكامل" : "Safe full wipe")}</div>
+              <div className="text-sm font-semibold">{isAr ? "احجز جلسة تنفيذية" : "Book an executive session"}</div>
+              <div className="text-[11px] text-muted-foreground">{isAr ? "مراجعة مباشرة مع الفريق" : "Live review with the team"}</div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
           </button>
@@ -235,9 +182,9 @@ function DemoCenter() {
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {[
-              { role: "CEO", name: "Demo Executive", email: DEMO_EMAIL, icon: TrendingUp },
-              { role: "CFO", name: "Sarah Chen", email: "cfo.demo@nexus.app", icon: Activity },
-              { role: "CTO", name: "Amir Hassan", email: "cto.demo@nexus.app", icon: Brain },
+              { role: "CEO", name: "Executive Director", email: "Personalized access", icon: TrendingUp },
+              { role: "CFO", name: "Finance Leadership", email: "Controlled workspace", icon: Activity },
+              { role: "CTO", name: "Technology Leadership", email: "Secure onboarding", icon: Brain },
             ].map((a) => (
               <div key={a.role} className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
                 <div className="flex items-center justify-between">
@@ -276,7 +223,7 @@ function DemoCenter() {
 }
 
 function ModeCard({
-  icon: Icon, tone, title, subtitle, bullets, cta, loading, onClick,
+  icon: Icon, tone, title, subtitle, bullets, cta, onClick,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   tone: "primary" | "accent";
@@ -284,7 +231,6 @@ function ModeCard({
   subtitle: string;
   bullets: string[];
   cta: string;
-  loading: boolean;
   onClick: () => void;
 }) {
   const ring = tone === "primary" ? "border-primary/40 hover:border-primary" : "border-accent/40 hover:border-accent";
@@ -307,20 +253,13 @@ function ModeCard({
       </ul>
       <button
         onClick={onClick}
-        disabled={loading}
         className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl ${grad} px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.01] disabled:opacity-60`}
       >
-        {loading ? (isAr() ? "جارٍ التحضير..." : "Preparing...") : cta}
-        {!loading && <ArrowRight className="h-4 w-4" />}
+        {cta}
+        <ArrowRight className="h-4 w-4" />
       </button>
     </div>
   );
-}
-
-function isAr() {
-  // Local helper for the button label fallback when locale not in scope.
-  if (typeof document === "undefined") return false;
-  return document.documentElement.dir === "rtl";
 }
 
 function CtaCard({

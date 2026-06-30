@@ -3,13 +3,8 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
-import { supabase } from "@/integrations/supabase/client";
-import { useServerFn } from "@tanstack/react-start";
-import { ensureDemoUser, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo.functions";
-import { toast } from "sonner";
 import {
   ArrowRight,
-  ChevronDown,
   Play,
   Sparkles,
 } from "lucide-react";
@@ -81,8 +76,6 @@ function CinematicHome() {
   const { user, loading } = useAuth();
   const { locale, setLocale } = useI18n();
   const navigate = useNavigate();
-  const ensureDemo = useServerFn(ensureDemoUser);
-  const [demoLoading, setDemoLoading] = useState(false);
   const [forcePublicHome, setForcePublicHome] = useState(false);
 
   useEffect(() => {
@@ -104,21 +97,6 @@ function CinematicHome() {
   const sceneLabels = isAr
     ? ["الأرض", "الفوضى", "أريا", "التوأم", "القيادة", "التنبؤ", "العائد", "العالم", "السينما", "الكشف"]
     : ["Earth", "Chaos", "ARIA", "Twin", "Command", "Predict", "Return", "Global", "Films", "Reveal"];
-
-  async function enterDemo() {
-    setDemoLoading(true);
-    try {
-      await ensureDemo({});
-      const { error } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
-      if (error) throw error;
-      navigate({ to: "/mission-control" });
-    } catch (e) {
-      toast.error(isAr ? "تعذّر فتح العرض" : "Could not start demo");
-      console.error(e);
-    } finally {
-      setDemoLoading(false);
-    }
-  }
 
   return (
     <div className="relative w-full overflow-x-clip bg-[#04060d] text-white antialiased">

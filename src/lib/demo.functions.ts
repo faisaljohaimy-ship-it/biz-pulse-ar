@@ -1,15 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const DEMO_EMAIL = "demo@nexus.app";
 export const DEMO_PASSWORD = "Nexus2026!";
 
-/**
- * Idempotently ensures the seeded demo account exists and is email-confirmed.
- * Safe to call repeatedly — used by the "Enter as Demo" button on /login.
- * Standard email/password auth remains intact for production sign-ups.
- */
-export const ensureDemoUser = createServerFn({ method: "POST" }).handler(async () => {
+async function requireAdmin(context: { supabase: { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: Error | null }> }; userId: string }) {
+  const { data, error } = await context.supabase.rpc("has_role", {
+    _user_id: context.userId,
+    _role: "admin",
+  });
+  if (error || data !== true) throw new Error("Forbidden");
+}
+
+/** Admin-only utility for preparing isolated demonstration accounts. */
+export const ensureDemoUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+  await requireAdmin(context);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // Check if the user already exists
   const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({
     page: 1,
