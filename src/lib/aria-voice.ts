@@ -15,8 +15,7 @@ type Opts = {
   onFinal?: (text: string) => void;
 };
 
-const ARABIC_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // multilingual male, deep
-const ENGLISH_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Bella, multilingual
+const ARIA_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual executive female, AR/EN bilingual
 
 function isArabic(t: string) {
   return /[\u0600-\u06FF]/.test(t);
@@ -94,7 +93,7 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: clean.slice(0, 1800),
-          voiceId: isArabic(clean) ? ARABIC_VOICE_ID : ENGLISH_VOICE_ID,
+          voiceId: ARIA_VOICE_ID,
           stability: 0.55,
           similarityBoost: 0.85,
           style: 0.35,
