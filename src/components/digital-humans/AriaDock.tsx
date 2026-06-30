@@ -263,30 +263,42 @@ export function AriaDock() {
     };
     (window as unknown as { aria?: typeof api }).aria = api;
 
-    // First-visit welcome — shows ARIA greeting the executive in the dock.
-    // Silent by default (browser autoplay policy + the existing "silent unless asked"
-    // rule). If voice is later enabled, replay button speaks it.
-    try {
-      const hour = new Date().getHours();
-      const greet_ar = hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
-      const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-      // Enable voice immediately so the greeting is audible and ARIA is ready
-      // to listen as soon as the executive speaks — no buttons, no codes.
+    // First-gesture unlock — browsers block both TTS audio playback and
+    // getUserMedia() before a user interaction. We attach a one-shot
+    // pointer/keyboard listener so the *first* tap anywhere triggers the
+    // greeting AND opens the mic. From that moment ARIA listens continuously.
+    const hour = new Date().getHours();
+    const greet_ar = hour < 12 ? "صباح الخير" : "مساء الخير";
+    const greet_en = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    let unlocked = false;
+    const unlock = () => {
+      if (unlocked) return;
+      unlocked = true;
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+      window.removeEventListener("touchstart", unlock, true);
       setVoiceOn(true);
-      setTimeout(() => {
-        api.speak({
-          id: `welcome-${Date.now()}`,
-          text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
-          text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
-          speaker: ARIA,
-        });
-        // Open the mic right after the greeting so the user can speak naturally.
-        try { listener.start(ARIA); } catch { /* mic unavailable — silent */ }
-      }, 600);
-    } catch { /* storage unavailable — skip welcome */ }
+      api.speak({
+        id: `welcome-${Date.now()}`,
+        text_ar: `${greet_ar}. أنا آريا، مساعدتك التنفيذية في نكسيوس. تفضّل بسؤالك.`,
+        text_en: `${greet_en}. I'm ARIA, your executive AI for NEXIOS. Go ahead — ask me anything.`,
+        speaker: ARIA,
+      });
+      // Open mic ~1.2s after greeting starts so playback isn't cut by the
+      // listener's `aria.stop()`. The listener pauses recording during TTS
+      // because echo/feedback would otherwise re-trigger STT.
+      setTimeout(() => { try { listener.start(ARIA); } catch { /* mic unavailable */ } }, 1200);
+    };
+    window.addEventListener("pointerdown", unlock, true);
+    window.addEventListener("keydown", unlock, true);
+    window.addEventListener("touchstart", unlock, true);
 
-
-    return () => { delete (window as unknown as { aria?: typeof api }).aria; };
+    return () => {
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+      window.removeEventListener("touchstart", unlock, true);
+      delete (window as unknown as { aria?: typeof api }).aria;
+    };
   }, [enqueue, listener]);
 
   const toggleVoice = () => {
@@ -363,7 +375,7 @@ export function AriaDock() {
         "fixed z-[60] transition-all duration-300",
         // Mobile: bottom-center, full-width minus gutter. Tablet+: anchored bottom-end.
         "bottom-[max(0.75rem,env(safe-area-inset-bottom))] start-3 end-3 w-auto",
-        "sm:start-auto sm:end-4 sm:w-[360px] sm:max-w-[calc(100vw-1.5rem)]",
+        "sm:start-auto sm:end-4 sm:w-[480px] sm:max-w-[calc(100vw-1.5rem)]",
         "rounded-2xl border border-cyan-400/25 bg-[#061A2E]/90 backdrop-blur-2xl",
         "shadow-[0_20px_60px_-20px_rgba(0,212,255,0.45)]",
         minimized ? "p-2.5" : "p-3.5",
@@ -377,7 +389,7 @@ export function AriaDock() {
           <Render
             spec={current?.speaker ?? ARIA}
             state={state}
-            size={minimized ? 60 : 144}
+            size={minimized ? 72 : 288}
             mouthAmplitude={amp}
             ambient
             ar={ar}
@@ -386,7 +398,7 @@ export function AriaDock() {
             onSpeechError={handleHeygenErr}
           />
         ) : (
-          <HologramFace state={state} amp={amp} size={minimized ? 60 : 144} ar={ar} />
+          <HologramFace state={state} amp={amp} size={minimized ? 72 : 288} ar={ar} />
         )}
         {!minimized && (
           <div className="min-w-0 flex-1">
