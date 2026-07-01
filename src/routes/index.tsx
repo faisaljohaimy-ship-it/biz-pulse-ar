@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
 import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
@@ -43,6 +43,16 @@ function IntroLanding() {
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
 
+  // Lock dark mode on the executive landing hero — required for delivery.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.remove("light");
+    root.classList.add("dark");
+    root.style.colorScheme = "dark";
+  }, []);
+
+
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
     cta_depts:      ar ? "نوافذ الإدارات" : "Department Windows",
@@ -64,7 +74,7 @@ function IntroLanding() {
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/runtime-hub" })} />
+      <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/os" })} />
 
       {/* Mini ARIA presence inside the hero */}
       <div className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
@@ -142,13 +152,18 @@ function IntroLanding() {
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
           <div className="mt-5">
             <Link
-              to="/runtime-hub"
+              to="/os"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(58,232,255,0.4)] transition hover:bg-[#3AE8FF]/20 sm:w-auto"
             >
               <span>{t.cta_enter}</span>
               <Arrow className="h-4 w-4" />
             </Link>
           </div>
+          <p className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]">
+            {ar
+              ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
+              : "Aligned with Saudi Vision 2030 · Digital transformation & industrial leadership"}
+          </p>
         </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
