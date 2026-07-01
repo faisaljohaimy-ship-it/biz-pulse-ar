@@ -5,8 +5,8 @@
  * plaintext secret values — resolution goes through the Credential Vault.
  */
 
-import type { AuthKind, ConnectorDescriptor, CredentialField } from "./types";
-import { getConnector } from "./registry";
+import type { AuthKind, CredentialField } from "./types";
+import { getConnector, listConnectors } from "./registry";
 import { getCredentialVault } from "./credential-vault";
 
 export interface AuthReadiness {
@@ -34,14 +34,9 @@ export function evaluateAuth(connectorId: string): AuthReadiness | null {
 
 export function evaluateAuthAll(): AuthReadiness[] {
   const out: AuthReadiness[] = [];
-  for (const desc of allConnectorsForAuth()) {
+  for (const desc of listConnectors()) {
     const r = evaluateAuth(desc.id);
     if (r) out.push(r);
   }
   return out;
-}
-
-function allConnectorsForAuth(): ConnectorDescriptor[] {
-  const { listConnectors } = require("./registry") as typeof import("./registry");
-  return listConnectors();
 }
