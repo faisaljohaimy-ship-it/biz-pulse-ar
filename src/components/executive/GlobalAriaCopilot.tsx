@@ -420,7 +420,7 @@ export function GlobalAriaCopilot() {
           `هل تودّ إحاطة تنفيذية؟`;
         try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
         const id = `welcome_${Date.now()}`;
-        setTurns((p) => [...p, { id, question: "—", qLang: lang, answer: { text_ar: greetAr, text_en: greetEn } }]);
+        setTurns((p) => [...p, { id, question: "—", qLang: lang, stage: "done", answer: { text_ar: greetAr, text_en: greetEn } }]);
         try { ariaSessionMemory.push({ role: "assistant", text: greetEn, page: pathname }); } catch { /* noop */ }
         if (!open) {
           let toastDismissed = false;
