@@ -314,6 +314,8 @@ export function GlobalAriaCopilot() {
       if (o === "1") setOpen(true);
       const v = localStorage.getItem(VOICE_KEY);
       if (v === "0") setVoiceOn(false);
+      if (localStorage.getItem(PIN_KEY) === "1") { setPinned(true); setOpen(true); }
+      if (localStorage.getItem(HIDDEN_KEY) === "1") setHidden(true);
     } catch { /* noop */ }
     // Detect the authenticated AriaDock at mount-time AND every route change.
     const probe = () => {
@@ -327,7 +329,7 @@ export function GlobalAriaCopilot() {
     return () => clearInterval(id);
   }, []);
 
-  // Persist open / voice prefs.
+  // Persist open / voice / pin / hidden prefs.
   useEffect(() => {
     if (!mounted) return;
     try { localStorage.setItem(OPEN_KEY, open ? "1" : "0"); } catch { /* noop */ }
@@ -336,6 +338,32 @@ export function GlobalAriaCopilot() {
     if (!mounted) return;
     try { localStorage.setItem(VOICE_KEY, voiceOn ? "1" : "0"); } catch { /* noop */ }
   }, [mounted, voiceOn]);
+  useEffect(() => {
+    if (!mounted) return;
+    try { localStorage.setItem(PIN_KEY, pinned ? "1" : "0"); } catch { /* noop */ }
+  }, [mounted, pinned]);
+  useEffect(() => {
+    if (!mounted) return;
+    try { localStorage.setItem(HIDDEN_KEY, hidden ? "1" : "0"); } catch { /* noop */ }
+  }, [mounted, hidden]);
+
+  // Live Highlighting: pulse any [data-aria-widget-id="<id>"] when ARIA emits focus.
+  useEffect(() => {
+    if (!mounted) return;
+    const onFocus = (e: Event) => {
+      const detail = (e as CustomEvent<{ widgetIds?: string[] }>).detail;
+      const ids = detail?.widgetIds ?? [];
+      for (const id of ids) {
+        const nodes = document.querySelectorAll<HTMLElement>(`[data-aria-widget-id="${CSS.escape(id)}"]`);
+        nodes.forEach((n) => {
+          n.classList.add("aria-focus-pulse");
+          setTimeout(() => n.classList.remove("aria-focus-pulse"), 3600);
+        });
+      }
+    };
+    window.addEventListener("nexios:aria-focus", onFocus as EventListener);
+    return () => window.removeEventListener("nexios:aria-focus", onFocus as EventListener);
+  }, [mounted]);
 
   // Auto-scroll transcript.
   useEffect(() => {
