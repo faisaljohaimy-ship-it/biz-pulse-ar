@@ -20,6 +20,7 @@ import { composePresenceGreeting } from "@/lib/aria/presence/greeting.server";
 import { detectInterruption } from "@/lib/aria/presence/interruption.server";
 import { readCursor, writeCursor } from "@/lib/aria/presence/tiers.server";
 import { requireBearerUser } from "@/lib/aria/require-bearer.server";
+import { getCurrentOrgIdForUser } from "@/lib/authz.server";
 
 function clientIp(req: Request): string {
   const h = req.headers;
