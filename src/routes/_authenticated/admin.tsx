@@ -106,6 +106,7 @@ function SimulationPanel({ locale }: { locale: string }) {
   const runSeed = useServerFn(runSimulationSeedFn);
   const validate = useServerFn(validateSimulationFn);
   const getStatus = useServerFn(getSimulationStatusFn);
+  const runScenario = useServerFn(runExecutiveScenarioFn);
   const [log, setLog] = useState<string>("");
 
   const status = useQuery({
@@ -125,6 +126,21 @@ function SimulationPanel({ locale }: { locale: string }) {
   const validateMut = useMutation({
     mutationFn: () => validate(),
     onSuccess: (r) => setLog(JSON.stringify(r, null, 2)),
+    onError: (e: Error) => setLog(`Error: ${e.message}`),
+  });
+
+  const scenarioMut = useMutation({
+    mutationFn: () => runScenario({ data: {} }),
+    onSuccess: (r) => {
+      setLog(
+        `Scenario ${r.scenario_tag} @ ${r.site.code} (${r.day})\n` +
+        `Duration: ${r.duration_ms}ms\n\n` +
+        `Timeline:\n` +
+        r.narrative.map((n) => `  ${n.time}  ${n.event}${n.ref ? "  [" + n.ref + "]" : ""}`).join("\n") +
+        `\n\nCounts:\n` + JSON.stringify(r.counts, null, 2),
+      );
+      status.refetch();
+    },
     onError: (e: Error) => setLog(`Error: ${e.message}`),
   });
 
