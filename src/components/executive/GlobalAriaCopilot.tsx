@@ -20,7 +20,7 @@
  * - Welcome message fires ONCE per browser session (sessionStorage).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ArrowUp,
   Loader2,
@@ -31,10 +31,20 @@ import {
   VolumeX,
   Minus,
   X,
+  ArrowRight,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
+import { useAriaSnapshot } from "@/lib/aria/context-engine";
+import { ariaSessionMemory } from "@/lib/aria/session-memory";
 
 type AskResult = { text_ar: string; text_en: string };
+type BriefingLite = {
+  health?: { openIncidents?: number; alerts24h?: number; overdueWorkOrders?: number; patrolsDoneToday?: number; patrolsPlannedToday?: number };
+  priorities?: Array<{ severity?: string }>;
+  greeting_ar?: string;
+  greeting_en?: string;
+};
+type QuickAction = { label_ar: string; label_en: string; to: string };
 type Turn = {
   id: string;
   question: string;
