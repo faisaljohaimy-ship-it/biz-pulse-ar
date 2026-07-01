@@ -182,9 +182,27 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         async function extract(r: Response) {
           const j = (await r.json()) as { choices?: { message?: { content?: string } }[] };
           const raw = j.choices?.[0]?.message?.content ?? "";
-          let p: { text_ar?: string; text_en?: string } = {};
+          let p: {
+            text_ar?: string;
+            text_en?: string;
+            summary?: string;
+            evidence?: unknown;
+            reasoning?: string;
+            recommendation?: string;
+            next_action?: unknown;
+            confidence?: number;
+          } = {};
           try { p = JSON.parse(raw); } catch { p = {}; }
-          return { ar: (p.text_ar ?? "").trim(), en: (p.text_en ?? "").trim() };
+          return {
+            ar: (p.text_ar ?? "").trim(),
+            en: (p.text_en ?? "").trim(),
+            summary: typeof p.summary === "string" ? p.summary : "",
+            evidence: Array.isArray(p.evidence) ? p.evidence.filter((x) => typeof x === "string").slice(0, 8) : [],
+            reasoning: typeof p.reasoning === "string" ? p.reasoning : "",
+            recommendation: typeof p.recommendation === "string" ? p.recommendation : "",
+            next_action: (p.next_action && typeof p.next_action === "object") ? p.next_action : null,
+            confidence: typeof p.confidence === "number" ? Math.max(0, Math.min(1, p.confidence)) : 0,
+          };
         }
 
         try {
@@ -196,7 +214,6 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             if (r.status === 429 || r.status === 402) {
               return Response.json({ error: "ask_failed", status: r.status }, { status: r.status });
             }
-            // Fall through to fallback model.
             r = await callModel("openai/gpt-5-mini", 1200);
             if (!r.ok) {
               const d2 = (await r.text().catch(() => "")).slice(0, 240);
@@ -204,19 +221,37 @@ export const Route = createFileRoute("/api/public/aria-ask")({
               return Response.json({ error: "ask_failed", status: r.status }, { status: 502 });
             }
           }
-          let { ar, en } = await extract(r);
-          if (!ar && !en) {
-            // Empty output (often: reasoning consumed budget). Retry on mini.
+          let parsed = await extract(r);
+          if (!parsed.ar && !parsed.en) {
             const r2 = await callModel("openai/gpt-5-mini", 1200);
-            if (r2.ok) ({ ar, en } = await extract(r2));
+            if (r2.ok) parsed = await extract(r2);
           }
-          if (!ar && !en) {
+          if (!parsed.ar && !parsed.en) {
             return Response.json({ error: "empty_response" }, { status: 502 });
           }
           return Response.json({
-            text_ar: ar || en,
-            text_en: en || ar,
+            text_ar: parsed.ar || parsed.en,
+            text_en: parsed.en || parsed.ar,
             mode: "concise" as const,
+            executive: {
+              intent: brief.intent,
+              summary: parsed.summary,
+              evidence: parsed.evidence,
+              reasoning: parsed.reasoning,
+              recommendation: parsed.recommendation,
+              next_action: parsed.next_action,
+              confidence: parsed.confidence,
+              sources: brief.sources,
+              plan: brief.plan.map((s) => ({ id: s.id, tool: s.tool, goal: s.goal_en })),
+              insights: brief.insights.map((i) => ({
+                kind: i.kind,
+                severity: i.severity,
+                title_en: i.title_en,
+                title_ar: i.title_ar,
+                recommendation_en: i.recommendation_en,
+                confidence: i.confidence,
+              })),
+            },
           });
         } catch (e) {
           console.error("[public/aria-ask]", e instanceof Error ? e.message : e);
