@@ -15,9 +15,45 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 
+const AnchorSchema = z.object({
+  kind: z.string().max(40),
+  id: z.string().max(120),
+  label: z.string().max(200).optional(),
+});
+const TurnSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  text: z.string().max(2000),
+  ts: z.string().optional(),
+  anchors: z.array(AnchorSchema).max(6).optional(),
+});
+const WidgetSchema = z.object({
+  id: z.string().max(120),
+  kind: z.string().max(30),
+  label: z.string().max(160),
+  value: z.unknown().optional(),
+  hint: z.string().max(240).optional(),
+});
+const PageSchema = z.object({
+  path: z.string().max(400).optional(),
+  title: z.string().max(200).optional(),
+  section: z.string().max(120).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
+  selected: z.record(z.string(), z.unknown()).nullable().optional(),
+});
+const ContextSchema = z
+  .object({
+    page: PageSchema.optional(),
+    widgets: z.array(WidgetSchema).max(24).optional(),
+    anchors: z.array(AnchorSchema).max(12).optional(),
+    locale: z.enum(["ar", "en", "mixed"]).optional(),
+  })
+  .optional();
+
 const Input = z.object({
   question: z.string().trim().min(1).max(600),
   lang: z.enum(["ar", "en"]).optional(),
+  context: ContextSchema,
+  history: z.array(TurnSchema).max(12).optional(),
 });
 
 function clientIp(req: Request): string {
