@@ -38,9 +38,9 @@ export function evaluateOSHealth(): ExecutiveHealth {
 
   try {
     const p = planningHealth();
-    subsystems.planning = coerce(p.status);
-    if (subsystems.planning !== "healthy") {
-      issues.push(`planning: ${p.status}`);
+    subsystems.planning = p.ok ? "healthy" : "degraded";
+    if (!p.ok) {
+      issues.push(`planning: ${p.last_failure_reason ?? "not ok"}`);
     }
   } catch {
     subsystems.planning = "degraded";
@@ -56,7 +56,13 @@ export function evaluateOSHealth(): ExecutiveHealth {
 
   try {
     const c = cognitionHealth();
-    subsystems.cognition = coerce(c.status);
+    // Cognition health has its own status enum; map to OS levels.
+    subsystems.cognition =
+      c.status === "healthy" || c.status === "learning"
+        ? "healthy"
+        : c.status === "blocked"
+          ? "unhealthy"
+          : "degraded";
     if (subsystems.cognition !== "healthy") {
       issues.push(`cognition: ${c.status}`);
     }
