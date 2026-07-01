@@ -182,7 +182,7 @@ registerAgent(executiveBrainAgent);
 
 registerAgent(
   passiveAgent("planning", "Planning", "التخطيط", ["command", "decision_support", "recommendation"], (a) => ({
-    evidence: a.plan.map((s) => `plan: ${s.title ?? s.tool ?? "step"}`),
+    evidence: a.plan.map((s) => `plan: ${s.goal_en || s.goal_ar || s.tool}`),
     sources: ["planning-engine"],
   })),
 );
