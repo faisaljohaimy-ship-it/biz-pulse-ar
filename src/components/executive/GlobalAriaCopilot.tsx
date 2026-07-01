@@ -20,7 +20,7 @@
  * - Welcome message fires ONCE per browser session (sessionStorage).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ArrowUp,
   Loader2,
@@ -31,10 +31,20 @@ import {
   VolumeX,
   Minus,
   X,
+  ArrowRight,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
+import { useAriaSnapshot } from "@/lib/aria/context-engine";
+import { ariaSessionMemory } from "@/lib/aria/session-memory";
 
 type AskResult = { text_ar: string; text_en: string };
+type BriefingLite = {
+  health?: { openIncidents?: number; alerts24h?: number; overdueWorkOrders?: number; patrolsDoneToday?: number; patrolsPlannedToday?: number };
+  priorities?: Array<{ severity?: string }>;
+  greeting_ar?: string;
+  greeting_en?: string;
+};
+type QuickAction = { label_ar: string; label_en: string; to: string };
 type Turn = {
   id: string;
   question: string;
@@ -45,7 +55,15 @@ type Turn = {
 
 const OPEN_KEY = "aria-copilot-open";
 const VOICE_KEY = "aria-copilot-voice";
-const WELCOMED_KEY = "aria-copilot-welcomed-v1";
+const WELCOMED_KEY = "aria-copilot-welcomed-v2";
+const WELCOME_TOAST_KEY = "aria-copilot-welcome-toast-v2";
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { label_ar: "غرفة العمليات", label_en: "Operations", to: "/operations" },
+  { label_ar: "التقارير التنفيذية", label_en: "Exec Reports", to: "/executive-reports" },
+  { label_ar: "منظومة الحج", label_en: "Hajj Ops", to: "/hajj" },
+  { label_ar: "الأمن الصناعي", label_en: "Security", to: "/sec" },
+];
 
 function isArabic(s: string) {
   return /[\u0600-\u06FF]/.test(s);
@@ -176,6 +194,8 @@ function resolvePageCtx(pathname: string): PageCtx {
 
 export function GlobalAriaCopilot() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const snap = useAriaSnapshot();
   const [mounted, setMounted] = useState(false);
   const [hideForAuthDock, setHideForAuthDock] = useState(false);
   const [open, setOpen] = useState(false);
@@ -184,11 +204,13 @@ export function GlobalAriaCopilot() {
   const [speaking, setSpeaking] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [lang, setLang] = useState<"ar" | "en">("ar");
+  const [lang, setLang] = useState<"ar" | "en">("en");
+  const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const briefingFiredRef = useRef(false);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const ar = lang === "ar";
@@ -286,13 +308,35 @@ export function GlobalAriaCopilot() {
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
+    // Persist the user turn into executive memory for cross-page recall.
+    try { ariaSessionMemory.push({ role: "user", text: qt, page: pathname }); } catch { /* noop */ }
+    // Assemble the live Executive Context payload from the global engine.
+    const liveCtx = {
+      page: {
+        path: snap.page.path,
+        title: snap.page.title,
+        section: snap.page.section ?? ctx.label_en,
+        filters: snap.page.filters ?? {},
+        selected: snap.page.selected ?? null,
+      },
+      widgets: snap.widgets.slice(0, 24).map((w) => ({
+        id: w.id, kind: w.kind, label: w.label, value: w.value, hint: w.hint,
+      })),
+      anchors: ariaSessionMemory.anchors().slice(-12),
+      locale: snap.locale,
+    };
+    const history = ariaSessionMemory.list().slice(-8).map((t) => ({
+      role: t.role, text: t.text, ts: t.ts, anchors: t.anchors,
+    }));
     try {
       const r = await fetch("/api/public/aria-ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question: `[Context: user is on page "${ctx.label_en}" (${pathname}).] ${qt}`,
+          question: qt,
           lang: detected,
+          context: liveCtx,
+          history,
         }),
         signal: ctrl.signal,
       });
@@ -303,6 +347,7 @@ export function GlobalAriaCopilot() {
         text_en: j.text_en ?? "",
       };
       setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer } : t)));
+      try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
       if (voiceOn) {
         const spoken = detected === "ar" ? answer.text_ar : answer.text_en;
         if (spoken) void speak(spoken);
@@ -316,23 +361,64 @@ export function GlobalAriaCopilot() {
     } finally {
       setLoading(false);
     }
-  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking]);
+  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap]);
 
-  // One-time session welcome — fires the first time the user opens the dock.
+  // Executive Welcome — fires once per browser session when the platform opens.
+  // Runs whether the dock is open or collapsed; if collapsed we surface a
+  // dismissible preview toast above the launcher so the executive still sees it.
   useEffect(() => {
-    if (!mounted || !open) return;
+    if (!mounted || briefingFiredRef.current) return;
+    briefingFiredRef.current = true;
     let welcomed = false;
     try { welcomed = sessionStorage.getItem(WELCOMED_KEY) === "1"; } catch { /* noop */ }
     if (welcomed) return;
-    try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
-    const greetingAr = `مرحباً بك. أنا آريا، مساعدك التنفيذي. أنت الآن في ${ctx.label_ar} — تفضّل بسؤالك.`;
-    const greetingEn = `Welcome. I'm ARIA, your executive copilot. You are on ${ctx.label_en} — how may I assist?`;
-    const id = `welcome_${Date.now()}`;
-    setTurns((p) => [...p, { id, question: ar ? "—" : "—", qLang: lang, answer: { text_ar: greetingAr, text_en: greetingEn } }]);
-    if (voiceOn) void speak(ar ? greetingAr : greetingEn);
-    // Only on first open of the session; deliberately ignore deps churn.
+    const t = setTimeout(() => {
+      void (async () => {
+        let health: BriefingLite["health"] = undefined;
+        let critical = 0;
+        try {
+          const r = await fetch("/api/public/aria-briefing");
+          if (r.ok) {
+            const j = (await r.json()) as BriefingLite;
+            health = j.health;
+            critical = (j.priorities ?? []).filter((p) => (p.severity ?? "").toLowerCase() === "critical").length;
+          }
+        } catch { /* noop */ }
+        const openInc = health?.openIncidents ?? 0;
+        const done = health?.patrolsDoneToday ?? 0;
+        const planned = health?.patrolsPlannedToday ?? 0;
+        const healthPct = planned > 0 ? Math.max(0, Math.min(100, Math.round((done / planned) * 100))) : 100;
+        const greetEn =
+          `Welcome back. All systems have been analyzed. System Health: ${healthPct}%. ` +
+          (critical > 0
+            ? `${critical} critical alert${critical === 1 ? "" : "s"} require attention. `
+            : openInc > 0
+              ? `${openInc} open incident${openInc === 1 ? "" : "s"} in the field. `
+              : "No critical alerts. ") +
+          `Would you like an executive briefing?`;
+        const greetAr =
+          `مرحباً بعودتك. تم تحليل جميع الأنظمة. صحة النظام: ${healthPct}٪. ` +
+          (critical > 0
+            ? `${critical} تنبيه حرج بحاجة إلى انتباهك. `
+            : openInc > 0
+              ? `${openInc} بلاغ مفتوح في الميدان. `
+              : "لا توجد تنبيهات حرجة. ") +
+          `هل تودّ إحاطة تنفيذية؟`;
+        try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
+        const id = `welcome_${Date.now()}`;
+        setTurns((p) => [...p, { id, question: "—", qLang: lang, answer: { text_ar: greetAr, text_en: greetEn } }]);
+        try { ariaSessionMemory.push({ role: "assistant", text: greetEn, page: pathname }); } catch { /* noop */ }
+        if (!open) {
+          let toastDismissed = false;
+          try { toastDismissed = sessionStorage.getItem(WELCOME_TOAST_KEY) === "0"; } catch { /* noop */ }
+          if (!toastDismissed) setWelcomeToast({ ar: greetAr, en: greetEn });
+        }
+        if (voiceOn) void speak(ar ? greetAr : greetEn);
+      })();
+    }, 1200);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, open]);
+  }, [mounted]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -353,6 +439,7 @@ export function GlobalAriaCopilot() {
         @keyframes gac-pulse { 0%,100% { box-shadow: 0 0 22px rgba(58,232,255,0.55), inset 0 0 12px rgba(58,232,255,0.3); } 50% { box-shadow: 0 0 36px rgba(58,232,255,0.85), inset 0 0 18px rgba(58,232,255,0.5); } }
         @keyframes gac-think { 0%,100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .9; } }
         @keyframes gac-speak { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+        @keyframes gac-halo { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(1.5); opacity: 0; } }
       `}</style>
 
       {open && (
@@ -459,7 +546,7 @@ export function GlobalAriaCopilot() {
             </div>
           )}
 
-          {/* Quick prompts */}
+          {/* Quick prompts (empty state) */}
           {turns.length === 0 && !loading && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {(ar ? ctx.prompts_ar : ctx.prompts_en).map((p) => (
@@ -472,6 +559,41 @@ export function GlobalAriaCopilot() {
                   {p}
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Follow-up suggestions after any answer */}
+          {turns.length > 0 && !loading && (
+            <div className="mt-3 space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {(ar ? ctx.prompts_ar : ctx.prompts_en).slice(0, 3).map((p) => (
+                  <button
+                    key={`fu-${p}`}
+                    type="button"
+                    onClick={() => void ask(p)}
+                    className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              {/* Executive Actions — navigation shortcuts */}
+              <div className="flex flex-wrap gap-1.5 border-t border-white/5 pt-2">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                  {ar ? "إجراءات تنفيذية" : "Executive Actions"}
+                </span>
+                {QUICK_ACTIONS.filter((a) => !pathname.startsWith(a.to)).slice(0, 3).map((a) => (
+                  <button
+                    key={a.to}
+                    type="button"
+                    onClick={() => { stopSpeaking(); void navigate({ to: a.to }); }}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/80 transition hover:border-[#3AE8FF]/60 hover:text-white"
+                  >
+                    <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+                    {ar ? a.label_ar : a.label_en}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -503,6 +625,39 @@ export function GlobalAriaCopilot() {
         </div>
       )}
 
+      {/* Executive Welcome preview toast — appears above the collapsed launcher */}
+      {!open && welcomeToast && (
+        <div className="pointer-events-auto w-[min(320px,calc(100vw-1.5rem))] rounded-2xl border border-[#3AE8FF]/45 bg-[#061A2E]/95 p-3 text-[12.5px] leading-relaxed text-white/90 shadow-[0_18px_60px_-12px_rgba(0,212,255,0.55)] backdrop-blur-xl animate-fade-in">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <span className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
+              {ar ? "إحاطة تنفيذية" : "Executive Briefing"}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                try { sessionStorage.setItem(WELCOME_TOAST_KEY, "0"); } catch { /* noop */ }
+                setWelcomeToast(null);
+              }}
+              aria-label={ar ? "إغلاق" : "Dismiss"}
+              className="grid h-5 w-5 place-items-center rounded-full border border-white/15 text-white/70 hover:border-white/40"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <p dir="auto" className="whitespace-pre-wrap">{ar ? welcomeToast.ar : welcomeToast.en}</p>
+          <div className="mt-2 flex justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => { setWelcomeToast(null); setOpen(true); }}
+              className="inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-3 py-1 text-[11px] font-medium text-[#3AE8FF] hover:bg-[#3AE8FF]/20"
+            >
+              {ar ? "افتح آريا" : "Open ARIA"}
+              <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Floating launcher (always visible when collapsed) */}
       {!open && (
         <button
@@ -512,6 +667,7 @@ export function GlobalAriaCopilot() {
           className="pointer-events-auto group relative grid h-14 w-14 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/40 via-[#0a2a44] to-[#061A2E] text-[#3AE8FF] transition hover:scale-110"
           style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
         >
+          <span aria-hidden className="pointer-events-none absolute -inset-2 rounded-full border border-[#3AE8FF]/25" style={{ animation: "gac-halo 3.6s ease-out infinite" }} />
           <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full rounded-full object-cover object-top" draggable={false} />
           <Sparkles className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-[#061A2E]/85 p-0.5 drop-shadow-[0_0_10px_rgba(58,232,255,0.95)]" />
           <span className="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#061A2E] text-[8px] font-bold text-[#3AE8FF]">
