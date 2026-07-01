@@ -15,9 +15,45 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 
+const AnchorSchema = z.object({
+  kind: z.string().max(40),
+  id: z.string().max(120),
+  label: z.string().max(200).optional(),
+});
+const TurnSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  text: z.string().max(2000),
+  ts: z.string().optional(),
+  anchors: z.array(AnchorSchema).max(6).optional(),
+});
+const WidgetSchema = z.object({
+  id: z.string().max(120),
+  kind: z.string().max(30),
+  label: z.string().max(160),
+  value: z.unknown().optional(),
+  hint: z.string().max(240).optional(),
+});
+const PageSchema = z.object({
+  path: z.string().max(400).optional(),
+  title: z.string().max(200).optional(),
+  section: z.string().max(120).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
+  selected: z.record(z.string(), z.unknown()).nullable().optional(),
+});
+const ContextSchema = z
+  .object({
+    page: PageSchema.optional(),
+    widgets: z.array(WidgetSchema).max(24).optional(),
+    anchors: z.array(AnchorSchema).max(12).optional(),
+    locale: z.enum(["ar", "en", "mixed"]).optional(),
+  })
+  .optional();
+
 const Input = z.object({
   question: z.string().trim().min(1).max(600),
   lang: z.enum(["ar", "en"]).optional(),
+  context: ContextSchema,
+  history: z.array(TurnSchema).max(12).optional(),
 });
 
 function clientIp(req: Request): string {
@@ -70,6 +106,61 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
+        // Build a compact, model-friendly context block from what the
+        // current page registered with the ARIA Global Context Engine.
+        function buildContextBlock(): string {
+          const c = data.context;
+          const h = data.history ?? [];
+          if (!c && !h.length) return "";
+          const parts: string[] = [];
+          if (c?.page) {
+            const p = c.page;
+            const pageLine = [
+              p.title ? `title=${p.title}` : null,
+              p.path ? `path=${p.path}` : null,
+              p.section ? `section=${p.section}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            parts.push(`# CURRENT PAGE\n${pageLine || "(unknown)"}`);
+            if (p.filters && Object.keys(p.filters).length) {
+              parts.push(`# ACTIVE FILTERS\n${JSON.stringify(p.filters).slice(0, 1200)}`);
+            }
+            if (p.selected) {
+              parts.push(`# SELECTED OBJECT\n${JSON.stringify(p.selected).slice(0, 1200)}`);
+            }
+          }
+          if (c?.widgets?.length) {
+            const lines = c.widgets.slice(0, 20).map((w) => {
+              const v = w.value === undefined ? "" : ` = ${JSON.stringify(w.value).slice(0, 200)}`;
+              const hint = w.hint ? ` — ${w.hint}` : "";
+              return `- [${w.kind}] ${w.label}${v}${hint}`;
+            });
+            parts.push(`# LIVE WIDGETS / KPIs ON SCREEN\n${lines.join("\n")}`);
+          }
+          if (c?.anchors?.length) {
+            parts.push(
+              `# REFERENCEABLE ANCHORS (resolve "this" / "that" / "the previous X" from these)\n${c.anchors
+                .map((a) => `- ${a.kind}: ${a.label ?? a.id} (${a.id})`)
+                .join("\n")}`,
+            );
+          }
+          if (h.length) {
+            parts.push(
+              `# RECENT CONVERSATION (oldest → newest)\n${h
+                .slice(-8)
+                .map((t) => `${t.role.toUpperCase()}: ${t.text.slice(0, 400)}`)
+                .join("\n")}`,
+            );
+          }
+          parts.push(
+            "GROUND every claim in the sections above. If a required datum is not present, say once: \"Data unavailable / بيانات غير متوفرة\" and stop. Never invent numbers, names, dates, or sources.",
+          );
+          return parts.join("\n\n");
+        }
+        const contextBlock = buildContextBlock();
+        const systemForCall = contextBlock ? `${SYSTEM}\n\n${contextBlock}` : SYSTEM;
+
         async function callModel(model: string, maxTokens: number) {
           const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
@@ -82,7 +173,7 @@ export const Route = createFileRoute("/api/public/aria-ask")({
               model,
               max_completion_tokens: maxTokens,
               messages: [
-                { role: "system", content: SYSTEM },
+                { role: "system", content: systemForCall },
                 { role: "user", content: data.question },
               ],
               response_format: { type: "json_object" },

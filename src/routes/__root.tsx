@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 import { GlobalAriaCopilot } from "@/components/executive/GlobalAriaCopilot";
 import { LanguageToggle } from "@/components/executive/LanguageToggle";
+import { AriaContextProvider } from "@/lib/aria/context-engine";
 
 function NotFoundComponent() {
   return (
@@ -177,15 +178,17 @@ function RootComponent() {
       <AuthProvider>
         <ThemeProvider>
           <I18nProvider>
-            <BetaMarqueeBar />
-            <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
-              <div className="pointer-events-auto">
-                <LanguageToggle />
+            <AriaContextProvider>
+              <BetaMarqueeBar />
+              <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
+                <div className="pointer-events-auto">
+                  <LanguageToggle />
+                </div>
               </div>
-            </div>
-            <Outlet />
-            <GlobalAriaCopilot />
-            <Toaster />
+              <Outlet />
+              <GlobalAriaCopilot />
+              <Toaster />
+            </AriaContextProvider>
           </I18nProvider>
         </ThemeProvider>
       </AuthProvider>
