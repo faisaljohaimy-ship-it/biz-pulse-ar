@@ -466,6 +466,11 @@ export function GlobalAriaCopilot() {
       })),
       anchors: ariaSessionMemory.anchors().slice(-12),
       locale: snap.locale,
+      persona: {
+        id: persona.id,
+        label: detected === "ar" ? persona.label_ar : persona.label_en,
+        mission: detected === "ar" ? persona.mission_ar : persona.mission_en,
+      },
     };
     const history = ariaSessionMemory.list().slice(-8).map((t) => ({
       role: t.role, text: t.text, ts: t.ts, anchors: t.anchors,
@@ -477,6 +482,7 @@ export function GlobalAriaCopilot() {
         body: JSON.stringify({
           question: qt,
           lang: detected,
+          persona: persona.id,
           context: liveCtx,
           history,
         }),
@@ -490,6 +496,20 @@ export function GlobalAriaCopilot() {
       };
       setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer, executive: j.executive, stage: "done" } : t)));
       try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
+      // Live Highlighting — pulse any registered widgets referenced in the answer.
+      try {
+        const spoken = (detected === "ar" ? answer.text_ar : answer.text_en) ?? "";
+        const hay = spoken.toLowerCase();
+        const matched = snap.widgets
+          .filter((w) => w.label && hay.includes(w.label.toLowerCase()))
+          .slice(0, 6)
+          .map((w) => w.id);
+        if (matched.length) {
+          window.dispatchEvent(new CustomEvent("nexios:aria-focus", {
+            detail: { widgetIds: matched, persona: persona.id },
+          }));
+        }
+      } catch { /* noop */ }
       if (voiceOn) {
         const spoken = detected === "ar" ? answer.text_ar : answer.text_en;
         if (spoken) void speak(spoken);
@@ -503,7 +523,7 @@ export function GlobalAriaCopilot() {
     } finally {
       setLoading(false);
     }
-  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap]);
+  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap, persona]);
 
   // Executive Welcome — fires once per browser session when the platform opens.
   // Runs whether the dock is open or collapsed; if collapsed we surface a
