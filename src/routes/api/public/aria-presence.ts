@@ -19,6 +19,7 @@ import {
 import { composePresenceGreeting } from "@/lib/aria/presence/greeting.server";
 import { detectInterruption } from "@/lib/aria/presence/interruption.server";
 import { readCursor, writeCursor } from "@/lib/aria/presence/tiers.server";
+import { requireBearerUser } from "@/lib/aria/require-bearer.server";
 
 function clientIp(req: Request): string {
   const h = req.headers;
@@ -44,6 +45,10 @@ export const Route = createFileRoute("/api/public/aria-presence")({
         const rate = await enforceRateLimit(`pub-aria-presence:${ip}`, 20, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        const auth = await requireBearerUser(request);
+        if ("response" in auth) return auth.response;
+
+
 
         const url = new URL(request.url);
         const sid = (url.searchParams.get("sid") ?? "").trim();
@@ -74,6 +79,8 @@ export const Route = createFileRoute("/api/public/aria-presence")({
         const rate = await enforceRateLimit(`pub-aria-presence-post:${ip}`, 30, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        const auth = await requireBearerUser(request);
+        if ("response" in auth) return auth.response;
         let body: unknown;
         try { body = await request.json(); } catch { return Response.json({ error: "invalid_json" }, { status: 400 }); }
         const parsed = HeartbeatSchema.safeParse(body);

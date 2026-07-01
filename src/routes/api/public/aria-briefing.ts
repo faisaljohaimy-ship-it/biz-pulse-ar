@@ -15,6 +15,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { buildExecutiveBriefing } from "@/lib/aria/executive-briefing.server";
+import { requireBearerUser } from "@/lib/aria/require-bearer.server";
 
 function clientIp(req: Request): string {
   const h = req.headers;
@@ -34,11 +35,15 @@ export const Route = createFileRoute("/api/public/aria-briefing")({
         const rate = await enforceRateLimit(`pub-aria-briefing:${ip}`, 12, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        const auth = await requireBearerUser(request);
+        if ("response" in auth) return auth.response;
         try {
           const briefing = await buildExecutiveBriefing();
           return Response.json(briefing, {
             headers: {
-              "Cache-Control": "public, max-age=45, s-maxage=45",
+              // Authenticated response — must not be shared across users
+              // by intermediaries or the edge cache.
+              "Cache-Control": "private, no-store",
             },
           });
         } catch (e) {
