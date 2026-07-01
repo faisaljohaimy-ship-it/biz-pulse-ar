@@ -135,14 +135,14 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
     jobs.push((async () => {
       const { data } = await admin!
         .from("sec_incidents")
-        .select("id,title,severity,status,site_id,reported_at")
+        .select("id,title_ar,title_en,severity,status,site_id,reported_at")
         .order("reported_at", { ascending: false })
         .limit(6);
       if (data?.length) {
         sources.push("sec_incidents");
         sections.push(
           `## Recent incidents (sec_incidents)\n${data
-            .map((r) => `- [${r.severity ?? "?"}/${r.status ?? "?"}] ${r.title ?? r.id} · site=${r.site_id ?? "?"} · ${r.reported_at ?? ""}`)
+            .map((r) => `- [${r.severity ?? "?"}/${r.status ?? "?"}] ${r.title_en ?? r.title_ar ?? r.id} · site=${r.site_id ?? "?"} · ${r.reported_at ?? ""}`)
             .join("\n")}`,
         );
       }
@@ -152,14 +152,14 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
     jobs.push((async () => {
       const { data } = await admin!
         .from("pulse_kpis")
-        .select("key,value_num,unit,trend,captured_at")
-        .order("captured_at", { ascending: false })
+        .select("key,label,label_en,value,delta,trend,tone,updated_at")
+        .order("updated_at", { ascending: false })
         .limit(10);
       if (data?.length) {
         sources.push("pulse_kpis");
         sections.push(
           `## Latest KPIs (pulse_kpis)\n${data
-            .map((r) => `- ${r.key} = ${r.value_num ?? "?"}${r.unit ?? ""} · trend=${r.trend ?? "?"} · ${r.captured_at ?? ""}`)
+            .map((r) => `- ${r.label_en ?? r.label ?? r.key} = ${r.value ?? "?"} · Δ=${r.delta ?? "?"} · trend=${r.trend ?? "?"} · tone=${r.tone ?? "?"}`)
             .join("\n")}`,
         );
       }
@@ -203,14 +203,14 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
     jobs.push((async () => {
       const { data } = await admin!
         .from("sec_work_orders")
-        .select("id,title,priority,status,due_at")
+        .select("id,title_ar,title_en,priority,status,due_at")
         .order("due_at", { ascending: true })
         .limit(6);
       if (data?.length) {
         sources.push("sec_work_orders");
         sections.push(
           `## Open work orders (sec_work_orders)\n${data
-            .map((r) => `- [${r.priority ?? "?"}/${r.status ?? "?"}] ${r.title ?? r.id} · due=${r.due_at ?? "?"}`)
+            .map((r) => `- [${r.priority ?? "?"}/${r.status ?? "?"}] ${r.title_en ?? r.title_ar ?? r.id} · due=${r.due_at ?? "?"}`)
             .join("\n")}`,
         );
       }
