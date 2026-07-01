@@ -7,6 +7,11 @@
  * Additive layer — never replaces `runExecutiveBrain`. The Chief
  * (executive_brain) still owns the final natural response.
  */
+// Phase 8.3 — boot the Marketplace so plug-in agents self-register
+// into the orchestrator registry before the first mission executes.
+import { bootMarketplace } from "../marketplace";
+bootMarketplace();
+
 export { runAgentMission } from "./orchestrator.server";
 export type { RunAgentMissionOptions } from "./orchestrator.server";
 export { planMission } from "./router.server";
