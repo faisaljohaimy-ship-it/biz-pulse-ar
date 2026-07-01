@@ -48,7 +48,13 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
             continue;
           }
           try {
-            const snap = await buildExecutiveSnapshot(supabaseAdmin, { range: s.range_window as "24h" | "7d" | "30d" });
+            // Tenant isolation: scope the snapshot to this schedule's org_id
+            // so cross-tenant incident/permit/patrol rows never end up in the
+            // rendered PDF/XLSX or the emailed recipient list.
+            const snap = await buildExecutiveSnapshot(supabaseAdmin, {
+              range: s.range_window as "24h" | "7d" | "30d",
+              orgId: s.org_id as string,
+            });
             const title = s.name;
             const stamp = nowIso.slice(0, 10);
             const ym = nowIso.slice(0, 7);

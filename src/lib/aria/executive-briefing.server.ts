@@ -82,7 +82,7 @@ function priorityFor(sev: Insight["severity"]): 1 | 2 | 3 {
   return sev === "critical" ? 1 : sev === "elevated" ? 2 : 3;
 }
 
-async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdmin>>>): Promise<{
+async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdmin>>>, orgId: string): Promise<{
   health: BriefingHealth;
   approvals: BriefingApproval[];
 }> {
@@ -106,6 +106,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { count } = await admin
         .from("sec_incidents")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .not("status", "in", "(closed,resolved,cancelled)");
       health.openIncidents = count ?? 0;
     })(),
@@ -113,6 +114,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { count } = await admin
         .from("sim_notifications")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .gte("created_at", iso24h);
       health.alerts24h = count ?? 0;
     })(),
@@ -120,6 +122,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data, count } = await admin
         .from("sec_work_orders")
         .select("id,title_en,title_ar,due_at", { count: "exact" })
+        .eq("org_id", orgId)
         .lt("due_at", new Date().toISOString())
         .not("status", "in", "(closed,completed,cancelled)")
         .limit(5);
@@ -137,6 +140,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data } = await admin
         .from("sim_daily_ops")
         .select("patrols_planned,patrols_done")
+        .eq("org_id", orgId)
         .eq("day", today)
         .limit(500);
       for (const r of data ?? []) {
@@ -148,6 +152,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { count } = await admin
         .from("sec_reports")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .gte("created_at", iso24h);
       health.reportsLast24h = count ?? 0;
     })(),
@@ -155,6 +160,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data } = await admin
         .from("sec_permits")
         .select("id,ref,work_type,status,ends_at")
+        .eq("org_id", orgId)
         .eq("status", "pending")
         .limit(5);
       for (const r of data ?? []) {
@@ -170,6 +176,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data } = await admin
         .from("sim_meetings")
         .select("id,title,scheduled_at,status")
+        .eq("org_id", orgId)
         .gte("scheduled_at", new Date().toISOString())
         .lte("scheduled_at", todayEnd)
         .eq("status", "scheduled")
@@ -197,10 +204,13 @@ async function importAdmin() {
   }
 }
 
-export async function buildExecutiveBriefing(): Promise<ExecutiveBriefing> {
+export async function buildExecutiveBriefing(orgId?: string | null): Promise<ExecutiveBriefing> {
   const generatedAt = new Date().toISOString();
   const admin = await importAdmin();
-  if (!admin) {
+  // Tenant isolation: this aggregator uses the service-role client (bypasses
+  // RLS), so callers MUST supply the current user's org_id. Without one we
+  // return a safe empty briefing instead of leaking cross-tenant data.
+  if (!admin || !orgId) {
     return {
       generatedAt,
       health: {
@@ -221,8 +231,8 @@ export async function buildExecutiveBriefing(): Promise<ExecutiveBriefing> {
   }
 
   const [{ health, approvals }, insightBundle] = await Promise.all([
-    loadHealth(admin),
-    runInsightScan(),
+    loadHealth(admin, orgId),
+    runInsightScan(orgId),
   ]);
 
   const priorities: ExecutivePriority[] = insightBundle.insights.slice(0, 5).map((i) => {

@@ -36,7 +36,10 @@ async function importAdmin() {
   }
 }
 
-export async function computePresenceDelta(sessionId: string): Promise<PresenceDelta> {
+export async function computePresenceDelta(
+  sessionId: string,
+  orgId?: string | null,
+): Promise<PresenceDelta> {
   const now = new Date();
   const nowISO = now.toISOString();
   const cursor = readCursor(sessionId);
@@ -57,13 +60,16 @@ export async function computePresenceDelta(sessionId: string): Promise<PresenceD
   };
 
   const admin = await importAdmin();
-  if (!admin) return delta;
+  // Tenant isolation: uses the service-role client. Skip live delta when the
+  // caller's org id is unknown rather than aggregate across every tenant.
+  if (!admin || !orgId) return delta;
 
   await Promise.all([
     (async () => {
       const { count } = await admin
         .from("sec_incidents")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .in("status", ["resolved", "closed"])
         .gte("updated_at", from);
       const n = count ?? 0;
@@ -77,6 +83,7 @@ export async function computePresenceDelta(sessionId: string): Promise<PresenceD
       const { count } = await admin
         .from("sim_risks")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .gte("updated_at", from)
         .in("status", ["escalated", "elevated", "critical"]);
       const n = count ?? 0;
@@ -90,6 +97,7 @@ export async function computePresenceDelta(sessionId: string): Promise<PresenceD
       const { data } = await admin
         .from("sim_inspections")
         .select("status,updated_at")
+        .eq("org_id", orgId)
         .gte("updated_at", from)
         .limit(500);
       if (!data || !data.length) return;
@@ -107,6 +115,7 @@ export async function computePresenceDelta(sessionId: string): Promise<PresenceD
       const { count } = await admin
         .from("sim_notifications")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .eq("severity", "critical")
         .gte("created_at", from);
       const n = count ?? 0;

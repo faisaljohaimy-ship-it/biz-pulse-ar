@@ -44,10 +44,13 @@ function salutation(band: PresenceGreeting["timeBand"], returning: boolean): { e
   return { en, ar };
 }
 
-export async function composePresenceGreeting(sessionId: string): Promise<PresenceGreeting> {
+export async function composePresenceGreeting(
+  sessionId: string,
+  orgId?: string | null,
+): Promise<PresenceGreeting> {
   const [briefing, delta] = await Promise.all([
-    buildExecutiveBriefing(),
-    computePresenceDelta(sessionId),
+    buildExecutiveBriefing(orgId),
+    computePresenceDelta(sessionId, orgId),
   ]);
   const band = timeBand(new Date());
   const { en: hi_en, ar: hi_ar } = salutation(band, delta.hasBaseline);

@@ -20,6 +20,7 @@ import { composePresenceGreeting } from "@/lib/aria/presence/greeting.server";
 import { detectInterruption } from "@/lib/aria/presence/interruption.server";
 import { readCursor, writeCursor } from "@/lib/aria/presence/tiers.server";
 import { requireBearerUser } from "@/lib/aria/require-bearer.server";
+import { getCurrentOrgIdForUser } from "@/lib/authz.server";
 
 function clientIp(req: Request): string {
   const h = req.headers;
@@ -56,9 +57,12 @@ export const Route = createFileRoute("/api/public/aria-presence")({
           return Response.json({ error: "missing_sid" }, { status: 400 });
         }
         try {
+          // Scope all admin-client reads to the caller's org so incidents,
+          // alerts, KPIs and priorities never bleed across tenants.
+          const orgId = await getCurrentOrgIdForUser(auth.userId);
           const [greeting, interruption] = await Promise.all([
-            composePresenceGreeting(sid),
-            detectInterruption(sid),
+            composePresenceGreeting(sid, orgId),
+            detectInterruption(sid, orgId),
           ]);
           return Response.json({
             greeting_en: greeting.greeting_en,

@@ -333,23 +333,38 @@ export type ExecKpiSources = {
 // Minimal shape of the authed Supabase client used by fetchExecKpiSources.
 // Kept structural so tests can pass an in-memory stub without pulling the full
 // supabase-js types — the real client (from `requireSupabaseAuth`) satisfies it.
+// The optional `.eq(col, val)` link lets callers using the service-role client
+// (which bypasses RLS) scope every query to a tenant's org_id.
+type ExecKpiQuery = {
+  eq?: (col: string, val: string) => Promise<{ data: unknown }>;
+} & Promise<{ data: unknown }>;
 type ExecKpiSupabase = {
-  from: (table: string) => { select: (cols: string) => Promise<{ data: unknown }> };
+  from: (table: string) => { select: (cols: string) => ExecKpiQuery };
 };
 
-export async function fetchExecKpiSources(supabase: ExecKpiSupabase): Promise<ExecKpiSources> {
+export async function fetchExecKpiSources(
+  supabase: ExecKpiSupabase,
+  orgId?: string | null,
+): Promise<ExecKpiSources> {
+  const q = (table: string, cols: string): Promise<{ data: unknown }> => {
+    const base = supabase.from(table).select(cols);
+    if (orgId && typeof base.eq === "function") {
+      return base.eq("org_id", orgId);
+    }
+    return base;
+  };
   const [incidents, patrols, visitors, permits, contractors, sites, cameras, gates, sensors, workOrders, projects] = await Promise.all([
-    supabase.from("sec_incidents").select("severity,status,response_minutes"),
-    supabase.from("sec_patrols").select("status,checkpoints_done,checkpoints_total"),
-    supabase.from("sec_visitors").select("status"),
-    supabase.from("sec_permits").select("status"),
-    supabase.from("sec_contractors").select("status,compliance_score"),
-    supabase.from("sec_sites").select("status"),
-    supabase.from("sec_cameras").select("status,health"),
-    supabase.from("sec_gates").select("status,health"),
-    supabase.from("sec_sensors").select("status"),
-    supabase.from("sec_work_orders").select("kind,status"),
-    supabase.from("sec_projects").select("status,progress,budget_sar,spent_sar,health"),
+    q("sec_incidents", "severity,status,response_minutes"),
+    q("sec_patrols", "status,checkpoints_done,checkpoints_total"),
+    q("sec_visitors", "status"),
+    q("sec_permits", "status"),
+    q("sec_contractors", "status,compliance_score"),
+    q("sec_sites", "status"),
+    q("sec_cameras", "status,health"),
+    q("sec_gates", "status,health"),
+    q("sec_sensors", "status"),
+    q("sec_work_orders", "kind,status"),
+    q("sec_projects", "status,progress,budget_sar,spent_sar,health"),
   ]);
   return {
     incidents: (incidents.data ?? []) as ExecKpiSources["incidents"],

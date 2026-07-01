@@ -16,6 +16,7 @@ import {
 } from "@/lib/governance/rate-limit.server";
 import { buildExecutiveBriefing } from "@/lib/aria/executive-briefing.server";
 import { requireBearerUser } from "@/lib/aria/require-bearer.server";
+import { getCurrentOrgIdForUser } from "@/lib/authz.server";
 
 function clientIp(req: Request): string {
   const h = req.headers;
@@ -38,7 +39,10 @@ export const Route = createFileRoute("/api/public/aria-briefing")({
         const auth = await requireBearerUser(request);
         if ("response" in auth) return auth.response;
         try {
-          const briefing = await buildExecutiveBriefing();
+          // Scope to the caller's org so the service-role queries inside
+          // buildExecutiveBriefing cannot leak cross-tenant operational data.
+          const orgId = await getCurrentOrgIdForUser(auth.userId);
+          const briefing = await buildExecutiveBriefing(orgId);
           return Response.json(briefing, {
             headers: {
               // Authenticated response — must not be shared across users
