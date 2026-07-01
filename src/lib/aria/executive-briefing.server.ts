@@ -154,15 +154,15 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
     (async () => {
       const { data } = await admin
         .from("sec_permits")
-        .select("id,title_en,title_ar,status,valid_to")
-        .eq("status", "pending_approval")
+        .select("id,ref,work_type,status,ends_at")
+        .eq("status", "pending")
         .limit(5);
       for (const r of data ?? []) {
         approvals.push({
           kind: "permit",
           id: String(r.id),
-          label: String(r.title_en ?? r.title_ar ?? r.id),
-          due_at: String(r.valid_to ?? ""),
+          label: `${r.ref ?? r.id} — ${r.work_type ?? "permit"}`,
+          due_at: String(r.ends_at ?? ""),
         });
       }
     })().catch(() => {}),
