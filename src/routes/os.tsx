@@ -84,15 +84,15 @@ function OsHub() {
   }, []);
 
   const t = {
-    title: ar ? "نظام التشغيل المؤسسي" : "Enterprise Operating System",
+    title: ar ? "نِظَامُ التَّشْغِيلِ المُؤَسَّسِيّ" : "Enterprise Operating System",
     subtitle: ar
-      ? "NEXIOS AI OS — الأمن الصناعي، المنطقة الغربية"
+      ? "نِكْسِيُوس — الأَمْنُ الصِّنَاعِيّ، المِنْطَقَةُ الغَرْبِيَّة"
       : "NEXIOS AI OS — Industrial Security, Western Region",
     vision: ar
-      ? "منصة استراتيجية تدعم رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
+      ? "مِنَصَّةٌ اسْتِرَاتِيجِيَّةٌ تَدْعَمُ رُؤْيَةَ المَمْلَكَةِ ٢٠٣٠ · التَّحَوُّلُ الرَّقْمِيُّ وَالرِّيَادَةُ الصِّنَاعِيَّة"
       : "Strategic platform empowering Saudi Vision 2030 · Digital transformation & industrial leadership",
-    ready: ar ? "جاهز" : "Ready",
-    footer: ar ? "منصة تشغيل المؤسسة · النسخة 1.0" : "Enterprise Runtime · v1.0",
+    ready: ar ? "جَاهِز" : "Ready",
+    footer: ar ? "مِنَصَّةُ تَشْغِيلِ المُؤَسَّسَة · النُّسْخَةُ ١٫٠" : "Enterprise Runtime · v1.0",
   };
 
   return (
