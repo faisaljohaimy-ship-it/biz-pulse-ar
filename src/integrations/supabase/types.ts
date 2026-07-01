@@ -4103,6 +4103,684 @@ export type Database = {
         }
         Relationships: []
       }
+      sim_buses: {
+        Row: {
+          capacity: number
+          created_at: string
+          driver_employee_id: string | null
+          id: string
+          metadata: Json
+          next_service_at: string | null
+          org_id: string
+          plate: string
+          route_code: string | null
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          driver_employee_id?: string | null
+          id?: string
+          metadata?: Json
+          next_service_at?: string | null
+          org_id: string
+          plate: string
+          route_code?: string | null
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          driver_employee_id?: string | null
+          id?: string
+          metadata?: Json
+          next_service_at?: string | null
+          org_id?: string
+          plate?: string
+          route_code?: string | null
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_buses_driver_employee_id_fkey"
+            columns: ["driver_employee_id"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_corrective_actions: {
+        Row: {
+          action: string
+          created_at: string
+          due_at: string | null
+          id: string
+          metadata: Json
+          org_id: string
+          owner_employee: string | null
+          priority: string
+          ref: string
+          source_id: string
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          metadata?: Json
+          org_id: string
+          owner_employee?: string | null
+          priority?: string
+          ref: string
+          source_id: string
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          metadata?: Json
+          org_id?: string
+          owner_employee?: string | null
+          priority?: string
+          ref?: string
+          source_id?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_corrective_actions_owner_employee_fkey"
+            columns: ["owner_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_daily_ops: {
+        Row: {
+          created_at: string
+          day: string
+          headcount: number
+          id: string
+          incidents_open: number
+          kpi_json: Json
+          metadata: Json
+          org_id: string
+          patrols_done: number
+          patrols_planned: number
+          permits_active: number
+          shift: string
+          site_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          headcount?: number
+          id?: string
+          incidents_open?: number
+          kpi_json?: Json
+          metadata?: Json
+          org_id: string
+          patrols_done?: number
+          patrols_planned?: number
+          permits_active?: number
+          shift?: string
+          site_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          headcount?: number
+          id?: string
+          incidents_open?: number
+          kpi_json?: Json
+          metadata?: Json
+          org_id?: string
+          patrols_done?: number
+          patrols_planned?: number
+          permits_active?: number
+          shift?: string
+          site_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sim_departments: {
+        Row: {
+          budget: number | null
+          code: string
+          created_at: string
+          head_employee_id: string | null
+          headcount_target: number | null
+          id: string
+          metadata: Json
+          name_ar: string
+          name_en: string
+          org_id: string
+          parent_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          code: string
+          created_at?: string
+          head_employee_id?: string | null
+          headcount_target?: number | null
+          id?: string
+          metadata?: Json
+          name_ar: string
+          name_en: string
+          org_id: string
+          parent_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          code?: string
+          created_at?: string
+          head_employee_id?: string | null
+          headcount_target?: number | null
+          id?: string
+          metadata?: Json
+          name_ar?: string
+          name_en?: string
+          org_id?: string
+          parent_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_departments_head_fk"
+            columns: ["head_employee_id"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sim_departments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "sim_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_employees: {
+        Row: {
+          contact: Json
+          created_at: string
+          dept_id: string | null
+          employee_no: string
+          full_name_ar: string
+          full_name_en: string
+          grade: string | null
+          hire_date: string | null
+          id: string
+          manager_id: string | null
+          metadata: Json
+          org_id: string
+          role: string
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact?: Json
+          created_at?: string
+          dept_id?: string | null
+          employee_no: string
+          full_name_ar: string
+          full_name_en: string
+          grade?: string | null
+          hire_date?: string | null
+          id?: string
+          manager_id?: string | null
+          metadata?: Json
+          org_id: string
+          role: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact?: Json
+          created_at?: string
+          dept_id?: string | null
+          employee_no?: string
+          full_name_ar?: string
+          full_name_en?: string
+          grade?: string | null
+          hire_date?: string | null
+          id?: string
+          manager_id?: string | null
+          metadata?: Json
+          org_id?: string
+          role?: string
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_employees_dept_id_fkey"
+            columns: ["dept_id"]
+            isOneToOne: false
+            referencedRelation: "sim_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sim_employees_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_history: {
+        Row: {
+          action: string
+          actor_employee: string | null
+          at: string
+          changes_json: Json
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          org_id: string
+        }
+        Insert: {
+          action: string
+          actor_employee?: string | null
+          at?: string
+          changes_json?: Json
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json
+          org_id: string
+        }
+        Update: {
+          action?: string
+          actor_employee?: string | null
+          at?: string
+          changes_json?: Json
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_history_actor_employee_fkey"
+            columns: ["actor_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_inspections: {
+        Row: {
+          building_id: string | null
+          completed_at: string | null
+          created_at: string
+          findings_count: number
+          id: string
+          inspector_employee: string | null
+          kind: string
+          metadata: Json
+          org_id: string
+          priority: string
+          ref: string
+          scheduled_at: string
+          score: number | null
+          site_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          building_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          findings_count?: number
+          id?: string
+          inspector_employee?: string | null
+          kind: string
+          metadata?: Json
+          org_id: string
+          priority?: string
+          ref: string
+          scheduled_at: string
+          score?: number | null
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          findings_count?: number
+          id?: string
+          inspector_employee?: string | null
+          kind?: string
+          metadata?: Json
+          org_id?: string
+          priority?: string
+          ref?: string
+          scheduled_at?: string
+          score?: number | null
+          site_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_inspections_inspector_employee_fkey"
+            columns: ["inspector_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_meetings: {
+        Row: {
+          attendees: Json
+          created_at: string
+          dept_id: string | null
+          duration_min: number
+          id: string
+          kind: string
+          location: string | null
+          metadata: Json
+          minutes_url: string | null
+          org_id: string
+          organizer_employee: string | null
+          priority: string
+          ref: string
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attendees?: Json
+          created_at?: string
+          dept_id?: string | null
+          duration_min?: number
+          id?: string
+          kind?: string
+          location?: string | null
+          metadata?: Json
+          minutes_url?: string | null
+          org_id: string
+          organizer_employee?: string | null
+          priority?: string
+          ref: string
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attendees?: Json
+          created_at?: string
+          dept_id?: string | null
+          duration_min?: number
+          id?: string
+          kind?: string
+          location?: string | null
+          metadata?: Json
+          minutes_url?: string | null
+          org_id?: string
+          organizer_employee?: string | null
+          priority?: string
+          ref?: string
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_meetings_dept_id_fkey"
+            columns: ["dept_id"]
+            isOneToOne: false
+            referencedRelation: "sim_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sim_meetings_organizer_employee_fkey"
+            columns: ["organizer_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_near_misses: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          org_id: string
+          priority: string
+          ref: string
+          reported_at: string
+          reported_by_employee: string | null
+          root_cause: string | null
+          severity_potential: string
+          site_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          org_id: string
+          priority?: string
+          ref: string
+          reported_at?: string
+          reported_by_employee?: string | null
+          root_cause?: string | null
+          severity_potential?: string
+          site_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          org_id?: string
+          priority?: string
+          ref?: string
+          reported_at?: string
+          reported_by_employee?: string | null
+          root_cause?: string | null
+          severity_potential?: string
+          site_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_near_misses_reported_by_employee_fkey"
+            columns: ["reported_by_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json
+          org_id: string
+          priority: string
+          read_at: string | null
+          severity: string
+          status: string
+          target_employee: string | null
+          target_user_id: string | null
+          title: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json
+          org_id: string
+          priority?: string
+          read_at?: string | null
+          severity?: string
+          status?: string
+          target_employee?: string | null
+          target_user_id?: string | null
+          title: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json
+          org_id?: string
+          priority?: string
+          read_at?: string | null
+          severity?: string
+          status?: string
+          target_employee?: string | null
+          target_user_id?: string | null
+          title?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_notifications_target_employee_fkey"
+            columns: ["target_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sim_risks: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          impact: number
+          inspection_id: string | null
+          likelihood: number
+          metadata: Json
+          mitigation: string | null
+          org_id: string
+          owner_employee: string | null
+          priority: string
+          ref: string
+          score: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          impact?: number
+          inspection_id?: string | null
+          likelihood?: number
+          metadata?: Json
+          mitigation?: string | null
+          org_id: string
+          owner_employee?: string | null
+          priority?: string
+          ref: string
+          score?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          impact?: number
+          inspection_id?: string | null
+          likelihood?: number
+          metadata?: Json
+          mitigation?: string | null
+          org_id?: string
+          owner_employee?: string | null
+          priority?: string
+          ref?: string
+          score?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sim_risks_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "sim_inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sim_risks_owner_employee_fkey"
+            columns: ["owner_employee"]
+            isOneToOne: false
+            referencedRelation: "sim_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
