@@ -71,8 +71,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
   // is available (e.g. missing membership) return an empty bundle rather than
   // leak cross-tenant rows.
   if (!orgId) return { insights, scannedAt, sources, block: "" };
-  const scope = <T extends { eq: (col: string, val: string) => T }>(q: T): T =>
-    q.eq("org_id", orgId);
+  if (!orgId) return { insights, scannedAt, sources, block: "" };
 
   // Windows
   const now = Date.now();
