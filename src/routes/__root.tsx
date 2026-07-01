@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 import { GlobalAriaCopilot } from "@/components/executive/GlobalAriaCopilot";
+import { LanguageToggle } from "@/components/executive/LanguageToggle";
 
 function NotFoundComponent() {
   return (
@@ -87,12 +88,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: SITE_NAME },
       { name: "twitter:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
-      { title: "Lovable App" },
-      { property: "og:title", content: "Lovable App" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cb33fb1a-24d3-4c6a-a162-69e66cd4a161/id-preview-32e203ea--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1782839209106.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cb33fb1a-24d3-4c6a-a162-69e66cd4a161/id-preview-32e203ea--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1782839209106.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -176,6 +171,11 @@ function RootComponent() {
         <ThemeProvider>
           <I18nProvider>
             <BetaMarqueeBar />
+            <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
+              <div className="pointer-events-auto">
+                <LanguageToggle />
+              </div>
+            </div>
             <Outlet />
             <GlobalAriaCopilot />
             <Toaster />
