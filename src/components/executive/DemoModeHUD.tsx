@@ -48,7 +48,19 @@ export function DemoModeHUD() {
     live:      ar ? "بث تنفيذي حي" : "Live executive broadcast",
     aria:      ar ? "سرد أريا" : "ARIA narration",
     ended:     ar ? "انتهى العرض" : "Demo ended",
+    speed:     ar ? "السرعة" : "Speed",
   };
+
+  const speedOptions: Array<{ label: string; ms: number }> = [
+    { label: "0.75×", ms: 8500 },
+    { label: "1×",    ms: 6500 },
+    { label: "1.5×",  ms: 4300 },
+    { label: "2×",    ms: 3200 },
+  ];
+  const currentSpeed = speedOptions.reduce((best, o) =>
+    Math.abs(o.ms - demo.stepDurationMs) < Math.abs(best.ms - demo.stepDurationMs) ? o : best,
+    speedOptions[0]!
+  );
 
   return (
     <div
