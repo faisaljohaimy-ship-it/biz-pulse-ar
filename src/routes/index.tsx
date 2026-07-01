@@ -13,6 +13,7 @@ import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
+import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -99,6 +100,7 @@ function IntroLanding() {
           <LayoutGrid className="h-4 w-4" />
           <span>{t.cta_depts}</span>
         </button>
+        <DemoModeLauncher />
         <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
           <Command className="h-3 w-3" /> K
         </kbd>
