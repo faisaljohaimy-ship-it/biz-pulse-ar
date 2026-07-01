@@ -65,7 +65,7 @@ export async function planMission(
 ): Promise<ExecutionPlan> {
   bootMarketplace();
   const validated = PlanMissionInputSchema.parse(input);
-  const constraints = constraints.map((c) => ({ ...c, id: uid("con") }));
+  const constraints = validated.constraints.map((c) => ({ ...c, id: uid("con") }));
   const missionId = uid("mission");
   const started = Date.now();
   noteActive(1);
