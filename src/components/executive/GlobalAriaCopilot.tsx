@@ -590,6 +590,25 @@ export function GlobalAriaCopilot() {
 
   if (!mounted || hideForAuthDock) return null;
 
+  // Hidden state — user chose to fully hide ARIA. Show a tiny restore pill.
+  if (hidden) {
+    return (
+      <div
+        dir={ar ? "rtl" : "ltr"}
+        className="pointer-events-none fixed bottom-3 z-[60] ltr:right-3 rtl:left-3"
+      >
+        <button
+          type="button"
+          onClick={() => setHidden(false)}
+          aria-label={ar ? "استعادة آريا" : "Restore ARIA"}
+          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#061A2E]/85 px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF] shadow-[0_8px_28px_-8px_rgba(0,212,255,0.55)] backdrop-blur hover:bg-[#3AE8FF]/10"
+        >
+          <Eye className="h-3 w-3" /> ARIA
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
@@ -602,7 +621,10 @@ export function GlobalAriaCopilot() {
         @keyframes gac-think { 0%,100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .9; } }
         @keyframes gac-speak { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
         @keyframes gac-halo { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes aria-focus-pulse-kf { 0% { box-shadow: 0 0 0 0 rgba(58,232,255,0.55); } 60% { box-shadow: 0 0 0 12px rgba(58,232,255,0); } 100% { box-shadow: 0 0 0 0 rgba(58,232,255,0); } }
+        .aria-focus-pulse { animation: aria-focus-pulse-kf 1.4s ease-out 2; outline: 1px solid rgba(58,232,255,0.55); outline-offset: 2px; border-radius: inherit; transition: outline 200ms; }
       `}</style>
+
 
       {open && (
         <div
