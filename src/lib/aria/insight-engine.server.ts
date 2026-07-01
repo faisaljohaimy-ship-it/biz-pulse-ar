@@ -54,7 +54,7 @@ function bucketBy<T, K extends string>(rows: T[], key: (r: T) => K | null | unde
   return m;
 }
 
-export async function runInsightScan(): Promise<InsightBundle> {
+export async function runInsightScan(orgId?: string | null): Promise<InsightBundle> {
   const scannedAt = new Date().toISOString();
   const sources: string[] = [];
   const insights: Insight[] = [];
@@ -66,6 +66,13 @@ export async function runInsightScan(): Promise<InsightBundle> {
     return { insights, scannedAt, sources, block: "" };
   }
   if (!admin) return { insights, scannedAt, sources, block: "" };
+  // Tenant isolation: this scan hits the service-role client (which bypasses
+  // RLS) so we MUST filter every query by the caller's org_id. When no org id
+  // is available (e.g. missing membership) return an empty bundle rather than
+  // leak cross-tenant rows.
+  if (!orgId) return { insights, scannedAt, sources, block: "" };
+  const scope = <T extends { eq: (col: string, val: string) => T }>(q: T): T =>
+    q.eq("org_id", orgId);
 
   // Windows
   const now = Date.now();
