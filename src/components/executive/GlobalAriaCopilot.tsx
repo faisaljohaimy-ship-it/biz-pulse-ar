@@ -561,18 +561,47 @@ export function GlobalAriaCopilot() {
                       <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-[#3AE8FF]">
                         <MessageSquare className="h-3 w-3" />
                       </span>
-                      <div className="flex-1 rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
-                        {!a && !t.error && isLast && loading && (
-                          <div className="flex items-center gap-2 text-[#3AE8FF]/90">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "gac-think 1.2s ease-in-out infinite" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.15s" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.3s" }} />
-                            <span className="text-[11.5px] text-white/70">{ar ? "آريا تفكّر…" : "ARIA is thinking…"}</span>
-                          </div>
-                        )}
-                        {t.error && <div className="text-rose-300">{t.error}</div>}
-                        {hasAnswer && (
-                          <p className="whitespace-pre-wrap break-words" dir="auto">{text}</p>
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
+                          {!a && !t.error && isLast && loading && (() => {
+                            const desc = STAGE_DESCRIPTORS[t.stage] ?? STAGE_DESCRIPTORS.thinking;
+                            return (
+                              <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-[#3AE8FF]/90">
+                                  <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: desc.glow, boxShadow: `0 0 8px ${desc.glow}`, animation: "gac-think 1.2s ease-in-out infinite" }}
+                                  />
+                                  <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: desc.glow, boxShadow: `0 0 8px ${desc.glow}`, animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.15s" }}
+                                  />
+                                  <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: desc.glow, boxShadow: `0 0 8px ${desc.glow}`, animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.3s" }}
+                                  />
+                                  <span className="text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF]/80">
+                                    {ar ? desc.label_ar : desc.label_en}
+                                  </span>
+                                </div>
+                                <p className="text-[11.5px] text-white/75" dir="auto">
+                                  {ar ? desc.narration_ar : desc.narration_en}
+                                </p>
+                              </div>
+                            );
+                          })()}
+                          {t.error && <div className="text-rose-300">{t.error}</div>}
+                          {hasAnswer && (
+                            <p className="whitespace-pre-wrap break-words" dir="auto">{text}</p>
+                          )}
+                        </div>
+                        {hasAnswer && t.executive && !isGreeting && (
+                          <ExecutiveEvidencePanel
+                            payload={t.executive}
+                            ar={ar}
+                            affectedDepartments={affectedDepartments}
+                            onDecision={(_d, prompt) => { void ask(prompt); }}
+                          />
                         )}
                       </div>
                     </div>
