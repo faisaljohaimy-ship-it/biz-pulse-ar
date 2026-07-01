@@ -20,7 +20,7 @@ export function summarizeFeedback(input: {
   let neg = 0;
   let neu = 0;
   let unk = 0;
-  const evidence: FeedbackSignal["evidence"] = [];
+  const evidence: Array<FeedbackSignal["evidence"][number]> = [];
   for (const raw of input.signals) {
     const s = FeedbackSignalZ.parse(raw);
     if (s.subject !== input.subject) continue;
