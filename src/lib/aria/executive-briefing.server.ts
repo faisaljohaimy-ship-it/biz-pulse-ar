@@ -204,10 +204,13 @@ async function importAdmin() {
   }
 }
 
-export async function buildExecutiveBriefing(): Promise<ExecutiveBriefing> {
+export async function buildExecutiveBriefing(orgId?: string | null): Promise<ExecutiveBriefing> {
   const generatedAt = new Date().toISOString();
   const admin = await importAdmin();
-  if (!admin) {
+  // Tenant isolation: this aggregator uses the service-role client (bypasses
+  // RLS), so callers MUST supply the current user's org_id. Without one we
+  // return a safe empty briefing instead of leaking cross-tenant data.
+  if (!admin || !orgId) {
     return {
       generatedAt,
       health: {
@@ -228,8 +231,8 @@ export async function buildExecutiveBriefing(): Promise<ExecutiveBriefing> {
   }
 
   const [{ health, approvals }, insightBundle] = await Promise.all([
-    loadHealth(admin),
-    runInsightScan(),
+    loadHealth(admin, orgId),
+    runInsightScan(orgId),
   ]);
 
   const priorities: ExecutivePriority[] = insightBundle.insights.slice(0, 5).map((i) => {
