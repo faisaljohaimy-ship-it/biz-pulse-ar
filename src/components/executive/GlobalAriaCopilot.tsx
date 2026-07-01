@@ -36,6 +36,16 @@ import {
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
 import { ariaSessionMemory } from "@/lib/aria/session-memory";
+import {
+  ExecutiveEvidencePanel,
+  type ExecutivePayload,
+  type ExecutiveDecision,
+} from "./ExecutiveEvidencePanel";
+import {
+  STAGE_DESCRIPTORS,
+  stageFromElapsed,
+  type ConversationStage,
+} from "@/lib/aria/conversation-stages";
 
 type AskResult = { text_ar: string; text_en: string };
 type BriefingLite = {
@@ -50,6 +60,9 @@ type Turn = {
   question: string;
   qLang: "ar" | "en";
   answer?: AskResult;
+  executive?: ExecutivePayload;
+  stage: ConversationStage;
+  startedAt?: number;
   error?: string;
 };
 
