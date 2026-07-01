@@ -16,7 +16,7 @@ export function planReplication(input: {
     .sort((a, b) => a.id.localeCompare(b.id));
   if (active.length === 0) throw new Error("no active nodes for replication");
   const primary =
-    (input.primaryNodeId && active.find((n) => n.id === input.primaryNodeId)) ??
+    (input.primaryNodeId ? active.find((n) => n.id === input.primaryNodeId) : undefined) ??
     active[0];
   const replicas = active
     .filter((n) => n.id !== primary.id)
