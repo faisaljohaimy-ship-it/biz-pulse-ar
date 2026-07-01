@@ -55,7 +55,15 @@ type Turn = {
 
 const OPEN_KEY = "aria-copilot-open";
 const VOICE_KEY = "aria-copilot-voice";
-const WELCOMED_KEY = "aria-copilot-welcomed-v1";
+const WELCOMED_KEY = "aria-copilot-welcomed-v2";
+const WELCOME_TOAST_KEY = "aria-copilot-welcome-toast-v2";
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { label_ar: "غرفة العمليات", label_en: "Operations", to: "/operations" },
+  { label_ar: "التقارير التنفيذية", label_en: "Exec Reports", to: "/executive-reports" },
+  { label_ar: "منظومة الحج", label_en: "Hajj Ops", to: "/hajj" },
+  { label_ar: "الأمن الصناعي", label_en: "Security", to: "/sec" },
+];
 
 function isArabic(s: string) {
   return /[\u0600-\u06FF]/.test(s);
