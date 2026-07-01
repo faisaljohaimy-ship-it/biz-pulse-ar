@@ -178,15 +178,17 @@ function RootComponent() {
       <AuthProvider>
         <ThemeProvider>
           <I18nProvider>
-            <BetaMarqueeBar />
-            <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
-              <div className="pointer-events-auto">
-                <LanguageToggle />
+            <AriaContextProvider>
+              <BetaMarqueeBar />
+              <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
+                <div className="pointer-events-auto">
+                  <LanguageToggle />
+                </div>
               </div>
-            </div>
-            <Outlet />
-            <GlobalAriaCopilot />
-            <Toaster />
+              <Outlet />
+              <GlobalAriaCopilot />
+              <Toaster />
+            </AriaContextProvider>
           </I18nProvider>
         </ThemeProvider>
       </AuthProvider>
