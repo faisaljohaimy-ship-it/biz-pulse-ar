@@ -116,6 +116,8 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
+import { Route as ApiPublicAriaPresenceRouteImport } from './routes/api/public/aria-presence'
+import { Route as ApiPublicAriaExplainRouteImport } from './routes/api/public/aria-explain'
 import { Route as ApiPublicAriaBriefingRouteImport } from './routes/api/public/aria-briefing'
 import { Route as ApiPublicAriaAskRouteImport } from './routes/api/public/aria-ask'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
@@ -713,6 +715,16 @@ const ApiPublicAriaTtsRoute = ApiPublicAriaTtsRouteImport.update({
   path: '/api/public/aria-tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAriaPresenceRoute = ApiPublicAriaPresenceRouteImport.update({
+  id: '/api/public/aria-presence',
+  path: '/api/public/aria-presence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAriaExplainRoute = ApiPublicAriaExplainRouteImport.update({
+  id: '/api/public/aria-explain',
+  path: '/api/public/aria-explain',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAriaBriefingRoute = ApiPublicAriaBriefingRouteImport.update({
   id: '/api/public/aria-briefing',
   path: '/api/public/aria-briefing',
@@ -1084,6 +1096,8 @@ export interface FileRoutesByFullPath {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
+  '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
+  '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1234,6 +1248,8 @@ export interface FileRoutesByTo {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
+  '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
+  '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1387,6 +1403,8 @@ export interface FileRoutesById {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
+  '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
+  '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1540,6 +1558,8 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
+    | '/api/public/aria-explain'
+    | '/api/public/aria-presence'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/version'
@@ -1690,6 +1710,8 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
+    | '/api/public/aria-explain'
+    | '/api/public/aria-presence'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/version'
@@ -1842,6 +1864,8 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
+    | '/api/public/aria-explain'
+    | '/api/public/aria-presence'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/version'
@@ -1905,6 +1929,8 @@ export interface RootRouteChildren {
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   ApiPublicAriaAskRoute: typeof ApiPublicAriaAskRoute
   ApiPublicAriaBriefingRoute: typeof ApiPublicAriaBriefingRoute
+  ApiPublicAriaExplainRoute: typeof ApiPublicAriaExplainRoute
+  ApiPublicAriaPresenceRoute: typeof ApiPublicAriaPresenceRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
@@ -2672,6 +2698,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAriaTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/aria-presence': {
+      id: '/api/public/aria-presence'
+      path: '/api/public/aria-presence'
+      fullPath: '/api/public/aria-presence'
+      preLoaderRoute: typeof ApiPublicAriaPresenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/aria-explain': {
+      id: '/api/public/aria-explain'
+      path: '/api/public/aria-explain'
+      fullPath: '/api/public/aria-explain'
+      preLoaderRoute: typeof ApiPublicAriaExplainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/aria-briefing': {
       id: '/api/public/aria-briefing'
       path: '/api/public/aria-briefing'
@@ -3235,6 +3275,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   ApiPublicAriaAskRoute: ApiPublicAriaAskRoute,
   ApiPublicAriaBriefingRoute: ApiPublicAriaBriefingRoute,
+  ApiPublicAriaExplainRoute: ApiPublicAriaExplainRoute,
+  ApiPublicAriaPresenceRoute: ApiPublicAriaPresenceRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
