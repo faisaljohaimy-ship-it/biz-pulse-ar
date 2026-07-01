@@ -188,6 +188,57 @@ const ROUTE_CTX: { match: (p: string) => boolean; ctx: PageCtx }[] = [
       ],
     },
   },
+  {
+    match: (p) => /\/risk/.test(p),
+    ctx: {
+      label_ar: "لوحة المخاطر",
+      label_en: "Risk Register",
+      prompts_ar: [
+        "ما أعلى ٥ مخاطر مفتوحة؟",
+        "اقترح خطة تخفيف للأكثر حرجاً.",
+        "ما الاتجاه الأسبوعي للمخاطر؟",
+      ],
+      prompts_en: [
+        "Top 5 open risks right now?",
+        "Suggest a mitigation for the most critical.",
+        "Weekly risk trend?",
+      ],
+    },
+  },
+  {
+    match: (p) => /\/patrol/.test(p),
+    ctx: {
+      label_ar: "الدوريات",
+      label_en: "Patrols",
+      prompts_ar: [
+        "أي دوريات فاتها الموعد؟",
+        "أعطني نسبة إنجاز الدوريات اليوم.",
+        "أظهر انحرافات المسار الأخيرة.",
+      ],
+      prompts_en: [
+        "Which patrols are overdue?",
+        "Today's patrol completion rate?",
+        "Show recent route deviations.",
+      ],
+    },
+  },
+  {
+    match: (p) => /\/(employees|hr|workforce)/.test(p),
+    ctx: {
+      label_ar: "الموارد البشرية",
+      label_en: "Workforce",
+      prompts_ar: [
+        "من الموظف الأعلى أداءً هذا الأسبوع؟",
+        "ما فجوات التدريب الحالية؟",
+        "أعطني ملخص الحضور اليوم.",
+      ],
+      prompts_en: [
+        "Top performer this week?",
+        "Current training gaps?",
+        "Today's attendance summary.",
+      ],
+    },
+  },
 ];
 
 const DEFAULT_CTX: PageCtx = {
