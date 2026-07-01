@@ -104,7 +104,8 @@ export async function coordinateMission(
 
   try {
     // 1) Executive Brain — authoritative reasoning + intent envelope.
-    answer = await runExecutiveBrain(args.request, { apiKey: args.api_key });
+    const apiKey = args.api_key ?? process.env.LOVABLE_API_KEY ?? "";
+    answer = await runExecutiveBrain(args.request, { apiKey });
     const answerArtifact = storeArtifact({
       workspace_id: args.workspace_id,
       session_id: args.session_id,
