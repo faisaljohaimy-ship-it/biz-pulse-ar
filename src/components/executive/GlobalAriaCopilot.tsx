@@ -36,6 +36,16 @@ import {
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
 import { ariaSessionMemory } from "@/lib/aria/session-memory";
+import {
+  ExecutiveEvidencePanel,
+  type ExecutivePayload,
+  type ExecutiveDecision,
+} from "./ExecutiveEvidencePanel";
+import {
+  STAGE_DESCRIPTORS,
+  stageFromElapsed,
+  type ConversationStage,
+} from "@/lib/aria/conversation-stages";
 
 type AskResult = { text_ar: string; text_en: string };
 type BriefingLite = {
@@ -50,6 +60,9 @@ type Turn = {
   question: string;
   qLang: "ar" | "en";
   answer?: AskResult;
+  executive?: ExecutivePayload;
+  stage: ConversationStage;
+  startedAt?: number;
   error?: string;
 };
 
@@ -215,6 +228,26 @@ export function GlobalAriaCopilot() {
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const ar = lang === "ar";
 
+  // Derive Affected Departments from the current page + live widgets.
+  // Pure derivation — no fetch, no fabrication. Falls back to route hint.
+  const affectedDepartments = useMemo<string[]>(() => {
+    const bag = new Set<string>();
+    const p = pathname;
+    if (p.startsWith("/sec") || p.startsWith("/operations")) bag.add("Industrial Security");
+    if (p.startsWith("/hajj")) bag.add("Hajj Operations");
+    if (p.startsWith("/executive-reports")) bag.add("Executive Office");
+    if (p.startsWith("/hse")) bag.add("HSE");
+    for (const w of snap.widgets.slice(0, 24)) {
+      const hay = `${w.label ?? ""} ${w.hint ?? ""}`.toLowerCase();
+      if (hay.includes("patrol") || hay.includes("دورية")) bag.add("Patrol Operations");
+      if (hay.includes("incident") || hay.includes("بلاغ")) bag.add("Incident Response");
+      if (hay.includes("permit") || hay.includes("تصريح")) bag.add("Permits & Compliance");
+      if (hay.includes("hse") || hay.includes("سلامة")) bag.add("HSE");
+      if (hay.includes("kpi") || hay.includes("مؤشر")) bag.add("Performance Office");
+    }
+    return Array.from(bag).slice(0, 5);
+  }, [pathname, snap.widgets]);
+
   // Mount-only hydration of persisted UI state.
   useEffect(() => {
     setMounted(true);
@@ -252,6 +285,28 @@ export function GlobalAriaCopilot() {
     if (!el) return;
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [turns, loading]);
+
+  // Executive conversation stage ticker — advances the *current* in-flight
+  // turn through listening → thinking → searching → reasoning → planning
+  // based on real elapsed request time. Zero fake delay: the moment the
+  // response resolves, `ask()` writes stage="done" and this ticker stops.
+  useEffect(() => {
+    if (!loading) return;
+    const iv = setInterval(() => {
+      setTurns((prev) => {
+        if (!prev.length) return prev;
+        const last = prev[prev.length - 1];
+        if (last.stage === "done" || last.stage === "error" || !last.startedAt) return prev;
+        const elapsed = (typeof performance !== "undefined" ? performance.now() : Date.now()) - last.startedAt;
+        const next = stageFromElapsed(elapsed);
+        if (next === last.stage) return prev;
+        const clone = prev.slice();
+        clone[clone.length - 1] = { ...last, stage: next };
+        return clone;
+      });
+    }, 220);
+    return () => clearInterval(iv);
+  }, [loading]);
 
   // Focus textarea when opened.
   useEffect(() => {
@@ -304,7 +359,8 @@ export function GlobalAriaCopilot() {
     const id = (typeof crypto !== "undefined" && "randomUUID" in crypto)
       ? crypto.randomUUID()
       : `t_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    setTurns((p) => [...p, { id, question: qt, qLang: detected }]);
+    const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+    setTurns((p) => [...p, { id, question: qt, qLang: detected, stage: "listening", startedAt }]);
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -340,13 +396,13 @@ export function GlobalAriaCopilot() {
         }),
         signal: ctrl.signal,
       });
-      const j = (await r.json().catch(() => ({}))) as Partial<AskResult> & { error?: string };
+      const j = (await r.json().catch(() => ({}))) as Partial<AskResult> & { error?: string; executive?: ExecutivePayload };
       if (!r.ok) throw new Error(j.error || `http_${r.status}`);
       const answer: AskResult = {
         text_ar: j.text_ar ?? "",
         text_en: j.text_en ?? "",
       };
-      setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer } : t)));
+      setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer, executive: j.executive, stage: "done" } : t)));
       try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
       if (voiceOn) {
         const spoken = detected === "ar" ? answer.text_ar : answer.text_en;
@@ -357,7 +413,7 @@ export function GlobalAriaCopilot() {
       const msg = e instanceof Error && e.message.includes("429")
         ? (detected === "ar" ? "الكثير من الطلبات — حاول بعد دقيقة." : "Too many requests — try again shortly.")
         : (detected === "ar" ? "تعذّر الاتصال بآريا الآن — أعد المحاولة." : "ARIA is unavailable right now — please retry.");
-      setTurns((p) => p.map((t) => (t.id === id ? { ...t, error: msg } : t)));
+      setTurns((p) => p.map((t) => (t.id === id ? { ...t, error: msg, stage: "error" } : t)));
     } finally {
       setLoading(false);
     }
@@ -406,7 +462,7 @@ export function GlobalAriaCopilot() {
           `هل تودّ إحاطة تنفيذية؟`;
         try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
         const id = `welcome_${Date.now()}`;
-        setTurns((p) => [...p, { id, question: "—", qLang: lang, answer: { text_ar: greetAr, text_en: greetEn } }]);
+        setTurns((p) => [...p, { id, question: "—", qLang: lang, stage: "done", answer: { text_ar: greetAr, text_en: greetEn } }]);
         try { ariaSessionMemory.push({ role: "assistant", text: greetEn, page: pathname }); } catch { /* noop */ }
         if (!open) {
           let toastDismissed = false;
@@ -525,18 +581,47 @@ export function GlobalAriaCopilot() {
                       <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-[#3AE8FF]">
                         <MessageSquare className="h-3 w-3" />
                       </span>
-                      <div className="flex-1 rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
-                        {!a && !t.error && isLast && loading && (
-                          <div className="flex items-center gap-2 text-[#3AE8FF]/90">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "gac-think 1.2s ease-in-out infinite" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.15s" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF]" style={{ animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.3s" }} />
-                            <span className="text-[11.5px] text-white/70">{ar ? "آريا تفكّر…" : "ARIA is thinking…"}</span>
-                          </div>
-                        )}
-                        {t.error && <div className="text-rose-300">{t.error}</div>}
-                        {hasAnswer && (
-                          <p className="whitespace-pre-wrap break-words" dir="auto">{text}</p>
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
+                          {!a && !t.error && isLast && loading && (() => {
+                            const desc = STAGE_DESCRIPTORS[t.stage] ?? STAGE_DESCRIPTORS.thinking;
+                            return (
+                              <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-[#3AE8FF]/90">
+                                  <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: desc.glow, boxShadow: `0 0 8px ${desc.glow}`, animation: "gac-think 1.2s ease-in-out infinite" }}
+                                  />
+                                  <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: desc.glow, boxShadow: `0 0 8px ${desc.glow}`, animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.15s" }}
+                                  />
+                                  <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: desc.glow, boxShadow: `0 0 8px ${desc.glow}`, animation: "gac-think 1.2s ease-in-out infinite", animationDelay: "0.3s" }}
+                                  />
+                                  <span className="text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF]/80">
+                                    {ar ? desc.label_ar : desc.label_en}
+                                  </span>
+                                </div>
+                                <p className="text-[11.5px] text-white/75" dir="auto">
+                                  {ar ? desc.narration_ar : desc.narration_en}
+                                </p>
+                              </div>
+                            );
+                          })()}
+                          {t.error && <div className="text-rose-300">{t.error}</div>}
+                          {hasAnswer && (
+                            <p className="whitespace-pre-wrap break-words" dir="auto">{text}</p>
+                          )}
+                        </div>
+                        {hasAnswer && t.executive && !isGreeting && (
+                          <ExecutiveEvidencePanel
+                            payload={t.executive}
+                            ar={ar}
+                            affectedDepartments={affectedDepartments}
+                            onDecision={(_d, prompt) => { void ask(prompt); }}
+                          />
                         )}
                       </div>
                     </div>
