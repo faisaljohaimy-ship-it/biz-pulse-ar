@@ -229,6 +229,9 @@ export function AriaContextProvider({ children }: { children: ReactNode }) {
     [setPage, registerWidget, unregisterWidget, setLocale, snapshot, subscribe],
   );
 
+  // Silent, proactive Executive Auto-Scan: greeting + background insights.
+  useAriaAutoScan();
+
   return (
     <AriaContextCtx.Provider value={value}>{children}</AriaContextCtx.Provider>
   );
