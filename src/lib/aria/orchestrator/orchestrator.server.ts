@@ -298,33 +298,57 @@ export async function runAgentMission(
     req.timeoutMs ?? DEFAULT_TIMEOUT,
   );
 
-  const results: AgentResult[] = [];
+  let results: AgentResult[] = [];
   let cancelled = false;
 
   try {
-    for (const layer of plan.layers) {
-      if (controller.signal.aborted) {
-        cancelled = true;
-        for (const id of layer) {
-          emitOrchestrationEvent("AgentSkipped", mission_id, { reason: "cancelled" }, id);
-          results.push(skipped(id, "mission cancelled"));
+    const { runScheduledMission } = await import("../task-bus/scheduler.server");
+    const nodesById = new Map(plan.nodes.map((n) => [n.agent_id, n]));
+    const taskIdByAgent = new Map<string, string>();
+    const busRun = await runScheduledMission(
+      mission_id,
+      {
+        request: { ...req, ...brainReq } as MissionRequest,
+        memory,
+        signal: controller.signal,
+        apiKey: opts.apiKey,
+      },
+      (enqueue) => {
+        // Enqueue in topological order so dependency ids are known.
+        for (const layer of plan.layers) {
+          for (const agentId of layer) {
+            const node = nodesById.get(agentId);
+            if (!node) continue;
+            const agent = listAgents().find((a) => a.contract.id === agentId);
+            const deps = node.depends_on
+              .map((d) => taskIdByAgent.get(d as string))
+              .filter((v): v is string => !!v);
+            const t = enqueue({
+              missionId: mission_id,
+              agentId,
+              intent: plan.intent,
+              priority: agent?.contract.priority === "critical" ? "critical" : "medium",
+              dependencies: deps,
+              approvalRequired: agent?.contract.requires_human_approval ?? false,
+              timeout: Math.max(3_000, (agent?.contract.estimated_latency_ms ?? 3_000) * 3),
+              estimatedCost: agent?.contract.estimated_cost,
+              estimatedLatency: agent?.contract.estimated_latency_ms,
+              contextSignature: req.sessionId ?? "",
+              memoryScope: req.sessionId ?? mission_id,
+              payload: { question: req.question },
+              metadata: { reason: node.reason },
+            });
+            taskIdByAgent.set(agentId as string, t.taskId);
+          }
         }
-        continue;
-      }
-      const layerResults = await Promise.all(
-        layer.map((id) => {
-          const ctx: AgentRunContext = {
-            mission_id,
-            request: { ...req, ...brainReq } as MissionRequest,
-            memory,
-            prior_results: results.slice(),
-            signal: controller.signal,
-            apiKey: opts.apiKey,
-          };
-          return runSingleAgent(id, ctx);
-        }),
-      );
-      results.push(...layerResults);
+      },
+    );
+    results = busRun.results;
+    cancelled = busRun.cancelled;
+    // Emit orchestrator-level events for tasks that never produced a result.
+    for (const t of busRun.tasks) {
+      if (t.status === "cancelled")
+        emitOrchestrationEvent("AgentSkipped", mission_id, { reason: "cancelled" }, t.agentId);
     }
   } finally {
     clearTimeout(missionTimeout);
