@@ -36,6 +36,7 @@ import {
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
 import { ariaSessionMemory } from "@/lib/aria/session-memory";
+import { resolvePersona } from "@/lib/aria/personas";
 import {
   ExecutiveEvidencePanel,
   type ExecutivePayload,
@@ -46,6 +47,7 @@ import {
   stageFromElapsed,
   type ConversationStage,
 } from "@/lib/aria/conversation-stages";
+import { Pin, PinOff, EyeOff, Eye } from "lucide-react";
 
 type AskResult = { text_ar: string; text_en: string };
 type BriefingLite = {
@@ -68,6 +70,8 @@ type Turn = {
 
 const OPEN_KEY = "aria-copilot-open";
 const VOICE_KEY = "aria-copilot-voice";
+const PIN_KEY = "aria-copilot-pinned";
+const HIDDEN_KEY = "aria-copilot-hidden";
 const WELCOMED_KEY = "aria-copilot-welcomed-v2";
 const WELCOME_TOAST_KEY = "aria-copilot-welcome-toast-v2";
 
@@ -184,6 +188,57 @@ const ROUTE_CTX: { match: (p: string) => boolean; ctx: PageCtx }[] = [
       ],
     },
   },
+  {
+    match: (p) => /\/risk/.test(p),
+    ctx: {
+      label_ar: "لوحة المخاطر",
+      label_en: "Risk Register",
+      prompts_ar: [
+        "ما أعلى ٥ مخاطر مفتوحة؟",
+        "اقترح خطة تخفيف للأكثر حرجاً.",
+        "ما الاتجاه الأسبوعي للمخاطر؟",
+      ],
+      prompts_en: [
+        "Top 5 open risks right now?",
+        "Suggest a mitigation for the most critical.",
+        "Weekly risk trend?",
+      ],
+    },
+  },
+  {
+    match: (p) => /\/patrol/.test(p),
+    ctx: {
+      label_ar: "الدوريات",
+      label_en: "Patrols",
+      prompts_ar: [
+        "أي دوريات فاتها الموعد؟",
+        "أعطني نسبة إنجاز الدوريات اليوم.",
+        "أظهر انحرافات المسار الأخيرة.",
+      ],
+      prompts_en: [
+        "Which patrols are overdue?",
+        "Today's patrol completion rate?",
+        "Show recent route deviations.",
+      ],
+    },
+  },
+  {
+    match: (p) => /\/(employees|hr|workforce)/.test(p),
+    ctx: {
+      label_ar: "الموارد البشرية",
+      label_en: "Workforce",
+      prompts_ar: [
+        "من الموظف الأعلى أداءً هذا الأسبوع؟",
+        "ما فجوات التدريب الحالية؟",
+        "أعطني ملخص الحضور اليوم.",
+      ],
+      prompts_en: [
+        "Top performer this week?",
+        "Current training gaps?",
+        "Today's attendance summary.",
+      ],
+    },
+  },
 ];
 
 const DEFAULT_CTX: PageCtx = {
@@ -218,6 +273,8 @@ export function GlobalAriaCopilot() {
   const [voiceOn, setVoiceOn] = useState(true);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [lang, setLang] = useState<"ar" | "en">("en");
+  const [pinned, setPinned] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -226,6 +283,7 @@ export function GlobalAriaCopilot() {
   const briefingFiredRef = useRef(false);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
+  const persona = useMemo(() => resolvePersona(pathname), [pathname]);
   const ar = lang === "ar";
 
   // Derive Affected Departments from the current page + live widgets.
@@ -256,6 +314,8 @@ export function GlobalAriaCopilot() {
       if (o === "1") setOpen(true);
       const v = localStorage.getItem(VOICE_KEY);
       if (v === "0") setVoiceOn(false);
+      if (localStorage.getItem(PIN_KEY) === "1") { setPinned(true); setOpen(true); }
+      if (localStorage.getItem(HIDDEN_KEY) === "1") setHidden(true);
     } catch { /* noop */ }
     // Detect the authenticated AriaDock at mount-time AND every route change.
     const probe = () => {
@@ -269,7 +329,7 @@ export function GlobalAriaCopilot() {
     return () => clearInterval(id);
   }, []);
 
-  // Persist open / voice prefs.
+  // Persist open / voice / pin / hidden prefs.
   useEffect(() => {
     if (!mounted) return;
     try { localStorage.setItem(OPEN_KEY, open ? "1" : "0"); } catch { /* noop */ }
@@ -278,6 +338,32 @@ export function GlobalAriaCopilot() {
     if (!mounted) return;
     try { localStorage.setItem(VOICE_KEY, voiceOn ? "1" : "0"); } catch { /* noop */ }
   }, [mounted, voiceOn]);
+  useEffect(() => {
+    if (!mounted) return;
+    try { localStorage.setItem(PIN_KEY, pinned ? "1" : "0"); } catch { /* noop */ }
+  }, [mounted, pinned]);
+  useEffect(() => {
+    if (!mounted) return;
+    try { localStorage.setItem(HIDDEN_KEY, hidden ? "1" : "0"); } catch { /* noop */ }
+  }, [mounted, hidden]);
+
+  // Live Highlighting: pulse any [data-aria-widget-id="<id>"] when ARIA emits focus.
+  useEffect(() => {
+    if (!mounted) return;
+    const onFocus = (e: Event) => {
+      const detail = (e as CustomEvent<{ widgetIds?: string[] }>).detail;
+      const ids = detail?.widgetIds ?? [];
+      for (const id of ids) {
+        const nodes = document.querySelectorAll<HTMLElement>(`[data-aria-widget-id="${CSS.escape(id)}"]`);
+        nodes.forEach((n) => {
+          n.classList.add("aria-focus-pulse");
+          setTimeout(() => n.classList.remove("aria-focus-pulse"), 3600);
+        });
+      }
+    };
+    window.addEventListener("nexios:aria-focus", onFocus as EventListener);
+    return () => window.removeEventListener("nexios:aria-focus", onFocus as EventListener);
+  }, [mounted]);
 
   // Auto-scroll transcript.
   useEffect(() => {
@@ -380,6 +466,11 @@ export function GlobalAriaCopilot() {
       })),
       anchors: ariaSessionMemory.anchors().slice(-12),
       locale: snap.locale,
+      persona: {
+        id: persona.id,
+        label: detected === "ar" ? persona.label_ar : persona.label_en,
+        mission: detected === "ar" ? persona.mission_ar : persona.mission_en,
+      },
     };
     const history = ariaSessionMemory.list().slice(-8).map((t) => ({
       role: t.role, text: t.text, ts: t.ts, anchors: t.anchors,
@@ -391,6 +482,7 @@ export function GlobalAriaCopilot() {
         body: JSON.stringify({
           question: qt,
           lang: detected,
+          persona: persona.id,
           context: liveCtx,
           history,
         }),
@@ -404,6 +496,20 @@ export function GlobalAriaCopilot() {
       };
       setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer, executive: j.executive, stage: "done" } : t)));
       try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
+      // Live Highlighting — pulse any registered widgets referenced in the answer.
+      try {
+        const spoken = (detected === "ar" ? answer.text_ar : answer.text_en) ?? "";
+        const hay = spoken.toLowerCase();
+        const matched = snap.widgets
+          .filter((w) => w.label && hay.includes(w.label.toLowerCase()))
+          .slice(0, 6)
+          .map((w) => w.id);
+        if (matched.length) {
+          window.dispatchEvent(new CustomEvent("nexios:aria-focus", {
+            detail: { widgetIds: matched, persona: persona.id },
+          }));
+        }
+      } catch { /* noop */ }
       if (voiceOn) {
         const spoken = detected === "ar" ? answer.text_ar : answer.text_en;
         if (spoken) void speak(spoken);
@@ -417,7 +523,7 @@ export function GlobalAriaCopilot() {
     } finally {
       setLoading(false);
     }
-  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap]);
+  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap, persona]);
 
   // Executive Welcome — fires once per browser session when the platform opens.
   // Runs whether the dock is open or collapsed; if collapsed we surface a
@@ -484,6 +590,25 @@ export function GlobalAriaCopilot() {
 
   if (!mounted || hideForAuthDock) return null;
 
+  // Hidden state — user chose to fully hide ARIA. Show a tiny restore pill.
+  if (hidden) {
+    return (
+      <div
+        dir={ar ? "rtl" : "ltr"}
+        className="pointer-events-none fixed bottom-3 z-[60] ltr:right-3 rtl:left-3"
+      >
+        <button
+          type="button"
+          onClick={() => setHidden(false)}
+          aria-label={ar ? "استعادة آريا" : "Restore ARIA"}
+          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#061A2E]/85 px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF] shadow-[0_8px_28px_-8px_rgba(0,212,255,0.55)] backdrop-blur hover:bg-[#3AE8FF]/10"
+        >
+          <Eye className="h-3 w-3" /> ARIA
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
@@ -496,7 +621,10 @@ export function GlobalAriaCopilot() {
         @keyframes gac-think { 0%,100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .9; } }
         @keyframes gac-speak { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
         @keyframes gac-halo { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes aria-focus-pulse-kf { 0% { box-shadow: 0 0 0 0 rgba(58,232,255,0.55); } 60% { box-shadow: 0 0 0 12px rgba(58,232,255,0); } 100% { box-shadow: 0 0 0 0 rgba(58,232,255,0); } }
+        .aria-focus-pulse { animation: aria-focus-pulse-kf 1.4s ease-out 2; outline: 1px solid rgba(58,232,255,0.55); outline-offset: 2px; border-radius: inherit; transition: outline 200ms; }
       `}</style>
+
 
       {open && (
         <div
@@ -527,10 +655,13 @@ export function GlobalAriaCopilot() {
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
-                ARIA · GPT-5 · {ar ? ctx.label_ar : ctx.label_en}
+                ARIA · GPT-5 · {ar ? persona.label_ar : persona.label_en}
               </div>
               <div className="truncate text-sm font-medium text-white">
-                {ar ? "كيف أساعدك الآن؟" : "How can I assist you?"}
+                {ar ? persona.mission_ar : persona.mission_en}
+              </div>
+              <div className="truncate text-[10px] text-white/45">
+                {ar ? ctx.label_ar : ctx.label_en}
               </div>
             </div>
             <button
@@ -544,13 +675,32 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
+              onClick={() => setPinned((v) => !v)}
+              aria-pressed={pinned}
+              aria-label={pinned ? (ar ? "إلغاء التثبيت" : "Unpin") : (ar ? "تثبيت" : "Pin")}
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border transition ${pinned ? "border-[#3AE8FF]/80 bg-[#3AE8FF]/15 text-[#3AE8FF]" : "border-white/20 text-white/70 hover:border-white/50 hover:bg-white/5"}`}
+            >
+              {pinned ? <Pin className="h-3.5 w-3.5" /> : <PinOff className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              type="button"
               onClick={() => { stopSpeaking(); setOpen(false); }}
+              disabled={pinned}
               aria-label={ar ? "تصغير" : "Minimize"}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:border-white/50 hover:bg-white/5"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:border-white/50 hover:bg-white/5 disabled:opacity-30"
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
+            <button
+              type="button"
+              onClick={() => { stopSpeaking(); setOpen(false); setHidden(true); }}
+              aria-label={ar ? "إخفاء" : "Hide"}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/70 transition hover:border-white/50 hover:bg-white/5"
+            >
+              <EyeOff className="h-3.5 w-3.5" />
+            </button>
           </div>
+
 
           {/* Transcript */}
           {(turns.length > 0 || loading) && (
@@ -687,8 +837,11 @@ export function GlobalAriaCopilot() {
             <textarea
               ref={inputRef}
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
+              onChange={(e) => { if (speaking) stopSpeaking(); setQuestion(e.target.value); }}
+              onFocus={() => { if (speaking) stopSpeaking(); }}
               onKeyDown={(e) => {
+                // Natural interruption — any keypress while ARIA speaks stops speech.
+                if (speaking) stopSpeaking();
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   onSubmit(e as unknown as React.FormEvent);
