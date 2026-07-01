@@ -106,6 +106,61 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
+        // Build a compact, model-friendly context block from what the
+        // current page registered with the ARIA Global Context Engine.
+        function buildContextBlock(): string {
+          const c = data.context;
+          const h = data.history ?? [];
+          if (!c && !h.length) return "";
+          const parts: string[] = [];
+          if (c?.page) {
+            const p = c.page;
+            const pageLine = [
+              p.title ? `title=${p.title}` : null,
+              p.path ? `path=${p.path}` : null,
+              p.section ? `section=${p.section}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            parts.push(`# CURRENT PAGE\n${pageLine || "(unknown)"}`);
+            if (p.filters && Object.keys(p.filters).length) {
+              parts.push(`# ACTIVE FILTERS\n${JSON.stringify(p.filters).slice(0, 1200)}`);
+            }
+            if (p.selected) {
+              parts.push(`# SELECTED OBJECT\n${JSON.stringify(p.selected).slice(0, 1200)}`);
+            }
+          }
+          if (c?.widgets?.length) {
+            const lines = c.widgets.slice(0, 20).map((w) => {
+              const v = w.value === undefined ? "" : ` = ${JSON.stringify(w.value).slice(0, 200)}`;
+              const hint = w.hint ? ` — ${w.hint}` : "";
+              return `- [${w.kind}] ${w.label}${v}${hint}`;
+            });
+            parts.push(`# LIVE WIDGETS / KPIs ON SCREEN\n${lines.join("\n")}`);
+          }
+          if (c?.anchors?.length) {
+            parts.push(
+              `# REFERENCEABLE ANCHORS (resolve "this" / "that" / "the previous X" from these)\n${c.anchors
+                .map((a) => `- ${a.kind}: ${a.label ?? a.id} (${a.id})`)
+                .join("\n")}`,
+            );
+          }
+          if (h.length) {
+            parts.push(
+              `# RECENT CONVERSATION (oldest → newest)\n${h
+                .slice(-8)
+                .map((t) => `${t.role.toUpperCase()}: ${t.text.slice(0, 400)}`)
+                .join("\n")}`,
+            );
+          }
+          parts.push(
+            "GROUND every claim in the sections above. If a required datum is not present, say once: \"Data unavailable / بيانات غير متوفرة\" and stop. Never invent numbers, names, dates, or sources.",
+          );
+          return parts.join("\n\n");
+        }
+        const contextBlock = buildContextBlock();
+        const systemForCall = contextBlock ? `${SYSTEM}\n\n${contextBlock}` : SYSTEM;
+
         async function callModel(model: string, maxTokens: number) {
           const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
@@ -118,7 +173,7 @@ export const Route = createFileRoute("/api/public/aria-ask")({
               model,
               max_completion_tokens: maxTokens,
               messages: [
-                { role: "system", content: SYSTEM },
+                { role: "system", content: systemForCall },
                 { role: "user", content: data.question },
               ],
               response_format: { type: "json_object" },
