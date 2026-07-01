@@ -3,7 +3,7 @@
  * Does not fabricate speech. Silent / no-transcript ⇒ UNKNOWN.
  */
 import type { MultimodalFinding, MultimodalInput, Signal } from "./types";
-import { aggregateConfidence, bucketOf, clamp01 } from "./confidence";
+import { aggregateConfidence, bucketOf, clamp01 } from "./confidence.server";
 
 export interface AudioUtterance {
   readonly start: number;

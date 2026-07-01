@@ -3,7 +3,7 @@
  * Deterministic keyword + modality filter; no vector fabrication.
  */
 import type { Modality, MultimodalFinding } from "./types";
-import { rank } from "./ranking";
+import { rank } from "./ranking.server";
 
 export interface RetrievalQuery {
   readonly text?: string;

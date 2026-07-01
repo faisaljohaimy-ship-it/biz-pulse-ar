@@ -5,7 +5,7 @@
 import type { MultimodalFinding, MultimodalInput, Signal } from "./types";
 import { extractOcr } from "./ocr.server";
 import { analyzeLayout, type LayoutRegion } from "./layout-analysis.server";
-import { aggregateConfidence, bucketOf } from "./confidence";
+import { aggregateConfidence, bucketOf } from "./confidence.server";
 
 export interface ImageAnalysisInputs {
   readonly regions?: readonly LayoutRegion[];

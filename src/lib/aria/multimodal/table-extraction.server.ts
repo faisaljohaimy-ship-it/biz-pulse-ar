@@ -2,7 +2,7 @@
  * Table extraction — accepts pre-parsed rows/cols; never OCRs pixels itself.
  */
 import type { MultimodalFinding, MultimodalInput, Signal } from "./types";
-import { aggregateConfidence, bucketOf, clamp01 } from "./confidence";
+import { aggregateConfidence, bucketOf, clamp01 } from "./confidence.server";
 
 export interface TableCell {
   readonly row: number;

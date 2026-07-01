@@ -9,7 +9,7 @@
  * unknown_region signal — unknown remains UNKNOWN.
  */
 import type { MultimodalInput, Signal } from "./types";
-import { bucketOf } from "./confidence";
+import { bucketOf } from "./confidence.server";
 
 export interface OcrOptions {
   readonly min_char_confidence?: number;

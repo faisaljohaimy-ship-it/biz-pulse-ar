@@ -3,7 +3,7 @@
  * Refuses to guess values from pixels.
  */
 import type { MultimodalFinding, MultimodalInput, Signal } from "./types";
-import { aggregateConfidence, bucketOf, clamp01 } from "./confidence";
+import { aggregateConfidence, bucketOf, clamp01 } from "./confidence.server";
 
 export interface ChartAxis {
   readonly name: string;

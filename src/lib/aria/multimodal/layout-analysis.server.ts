@@ -4,7 +4,7 @@
  */
 import type { BoundingBox, MultimodalInput, Signal } from "./types";
 import { BoundingBoxSchema } from "./contracts";
-import { bucketOf } from "./confidence";
+import { bucketOf } from "./confidence.server";
 
 export interface LayoutRegion {
   readonly bbox: BoundingBox;
