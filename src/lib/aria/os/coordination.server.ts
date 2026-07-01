@@ -119,25 +119,18 @@ export async function coordinateMission(
 
     // 2) Cognition — evidence-first verification (never executes).
     try {
+      const brainAnswer = answer;
       cognition = runReasoningSession({
         goal: args.request.question,
-        evidence: answer.evidence.map((text, i) => ({
-          id: `ev_${i}`,
-          statement: text,
-          source: answer.sources[i] ?? "brain",
-          weight: 1,
-          reliability: Math.max(0.4, Math.min(1, answer.confidence.overall)),
+        evidenceSeeds: brainAnswer.evidence.map((text, i) => ({
+          claim: text,
+          source: {
+            id: `brain_${i}`,
+            kind: "reasoning",
+            label: brainAnswer.sources[i] ?? "executive-brain",
+            trust: Math.max(0.4, Math.min(1, brainAnswer.confidence.overall)),
+          },
         })),
-        options:
-          answer.decision && answer.recommendation
-            ? [
-                {
-                  id: "primary",
-                  label: answer.recommendation.why_en || answer.recommendation.why_ar,
-                  description: answer.decision.rationale_en,
-                },
-              ]
-            : [],
       });
       const reasoningArtifact = storeArtifact({
         workspace_id: args.workspace_id,
@@ -145,14 +138,12 @@ export async function coordinateMission(
         mission_id,
         kind: "reasoning",
         label: `Cognitive verification · ${mission_id}`,
-        summary: cognition.recommendation.summary_en,
+        summary: cognition.recommendation.rationale,
         payload: cognition,
       });
       artifacts.push(reasoningArtifact);
       reasoning_artifact_id = reasoningArtifact.id;
     } catch {
-      // Cognition is advisory in Phase 8.9 — its absence must not
-      // block execution.
       cognition = null;
     }
 
