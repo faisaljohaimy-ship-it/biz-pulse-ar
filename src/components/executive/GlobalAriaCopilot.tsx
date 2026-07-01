@@ -317,7 +317,8 @@ export function GlobalAriaCopilot() {
     const id = (typeof crypto !== "undefined" && "randomUUID" in crypto)
       ? crypto.randomUUID()
       : `t_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    setTurns((p) => [...p, { id, question: qt, qLang: detected }]);
+    const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+    setTurns((p) => [...p, { id, question: qt, qLang: detected, stage: "listening", startedAt }]);
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
