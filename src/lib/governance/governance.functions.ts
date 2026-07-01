@@ -34,15 +34,29 @@ export const getCostBudgetStatus = createServerFn({ method: "GET" })
     monthStart.setUTCDate(1);
     monthStart.setUTCHours(0, 0, 0, 0);
 
+    // Resolve the caller's org members so ai_usage is scoped to this tenant
+    // only. ai_usage has no org_id column, so we filter by the user_ids that
+    // belong to the caller's organization. Using the service-role admin
+    // client bypasses RLS, so this explicit filter is required to prevent
+    // cross-tenant financial data leakage.
+    const { data: orgUsers } = await supabaseAdmin
+      .from("org_members")
+      .select("user_id")
+      .eq("org_id", orgId);
+    const orgUserIds = (orgUsers ?? []).map((r) => r.user_id).filter(Boolean);
+
     const [budgetsRes, usageRes] = await Promise.all([
       supabaseAdmin
         .from("cost_budgets")
         .select("scope, monthly_cap_usd, alert_threshold_pct, enabled")
         .eq("org_id", orgId),
-      supabaseAdmin
-        .from("ai_usage")
-        .select("cost_usd")
-        .gte("created_at", monthStart.toISOString()),
+      orgUserIds.length > 0
+        ? supabaseAdmin
+            .from("ai_usage")
+            .select("cost_usd")
+            .gte("created_at", monthStart.toISOString())
+            .in("user_id", orgUserIds)
+        : Promise.resolve({ data: [] as { cost_usd: number | null }[] }),
     ]);
 
     const monthSpend = (usageRes.data ?? []).reduce(
