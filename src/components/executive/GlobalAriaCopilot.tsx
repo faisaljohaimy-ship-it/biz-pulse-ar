@@ -354,13 +354,13 @@ export function GlobalAriaCopilot() {
         }),
         signal: ctrl.signal,
       });
-      const j = (await r.json().catch(() => ({}))) as Partial<AskResult> & { error?: string };
+      const j = (await r.json().catch(() => ({}))) as Partial<AskResult> & { error?: string; executive?: ExecutivePayload };
       if (!r.ok) throw new Error(j.error || `http_${r.status}`);
       const answer: AskResult = {
         text_ar: j.text_ar ?? "",
         text_en: j.text_en ?? "",
       };
-      setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer } : t)));
+      setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer, executive: j.executive, stage: "done" } : t)));
       try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
       if (voiceOn) {
         const spoken = detected === "ar" ? answer.text_ar : answer.text_en;
@@ -371,7 +371,7 @@ export function GlobalAriaCopilot() {
       const msg = e instanceof Error && e.message.includes("429")
         ? (detected === "ar" ? "الكثير من الطلبات — حاول بعد دقيقة." : "Too many requests — try again shortly.")
         : (detected === "ar" ? "تعذّر الاتصال بآريا الآن — أعد المحاولة." : "ARIA is unavailable right now — please retry.");
-      setTurns((p) => p.map((t) => (t.id === id ? { ...t, error: msg } : t)));
+      setTurns((p) => p.map((t) => (t.id === id ? { ...t, error: msg, stage: "error" } : t)));
     } finally {
       setLoading(false);
     }
