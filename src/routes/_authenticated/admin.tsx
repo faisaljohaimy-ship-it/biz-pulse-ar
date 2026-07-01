@@ -174,7 +174,22 @@ function SimulationPanel({ locale }: { locale: string }) {
         >
           {locale === "ar" ? "تحقق من السلامة" : "Validate"}
         </button>
+        <button
+          onClick={() => scenarioMut.mutate()}
+          disabled={scenarioMut.isPending}
+          className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50"
+        >
+          {scenarioMut.isPending
+            ? locale === "ar" ? "جارٍ توليد اليوم التنفيذي…" : "Building Executive Day…"
+            : locale === "ar" ? "توليد يوم تنفيذي كامل (06:00–18:00)" : "Run Executive Day Scenario (06:00–18:00)"}
+        </button>
       </div>
+
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        {locale === "ar"
+          ? "«اليوم التنفيذي» ينشئ قصة تشغيلية مترابطة: دورية → تفتيش → مخاطرة → إشعارات → إجراءات تصحيحية → حادثة → أمر عمل → اجتماع تنفيذي → تقرير ARIA — كلها مترابطة بالمعرّفات."
+          : "\"Executive Day\" builds a fully connected story: patrol → inspection → risk → notifications → CARs → incident → work order → executive meeting → ARIA briefing — all linked by refs."}
+      </p>
 
       {status.data && (
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-4">
