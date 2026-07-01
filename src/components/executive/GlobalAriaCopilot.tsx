@@ -228,6 +228,26 @@ export function GlobalAriaCopilot() {
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const ar = lang === "ar";
 
+  // Derive Affected Departments from the current page + live widgets.
+  // Pure derivation — no fetch, no fabrication. Falls back to route hint.
+  const affectedDepartments = useMemo<string[]>(() => {
+    const bag = new Set<string>();
+    const p = pathname;
+    if (p.startsWith("/sec") || p.startsWith("/operations")) bag.add("Industrial Security");
+    if (p.startsWith("/hajj")) bag.add("Hajj Operations");
+    if (p.startsWith("/executive-reports")) bag.add("Executive Office");
+    if (p.startsWith("/hse")) bag.add("HSE");
+    for (const w of snap.widgets.slice(0, 24)) {
+      const hay = `${w.label ?? ""} ${w.hint ?? ""}`.toLowerCase();
+      if (hay.includes("patrol") || hay.includes("دورية")) bag.add("Patrol Operations");
+      if (hay.includes("incident") || hay.includes("بلاغ")) bag.add("Incident Response");
+      if (hay.includes("permit") || hay.includes("تصريح")) bag.add("Permits & Compliance");
+      if (hay.includes("hse") || hay.includes("سلامة")) bag.add("HSE");
+      if (hay.includes("kpi") || hay.includes("مؤشر")) bag.add("Performance Office");
+    }
+    return Array.from(bag).slice(0, 5);
+  }, [pathname, snap.widgets]);
+
   // Mount-only hydration of persisted UI state.
   useEffect(() => {
     setMounted(true);
