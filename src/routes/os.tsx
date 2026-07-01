@@ -48,16 +48,19 @@ type Stage = {
   featured?: boolean;
 };
 
+// Card grid order per SEC delivery spec (3×3). Arabic labels carry full
+// tashkeel (diacritics) so ARIA/TTS pronounces them in formal Modern
+// Standard Arabic.
 const STAGES: readonly Stage[] = [
-  { key: "auth",     ar: "المصادقة",         en: "Authentication", icon: ShieldCheck, to: "/command-center" },
-  { key: "org",      ar: "بيانات المؤسسة",  en: "Organization",   icon: Building2,   to: "/command-center" },
-  { key: "twin",     ar: "التوأم الرقمي",   en: "Digital Twin",   icon: Radar,       to: "/operations" },
-  { key: "kpi",      ar: "مؤشرات الأداء",   en: "Executive KPIs", icon: BarChart3,   to: "/executive-reports" },
-  { key: "hajj",     ar: "نظام الحج",        en: "Hajj 1447",      icon: Moon,        to: "/hajj", featured: true },
-  { key: "ops",      ar: "العمليات",         en: "Operations",     icon: Activity,    to: "/operations" },
-  { key: "aria",     ar: "ARIA",              en: "ARIA Runtime",   icon: Sparkles,    to: "/command-center" },
-  { key: "realtime", ar: "البث اللحظي",     en: "Realtime",       icon: Radio,       to: "/operations" },
-  { key: "agents",   ar: "الوكلاء",          en: "Agents",         icon: Bot,         to: "/exec" },
+  { key: "twin",     ar: "التَّوْأَمُ الرَّقْمِيّ",       en: "Digital Twin",   icon: Radar,       to: "/operations" },
+  { key: "org",      ar: "بَيَانَاتُ المُؤَسَّسَة",       en: "Organization",   icon: Building2,   to: "/command-center" },
+  { key: "auth",     ar: "المُصَادَقَة",                    en: "Authentication", icon: ShieldCheck, to: "/command-center" },
+  { key: "kpi",      ar: "مُؤَشِّرَاتُ الأَدَاءِ التَّنْفِيذِيَّة", en: "Executive KPIs", icon: BarChart3, to: "/executive-reports" },
+  { key: "hajj",     ar: "مَنْظُومَةُ الحَجِّ ١٤٤٧",       en: "Hajj 1447",      icon: Moon,        to: "/hajj", featured: true },
+  { key: "ops",      ar: "العَمَلِيَّات",                    en: "Operations",     icon: Activity,    to: "/operations" },
+  { key: "aria",     ar: "آرِيَا — المُحَرِّكُ التَّنْفِيذِيّ", en: "ARIA Runtime", icon: Sparkles, to: "/command-center" },
+  { key: "realtime", ar: "البَثُّ اللَّحْظِيّ",             en: "Realtime",       icon: Radio,       to: "/operations" },
+  { key: "agents",   ar: "الوُكَلَاءُ الأَذْكِيَاء",         en: "AI Agents",       icon: Bot,         to: "/exec" },
 ] as const;
 
 function OsHub() {
@@ -81,15 +84,15 @@ function OsHub() {
   }, []);
 
   const t = {
-    title: ar ? "نظام التشغيل المؤسسي" : "Enterprise Operating System",
+    title: ar ? "نِظَامُ التَّشْغِيلِ المُؤَسَّسِيّ" : "Enterprise Operating System",
     subtitle: ar
-      ? "NEXIOS AI OS — الأمن الصناعي، المنطقة الغربية"
+      ? "نِكْسِيُوس — الأَمْنُ الصِّنَاعِيّ، المِنْطَقَةُ الغَرْبِيَّة"
       : "NEXIOS AI OS — Industrial Security, Western Region",
     vision: ar
-      ? "منصة استراتيجية تدعم رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
+      ? "مِنَصَّةٌ اسْتِرَاتِيجِيَّةٌ تَدْعَمُ رُؤْيَةَ المَمْلَكَةِ ٢٠٣٠ · التَّحَوُّلُ الرَّقْمِيُّ وَالرِّيَادَةُ الصِّنَاعِيَّة"
       : "Strategic platform empowering Saudi Vision 2030 · Digital transformation & industrial leadership",
-    ready: ar ? "جاهز" : "Ready",
-    footer: ar ? "منصة تشغيل المؤسسة · النسخة 1.0" : "Enterprise Runtime · v1.0",
+    ready: ar ? "جَاهِز" : "Ready",
+    footer: ar ? "مِنَصَّةُ تَشْغِيلِ المُؤَسَّسَة · النُّسْخَةُ ١٫٠" : "Enterprise Runtime · v1.0",
   };
 
   return (
