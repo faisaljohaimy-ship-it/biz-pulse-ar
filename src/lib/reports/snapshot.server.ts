@@ -73,38 +73,54 @@ const ROW_LIMIT = 200;
 
 export async function buildExecutiveSnapshot(
   supabase: SupabaseClient,
-  opts: { range: SnapshotRange },
+  opts: { range: SnapshotRange; orgId?: string | null },
 ): Promise<ExecutiveSnapshot> {
   const from = rangeStart(opts.range).toISOString();
+  const orgId = opts.orgId ?? null;
 
-  // KPIs use the existing tested aggregator (whole-org view, RLS-aware).
+  // KPIs use the existing tested aggregator. When `orgId` is provided the
+  // aggregator scopes each source query by org — required whenever the caller
+  // passes the service-role client (which bypasses RLS).
   const sources = await fetchExecKpiSources(
     supabase as unknown as Parameters<typeof fetchExecKpiSources>[0],
+    orgId,
   );
   const kpis = computeExecKpis(sources);
 
+  const scoped = <
+    Q extends { eq: (col: string, val: string) => Q },
+  >(query: Q): Q => (orgId ? query.eq("org_id", orgId) : query);
+
   const [inc, wo, pm, pat] = await Promise.all([
-    supabase
-      .from("sec_incidents")
-      .select("id,ref,title,severity,status,site,reported_at,response_minutes")
+    scoped(
+      supabase
+        .from("sec_incidents")
+        .select("id,ref,title,severity,status,site,reported_at,response_minutes"),
+    )
       .gte("reported_at", from)
       .order("reported_at", { ascending: false })
       .limit(ROW_LIMIT),
-    supabase
-      .from("sec_work_orders")
-      .select("id,ref,title,kind,status,priority,due_at,created_at")
+    scoped(
+      supabase
+        .from("sec_work_orders")
+        .select("id,ref,title,kind,status,priority,due_at,created_at"),
+    )
       .gte("created_at", from)
       .order("created_at", { ascending: false })
       .limit(ROW_LIMIT),
-    supabase
-      .from("sec_permits")
-      .select("id,ref,type,status,contractor,starts_at,ends_at,created_at")
+    scoped(
+      supabase
+        .from("sec_permits")
+        .select("id,ref,type,status,contractor,starts_at,ends_at,created_at"),
+    )
       .gte("created_at", from)
       .order("created_at", { ascending: false })
       .limit(ROW_LIMIT),
-    supabase
-      .from("sec_patrols")
-      .select("id,ref,status,team,started_at,checkpoints_done,checkpoints_total")
+    scoped(
+      supabase
+        .from("sec_patrols")
+        .select("id,ref,status,team,started_at,checkpoints_done,checkpoints_total"),
+    )
       .gte("started_at", from)
       .order("started_at", { ascending: false })
       .limit(ROW_LIMIT),
