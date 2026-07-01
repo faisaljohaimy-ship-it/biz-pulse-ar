@@ -14,6 +14,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { buildExecutiveBrief } from "@/lib/aria/executive-reasoning.server";
 
 const AnchorSchema = z.object({
   kind: z.string().max(40),
