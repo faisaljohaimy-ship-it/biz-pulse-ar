@@ -624,6 +624,39 @@ export function GlobalAriaCopilot() {
         </div>
       )}
 
+      {/* Executive Welcome preview toast — appears above the collapsed launcher */}
+      {!open && welcomeToast && (
+        <div className="pointer-events-auto w-[min(320px,calc(100vw-1.5rem))] rounded-2xl border border-[#3AE8FF]/45 bg-[#061A2E]/95 p-3 text-[12.5px] leading-relaxed text-white/90 shadow-[0_18px_60px_-12px_rgba(0,212,255,0.55)] backdrop-blur-xl animate-fade-in">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <span className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
+              {ar ? "إحاطة تنفيذية" : "Executive Briefing"}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                try { sessionStorage.setItem(WELCOME_TOAST_KEY, "0"); } catch { /* noop */ }
+                setWelcomeToast(null);
+              }}
+              aria-label={ar ? "إغلاق" : "Dismiss"}
+              className="grid h-5 w-5 place-items-center rounded-full border border-white/15 text-white/70 hover:border-white/40"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <p dir="auto" className="whitespace-pre-wrap">{ar ? welcomeToast.ar : welcomeToast.en}</p>
+          <div className="mt-2 flex justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => { setWelcomeToast(null); setOpen(true); }}
+              className="inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-3 py-1 text-[11px] font-medium text-[#3AE8FF] hover:bg-[#3AE8FF]/20"
+            >
+              {ar ? "افتح آريا" : "Open ARIA"}
+              <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Floating launcher (always visible when collapsed) */}
       {!open && (
         <button
@@ -633,6 +666,7 @@ export function GlobalAriaCopilot() {
           className="pointer-events-auto group relative grid h-14 w-14 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/40 via-[#0a2a44] to-[#061A2E] text-[#3AE8FF] transition hover:scale-110"
           style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
         >
+          <span aria-hidden className="pointer-events-none absolute -inset-2 rounded-full border border-[#3AE8FF]/25" style={{ animation: "gac-halo 3.6s ease-out infinite" }} />
           <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full rounded-full object-cover object-top" draggable={false} />
           <Sparkles className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-[#061A2E]/85 p-0.5 drop-shadow-[0_0_10px_rgba(58,232,255,0.95)]" />
           <span className="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#061A2E] text-[8px] font-bold text-[#3AE8FF]">
