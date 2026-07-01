@@ -24,6 +24,7 @@ import {
   ariaSessionMemory,
   type AriaTurn,
 } from "./session-memory";
+import { useAriaAutoScan } from "./use-auto-scan";
 
 export type AriaWidgetKind =
   | "kpi"
