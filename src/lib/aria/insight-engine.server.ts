@@ -85,7 +85,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sec_incidents")
       .select("id,site_id,severity,status,title_en,title_ar,reported_at")
       .gte("reported_at", iso7d)
-      .limit(200);
+      .eq("org_id", orgId!).limit(200);
     if (inc?.length) {
       sources.push("sec_incidents");
       const bySite = bucketBy(inc, (r) => (r.site_id as string) ?? null);
@@ -125,7 +125,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("pulse_kpis")
       .select("key,label,label_en,value,delta,trend,tone,updated_at")
       .order("updated_at", { ascending: false })
-      .limit(30);
+      .eq("org_id", orgId!).limit(30);
     if (kpis?.length) {
       sources.push("pulse_kpis");
       for (const k of kpis) {
@@ -155,7 +155,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .select("id,title_en,title_ar,priority,status,due_at")
       .lt("due_at", new Date().toISOString())
       .not("status", "in", "(closed,completed,cancelled)")
-      .limit(50);
+      .eq("org_id", orgId!).limit(50);
     if (wo?.length) {
       sources.push("sec_work_orders");
       if (wo.length >= 5) {
@@ -179,7 +179,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_risks")
       .select("title,category,likelihood,impact,status")
       .order("impact", { ascending: false })
-      .limit(20);
+      .eq("org_id", orgId!).limit(20);
     if (risks?.length) {
       sources.push("sim_risks");
       const hot = risks.filter((r) => Number(r.impact ?? 0) >= 4 && Number(r.likelihood ?? 0) >= 3);
@@ -204,7 +204,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_notifications")
       .select("id,severity,created_at")
       .gte("created_at", iso24h)
-      .limit(500);
+      .eq("org_id", orgId!).limit(500);
     if (alerts && alerts.length >= 30) {
       sources.push("sim_notifications");
       insights.push({
@@ -227,7 +227,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_daily_ops")
       .select("day,site_id,patrols_planned,patrols_done,incidents_open,headcount")
       .gte("day", new Date(now - 3 * 86400_000).toISOString().slice(0, 10))
-      .limit(200);
+      .eq("org_id", orgId!).limit(200);
     if (ops?.length) {
       sources.push("sim_daily_ops");
       const todayRows = ops.filter((r) => r.day === today);
@@ -271,7 +271,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sec_reports")
       .select("kind,created_at")
       .gte("created_at", iso24h)
-      .limit(50);
+      .eq("org_id", orgId!).limit(50);
     sources.push("sec_reports");
     if (!rpt || rpt.length === 0) {
       insights.push({
@@ -293,14 +293,14 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_departments")
       .select("id,name_en,status")
       .eq("status", "active")
-      .limit(50);
+      .eq("org_id", orgId!).limit(50);
     if (depts?.length) {
       const iso14d = new Date(now - 14 * 86400_000).toISOString();
       const { data: mts } = await admin
         .from("sim_meetings")
         .select("dept_id,scheduled_at")
         .gte("scheduled_at", iso14d)
-        .limit(500);
+        .eq("org_id", orgId!).limit(500);
       const active = new Set((mts ?? []).map((m) => m.dept_id).filter(Boolean));
       const inactive = depts.filter((d) => !active.has(d.id));
       if (inactive.length >= 2) {
@@ -326,7 +326,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sec_incidents")
       .select("reported_at,severity,site_id")
       .gte("reported_at", iso14d)
-      .limit(1000);
+      .eq("org_id", orgId!).limit(1000);
     if (inc2?.length) {
       const cutoff = new Date(now - 7 * 86400_000).getTime();
       const recent = inc2.filter((r) => new Date(String(r.reported_at)).getTime() >= cutoff);
