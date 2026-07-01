@@ -65,7 +65,7 @@ export async function planMission(
 ): Promise<ExecutionPlan> {
   bootMarketplace();
   const validated = PlanMissionInputSchema.parse(input);
-  const constraints = validated.constraints.map((c) => ({ ...c, id: uid("con") }));
+  const constraints = constraints.map((c) => ({ ...c, id: uid("con") }));
   const missionId = uid("mission");
   const started = Date.now();
   noteActive(1);
@@ -147,7 +147,7 @@ export async function planMission(
     );
 
     // 6. Strategy + stages
-    const strategy = chooseStrategy(goal, graph, validated.constraints);
+    const strategy = chooseStrategy(goal, graph, constraints);
     const stages = planStages(graph, strategy);
     emitPlanning("StrategyChosen", missionId, { strategy });
     decisions.push(
@@ -158,14 +158,14 @@ export async function planMission(
         [
           `layers=${graph.layers.length}`,
           `edges=${graph.edges.length}`,
-          `hard_constraints=${validated.constraints.filter((c) => c.hard).length}`,
+          `hard_constraints=${constraints.filter((c) => c.hard).length}`,
         ],
         0.85,
       ),
     );
 
     // 7. Estimation
-    const estimation = estimatePlan(graph, bindings, validated.constraints);
+    const estimation = estimatePlan(graph, bindings, constraints);
     decisions.push(
       decision(
         "constraint",
@@ -181,13 +181,13 @@ export async function planMission(
 
     // 8. Constraint feasibility
     const constraintIssues = validateConstraints(
-      validated.constraints,
+      constraints,
       estimation,
       bindings,
     );
 
     // 9. Risks
-    const risks = analyzeRisks(graph, bindings, estimation, validated.constraints);
+    const risks = analyzeRisks(graph, bindings, estimation, constraints);
     const riskScore = scoreRisk(risks);
     emitPlanning("RiskCalculated", missionId, {
       count: risks.length,
@@ -217,12 +217,12 @@ export async function planMission(
     );
 
     // 11. Approvals
-    const approvals = resolveApprovals(tree, bindings, validated.constraints);
+    const approvals = resolveApprovals(tree, bindings, constraints);
     if (approvals.some((a) => a.mode === "required"))
       emitPlanning("ApprovalRequired", missionId);
 
     // 12. Policy evaluation
-    const policyIssues = evaluatePolicies(goal, bindings, validated.constraints);
+    const policyIssues = evaluatePolicies(goal, bindings, constraints);
 
     // 13. Verification (adds reflection issues)
     const verification = verifyPlan(objectives, tree, graph, bindings);
@@ -259,7 +259,7 @@ export async function planMission(
       mission_id: missionId,
       goal,
       objectives,
-      constraints: validated.constraints.map((c) => ({ ...c, id: uid("con") })),
+      constraints: constraints.map((c) => ({ ...c, id: uid("con") })),
       tree,
       graph,
       stages,
