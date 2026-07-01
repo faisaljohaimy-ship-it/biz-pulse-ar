@@ -266,6 +266,28 @@ export function GlobalAriaCopilot() {
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [turns, loading]);
 
+  // Executive conversation stage ticker — advances the *current* in-flight
+  // turn through listening → thinking → searching → reasoning → planning
+  // based on real elapsed request time. Zero fake delay: the moment the
+  // response resolves, `ask()` writes stage="done" and this ticker stops.
+  useEffect(() => {
+    if (!loading) return;
+    const iv = setInterval(() => {
+      setTurns((prev) => {
+        if (!prev.length) return prev;
+        const last = prev[prev.length - 1];
+        if (last.stage === "done" || last.stage === "error" || !last.startedAt) return prev;
+        const elapsed = (typeof performance !== "undefined" ? performance.now() : Date.now()) - last.startedAt;
+        const next = stageFromElapsed(elapsed);
+        if (next === last.stage) return prev;
+        const clone = prev.slice();
+        clone[clone.length - 1] = { ...last, stage: next };
+        return clone;
+      });
+    }, 220);
+    return () => clearInterval(iv);
+  }, [loading]);
+
   // Focus textarea when opened.
   useEffect(() => {
     if (open) {
