@@ -151,9 +151,9 @@ export const Route = createFileRoute("/api/public/aria-ask")({
           return parts.join("\n\n");
         }
         const contextBlock = buildContextBlock();
-        // Layers 2–4: intent classification, live retrieval, executive prompt.
-        const brief = await buildExecutiveBrief(data.question);
-        const systemForCall = [brief.system, contextBlock, brief.evidenceBlock]
+        // Executive Thinking Loop: Observe → Understand → Analyze → Predict → Recommend → Verify.
+        const brief = await runThinkingLoop(data.question);
+        const systemForCall = [brief.system, contextBlock]
           .filter(Boolean)
           .join("\n\n");
 
