@@ -308,13 +308,35 @@ export function GlobalAriaCopilot() {
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
+    // Persist the user turn into executive memory for cross-page recall.
+    try { ariaSessionMemory.push({ role: "user", text: qt, page: pathname }); } catch { /* noop */ }
+    // Assemble the live Executive Context payload from the global engine.
+    const liveCtx = {
+      page: {
+        path: snap.page.path,
+        title: snap.page.title,
+        section: snap.page.section ?? ctx.label_en,
+        filters: snap.page.filters ?? {},
+        selected: snap.page.selected ?? null,
+      },
+      widgets: snap.widgets.slice(0, 24).map((w) => ({
+        id: w.id, kind: w.kind, label: w.label, value: w.value, hint: w.hint,
+      })),
+      anchors: ariaSessionMemory.anchors().slice(-12),
+      locale: snap.locale,
+    };
+    const history = ariaSessionMemory.list().slice(-8).map((t) => ({
+      role: t.role, text: t.text, ts: t.ts, anchors: t.anchors,
+    }));
     try {
       const r = await fetch("/api/public/aria-ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question: `[Context: user is on page "${ctx.label_en}" (${pathname}).] ${qt}`,
+          question: qt,
           lang: detected,
+          context: liveCtx,
+          history,
         }),
         signal: ctrl.signal,
       });
@@ -325,6 +347,7 @@ export function GlobalAriaCopilot() {
         text_en: j.text_en ?? "",
       };
       setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer } : t)));
+      try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
       if (voiceOn) {
         const spoken = detected === "ar" ? answer.text_ar : answer.text_en;
         if (spoken) void speak(spoken);
@@ -338,23 +361,64 @@ export function GlobalAriaCopilot() {
     } finally {
       setLoading(false);
     }
-  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking]);
+  }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap]);
 
-  // One-time session welcome — fires the first time the user opens the dock.
+  // Executive Welcome — fires once per browser session when the platform opens.
+  // Runs whether the dock is open or collapsed; if collapsed we surface a
+  // dismissible preview toast above the launcher so the executive still sees it.
   useEffect(() => {
-    if (!mounted || !open) return;
+    if (!mounted || briefingFiredRef.current) return;
+    briefingFiredRef.current = true;
     let welcomed = false;
     try { welcomed = sessionStorage.getItem(WELCOMED_KEY) === "1"; } catch { /* noop */ }
     if (welcomed) return;
-    try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
-    const greetingAr = `مرحباً بك. أنا آريا، مساعدك التنفيذي. أنت الآن في ${ctx.label_ar} — تفضّل بسؤالك.`;
-    const greetingEn = `Welcome. I'm ARIA, your executive copilot. You are on ${ctx.label_en} — how may I assist?`;
-    const id = `welcome_${Date.now()}`;
-    setTurns((p) => [...p, { id, question: ar ? "—" : "—", qLang: lang, answer: { text_ar: greetingAr, text_en: greetingEn } }]);
-    if (voiceOn) void speak(ar ? greetingAr : greetingEn);
-    // Only on first open of the session; deliberately ignore deps churn.
+    const t = setTimeout(() => {
+      void (async () => {
+        let health: BriefingLite["health"] = undefined;
+        let critical = 0;
+        try {
+          const r = await fetch("/api/public/aria-briefing");
+          if (r.ok) {
+            const j = (await r.json()) as BriefingLite;
+            health = j.health;
+            critical = (j.priorities ?? []).filter((p) => (p.severity ?? "").toLowerCase() === "critical").length;
+          }
+        } catch { /* noop */ }
+        const openInc = health?.openIncidents ?? 0;
+        const done = health?.patrolsDoneToday ?? 0;
+        const planned = health?.patrolsPlannedToday ?? 0;
+        const healthPct = planned > 0 ? Math.max(0, Math.min(100, Math.round((done / planned) * 100))) : 100;
+        const greetEn =
+          `Welcome back. All systems have been analyzed. System Health: ${healthPct}%. ` +
+          (critical > 0
+            ? `${critical} critical alert${critical === 1 ? "" : "s"} require attention. `
+            : openInc > 0
+              ? `${openInc} open incident${openInc === 1 ? "" : "s"} in the field. `
+              : "No critical alerts. ") +
+          `Would you like an executive briefing?`;
+        const greetAr =
+          `مرحباً بعودتك. تم تحليل جميع الأنظمة. صحة النظام: ${healthPct}٪. ` +
+          (critical > 0
+            ? `${critical} تنبيه حرج بحاجة إلى انتباهك. `
+            : openInc > 0
+              ? `${openInc} بلاغ مفتوح في الميدان. `
+              : "لا توجد تنبيهات حرجة. ") +
+          `هل تودّ إحاطة تنفيذية؟`;
+        try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
+        const id = `welcome_${Date.now()}`;
+        setTurns((p) => [...p, { id, question: "—", qLang: lang, answer: { text_ar: greetAr, text_en: greetEn } }]);
+        try { ariaSessionMemory.push({ role: "assistant", text: greetEn, page: pathname }); } catch { /* noop */ }
+        if (!open) {
+          let toastDismissed = false;
+          try { toastDismissed = sessionStorage.getItem(WELCOME_TOAST_KEY) === "0"; } catch { /* noop */ }
+          if (!toastDismissed) setWelcomeToast({ ar: greetAr, en: greetEn });
+        }
+        if (voiceOn) void speak(ar ? greetAr : greetEn);
+      })();
+    }, 1200);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, open]);
+  }, [mounted]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
