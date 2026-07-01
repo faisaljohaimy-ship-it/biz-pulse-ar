@@ -11,6 +11,7 @@ import {
   validateSimulationFn,
   getSimulationStatusFn,
 } from "@/lib/simulation/sim.functions";
+import { runExecutiveScenarioFn } from "@/lib/simulation/exec-scenario.functions";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
