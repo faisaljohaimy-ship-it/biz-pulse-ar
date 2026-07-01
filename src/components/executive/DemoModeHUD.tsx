@@ -48,7 +48,19 @@ export function DemoModeHUD() {
     live:      ar ? "بث تنفيذي حي" : "Live executive broadcast",
     aria:      ar ? "سرد أريا" : "ARIA narration",
     ended:     ar ? "انتهى العرض" : "Demo ended",
+    speed:     ar ? "السرعة" : "Speed",
   };
+
+  const speedOptions: Array<{ label: string; ms: number }> = [
+    { label: "0.75×", ms: 8500 },
+    { label: "1×",    ms: 6500 },
+    { label: "1.5×",  ms: 4300 },
+    { label: "2×",    ms: 3200 },
+  ];
+  const currentSpeed = speedOptions.reduce((best, o) =>
+    Math.abs(o.ms - demo.stepDurationMs) < Math.abs(best.ms - demo.stepDurationMs) ? o : best,
+    speedOptions[0]!
+  );
 
   return (
     <div
@@ -147,6 +159,28 @@ export function DemoModeHUD() {
             <X className="h-4 w-4" />
             <span className="hidden sm:inline">{t.exit}</span>
           </HudButton>
+        </div>
+
+        {/* Speed selector */}
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+          <span className="uppercase tracking-[0.24em] text-white/50">{t.speed}</span>
+          {speedOptions.map((o) => {
+            const active = o.ms === currentSpeed.ms;
+            return (
+              <button
+                key={o.label}
+                type="button"
+                onClick={() => demo.setStepDurationMs(o.ms)}
+                className={`rounded-full border px-2 py-0.5 font-semibold transition ${
+                  active
+                    ? "border-[#3AE8FF]/70 bg-[#3AE8FF]/15 text-white shadow-[0_0_14px_rgba(58,232,255,0.35)]"
+                    : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+                }`}
+              >
+                {o.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

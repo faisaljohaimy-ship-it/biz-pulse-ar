@@ -22,6 +22,7 @@ import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { DemoModeHUD } from "@/components/executive/DemoModeHUD";
 import { DemoAriaPresenter } from "@/components/executive/DemoAriaPresenter";
 import { DemoMotionOverlay } from "@/lib/demo/motion-director";
+import { PresentationLayer } from "@/components/executive/presentation/PresentationLayer";
 
 function NotFoundComponent() {
   return (
@@ -194,6 +195,7 @@ function RootComponent() {
                 <GlobalAriaCopilot />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
+                <PresentationLayer />
                 <DemoModeHUD />
                 <Toaster />
               </DemoModeProvider>
