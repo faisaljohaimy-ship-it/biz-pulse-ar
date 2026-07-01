@@ -15,7 +15,13 @@ export type InsightKind =
   | "kpi_drop"
   | "overdue_work"
   | "risk_hotspot"
-  | "alert_surge";
+  | "alert_surge"
+  | "patrol_shortfall"
+  | "missing_reports"
+  | "inactive_department"
+  | "workload_pressure"
+  | "trend_prediction"
+  | "correlation";
 
 export interface Insight {
   kind: InsightKind;
@@ -207,10 +213,151 @@ export async function runInsightScan(): Promise<InsightBundle> {
     }
   } catch { /* ignore */ }
 
+  // 6. Patrol shortfall + workload pressure (sim_daily_ops)
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: ops } = await admin
+      .from("sim_daily_ops")
+      .select("day,site_id,patrols_planned,patrols_done,incidents_open,headcount")
+      .gte("day", new Date(now - 3 * 86400_000).toISOString().slice(0, 10))
+      .limit(200);
+    if (ops?.length) {
+      sources.push("sim_daily_ops");
+      const todayRows = ops.filter((r) => r.day === today);
+      const short = todayRows.filter(
+        (r) => r.patrols_planned > 0 && r.patrols_done < r.patrols_planned * 0.7,
+      );
+      if (short.length >= 2) {
+        const gap = short.reduce((s, r) => s + (r.patrols_planned - r.patrols_done), 0);
+        insights.push({
+          kind: "patrol_shortfall",
+          severity: gap >= 15 ? "critical" : "elevated",
+          title_en: `Patrol shortfall: ${gap} patrols missed across ${short.length} sites today`,
+          title_ar: `عجز في الدوريات: ${gap} دورية غير منفذة في ${short.length} موقع اليوم`,
+          evidence: `sim_daily_ops: planned-vs-done gap=${gap} sites=${short.length}`,
+          recommendation_en: "Reassign patrol teams to shortfall sites and confirm shift coverage.",
+          recommendation_ar: "إعادة توزيع فرق الدوريات على المواقع المتأخرة وتأكيد تغطية الورديات.",
+          confidence: 0.85,
+        });
+      }
+      const pressured = todayRows.filter(
+        (r) => r.headcount > 0 && r.incidents_open >= Math.max(3, Math.ceil(r.headcount * 0.4)),
+      );
+      if (pressured.length) {
+        insights.push({
+          kind: "workload_pressure",
+          severity: pressured.length >= 3 ? "elevated" : "watch",
+          title_en: `High workload at ${pressured.length} site(s): open incidents outpace headcount`,
+          title_ar: `ضغط تشغيلي في ${pressured.length} موقع: الحوادث المفتوحة تفوق عدد الأفراد`,
+          evidence: `sim_daily_ops: pressured sites=${pressured.length}`,
+          recommendation_en: "Surge additional operators to the pressured sites for the next shift.",
+          recommendation_ar: "دعم المواقع المضغوطة بمشغّلين إضافيين خلال الوردية القادمة.",
+          confidence: 0.72,
+        });
+      }
+    }
+  } catch { /* ignore */ }
+
+  // 7. Missing reports (no reports in last 24h)
+  try {
+    const { data: rpt } = await admin
+      .from("sec_reports")
+      .select("kind,created_at")
+      .gte("created_at", iso24h)
+      .limit(50);
+    sources.push("sec_reports");
+    if (!rpt || rpt.length === 0) {
+      insights.push({
+        kind: "missing_reports",
+        severity: "elevated",
+        title_en: "No operational reports produced in the last 24 hours",
+        title_ar: "لم يتم إصدار أي تقارير تشغيلية خلال آخر ٢٤ ساعة",
+        evidence: "sec_reports: 0 rows in last 24h",
+        recommendation_en: "Trigger the daily executive report and verify the reporting pipeline.",
+        recommendation_ar: "إطلاق التقرير التنفيذي اليومي والتحقق من خط الإصدار.",
+        confidence: 0.8,
+      });
+    }
+  } catch { /* ignore */ }
+
+  // 8. Inactive departments (no meetings scheduled in 14d)
+  try {
+    const { data: depts } = await admin
+      .from("sim_departments")
+      .select("id,name_en,status")
+      .eq("status", "active")
+      .limit(50);
+    if (depts?.length) {
+      const iso14d = new Date(now - 14 * 86400_000).toISOString();
+      const { data: mts } = await admin
+        .from("sim_meetings")
+        .select("dept_id,scheduled_at")
+        .gte("scheduled_at", iso14d)
+        .limit(500);
+      const active = new Set((mts ?? []).map((m) => m.dept_id).filter(Boolean));
+      const inactive = depts.filter((d) => !active.has(d.id));
+      if (inactive.length >= 2) {
+        sources.push("sim_departments", "sim_meetings");
+        insights.push({
+          kind: "inactive_department",
+          severity: inactive.length >= 5 ? "elevated" : "watch",
+          title_en: `${inactive.length} departments held no meetings in 14 days`,
+          title_ar: `${inactive.length} إدارة لم تعقد أي اجتماعات خلال ١٤ يوماً`,
+          evidence: `sim_departments: ${inactive.slice(0, 3).map((d) => d.name_en).join(", ")}${inactive.length > 3 ? "…" : ""}`,
+          recommendation_en: "Ask department heads to schedule a governance review this week.",
+          recommendation_ar: "الطلب من رؤساء الإدارات جدولة مراجعة حوكمية هذا الأسبوع.",
+          confidence: 0.7,
+        });
+      }
+    }
+  } catch { /* ignore */ }
+
+  // 9. Trend prediction + site correlation (7d vs prior 7d)
+  try {
+    const iso14d = new Date(now - 14 * 86400_000).toISOString();
+    const { data: inc2 } = await admin
+      .from("sec_incidents")
+      .select("reported_at,severity,site_id")
+      .gte("reported_at", iso14d)
+      .limit(1000);
+    if (inc2?.length) {
+      const cutoff = new Date(now - 7 * 86400_000).getTime();
+      const recent = inc2.filter((r) => new Date(String(r.reported_at)).getTime() >= cutoff);
+      const prior = inc2.filter((r) => new Date(String(r.reported_at)).getTime() < cutoff);
+      if (prior.length >= 3 && recent.length >= prior.length * 1.3) {
+        const growth = Math.round(((recent.length - prior.length) / Math.max(1, prior.length)) * 100);
+        insights.push({
+          kind: "trend_prediction",
+          severity: growth >= 60 ? "critical" : "elevated",
+          title_en: `Incident volume trending +${growth}% vs prior week — projected to persist`,
+          title_ar: `اتجاه صاعد في الحوادث بنسبة +${growth}% مقارنة بالأسبوع السابق — يُتوقع استمراره`,
+          evidence: `sec_incidents: last7d=${recent.length} prev7d=${prior.length}`,
+          recommendation_en: "Activate preventive controls now to avoid next-week escalation.",
+          recommendation_ar: "تفعيل الضوابط الوقائية الآن لتفادي تصاعد الأسبوع المقبل.",
+          confidence: 0.78,
+        });
+      }
+      const bySite = bucketBy(recent, (r) => (r.site_id as string) ?? null);
+      const topSite = [...bySite.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+      if (topSite && topSite[1].length >= 4) {
+        insights.push({
+          kind: "correlation",
+          severity: "elevated",
+          title_en: `Site ${topSite[0]} shows compounding pressure: ${topSite[1].length} incidents in 7d`,
+          title_ar: `الموقع ${topSite[0]} يظهر ضغطاً متراكماً: ${topSite[1].length} حادثة خلال ٧ أيام`,
+          evidence: `sec_incidents cluster at site=${topSite[0]}`,
+          recommendation_en: "Cross-check overdue work orders and patrol coverage at this site.",
+          recommendation_ar: "التحقق المتقاطع من أوامر العمل المتأخرة وتغطية الدوريات لهذا الموقع.",
+          confidence: 0.72,
+        });
+      }
+    }
+  } catch { /* ignore */ }
+
   // Rank & cap
   const order: Record<InsightSeverity, number> = { critical: 0, elevated: 1, watch: 2, info: 3 };
   insights.sort((a, b) => order[a.severity] - order[b.severity] || b.confidence - a.confidence);
-  const top = insights.slice(0, 6);
+  const top = insights.slice(0, 8);
 
   const block = top.length
     ? `# PROACTIVE OBSERVATIONS (Insight Engine, live scan)\n${top

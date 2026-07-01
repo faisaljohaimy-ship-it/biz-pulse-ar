@@ -24,6 +24,7 @@ import {
   ariaSessionMemory,
   type AriaTurn,
 } from "./session-memory";
+import { useAriaAutoScan } from "./use-auto-scan";
 
 export type AriaWidgetKind =
   | "kpi"
@@ -227,6 +228,9 @@ export function AriaContextProvider({ children }: { children: ReactNode }) {
     }),
     [setPage, registerWidget, unregisterWidget, setLocale, snapshot, subscribe],
   );
+
+  // Silent, proactive Executive Auto-Scan: greeting + background insights.
+  useAriaAutoScan();
 
   return (
     <AriaContextCtx.Provider value={value}>{children}</AriaContextCtx.Provider>
