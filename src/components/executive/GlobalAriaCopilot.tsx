@@ -545,7 +545,7 @@ export function GlobalAriaCopilot() {
             </div>
           )}
 
-          {/* Quick prompts */}
+          {/* Quick prompts (empty state) */}
           {turns.length === 0 && !loading && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {(ar ? ctx.prompts_ar : ctx.prompts_en).map((p) => (
@@ -558,6 +558,41 @@ export function GlobalAriaCopilot() {
                   {p}
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Follow-up suggestions after any answer */}
+          {turns.length > 0 && !loading && (
+            <div className="mt-3 space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {(ar ? ctx.prompts_ar : ctx.prompts_en).slice(0, 3).map((p) => (
+                  <button
+                    key={`fu-${p}`}
+                    type="button"
+                    onClick={() => void ask(p)}
+                    className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              {/* Executive Actions — navigation shortcuts */}
+              <div className="flex flex-wrap gap-1.5 border-t border-white/5 pt-2">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                  {ar ? "إجراءات تنفيذية" : "Executive Actions"}
+                </span>
+                {QUICK_ACTIONS.filter((a) => !pathname.startsWith(a.to)).slice(0, 3).map((a) => (
+                  <button
+                    key={a.to}
+                    type="button"
+                    onClick={() => { stopSpeaking(); void navigate({ to: a.to }); }}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/80 transition hover:border-[#3AE8FF]/60 hover:text-white"
+                  >
+                    <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+                    {ar ? a.label_ar : a.label_en}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
