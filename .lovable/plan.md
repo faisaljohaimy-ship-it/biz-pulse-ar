@@ -1,72 +1,83 @@
-# NEXIOS × NEXUS AI OS — Enterprise Delivery Plan (SEC-Ready)
+## Milestone 1 — Enterprise Simulation Foundation
 
-## Objective
-Merge the standalone NEXUS AI OS runtime hub into `nexios.com` as a first-class native section under unified routing, navigation, and identity — not an iframe or external link. Lock dark mode, deliver instant bilingual AR/EN switching (English default), rebuild the ARIA holographic assistant to match the reference portrait, and pass a full multi-discipline production audit before handoff.
+Goal: a self-contained **Simulation Engine** that generates realistic, fully-related enterprise data across 20 domains. UI stays unchanged. In Phase 2, swapping `SIM_MODE=off` (production) will bypass the seeder without touching consuming code.
 
-## Scope
+### 1. Schema — new tables (migration)
 
-### 1. Native Integration — Runtime Hub as `/os`
-- New route `src/routes/os.tsx` (English-labelled "Enterprise Operating System") replacing the standalone `runtime-hub.tsx` UX, rendered inside the nexios shell (BetaMarqueeBar, root layout, GlobalAriaCopilot).
-- Add nav entry "Enterprise OS / نظام التشغيل" in the header of `__root.tsx`.
-- Each of the 9 tiles routes into existing internal modules (`/hajj`, `/operations`, `/executive-reports`, `/exec`, `/command-center`).
-- Remove any external `hajj-nexus-prime.lovable.app` links; the experience lives inside nexios.
+Existing tables reused as-is: `sec_sites`, `sec_buildings`, `sec_assets`, `sec_vehicles`, `sec_contractors`, `sec_incidents`, `sec_permits`, `sec_work_orders` (as Corrective Actions), `sec_patrol_teams` (as Emergency Teams), `sec_visitors`, `tasks`, `pulse_kpis`.
 
-### 2. Locked Dark Mode (Hero + `/os` section)
-- Add `data-force-dark` attribute strategy in `src/lib/theme.tsx`: on `/` (hero) and `/os/*` routes, force `dark` class on `<html>`, ignore localStorage, disable ThemeToggle rendering.
-- Purge any code path that writes `light` to localStorage while on these routes.
-- CSS: scope the obsidian palette (`#0a0e1a → #0f1729`) via a `[data-surface="os"]` root wrapper so tokens can't be overridden.
+New tables (all org-scoped, RLS by org membership, GRANTs to authenticated + service_role):
 
-### 3. Mobile-First Responsive Grid
-- Rebuild the 3×3 grid with `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`, Hajj tile spans `sm:col-span-2 lg:col-span-1 lg:row-span-1` and stays visually dominant via ring/glow, not size hacks.
-- Touch targets ≥ 44px, fluid typography via `clamp()`, `min-w-0` + `truncate` on bilingual labels, no horizontal scroll at 320px.
-- Reduce particle count / disable heavy blur on `(max-width: 640px)` and `(prefers-reduced-motion)`.
+- `sim_departments` — code, name_ar, name_en, parent_id, head_employee_id, budget, headcount_target
+- `sim_employees` — employee_no, full_name_ar, full_name_en, dept_id, role, grade, site_id, manager_id, hire_date, status, contact
+- `sim_buses` — plate, capacity, route_code, driver_employee_id, site_id, status, next_service_at
+- `sim_near_misses` — ref, title, site_id, reported_by_employee, severity_potential, root_cause, status, reported_at
+- `sim_risks` — ref, title, category, likelihood(1-5), impact(1-5), score(gen), owner_employee, inspection_id, mitigation, status
+- `sim_inspections` — ref, kind, site_id, building_id, inspector_employee, scheduled_at, completed_at, score, findings_count, status
+- `sim_corrective_actions` — ref, source_type(inspection|incident|risk|near_miss), source_id, action, owner_employee, due_at, status, priority
+- `sim_meetings` — ref, title, dept_id, organizer_employee, scheduled_at, duration_min, location, kind, minutes_url, status
+- `sim_notifications` — user_id/target_employee, topic, severity, title, body, link, read_at
+- `sim_daily_ops` — day, site_id, shift, patrols_planned, patrols_done, incidents_open, permits_active, headcount, kpi_json
+- `sim_history` — generic audit rows (entity_type, entity_id, action, changes_json, actor_employee, at) — the "History" requirement per record
 
-### 4. Instant i18n (EN default, AR toggle)
-- Extend `src/lib/i18n.tsx` with a dedicated `os.*` namespace covering: hero title, subtitle, Vision 2030 tagline, 9 tile labels (AR + EN), READY badge, footer version, ARIA prompt placeholder, agent status strings.
-- LanguageToggle already exists — surface it in the root header as a globe icon with cyan glow, visible on every route.
-- Switching updates `<html lang dir>` synchronously (no reload), verified against RTL/LTR flip of icons/arrows using logical properties (`ms-*`, `me-*`, `start/end`).
-- Persist choice in `localStorage` under `nexios.locale`, default `en` on first visit.
+Every table has: `id uuid pk`, `org_id`, `owner_user_id` nullable, `priority` (where relevant), `status`, `created_at`, `updated_at`, `metadata jsonb default '{}'`, FKs enforcing relationships.
 
-### 5. Bilingual Agents + Voice
-- `aria-ask` system prompt already language-aware; extend to receive `locale` param from client and enforce reply language.
-- `aria-tts`: pass locale → choose ElevenLabs multilingual voice already in use (Sarah supports both); pick `nova` for EN when gateway path fires. Add `voice_settings` tweaks per locale.
-- Agent ring labels + tooltips read from `os.agents.*` keys.
+Add `update_updated_at_column` triggers.
 
-### 6. ARIA Holographic Redesign
-- Replace current `AriaDock` avatar with a new asset matching the reference: cyan holographic female bust, particles, extended hand, fade-to-mist base. Generate via `imagegen` (premium, transparent bg) → upload via `lovable-assets` → wire into `HologramFace.tsx`.
-- Presentation container: white/light radial backdrop (intentional identity contrast) inside a rounded card.
-- Motion: idle breathing (scale 1↔1.015, 4s), particle shimmer (SVG/CSS layer), speaking = mouth-area glow pulse driven by existing `mouthAmplitude`, listening = mic pulse ring. All GPU-accelerated (`transform`, `opacity` only), respects `prefers-reduced-motion`.
-- Extensible expression state machine: `idle | listening | thinking | speaking | alert` (enum in `aria-voice.ts`), only 3 wired now, rest scaffolded.
-- Input bar underneath: glass border, teal mic icon, bilingual placeholder from i18n keys.
+### 2. Simulation Engine module
 
-### 7. Hero + Vision 2030 Messaging
-- Update landing hero copy: add tagline "Empowering Saudi Vision 2030 · Digital Transformation for National Industrial Excellence" / "تمكين رؤية السعودية 2030 · التحول الرقمي للتميز الصناعي الوطني".
-- Sparkle icon, obsidian bg with dot-grid overlay, Tajawal (AR) / Inter (EN) already loaded.
+New folder `src/lib/simulation/`:
 
-### 8. Agents Card Elevation
-- The "Agents / الوكلاء" tile links to `/exec` (agent ring). Copy elevated to describe autonomous decision layer aligned with Vision 2030 digital transformation goals, bilingual.
+- `sim.types.ts` — TypeScript models per table
+- `sim.rng.ts` — seedable deterministic RNG (mulberry32) so the same seed → same dataset
+- `sim.catalog.ts` — realistic pools (Saudi names, Jeddah/Makkah/Yanbu sites, dept codes SEC/HSE/OPS/…)
+- `sim.generators.ts` — pure functions: `genDepartments()`, `genEmployees(depts, sites)`, `genBuses(sites, employees)`, `genIncidents(sites, employees)`, `genNearMisses`, `genInspections`, `genRisks(inspections)`, `genCorrectiveActions(sources)`, `genPermits`, `genWorkOrders`, `genMeetings(depts, employees)`, `genTasks(incidents, employees)`, `genNotifications(employees)`, `genDailyOps(sites, 30d)`, `genKpisFromOps(dailyOps)`
+- `sim.graph.ts` — enforces referential integrity: builds objects in dependency order, threads FKs, appends `sim_history` rows
+- `sim.seeder.server.ts` — server-only: idempotent upsert into all tables using `supabaseAdmin`, chunked inserts, wrapped in a single "seed run" id stored in metadata for rollback
+- `sim.functions.ts` — `runSimulationSeed({ scope, seed })`, `resetSimulation()`, `getSimulationStatus()` server fns, guarded by `requirePlatformAdmin`
+- `sim.config.ts` — `SIM_MODE = "on" | "off"`, volumes per entity, date window (last 90d + next 14d)
 
-## Multi-Discipline Audit (post-implementation)
+### 3. Data source contract (Phase-2-ready)
 
-| Reviewer | Checks |
-|---|---|
-| Design QA | Dark lock verified via DevTools on `/` and `/os`; contrast ≥ 4.5:1 both locales; glow FPS on mid-tier Android via Playwright throttle. |
-| Mobile QA | Playwright viewports 375×667, 390×844, 430×932, 360×800 — no horizontal scroll, tiles tappable, hero readable without zoom. |
-| i18n QA | Toggle round-trip: EN→AR→EN, assert every `os.*` key present, no untranslated fallback, `dir` attr flips, icons mirror correctly. |
-| Code Quality | Single reusable `<RuntimeTile>` component, all strings via `t()`, TypeScript strict, `tsgo` clean, zero console warnings. |
-| Security | No secrets in client bundle, `aria-ask`/`aria-tts` rate-limited (already in place), verify Beta marquee doesn't leak internals. |
-| Performance | Lazy-load ARIA 3D scene, `loading="lazy"` on hologram asset, bundle diff < +40KB gzip, LCP unchanged. |
+New `src/lib/sec/data-source.ts` exports typed readers (`listIncidents`, `listRisks`, …) that today just call the existing `sec_*` / `sim_*` server fns. Dashboards and ARIA tools already import from `sec.functions.ts` — we re-export from the data-source module and switch callers over. Phase 2 flips a single env flag to swap seeders for live adapters; no consumer change.
 
-Findings will be listed as **Critical / Major / Minor** and fixed inline before sign-off.
+### 4. ARIA integration
 
-## Technical Notes
+Extend `src/lib/aria-tools.server.ts` with read tools for the new tables (`list_employees_by_dept`, `list_open_risks`, `today_operations_summary`, `notifications_for_me`). Add a short section to `aria-context.server.ts` describing the new tables so GPT-5 knows to query them.
 
-- **Files created**: `src/routes/os.tsx`, `src/components/os/RuntimeTile.tsx`, `src/components/os/OsHeader.tsx`, `src/lib/i18n/os.ts` (namespace merge), new ARIA hologram asset under `src/assets/aria-holo-v2.png.asset.json`.
-- **Files modified**: `src/routes/__root.tsx` (nav + LanguageToggle placement), `src/lib/theme.tsx` (force-dark scopes), `src/lib/i18n.tsx` (namespace), `src/components/executive/LanguageToggle.tsx` (globe icon variant), `src/components/digital-humans/AriaDock.tsx` + `HologramFace.tsx` (new asset + state machine), `src/routes/index.tsx` (Vision 2030 tagline, entry CTA to `/os`).
-- **Non-goals**: Not rebuilding `/hajj`, `/operations`, `/exec` internals — they are the destinations, already production. Not changing backend RLS, agents SQL, or Supabase schema.
-- **Rollback**: All changes additive or scoped by route; removing `/os` route + reverting `theme.tsx` restores prior behavior.
+### 5. Dashboards
 
-## Out of Scope
-- Adding new AI agents or workflows (existing 14 agents remain).
-- Backend migrations.
-- Changing published domain / DNS.
+No new pages, no redesign. Verify existing consumers (executive KPIs, ops page, mission-control, sec pages) now display seeded rows. Where a component was empty because a table was empty, it will simply fill in.
+
+### 6. Validation
+
+- `src/lib/simulation/sim.validate.ts` — post-seed checks: no orphan FKs, every incident has ≥1 task, every inspection has ≥0 risks, KPI totals match aggregated ops rows
+- `src/lib/simulation/sim.test.ts` — vitest: generators are deterministic per seed, relationships close, counts within tolerances
+- Manual: after migration, admin hits `runSimulationSeed` from an existing admin surface (temporary button in `/os` admin section — no new route)
+
+### 7. Documentation
+
+`docs/SIMULATION.md` — architecture, entity map, volumes, how to reseed, how to swap to production adapters in Phase 2.
+
+### 8. Volumes (seeded per org)
+
+Departments 12 · Employees 420 · Contractors 35 · Sites 6 · Buildings 28 · Vehicles 60 · Buses 22 · Assets 180 · Incidents 240 (90d) · Near-misses 180 · Risks 140 · Inspections 200 · Permits 320 · Corrective actions 380 · Emergency teams 8 · Meetings 160 · Tasks 900 · Notifications 1 200 · Daily ops rows 6 sites × 90d = 540 · KPI snapshots 90.
+
+### Technical notes
+
+- All writes via `supabaseAdmin` inside handler bodies (never module-scope in `.functions.ts`).
+- Seeder is idempotent: keyed on `metadata->>'sim_seed'` per row; re-running with same seed no-ops, different seed regenerates cleanly.
+- History rows: for every insert the seeder pushes a `sim_history` "created" row plus 1–3 backdated "status_changed" rows to feel real.
+- Bilingual: every human-facing string in AR + EN (matches existing convention).
+- No random values at read-time — the RNG lives only in the seeder; consumers always read stored rows.
+
+### Deliverables checklist
+
+- [ ] Migration with 11 new tables + triggers + RLS + GRANTs
+- [ ] `src/lib/simulation/*` engine
+- [ ] `src/lib/sec/data-source.ts` unified reader
+- [ ] ARIA tool + context updates
+- [ ] Admin trigger button (inside existing admin panel — no new route)
+- [ ] `docs/SIMULATION.md`
+- [ ] Vitest + validation script green
+- [ ] Existing dashboards render seeded data without code edits
