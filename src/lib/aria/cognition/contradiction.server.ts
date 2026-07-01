@@ -1,5 +1,5 @@
 import { emitCognitiveEvent } from "./events";
-import type { Contradiction, Evidence, Hypothesis } from "./types";
+import type { Contradiction, ContradictionKind, Evidence, Hypothesis } from "./types";
 
 function nextId(): string {
   return `ctr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
