@@ -20,7 +20,7 @@ export function summarizeQuality(input: {
     latency: [],
     cost: [],
   };
-  const evidence: QualitySignal["evidence"] = [];
+  const evidence: Array<QualitySignal["evidence"][number]> = [];
   for (const raw of input.signals) {
     const s = QualitySignalZ.parse(raw);
     if (s.subject !== input.subject) continue;
