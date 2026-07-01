@@ -36,6 +36,7 @@ import {
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
 import { ariaSessionMemory } from "@/lib/aria/session-memory";
+import { resolvePersona } from "@/lib/aria/personas";
 import {
   ExecutiveEvidencePanel,
   type ExecutivePayload,
@@ -46,6 +47,7 @@ import {
   stageFromElapsed,
   type ConversationStage,
 } from "@/lib/aria/conversation-stages";
+import { Pin, PinOff, EyeOff, Eye } from "lucide-react";
 
 type AskResult = { text_ar: string; text_en: string };
 type BriefingLite = {
