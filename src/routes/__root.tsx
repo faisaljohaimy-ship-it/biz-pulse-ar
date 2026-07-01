@@ -92,8 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Lovable App" },
       { name: "twitter:title", content: "Lovable App" },
       { name: "description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/045b689c-3ea5-4175-a9c6-c70237dd78f1/id-preview-1c70d0a6--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1782906606270.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/045b689c-3ea5-4175-a9c6-c70237dd78f1/id-preview-1c70d0a6--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1782906606270.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/4oFn87w5GiXP8JBD99DtcazaWOB2/social-images/social-1782927012318-IMG_7450.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/4oFn87w5GiXP8JBD99DtcazaWOB2/social-images/social-1782927012318-IMG_7450.webp" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
