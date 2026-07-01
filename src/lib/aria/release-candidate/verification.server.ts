@@ -1,42 +1,45 @@
 /**
- * Verifier — validates a RcReport before release.
+ * Phase 10.0 — RC1 report verification.
+ * Ensures no gate passes without evidence and decisions match gate state.
  */
-import { GateResultSchema, KnownLimitationSchema, RequirementSchema } from "./contracts";
-import type { RcReport } from "./types";
+import type { Blocker, Decision, GateResult, Rc1Report } from "./types";
 
 export interface VerificationResult {
-  readonly ok: boolean;
-  readonly reasons: readonly string[];
+  readonly verified: boolean;
+  readonly notes: ReadonlyArray<string>;
 }
 
-export function verifyReport(r: RcReport): VerificationResult {
-  const reasons: string[] = [];
-  for (const g of r.gates) {
-    const p = GateResultSchema.safeParse(g);
-    if (!p.success) reasons.push(`gate ${g.id}: schema`);
-    if (g.status === "pass" && g.evidence.length === 0)
-      reasons.push(`gate ${g.id}: pass without evidence`);
-    if (g.status === "unknown" && !g.unknown_reason)
-      reasons.push(`gate ${g.id}: unknown without reason`);
+export function verifyReport(report: Rc1Report): VerificationResult {
+  const notes: string[] = [];
+
+  for (const g of report.gates) {
+    if (g.status === "pass" && g.evidence.length === 0 && g.gate !== "release_notes") {
+      notes.push(`Gate ${g.gate} marked pass without evidence.`);
+    }
+    if (g.status === "unknown" && g.blockers.length === 0) {
+      notes.push(`Gate ${g.gate} unknown but no blocker recorded.`);
+    }
   }
-  for (const l of r.known_limitations) {
-    if (!KnownLimitationSchema.safeParse(l).success)
-      reasons.push(`limitation ${l.id}: schema`);
+
+  const criticalOpen = report.gates.some(
+    (g) =>
+      g.severity === "critical" && (g.status === "fail" || g.status === "unknown"),
+  );
+  if (criticalOpen && report.decision === "GO") {
+    notes.push("Decision GO issued while critical gates remain open.");
   }
-  for (const req of r.requirements) {
-    if (!RequirementSchema.safeParse(req).success)
-      reasons.push(`requirement ${req.id}: schema`);
+
+  const hasCriticalBlocker = report.blockers.some(
+    (b: Blocker) => b.severity === "critical",
+  );
+  if (hasCriticalBlocker && report.decision !== "NO-GO") {
+    notes.push("Critical blocker present but decision is not NO-GO.");
   }
-  if (r.decision === "GO") {
-    const critFail = r.gates.some(
-      (g) => g.criticality === "critical" && (g.status === "fail" || g.status === "unknown"),
-    );
-    if (critFail) reasons.push("GO with critical fail/unknown");
-    if (r.requirements.some((rq) => rq.blocker))
-      reasons.push("GO with unresolved blocker requirement");
+
+  const validDecisions: Decision[] = ["GO", "NO-GO", "GO_WITH_KNOWN_LIMITATIONS"];
+  if (!validDecisions.includes(report.decision)) {
+    notes.push(`Unknown decision value: ${String(report.decision)}.`);
   }
-  if (r.decision === "CONDITIONAL-GO" && r.requirements.length === 0) {
-    reasons.push("CONDITIONAL-GO must list explicit requirements");
-  }
-  return { ok: reasons.length === 0, reasons };
+
+  return { verified: notes.length === 0, notes };
 }

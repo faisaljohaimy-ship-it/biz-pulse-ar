@@ -1,121 +1,194 @@
 /**
- * Phase 10.0 — Enterprise Release Candidate RC1
- * Types (server-side only, worker-compatible)
+ * Phase 10.0 — Release Candidate RC1
+ * Types for evidence-linked release readiness assessment.
  *
  * Rules:
- *  - Unknown remains UNKNOWN.
- *  - Every gate result is evidence-linked.
- *  - No fabricated readiness. No fabricated test results.
+ * - Unknown remains UNKNOWN.
+ * - Evidence-linked only.
+ * - No fabricated results.
  */
 
 export type GateId =
-  | "architecture"
-  | "type_safety"
   | "build"
+  | "typecheck"
+  | "lint"
+  | "core_runtime"
+  | "aria_os"
+  | "planning"
+  | "execution"
+  | "marketplace"
+  | "task_bus"
   | "runtime"
-  | "security"
-  | "governance"
+  | "tools"
   | "memory"
   | "knowledge_graph"
   | "world_model"
-  | "agent_runtime"
-  | "tool_engine"
-  | "integration"
-  | "simulation"
-  | "executive_demo"
-  | "aria_conversation"
-  | "approval_workflow"
-  | "audit_trail"
+  | "governance"
+  | "security"
   | "performance"
+  | "accessibility"
+  | "observability"
   | "error_handling"
-  | "fallback";
+  | "release_notes";
 
-export type GateStatus = "pass" | "warn" | "fail" | "unknown";
-export type Criticality = "critical" | "high" | "medium" | "low";
+export type GateSeverity = "critical" | "high" | "medium" | "low";
+export type GateStatus = "pass" | "fail" | "warn" | "unknown";
 
-export type ReleaseDecision = "GO" | "NO-GO" | "CONDITIONAL-GO";
+export type Decision = "GO" | "NO-GO" | "GO_WITH_KNOWN_LIMITATIONS";
 
 export interface EvidenceRef {
-  readonly source_id: string;
   readonly kind:
+    | "typecheck"
+    | "build"
+    | "lint"
+    | "smoke"
+    | "integration"
+    | "e2e"
+    | "regression"
+    | "security"
+    | "performance"
+    | "accessibility"
+    | "observability"
+    | "dependency"
     | "audit"
     | "metric"
-    | "log"
-    | "artifact"
-    | "policy"
-    | "test"
-    | "config"
-    | "signal";
-  readonly locator: string;
+    | "manual";
+  readonly source: string;
+  readonly ref?: string;
   readonly captured_at: string;
 }
 
 export interface GateResult {
-  readonly id: GateId;
-  readonly title: string;
+  readonly gate: GateId;
+  readonly severity: GateSeverity;
   readonly status: GateStatus;
-  readonly criticality: Criticality;
-  readonly score: number; // 0..1
   readonly summary: string;
-  readonly findings: readonly string[];
-  readonly evidence: readonly EvidenceRef[];
-  readonly unknown_reason?: string;
-  readonly checked_at: string;
+  readonly evidence: ReadonlyArray<EvidenceRef>;
+  readonly blockers: ReadonlyArray<string>;
+  readonly notes: ReadonlyArray<string>;
 }
 
-export interface KnownLimitation {
+export interface TestCase {
   readonly id: string;
-  readonly area: string;
-  readonly description: string;
-  readonly severity: Criticality;
-  readonly workaround?: string;
-  readonly evidence: readonly EvidenceRef[];
+  readonly gate: GateId;
+  readonly kind: "smoke" | "integration" | "e2e" | "regression";
+  readonly title: string;
+  readonly required: boolean;
 }
 
-export interface Requirement {
+export interface TestOutcome {
+  readonly case_id: string;
+  readonly status: GateStatus;
+  readonly evidence?: EvidenceRef;
+  readonly detail?: string;
+}
+
+export interface TestPlan {
+  readonly cases: ReadonlyArray<TestCase>;
+  readonly generated_at: string;
+}
+
+export interface TestReport {
+  readonly kind: "smoke" | "integration" | "e2e" | "regression";
+  readonly outcomes: ReadonlyArray<TestOutcome>;
+  readonly executed_at: string;
+}
+
+export interface ReviewFinding {
   readonly id: string;
+  readonly severity: GateSeverity;
   readonly title: string;
   readonly detail: string;
-  readonly blocker: boolean;
+  readonly evidence?: EvidenceRef;
 }
 
-export interface PilotReadinessScore {
-  readonly overall: number; // 0..100
-  readonly by_gate: Readonly<Record<GateId, number>>;
-  readonly gaps: readonly string[];
+export interface ReviewReport {
+  readonly domain:
+    | "security"
+    | "performance"
+    | "accessibility"
+    | "observability"
+    | "dependency";
+  readonly status: GateStatus;
+  readonly findings: ReadonlyArray<ReviewFinding>;
+  readonly evidence: ReadonlyArray<EvidenceRef>;
 }
 
-export interface ReleaseNotes {
+export interface RiskEntry {
+  readonly id: string;
+  readonly gate: GateId;
+  readonly severity: GateSeverity;
+  readonly likelihood: "low" | "medium" | "high";
+  readonly impact: "low" | "medium" | "high";
+  readonly description: string;
+  readonly mitigation: string;
+  readonly owner?: string;
+}
+
+export interface Blocker {
+  readonly id: string;
+  readonly gate: GateId;
+  readonly severity: "critical" | "high";
+  readonly reason: string;
+  readonly requirement: string;
+  readonly evidence?: EvidenceRef;
+}
+
+export interface ReleaseNotesDraft {
   readonly version: string;
   readonly generated_at: string;
-  readonly highlights: readonly string[];
-  readonly gates: readonly GateResult[];
-  readonly known_limitations: readonly KnownLimitation[];
-  readonly requirements: readonly Requirement[];
-  readonly decision: ReleaseDecision;
-  readonly decision_reason: string;
+  readonly highlights: ReadonlyArray<string>;
+  readonly gates: ReadonlyArray<GateResult>;
+  readonly known_limitations: ReadonlyArray<string>;
+  readonly decision: Decision;
 }
 
-export interface RcReport {
+export interface AuditRecord {
   readonly id: string;
-  readonly generated_at: string;
-  readonly gates: readonly GateResult[];
-  readonly pilot_readiness: PilotReadinessScore;
-  readonly known_limitations: readonly KnownLimitation[];
-  readonly requirements: readonly Requirement[];
-  readonly release_notes: ReleaseNotes;
-  readonly decision: ReleaseDecision;
-  readonly decision_reason: string;
-  readonly telemetry_id: string;
+  readonly stage: string;
+  readonly status: GateStatus | "info";
+  readonly summary: string;
+  readonly evidence: ReadonlyArray<EvidenceRef>;
+  readonly recorded_at: string;
 }
 
-export interface RcInputs {
-  readonly version?: string;
-  /** Optional caller-supplied evidence (build/runtime/test signals). */
-  readonly build_ok?: boolean;
+export interface MetricSample {
+  readonly name: string;
+  readonly value: number;
+  readonly unit: string;
+  readonly captured_at: string;
+}
+
+export interface Rc1Signals {
   readonly typecheck_ok?: boolean;
+  readonly build_ok?: boolean;
+  readonly lint_ok?: boolean;
   readonly runtime_ok?: boolean;
-  readonly external_credentials?: Readonly<Record<string, boolean>>;
-  readonly performance_p95_ms?: number;
-  readonly notes?: readonly string[];
+  readonly smoke?: TestReport;
+  readonly integration?: TestReport;
+  readonly e2e?: TestReport;
+  readonly regression?: TestReport;
+  readonly security?: ReviewReport;
+  readonly performance?: ReviewReport;
+  readonly accessibility?: ReviewReport;
+  readonly observability?: ReviewReport;
+  readonly dependency?: ReviewReport;
+  readonly evidence: ReadonlyArray<EvidenceRef>;
+}
+
+export interface Rc1Report {
+  readonly generated_at: string;
+  readonly version: string;
+  readonly gates: ReadonlyArray<GateResult>;
+  readonly test_plan: TestPlan;
+  readonly reviews: ReadonlyArray<ReviewReport>;
+  readonly risks: ReadonlyArray<RiskEntry>;
+  readonly blockers: ReadonlyArray<Blocker>;
+  readonly release_notes: ReleaseNotesDraft;
+  readonly audit: ReadonlyArray<AuditRecord>;
+  readonly metrics: ReadonlyArray<MetricSample>;
+  readonly decision: Decision;
+  readonly decision_reason: string;
+  readonly verified: boolean;
+  readonly verification_notes: ReadonlyArray<string>;
 }
