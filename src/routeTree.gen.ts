@@ -22,6 +22,7 @@ import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as OsRouteImport } from './routes/os'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
@@ -221,6 +222,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OsRoute = OsRouteImport.update({
+  id: '/os',
+  path: '/os',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -957,6 +963,7 @@ export interface FileRoutesByFullPath {
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
+  '/os': typeof OsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
@@ -1106,6 +1113,7 @@ export interface FileRoutesByTo {
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
+  '/os': typeof OsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
@@ -1256,6 +1264,7 @@ export interface FileRoutesById {
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
+  '/os': typeof OsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
@@ -1407,6 +1416,7 @@ export interface FileRouteTypes {
     | '/government-brief'
     | '/hajj-prime'
     | '/login'
+    | '/os'
     | '/pricing'
     | '/privacy'
     | '/request-demo'
@@ -1556,6 +1566,7 @@ export interface FileRouteTypes {
     | '/government-brief'
     | '/hajj-prime'
     | '/login'
+    | '/os'
     | '/pricing'
     | '/privacy'
     | '/request-demo'
@@ -1705,6 +1716,7 @@ export interface FileRouteTypes {
     | '/government-brief'
     | '/hajj-prime'
     | '/login'
+    | '/os'
     | '/pricing'
     | '/privacy'
     | '/request-demo'
@@ -1856,6 +1868,7 @@ export interface RootRouteChildren {
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   HajjPrimeRoute: typeof HajjPrimeRoute
   LoginRoute: typeof LoginRoute
+  OsRoute: typeof OsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RequestDemoRoute: typeof RequestDemoRoute
@@ -1986,6 +1999,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/os': {
+      id: '/os'
+      path: '/os'
+      fullPath: '/os'
+      preLoaderRoute: typeof OsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -3170,6 +3190,7 @@ const rootRouteChildren: RootRouteChildren = {
   GovernmentBriefRoute: GovernmentBriefRoute,
   HajjPrimeRoute: HajjPrimeRoute,
   LoginRoute: LoginRoute,
+  OsRoute: OsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RequestDemoRoute: RequestDemoRoute,

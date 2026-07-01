@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
 import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
@@ -42,6 +42,16 @@ function IntroLanding() {
   const [bootDone, setBootDone] = useState(false);
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+
+  // Lock dark mode on the executive landing hero — required for delivery.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.remove("light");
+    root.classList.add("dark");
+    root.style.colorScheme = "dark";
+  }, []);
+
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
