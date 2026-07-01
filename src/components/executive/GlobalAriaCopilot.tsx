@@ -70,6 +70,8 @@ type Turn = {
 
 const OPEN_KEY = "aria-copilot-open";
 const VOICE_KEY = "aria-copilot-voice";
+const PIN_KEY = "aria-copilot-pinned";
+const HIDDEN_KEY = "aria-copilot-hidden";
 const WELCOMED_KEY = "aria-copilot-welcomed-v2";
 const WELCOME_TOAST_KEY = "aria-copilot-welcome-toast-v2";
 
