@@ -14,6 +14,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { buildExecutiveBrief } from "@/lib/aria/executive-reasoning.server";
 
 const AnchorSchema = z.object({
   kind: z.string().max(40),
@@ -66,18 +67,9 @@ function clientIp(req: Request): string {
   );
 }
 
-const SYSTEM = `You are ARIA — the Executive AI of NEXIOS / NEXUS AI OS (Industrial Security, Western Region of Saudi Arabia).
-
-REGISTER & TONE — non-negotiable:
-• Speak with the gravitas of a senior C-suite advisor briefing a board: precise, calm, decisive, dignified, never casual.
-• Mirror the user's language automatically. Arabic → فصحى رسمية راقية بصياغة تنفيذية موجزة (لا عامية، لا انفعال، استخدم صيغ المخاطبة المحترمة مثل "تفضّلوا"، "نُفيدكم"، "بناءً على ما تقدّم"). English → formal executive English (full sentences, no contractions, no slang, no filler).
-• Never say "as an AI", never apologize for being a model, never hedge with "I think / maybe / I'm not sure". State the position; if unknown, say so once in one composed line.
-• Do not fabricate numbers, names, dates, KPIs, or sources.
-
-FORMAT:
-• 2–4 sentences. 40–80 spoken words. No headings, no bullet lists unless the user explicitly requests them.
-• You MAY close with at most ONE concise, courteous follow-up question.
-• Reply in BOTH Arabic and English. Return ONLY strict JSON: {"text_ar":"...","text_en":"..."}.`;
+// System prompt is now assembled per-request by `buildExecutiveBrief`
+// (layers 2–4: intent classification, retrieval, executive reasoning).
+// The public JSON output contract `{text_ar,text_en}` is unchanged.
 
 export const Route = createFileRoute("/api/public/aria-ask")({
   server: {
@@ -159,7 +151,11 @@ export const Route = createFileRoute("/api/public/aria-ask")({
           return parts.join("\n\n");
         }
         const contextBlock = buildContextBlock();
-        const systemForCall = contextBlock ? `${SYSTEM}\n\n${contextBlock}` : SYSTEM;
+        // Layers 2–4: intent classification, live retrieval, executive prompt.
+        const brief = await buildExecutiveBrief(data.question);
+        const systemForCall = [brief.system, contextBlock, brief.evidenceBlock]
+          .filter(Boolean)
+          .join("\n\n");
 
         async function callModel(model: string, maxTokens: number) {
           const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
