@@ -82,7 +82,7 @@ function priorityFor(sev: Insight["severity"]): 1 | 2 | 3 {
   return sev === "critical" ? 1 : sev === "elevated" ? 2 : 3;
 }
 
-async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdmin>>>): Promise<{
+async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdmin>>>, orgId: string): Promise<{
   health: BriefingHealth;
   approvals: BriefingApproval[];
 }> {
