@@ -414,17 +414,45 @@ export function AriaDock() {
     setState("thinking");
     try {
       const lang = /[\u0600-\u06FF]/.test(q) ? "ar" : "en";
+      // Attach the ARIA Global Context Engine snapshot so the model can
+      // ground its answer in the current page, KPIs, filters, and recent
+      // conversation.
+      const w = window as unknown as {
+        __aria_context?: {
+          get: () => {
+            page: { path: string; title?: string; section?: string; filters?: Record<string, unknown>; selected?: Record<string, unknown> | null };
+            widgets: { id: string; kind: string; label: string; value?: unknown; hint?: string }[];
+            history: { role: "user" | "assistant"; text: string; ts: string; anchors?: { kind: string; id: string; label?: string }[] }[];
+            locale: "ar" | "en" | "mixed";
+          };
+          pushTurn: (t: { role: "user" | "assistant"; text: string; page?: string; anchors?: { kind: string; id: string; label?: string }[] }) => void;
+        };
+      };
+      const snap = w.__aria_context?.get?.();
+      const context = snap
+        ? {
+            page: snap.page,
+            widgets: snap.widgets,
+            anchors: snap.history.flatMap((t) => t.anchors ?? []).slice(-12),
+            locale: snap.locale,
+          }
+        : undefined;
+      const history = snap?.history?.slice(-8);
+      w.__aria_context?.pushTurn({ role: "user", text: q, page: snap?.page?.path });
       const r = await fetch("/api/public/aria-ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, lang }),
+        body: JSON.stringify({ question: q, lang, context, history }),
       });
       const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string; error?: string };
       if (!r.ok) throw new Error(j.error || `ask_${r.status}`);
+      const text_ar = j.text_ar || j.text_en || "تم استلام سؤالك، لكن لم يصل نص الرد. أعد المحاولة.";
+      const text_en = j.text_en || j.text_ar || "I received your question, but the reply text was empty. Please retry.";
+      w.__aria_context?.pushTurn({ role: "assistant", text: lang === "ar" ? text_ar : text_en, page: snap?.page?.path });
       enqueue({
         id: `typed-${Date.now()}`,
-        text_ar: j.text_ar || j.text_en || "تم استلام سؤالك، لكن لم يصل نص الرد. أعد المحاولة.",
-        text_en: j.text_en || j.text_ar || "I received your question, but the reply text was empty. Please retry.",
+        text_ar,
+        text_en,
         speaker: ARIA,
       });
     } catch {
