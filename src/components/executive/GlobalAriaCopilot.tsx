@@ -194,6 +194,8 @@ function resolvePageCtx(pathname: string): PageCtx {
 
 export function GlobalAriaCopilot() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const snap = useAriaSnapshot();
   const [mounted, setMounted] = useState(false);
   const [hideForAuthDock, setHideForAuthDock] = useState(false);
   const [open, setOpen] = useState(false);
@@ -202,11 +204,13 @@ export function GlobalAriaCopilot() {
   const [speaking, setSpeaking] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [lang, setLang] = useState<"ar" | "en">("ar");
+  const [lang, setLang] = useState<"ar" | "en">("en");
+  const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const briefingFiredRef = useRef(false);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const ar = lang === "ar";
