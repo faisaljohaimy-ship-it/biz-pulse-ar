@@ -837,8 +837,11 @@ export function GlobalAriaCopilot() {
             <textarea
               ref={inputRef}
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
+              onChange={(e) => { if (speaking) stopSpeaking(); setQuestion(e.target.value); }}
+              onFocus={() => { if (speaking) stopSpeaking(); }}
               onKeyDown={(e) => {
+                // Natural interruption — any keypress while ARIA speaks stops speech.
+                if (speaking) stopSpeaking();
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   onSubmit(e as unknown as React.FormEvent);
