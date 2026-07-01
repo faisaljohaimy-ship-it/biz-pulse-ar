@@ -15,7 +15,13 @@ export type InsightKind =
   | "kpi_drop"
   | "overdue_work"
   | "risk_hotspot"
-  | "alert_surge";
+  | "alert_surge"
+  | "patrol_shortfall"
+  | "missing_reports"
+  | "inactive_department"
+  | "workload_pressure"
+  | "trend_prediction"
+  | "correlation";
 
 export interface Insight {
   kind: InsightKind;
