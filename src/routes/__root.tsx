@@ -20,6 +20,8 @@ import { LanguageToggle } from "@/components/executive/LanguageToggle";
 import { AriaContextProvider } from "@/lib/aria/context-engine";
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { DemoModeHUD } from "@/components/executive/DemoModeHUD";
+import { DemoAriaPresenter } from "@/components/executive/DemoAriaPresenter";
+import { DemoMotionOverlay } from "@/lib/demo/motion-director";
 
 function NotFoundComponent() {
   return (
@@ -190,6 +192,8 @@ function RootComponent() {
                 </div>
                 <Outlet />
                 <GlobalAriaCopilot />
+                <DemoMotionOverlay />
+                <DemoAriaPresenter />
                 <DemoModeHUD />
                 <Toaster />
               </DemoModeProvider>
