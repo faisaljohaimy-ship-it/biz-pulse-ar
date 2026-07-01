@@ -273,6 +273,8 @@ export function GlobalAriaCopilot() {
   const [voiceOn, setVoiceOn] = useState(true);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [lang, setLang] = useState<"ar" | "en">("en");
+  const [pinned, setPinned] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -281,6 +283,7 @@ export function GlobalAriaCopilot() {
   const briefingFiredRef = useRef(false);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
+  const persona = useMemo(() => resolvePersona(pathname), [pathname]);
   const ar = lang === "ar";
 
   // Derive Affected Departments from the current page + live widgets.
