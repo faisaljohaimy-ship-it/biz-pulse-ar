@@ -259,7 +259,7 @@ export async function planMission(
       mission_id: missionId,
       goal,
       objectives,
-      constraints: constraints.map((c) => ({ ...c, id: uid("con") })),
+      constraints,
       tree,
       graph,
       stages,
