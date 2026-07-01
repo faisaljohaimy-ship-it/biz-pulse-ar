@@ -37,9 +37,14 @@ const NONE: InterruptionSignal = {
   why_ar: "",
 };
 
-export async function detectInterruption(sessionId: string): Promise<InterruptionSignal> {
+export async function detectInterruption(
+  sessionId: string,
+  orgId?: string | null,
+): Promise<InterruptionSignal> {
   const admin = await importAdmin();
-  if (!admin) return NONE;
+  // Tenant isolation: uses the service-role client (RLS bypassed). Without an
+  // org id we cannot safely query cross-tenant incident/alert tables.
+  if (!admin || !orgId) return NONE;
 
   const cursor = readCursor(sessionId);
   const since =
@@ -51,6 +56,7 @@ export async function detectInterruption(sessionId: string): Promise<Interruptio
     admin
       .from("sec_incidents")
       .select("id,title_en,title_ar,severity,reported_at,site_id")
+      .eq("org_id", orgId)
       .eq("severity", "critical")
       .gt("reported_at", since)
       .order("reported_at", { ascending: false })
@@ -58,6 +64,7 @@ export async function detectInterruption(sessionId: string): Promise<Interruptio
     admin
       .from("sim_notifications")
       .select("id,title,body,severity,created_at")
+      .eq("org_id", orgId)
       .eq("severity", "critical")
       .gt("created_at", since)
       .order("created_at", { ascending: false })
