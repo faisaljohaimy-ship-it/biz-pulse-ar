@@ -106,6 +106,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { count } = await admin
         .from("sec_incidents")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .not("status", "in", "(closed,resolved,cancelled)");
       health.openIncidents = count ?? 0;
     })(),
@@ -113,6 +114,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { count } = await admin
         .from("sim_notifications")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .gte("created_at", iso24h);
       health.alerts24h = count ?? 0;
     })(),
@@ -120,6 +122,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data, count } = await admin
         .from("sec_work_orders")
         .select("id,title_en,title_ar,due_at", { count: "exact" })
+        .eq("org_id", orgId)
         .lt("due_at", new Date().toISOString())
         .not("status", "in", "(closed,completed,cancelled)")
         .limit(5);
@@ -137,6 +140,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data } = await admin
         .from("sim_daily_ops")
         .select("patrols_planned,patrols_done")
+        .eq("org_id", orgId)
         .eq("day", today)
         .limit(500);
       for (const r of data ?? []) {
@@ -148,6 +152,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { count } = await admin
         .from("sec_reports")
         .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
         .gte("created_at", iso24h);
       health.reportsLast24h = count ?? 0;
     })(),
@@ -155,6 +160,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data } = await admin
         .from("sec_permits")
         .select("id,ref,work_type,status,ends_at")
+        .eq("org_id", orgId)
         .eq("status", "pending")
         .limit(5);
       for (const r of data ?? []) {
@@ -170,6 +176,7 @@ async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdm
       const { data } = await admin
         .from("sim_meetings")
         .select("id,title,scheduled_at,status")
+        .eq("org_id", orgId)
         .gte("scheduled_at", new Date().toISOString())
         .lte("scheduled_at", todayEnd)
         .eq("status", "scheduled")
