@@ -160,7 +160,11 @@ export const Route = createFileRoute("/api/public/aria-ask")({
           return parts.join("\n\n");
         }
         const contextBlock = buildContextBlock();
-        const systemForCall = contextBlock ? `${SYSTEM}\n\n${contextBlock}` : SYSTEM;
+        // Layers 2–4: intent classification, live retrieval, executive prompt.
+        const brief = await buildExecutiveBrief(data.question);
+        const systemForCall = [brief.system, contextBlock, brief.evidenceBlock]
+          .filter(Boolean)
+          .join("\n\n");
 
         async function callModel(model: string, maxTokens: number) {
           const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
