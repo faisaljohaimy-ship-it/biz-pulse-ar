@@ -539,11 +539,17 @@ export function GlobalAriaCopilot() {
         let health: BriefingLite["health"] = undefined;
         let critical = 0;
         try {
-          const r = await fetch("/api/public/aria-briefing");
-          if (r.ok) {
-            const j = (await r.json()) as BriefingLite;
-            health = j.health;
-            critical = (j.priorities ?? []).filter((p) => (p.severity ?? "").toLowerCase() === "critical").length;
+          const { supabase } = await import("@/integrations/supabase/client");
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            const r = await fetch("/api/public/aria-briefing", {
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+            if (r.ok) {
+              const j = (await r.json()) as BriefingLite;
+              health = j.health;
+              critical = (j.priorities ?? []).filter((p) => (p.severity ?? "").toLowerCase() === "critical").length;
+            }
           }
         } catch { /* noop */ }
         const openInc = health?.openIncidents ?? 0;

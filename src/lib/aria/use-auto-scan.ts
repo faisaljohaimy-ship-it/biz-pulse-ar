@@ -104,9 +104,15 @@ function markGreeted() {
 
 async function fetchBriefing(signal: AbortSignal): Promise<Briefing | null> {
   try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return null;
     const r = await fetch("/api/public/aria-briefing", {
       method: "GET",
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
       signal,
     });
     if (!r.ok) return null;
