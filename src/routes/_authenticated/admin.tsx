@@ -11,6 +11,7 @@ import {
   validateSimulationFn,
   getSimulationStatusFn,
 } from "@/lib/simulation/sim.functions";
+import { runExecutiveScenarioFn } from "@/lib/simulation/exec-scenario.functions";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -105,6 +106,7 @@ function SimulationPanel({ locale }: { locale: string }) {
   const runSeed = useServerFn(runSimulationSeedFn);
   const validate = useServerFn(validateSimulationFn);
   const getStatus = useServerFn(getSimulationStatusFn);
+  const runScenario = useServerFn(runExecutiveScenarioFn);
   const [log, setLog] = useState<string>("");
 
   const status = useQuery({
@@ -124,6 +126,21 @@ function SimulationPanel({ locale }: { locale: string }) {
   const validateMut = useMutation({
     mutationFn: () => validate(),
     onSuccess: (r) => setLog(JSON.stringify(r, null, 2)),
+    onError: (e: Error) => setLog(`Error: ${e.message}`),
+  });
+
+  const scenarioMut = useMutation({
+    mutationFn: () => runScenario({ data: {} }),
+    onSuccess: (r) => {
+      setLog(
+        `Scenario ${r.scenario_tag} @ ${r.site.code} (${r.day})\n` +
+        `Duration: ${r.duration_ms}ms\n\n` +
+        `Timeline:\n` +
+        r.narrative.map((n) => `  ${n.time}  ${n.event}${n.ref ? "  [" + n.ref + "]" : ""}`).join("\n") +
+        `\n\nCounts:\n` + JSON.stringify(r.counts, null, 2),
+      );
+      status.refetch();
+    },
     onError: (e: Error) => setLog(`Error: ${e.message}`),
   });
 
@@ -157,7 +174,22 @@ function SimulationPanel({ locale }: { locale: string }) {
         >
           {locale === "ar" ? "تحقق من السلامة" : "Validate"}
         </button>
+        <button
+          onClick={() => scenarioMut.mutate()}
+          disabled={scenarioMut.isPending}
+          className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground disabled:opacity-50"
+        >
+          {scenarioMut.isPending
+            ? locale === "ar" ? "جارٍ توليد اليوم التنفيذي…" : "Building Executive Day…"
+            : locale === "ar" ? "توليد يوم تنفيذي كامل (06:00–18:00)" : "Run Executive Day Scenario (06:00–18:00)"}
+        </button>
       </div>
+
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        {locale === "ar"
+          ? "«اليوم التنفيذي» ينشئ قصة تشغيلية مترابطة: دورية → تفتيش → مخاطرة → إشعارات → إجراءات تصحيحية → حادثة → أمر عمل → اجتماع تنفيذي → تقرير ARIA — كلها مترابطة بالمعرّفات."
+          : "\"Executive Day\" builds a fully connected story: patrol → inspection → risk → notifications → CARs → incident → work order → executive meeting → ARIA briefing — all linked by refs."}
+      </p>
 
       {status.data && (
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-4">
