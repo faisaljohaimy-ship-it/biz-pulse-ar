@@ -16,6 +16,7 @@ import { ExecutiveWalkthrough, WT_DURATION, WT_FPS } from "./ExecutiveWalkthroug
 import { EnterpriseFilm, FILM_DURATION, FILM_FPS } from "./EnterpriseFilm";
 import { RoiFilmAR, ROI_DURATION, ROI_FPS } from "./RoiFilmAR";
 import { SaudiFinal, SAUDI_DURATION, SAUDI_FPS } from "./SaudiFinal";
+import { SeedExplain, SEED_DURATION, SEED_FPS } from "./SeedExplain";
 
 export const RemotionRoot = () => (
   <>
