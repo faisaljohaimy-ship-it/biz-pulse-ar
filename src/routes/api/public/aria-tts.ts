@@ -85,7 +85,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
         const text = parsed.data.text;
         if (lovableKey) {
           try {
-            const gatewayAudio = await synthesizeWithGateway(text, lovableKey);
+            const gatewayAudio = await synthesizeWithGateway(text, lovableKey, parsed.data.lang);
             if (gatewayAudio) {
               const audio = await gatewayAudio.arrayBuffer();
               return new Response(audio, {
