@@ -25,52 +25,127 @@ import { DemoMotionOverlay } from "@/lib/demo/motion-director";
 import { PresentationLayer } from "@/components/executive/presentation/PresentationLayer";
 import { AriaGlobalDock } from "@/components/aria/AriaGlobalDock";
 import { ExecutiveBriefingBar } from "@/components/aria/ExecutiveBriefingBar";
+import { OfflineBanner } from "@/components/system/OfflineBanner";
 
+
+function BrandedBackdrop({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 30%, rgba(0,212,255,0.14), transparent 60%), linear-gradient(180deg, #061A2E 0%, #04111f 100%)",
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          background:
+            "repeating-linear-gradient(0deg, rgba(58,232,255,0.04) 0 1px, transparent 1px 3px)",
+        }}
+      />
+      <div className="relative z-10 max-w-md text-center" dir="rtl">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-gradient">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+    <BrandedBackdrop>
+      <div
+        className="mx-auto mb-6 h-24 w-24 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 40% 35%, #6FFFE9 0%, #00D4FF 40%, #0B2742 90%)",
+          boxShadow: "0 0 60px rgba(0,212,255,0.45)",
+        }}
+        aria-hidden
+      />
+      <h1
+        className="text-6xl font-bold"
+        style={{
+          background: "linear-gradient(135deg, #6FFFE9, #00D4FF)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          fontFamily: "var(--font-arabic)",
+        }}
+      >
+        404
+      </h1>
+      <p
+        className="mt-4 text-base"
+        style={{ color: "#D7EAF4", fontFamily: "var(--font-arabic)" }}
+      >
+        يبدو أنك خرجت عن المسار — أعيدك إلى غرفة القيادة؟
+      </p>
+      <p className="mt-1 text-xs" style={{ color: "#8FAFC4" }}>
+        Looks like you drifted off-course — return to the command room.
+      </p>
+      <div className="mt-6">
+        <Link
+          to="/"
+          className="nx-press inline-flex items-center justify-center rounded-md px-5 py-2 text-sm font-semibold"
+          style={{
+            background: "linear-gradient(135deg, #00D4FF, #3AE8FF)",
+            color: "#04111f",
+            boxShadow: "0 8px 30px rgba(0,212,255,0.35)",
+          }}
+        >
+          العودة إلى NEXIOS
+        </Link>
       </div>
-    </div>
+    </BrandedBackdrop>
   );
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-        </div>
+    <BrandedBackdrop>
+      <div
+        className="mx-auto mb-6 h-20 w-20 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 40% 35%, #FFB703 0%, #FF4D6D 55%, #0B2742 95%)",
+          boxShadow: "0 0 50px rgba(255,77,109,0.35)",
+        }}
+        aria-hidden
+      />
+      <h1
+        className="text-xl font-semibold"
+        style={{ color: "#fff", fontFamily: "var(--font-arabic)" }}
+      >
+        تعذّر تحميل هذه اللوحة
+      </h1>
+      <p className="mt-2 text-sm" style={{ color: "#8FAFC4" }}>
+        {error.message || "حدث خطأ غير متوقع في وحدة العرض."}
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <button
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+          className="nx-press inline-flex items-center justify-center rounded-md px-5 py-2 text-sm font-semibold"
+          style={{
+            background: "linear-gradient(135deg, #00D4FF, #3AE8FF)",
+            color: "#04111f",
+          }}
+        >
+          إعادة المحاولة
+        </button>
+        <Link
+          to="/"
+          className="nx-press inline-flex items-center justify-center rounded-md border px-5 py-2 text-sm font-semibold"
+          style={{ borderColor: "rgba(0,212,255,0.35)", color: "#D7EAF4" }}
+        >
+          غرفة القيادة
+        </Link>
       </div>
-    </div>
+    </BrandedBackdrop>
   );
 }
 
@@ -79,6 +154,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#0A0E14" },
+      { name: "color-scheme", content: "dark" },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
       {
@@ -184,6 +261,7 @@ function RootComponent() {
           <I18nProvider>
             <AriaContextProvider>
               <DemoModeProvider>
+                <OfflineBanner />
                 <BetaMarqueeBar />
                 <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
                   <div className="pointer-events-auto">

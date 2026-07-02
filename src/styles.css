@@ -687,3 +687,80 @@ html[lang^="ar"] [dir="ltr"] .tracking-wider,
 html[lang^="ar"] [dir="ltr"] .tracking-widest {
   letter-spacing: revert !important;
 }
+
+/* ============================================================
+   NEXIOS · Final Excellence Pass — motion tokens + polish
+   Additive only. No behavior changes.
+   ============================================================ */
+:root {
+  --nx-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --nx-dur-1: 150ms;
+  --nx-dur-2: 300ms;
+  --nx-dur-3: 600ms;
+}
+
+/* Keyboard focus ring (emerald 2px) — non-destructive to mouse users */
+:where(a, button, [role="button"], input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Consistent press feedback on interactive elements */
+@media (hover: hover) {
+  :where(button, [role="button"], a.btn, .nx-press):not(:disabled):active {
+    transform: scale(0.98);
+    transition: transform var(--nx-dur-1) var(--nx-ease);
+  }
+}
+
+/* Glass skeleton shimmer (max 800ms cycle) */
+@keyframes nx-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.nx-skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--nx-surface) 60%, transparent) 0%,
+    color-mix(in srgb, var(--nx-cyan) 12%, transparent) 50%,
+    color-mix(in srgb, var(--nx-surface) 60%, transparent) 100%
+  );
+  background-size: 800px 100%;
+  animation: nx-shimmer 800ms var(--nx-ease) infinite;
+  border-radius: 12px;
+}
+
+/* Scroll-reveal: 12px rise + fade, once */
+@keyframes nx-reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.nx-reveal {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+.nx-reveal.nx-in {
+  animation: nx-reveal var(--nx-dur-3) var(--nx-ease) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-skeleton { animation: none; }
+  .nx-reveal, .nx-reveal.nx-in { opacity: 1; transform: none; animation: none; }
+  :where(button, [role="button"], a.btn, .nx-press):active { transform: none; }
+}
+
+/* Offline banner */
+.nx-offline-banner {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 200;
+  background: linear-gradient(90deg, #7f1d1d, #b91c1c);
+  color: #fff;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: var(--font-arabic);
+  letter-spacing: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
