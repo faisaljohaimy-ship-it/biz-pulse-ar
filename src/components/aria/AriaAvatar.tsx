@@ -60,6 +60,22 @@ export function AriaAvatar({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const reduced = prefersReducedMotion();
 
+  // v3 rig — layered sprites with amplitude-driven lip-sync + hand gestures.
+  // Feature-flagged (default ON). Orb mode always uses the v1 renderer.
+  if (mode === "hologram" && isAriaV3Enabled()) {
+    return (
+      <AriaAvatarV3
+        framing={framing}
+        size={size}
+        speaking={speaking}
+        thinking={thinking}
+        listening={listening}
+        className={className}
+        alt={alt}
+      />
+    );
+  }
+
   useEffect(() => {
     if (mode !== "hologram" || framing !== "portrait" || reduced) return;
     const cv = canvasRef.current;
