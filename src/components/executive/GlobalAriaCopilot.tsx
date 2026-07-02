@@ -400,6 +400,9 @@ export function GlobalAriaCopilot() {
   useEffect(() => {
     if (!mounted) return;
     try { localStorage.setItem(OPEN_KEY, open ? "1" : "0"); } catch { /* noop */ }
+    try {
+      (window as unknown as { __aria_copilot_open?: boolean }).__aria_copilot_open = open;
+    } catch { /* noop */ }
   }, [mounted, open]);
   useEffect(() => {
     if (!mounted) return;

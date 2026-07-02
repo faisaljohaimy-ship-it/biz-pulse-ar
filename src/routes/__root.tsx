@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 import { GlobalAriaCopilot } from "@/components/executive/GlobalAriaCopilot";
+import { AriaLiveBriefing } from "@/components/executive/AriaLiveBriefing";
 
 import { AriaContextProvider } from "@/lib/aria/context-engine";
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -188,6 +189,7 @@ function RootComponent() {
                 <BetaMarqueeBar />
                 <Outlet />
                 <GlobalAriaCopilot />
+                <AriaLiveBriefing />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
                 <PresentationLayer />
