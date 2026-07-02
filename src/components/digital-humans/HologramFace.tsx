@@ -72,9 +72,76 @@ function paletteFor(state: DigitalHumanState): Palette {
   }
 }
 
-export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props) {
+export function HologramFace({ state, amp = 0, size = 72, className, ar, text, emotion, attentionSide = null, greeting, anomaly }: Props) {
   const speaking = state === "speaking";
   const thinking = state === "thinking" || state === "analyzing" || state === "searching" || state === "reading";
+  const listening = state === "listening";
+  const intensity = Math.min(1, Math.max(0, amp));
+  const pal = paletteFor(state);
+
+  // ---- Emotion director ----------------------------------------------------
+  // If speaking with text, resolve per-sentence emotion + gesture; otherwise
+  // fall back to state-driven emotion.
+  const [activeEmotion, setActiveEmotion] = useState<AriaEmotion>("warm");
+  const [activeGesture, setActiveGesture] = useState<AriaHeadGesture>("none");
+  const [gestureP, setGestureP] = useState(0);
+  useEffect(() => {
+    if (emotion) { setActiveEmotion(emotion); return; }
+    if (speaking && text) {
+      const sentences = splitSentences(text);
+      const last = sentences[sentences.length - 1] ?? text;
+      setActiveEmotion(anomaly ? "concern" : emotionForSentence(last));
+      setActiveGesture(gestureForSentence(last));
+    } else {
+      setActiveEmotion(emotionForState(
+        speaking ? "speaking" : listening ? "listening" : thinking ? "thinking" : "idle",
+        { greeting, anomaly },
+      ));
+      setActiveGesture("none");
+    }
+  }, [text, emotion, speaking, listening, thinking, greeting, anomaly]);
+
+  // Drive gesture progress 0→1 over 350ms then reset
+  useEffect(() => {
+    if (activeGesture === "none") { setGestureP(0); return; }
+    const duration = activeGesture === "question-tilt" ? 900 : activeGesture === "double-nod" ? 620 : 350;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      setGestureP(p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setActiveGesture("none");
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [activeGesture]);
+
+  // ---- Living idle: value-noise micro-sway (±0.8°, 8s period) --------------
+  const [sway, setSway] = useState({ yaw: 0, roll: 0 });
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    // seeded pseudo-noise via layered sines — deterministic + cheap
+    const tick = (now: number) => {
+      const t = (now - start) / 1000;
+      const damp = listening ? 0.5 : 1;
+      const yaw = (Math.sin(t * 0.78) * 0.5 + Math.sin(t * 0.31 + 1.7) * 0.5) * 0.8 * damp;
+      const roll = (Math.sin(t * 0.44 + 0.9) * 0.5 + Math.sin(t * 0.19 + 2.3) * 0.5) * 0.8 * damp;
+      setSway({ yaw, roll });
+      raf = requestAnimationFrame(tick);
+    };
+    if (typeof window !== "undefined" && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      raf = requestAnimationFrame(tick);
+    }
+    return () => cancelAnimationFrame(raf);
+  }, [listening]);
+
+  const overlay = emotionOverlay(activeEmotion);
+  const yaw = sway.yaw + attentionYaw(attentionSide) + (listening ? 6 : 0);
+  const roll = sway.roll;
+  const gestureTx = gestureTransform(activeGesture, gestureP);
+
   const listening = state === "listening";
   const intensity = Math.min(1, Math.max(0, amp));
   const pal = paletteFor(state);
