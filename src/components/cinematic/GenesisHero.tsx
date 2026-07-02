@@ -309,6 +309,12 @@ export function GenesisHero({ onDone }: Props) {
   const [needsGesture, setNeedsGesture] = useState(true);
   const [muted, setMuted] = useState(false);
 
+  // Royal art-direction flag (default ON; OFF restores classic v2 palette)
+  const isRoyal = useMemo(() => isFlagOn("hero_royal"), []);
+  const riyadhHour = useMemo(() => (new Date().getUTCHours() + 3) % 24, []);
+  const royalGreet = useMemo(() => royalGreetingFor(riyadhHour), [riyadhHour]);
+  const [typedGreet, setTypedGreet] = useState("");
+
   // reduced-motion escape hatch → skip immediately, delegate to fallback intro
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
