@@ -81,8 +81,9 @@ function IntroLanding() {
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      {/* Signature wordmark above the fold */}
-      <div className={`relative z-10 mx-auto mt-6 px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+      {/* Signature ARIA core orb + wordmark above the fold */}
+      <div className={`relative z-10 mx-auto mt-6 px-4 transition-opacity duration-1000 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+        <AriaCoreOrb size={340} className="mb-2 sm:mb-4" />
         <ExecutiveWordmark title="A R I A" caption={ar ? "الذكاء التنفيذي" : "Executive Intelligence"} size="md" />
       </div>
 
