@@ -11,6 +11,8 @@ import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
 import { AriaCinematicIntro } from "@/components/cinematic/AriaCinematicIntro";
+import { GenesisHero } from "@/components/cinematic/GenesisHero";
+import { isFlagOn } from "@/lib/feature-flags";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
