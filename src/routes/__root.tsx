@@ -191,6 +191,7 @@ function RootComponent() {
                 <Outlet />
                 <GlobalAriaCopilot />
                 <AriaLiveBriefing />
+                <DeveloperBrainToggle />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
                 <PresentationLayer />
