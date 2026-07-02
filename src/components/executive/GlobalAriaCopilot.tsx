@@ -512,6 +512,8 @@ export function GlobalAriaCopilot() {
   const ask = useCallback(async (q: string) => {
     const qt = q.trim();
     if (!qt) return;
+    demoCancelRef.current = true;
+    setDemoPlaying(false);
     stopSpeaking();
     setLoading(true);
     const detected: "ar" | "en" = isArabic(qt) ? "ar" : "en";
