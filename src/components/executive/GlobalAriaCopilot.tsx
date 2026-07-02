@@ -811,7 +811,7 @@ export function GlobalAriaCopilot() {
           aria-label={ar ? "استعادة آريا" : "Restore ARIA"}
           className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#061A2E]/85 px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF] shadow-[0_8px_28px_-8px_rgba(0,212,255,0.55)] backdrop-blur hover:bg-[#3AE8FF]/10"
         >
-          <Eye className="h-3 w-3" /> ARIA
+          ARIA
         </button>
       </div>
     );
