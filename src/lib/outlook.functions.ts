@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { apiError, input, z } from "@/lib/api";
 import { httpJson } from "@/lib/api/http.server";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
 
