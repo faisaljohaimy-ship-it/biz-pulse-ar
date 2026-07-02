@@ -93,6 +93,7 @@ const PIN_KEY = "aria-copilot-pinned";
 const HIDDEN_KEY = "aria-copilot-hidden";
 const WELCOMED_KEY = "aria-copilot-welcomed-v2";
 const WELCOME_TOAST_KEY = "aria-copilot-welcome-toast-v2";
+const GREETED_KEY = "aria-copilot-greeted-v1";
 
 const QUICK_ACTIONS: QuickAction[] = [
   { label_ar: "غرفة العمليات", label_en: "Operations", to: "/operations" },
@@ -100,6 +101,32 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label_ar: "منظومة الحج", label_en: "Hajj Ops", to: "/hajj" },
   { label_ar: "الأمن الصناعي", label_en: "Security", to: "/sec" },
 ];
+
+// Executive Action Mode — 5 canonical intents surfaced as chips in the panel.
+type ExecIntent = {
+  id: "executive_summary" | "explain_current_page" | "next_action" | "risk_review" | "executive_tour";
+  label_ar: string;
+  label_en: string;
+  prompt_ar: string;
+  prompt_en: string;
+};
+const EXEC_INTENTS: readonly ExecIntent[] = [
+  { id: "executive_summary",    label_ar: "ملخص تنفيذي",       label_en: "Executive Summary",
+    prompt_ar: "أعطني ملخصاً تنفيذياً موجزاً لحالة النظام الآن، بدون تفاصيل تقنية.",
+    prompt_en: "Give me a concise executive summary of the current system state, no technical detail." },
+  { id: "explain_current_page", label_ar: "اشرح الصفحة",       label_en: "Explain This Page",
+    prompt_ar: "اشرح لي هذه الصفحة وأهم عناصرها بإيجاز تنفيذي.",
+    prompt_en: "Explain this page and its key elements briefly, executive style." },
+  { id: "next_action",          label_ar: "ما الإجراء التالي؟", label_en: "Next Action",
+    prompt_ar: "ما الإجراء التنفيذي التالي الذي يجب أن أتخذه الآن؟ اذكر خطوة واحدة واضحة.",
+    prompt_en: "What is the single next executive action I should take right now?" },
+  { id: "risk_review",          label_ar: "اعرض المخاطر",       label_en: "Show Risks",
+    prompt_ar: "اعرض لي أعلى المخاطر المفتوحة مع خطة تخفيف مقترحة لكل منها.",
+    prompt_en: "Show me the top open risks with a suggested mitigation for each." },
+  { id: "executive_tour",       label_ar: "ابدأ جولة تنفيذية",  label_en: "Executive Tour",
+    prompt_ar: "ابدأ جولة تنفيذية مختصرة تشرح أهم قدرات نكسيوس في خطوات قصيرة.",
+    prompt_en: "Start a short executive tour of the top NEXIOS capabilities in brief steps." },
+] as const;
 
 function isArabic(s: string) {
   return /[\u0600-\u06FF]/.test(s);
@@ -377,6 +404,24 @@ export function GlobalAriaCopilot() {
     window.addEventListener("aria:open", onOpen as EventListener);
     return () => window.removeEventListener("aria:open", onOpen as EventListener);
   }, [mounted]);
+
+  // Greet once per session — only when the executive explicitly opens ARIA.
+  // Silent by default (no auto-TTS); the greeting is a written turn.
+  useEffect(() => {
+    if (!mounted || !open) return;
+    let greeted = false;
+    try { greeted = sessionStorage.getItem(GREETED_KEY) === "1"; } catch { /* noop */ }
+    if (greeted) return;
+    try { sessionStorage.setItem(GREETED_KEY, "1"); } catch { /* noop */ }
+    const greet_ar = "أهلاً بك. أنا آريا، مساعدك التنفيذي. اختر إجراءً من الأسفل أو اسألني مباشرة.";
+    const greet_en = "Welcome. I'm ARIA, your executive assistant. Pick an action below or ask me directly.";
+    setTurns((p) => [
+      ...p,
+      { id: `greet_${Date.now()}`, question: "—", qLang: "ar", stage: "done",
+        answer: { text_ar: greet_ar, text_en: greet_en } },
+    ]);
+  }, [mounted, open]);
+
 
   // Live Highlighting: pulse any [data-aria-widget-id="<id>"] when ARIA emits focus.
   useEffect(() => {
@@ -868,23 +913,29 @@ export function GlobalAriaCopilot() {
             </div>
           )}
 
-          {/* Quick prompts (empty state) */}
-          {turns.length === 0 && !loading && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(ar ? ctx.prompts_ar : ctx.prompts_en).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => void ask(p)}
-                  className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
-                >
-                  {p}
-                </button>
-              ))}
+          {/* Executive Action chips — always visible, 5 canonical intents */}
+          {!loading && (
+            <div className="mt-3 space-y-2">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF]/70">
+                {ar ? "إجراءات ARIA السريعة" : "ARIA Quick Actions"}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {EXEC_INTENTS.map((intent) => (
+                  <button
+                    key={intent.id}
+                    type="button"
+                    data-aria-intent={intent.id}
+                    onClick={() => void ask(ar ? intent.prompt_ar : intent.prompt_en)}
+                    className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/[0.08] px-2.5 py-1 text-[11px] font-medium text-[#3AE8FF] transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/20"
+                  >
+                    {ar ? intent.label_ar : intent.label_en}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Follow-up suggestions after any answer */}
+          {/* Follow-up: contextual page prompts after any answer */}
           {turns.length > 0 && !loading && (
             <div className="mt-3 space-y-2">
               <div className="flex flex-wrap gap-1.5">
@@ -893,7 +944,7 @@ export function GlobalAriaCopilot() {
                     key={`fu-${p}`}
                     type="button"
                     onClick={() => void ask(p)}
-                    className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
+                    className="rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/75 transition hover:border-[#3AE8FF]/60 hover:text-white"
                   >
                     {p}
                   </button>
