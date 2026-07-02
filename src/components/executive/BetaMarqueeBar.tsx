@@ -65,7 +65,7 @@ export function BetaMarqueeBar() {
       <div className="relative flex items-center py-2">
         <div className="absolute left-3 z-20 hidden items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-2.5 py-0.5 sm:flex">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">BETA</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">{isPublic ? "GA" : "BETA"}</span>
         </div>
 
         <div className="beta-marquee-track flex w-max items-center gap-12 whitespace-nowrap px-6 text-[12px] font-semibold tracking-wide text-white/90 sm:text-[13px]">
