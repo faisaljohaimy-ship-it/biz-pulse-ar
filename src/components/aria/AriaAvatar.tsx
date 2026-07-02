@@ -31,6 +31,7 @@ type Props = {
   size?: number;
   speaking?: boolean;
   thinking?: boolean;
+  listening?: boolean;
   className?: string;
   alt?: string;
 };
