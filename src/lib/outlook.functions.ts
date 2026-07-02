@@ -54,7 +54,8 @@ export const sendOutlookReport = createServerFn({ method: "POST" })
 
 export const listOutlookInbox = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
     const json = await httpJson<{
       value?: Array<{
         id: string;
