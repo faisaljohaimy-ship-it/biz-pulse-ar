@@ -927,8 +927,8 @@ export function GlobalAriaCopilot() {
                   <div key={t.id} className="space-y-1.5">
                     {!isGreeting && (
                       <div className="flex items-start gap-2" dir={t.qLang === "ar" ? "rtl" : "ltr"}>
-                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/15 bg-white/5 text-white/70">
-                          <User className="h-3 w-3" />
+                        <span className="mt-0.5 shrink-0 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-white/60">
+                          {ar ? "أنت" : "You"}
                         </span>
                         <div className="rounded-xl rounded-tl-sm border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] leading-relaxed text-white/85">
                           <p className="whitespace-pre-wrap break-words">{t.question}</p>
@@ -936,8 +936,8 @@ export function GlobalAriaCopilot() {
                       </div>
                     )}
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-[#3AE8FF]">
-                        <MessageSquare className="h-3 w-3" />
+                      <span className="mt-0.5 shrink-0 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-[#3AE8FF]">
+                        ARIA
                       </span>
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
