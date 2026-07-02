@@ -79,6 +79,23 @@ export default function AriaGlobalPanel({ onClose }: Props) {
 
   useEffect(() => () => { stopAllAudioAndMic(); }, [stopAllAudioAndMic]);
 
+  // Preload ARIA pose images so state swaps are instant.
+  useEffect(() => {
+    (async () => {
+      try {
+        const [idle, listening, speaking] = await Promise.all([
+          import("@/assets/aria-hologram.png.asset.json"),
+          import("@/assets/aria-pose-listening.png.asset.json"),
+          import("@/assets/aria-pose-speaking.png.asset.json"),
+        ]);
+        [idle, listening, speaking].forEach((m) => {
+          const img = new Image();
+          img.src = (m as { default: { url: string } }).default.url;
+        });
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
   /** Stream from /api/public/aria-chat; fall back to /api/public/aria-ask on error. */
   const streamAnswer = useCallback(async (
     q: string,
