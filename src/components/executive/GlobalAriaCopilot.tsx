@@ -405,6 +405,24 @@ export function GlobalAriaCopilot() {
     return () => window.removeEventListener("aria:open", onOpen as EventListener);
   }, [mounted]);
 
+  // Greet once per session — only when the executive explicitly opens ARIA.
+  // Silent by default (no auto-TTS); the greeting is a written turn.
+  useEffect(() => {
+    if (!mounted || !open) return;
+    let greeted = false;
+    try { greeted = sessionStorage.getItem(GREETED_KEY) === "1"; } catch { /* noop */ }
+    if (greeted) return;
+    try { sessionStorage.setItem(GREETED_KEY, "1"); } catch { /* noop */ }
+    const greet_ar = "أهلاً بك. أنا آريا، مساعدك التنفيذي. اختر إجراءً من الأسفل أو اسألني مباشرة.";
+    const greet_en = "Welcome. I'm ARIA, your executive assistant. Pick an action below or ask me directly.";
+    setTurns((p) => [
+      ...p,
+      { id: `greet_${Date.now()}`, question: "—", qLang: "ar", stage: "done",
+        answer: { text_ar: greet_ar, text_en: greet_en } },
+    ]);
+  }, [mounted, open]);
+
+
   // Live Highlighting: pulse any [data-aria-widget-id="<id>"] when ARIA emits focus.
   useEffect(() => {
     if (!mounted) return;
