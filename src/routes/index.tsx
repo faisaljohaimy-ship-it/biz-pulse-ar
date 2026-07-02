@@ -180,6 +180,9 @@ function IntroLanding() {
           NEXIOS AI OS · v1.0 GA
         </p>
       </div>
+
+      {/* Grand closing wordmark */}
+      <NexiosFootermark caption={ar ? "منصة الذكاء التنفيذي" : "Enterprise AI Operating System"} />
     </div>
   );
 }
