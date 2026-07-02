@@ -444,12 +444,6 @@ export function GlobalAriaCopilot() {
     };
   }, [open, pinned]);
 
-  // Detect Web Speech API availability (browser-native STT, no backend).
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
-    setSttSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
-  }, []);
 
 
   const stopSpeaking = useCallback(() => {
@@ -485,78 +479,34 @@ export function GlobalAriaCopilot() {
     }
   }, [stopSpeaking]);
 
-  // Voice input via Web Speech API. Graceful fallback: mic button hidden
-  // when unsupported; user still has full text input.
-  const stopListening = useCallback(() => {
-    const rec = recogRef.current as { stop?: () => void; abort?: () => void } | null;
-    try { rec?.stop?.(); } catch { /* noop */ }
-    recogRef.current = null;
-    setListening(false);
-    setInterimText("");
-  }, []);
-
-  const startListening = useCallback(() => {
-    if (typeof window === "undefined") return;
-    const w = window as unknown as {
-      SpeechRecognition?: new () => unknown;
-      webkitSpeechRecognition?: new () => unknown;
-    };
-    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
-    if (!Ctor) return;
-    // Natural interruption: stop any speaking playback while user talks.
+  // Speak-and-wait: resolves when playback ends (or on error/timeout).
+  const speakAndWait = useCallback(async (text: string) => {
+    const clean = cleanForVoice(text);
+    if (!clean) return;
     stopSpeaking();
     try {
-      const rec = new Ctor() as {
-        lang: string;
-        continuous: boolean;
-        interimResults: boolean;
-        maxAlternatives: number;
-        onresult: (e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void;
-        onerror: () => void;
-        onend: () => void;
-        start: () => void;
-        stop: () => void;
-      };
-      rec.lang = ar ? "ar-SA" : "en-US";
-      rec.continuous = false;
-      rec.interimResults = true;
-      rec.maxAlternatives = 1;
-      let finalText = "";
-      rec.onresult = (e) => {
-        let interim = "";
-        for (let i = e.resultIndex; i < e.results.length; i += 1) {
-          const seg = e.results[i];
-          const txt = seg[0]?.transcript ?? "";
-          if (seg.isFinal) finalText += txt;
-          else interim += txt;
-        }
-        setInterimText(interim);
-        if (interim) setQuestion(interim);
-      };
-      rec.onerror = () => {
-        setListening(false);
-        setInterimText("");
-        recogRef.current = null;
-      };
-      rec.onend = () => {
-        setListening(false);
-        setInterimText("");
-        recogRef.current = null;
-        const finalQ = (finalText || "").trim();
-        if (finalQ) {
-          setQuestion("");
-          const runner = askRef.current;
-          if (runner) void runner(finalQ);
-        }
-      };
-      recogRef.current = rec;
-      setListening(true);
-      rec.start();
+      setSpeaking(true);
+      const r = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clean }),
+      });
+      if (!r.ok) { setSpeaking(false); return; }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      await new Promise<void>((resolve) => {
+        let done = false;
+        const finish = () => { if (done) return; done = true; setSpeaking(false); URL.revokeObjectURL(url); resolve(); };
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.play().catch(finish);
+      });
     } catch {
-      setListening(false);
-      recogRef.current = null;
+      setSpeaking(false);
     }
-  }, [ar, stopSpeaking]);
+  }, [stopSpeaking]);
 
 
   const ask = useCallback(async (q: string) => {
