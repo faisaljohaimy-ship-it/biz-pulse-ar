@@ -125,3 +125,12 @@ export function getPageEntry(pathname: string): PageEntry {
   for (const k of keys) if (k !== "/" && pathname.startsWith(k)) return R[k];
   return FALLBACK;
 }
+
+export function listPages(): Array<{ path: string; title_en: string; purpose_en: string }> {
+  return Object.entries(R).map(([path, e]) => ({
+    path,
+    title_en: e.title_en,
+    purpose_en: e.purpose_en,
+  }));
+}
+
