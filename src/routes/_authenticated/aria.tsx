@@ -34,6 +34,11 @@ import type { PipelineResult } from "@/lib/aria/pipeline.server";
 import { PIPELINE_STAGES, type ReportKind } from "@/lib/aria/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AriaAvatar } from "@/components/aria/AriaAvatar";
+import {
+  togglePresentationMode,
+  useAriaPresentationMode,
+} from "@/lib/aria/presentation-mode";
 
 export const Route = createFileRoute("/_authenticated/aria")({
   validateSearch: z.object({ prompt: z.string().optional() }),
@@ -48,6 +53,7 @@ function AriaConsole() {
   const [draft, setDraft] = useState(prefill ?? "");
   useEffect(() => { if (prefill) setDraft(prefill); }, [prefill]);
   const qc = useQueryClient();
+  const ariaPresMode = useAriaPresentationMode();
   const runFn = useServerFn(runAriaPipeline);
   const generateFn = useServerFn(generateAriaReport);
   const pinFn = useServerFn(pinAriaMemory);
@@ -144,13 +150,29 @@ function AriaConsole() {
       {/* CENTER — Pipeline timeline + chat */}
       <main className="lg:col-span-6 flex flex-col gap-3 min-h-0">
         <header className="flex items-center gap-3 border-b border-border pb-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/30 shadow-glow">
-            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-primary/40 bg-[#03111e] shadow-glow">
+            <AriaAvatar
+              mode={ariaPresMode}
+              framing="portrait"
+              size={44}
+              thinking={runMut.isPending}
+              className="!h-full !w-full"
+              alt="ARIA"
+            />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-base font-bold">ARIA — مركز الذكاء التنفيذي</h1>
             <p className="text-[11px] text-muted-foreground font-mono">Intent → Memory → RAG → Context → KPI → Risk → Decision → Reason → Tools → Report</p>
           </div>
+          <button
+            type="button"
+            onClick={() => togglePresentationMode()}
+            title={ariaPresMode === "hologram" ? "Hologram → Orb" : "Orb → Hologram"}
+            aria-label="Toggle ARIA presentation mode"
+            className="grid h-8 w-8 place-items-center rounded-md border border-primary/30 bg-primary/5 text-primary hover:bg-primary/15 transition"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+          </button>
         </header>
 
         <div className="flex-1 overflow-y-auto space-y-4 pr-1">
