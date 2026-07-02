@@ -63,11 +63,10 @@ export function AriaGlobalDock() {
         aria-hidden={hiddenByHero || undefined}
         className={[
           "fixed z-[90] transition-opacity duration-300",
-          // RTL: bottom-start (visually bottom-right in RTL, bottom-left in LTR per spec: "bottom-left in RTL, mirrors to bottom-right in LTR")
-          // spec says orb bottom-left in RTL. Using logical `start` yields left in RTL.
-          "bottom-4 start-4",
+          "start-4",
           hiddenByHero ? "opacity-0 pointer-events-none" : "opacity-100",
         ].join(" ")}
+        style={{ bottom: "calc(1rem + var(--nx-dock-offset, 0px))" }}
       >
         <div className="relative">
           {/* Greet tooltip */}
