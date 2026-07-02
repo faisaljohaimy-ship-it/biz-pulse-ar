@@ -179,7 +179,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
                 framing="portrait"
                 size={36}
                 thinking={stage === "thinking"}
-                speaking={stage === "streaming"}
+                speaking={stage === "streaming" || voice.speaking}
                 alt={isAr ? "آريا" : "ARIA"}
                 className="!h-full !w-full"
               />
