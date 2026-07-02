@@ -773,13 +773,6 @@ export function GlobalAriaCopilot() {
             >
               <img src={ariaHologram.url} alt="ARIA" className="aria-avatar-breathe absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
               <span aria-hidden className="aria-avatar-blink" />
-              {listening && (
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-full"
-                  style={{ animation: "gac-listen 1.4s ease-out infinite" }}
-                />
-              )}
               {loading ? (
                 <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
                   <Loader2 className="h-4 w-4 animate-spin text-[#3AE8FF]" />
