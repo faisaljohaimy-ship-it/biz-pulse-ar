@@ -973,6 +973,22 @@ export function GenesisHero({ onDone }: Props) {
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>\")",
         }}
       />
+
+      {/* ROYAL: keyframes for aurora curtain, ring rotation, caret blink */}
+      {isRoyal && (
+        <style>{`
+          @keyframes nx-royal-aurora {
+            0%   { filter: blur(48px) hue-rotate(0deg); opacity: 0.75; }
+            50%  { filter: blur(56px) hue-rotate(6deg); opacity: 0.9; }
+            100% { filter: blur(48px) hue-rotate(-6deg); opacity: 0.75; }
+          }
+          @keyframes nx-royal-ring { to { transform: rotate(360deg); } }
+          @keyframes nx-royal-caret { 50% { opacity: 0.15; } }
+          @media (prefers-reduced-motion: reduce) {
+            [style*="nx-royal-aurora"], [style*="nx-royal-ring"], [style*="nx-royal-caret"] { animation: none !important; }
+          }
+        `}</style>
+      )}
     </div>
   );
 }
