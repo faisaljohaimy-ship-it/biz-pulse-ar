@@ -556,7 +556,6 @@ export function GenesisHero({ onDone }: Props) {
 
       rafRef.current = requestAnimationFrame(loop);
     };
-    const rp_marks: boolean[] = [false, false, false, false];
 
     rafRef.current = requestAnimationFrame(loop);
 
