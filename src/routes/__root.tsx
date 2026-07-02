@@ -276,8 +276,8 @@ function RootComponent() {
                 <OfflineBanner />
                 <BetaMarqueeBar />
                 <div
-                  className="pointer-events-none fixed left-1/2 z-[110] -translate-x-1/2"
-                  style={{ top: "calc(env(safe-area-inset-top, 0px) + 40px)" }}
+                  className="pointer-events-none fixed left-1/2 z-[200] -translate-x-1/2"
+                  style={{ top: "max(6px, env(safe-area-inset-top, 0px))" }}
                 >
                   <div className="pointer-events-auto">
                     <LanguageToggle />
