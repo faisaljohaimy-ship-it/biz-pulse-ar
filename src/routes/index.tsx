@@ -19,6 +19,8 @@ import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { BUILD_ID } from "@/lib/build-id";
 import { Scene } from "@/components/cinema/Scene";
+import { narrator } from "@/lib/aria/narrator";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
