@@ -78,7 +78,7 @@ function IntroLanding() {
       <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/os" })} />
 
       {/* Mini ARIA presence inside the hero */}
-      <div className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+      <div id="aria-quick-ask" className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
         <MiniAriaHeroBadge />
       </div>
 
