@@ -63,6 +63,15 @@ class Sfx {
   private ctx: AudioContext | null = null;
   private hum: OscillatorNode | null = null;
   private humG: GainNode | null = null;
+  // Royal layers
+  private rustleSrc: AudioBufferSourceNode | null = null;
+  private rustleG: GainNode | null = null;
+  private rustleLfo: OscillatorNode | null = null;
+  private swellO1: OscillatorNode | null = null;
+  private swellO2: OscillatorNode | null = null;
+  private swellO3: OscillatorNode | null = null;
+  private swellG: GainNode | null = null;
+  private masterG: GainNode | null = null;
   private muted = false;
   private unlocked = false;
   constructor() {
@@ -71,7 +80,7 @@ class Sfx {
   setMuted(m: boolean) {
     this.muted = m;
     try { sessionStorage.setItem(AUDIO_PREF_KEY, m ? "1" : "0"); } catch { /* */ }
-    if (m) this.stopHum();
+    if (m) { this.stopHum(); this.stopRustle(); this.stopSwell(); }
   }
   isMuted() { return this.muted; }
   async unlock(): Promise<boolean> {
@@ -82,18 +91,30 @@ class Sfx {
       if (!this.ctx) this.ctx = new AC();
       if (this.ctx.state === "suspended") await this.ctx.resume();
       this.unlocked = this.ctx.state === "running";
+      if (this.unlocked && !this.masterG) {
+        this.masterG = this.ctx.createGain();
+        this.masterG.gain.value = 1;
+        this.masterG.connect(this.ctx.destination);
+      }
       return this.unlocked;
     } catch { return false; }
   }
+  // Duck all layered ambience under ARIA's voice (0..1 amp → -8dB max)
+  duck(amp: number) {
+    if (!this.ctx || !this.masterG) return;
+    const target = amp > 0.05 ? 0.4 : 1; // ~ -8dB
+    const t = this.ctx.currentTime;
+    this.masterG.gain.setTargetAtTime(target, t, 0.2);
+  }
   startHum(ms = 2400) {
-    if (!this.unlocked || !this.ctx || this.muted || this.hum) return;
+    if (!this.unlocked || !this.ctx || this.muted || this.hum || !this.masterG) return;
     const t = this.ctx.currentTime;
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.08, t + ms / 1000);
+    g.gain.exponentialRampToValueAtTime(0.06, t + ms / 1000);
     const o = this.ctx.createOscillator();
     o.type = "sine"; o.frequency.value = 55;
-    o.connect(g); g.connect(this.ctx.destination); o.start();
+    o.connect(g); g.connect(this.masterG); o.start();
     this.hum = o; this.humG = g;
   }
   stopHum(fadeMs = 900) {
@@ -105,16 +126,81 @@ class Sfx {
     const h = this.hum; setTimeout(() => { try { h.stop(); } catch { /* */ } }, fadeMs + 60);
     this.hum = null; this.humG = null;
   }
+  // Royal layer 1: silky filtered-noise "rustle", -28dB ≈ 0.04 gain
+  startRustle() {
+    if (!this.unlocked || !this.ctx || this.muted || this.rustleSrc || !this.masterG) return;
+    const dur = 2; // seconds of noise loop
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * dur, this.ctx.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * 0.5;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = "bandpass"; bp.frequency.value = 4200; bp.Q.value = 0.9;
+    const g = this.ctx.createGain(); g.gain.value = 0.0001;
+    const lfo = this.ctx.createOscillator(); lfo.type = "sine"; lfo.frequency.value = 0.35;
+    const lfoG = this.ctx.createGain(); lfoG.gain.value = 0.025;
+    lfo.connect(lfoG); lfoG.connect(g.gain);
+    src.connect(bp); bp.connect(g); g.connect(this.masterG);
+    const t = this.ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.04, t + 1.2);
+    src.start(); lfo.start();
+    this.rustleSrc = src; this.rustleG = g; this.rustleLfo = lfo;
+  }
+  stopRustle(fadeMs = 700) {
+    if (!this.ctx || !this.rustleSrc || !this.rustleG) return;
+    const t = this.ctx.currentTime;
+    this.rustleG.gain.cancelScheduledValues(t);
+    this.rustleG.gain.setValueAtTime(this.rustleG.gain.value, t);
+    this.rustleG.gain.exponentialRampToValueAtTime(0.0001, t + fadeMs / 1000);
+    const s = this.rustleSrc, l = this.rustleLfo;
+    setTimeout(() => { try { s.stop(); } catch { /* */ } try { l?.stop(); } catch { /* */ } }, fadeMs + 80);
+    this.rustleSrc = null; this.rustleG = null; this.rustleLfo = null;
+  }
+  // Royal layer 2: warm major swell (I major triad pad)
+  startSwell(rootHz = 261.63, riseMs = 2400) {
+    if (!this.unlocked || !this.ctx || this.muted || this.swellG || !this.masterG) return;
+    const t = this.ctx.currentTime;
+    const g = this.ctx.createGain(); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + riseMs / 1000);
+    const mk = (f: number, type: OscillatorType = "sine") => {
+      const o = this.ctx!.createOscillator(); o.type = type; o.frequency.value = f;
+      o.connect(g); o.start(); return o;
+    };
+    this.swellO1 = mk(rootHz, "sine");
+    this.swellO2 = mk(rootHz * 1.25, "sine"); // major third
+    this.swellO3 = mk(rootHz * 1.5, "triangle"); // perfect fifth
+    g.connect(this.masterG);
+    this.swellG = g;
+  }
+  stopSwell(fadeMs = 1200) {
+    if (!this.ctx || !this.swellG) return;
+    const t = this.ctx.currentTime;
+    this.swellG.gain.cancelScheduledValues(t);
+    this.swellG.gain.setValueAtTime(this.swellG.gain.value, t);
+    this.swellG.gain.exponentialRampToValueAtTime(0.0001, t + fadeMs / 1000);
+    const os = [this.swellO1, this.swellO2, this.swellO3];
+    setTimeout(() => os.forEach((o) => { try { o?.stop(); } catch { /* */ } }), fadeMs + 100);
+    this.swellO1 = this.swellO2 = this.swellO3 = null;
+    this.swellG = null;
+  }
   chime(freq = 880, ms = 700) {
-    if (!this.unlocked || !this.ctx || this.muted) return;
+    if (!this.unlocked || !this.ctx || this.muted || !this.masterG) return;
     const t = this.ctx.currentTime;
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
     const o = this.ctx.createOscillator();
     o.type = "triangle"; o.frequency.value = freq;
-    o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(t + ms / 1000 + 0.05);
+    o.connect(g); g.connect(this.masterG); o.start(); o.stop(t + ms / 1000 + 0.05);
+  }
+  // Royal layer 3: 3-note ascending crystalline arpeggio (E5 → G#5 → B5)
+  royalChime() {
+    if (!this.unlocked || !this.ctx || this.muted) return;
+    const notes = [659.25, 830.61, 987.77];
+    notes.forEach((f, i) => setTimeout(() => this.chime(f, 900), i * 140));
   }
 }
 
