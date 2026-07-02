@@ -739,8 +739,13 @@ export function GlobalAriaCopilot() {
         @keyframes gac-think { 0%,100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .9; } }
         @keyframes gac-speak { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
         @keyframes gac-halo { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes gac-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+        @keyframes gac-blink { 0%,92%,100% { transform: scaleY(0); opacity: 0; } 94%,98% { transform: scaleY(1); opacity: .55; } }
+        @keyframes gac-listen { 0%,100% { box-shadow: 0 0 0 0 rgba(255,88,120,0.55); } 50% { box-shadow: 0 0 0 10px rgba(255,88,120,0); } }
         @keyframes aria-focus-pulse-kf { 0% { box-shadow: 0 0 0 0 rgba(58,232,255,0.55); } 60% { box-shadow: 0 0 0 12px rgba(58,232,255,0); } 100% { box-shadow: 0 0 0 0 rgba(58,232,255,0); } }
         .aria-focus-pulse { animation: aria-focus-pulse-kf 1.4s ease-out 2; outline: 1px solid rgba(58,232,255,0.55); outline-offset: 2px; border-radius: inherit; transition: outline 200ms; }
+        .aria-avatar-breathe { animation: gac-breathe 4.2s ease-in-out infinite; }
+        .aria-avatar-blink { position: absolute; left: 12%; right: 12%; top: 38%; height: 6%; background: #04111F; border-radius: 4px; transform-origin: center; animation: gac-blink 5.4s ease-in-out infinite; pointer-events: none; }
       `}</style>
 
 
