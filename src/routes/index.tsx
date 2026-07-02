@@ -174,9 +174,9 @@ function IntroLanding() {
               );
             })}
           </ul>
-        </section>
+        </Scene>
 
-        <section className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
+        <Scene as="section" number="03" label="الدعوة" entrance="clip" className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
           <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
           <div className="mt-5">
