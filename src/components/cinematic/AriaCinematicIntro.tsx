@@ -343,7 +343,8 @@ export function AriaCinematicIntro() {
       timersRef.current = [];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, reduced]);
+  }, [mounted, reduced, started]);
+
 
   if (!mounted) return null;
 
