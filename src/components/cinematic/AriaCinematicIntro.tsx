@@ -299,7 +299,8 @@ export function AriaCinematicIntro() {
 
   /* ---------- directed timeline ---------- */
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !started) return;
+
     setTimeout(() => skipRef.current?.focus(), 60);
     setTimeout(() => { if (liveRef.current) liveRef.current.textContent = greeting; }, 400);
 
