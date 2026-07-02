@@ -29,7 +29,9 @@ export default function AriaGlobalPanel({ onClose }: Props) {
   const entry = useMemo(() => getPageEntry(pathname), [pathname]);
   const turns = useTurns();
   const presMode = useAriaPresentationMode();
+  const voice = useAriaVoice();
   const [draft, setDraft] = useState<string>(dockStore.getDraft());
+  const [interim, setInterim] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "thinking" | "streaming">("idle");
   const scrollRef = useRef<HTMLDivElement | null>(null);
