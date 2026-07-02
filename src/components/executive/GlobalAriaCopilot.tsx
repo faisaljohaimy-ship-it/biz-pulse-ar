@@ -645,8 +645,10 @@ export function GlobalAriaCopilot() {
     const history = ariaSessionMemory.list().slice(-8).map((t) => ({
       role: t.role, text: t.text, ts: t.ts, anchors: t.anchors,
     }));
-    try {
-      const r = await fetch("/api/public/aria-ask", {
+    // Resilient send: exponential backoff on transient failures, offline-aware,
+    // preserves conversation and memory. Never surfaces raw provider errors.
+    const attemptSend = async (): Promise<Response> => {
+      return fetch("/api/public/aria-ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -658,13 +660,60 @@ export function GlobalAriaCopilot() {
         }),
         signal: ctrl.signal,
       });
+    };
+    const isOffline = () => typeof navigator !== "undefined" && navigator.onLine === false;
+    const waitForOnline = () =>
+      new Promise<void>((resolve) => {
+        if (!isOffline()) return resolve();
+        const onOnline = () => { window.removeEventListener("online", onOnline); resolve(); };
+        window.addEventListener("online", onOnline, { once: true });
+        // Safety: resolve after 15s so we still surface a retry message.
+        setTimeout(() => { window.removeEventListener("online", onOnline); resolve(); }, 15000);
+      });
+    try {
+      // Wait quietly if the browser is offline before the first attempt.
+      if (isOffline()) {
+        setTurns((p) => p.map((t) => (t.id === id
+          ? { ...t, stage: "listening", error: detected === "ar" ? "جارٍ إعادة الاتصال…" : "Reconnecting…" }
+          : t)));
+        await waitForOnline();
+        if (ctrl.signal.aborted) return;
+      }
+      let r: Response | null = null;
+      let lastErr: unknown = null;
+      const delays = [0, 500, 1500]; // 3 attempts, exponential-ish backoff
+      for (let i = 0; i < delays.length; i += 1) {
+        if (ctrl.signal.aborted) return;
+        if (delays[i] > 0) await new Promise((res) => setTimeout(res, delays[i]));
+        try {
+          r = await attemptSend();
+          // Retry only transient upstream failures (5xx). 4xx is terminal.
+          if (r.ok || (r.status >= 400 && r.status < 500 && r.status !== 408 && r.status !== 429)) break;
+          lastErr = new Error(`http_${r.status}`);
+          // Clear message shows a soft retry state instead of the raw error.
+          if (i < delays.length - 1) {
+            setTurns((p) => p.map((t) => (t.id === id
+              ? { ...t, stage: "listening", error: detected === "ar" ? "جارٍ إعادة المحاولة…" : "Retrying…" }
+              : t)));
+          }
+        } catch (err) {
+          if ((err as Error).name === "AbortError") return;
+          lastErr = err;
+          if (i < delays.length - 1) {
+            setTurns((p) => p.map((t) => (t.id === id
+              ? { ...t, stage: "listening", error: detected === "ar" ? "جارٍ إعادة الاتصال…" : "Reconnecting…" }
+              : t)));
+          }
+        }
+      }
+      if (!r) throw lastErr instanceof Error ? lastErr : new Error("network");
       const j = (await r.json().catch(() => ({}))) as Partial<AskResult> & { error?: string; executive?: ExecutivePayload };
       if (!r.ok) throw new Error(j.error || `http_${r.status}`);
       const answer: AskResult = {
         text_ar: j.text_ar ?? "",
         text_en: j.text_en ?? "",
       };
-      setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer, executive: j.executive, stage: "done" } : t)));
+      setTurns((p) => p.map((t) => (t.id === id ? { ...t, answer, executive: j.executive, stage: "done", error: undefined } : t)));
       try { ariaSessionMemory.push({ role: "assistant", text: detected === "ar" ? answer.text_ar : answer.text_en, page: pathname }); } catch { /* noop */ }
       // Live Highlighting — pulse any registered widgets referenced in the answer.
       try {
@@ -686,9 +735,12 @@ export function GlobalAriaCopilot() {
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      const msg = e instanceof Error && e.message.includes("429")
-        ? (detected === "ar" ? "الكثير من الطلبات — حاول بعد دقيقة." : "Too many requests — try again shortly.")
-        : (detected === "ar" ? "تعذّر الاتصال بآريا الآن — أعد المحاولة." : "ARIA is unavailable right now — please retry.");
+      const raw = e instanceof Error ? e.message : "";
+      const msg = raw.includes("429")
+        ? (detected === "ar" ? "الكثير من الطلبات — سيتم المتابعة تلقائيًا." : "Too many requests — will resume automatically.")
+        : isOffline()
+        ? (detected === "ar" ? "الخدمة غير متاحة مؤقتًا — سيتم إعادة الاتصال." : "Service temporarily unavailable — reconnecting.")
+        : (detected === "ar" ? "تعذّر الوصول للخدمة الآن — الجلسة والسياق محفوظان." : "Service temporarily unavailable — session and context preserved.");
       setTurns((p) => p.map((t) => (t.id === id ? { ...t, error: msg, stage: "error" } : t)));
     } finally {
       setLoading(false);
