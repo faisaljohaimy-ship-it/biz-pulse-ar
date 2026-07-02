@@ -370,6 +370,14 @@ export function GlobalAriaCopilot() {
     try { localStorage.setItem(HIDDEN_KEY, hidden ? "1" : "0"); } catch { /* noop */ }
   }, [mounted, hidden]);
 
+  // Global opener: any UI element can dispatch `aria:open` to reveal ARIA.
+  useEffect(() => {
+    if (!mounted) return;
+    const onOpen = () => { setHidden(false); setOpen(true); };
+    window.addEventListener("aria:open", onOpen as EventListener);
+    return () => window.removeEventListener("aria:open", onOpen as EventListener);
+  }, [mounted]);
+
   // Live Highlighting: pulse any [data-aria-widget-id="<id>"] when ARIA emits focus.
   useEffect(() => {
     if (!mounted) return;
