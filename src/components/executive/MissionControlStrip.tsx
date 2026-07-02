@@ -183,7 +183,9 @@ export function MissionControlStrip() {
       preventive_wo: useDemo ? demo.preventiveWo : (k?.preventive_wo ?? 0),
       active_projects: useDemo ? demo.activeProjects : (k?.projects_in_progress ?? 0),
     };
-  }, [k, useDemo, demo, ar]);
+    briefing.publishLive(kpisRef.current, tiles.length >= 6 ? "exec" : "hero");
+  }, [k, useDemo, demo, ar, tiles.length]);
+
 
   const brief = useBriefingState();
   // Number of visible cards → 6 (lg) — spec allows a 4-KPI hero variant
