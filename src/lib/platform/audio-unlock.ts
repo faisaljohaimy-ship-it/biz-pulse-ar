@@ -24,10 +24,11 @@ export function getSharedAudioContext(): AC | null {
   if (!w) return null;
   if (w.__nx_ac) return w.__nx_ac;
   try {
-    const Ctor = w.AudioContext ?? w.webkitAudioContext;
+    const Ctor = (window.AudioContext ?? w.webkitAudioContext) as typeof AudioContext | undefined;
     if (!Ctor) return null;
-    w.__nx_ac = new Ctor();
-    return w.__nx_ac;
+    const ac = new Ctor();
+    w.__nx_ac = ac;
+    return ac;
   } catch { return null; }
 }
 
