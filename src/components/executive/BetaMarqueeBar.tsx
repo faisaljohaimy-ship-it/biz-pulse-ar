@@ -5,14 +5,14 @@
 import { useI18n } from "@/lib/i18n";
 
 const MESSAGES_AR = [
-  "✦ نسخة تجريبية قابلة للتعديل",
-  "✦ منصة إنجاز الأعمال التنفيذية — قيد التطوير المستمر",
-  "✦ مدعومة بـ ARIA · GPT-5",
+  "✦ نسخة تجريبية تنفيذية",
+  "✦ منصة إنجاز الأعمال التنفيذية",
+  "✦ رؤية 2030 · NEXIOS",
 ];
 const MESSAGES_EN = [
-  "✦ Editable Beta Preview",
-  "✦ Executive Delivery Platform — under continuous iteration",
-  "✦ Powered by ARIA · GPT-5",
+  "✦ Executive Beta Preview",
+  "✦ Executive Delivery Platform",
+  "✦ Vision 2030 · NEXIOS",
 ];
 
 export function BetaMarqueeBar() {

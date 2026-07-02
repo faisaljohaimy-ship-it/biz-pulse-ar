@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 const STAGES = [
   { t: 0,      label_ar: "تهيئة النواة",              label_en: "Initializing core" },
   { t: 2_500,  label_ar: "تجميع الجزيئات العصبية",     label_en: "Assembling neural particles" },
-  { t: 6_000, label_ar: "تفعيل ARIA · GPT-5",         label_en: "Materializing ARIA · GPT-5" },
+  { t: 6_000, label_ar: "تفعيل ARIA",                  label_en: "Materializing ARIA" },
   { t: 10_000, label_ar: "ترحيب آريا التنفيذي",        label_en: "ARIA executive greeting" },
   { t: 14_500, label_ar: "ربط مركز القيادة",            label_en: "Linking Command Center" },
   { t: 19_000, label_ar: "بث المؤشرات التنفيذية",       label_en: "Streaming executive KPIs" },
@@ -175,7 +175,7 @@ function speakAriaGreeting() {
 
   const phrases: { text: string; lang: string }[] = [
     { text: "أهلاً بك في منصة إنجاز الأعمال التنفيذية. أنا آريا، عقلك التنفيذي.", lang: "ar-SA" },
-    { text: "Welcome to NEXIOS. I am ARIA, your executive AI — powered by GPT-5.", lang: "en-US" },
+    { text: "Welcome to NEXIOS. I am ARIA, your executive AI.", lang: "en-US" },
     { text: "بماذا يمكنني مساعدتك اليوم؟", lang: "ar-SA" },
   ];
 

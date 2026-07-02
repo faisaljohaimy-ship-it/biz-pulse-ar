@@ -272,7 +272,7 @@ export function MiniAriaHeroBadge() {
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/75">
-            ARIA · GPT-5 {speaking ? (ar ? "· يتحدث" : "· speaking") : ""}
+            ARIA {speaking ? (ar ? "· يتحدث" : "· speaking") : ""}
           </div>
           <div className="truncate text-sm font-medium text-white">
             {ar ? "بماذا يمكنني مساعدتك؟" : "How can I help you?"}
@@ -335,7 +335,7 @@ export function MiniAriaHeroBadge() {
                   </span>
                   <div className="flex-1 rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
                     <div className="mb-0.5 flex items-center justify-between gap-2 text-[9.5px] uppercase tracking-[0.2em] text-[#3AE8FF]/75">
-                      <span>ARIA · GPT-5</span>
+                      <span>ARIA</span>
                       {isLast && speaking && (
                         <span className="text-[#3AE8FF]">{ar ? "يتحدث…" : "speaking…"}</span>
                       )}

@@ -308,7 +308,7 @@ export function IncidentDrawer({ incident, onOpenChange }: { incident: IncRow | 
               <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 dark:text-violet-400">
-                    <Sparkles className="h-3.5 w-3.5" /> تحليل ARIA (gpt-5)
+                    <Sparkles className="h-3.5 w-3.5" /> تحليل ARIA
                   </div>
                   <Button size="sm" variant="outline" onClick={() => mAria.mutate()} disabled={mAria.isPending}>
                     {mAria.isPending ? "جارٍ التحليل…" : "إعادة التحليل"}
