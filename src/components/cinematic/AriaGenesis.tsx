@@ -1,299 +1,245 @@
 /**
- * ARIA GENESIS — Cinematic System Boot
+ * ARIA GENESIS — Executive Cinematic Boot
  *
- * A single 15-second opening sequence that replaces the previous hero surfaces.
- * Stages (approximate, ms):
- *   0000  Absolute darkness — one pulse of light in the center.
- *   2000  Breathing light, expanding energy rings, particle genesis.
- *   5000  Holographic AI grid forms — 3D light lines, magnetic rings, data streams.
- *   8000  ARIA neural core awakens — nested rings, sound-wave halos.
- *  11000  Saudi Vision 2030 signature fades in and dissolves gracefully.
- *  13000  ARIA fully present — HUD ignition, wordmark reveal.
- *  15000  Smooth cross-fade into the main interface.
+ * A restrained 10-second opening designed for boardroom viewing:
+ * quiet, luxurious, confident. Fewer moving parts, tighter typography,
+ * a single focal light. Uses GPU-friendly transforms and a small
+ * canvas particle field. Respects prefers-reduced-motion (short fade),
+ * skips on repeat visits within a session, and can be dismissed with
+ * the Skip button or Escape.
  *
- * Fully GPU-friendly: canvas particles + SVG + transform/opacity only.
- * Respects prefers-reduced-motion (collapses to a graceful 1.6s fade).
+ * Timeline (ms):
+ *    0    silence, deep midnight background
+ *  400    seed light appears and begins to breathe
+ * 1800    concentric halo rings + soft particle field
+ * 4200    two ambient orbit ellipses (very low speed)
+ * 6600    Vision 2030 signature fades in
+ * 8200    signature dissolves, ARIA identity reveals
+ *10000    smooth cross-fade into the application
  */
 import { useEffect, useRef, useState } from "react";
 
 type Props = { onComplete: () => void };
 
-const TOTAL_MS = 15_000;
+const TOTAL_MS = 10_000;
+const SESSION_KEY = "aria-genesis-played";
 
 export function AriaGenesis({ onComplete }: Props) {
-  const [stage, setStage] = useState(0); // 0..6
+  const [stage, setStage] = useState(0);        // 0..5
   const [hiding, setHiding] = useState(false);
   const [mounted, setMounted] = useState(true);
   const doneRef = useRef(false);
-  const reducedRef = useRef(false);
 
-  // Skip on repeat visits within the same session so it never feels intrusive.
-  const skipRef = useRef<boolean>(false);
-  useEffect(() => {
-    try {
-      if (typeof window !== "undefined" && sessionStorage.getItem("aria-genesis-played") === "1") {
-        skipRef.current = true;
-      }
-    } catch {}
-  }, []);
+  const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    setHiding(true);
+    try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
+    window.setTimeout(() => { setMounted(false); onComplete(); }, 700);
+  };
 
+  // Boot timeline
   useEffect(() => {
     if (typeof window === "undefined") return;
-    reducedRef.current =
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
-    const finish = () => {
-      if (doneRef.current) return;
-      doneRef.current = true;
-      setHiding(true);
-      try { sessionStorage.setItem("aria-genesis-played", "1"); } catch {}
-      // let CSS fade play
-      window.setTimeout(() => { setMounted(false); onComplete(); }, 900);
-    };
+    let alreadyPlayed = false;
+    try { alreadyPlayed = sessionStorage.getItem(SESSION_KEY) === "1"; } catch { /* ignore */ }
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
-    if (skipRef.current) {
-      // Very short flash so the app doesn't feel abrupt on revisit.
-      setStage(6);
-      const t = window.setTimeout(finish, 350);
+    if (alreadyPlayed) {
+      // Very short brand flash on subsequent visits — never intrusive.
+      setStage(5);
+      const t = window.setTimeout(finish, 400);
       return () => window.clearTimeout(t);
     }
-
-    if (reducedRef.current) {
-      setStage(6);
-      const t = window.setTimeout(finish, 1_400);
+    if (reduced) {
+      setStage(5);
+      const t = window.setTimeout(finish, 1_200);
       return () => window.clearTimeout(t);
     }
 
     const timers: number[] = [];
-    const at = (ms: number, s: number) => timers.push(window.setTimeout(() => setStage(s), ms));
-    at(   0, 1);
-    at(2000, 2);
-    at(5000, 3);
-    at(8000, 4);
-    at(11000, 5);
-    at(13000, 6);
+    const at = (ms: number, s: number) =>
+      timers.push(window.setTimeout(() => setStage(s), ms));
+    at(  400, 1);   // seed
+    at( 1800, 2);   // halo + particles
+    at( 4200, 3);   // orbit rings
+    at( 6600, 4);   // Vision 2030 mark
+    at( 8200, 5);   // ARIA identity
     timers.push(window.setTimeout(finish, TOTAL_MS));
     return () => timers.forEach(window.clearTimeout);
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Allow the user to skip with Escape / click.
+  // Escape to skip
   useEffect(() => {
     if (!mounted) return;
-    const skip = () => {
-      if (doneRef.current) return;
-      doneRef.current = true;
-      setHiding(true);
-      try { sessionStorage.setItem("aria-genesis-played", "1"); } catch {}
-      window.setTimeout(() => { setMounted(false); onComplete(); }, 500);
-    };
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") skip(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") finish(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mounted, onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
 
   if (!mounted) return null;
 
   const s = stage;
+  const showParticles = s >= 2 && !hiding;
+  const showOrbits = s >= 3;
+  const showVision = s === 4;
+  const showAria = s >= 5;
 
   return (
     <div
       role="dialog"
-      aria-label="ARIA system boot"
+      aria-modal="true"
+      aria-label="NEXIOS system boot"
       className={[
-        "fixed inset-0 z-[100] overflow-hidden bg-black",
-        "transition-opacity duration-[900ms] ease-out",
+        "fixed inset-0 z-[100] overflow-hidden",
+        "transition-opacity duration-[700ms] ease-out",
         hiding ? "opacity-0 pointer-events-none" : "opacity-100",
       ].join(" ")}
-      style={{ contain: "strict" }}
+      style={{
+        contain: "strict",
+        // Deep executive midnight — matches the platform palette.
+        background:
+          "radial-gradient(ellipse at 50% 50%, #0A2440 0%, #061A2E 45%, #030B17 100%)",
+      }}
     >
-      {/* Canvas particle field — starts at stage >= 2 */}
-      <GenesisCanvas active={s >= 2 && !hiding} intensity={s} />
+      {/* Ambient particle field — quiet, low-count, no shadow blur */}
+      {showParticles && <QuietParticles />}
 
-      {/* Ambient radial breath */}
-      <div
-        aria-hidden
-        className="absolute inset-0 transition-opacity duration-[1400ms]"
-        style={{
-          opacity: s === 0 ? 0 : s < 3 ? 0.55 : s < 6 ? 0.85 : 1,
-          background:
-            "radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.22) 0%, rgba(6,26,46,0.35) 35%, rgba(0,0,0,0.95) 72%)",
-        }}
-      />
-
-      {/* Holographic grid — stage 3+ */}
-      <div
-        aria-hidden
-        className="absolute inset-0 transition-opacity duration-[1600ms]"
-        style={{
-          opacity: s >= 3 && s < 6 ? 0.35 : s >= 6 ? 0.18 : 0,
-          backgroundImage:
-            "linear-gradient(rgba(0,212,255,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.18) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 78%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 78%)",
-          transform: "perspective(900px) rotateX(58deg) translateZ(0)",
-          transformOrigin: "50% 60%",
-        }}
-      />
-
-      {/* Light rays — stage 3+ */}
-      <div
-        aria-hidden
-        className="absolute inset-0 transition-opacity duration-1000"
-        style={{
-          opacity: s >= 3 && s < 6 ? 0.45 : s >= 6 ? 0.25 : 0,
-          background:
-            "conic-gradient(from 210deg at 50% 50%, transparent 0deg, rgba(58,232,255,0.18) 22deg, transparent 44deg, transparent 180deg, rgba(0,212,255,0.14) 210deg, transparent 240deg)",
-          animation: "genesis-spin 22s linear infinite",
-          filter: "blur(24px)",
-        }}
-      />
-
-      {/* CORE — nested rings + pulse */}
+      {/* Focal composition */}
       <div className="absolute inset-0 grid place-items-center">
         <div
           className="relative"
           style={{
-            width: "min(78vmin, 620px)",
-            height: "min(78vmin, 620px)",
+            width: "min(70vmin, 560px)",
+            height: "min(70vmin, 560px)",
           }}
         >
-          {/* seed pulse */}
+          {/* Seed light — always present after stage 1 */}
           <span
             aria-hidden
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="absolute left-1/2 top-1/2 rounded-full"
             style={{
-              width: 14, height: 14,
-              background: "radial-gradient(circle, #E8FBFF 0%, #3AE8FF 45%, rgba(0,212,255,0) 70%)",
-              boxShadow: "0 0 40px 10px rgba(58,232,255,0.85), 0 0 120px 20px rgba(0,212,255,0.55)",
+              width: 10, height: 10,
+              marginLeft: -5, marginTop: -5,
+              background: "radial-gradient(circle, #EAFBFF 0%, #3AE8FF 55%, rgba(0,212,255,0) 75%)",
+              boxShadow: "0 0 32px 6px rgba(58,232,255,0.55), 0 0 90px 18px rgba(0,212,255,0.35)",
               opacity: s >= 1 ? 1 : 0,
-              transform: `translate(-50%,-50%) scale(${s === 1 ? 1 : s < 4 ? 2.2 : s < 6 ? 3.6 : 4.2})`,
-              transition: "transform 1600ms cubic-bezier(0.22,0.68,0.16,1), opacity 900ms ease-out",
-              animation: s >= 1 ? "genesis-breath 3.4s ease-in-out infinite" : undefined,
+              transform: `scale(${s < 2 ? 1 : s < 5 ? 1.6 : 2.1})`,
+              transition: "transform 1600ms cubic-bezier(0.22,0.68,0.16,1), opacity 700ms ease-out",
+              animation: s >= 1 ? "aria-breath 4s ease-in-out infinite" : undefined,
               willChange: "transform, opacity",
             }}
           />
 
-          {/* expanding waves */}
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              aria-hidden
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border"
-              style={{
-                width: "60%", height: "60%",
-                borderColor: "rgba(58,232,255,0.35)",
-                opacity: s >= 2 && s < 6 ? 0.9 : 0,
-                animation: s >= 2 ? `genesis-wave 3.6s ease-out ${i * 1.2}s infinite` : undefined,
-                willChange: "transform, opacity",
-              }}
-            />
-          ))}
+          {/* Concentric halo — a single slow ring rather than many */}
+          <span
+            aria-hidden
+            className="absolute inset-0 m-auto rounded-full border"
+            style={{
+              width: "58%", height: "58%",
+              inset: 0,
+              margin: "auto",
+              borderColor: "rgba(58,232,255,0.22)",
+              opacity: s >= 2 && !hiding ? 1 : 0,
+              transition: "opacity 1200ms ease-out",
+              animation: s >= 2 ? "aria-halo 5.5s ease-in-out infinite" : undefined,
+              willChange: "transform, opacity",
+            }}
+          />
 
-          {/* orbit rings — stage 4+ */}
+          {/* Two calm orbit ellipses — stage 3+ */}
           <svg
             aria-hidden
             viewBox="0 0 400 400"
-            className="absolute inset-0 h-full w-full transition-opacity duration-1000"
-            style={{ opacity: s >= 4 ? 1 : 0 }}
+            className="absolute inset-0 h-full w-full"
+            style={{
+              opacity: showOrbits ? 1 : 0,
+              transition: "opacity 1400ms ease-out",
+            }}
           >
             <defs>
-              <radialGradient id="gcore" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#E8FBFF" stopOpacity="0.95" />
-                <stop offset="30%" stopColor="#3AE8FF" stopOpacity="0.55" />
-                <stop offset="70%" stopColor="#00D4FF" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
-              </radialGradient>
-              <linearGradient id="gring" x1="0" x2="1">
-                <stop offset="0%" stopColor="#3AE8FF" stopOpacity="0" />
-                <stop offset="50%" stopColor="#3AE8FF" stopOpacity="0.95" />
+              <linearGradient id="aria-orbit" x1="0" x2="1">
+                <stop offset="0%"   stopColor="#3AE8FF" stopOpacity="0" />
+                <stop offset="50%"  stopColor="#3AE8FF" stopOpacity="0.8" />
                 <stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <circle cx="200" cy="200" r="150" fill="url(#gcore)" />
-            <g style={{ transformOrigin: "200px 200px", animation: "genesis-spin 24s linear infinite" }}>
-              <circle cx="200" cy="200" r="150" fill="none" stroke="url(#gring)" strokeWidth="1.2" />
-              <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(0,212,255,0.35)" strokeWidth="0.6" strokeDasharray="2 8" />
+            <g style={{ transformOrigin: "200px 200px", animation: "aria-spin 60s linear infinite" }}>
+              <ellipse cx="200" cy="200" rx="175" ry="60"
+                fill="none" stroke="url(#aria-orbit)" strokeWidth="0.9" />
             </g>
-            <g style={{ transformOrigin: "200px 200px", animation: "genesis-spin-rev 34s linear infinite" }}>
-              <ellipse cx="200" cy="200" rx="185" ry="60" fill="none" stroke="rgba(58,232,255,0.55)" strokeWidth="0.9" />
-              <ellipse cx="200" cy="200" rx="185" ry="60" fill="none" stroke="rgba(0,212,255,0.25)" strokeWidth="0.5" strokeDasharray="1 6" />
-            </g>
-            <g style={{ transformOrigin: "200px 200px", animation: "genesis-spin 42s linear infinite", transform: "rotate(60deg)" }}>
-              <ellipse cx="200" cy="200" rx="185" ry="60" fill="none" stroke="rgba(58,232,255,0.4)" strokeWidth="0.8" />
-            </g>
-            <g style={{ transformOrigin: "200px 200px", animation: "genesis-spin-rev 52s linear infinite", transform: "rotate(120deg)" }}>
-              <ellipse cx="200" cy="200" rx="185" ry="60" fill="none" stroke="rgba(0,212,255,0.35)" strokeWidth="0.8" />
+            <g style={{ transformOrigin: "200px 200px", animation: "aria-spin-rev 80s linear infinite", transform: "rotate(45deg)" }}>
+              <ellipse cx="200" cy="200" rx="175" ry="60"
+                fill="none" stroke="rgba(58,232,255,0.32)" strokeWidth="0.7" />
             </g>
           </svg>
 
-          {/* Vision 2030 signature — stage 5 only, fades in and out */}
+          {/* Vision 2030 signature — appears briefly, then dissolves */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 grid place-items-center"
             style={{
-              opacity: s === 5 ? 1 : 0,
-              transition: "opacity 1200ms ease-in-out",
+              opacity: showVision ? 1 : 0,
+              transform: `translateY(${showVision ? 0 : 4}px)`,
+              transition: "opacity 900ms ease-in-out, transform 900ms ease-out",
             }}
           >
             <Vision2030Mark />
           </div>
 
-          {/* ARIA wordmark — stage 6 */}
+          {/* ARIA identity — final stage */}
           <div
             className="pointer-events-none absolute inset-0 grid place-items-center"
             style={{
-              opacity: s >= 6 ? 1 : 0,
-              transform: `translateY(${s >= 6 ? 0 : 8}px)`,
-              transition: "opacity 900ms ease-out 200ms, transform 900ms ease-out 200ms",
+              opacity: showAria ? 1 : 0,
+              transform: `translateY(${showAria ? 0 : 6}px)`,
+              transition: "opacity 900ms ease-out 150ms, transform 900ms ease-out 150ms",
             }}
           >
             <div className="text-center">
               <div
-                className="text-[11px] uppercase tracking-[0.55em] text-[#3AE8FF]/80"
-                style={{ textShadow: "0 0 24px rgba(58,232,255,0.6)" }}
+                className="text-[10px] uppercase tracking-[0.55em] text-[#3AE8FF]/85"
+                style={{ textShadow: "0 0 18px rgba(58,232,255,0.45)" }}
               >
                 NEXIOS · AI OS
               </div>
               <div
-                className="mt-3 font-semibold tracking-[0.18em] text-white"
+                className="mt-3 font-semibold tracking-[0.32em] text-white"
                 style={{
-                  fontSize: "clamp(28px, 6.4vmin, 64px)",
-                  textShadow: "0 0 32px rgba(58,232,255,0.55), 0 0 80px rgba(0,212,255,0.35)",
+                  fontSize: "clamp(30px, 6vmin, 60px)",
+                  textShadow: "0 0 26px rgba(58,232,255,0.5), 0 0 70px rgba(0,212,255,0.3)",
                 }}
               >
                 A R I A
               </div>
               <div className="mt-3 text-[10px] uppercase tracking-[0.4em] text-white/55">
-                Executive Intelligence · Online
+                Executive Intelligence · Ready
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* subtle atmospheric fog */}
+      {/* Bottom fog — very subtle */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
         style={{
-          background: "radial-gradient(60% 40% at 50% 100%, rgba(0,212,255,0.14), transparent 70%)",
-          opacity: s >= 3 ? 1 : 0,
+          background:
+            "radial-gradient(60% 100% at 50% 100%, rgba(0,212,255,0.10), transparent 70%)",
+          opacity: s >= 2 ? 1 : 0,
           transition: "opacity 1400ms ease-out",
         }}
       />
 
-      {/* Skip affordance — appears after 4s */}
+      {/* Skip — quiet, discoverable */}
       <button
         type="button"
-        onClick={() => {
-          if (doneRef.current) return;
-          doneRef.current = true;
-          setHiding(true);
-          try { sessionStorage.setItem("aria-genesis-played", "1"); } catch {}
-          window.setTimeout(() => { setMounted(false); onComplete(); }, 500);
-        }}
-        className="absolute bottom-6 right-6 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/50 backdrop-blur transition hover:border-[#3AE8FF]/50 hover:text-white"
+        onClick={finish}
+        className="absolute bottom-6 right-6 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/60 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/70"
         style={{
           opacity: s >= 2 ? 1 : 0,
           transition: "opacity 800ms ease-out",
@@ -303,19 +249,21 @@ export function AriaGenesis({ onComplete }: Props) {
       </button>
 
       <style>{`
-        @keyframes genesis-breath {
+        @keyframes aria-breath {
           0%,100% { filter: brightness(1); }
-          50%     { filter: brightness(1.35); }
+          50%     { filter: brightness(1.28); }
         }
-        @keyframes genesis-wave {
-          0%   { transform: translate(-50%,-50%) scale(0.15); opacity: 0.9; }
-          80%  { opacity: 0.15; }
-          100% { transform: translate(-50%,-50%) scale(2.6);  opacity: 0; }
+        @keyframes aria-halo {
+          0%,100% { transform: scale(1);    opacity: 0.55; }
+          50%     { transform: scale(1.08); opacity: 0.9;  }
         }
-        @keyframes genesis-spin      { to { transform: rotate(360deg); } }
-        @keyframes genesis-spin-rev  { to { transform: rotate(-360deg); } }
+        @keyframes aria-spin     { to { transform: rotate(360deg); } }
+        @keyframes aria-spin-rev { to { transform: rotate(-315deg); } }
         @media (prefers-reduced-motion: reduce) {
-          [role="dialog"][aria-label="ARIA system boot"] * { animation: none !important; transition: opacity 400ms ease-out !important; }
+          [role="dialog"][aria-label="NEXIOS system boot"] * {
+            animation: none !important;
+            transition: opacity 400ms ease-out !important;
+          }
         }
       `}</style>
     </div>
@@ -323,22 +271,22 @@ export function AriaGenesis({ onComplete }: Props) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Canvas particle field — attraction to center, GPU-friendly.               */
+/*  Quiet particle field — small count, no shadow blur, single rAF loop.      */
 /* -------------------------------------------------------------------------- */
 
-function GenesisCanvas({ active, intensity }: { active: boolean; intensity: number }) {
+function QuietParticles() {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas || !active) return;
-
-    const dpr = Math.min(1.75, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
+    if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
     let w = 0, h = 0, cx = 0, cy = 0;
+
     const resize = () => {
       const r = canvas.getBoundingClientRect();
       w = r.width; h = r.height;
@@ -351,109 +299,101 @@ function GenesisCanvas({ active, intensity }: { active: boolean; intensity: numb
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-    const count = isMobile ? 140 : 260;
-    const particles = Array.from({ length: count }, () => {
+    const mobile = window.innerWidth < 640;
+    const count = mobile ? 60 : 120;
+    const parts = Array.from({ length: count }, () => {
       const a = Math.random() * Math.PI * 2;
-      const r = 40 + Math.random() * Math.min(w, h) * 0.55;
+      const r = 80 + Math.random() * Math.min(w, h) * 0.5;
       return {
-        x: cx + Math.cos(a) * r * (0.4 + Math.random()),
-        y: cy + Math.sin(a) * r * (0.4 + Math.random()),
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: 0.5 + Math.random() * 1.6,
-        life: Math.random(),
+        x: cx + Math.cos(a) * r,
+        y: cy + Math.sin(a) * r,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        r: 0.4 + Math.random() * 1.1,
+        phase: Math.random() * Math.PI * 2,
       };
     });
 
     let last = performance.now();
+    // Pause when tab hidden
+    let paused = document.hidden;
+    const onVis = () => { paused = document.hidden; if (!paused) { last = performance.now(); loop(last); } };
+    document.addEventListener("visibilitychange", onVis);
+
     const loop = (t: number) => {
+      if (paused) { rafRef.current = null; return; }
       const dt = Math.min(50, t - last); last = t;
       ctx.clearRect(0, 0, w, h);
 
-      // subtle center glow
-      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.6);
-      grd.addColorStop(0, "rgba(58,232,255,0.05)");
-      grd.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = grd;
+      // very soft center wash
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.55);
+      g.addColorStop(0, "rgba(58,232,255,0.035)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
 
-      const pull = intensity >= 4 ? 0.00018 : 0.00008;
-      const speed = intensity >= 4 ? 1.0 : 0.6;
-
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
+      const pull = 0.00006;
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
         const dx = cx - p.x, dy = cy - p.y;
-        const dist2 = dx * dx + dy * dy + 40;
-        // attract
         p.vx += dx * pull * dt;
         p.vy += dy * pull * dt;
-        // damping
-        p.vx *= 0.985; p.vy *= 0.985;
-        p.x += p.vx * speed;
-        p.y += p.vy * speed;
+        p.vx *= 0.99; p.vy *= 0.99;
+        p.x  += p.vx; p.y += p.vy;
 
-        p.life += dt * 0.0006;
-        const a = 0.35 + 0.45 * Math.sin(p.life * 3);
-        const glow = intensity >= 4 ? 1.4 : 1.0;
-
+        p.phase += dt * 0.002;
+        const a = 0.28 + 0.22 * Math.sin(p.phase);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * glow, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(180,240,255,${a.toFixed(3)})`;
-        ctx.shadowColor = "rgba(58,232,255,0.9)";
-        ctx.shadowBlur = 8 * glow;
         ctx.fill();
 
-        // respawn when consumed by core
-        if (dist2 < 60) {
+        // respawn if consumed by the core
+        if (dx * dx + dy * dy < 300) {
           const ang = Math.random() * Math.PI * 2;
-          const rad = Math.min(w, h) * (0.35 + Math.random() * 0.3);
+          const rad = Math.min(w, h) * (0.35 + Math.random() * 0.25);
           p.x = cx + Math.cos(ang) * rad;
           p.y = cy + Math.sin(ang) * rad;
-          p.vx = (Math.random() - 0.5) * 0.4;
-          p.vy = (Math.random() - 0.5) * 0.4;
+          p.vx = (Math.random() - 0.5) * 0.15;
+          p.vy = (Math.random() - 0.5) * 0.15;
         }
       }
-      ctx.shadowBlur = 0;
-
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
 
     return () => {
+      document.removeEventListener("visibilitychange", onVis);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
     };
-  }, [active, intensity]);
+  }, []);
 
   return (
     <canvas
       ref={ref}
       aria-hidden
       className="absolute inset-0 h-full w-full"
-      style={{ opacity: active ? 1 : 0, transition: "opacity 900ms ease-out" }}
     />
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Elegant typographic Vision 2030 signature (uses in-project styling only). */
+/*  Vision 2030 signature — typographic, subordinate to ARIA.                 */
 /* -------------------------------------------------------------------------- */
+
 function Vision2030Mark() {
   return (
     <div
-      className="rounded-full border border-[#3AE8FF]/25 bg-black/40 px-6 py-4 text-center backdrop-blur-md"
-      style={{ boxShadow: "0 0 40px rgba(0,212,255,0.25), inset 0 0 30px rgba(0,212,255,0.12)" }}
+      className="rounded-full border border-[#3AE8FF]/25 bg-black/40 px-6 py-3 text-center backdrop-blur-md"
+      style={{ boxShadow: "0 0 30px rgba(0,212,255,0.18), inset 0 0 22px rgba(0,212,255,0.10)" }}
     >
       <div className="text-[9px] uppercase tracking-[0.5em] text-[#3AE8FF]/80">
         Kingdom of Saudi Arabia
       </div>
       <div
-        className="mt-1 font-semibold tracking-[0.24em] text-white"
-        style={{
-          fontSize: "clamp(18px, 3.2vmin, 30px)",
-          textShadow: "0 0 24px rgba(58,232,255,0.55)",
-        }}
+        className="mt-1 font-semibold tracking-[0.28em] text-white"
+        style={{ fontSize: "clamp(16px, 2.8vmin, 26px)", textShadow: "0 0 18px rgba(58,232,255,0.45)" }}
       >
         VISION · 2030
       </div>
