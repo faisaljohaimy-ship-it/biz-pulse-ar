@@ -132,11 +132,18 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       >
         {/* header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-400/10">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="relative inline-flex h-2.5 w-2.5">
-              <span className="absolute inset-0 rounded-full bg-cyan-400/60 motion-safe:animate-ping" />
-              <span className="relative rounded-full h-2.5 w-2.5 bg-cyan-300" />
-            </span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative h-9 w-9 shrink-0 rounded-full overflow-hidden border border-cyan-400/40 bg-[#03111e]">
+              <AriaAvatar
+                mode={presMode}
+                framing="portrait"
+                size={36}
+                thinking={stage === "thinking"}
+                speaking={stage === "streaming"}
+                alt={isAr ? "آريا" : "ARIA"}
+                className="!h-full !w-full"
+              />
+            </div>
             <div className="min-w-0">
               <div className="text-[13px] font-semibold text-cyan-100 truncate">
                 {isAr ? "آريا — المساعدة التنفيذية" : "ARIA — Executive Assistant"}
@@ -144,13 +151,32 @@ export default function AriaGlobalPanel({ onClose }: Props) {
               <div className="text-[11px] text-cyan-200/60 truncate">{introTitle}</div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            aria-label={isAr ? "إغلاق" : "Close"}
-            className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => togglePresentationMode()}
+              aria-label={
+                isAr
+                  ? presMode === "hologram"
+                    ? "تبديل إلى الوضع الرمزي"
+                    : "تبديل إلى الوضع الهولوجرامي"
+                  : presMode === "hologram"
+                    ? "Switch to orb mode"
+                    : "Switch to hologram mode"
+              }
+              title={presMode === "hologram" ? "Hologram → Orb" : "Orb → Hologram"}
+              className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
+            >
+              <Sparkles className="h-4 w-4" />
+            </button>
+            <button
+              onClick={onClose}
+              aria-label={isAr ? "إغلاق" : "Close"}
+              className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* messages */}
