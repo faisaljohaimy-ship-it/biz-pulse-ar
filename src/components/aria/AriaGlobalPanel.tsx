@@ -194,6 +194,28 @@ export default function AriaGlobalPanel({ onClose }: Props) {
           <div className="flex items-center gap-1">
             <button
               type="button"
+              onClick={() => {
+                const wasEnabled = ariaVoice.isEnabled();
+                ariaVoice.toggle();
+                if (wasEnabled) ariaVoice.clear();
+              }}
+              aria-label={
+                isAr
+                  ? voice.enabled ? "كتم صوت آريا" : "تفعيل صوت آريا"
+                  : voice.enabled ? "Mute ARIA voice" : "Unmute ARIA voice"
+              }
+              title={voice.enabled ? "Voice on" : "Voice off"}
+              className={[
+                "p-1.5 rounded-md transition",
+                voice.enabled
+                  ? "text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white"
+                  : "text-cyan-200/40 hover:bg-cyan-400/10 hover:text-cyan-100",
+              ].join(" ")}
+            >
+              {voice.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
               onClick={() => togglePresentationMode()}
               aria-label={
                 isAr
@@ -210,7 +232,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
               <Sparkles className="h-4 w-4" />
             </button>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               aria-label={isAr ? "إغلاق" : "Close"}
               className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
             >
