@@ -1156,12 +1156,8 @@ export function GlobalAriaCopilot() {
         >
           <span aria-hidden className="pointer-events-none absolute -inset-2 rounded-full border border-[#3AE8FF]/25" style={{ animation: "gac-halo 3.6s ease-out infinite" }} />
           <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full rounded-full object-cover object-top" draggable={false} />
-          <Sparkles className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-[#061A2E]/85 p-0.5 drop-shadow-[0_0_10px_rgba(58,232,255,0.95)]" />
-          <span className="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#061A2E] text-[8px] font-bold text-[#3AE8FF]">
-            5
-          </span>
           <span className="pointer-events-none absolute bottom-full mb-2 whitespace-nowrap rounded-md border border-[#3AE8FF]/30 bg-[#061A2E]/95 px-2 py-1 text-[10px] uppercase tracking-wider text-[#3AE8FF] opacity-0 transition group-hover:opacity-100">
-            ARIA · GPT-5
+            ARIA
           </span>
         </button>
       )}
