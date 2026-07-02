@@ -8,7 +8,7 @@ import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
-import { AmbientAuraLayer } from "@/components/cinematic/AmbientAuraLayer";
+import { HeroAIBackground } from "@/components/cinematic/HeroAIBackground";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaCoreOrb } from "@/components/cinematic/AriaCoreOrb";
@@ -71,12 +71,12 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
-      {/* Ambient executive aura — sits behind everything */}
+      {/* Futuristic AI background — neural mesh, particles, grid horizon */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
-        <AmbientAuraLayer intensity={0.85} />
+        <HeroAIBackground />
       </div>
 
-      {/* Deep midnight cyan backdrop — no holographic presence */}
+
 
       <AriaGenesis onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
