@@ -16,6 +16,17 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
+import {
+  emotionForSentence,
+  emotionForState,
+  emotionOverlay,
+  gestureForSentence,
+  gestureTransform,
+  attentionYaw,
+  splitSentences,
+  type AriaEmotion,
+  type AriaHeadGesture,
+} from "@/lib/aria/avatar-motion/emotion-director";
 
 interface Props {
   state: DigitalHumanState;
@@ -23,6 +34,16 @@ interface Props {
   size?: number;
   className?: string;
   ar?: boolean;
+  /** Current spoken text chunk — drives emotion director + semantic gestures. */
+  text?: string;
+  /** Explicit emotion override. When absent, derived from state + text. */
+  emotion?: AriaEmotion;
+  /** UI region she should attend to. Adds 2–3° yaw. */
+  attentionSide?: "left" | "right" | null;
+  /** Force greeting joy pulse for the current speaking chunk. */
+  greeting?: boolean;
+  /** Force concern (anomaly/risk sections). */
+  anomaly?: boolean;
 }
 
 type Palette = { core: string; glow: string; ring: string };
