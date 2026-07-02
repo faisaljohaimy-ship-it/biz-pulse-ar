@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, Send, Loader2, Mic, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getPageEntry } from "@/lib/aria/page-registry";
 import { dockStore, type DockTurn } from "@/lib/aria/dock-store";
+import { AriaAvatar } from "./AriaAvatar";
+import {
+  togglePresentationMode,
+  useAriaPresentationMode,
+} from "@/lib/aria/presentation-mode";
 
 type Props = { onClose: () => void };
 
