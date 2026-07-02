@@ -11,7 +11,7 @@ import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
 import { HeroAIBackground } from "@/components/cinematic/HeroAIBackground";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
-import { AriaCoreOrb } from "@/components/cinematic/AriaCoreOrb";
+import { AriaHeroPresence } from "@/components/cinematic/AriaHeroPresence";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
@@ -76,6 +76,16 @@ function IntroLanding() {
         <HeroAIBackground />
       </div>
 
+      {/* ARIA holographic presence — living idle motion behind the hero UI */}
+      <div
+        aria-hidden
+        data-aria-presence
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[100vh] opacity-70 sm:opacity-90"
+      >
+        <AriaHeroPresence intensity="stage" />
+      </div>
+
+
 
 
       <AriaGenesis onComplete={() => setBootDone(true)} />
@@ -88,15 +98,16 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className={`relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 transition-opacity duration-1000 sm:max-w-2xl sm:pt-14 ${bootDone ? "opacity-100" : "opacity-0"}`}
       >
-        {/* Orb + status pill */}
+        {/* Status pill — sits above the holographic presence */}
         <div className="relative mb-8 flex flex-col items-center">
-          <AriaCoreOrb size={260} />
-          <div className="absolute -bottom-2 rounded-full border border-[#3AE8FF]/60 bg-[#061A2E] px-3 py-1 shadow-[0_0_18px_rgba(58,232,255,0.4)]">
+          <div className="h-[220px]" aria-hidden />
+          <div className="absolute bottom-0 rounded-full border border-[#3AE8FF]/60 bg-[#061A2E]/80 px-3 py-1 shadow-[0_0_18px_rgba(58,232,255,0.4)] backdrop-blur-sm">
             <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]">
               {ar ? "آريا نشطة" : "ARIA Active"}
             </span>
           </div>
         </div>
+
 
         {/* Product eyebrow */}
         <div className="mb-5 flex flex-col items-center gap-1">
