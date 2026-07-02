@@ -93,6 +93,7 @@ const PIN_KEY = "aria-copilot-pinned";
 const HIDDEN_KEY = "aria-copilot-hidden";
 const WELCOMED_KEY = "aria-copilot-welcomed-v2";
 const WELCOME_TOAST_KEY = "aria-copilot-welcome-toast-v2";
+const GREETED_KEY = "aria-copilot-greeted-v1";
 
 const QUICK_ACTIONS: QuickAction[] = [
   { label_ar: "غرفة العمليات", label_en: "Operations", to: "/operations" },
@@ -100,6 +101,32 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label_ar: "منظومة الحج", label_en: "Hajj Ops", to: "/hajj" },
   { label_ar: "الأمن الصناعي", label_en: "Security", to: "/sec" },
 ];
+
+// Executive Action Mode — 5 canonical intents surfaced as chips in the panel.
+type ExecIntent = {
+  id: "executive_summary" | "explain_current_page" | "next_action" | "risk_review" | "executive_tour";
+  label_ar: string;
+  label_en: string;
+  prompt_ar: string;
+  prompt_en: string;
+};
+const EXEC_INTENTS: readonly ExecIntent[] = [
+  { id: "executive_summary",    label_ar: "ملخص تنفيذي",       label_en: "Executive Summary",
+    prompt_ar: "أعطني ملخصاً تنفيذياً موجزاً لحالة النظام الآن، بدون تفاصيل تقنية.",
+    prompt_en: "Give me a concise executive summary of the current system state, no technical detail." },
+  { id: "explain_current_page", label_ar: "اشرح الصفحة",       label_en: "Explain This Page",
+    prompt_ar: "اشرح لي هذه الصفحة وأهم عناصرها بإيجاز تنفيذي.",
+    prompt_en: "Explain this page and its key elements briefly, executive style." },
+  { id: "next_action",          label_ar: "ما الإجراء التالي؟", label_en: "Next Action",
+    prompt_ar: "ما الإجراء التنفيذي التالي الذي يجب أن أتخذه الآن؟ اذكر خطوة واحدة واضحة.",
+    prompt_en: "What is the single next executive action I should take right now?" },
+  { id: "risk_review",          label_ar: "اعرض المخاطر",       label_en: "Show Risks",
+    prompt_ar: "اعرض لي أعلى المخاطر المفتوحة مع خطة تخفيف مقترحة لكل منها.",
+    prompt_en: "Show me the top open risks with a suggested mitigation for each." },
+  { id: "executive_tour",       label_ar: "ابدأ جولة تنفيذية",  label_en: "Executive Tour",
+    prompt_ar: "ابدأ جولة تنفيذية مختصرة تشرح أهم قدرات نكسيوس في خطوات قصيرة.",
+    prompt_en: "Start a short executive tour of the top NEXIOS capabilities in brief steps." },
+] as const;
 
 function isArabic(s: string) {
   return /[\u0600-\u06FF]/.test(s);
