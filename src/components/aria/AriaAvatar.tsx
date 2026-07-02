@@ -274,6 +274,18 @@ export function AriaAvatar({
           }}
         />
       )}
+      {listening && (
+        <>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-full border border-cyan-300/40 motion-safe:animate-[aa-ripple_1.6s_ease-out_infinite]"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-full border border-cyan-200/25 motion-safe:animate-[aa-ripple_1.6s_ease-out_0.5s_infinite]"
+          />
+        </>
+      )}
       {speaking && (
         <span
           aria-hidden
@@ -281,20 +293,29 @@ export function AriaAvatar({
         />
       )}
       {thinking && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute right-1 top-1 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(58,232,255,0.9)] motion-safe:animate-[aa-pulse_1.3s_ease-in-out_infinite]"
-        />
+        <>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute right-1 top-1 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(58,232,255,0.9)] motion-safe:animate-[aa-pulse_1.3s_ease-in-out_infinite]"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-[8%] rounded-full border border-dashed border-cyan-300/30 motion-safe:animate-[aa-spin_4.5s_linear_infinite]"
+          />
+        </>
       )}
       <style>{`
         @keyframes aa-breath { 0%,100% { transform: scale(1);} 50% { transform: scale(1.012);} }
         @keyframes aa-glow  { 0%,100% { opacity:.55;} 50% { opacity:.9;} }
         @keyframes aa-wave2 { 0%,100% { transform: scaleX(.55); opacity:.4;} 50% { transform: scaleX(1); opacity:.9;} }
         @keyframes aa-blink { 0%,94%,100% { background-color: rgba(6,26,46,0);} 96%,98% { background-color: rgba(6,26,46,0.55);} }
+        @keyframes aa-ripple { 0% { opacity:.7; transform: scale(0.96);} 100% { opacity:0; transform: scale(1.18);} }
+        @keyframes aa-shimmer { 0% { opacity:0;} 40% { opacity:1;} 100% { opacity:0;} }
         @media (prefers-reduced-motion: reduce) {
-          [class*="aa-breath"], [class*="aa-glow"], [class*="aa-wave2"], [class*="aa-blink"] { animation: none !important; }
+          [class*="aa-breath"], [class*="aa-glow"], [class*="aa-wave2"], [class*="aa-blink"], [class*="aa-ripple"], [class*="aa-shimmer"] { animation: none !important; }
         }
       `}</style>
+
     </div>
   );
 }
