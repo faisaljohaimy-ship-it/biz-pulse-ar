@@ -8,7 +8,7 @@ import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
-import { AmbientAuraLayer } from "@/components/cinematic/AmbientAuraLayer";
+import { HeroAIBackground } from "@/components/cinematic/HeroAIBackground";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaCoreOrb } from "@/components/cinematic/AriaCoreOrb";
