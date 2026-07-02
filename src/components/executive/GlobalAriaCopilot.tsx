@@ -528,6 +528,27 @@ export function GlobalAriaCopilot() {
     setSpeaking(false);
   }, []);
 
+  // Singleton Constitution: on route change, abort in-flight ARIA work and
+  // silence voice so replies never bind to a page the user already left.
+  // Conversation history, memory, avatar and open/closed UI state are
+  // preserved — only obsolete work is cancelled.
+  const lastPathRef = useRef(pathname);
+  useEffect(() => {
+    if (lastPathRef.current === pathname) return;
+    lastPathRef.current = pathname;
+    try { abortRef.current?.abort(); } catch { /* noop */ }
+    abortRef.current = null;
+    demoCancelRef.current = true;
+    if (audioRef.current) {
+      try { audioRef.current.pause(); } catch { /* noop */ }
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    setSpeaking(false);
+  }, [pathname]);
+
+
+
   const speak = useCallback(async (text: string) => {
     const clean = cleanForVoice(text);
     if (!clean) return;
