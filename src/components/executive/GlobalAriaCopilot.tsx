@@ -35,6 +35,8 @@ import {
   Mic,
   MicOff,
 } from "lucide-react";
+import { briefing } from "@/lib/aria/executive-briefing-orchestrator";
+
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
 import { ariaSessionMemory } from "@/lib/aria/session-memory";
