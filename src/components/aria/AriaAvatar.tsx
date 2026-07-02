@@ -51,6 +51,7 @@ export function AriaAvatar({
   size = 96,
   speaking = false,
   thinking = false,
+  listening = false,
   className = "",
   alt = "ARIA",
 }: Props) {
