@@ -120,6 +120,7 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
 import { Route as ApiPublicAriaPresenceRouteImport } from './routes/api/public/aria-presence'
 import { Route as ApiPublicAriaExplainRouteImport } from './routes/api/public/aria-explain'
+import { Route as ApiPublicAriaChatRouteImport } from './routes/api/public/aria-chat'
 import { Route as ApiPublicAriaBriefingRouteImport } from './routes/api/public/aria-briefing'
 import { Route as ApiPublicAriaAskRouteImport } from './routes/api/public/aria-ask'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
@@ -738,6 +739,11 @@ const ApiPublicAriaExplainRoute = ApiPublicAriaExplainRouteImport.update({
   path: '/api/public/aria-explain',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAriaChatRoute = ApiPublicAriaChatRouteImport.update({
+  id: '/api/public/aria-chat',
+  path: '/api/public/aria-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAriaBriefingRoute = ApiPublicAriaBriefingRouteImport.update({
   id: '/api/public/aria-briefing',
   path: '/api/public/aria-briefing',
@@ -1111,6 +1117,7 @@ export interface FileRoutesByFullPath {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
+  '/api/public/aria-chat': typeof ApiPublicAriaChatRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
@@ -1265,6 +1272,7 @@ export interface FileRoutesByTo {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
+  '/api/public/aria-chat': typeof ApiPublicAriaChatRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
@@ -1422,6 +1430,7 @@ export interface FileRoutesById {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
+  '/api/public/aria-chat': typeof ApiPublicAriaChatRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
@@ -1579,6 +1588,7 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
+    | '/api/public/aria-chat'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-tts'
@@ -1733,6 +1743,7 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
+    | '/api/public/aria-chat'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-tts'
@@ -1889,6 +1900,7 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
+    | '/api/public/aria-chat'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-tts'
@@ -1956,6 +1968,7 @@ export interface RootRouteChildren {
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   ApiPublicAriaAskRoute: typeof ApiPublicAriaAskRoute
   ApiPublicAriaBriefingRoute: typeof ApiPublicAriaBriefingRoute
+  ApiPublicAriaChatRoute: typeof ApiPublicAriaChatRoute
   ApiPublicAriaExplainRoute: typeof ApiPublicAriaExplainRoute
   ApiPublicAriaPresenceRoute: typeof ApiPublicAriaPresenceRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
@@ -2753,6 +2766,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAriaExplainRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/aria-chat': {
+      id: '/api/public/aria-chat'
+      path: '/api/public/aria-chat'
+      fullPath: '/api/public/aria-chat'
+      preLoaderRoute: typeof ApiPublicAriaChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/aria-briefing': {
       id: '/api/public/aria-briefing'
       path: '/api/public/aria-briefing'
@@ -3318,6 +3338,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   ApiPublicAriaAskRoute: ApiPublicAriaAskRoute,
   ApiPublicAriaBriefingRoute: ApiPublicAriaBriefingRoute,
+  ApiPublicAriaChatRoute: ApiPublicAriaChatRoute,
   ApiPublicAriaExplainRoute: ApiPublicAriaExplainRoute,
   ApiPublicAriaPresenceRoute: ApiPublicAriaPresenceRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,

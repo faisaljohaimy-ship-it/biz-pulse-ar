@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { X, Send, Loader2, Mic, MicOff, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { X, Send, Loader2, Mic, MicOff, Sparkles, Volume2, VolumeX, Headphones, MessageSquarePlus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getPageEntry } from "@/lib/aria/page-registry";
 import { dockStore, type DockTurn } from "@/lib/aria/dock-store";
@@ -34,10 +34,13 @@ export default function AriaGlobalPanel({ onClose }: Props) {
   const [interim, setInterim] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "thinking" | "streaming">("idle");
+  const [convMode, setConvMode] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const convModeRef = useRef(convMode);
+  convModeRef.current = convMode;
 
-  // Intro line — only when there are no turns yet.
   const introTitle = isAr ? entry.title_ar : entry.title_en;
   const introPurpose = isAr ? entry.purpose_ar : entry.purpose_en;
   const chips = isAr ? entry.questions_ar : entry.questions_en;
@@ -53,12 +56,18 @@ export default function AriaGlobalPanel({ onClose }: Props) {
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [turns.length, stage]);
+  }, [turns.length, stage, turns]);
+
+  const stopAllAudioAndMic = useCallback(() => {
+    try { abortRef.current?.abort(); } catch { /* ignore */ }
+    ariaVoice.clear();
+  }, []);
 
   const handleClose = useCallback(() => {
-    ariaVoice.clear();
+    setConvMode(false);
+    stopAllAudioAndMic();
     onClose();
-  }, [onClose]);
+  }, [onClose, stopAllAudioAndMic]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -68,8 +77,119 @@ export default function AriaGlobalPanel({ onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [handleClose]);
 
-  // Stop any audio when the panel unmounts (defence in depth).
-  useEffect(() => () => ariaVoice.clear(), []);
+  useEffect(() => () => { stopAllAudioAndMic(); }, [stopAllAudioAndMic]);
+
+  /** Stream from /api/public/aria-chat; fall back to /api/public/aria-ask on error. */
+  const streamAnswer = useCallback(async (
+    q: string,
+    aid: string,
+    history: Array<{ role: "user" | "assistant"; text: string }>,
+    ctrl: AbortController,
+  ): Promise<{ ok: boolean; answer: string }> => {
+    let acc = "";
+    let ttsCursor = 0;
+    const flushChunks = (final: boolean) => {
+      if (!ariaVoice.isEnabled()) return;
+      const rem = acc.slice(ttsCursor);
+      if (!rem) return;
+      // Feed complete sentences to TTS; on final flush, feed the tail too.
+      const re = /[^.!?؟،\n]+[.!?؟،\n]+/g;
+      let m: RegExpExecArray | null;
+      let lastIdx = 0;
+      while ((m = re.exec(rem)) !== null) {
+        ariaVoice.feedText(m[0]);
+        lastIdx = m.index + m[0].length;
+      }
+      ttsCursor += lastIdx;
+      if (final && ttsCursor < acc.length) {
+        ariaVoice.feedText(acc.slice(ttsCursor));
+        ttsCursor = acc.length;
+      }
+    };
+
+    try {
+      const r = await fetch("/api/public/aria-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: q,
+          lang: locale,
+          page: pathname,
+          history,
+        }),
+        signal: ctrl.signal,
+      });
+      if (!r.ok || !r.body) return { ok: false, answer: "" };
+      const reader = r.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      setStage("streaming");
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (!line.startsWith("data:")) continue;
+          const payload = line.slice(5).trim();
+          if (!payload) continue;
+          try {
+            const j = JSON.parse(payload) as { type: string; text?: string; message?: string };
+            if (j.type === "delta" && j.text) {
+              acc += j.text;
+              dockStore.patch(aid, { text: acc, pending: true });
+              flushChunks(false);
+            } else if (j.type === "done") {
+              flushChunks(true);
+              dockStore.patch(aid, { text: acc, pending: false });
+              return { ok: true, answer: acc };
+            } else if (j.type === "error") {
+              return { ok: false, answer: acc };
+            }
+          } catch { /* ignore */ }
+        }
+      }
+      flushChunks(true);
+      dockStore.patch(aid, { text: acc, pending: false });
+      return { ok: acc.length > 0, answer: acc };
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return { ok: true, answer: acc };
+      return { ok: false, answer: acc };
+    }
+  }, [locale, pathname]);
+
+  const fallbackAsk = useCallback(async (
+    q: string,
+    aid: string,
+    history: Array<{ role: "user" | "assistant"; text: string }>,
+    ctrl: AbortController,
+  ): Promise<boolean> => {
+    try {
+      const context = {
+        page: pathname,
+        page_title: isAr ? entry.title_ar : entry.title_en,
+        page_purpose: isAr ? entry.purpose_ar : entry.purpose_en,
+        surface: "aria_global_dock",
+      };
+      const r = await fetch("/api/public/aria-ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, lang: locale, context, history: history.slice(-8).map((t) => ({ role: t.role, text: t.text })) }),
+        signal: ctrl.signal,
+      });
+      const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string };
+      if (!r.ok) return false;
+      const answer = (isAr ? j.text_ar : j.text_en) ?? j.text_en ?? j.text_ar ?? "";
+      if (!answer) return false;
+      dockStore.patch(aid, { text: answer, pending: false });
+      if (ariaVoice.isEnabled()) ariaVoice.feedText(answer);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [pathname, entry, locale, isAr]);
 
   const send = useCallback(async (text: string) => {
     const q = text.trim();
@@ -85,41 +205,29 @@ export default function AriaGlobalPanel({ onClose }: Props) {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
-    // Prepend page context — keep endpoint contract unchanged.
-    const context = {
-      page: pathname,
-      page_title: isAr ? entry.title_ar : entry.title_en,
-      page_purpose: isAr ? entry.purpose_ar : entry.purpose_en,
-      surface: "aria_global_dock",
-    };
-    const history = turns.slice(-8).map((t) => ({ role: t.role, text: t.text, ts: t.ts }));
+    const history = dockStore.getTurns()
+      .filter((t) => t.id !== aid)
+      .slice(-20)
+      .map((t) => ({ role: t.role, text: t.text }));
 
     try {
-      const r = await fetch("/api/public/aria-ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, lang: locale, context, history }),
-        signal: ctrl.signal,
-      });
-      const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string; error?: string };
-      if (!r.ok) throw new Error(j.error || `http_${r.status}`);
-      setStage("streaming");
-      const answer = (isAr ? j.text_ar : j.text_en) ?? j.text_en ?? j.text_ar ?? "";
-      dockStore.patch(aid, { text: answer, pending: false });
-      if (answer && ariaVoice.isEnabled()) ariaVoice.feedText(answer);
-    } catch (e) {
-      if ((e as Error).name === "AbortError") return;
-      dockStore.patch(aid, {
-        pending: false,
-        error: isAr ? "تعذّر الاتصال بآريا الآن — أعد المحاولة." : "ARIA is unavailable — please retry.",
-      });
+      const primary = await streamAnswer(q, aid, history, ctrl);
+      if (!primary.ok && !primary.answer) {
+        const ok2 = await fallbackAsk(q, aid, history, ctrl);
+        if (!ok2) {
+          dockStore.patch(aid, {
+            pending: false,
+            error: isAr ? "تعذّر الاتصال بآريا الآن — أعد المحاولة." : "ARIA is unavailable — please retry.",
+          });
+        }
+      }
     } finally {
       setBusy(false);
       setStage("idle");
     }
-  }, [busy, pathname, entry, locale, isAr, turns]);
+  }, [busy, pathname, isAr, streamAnswer, fallbackAsk]);
 
-  // Speech-to-text — Web Speech API, silent if unsupported.
+  // Speech-to-text with barge-in support.
   const stt = useSpeechRecognition({
     lang: isAr ? "ar-SA" : "en-US",
     onInterim: (t) => setInterim(t),
@@ -127,17 +235,51 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       setInterim("");
       if (t) void send(t);
     },
+    onSpeechStart: () => {
+      // Barge-in: if ARIA is talking, fade her out immediately.
+      if (ariaVoice.isSpeaking()) ariaVoice.interrupt();
+    },
   });
 
-  // If user starts typing while ARIA speaks → fade out (interrupt).
+  // Interrupt audio when user starts typing while ARIA speaks.
   useEffect(() => {
     if (draft && voice.speaking) ariaVoice.interrupt();
   }, [draft, voice.speaking]);
 
+  // Conversation-mode loop: when ARIA finishes speaking, auto-listen.
+  const prevSpeakingRef = useRef(false);
+  useEffect(() => {
+    const wasSpeaking = prevSpeakingRef.current;
+    prevSpeakingRef.current = voice.speaking;
+    if (
+      convMode &&
+      !busy &&
+      wasSpeaking &&
+      !voice.speaking &&
+      !voice.paused &&
+      stt.supported &&
+      !stt.listening
+    ) {
+      const t = window.setTimeout(() => {
+        if (convModeRef.current && !stt.listening) {
+          setInterim("");
+          stt.start();
+        }
+      }, 400);
+      return () => window.clearTimeout(t);
+    }
+  }, [voice.speaking, voice.paused, convMode, busy, stt]);
+
+  // When conversation mode is turned OFF, stop everything.
+  useEffect(() => {
+    if (!convMode) {
+      try { stt.stop(); } catch { /* ignore */ }
+    }
+  }, [convMode, stt]);
+
   const onMicClick = useCallback(() => {
     if (stt.listening) {
       stt.stop();
-      // If user cancels without a final result, resume any paused audio.
       if (voice.paused) ariaVoice.resume();
       return;
     }
@@ -146,6 +288,46 @@ export default function AriaGlobalPanel({ onClose }: Props) {
     stt.start();
   }, [stt, voice.speaking, voice.paused]);
 
+  const toggleConvMode = useCallback(() => {
+    setConvMode((prev) => {
+      const next = !prev;
+      if (next) {
+        // Enable voice if muted so ARIA can talk back.
+        if (!ariaVoice.isEnabled()) ariaVoice.setEnabled(true);
+        if (stt.supported && !stt.listening && !busy) {
+          setInterim("");
+          stt.start();
+        }
+      } else {
+        try { stt.stop(); } catch { /* ignore */ }
+        ariaVoice.clear();
+      }
+      return next;
+    });
+  }, [stt, busy]);
+
+  const startNewChat = useCallback(() => {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      window.setTimeout(() => setConfirmClear(false), 3000);
+      return;
+    }
+    stopAllAudioAndMic();
+    dockStore.clear();
+    setInterim("");
+    setDraft("");
+    setConfirmClear(false);
+  }, [confirmClear, stopAllAudioAndMic]);
+
+  // Avatar state label
+  const stateLabel = stt.listening
+    ? (isAr ? "أستمع…" : "Listening…")
+    : stage === "thinking"
+      ? (isAr ? "أفكر…" : "Thinking…")
+      : (voice.speaking || stage === "streaming")
+        ? (isAr ? "أتحدث…" : "Speaking…")
+        : "";
+
   return (
     <div
       className="fixed inset-0 z-[95] pointer-events-none"
@@ -153,14 +335,13 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       aria-modal="false"
       aria-label={isAr ? "لوحة آريا" : "ARIA panel"}
     >
-      {/* outside-tap surface */}
       <div className="absolute inset-0 pointer-events-auto" onClick={handleClose} />
 
       <div
         className={[
           "pointer-events-auto absolute bottom-0 sm:bottom-4",
           isAr ? "sm:start-4 start-0" : "sm:start-4 start-0",
-          "w-full sm:w-[380px] h-[70vh] sm:h-[560px] max-h-[85vh]",
+          "w-full sm:w-[380px] h-[70vh] sm:h-[600px] max-h-[90vh]",
           "rounded-t-2xl sm:rounded-2xl",
           "border border-cyan-400/20 shadow-[0_20px_60px_-15px_rgba(0,212,255,0.35)]",
           "bg-[#061A2E]/85 backdrop-blur-2xl",
@@ -173,11 +354,11 @@ export default function AriaGlobalPanel({ onClose }: Props) {
         {/* header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-400/10">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative h-9 w-9 shrink-0 rounded-full overflow-hidden border border-cyan-400/40 bg-[#03111e]">
+            <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden border border-cyan-400/40 bg-[#03111e]">
               <AriaAvatar
                 mode={presMode}
                 framing="portrait"
-                size={36}
+                size={40}
                 thinking={stage === "thinking"}
                 speaking={stage === "streaming" || voice.speaking}
                 alt={isAr ? "آريا" : "ARIA"}
@@ -188,10 +369,47 @@ export default function AriaGlobalPanel({ onClose }: Props) {
               <div className="text-[13px] font-semibold text-cyan-100 truncate">
                 {isAr ? "آريا — المساعدة التنفيذية" : "ARIA — Executive Assistant"}
               </div>
-              <div className="text-[11px] text-cyan-200/60 truncate">{introTitle}</div>
+              <div className="text-[11px] text-cyan-200/70 truncate min-h-[14px]">
+                {stateLabel || introTitle}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={startNewChat}
+              aria-label={isAr ? "محادثة جديدة" : "New conversation"}
+              title={
+                confirmClear
+                  ? (isAr ? "اضغط للتأكيد" : "Tap to confirm")
+                  : (isAr ? "محادثة جديدة" : "New chat")
+              }
+              className={[
+                "p-1.5 rounded-md transition",
+                confirmClear
+                  ? "text-amber-200 bg-amber-400/15 hover:bg-amber-400/25"
+                  : "text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white",
+              ].join(" ")}
+            >
+              <MessageSquarePlus className="h-4 w-4" />
+            </button>
+            {stt.supported && (
+              <button
+                type="button"
+                onClick={toggleConvMode}
+                aria-pressed={convMode}
+                aria-label={isAr ? "وضع المحادثة" : "Conversation mode"}
+                title={isAr ? "محادثة" : "Conversation"}
+                className={[
+                  "p-1.5 rounded-md transition",
+                  convMode
+                    ? "text-cyan-50 bg-cyan-400/25 border border-cyan-300/60 shadow-[0_0_12px_rgba(0,212,255,0.5)]"
+                    : "text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white",
+                ].join(" ")}
+              >
+                <Headphones className="h-4 w-4" />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -267,12 +485,12 @@ export default function AriaGlobalPanel({ onClose }: Props) {
           {stage === "thinking" && (
             <div className="flex items-center gap-2 text-[12px] text-cyan-200/80 px-1">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span className="motion-safe:animate-pulse">{isAr ? "تفكر…" : "Thinking…"}</span>
+              <span className="motion-safe:animate-pulse">{isAr ? "أفكر…" : "Thinking…"}</span>
             </div>
           )}
         </div>
 
-        {/* composer — glass bar, mic on trailing side, exact AR placeholder */}
+        {/* composer */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -341,6 +559,11 @@ export default function AriaGlobalPanel({ onClose }: Props) {
               </button>
             ) : null}
           </div>
+          {convMode && (
+            <div className="mt-1.5 text-center text-[10px] text-cyan-200/60">
+              {isAr ? "وضع المحادثة نشط — اضغط السمّاعة للإيقاف" : "Conversation mode on — tap headset to stop"}
+            </div>
+          )}
         </form>
       </div>
     </div>
