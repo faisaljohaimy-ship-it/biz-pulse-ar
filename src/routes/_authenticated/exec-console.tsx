@@ -92,7 +92,7 @@ function statusBadge(status: string) {
   return <Badge className={cfg.cls}>{cfg.label}</Badge>;
 }
 
-function ExecConsole() {
+export function ExecConsole() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
   
