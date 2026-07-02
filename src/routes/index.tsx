@@ -12,7 +12,6 @@ import { AmbientAuraLayer } from "@/components/cinematic/AmbientAuraLayer";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaCoreOrb } from "@/components/cinematic/AriaCoreOrb";
-import { AriaHoloBackdrop } from "@/components/cinematic/AriaHoloBackdrop";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
@@ -71,14 +70,13 @@ function IntroLanding() {
   const Arrow = ar ? ArrowLeft : ArrowRight;
 
   return (
-    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
+    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
       {/* Ambient executive aura — sits behind everything */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
         <AmbientAuraLayer intensity={0.85} />
       </div>
 
-      {/* ARIA holographic presence — full-figure backdrop with living motion */}
-      <AriaHoloBackdrop opacity={0.92} />
+      {/* Deep midnight cyan backdrop — no holographic presence */}
 
       <AriaGenesis onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
