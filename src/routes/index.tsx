@@ -130,6 +130,7 @@ function IntroLanding() {
         <button
           type="button"
           onClick={() => setCinemaOpen(true)}
+          data-narrator="cta"
           className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_24px_rgba(58,232,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3AE8FF]/20 sm:text-sm"
         >
           <Play className="h-4 w-4" />
@@ -148,6 +149,7 @@ function IntroLanding() {
           <Command className="h-3 w-3" /> K
         </kbd>
       </div>
+
 
       <LiveSystemShowcase />
 
