@@ -33,8 +33,13 @@ export const dockStore = {
     STATE.turns = STATE.turns.map((x) => (x.id === id ? { ...x, ...patch } : x));
     listeners.forEach((l) => l());
   },
+  clear() {
+    STATE.turns = [];
+    listeners.forEach((l) => l());
+  },
   subscribe(l: Listener) {
     listeners.add(l);
     return () => listeners.delete(l);
   },
 };
+
