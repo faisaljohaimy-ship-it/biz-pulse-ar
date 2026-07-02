@@ -102,9 +102,17 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label_ar: "الأمن الصناعي", label_en: "Security", to: "/sec" },
 ];
 
-// Executive Action Mode — 5 canonical intents surfaced as chips in the panel.
+// Executive Action Mode — canonical intents surfaced as chips in the panel.
 type ExecIntent = {
-  id: "executive_summary" | "explain_current_page" | "next_action" | "risk_review" | "executive_tour";
+  id:
+    | "executive_summary"
+    | "explain_current_page"
+    | "explain_kpis"
+    | "next_action"
+    | "risk_review"
+    | "awareness_scan"
+    | "suggest_automation"
+    | "executive_tour";
   label_ar: string;
   label_en: string;
   prompt_ar: string;
@@ -115,14 +123,23 @@ const EXEC_INTENTS: readonly ExecIntent[] = [
     prompt_ar: "أعطني ملخصاً تنفيذياً موجزاً لحالة النظام الآن، بدون تفاصيل تقنية.",
     prompt_en: "Give me a concise executive summary of the current system state, no technical detail." },
   { id: "explain_current_page", label_ar: "اشرح الصفحة",       label_en: "Explain This Page",
-    prompt_ar: "اشرح لي هذه الصفحة وأهم عناصرها بإيجاز تنفيذي.",
-    prompt_en: "Explain this page and its key elements briefly, executive style." },
+    prompt_ar: "اشرح لي هذه الصفحة وأهم عناصرها بإيجاز تنفيذي، بما في ذلك الأزرار والمخططات وسير العمل.",
+    prompt_en: "Explain this page briefly — its key elements, buttons, charts, and workflow — in executive style." },
+  { id: "explain_kpis",         label_ar: "اشرح المؤشرات",     label_en: "Explain KPIs",
+    prompt_ar: "اشرح لي المؤشرات الظاهرة على الشاشة الآن، وماذا تعني تنفيذياً، وما الجيد وما المقلق منها.",
+    prompt_en: "Explain the KPIs currently on screen, what they mean at the executive level, and which are healthy vs concerning." },
   { id: "next_action",          label_ar: "ما الإجراء التالي؟", label_en: "Next Action",
     prompt_ar: "ما الإجراء التنفيذي التالي الذي يجب أن أتخذه الآن؟ اذكر خطوة واحدة واضحة.",
     prompt_en: "What is the single next executive action I should take right now?" },
   { id: "risk_review",          label_ar: "اعرض المخاطر",       label_en: "Show Risks",
     prompt_ar: "اعرض لي أعلى المخاطر المفتوحة مع خطة تخفيف مقترحة لكل منها.",
     prompt_en: "Show me the top open risks with a suggested mitigation for each." },
+  { id: "awareness_scan",       label_ar: "افحص الشاشة",        label_en: "Scan Screen",
+    prompt_ar: "افحص الشاشة الحالية: هل توجد بيانات ناقصة أو مؤشرات فارغة أو أعطال في التدفق؟ اذكر النقاط بإيجاز.",
+    prompt_en: "Scan the current screen: any missing data, empty widgets, broken flow, or UX problems? List briefly." },
+  { id: "suggest_automation",   label_ar: "اقترح أتمتة",        label_en: "Suggest Automation",
+    prompt_ar: "بناءً على هذه الصفحة، اقترح فرصة أتمتة أو تقرير تنفيذي أو تحسين واحد يوفر وقت القيادة.",
+    prompt_en: "Based on this page, suggest one automation, executive report, or optimisation that saves leadership time." },
   { id: "executive_tour",       label_ar: "ابدأ جولة تنفيذية",  label_en: "Executive Tour",
     prompt_ar: "ابدأ جولة تنفيذية مختصرة تشرح أهم قدرات نكسيوس في خطوات قصيرة.",
     prompt_en: "Start a short executive tour of the top NEXIOS capabilities in brief steps." },
@@ -913,7 +930,43 @@ export function GlobalAriaCopilot() {
             </div>
           )}
 
-          {/* Executive Action chips — always visible, 5 canonical intents */}
+          {/* Executive Awareness — client-side scan of the live snapshot */}
+          {!loading && (() => {
+            const notes: string[] = [];
+            const widgets = snap.widgets;
+            const kpis = widgets.filter((w) => w.kind === "kpi");
+            const emptyKpis = kpis.filter((w) => {
+              const v = w.value;
+              return v === null || v === undefined || v === "" || v === 0 || v === "0";
+            });
+            if (!widgets.length) {
+              notes.push(ar
+                ? "لا توجد مؤشرات مسجّلة على هذه الشاشة — قد تكون صفحة عرض فقط."
+                : "No live widgets registered on this screen — likely a display-only page.");
+            }
+            if (kpis.length && emptyKpis.length === kpis.length) {
+              notes.push(ar
+                ? `جميع المؤشرات (${kpis.length}) فارغة أو صفر — تحقّق من مصدر البيانات.`
+                : `All KPIs (${kpis.length}) are empty or zero — check the data source.`);
+            } else if (emptyKpis.length >= 2) {
+              notes.push(ar
+                ? `${emptyKpis.length} مؤشرات فارغة: ${emptyKpis.slice(0, 3).map((w) => w.label).join("، ")}.`
+                : `${emptyKpis.length} empty KPIs: ${emptyKpis.slice(0, 3).map((w) => w.label).join(", ")}.`);
+            }
+            if (!notes.length) return null;
+            return (
+              <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] px-2.5 py-1.5 text-[11px] text-amber-200/90">
+                <div className="mb-0.5 text-[10px] uppercase tracking-[0.2em] text-amber-300/80">
+                  {ar ? "وعي ARIA" : "ARIA Awareness"}
+                </div>
+                <ul className="list-disc space-y-0.5 ps-4">
+                  {notes.map((n) => <li key={n}>{n}</li>)}
+                </ul>
+              </div>
+            );
+          })()}
+
+          {/* Executive Action chips — always visible, canonical intents */}
           {!loading && (
             <div className="mt-3 space-y-2">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF]/70">
@@ -934,6 +987,7 @@ export function GlobalAriaCopilot() {
               </div>
             </div>
           )}
+
 
           {/* Follow-up: contextual page prompts after any answer */}
           {turns.length > 0 && !loading && (
