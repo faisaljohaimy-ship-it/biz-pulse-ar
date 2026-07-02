@@ -1,15 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
-import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
-import { CinematicBoot } from "@/components/executive/CinematicBoot";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
-import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
+import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
