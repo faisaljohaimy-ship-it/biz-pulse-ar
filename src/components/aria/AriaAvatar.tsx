@@ -204,21 +204,44 @@ export function AriaAvatar({
       className={`relative overflow-hidden ${className}`}
       style={{ width: size, aspectRatio: aspect }}
     >
-      <img
-        src={ariaHologram.url}
-        alt=""
-        draggable={false}
-        className={[
-          "absolute inset-0 h-full w-full select-none",
-          framing === "portrait" ? "object-cover" : "object-contain",
-          reduced ? "" : "motion-safe:animate-[aa-breath_5s_ease-in-out_infinite]",
-        ].join(" ")}
-        style={{
-          objectPosition: framing === "portrait" ? "center 10%" : "center",
-          WebkitMaskImage: framing === "portrait" ? portraitMask : undefined,
-          maskImage: framing === "portrait" ? portraitMask : undefined,
-        }}
-      />
+      {/* Pose layers: idle / listening / speaking. Crossfade 350ms via opacity. */}
+      {[
+        { key: "idle", src: ariaHologram.url, visible: !listening && !speaking },
+        { key: "listening", src: ariaPoseListening.url, visible: listening && !speaking },
+        { key: "speaking", src: ariaPoseSpeaking.url, visible: speaking },
+      ].map((p) => (
+        <img
+          key={p.key}
+          src={p.src}
+          alt=""
+          draggable={false}
+          aria-hidden={!p.visible}
+          className={[
+            "absolute inset-0 h-full w-full select-none transition-opacity duration-[350ms] ease-out",
+            framing === "portrait" ? "object-cover" : "object-contain",
+            reduced ? "" : "motion-safe:animate-[aa-breath_5s_ease-in-out_infinite]",
+            p.visible ? "opacity-100" : "opacity-0",
+            thinking && p.visible ? "opacity-[0.85]" : "",
+          ].join(" ")}
+          style={{
+            objectPosition: framing === "portrait" ? "center 10%" : "center",
+            WebkitMaskImage: framing === "portrait" ? portraitMask : undefined,
+            maskImage: framing === "portrait" ? portraitMask : undefined,
+          }}
+        />
+      ))}
+      {/* pose-swap shimmer (brief) */}
+      {!reduced && (listening || speaking) && (
+        <span
+          key={listening ? "shimmer-l" : "shimmer-s"}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 motion-safe:animate-[aa-shimmer_600ms_ease-out_1]"
+          style={{
+            background:
+              "radial-gradient(60% 45% at 50% 45%, rgba(58,232,255,0.35), transparent 70%)",
+          }}
+        />
+      )}
       {/* ambient glow behind the head */}
       <span
         aria-hidden
