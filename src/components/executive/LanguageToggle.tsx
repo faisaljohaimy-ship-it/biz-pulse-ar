@@ -1,16 +1,15 @@
 /**
- * LanguageToggle — premium globe AR/EN switcher pinned at the top of every page.
- * Persists choice via the shared `useI18n()` provider (localStorage `locale`).
+ * LanguageToggle — compact glass pill (ع | EN), top-center of the viewport.
+ * Single component; mounted once at the root layout only.
+ * Active language: font-weight 600, full opacity. Inactive: 45% opacity.
  */
-import { Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 export function LanguageToggle() {
   const { locale, setLocale } = useI18n();
-  const next = locale === "ar" ? "en" : "ar";
-  const aria = locale === "ar" ? "Switch to English" : "التبديل إلى العربية";
-  const active = locale === "ar" ? "AR" : "EN";
-  const dim = locale === "ar" ? "EN" : "AR";
+  const isAr = locale === "ar";
+  const next = isAr ? "en" : "ar";
+  const aria = isAr ? "Switch to English" : "التبديل إلى العربية";
 
   return (
     <button
@@ -18,12 +17,30 @@ export function LanguageToggle() {
       onClick={() => setLocale(next)}
       aria-label={aria}
       title={aria}
-      className="group inline-flex h-8 items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_0_14px_-2px_rgba(58,232,255,0.7)] backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-[#3AE8FF]/20"
+      dir="ltr"
+      className="inline-flex h-7 select-none items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 text-[11px] tracking-wide text-white/85 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+      style={{ paddingBlock: 4, paddingInline: 10 }}
     >
-      <Globe className="h-3.5 w-3.5 text-[#3AE8FF] transition group-hover:rotate-12" />
-      <span className="text-[#3AE8FF]">{active}</span>
-      <span className="text-white/30">/</span>
-      <span className="text-white/50">{dim}</span>
+      <span
+        className="leading-none"
+        style={{
+          fontWeight: isAr ? 600 : 400,
+          opacity: isAr ? 1 : 0.45,
+          fontFamily: "'IBM Plex Sans Arabic','Cairo',ui-sans-serif,system-ui",
+        }}
+      >
+        ع
+      </span>
+      <span aria-hidden className="text-white/25">|</span>
+      <span
+        className="leading-none"
+        style={{
+          fontWeight: isAr ? 400 : 600,
+          opacity: isAr ? 0.45 : 1,
+        }}
+      >
+        EN
+      </span>
     </button>
   );
 }
