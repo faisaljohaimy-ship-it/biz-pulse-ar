@@ -1140,7 +1140,6 @@ export function GlobalAriaCopilot() {
               className="inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-3 py-1 text-[11px] font-medium text-[#3AE8FF] hover:bg-[#3AE8FF]/20"
             >
               {ar ? "افتح آريا" : "Open ARIA"}
-              <ArrowRight className="h-3 w-3 rtl:rotate-180" />
             </button>
           </div>
         </div>
