@@ -424,12 +424,15 @@ const noop: BriefingOrchestrator = {
   subscribe: () => () => {},
   getSnapshot: () => EMPTY_SNAP,
   isActive: () => false,
+  publishLive: () => {},
+  getLive: () => ({ kpis: null, mode: "hero" as BriefingMode }),
   start: async () => {},
   pause: () => {},
   resume: () => {},
   skip: () => {},
   stop: () => {},
 } as unknown as BriefingOrchestrator;
+
 
 export const briefing: BriefingOrchestrator =
   typeof window !== "undefined" ? new BriefingOrchestrator() : noop;
