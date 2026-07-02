@@ -938,7 +938,7 @@ export function GlobalAriaCopilot() {
                 <button
                   key={p}
                   type="button"
-                  onClick={() => void ask(p)}
+                  onClick={() => { if (!maybeStartBriefing(p)) void ask(p); }}
                   className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
                 >
                   {p}
@@ -955,7 +955,7 @@ export function GlobalAriaCopilot() {
                   <button
                     key={`fu-${p}`}
                     type="button"
-                    onClick={() => void ask(p)}
+                    onClick={() => { if (!maybeStartBriefing(p)) void ask(p); }}
                     className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
                   >
                     {p}
