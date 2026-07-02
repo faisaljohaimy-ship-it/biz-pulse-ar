@@ -149,9 +149,11 @@ export function AriaCinematicIntro() {
   const [settled, setSettled] = useState(false);
   const [dissolving, setDissolving] = useState(false);
   const [headlineIn, setHeadlineIn] = useState(false);
+  const [started, setStarted] = useState(false);
   const [muted, setMutedState] = useState<boolean>(() => {
     try { return sessionStorage.getItem(AUDIO_PREF_KEY) === "1"; } catch { return false; }
   });
+
 
   const voice = useAriaVoice();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -297,7 +299,8 @@ export function AriaCinematicIntro() {
 
   /* ---------- directed timeline ---------- */
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !started) return;
+
     setTimeout(() => skipRef.current?.focus(), 60);
     setTimeout(() => { if (liveRef.current) liveRef.current.textContent = greeting; }, 400);
 
@@ -340,7 +343,8 @@ export function AriaCinematicIntro() {
       timersRef.current = [];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, reduced]);
+  }, [mounted, reduced, started]);
+
 
   if (!mounted) return null;
 
@@ -359,6 +363,39 @@ export function AriaCinematicIntro() {
     // let ARIA's voice queue resume too
     if (voice.enabled && voice.autoplayBlocked) ariaVoice.resume();
   };
+
+  const beginExperience = async () => {
+    if (started) return;
+    // Gesture — unlock audio BEFORE the timeline runs so greeting is audible.
+    await sfxRef.current?.unlock();
+    // Probe TTS path once and log it explicitly.
+    let path: "elevenlabs" | "browser" | "text-only" = "text-only";
+    try {
+      const r = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: ar ? "جاهزة." : "Ready.", lang: ar ? "ar" : "en" }),
+      });
+      if (r.ok) path = "elevenlabs";
+      else if (typeof window !== "undefined" && "speechSynthesis" in window) path = "browser";
+    } catch {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) path = "browser";
+    }
+    // eslint-disable-next-line no-console
+    console.info("ARIA voice path:", path);
+    if (path === "browser" && ar) {
+      try {
+        const voices = window.speechSynthesis?.getVoices?.() ?? [];
+        const hasAr = voices.some((v) => v.lang?.toLowerCase().startsWith("ar"));
+        if (!hasAr && !sessionStorage.getItem("nx_hint_chrome_voice")) {
+          sessionStorage.setItem("nx_hint_chrome_voice", "1");
+          window.dispatchEvent(new CustomEvent("nexios:hint", { detail: { message: "أفضل تجربة صوتية عبر Chrome" } }));
+        }
+      } catch { /* ignore */ }
+    }
+    setStarted(true);
+  };
+
 
   return (
     <div
@@ -559,6 +596,40 @@ export function AriaCinematicIntro() {
         />
       </div>
 
+      {/* Begin CTA — gesture bridge that unlocks audio & triggers the sequence */}
+      {!started && (
+        <button
+          type="button"
+          onClick={beginExperience}
+          className="fixed left-1/2 z-20 -translate-x-1/2 rounded-full border px-6 py-3 text-sm font-medium tracking-wide transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+          style={{
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)",
+            color: "rgba(232,246,255,0.98)",
+            borderColor: "rgba(34,211,238,0.55)",
+            background: "rgba(6,26,46,0.62)",
+            backdropFilter: "blur(14px) saturate(140%)",
+            boxShadow: "0 8px 32px -8px rgba(0,212,255,0.55), inset 0 0 24px rgba(58,232,255,0.14)",
+            fontFamily: ar
+              ? "'IBM Plex Sans Arabic','Cairo',ui-sans-serif,system-ui"
+              : "'Space Grotesk','DM Sans',ui-sans-serif,system-ui",
+            animation: "aria-cta-glow 2.6s ease-in-out infinite",
+          }}
+        >
+          {ar ? "ابدأ التجربة ▸" : "Begin experience ▸"}
+        </button>
+      )}
+      {/* Fullscreen tap fallback — any tap before start unlocks audio + begins. */}
+      {!started && (
+        <button
+          type="button"
+          aria-hidden
+          tabIndex={-1}
+          onClick={beginExperience}
+          className="fixed inset-0 z-[5] cursor-pointer bg-transparent"
+        />
+      )}
+
+
       {/* Skip */}
       <button
         ref={skipRef}
@@ -631,6 +702,11 @@ export function AriaCinematicIntro() {
           20%  { opacity: 1; }
           100% { background-position: -20% 0%; opacity: 0; }
         }
+        @keyframes aria-cta-glow {
+          0%,100% { box-shadow: 0 8px 32px -8px rgba(0,212,255,0.55), inset 0 0 24px rgba(58,232,255,0.14); }
+          50%     { box-shadow: 0 10px 42px -6px rgba(0,212,255,0.85), inset 0 0 32px rgba(58,232,255,0.28); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           [data-nx-intro] * { animation: none !important; transition-duration: 1.5s !important; }
         }

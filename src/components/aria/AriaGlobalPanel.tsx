@@ -79,6 +79,20 @@ export default function AriaGlobalPanel({ onClose }: Props) {
 
   useEffect(() => () => { stopAllAudioAndMic(); }, [stopAllAudioAndMic]);
 
+  // Speak a short page-aware welcome once per session per pathname.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!ariaVoice.isEnabled()) return;
+    const key = `aria_panel_welcome:${pathname}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch { /* ignore */ }
+    const t = window.setTimeout(() => { ariaVoice.enqueue(introLine, isAr ? "ar" : "en"); }, 180);
+    return () => window.clearTimeout(t);
+  }, [pathname, introLine, isAr]);
+
+
   // Preload ARIA pose images so state swaps are instant.
   useEffect(() => {
     (async () => {

@@ -2,7 +2,7 @@
  * BetaMarqueeBar — cinematic beta-version marquee, locale-aware.
  * Public visitors see GA branding; authenticated users see the beta wording.
  */
-import { LanguageToggle } from "./LanguageToggle";
+// Language toggle is mounted once at the root layout — no per-component copy.
 import { useI18n } from "@/lib/i18n";
 import { usePublicSession } from "@/lib/demo/usePublicSession";
 import { glossary as G } from "@/lib/i18n/glossary";
@@ -71,9 +71,8 @@ export function BetaMarqueeBar() {
           ))}
         </div>
 
-        <div className="absolute right-3 z-20 flex items-center">
-          <LanguageToggle />
-        </div>
+        {/* Language toggle intentionally removed — single instance mounted at root. */}
+
       </div>
     </div>
   );

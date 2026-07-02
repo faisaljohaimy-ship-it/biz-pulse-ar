@@ -26,15 +26,16 @@ type Turn = {
 };
 
 const PROMPTS_AR = [
-  "ما حالة العمليات الآن؟",
-  "أعطني ملخصاً تنفيذياً لرؤية 2030.",
-  "كيف يدعم نكسيوس قطاع الأمن الصناعي؟",
+  "أعطني إحاطة تنفيذية في ٣٠ ثانية",
+  "ما الذي تفعله نكسيوس؟",
+  "كيف تدعم آريا الأمن الصناعي؟",
 ];
 const PROMPTS_EN = [
+  "Give me a 30-second executive brief",
   "What does NEXIOS do?",
-  "Give me a 30-second executive brief.",
   "How does ARIA support industrial security?",
 ];
+
 
 const VOICE_PREF_KEY = "aria-hero-voice-enabled";
 
