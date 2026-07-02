@@ -538,6 +538,7 @@ export function GenesisHero({ onDone }: Props) {
       if (t >= T.wordStart && !wordAssigned) {
         assign(wordPts, ar); wordAssigned = true; setPh("wordmark");
         sfx.chime(660, 500);
+        if (isRoyal) { sfx.startRustle(); sfx.startSwell(261.63, 2400); }
       }
       if (t >= T.cityStart && !cityAssigned) {
         // radial impulse
@@ -554,12 +555,24 @@ export function GenesisHero({ onDone }: Props) {
       }
       if (t >= T.ariaStart && !ariaAssigned && ariaPts.length) {
         assign(ariaPts); ariaAssigned = true; setPh("aria");
-        sfx.chime(880, 700);
+        if (isRoyal) { sfx.royalChime(); scanStartedAt = now; }
+        else { sfx.chime(880, 700); }
       }
       if (t >= T.ariaStart + 300 && !spoken) {
         spoken = true;
         // gesture-gated: only speak if audio unlocked
-        try { ariaVoice.enqueue(ar ? GREETING_AR : GREETING_EN, ar ? "ar" : "en"); } catch { /* */ }
+        const line = isRoyal ? (ar ? royalGreet.ar : royalGreet.en) : (ar ? GREETING_AR : GREETING_EN);
+        try { ariaVoice.enqueue(line, ar ? "ar" : "en"); } catch { /* */ }
+        // typewriter reveal beneath ARIA
+        if (isRoyal) {
+          let idx = 0;
+          const type = () => {
+            idx = Math.min(line.length, idx + 1);
+            setTypedGreet(line.slice(0, idx));
+            if (idx < line.length) setTimeout(type, 28);
+          };
+          type();
+        }
       }
       if (t >= T.conductStart && phaseRef.current !== "conduct") setPh("conduct");
       if (t >= T.conductEnd && !doneRef.current) finish();
