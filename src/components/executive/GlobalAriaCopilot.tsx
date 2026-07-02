@@ -24,14 +24,9 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ArrowUp,
   Loader2,
-  MessageSquare,
-  Sparkles,
-  User,
   Volume2,
   VolumeX,
-  Minus,
   X,
-  ArrowRight,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
@@ -47,7 +42,6 @@ import {
   stageFromElapsed,
   type ConversationStage,
 } from "@/lib/aria/conversation-stages";
-import { Pin, PinOff, EyeOff, Eye } from "lucide-react";
 
 // Executive demo script — 10 short Arabic sentences that ARIA narrates
 // automatically 60 seconds after the platform loads, once per session, so a
@@ -817,7 +811,7 @@ export function GlobalAriaCopilot() {
           aria-label={ar ? "استعادة آريا" : "Restore ARIA"}
           className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#061A2E]/85 px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF] shadow-[0_8px_28px_-8px_rgba(0,212,255,0.55)] backdrop-blur hover:bg-[#3AE8FF]/10"
         >
-          <Eye className="h-3 w-3" /> ARIA
+          ARIA
         </button>
       </div>
     );
@@ -880,7 +874,7 @@ export function GlobalAriaCopilot() {
             </button>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
-                ARIA · GPT-5 · {ar ? persona.label_ar : persona.label_en}
+                ARIA · {ar ? persona.label_ar : persona.label_en}
               </div>
               <div className="truncate text-sm font-medium text-white">
                 {ar ? persona.mission_ar : persona.mission_en}
@@ -900,31 +894,20 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => setPinned((v) => !v)}
-              aria-pressed={pinned}
-              aria-label={pinned ? (ar ? "إلغاء التثبيت" : "Unpin") : (ar ? "تثبيت" : "Pin")}
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border transition ${pinned ? "border-[#3AE8FF]/80 bg-[#3AE8FF]/15 text-[#3AE8FF]" : "border-white/20 text-white/70 hover:border-white/50 hover:bg-white/5"}`}
-            >
-              {pinned ? <Pin className="h-3.5 w-3.5" /> : <PinOff className="h-3.5 w-3.5" />}
-            </button>
-            <button
-              type="button"
               onClick={() => { cancelDemo(); setOpen(false); }}
-              disabled={pinned}
-              aria-label={ar ? "تصغير" : "Minimize"}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:border-white/50 hover:bg-white/5 disabled:opacity-30"
+              className="shrink-0 rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70 transition hover:border-white/50 hover:bg-white/5"
             >
-              <Minus className="h-3.5 w-3.5" />
+              {ar ? "تصغير" : "Minimize"}
             </button>
             <button
               type="button"
               onClick={() => { cancelDemo(); setOpen(false); setHidden(true); }}
-              aria-label={ar ? "إخفاء" : "Hide"}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/70 transition hover:border-white/50 hover:bg-white/5"
+              className="shrink-0 rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70 transition hover:border-white/50 hover:bg-white/5"
             >
-              <EyeOff className="h-3.5 w-3.5" />
+              {ar ? "إخفاء" : "Hide"}
             </button>
           </div>
+
 
 
           {/* Transcript */}
@@ -944,8 +927,8 @@ export function GlobalAriaCopilot() {
                   <div key={t.id} className="space-y-1.5">
                     {!isGreeting && (
                       <div className="flex items-start gap-2" dir={t.qLang === "ar" ? "rtl" : "ltr"}>
-                        <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/15 bg-white/5 text-white/70">
-                          <User className="h-3 w-3" />
+                        <span className="mt-0.5 shrink-0 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-white/60">
+                          {ar ? "أنت" : "You"}
                         </span>
                         <div className="rounded-xl rounded-tl-sm border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] leading-relaxed text-white/85">
                           <p className="whitespace-pre-wrap break-words">{t.question}</p>
@@ -953,8 +936,8 @@ export function GlobalAriaCopilot() {
                       </div>
                     )}
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-[#3AE8FF]">
-                        <MessageSquare className="h-3 w-3" />
+                      <span className="mt-0.5 shrink-0 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-[#3AE8FF]">
+                        ARIA
                       </span>
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="rounded-xl rounded-tl-sm border border-[#3AE8FF]/25 bg-[#04111F]/85 px-3 py-2 text-[13px] leading-relaxed text-white/95">
@@ -1092,7 +1075,6 @@ export function GlobalAriaCopilot() {
                     onClick={() => { stopSpeaking(); void navigate({ to: a.to }); }}
                     className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/80 transition hover:border-[#3AE8FF]/60 hover:text-white"
                   >
-                    <ArrowRight className="h-3 w-3 rtl:rotate-180" />
                     {ar ? a.label_ar : a.label_en}
                   </button>
                 ))}
@@ -1158,7 +1140,6 @@ export function GlobalAriaCopilot() {
               className="inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-3 py-1 text-[11px] font-medium text-[#3AE8FF] hover:bg-[#3AE8FF]/20"
             >
               {ar ? "افتح آريا" : "Open ARIA"}
-              <ArrowRight className="h-3 w-3 rtl:rotate-180" />
             </button>
           </div>
         </div>
@@ -1175,12 +1156,8 @@ export function GlobalAriaCopilot() {
         >
           <span aria-hidden className="pointer-events-none absolute -inset-2 rounded-full border border-[#3AE8FF]/25" style={{ animation: "gac-halo 3.6s ease-out infinite" }} />
           <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full rounded-full object-cover object-top" draggable={false} />
-          <Sparkles className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-[#061A2E]/85 p-0.5 drop-shadow-[0_0_10px_rgba(58,232,255,0.95)]" />
-          <span className="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#061A2E] text-[8px] font-bold text-[#3AE8FF]">
-            5
-          </span>
           <span className="pointer-events-none absolute bottom-full mb-2 whitespace-nowrap rounded-md border border-[#3AE8FF]/30 bg-[#061A2E]/95 px-2 py-1 text-[10px] uppercase tracking-wider text-[#3AE8FF] opacity-0 transition group-hover:opacity-100">
-            ARIA · GPT-5
+            ARIA
           </span>
         </button>
       )}
