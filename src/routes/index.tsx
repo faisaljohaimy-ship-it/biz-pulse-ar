@@ -155,11 +155,14 @@ function IntroLanding() {
 
       <HajjExecutiveStage />
 
-      <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
+      <div data-narrator="kpi-row" className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
       </div>
 
-      <AgentRing />
+      <div data-narrator="agents">
+        <AgentRing />
+      </div>
+
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
         <Scene as="section" number="02" label="القدرات" stagger className="mt-6 sm:mt-16">
