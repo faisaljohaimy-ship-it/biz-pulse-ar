@@ -8,6 +8,9 @@ import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
+import { AmbientAuraLayer } from "@/components/cinematic/AmbientAuraLayer";
+import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
+import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
@@ -67,14 +70,23 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
+      {/* Ambient executive aura — sits behind everything */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
+        <AmbientAuraLayer intensity={0.85} />
+      </div>
+
       <AriaGenesis onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
+      {/* Signature wordmark above the fold */}
+      <div className={`relative z-10 mx-auto mt-6 px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+        <ExecutiveWordmark title="A R I A" caption={ar ? "الذكاء التنفيذي" : "Executive Intelligence"} size="md" />
+      </div>
 
       {/* Mini ARIA presence inside the hero */}
-      <div id="aria-quick-ask" className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
+      <div id="aria-quick-ask" className={`relative z-10 mt-5 px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
         <MiniAriaHeroBadge />
       </div>
 
