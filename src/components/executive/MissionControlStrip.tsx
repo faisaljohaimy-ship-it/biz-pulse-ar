@@ -81,8 +81,9 @@ export function MissionControlStrip() {
         key: "risk",
         driftKey: "criticalIncidents24h" as const,
         Icon: AlertTriangle,
-        labelAr: "مستوى المخاطر",
-        labelEn: "Risk Level",
+        labelAr: G.kpi_risk_level.ar,
+        labelEn: G.kpi_risk_level.en,
+
         value: useDemo
           ? riskLevelLabel(demo.riskLevelKey, ar)
           : realLoading
