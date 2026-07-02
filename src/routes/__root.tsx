@@ -262,6 +262,7 @@ function RootComponent() {
         <ThemeProvider>
           <I18nProvider>
             <AriaContextProvider>
+              <KpiWatcherProvider>
               <DemoModeProvider>
                 <OfflineBanner />
                 <BetaMarqueeBar />
@@ -277,10 +278,12 @@ function RootComponent() {
                 <PresentationLayer />
                 <DemoModeHUD />
                 <AriaGlobalDock />
+                <AriaProactiveNudge />
                 <ExecutiveBriefingBar />
                 <Toaster />
 
               </DemoModeProvider>
+              </KpiWatcherProvider>
             </AriaContextProvider>
           </I18nProvider>
         </ThemeProvider>
