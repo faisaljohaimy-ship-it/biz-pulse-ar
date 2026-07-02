@@ -260,11 +260,13 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
           draggable={false}
           className="absolute inset-0 h-full w-full object-contain object-top"
           style={{
-            filter: thinking
-              ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"
-              : speaking
-                ? `brightness(${1 + intensity * 0.18}) saturate(${1.1 + intensity * 0.25})`
+            filter: [
+              thinking ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"
+                : speaking ? `brightness(${1 + intensity * 0.18}) saturate(${1.1 + intensity * 0.25})`
                 : "brightness(0.97)",
+              overlay.filter,
+            ].join(" "),
+            transition: "filter 260ms ease-out",
           }}
         />
 
