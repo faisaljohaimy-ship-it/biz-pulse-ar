@@ -289,27 +289,57 @@ export default function AriaGlobalPanel({ onClose }: Props) {
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(draft);
+            <div className="relative flex-1">
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void send(draft);
+                  }
+                }}
+                rows={1}
+                dir="auto"
+                placeholder={isAr ? "كيف يمكنني مساعدتك اليوم؟" : "How can I help you today?"}
+                className="w-full resize-none bg-transparent border-0 outline-none px-1 py-1.5 text-[13px] text-cyan-50 placeholder:text-cyan-200/50 max-h-32 leading-6"
+              />
+              {stt.listening && interim && !draft && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 px-1 py-1.5 text-[13px] leading-6 text-cyan-200/40 truncate"
+                >
+                  {interim}
+                </span>
+              )}
+            </div>
+            {stt.supported ? (
+              <button
+                type="button"
+                onClick={onMicClick}
+                aria-pressed={stt.listening}
+                aria-label={
+                  isAr
+                    ? stt.listening ? "إيقاف الاستماع" : "بدء الاستماع"
+                    : stt.listening ? "Stop listening" : "Start listening"
                 }
-              }}
-              rows={1}
-              dir="auto"
-              placeholder={isAr ? "كيف يمكنني مساعدتك اليوم؟" : "How can I help you today?"}
-              className="flex-1 resize-none bg-transparent border-0 outline-none px-1 py-1.5 text-[13px] text-cyan-50 placeholder:text-cyan-200/50 max-h-32 leading-6"
-            />
-            <span
-              aria-hidden
-              title={isAr ? "الميكروفون" : "Microphone"}
-              className="shrink-0 h-8 w-8 rounded-full border border-cyan-400/30 bg-[#061A2E]/70 text-cyan-200/80 flex items-center justify-center"
-            >
-              <Mic className="h-4 w-4" />
-            </span>
+                title={stt.listening ? (isAr ? "استمع…" : "Listening…") : (isAr ? "الميكروفون" : "Microphone")}
+                className={[
+                  "shrink-0 h-8 w-8 rounded-full flex items-center justify-center transition relative",
+                  stt.listening
+                    ? "bg-cyan-400/25 border border-cyan-300/70 text-cyan-50 shadow-[0_0_16px_rgba(0,212,255,0.55)]"
+                    : "border border-cyan-400/30 bg-[#061A2E]/70 text-cyan-200/80 hover:text-cyan-50 hover:border-cyan-300/60",
+                ].join(" ")}
+              >
+                {stt.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                {stt.listening && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-full border border-cyan-300/60 motion-safe:animate-ping"
+                  />
+                )}
+              </button>
+            ) : null}
           </div>
         </form>
       </div>
