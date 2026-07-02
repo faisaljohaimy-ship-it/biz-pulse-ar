@@ -149,7 +149,7 @@ export function NexusRevealHero({
               fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
             }}
           >
-            NEXUS
+            NEXIOS
           </div>
           <div
             className="mt-2 text-[11px] uppercase tracking-[0.4em] text-white/65 sm:text-sm sm:tracking-[0.7em]"
