@@ -987,22 +987,6 @@ export function GlobalAriaCopilot() {
               placeholder={ar ? "اكتب سؤالك لآريا…" : "Ask ARIA…"}
               className="min-h-[40px] max-h-[120px] flex-1 resize-none rounded-xl border border-[#3AE8FF]/30 bg-[#04111F]/70 px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:border-[#3AE8FF]/70 focus:outline-none"
             />
-            {sttSupported && (
-              <button
-                type="button"
-                onClick={() => (listening ? stopListening() : startListening())}
-                aria-pressed={listening}
-                aria-label={listening ? (ar ? "أوقف الاستماع" : "Stop listening") : (ar ? "تحدث لآريا" : "Talk to ARIA")}
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition ${
-                  listening
-                    ? "border-rose-400/70 bg-rose-500/20 text-rose-100 shadow-[0_0_20px_rgba(255,88,120,0.55)]"
-                    : "border-[#3AE8FF]/40 text-[#3AE8FF] hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/10"
-                }`}
-                style={listening ? { animation: "gac-listen 1.4s ease-out infinite" } : undefined}
-              >
-                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </button>
-            )}
             <button
               type="submit"
               disabled={loading || !question.trim()}
@@ -1012,11 +996,6 @@ export function GlobalAriaCopilot() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </button>
           </form>
-          {listening && (
-            <div className="mt-1 text-[10.5px] uppercase tracking-[0.22em] text-rose-200/85" dir="auto">
-              {ar ? "جارٍ الاستماع…" : "Listening…"} {interimText && <span className="normal-case tracking-normal text-white/70">— {interimText}</span>}
-            </div>
-          )}
         </div>
       )}
 
