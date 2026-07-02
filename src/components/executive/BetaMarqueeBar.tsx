@@ -1,15 +1,27 @@
 /**
  * BetaMarqueeBar — cinematic beta-version marquee, locale-aware.
+ * Public visitors see GA branding; authenticated users see the beta wording.
  */
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18n } from "@/lib/i18n";
+import { usePublicSession } from "@/lib/demo/usePublicSession";
 
-const MESSAGES_AR = [
+const PUBLIC_AR = [
+  "✦ NEXIOS AI OS · الإصدار 1.0 GA",
+  "✦ منصة الإنجاز التنفيذية · رؤية 2030",
+  "✦ مدعومة بـ ARIA · GPT-5",
+];
+const PUBLIC_EN = [
+  "✦ NEXIOS AI OS · v1.0 GA",
+  "✦ Executive Delivery Platform · Vision 2030",
+  "✦ Powered by ARIA · GPT-5",
+];
+const BETA_AR = [
   "✦ نسخة تجريبية قابلة للتعديل",
   "✦ منصة إنجاز الأعمال التنفيذية — قيد التطوير المستمر",
   "✦ مدعومة بـ ARIA · GPT-5",
 ];
-const MESSAGES_EN = [
+const BETA_EN = [
   "✦ Editable Beta Preview",
   "✦ Executive Delivery Platform — under continuous iteration",
   "✦ Powered by ARIA · GPT-5",
@@ -17,8 +29,11 @@ const MESSAGES_EN = [
 
 export function BetaMarqueeBar() {
   const { locale } = useI18n();
-  const MESSAGES = locale === "ar" ? MESSAGES_AR : MESSAGES_EN;
+  const isPublic = usePublicSession();
+  const ar = locale === "ar";
+  const MESSAGES = isPublic ? (ar ? PUBLIC_AR : PUBLIC_EN) : (ar ? BETA_AR : BETA_EN);
   const strip = [...MESSAGES, ...MESSAGES, ...MESSAGES];
+
 
   return (
     <div
