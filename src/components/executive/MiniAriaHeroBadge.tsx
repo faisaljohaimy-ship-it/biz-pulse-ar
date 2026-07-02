@@ -193,8 +193,8 @@ export function MiniAriaHeroBadge() {
           ? "الكثير من الطلبات — حاول بعد دقيقة."
           : "Too many requests — try again shortly."
         : detected === "ar"
-          ? "تعذّر الاتصال بآريا الآن — أعد المحاولة."
-          : "ARIA is unavailable right now — please retry.";
+          ? "جاري إعادة الاتصال بـ ARIA… تم حفظ السياق، وسيتم إعادة المحاولة تلقائيًا."
+          : "Reconnecting to ARIA… context preserved, will retry automatically.";
       setError(friendly);
       setTurns((prev) => prev.map((t) => (t.id === turnId ? { ...t, error: friendly } : t)));
     } finally {
