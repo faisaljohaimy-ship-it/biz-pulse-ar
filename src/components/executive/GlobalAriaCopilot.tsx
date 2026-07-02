@@ -32,8 +32,6 @@ import {
   Minus,
   X,
   ArrowRight,
-  Mic,
-  MicOff,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
@@ -50,6 +48,25 @@ import {
   type ConversationStage,
 } from "@/lib/aria/conversation-stages";
 import { Pin, PinOff, EyeOff, Eye } from "lucide-react";
+
+// Executive demo script — 10 short Arabic sentences that ARIA narrates
+// automatically 60 seconds after the platform loads, once per session, so a
+// first-time visitor immediately understands what NEXIOS does. The user can
+// silence + hide ARIA at any moment by clicking her floating icon.
+const DEMO_SCRIPT_AR: string[] = [
+  "أهلاً بك في نكسيوس. أنا آريا، الذكاء التنفيذي لإدارة الأمن الصناعي بالمنطقة الغربية.",
+  "أراقب الآن أربعة مواقع رئيسية: جدة، مكة المكرمة، ينبع، والمنطقة الصناعية.",
+  "حالة النظام مستقرة، والدوريات الميدانية تسير وفق الخطة اليومية.",
+  "لدينا عدد من البلاغات المفتوحة تتابعها غرفة العمليات لحظة بلحظة.",
+  "أعرض عبر لوحة القيادة مؤشرات الأداء الحيّة وحالة الأصول والتصاريح.",
+  "يمكنك الانتقال إلى غرفة العمليات لعرض تفصيلي، أو التقارير التنفيذية لملخّص فوري.",
+  "في منظومة الحج، أتابع المشاعر المقدسة وأنبّهك فوراً عند أي مخاطرة حرجة.",
+  "أستطيع تحليل أي بلاغ، اقتراح خطة استجابة، وإصدار أوامر عمل خلال ثوانٍ.",
+  "جميع قراراتي مبنية على بيانات حقيقية موثّقة من قواعد النظام، دون تخمين.",
+  "اضغط على أيقونتي في أي وقت لإسكاتي وإخفائي، أو اسألني مباشرة وسأخدمك فوراً.",
+];
+const DEMO_DELAY_MS = 60_000;
+const DEMO_STARTED_KEY = "aria-copilot-demo-started-v1";
 
 type AskResult = { text_ar: string; text_en: string };
 type BriefingLite = {
@@ -278,17 +295,15 @@ export function GlobalAriaCopilot() {
   const [pinned, setPinned] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
-  const [listening, setListening] = useState(false);
-  const [sttSupported, setSttSupported] = useState(false);
-  const [interimText, setInterimText] = useState("");
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const briefingFiredRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const recogRef = useRef<unknown>(null);
-  const askRef = useRef<((q: string) => void) | null>(null);
+  const demoStartedRef = useRef(false);
+  const demoCancelRef = useRef(false);
+  const [demoPlaying, setDemoPlaying] = useState(false);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const persona = useMemo(() => resolvePersona(pathname), [pathname]);
