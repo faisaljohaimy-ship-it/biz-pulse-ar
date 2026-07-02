@@ -77,6 +77,16 @@ function IntroLanding() {
         <HeroAIBackground />
       </div>
 
+      {/* ARIA holographic presence — living idle motion behind the hero UI */}
+      <div
+        aria-hidden
+        data-aria-presence
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[100vh] opacity-70 sm:opacity-90"
+      >
+        <AriaHeroPresence intensity="stage" />
+      </div>
+
+
 
 
       <AriaGenesis onComplete={() => setBootDone(true)} />
