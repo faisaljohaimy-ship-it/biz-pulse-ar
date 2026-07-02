@@ -15,6 +15,7 @@ import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
+import { BUILD_ID } from "@/lib/build-id";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -59,6 +60,12 @@ function IntroLanding() {
     const onPlay = () => setCinemaOpen(true);
     window.addEventListener("nexios:play-demo", onPlay);
     return () => window.removeEventListener("nexios:play-demo", onPlay);
+  }, []);
+
+  // Boot beacon — logs the deployed build stamp once.
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.info("NEXIOS build", BUILD_ID);
   }, []);
 
 
@@ -178,8 +185,16 @@ function IntroLanding() {
         </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
+        <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
           NEXIOS AI OS · v1.0 GA
+          <span className="ms-2 rounded-full border border-white/15 px-2 py-0.5 text-[9px] normal-case tracking-normal text-white/40">
+            build {BUILD_ID}
+          </span>
         </p>
+      </div>
+    </div>
+  );
+}
       </div>
     </div>
   );
