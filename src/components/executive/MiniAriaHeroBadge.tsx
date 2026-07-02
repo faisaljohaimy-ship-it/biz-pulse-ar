@@ -457,7 +457,19 @@ export function MiniAriaHeroBadge() {
         </button>
       </form>
 
-      {/* Suggestions */}
+      {/* Greeting + Suggestions */}
+      {turns.length === 0 && !loading && (
+        <>
+          <div
+            dir={ar ? "rtl" : "ltr"}
+            className="mt-3 rounded-xl border border-[#3AE8FF]/25 bg-[#3AE8FF]/[0.05] px-3 py-2 text-[12px] leading-relaxed text-white/80"
+          >
+            {ar
+              ? "أهلاً بك، أنا آريا — الذكاء التنفيذي لإدارة الأمن الصناعي بالمنطقة الغربية. كيف يمكنني خدمتك اليوم؟"
+              : "Hello, I'm ARIA — Executive Intelligence for Western Region Industrial Security. How may I serve you today?"}
+          </div>
+        </>
+      )}
       {turns.length === 0 && !loading && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {suggestions.map((s) => (
