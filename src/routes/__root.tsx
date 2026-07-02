@@ -281,6 +281,7 @@ function RootComponent() {
                   </div>
                 </div>
                 <Outlet />
+                <CinematicRouteShell />
                 <GlobalAriaCopilot />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
