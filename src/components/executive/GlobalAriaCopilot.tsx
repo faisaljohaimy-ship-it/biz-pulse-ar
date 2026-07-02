@@ -113,10 +113,11 @@ const ROUTE_CTX: { match: (p: string) => boolean; ctx: PageCtx }[] = [
       label_ar: "الصفحة الرئيسية",
       label_en: "Home",
       prompts_ar: [
+        "أعطني إحاطة تنفيذية في ٣٠ ثانية",
         "أعطني ملخصاً تنفيذياً لـ نكسيوس.",
         "كيف يدعم النظام رؤية 2030؟",
-        "ما المميزات الرئيسية للمنصة؟",
       ],
+
       prompts_en: [
         "Give me a 30-second executive brief.",
         "How does NEXIOS support Vision 2030?",
