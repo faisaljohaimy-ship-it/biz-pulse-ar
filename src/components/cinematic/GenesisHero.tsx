@@ -364,6 +364,7 @@ export function GenesisHero({ onDone }: Props) {
 
     let wordAssigned = false, cityAssigned = false, ariaAssigned = false, spoken = false;
     let dissolving = 0;
+    const rp_marks: boolean[] = [false, false, false, false];
 
     const finish = () => {
       if (doneRef.current) return;
