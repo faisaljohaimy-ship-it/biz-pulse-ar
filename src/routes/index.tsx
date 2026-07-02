@@ -16,6 +16,7 @@ import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher"
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { BUILD_ID } from "@/lib/build-id";
+import { Scene } from "@/components/cinema/Scene";
 
 export const Route = createFileRoute("/")({
   head: () => ({
