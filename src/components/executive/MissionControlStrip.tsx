@@ -121,8 +121,9 @@ export function MissionControlStrip() {
         key: "wo",
         driftKey: "openWorkOrders" as const,
         Icon: Wrench,
-        labelAr: "أوامر عمل مفتوحة",
-        labelEn: "Open Work Orders",
+        labelAr: G.kpi_open_wo.ar,
+        labelEn: G.kpi_open_wo.en,
+
         value: displayValue(realLoading, useDemo, k?.wo_open ?? "—", woOpen),
         hint: useDemo
           ? (ar ? `مغلق ${180}` : `Closed ${180}`)
