@@ -529,7 +529,8 @@ export function GlobalAriaCopilot() {
         const finalQ = (finalText || "").trim();
         if (finalQ) {
           setQuestion("");
-          void ask(finalQ);
+          const runner = askRef.current;
+          if (runner) void runner(finalQ);
         }
       };
       recogRef.current = rec;
