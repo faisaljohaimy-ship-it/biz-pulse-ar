@@ -10,6 +10,7 @@ import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
+import { AriaCinematicIntro } from "@/components/cinematic/AriaCinematicIntro";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
@@ -77,6 +78,7 @@ function IntroLanding() {
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
       <AriaWelcomeCurtain />
+      <AriaCinematicIntro />
       <CinematicBoot onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
