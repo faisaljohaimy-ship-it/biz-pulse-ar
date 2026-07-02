@@ -185,7 +185,6 @@ function IntroLanding() {
         </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
-        <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
           NEXIOS AI OS · v1.0 GA
           <span className="ms-2 rounded-full border border-white/15 px-2 py-0.5 text-[9px] normal-case tracking-normal text-white/40">
             build {BUILD_ID}
@@ -195,7 +194,4 @@ function IntroLanding() {
     </div>
   );
 }
-      </div>
-    </div>
-  );
-}
+
