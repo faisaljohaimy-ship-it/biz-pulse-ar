@@ -33,10 +33,14 @@ export function AriaCinematicIntro() {
   const greeting = ar ? GREETING_AR : GREETING_EN;
 
   const reduced = useReducedMotion();
-  const [mounted, setMounted] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    try { return sessionStorage.getItem(SESSION_KEY) !== "1"; } catch { return true; }
-  });
+  // Defer the mount decision to the client so SSR and first client render
+  // agree (both return null), preventing a hydration mismatch.
+  const [mounted, setMounted] = useState<boolean>(false);
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(SESSION_KEY) !== "1") setMounted(true);
+    } catch { setMounted(true); }
+  }, []);
   const [phase, setPhase] = useState<Phase>("materialize");
   const [typed, setTyped] = useState(0);
   const [avatarIn, setAvatarIn] = useState(false);
