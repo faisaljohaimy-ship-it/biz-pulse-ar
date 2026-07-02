@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { X, Send, Loader2, Mic, Sparkles } from "lucide-react";
+import { X, Send, Loader2, Mic, MicOff, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getPageEntry } from "@/lib/aria/page-registry";
 import { dockStore, type DockTurn } from "@/lib/aria/dock-store";
@@ -9,6 +9,8 @@ import {
   togglePresentationMode,
   useAriaPresentationMode,
 } from "@/lib/aria/presentation-mode";
+import { ariaVoice, useAriaVoice } from "@/lib/aria/voice-queue";
+import { useSpeechRecognition } from "@/lib/aria/use-speech-recognition";
 
 type Props = { onClose: () => void };
 
