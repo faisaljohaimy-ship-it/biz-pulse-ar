@@ -67,13 +67,11 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
-      <AriaWelcomeCurtain />
-      <CinematicBoot onComplete={() => setBootDone(true)} />
+      <AriaGenesis onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/os" })} />
 
       {/* Mini ARIA presence inside the hero */}
       <div id="aria-quick-ask" className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
