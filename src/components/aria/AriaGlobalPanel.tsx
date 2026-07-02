@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { X, Send, Loader2, Mic, Sparkles } from "lucide-react";
+import { X, Send, Loader2, Mic, MicOff, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getPageEntry } from "@/lib/aria/page-registry";
 import { dockStore, type DockTurn } from "@/lib/aria/dock-store";
@@ -9,6 +9,8 @@ import {
   togglePresentationMode,
   useAriaPresentationMode,
 } from "@/lib/aria/presentation-mode";
+import { ariaVoice, useAriaVoice } from "@/lib/aria/voice-queue";
+import { useSpeechRecognition } from "@/lib/aria/use-speech-recognition";
 
 type Props = { onClose: () => void };
 
@@ -27,7 +29,9 @@ export default function AriaGlobalPanel({ onClose }: Props) {
   const entry = useMemo(() => getPageEntry(pathname), [pathname]);
   const turns = useTurns();
   const presMode = useAriaPresentationMode();
+  const voice = useAriaVoice();
   const [draft, setDraft] = useState<string>(dockStore.getDraft());
+  const [interim, setInterim] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "thinking" | "streaming">("idle");
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -51,13 +55,21 @@ export default function AriaGlobalPanel({ onClose }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [turns.length, stage]);
 
+  const handleClose = useCallback(() => {
+    ariaVoice.clear();
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [handleClose]);
+
+  // Stop any audio when the panel unmounts (defence in depth).
+  useEffect(() => () => ariaVoice.clear(), []);
 
   const send = useCallback(async (text: string) => {
     const q = text.trim();
@@ -94,6 +106,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       setStage("streaming");
       const answer = (isAr ? j.text_ar : j.text_en) ?? j.text_en ?? j.text_ar ?? "";
       dockStore.patch(aid, { text: answer, pending: false });
+      if (answer && ariaVoice.isEnabled()) ariaVoice.feedText(answer);
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       dockStore.patch(aid, {
@@ -106,6 +119,33 @@ export default function AriaGlobalPanel({ onClose }: Props) {
     }
   }, [busy, pathname, entry, locale, isAr, turns]);
 
+  // Speech-to-text — Web Speech API, silent if unsupported.
+  const stt = useSpeechRecognition({
+    lang: isAr ? "ar-SA" : "en-US",
+    onInterim: (t) => setInterim(t),
+    onFinal: (t) => {
+      setInterim("");
+      if (t) void send(t);
+    },
+  });
+
+  // If user starts typing while ARIA speaks → fade out (interrupt).
+  useEffect(() => {
+    if (draft && voice.speaking) ariaVoice.interrupt();
+  }, [draft, voice.speaking]);
+
+  const onMicClick = useCallback(() => {
+    if (stt.listening) {
+      stt.stop();
+      // If user cancels without a final result, resume any paused audio.
+      if (voice.paused) ariaVoice.resume();
+      return;
+    }
+    if (voice.speaking) ariaVoice.interrupt();
+    setInterim("");
+    stt.start();
+  }, [stt, voice.speaking, voice.paused]);
+
   return (
     <div
       className="fixed inset-0 z-[95] pointer-events-none"
@@ -114,7 +154,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       aria-label={isAr ? "لوحة آريا" : "ARIA panel"}
     >
       {/* outside-tap surface */}
-      <div className="absolute inset-0 pointer-events-auto" onClick={onClose} />
+      <div className="absolute inset-0 pointer-events-auto" onClick={handleClose} />
 
       <div
         className={[
@@ -139,7 +179,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
                 framing="portrait"
                 size={36}
                 thinking={stage === "thinking"}
-                speaking={stage === "streaming"}
+                speaking={stage === "streaming" || voice.speaking}
                 alt={isAr ? "آريا" : "ARIA"}
                 className="!h-full !w-full"
               />
@@ -152,6 +192,28 @@ export default function AriaGlobalPanel({ onClose }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                const wasEnabled = ariaVoice.isEnabled();
+                ariaVoice.toggle();
+                if (wasEnabled) ariaVoice.clear();
+              }}
+              aria-label={
+                isAr
+                  ? voice.enabled ? "كتم صوت آريا" : "تفعيل صوت آريا"
+                  : voice.enabled ? "Mute ARIA voice" : "Unmute ARIA voice"
+              }
+              title={voice.enabled ? "Voice on" : "Voice off"}
+              className={[
+                "p-1.5 rounded-md transition",
+                voice.enabled
+                  ? "text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white"
+                  : "text-cyan-200/40 hover:bg-cyan-400/10 hover:text-cyan-100",
+              ].join(" ")}
+            >
+              {voice.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
             <button
               type="button"
               onClick={() => togglePresentationMode()}
@@ -170,7 +232,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
               <Sparkles className="h-4 w-4" />
             </button>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               aria-label={isAr ? "إغلاق" : "Close"}
               className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
             >
@@ -227,27 +289,57 @@ export default function AriaGlobalPanel({ onClose }: Props) {
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(draft);
+            <div className="relative flex-1">
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void send(draft);
+                  }
+                }}
+                rows={1}
+                dir="auto"
+                placeholder={isAr ? "كيف يمكنني مساعدتك اليوم؟" : "How can I help you today?"}
+                className="w-full resize-none bg-transparent border-0 outline-none px-1 py-1.5 text-[13px] text-cyan-50 placeholder:text-cyan-200/50 max-h-32 leading-6"
+              />
+              {stt.listening && interim && !draft && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 px-1 py-1.5 text-[13px] leading-6 text-cyan-200/40 truncate"
+                >
+                  {interim}
+                </span>
+              )}
+            </div>
+            {stt.supported ? (
+              <button
+                type="button"
+                onClick={onMicClick}
+                aria-pressed={stt.listening}
+                aria-label={
+                  isAr
+                    ? stt.listening ? "إيقاف الاستماع" : "بدء الاستماع"
+                    : stt.listening ? "Stop listening" : "Start listening"
                 }
-              }}
-              rows={1}
-              dir="auto"
-              placeholder={isAr ? "كيف يمكنني مساعدتك اليوم؟" : "How can I help you today?"}
-              className="flex-1 resize-none bg-transparent border-0 outline-none px-1 py-1.5 text-[13px] text-cyan-50 placeholder:text-cyan-200/50 max-h-32 leading-6"
-            />
-            <span
-              aria-hidden
-              title={isAr ? "الميكروفون" : "Microphone"}
-              className="shrink-0 h-8 w-8 rounded-full border border-cyan-400/30 bg-[#061A2E]/70 text-cyan-200/80 flex items-center justify-center"
-            >
-              <Mic className="h-4 w-4" />
-            </span>
+                title={stt.listening ? (isAr ? "استمع…" : "Listening…") : (isAr ? "الميكروفون" : "Microphone")}
+                className={[
+                  "shrink-0 h-8 w-8 rounded-full flex items-center justify-center transition relative",
+                  stt.listening
+                    ? "bg-cyan-400/25 border border-cyan-300/70 text-cyan-50 shadow-[0_0_16px_rgba(0,212,255,0.55)]"
+                    : "border border-cyan-400/30 bg-[#061A2E]/70 text-cyan-200/80 hover:text-cyan-50 hover:border-cyan-300/60",
+                ].join(" ")}
+              >
+                {stt.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                {stt.listening && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-full border border-cyan-300/60 motion-safe:animate-ping"
+                  />
+                )}
+              </button>
+            ) : null}
           </div>
         </form>
       </div>

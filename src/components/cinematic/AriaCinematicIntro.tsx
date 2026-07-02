@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import ariaAvatar from "@/assets/aria-holo-executive.png";
 import { useI18n } from "@/lib/i18n";
+import { ariaVoice, useAriaVoice } from "@/lib/aria/voice-queue";
 
 const SESSION_KEY = "nexios_intro_seen";
 
@@ -40,10 +41,24 @@ export function AriaCinematicIntro() {
   const [typed, setTyped] = useState(0);
   const [avatarIn, setAvatarIn] = useState(false);
   const [dissolving, setDissolving] = useState(false);
+  const voice = useAriaVoice();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const skipRef = useRef<HTMLButtonElement | null>(null);
   const liveRef = useRef<HTMLDivElement | null>(null);
   const timersRef = useRef<number[]>([]);
+  const spokeRef = useRef(false);
+
+  // Speak greeting when the greet phase starts; the queue silently
+  // records autoplay-blocked so the chip below can offer a tap.
+  useEffect(() => {
+    if (phase !== "greet" || spokeRef.current) return;
+    if (!ariaVoice.isEnabled()) return;
+    spokeRef.current = true;
+    ariaVoice.enqueue(greeting);
+  }, [phase, greeting]);
+
+  // Ensure audio never survives the intro.
+  useEffect(() => () => ariaVoice.clear(), []);
 
   const finish = () => {
     try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
@@ -307,6 +322,24 @@ export function AriaCinematicIntro() {
       >
         {ar ? "تخطي" : "Skip"}
       </button>
+
+      {/* Autoplay-blocked fallback — one-tap chip to start ARIA's voice. */}
+      {voice.enabled && voice.autoplayBlocked && phase !== "done" && (
+        <button
+          type="button"
+          onClick={() => ariaVoice.resume()}
+          className="fixed bottom-5 z-10 rounded-full border px-4 py-2 text-xs font-medium tracking-wide transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-300/60"
+          style={{
+            [ar ? "right" : "left"]: 20,
+            color: "rgba(232,246,255,0.9)",
+            borderColor: "rgba(34,211,238,0.4)",
+            background: "rgba(10,14,20,0.55)",
+            backdropFilter: "blur(10px)",
+          } as React.CSSProperties}
+        >
+          {ar ? "🔊 تشغيل صوت آريا" : "🔊 Play ARIA voice"}
+        </button>
+      )}
 
       <style>{`
         @keyframes aria-breathe {
