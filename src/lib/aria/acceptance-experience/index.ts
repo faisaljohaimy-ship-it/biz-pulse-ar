@@ -69,3 +69,47 @@ export {
   verifyAcceptance,
   type AcceptanceVerification,
 } from "./verification.server";
+
+// Phase 11.7 additions.
+export {
+  startAcceptanceRuntime,
+  deliverExecutiveGreeting,
+  advanceAcceptanceStep,
+  acceptanceRuntimeSnapshot,
+  recordUserTurn,
+  disciplineResponse,
+  setPresentationMode,
+  closeEngagement,
+  type AcceptanceRuntimeSnapshot,
+} from "./acceptance-runtime.server";
+export {
+  getPresentationMode,
+  presentationProfile,
+  type PresentationMode,
+  type PresentationProfile,
+} from "./presentation-mode.server";
+export {
+  openEngagement,
+  recordUserInteraction,
+  tickEngagement,
+  engagementLevel,
+  type EngagementSession,
+} from "./engagement.server";
+export { buildTrustChips, type TrustChip } from "./trust-signals.server";
+export {
+  recordLatency,
+  responsivenessSnapshot,
+  latencyBudgets,
+  type LatencySample,
+  type ResponsivenessSnapshot,
+} from "./responsiveness.server";
+export {
+  scoreInteraction,
+  type InteractionQualityScore,
+} from "./interaction-quality.server";
+export {
+  decideAcceptanceFallback,
+  type AcceptanceFallbackKind,
+  type AcceptanceFallbackInput,
+  type AcceptanceFallbackDecision,
+} from "./fallback.server";
