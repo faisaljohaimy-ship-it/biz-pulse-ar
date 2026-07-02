@@ -126,7 +126,8 @@ type Ctx = { locale: Locale; t: (k: string) => string; setLocale: (l: Locale) =>
 const I18nContext = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  // Arabic-first default — first visit has no stored preference.
+  const [locale, setLocaleState] = useState<Locale>("ar");
 
   useEffect(() => {
     const stored = (typeof window !== "undefined" && localStorage.getItem("locale")) as Locale | null;
@@ -136,7 +137,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.lang = locale;
+    document.documentElement.lang = locale === "ar" ? "ar-SA" : "en";
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
   }, [locale]);
 
@@ -144,6 +145,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLocaleState(l);
     if (typeof window !== "undefined") localStorage.setItem("locale", l);
   };
+
 
   const t = (k: string) => dict[k]?.[locale] ?? k;
   return <I18nContext.Provider value={{ locale, t, setLocale }}>{children}</I18nContext.Provider>;
