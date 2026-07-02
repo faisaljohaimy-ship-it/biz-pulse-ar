@@ -149,9 +149,11 @@ export function AriaCinematicIntro() {
   const [settled, setSettled] = useState(false);
   const [dissolving, setDissolving] = useState(false);
   const [headlineIn, setHeadlineIn] = useState(false);
+  const [started, setStarted] = useState(false);
   const [muted, setMutedState] = useState<boolean>(() => {
     try { return sessionStorage.getItem(AUDIO_PREF_KEY) === "1"; } catch { return false; }
   });
+
 
   const voice = useAriaVoice();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
