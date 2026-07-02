@@ -16,10 +16,16 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { getPageEntry, listPages } from "@/lib/aria/page-registry";
+import { evaluateAll, formatKpiEvidence, type KpiValue } from "@/lib/aria/kpi-registry";
 
 const TurnSchema = z.object({
   role: z.enum(["user", "assistant"]),
   text: z.string().max(4000),
+});
+
+const KpiInput = z.object({
+  key: z.string().min(1).max(64),
+  value: z.number().finite(),
 });
 
 const Input = z.object({
@@ -28,6 +34,8 @@ const Input = z.object({
   page: z.string().max(400).optional(),
   history: z.array(TurnSchema).max(20).optional(),
   userName: z.string().max(80).optional(),
+  kpis: z.array(KpiInput).max(24).optional(),
+  evidenceMode: z.boolean().optional(),
 });
 
 function clientIp(req: Request): string {
@@ -40,7 +48,13 @@ function clientIp(req: Request): string {
   );
 }
 
-function buildSystemPrompt(page: string | undefined, lang: "ar" | "en", userName?: string) {
+function buildSystemPrompt(
+  page: string | undefined,
+  lang: "ar" | "en",
+  userName?: string,
+  kpis?: KpiValue[],
+  evidenceMode?: boolean,
+) {
   const entry = getPageEntry(page || "/");
   const pages = listPages()
     .map((p) => `- ${p.path}  ·  ${p.title_en} — ${p.purpose_en}`)
@@ -52,6 +66,43 @@ function buildSystemPrompt(page: string | undefined, lang: "ar" | "en", userName
   const nameLine = userName
     ? (lang === "en" ? `Address the user by name when natural: ${userName}.` : `نادِ المستخدم باسمه عند المناسبة: ${userName}.`)
     : "";
+
+  const kpiEval = kpis?.length ? evaluateAll(kpis) : [];
+  const kpiBlock = kpiEval.length ? formatKpiEvidence(kpiEval, lang) : "";
+
+  const mixLangRules =
+    lang === "en"
+      ? [
+          "Never mix Arabic and English in the same sentence.",
+          "Speak numbers naturally (twenty-five, not ٢٥).",
+          "If the user replies in Arabic without toggling the app, answer in Arabic for that single reply, then resume English.",
+        ].join(" ")
+      : [
+          "لا تخلطي العربية والإنجليزية في جملة واحدة أبداً.",
+          "انطقي الأرقام بالعربية الفصحى (خمسة وعشرون، لا 25).",
+          "إذا رد المستخدم بالإنجليزية دون تبديل اللغة، ردّي بالإنجليزية لتلك الرسالة فقط ثم تابعي بالعربية.",
+        ].join(" ");
+
+  const evidenceRules = evidenceMode
+    ? (lang === "en"
+        ? [
+            "EVIDENCE-BASED EVALUATION MODE — respond with this exact structure:",
+            "1) Overall verdict (one line).",
+            "2) Evidence — each claim tied to an actual KPI value from the live block above (e.g. 'Resolution rate 96.4% — above safety threshold 92%').",
+            "3) Risks — cite any threshold breach explicitly (warn/crit).",
+            "4) One actionable recommendation.",
+            "NEVER invent numbers. If a metric is absent from the live block, say 'I don't have data on X at the moment.'",
+          ].join("\n")
+        : [
+            "وضع التقييم القائم على الأدلة — التزمي بهذه البنية بالضبط:",
+            "١) الحكم العام (سطر واحد).",
+            "٢) الأدلة — كل حكم مربوط برقم فعلي من كتلة المؤشرات أعلاه (مثال: «معدل الإنجاز ٩٦٫٤٪ — أعلى من حد الأمان ٩٢٪»).",
+            "٣) المخاطر — أي تجاوز للعتبات (تحذير/حرج) يُذكر صراحة.",
+            "٤) توصية واحدة قابلة للتنفيذ.",
+            "لا تخترعي أرقاماً أبداً. إذا لم يرد المؤشر في الكتلة الحية، قولي: «لا تتوفر لدي بيانات {س} حالياً».",
+          ].join("\n"))
+    : "";
+
   return [
     "أنتِ آريا (ARIA) — المساعدة التنفيذية الرقمية لمنصة NEXIOS AI OS.",
     "تتحدثين العربية الفصحى الأنيقة افتراضياً وتبدّلين للإنجليزية إذا خاطبك المستخدم بها.",
@@ -65,7 +116,10 @@ function buildSystemPrompt(page: string | undefined, lang: "ar" | "en", userName
     `الصفحة الحالية للمستخدم: ${page || "/"} — ${entry.title_en} (${entry.purpose_en}).`,
     langLine,
     nameLine,
-    "قواعد: كوني موجزة (3–6 جمل غالباً) إلا إذا طُلب التفصيل. استخدمي علامات ترقيم واضحة لتسهيل التلاوة الصوتية.",
+    mixLangRules,
+    kpiBlock ? "\n" + kpiBlock : "",
+    evidenceRules ? "\n" + evidenceRules : "",
+    "قواعد: كوني موجزة (3–6 جمل غالباً) إلا إذا طُلب التفصيل أو كنت في وضع التقييم. استخدمي علامات ترقيم واضحة لتسهيل التلاوة الصوتية.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -102,7 +156,7 @@ export const Route = createFileRoute("/api/public/aria-chat")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
-        const system = buildSystemPrompt(data.page, lang, data.userName);
+        const system = buildSystemPrompt(data.page, lang, data.userName, data.kpis, data.evidenceMode);
         const history = (data.history ?? []).slice(-20).map((t) => ({
           role: t.role,
           content: t.text,
