@@ -275,11 +275,15 @@ function RootComponent() {
                 <PlatformCompatibility />
                 <OfflineBanner />
                 <BetaMarqueeBar />
-                <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">
+                <div
+                  className="pointer-events-none fixed left-1/2 z-[110] -translate-x-1/2"
+                  style={{ top: "calc(env(safe-area-inset-top, 0px) + 40px)" }}
+                >
                   <div className="pointer-events-auto">
                     <LanguageToggle />
                   </div>
                 </div>
+
                 <Outlet />
                 <CinematicRouteShell />
                 <GlobalAriaCopilot />
