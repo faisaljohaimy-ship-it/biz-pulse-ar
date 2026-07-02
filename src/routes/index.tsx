@@ -16,6 +16,7 @@ import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher"
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { BUILD_ID } from "@/lib/build-id";
+import { Scene } from "@/components/cinema/Scene";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -143,7 +144,7 @@ function IntroLanding() {
       <AgentRing />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        <section className="mt-6 sm:mt-16">
+        <Scene as="section" number="02" label="القدرات" stagger className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">Capabilities</div>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t.capabilities}</h2>
@@ -173,9 +174,9 @@ function IntroLanding() {
               );
             })}
           </ul>
-        </section>
+        </Scene>
 
-        <section className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
+        <Scene as="section" number="03" label="الدعوة" entrance="clip" className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
           <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
           <div className="mt-5">
@@ -192,7 +193,7 @@ function IntroLanding() {
               ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
               : "Aligned with Saudi Vision 2030 · Digital transformation & industrial leadership"}
           </p>
-        </section>
+        </Scene>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
           NEXIOS AI OS · v1.0 GA

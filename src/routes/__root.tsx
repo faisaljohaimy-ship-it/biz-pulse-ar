@@ -29,6 +29,7 @@ import { OfflineBanner } from "@/components/system/OfflineBanner";
 import { PlatformCompatibility } from "@/components/system/PlatformCompatibility";
 import { KpiWatcherProvider } from "@/lib/aria/kpi-watcher";
 import { AriaProactiveNudge } from "@/components/aria/AriaProactiveNudge";
+import { CinematicRouteShell } from "@/components/cinema/CinematicRouteShell";
 
 
 function BrandedBackdrop({ children }: { children: React.ReactNode }) {
@@ -280,6 +281,7 @@ function RootComponent() {
                   </div>
                 </div>
                 <Outlet />
+                <CinematicRouteShell />
                 <GlobalAriaCopilot />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
