@@ -147,8 +147,9 @@ export function MissionControlStrip() {
         key: "projects",
         driftKey: "activeProjects" as const,
         Icon: Bot,
-        labelAr: "مشاريع جارية",
-        labelEn: "Active Projects",
+        labelAr: G.kpi_active_proj.ar,
+        labelEn: G.kpi_active_proj.en,
+
         value: displayValue(realLoading, useDemo, k?.projects_in_progress ?? "—", projectsOpen),
         hint: useDemo
           ? (ar ? `مكتمل ${28}` : `Completed ${28}`)
