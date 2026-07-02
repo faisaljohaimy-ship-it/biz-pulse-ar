@@ -217,7 +217,7 @@ export function MissionControlStrip() {
           <div className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
             Mission Control
           </div>
-          <h2 className="text-base font-semibold text-white">{ar ? "نبض العمليات الحي" : "Live Operations Pulse"}</h2>
+          <h2 className="text-base font-semibold text-white">{ar ? G.pulse_title.ar : G.pulse_title.en}</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
