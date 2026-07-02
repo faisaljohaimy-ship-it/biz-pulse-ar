@@ -82,10 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
+          "Bilingual executive AI platform unifying security operations, digital twin, and real-time intelligence.",
       },
-      { property: "og:title", content: SITE_NAME },
-      { property: "og:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
+      { property: "og:title", content: "NEXIOS AI OS — Enterprise Industrial Security Operating System" },
+      { property: "og:description", content: "Bilingual executive AI platform unifying security operations, digital twin, and real-time intelligence." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
