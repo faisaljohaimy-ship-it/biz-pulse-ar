@@ -255,8 +255,12 @@ export function MiniAriaHeroBadge() {
 
       {/* Header */}
       <div className="flex items-center gap-3">
-        <span
-          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
+        <button
+          type="button"
+          onClick={() => narrator.toggle()}
+          aria-label={ar ? "استمع إلى آريا" : "Listen to ARIA"}
+          title={ar ? "اضغط للاستماع" : "Tap to listen"}
+          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F] cursor-pointer transition-transform active:scale-95 hover:scale-105"
           style={{ animation: "mab-core 3.2s ease-in-out infinite" }}
         >
           <AriaAvatar
@@ -283,7 +287,8 @@ export function MiniAriaHeroBadge() {
               ))}
             </span>
           ) : null}
-        </span>
+        </button>
+
         <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/75">
             ARIA · GPT-5 {speaking ? (ar ? "· يتحدث" : "· speaking") : ""}
