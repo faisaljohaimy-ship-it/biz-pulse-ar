@@ -599,8 +599,54 @@ export function GlobalAriaCopilot() {
     }
   }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap, persona]);
 
-  // Keep the STT closure pointed at the latest ask() reference.
-  useEffect(() => { askRef.current = ask; }, [ask]);
+  // Demo auto-narration — 60s after mount, once per session, ARIA walks the
+  // user through NEXIOS using the 10-sentence script. Cancellable by clicking
+  // the floating icon (silence + hide) or by starting any interaction.
+  const runDemo = useCallback(async () => {
+    if (demoStartedRef.current) return;
+    demoStartedRef.current = true;
+    demoCancelRef.current = false;
+    setDemoPlaying(true);
+    setOpen(true);
+    setLang("ar");
+    for (let i = 0; i < DEMO_SCRIPT_AR.length; i += 1) {
+      if (demoCancelRef.current) break;
+      const line = DEMO_SCRIPT_AR[i];
+      const id = `demo_${Date.now()}_${i}`;
+      setTurns((p) => [
+        ...p,
+        { id, question: "—", qLang: "ar", stage: "done", answer: { text_ar: line, text_en: line } },
+      ]);
+      try { ariaSessionMemory.push({ role: "assistant", text: line, page: pathname }); } catch { /* noop */ }
+      if (voiceOn && !demoCancelRef.current) {
+        await speakAndWait(line);
+      } else {
+        await new Promise((r) => setTimeout(r, 2600));
+      }
+      if (demoCancelRef.current) break;
+      await new Promise((r) => setTimeout(r, 650));
+    }
+    setDemoPlaying(false);
+  }, [pathname, voiceOn, speakAndWait]);
+
+  const cancelDemo = useCallback(() => {
+    demoCancelRef.current = true;
+    setDemoPlaying(false);
+    stopSpeaking();
+  }, [stopSpeaking]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    let started = false;
+    try { started = sessionStorage.getItem(DEMO_STARTED_KEY) === "1"; } catch { /* noop */ }
+    if (started) { demoStartedRef.current = true; return; }
+    const t = setTimeout(() => {
+      if (hidden) return;
+      try { sessionStorage.setItem(DEMO_STARTED_KEY, "1"); } catch { /* noop */ }
+      void runDemo();
+    }, DEMO_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [mounted, hidden, runDemo]);
 
   // Executive Welcome — fires once per browser session when the platform opens.
   // Runs whether the dock is open or collapsed; if collapsed we surface a
