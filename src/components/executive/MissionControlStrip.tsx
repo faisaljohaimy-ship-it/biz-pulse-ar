@@ -15,6 +15,8 @@ import {
   useBriefingState,
   type CardKey,
 } from "@/lib/aria/executive-briefing-orchestrator";
+import { glossary as G } from "@/lib/i18n/glossary";
+
 
 
 
