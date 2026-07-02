@@ -409,6 +409,33 @@ export function GlobalAriaCopilot() {
     }
   }, [open]);
 
+  // Click-outside to minimize (respects pin).
+  useEffect(() => {
+    if (!open || pinned) return;
+    const onDown = (ev: MouseEvent | TouchEvent) => {
+      const el = panelRef.current;
+      if (!el) return;
+      const target = ev.target as Node | null;
+      if (target && !el.contains(target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [open, pinned]);
+
+  // Detect Web Speech API availability (browser-native STT, no backend).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
+    setSttSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+  }, []);
+
+
   const stopSpeaking = useCallback(() => {
     if (audioRef.current) {
       try { audioRef.current.pause(); } catch { /* noop */ }
