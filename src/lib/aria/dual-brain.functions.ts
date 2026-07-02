@@ -82,7 +82,8 @@ function resolveBrain(brain: "gpt" | "claude" | "auto", task: "code" | "reason" 
 export const ariaDualBrain = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
-    const chosen = resolveBrain(data.brain, data.task);
+    const task = data.task === "detect" ? detectTask(data.prompt) : data.task;
+    const chosen = resolveBrain(data.brain, task);
     const started = Date.now();
     try {
       const res =
