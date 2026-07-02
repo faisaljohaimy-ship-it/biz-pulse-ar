@@ -134,8 +134,9 @@ export function MissionControlStrip() {
         key: "preventive",
         driftKey: "preventiveWo" as const,
         Icon: Activity,
-        labelAr: "صيانة وقائية",
-        labelEn: "Preventive WO",
+        labelAr: G.kpi_preventive.ar,
+        labelEn: G.kpi_preventive.en,
+
         value: displayValue(realLoading, useDemo, k?.preventive_wo ?? "—", preventive),
         hint: useDemo
           ? (ar ? `إصلاحي ${34}` : `Corrective ${34}`)
