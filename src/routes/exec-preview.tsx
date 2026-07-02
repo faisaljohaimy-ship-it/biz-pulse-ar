@@ -13,10 +13,10 @@ export const Route = createFileRoute("/exec-preview")({
       { name: "description", content: "غرفة القيادة التنفيذية — نبض العمليات المباشر ومؤشرات الأداء الحيّة على منصة NEXIOS AI OS." },
       { property: "og:title", content: "غرفة القيادة التنفيذية — NEXIOS AI OS" },
       { property: "og:description", content: "نبض العمليات الحيّ، حوادث، أوامر عمل، صيانة وقائية، ومشاريع تنفيذية." },
-      { property: "og:url", content: "https://neexios.com/exec" },
+      { property: "og:url", content: "https://neexios.com/exec-preview" },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://neexios.com/exec" }],
+    links: [{ rel: "canonical", href: "https://neexios.com/exec-preview" }],
   }),
   component: ExecRoomPublic,
 });
