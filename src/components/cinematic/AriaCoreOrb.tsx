@@ -212,11 +212,20 @@ export function AriaCoreOrb({ size = 340, className = "" }: AriaCoreOrbProps) {
         {/* Faint concentric hairline */}
         <circle cx="200" cy="200" r="110" fill="none" stroke="#3AE8FF" strokeOpacity="0.15" strokeWidth="0.6" />
 
+        {/* Chromatic aberration ghosts — magenta ↔ cyan channel split for holographic prism edge */}
+        <g className="aria-chroma-r">
+          <circle cx="202.2" cy="196" r="86" fill="none" stroke="#FF4DC9" strokeOpacity="0.55" strokeWidth="1.1" />
+        </g>
+        <g className="aria-chroma-b">
+          <circle cx="197.8" cy="196" r="86" fill="none" stroke="#4DE1FF" strokeOpacity="0.55" strokeWidth="1.1" />
+        </g>
+
         {/* Core sphere — breathing */}
         <g className="aria-orb-core" filter="url(#ariaCoreGlow)">
           <circle cx="200" cy="196" r="86" fill="url(#ariaCoreFill)" />
           <circle cx="188" cy="176" r="26" fill="url(#ariaCoreSpec)" />
         </g>
+
 
         {/* Baseline under the sphere */}
         <line x1="130" y1="284" x2="270" y2="284" stroke="#3AE8FF" strokeOpacity="0.55" strokeWidth="1" />
