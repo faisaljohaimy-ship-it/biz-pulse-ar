@@ -12,7 +12,6 @@ import { AmbientAuraLayer } from "@/components/cinematic/AmbientAuraLayer";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaCoreOrb } from "@/components/cinematic/AriaCoreOrb";
-import { AriaHoloBackdrop } from "@/components/cinematic/AriaHoloBackdrop";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
