@@ -144,7 +144,7 @@ function IntroLanding() {
       <AgentRing />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        <section className="mt-6 sm:mt-16">
+        <Scene as="section" number="02" label="القدرات" stagger className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">Capabilities</div>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t.capabilities}</h2>
