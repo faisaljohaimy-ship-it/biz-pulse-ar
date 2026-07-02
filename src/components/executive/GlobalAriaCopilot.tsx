@@ -469,6 +469,81 @@ export function GlobalAriaCopilot() {
     }
   }, [stopSpeaking]);
 
+  // Voice input via Web Speech API. Graceful fallback: mic button hidden
+  // when unsupported; user still has full text input.
+  const stopListening = useCallback(() => {
+    const rec = recogRef.current as { stop?: () => void; abort?: () => void } | null;
+    try { rec?.stop?.(); } catch { /* noop */ }
+    recogRef.current = null;
+    setListening(false);
+    setInterimText("");
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as {
+      SpeechRecognition?: new () => unknown;
+      webkitSpeechRecognition?: new () => unknown;
+    };
+    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!Ctor) return;
+    // Natural interruption: stop any speaking playback while user talks.
+    stopSpeaking();
+    try {
+      const rec = new Ctor() as {
+        lang: string;
+        continuous: boolean;
+        interimResults: boolean;
+        maxAlternatives: number;
+        onresult: (e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void;
+        onerror: () => void;
+        onend: () => void;
+        start: () => void;
+        stop: () => void;
+      };
+      rec.lang = ar ? "ar-SA" : "en-US";
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+      let finalText = "";
+      rec.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i += 1) {
+          const seg = e.results[i];
+          const txt = seg[0]?.transcript ?? "";
+          if (seg.isFinal) finalText += txt;
+          else interim += txt;
+        }
+        setInterimText(interim);
+        if (interim) setQuestion(interim);
+      };
+      rec.onerror = () => {
+        setListening(false);
+        setInterimText("");
+        recogRef.current = null;
+      };
+      rec.onend = () => {
+        setListening(false);
+        setInterimText("");
+        recogRef.current = null;
+        const finalQ = (finalText || "").trim();
+        if (finalQ) {
+          setQuestion("");
+          void ask(finalQ);
+        }
+      };
+      recogRef.current = rec;
+      setListening(true);
+      rec.start();
+    } catch {
+      setListening(false);
+      recogRef.current = null;
+    }
+    // ask is stable enough; intentional deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ar, stopSpeaking]);
+
+
   const ask = useCallback(async (q: string) => {
     const qt = q.trim();
     if (!qt) return;
