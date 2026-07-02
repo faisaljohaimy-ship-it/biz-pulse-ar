@@ -846,19 +846,23 @@ export function GenesisHero({ onDone }: Props) {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="absolute inset-0 rounded-full"
-                style={{
-                  transform: `scale(${1 - i * 0.16})`,
-                  background:
-                    "conic-gradient(from 0deg, rgba(232,201,122,0) 0deg, rgba(232,201,122,0.55) 60deg, rgba(45,212,191,0.55) 180deg, rgba(139,124,246,0.55) 300deg, rgba(232,201,122,0) 360deg)",
-                  WebkitMask:
-                    "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
-                  mask:
-                    "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
-                  opacity: 0.55,
-                  animation: `nx-royal-ring ${22 + i * 6}s linear infinite ${i % 2 === 0 ? "" : "reverse"}`,
-                }}
-              />
+                className="absolute inset-0"
+                style={{ transform: `scale(${1 - i * 0.16})` }}
+              >
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, rgba(232,201,122,0) 0deg, rgba(232,201,122,0.55) 60deg, rgba(45,212,191,0.55) 180deg, rgba(139,124,246,0.55) 300deg, rgba(232,201,122,0) 360deg)",
+                    WebkitMask:
+                      "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
+                    mask:
+                      "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
+                    opacity: 0.55,
+                    animation: `nx-royal-ring ${22 + i * 6}s linear infinite ${i % 2 === 0 ? "" : "reverse"}`,
+                  }}
+                />
+              </div>
             ))}
             {/* Etched Arabic micro-glyphs on outer ring */}
             <div
