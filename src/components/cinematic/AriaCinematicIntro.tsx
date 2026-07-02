@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import ariaAvatar from "@/assets/aria-holo-executive.png";
 import { useI18n } from "@/lib/i18n";
+import { ariaVoice, useAriaVoice } from "@/lib/aria/voice-queue";
 
 const SESSION_KEY = "nexios_intro_seen";
 
