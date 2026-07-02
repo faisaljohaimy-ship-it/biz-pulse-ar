@@ -26,14 +26,16 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { redirect } = useSearch({ from: "/auth" });
+  const postLoginTarget = (redirect ?? "/command-center") as string;
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) navigate({ to: "/command-center", replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user) navigate({ to: postLoginTarget, replace: true });
+  }, [user, authLoading, navigate, postLoginTarget]);
 
   async function handleGoogle() {
     setBusy(true);
