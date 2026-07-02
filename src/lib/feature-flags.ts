@@ -3,10 +3,11 @@
  * users can override per-flag via localStorage ("1" = ON, "0" = OFF)
  * or the URL query (?flag=hero_v2:0). SSR-safe.
  */
-export type FlagName = "hero_v2";
+export type FlagName = "hero_v2" | "hero_royal";
 
 const DEFAULTS: Record<FlagName, boolean> = {
   hero_v2: true,
+  hero_royal: true,
 };
 
 export function isFlagOn(name: FlagName): boolean {

@@ -15,26 +15,63 @@
  * grain + vignette during the sequence only, cool grade lift on exit,
  * time-adaptive gold horizon before 18:00 Riyadh.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ariaAvatar from "@/assets/aria-holo-executive.png";
 import { detectDeviceTier } from "@/lib/platform/device-tier";
 import { ariaVoice } from "@/lib/aria/voice-queue";
 import { AriaAvatarV3 } from "@/components/aria/AriaAvatarV3";
 import { useI18n } from "@/lib/i18n";
+import { isFlagOn } from "@/lib/feature-flags";
 
 const SESSION_KEY = "nexios_genesis_seen";
 const AUDIO_PREF_KEY = "nexios_intro_muted";
 
+// Legacy v2 greeting (used when hero_royal is OFF)
 const GREETING_AR = "من البيانات… يولد القرار. أهلاً بك في نِكسيوس.";
 const GREETING_EN = "From data… a decision is born. Welcome to NEXIOS.";
 const WORDMARK_AR = "نِكسيوس";
 const WORDMARK_EN = "NEXIOS";
+
+// ── Royal time-aware greetings (Riyadh, UTC+3)
+type RoyalTint = "dawn" | "day" | "gold" | "night";
+interface RoyalGreeting { ar: string; en: string; tint: RoyalTint }
+function royalGreetingFor(hour: number): RoyalGreeting {
+  if (hour >= 5 && hour < 11) return {
+    ar: "صباح النور… يوم جديد، ورؤية أوضح. أنا آريا، وهذه نِكسيوس.",
+    en: "Good morning… a new day, a clearer vision. I am ARIA — this is NEXIOS.",
+    tint: "dawn",
+  };
+  if (hour >= 11 && hour < 16) return {
+    ar: "نهارك سعيد… مؤشراتك بين يديك. أنا آريا، أهلاً بك في نِكسيوس.",
+    en: "Good day… your metrics are in hand. I am ARIA — welcome to NEXIOS.",
+    tint: "day",
+  };
+  if (hour >= 16 && hour < 20) return {
+    ar: "مساء الذهب… وقت القرارات الهادئة. أنا آريا، وهذه نِكسيوس.",
+    en: "Golden evening… time for quiet decisions. I am ARIA — this is NEXIOS.",
+    tint: "gold",
+  };
+  return {
+    ar: "سهرة موفقة… المنظومة ساهرة معك. أنا آريا، أهلاً بك في نِكسيوس.",
+    en: "A blessed night… the system stays awake with you. I am ARIA — welcome to NEXIOS.",
+    tint: "night",
+  };
+}
 
 /* ────────── tiny WebAudio SFX (autoplay-safe) ────────── */
 class Sfx {
   private ctx: AudioContext | null = null;
   private hum: OscillatorNode | null = null;
   private humG: GainNode | null = null;
+  // Royal layers
+  private rustleSrc: AudioBufferSourceNode | null = null;
+  private rustleG: GainNode | null = null;
+  private rustleLfo: OscillatorNode | null = null;
+  private swellO1: OscillatorNode | null = null;
+  private swellO2: OscillatorNode | null = null;
+  private swellO3: OscillatorNode | null = null;
+  private swellG: GainNode | null = null;
+  private masterG: GainNode | null = null;
   private muted = false;
   private unlocked = false;
   constructor() {
@@ -43,7 +80,7 @@ class Sfx {
   setMuted(m: boolean) {
     this.muted = m;
     try { sessionStorage.setItem(AUDIO_PREF_KEY, m ? "1" : "0"); } catch { /* */ }
-    if (m) this.stopHum();
+    if (m) { this.stopHum(); this.stopRustle(); this.stopSwell(); }
   }
   isMuted() { return this.muted; }
   async unlock(): Promise<boolean> {
@@ -54,18 +91,30 @@ class Sfx {
       if (!this.ctx) this.ctx = new AC();
       if (this.ctx.state === "suspended") await this.ctx.resume();
       this.unlocked = this.ctx.state === "running";
+      if (this.unlocked && !this.masterG) {
+        this.masterG = this.ctx.createGain();
+        this.masterG.gain.value = 1;
+        this.masterG.connect(this.ctx.destination);
+      }
       return this.unlocked;
     } catch { return false; }
   }
+  // Duck all layered ambience under ARIA's voice (0..1 amp → -8dB max)
+  duck(amp: number) {
+    if (!this.ctx || !this.masterG) return;
+    const target = amp > 0.05 ? 0.4 : 1; // ~ -8dB
+    const t = this.ctx.currentTime;
+    this.masterG.gain.setTargetAtTime(target, t, 0.2);
+  }
   startHum(ms = 2400) {
-    if (!this.unlocked || !this.ctx || this.muted || this.hum) return;
+    if (!this.unlocked || !this.ctx || this.muted || this.hum || !this.masterG) return;
     const t = this.ctx.currentTime;
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.08, t + ms / 1000);
+    g.gain.exponentialRampToValueAtTime(0.06, t + ms / 1000);
     const o = this.ctx.createOscillator();
     o.type = "sine"; o.frequency.value = 55;
-    o.connect(g); g.connect(this.ctx.destination); o.start();
+    o.connect(g); g.connect(this.masterG); o.start();
     this.hum = o; this.humG = g;
   }
   stopHum(fadeMs = 900) {
@@ -77,16 +126,81 @@ class Sfx {
     const h = this.hum; setTimeout(() => { try { h.stop(); } catch { /* */ } }, fadeMs + 60);
     this.hum = null; this.humG = null;
   }
+  // Royal layer 1: silky filtered-noise "rustle", -28dB ≈ 0.04 gain
+  startRustle() {
+    if (!this.unlocked || !this.ctx || this.muted || this.rustleSrc || !this.masterG) return;
+    const dur = 2; // seconds of noise loop
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * dur, this.ctx.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * 0.5;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = "bandpass"; bp.frequency.value = 4200; bp.Q.value = 0.9;
+    const g = this.ctx.createGain(); g.gain.value = 0.0001;
+    const lfo = this.ctx.createOscillator(); lfo.type = "sine"; lfo.frequency.value = 0.35;
+    const lfoG = this.ctx.createGain(); lfoG.gain.value = 0.025;
+    lfo.connect(lfoG); lfoG.connect(g.gain);
+    src.connect(bp); bp.connect(g); g.connect(this.masterG);
+    const t = this.ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.04, t + 1.2);
+    src.start(); lfo.start();
+    this.rustleSrc = src; this.rustleG = g; this.rustleLfo = lfo;
+  }
+  stopRustle(fadeMs = 700) {
+    if (!this.ctx || !this.rustleSrc || !this.rustleG) return;
+    const t = this.ctx.currentTime;
+    this.rustleG.gain.cancelScheduledValues(t);
+    this.rustleG.gain.setValueAtTime(this.rustleG.gain.value, t);
+    this.rustleG.gain.exponentialRampToValueAtTime(0.0001, t + fadeMs / 1000);
+    const s = this.rustleSrc, l = this.rustleLfo;
+    setTimeout(() => { try { s.stop(); } catch { /* */ } try { l?.stop(); } catch { /* */ } }, fadeMs + 80);
+    this.rustleSrc = null; this.rustleG = null; this.rustleLfo = null;
+  }
+  // Royal layer 2: warm major swell (I major triad pad)
+  startSwell(rootHz = 261.63, riseMs = 2400) {
+    if (!this.unlocked || !this.ctx || this.muted || this.swellG || !this.masterG) return;
+    const t = this.ctx.currentTime;
+    const g = this.ctx.createGain(); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + riseMs / 1000);
+    const mk = (f: number, type: OscillatorType = "sine") => {
+      const o = this.ctx!.createOscillator(); o.type = type; o.frequency.value = f;
+      o.connect(g); o.start(); return o;
+    };
+    this.swellO1 = mk(rootHz, "sine");
+    this.swellO2 = mk(rootHz * 1.25, "sine"); // major third
+    this.swellO3 = mk(rootHz * 1.5, "triangle"); // perfect fifth
+    g.connect(this.masterG);
+    this.swellG = g;
+  }
+  stopSwell(fadeMs = 1200) {
+    if (!this.ctx || !this.swellG) return;
+    const t = this.ctx.currentTime;
+    this.swellG.gain.cancelScheduledValues(t);
+    this.swellG.gain.setValueAtTime(this.swellG.gain.value, t);
+    this.swellG.gain.exponentialRampToValueAtTime(0.0001, t + fadeMs / 1000);
+    const os = [this.swellO1, this.swellO2, this.swellO3];
+    setTimeout(() => os.forEach((o) => { try { o?.stop(); } catch { /* */ } }), fadeMs + 100);
+    this.swellO1 = this.swellO2 = this.swellO3 = null;
+    this.swellG = null;
+  }
   chime(freq = 880, ms = 700) {
-    if (!this.unlocked || !this.ctx || this.muted) return;
+    if (!this.unlocked || !this.ctx || this.muted || !this.masterG) return;
     const t = this.ctx.currentTime;
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
     const o = this.ctx.createOscillator();
     o.type = "triangle"; o.frequency.value = freq;
-    o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(t + ms / 1000 + 0.05);
+    o.connect(g); g.connect(this.masterG); o.start(); o.stop(t + ms / 1000 + 0.05);
+  }
+  // Royal layer 3: 3-note ascending crystalline arpeggio (E5 → G#5 → B5)
+  royalChime() {
+    if (!this.unlocked || !this.ctx || this.muted) return;
+    const notes = [659.25, 830.61, 987.77];
+    notes.forEach((f, i) => setTimeout(() => this.chime(f, 900), i * 140));
   }
 }
 
@@ -194,6 +308,12 @@ export function GenesisHero({ onDone }: Props) {
   const [visible, setVisible] = useState(true);
   const [needsGesture, setNeedsGesture] = useState(true);
   const [muted, setMuted] = useState(false);
+
+  // Royal art-direction flag (default ON; OFF restores classic v2 palette)
+  const isRoyal = useMemo(() => isFlagOn("hero_royal"), []);
+  const riyadhHour = useMemo(() => (new Date().getUTCHours() + 3) % 24, []);
+  const royalGreet = useMemo(() => royalGreetingFor(riyadhHour), [riyadhHour]);
+  const [typedGreet, setTypedGreet] = useState("");
 
   // reduced-motion escape hatch → skip immediately, delegate to fallback intro
   const [reduced, setReduced] = useState(false);
@@ -343,12 +463,29 @@ export function GenesisHero({ onDone }: Props) {
     const hour = new Date().getUTCHours() + 3; // Riyadh UTC+3
     const preSunset = ((hour + 24) % 24) < 18;
 
-    // colour ramp
-    const COL = [
-      [0, 212, 255],   // cyan
-      [88, 148, 255],  // blue
-      [58, 232, 200],  // emerald
-    ];
+    // colour ramp — legacy v2 (cool) OR royal (teal/violet/gold aurora)
+    const COL = isRoyal
+      ? [
+          [45, 212, 191],  // soft teal
+          [139, 124, 246], // royal violet
+          [232, 201, 122], // champagne gold
+        ]
+      : [
+          [0, 212, 255],
+          [88, 148, 255],
+          [58, 232, 200],
+        ];
+
+    // Royal light-motes: 40 soft bokeh orbs drifting upward (deviceTier-scaled)
+    const moteCount = isRoyal ? (tier === "HIGH" ? 40 : tier === "MID" ? 28 : 16) : 0;
+    const motes = Array.from({ length: moteCount }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h + h * 0.2,
+      r: 4 + Math.random() * 8,
+      v: 0.15 + Math.random() * 0.35,
+      hue: Math.random(),
+      seed: Math.random() * 1000,
+    }));
 
     // Phase transition helper
     const setPh = (p: Phase) => { phaseRef.current = p; setPhase(p); };
@@ -361,6 +498,9 @@ export function GenesisHero({ onDone }: Props) {
       ariaStart: 6000, ariaEnd: 8000,
       conductStart: 8000, conductEnd: 11000,
     };
+
+    // Royal scanline sweep: one 800ms pass across ARIA silhouette
+    let scanStartedAt = 0;
 
     let wordAssigned = false, cityAssigned = false, ariaAssigned = false, spoken = false;
     let dissolving = 0;
@@ -376,7 +516,13 @@ export function GenesisHero({ onDone }: Props) {
         const k = Math.min(1, (t - start) / 700);
         dissolving = k;
         if (k < 1) requestAnimationFrame(fade);
-        else { cancelAnimationFrame(rafRef.current); setVisible(false); sfx.stopHum(600); onDone?.(); }
+        else {
+          cancelAnimationFrame(rafRef.current);
+          setVisible(false);
+          sfx.stopHum(600);
+          if (isRoyal) { sfx.stopRustle(600); sfx.stopSwell(900); }
+          onDone?.();
+        }
       };
       requestAnimationFrame(fade);
     };
@@ -398,6 +544,7 @@ export function GenesisHero({ onDone }: Props) {
       if (t >= T.wordStart && !wordAssigned) {
         assign(wordPts, ar); wordAssigned = true; setPh("wordmark");
         sfx.chime(660, 500);
+        if (isRoyal) { sfx.startRustle(); sfx.startSwell(261.63, 2400); }
       }
       if (t >= T.cityStart && !cityAssigned) {
         // radial impulse
@@ -414,12 +561,24 @@ export function GenesisHero({ onDone }: Props) {
       }
       if (t >= T.ariaStart && !ariaAssigned && ariaPts.length) {
         assign(ariaPts); ariaAssigned = true; setPh("aria");
-        sfx.chime(880, 700);
+        if (isRoyal) { sfx.royalChime(); scanStartedAt = now; }
+        else { sfx.chime(880, 700); }
       }
       if (t >= T.ariaStart + 300 && !spoken) {
         spoken = true;
         // gesture-gated: only speak if audio unlocked
-        try { ariaVoice.enqueue(ar ? GREETING_AR : GREETING_EN, ar ? "ar" : "en"); } catch { /* */ }
+        const line = isRoyal ? (ar ? royalGreet.ar : royalGreet.en) : (ar ? GREETING_AR : GREETING_EN);
+        try { ariaVoice.enqueue(line, ar ? "ar" : "en"); } catch { /* */ }
+        // typewriter reveal beneath ARIA
+        if (isRoyal) {
+          let idx = 0;
+          const type = () => {
+            idx = Math.min(line.length, idx + 1);
+            setTypedGreet(line.slice(0, idx));
+            if (idx < line.length) setTimeout(type, 28);
+          };
+          type();
+        }
       }
       if (t >= T.conductStart && phaseRef.current !== "conduct") setPh("conduct");
       if (t >= T.conductEnd && !doneRef.current) finish();
@@ -457,19 +616,54 @@ export function GenesisHero({ onDone }: Props) {
       }
 
       // ── draw
-      // motion-blur trail: translucent fill (no clear)
+      // motion-blur trail: translucent fill (no clear) — obsidian base for royal
       ctx.globalCompositeOperation = "source-over";
       const bgAlpha = phaseRef.current === "void" ? 0.28 : 0.24;
-      ctx.fillStyle = `rgba(2,6,12,${bgAlpha})`;
+      ctx.fillStyle = isRoyal
+        ? `rgba(10,14,20,${bgAlpha})`
+        : `rgba(2,6,12,${bgAlpha})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // gold horizon before 18:00
-      if (preSunset && phaseRef.current === "void") {
+      // Royal aurora wash — hue-drifts ±8° over 20s, low saturation, restful
+      if (isRoyal) {
+        const drift = Math.sin(now * 0.0003) * 8; // ±8°
+        const g1 = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        g1.addColorStop(0, `hsla(${180 + drift}, 45%, 22%, 0.10)`); // teal top
+        g1.addColorStop(0.55, `hsla(${262 + drift}, 42%, 20%, 0.08)`); // violet mid
+        g1.addColorStop(1, `hsla(${40 + drift}, 55%, 18%, 0.10)`); // champagne floor
+        ctx.fillStyle = g1;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // gold horizon before 18:00 (v2 legacy)
+      if (!isRoyal && preSunset && phaseRef.current === "void") {
         const grad = ctx.createRadialGradient(cx * dpr, h * 0.95 * dpr, 20, cx * dpr, h * 0.95 * dpr, w * 0.9 * dpr);
         grad.addColorStop(0, "rgba(255,180,80,0.10)");
         grad.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Royal floating light-motes (behind particles)
+      if (isRoyal && motes.length) {
+        ctx.globalCompositeOperation = "lighter";
+        for (const m of motes) {
+          m.y -= m.v;
+          m.x += Math.sin((now * 0.0004) + m.seed) * 0.15;
+          if (m.y < -20) { m.y = h + 20; m.x = Math.random() * w; }
+          // hue: teal→gold by depth
+          const tealMix = m.hue;
+          const rr = Math.round(45 * tealMix + 232 * (1 - tealMix));
+          const gg = Math.round(212 * tealMix + 201 * (1 - tealMix));
+          const bb = Math.round(191 * tealMix + 122 * (1 - tealMix));
+          const rg = ctx.createRadialGradient(m.x * dpr, m.y * dpr, 0, m.x * dpr, m.y * dpr, m.r * dpr);
+          rg.addColorStop(0, `rgba(${rr},${gg},${bb},0.28)`);
+          rg.addColorStop(1, `rgba(${rr},${gg},${bb},0)`);
+          ctx.fillStyle = rg;
+          ctx.beginPath();
+          ctx.arc(m.x * dpr, m.y * dpr, m.r * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       // particles
@@ -489,6 +683,27 @@ export function GenesisHero({ onDone }: Props) {
         ctx.fillRect((x[i] - s / 2) * dpr, (y[i] - s / 2) * dpr, s * dpr, s * dpr);
       }
 
+      // Royal prismatic scanline — one 800ms sweep across ARIA silhouette
+      if (isRoyal && scanStartedAt > 0) {
+        const sK = (now - scanStartedAt) / 800;
+        if (sK <= 1) {
+          const yPos = (h * 0.2 + sK * h * 0.7) * dpr;
+          const barH = 2 * dpr;
+          const g = ctx.createLinearGradient(0, yPos, canvas.width, yPos);
+          g.addColorStop(0, "rgba(45,212,191,0)");
+          g.addColorStop(0.35, "rgba(139,124,246,0.55)");
+          g.addColorStop(0.65, "rgba(232,201,122,0.55)");
+          g.addColorStop(1, "rgba(45,212,191,0)");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, yPos - barH / 2, canvas.width, barH);
+        } else if (sK > 1.4) {
+          scanStartedAt = 0; // vanish (never persist)
+        }
+      }
+
+      // Duck ambience under ARIA voice
+      if (isRoyal) sfx.duck(ampL);
+
       // ripples
       for (let i = ripples.length - 1; i >= 0; i--) {
         const rp = ripples[i];
@@ -497,7 +712,8 @@ export function GenesisHero({ onDone }: Props) {
         const rad = k * Math.max(w, h) * 0.6;
         ctx.beginPath();
         ctx.arc(rp.x * dpr, rp.y * dpr, rad * dpr, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(0,212,255,${(1 - k) * 0.35})`;
+        const rippleC = isRoyal ? "232,201,122" : "0,212,255";
+        ctx.strokeStyle = `rgba(${rippleC},${(1 - k) * 0.35})`;
         ctx.lineWidth = 1.5 * dpr;
         ctx.stroke();
       }
@@ -566,6 +782,7 @@ export function GenesisHero({ onDone }: Props) {
       window.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("keydown", onKey);
       unAmp();
+      if (isRoyal) { sfx.stopRustle(300); sfx.stopSwell(400); }
     };
   }, [visible, reduced, ar, onDone]);
 
@@ -608,11 +825,65 @@ export function GenesisHero({ onDone }: Props) {
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
+      {/* ROYAL: aurora vertical curtain — behind wordmark beat only */}
+      {isRoyal && (phase === "wordmark" || phase === "city") && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(45,212,191,0.10) 0%, rgba(139,124,246,0.14) 45%, rgba(232,201,122,0.10) 100%)",
+            filter: "blur(48px)",
+            opacity: 0.85,
+            animation: "nx-royal-aurora 14s ease-in-out infinite alternate",
+          }}
+        />
+      )}
+
+      {/* ROYAL: holo-rings — 3 concentric conic strokes counter-rotating */}
+      {isRoyal && (phase === "aria" || phase === "conduct") && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="relative" style={{ width: "min(72vmin,640px)", height: "min(72vmin,640px)" }}>
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="absolute inset-0"
+                style={{ transform: `scale(${1 - i * 0.16})` }}
+              >
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, rgba(232,201,122,0) 0deg, rgba(232,201,122,0.55) 60deg, rgba(45,212,191,0.55) 180deg, rgba(139,124,246,0.55) 300deg, rgba(232,201,122,0) 360deg)",
+                    WebkitMask:
+                      "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
+                    mask:
+                      "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
+                    opacity: 0.55,
+                    animation: `nx-royal-ring ${22 + i * 6}s linear infinite ${i % 2 === 0 ? "" : "reverse"}`,
+                  }}
+                />
+              </div>
+            ))}
+            {/* Etched Arabic micro-glyphs on outer ring */}
+            <div
+              aria-hidden
+              className="absolute inset-0 flex items-center justify-center text-[10px] tracking-[0.6em] text-[#E8C97A]/60"
+              style={{ animation: "nx-royal-ring 40s linear infinite" }}
+            >
+              <span style={{ transform: "translateY(calc(-1 * min(34vmin, 300px)))" }}>
+                نبض · أمن · قيادة · رؤية
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ARIA reveal layer — only visible in aria/conduct phases */}
       {(phase === "aria" || phase === "conduct") && (
         <div className="pointer-events-none absolute inset-0 flex items-end justify-center pb-[8vh]">
           <div
-            className="transition-opacity duration-700"
+            className="relative transition-opacity duration-700"
             style={{
               opacity: phase === "aria" ? 0.85 : 1,
               width: "min(520px,60vw)",
@@ -620,8 +891,52 @@ export function GenesisHero({ onDone }: Props) {
             }}
           >
             <AriaAvatarV3 framing="full" />
+            {/* ROYAL: subtle gold rim-light pass over avatar */}
+            {isRoyal && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at 50% 35%, rgba(232,201,122,0.14) 0%, rgba(139,124,246,0.08) 45%, transparent 70%)",
+                  mixBlendMode: "screen",
+                  opacity: 0.75,
+                }}
+              />
+            )}
           </div>
         </div>
+      )}
+
+      {/* ROYAL: typed time-aware greeting (gold-tinted) beneath ARIA */}
+      {isRoyal && typedGreet && (phase === "aria" || phase === "conduct") && (
+        <div
+          className="pointer-events-none absolute inset-x-0 z-[5] flex justify-center px-6"
+          style={{ bottom: "calc(9vh - 8px)" }}
+        >
+          <p
+            dir={ar ? "rtl" : "ltr"}
+            className="max-w-[min(760px,90vw)] text-center text-[15px] leading-[1.6] tracking-wide sm:text-[17px]"
+            style={{
+              color: "#E8C97A",
+              textShadow: "0 0 22px rgba(232,201,122,0.35), 0 1px 0 rgba(0,0,0,0.6)",
+              fontFamily: ar
+                ? "'IBM Plex Sans Arabic','Cairo',ui-sans-serif,system-ui"
+                : "ui-sans-serif,system-ui,'Inter'",
+            }}
+          >
+            {typedGreet}
+            <span className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] bg-[#E8C97A]/80 align-middle" style={{ animation: "nx-royal-caret 1s steps(2,end) infinite" }} />
+          </p>
+        </div>
+      )}
+
+      {/* ROYAL: cinema letterbox bars (4vh) — retract with dissolve */}
+      {isRoyal && (
+        <>
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-[6] bg-[#0A0E14]" style={{ height: "4vh" }} />
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-[#0A0E14]" style={{ height: "4vh" }} />
+        </>
       )}
 
       {/* Gesture gate */}
@@ -663,6 +978,22 @@ export function GenesisHero({ onDone }: Props) {
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>\")",
         }}
       />
+
+      {/* ROYAL: keyframes for aurora curtain, ring rotation, caret blink */}
+      {isRoyal && (
+        <style>{`
+          @keyframes nx-royal-aurora {
+            0%   { filter: blur(48px) hue-rotate(0deg); opacity: 0.75; }
+            50%  { filter: blur(56px) hue-rotate(6deg); opacity: 0.9; }
+            100% { filter: blur(48px) hue-rotate(-6deg); opacity: 0.75; }
+          }
+          @keyframes nx-royal-ring { to { transform: rotate(360deg); } }
+          @keyframes nx-royal-caret { 50% { opacity: 0.15; } }
+          @media (prefers-reduced-motion: reduce) {
+            [style*="nx-royal-aurora"], [style*="nx-royal-ring"], [style*="nx-royal-caret"] { animation: none !important; }
+          }
+        `}</style>
+      )}
     </div>
   );
 }
