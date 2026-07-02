@@ -15,20 +15,48 @@
  * grain + vignette during the sequence only, cool grade lift on exit,
  * time-adaptive gold horizon before 18:00 Riyadh.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ariaAvatar from "@/assets/aria-holo-executive.png";
 import { detectDeviceTier } from "@/lib/platform/device-tier";
 import { ariaVoice } from "@/lib/aria/voice-queue";
 import { AriaAvatarV3 } from "@/components/aria/AriaAvatarV3";
 import { useI18n } from "@/lib/i18n";
+import { isFlagOn } from "@/lib/feature-flags";
 
 const SESSION_KEY = "nexios_genesis_seen";
 const AUDIO_PREF_KEY = "nexios_intro_muted";
 
+// Legacy v2 greeting (used when hero_royal is OFF)
 const GREETING_AR = "من البيانات… يولد القرار. أهلاً بك في نِكسيوس.";
 const GREETING_EN = "From data… a decision is born. Welcome to NEXIOS.";
 const WORDMARK_AR = "نِكسيوس";
 const WORDMARK_EN = "NEXIOS";
+
+// ── Royal time-aware greetings (Riyadh, UTC+3)
+type RoyalTint = "dawn" | "day" | "gold" | "night";
+interface RoyalGreeting { ar: string; en: string; tint: RoyalTint }
+function royalGreetingFor(hour: number): RoyalGreeting {
+  if (hour >= 5 && hour < 11) return {
+    ar: "صباح النور… يوم جديد، ورؤية أوضح. أنا آريا، وهذه نِكسيوس.",
+    en: "Good morning… a new day, a clearer vision. I am ARIA — this is NEXIOS.",
+    tint: "dawn",
+  };
+  if (hour >= 11 && hour < 16) return {
+    ar: "نهارك سعيد… مؤشراتك بين يديك. أنا آريا، أهلاً بك في نِكسيوس.",
+    en: "Good day… your metrics are in hand. I am ARIA — welcome to NEXIOS.",
+    tint: "day",
+  };
+  if (hour >= 16 && hour < 20) return {
+    ar: "مساء الذهب… وقت القرارات الهادئة. أنا آريا، وهذه نِكسيوس.",
+    en: "Golden evening… time for quiet decisions. I am ARIA — this is NEXIOS.",
+    tint: "gold",
+  };
+  return {
+    ar: "سهرة موفقة… المنظومة ساهرة معك. أنا آريا، أهلاً بك في نِكسيوس.",
+    en: "A blessed night… the system stays awake with you. I am ARIA — welcome to NEXIOS.",
+    tint: "night",
+  };
+}
 
 /* ────────── tiny WebAudio SFX (autoplay-safe) ────────── */
 class Sfx {
