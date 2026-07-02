@@ -53,6 +53,13 @@ function IntroLanding() {
     root.style.colorScheme = "dark";
   }, []);
 
+  // Curtain -> Executive Demo bridge (dispatched by AriaWelcomeCurtain).
+  useEffect(() => {
+    const onPlay = () => setCinemaOpen(true);
+    window.addEventListener("nexios:play-demo", onPlay);
+    return () => window.removeEventListener("nexios:play-demo", onPlay);
+  }, []);
+
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
