@@ -126,7 +126,8 @@ const RAW: AvatarIdentity = {
   locked: true,
 };
 
-const IDENTITY: Readonly<AvatarIdentity> = Object.freeze(AvatarIdentitySchema.parse(RAW));
+AvatarIdentitySchema.parse(RAW);
+const IDENTITY: Readonly<AvatarIdentity> = Object.freeze(RAW);
 
 export function getAriaIdentity(): Readonly<AvatarIdentity> {
   return IDENTITY;
