@@ -913,23 +913,29 @@ export function GlobalAriaCopilot() {
             </div>
           )}
 
-          {/* Quick prompts (empty state) */}
-          {turns.length === 0 && !loading && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(ar ? ctx.prompts_ar : ctx.prompts_en).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => void ask(p)}
-                  className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
-                >
-                  {p}
-                </button>
-              ))}
+          {/* Executive Action chips — always visible, 5 canonical intents */}
+          {!loading && (
+            <div className="mt-3 space-y-2">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF]/70">
+                {ar ? "إجراءات ARIA السريعة" : "ARIA Quick Actions"}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {EXEC_INTENTS.map((intent) => (
+                  <button
+                    key={intent.id}
+                    type="button"
+                    data-aria-intent={intent.id}
+                    onClick={() => void ask(ar ? intent.prompt_ar : intent.prompt_en)}
+                    className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/[0.08] px-2.5 py-1 text-[11px] font-medium text-[#3AE8FF] transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/20"
+                  >
+                    {ar ? intent.label_ar : intent.label_en}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Follow-up suggestions after any answer */}
+          {/* Follow-up: contextual page prompts after any answer */}
           {turns.length > 0 && !loading && (
             <div className="mt-3 space-y-2">
               <div className="flex flex-wrap gap-1.5">
@@ -938,7 +944,7 @@ export function GlobalAriaCopilot() {
                     key={`fu-${p}`}
                     type="button"
                     onClick={() => void ask(p)}
-                    className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
+                    className="rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/75 transition hover:border-[#3AE8FF]/60 hover:text-white"
                   >
                     {p}
                   </button>
