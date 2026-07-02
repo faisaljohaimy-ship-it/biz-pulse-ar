@@ -637,81 +637,18 @@ export function GlobalAriaCopilot() {
     stopSpeaking();
   }, [stopSpeaking]);
 
+  // Auto-narration and welcome briefing are intentionally disabled:
+  // ARIA stays silent and her conversation surface stays hidden until the
+  // executive explicitly opens it by clicking the launcher.
   useEffect(() => {
     if (!mounted) return;
-    let started = false;
-    try { started = sessionStorage.getItem(DEMO_STARTED_KEY) === "1"; } catch { /* noop */ }
-    if (started) { demoStartedRef.current = true; return; }
-    const t = setTimeout(() => {
-      if (hidden) return;
-      try { sessionStorage.setItem(DEMO_STARTED_KEY, "1"); } catch { /* noop */ }
-      void runDemo();
-    }, DEMO_DELAY_MS);
-    return () => clearTimeout(t);
-  }, [mounted, hidden, runDemo]);
-
-  // Executive Welcome — fires once per browser session when the platform opens.
-  // Runs whether the dock is open or collapsed; if collapsed we surface a
-  // dismissible preview toast above the launcher so the executive still sees it.
-  useEffect(() => {
-    if (!mounted || briefingFiredRef.current) return;
+    demoStartedRef.current = true;
     briefingFiredRef.current = true;
-    let welcomed = false;
-    try { welcomed = sessionStorage.getItem(WELCOMED_KEY) === "1"; } catch { /* noop */ }
-    if (welcomed) return;
-    const t = setTimeout(() => {
-      void (async () => {
-        let health: BriefingLite["health"] = undefined;
-        let critical = 0;
-        try {
-          const { supabase } = await import("@/integrations/supabase/client");
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.access_token) {
-            const r = await fetch("/api/public/aria-briefing", {
-              headers: { Authorization: `Bearer ${session.access_token}` },
-            });
-            if (r.ok) {
-              const j = (await r.json()) as BriefingLite;
-              health = j.health;
-              critical = (j.priorities ?? []).filter((p) => (p.severity ?? "").toLowerCase() === "critical").length;
-            }
-          }
-        } catch { /* noop */ }
-        const openInc = health?.openIncidents ?? 0;
-        const done = health?.patrolsDoneToday ?? 0;
-        const planned = health?.patrolsPlannedToday ?? 0;
-        const healthPct = planned > 0 ? Math.max(0, Math.min(100, Math.round((done / planned) * 100))) : 100;
-        const greetEn =
-          `Welcome back. All systems have been analyzed. System Health: ${healthPct}%. ` +
-          (critical > 0
-            ? `${critical} critical alert${critical === 1 ? "" : "s"} require attention. `
-            : openInc > 0
-              ? `${openInc} open incident${openInc === 1 ? "" : "s"} in the field. `
-              : "No critical alerts. ") +
-          `Would you like an executive briefing?`;
-        const greetAr =
-          `مرحباً بعودتك. تم تحليل جميع الأنظمة. صحة النظام: ${healthPct}٪. ` +
-          (critical > 0
-            ? `${critical} تنبيه حرج بحاجة إلى انتباهك. `
-            : openInc > 0
-              ? `${openInc} بلاغ مفتوح في الميدان. `
-              : "لا توجد تنبيهات حرجة. ") +
-          `هل تودّ إحاطة تنفيذية؟`;
-        try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
-        const id = `welcome_${Date.now()}`;
-        setTurns((p) => [...p, { id, question: "—", qLang: lang, stage: "done", answer: { text_ar: greetAr, text_en: greetEn } }]);
-        try { ariaSessionMemory.push({ role: "assistant", text: greetEn, page: pathname }); } catch { /* noop */ }
-        if (!open) {
-          let toastDismissed = false;
-          try { toastDismissed = sessionStorage.getItem(WELCOME_TOAST_KEY) === "0"; } catch { /* noop */ }
-          if (!toastDismissed) setWelcomeToast({ ar: greetAr, en: greetEn });
-        }
-        if (voiceOn) void speak(ar ? greetAr : greetEn);
-      })();
-    }, 1200);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    try { sessionStorage.setItem(DEMO_STARTED_KEY, "1"); } catch { /* noop */ }
+    try { sessionStorage.setItem(WELCOMED_KEY, "1"); } catch { /* noop */ }
+    try { sessionStorage.setItem(WELCOME_TOAST_KEY, "0"); } catch { /* noop */ }
   }, [mounted]);
+
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
