@@ -33,10 +33,13 @@ export const sendOutlookReport = createServerFn({ method: "POST" })
       }),
     ),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const message: Record<string, unknown> = {
       subject: data.subject,
       body: { contentType: "HTML", content: data.html },
+      toRecipients: [{ emailAddress: { address: data.to } }],
+    };
       toRecipients: [{ emailAddress: { address: data.to } }],
     };
     if (data.cc) {
