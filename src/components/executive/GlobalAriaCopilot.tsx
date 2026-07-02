@@ -702,11 +702,27 @@ export function GlobalAriaCopilot() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
+  const BRIEFING_TRIGGERS = [
+    "give me a 30-second executive brief.",
+    "give me a 30 second executive brief.",
+    "أعطني إحاطة تنفيذية في ٣٠ ثانية",
+    "أعطني إحاطة تنفيذية في 30 ثانية",
+  ];
+  const maybeStartBriefing = (prompt: string): boolean => {
+    const norm = prompt.trim().toLowerCase();
+    if (!BRIEFING_TRIGGERS.some((t) => norm === t.toLowerCase())) return false;
+    const { kpis, mode } = briefing.getLive();
+    if (!kpis) return false; // fall back to normal chat
+    void briefing.start({ mode, ar, kpis });
+    return true;
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    void ask(question);
+    if (!maybeStartBriefing(question)) void ask(question);
     setQuestion("");
   };
+
 
   if (!mounted || hideForAuthDock) return null;
 
