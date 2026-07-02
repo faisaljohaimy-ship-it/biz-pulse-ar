@@ -1,15 +1,13 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
-import { ExecutiveHeroStage } from "@/components/executive/ExecutiveHeroStage";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
-import { CinematicBoot } from "@/components/executive/CinematicBoot";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
-import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
+import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
@@ -37,7 +35,7 @@ const PILLARS = [
 ] as const;
 
 function IntroLanding() {
-  const navigate = useNavigate();
+  // navigation handled via <Link> below
   const { locale } = useI18n();
   const ar = locale === "ar";
   const [bootDone, setBootDone] = useState(false);
@@ -69,13 +67,11 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
-      <AriaWelcomeCurtain />
-      <CinematicBoot onComplete={() => setBootDone(true)} />
+      <AriaGenesis onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/os" })} />
 
       {/* Mini ARIA presence inside the hero */}
       <div id="aria-quick-ask" className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
