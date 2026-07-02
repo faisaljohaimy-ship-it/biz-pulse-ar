@@ -6,7 +6,7 @@ import { MissionControlStrip } from "@/components/executive/MissionControlStrip"
 import { PublicAgentsDemoGrid } from "@/components/executive/PublicAgentsDemoGrid";
 import { DemoDataBadge } from "@/components/executive/DemoDataBadge";
 
-export const Route = createFileRoute("/exec")({
+export const Route = createFileRoute("/exec-preview")({
   head: () => ({
     meta: [
       { title: "غرفة القيادة التنفيذية — NEXIOS AI OS" },
