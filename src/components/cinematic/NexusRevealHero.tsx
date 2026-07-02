@@ -149,7 +149,7 @@ export function NexusRevealHero({
               fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
             }}
           >
-            NEXUS
+            NEXIOS
           </div>
           <div
             className="mt-2 text-[11px] uppercase tracking-[0.4em] text-white/65 sm:text-sm sm:tracking-[0.7em]"
@@ -222,7 +222,7 @@ export function NexusRevealHero({
               </div>
             </div>
             <div className="text-center">
-              <div className="text-sm font-semibold tracking-[0.4em] text-amber-200">NEXUS · BOOT</div>
+              <div className="text-sm font-semibold tracking-[0.4em] text-amber-200">NEXIOS · BOOT</div>
               <div className="mt-1 text-xs text-white/70">تهيئة بيئة التشغيل…</div>
             </div>
           </div>

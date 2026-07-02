@@ -29,6 +29,7 @@ import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
+import { Route as ExecPreviewRouteImport } from './routes/exec-preview'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -260,6 +261,11 @@ const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
 const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
   id: '/executive-booking',
   path: '/executive-booking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecPreviewRoute = ExecPreviewRouteImport.update({
+  id: '/exec-preview',
+  path: '/exec-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DpaRoute = DpaRouteImport.update({
@@ -975,6 +981,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -1128,6 +1135,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -1282,6 +1290,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -1437,6 +1446,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
     | '/films'
@@ -1590,6 +1600,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
     | '/films'
@@ -1743,6 +1754,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
     | '/films'
@@ -1898,6 +1910,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
+  ExecPreviewRoute: typeof ExecPreviewRoute
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
@@ -2087,6 +2100,13 @@ declare module '@tanstack/react-router' {
       path: '/executive-booking'
       fullPath: '/executive-booking'
       preLoaderRoute: typeof ExecutiveBookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exec-preview': {
+      id: '/exec-preview'
+      path: '/exec-preview'
+      fullPath: '/exec-preview'
+      preLoaderRoute: typeof ExecPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dpa': {
@@ -3244,6 +3264,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
+  ExecPreviewRoute: ExecPreviewRoute,
   ExecutiveBookingRoute: ExecutiveBookingRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,

@@ -1,15 +1,27 @@
 /**
  * BetaMarqueeBar — cinematic beta-version marquee, locale-aware.
+ * Public visitors see GA branding; authenticated users see the beta wording.
  */
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18n } from "@/lib/i18n";
+import { usePublicSession } from "@/lib/demo/usePublicSession";
 
-const MESSAGES_AR = [
+const PUBLIC_AR = [
+  "✦ NEXIOS AI OS · الإصدار 1.0 GA",
+  "✦ منصة الإنجاز التنفيذية · رؤية 2030",
+  "✦ مدعومة بـ ARIA · GPT-5",
+];
+const PUBLIC_EN = [
+  "✦ NEXIOS AI OS · v1.0 GA",
+  "✦ Executive Delivery Platform · Vision 2030",
+  "✦ Powered by ARIA · GPT-5",
+];
+const BETA_AR = [
   "✦ نسخة تجريبية قابلة للتعديل",
   "✦ منصة إنجاز الأعمال التنفيذية — قيد التطوير المستمر",
   "✦ مدعومة بـ ARIA · GPT-5",
 ];
-const MESSAGES_EN = [
+const BETA_EN = [
   "✦ Editable Beta Preview",
   "✦ Executive Delivery Platform — under continuous iteration",
   "✦ Powered by ARIA · GPT-5",
@@ -17,8 +29,11 @@ const MESSAGES_EN = [
 
 export function BetaMarqueeBar() {
   const { locale } = useI18n();
-  const MESSAGES = locale === "ar" ? MESSAGES_AR : MESSAGES_EN;
+  const isPublic = usePublicSession();
+  const ar = locale === "ar";
+  const MESSAGES = isPublic ? (ar ? PUBLIC_AR : PUBLIC_EN) : (ar ? BETA_AR : BETA_EN);
   const strip = [...MESSAGES, ...MESSAGES, ...MESSAGES];
+
 
   return (
     <div
@@ -50,7 +65,7 @@ export function BetaMarqueeBar() {
       <div className="relative flex items-center py-2">
         <div className="absolute left-3 z-20 hidden items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-2.5 py-0.5 sm:flex">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">BETA</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">{isPublic ? "GA" : "BETA"}</span>
         </div>
 
         <div className="beta-marquee-track flex w-max items-center gap-12 whitespace-nowrap px-6 text-[12px] font-semibold tracking-wide text-white/90 sm:text-[13px]">
