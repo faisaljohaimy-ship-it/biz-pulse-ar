@@ -33,7 +33,7 @@ import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkle
 import { toast } from "sonner";
 
 
-export const Route = createFileRoute("/_authenticated/exec")({
+export const Route = createFileRoute("/_authenticated/exec-console")({
   component: ExecConsole,
   errorComponent: ({ error, reset }) => {
     const router = useRouter();
@@ -92,7 +92,7 @@ function statusBadge(status: string) {
   return <Badge className={cfg.cls}>{cfg.label}</Badge>;
 }
 
-function ExecConsole() {
+export function ExecConsole() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
   

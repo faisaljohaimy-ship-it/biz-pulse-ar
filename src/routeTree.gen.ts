@@ -30,6 +30,7 @@ import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
 import { Route as ExecPreviewRouteImport } from './routes/exec-preview'
+import { Route as ExecRouteImport } from './routes/exec'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -89,7 +90,7 @@ import { Route as AuthenticatedExecutiveReportsRouteImport } from './routes/_aut
 import { Route as AuthenticatedExecutiveMapRouteImport } from './routes/_authenticated/executive-map'
 import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authenticated/executive'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
-import { Route as AuthenticatedExecRouteImport } from './routes/_authenticated/exec'
+import { Route as AuthenticatedExecConsoleRouteImport } from './routes/_authenticated/exec-console'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedElevenlabsStatusRouteImport } from './routes/_authenticated/elevenlabs-status'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
@@ -266,6 +267,11 @@ const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
 const ExecPreviewRoute = ExecPreviewRouteImport.update({
   id: '/exec-preview',
   path: '/exec-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecRoute = ExecRouteImport.update({
+  id: '/exec',
+  path: '/exec',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DpaRoute = DpaRouteImport.update({
@@ -573,11 +579,12 @@ const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
   path: '/execution',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedExecRoute = AuthenticatedExecRouteImport.update({
-  id: '/exec',
-  path: '/exec',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedExecConsoleRoute =
+  AuthenticatedExecConsoleRouteImport.update({
+    id: '/exec-console',
+    path: '/exec-console',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -981,6 +988,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec': typeof ExecRoute
   '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
@@ -1023,7 +1031,7 @@ export interface FileRoutesByFullPath {
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/events': typeof AuthenticatedEventsRoute
-  '/exec': typeof AuthenticatedExecRoute
+  '/exec-console': typeof AuthenticatedExecConsoleRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1135,6 +1143,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec': typeof ExecRoute
   '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
@@ -1177,7 +1186,7 @@ export interface FileRoutesByTo {
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/events': typeof AuthenticatedEventsRoute
-  '/exec': typeof AuthenticatedExecRoute
+  '/exec-console': typeof AuthenticatedExecConsoleRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1290,6 +1299,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec': typeof ExecRoute
   '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
@@ -1332,7 +1342,7 @@ export interface FileRoutesById {
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/_authenticated/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
-  '/_authenticated/exec': typeof AuthenticatedExecRoute
+  '/_authenticated/exec-console': typeof AuthenticatedExecConsoleRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
   '/_authenticated/executive': typeof AuthenticatedExecutiveRoute
   '/_authenticated/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1446,6 +1456,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec'
     | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
@@ -1488,7 +1499,7 @@ export interface FileRouteTypes {
     | '/digital-twin'
     | '/elevenlabs-status'
     | '/events'
-    | '/exec'
+    | '/exec-console'
     | '/execution'
     | '/executive'
     | '/executive-map'
@@ -1600,6 +1611,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec'
     | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
@@ -1642,7 +1654,7 @@ export interface FileRouteTypes {
     | '/digital-twin'
     | '/elevenlabs-status'
     | '/events'
-    | '/exec'
+    | '/exec-console'
     | '/execution'
     | '/executive'
     | '/executive-map'
@@ -1754,6 +1766,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec'
     | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
@@ -1796,7 +1809,7 @@ export interface FileRouteTypes {
     | '/_authenticated/digital-twin'
     | '/_authenticated/elevenlabs-status'
     | '/_authenticated/events'
-    | '/_authenticated/exec'
+    | '/_authenticated/exec-console'
     | '/_authenticated/execution'
     | '/_authenticated/executive'
     | '/_authenticated/executive-map'
@@ -1910,6 +1923,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
+  ExecRoute: typeof ExecRoute
   ExecPreviewRoute: typeof ExecPreviewRoute
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
@@ -2107,6 +2121,13 @@ declare module '@tanstack/react-router' {
       path: '/exec-preview'
       fullPath: '/exec-preview'
       preLoaderRoute: typeof ExecPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exec': {
+      id: '/exec'
+      path: '/exec'
+      fullPath: '/exec'
+      preLoaderRoute: typeof ExecRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dpa': {
@@ -2522,11 +2543,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExecutionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/exec': {
-      id: '/_authenticated/exec'
-      path: '/exec'
-      fullPath: '/exec'
-      preLoaderRoute: typeof AuthenticatedExecRouteImport
+    '/_authenticated/exec-console': {
+      id: '/_authenticated/exec-console'
+      path: '/exec-console'
+      fullPath: '/exec-console'
+      preLoaderRoute: typeof AuthenticatedExecConsoleRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/events': {
@@ -3134,7 +3155,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
   AuthenticatedElevenlabsStatusRoute: typeof AuthenticatedElevenlabsStatusRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
-  AuthenticatedExecRoute: typeof AuthenticatedExecRoute
+  AuthenticatedExecConsoleRoute: typeof AuthenticatedExecConsoleRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
   AuthenticatedExecutiveRoute: typeof AuthenticatedExecutiveRoute
   AuthenticatedExecutiveMapRoute: typeof AuthenticatedExecutiveMapRoute
@@ -3201,7 +3222,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
   AuthenticatedElevenlabsStatusRoute: AuthenticatedElevenlabsStatusRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
-  AuthenticatedExecRoute: AuthenticatedExecRoute,
+  AuthenticatedExecConsoleRoute: AuthenticatedExecConsoleRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
   AuthenticatedExecutiveRoute: AuthenticatedExecutiveRoute,
   AuthenticatedExecutiveMapRoute: AuthenticatedExecutiveMapRoute,
@@ -3264,6 +3285,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
+  ExecRoute: ExecRoute,
   ExecPreviewRoute: ExecPreviewRoute,
   ExecutiveBookingRoute: ExecutiveBookingRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
