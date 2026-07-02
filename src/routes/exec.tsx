@@ -41,6 +41,10 @@ function ExecRouteSwitch() {
     );
   }
 
-  if (user) return <ExecConsole />;
-  return <ExecPublicDemoRoom />;
+  return (
+    <>
+      <CommandRoomPowerUp />
+      {user ? <ExecConsole /> : <ExecPublicDemoRoom />}
+    </>
+  );
 }
