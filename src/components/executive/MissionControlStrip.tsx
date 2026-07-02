@@ -6,6 +6,10 @@ import { getExecKpis } from "@/lib/sec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { KpiTile, type KpiTone } from "./KpiTile";
 import { useI18n } from "@/lib/i18n";
+import { useDemoData } from "@/lib/demo/useDemoData";
+import { riskLevelLabel } from "@/lib/demo/demoDataProvider";
+import { DemoDataBadge } from "./DemoDataBadge";
+
 
 
 export function MissionControlStrip() {
