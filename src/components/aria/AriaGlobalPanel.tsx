@@ -106,6 +106,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       setStage("streaming");
       const answer = (isAr ? j.text_ar : j.text_en) ?? j.text_en ?? j.text_ar ?? "";
       dockStore.patch(aid, { text: answer, pending: false });
+      if (answer && ariaVoice.isEnabled()) ariaVoice.feedText(answer);
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       dockStore.patch(aid, {
@@ -117,6 +118,33 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       setStage("idle");
     }
   }, [busy, pathname, entry, locale, isAr, turns]);
+
+  // Speech-to-text — Web Speech API, silent if unsupported.
+  const stt = useSpeechRecognition({
+    lang: isAr ? "ar-SA" : "en-US",
+    onInterim: (t) => setInterim(t),
+    onFinal: (t) => {
+      setInterim("");
+      if (t) void send(t);
+    },
+  });
+
+  // If user starts typing while ARIA speaks → fade out (interrupt).
+  useEffect(() => {
+    if (draft && voice.speaking) ariaVoice.interrupt();
+  }, [draft, voice.speaking]);
+
+  const onMicClick = useCallback(() => {
+    if (stt.listening) {
+      stt.stop();
+      // If user cancels without a final result, resume any paused audio.
+      if (voice.paused) ariaVoice.resume();
+      return;
+    }
+    if (voice.speaking) ariaVoice.interrupt();
+    setInterim("");
+    stt.start();
+  }, [stt, voice.speaking, voice.paused]);
 
   return (
     <div
