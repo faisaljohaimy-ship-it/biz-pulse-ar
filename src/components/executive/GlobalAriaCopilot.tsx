@@ -634,6 +634,9 @@ export function GlobalAriaCopilot() {
     }
   }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap, persona]);
 
+  // Keep the STT closure pointed at the latest ask() reference.
+  useEffect(() => { askRef.current = ask; }, [ask]);
+
   // Executive Welcome — fires once per browser session when the platform opens.
   // Runs whether the dock is open or collapsed; if collapsed we surface a
   // dismissible preview toast above the launcher so the executive still sees it.
