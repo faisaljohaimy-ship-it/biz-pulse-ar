@@ -5,17 +5,11 @@
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { usePublicSession } from "@/lib/demo/usePublicSession";
+import { glossary as G } from "@/lib/i18n/glossary";
 
-const PUBLIC_AR = [
-  "✦ NEXIOS AI OS · الإصدار 1.0 GA",
-  "✦ منصة الإنجاز التنفيذية · رؤية 2030",
-  "✦ مدعومة بـ ARIA · GPT-5",
-];
-const PUBLIC_EN = [
-  "✦ NEXIOS AI OS · v1.0 GA",
-  "✦ Executive Delivery Platform · Vision 2030",
-  "✦ Powered by ARIA · GPT-5",
-];
+const PUBLIC_AR = [G.marquee_1.ar, G.marquee_2.ar, G.marquee_3.ar];
+const PUBLIC_EN = [G.marquee_1.en, G.marquee_2.en, G.marquee_3.en];
+
 const BETA_AR = [
   "✦ نسخة تجريبية قابلة للتعديل",
   "✦ منصة إنجاز الأعمال التنفيذية — قيد التطوير المستمر",

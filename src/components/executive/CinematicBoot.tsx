@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
+import { glossary as G } from "@/lib/i18n/glossary";
 
 
 const STAGES = [
-  { t: 0,      label_ar: "تهيئة النواة",              label_en: "Initializing core" },
-  { t: 2_500,  label_ar: "تجميع الجزيئات العصبية",     label_en: "Assembling neural particles" },
-  { t: 6_000, label_ar: "تفعيل ARIA · GPT-5",         label_en: "Materializing ARIA · GPT-5" },
-  { t: 10_000, label_ar: "ترحيب آريا التنفيذي",        label_en: "ARIA executive greeting" },
-  { t: 14_500, label_ar: "ربط مركز القيادة",            label_en: "Linking Command Center" },
-  { t: 19_000, label_ar: "بث المؤشرات التنفيذية",       label_en: "Streaming executive KPIs" },
-  { t: 23_000, label_ar: "جاهز للدخول",                 label_en: "Ready for entry" },
+  { t: 0,      label_ar: G.boot_brand.ar,                    label_en: G.boot_brand.en },
+  { t: 2_500,  label_ar: G.boot_init.ar,                     label_en: G.boot_init.en },
+  { t: 6_000,  label_ar: "تفعيل آريا · GPT-5",               label_en: "Materializing ARIA · GPT-5" },
+  { t: 10_000, label_ar: "ترحيب آريا التنفيذي",              label_en: "ARIA executive greeting" },
+  { t: 14_500, label_ar: "ربط غرفة القيادة",                 label_en: "Linking Command Room" },
+  { t: 19_000, label_ar: "بث المؤشرات التنفيذية",            label_en: "Streaming executive KPIs" },
+  { t: 23_000, label_ar: G.boot_scene_10.ar,                 label_en: G.boot_scene_10.en },
 ] as const;
+
 
 const TOTAL_MS = 25_000;
 const SESSION_KEY = "nexios.boot-seen";

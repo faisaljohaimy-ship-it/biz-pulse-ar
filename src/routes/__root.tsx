@@ -112,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
-        children: `(function(){try{var s=localStorage.getItem('locale');var l=(s==='ar'||s==='en')?s:'en';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';}catch(e){}})();`,
+        children: `(function(){try{var s=localStorage.getItem('locale');var l=(s==='ar'||s==='en')?s:'ar';document.documentElement.lang=(l==='ar'?'ar-SA':'en');document.documentElement.dir=l==='ar'?'rtl':'ltr';}catch(e){document.documentElement.lang='ar-SA';document.documentElement.dir='rtl';}})();`,
       },
 
       {
@@ -162,7 +162,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" className="dark">
+    <html lang="ar-SA" dir="rtl" className="dark">
       <head>
         <HeadContent />
       </head>

@@ -47,7 +47,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  --font-arabic: "Cairo", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Cairo", system-ui, sans-serif;
 }
 
 /* NEXUS Enterprise Design System 2.0 — Luxury Executive (Deep Midnight Cyan) */
@@ -650,4 +650,40 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .executive-fog { animation: none; }
   .executive-mote { animation: none; opacity: 0.5; }
+}
+
+/* ============================================================
+ * Arabic-first typography — NEXIOS Executive
+ * Applied when <html lang="ar-SA"> / dir="rtl" is set.
+ * ============================================================ */
+html[lang^="ar"] body,
+html[dir="rtl"] body {
+  font-family: var(--font-arabic);
+  letter-spacing: 0 !important;
+  line-height: 1.6;
+  font-feature-settings: "kern", "liga", "calt";
+}
+html[lang^="ar"] h1, html[dir="rtl"] h1,
+html[lang^="ar"] h2, html[dir="rtl"] h2,
+html[lang^="ar"] h3, html[dir="rtl"] h3,
+html[lang^="ar"] h4, html[dir="rtl"] h4 {
+  font-family: var(--font-arabic);
+  font-weight: 600;
+  letter-spacing: 0 !important;
+  line-height: 1.25;
+}
+/* Kill Latin-oriented tracking classes on Arabic text — they clot glyphs. */
+html[lang^="ar"] .tracking-wide,
+html[lang^="ar"] .tracking-wider,
+html[lang^="ar"] .tracking-widest,
+html[dir="rtl"]  .tracking-wide,
+html[dir="rtl"]  .tracking-wider,
+html[dir="rtl"]  .tracking-widest {
+  letter-spacing: 0 !important;
+}
+/* Preserve tracking on explicitly Latin runs (marquee, dates, monospaced HUD chips). */
+html[lang^="ar"] [dir="ltr"] .tracking-wide,
+html[lang^="ar"] [dir="ltr"] .tracking-wider,
+html[lang^="ar"] [dir="ltr"] .tracking-widest {
+  letter-spacing: revert !important;
 }

@@ -15,6 +15,8 @@ import {
   useBriefingState,
   type CardKey,
 } from "@/lib/aria/executive-briefing-orchestrator";
+import { glossary as G } from "@/lib/i18n/glossary";
+
 
 
 
@@ -79,8 +81,9 @@ export function MissionControlStrip() {
         key: "risk",
         driftKey: "criticalIncidents24h" as const,
         Icon: AlertTriangle,
-        labelAr: "مستوى المخاطر",
-        labelEn: "Risk Level",
+        labelAr: G.kpi_risk_level.ar,
+        labelEn: G.kpi_risk_level.en,
+
         value: useDemo
           ? riskLevelLabel(demo.riskLevelKey, ar)
           : realLoading
@@ -95,8 +98,9 @@ export function MissionControlStrip() {
         key: "compliance",
         driftKey: "resolutionRate" as const,
         Icon: ShieldCheck,
-        labelAr: "نسبة الإغلاق",
-        labelEn: "Resolution Rate",
+        labelAr: G.kpi_resolution.ar,
+        labelEn: G.kpi_resolution.en,
+
         value: displayValue(realLoading, useDemo, `${compliancePct}%`, `${compliancePct}%`),
         hint: useDemo ? `MTTR ${mttr}m` : realLoading ? undefined : `MTTR ${k!.mttr_minutes}m`,
         tone: complianceTone,
@@ -117,8 +121,9 @@ export function MissionControlStrip() {
         key: "wo",
         driftKey: "openWorkOrders" as const,
         Icon: Wrench,
-        labelAr: "أوامر عمل مفتوحة",
-        labelEn: "Open Work Orders",
+        labelAr: G.kpi_open_wo.ar,
+        labelEn: G.kpi_open_wo.en,
+
         value: displayValue(realLoading, useDemo, k?.wo_open ?? "—", woOpen),
         hint: useDemo
           ? (ar ? `مغلق ${180}` : `Closed ${180}`)
@@ -129,8 +134,9 @@ export function MissionControlStrip() {
         key: "preventive",
         driftKey: "preventiveWo" as const,
         Icon: Activity,
-        labelAr: "صيانة وقائية",
-        labelEn: "Preventive WO",
+        labelAr: G.kpi_preventive.ar,
+        labelEn: G.kpi_preventive.en,
+
         value: displayValue(realLoading, useDemo, k?.preventive_wo ?? "—", preventive),
         hint: useDemo
           ? (ar ? `إصلاحي ${34}` : `Corrective ${34}`)
@@ -141,8 +147,9 @@ export function MissionControlStrip() {
         key: "projects",
         driftKey: "activeProjects" as const,
         Icon: Bot,
-        labelAr: "مشاريع جارية",
-        labelEn: "Active Projects",
+        labelAr: G.kpi_active_proj.ar,
+        labelEn: G.kpi_active_proj.en,
+
         value: displayValue(realLoading, useDemo, k?.projects_in_progress ?? "—", projectsOpen),
         hint: useDemo
           ? (ar ? `مكتمل ${28}` : `Completed ${28}`)
@@ -210,7 +217,7 @@ export function MissionControlStrip() {
           <div className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
             Mission Control
           </div>
-          <h2 className="text-base font-semibold text-white">{ar ? "نبض العمليات الحي" : "Live Operations Pulse"}</h2>
+          <h2 className="text-base font-semibold text-white">{ar ? G.pulse_title.ar : G.pulse_title.en}</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -226,8 +233,9 @@ export function MissionControlStrip() {
             <Mic className="h-3 w-3" aria-hidden />
             <span>
               {brief.active
-                ? ar ? "إيقاف الإحاطة" : "Stop briefing"
-                : ar ? "الإحاطة التنفيذية ▸" : "Executive Briefing ▸"}
+                ? ar ? G.briefing_stop.ar : G.briefing_stop.en
+                : ar ? G.briefing_button.ar : G.briefing_button.en}
+
             </span>
           </button>
           {useDemo && <DemoDataBadge />}
