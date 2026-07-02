@@ -88,7 +88,7 @@ function IntroLanding() {
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
       <AriaWelcomeCurtain />
-      <AriaCinematicIntro />
+      {isFlagOn("hero_v2") ? <GenesisHero /> : <AriaCinematicIntro />}
       <CinematicBoot onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
