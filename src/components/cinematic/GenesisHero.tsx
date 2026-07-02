@@ -610,19 +610,54 @@ export function GenesisHero({ onDone }: Props) {
       }
 
       // ── draw
-      // motion-blur trail: translucent fill (no clear)
+      // motion-blur trail: translucent fill (no clear) — obsidian base for royal
       ctx.globalCompositeOperation = "source-over";
       const bgAlpha = phaseRef.current === "void" ? 0.28 : 0.24;
-      ctx.fillStyle = `rgba(2,6,12,${bgAlpha})`;
+      ctx.fillStyle = isRoyal
+        ? `rgba(10,14,20,${bgAlpha})`
+        : `rgba(2,6,12,${bgAlpha})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // gold horizon before 18:00
-      if (preSunset && phaseRef.current === "void") {
+      // Royal aurora wash — hue-drifts ±8° over 20s, low saturation, restful
+      if (isRoyal) {
+        const drift = Math.sin(now * 0.0003) * 8; // ±8°
+        const g1 = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        g1.addColorStop(0, `hsla(${180 + drift}, 45%, 22%, 0.10)`); // teal top
+        g1.addColorStop(0.55, `hsla(${262 + drift}, 42%, 20%, 0.08)`); // violet mid
+        g1.addColorStop(1, `hsla(${40 + drift}, 55%, 18%, 0.10)`); // champagne floor
+        ctx.fillStyle = g1;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // gold horizon before 18:00 (v2 legacy)
+      if (!isRoyal && preSunset && phaseRef.current === "void") {
         const grad = ctx.createRadialGradient(cx * dpr, h * 0.95 * dpr, 20, cx * dpr, h * 0.95 * dpr, w * 0.9 * dpr);
         grad.addColorStop(0, "rgba(255,180,80,0.10)");
         grad.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Royal floating light-motes (behind particles)
+      if (isRoyal && motes.length) {
+        ctx.globalCompositeOperation = "lighter";
+        for (const m of motes) {
+          m.y -= m.v;
+          m.x += Math.sin((now * 0.0004) + m.seed) * 0.15;
+          if (m.y < -20) { m.y = h + 20; m.x = Math.random() * w; }
+          // hue: teal→gold by depth
+          const tealMix = m.hue;
+          const rr = Math.round(45 * tealMix + 232 * (1 - tealMix));
+          const gg = Math.round(212 * tealMix + 201 * (1 - tealMix));
+          const bb = Math.round(191 * tealMix + 122 * (1 - tealMix));
+          const rg = ctx.createRadialGradient(m.x * dpr, m.y * dpr, 0, m.x * dpr, m.y * dpr, m.r * dpr);
+          rg.addColorStop(0, `rgba(${rr},${gg},${bb},0.28)`);
+          rg.addColorStop(1, `rgba(${rr},${gg},${bb},0)`);
+          ctx.fillStyle = rg;
+          ctx.beginPath();
+          ctx.arc(m.x * dpr, m.y * dpr, m.r * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       // particles
@@ -642,6 +677,27 @@ export function GenesisHero({ onDone }: Props) {
         ctx.fillRect((x[i] - s / 2) * dpr, (y[i] - s / 2) * dpr, s * dpr, s * dpr);
       }
 
+      // Royal prismatic scanline — one 800ms sweep across ARIA silhouette
+      if (isRoyal && scanStartedAt > 0) {
+        const sK = (now - scanStartedAt) / 800;
+        if (sK <= 1) {
+          const yPos = (h * 0.2 + sK * h * 0.7) * dpr;
+          const barH = 2 * dpr;
+          const g = ctx.createLinearGradient(0, yPos, canvas.width, yPos);
+          g.addColorStop(0, "rgba(45,212,191,0)");
+          g.addColorStop(0.35, "rgba(139,124,246,0.55)");
+          g.addColorStop(0.65, "rgba(232,201,122,0.55)");
+          g.addColorStop(1, "rgba(45,212,191,0)");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, yPos - barH / 2, canvas.width, barH);
+        } else if (sK > 1.4) {
+          scanStartedAt = 0; // vanish (never persist)
+        }
+      }
+
+      // Duck ambience under ARIA voice
+      if (isRoyal) sfx.duck(ampL);
+
       // ripples
       for (let i = ripples.length - 1; i >= 0; i--) {
         const rp = ripples[i];
@@ -650,7 +706,8 @@ export function GenesisHero({ onDone }: Props) {
         const rad = k * Math.max(w, h) * 0.6;
         ctx.beginPath();
         ctx.arc(rp.x * dpr, rp.y * dpr, rad * dpr, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(0,212,255,${(1 - k) * 0.35})`;
+        const rippleC = isRoyal ? "232,201,122" : "0,212,255";
+        ctx.strokeStyle = `rgba(${rippleC},${(1 - k) * 0.35})`;
         ctx.lineWidth = 1.5 * dpr;
         ctx.stroke();
       }
