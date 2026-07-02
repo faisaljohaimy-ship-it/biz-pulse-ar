@@ -87,6 +87,8 @@ export function HajjExecutiveStage() {
       </header>
 
 
+      <UrgentWhatsAppBadge ar={ar} />
+
       <div className="hes-anim grid grid-cols-1 gap-5">
         {/* Digital integration constellation */}
         <div
