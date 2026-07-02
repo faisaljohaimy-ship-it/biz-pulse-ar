@@ -126,7 +126,7 @@ type Ctx = { locale: Locale; t: (k: string) => string; setLocale: (l: Locale) =>
 const I18nContext = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("ar");
 
   useEffect(() => {
     const stored = (typeof window !== "undefined" && localStorage.getItem("locale")) as Locale | null;
