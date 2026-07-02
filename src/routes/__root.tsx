@@ -155,9 +155,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0A0E14" },
       { name: "color-scheme", content: "dark" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "NEXIOS" },
+      { name: "format-detection", content: "telephone=no" },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
       {
@@ -188,6 +193,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/nexus-icon.png" },
       { rel: "apple-touch-icon", href: "/nexus-icon.png" },
       { rel: "shortcut icon", href: "/nexus-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
       {
