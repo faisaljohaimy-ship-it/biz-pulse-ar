@@ -327,10 +327,29 @@ export function NexusRevealHero({
           0%   { opacity: 0.9; transform: scale(0.6); }
           100% { opacity: 0;   transform: scale(1.8); }
         }
+        @keyframes nxh-breath {
+          0%,100% { opacity: 0.55; transform: scale(1); }
+          50%     { opacity: 0.85; transform: scale(1.06); }
+        }
+        @keyframes nxh-ring {
+          0%,100% { opacity: 0.35; transform: scale(1); }
+          50%     { opacity: 0.7;  transform: scale(1.04); }
+        }
+        @keyframes nxh-pulse {
+          0%,100% { opacity: 0.35; transform: scaleY(0.85); }
+          50%     { opacity: 0.9;  transform: scaleY(1.15); }
+        }
+        @keyframes nxh-stream {
+          0%   { transform: translateY(28px); opacity: 0; }
+          20%  { opacity: 0.6; }
+          80%  { opacity: 0.6; }
+          100% { transform: translateY(-28px); opacity: 0; }
+        }
         @media (prefers-reduced-motion: reduce) {
           [data-scene="nexus-reveal"] * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
         }
       `}</style>
+
     </section>
   );
 }
