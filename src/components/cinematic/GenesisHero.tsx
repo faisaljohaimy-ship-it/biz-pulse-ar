@@ -782,6 +782,7 @@ export function GenesisHero({ onDone }: Props) {
       window.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("keydown", onKey);
       unAmp();
+      if (isRoyal) { sfx.stopRustle(300); sfx.stopSwell(400); }
     };
   }, [visible, reduced, ar, onDone]);
 
