@@ -32,8 +32,6 @@ import {
   Minus,
   X,
   ArrowRight,
-  Mic,
-  MicOff,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
@@ -50,6 +48,25 @@ import {
   type ConversationStage,
 } from "@/lib/aria/conversation-stages";
 import { Pin, PinOff, EyeOff, Eye } from "lucide-react";
+
+// Executive demo script — 10 short Arabic sentences that ARIA narrates
+// automatically 60 seconds after the platform loads, once per session, so a
+// first-time visitor immediately understands what NEXIOS does. The user can
+// silence + hide ARIA at any moment by clicking her floating icon.
+const DEMO_SCRIPT_AR: string[] = [
+  "أهلاً بك في نكسيوس. أنا آريا، الذكاء التنفيذي لإدارة الأمن الصناعي بالمنطقة الغربية.",
+  "أراقب الآن أربعة مواقع رئيسية: جدة، مكة المكرمة، ينبع، والمنطقة الصناعية.",
+  "حالة النظام مستقرة، والدوريات الميدانية تسير وفق الخطة اليومية.",
+  "لدينا عدد من البلاغات المفتوحة تتابعها غرفة العمليات لحظة بلحظة.",
+  "أعرض عبر لوحة القيادة مؤشرات الأداء الحيّة وحالة الأصول والتصاريح.",
+  "يمكنك الانتقال إلى غرفة العمليات لعرض تفصيلي، أو التقارير التنفيذية لملخّص فوري.",
+  "في منظومة الحج، أتابع المشاعر المقدسة وأنبّهك فوراً عند أي مخاطرة حرجة.",
+  "أستطيع تحليل أي بلاغ، اقتراح خطة استجابة، وإصدار أوامر عمل خلال ثوانٍ.",
+  "جميع قراراتي مبنية على بيانات حقيقية موثّقة من قواعد النظام، دون تخمين.",
+  "اضغط على أيقونتي في أي وقت لإسكاتي وإخفائي، أو اسألني مباشرة وسأخدمك فوراً.",
+];
+const DEMO_DELAY_MS = 60_000;
+const DEMO_STARTED_KEY = "aria-copilot-demo-started-v1";
 
 type AskResult = { text_ar: string; text_en: string };
 type BriefingLite = {
@@ -278,17 +295,15 @@ export function GlobalAriaCopilot() {
   const [pinned, setPinned] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
-  const [listening, setListening] = useState(false);
-  const [sttSupported, setSttSupported] = useState(false);
-  const [interimText, setInterimText] = useState("");
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const briefingFiredRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const recogRef = useRef<unknown>(null);
-  const askRef = useRef<((q: string) => void) | null>(null);
+  const demoStartedRef = useRef(false);
+  const demoCancelRef = useRef(false);
+  const [demoPlaying, setDemoPlaying] = useState(false);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const persona = useMemo(() => resolvePersona(pathname), [pathname]);
@@ -429,12 +444,6 @@ export function GlobalAriaCopilot() {
     };
   }, [open, pinned]);
 
-  // Detect Web Speech API availability (browser-native STT, no backend).
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
-    setSttSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
-  }, []);
 
 
   const stopSpeaking = useCallback(() => {
@@ -470,83 +479,41 @@ export function GlobalAriaCopilot() {
     }
   }, [stopSpeaking]);
 
-  // Voice input via Web Speech API. Graceful fallback: mic button hidden
-  // when unsupported; user still has full text input.
-  const stopListening = useCallback(() => {
-    const rec = recogRef.current as { stop?: () => void; abort?: () => void } | null;
-    try { rec?.stop?.(); } catch { /* noop */ }
-    recogRef.current = null;
-    setListening(false);
-    setInterimText("");
-  }, []);
-
-  const startListening = useCallback(() => {
-    if (typeof window === "undefined") return;
-    const w = window as unknown as {
-      SpeechRecognition?: new () => unknown;
-      webkitSpeechRecognition?: new () => unknown;
-    };
-    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
-    if (!Ctor) return;
-    // Natural interruption: stop any speaking playback while user talks.
+  // Speak-and-wait: resolves when playback ends (or on error/timeout).
+  const speakAndWait = useCallback(async (text: string) => {
+    const clean = cleanForVoice(text);
+    if (!clean) return;
     stopSpeaking();
     try {
-      const rec = new Ctor() as {
-        lang: string;
-        continuous: boolean;
-        interimResults: boolean;
-        maxAlternatives: number;
-        onresult: (e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void;
-        onerror: () => void;
-        onend: () => void;
-        start: () => void;
-        stop: () => void;
-      };
-      rec.lang = ar ? "ar-SA" : "en-US";
-      rec.continuous = false;
-      rec.interimResults = true;
-      rec.maxAlternatives = 1;
-      let finalText = "";
-      rec.onresult = (e) => {
-        let interim = "";
-        for (let i = e.resultIndex; i < e.results.length; i += 1) {
-          const seg = e.results[i];
-          const txt = seg[0]?.transcript ?? "";
-          if (seg.isFinal) finalText += txt;
-          else interim += txt;
-        }
-        setInterimText(interim);
-        if (interim) setQuestion(interim);
-      };
-      rec.onerror = () => {
-        setListening(false);
-        setInterimText("");
-        recogRef.current = null;
-      };
-      rec.onend = () => {
-        setListening(false);
-        setInterimText("");
-        recogRef.current = null;
-        const finalQ = (finalText || "").trim();
-        if (finalQ) {
-          setQuestion("");
-          const runner = askRef.current;
-          if (runner) void runner(finalQ);
-        }
-      };
-      recogRef.current = rec;
-      setListening(true);
-      rec.start();
+      setSpeaking(true);
+      const r = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clean }),
+      });
+      if (!r.ok) { setSpeaking(false); return; }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      await new Promise<void>((resolve) => {
+        let done = false;
+        const finish = () => { if (done) return; done = true; setSpeaking(false); URL.revokeObjectURL(url); resolve(); };
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.play().catch(finish);
+      });
     } catch {
-      setListening(false);
-      recogRef.current = null;
+      setSpeaking(false);
     }
-  }, [ar, stopSpeaking]);
+  }, [stopSpeaking]);
 
 
   const ask = useCallback(async (q: string) => {
     const qt = q.trim();
     if (!qt) return;
+    demoCancelRef.current = true;
+    setDemoPlaying(false);
     stopSpeaking();
     setLoading(true);
     const detected: "ar" | "en" = isArabic(qt) ? "ar" : "en";
@@ -634,8 +601,54 @@ export function GlobalAriaCopilot() {
     }
   }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap, persona]);
 
-  // Keep the STT closure pointed at the latest ask() reference.
-  useEffect(() => { askRef.current = ask; }, [ask]);
+  // Demo auto-narration — 60s after mount, once per session, ARIA walks the
+  // user through NEXIOS using the 10-sentence script. Cancellable by clicking
+  // the floating icon (silence + hide) or by starting any interaction.
+  const runDemo = useCallback(async () => {
+    if (demoStartedRef.current) return;
+    demoStartedRef.current = true;
+    demoCancelRef.current = false;
+    setDemoPlaying(true);
+    setOpen(true);
+    setLang("ar");
+    for (let i = 0; i < DEMO_SCRIPT_AR.length; i += 1) {
+      if (demoCancelRef.current) break;
+      const line = DEMO_SCRIPT_AR[i];
+      const id = `demo_${Date.now()}_${i}`;
+      setTurns((p) => [
+        ...p,
+        { id, question: "—", qLang: "ar", stage: "done", answer: { text_ar: line, text_en: line } },
+      ]);
+      try { ariaSessionMemory.push({ role: "assistant", text: line, page: pathname }); } catch { /* noop */ }
+      if (voiceOn && !demoCancelRef.current) {
+        await speakAndWait(line);
+      } else {
+        await new Promise((r) => setTimeout(r, 2600));
+      }
+      if (demoCancelRef.current) break;
+      await new Promise((r) => setTimeout(r, 650));
+    }
+    setDemoPlaying(false);
+  }, [pathname, voiceOn, speakAndWait]);
+
+  const cancelDemo = useCallback(() => {
+    demoCancelRef.current = true;
+    setDemoPlaying(false);
+    stopSpeaking();
+  }, [stopSpeaking]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    let started = false;
+    try { started = sessionStorage.getItem(DEMO_STARTED_KEY) === "1"; } catch { /* noop */ }
+    if (started) { demoStartedRef.current = true; return; }
+    const t = setTimeout(() => {
+      if (hidden) return;
+      try { sessionStorage.setItem(DEMO_STARTED_KEY, "1"); } catch { /* noop */ }
+      void runDemo();
+    }, DEMO_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [mounted, hidden, runDemo]);
 
   // Executive Welcome — fires once per browser session when the platform opens.
   // Runs whether the dock is open or collapsed; if collapsed we surface a
@@ -756,19 +769,16 @@ export function GlobalAriaCopilot() {
         >
           {/* Header */}
           <div className="flex items-center gap-3">
-            <span
-              className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
+            <button
+              type="button"
+              onClick={() => { cancelDemo(); setOpen(false); setHidden(true); }}
+              aria-label={ar ? "إسكات وإخفاء آريا" : "Silence and hide ARIA"}
+              title={ar ? "إسكات وإخفاء" : "Silence & hide"}
+              className="relative grid h-12 w-12 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F] transition hover:border-[#3AE8FF]/90"
               style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
             >
               <img src={ariaHologram.url} alt="ARIA" className="aria-avatar-breathe absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
               <span aria-hidden className="aria-avatar-blink" />
-              {listening && (
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-full"
-                  style={{ animation: "gac-listen 1.4s ease-out infinite" }}
-                />
-              )}
               {loading ? (
                 <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
                   <Loader2 className="h-4 w-4 animate-spin text-[#3AE8FF]" />
@@ -784,7 +794,7 @@ export function GlobalAriaCopilot() {
                   ))}
                 </span>
               ) : null}
-            </span>
+            </button>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
                 ARIA · GPT-5 · {ar ? persona.label_ar : persona.label_en}
@@ -816,7 +826,7 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => { stopSpeaking(); setOpen(false); }}
+              onClick={() => { cancelDemo(); setOpen(false); }}
               disabled={pinned}
               aria-label={ar ? "تصغير" : "Minimize"}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:border-white/50 hover:bg-white/5 disabled:opacity-30"
@@ -825,7 +835,7 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => { stopSpeaking(); setOpen(false); setHidden(true); }}
+              onClick={() => { cancelDemo(); setOpen(false); setHidden(true); }}
               aria-label={ar ? "إخفاء" : "Hide"}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/70 transition hover:border-white/50 hover:bg-white/5"
             >
@@ -983,22 +993,6 @@ export function GlobalAriaCopilot() {
               placeholder={ar ? "اكتب سؤالك لآريا…" : "Ask ARIA…"}
               className="min-h-[40px] max-h-[120px] flex-1 resize-none rounded-xl border border-[#3AE8FF]/30 bg-[#04111F]/70 px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:border-[#3AE8FF]/70 focus:outline-none"
             />
-            {sttSupported && (
-              <button
-                type="button"
-                onClick={() => (listening ? stopListening() : startListening())}
-                aria-pressed={listening}
-                aria-label={listening ? (ar ? "أوقف الاستماع" : "Stop listening") : (ar ? "تحدث لآريا" : "Talk to ARIA")}
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition ${
-                  listening
-                    ? "border-rose-400/70 bg-rose-500/20 text-rose-100 shadow-[0_0_20px_rgba(255,88,120,0.55)]"
-                    : "border-[#3AE8FF]/40 text-[#3AE8FF] hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/10"
-                }`}
-                style={listening ? { animation: "gac-listen 1.4s ease-out infinite" } : undefined}
-              >
-                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </button>
-            )}
             <button
               type="submit"
               disabled={loading || !question.trim()}
@@ -1008,11 +1002,6 @@ export function GlobalAriaCopilot() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </button>
           </form>
-          {listening && (
-            <div className="mt-1 text-[10.5px] uppercase tracking-[0.22em] text-rose-200/85" dir="auto">
-              {ar ? "جارٍ الاستماع…" : "Listening…"} {interimText && <span className="normal-case tracking-normal text-white/70">— {interimText}</span>}
-            </div>
-          )}
         </div>
       )}
 

@@ -11,7 +11,7 @@ import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
 import { AmbientAuraLayer } from "@/components/cinematic/AmbientAuraLayer";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
-import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
+
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
@@ -85,10 +85,6 @@ function IntroLanding() {
         <ExecutiveWordmark title="A R I A" caption={ar ? "الذكاء التنفيذي" : "Executive Intelligence"} size="md" />
       </div>
 
-      {/* Mini ARIA presence inside the hero */}
-      <div id="aria-quick-ask" className={`relative z-10 mt-5 px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
-        <MiniAriaHeroBadge />
-      </div>
 
       {/* Executive toolbar */}
       <div className={`relative z-20 mx-auto mt-4 flex w-full max-w-6xl items-center justify-center gap-2 px-4 sm:gap-3 sm:px-6 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>

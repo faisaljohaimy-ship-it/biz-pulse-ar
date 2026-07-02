@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { RuntimeProvider } from "@/lib/runtime/RuntimeContext";
-import { AriaDock } from "@/components/digital-humans/AriaDock";
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -28,7 +28,6 @@ function AuthLayout() {
       <AppShell>
         <Outlet />
       </AppShell>
-      <AriaDock />
     </RuntimeProvider>
   );
 }
