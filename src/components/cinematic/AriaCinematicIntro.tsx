@@ -702,6 +702,11 @@ export function AriaCinematicIntro() {
           20%  { opacity: 1; }
           100% { background-position: -20% 0%; opacity: 0; }
         }
+        @keyframes aria-cta-glow {
+          0%,100% { box-shadow: 0 8px 32px -8px rgba(0,212,255,0.55), inset 0 0 24px rgba(58,232,255,0.14); }
+          50%     { box-shadow: 0 10px 42px -6px rgba(0,212,255,0.85), inset 0 0 32px rgba(58,232,255,0.28); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           [data-nx-intro] * { animation: none !important; transition-duration: 1.5s !important; }
         }
