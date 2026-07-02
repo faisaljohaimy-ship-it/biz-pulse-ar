@@ -13,10 +13,12 @@ type Recognition = {
   onresult: ((e: SpeechRecognitionEvent) => void) | null;
   onerror: ((e: Event) => void) | null;
   onend: (() => void) | null;
+  onspeechstart: (() => void) | null;
   start: () => void;
   stop: () => void;
   abort: () => void;
 };
+
 
 type RecognitionCtor = new () => Recognition;
 
@@ -46,7 +48,9 @@ export interface UseSpeechRecognitionOptions {
   lang: string; // "ar-SA" | "en-US"
   onInterim?: (text: string) => void;
   onFinal?: (text: string) => void;
+  onSpeechStart?: () => void;
 }
+
 
 export interface SpeechRecognitionHandle {
   supported: boolean;
@@ -93,11 +97,15 @@ export function useSpeechRecognition(
       if (final) optsRef.current.onFinal?.(final.trim());
     };
     r.onerror = () => setListening(false);
+    r.onspeechstart = () => {
+      try { optsRef.current.onSpeechStart?.(); } catch { /* ignore */ }
+    };
     r.onend = () => {
       setListening(false);
       recRef.current = null;
     };
     recRef.current = r;
+
     try {
       r.start();
       setListening(true);
