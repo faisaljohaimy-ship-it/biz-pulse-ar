@@ -764,3 +764,20 @@ html[lang^="ar"] [dir="ltr"] .tracking-widest {
   letter-spacing: 0;
   box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
+
+/* ============================================================
+   NEXIOS · ARIA Presence — 3.5:10 of screen (35vh baseline)
+   Responsive matrix; used by hero / /aria / expanded panel header.
+   ============================================================ */
+:root {
+  --aria-avatar-h: 35vh;
+}
+@media (max-width: 1279px) { :root { --aria-avatar-h: 30vh; } }
+@media (max-width: 767px) and (orientation: portrait)  { :root { --aria-avatar-h: min(28vh, 320px); } }
+@media (max-width: 767px) and (orientation: landscape) { :root { --aria-avatar-h: 24vh; } }
+.nx-aria-presence {
+  height: var(--aria-avatar-h);
+  max-height: var(--aria-avatar-h);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+}
