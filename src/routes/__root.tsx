@@ -24,6 +24,8 @@ import { DemoAriaPresenter } from "@/components/executive/DemoAriaPresenter";
 import { DemoMotionOverlay } from "@/lib/demo/motion-director";
 import { PresentationLayer } from "@/components/executive/presentation/PresentationLayer";
 import { AriaGlobalDock } from "@/components/aria/AriaGlobalDock";
+import { ExecutiveBriefingBar } from "@/components/aria/ExecutiveBriefingBar";
+
 
 function NotFoundComponent() {
   return (
