@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { apiError, input, z } from "@/lib/api";
 import { httpJson } from "@/lib/api/http.server";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
 
@@ -32,7 +33,8 @@ export const sendOutlookReport = createServerFn({ method: "POST" })
       }),
     ),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const message: Record<string, unknown> = {
       subject: data.subject,
       body: { contentType: "HTML", content: data.html },
@@ -52,7 +54,8 @@ export const sendOutlookReport = createServerFn({ method: "POST" })
 
 export const listOutlookInbox = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
     const json = await httpJson<{
       value?: Array<{
         id: string;
