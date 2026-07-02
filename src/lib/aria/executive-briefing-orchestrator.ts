@@ -212,6 +212,18 @@ class BriefingOrchestrator {
   private lastSpeaking = false;
   private silent = false;
   private ar = false;
+  private liveKpis: BriefingKpis | null = null;
+  private liveMode: BriefingMode = "hero";
+
+  /** Called by MissionControlStrip whenever KPIs change; used by remote
+   * triggers (chat chip, external header buttons) that don't own the data. */
+  publishLive(kpis: BriefingKpis, mode: BriefingMode): void {
+    this.liveKpis = kpis;
+    this.liveMode = mode;
+  }
+  getLive(): { kpis: BriefingKpis | null; mode: BriefingMode } {
+    return { kpis: this.liveKpis, mode: this.liveMode };
+  }
 
   subscribe(fn: () => void): () => void {
     this.listeners.add(fn);
@@ -220,6 +232,7 @@ class BriefingOrchestrator {
   getSnapshot(): BriefingSnap {
     return this.snap;
   }
+
   private emit(next: Partial<BriefingSnap>): void {
     this.snap = { ...this.snap, ...next };
     this.listeners.forEach((f) => f());
