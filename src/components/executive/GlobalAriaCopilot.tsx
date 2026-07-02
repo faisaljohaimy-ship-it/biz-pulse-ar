@@ -769,8 +769,12 @@ export function GlobalAriaCopilot() {
         >
           {/* Header */}
           <div className="flex items-center gap-3">
-            <span
-              className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
+            <button
+              type="button"
+              onClick={() => { cancelDemo(); setOpen(false); setHidden(true); }}
+              aria-label={ar ? "إسكات وإخفاء آريا" : "Silence and hide ARIA"}
+              title={ar ? "إسكات وإخفاء" : "Silence & hide"}
+              className="relative grid h-12 w-12 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F] transition hover:border-[#3AE8FF]/90"
               style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
             >
               <img src={ariaHologram.url} alt="ARIA" className="aria-avatar-breathe absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
@@ -790,7 +794,7 @@ export function GlobalAriaCopilot() {
                   ))}
                 </span>
               ) : null}
-            </span>
+            </button>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
                 ARIA · GPT-5 · {ar ? persona.label_ar : persona.label_en}
