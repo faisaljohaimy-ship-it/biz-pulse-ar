@@ -930,7 +930,43 @@ export function GlobalAriaCopilot() {
             </div>
           )}
 
-          {/* Executive Action chips — always visible, 5 canonical intents */}
+          {/* Executive Awareness — client-side scan of the live snapshot */}
+          {!loading && (() => {
+            const notes: string[] = [];
+            const widgets = snap.widgets;
+            const kpis = widgets.filter((w) => w.kind === "kpi");
+            const emptyKpis = kpis.filter((w) => {
+              const v = w.value;
+              return v === null || v === undefined || v === "" || v === 0 || v === "0";
+            });
+            if (!widgets.length) {
+              notes.push(ar
+                ? "لا توجد مؤشرات مسجّلة على هذه الشاشة — قد تكون صفحة عرض فقط."
+                : "No live widgets registered on this screen — likely a display-only page.");
+            }
+            if (kpis.length && emptyKpis.length === kpis.length) {
+              notes.push(ar
+                ? `جميع المؤشرات (${kpis.length}) فارغة أو صفر — تحقّق من مصدر البيانات.`
+                : `All KPIs (${kpis.length}) are empty or zero — check the data source.`);
+            } else if (emptyKpis.length >= 2) {
+              notes.push(ar
+                ? `${emptyKpis.length} مؤشرات فارغة: ${emptyKpis.slice(0, 3).map((w) => w.label).join("، ")}.`
+                : `${emptyKpis.length} empty KPIs: ${emptyKpis.slice(0, 3).map((w) => w.label).join(", ")}.`);
+            }
+            if (!notes.length) return null;
+            return (
+              <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] px-2.5 py-1.5 text-[11px] text-amber-200/90">
+                <div className="mb-0.5 text-[10px] uppercase tracking-[0.2em] text-amber-300/80">
+                  {ar ? "وعي ARIA" : "ARIA Awareness"}
+                </div>
+                <ul className="list-disc space-y-0.5 ps-4">
+                  {notes.map((n) => <li key={n}>{n}</li>)}
+                </ul>
+              </div>
+            );
+          })()}
+
+          {/* Executive Action chips — always visible, canonical intents */}
           {!loading && (
             <div className="mt-3 space-y-2">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#3AE8FF]/70">
@@ -951,6 +987,7 @@ export function GlobalAriaCopilot() {
               </div>
             </div>
           )}
+
 
           {/* Follow-up: contextual page prompts after any answer */}
           {turns.length > 0 && !loading && (
