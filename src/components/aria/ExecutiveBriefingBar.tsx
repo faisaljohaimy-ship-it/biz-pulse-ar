@@ -32,6 +32,14 @@ export function ExecutiveBriefingBar() {
   const ar = locale === "ar";
   const reduced = usePrefersReducedMotion();
   const [replayVisible, setReplayVisible] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Stop any active briefing when the route changes.
+  useEffect(() => {
+    if (briefing.isActive()) briefing.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
 
   // Show the "replay" chip for 8s after a natural completion.
   useEffect(() => {
