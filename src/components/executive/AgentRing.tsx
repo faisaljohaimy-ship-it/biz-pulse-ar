@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { Bot, Activity, ShieldCheck, Cpu, Sparkles, MessageSquare } from "lucide-react";
 import { listAgents, listAgentRuns } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { PublicAgentsDemoGrid } from "./PublicAgentsDemoGrid";
 
 /**
  * AgentRing — Executive AI Command Center surface.
