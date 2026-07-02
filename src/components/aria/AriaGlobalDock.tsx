@@ -1,12 +1,16 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { MessageSquare } from "lucide-react";
 import { useRouterState } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { AriaAvatar } from "./AriaAvatar";
 import { useAriaPresentationMode } from "@/lib/aria/presentation-mode";
+import { narrator, useNarrator } from "@/lib/aria/narrator";
 
 const AriaGlobalPanel = lazy(() => import("./AriaGlobalPanel"));
 
 const GREET_KEY = "aria_dock_greeted";
+const HINT_KEY = "aria_narrator_hint_seen";
+
 
 /**
  * AriaGlobalDock — persistent, page-aware Digital Executive dock.
