@@ -154,7 +154,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       aria-label={isAr ? "لوحة آريا" : "ARIA panel"}
     >
       {/* outside-tap surface */}
-      <div className="absolute inset-0 pointer-events-auto" onClick={onClose} />
+      <div className="absolute inset-0 pointer-events-auto" onClick={handleClose} />
 
       <div
         className={[
