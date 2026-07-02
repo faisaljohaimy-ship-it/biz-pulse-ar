@@ -46,7 +46,9 @@ export interface UseSpeechRecognitionOptions {
   lang: string; // "ar-SA" | "en-US"
   onInterim?: (text: string) => void;
   onFinal?: (text: string) => void;
+  onSpeechStart?: () => void;
 }
+
 
 export interface SpeechRecognitionHandle {
   supported: boolean;
