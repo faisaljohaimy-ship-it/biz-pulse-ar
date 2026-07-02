@@ -26,6 +26,7 @@ import { PresentationLayer } from "@/components/executive/presentation/Presentat
 import { AriaGlobalDock } from "@/components/aria/AriaGlobalDock";
 import { ExecutiveBriefingBar } from "@/components/aria/ExecutiveBriefingBar";
 import { OfflineBanner } from "@/components/system/OfflineBanner";
+import { PlatformCompatibility } from "@/components/system/PlatformCompatibility";
 import { KpiWatcherProvider } from "@/lib/aria/kpi-watcher";
 import { AriaProactiveNudge } from "@/components/aria/AriaProactiveNudge";
 
@@ -155,9 +156,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0A0E14" },
       { name: "color-scheme", content: "dark" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "NEXIOS" },
+      { name: "format-detection", content: "telephone=no" },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
       {
@@ -188,6 +194,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/nexus-icon.png" },
       { rel: "apple-touch-icon", href: "/nexus-icon.png" },
       { rel: "shortcut icon", href: "/nexus-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
       {
@@ -264,6 +271,7 @@ function RootComponent() {
             <AriaContextProvider>
               <KpiWatcherProvider>
               <DemoModeProvider>
+                <PlatformCompatibility />
                 <OfflineBanner />
                 <BetaMarqueeBar />
                 <div className="pointer-events-none fixed end-3 top-[42px] z-[70] sm:end-4 sm:top-[48px]">

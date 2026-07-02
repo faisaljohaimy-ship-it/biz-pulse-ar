@@ -1,0 +1,21 @@
+{
+  "name": "NEXIOS AI OS",
+  "short_name": "NEXIOS",
+  "description": "Enterprise AI Operating System — bilingual executive intelligence.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#05070C",
+  "theme_color": "#0A0E14",
+  "lang": "ar-SA",
+  "dir": "auto",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "/nexus-icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/nexus-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/nexus-icon.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/nexus-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

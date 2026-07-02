@@ -781,3 +781,89 @@ html[lang^="ar"] [dir="ltr"] .tracking-widest {
   aspect-ratio: 1 / 1;
   margin-inline: auto;
 }
+
+/* ============================================================
+   NEXIOS Universal Device Harmony (additive compatibility layer)
+   ============================================================ */
+
+/* Safe-area helpers (notch / Dynamic Island / home indicator). */
+.nx-safe-top    { padding-top:    env(safe-area-inset-top);    }
+.nx-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.nx-safe-left   { padding-left:   env(safe-area-inset-left);   }
+.nx-safe-right  { padding-right:  env(safe-area-inset-right);  }
+.nx-safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.nx-safe-y { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
+/* Dock offset variable — combines safe area + software-keyboard delta. */
+:root { --nx-dock-offset: max(env(safe-area-inset-bottom), var(--nx-kb, 0px)); }
+
+/* Horizontal overflow guard — safe global rule. */
+html, body { overflow-x: hidden; overscroll-behavior-y: contain; }
+body { text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+
+/* Touch UX: kill 300ms tap delay, momentum scroll on scroll containers. */
+a, button, [role="button"], input, select, textarea, label, summary {
+  touch-action: manipulation;
+}
+.nx-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Tap targets ≥44px on coarse pointers (touch). */
+@media (pointer: coarse) {
+  button, [role="button"], a.nx-tap, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Gate :hover effects to real hover devices — no sticky hover on touch. */
+@media (hover: none) {
+  .hover\:scale-105:hover,
+  .hover\:-translate-y-0\.5:hover,
+  .hover\:bg-white\/10:hover,
+  .hover\:bg-white\/5:hover,
+  .hover\:shadow-\[0_0_40px_rgba\(58\,232\,255\,0\.35\)\]:hover {
+    transform: none;
+    background-color: initial;
+    box-shadow: initial;
+  }
+}
+
+/* Slim dark scrollbars (desktop). */
+* { scrollbar-width: thin; scrollbar-color: rgba(0,212,255,0.35) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,212,255,0.35), rgba(58,232,255,0.25));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: rgba(58,232,255,0.55); }
+
+/* Font smoothing across OSes. */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Glassmorphism fallback — solid tint when backdrop-filter is unsupported. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .backdrop-blur, .backdrop-blur-sm, .backdrop-blur-md, .backdrop-blur-lg,
+  .backdrop-blur-xl, .backdrop-blur-2xl, .backdrop-blur-3xl {
+    background-color: rgba(6, 26, 46, 0.88) !important;
+  }
+}
+
+/* Reduced motion — soften everything to a 1.5s fade path. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1.5s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1.5s !important;
+    scroll-behavior: auto !important;
+  }
+}
