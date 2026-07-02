@@ -171,7 +171,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
               {ar ? "ثقة الخلاصة" : "Synthesis confidence"}: {Math.round(synth.confidence * 100)}%
             </span>
             <span>
-              {synth.source === "gpt-5" ? "ARIA · gpt-5" : (ar ? "وضع احتياطي" : "Fallback")}
+              {synth.source === "gpt-5" ? "ARIA" : (ar ? "وضع احتياطي" : "Fallback")}
               {data?.cached ? ` · ${ar ? "ذاكرة" : "memory"}` : ""}
             </span>
           </div>

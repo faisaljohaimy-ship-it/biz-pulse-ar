@@ -13,7 +13,7 @@ type Chapter = {
 const CHAPTERS: Chapter[] = [
   { id: "vision",      title_ar: "رؤية المنصة",         title_en: "Platform Vision",         desc_ar: "نظرة شاملة على فلسفة NEXIOS وتأثيرها التشغيلي.", duration: "02:10", accent: "from-[#00D4FF] to-[#3AE8FF]" },
   { id: "walkthrough", title_ar: "جولة تنفيذية",        title_en: "Executive Walkthrough",   desc_ar: "تجربة كاملة لمركز القيادة من منظور القيادة العليا.", duration: "04:30", accent: "from-[#3AE8FF] to-[#7CF9FF]" },
-  { id: "aria",        title_ar: "تعريف ARIA",          title_en: "ARIA Introduction",       desc_ar: "محرك GPT-5 التنفيذي، الصوت، الذاكرة، والوكلاء.",   duration: "03:15", accent: "from-[#5AC8FA] to-[#00D4FF]" },
+  { id: "aria",        title_ar: "تعريف ARIA",          title_en: "ARIA Introduction",       desc_ar: "المحرك التنفيذي، الصوت، الذاكرة، والوكلاء.",       duration: "03:15", accent: "from-[#5AC8FA] to-[#00D4FF]" },
   { id: "agents",      title_ar: "وكلاء الذكاء",        title_en: "AI Agents",               desc_ar: "14 وكيلًا متخصصًا مع تنسيق أدوات وتحقق فيزيائي.",   duration: "05:00", accent: "from-[#00D4FF] to-[#3AE8FF]" },
   { id: "security",    title_ar: "الأمن الصناعي",       title_en: "Industrial Security",     desc_ar: "حوادث، دوريات، تصاريح، زوار ومركبات في منصة واحدة.",  duration: "03:50", accent: "from-[#3AE8FF] to-[#7CF9FF]" },
   { id: "emergency",   title_ar: "الاستجابة للطوارئ",   title_en: "Emergency Response",      desc_ar: "تدفقات استجابة آلية مع تتبع SLA ومسار قرار شفاف.",     duration: "02:55", accent: "from-[#FFB347] to-[#FF6B6B]" },

@@ -169,7 +169,7 @@ function speakWelcome(force = false) {
 
   const phrases: { text: string; lang: string }[] = [
     { text: "أهلاً بك في منصة إنجاز الأعمال التنفيذية. أنا آريا، عقلك التنفيذي.", lang: "ar-SA" },
-    { text: "Welcome to NEXIOS. I am ARIA, your executive AI — powered by GPT-5.", lang: "en-US" },
+    { text: "Welcome to NEXIOS. I am ARIA, your executive AI.", lang: "en-US" },
   ];
 
   const run = () => {
