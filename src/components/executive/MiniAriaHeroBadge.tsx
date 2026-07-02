@@ -12,10 +12,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Loader2, MessageSquare, Sparkles, User, Volume2, VolumeX, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
-import { AriaAvatar } from "@/components/aria/AriaAvatar";
-import { useAriaPresentationMode } from "@/lib/aria/presentation-mode";
-import { narrator } from "@/lib/aria/narrator";
-
 
 
 type AskResult = { text_ar: string; text_en: string };
@@ -28,16 +24,15 @@ type Turn = {
 };
 
 const PROMPTS_AR = [
-  "أعطني إحاطة تنفيذية في ٣٠ ثانية",
-  "ما الذي تفعله نكسيوس؟",
-  "كيف تدعم آريا الأمن الصناعي؟",
+  "ما حالة العمليات الآن؟",
+  "أعطني ملخصاً تنفيذياً لرؤية 2030.",
+  "كيف يدعم نكسيوس قطاع الأمن الصناعي؟",
 ];
 const PROMPTS_EN = [
-  "Give me a 30-second executive brief",
   "What does NEXIOS do?",
+  "Give me a 30-second executive brief.",
   "How does ARIA support industrial security?",
 ];
-
 
 const VOICE_PREF_KEY = "aria-hero-voice-enabled";
 
@@ -56,7 +51,6 @@ function cleanForVoice(s: string) {
 
 export function MiniAriaHeroBadge() {
   const { locale } = useI18n();
-  const presMode = useAriaPresentationMode();
   const [open, setOpen] = useState(true);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
@@ -255,23 +249,11 @@ export function MiniAriaHeroBadge() {
 
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => narrator.toggle()}
-          aria-label={ar ? "استمع إلى آريا" : "Listen to ARIA"}
-          title={ar ? "اضغط للاستماع" : "Tap to listen"}
-          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F] cursor-pointer transition-transform active:scale-95 hover:scale-105"
+        <span
+          className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
           style={{ animation: "mab-core 3.2s ease-in-out infinite" }}
         >
-          <AriaAvatar
-            mode={presMode}
-            framing="portrait"
-            size={48}
-            speaking={speaking}
-            thinking={loading}
-            alt="ARIA"
-            className="!h-full !w-full"
-          />
+          <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
           {loading ? (
             <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
               <Loader2 className="h-5 w-5 animate-spin text-[#3AE8FF]" />
@@ -287,8 +269,7 @@ export function MiniAriaHeroBadge() {
               ))}
             </span>
           ) : null}
-        </button>
-
+        </span>
         <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/75">
             ARIA · GPT-5 {speaking ? (ar ? "· يتحدث" : "· speaking") : ""}

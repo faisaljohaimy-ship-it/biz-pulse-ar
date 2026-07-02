@@ -44,10 +44,8 @@ function HajjPrimeWindow() {
         <iframe
           src={LIVE_URL}
           title="Hajj Nexus Prime · Live System"
-          loading="lazy"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
           allow="clipboard-read; clipboard-write; fullscreen"
-          referrerPolicy="no-referrer"
           className="h-full w-full border-0"
           style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
         />

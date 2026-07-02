@@ -1,21 +1,15 @@
 /**
  * BetaMarqueeBar — cinematic beta-version marquee, locale-aware.
- * Public visitors see GA branding; authenticated users see the beta wording.
  */
-// Language toggle is mounted once at the root layout — no per-component copy.
+import { LanguageToggle } from "./LanguageToggle";
 import { useI18n } from "@/lib/i18n";
-import { usePublicSession } from "@/lib/demo/usePublicSession";
-import { glossary as G } from "@/lib/i18n/glossary";
 
-const PUBLIC_AR = [G.marquee_1.ar, G.marquee_2.ar, G.marquee_3.ar];
-const PUBLIC_EN = [G.marquee_1.en, G.marquee_2.en, G.marquee_3.en];
-
-const BETA_AR = [
+const MESSAGES_AR = [
   "✦ نسخة تجريبية قابلة للتعديل",
   "✦ منصة إنجاز الأعمال التنفيذية — قيد التطوير المستمر",
   "✦ مدعومة بـ ARIA · GPT-5",
 ];
-const BETA_EN = [
+const MESSAGES_EN = [
   "✦ Editable Beta Preview",
   "✦ Executive Delivery Platform — under continuous iteration",
   "✦ Powered by ARIA · GPT-5",
@@ -23,11 +17,8 @@ const BETA_EN = [
 
 export function BetaMarqueeBar() {
   const { locale } = useI18n();
-  const isPublic = usePublicSession();
-  const ar = locale === "ar";
-  const MESSAGES = isPublic ? (ar ? PUBLIC_AR : PUBLIC_EN) : (ar ? BETA_AR : BETA_EN);
+  const MESSAGES = locale === "ar" ? MESSAGES_AR : MESSAGES_EN;
   const strip = [...MESSAGES, ...MESSAGES, ...MESSAGES];
-
 
   return (
     <div
@@ -35,7 +26,6 @@ export function BetaMarqueeBar() {
       role="status"
       aria-label="Beta preview banner"
       className="sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] backdrop-blur-xl shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
-      style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 30px)" }}
     >
       <style>{`
         @keyframes beta-marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-33.3333%); } }
@@ -60,7 +50,7 @@ export function BetaMarqueeBar() {
       <div className="relative flex items-center py-2">
         <div className="absolute left-3 z-20 hidden items-center gap-1.5 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-2.5 py-0.5 sm:flex">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">{isPublic ? "GA" : "BETA"}</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">BETA</span>
         </div>
 
         <div className="beta-marquee-track flex w-max items-center gap-12 whitespace-nowrap px-6 text-[12px] font-semibold tracking-wide text-white/90 sm:text-[13px]">
@@ -72,8 +62,9 @@ export function BetaMarqueeBar() {
           ))}
         </div>
 
-        {/* Language toggle intentionally removed — single instance mounted at root. */}
-
+        <div className="absolute right-3 z-20 flex items-center">
+          <LanguageToggle />
+        </div>
       </div>
     </div>
   );

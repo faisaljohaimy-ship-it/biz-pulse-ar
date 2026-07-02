@@ -258,7 +258,7 @@ export default function CityToBoardroomTransition({ isAr }: { isAr: boolean }) {
 
         {/* Top corner readout */}
         <div className="pointer-events-none absolute left-5 top-5 font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-200/60">
-          <div>NEXIOS · OS · TRANSIT</div>
+          <div>NEXUS · OS · TRANSIT</div>
           <div className="mt-1 text-white/40">
             {isAr ? "من" : "FROM"} DIGITAL-TWIN → {isAr ? "إلى" : "TO"} COMMAND-CENTER
           </div>

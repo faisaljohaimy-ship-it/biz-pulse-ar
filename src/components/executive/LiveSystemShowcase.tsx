@@ -99,7 +99,7 @@ export function LiveSystemShowcase() {
 
             <iframe
               src={LIVE_URL}
-              title="NEXIOS AI OS — Hajj Prime (Night Mode)"
+              title="NEXUS AI OS — Hajj Prime (Night Mode)"
               loading="lazy"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
               style={{ colorScheme: "dark", backgroundColor: "#02101e" }}

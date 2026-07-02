@@ -29,8 +29,6 @@ import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
-import { Route as ExecPreviewRouteImport } from './routes/exec-preview'
-import { Route as ExecRouteImport } from './routes/exec'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -90,7 +88,7 @@ import { Route as AuthenticatedExecutiveReportsRouteImport } from './routes/_aut
 import { Route as AuthenticatedExecutiveMapRouteImport } from './routes/_authenticated/executive-map'
 import { Route as AuthenticatedExecutiveRouteImport } from './routes/_authenticated/executive'
 import { Route as AuthenticatedExecutionRouteImport } from './routes/_authenticated/execution'
-import { Route as AuthenticatedExecConsoleRouteImport } from './routes/_authenticated/exec-console'
+import { Route as AuthenticatedExecRouteImport } from './routes/_authenticated/exec'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedElevenlabsStatusRouteImport } from './routes/_authenticated/elevenlabs-status'
 import { Route as AuthenticatedDigitalTwinRouteImport } from './routes/_authenticated/digital-twin'
@@ -120,7 +118,6 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
 import { Route as ApiPublicAriaPresenceRouteImport } from './routes/api/public/aria-presence'
 import { Route as ApiPublicAriaExplainRouteImport } from './routes/api/public/aria-explain'
-import { Route as ApiPublicAriaChatRouteImport } from './routes/api/public/aria-chat'
 import { Route as ApiPublicAriaBriefingRouteImport } from './routes/api/public/aria-briefing'
 import { Route as ApiPublicAriaAskRouteImport } from './routes/api/public/aria-ask'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
@@ -263,16 +260,6 @@ const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
 const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
   id: '/executive-booking',
   path: '/executive-booking',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExecPreviewRoute = ExecPreviewRouteImport.update({
-  id: '/exec-preview',
-  path: '/exec-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExecRoute = ExecRouteImport.update({
-  id: '/exec',
-  path: '/exec',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DpaRoute = DpaRouteImport.update({
@@ -580,12 +567,11 @@ const AuthenticatedExecutionRoute = AuthenticatedExecutionRouteImport.update({
   path: '/execution',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedExecConsoleRoute =
-  AuthenticatedExecConsoleRouteImport.update({
-    id: '/exec-console',
-    path: '/exec-console',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
+const AuthenticatedExecRoute = AuthenticatedExecRouteImport.update({
+  id: '/exec',
+  path: '/exec',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -737,11 +723,6 @@ const ApiPublicAriaPresenceRoute = ApiPublicAriaPresenceRouteImport.update({
 const ApiPublicAriaExplainRoute = ApiPublicAriaExplainRouteImport.update({
   id: '/api/public/aria-explain',
   path: '/api/public/aria-explain',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicAriaChatRoute = ApiPublicAriaChatRouteImport.update({
-  id: '/api/public/aria-chat',
-  path: '/api/public/aria-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicAriaBriefingRoute = ApiPublicAriaBriefingRouteImport.update({
@@ -994,8 +975,6 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
-  '/exec': typeof ExecRoute
-  '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -1037,7 +1016,7 @@ export interface FileRoutesByFullPath {
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/events': typeof AuthenticatedEventsRoute
-  '/exec-console': typeof AuthenticatedExecConsoleRoute
+  '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1117,7 +1096,6 @@ export interface FileRoutesByFullPath {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
-  '/api/public/aria-chat': typeof ApiPublicAriaChatRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
@@ -1150,8 +1128,6 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
-  '/exec': typeof ExecRoute
-  '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -1193,7 +1169,7 @@ export interface FileRoutesByTo {
   '/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/events': typeof AuthenticatedEventsRoute
-  '/exec-console': typeof AuthenticatedExecConsoleRoute
+  '/exec': typeof AuthenticatedExecRoute
   '/execution': typeof AuthenticatedExecutionRoute
   '/executive': typeof AuthenticatedExecutiveRoute
   '/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1272,7 +1248,6 @@ export interface FileRoutesByTo {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
-  '/api/public/aria-chat': typeof ApiPublicAriaChatRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
@@ -1307,8 +1282,6 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
-  '/exec': typeof ExecRoute
-  '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
@@ -1350,7 +1323,7 @@ export interface FileRoutesById {
   '/_authenticated/digital-twin': typeof AuthenticatedDigitalTwinRoute
   '/_authenticated/elevenlabs-status': typeof AuthenticatedElevenlabsStatusRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
-  '/_authenticated/exec-console': typeof AuthenticatedExecConsoleRoute
+  '/_authenticated/exec': typeof AuthenticatedExecRoute
   '/_authenticated/execution': typeof AuthenticatedExecutionRoute
   '/_authenticated/executive': typeof AuthenticatedExecutiveRoute
   '/_authenticated/executive-map': typeof AuthenticatedExecutiveMapRoute
@@ -1430,7 +1403,6 @@ export interface FileRoutesById {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
-  '/api/public/aria-chat': typeof ApiPublicAriaChatRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
@@ -1465,8 +1437,6 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
-    | '/exec'
-    | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
     | '/films'
@@ -1508,7 +1478,7 @@ export interface FileRouteTypes {
     | '/digital-twin'
     | '/elevenlabs-status'
     | '/events'
-    | '/exec-console'
+    | '/exec'
     | '/execution'
     | '/executive'
     | '/executive-map'
@@ -1588,7 +1558,6 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
-    | '/api/public/aria-chat'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-tts'
@@ -1621,8 +1590,6 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
-    | '/exec'
-    | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
     | '/films'
@@ -1664,7 +1631,7 @@ export interface FileRouteTypes {
     | '/digital-twin'
     | '/elevenlabs-status'
     | '/events'
-    | '/exec-console'
+    | '/exec'
     | '/execution'
     | '/executive'
     | '/executive-map'
@@ -1743,7 +1710,6 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
-    | '/api/public/aria-chat'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-tts'
@@ -1777,8 +1743,6 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
-    | '/exec'
-    | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
     | '/films'
@@ -1820,7 +1784,7 @@ export interface FileRouteTypes {
     | '/_authenticated/digital-twin'
     | '/_authenticated/elevenlabs-status'
     | '/_authenticated/events'
-    | '/_authenticated/exec-console'
+    | '/_authenticated/exec'
     | '/_authenticated/execution'
     | '/_authenticated/executive'
     | '/_authenticated/executive-map'
@@ -1900,7 +1864,6 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
-    | '/api/public/aria-chat'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-tts'
@@ -1935,8 +1898,6 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
-  ExecRoute: typeof ExecRoute
-  ExecPreviewRoute: typeof ExecPreviewRoute
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
@@ -1968,7 +1929,6 @@ export interface RootRouteChildren {
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   ApiPublicAriaAskRoute: typeof ApiPublicAriaAskRoute
   ApiPublicAriaBriefingRoute: typeof ApiPublicAriaBriefingRoute
-  ApiPublicAriaChatRoute: typeof ApiPublicAriaChatRoute
   ApiPublicAriaExplainRoute: typeof ApiPublicAriaExplainRoute
   ApiPublicAriaPresenceRoute: typeof ApiPublicAriaPresenceRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
@@ -2127,20 +2087,6 @@ declare module '@tanstack/react-router' {
       path: '/executive-booking'
       fullPath: '/executive-booking'
       preLoaderRoute: typeof ExecutiveBookingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/exec-preview': {
-      id: '/exec-preview'
-      path: '/exec-preview'
-      fullPath: '/exec-preview'
-      preLoaderRoute: typeof ExecPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/exec': {
-      id: '/exec'
-      path: '/exec'
-      fullPath: '/exec'
-      preLoaderRoute: typeof ExecRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dpa': {
@@ -2556,11 +2502,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExecutionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/exec-console': {
-      id: '/_authenticated/exec-console'
-      path: '/exec-console'
-      fullPath: '/exec-console'
-      preLoaderRoute: typeof AuthenticatedExecConsoleRouteImport
+    '/_authenticated/exec': {
+      id: '/_authenticated/exec'
+      path: '/exec'
+      fullPath: '/exec'
+      preLoaderRoute: typeof AuthenticatedExecRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/events': {
@@ -2764,13 +2710,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/aria-explain'
       fullPath: '/api/public/aria-explain'
       preLoaderRoute: typeof ApiPublicAriaExplainRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/aria-chat': {
-      id: '/api/public/aria-chat'
-      path: '/api/public/aria-chat'
-      fullPath: '/api/public/aria-chat'
-      preLoaderRoute: typeof ApiPublicAriaChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/aria-briefing': {
@@ -3175,7 +3114,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDigitalTwinRoute: typeof AuthenticatedDigitalTwinRoute
   AuthenticatedElevenlabsStatusRoute: typeof AuthenticatedElevenlabsStatusRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
-  AuthenticatedExecConsoleRoute: typeof AuthenticatedExecConsoleRoute
+  AuthenticatedExecRoute: typeof AuthenticatedExecRoute
   AuthenticatedExecutionRoute: typeof AuthenticatedExecutionRoute
   AuthenticatedExecutiveRoute: typeof AuthenticatedExecutiveRoute
   AuthenticatedExecutiveMapRoute: typeof AuthenticatedExecutiveMapRoute
@@ -3242,7 +3181,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDigitalTwinRoute: AuthenticatedDigitalTwinRoute,
   AuthenticatedElevenlabsStatusRoute: AuthenticatedElevenlabsStatusRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
-  AuthenticatedExecConsoleRoute: AuthenticatedExecConsoleRoute,
+  AuthenticatedExecRoute: AuthenticatedExecRoute,
   AuthenticatedExecutionRoute: AuthenticatedExecutionRoute,
   AuthenticatedExecutiveRoute: AuthenticatedExecutiveRoute,
   AuthenticatedExecutiveMapRoute: AuthenticatedExecutiveMapRoute,
@@ -3305,8 +3244,6 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
-  ExecRoute: ExecRoute,
-  ExecPreviewRoute: ExecPreviewRoute,
   ExecutiveBookingRoute: ExecutiveBookingRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
@@ -3338,7 +3275,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   ApiPublicAriaAskRoute: ApiPublicAriaAskRoute,
   ApiPublicAriaBriefingRoute: ApiPublicAriaBriefingRoute,
-  ApiPublicAriaChatRoute: ApiPublicAriaChatRoute,
   ApiPublicAriaExplainRoute: ApiPublicAriaExplainRoute,
   ApiPublicAriaPresenceRoute: ApiPublicAriaPresenceRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
@@ -3360,13 +3296,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

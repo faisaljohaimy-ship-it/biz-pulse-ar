@@ -15,18 +15,11 @@ import {
 const Input = z.object({
   text: z.string().trim().min(1).max(1200),
   voiceId: z.string().regex(/^[A-Za-z0-9_-]+$/).max(64).optional(),
-  lang: z.enum(["ar", "en"]).optional(),
 });
 
 const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"; // Sarah — bilingual AR/EN executive
 
-async function synthesizeWithGateway(text: string, key: string, lang?: "ar" | "en"): Promise<Response | null> {
-  const instructions =
-    lang === "ar"
-      ? "صوت تنفيذي أنثوي بالعربية الفصحى الأنيقة. هادئ، واضح، فاخر، وموجز. لا تنطقي كلمات إنجليزية."
-      : lang === "en"
-        ? "Polished executive female voice in clean English. Calm, clear, premium, and concise. Do not pronounce Arabic phonemes."
-        : "Formal executive bilingual voice. Calm, clear, premium, and concise.";
+async function synthesizeWithGateway(text: string, key: string): Promise<Response | null> {
   const r = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
     method: "POST",
     headers: {
@@ -39,7 +32,7 @@ async function synthesizeWithGateway(text: string, key: string, lang?: "ar" | "e
       input: text,
       voice: "nova",
       response_format: "mp3",
-      instructions,
+      instructions: "Formal executive bilingual voice. Calm, clear, premium, and concise.",
     }),
     signal: AbortSignal.timeout(30_000),
   });
@@ -85,7 +78,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
         const text = parsed.data.text;
         if (lovableKey) {
           try {
-            const gatewayAudio = await synthesizeWithGateway(text, lovableKey, parsed.data.lang);
+            const gatewayAudio = await synthesizeWithGateway(text, lovableKey);
             if (gatewayAudio) {
               const audio = await gatewayAudio.arrayBuffer();
               return new Response(audio, {

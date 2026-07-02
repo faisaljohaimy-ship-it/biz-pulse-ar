@@ -5,7 +5,6 @@ import { Link } from "@tanstack/react-router";
 import { Bot, Activity, ShieldCheck, Cpu, Sparkles, MessageSquare } from "lucide-react";
 import { listAgents, listAgentRuns } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { PublicAgentsDemoGrid } from "./PublicAgentsDemoGrid";
 
 /**
  * AgentRing — Executive AI Command Center surface.
@@ -530,9 +529,19 @@ function Inspector({ vm }: { vm: AgentVM }) {
 }
 
 function EmptyState() {
-  // Public visitors: never render the login-wall as the primary content.
-  // Show a demo agents grid; keep the sign-in link as a small footnote
-  // (rendered inside PublicAgentsDemoGrid).
-  return <PublicAgentsDemoGrid ar={true} />;
+  return (
+    <div className="text-center">
+      <p className="text-xs text-white/65">
+        الوكلاء غير متاحين على الجلسة العامة. سجّل الدخول لعرض الشبكة الحيّة من{" "}
+        <code className="text-white/80">agent_definitions</code>.
+      </p>
+      <Link
+        to="/aria"
+        className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
+      >
+        <Sparkles className="h-3 w-3" />
+        <span>تحدّث مع آريا</span>
+      </Link>
+    </div>
+  );
 }
-

@@ -10,17 +10,10 @@ import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { AriaWelcomeCurtain } from "@/components/cinematic/AriaWelcomeCurtain";
-import { AriaCinematicIntro } from "@/components/cinematic/AriaCinematicIntro";
-import { GenesisHero } from "@/components/cinematic/GenesisHero";
-import { isFlagOn } from "@/lib/feature-flags";
 import { MiniAriaHeroBadge } from "@/components/executive/MiniAriaHeroBadge";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
-import { BUILD_ID } from "@/lib/build-id";
-import { Scene } from "@/components/cinema/Scene";
-import { narrator } from "@/lib/aria/narrator";
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,25 +53,6 @@ function IntroLanding() {
     root.style.colorScheme = "dark";
   }, []);
 
-  // Curtain -> Executive Demo bridge (dispatched by AriaWelcomeCurtain).
-  useEffect(() => {
-    const onPlay = () => setCinemaOpen(true);
-    window.addEventListener("nexios:play-demo", onPlay);
-    return () => window.removeEventListener("nexios:play-demo", onPlay);
-  }, []);
-
-  // Boot beacon — logs the deployed build stamp once.
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.info("NEXIOS build", BUILD_ID);
-  }, []);
-
-  // Narrator auto-plays once per session after the intro breathes out.
-  useEffect(() => {
-    narrator.autoStartOnce(4200);
-  }, []);
-
-
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
@@ -95,30 +69,13 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-black text-white">
-      {isFlagOn("hero_v2") ? (
-        <GenesisHero />
-      ) : (
-        <>
-          <AriaWelcomeCurtain />
-          <AriaCinematicIntro />
-        </>
-      )}
+      <AriaWelcomeCurtain />
       <CinematicBoot onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
       <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/os" })} />
-
-      {/* Replay intro ghost button — hero corner (gesture unlocks audio) */}
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new Event("nexios:replay-intro"))}
-        className={`absolute top-4 z-30 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium tracking-wide text-white/70 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white ${ar ? "left-4" : "right-4"} ${bootDone ? "opacity-100" : "opacity-0"} duration-700`}
-        aria-label={ar ? "إعادة عرض الافتتاحية" : "Replay intro"}
-      >
-        {ar ? "إعادة العرض ▸" : "Replay intro ▸"}
-      </button>
 
       {/* Mini ARIA presence inside the hero */}
       <div className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
@@ -130,7 +87,6 @@ function IntroLanding() {
         <button
           type="button"
           onClick={() => setCinemaOpen(true)}
-          data-narrator="cta"
           className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_24px_rgba(58,232,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3AE8FF]/20 sm:text-sm"
         >
           <Play className="h-4 w-4" />
@@ -150,22 +106,18 @@ function IntroLanding() {
         </kbd>
       </div>
 
-
       <LiveSystemShowcase />
 
       <HajjExecutiveStage />
 
-      <div data-narrator="kpi-row" className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
+      <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
       </div>
 
-      <div data-narrator="agents">
-        <AgentRing />
-      </div>
-
+      <AgentRing />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        <Scene as="section" number="02" label="القدرات" stagger className="mt-6 sm:mt-16">
+        <section className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">Capabilities</div>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t.capabilities}</h2>
@@ -195,9 +147,9 @@ function IntroLanding() {
               );
             })}
           </ul>
-        </Scene>
+        </section>
 
-        <Scene as="section" number="03" label="الدعوة" entrance="clip" className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
+        <section className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
           <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
           <div className="mt-5">
@@ -214,16 +166,12 @@ function IntroLanding() {
               ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
               : "Aligned with Saudi Vision 2030 · Digital transformation & industrial leadership"}
           </p>
-        </Scene>
+        </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
           NEXIOS AI OS · v1.0 GA
-          <span className="ms-2 rounded-full border border-white/15 px-2 py-0.5 text-[9px] normal-case tracking-normal text-white/40">
-            build {BUILD_ID}
-          </span>
         </p>
       </div>
     </div>
   );
 }
-

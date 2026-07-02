@@ -1,5 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { z } from "zod";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -10,32 +9,21 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-// Only same-origin relative paths are honored to prevent open redirects.
-const authSearchSchema = z.object({
-  redirect: z
-    .string()
-    .regex(/^\/[a-zA-Z0-9_\-/.?=&%#]*$/)
-    .optional(),
-});
-
 export const Route = createFileRoute("/auth")({
-  validateSearch: authSearchSchema,
   component: AuthPage,
 });
 
 function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { redirect } = useSearch({ from: "/auth" });
-  const postLoginTarget = (redirect ?? "/command-center") as string;
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) navigate({ to: postLoginTarget, replace: true });
-  }, [user, authLoading, navigate, postLoginTarget]);
+    if (!authLoading && user) navigate({ to: "/command-center", replace: true });
+  }, [user, authLoading, navigate]);
 
   async function handleGoogle() {
     setBusy(true);
@@ -49,7 +37,7 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: postLoginTarget, replace: true });
+      navigate({ to: "/command-center", replace: true });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Sign-in error");
       setBusy(false);
@@ -71,7 +59,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: postLoginTarget, replace: true });
+        navigate({ to: "/command-center", replace: true });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication error");

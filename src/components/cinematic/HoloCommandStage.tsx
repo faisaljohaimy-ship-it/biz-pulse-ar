@@ -187,7 +187,7 @@ export function HoloCommandStage({
               <div className="absolute inset-12 rounded-full border border-cyan-200/30" />
               <div className="absolute inset-[60px] rounded-full border border-cyan-100/40 bg-[radial-gradient(circle,rgba(0,212,255,0.35),rgba(4,18,31,0.6)_70%)] shadow-[inset_0_0_40px_rgba(110,231,255,0.4)]" />
               <div className="relative z-10 text-center leading-none">
-                <div className="text-[9px] tracking-[0.4em] text-cyan-200/70 font-mono">NEXIOS</div>
+                <div className="text-[9px] tracking-[0.4em] text-cyan-200/70 font-mono">NEXUS</div>
                 <div className={cn("mt-1 text-[11px] tracking-[0.3em] font-mono", statusTone)}>{status}</div>
                 <div className="mt-3 text-3xl font-bold tabular-nums text-cyan-100">{pct(k?.executive_readiness)}</div>
                 <div className="mt-1 text-[9px] tracking-[0.3em] text-cyan-200/60 font-mono">
