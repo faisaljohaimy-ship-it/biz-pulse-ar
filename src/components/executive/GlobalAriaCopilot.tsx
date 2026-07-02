@@ -541,8 +541,6 @@ export function GlobalAriaCopilot() {
       setListening(false);
       recogRef.current = null;
     }
-    // ask is stable enough; intentional deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ar, stopSpeaking]);
 
 
