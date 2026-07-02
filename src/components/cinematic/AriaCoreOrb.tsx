@@ -57,6 +57,14 @@ export function AriaCoreOrb({ size = 340, className = "" }: AriaCoreOrbProps) {
         @keyframes ariaOrbitCW  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes ariaOrbitCCW { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
         @keyframes ariaWaveShift { 0% { transform: translateX(0); } 100% { transform: translateX(-20%); } }
+        @keyframes ariaIridescence { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes ariaChromaShift {
+          0%,100% { transform: translate(0,0); opacity: 0.55; }
+          33%     { transform: translate(-1.5px, 0.5px); opacity: 0.75; }
+          66%     { transform: translate(1.5px, -0.5px); opacity: 0.65; }
+        }
+        @keyframes ariaScanlines { from { background-position: 0 0; } to { background-position: 0 -12px; } }
+        @keyframes ariaHaloPulse { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.06); } }
         @keyframes ariaMoteDrift {
           0%   { transform: translate(0,0) scale(1);   opacity: var(--o); }
           50%  { transform: translate(var(--dx), var(--dy)) scale(1.15); opacity: calc(var(--o) * 1.15); }
@@ -67,12 +75,45 @@ export function AriaCoreOrb({ size = 340, className = "" }: AriaCoreOrbProps) {
         .aria-orbit-outer  { animation: ariaOrbitCW  90s linear infinite; transform-origin: center; }
         .aria-orbit-inner  { animation: ariaOrbitCCW 60s linear infinite; transform-origin: center; }
         .aria-wave-shift   { animation: ariaWaveShift 4.5s linear infinite; }
+        .aria-iridescence  { animation: ariaIridescence 22s linear infinite; transform-origin: center; }
+        .aria-chroma-r     { animation: ariaChromaShift 4.6s ease-in-out infinite; mix-blend-mode: screen; }
+        .aria-chroma-b     { animation: ariaChromaShift 4.6s ease-in-out infinite reverse; mix-blend-mode: screen; }
+        .aria-scanlines    { animation: ariaScanlines 6s linear infinite; }
+        .aria-halo         { animation: ariaHaloPulse 5.2s ease-in-out infinite; transform-origin: center; }
         @media (prefers-reduced-motion: reduce) {
-          .aria-orb-core, .aria-orbit-outer, .aria-orbit-inner, .aria-wave-shift { animation: none !important; }
+          .aria-orb-core, .aria-orbit-outer, .aria-orbit-inner, .aria-wave-shift,
+          .aria-iridescence, .aria-chroma-r, .aria-chroma-b, .aria-scanlines, .aria-halo { animation: none !important; }
         }
       `}</style>
 
-      {/* Layered radiant glow behind the sphere */}
+      {/* ── Holographic volumetric halo (deep glow behind everything) ── */}
+      <div
+        aria-hidden
+        className="aria-halo pointer-events-none absolute inset-[-14%]"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(58,232,255,0.55) 0%, rgba(0,212,255,0.28) 18%, rgba(122,90,255,0.18) 38%, rgba(6,26,46,0) 62%)",
+          filter: "blur(24px)",
+        }}
+      />
+
+      {/* ── Iridescent film — slow conic sweep for holographic sheen ── */}
+      <div
+        aria-hidden
+        className="aria-iridescence pointer-events-none absolute inset-0 rounded-full"
+        style={{
+          background:
+            "conic-gradient(from 0deg, rgba(58,232,255,0) 0%, rgba(122,90,255,0.35) 12%, rgba(58,232,255,0.55) 25%, rgba(255,120,220,0.28) 42%, rgba(58,232,255,0) 55%, rgba(0,212,255,0.45) 72%, rgba(122,90,255,0.3) 88%, rgba(58,232,255,0) 100%)",
+          maskImage:
+            "radial-gradient(circle at 50% 50%, transparent 34%, black 42%, black 56%, transparent 66%)",
+          WebkitMaskImage:
+            "radial-gradient(circle at 50% 50%, transparent 34%, black 42%, black 56%, transparent 66%)",
+          mixBlendMode: "screen",
+          opacity: 0.75,
+        }}
+      />
+
+      {/* ── Layered radiant glow behind the sphere ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -82,6 +123,8 @@ export function AriaCoreOrb({ size = 340, className = "" }: AriaCoreOrbProps) {
           filter: "blur(6px)",
         }}
       />
+
+
 
       {/* Compass HUD + orbits + core + waveform, all in one SVG */}
       <svg
