@@ -13,10 +13,12 @@ type Recognition = {
   onresult: ((e: SpeechRecognitionEvent) => void) | null;
   onerror: ((e: Event) => void) | null;
   onend: (() => void) | null;
+  onspeechstart: (() => void) | null;
   start: () => void;
   stop: () => void;
   abort: () => void;
 };
+
 
 type RecognitionCtor = new () => Recognition;
 
