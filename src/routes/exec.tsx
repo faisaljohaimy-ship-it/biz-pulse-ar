@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { ExecPublicDemoRoom } from "@/components/executive/ExecPublicDemoRoom";
 import { ExecConsole } from "@/routes/_authenticated/exec-console";
+import { CommandRoomPowerUp } from "@/components/cinema/CommandRoomPowerUp";
 
 /**
  * Canonical /exec route.
