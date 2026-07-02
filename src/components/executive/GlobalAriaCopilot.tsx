@@ -288,6 +288,7 @@ export function GlobalAriaCopilot() {
   const briefingFiredRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const recogRef = useRef<unknown>(null);
+  const askRef = useRef<((q: string) => void) | null>(null);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const persona = useMemo(() => resolvePersona(pathname), [pathname]);
