@@ -14,6 +14,8 @@ import { useI18n } from "@/lib/i18n";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { AriaAvatar } from "@/components/aria/AriaAvatar";
 import { useAriaPresentationMode } from "@/lib/aria/presentation-mode";
+import { narrator } from "@/lib/aria/narrator";
+
 
 
 type AskResult = { text_ar: string; text_en: string };
