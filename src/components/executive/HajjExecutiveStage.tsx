@@ -10,8 +10,7 @@
  *
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
-import { Link } from "@tanstack/react-router";
-import { Moon, Gem, ArrowLeft, ArrowRight, Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 
@@ -24,7 +23,6 @@ const INTEGRATIONS = [
 export function HajjExecutiveStage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const Arrow = ar ? ArrowLeft : ArrowRight;
   const heading = ar ? "منصة إنجاز الأعمال التنفيذية" : "Executive Delivery Platform";
   const sub = ar
     ? "تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط Outlook، SAP، و Windows 365 مع منظومة وكلاء آريا."
