@@ -20,7 +20,13 @@ const Input = z.object({
 
 const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"; // Sarah — bilingual AR/EN executive
 
-async function synthesizeWithGateway(text: string, key: string): Promise<Response | null> {
+async function synthesizeWithGateway(text: string, key: string, lang?: "ar" | "en"): Promise<Response | null> {
+  const instructions =
+    lang === "ar"
+      ? "صوت تنفيذي أنثوي بالعربية الفصحى الأنيقة. هادئ، واضح، فاخر، وموجز. لا تنطقي كلمات إنجليزية."
+      : lang === "en"
+        ? "Polished executive female voice in clean English. Calm, clear, premium, and concise. Do not pronounce Arabic phonemes."
+        : "Formal executive bilingual voice. Calm, clear, premium, and concise.";
   const r = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
     method: "POST",
     headers: {
@@ -33,7 +39,7 @@ async function synthesizeWithGateway(text: string, key: string): Promise<Respons
       input: text,
       voice: "nova",
       response_format: "mp3",
-      instructions: "Formal executive bilingual voice. Calm, clear, premium, and concise.",
+      instructions,
     }),
     signal: AbortSignal.timeout(30_000),
   });
