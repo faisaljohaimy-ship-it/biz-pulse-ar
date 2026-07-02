@@ -16,7 +16,7 @@ import {
   Moon,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/executive/LanguageToggle";
+
 import { RuntimeTile } from "@/components/os/RuntimeTile";
 
 export const Route = createFileRoute("/os")({
