@@ -98,8 +98,9 @@ export function MissionControlStrip() {
         key: "compliance",
         driftKey: "resolutionRate" as const,
         Icon: ShieldCheck,
-        labelAr: "نسبة الإغلاق",
-        labelEn: "Resolution Rate",
+        labelAr: G.kpi_resolution.ar,
+        labelEn: G.kpi_resolution.en,
+
         value: displayValue(realLoading, useDemo, `${compliancePct}%`, `${compliancePct}%`),
         hint: useDemo ? `MTTR ${mttr}m` : realLoading ? undefined : `MTTR ${k!.mttr_minutes}m`,
         tone: complianceTone,
