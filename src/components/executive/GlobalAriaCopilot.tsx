@@ -874,7 +874,7 @@ export function GlobalAriaCopilot() {
             </button>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/80">
-                ARIA · GPT-5 · {ar ? persona.label_ar : persona.label_en}
+                ARIA · {ar ? persona.label_ar : persona.label_en}
               </div>
               <div className="truncate text-sm font-medium text-white">
                 {ar ? persona.mission_ar : persona.mission_en}
@@ -894,31 +894,20 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => setPinned((v) => !v)}
-              aria-pressed={pinned}
-              aria-label={pinned ? (ar ? "إلغاء التثبيت" : "Unpin") : (ar ? "تثبيت" : "Pin")}
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border transition ${pinned ? "border-[#3AE8FF]/80 bg-[#3AE8FF]/15 text-[#3AE8FF]" : "border-white/20 text-white/70 hover:border-white/50 hover:bg-white/5"}`}
-            >
-              {pinned ? <Pin className="h-3.5 w-3.5" /> : <PinOff className="h-3.5 w-3.5" />}
-            </button>
-            <button
-              type="button"
               onClick={() => { cancelDemo(); setOpen(false); }}
-              disabled={pinned}
-              aria-label={ar ? "تصغير" : "Minimize"}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:border-white/50 hover:bg-white/5 disabled:opacity-30"
+              className="shrink-0 rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70 transition hover:border-white/50 hover:bg-white/5"
             >
-              <Minus className="h-3.5 w-3.5" />
+              {ar ? "تصغير" : "Minimize"}
             </button>
             <button
               type="button"
               onClick={() => { cancelDemo(); setOpen(false); setHidden(true); }}
-              aria-label={ar ? "إخفاء" : "Hide"}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/70 transition hover:border-white/50 hover:bg-white/5"
+              className="shrink-0 rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70 transition hover:border-white/50 hover:bg-white/5"
             >
-              <EyeOff className="h-3.5 w-3.5" />
+              {ar ? "إخفاء" : "Hide"}
             </button>
           </div>
+
 
 
           {/* Transcript */}
