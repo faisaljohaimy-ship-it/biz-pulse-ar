@@ -26,6 +26,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const entry = useMemo(() => getPageEntry(pathname), [pathname]);
   const turns = useTurns();
+  const presMode = useAriaPresentationMode();
   const [draft, setDraft] = useState<string>(dockStore.getDraft());
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "thinking" | "streaming">("idle");
