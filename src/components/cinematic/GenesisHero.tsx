@@ -516,7 +516,13 @@ export function GenesisHero({ onDone }: Props) {
         const k = Math.min(1, (t - start) / 700);
         dissolving = k;
         if (k < 1) requestAnimationFrame(fade);
-        else { cancelAnimationFrame(rafRef.current); setVisible(false); sfx.stopHum(600); onDone?.(); }
+        else {
+          cancelAnimationFrame(rafRef.current);
+          setVisible(false);
+          sfx.stopHum(600);
+          if (isRoyal) { sfx.stopRustle(600); sfx.stopSwell(900); }
+          onDone?.();
+        }
       };
       requestAnimationFrame(fade);
     };
