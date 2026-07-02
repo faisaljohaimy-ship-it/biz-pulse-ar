@@ -47,7 +47,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  --font-arabic: "Cairo", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Cairo", system-ui, sans-serif;
 }
 
 /* NEXUS Enterprise Design System 2.0 — Luxury Executive (Deep Midnight Cyan) */
