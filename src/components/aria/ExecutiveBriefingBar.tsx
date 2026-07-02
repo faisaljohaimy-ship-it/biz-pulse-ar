@@ -7,10 +7,12 @@
  * inactive so it has zero cost outside of a briefing.
  */
 import { useEffect, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { Pause, Play, SkipForward, X, Mic } from "lucide-react";
 import { briefing, useBriefingState } from "@/lib/aria/executive-briefing-orchestrator";
 import { useI18n } from "@/lib/i18n";
 import ariaAvatar from "@/assets/aria-holo-executive.png";
+
 
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
