@@ -364,6 +364,39 @@ export function AriaCinematicIntro() {
     if (voice.enabled && voice.autoplayBlocked) ariaVoice.resume();
   };
 
+  const beginExperience = async () => {
+    if (started) return;
+    // Gesture — unlock audio BEFORE the timeline runs so greeting is audible.
+    await sfxRef.current?.unlock();
+    // Probe TTS path once and log it explicitly.
+    let path: "elevenlabs" | "browser" | "text-only" = "text-only";
+    try {
+      const r = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: ar ? "جاهزة." : "Ready.", lang: ar ? "ar" : "en" }),
+      });
+      if (r.ok) path = "elevenlabs";
+      else if (typeof window !== "undefined" && "speechSynthesis" in window) path = "browser";
+    } catch {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) path = "browser";
+    }
+    // eslint-disable-next-line no-console
+    console.info("ARIA voice path:", path);
+    if (path === "browser" && ar) {
+      try {
+        const voices = window.speechSynthesis?.getVoices?.() ?? [];
+        const hasAr = voices.some((v) => v.lang?.toLowerCase().startsWith("ar"));
+        if (!hasAr && !sessionStorage.getItem("nx_hint_chrome_voice")) {
+          sessionStorage.setItem("nx_hint_chrome_voice", "1");
+          window.dispatchEvent(new CustomEvent("nexios:hint", { detail: { message: "أفضل تجربة صوتية عبر Chrome" } }));
+        }
+      } catch { /* ignore */ }
+    }
+    setStarted(true);
+  };
+
+
   return (
     <div
       ref={overlayRef}
