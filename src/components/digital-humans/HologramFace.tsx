@@ -246,9 +246,12 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
       <div
         className="absolute inset-0 overflow-visible"
         style={{
-          transform: `translate3d(${headTx}px, ${headTy}px, 0) scale(${scale})`,
-          transition: "transform 220ms cubic-bezier(.22,.61,.36,1)",
-          filter: `drop-shadow(0 0 ${baseGlow}px ${pal.glow})`,
+          transformOrigin: "50% 92%", // neck pivot
+          transform:
+            `translate3d(${headTx}px, ${headTy}px, 0) scale(${scale}) ` +
+            `rotateY(${yaw}deg) rotateZ(${roll}deg) ${gestureTx}`,
+          transition: "transform 260ms cubic-bezier(.22,.61,.36,1), filter 260ms ease-out",
+          filter: `drop-shadow(0 0 ${baseGlow}px ${pal.glow}) drop-shadow(0 0 ${baseGlow * 0.6}px ${overlay.glow})`,
         }}
       >
         <img
