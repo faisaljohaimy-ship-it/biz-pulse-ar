@@ -12,9 +12,21 @@ const Input = z.object({
   prompt: z.string().min(1),
   system: z.string().optional(),
   brain: z.enum(["gpt", "claude", "auto"]).default("auto"),
-  task: z.enum(["code", "reason", "exec", "general"]).default("general"),
+  task: z.enum(["code", "reason", "exec", "general", "detect"]).default("detect"),
   maxTokens: z.number().int().positive().max(4096).default(1400),
 });
+
+/** Heuristic task detection from prompt content (bilingual AR/EN). */
+function detectTask(prompt: string): "code" | "reason" | "exec" | "general" {
+  const p = prompt.toLowerCase();
+  const codeHints = /\b(code|function|typescript|javascript|python|sql|bug|refactor|api|regex|stack trace|compile|build error|كود|برمج|دالة|خطأ برمج)\b|```/;
+  const reasonHints = /\b(why|explain|analyze|compare|derive|prove|architecture|design pattern|trade[- ]?off|حلل|قارن|اشرح|استنتج|لماذا)\b/;
+  const execHints = /\b(kpi|revenue|report|forecast|risk|incident|briefing|executive|strategy|decision|تنفيذي|تقرير|قرار|مخاطر|استراتيج)\b/;
+  if (codeHints.test(p)) return "code";
+  if (reasonHints.test(p)) return "reason";
+  if (execHints.test(p)) return "exec";
+  return "general";
+}
 
 async function callGpt(system: string | undefined, prompt: string, maxTokens: number) {
   const key = process.env.LOVABLE_API_KEY;
@@ -70,7 +82,8 @@ function resolveBrain(brain: "gpt" | "claude" | "auto", task: "code" | "reason" 
 export const ariaDualBrain = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
-    const chosen = resolveBrain(data.brain, data.task);
+    const task = data.task === "detect" ? detectTask(data.prompt) : data.task;
+    const chosen = resolveBrain(data.brain, task);
     const started = Date.now();
     try {
       const res =

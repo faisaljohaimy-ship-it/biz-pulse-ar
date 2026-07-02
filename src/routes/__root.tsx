@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 import { GlobalAriaCopilot } from "@/components/executive/GlobalAriaCopilot";
 import { AriaLiveBriefing } from "@/components/executive/AriaLiveBriefing";
+import { DeveloperBrainToggle } from "@/components/executive/DeveloperBrainToggle";
 
 import { AriaContextProvider } from "@/lib/aria/context-engine";
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -190,6 +191,7 @@ function RootComponent() {
                 <Outlet />
                 <GlobalAriaCopilot />
                 <AriaLiveBriefing />
+                <DeveloperBrainToggle />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
                 <PresentationLayer />
