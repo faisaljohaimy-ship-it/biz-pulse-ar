@@ -136,7 +136,22 @@ export function AriaAvatar({
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
     };
-  }, [mode, framing, reduced]);
+  }, [useV3, mode, framing, reduced]);
+
+  // v3 rig takes over the hologram path when the flag is on.
+  if (useV3) {
+    return (
+      <AriaAvatarV3
+        framing={framing}
+        size={size}
+        speaking={speaking}
+        thinking={thinking}
+        listening={listening}
+        className={className}
+        alt={alt}
+      />
+    );
+  }
 
   // ORB MODE
   if (mode === "orb") {
