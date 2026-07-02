@@ -1,12 +1,16 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { MessageSquare } from "lucide-react";
 import { useRouterState } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { AriaAvatar } from "./AriaAvatar";
 import { useAriaPresentationMode } from "@/lib/aria/presentation-mode";
+import { narrator, useNarrator } from "@/lib/aria/narrator";
 
 const AriaGlobalPanel = lazy(() => import("./AriaGlobalPanel"));
 
 const GREET_KEY = "aria_dock_greeted";
+const HINT_KEY = "aria_narrator_hint_seen";
+
 
 /**
  * AriaGlobalDock — persistent, page-aware Digital Executive dock.
@@ -54,10 +58,43 @@ export function AriaGlobalDock() {
     setOpen((v) => !v);
   }, []);
 
-  const orbAria = isAr ? "افتح آريا" : "Open ARIA";
+  // Narrator tap-hint: pulsing ring + micro-label once per session on the orb.
+  const [showHint, setShowHint] = useState(false);
+  useEffect(() => {
+    if (hiddenByHero) return;
+    try {
+      if (sessionStorage.getItem(HINT_KEY)) return;
+      const t = window.setTimeout(() => setShowHint(true), 1500);
+      return () => window.clearTimeout(t);
+    } catch { /* noop */ }
+  }, [hiddenByHero]);
+
+  const nSnap = useNarrator();
+  const onOrbTap = useCallback(() => {
+    if (showHint) {
+      setShowHint(false);
+      try { sessionStorage.setItem(HINT_KEY, "1"); } catch { /* noop */ }
+    }
+    setShowGreet(false);
+    narrator.toggle();
+  }, [showHint]);
+
+  const orbAria = isAr ? "استمع إلى آريا" : "Listen to ARIA";
+  const chatAria = isAr ? "افتح محادثة آريا" : "Open ARIA chat";
 
   return (
     <>
+      {/* Silenced flash chip */}
+      {nSnap.hint === "silenced" && (
+        <div
+          dir={isAr ? "rtl" : "ltr"}
+          className="fixed z-[95] start-4 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 px-3 py-1.5 text-[11px] text-cyan-100 shadow-[0_0_18px_rgba(0,212,255,0.4)] backdrop-blur"
+          style={{ bottom: "calc(6.25rem + var(--nx-dock-offset, 0px))" }}
+        >
+          {isAr ? "صمتت آريا · اضغط عليها للمتابعة" : "ARIA is silent · tap her to resume"}
+        </div>
+      )}
+
       {/* Orb */}
       <div
         aria-hidden={hiddenByHero || undefined}
@@ -69,8 +106,21 @@ export function AriaGlobalDock() {
         style={{ bottom: "calc(1rem + var(--nx-dock-offset, 0px))" }}
       >
         <div className="relative">
+          {/* Tap-to-listen hint (once per session) */}
+          {showHint && !nSnap.active && (
+            <>
+              <span aria-hidden className="nx-narrator-hint" />
+              <div
+                dir={isAr ? "rtl" : "ltr"}
+                className="absolute bottom-full mb-2 whitespace-nowrap start-0 rounded-xl border border-cyan-400/40 bg-[#061A2E]/90 px-3 py-1.5 text-[11px] text-cyan-100 shadow-[0_8px_28px_-10px_rgba(0,212,255,0.5)] backdrop-blur-md"
+              >
+                {isAr ? "اضغط للاستماع" : "Tap to listen"}
+              </div>
+            </>
+          )}
+
           {/* Greet tooltip */}
-          {showGreet && !open && (
+          {showGreet && !open && !showHint && (
             <div
               dir={isAr ? "rtl" : "ltr"}
               className={[
@@ -88,11 +138,12 @@ export function AriaGlobalDock() {
 
           <button
             type="button"
-            onClick={toggle}
+            onClick={onOrbTap}
             aria-label={orbAria}
-            aria-expanded={open}
+            aria-pressed={nSnap.active}
+            data-narrator="mic"
             className={[
-              "relative h-16 w-16 rounded-full overflow-hidden",
+              "relative h-16 w-16 rounded-full overflow-hidden cursor-pointer",
               "border border-cyan-400/40",
               "shadow-[0_0_24px_rgba(0,212,255,0.35),inset_0_0_18px_rgba(58,232,255,0.15)]",
               "flex items-center justify-center bg-[#03111e]",
@@ -109,8 +160,20 @@ export function AriaGlobalDock() {
               className="!h-full !w-full"
             />
           </button>
+
+          {/* Secondary chat opener (small pill above orb) */}
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={chatAria}
+            aria-expanded={open}
+            className="absolute -top-2 -end-2 grid h-7 w-7 place-items-center rounded-full border border-cyan-400/50 bg-[#04111F] text-cyan-200 shadow-[0_0_14px_rgba(0,212,255,0.4)] transition hover:scale-110 hover:bg-cyan-400/20"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
+
 
       {open && (
         <Suspense fallback={null}>

@@ -19,6 +19,8 @@ import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { BUILD_ID } from "@/lib/build-id";
 import { Scene } from "@/components/cinema/Scene";
+import { narrator } from "@/lib/aria/narrator";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,6 +73,12 @@ function IntroLanding() {
     console.info("NEXIOS build", BUILD_ID);
   }, []);
 
+  // Narrator auto-plays once per session after the intro breathes out.
+  useEffect(() => {
+    narrator.autoStartOnce(4200);
+  }, []);
+
+
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
@@ -122,6 +130,7 @@ function IntroLanding() {
         <button
           type="button"
           onClick={() => setCinemaOpen(true)}
+          data-narrator="cta"
           className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_24px_rgba(58,232,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#3AE8FF]/20 sm:text-sm"
         >
           <Play className="h-4 w-4" />
@@ -141,15 +150,19 @@ function IntroLanding() {
         </kbd>
       </div>
 
+
       <LiveSystemShowcase />
 
       <HajjExecutiveStage />
 
-      <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
+      <div data-narrator="kpi-row" className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
       </div>
 
-      <AgentRing />
+      <div data-narrator="agents">
+        <AgentRing />
+      </div>
+
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
         <Scene as="section" number="02" label="القدرات" stagger className="mt-6 sm:mt-16">
