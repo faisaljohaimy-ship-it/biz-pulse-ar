@@ -278,6 +278,20 @@ export function AriaCoreOrb({ size = 340, className = "" }: AriaCoreOrbProps) {
           );
         })}
       </div>
+
+      {/* ── Holographic scanlines masked to the sphere ── */}
+      <div
+        aria-hidden
+        className="aria-scanlines pointer-events-none absolute left-1/2 top-[49%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          width: `${size * 0.44}px`,
+          height: `${size * 0.44}px`,
+          background:
+            "repeating-linear-gradient(180deg, rgba(234,252,255,0.14) 0px, rgba(234,252,255,0.14) 1px, transparent 1px, transparent 4px)",
+          mixBlendMode: "screen",
+          opacity: 0.7,
+        }}
+      />
     </div>
   );
 }
