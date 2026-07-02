@@ -222,7 +222,7 @@ export function NexusRevealHero({
               </div>
             </div>
             <div className="text-center">
-              <div className="text-sm font-semibold tracking-[0.4em] text-amber-200">NEXUS · BOOT</div>
+              <div className="text-sm font-semibold tracking-[0.4em] text-amber-200">NEXIOS · BOOT</div>
               <div className="mt-1 text-xs text-white/70">تهيئة بيئة التشغيل…</div>
             </div>
           </div>
