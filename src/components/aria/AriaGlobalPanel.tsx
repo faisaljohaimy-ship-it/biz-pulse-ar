@@ -210,35 +210,45 @@ export default function AriaGlobalPanel({ onClose }: Props) {
           )}
         </div>
 
-        {/* composer */}
+        {/* composer — glass bar, mic on trailing side, exact AR placeholder */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void send(draft);
           }}
-          className="border-t border-cyan-400/10 p-2.5 flex items-end gap-2"
+          className="border-t border-cyan-400/10 p-2.5"
         >
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void send(draft);
-              }
-            }}
-            rows={1}
-            placeholder={isAr ? "اسأل آريا عن هذه الصفحة…" : "Ask ARIA about this page…"}
-            className="flex-1 resize-none bg-[#04121F] border border-cyan-400/20 rounded-lg px-3 py-2 text-[13px] text-cyan-50 placeholder:text-cyan-200/40 focus:outline-none focus:ring-1 focus:ring-cyan-400/40 max-h-32"
-          />
-          <button
-            type="submit"
-            disabled={busy || !draft.trim()}
-            aria-label={isAr ? "إرسال" : "Send"}
-            className="shrink-0 h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 text-[#03111E] flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_16px_rgba(0,212,255,0.35)]"
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </button>
+          <div className="relative flex items-center gap-2 rounded-full border border-cyan-400/25 bg-[#04121F]/80 backdrop-blur-xl px-3 py-1.5 shadow-[0_0_18px_-6px_rgba(0,212,255,0.45)] focus-within:border-cyan-400/60 focus-within:shadow-[0_0_22px_-4px_rgba(0,212,255,0.6)] transition">
+            <button
+              type="submit"
+              disabled={busy || !draft.trim()}
+              aria-label={isAr ? "إرسال" : "Send"}
+              className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 text-[#03111E] flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_14px_rgba(0,212,255,0.4)]"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </button>
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void send(draft);
+                }
+              }}
+              rows={1}
+              dir="auto"
+              placeholder={isAr ? "كيف يمكنني مساعدتك اليوم؟" : "How can I help you today?"}
+              className="flex-1 resize-none bg-transparent border-0 outline-none px-1 py-1.5 text-[13px] text-cyan-50 placeholder:text-cyan-200/50 max-h-32 leading-6"
+            />
+            <span
+              aria-hidden
+              title={isAr ? "الميكروفون" : "Microphone"}
+              className="shrink-0 h-8 w-8 rounded-full border border-cyan-400/30 bg-[#061A2E]/70 text-cyan-200/80 flex items-center justify-center"
+            >
+              <Mic className="h-4 w-4" />
+            </span>
+          </div>
         </form>
       </div>
     </div>
