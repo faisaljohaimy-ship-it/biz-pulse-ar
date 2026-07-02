@@ -32,6 +32,8 @@ import {
   Minus,
   X,
   ArrowRight,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
