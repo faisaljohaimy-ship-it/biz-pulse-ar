@@ -33,7 +33,7 @@ import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkle
 import { toast } from "sonner";
 
 
-export const Route = createFileRoute("/_authenticated/exec")({
+export const Route = createFileRoute("/_authenticated/exec-console")({
   component: ExecConsole,
   errorComponent: ({ error, reset }) => {
     const router = useRouter();
