@@ -40,8 +40,6 @@ export const sendOutlookReport = createServerFn({ method: "POST" })
       body: { contentType: "HTML", content: data.html },
       toRecipients: [{ emailAddress: { address: data.to } }],
     };
-      toRecipients: [{ emailAddress: { address: data.to } }],
-    };
     if (data.cc) {
       message.ccRecipients = [{ emailAddress: { address: data.cc } }];
     }
