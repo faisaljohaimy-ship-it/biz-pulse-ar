@@ -1,6 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
+import { AriaAvatar } from "./AriaAvatar";
+import { useAriaPresentationMode } from "@/lib/aria/presentation-mode";
 
 const AriaGlobalPanel = lazy(() => import("./AriaGlobalPanel"));
 
@@ -15,6 +17,7 @@ export function AriaGlobalDock() {
   const { locale } = useI18n();
   const isAr = locale === "ar";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const mode = useAriaPresentationMode();
   const [open, setOpen] = useState(false);
   const [showGreet, setShowGreet] = useState(false);
   const [hiddenByHero, setHiddenByHero] = useState(false);
@@ -90,25 +93,21 @@ export function AriaGlobalDock() {
             aria-label={orbAria}
             aria-expanded={open}
             className={[
-              "relative h-16 w-16 rounded-full",
-              "bg-[radial-gradient(circle_at_30%_30%,#0d3a5c,#03111e_70%)]",
+              "relative h-16 w-16 rounded-full overflow-hidden",
               "border border-cyan-400/40",
               "shadow-[0_0_24px_rgba(0,212,255,0.35),inset_0_0_18px_rgba(58,232,255,0.15)]",
-              "flex items-center justify-center",
+              "flex items-center justify-center bg-[#03111e]",
               "transition-transform duration-200 active:scale-95 hover:scale-105",
               "motion-safe:animate-[aria-breathe_4s_ease-in-out_infinite]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60",
             ].join(" ")}
           >
-            {/* holographic ring */}
-            <span
-              aria-hidden
-              className="absolute inset-0 rounded-full border border-cyan-300/30 motion-safe:animate-[aria-ring_4s_ease-in-out_infinite]"
-            />
-            {/* core */}
-            <span
-              aria-hidden
-              className="h-6 w-6 rounded-full bg-gradient-to-br from-cyan-200 to-cyan-500 shadow-[0_0_14px_rgba(0,212,255,0.7)]"
+            <AriaAvatar
+              mode={mode}
+              framing="portrait"
+              size={64}
+              alt={orbAria}
+              className="!h-full !w-full"
             />
           </button>
         </div>

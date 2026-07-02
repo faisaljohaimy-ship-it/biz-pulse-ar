@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, Send, Loader2, Mic, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getPageEntry } from "@/lib/aria/page-registry";
 import { dockStore, type DockTurn } from "@/lib/aria/dock-store";
+import { AriaAvatar } from "./AriaAvatar";
+import {
+  togglePresentationMode,
+  useAriaPresentationMode,
+} from "@/lib/aria/presentation-mode";
 
 type Props = { onClose: () => void };
 
@@ -21,6 +26,7 @@ export default function AriaGlobalPanel({ onClose }: Props) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const entry = useMemo(() => getPageEntry(pathname), [pathname]);
   const turns = useTurns();
+  const presMode = useAriaPresentationMode();
   const [draft, setDraft] = useState<string>(dockStore.getDraft());
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "thinking" | "streaming">("idle");
@@ -126,11 +132,18 @@ export default function AriaGlobalPanel({ onClose }: Props) {
       >
         {/* header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-400/10">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="relative inline-flex h-2.5 w-2.5">
-              <span className="absolute inset-0 rounded-full bg-cyan-400/60 motion-safe:animate-ping" />
-              <span className="relative rounded-full h-2.5 w-2.5 bg-cyan-300" />
-            </span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative h-9 w-9 shrink-0 rounded-full overflow-hidden border border-cyan-400/40 bg-[#03111e]">
+              <AriaAvatar
+                mode={presMode}
+                framing="portrait"
+                size={36}
+                thinking={stage === "thinking"}
+                speaking={stage === "streaming"}
+                alt={isAr ? "آريا" : "ARIA"}
+                className="!h-full !w-full"
+              />
+            </div>
             <div className="min-w-0">
               <div className="text-[13px] font-semibold text-cyan-100 truncate">
                 {isAr ? "آريا — المساعدة التنفيذية" : "ARIA — Executive Assistant"}
@@ -138,13 +151,32 @@ export default function AriaGlobalPanel({ onClose }: Props) {
               <div className="text-[11px] text-cyan-200/60 truncate">{introTitle}</div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            aria-label={isAr ? "إغلاق" : "Close"}
-            className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => togglePresentationMode()}
+              aria-label={
+                isAr
+                  ? presMode === "hologram"
+                    ? "تبديل إلى الوضع الرمزي"
+                    : "تبديل إلى الوضع الهولوجرامي"
+                  : presMode === "hologram"
+                    ? "Switch to orb mode"
+                    : "Switch to hologram mode"
+              }
+              title={presMode === "hologram" ? "Hologram → Orb" : "Orb → Hologram"}
+              className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
+            >
+              <Sparkles className="h-4 w-4" />
+            </button>
+            <button
+              onClick={onClose}
+              aria-label={isAr ? "إغلاق" : "Close"}
+              className="p-1.5 rounded-md text-cyan-200/80 hover:bg-cyan-400/10 hover:text-white transition"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* messages */}
@@ -178,35 +210,45 @@ export default function AriaGlobalPanel({ onClose }: Props) {
           )}
         </div>
 
-        {/* composer */}
+        {/* composer — glass bar, mic on trailing side, exact AR placeholder */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void send(draft);
           }}
-          className="border-t border-cyan-400/10 p-2.5 flex items-end gap-2"
+          className="border-t border-cyan-400/10 p-2.5"
         >
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void send(draft);
-              }
-            }}
-            rows={1}
-            placeholder={isAr ? "اسأل آريا عن هذه الصفحة…" : "Ask ARIA about this page…"}
-            className="flex-1 resize-none bg-[#04121F] border border-cyan-400/20 rounded-lg px-3 py-2 text-[13px] text-cyan-50 placeholder:text-cyan-200/40 focus:outline-none focus:ring-1 focus:ring-cyan-400/40 max-h-32"
-          />
-          <button
-            type="submit"
-            disabled={busy || !draft.trim()}
-            aria-label={isAr ? "إرسال" : "Send"}
-            className="shrink-0 h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 text-[#03111E] flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_16px_rgba(0,212,255,0.35)]"
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </button>
+          <div className="relative flex items-center gap-2 rounded-full border border-cyan-400/25 bg-[#04121F]/80 backdrop-blur-xl px-3 py-1.5 shadow-[0_0_18px_-6px_rgba(0,212,255,0.45)] focus-within:border-cyan-400/60 focus-within:shadow-[0_0_22px_-4px_rgba(0,212,255,0.6)] transition">
+            <button
+              type="submit"
+              disabled={busy || !draft.trim()}
+              aria-label={isAr ? "إرسال" : "Send"}
+              className="shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 text-[#03111E] flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_14px_rgba(0,212,255,0.4)]"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </button>
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void send(draft);
+                }
+              }}
+              rows={1}
+              dir="auto"
+              placeholder={isAr ? "كيف يمكنني مساعدتك اليوم؟" : "How can I help you today?"}
+              className="flex-1 resize-none bg-transparent border-0 outline-none px-1 py-1.5 text-[13px] text-cyan-50 placeholder:text-cyan-200/50 max-h-32 leading-6"
+            />
+            <span
+              aria-hidden
+              title={isAr ? "الميكروفون" : "Microphone"}
+              className="shrink-0 h-8 w-8 rounded-full border border-cyan-400/30 bg-[#061A2E]/70 text-cyan-200/80 flex items-center justify-center"
+            >
+              <Mic className="h-4 w-4" />
+            </span>
+          </div>
         </form>
       </div>
     </div>

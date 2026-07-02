@@ -12,6 +12,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Loader2, MessageSquare, Sparkles, User, Volume2, VolumeX, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
+import { AriaAvatar } from "@/components/aria/AriaAvatar";
+import { useAriaPresentationMode } from "@/lib/aria/presentation-mode";
 
 
 type AskResult = { text_ar: string; text_en: string };
@@ -51,6 +53,7 @@ function cleanForVoice(s: string) {
 
 export function MiniAriaHeroBadge() {
   const { locale } = useI18n();
+  const presMode = useAriaPresentationMode();
   const [open, setOpen] = useState(true);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
@@ -253,7 +256,15 @@ export function MiniAriaHeroBadge() {
           className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
           style={{ animation: "mab-core 3.2s ease-in-out infinite" }}
         >
-          <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
+          <AriaAvatar
+            mode={presMode}
+            framing="portrait"
+            size={48}
+            speaking={speaking}
+            thinking={loading}
+            alt="ARIA"
+            className="!h-full !w-full"
+          />
           {loading ? (
             <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
               <Loader2 className="h-5 w-5 animate-spin text-[#3AE8FF]" />
