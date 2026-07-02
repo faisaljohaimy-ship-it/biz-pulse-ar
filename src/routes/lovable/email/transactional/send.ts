@@ -115,6 +115,66 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
+        // Anti-abuse: any signed-in user must not be able to relay branded
+        // emails to arbitrary third parties. Allowed callers:
+        //   1. Templates with a fixed `to` (system notifications to owner).
+        //   2. Platform admins (via user_roles).
+        //   3. The caller sending to their own verified email address.
+        // Additionally enforce a per-user rate limit.
+        const isTemplateFixedRecipient = Boolean(template.to)
+        const callerEmail = (user.email ?? '').toLowerCase()
+        const recipientLower = effectiveRecipient.toLowerCase()
+        const isSelfSend = callerEmail && callerEmail === recipientLower
+
+        let isAdmin = false
+        if (!isTemplateFixedRecipient && !isSelfSend) {
+          const { data: adminRow } = await supabase
+            .from('user_roles')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle()
+          isAdmin = Boolean(adminRow)
+        }
+
+        if (!isTemplateFixedRecipient && !isSelfSend && !isAdmin) {
+          console.warn('Blocked email relay attempt', {
+            user_id: user.id,
+            recipient_redacted: redactEmail(effectiveRecipient),
+            templateName,
+          })
+          return Response.json(
+            { error: 'Forbidden: cannot send to arbitrary recipients' },
+            { status: 403 }
+          )
+        }
+
+        // Per-user rate limit (10 sends / 60s) for non-admin callers.
+        if (!isAdmin) {
+          const { data: allowed, error: rateErr } = await supabase.rpc(
+            'check_rate_limit',
+            {
+              _bucket_key: `email-send:${user.id}`,
+              _max_requests: 10,
+              _window_seconds: 60,
+            }
+          )
+          if (rateErr) {
+            console.error('Rate limit check failed — refusing to send', rateErr)
+            return Response.json(
+              { error: 'Rate limit check unavailable' },
+              { status: 503 }
+            )
+          }
+          if (!allowed) {
+            return Response.json(
+              { error: 'Rate limit exceeded', retry_after_seconds: 60 },
+              { status: 429, headers: { 'Retry-After': '60' } }
+            )
+          }
+        }
+
+
         // 2. Check suppression list (fail-closed: if we can't verify, don't send)
         const { data: suppressed, error: suppressionError } = await supabase
           .from('suppressed_emails')
