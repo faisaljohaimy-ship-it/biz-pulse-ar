@@ -20,6 +20,8 @@ import { useEffect, useRef } from "react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import ariaPoseListening from "@/assets/aria-pose-listening.png.asset.json";
 import ariaPoseSpeaking from "@/assets/aria-pose-speaking.png.asset.json";
+import { AriaAvatarV3 } from "./AriaAvatarV3";
+import { isAriaV3Enabled } from "@/lib/aria/feature-flags";
 
 export type AriaAvatarMode = "hologram" | "orb";
 export type AriaAvatarFraming = "portrait" | "full";
@@ -57,8 +59,11 @@ export function AriaAvatar({
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const reduced = prefersReducedMotion();
+  // v3 rig — decided from stable localStorage on mount, so ordering is stable.
+  const useV3 = mode === "hologram" && isAriaV3Enabled();
 
   useEffect(() => {
+    if (useV3) return;
     if (mode !== "hologram" || framing !== "portrait" || reduced) return;
     const cv = canvasRef.current;
     if (!cv) return;
@@ -131,7 +136,22 @@ export function AriaAvatar({
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
     };
-  }, [mode, framing, reduced]);
+  }, [useV3, mode, framing, reduced]);
+
+  // v3 rig takes over the hologram path when the flag is on.
+  if (useV3) {
+    return (
+      <AriaAvatarV3
+        framing={framing}
+        size={size}
+        speaking={speaking}
+        thinking={thinking}
+        listening={listening}
+        className={className}
+        alt={alt}
+      />
+    );
+  }
 
   // ORB MODE
   if (mode === "orb") {
