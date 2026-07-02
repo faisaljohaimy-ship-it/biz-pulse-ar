@@ -154,8 +154,49 @@ export function MissionControlStrip() {
 
   const loading = useDemo ? false : realLoading;
 
+  // Snapshot current KPI values for the briefing orchestrator.
+  const kpisRef = useRef({
+    risk_label: "",
+    critical_24h: 0,
+    mttr_min: 0,
+    resolution_pct: 0,
+    open_wo: 0,
+    preventive_wo: 0,
+    active_projects: 0,
+  });
+  useEffect(() => {
+    const critical = useDemo ? demo.criticalIncidents24h : (k?.incidents_critical ?? 0);
+    const openInc  = useDemo ? demo.openIncidents        : (k?.incidents_open ?? 0);
+    const compliancePct = useDemo ? demo.resolutionRate : (k?.incidents_resolution_rate ?? 0);
+    const label =
+      critical > 0
+        ? (ar ? "حرج" : "Critical")
+        : openInc > 5
+          ? (ar ? "متوسط" : "Elevated")
+          : (ar ? "منخفض" : "Low");
+    kpisRef.current = {
+      risk_label: useDemo ? riskLevelLabel(demo.riskLevelKey, ar) : label,
+      critical_24h: critical,
+      mttr_min: useDemo ? demo.mttrMin : (k?.mttr_minutes ?? 0),
+      resolution_pct: compliancePct,
+      open_wo: useDemo ? demo.openWorkOrders : (k?.wo_open ?? 0),
+      preventive_wo: useDemo ? demo.preventiveWo : (k?.preventive_wo ?? 0),
+      active_projects: useDemo ? demo.activeProjects : (k?.projects_in_progress ?? 0),
+    };
+  }, [k, useDemo, demo, ar]);
 
+  const brief = useBriefingState();
+  // Number of visible cards → 6 (lg) — spec allows a 4-KPI hero variant
+  // and a 7-KPI exec variant; the orchestrator handles both.
+  const mode = tiles.length >= 6 ? "exec" : "hero";
 
+  const handleStartBriefing = (): void => {
+    if (brief.active) {
+      briefing.stop();
+      return;
+    }
+    void briefing.start({ mode, ar, kpis: kpisRef.current });
+  };
 
   return (
     <section
@@ -170,6 +211,23 @@ export function MissionControlStrip() {
           <h2 className="text-base font-semibold text-white">{ar ? "نبض العمليات الحي" : "Live Operations Pulse"}</h2>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleStartBriefing}
+            aria-pressed={brief.active}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition backdrop-blur-md ${
+              brief.active
+                ? "border-rose-400/40 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20"
+                : "border-[color:var(--nx-cyan-2)]/50 bg-[color:var(--nx-cyan-2)]/10 text-white shadow-[0_0_18px_rgba(58,232,255,0.35)] hover:bg-[color:var(--nx-cyan-2)]/20"
+            }`}
+          >
+            <Mic className="h-3 w-3" aria-hidden />
+            <span>
+              {brief.active
+                ? ar ? "إيقاف الإحاطة" : "Stop briefing"
+                : ar ? "الإحاطة التنفيذية ▸" : "Executive Briefing ▸"}
+            </span>
+          </button>
           {useDemo && <DemoDataBadge />}
           <span
             className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
@@ -188,11 +246,35 @@ export function MissionControlStrip() {
           100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
         }
         .mcs-flash { animation: mcs-flash 900ms ease-out; border-radius: 14px; }
+        @keyframes mcs-brief-glow {
+          0%, 100% { box-shadow: 0 0 0 2px rgba(52,211,153,0.55), 0 0 26px rgba(52,211,153,0.35); }
+          50% { box-shadow: 0 0 0 3px rgba(52,211,153,0.9), 0 0 38px rgba(52,211,153,0.55); }
+        }
+        .mcs-brief-active {
+          animation: mcs-brief-glow 1.6s ease-in-out infinite;
+          border-radius: 14px;
+          transform: scale(1.03);
+          transition: transform 260ms ease-out, opacity 260ms ease-out;
+        }
+        .mcs-brief-dim { opacity: 0.55; transition: opacity 260ms ease-out; }
+        @media (prefers-reduced-motion: reduce) {
+          .mcs-brief-active {
+            animation: none;
+            transform: none;
+            box-shadow: 0 0 0 2px rgba(52,211,153,0.9);
+          }
+          .mcs-brief-dim { opacity: 0.85; }
+        }
       `}</style>
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
         {tiles.map((t) => (
-          <li key={t.key} className={flash === t.driftKey ? "mcs-flash" : undefined}>
+          <BriefingTile
+            key={t.key}
+            cardKey={t.key as CardKey}
+            flashActive={flash === t.driftKey}
+            briefingActive={brief.active}
+          >
             <KpiTile
               labelAr={t.labelAr}
               labelEn={t.labelEn}
@@ -201,12 +283,44 @@ export function MissionControlStrip() {
               tone={t.tone}
               loading={loading}
             />
-          </li>
+          </BriefingTile>
         ))}
       </ul>
     </section>
   );
 }
+
+function BriefingTile({
+  cardKey,
+  flashActive,
+  briefingActive,
+  children,
+}: {
+  cardKey: CardKey;
+  flashActive: boolean;
+  briefingActive: boolean;
+  children: React.ReactNode;
+}) {
+  const active = useBriefingHighlight(cardKey);
+  const liRef = useRef<HTMLLIElement | null>(null);
+  useEffect(() => {
+    if (!active || !liRef.current) return;
+    // Auto-scroll into view (RTL-aware handled by scrollIntoView automatically).
+    liRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+  }, [active]);
+  const cls = [
+    flashActive ? "mcs-flash" : "",
+    active ? "mcs-brief-active" : briefingActive ? "mcs-brief-dim" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return (
+    <li ref={liRef} className={cls || undefined}>
+      {children}
+    </li>
+  );
+}
+
 
 
 export default MissionControlStrip;
