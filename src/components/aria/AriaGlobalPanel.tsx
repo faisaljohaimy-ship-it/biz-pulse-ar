@@ -55,13 +55,21 @@ export default function AriaGlobalPanel({ onClose }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [turns.length, stage]);
 
+  const handleClose = useCallback(() => {
+    ariaVoice.clear();
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [handleClose]);
+
+  // Stop any audio when the panel unmounts (defence in depth).
+  useEffect(() => () => ariaVoice.clear(), []);
 
   const send = useCallback(async (text: string) => {
     const q = text.trim();
