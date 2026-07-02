@@ -463,12 +463,29 @@ export function GenesisHero({ onDone }: Props) {
     const hour = new Date().getUTCHours() + 3; // Riyadh UTC+3
     const preSunset = ((hour + 24) % 24) < 18;
 
-    // colour ramp
-    const COL = [
-      [0, 212, 255],   // cyan
-      [88, 148, 255],  // blue
-      [58, 232, 200],  // emerald
-    ];
+    // colour ramp — legacy v2 (cool) OR royal (teal/violet/gold aurora)
+    const COL = isRoyal
+      ? [
+          [45, 212, 191],  // soft teal
+          [139, 124, 246], // royal violet
+          [232, 201, 122], // champagne gold
+        ]
+      : [
+          [0, 212, 255],
+          [88, 148, 255],
+          [58, 232, 200],
+        ];
+
+    // Royal light-motes: 40 soft bokeh orbs drifting upward (deviceTier-scaled)
+    const moteCount = isRoyal ? (tier === "HIGH" ? 40 : tier === "MID" ? 28 : 16) : 0;
+    const motes = Array.from({ length: moteCount }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h + h * 0.2,
+      r: 4 + Math.random() * 8,
+      v: 0.15 + Math.random() * 0.35,
+      hue: Math.random(),
+      seed: Math.random() * 1000,
+    }));
 
     // Phase transition helper
     const setPh = (p: Phase) => { phaseRef.current = p; setPhase(p); };
@@ -481,6 +498,9 @@ export function GenesisHero({ onDone }: Props) {
       ariaStart: 6000, ariaEnd: 8000,
       conductStart: 8000, conductEnd: 11000,
     };
+
+    // Royal scanline sweep: one 800ms pass across ARIA silhouette
+    let scanStartedAt = 0;
 
     let wordAssigned = false, cityAssigned = false, ariaAssigned = false, spoken = false;
     let dissolving = 0;
