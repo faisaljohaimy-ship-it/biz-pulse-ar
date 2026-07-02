@@ -236,7 +236,7 @@ function ExecutiveReportsPage() {
               id: c.id, teamId: c.teamId, displayName: c.displayName, teamName: teamMap.get(c.teamId) ?? "",
             })),
           );
-        } else toast.error(isAr ? "تعذّر تحميل قنوات Teams" : "Failed to load Teams channels");
+        } else toast.error(isAr ? "تعذر الاتصال بقنوات Teams حاليًا، وسيتم إعادة المحاولة تلقائيًا دون التأثير على بقية النظام." : "Couldn't reach Teams channels right now — will retry automatically without affecting the rest of the system.");
         if (briefRes.status === "fulfilled" && briefRes.value.data) setBriefings(briefRes.value.data as Briefing[]);
       } finally {
         if (alive) setLoading(false);

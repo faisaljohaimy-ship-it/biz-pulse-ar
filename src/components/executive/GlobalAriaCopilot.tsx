@@ -1017,8 +1017,8 @@ export function GlobalAriaCopilot() {
             });
             if (!widgets.length) {
               notes.push(ar
-                ? "لا توجد مؤشرات مسجّلة على هذه الشاشة — قد تكون صفحة عرض فقط."
-                : "No live widgets registered on this screen — likely a display-only page.");
+                ? "لا توجد بيانات مباشرة في هذه الصفحة حاليًا، ويمكنني شرح محتواها أو اقتراح الإجراء التالي."
+                : "No live data on this page right now — I can explain its content or suggest the next action.");
             }
             if (kpis.length && emptyKpis.length === kpis.length) {
               notes.push(ar

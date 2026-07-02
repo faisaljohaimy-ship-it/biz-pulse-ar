@@ -952,7 +952,7 @@ function TeamsBroadcastModal({ ar, html, onClose }: { ar: boolean; html: string;
           </div>
         ) : channels.isError ? (
           <div className="rounded border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
-            {ar ? "تعذّر جلب قنوات Teams" : "Could not load Teams channels"}
+            {ar ? "تعذر الاتصال بقنوات Teams حاليًا، وسيتم إعادة المحاولة تلقائيًا دون التأثير على بقية النظام." : "Couldn't reach Teams channels right now — will retry automatically without affecting the rest of the system."}
           </div>
         ) : (
           <select
