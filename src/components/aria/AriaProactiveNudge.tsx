@@ -22,7 +22,8 @@ function saveSeen(s: Set<string>) {
  */
 export function AriaProactiveNudge() {
   const { breaches } = useKpiWatcher();
-  const { lang } = useI18n();
+  const { locale } = useI18n();
+  const lang: "ar" | "en" = locale === "ar" ? "ar" : "en";
   const [seen, setSeen] = useState<Set<string>>(() => loadSeen());
   const [active, setActive] = useState<string | null>(null);
 
