@@ -189,6 +189,7 @@ function RootComponent() {
                 <BetaMarqueeBar />
                 <Outlet />
                 <GlobalAriaCopilot />
+                <AriaLiveBriefing />
                 <DemoMotionOverlay />
                 <DemoAriaPresenter />
                 <PresentationLayer />
