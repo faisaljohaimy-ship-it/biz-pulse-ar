@@ -35,6 +35,8 @@ import {
   Mic,
   MicOff,
 } from "lucide-react";
+import { briefing } from "@/lib/aria/executive-briefing-orchestrator";
+
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
 import { ariaSessionMemory } from "@/lib/aria/session-memory";
@@ -111,10 +113,11 @@ const ROUTE_CTX: { match: (p: string) => boolean; ctx: PageCtx }[] = [
       label_ar: "الصفحة الرئيسية",
       label_en: "Home",
       prompts_ar: [
+        "أعطني إحاطة تنفيذية في ٣٠ ثانية",
         "أعطني ملخصاً تنفيذياً لـ نكسيوس.",
         "كيف يدعم النظام رؤية 2030؟",
-        "ما المميزات الرئيسية للمنصة؟",
       ],
+
       prompts_en: [
         "Give me a 30-second executive brief.",
         "How does NEXIOS support Vision 2030?",
@@ -700,11 +703,27 @@ export function GlobalAriaCopilot() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
+  const BRIEFING_TRIGGERS = [
+    "give me a 30-second executive brief.",
+    "give me a 30 second executive brief.",
+    "أعطني إحاطة تنفيذية في ٣٠ ثانية",
+    "أعطني إحاطة تنفيذية في 30 ثانية",
+  ];
+  const maybeStartBriefing = (prompt: string): boolean => {
+    const norm = prompt.trim().toLowerCase();
+    if (!BRIEFING_TRIGGERS.some((t) => norm === t.toLowerCase())) return false;
+    const { kpis, mode } = briefing.getLive();
+    if (!kpis) return false; // fall back to normal chat
+    void briefing.start({ mode, ar, kpis });
+    return true;
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    void ask(question);
+    if (!maybeStartBriefing(question)) void ask(question);
     setQuestion("");
   };
+
 
   if (!mounted || hideForAuthDock) return null;
 
@@ -920,7 +939,7 @@ export function GlobalAriaCopilot() {
                 <button
                   key={p}
                   type="button"
-                  onClick={() => void ask(p)}
+                  onClick={() => { if (!maybeStartBriefing(p)) void ask(p); }}
                   className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
                 >
                   {p}
@@ -937,7 +956,7 @@ export function GlobalAriaCopilot() {
                   <button
                     key={`fu-${p}`}
                     type="button"
-                    onClick={() => void ask(p)}
+                    onClick={() => { if (!maybeStartBriefing(p)) void ask(p); }}
                     className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/[0.06] px-2.5 py-1 text-[11px] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/15"
                   >
                     {p}
