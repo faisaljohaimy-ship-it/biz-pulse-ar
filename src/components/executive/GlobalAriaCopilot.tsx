@@ -32,6 +32,8 @@ import {
   Minus,
   X,
   ArrowRight,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
@@ -276,11 +278,17 @@ export function GlobalAriaCopilot() {
   const [pinned, setPinned] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
+  const [listening, setListening] = useState(false);
+  const [sttSupported, setSttSupported] = useState(false);
+  const [interimText, setInterimText] = useState("");
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const briefingFiredRef = useRef(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const recogRef = useRef<unknown>(null);
+  const askRef = useRef<((q: string) => void) | null>(null);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const persona = useMemo(() => resolvePersona(pathname), [pathname]);
@@ -402,6 +410,33 @@ export function GlobalAriaCopilot() {
     }
   }, [open]);
 
+  // Click-outside to minimize (respects pin).
+  useEffect(() => {
+    if (!open || pinned) return;
+    const onDown = (ev: MouseEvent | TouchEvent) => {
+      const el = panelRef.current;
+      if (!el) return;
+      const target = ev.target as Node | null;
+      if (target && !el.contains(target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [open, pinned]);
+
+  // Detect Web Speech API availability (browser-native STT, no backend).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
+    setSttSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+  }, []);
+
+
   const stopSpeaking = useCallback(() => {
     if (audioRef.current) {
       try { audioRef.current.pause(); } catch { /* noop */ }
@@ -434,6 +469,80 @@ export function GlobalAriaCopilot() {
       setSpeaking(false);
     }
   }, [stopSpeaking]);
+
+  // Voice input via Web Speech API. Graceful fallback: mic button hidden
+  // when unsupported; user still has full text input.
+  const stopListening = useCallback(() => {
+    const rec = recogRef.current as { stop?: () => void; abort?: () => void } | null;
+    try { rec?.stop?.(); } catch { /* noop */ }
+    recogRef.current = null;
+    setListening(false);
+    setInterimText("");
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as {
+      SpeechRecognition?: new () => unknown;
+      webkitSpeechRecognition?: new () => unknown;
+    };
+    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!Ctor) return;
+    // Natural interruption: stop any speaking playback while user talks.
+    stopSpeaking();
+    try {
+      const rec = new Ctor() as {
+        lang: string;
+        continuous: boolean;
+        interimResults: boolean;
+        maxAlternatives: number;
+        onresult: (e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void;
+        onerror: () => void;
+        onend: () => void;
+        start: () => void;
+        stop: () => void;
+      };
+      rec.lang = ar ? "ar-SA" : "en-US";
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+      let finalText = "";
+      rec.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i += 1) {
+          const seg = e.results[i];
+          const txt = seg[0]?.transcript ?? "";
+          if (seg.isFinal) finalText += txt;
+          else interim += txt;
+        }
+        setInterimText(interim);
+        if (interim) setQuestion(interim);
+      };
+      rec.onerror = () => {
+        setListening(false);
+        setInterimText("");
+        recogRef.current = null;
+      };
+      rec.onend = () => {
+        setListening(false);
+        setInterimText("");
+        recogRef.current = null;
+        const finalQ = (finalText || "").trim();
+        if (finalQ) {
+          setQuestion("");
+          const runner = askRef.current;
+          if (runner) void runner(finalQ);
+        }
+      };
+      recogRef.current = rec;
+      setListening(true);
+      rec.start();
+    } catch {
+      setListening(false);
+      recogRef.current = null;
+    }
+  }, [ar, stopSpeaking]);
+
 
   const ask = useCallback(async (q: string) => {
     const qt = q.trim();
@@ -524,6 +633,9 @@ export function GlobalAriaCopilot() {
       setLoading(false);
     }
   }, [ctx.label_en, pathname, voiceOn, speak, stopSpeaking, snap, persona]);
+
+  // Keep the STT closure pointed at the latest ask() reference.
+  useEffect(() => { askRef.current = ask; }, [ask]);
 
   // Executive Welcome — fires once per browser session when the platform opens.
   // Runs whether the dock is open or collapsed; if collapsed we surface a
@@ -627,13 +739,19 @@ export function GlobalAriaCopilot() {
         @keyframes gac-think { 0%,100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .9; } }
         @keyframes gac-speak { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
         @keyframes gac-halo { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes gac-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+        @keyframes gac-blink { 0%,92%,100% { transform: scaleY(0); opacity: 0; } 94%,98% { transform: scaleY(1); opacity: .55; } }
+        @keyframes gac-listen { 0%,100% { box-shadow: 0 0 0 0 rgba(255,88,120,0.55); } 50% { box-shadow: 0 0 0 10px rgba(255,88,120,0); } }
         @keyframes aria-focus-pulse-kf { 0% { box-shadow: 0 0 0 0 rgba(58,232,255,0.55); } 60% { box-shadow: 0 0 0 12px rgba(58,232,255,0); } 100% { box-shadow: 0 0 0 0 rgba(58,232,255,0); } }
         .aria-focus-pulse { animation: aria-focus-pulse-kf 1.4s ease-out 2; outline: 1px solid rgba(58,232,255,0.55); outline-offset: 2px; border-radius: inherit; transition: outline 200ms; }
+        .aria-avatar-breathe { animation: gac-breathe 4.2s ease-in-out infinite; }
+        .aria-avatar-blink { position: absolute; left: 12%; right: 12%; top: 38%; height: 6%; background: #04111F; border-radius: 4px; transform-origin: center; animation: gac-blink 5.4s ease-in-out infinite; pointer-events: none; }
       `}</style>
 
 
       {open && (
         <div
+          ref={panelRef}
           className="pointer-events-auto w-[min(420px,calc(100vw-1.5rem))] origin-bottom rounded-2xl border border-[#3AE8FF]/45 bg-[#061A2E]/95 p-3 shadow-[0_24px_80px_-12px_rgba(0,212,255,0.6)] backdrop-blur-xl animate-scale-in"
         >
           {/* Header */}
@@ -642,7 +760,15 @@ export function GlobalAriaCopilot() {
               className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border border-[#3AE8FF]/60 bg-[#04111F]"
               style={{ animation: "gac-pulse 3.2s ease-in-out infinite" }}
             >
-              <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
+              <img src={ariaHologram.url} alt="ARIA" className="aria-avatar-breathe absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
+              <span aria-hidden className="aria-avatar-blink" />
+              {listening && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-full"
+                  style={{ animation: "gac-listen 1.4s ease-out infinite" }}
+                />
+              )}
               {loading ? (
                 <span className="absolute inset-0 grid place-items-center bg-[#061A2E]/55 backdrop-blur-[1px]">
                   <Loader2 className="h-4 w-4 animate-spin text-[#3AE8FF]" />
@@ -857,6 +983,22 @@ export function GlobalAriaCopilot() {
               placeholder={ar ? "اكتب سؤالك لآريا…" : "Ask ARIA…"}
               className="min-h-[40px] max-h-[120px] flex-1 resize-none rounded-xl border border-[#3AE8FF]/30 bg-[#04111F]/70 px-3 py-2 text-[13px] text-white placeholder:text-white/40 focus:border-[#3AE8FF]/70 focus:outline-none"
             />
+            {sttSupported && (
+              <button
+                type="button"
+                onClick={() => (listening ? stopListening() : startListening())}
+                aria-pressed={listening}
+                aria-label={listening ? (ar ? "أوقف الاستماع" : "Stop listening") : (ar ? "تحدث لآريا" : "Talk to ARIA")}
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition ${
+                  listening
+                    ? "border-rose-400/70 bg-rose-500/20 text-rose-100 shadow-[0_0_20px_rgba(255,88,120,0.55)]"
+                    : "border-[#3AE8FF]/40 text-[#3AE8FF] hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/10"
+                }`}
+                style={listening ? { animation: "gac-listen 1.4s ease-out infinite" } : undefined}
+              >
+                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            )}
             <button
               type="submit"
               disabled={loading || !question.trim()}
@@ -866,6 +1008,11 @@ export function GlobalAriaCopilot() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </button>
           </form>
+          {listening && (
+            <div className="mt-1 text-[10.5px] uppercase tracking-[0.22em] text-rose-200/85" dir="auto">
+              {ar ? "جارٍ الاستماع…" : "Listening…"} {interimText && <span className="normal-case tracking-normal text-white/70">— {interimText}</span>}
+            </div>
+          )}
         </div>
       )}
 
