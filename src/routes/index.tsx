@@ -35,7 +35,7 @@ const PILLARS = [
 ] as const;
 
 function IntroLanding() {
-  const navigate = useNavigate();
+  // navigation handled via <Link> below
   const { locale } = useI18n();
   const ar = locale === "ar";
   const [bootDone, setBootDone] = useState(false);
