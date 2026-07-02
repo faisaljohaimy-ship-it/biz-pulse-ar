@@ -16,6 +16,17 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
+import {
+  emotionForSentence,
+  emotionForState,
+  emotionOverlay,
+  gestureForSentence,
+  gestureTransform,
+  attentionYaw,
+  splitSentences,
+  type AriaEmotion,
+  type AriaHeadGesture,
+} from "@/lib/aria/avatar-motion/emotion-director";
 
 interface Props {
   state: DigitalHumanState;
@@ -23,6 +34,16 @@ interface Props {
   size?: number;
   className?: string;
   ar?: boolean;
+  /** Current spoken text chunk — drives emotion director + semantic gestures. */
+  text?: string;
+  /** Explicit emotion override. When absent, derived from state + text. */
+  emotion?: AriaEmotion;
+  /** UI region she should attend to. Adds 2–3° yaw. */
+  attentionSide?: "left" | "right" | null;
+  /** Force greeting joy pulse for the current speaking chunk. */
+  greeting?: boolean;
+  /** Force concern (anomaly/risk sections). */
+  anomaly?: boolean;
 }
 
 type Palette = { core: string; glow: string; ring: string };
@@ -51,12 +72,76 @@ function paletteFor(state: DigitalHumanState): Palette {
   }
 }
 
-export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props) {
+export function HologramFace({ state, amp = 0, size = 72, className, ar, text, emotion, attentionSide = null, greeting, anomaly }: Props) {
   const speaking = state === "speaking";
   const thinking = state === "thinking" || state === "analyzing" || state === "searching" || state === "reading";
   const listening = state === "listening";
   const intensity = Math.min(1, Math.max(0, amp));
   const pal = paletteFor(state);
+
+  // ---- Emotion director ----------------------------------------------------
+  // If speaking with text, resolve per-sentence emotion + gesture; otherwise
+  // fall back to state-driven emotion.
+  const [activeEmotion, setActiveEmotion] = useState<AriaEmotion>("warm");
+  const [activeGesture, setActiveGesture] = useState<AriaHeadGesture>("none");
+  const [gestureP, setGestureP] = useState(0);
+  useEffect(() => {
+    if (emotion) { setActiveEmotion(emotion); return; }
+    if (speaking && text) {
+      const sentences = splitSentences(text);
+      const last = sentences[sentences.length - 1] ?? text;
+      setActiveEmotion(anomaly ? "concern" : emotionForSentence(last));
+      setActiveGesture(gestureForSentence(last));
+    } else {
+      setActiveEmotion(emotionForState(
+        speaking ? "speaking" : listening ? "listening" : thinking ? "thinking" : "idle",
+        { greeting, anomaly },
+      ));
+      setActiveGesture("none");
+    }
+  }, [text, emotion, speaking, listening, thinking, greeting, anomaly]);
+
+  // Drive gesture progress 0→1 over 350ms then reset
+  useEffect(() => {
+    if (activeGesture === "none") { setGestureP(0); return; }
+    const duration = activeGesture === "question-tilt" ? 900 : activeGesture === "double-nod" ? 620 : 350;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      setGestureP(p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setActiveGesture("none");
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [activeGesture]);
+
+  // ---- Living idle: value-noise micro-sway (±0.8°, 8s period) --------------
+  const [sway, setSway] = useState({ yaw: 0, roll: 0 });
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    // seeded pseudo-noise via layered sines — deterministic + cheap
+    const tick = (now: number) => {
+      const t = (now - start) / 1000;
+      const damp = listening ? 0.5 : 1;
+      const yaw = (Math.sin(t * 0.78) * 0.5 + Math.sin(t * 0.31 + 1.7) * 0.5) * 0.8 * damp;
+      const roll = (Math.sin(t * 0.44 + 0.9) * 0.5 + Math.sin(t * 0.19 + 2.3) * 0.5) * 0.8 * damp;
+      setSway({ yaw, roll });
+      raf = requestAnimationFrame(tick);
+    };
+    if (typeof window !== "undefined" && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      raf = requestAnimationFrame(tick);
+    }
+    return () => cancelAnimationFrame(raf);
+  }, [listening]);
+
+  const overlay = emotionOverlay(activeEmotion);
+  const yaw = sway.yaw + attentionYaw(attentionSide) + (listening ? 6 : 0);
+  const roll = sway.roll;
+  const gestureTx = gestureTransform(activeGesture, gestureP);
+
 
   // Eye tracking — track pointer within hosting hero area
   const rootRef = useRef<HTMLDivElement>(null);
@@ -161,9 +246,12 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props
       <div
         className="absolute inset-0 overflow-visible"
         style={{
-          transform: `translate3d(${headTx}px, ${headTy}px, 0) scale(${scale})`,
-          transition: "transform 220ms cubic-bezier(.22,.61,.36,1)",
-          filter: `drop-shadow(0 0 ${baseGlow}px ${pal.glow})`,
+          transformOrigin: "50% 92%", // neck pivot
+          transform:
+            `translate3d(${headTx}px, ${headTy}px, 0) scale(${scale}) ` +
+            `rotateY(${yaw}deg) rotateZ(${roll}deg) ${gestureTx}`,
+          transition: "transform 260ms cubic-bezier(.22,.61,.36,1), filter 260ms ease-out",
+          filter: `drop-shadow(0 0 ${baseGlow}px ${pal.glow}) drop-shadow(0 0 ${baseGlow * 0.6}px ${overlay.glow})`,
         }}
       >
         <img
@@ -172,11 +260,13 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar }: Props
           draggable={false}
           className="absolute inset-0 h-full w-full object-contain object-top"
           style={{
-            filter: thinking
-              ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"
-              : speaking
-                ? `brightness(${1 + intensity * 0.18}) saturate(${1.1 + intensity * 0.25})`
+            filter: [
+              thinking ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"
+                : speaking ? `brightness(${1 + intensity * 0.18}) saturate(${1.1 + intensity * 0.25})`
                 : "brightness(0.97)",
+              overlay.filter,
+            ].join(" "),
+            transition: "filter 260ms ease-out",
           }}
         />
 
