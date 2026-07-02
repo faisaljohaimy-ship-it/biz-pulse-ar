@@ -73,6 +73,12 @@ function IntroLanding() {
     console.info("NEXIOS build", BUILD_ID);
   }, []);
 
+  // Narrator auto-plays once per session after the intro breathes out.
+  useEffect(() => {
+    narrator.autoStartOnce(4200);
+  }, []);
+
+
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
