@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, ShieldCheck, Siren, Wrench, Bot } from "lucide-react";
+import { Activity, AlertTriangle, ShieldCheck, Siren, Wrench, Bot, Mic } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { KpiTile, type KpiTone } from "./KpiTile";
@@ -9,6 +9,13 @@ import { useI18n } from "@/lib/i18n";
 import { useDemoData } from "@/lib/demo/useDemoData";
 import { riskLevelLabel } from "@/lib/demo/demoDataProvider";
 import { DemoDataBadge } from "./DemoDataBadge";
+import {
+  briefing,
+  useBriefingHighlight,
+  useBriefingState,
+  type CardKey,
+} from "@/lib/aria/executive-briefing-orchestrator";
+
 
 
 
