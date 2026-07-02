@@ -18,6 +18,8 @@
  */
 import { useEffect, useRef } from "react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
+import ariaPoseListening from "@/assets/aria-pose-listening.png.asset.json";
+import ariaPoseSpeaking from "@/assets/aria-pose-speaking.png.asset.json";
 
 export type AriaAvatarMode = "hologram" | "orb";
 export type AriaAvatarFraming = "portrait" | "full";
