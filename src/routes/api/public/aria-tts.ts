@@ -15,6 +15,7 @@ import {
 const Input = z.object({
   text: z.string().trim().min(1).max(1200),
   voiceId: z.string().regex(/^[A-Za-z0-9_-]+$/).max(64).optional(),
+  lang: z.enum(["ar", "en"]).optional(),
 });
 
 const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"; // Sarah — bilingual AR/EN executive

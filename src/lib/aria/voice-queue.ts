@@ -125,16 +125,16 @@ class AriaVoiceQueue {
     this.setEnabled(!this.enabled);
   }
 
-  /** Feed a full answer; split into sentences and enqueue. */
-  feedText(text: string): void {
+  /** Feed a full answer; split into sentences and enqueue. `lang` overrides autodetect. */
+  feedText(text: string, langHint?: "ar" | "en"): void {
     if (!this.enabled || !text) return;
-    for (const s of splitSentences(text)) this.enqueue(s);
+    for (const s of splitSentences(text)) this.enqueue(s, langHint);
   }
 
-  enqueue(text: string): void {
+  enqueue(text: string, langHint?: "ar" | "en"): void {
     const t = text.trim();
     if (!t || !this.enabled) return;
-    const lang: "ar" | "en" = ARABIC_RANGE.test(t) ? "ar" : "en";
+    const lang: "ar" | "en" = langHint ?? (ARABIC_RANGE.test(t) ? "ar" : "en");
     this.queue.push({ id: this.nextId++, text: t, lang });
     if (!this.current && !this.paused) void this.playNext();
   }
@@ -154,7 +154,7 @@ class AriaVoiceQueue {
       const res = await fetch("/api/public/aria-tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: next.text }),
+        body: JSON.stringify({ text: next.text, lang: next.lang }),
       });
       if (!res.ok) throw new Error(`tts_${res.status}`);
       const blob = await res.blob();
