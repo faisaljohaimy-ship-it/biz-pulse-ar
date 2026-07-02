@@ -97,11 +97,15 @@ export function useSpeechRecognition(
       if (final) optsRef.current.onFinal?.(final.trim());
     };
     r.onerror = () => setListening(false);
+    r.onspeechstart = () => {
+      try { optsRef.current.onSpeechStart?.(); } catch { /* ignore */ }
+    };
     r.onend = () => {
       setListening(false);
       recRef.current = null;
     };
     recRef.current = r;
+
     try {
       r.start();
       setListening(true);
