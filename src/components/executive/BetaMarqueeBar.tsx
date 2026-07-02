@@ -62,9 +62,6 @@ export function BetaMarqueeBar() {
           ))}
         </div>
 
-        <div className="absolute right-3 z-20 flex items-center">
-          <LanguageToggle />
-        </div>
       </div>
     </div>
   );
