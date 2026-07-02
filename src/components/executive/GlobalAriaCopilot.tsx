@@ -826,7 +826,7 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => { stopSpeaking(); setOpen(false); }}
+              onClick={() => { cancelDemo(); setOpen(false); }}
               disabled={pinned}
               aria-label={ar ? "تصغير" : "Minimize"}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:border-white/50 hover:bg-white/5 disabled:opacity-30"
@@ -835,7 +835,7 @@ export function GlobalAriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => { stopSpeaking(); setOpen(false); setHidden(true); }}
+              onClick={() => { cancelDemo(); setOpen(false); setHidden(true); }}
               aria-label={ar ? "إخفاء" : "Hide"}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/20 text-white/70 transition hover:border-white/50 hover:bg-white/5"
             >
