@@ -16,7 +16,7 @@ import {
   Moon,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/executive/LanguageToggle";
+
 import { RuntimeTile } from "@/components/os/RuntimeTile";
 
 export const Route = createFileRoute("/os")({
@@ -115,13 +115,10 @@ function OsHub() {
       <div aria-hidden className="pointer-events-none absolute -top-40 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#00D4FF]/10 blur-[120px] motion-safe:animate-pulse" />
       <div aria-hidden className="pointer-events-none absolute -bottom-40 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#3AE8FF]/10 blur-[120px] motion-safe:animate-pulse" />
 
-      {/* Sticky top strip with language toggle */}
+      {/* Sticky top strip */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 px-4 pt-3 sm:px-6">
         <span className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 backdrop-blur">
           NEXIOS · OS
-        </span>
-        <span className="pointer-events-auto">
-          <LanguageToggle />
         </span>
       </div>
 
