@@ -24,14 +24,9 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ArrowUp,
   Loader2,
-  MessageSquare,
-  Sparkles,
-  User,
   Volume2,
   VolumeX,
-  Minus,
   X,
-  ArrowRight,
 } from "lucide-react";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSnapshot } from "@/lib/aria/context-engine";
@@ -47,7 +42,6 @@ import {
   stageFromElapsed,
   type ConversationStage,
 } from "@/lib/aria/conversation-stages";
-import { Pin, PinOff, EyeOff, Eye } from "lucide-react";
 
 // Executive demo script — 10 short Arabic sentences that ARIA narrates
 // automatically 60 seconds after the platform loads, once per session, so a
