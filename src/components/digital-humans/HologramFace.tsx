@@ -142,9 +142,6 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
   const roll = sway.roll;
   const gestureTx = gestureTransform(activeGesture, gestureP);
 
-  const listening = state === "listening";
-  const intensity = Math.min(1, Math.max(0, amp));
-  const pal = paletteFor(state);
 
   // Eye tracking — track pointer within hosting hero area
   const rootRef = useRef<HTMLDivElement>(null);
