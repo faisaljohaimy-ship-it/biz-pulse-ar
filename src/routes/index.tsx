@@ -93,6 +93,16 @@ function IntroLanding() {
 
       <ExecutiveHeroStage onEnterOps={() => navigate({ to: "/os" })} />
 
+      {/* Replay intro ghost button — hero corner (gesture unlocks audio) */}
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event("nexios:replay-intro"))}
+        className={`absolute top-4 z-30 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium tracking-wide text-white/70 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white ${ar ? "left-4" : "right-4"} ${bootDone ? "opacity-100" : "opacity-0"} duration-700`}
+        aria-label={ar ? "إعادة عرض الافتتاحية" : "Replay intro"}
+      >
+        {ar ? "إعادة العرض ▸" : "Replay intro ▸"}
+      </button>
+
       {/* Mini ARIA presence inside the hero */}
       <div className={`px-4 transition-opacity duration-700 ${bootDone ? "opacity-100" : "opacity-0"}`}>
         <MiniAriaHeroBadge />
