@@ -195,7 +195,9 @@ function RootComponent() {
                 <PresentationLayer />
                 <DemoModeHUD />
                 <AriaGlobalDock />
+                <ExecutiveBriefingBar />
                 <Toaster />
+
               </DemoModeProvider>
             </AriaContextProvider>
           </I18nProvider>
