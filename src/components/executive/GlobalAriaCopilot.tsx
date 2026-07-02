@@ -278,11 +278,16 @@ export function GlobalAriaCopilot() {
   const [pinned, setPinned] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [welcomeToast, setWelcomeToast] = useState<null | { ar: string; en: string }>(null);
+  const [listening, setListening] = useState(false);
+  const [sttSupported, setSttSupported] = useState(false);
+  const [interimText, setInterimText] = useState("");
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const briefingFiredRef = useRef(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const recogRef = useRef<unknown>(null);
 
   const ctx = useMemo(() => resolvePageCtx(pathname), [pathname]);
   const persona = useMemo(() => resolvePersona(pathname), [pathname]);
