@@ -71,12 +71,12 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
-      {/* Ambient executive aura — sits behind everything */}
+      {/* Futuristic AI background — neural mesh, particles, grid horizon */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
-        <AmbientAuraLayer intensity={0.85} />
+        <HeroAIBackground />
       </div>
 
-      {/* Deep midnight cyan backdrop — no holographic presence */}
+
 
       <AriaGenesis onComplete={() => setBootDone(true)} />
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
