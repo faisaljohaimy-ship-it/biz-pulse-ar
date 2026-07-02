@@ -1075,7 +1075,6 @@ export function GlobalAriaCopilot() {
                     onClick={() => { stopSpeaking(); void navigate({ to: a.to }); }}
                     className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/80 transition hover:border-[#3AE8FF]/60 hover:text-white"
                   >
-                    <ArrowRight className="h-3 w-3 rtl:rotate-180" />
                     {ar ? a.label_ar : a.label_en}
                   </button>
                 ))}
