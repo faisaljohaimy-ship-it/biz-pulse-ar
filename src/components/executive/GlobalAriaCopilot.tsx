@@ -746,6 +746,7 @@ export function GlobalAriaCopilot() {
 
       {open && (
         <div
+          ref={panelRef}
           className="pointer-events-auto w-[min(420px,calc(100vw-1.5rem))] origin-bottom rounded-2xl border border-[#3AE8FF]/45 bg-[#061A2E]/95 p-3 shadow-[0_24px_80px_-12px_rgba(0,212,255,0.6)] backdrop-blur-xl animate-scale-in"
         >
           {/* Header */}
