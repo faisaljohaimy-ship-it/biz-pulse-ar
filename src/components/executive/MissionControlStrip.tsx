@@ -162,18 +162,30 @@ export function MissionControlStrip() {
           </div>
           <h2 className="text-base font-semibold text-white">{ar ? "نبض العمليات الحي" : "Live Operations Pulse"}</h2>
         </div>
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
-          aria-live="polite"
-        >
-          <span className={`h-1.5 w-1.5 rounded-full ${q.isFetching ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`} aria-hidden />
-          {q.isFetching ? (ar ? "تحديث…" : "Updating…") : q.isError ? (ar ? "غير متصل" : "Offline") : (ar ? "حي" : "Live")}
-        </span>
+        <div className="flex items-center gap-2">
+          {useDemo && <DemoDataBadge />}
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
+            aria-live="polite"
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${q.isFetching ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`} aria-hidden />
+            {q.isFetching ? (ar ? "تحديث…" : "Updating…") : useDemo ? (ar ? "عرض توضيحي" : "Demo") : q.isError ? (ar ? "غير متصل" : "Offline") : (ar ? "حي" : "Live")}
+          </span>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes mcs-flash {
+          0% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+          20% { box-shadow: 0 0 0 4px rgba(52,211,153,0.55); }
+          100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+        }
+        .mcs-flash { animation: mcs-flash 900ms ease-out; border-radius: 14px; }
+      `}</style>
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
         {tiles.map((t) => (
-          <li key={t.key}>
+          <li key={t.key} className={flash === t.driftKey ? "mcs-flash" : undefined}>
             <KpiTile
               labelAr={t.labelAr}
               labelEn={t.labelEn}
@@ -188,5 +200,6 @@ export function MissionControlStrip() {
     </section>
   );
 }
+
 
 export default MissionControlStrip;
