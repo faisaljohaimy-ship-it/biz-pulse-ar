@@ -12,6 +12,7 @@ import { HeroAIBackground } from "@/components/cinematic/HeroAIBackground";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaCoreOrb } from "@/components/cinematic/AriaCoreOrb";
+import { AriaHeroPresence } from "@/components/cinematic/AriaHeroPresence";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
