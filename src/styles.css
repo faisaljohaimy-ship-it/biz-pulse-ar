@@ -867,3 +867,210 @@ html {
     scroll-behavior: auto !important;
   }
 }
+
+/* ================================================================
+   NEXIOS Cinema — Light Language Tokens (additive, shared)
+   ================================================================ */
+:root {
+  --nx-ease-cine: cubic-bezier(0.16, 1, 0.3, 1);
+  --nx-sweep-gradient: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(58, 232, 255, 0.06) 42%,
+    rgba(111, 255, 233, 0.28) 50%,
+    rgba(58, 232, 255, 0.06) 58%,
+    transparent 80%
+  );
+  --nx-glow: rgba(0, 212, 255, 0.45);
+  --nx-vignette:
+    radial-gradient(ellipse at center, transparent 55%, rgba(2, 8, 16, 0.55) 100%);
+}
+
+/* --- Route transition overlay --- */
+.nx-route-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+}
+.nx-route-overlay .nx-route-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 17, 31, 0.55);
+  opacity: 0;
+  transition: opacity 220ms var(--nx-ease-cine);
+}
+.nx-route-overlay .nx-route-sweep {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  width: 140%;
+  background: var(--nx-sweep-gradient);
+  filter: blur(2px);
+  transform: translateX(-120%) skewX(-8deg);
+  opacity: 0;
+}
+.nx-route-overlay[data-active="1"] { opacity: 1; }
+.nx-route-overlay[data-active="1"] .nx-route-dim { opacity: 1; }
+.nx-route-overlay[data-active="1"] .nx-route-sweep {
+  animation: nx-sweep-fwd 500ms var(--nx-ease-cine) forwards;
+  opacity: 1;
+}
+.nx-route-overlay[data-active="1"][data-dir="back"] .nx-route-sweep {
+  animation-name: nx-sweep-back;
+}
+@keyframes nx-sweep-fwd {
+  0%   { transform: translateX(120%) skewX(-8deg); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { transform: translateX(-120%) skewX(-8deg); opacity: 0; }
+}
+@keyframes nx-sweep-back {
+  0%   { transform: translateX(-120%) skewX(-8deg); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { transform: translateX(120%) skewX(-8deg); opacity: 0; }
+}
+
+/* Incoming view lift-in */
+.nx-route-content {
+  animation: nx-route-in 280ms var(--nx-ease-cine) both;
+}
+@keyframes nx-route-in {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+/* --- Scene wrapper --- */
+.nx-scene { position: relative; }
+.nx-scene-tag {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(215, 234, 244, 0.35);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+.nx-scene-reveal {
+  animation: nx-scene-reveal 700ms var(--nx-ease-cine) both;
+}
+.nx-scene-clip {
+  animation: nx-scene-clip 780ms var(--nx-ease-cine) both;
+}
+@keyframes nx-scene-reveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes nx-scene-clip {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+.nx-scene-heading-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.nx-scene-heading-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--nx-sweep-gradient);
+  transform: translateX(-120%) skewX(-10deg);
+  animation: nx-scene-heading-sweep 1400ms var(--nx-ease-cine) 250ms 1 forwards;
+  pointer-events: none;
+}
+@keyframes nx-scene-heading-sweep {
+  0%   { transform: translateX(-120%) skewX(-10deg); }
+  100% { transform: translateX(120%)  skewX(-10deg); }
+}
+.nx-scene-stagger > * {
+  animation: nx-stagger-in 520ms var(--nx-ease-cine) both;
+}
+.nx-scene-stagger > *:nth-child(1) { animation-delay: 70ms; }
+.nx-scene-stagger > *:nth-child(2) { animation-delay: 140ms; }
+.nx-scene-stagger > *:nth-child(3) { animation-delay: 210ms; }
+.nx-scene-stagger > *:nth-child(4) { animation-delay: 280ms; }
+.nx-scene-stagger > *:nth-child(5) { animation-delay: 350ms; }
+.nx-scene-stagger > *:nth-child(6) { animation-delay: 420ms; }
+.nx-scene-stagger > *:nth-child(n+7) { animation-delay: 490ms; }
+@keyframes nx-stagger-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Ambient breathing luminance --- */
+.nx-breathe { animation: nx-breathe 12s ease-in-out infinite; }
+@keyframes nx-breathe {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50%      { filter: brightness(1.03) saturate(1.04); }
+}
+
+/* --- Command Room power-up --- */
+.nx-powerup {
+  position: fixed; inset: 0; z-index: 65; pointer-events: none;
+  animation: nx-powerup-fade 2200ms var(--nx-ease-cine) forwards;
+}
+.nx-powerup .nx-powerup-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 20%, #02101e 85%);
+  animation: nx-powerup-vignette 900ms var(--nx-ease-cine) forwards;
+}
+.nx-powerup .nx-powerup-scan {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #6FFFE9 40%, #00D4FF 60%, transparent);
+  box-shadow: 0 0 24px rgba(111,255,233,0.75), 0 0 60px rgba(0,212,255,0.5);
+  top: 0;
+  animation: nx-powerup-scan 450ms var(--nx-ease-cine) 350ms forwards;
+  opacity: 0;
+}
+@keyframes nx-powerup-vignette {
+  0%   { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes nx-powerup-scan {
+  0%   { top: 0;    opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes nx-powerup-fade {
+  0%, 90% { opacity: 1; }
+  100%    { opacity: 0; visibility: hidden; }
+}
+
+/* --- Rolling digit --- */
+.nx-roll-digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  vertical-align: baseline;
+  line-height: 1;
+}
+.nx-roll-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform 620ms var(--nx-ease-cine);
+  will-change: transform;
+}
+.nx-roll-track > span {
+  height: 1em;
+  line-height: 1;
+}
+
+/* --- Reduced motion: instant cuts with 150ms fade --- */
+@media (prefers-reduced-motion: reduce) {
+  .nx-route-overlay,
+  .nx-route-overlay .nx-route-sweep,
+  .nx-scene-heading-sweep::after,
+  .nx-powerup .nx-powerup-scan,
+  .nx-powerup .nx-powerup-vignette { animation: none !important; }
+  .nx-route-content { animation: nx-route-in-fast 150ms linear both; }
+  .nx-scene-reveal, .nx-scene-clip { animation: nx-route-in-fast 150ms linear both; }
+  .nx-scene-stagger > * { animation: nx-route-in-fast 150ms linear both !important; animation-delay: 0 !important; }
+  .nx-breathe { animation: none; }
+  .nx-roll-track { transition: none; }
+}
+@keyframes nx-route-in-fast {
+  from { opacity: 0; } to { opacity: 1; }
+}
