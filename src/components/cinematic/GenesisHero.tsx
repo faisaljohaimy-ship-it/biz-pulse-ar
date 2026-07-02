@@ -824,11 +824,61 @@ export function GenesisHero({ onDone }: Props) {
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
+      {/* ROYAL: aurora vertical curtain — behind wordmark beat only */}
+      {isRoyal && (phase === "wordmark" || phase === "city") && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(45,212,191,0.10) 0%, rgba(139,124,246,0.14) 45%, rgba(232,201,122,0.10) 100%)",
+            filter: "blur(48px)",
+            opacity: 0.85,
+            animation: "nx-royal-aurora 14s ease-in-out infinite alternate",
+          }}
+        />
+      )}
+
+      {/* ROYAL: holo-rings — 3 concentric conic strokes counter-rotating */}
+      {isRoyal && (phase === "aria" || phase === "conduct") && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="relative" style={{ width: "min(72vmin,640px)", height: "min(72vmin,640px)" }}>
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="absolute inset-0 rounded-full"
+                style={{
+                  transform: `scale(${1 - i * 0.16})`,
+                  background:
+                    "conic-gradient(from 0deg, rgba(232,201,122,0) 0deg, rgba(232,201,122,0.55) 60deg, rgba(45,212,191,0.55) 180deg, rgba(139,124,246,0.55) 300deg, rgba(232,201,122,0) 360deg)",
+                  WebkitMask:
+                    "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
+                  mask:
+                    "radial-gradient(circle, transparent calc(50% - 1.5px), #000 calc(50% - 1.5px), #000 50%, transparent 50%)",
+                  opacity: 0.55,
+                  animation: `nx-royal-ring ${22 + i * 6}s linear infinite ${i % 2 === 0 ? "" : "reverse"}`,
+                }}
+              />
+            ))}
+            {/* Etched Arabic micro-glyphs on outer ring */}
+            <div
+              aria-hidden
+              className="absolute inset-0 flex items-center justify-center text-[10px] tracking-[0.6em] text-[#E8C97A]/60"
+              style={{ animation: "nx-royal-ring 40s linear infinite" }}
+            >
+              <span style={{ transform: "translateY(calc(-1 * min(34vmin, 300px)))" }}>
+                نبض · أمن · قيادة · رؤية
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ARIA reveal layer — only visible in aria/conduct phases */}
       {(phase === "aria" || phase === "conduct") && (
         <div className="pointer-events-none absolute inset-0 flex items-end justify-center pb-[8vh]">
           <div
-            className="transition-opacity duration-700"
+            className="relative transition-opacity duration-700"
             style={{
               opacity: phase === "aria" ? 0.85 : 1,
               width: "min(520px,60vw)",
@@ -836,8 +886,52 @@ export function GenesisHero({ onDone }: Props) {
             }}
           >
             <AriaAvatarV3 framing="full" />
+            {/* ROYAL: subtle gold rim-light pass over avatar */}
+            {isRoyal && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at 50% 35%, rgba(232,201,122,0.14) 0%, rgba(139,124,246,0.08) 45%, transparent 70%)",
+                  mixBlendMode: "screen",
+                  opacity: 0.75,
+                }}
+              />
+            )}
           </div>
         </div>
+      )}
+
+      {/* ROYAL: typed time-aware greeting (gold-tinted) beneath ARIA */}
+      {isRoyal && typedGreet && (phase === "aria" || phase === "conduct") && (
+        <div
+          className="pointer-events-none absolute inset-x-0 z-[5] flex justify-center px-6"
+          style={{ bottom: "calc(9vh - 8px)" }}
+        >
+          <p
+            dir={ar ? "rtl" : "ltr"}
+            className="max-w-[min(760px,90vw)] text-center text-[15px] leading-[1.6] tracking-wide sm:text-[17px]"
+            style={{
+              color: "#E8C97A",
+              textShadow: "0 0 22px rgba(232,201,122,0.35), 0 1px 0 rgba(0,0,0,0.6)",
+              fontFamily: ar
+                ? "'IBM Plex Sans Arabic','Cairo',ui-sans-serif,system-ui"
+                : "ui-sans-serif,system-ui,'Inter'",
+            }}
+          >
+            {typedGreet}
+            <span className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] bg-[#E8C97A]/80 align-middle" style={{ animation: "nx-royal-caret 1s steps(2,end) infinite" }} />
+          </p>
+        </div>
+      )}
+
+      {/* ROYAL: cinema letterbox bars (4vh) — retract with dissolve */}
+      {isRoyal && (
+        <>
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-[6] bg-[#0A0E14]" style={{ height: "4vh" }} />
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-[#0A0E14]" style={{ height: "4vh" }} />
+        </>
       )}
 
       {/* Gesture gate */}
