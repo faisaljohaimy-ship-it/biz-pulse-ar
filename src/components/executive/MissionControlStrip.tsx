@@ -233,8 +233,9 @@ export function MissionControlStrip() {
             <Mic className="h-3 w-3" aria-hidden />
             <span>
               {brief.active
-                ? ar ? "إيقاف الإحاطة" : "Stop briefing"
-                : ar ? "الإحاطة التنفيذية ▸" : "Executive Briefing ▸"}
+                ? ar ? G.briefing_stop.ar : G.briefing_stop.en
+                : ar ? G.briefing_button.ar : G.briefing_button.en}
+
             </span>
           </button>
           {useDemo && <DemoDataBadge />}
