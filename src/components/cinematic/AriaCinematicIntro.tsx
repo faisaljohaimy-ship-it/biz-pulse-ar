@@ -596,6 +596,40 @@ export function AriaCinematicIntro() {
         />
       </div>
 
+      {/* Begin CTA — gesture bridge that unlocks audio & triggers the sequence */}
+      {!started && (
+        <button
+          type="button"
+          onClick={beginExperience}
+          className="fixed left-1/2 z-20 -translate-x-1/2 rounded-full border px-6 py-3 text-sm font-medium tracking-wide transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+          style={{
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)",
+            color: "rgba(232,246,255,0.98)",
+            borderColor: "rgba(34,211,238,0.55)",
+            background: "rgba(6,26,46,0.62)",
+            backdropFilter: "blur(14px) saturate(140%)",
+            boxShadow: "0 8px 32px -8px rgba(0,212,255,0.55), inset 0 0 24px rgba(58,232,255,0.14)",
+            fontFamily: ar
+              ? "'IBM Plex Sans Arabic','Cairo',ui-sans-serif,system-ui"
+              : "'Space Grotesk','DM Sans',ui-sans-serif,system-ui",
+            animation: "aria-cta-glow 2.6s ease-in-out infinite",
+          }}
+        >
+          {ar ? "ابدأ التجربة ▸" : "Begin experience ▸"}
+        </button>
+      )}
+      {/* Fullscreen tap fallback — any tap before start unlocks audio + begins. */}
+      {!started && (
+        <button
+          type="button"
+          aria-hidden
+          tabIndex={-1}
+          onClick={beginExperience}
+          className="fixed inset-0 z-[5] cursor-pointer bg-transparent"
+        />
+      )}
+
+
       {/* Skip */}
       <button
         ref={skipRef}
