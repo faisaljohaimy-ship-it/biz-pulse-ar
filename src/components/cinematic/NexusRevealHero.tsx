@@ -113,24 +113,86 @@ export function NexusRevealHero({
           {t.status}
         </div>
 
-        {/* Decorative ARIA sigil — no duplicate assistant, purely visual */}
+        {/* ============================================================
+            ARIA — Executive Presence (Centerpiece)
+            The emotional anchor of the hero. Purely visual — the real
+            conversational ARIA lives in GlobalAriaCopilot + the
+            #aria-quick-ask badge below. Do NOT wire audio/mic here.
+        ============================================================ */}
         <div
           aria-hidden
-          className="relative mt-8 h-24 w-24 sm:h-28 sm:w-28"
-          style={{ animation: "nxh-fade 1100ms ease-out 120ms both" }}
+          className="relative mt-10 flex flex-col items-center"
+          style={{ animation: "nxh-fade 1400ms ease-out 120ms both" }}
         >
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.55)_0%,rgba(0,212,255,0)_70%)] blur-xl motion-safe:animate-pulse" />
-          <div className="absolute inset-3 rounded-full border border-[#3AE8FF]/40 bg-[radial-gradient(circle,rgba(58,232,255,0.35)_0%,rgba(6,26,46,0.7)_60%,transparent_100%)] shadow-[inset_0_0_40px_rgba(0,212,255,0.35),0_0_40px_rgba(0,212,255,0.25)]" />
-          <div className="absolute inset-0 flex items-center justify-center font-mono text-[10px] uppercase tracking-[0.32em] text-[#BEEBFF]">
-            ARIA
+          {/* Volumetric halo + rim glow */}
+          <div className="relative flex h-56 w-56 items-center justify-center sm:h-72 sm:w-72">
+            <div className="absolute h-56 w-56 rounded-full bg-[#00D4FF]/10 blur-[80px] motion-safe:animate-[nxh-breath_5s_ease-in-out_infinite] sm:h-72 sm:w-72" />
+            <div className="absolute h-40 w-72 rotate-12 rounded-full bg-[#3AE8FF]/[0.06] blur-[46px] motion-reduce:hidden sm:h-48 sm:w-96" />
+
+            {/* Breathing outer rings */}
+            <div className="absolute inset-4 rounded-full border border-[#3AE8FF]/25 motion-safe:animate-[nxh-ring_4.5s_ease-in-out_infinite]" />
+            <div className="absolute inset-0 rounded-full border border-white/10" />
+            <div className="absolute inset-8 rounded-full border border-[#3AE8FF]/15 motion-safe:animate-[nxh-ring_4.5s_ease-in-out_1.5s_infinite]" />
+
+            {/* Glass executive core */}
+            <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-white/[0.18] via-[#3AE8FF]/[0.08] to-transparent shadow-[0_0_60px_rgba(0,212,255,0.35),inset_0_0_40px_rgba(58,232,255,0.20)] backdrop-blur-xl sm:h-52 sm:w-52">
+              {/* Inner luminous chamber */}
+              <div className="relative flex h-28 w-28 items-end justify-center overflow-hidden rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(58,232,255,0.35)_0%,rgba(6,26,46,0.85)_65%,#02060F_100%)] shadow-[inset_0_0_25px_rgba(255,255,255,0.14)] sm:h-36 sm:w-36">
+                {/* Streaming particle lines (behind silhouette) */}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-around px-3 motion-reduce:hidden">
+                  {[
+                    { d: 2.1, delay: 0.2, h: "h-6",  o: "bg-[#3AE8FF]/40" },
+                    { d: 1.8, delay: 0.7, h: "h-9",  o: "bg-[#3AE8FF]/60" },
+                    { d: 2.5, delay: 0.4, h: "h-5",  o: "bg-[#3AE8FF]/30" },
+                    { d: 2.2, delay: 1.1, h: "h-10", o: "bg-[#3AE8FF]/55" },
+                    { d: 1.9, delay: 0.1, h: "h-7",  o: "bg-[#3AE8FF]/40" },
+                  ].map((p, i) => (
+                    <span
+                      key={i}
+                      className={`block w-px ${p.h} ${p.o} rounded-full`}
+                      style={{
+                        animation: `nxh-stream ${p.d}s linear ${p.delay}s infinite`,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Executive silhouette */}
+                <svg
+                  className="relative z-10 mb-2 h-14 w-14 translate-y-1 text-[#DFF6FF]/70 drop-shadow-[0_0_14px_rgba(58,232,255,0.55)] sm:h-16 sm:w-16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 4a4 4 0 100 8 4 4 0 000-8zM4 18c0-2.2 3.6-4 8-4s8 1.8 8 4v2H4v-2z" />
+                </svg>
+
+                {/* Vertical pulse (voice-line vibe) */}
+                <div className="absolute inset-0 z-20 flex items-center justify-center motion-reduce:hidden">
+                  <div className="h-12 w-px bg-[#3AE8FF]/70 blur-[1px] motion-safe:animate-[nxh-pulse_1.6s_ease-in-out_infinite]" />
+                </div>
+              </div>
+
+              {/* Highlight speck */}
+              <div className="absolute -top-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-white shadow-[0_0_12px_#fff]" />
+            </div>
+          </div>
+
+          {/* ARIA nameplate */}
+          <div className="mt-6 flex flex-col items-center">
+            <h2 className="text-3xl font-extralight uppercase tracking-[0.35em] text-white sm:text-4xl">
+              {ar ? "آريا" : "ARIA"}
+            </h2>
+            <p className="mt-2 text-[10px] uppercase tracking-[0.4em] text-[#3AE8FF]/75 sm:tracking-[0.5em]">
+              {ar ? "الذكاء التنفيذي" : "Executive Intelligence"}
+            </p>
           </div>
         </div>
 
-        {/* Wordmark */}
+        {/* Subordinate NEXIOS wordmark — ARIA leads, NEXIOS supports */}
         <div
-          className="mt-8 bg-gradient-to-b from-white via-[#DFF6FF] to-[#3AE8FF] bg-clip-text text-[14vw] font-semibold leading-[0.92] tracking-[-0.045em] text-transparent sm:text-8xl lg:text-9xl"
+          className="mt-10 bg-gradient-to-b from-white via-[#DFF6FF] to-[#3AE8FF] bg-clip-text text-[10vw] font-semibold leading-[0.92] tracking-[-0.045em] text-transparent sm:text-7xl lg:text-8xl"
           style={{
-            animation: "nxh-lockup 1200ms cubic-bezier(.22,.61,.36,1) both",
+            animation: "nxh-lockup 1200ms cubic-bezier(.22,.61,.36,1) 400ms both",
             fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
             textShadow: "0 0 60px rgba(0,212,255,0.25)",
           }}
@@ -139,14 +201,15 @@ export function NexusRevealHero({
         </div>
         <div
           className="mt-2 text-[11px] uppercase tracking-[0.5em] text-white/60 sm:text-xs sm:tracking-[0.6em]"
-          style={{ animation: "nxh-fade 900ms ease-out 700ms both" }}
+          style={{ animation: "nxh-fade 900ms ease-out 900ms both" }}
         >
           AI · OS
         </div>
         <div
           className="mx-auto mt-5 h-px w-32 bg-gradient-to-r from-transparent via-[#3AE8FF]/70 to-transparent sm:w-40"
-          style={{ animation: "nxh-line 900ms ease-out 500ms both" }}
+          style={{ animation: "nxh-line 900ms ease-out 700ms both" }}
         />
+
 
         {/* Headline */}
         <h1
