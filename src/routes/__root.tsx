@@ -26,6 +26,8 @@ import { PresentationLayer } from "@/components/executive/presentation/Presentat
 import { AriaGlobalDock } from "@/components/aria/AriaGlobalDock";
 import { ExecutiveBriefingBar } from "@/components/aria/ExecutiveBriefingBar";
 import { OfflineBanner } from "@/components/system/OfflineBanner";
+import { KpiWatcherProvider } from "@/lib/aria/kpi-watcher";
+import { AriaProactiveNudge } from "@/components/aria/AriaProactiveNudge";
 
 
 function BrandedBackdrop({ children }: { children: React.ReactNode }) {
