@@ -30,6 +30,7 @@ import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
 import { Route as ExecPreviewRouteImport } from './routes/exec-preview'
+import { Route as ExecRouteImport } from './routes/exec'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoVideosRouteImport } from './routes/demo-videos'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -266,6 +267,11 @@ const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
 const ExecPreviewRoute = ExecPreviewRouteImport.update({
   id: '/exec-preview',
   path: '/exec-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecRoute = ExecRouteImport.update({
+  id: '/exec',
+  path: '/exec',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DpaRoute = DpaRouteImport.update({
@@ -982,6 +988,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec': typeof ExecRoute
   '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
@@ -1136,6 +1143,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec': typeof ExecRoute
   '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
@@ -1291,6 +1299,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
+  '/exec': typeof ExecRoute
   '/exec-preview': typeof ExecPreviewRoute
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
@@ -1447,6 +1456,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec'
     | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
@@ -1601,6 +1611,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec'
     | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
@@ -1755,6 +1766,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/demo-videos'
     | '/dpa'
+    | '/exec'
     | '/exec-preview'
     | '/executive-booking'
     | '/executive-briefing'
@@ -1911,6 +1923,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
+  ExecRoute: typeof ExecRoute
   ExecPreviewRoute: typeof ExecPreviewRoute
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
@@ -2108,6 +2121,13 @@ declare module '@tanstack/react-router' {
       path: '/exec-preview'
       fullPath: '/exec-preview'
       preLoaderRoute: typeof ExecPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exec': {
+      id: '/exec'
+      path: '/exec'
+      fullPath: '/exec'
+      preLoaderRoute: typeof ExecRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dpa': {
@@ -3265,6 +3285,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
+  ExecRoute: ExecRoute,
   ExecPreviewRoute: ExecPreviewRoute,
   ExecutiveBookingRoute: ExecutiveBookingRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
