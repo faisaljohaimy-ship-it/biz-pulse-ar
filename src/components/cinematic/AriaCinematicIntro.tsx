@@ -41,10 +41,24 @@ export function AriaCinematicIntro() {
   const [typed, setTyped] = useState(0);
   const [avatarIn, setAvatarIn] = useState(false);
   const [dissolving, setDissolving] = useState(false);
+  const voice = useAriaVoice();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const skipRef = useRef<HTMLButtonElement | null>(null);
   const liveRef = useRef<HTMLDivElement | null>(null);
   const timersRef = useRef<number[]>([]);
+  const spokeRef = useRef(false);
+
+  // Speak greeting when the greet phase starts; the queue silently
+  // records autoplay-blocked so the chip below can offer a tap.
+  useEffect(() => {
+    if (phase !== "greet" || spokeRef.current) return;
+    if (!ariaVoice.isEnabled()) return;
+    spokeRef.current = true;
+    ariaVoice.enqueue(greeting);
+  }, [phase, greeting]);
+
+  // Ensure audio never survives the intro.
+  useEffect(() => () => ariaVoice.clear(), []);
 
   const finish = () => {
     try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
