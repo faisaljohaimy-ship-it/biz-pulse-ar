@@ -11,6 +11,7 @@ import { AlertTriangle, GraduationCap, Sparkles, Target, MessageSquare, Award, P
 import { useI18n } from "@/lib/i18n";
 import { getLesson } from "@/lib/learn/lessons.functions";
 import { LessonVideo } from "@/components/learn/LessonVideo";
+import { LessonCinematicHero } from "@/components/learn/LessonCinematicHero";
 import { LessonNarration } from "@/components/learn/LessonNarration";
 import { LessonSimulation } from "@/components/learn/LessonSimulation";
 import { LessonARIAChat } from "@/components/learn/LessonARIAChat";
@@ -128,9 +129,12 @@ function LessonPage() {
               poster={lesson.cover_url}
             />
           ) : (
-            <div className="aspect-video rounded-3xl border border-white/10 bg-white/[0.02] grid place-items-center text-white/40">
-              <Play className="h-10 w-10" />
-            </div>
+            <LessonCinematicHero
+              title={title}
+              subtitle={subtitle}
+              order={lesson.order_index}
+              lang={ar ? "ar" : "en"}
+            />
           )}
 
           {/* Summary + narration */}
