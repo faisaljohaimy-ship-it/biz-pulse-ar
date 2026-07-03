@@ -65,7 +65,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
       supabase.from("profiles").select("user_id, display_name, avatar_url").eq("user_id", userId).maybeSingle(),
       supabase
         .from("org_members")
-        .select("role, org_id, organizations:org_id(id, name, region)")
+        .select("role, org_id, organizations:org_id(id, name)")
         .eq("user_id", userId)
         .order("joined_at", { ascending: true })
         .limit(1)
