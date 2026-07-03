@@ -49,8 +49,9 @@ describe("tool-registry.server", () => {
       const parse = tool!.input.safeParse({ table: "sec_incidents" });
       expect(parse.success).toBe(true);
       if (parse.success) {
-        expect(parse.data.columns).toEqual(["*"]);
-        expect(parse.data.limit).toBe(50);
+        const data = parse.data as { columns: string[]; limit: number };
+        expect(data.columns).toEqual(["*"]);
+        expect(data.limit).toBe(50);
       }
     });
 
