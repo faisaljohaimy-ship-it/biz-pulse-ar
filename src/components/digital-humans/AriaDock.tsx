@@ -36,6 +36,26 @@ import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gat
 import { HologramFace } from "@/components/digital-humans/HologramFace";
 import { AriaStatusStrip } from "@/components/digital-humans/AriaStatusStrip";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
+import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+
+/** Strip markdown / emoji so TTS reads clean prose. */
+function stripForSpeech(input: string): string {
+  return input
+    // fenced + inline code
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    // images and links → keep label
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    // emphasis, headings, blockquotes, list bullets
+    .replace(/[*_~#>]+/g, " ")
+    .replace(/^\s*[-•·]\s+/gm, "")
+    // emoji + pictographic symbols
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 
 
 
