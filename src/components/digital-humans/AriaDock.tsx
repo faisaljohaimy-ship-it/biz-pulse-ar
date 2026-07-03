@@ -428,7 +428,12 @@ export function AriaDock() {
     setTypedQuestion("");
     setTypedLoading(true);
     setTypedError(null);
-    setVoiceOn(true);
+    // Barge-in: cut any prior ARIA voice the moment the user sends again.
+    ariaSpeech.stop();
+    // Route reply audio exclusively through useAriaSpeech (ElevenLabs → browser fallback).
+    // Silencing the internal queue speaker prevents double-voicing while keeping the
+    // visual pulse animation via the silent-narration path in playNext().
+    setVoiceOn(false);
     handleRef.current?.stop();
     handleRef.current = null;
     queueRef.current = [];
@@ -436,9 +441,6 @@ export function AriaDock() {
     setState("thinking");
     try {
       const lang = /[\u0600-\u06FF]/.test(q) ? "ar" : "en";
-      // Attach the ARIA Global Context Engine snapshot so the model can
-      // ground its answer in the current page, KPIs, filters, and recent
-      // conversation.
       const w = window as unknown as {
         __aria_context?: {
           get: () => {
@@ -477,6 +479,8 @@ export function AriaDock() {
         text_en,
         speaker: ARIA,
       });
+      // Speak the reply aloud (barge-in-safe, mute-aware, fallback-safe).
+      void ariaSpeech.speak(stripForSpeech(lang === "ar" ? text_ar : text_en));
     } catch {
       setState("idle");
       setTypedError(ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
@@ -485,7 +489,8 @@ export function AriaDock() {
     }
   };
 
-  useEffect(() => () => handleRef.current?.stop(), []);
+  useEffect(() => () => { handleRef.current?.stop(); ariaSpeech.stop(); }, [ariaSpeech]);
+
 
   // Reveal the dock UI once the opening welcome line has finished playing.
   // Until then ARIA's voice is heard but no avatar / transcript is shown,
