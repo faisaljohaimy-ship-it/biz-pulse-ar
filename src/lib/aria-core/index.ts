@@ -85,6 +85,11 @@ export { conversationAnimation } from "./core/conversation-animation";
 export { thinkingAnimation } from "./core/thinking-animation";
 export { executionAnimation } from "./core/execution-animation";
 export { executivePresence } from "./core/executive-presence";
+export { avatarLifecycle } from "./core/avatar-lifecycle";
+export { avatarScheduler } from "./core/avatar-scheduler";
+export { avatarVoiceSync } from "./core/avatar-voice-sync";
+export { avatarTelemetry } from "./core/avatar-telemetry";
+export type { TelemetrySnapshot } from "./core/avatar-telemetry";
 export type { PresenceSnapshot, PresenceLevel, PresenceGlow } from "./core/executive-presence";
 
 export type {
