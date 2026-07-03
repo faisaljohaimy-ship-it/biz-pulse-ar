@@ -62,7 +62,8 @@ export const uploadReportToSharePoint = createServerFn({ method: "POST" })
       }),
     ),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const bin = Buffer.from(data.base64, "base64");
     const safeName = data.filename.replace(/[/\\]/g, "_");
     const uploadPath = `/sites/${encodeURIComponent(data.siteId)}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(safeName)}:/content`;
