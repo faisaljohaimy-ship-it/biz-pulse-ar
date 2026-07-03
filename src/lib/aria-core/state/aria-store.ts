@@ -53,6 +53,7 @@ export const useAriaStore = create<AriaState>((set, get) => ({
   pageContext: null,
   activeTurn: null,
   activeEnvelope: null,
+  activeExecution: null,
   pendingCommands: [],
 
   setMode: (mode) => set({ mode }),
