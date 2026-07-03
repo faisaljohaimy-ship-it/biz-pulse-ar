@@ -21,14 +21,25 @@ export function AriaSystemBackdrop() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [mode, setMode] = useState<"video" | "still">("still");
   const [voiceOn, setVoiceOn] = useState(false);
+  // Mobile crash guard: on ≤768px viewports never load the greeting video or
+  // the large hologram still — lightweight glow only. `null` = unknown yet.
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Init: decide mode + hydrate voice pref
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || isMobile !== false) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!reduced && sessionStorage.getItem(KEY) !== "1") setMode("video");
     try { setVoiceOn(localStorage.getItem(VOICE_KEY) === "1"); } catch { /* noop */ }
-  }, []);
+  }, [isMobile]);
 
   // Greeting playback lifecycle
   useEffect(() => {
