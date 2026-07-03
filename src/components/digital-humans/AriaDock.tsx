@@ -560,8 +560,21 @@ export function AriaDock() {
             onSpeechError={handleHeygenErr}
           />
         ) : (
-          <HologramFace state={state} amp={amp} size={minimized ? 36 : 144} ar={ar} />
+          <div className="relative">
+            {ariaSpeech.speaking && !ariaSpeech.muted && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-full animate-pulse"
+                style={{
+                  boxShadow:
+                    "0 0 32px 6px rgba(58,232,255,0.55), inset 0 0 22px rgba(0,212,255,0.35)",
+                }}
+              />
+            )}
+            <HologramFace state={state} amp={amp} size={minimized ? 36 : 144} ar={ar} />
+          </div>
         )}
+
         {!minimized && (
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
