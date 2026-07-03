@@ -1,17 +1,26 @@
+import { useAriaPresenceState } from "@/lib/aria/aria-state";
+
 /**
  * AriaBackdrop — STATIC full-figure ARIA presence behind the hero UI.
  * No video. No audio. No AudioContext. Safe on mobile Safari.
- * Only motion: cheap CSS breathing (transform/filter) already defined in styles.
- * Always aria-hidden + pointer-events-none — never intercepts a tap or focus.
+ * State-driven CSS only (transform / opacity / filter):
+ *   idle      → slow breathing + soft glow
+ *   listening → emerald ring, gentle glow pulse
+ *   thinking  → subtle shimmer sweep
+ *   speaking  → rhythmic glow pulse
+ * Always aria-hidden + pointer-events-none.
  */
 export function AriaBackdrop() {
+  const state = useAriaPresenceState();
+
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      data-aria-state={state}
+      className="aria-presence pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
       {/* ARIA figure — centered, full height, top-anchored so face never crops */}
-      <div className="absolute left-1/2 top-0 h-full w-[min(110%,900px)] -translate-x-1/2 animate-aria-breathe">
+      <div className="aria-figure absolute left-1/2 top-0 h-full w-[min(110%,900px)] -translate-x-1/2">
         <img
           src="/aria.jpg"
           alt=""
@@ -20,16 +29,13 @@ export function AriaBackdrop() {
           decoding="async"
           className="h-full w-full select-none object-contain object-top opacity-[0.32]"
         />
+        {/* Shimmer sweep — visible only in 'thinking' state via CSS */}
+        <div className="aria-shimmer" aria-hidden />
       </div>
 
-      {/* Soft cyan life-glow behind her */}
+      {/* Cyan life-glow — pulses per state */}
       <div
-        className="absolute left-1/2 top-1/2 h-[80vmin] w-[80vmin] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(0,212,255,0.22) 0%, rgba(58,232,255,0.08) 45%, transparent 72%)",
-          filter: "blur(30px)",
-        }}
+        className="aria-glow absolute left-1/2 top-1/2 h-[80vmin] w-[80vmin] -translate-x-1/2 -translate-y-1/2 rounded-full"
       />
 
       {/* Readability scrims — UI must always win */}

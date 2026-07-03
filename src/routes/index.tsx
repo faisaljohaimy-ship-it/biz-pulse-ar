@@ -13,7 +13,7 @@ import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaHeroPresence } from "@/components/cinematic/AriaHeroPresence";
 import { AriaBackdrop } from "@/components/aria/AriaBackdrop";
-import { AriaHeroGreeting } from "@/components/aria/AriaHeroGreeting";
+
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";

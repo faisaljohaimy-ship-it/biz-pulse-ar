@@ -51,27 +51,8 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
     onSegmentChange?.(active ?? null);
   }, [activeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Speak each segment exactly once.
-  useEffect(() => {
-    if (muted || paused) return;
-    if (!active) return;
-    if (spokenRef.current.has(activeIndex)) return;
-    spokenRef.current.add(activeIndex);
-    const text = ar ? active.text_ar : active.text_en;
-    (async () => {
-      try {
-        const res = await ariaSpeak({ data: { text, voice: "alloy" } });
-        if (muted) return;
-        const audio = new Audio(`data:${res.mime};base64,${res.audio_base64}`);
-        audioRef.current?.pause();
-        audioRef.current = audio;
-        audio.play().catch(() => {});
-      } catch {
-        /* TTS optional — segments remain visible without voice. */
-      }
-    })();
-  }, [activeIndex, muted, paused]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // Audio removed site-wide — ARIA (chat panel) is the only voice.
+  // Segment progression still runs; narration is text-only.
   useEffect(() => {
     return () => {
       audioRef.current?.pause();

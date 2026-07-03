@@ -666,3 +666,79 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
 }
 .animate-aria-sys-breathe { animation: aria-sys-breathe 8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .animate-aria-sys-breathe { animation: none; } }
+
+/* ═══ ARIA presence — state-driven CSS (no video, no audio, no canvas) ═══ */
+.aria-presence .aria-figure {
+  transform-origin: 50% 50%;
+  animation: aria-idle-breathe 8s ease-in-out infinite;
+  will-change: transform, filter;
+}
+.aria-presence .aria-glow {
+  background: radial-gradient(circle, rgba(0,212,255,0.22) 0%, rgba(58,232,255,0.08) 45%, transparent 72%);
+  filter: blur(30px);
+  transition: background 400ms ease, transform 400ms ease;
+  animation: aria-glow-idle 8s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+.aria-presence .aria-shimmer {
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(58,232,255,0.14) 50%, transparent 60%);
+  opacity: 0; pointer-events: none; mix-blend-mode: screen;
+}
+
+/* Listening — user typing / mic hot: emerald ring + gentle glow pulse */
+.aria-presence[data-aria-state="listening"] .aria-glow {
+  background: radial-gradient(circle, rgba(52,211,153,0.28) 0%, rgba(52,211,153,0.10) 45%, transparent 72%);
+  animation: aria-glow-listen 1.8s ease-in-out infinite;
+}
+/* Thinking — subtle shimmer sweep */
+.aria-presence[data-aria-state="thinking"] .aria-shimmer {
+  animation: aria-shimmer-sweep 2.4s linear infinite;
+}
+.aria-presence[data-aria-state="thinking"] .aria-glow {
+  animation: aria-glow-think 3s ease-in-out infinite;
+}
+/* Speaking — rhythmic glow pulse synced to speech */
+.aria-presence[data-aria-state="speaking"] .aria-glow {
+  background: radial-gradient(circle, rgba(0,212,255,0.32) 0%, rgba(58,232,255,0.12) 45%, transparent 72%);
+  animation: aria-glow-speak 620ms ease-in-out infinite;
+}
+.aria-presence[data-aria-state="speaking"] .aria-figure {
+  animation: aria-figure-speak 620ms ease-in-out infinite;
+}
+
+@keyframes aria-idle-breathe {
+  0%,100% { transform: scale(1); filter: brightness(1); }
+  50%     { transform: scale(1.014); filter: brightness(1.06); }
+}
+@keyframes aria-glow-idle {
+  0%,100% { opacity: 0.85; transform: translate(-50%,-50%) scale(1); }
+  50%     { opacity: 1;    transform: translate(-50%,-50%) scale(1.04); }
+}
+@keyframes aria-glow-listen {
+  0%,100% { opacity: 0.75; transform: translate(-50%,-50%) scale(1); }
+  50%     { opacity: 1;    transform: translate(-50%,-50%) scale(1.08); }
+}
+@keyframes aria-glow-think {
+  0%,100% { opacity: 0.7; }
+  50%     { opacity: 0.95; }
+}
+@keyframes aria-glow-speak {
+  0%,100% { opacity: 0.85; transform: translate(-50%,-50%) scale(1); }
+  50%     { opacity: 1;    transform: translate(-50%,-50%) scale(1.06); }
+}
+@keyframes aria-figure-speak {
+  0%,100% { transform: scale(1); filter: brightness(1.05); }
+  50%     { transform: scale(1.008); filter: brightness(1.15); }
+}
+@keyframes aria-shimmer-sweep {
+  0%   { opacity: 0; transform: translateX(-40%); }
+  40%  { opacity: 0.7; }
+  100% { opacity: 0; transform: translateX(40%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aria-presence .aria-figure,
+  .aria-presence .aria-glow,
+  .aria-presence .aria-shimmer { animation: none !important; }
+}
+

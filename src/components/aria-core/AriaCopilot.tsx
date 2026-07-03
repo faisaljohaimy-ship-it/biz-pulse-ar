@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
+import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
 const ERROR_MASK_AR =
@@ -25,9 +26,7 @@ const ERROR_MASK_AR =
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
-const GREETING_SRC = "/aria-greeting.mp4";
-const STILL_SRC = "/aria.png";
-const VOICE_OK_KEY = "aria-panel-voice-ok";
+const STILL_SRC = "/aria.jpg";
 
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
@@ -41,102 +40,19 @@ function sanitiseAssistantText(raw: string): string {
   return t.trim();
 }
 
-/** Full-panel ARIA backdrop — greeting video every panel-open, then still.
- *  Attempts audible playback; falls back to a tap-to-listen chip when the
- *  browser blocks unmuted autoplay. Hard-stops on panel close. */
-function AriaPanelBackdrop({ active }: { active: boolean }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [mode, setMode] = useState<"video" | "still">("still");
-  const [needsTap, setNeedsTap] = useState(false);
-
-  // Panel-open: (re)start greeting every time. prefers-reduced-motion → still.
-  useEffect(() => {
-    if (!active) {
-      // Panel closed → hard stop
-      const v = videoRef.current;
-      if (v) { try { v.pause(); v.currentTime = 0; } catch { /* noop */ } }
-      setMode("still");
-      setNeedsTap(false);
-      return;
-    }
-    if (typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setMode(reduced ? "still" : "video");
-  }, [active]);
-
-  useEffect(() => {
-    if (mode !== "video" || !active) return;
-    const v = videoRef.current;
-    if (!v) return;
-    const toStill = () => setMode("still");
-    v.addEventListener("ended", toStill);
-    v.addEventListener("error", toStill);
-    const timeout = setTimeout(() => {
-      if (v.readyState < 2) toStill();
-    }, 4000);
-
-    // Try audible first if user previously approved; else muted autoplay
-    // and offer a tap chip to enable sound.
-    const voiceOk = (() => {
-      try { return localStorage.getItem(VOICE_OK_KEY) === "1"; } catch { return false; }
-    })();
-    v.muted = !voiceOk;
-    v.volume = 1;
-    v.play()
-      .then(() => { if (!v.muted) setNeedsTap(false); else setNeedsTap(true); })
-      .catch(() => {
-        // Autoplay blocked entirely — fall back to muted play + chip.
-        v.muted = true;
-        v.play().then(() => setNeedsTap(true)).catch(toStill);
-      });
-
-    return () => {
-      v.removeEventListener("ended", toStill);
-      v.removeEventListener("error", toStill);
-      clearTimeout(timeout);
-    };
-  }, [mode, active]);
-
-  const enableVoice = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.volume = 1;
-    v.play().then(() => {
-      try { localStorage.setItem(VOICE_OK_KEY, "1"); } catch { /* noop */ }
-      setNeedsTap(false);
-    }).catch(() => { /* leave chip visible */ });
-  };
-
+/** Full-panel ARIA backdrop — STATIC image only. No video, no audio,
+ *  no AudioContext. State-driven CSS motion via `.aria-presence`. */
+function AriaPanelBackdrop() {
+  const state = useAriaPresenceState();
   return (
     <div
-      aria-hidden={!needsTap}
-      className="absolute inset-0 overflow-hidden pointer-events-none"
+      aria-hidden
+      data-aria-state={state}
+      className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
-      {/* Cyan radial glow behind her */}
-      <div
-        className="absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(56,225,255,0.18) 0%, rgba(0,212,255,0.08) 45%, transparent 75%)",
-          filter: "blur(24px)",
-        }}
-      />
-      {/* ARIA figure — full height, contained, top-anchored so face is always visible */}
-      {mode === "video" ? (
-        <video
-          ref={videoRef}
-          src={GREETING_SRC}
-          poster={STILL_SRC}
-          playsInline
-          autoPlay
-          preload="auto"
-          className="absolute inset-0 h-full w-full opacity-95"
-          style={{ objectFit: "contain", objectPosition: "center top" }}
-          onError={() => setMode("still")}
-        />
-      ) : (
+      <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+      <div className="aria-figure absolute inset-0">
         <img
           src={STILL_SRC}
           alt=""
@@ -145,8 +61,8 @@ function AriaPanelBackdrop({ active }: { active: boolean }) {
           style={{ objectFit: "contain", objectPosition: "center top" }}
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
-      )}
-      {/* Readability scrims */}
+        <div className="aria-shimmer" aria-hidden />
+      </div>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -154,19 +70,10 @@ function AriaPanelBackdrop({ active }: { active: boolean }) {
             "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
         }}
       />
-      {/* Tap-to-listen chip — pointer-events on ONLY when needed */}
-      {needsTap && mode === "video" && (
-        <button
-          type="button"
-          onClick={enableVoice}
-          className="pointer-events-auto absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-cyan-400/40 bg-black/60 px-4 py-1.5 text-xs text-cyan-200 backdrop-blur-md hover:bg-black/80"
-        >
-          🔊 اضغط للاستماع
-        </button>
-      )}
     </div>
   );
 }
+
 
 export function AriaCopilot() {
   const { chat, composerRef } = useAriaChat();
@@ -187,6 +94,16 @@ export function AriaCopilot() {
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
+
+  // Drive ARIA presence state from chat lifecycle.
+  // thinking > listening > idle (speaking is driven by audio events below).
+  useEffect(() => {
+    if (isBusy) { ariaState.set("thinking"); return; }
+    if (draft.trim().length > 0) { ariaState.set("listening"); return; }
+    if (ariaState.get() !== "speaking") ariaState.set("idle");
+  }, [isBusy, draft]);
+  // On unmount / panel close, drop to idle.
+  useEffect(() => () => { ariaState.set("idle"); }, []);
 
   // Health probe on panel open
   useEffect(() => {
@@ -236,18 +153,27 @@ export function AriaCopilot() {
         if (prev) { try { prev.pause(); URL.revokeObjectURL(prev.src); } catch { /* noop */ } }
         const audio = new Audio(url);
         audioRef.current = audio;
-        audio.onended = () => { try { URL.revokeObjectURL(url); } catch { /* noop */ } };
-        audio.play().catch(() => { /* autoplay blocked */ });
+        const done = () => {
+          try { URL.revokeObjectURL(url); } catch { /* noop */ }
+          ariaState.set("idle");
+        };
+        audio.onended = done;
+        audio.onerror = done;
+        audio.onpause = () => { if (audio.ended) ariaState.set("idle"); };
+        audio.play()
+          .then(() => ariaState.set("speaking"))
+          .catch(() => { /* autoplay blocked */ ariaState.set("idle"); });
       } catch { /* silent — voice is a nice-to-have */ }
     })();
     return () => { cancelled = true; };
   }, [chat.messages, isBusy, voiceEnabled]);
 
-  // Stop TTS when panel closes
+  // Stop TTS when panel closes — barge-in / silence guarantee.
   useEffect(() => {
     if (isOpen) return;
     const a = audioRef.current;
     if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+    ariaState.set("idle");
   }, [isOpen]);
 
   useEffect(() => {
@@ -328,7 +254,7 @@ export function AriaCopilot() {
           }}
         >
           {/* LAYER 0 — ARIA cinematic backdrop */}
-          <AriaPanelBackdrop active={isOpen} />
+          <AriaPanelBackdrop />
 
           {/* LAYER 2 — Header */}
           <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-background/30 px-4 py-3 backdrop-blur-sm">
