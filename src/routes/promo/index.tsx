@@ -71,8 +71,8 @@ function PromoHub() {
         </div>
 
         <div className="mt-12 text-center text-xs text-white/40">
-          الملفات الصوتية والفيديوهات: <code>/promo/audio/f1..f4.mp3</code> ·{" "}
-          <code>/promo/video/f1..f4.mp4</code>
+          الملفات الصوتية والفيديوهات: <code>/promo/audio/f1..f5.mp3</code> ·{" "}
+          <code>/promo/video/f1..f5.mp4</code>
         </div>
       </div>
     </div>
