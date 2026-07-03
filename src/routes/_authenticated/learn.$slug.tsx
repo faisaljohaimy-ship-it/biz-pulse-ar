@@ -7,11 +7,14 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { AlertTriangle, GraduationCap, Sparkles, Target, MessageSquare, Award, Play } from "lucide-react";
+import { AlertTriangle, GraduationCap, Sparkles, Target, MessageSquare, Award, Play, Activity } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getLesson } from "@/lib/learn/lessons.functions";
 import { LessonVideo } from "@/components/learn/LessonVideo";
 import { LessonCinematicHero } from "@/components/learn/LessonCinematicHero";
+import { DigitalTwinHero } from "@/components/learn/heroes/DigitalTwinHero";
+import { LessonLiveKpis, type LiveKpi } from "@/components/learn/LessonLiveKpis";
+import { LessonAskAria } from "@/components/learn/LessonAskAria";
 import { LessonNarration } from "@/components/learn/LessonNarration";
 import { LessonSimulation } from "@/components/learn/LessonSimulation";
 import { LessonARIAChat } from "@/components/learn/LessonARIAChat";
@@ -119,7 +122,7 @@ function LessonPage() {
       <div className="relative grid grid-cols-1 gap-6 px-5 pb-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8">
         {/* Main column */}
         <main className="min-w-0 space-y-6">
-          {/* Video */}
+          {/* Video / Cinematic hero (bespoke per lesson when available) */}
           {lesson.video_url ? (
             <LessonVideo
               slug={lesson.slug}
@@ -128,6 +131,8 @@ function LessonPage() {
               initialSeconds={lesson.progress?.video_watched_seconds ?? 0}
               poster={lesson.cover_url}
             />
+          ) : lesson.slug === "digital-twin" ? (
+            <DigitalTwinHero title={title} subtitle={subtitle} lang={ar ? "ar" : "en"} />
           ) : (
             <LessonCinematicHero
               title={title}
@@ -140,7 +145,13 @@ function LessonPage() {
           {/* Summary + narration */}
           <SectionCard icon={<Sparkles className="h-4 w-4" />} label={ar ? "الملخص التنفيذي" : "Executive Summary"}>
             <p className="text-base leading-relaxed text-white/85">{summary}</p>
-            {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
+              <LessonAskAria
+                prompt={ar ? `آريا، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.` : `ARIA, give me the executive one-pager on what I must understand from the lesson "${title}".`}
+                label={ar ? "اسأل آريا حول هذه الحصة" : "Ask ARIA about this lesson"}
+              />
+            </div>
           </SectionCard>
 
           {/* Objectives */}
@@ -156,6 +167,13 @@ function LessonPage() {
                   </li>
                 ))}
               </ul>
+            </SectionCard>
+          )}
+
+          {/* Live executive KPIs (Golden-Reference lessons) */}
+          {lessonKpis(lesson.slug, ar).length > 0 && (
+            <SectionCard icon={<Activity className="h-4 w-4" />} label={ar ? "المؤشرات التنفيذية الحيّة" : "Live executive KPIs"}>
+              <LessonLiveKpis kpis={lessonKpis(lesson.slug, ar)} />
             </SectionCard>
           )}
 
@@ -249,4 +267,17 @@ function ProgressPill({
       ) : null}
     </div>
   );
+}
+
+// ── Per-lesson executive KPI feed (Golden-Reference lessons only) ──────
+function lessonKpis(slug: string, ar: boolean): LiveKpi[] {
+  if (slug === "digital-twin") {
+    return [
+      { label: ar ? "تزامن التوأم" : "Twin sync", value: "99.4%", hint: ar ? "آخر مزامنة 3 ث" : "last sync 3s ago", tone: "ok" },
+      { label: ar ? "زمن كشف الشذوذ" : "Anomaly latency", value: "1.2s", hint: ar ? "متوسّط آخر ساعة" : "avg last hour", tone: "info" },
+      { label: ar ? "الحسّاسات النشطة" : "Sensors live", value: "128 / 132", hint: ar ? "4 خارج الخدمة" : "4 offline", tone: "warn" },
+      { label: ar ? "الجاهزية التنفيذية" : "Executive readiness", value: "96", hint: ar ? "من 100" : "of 100", tone: "ok" },
+    ];
+  }
+  return [];
 }
