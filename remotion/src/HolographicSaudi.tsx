@@ -1568,6 +1568,21 @@ export const NexiosFilmF5: React.FC = () => {
           </React.Fragment>
         ))}
       </TransitionSeries>
+      {/* Arabic voiceover — ARIA */}
+      {(() => {
+        const fadeF = 18;
+        let t = 0;
+        const els: React.ReactNode[] = [];
+        for (let i = 0; i < scenes.length; i++) {
+          els.push(
+            <Sequence key={`a${i}`} from={t} layout="none">
+              <Audio src={staticFile(`audio/f5/n${String(i + 1).padStart(2, "0")}.mp3`)} volume={0.95} />
+            </Sequence>
+          );
+          t += sceneDurations[i] - (i < scenes.length - 1 ? fadeF : 0);
+        }
+        return els;
+      })()}
       {/* Caption overlay */}
       {captionWindows.map((c, i) =>
         frame >= c.start && frame <= c.end ? (
