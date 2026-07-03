@@ -5,9 +5,9 @@ export const Route = createFileRoute("/promo/")({
   head: () => ({
     meta: [
       { title: "نيكسوس — سلسلة الأفلام التنفيذية" },
-      { name: "description", content: "أربعة أفلام تنفيذية قصيرة تشرح نيكسوس بالأرقام والمشاهد." },
+      { name: "description", content: "خمسة أفلام تنفيذية قصيرة تشرح نيكسوس بالأرقام والمشاهد." },
       { property: "og:title", content: "نيكسوس — سلسلة الأفلام التنفيذية" },
-      { property: "og:description", content: "أربعة أفلام تنفيذية قصيرة تشرح نيكسوس." },
+      { property: "og:description", content: "خمسة أفلام تنفيذية قصيرة تشرح نيكسوس." },
     ],
   }),
   component: PromoHub,
