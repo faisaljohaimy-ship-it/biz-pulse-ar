@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/learn/aria-teach")({
         const result = streamText({
           model,
           system: baseInstructor + contextLine,
-          messages: convertToModelMessages(body.messages),
+          messages: await convertToModelMessages(body.messages),
         });
         return result.toUIMessageStreamResponse({ originalMessages: body.messages });
       },

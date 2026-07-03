@@ -7,19 +7,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type {
+  LessonCategory,
   LessonListItem,
   LessonDetail,
   LessonProgress,
   QuizQuestionPublic,
   QuizSubmissionResult,
+  SimulationKind,
+  Bilingual,
 } from "./types";
 
 // ---------- helpers ----------
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Sb = any;
+
 async function loadProgress(
-  supabase: Awaited<ReturnType<typeof requireSupabaseAuth>> extends never
-    ? never
-    : ReturnType<typeof createSupabase>,
+  supabase: Sb,
   userId: string,
   lessonIds: string[],
 ): Promise<Record<string, LessonProgress>> {
@@ -31,22 +35,18 @@ async function loadProgress(
     .in("lesson_id", lessonIds);
   if (error) throw new Error(error.message);
   const out: Record<string, LessonProgress> = {};
-  for (const row of data ?? []) {
+  for (const row of (data ?? []) as Array<Record<string, unknown>>) {
     out[row.lesson_id as string] = {
-      status: row.status as LessonProgress["status"],
-      video_watched_seconds: row.video_watched_seconds ?? 0,
+      status: (row.status as LessonProgress["status"]) ?? "not_started",
+      video_watched_seconds: (row.video_watched_seconds as number) ?? 0,
       simulation_completed: !!row.simulation_completed,
-      quiz_best_score: row.quiz_best_score ?? 0,
+      quiz_best_score: (row.quiz_best_score as number) ?? 0,
       quiz_passed: !!row.quiz_passed,
       completed_at: (row.completed_at as string | null) ?? null,
     };
   }
   return out;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SupabaseLike = any;
-function createSupabase(): SupabaseLike { return null as unknown as SupabaseLike; }
 
 // ---------- listLessons ----------
 
@@ -93,28 +93,29 @@ export const getLesson = createServerFn({ method: "GET" })
 
     const progress = (await loadProgress(supabase, userId, [row.id as string]))[row.id as string] ?? null;
 
+    const r = row as Record<string, unknown>;
     return {
-      id: row.id,
-      slug: row.slug,
-      order_index: row.order_index,
-      category: row.category,
-      title_ar: row.title_ar,
-      title_en: row.title_en,
-      subtitle_ar: row.subtitle_ar,
-      subtitle_en: row.subtitle_en,
-      summary_ar: row.summary_ar,
-      summary_en: row.summary_en,
-      narration_ar: row.narration_ar ?? "",
-      narration_en: row.narration_en ?? "",
-      objectives_ar: Array.isArray(row.objectives_ar) ? row.objectives_ar : [],
-      objectives_en: Array.isArray(row.objectives_en) ? row.objectives_en : [],
-      cover_url: row.cover_url ?? null,
-      video_url: row.video_url ?? null,
-      video_duration_seconds: row.video_duration_seconds ?? 0,
-      simulation_kind: row.simulation_kind ?? null,
-      aria_suggested_prompts: Array.isArray(row.aria_suggested_prompts) ? row.aria_suggested_prompts : [],
-      quiz_pass_score: row.quiz_pass_score ?? 60,
-      published: !!row.published,
+      id: r.id as string,
+      slug: r.slug as string,
+      order_index: r.order_index as number,
+      category: (r.category as LessonCategory) ?? "core",
+      title_ar: r.title_ar as string,
+      title_en: r.title_en as string,
+      subtitle_ar: r.subtitle_ar as string,
+      subtitle_en: r.subtitle_en as string,
+      summary_ar: r.summary_ar as string,
+      summary_en: r.summary_en as string,
+      narration_ar: (r.narration_ar as string) ?? "",
+      narration_en: (r.narration_en as string) ?? "",
+      objectives_ar: Array.isArray(r.objectives_ar) ? (r.objectives_ar as string[]) : [],
+      objectives_en: Array.isArray(r.objectives_en) ? (r.objectives_en as string[]) : [],
+      cover_url: (r.cover_url as string | null) ?? null,
+      video_url: (r.video_url as string | null) ?? null,
+      video_duration_seconds: (r.video_duration_seconds as number) ?? 0,
+      simulation_kind: (r.simulation_kind as SimulationKind | null) ?? null,
+      aria_suggested_prompts: Array.isArray(r.aria_suggested_prompts) ? (r.aria_suggested_prompts as Bilingual[]) : [],
+      quiz_pass_score: (r.quiz_pass_score as number) ?? 60,
+      published: !!r.published,
       prev_slug,
       next_slug,
       progress,
