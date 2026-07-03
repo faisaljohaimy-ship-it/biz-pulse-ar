@@ -430,6 +430,7 @@ export function AriaDock() {
     setTypedLoading(true);
     setTypedError(null);
     // Barge-in: cut any prior ARIA voice the moment the user sends again.
+    AriaAudioBus.unlock();
     ariaSpeech.stop();
     // Route reply audio exclusively through useAriaSpeech (ElevenLabs → browser fallback).
     // Silencing the internal queue speaker prevents double-voicing while keeping the
