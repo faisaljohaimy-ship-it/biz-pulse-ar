@@ -134,6 +134,7 @@ import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
+import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
@@ -817,6 +818,11 @@ const ApiChatHealthRoute = ApiChatHealthRouteImport.update({
   path: '/health',
   getParentRoute: () => ApiChatRoute,
 } as any)
+const ApiAriaTtsRoute = ApiAriaTtsRouteImport.update({
+  id: '/api/aria/tts',
+  path: '/api/aria/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsMicrosoftRoute =
   AuthenticatedSettingsMicrosoftRouteImport.update({
     id: '/microsoft',
@@ -1172,6 +1178,7 @@ export interface FileRoutesByFullPath {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
@@ -1335,6 +1342,7 @@ export interface FileRoutesByTo {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
@@ -1502,6 +1510,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
@@ -1669,6 +1678,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
@@ -1832,6 +1842,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
@@ -1998,6 +2009,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
+    | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
@@ -2073,6 +2085,7 @@ export interface RootRouteChildren {
   PromoF5Route: typeof PromoF5Route
   PromoImpactRoute: typeof PromoImpactRoute
   PromoIndexRoute: typeof PromoIndexRoute
+  ApiAriaTtsRoute: typeof ApiAriaTtsRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
@@ -2974,6 +2987,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatHealthRouteImport
       parentRoute: typeof ApiChatRoute
     }
+    '/api/aria/tts': {
+      id: '/api/aria/tts'
+      path: '/api/aria/tts'
+      fullPath: '/api/aria/tts'
+      preLoaderRoute: typeof ApiAriaTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/settings/microsoft': {
       id: '/_authenticated/settings/microsoft'
       path: '/microsoft'
@@ -3537,6 +3557,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromoF5Route: PromoF5Route,
   PromoImpactRoute: PromoImpactRoute,
   PromoIndexRoute: PromoIndexRoute,
+  ApiAriaTtsRoute: ApiAriaTtsRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
