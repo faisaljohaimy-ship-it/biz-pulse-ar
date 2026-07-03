@@ -29,6 +29,30 @@ export { conversationIntelligence } from "./core/conversation-intelligence";
 export { responseValidator } from "./core/response-validator";
 export { planningEngine } from "./core/planning-engine";
 
+// ─── Phase 3: Executive Execution Layer ────────────────────────────────
+export { executionPlanner } from "./core/execution-planner";
+export { actionRegistry } from "./core/action-registry";
+export { toolRegistry } from "./core/tool-registry";
+export { permissionGuard } from "./core/permission-guard";
+export { approvalGate } from "./core/approval-gate";
+export { executionQueue } from "./core/execution-queue";
+export { executionSimulator } from "./core/execution-simulator";
+export { executionSimulator as executionSimulatorEngine } from "./core/execution-simulator";
+export { auditTrail } from "./core/audit-trail";
+export type { ActionType, ActionDefinition } from "./core/action-registry";
+export type { ToolId, ToolDescriptor, ToolCategory } from "./core/tool-registry";
+export type { CallerRole } from "./core/permission-guard";
+export type {
+  ExecutionEnvelope,
+  ExecutionStep,
+  QueueState,
+  PermissionDecision,
+  PermissionReport,
+  ApprovalReport,
+  SimulationReport,
+  AuditRecord,
+} from "./core/execution-envelope";
+
 export type {
   AriaMode,
   AriaVoiceState,
