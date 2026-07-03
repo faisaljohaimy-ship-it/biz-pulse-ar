@@ -122,7 +122,7 @@ function LessonPage() {
       <div className="relative grid grid-cols-1 gap-6 px-5 pb-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8">
         {/* Main column */}
         <main className="min-w-0 space-y-6">
-          {/* Video */}
+          {/* Video / Cinematic hero (bespoke per lesson when available) */}
           {lesson.video_url ? (
             <LessonVideo
               slug={lesson.slug}
@@ -131,6 +131,8 @@ function LessonPage() {
               initialSeconds={lesson.progress?.video_watched_seconds ?? 0}
               poster={lesson.cover_url}
             />
+          ) : lesson.slug === "digital-twin" ? (
+            <DigitalTwinHero title={title} subtitle={subtitle} lang={ar ? "ar" : "en"} />
           ) : (
             <LessonCinematicHero
               title={title}
@@ -143,7 +145,13 @@ function LessonPage() {
           {/* Summary + narration */}
           <SectionCard icon={<Sparkles className="h-4 w-4" />} label={ar ? "الملخص التنفيذي" : "Executive Summary"}>
             <p className="text-base leading-relaxed text-white/85">{summary}</p>
-            {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
+              <LessonAskAria
+                prompt={ar ? `آريا، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.` : `ARIA, give me the executive one-pager on what I must understand from the lesson "${title}".`}
+                label={ar ? "اسأل آريا حول هذه الحصة" : "Ask ARIA about this lesson"}
+              />
+            </div>
           </SectionCard>
 
           {/* Objectives */}
