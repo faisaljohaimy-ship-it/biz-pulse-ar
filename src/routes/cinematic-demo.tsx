@@ -145,9 +145,6 @@ function CinematicDemo() {
   const rafRef = useRef<number | null>(null);
   const lastRef = useRef<number | null>(null);
   // Audio/AudioContext removed site-wide. ARIA chat is the only voice.
-  const audioCtxRef = useRef<null>(null);
-  const oscRef = useRef<null>(null);
-  const gainRef = useRef<null>(null);
 
   // RAF clock
   useEffect(() => {
