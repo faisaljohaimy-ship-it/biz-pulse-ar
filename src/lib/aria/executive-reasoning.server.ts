@@ -269,9 +269,23 @@ export interface ExecutiveBrief {
   sources: string[];
 }
 
-/** Public entry point: run layers 2–4 and return the composed prompt parts. */
-export async function buildExecutiveBrief(question: string): Promise<ExecutiveBrief> {
+/** Public entry point: run layers 2–4 and return the composed prompt parts.
+ *  Pass `{ skipEvidence: true }` for public/unauthenticated callers so no
+ *  service-role live rows are pulled into the prompt (cross-tenant leak
+ *  protection). */
+export async function buildExecutiveBrief(
+  question: string,
+  options?: { skipEvidence?: boolean },
+): Promise<ExecutiveBrief> {
   const intent = classifyIntent(question);
+  if (options?.skipEvidence) {
+    return {
+      intent,
+      system: buildExecutiveSystemPrompt(intent, []),
+      evidenceBlock: "",
+      sources: [],
+    };
+  }
   const { block, sources } = await collectEvidence(intent);
   return {
     intent,

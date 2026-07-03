@@ -43,12 +43,18 @@ const JSON_CONTRACT = `RESPONSE CONTRACT (STRICT JSON, no prose outside JSON):
 }
 The text_ar and text_en fields are the only fields shown to the user; the rest are consumed by the executive layer. Never invent values. If a required datum is missing, set the field to "" (empty string) or confidence to 0.2 and say once in text_*: "Data unavailable / بيانات غير متوفرة".`;
 
-export async function runThinkingLoop(question: string): Promise<ThinkingBundle> {
-  // Layers 2–4 (intent + retrieval + reasoning prompt)
-  const brief = await buildExecutiveBrief(question);
-  // Autonomous additions: proactive scan + explicit plan
+export async function runThinkingLoop(
+  question: string,
+  options?: { skipEvidence?: boolean; skipInsights?: boolean },
+): Promise<ThinkingBundle> {
+  // Layers 2–4 (intent + retrieval + reasoning prompt). Public callers must
+  // pass skipEvidence:true — collectEvidence and runInsightScan both use the
+  // service-role client with no tenant filter and would leak cross-org data.
+  const brief = await buildExecutiveBrief(question, { skipEvidence: options?.skipEvidence });
   const [insightBundle, plan] = await Promise.all([
-    runInsightScan(),
+    options?.skipInsights || options?.skipEvidence
+      ? Promise.resolve({ block: "", sources: [] as string[], insights: [] as Insight[] })
+      : runInsightScan(),
     Promise.resolve(buildPlan(brief.intent)),
   ]);
 
