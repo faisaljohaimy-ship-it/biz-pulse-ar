@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
+import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
 const ERROR_MASK_AR =
