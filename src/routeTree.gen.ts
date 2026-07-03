@@ -42,7 +42,12 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PromoIndexRouteImport } from './routes/promo/index'
 import { Route as PromoImpactRouteImport } from './routes/promo/impact'
+import { Route as PromoF4RouteImport } from './routes/promo/f4'
+import { Route as PromoF3RouteImport } from './routes/promo/f3'
+import { Route as PromoF2RouteImport } from './routes/promo/f2'
+import { Route as PromoF1RouteImport } from './routes/promo/f1'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
 import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
@@ -332,9 +337,34 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PromoIndexRoute = PromoIndexRouteImport.update({
+  id: '/promo/',
+  path: '/promo/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PromoImpactRoute = PromoImpactRouteImport.update({
   id: '/promo/impact',
   path: '/promo/impact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoF4Route = PromoF4RouteImport.update({
+  id: '/promo/f4',
+  path: '/promo/f4',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoF3Route = PromoF3RouteImport.update({
+  id: '/promo/f3',
+  path: '/promo/f3',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoF2Route = PromoF2RouteImport.update({
+  id: '/promo/f2',
+  path: '/promo/f2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoF1Route = PromoF1RouteImport.update({
+  id: '/promo/f1',
+  path: '/promo/f1',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -1100,7 +1130,12 @@ export interface FileRoutesByFullPath {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/promo/f1': typeof PromoF1Route
+  '/promo/f2': typeof PromoF2Route
+  '/promo/f3': typeof PromoF3Route
+  '/promo/f4': typeof PromoF4Route
   '/promo/impact': typeof PromoImpactRoute
+  '/promo/': typeof PromoIndexRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1257,7 +1292,12 @@ export interface FileRoutesByTo {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/promo/f1': typeof PromoF1Route
+  '/promo/f2': typeof PromoF2Route
+  '/promo/f3': typeof PromoF3Route
+  '/promo/f4': typeof PromoF4Route
   '/promo/impact': typeof PromoImpactRoute
+  '/promo': typeof PromoIndexRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1418,7 +1458,12 @@ export interface FileRoutesById {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/promo/f1': typeof PromoF1Route
+  '/promo/f2': typeof PromoF2Route
+  '/promo/f3': typeof PromoF3Route
+  '/promo/f4': typeof PromoF4Route
   '/promo/impact': typeof PromoImpactRoute
+  '/promo/': typeof PromoIndexRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1579,7 +1624,12 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
+    | '/promo/f1'
+    | '/promo/f2'
+    | '/promo/f3'
+    | '/promo/f4'
     | '/promo/impact'
+    | '/promo/'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1736,7 +1786,12 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
+    | '/promo/f1'
+    | '/promo/f2'
+    | '/promo/f3'
+    | '/promo/f4'
     | '/promo/impact'
+    | '/promo'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1896,7 +1951,12 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
+    | '/promo/f1'
+    | '/promo/f2'
+    | '/promo/f3'
+    | '/promo/f4'
     | '/promo/impact'
+    | '/promo/'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
@@ -1994,7 +2054,12 @@ export interface RootRouteChildren {
   ApiVoiceSttRoute: typeof ApiVoiceSttRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  PromoF1Route: typeof PromoF1Route
+  PromoF2Route: typeof PromoF2Route
+  PromoF3Route: typeof PromoF3Route
+  PromoF4Route: typeof PromoF4Route
   PromoImpactRoute: typeof PromoImpactRoute
+  PromoIndexRoute: typeof PromoIndexRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
@@ -2252,11 +2317,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/promo/': {
+      id: '/promo/'
+      path: '/promo'
+      fullPath: '/promo/'
+      preLoaderRoute: typeof PromoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/promo/impact': {
       id: '/promo/impact'
       path: '/promo/impact'
       fullPath: '/promo/impact'
       preLoaderRoute: typeof PromoImpactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/f4': {
+      id: '/promo/f4'
+      path: '/promo/f4'
+      fullPath: '/promo/f4'
+      preLoaderRoute: typeof PromoF4RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/f3': {
+      id: '/promo/f3'
+      path: '/promo/f3'
+      fullPath: '/promo/f3'
+      preLoaderRoute: typeof PromoF3RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/f2': {
+      id: '/promo/f2'
+      path: '/promo/f2'
+      fullPath: '/promo/f2'
+      preLoaderRoute: typeof PromoF2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/f1': {
+      id: '/promo/f1'
+      path: '/promo/f1'
+      fullPath: '/promo/f1'
+      preLoaderRoute: typeof PromoF1RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -3410,7 +3510,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceSttRoute: ApiVoiceSttRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  PromoF1Route: PromoF1Route,
+  PromoF2Route: PromoF2Route,
+  PromoF3Route: PromoF3Route,
+  PromoF4Route: PromoF4Route,
   PromoImpactRoute: PromoImpactRoute,
+  PromoIndexRoute: PromoIndexRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
