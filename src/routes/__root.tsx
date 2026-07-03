@@ -22,7 +22,6 @@ import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 
-import { AriaContextProvider } from "@/lib/aria/context-engine";
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 
 function NotFoundComponent() {
