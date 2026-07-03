@@ -36,6 +36,26 @@ import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gat
 import { HologramFace } from "@/components/digital-humans/HologramFace";
 import { AriaStatusStrip } from "@/components/digital-humans/AriaStatusStrip";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
+import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+
+/** Strip markdown / emoji so TTS reads clean prose. */
+function stripForSpeech(input: string): string {
+  return input
+    // fenced + inline code
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    // images and links → keep label
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    // emphasis, headings, blockquotes, list bullets
+    .replace(/[*_~#>]+/g, " ")
+    .replace(/^\s*[-•·]\s+/gm, "")
+    // emoji + pictographic symbols
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 
 
 
@@ -71,6 +91,8 @@ export function AriaDock() {
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
+  const ariaSpeech = useAriaSpeech();
+
   // The opening greeting is audio-only: ARIA speaks the welcome line before
   // the dock UI (avatar, transcript, controls) becomes visible. We reveal
   // the dock when the welcome turn finishes (or after a safety timeout).
@@ -406,7 +428,12 @@ export function AriaDock() {
     setTypedQuestion("");
     setTypedLoading(true);
     setTypedError(null);
-    setVoiceOn(true);
+    // Barge-in: cut any prior ARIA voice the moment the user sends again.
+    ariaSpeech.stop();
+    // Route reply audio exclusively through useAriaSpeech (ElevenLabs → browser fallback).
+    // Silencing the internal queue speaker prevents double-voicing while keeping the
+    // visual pulse animation via the silent-narration path in playNext().
+    setVoiceOn(false);
     handleRef.current?.stop();
     handleRef.current = null;
     queueRef.current = [];
@@ -414,9 +441,6 @@ export function AriaDock() {
     setState("thinking");
     try {
       const lang = /[\u0600-\u06FF]/.test(q) ? "ar" : "en";
-      // Attach the ARIA Global Context Engine snapshot so the model can
-      // ground its answer in the current page, KPIs, filters, and recent
-      // conversation.
       const w = window as unknown as {
         __aria_context?: {
           get: () => {
@@ -455,6 +479,8 @@ export function AriaDock() {
         text_en,
         speaker: ARIA,
       });
+      // Speak the reply aloud (barge-in-safe, mute-aware, fallback-safe).
+      void ariaSpeech.speak(stripForSpeech(lang === "ar" ? text_ar : text_en));
     } catch {
       setState("idle");
       setTypedError(ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
@@ -463,7 +489,8 @@ export function AriaDock() {
     }
   };
 
-  useEffect(() => () => handleRef.current?.stop(), []);
+  useEffect(() => () => { handleRef.current?.stop(); ariaSpeech.stop(); }, [ariaSpeech]);
+
 
   // Reveal the dock UI once the opening welcome line has finished playing.
   // Until then ARIA's voice is heard but no avatar / transcript is shown,
@@ -533,8 +560,21 @@ export function AriaDock() {
             onSpeechError={handleHeygenErr}
           />
         ) : (
-          <HologramFace state={state} amp={amp} size={minimized ? 36 : 144} ar={ar} />
+          <div className="relative">
+            {ariaSpeech.speaking && !ariaSpeech.muted && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-full animate-pulse"
+                style={{
+                  boxShadow:
+                    "0 0 32px 6px rgba(58,232,255,0.55), inset 0 0 22px rgba(0,212,255,0.35)",
+                }}
+              />
+            )}
+            <HologramFace state={state} amp={amp} size={minimized ? 36 : 144} ar={ar} />
+          </div>
         )}
+
         {!minimized && (
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
@@ -567,20 +607,39 @@ export function AriaDock() {
                       ? <MicOff className="h-3.5 w-3.5" />
                       : <Mic className="h-3.5 w-3.5" />}
                 </Button>
-                {/* Audio controls intentionally removed for executive minimalism.
-                    Voice playback is auto-managed by the listener pipeline. */}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className={cn(
+                    "h-7 w-7 hover:bg-white/10",
+                    ariaSpeech.muted ? "text-white/60" : "text-cyan-200 hover:text-white",
+                  )}
+                  onClick={() => {
+                    ariaSpeech.setMuted((m) => {
+                      const next = !m;
+                      if (next) ariaSpeech.stop();
+                      setAriaLiveText(next ? (ar ? "صوت آريا مكتوم" : "ARIA voice muted") : (ar ? "صوت آريا مفعّل" : "ARIA voice on"));
+                      return next;
+                    });
+                  }}
+                  aria-label={ar ? "تشغيل/كتم صوت آريا" : "Toggle ARIA voice"}
+                  title={ariaSpeech.muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+                  aria-pressed={!ariaSpeech.muted}
+                >
+                  {ariaSpeech.muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10"
-                  onClick={() => setMinimized(true)}
+                  onClick={() => { ariaSpeech.stop(); setMinimized(true); }}
                   aria-label={ar ? "تصغير" : "Minimize"}
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
                 <button
                   type="button"
-                  onClick={() => setHidden(true)}
+                  onClick={() => { ariaSpeech.stop(); setHidden(true); }}
                   aria-label={ar ? "إخفاء آريا" : "Dismiss ARIA"}
                   title={ar ? "إخفاء" : "Dismiss"}
                   className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/40 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
@@ -590,6 +649,7 @@ export function AriaDock() {
                 </button>
               </div>
             </div>
+
 
             <AriaStatusStrip
               className="mt-2"
