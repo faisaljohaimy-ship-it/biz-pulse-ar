@@ -67,6 +67,7 @@ export const useAriaStore = create<AriaState>((set, get) => ({
   setPageContext: (pageContext) => set({ pageContext }),
   setActiveTurn: (activeTurn) => set({ activeTurn }),
   setActiveEnvelope: (activeEnvelope) => set({ activeEnvelope }),
+  setActiveExecution: (activeExecution) => set({ activeExecution }),
   enqueue: (cmd) => set({ pendingCommands: [...get().pendingCommands, cmd] }),
   drainCommands: () => {
     const cmds = get().pendingCommands;
