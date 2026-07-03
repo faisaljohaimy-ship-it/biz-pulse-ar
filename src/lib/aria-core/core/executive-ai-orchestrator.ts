@@ -136,12 +136,16 @@ export const executiveAiOrchestrator = {
     }
     conversationManager.completeTurn(turnId);
     setPendingRouteHint(null);
+    avatarBrain.onSpeakingEnd(turnId);
+    avatarBrain.onSuccess();
     return { ok: scrubbed.ok && validated.ok, text: validated.text };
   },
   failTurn(turnId: string, err: unknown, locale: "ar" | "en") {
     const message = responsePipeline.formatError(err, locale);
     conversationManager.failTurn(turnId, message);
     setPendingRouteHint(null);
+    avatarBrain.onSpeakingEnd(turnId);
+    avatarBrain.onError();
     return message;
   },
   /** Read-only accessor for the current executive envelope. */
