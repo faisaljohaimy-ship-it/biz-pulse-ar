@@ -21,9 +21,12 @@ import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 // `src/lib/aria-core/README.md` for the migration kill-list.
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
-import { AriaSystemBackdrop } from "@/components/aria/AriaSystemBackdrop";
+import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
+import { AriaGreeter } from "@/components/aria/AriaGreeter";
+import { useRouterState } from "@tanstack/react-router";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
+
 
 
 
@@ -174,6 +177,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isPromo = pathname.startsWith("/promo");
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -182,12 +187,13 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <AriaProvider>
-                <AriaSystemBackdrop />
+                {!isPromo && <AriaGlobalBackdrop />}
                 <BetaMarqueeBar />
                 <div className="relative z-10">
                   <Outlet />
                 </div>
                 <AriaCopilot />
+                {!isPromo && <AriaGreeter />}
                 <Toaster />
               </AriaProvider>
             </DemoModeProvider>
@@ -197,3 +203,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
