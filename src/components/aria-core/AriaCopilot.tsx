@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
+import { AvatarGreeting } from "./AvatarGreeting";
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
 const ERROR_MASK_AR =
@@ -159,6 +160,9 @@ export function AriaCopilot() {
               <X className="h-4 w-4" aria-hidden />
             </button>
           </header>
+
+          {/* Greeting avatar (video → still) */}
+          <AvatarGreeting key={isOpen ? "open" : "closed"} />
 
           {/* Messages */}
           <div
