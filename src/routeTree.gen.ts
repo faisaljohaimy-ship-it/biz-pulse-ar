@@ -112,6 +112,7 @@ import { Route as AuthenticatedAiOpsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticated/sec.index'
+import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
@@ -152,6 +153,7 @@ import { Route as AuthenticatedSecCctvRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSecAssetsRouteImport } from './routes/_authenticated/sec.assets'
 import { Route as AuthenticatedSecAiRouteImport } from './routes/_authenticated/sec.ai'
 import { Route as AuthenticatedSecAccessRouteImport } from './routes/_authenticated/sec.access'
+import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -696,6 +698,11 @@ const AuthenticatedSecIndexRoute = AuthenticatedSecIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedSecRoute,
 } as any)
+const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedLearnRoute,
+} as any)
 const AuthenticatedAssistantIndexRoute =
   AuthenticatedAssistantIndexRouteImport.update({
     id: '/assistant/',
@@ -910,6 +917,11 @@ const AuthenticatedSecAccessRoute = AuthenticatedSecAccessRouteImport.update({
   path: '/access',
   getParentRoute: () => AuthenticatedSecRoute,
 } as any)
+const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AuthenticatedLearnRoute,
+} as any)
 const AuthenticatedAssistantThreadIdRoute =
   AuthenticatedAssistantThreadIdRouteImport.update({
     id: '/assistant/$threadId',
@@ -1045,7 +1057,7 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/leads': typeof AuthenticatedLeadsRoute
-  '/learn': typeof AuthenticatedLearnRoute
+  '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/mission-control': typeof AuthenticatedMissionControlRoute
@@ -1077,6 +1089,7 @@ export interface FileRoutesByFullPath {
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
   '/sec/ai': typeof AuthenticatedSecAiRoute
   '/sec/assets': typeof AuthenticatedSecAssetsRoute
@@ -1117,6 +1130,7 @@ export interface FileRoutesByFullPath {
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
+  '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
@@ -1200,7 +1214,6 @@ export interface FileRoutesByTo {
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/leads': typeof AuthenticatedLeadsRoute
-  '/learn': typeof AuthenticatedLearnRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/mission-control': typeof AuthenticatedMissionControlRoute
@@ -1231,6 +1244,7 @@ export interface FileRoutesByTo {
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
   '/sec/ai': typeof AuthenticatedSecAiRoute
   '/sec/assets': typeof AuthenticatedSecAssetsRoute
@@ -1271,6 +1285,7 @@ export interface FileRoutesByTo {
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
+  '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
@@ -1356,7 +1371,7 @@ export interface FileRoutesById {
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
-  '/_authenticated/learn': typeof AuthenticatedLearnRoute
+  '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/mission-control': typeof AuthenticatedMissionControlRoute
@@ -1388,6 +1403,7 @@ export interface FileRoutesById {
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
   '/_authenticated/sec/ai': typeof AuthenticatedSecAiRoute
   '/_authenticated/sec/assets': typeof AuthenticatedSecAssetsRoute
@@ -1428,6 +1444,7 @@ export interface FileRoutesById {
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
+  '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
@@ -1545,6 +1562,7 @@ export interface FileRouteTypes {
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/assistant/$threadId'
+    | '/learn/$slug'
     | '/sec/access'
     | '/sec/ai'
     | '/sec/assets'
@@ -1585,6 +1603,7 @@ export interface FileRouteTypes {
     | '/api/public/version'
     | '/lovable/email/suppression'
     | '/assistant/'
+    | '/learn/'
     | '/sec/'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
@@ -1668,7 +1687,6 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/knowledge-upload'
     | '/leads'
-    | '/learn'
     | '/marketplace'
     | '/memory'
     | '/mission-control'
@@ -1699,6 +1717,7 @@ export interface FileRouteTypes {
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/assistant/$threadId'
+    | '/learn/$slug'
     | '/sec/access'
     | '/sec/ai'
     | '/sec/assets'
@@ -1739,6 +1758,7 @@ export interface FileRouteTypes {
     | '/api/public/version'
     | '/lovable/email/suppression'
     | '/assistant'
+    | '/learn'
     | '/sec'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
@@ -1855,6 +1875,7 @@ export interface FileRouteTypes {
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/_authenticated/assistant/$threadId'
+    | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
     | '/_authenticated/sec/ai'
     | '/_authenticated/sec/assets'
@@ -1895,6 +1916,7 @@ export interface FileRouteTypes {
     | '/api/public/version'
     | '/lovable/email/suppression'
     | '/_authenticated/assistant/'
+    | '/_authenticated/learn/'
     | '/_authenticated/sec/'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/executive-reports-run'
@@ -2695,6 +2717,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecIndexRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/learn/': {
+      id: '/_authenticated/learn/'
+      path: '/'
+      fullPath: '/learn/'
+      preLoaderRoute: typeof AuthenticatedLearnIndexRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
     '/_authenticated/assistant/': {
       id: '/_authenticated/assistant/'
       path: '/assistant'
@@ -2975,6 +3004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecAccessRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/learn/$slug': {
+      id: '/_authenticated/learn/$slug'
+      path: '/$slug'
+      fullPath: '/learn/$slug'
+      preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
     '/_authenticated/assistant/$threadId': {
       id: '/_authenticated/assistant/$threadId'
       path: '/assistant/$threadId'
@@ -3054,6 +3090,19 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedLearnRouteChildren {
+  AuthenticatedLearnSlugRoute: typeof AuthenticatedLearnSlugRoute
+  AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
+}
+
+const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
+  AuthenticatedLearnSlugRoute: AuthenticatedLearnSlugRoute,
+  AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
+}
+
+const AuthenticatedLearnRouteWithChildren =
+  AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
 
 interface AuthenticatedSecRouteChildren {
   AuthenticatedSecAccessRoute: typeof AuthenticatedSecAccessRoute
@@ -3170,7 +3219,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedKnowledgeUploadRoute: typeof AuthenticatedKnowledgeUploadRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
-  AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
+  AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedMissionControlRoute: typeof AuthenticatedMissionControlRoute
@@ -3238,7 +3287,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedKnowledgeUploadRoute: AuthenticatedKnowledgeUploadRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
-  AuthenticatedLearnRoute: AuthenticatedLearnRoute,
+  AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedMissionControlRoute: AuthenticatedMissionControlRoute,
