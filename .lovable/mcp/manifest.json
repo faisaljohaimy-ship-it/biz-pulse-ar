@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "nexus-aria-mcp",
+      "version": "0.1.0",
+      "title": "NEXUS AI OS — ARIA"
+    },
+    "tools": [
+      {
+        "name": "ping",
+        "title": "Ping NEXUS",
+        "description": "Health check that returns the current server time and app name. Use to verify connectivity.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "ask_aria",
+        "title": "Ask ARIA",
+        "description": "Send a natural-language question to ARIA, the NEXUS Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Executive question in Arabic or English."
+            },
+            "language": {
+              "description": "Preferred reply language.",
+              "type": "string",
+              "enum": [
+                "ar",
+                "en"
+              ]
+            }
+          },
+          "required": [
+            "question"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

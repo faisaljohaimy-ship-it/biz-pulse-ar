@@ -23,6 +23,7 @@ import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OsRouteImport } from './routes/os'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
@@ -118,6 +119,8 @@ import { Route as AuthenticatedAnalystRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAiOpsRouteImport } from './routes/_authenticated/ai-ops'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticated/sec.index'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
@@ -164,6 +167,7 @@ import { Route as AuthenticatedSecAiRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSecAccessRouteImport } from './routes/_authenticated/sec.access'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -243,6 +247,11 @@ const PricingRoute = PricingRouteImport.update({
 const OsRoute = OsRouteImport.update({
   id: '/os',
   path: '/os',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -737,6 +746,18 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSecIndexRoute = AuthenticatedSecIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -982,6 +1003,12 @@ const AuthenticatedAssistantThreadIdRoute =
     path: '/assistant/$threadId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -1059,6 +1086,7 @@ export interface FileRoutesByFullPath {
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/os': typeof OsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1073,6 +1101,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -1149,6 +1179,7 @@ export interface FileRoutesByFullPath {
   '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo/': typeof PromoIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1225,6 +1256,7 @@ export interface FileRoutesByTo {
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/os': typeof OsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1239,6 +1271,8 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -1313,6 +1347,7 @@ export interface FileRoutesByTo {
   '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo': typeof PromoIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1391,6 +1426,7 @@ export interface FileRoutesById {
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/os': typeof OsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1405,6 +1441,8 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -1481,6 +1519,7 @@ export interface FileRoutesById {
   '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo/': typeof PromoIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1559,6 +1598,7 @@ export interface FileRouteTypes {
     | '/government-brief'
     | '/hajj-prime'
     | '/login'
+    | '/mcp'
     | '/os'
     | '/pricing'
     | '/privacy'
@@ -1573,6 +1613,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trust'
     | '/unsubscribe'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/agents'
     | '/ai-ops'
@@ -1649,6 +1691,7 @@ export interface FileRouteTypes {
     | '/promo/f5'
     | '/promo/impact'
     | '/promo/'
+    | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1725,6 +1768,7 @@ export interface FileRouteTypes {
     | '/government-brief'
     | '/hajj-prime'
     | '/login'
+    | '/mcp'
     | '/os'
     | '/pricing'
     | '/privacy'
@@ -1739,6 +1783,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trust'
     | '/unsubscribe'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/agents'
     | '/ai-ops'
@@ -1813,6 +1859,7 @@ export interface FileRouteTypes {
     | '/promo/f5'
     | '/promo/impact'
     | '/promo'
+    | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1890,6 +1937,7 @@ export interface FileRouteTypes {
     | '/government-brief'
     | '/hajj-prime'
     | '/login'
+    | '/mcp'
     | '/os'
     | '/pricing'
     | '/privacy'
@@ -1904,6 +1952,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trust'
     | '/unsubscribe'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/agents'
     | '/_authenticated/ai-ops'
@@ -1980,6 +2030,7 @@ export interface FileRouteTypes {
     | '/promo/f5'
     | '/promo/impact'
     | '/promo/'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
@@ -2058,6 +2109,7 @@ export interface RootRouteChildren {
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   HajjPrimeRoute: typeof HajjPrimeRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   OsRoute: typeof OsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -2072,6 +2124,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRouteWithChildren
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
@@ -2085,6 +2139,7 @@ export interface RootRouteChildren {
   PromoF5Route: typeof PromoF5Route
   PromoImpactRoute: typeof PromoImpactRoute
   PromoIndexRoute: typeof PromoIndexRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAriaTtsRoute: typeof ApiAriaTtsRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
@@ -2208,6 +2263,13 @@ declare module '@tanstack/react-router' {
       path: '/os'
       fullPath: '/os'
       preLoaderRoute: typeof OsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -2875,6 +2937,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/sec/': {
       id: '/_authenticated/sec/'
       path: '/'
@@ -3196,6 +3272,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/assistant/$threadId'
       preLoaderRoute: typeof AuthenticatedAssistantThreadIdRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -3530,6 +3613,7 @@ const rootRouteChildren: RootRouteChildren = {
   GovernmentBriefRoute: GovernmentBriefRoute,
   HajjPrimeRoute: HajjPrimeRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   OsRoute: OsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
@@ -3544,6 +3628,9 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRouteWithChildren,
   ApiTtsRoute: ApiTtsRoute,
   ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,
@@ -3557,6 +3644,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromoF5Route: PromoF5Route,
   PromoImpactRoute: PromoImpactRoute,
   PromoIndexRoute: PromoIndexRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAriaTtsRoute: ApiAriaTtsRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
