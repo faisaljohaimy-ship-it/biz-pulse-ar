@@ -89,7 +89,11 @@ export { avatarLifecycle } from "./core/avatar-lifecycle";
 export { avatarScheduler } from "./core/avatar-scheduler";
 export { avatarVoiceSync } from "./core/avatar-voice-sync";
 export { avatarTelemetry } from "./core/avatar-telemetry";
+export { avatarPerformanceEngine } from "./core/avatar-performance-engine";
+export { avatarHealthMonitor } from "./core/avatar-health-monitor";
 export type { TelemetrySnapshot } from "./core/avatar-telemetry";
+export type { PerfSample } from "./core/avatar-performance-engine";
+export type { HealthSnapshot, HealthLevel } from "./core/avatar-health-monitor";
 export type { PresenceSnapshot, PresenceLevel, PresenceGlow } from "./core/executive-presence";
 
 export type {
