@@ -65,7 +65,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
       supabase.from("profiles").select("user_id, display_name, avatar_url").eq("user_id", userId).maybeSingle(),
       supabase
         .from("org_members")
-        .select("role, org_id, organizations:org_id(id, name, region)")
+        .select("role, org_id, organizations:org_id(id, name)")
         .eq("user_id", userId)
         .order("joined_at", { ascending: true })
         .limit(1)
@@ -84,7 +84,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
 
     const profile = profileRes.data;
     const orgRow = orgMemberRes.data as
-      | { role: string; org_id: string; organizations: { id: string; name: string; region: string | null } | null }
+      | { role: string; org_id: string; organizations: { id: string; name: string } | null }
       | null;
 
     const incidents = incidentsRes.data ?? [];
@@ -101,7 +101,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
         ? {
             id: orgRow.organizations.id,
             name: orgRow.organizations.name,
-            region: orgRow.organizations.region ?? "western",
+            region: "western",
             role: orgRow.role,
           }
         : null,
