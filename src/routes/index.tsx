@@ -81,24 +81,32 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
-      {/* Futuristic AI background — neural mesh, particles, grid horizon */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
-        <HeroAIBackground />
-      </div>
+      {isMobile ? (
+        /* Lightweight static gradient hero backdrop — no canvas, no video, no audio */
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(80%_55%_at_50%_0%,rgba(0,212,255,0.18),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_40%_at_50%_35%,rgba(58,232,255,0.10),transparent_65%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#04070F] to-transparent" />
+        </div>
+      ) : (
+        <>
+          {/* Futuristic AI background — neural mesh, particles, grid horizon */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
+            <HeroAIBackground />
+          </div>
 
-      {/* ARIA holographic presence — living idle motion behind the hero UI */}
-      <div
-        aria-hidden
-        data-aria-presence
-        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[100vh] opacity-70 sm:opacity-90"
-      >
-        <AriaHeroPresence intensity="stage" />
-      </div>
+          {/* ARIA holographic presence — living idle motion behind the hero UI */}
+          <div
+            aria-hidden
+            data-aria-presence
+            className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[100vh] opacity-70 sm:opacity-90"
+          >
+            <AriaHeroPresence intensity="stage" />
+          </div>
 
-
-
-
-      <AriaGenesis onComplete={() => setBootDone(true)} />
+          <AriaGenesis onComplete={() => setBootDone(true)} />
+        </>
+      )}
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
@@ -108,7 +116,15 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className={`relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 transition-opacity duration-1000 sm:max-w-2xl sm:pt-14 ${bootDone ? "opacity-100" : "opacity-0"}`}
       >
-        <AriaBackdrop />
+        {isMobile ? (
+          /* Static glow disc instead of the orb/video backdrop */
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(58,232,255,0.22),rgba(0,212,255,0.08)_55%,transparent_75%)]"
+          />
+        ) : (
+          <AriaBackdrop />
+        )}
         {/* Status pill — sits above the holographic presence */}
         <div className="relative mb-8 flex flex-col items-center">
           <div className="h-[220px]" aria-hidden />
