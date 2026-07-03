@@ -183,16 +183,14 @@ function RootComponent() {
       <AuthProvider>
         <ThemeProvider>
           <I18nProvider>
-            <AriaContextProvider>
-              <DemoModeProvider>
-                <AriaProvider>
-                  <BetaMarqueeBar />
-                  <Outlet />
-                  <AriaCopilot />
-                  <Toaster />
-                </AriaProvider>
-              </DemoModeProvider>
-            </AriaContextProvider>
+            <DemoModeProvider>
+              <AriaProvider>
+                <BetaMarqueeBar />
+                <Outlet />
+                <AriaCopilot />
+                <Toaster />
+              </AriaProvider>
+            </DemoModeProvider>
           </I18nProvider>
         </ThemeProvider>
       </AuthProvider>
