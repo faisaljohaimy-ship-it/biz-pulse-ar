@@ -27,6 +27,7 @@ interface AriaState {
   voiceEnabled: boolean;
   pageContext: AriaPageContext | null;
   activeTurn: AriaTurn | null;
+  activeEnvelope: ExecutiveEnvelope | null;
   pendingCommands: PendingCommand[];
 
   // Actions
@@ -35,6 +36,7 @@ interface AriaState {
   setVoiceEnabled: (enabled: boolean) => void;
   setPageContext: (ctx: AriaPageContext) => void;
   setActiveTurn: (turn: AriaTurn | null) => void;
+  setActiveEnvelope: (envelope: ExecutiveEnvelope | null) => void;
   enqueue: (cmd: PendingCommand) => void;
   drainCommands: () => PendingCommand[];
 }
