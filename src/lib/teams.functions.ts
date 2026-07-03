@@ -60,7 +60,8 @@ export const sendTeamsAlert = createServerFn({ method: "POST" })
       }),
     ),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     await gw(`/teams/${data.teamId}/channels/${data.channelId}/messages`, {
       method: "POST",
       body: JSON.stringify({ body: { contentType: "html", content: data.html } }),
