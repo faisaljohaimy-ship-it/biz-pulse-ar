@@ -3,28 +3,33 @@
  * the dockable copilot panel. Consumes the singleton `useChat` from the
  * `<AriaProvider>` so state persists across every route change.
  *
- * Visual language follows the NEXUS Deep Midnight Cyan design system
- * (see `src/styles.css`). All colors are semantic tokens; no hardcoded
- * hex values in this file.
+ * Panel layout (Objective 1): ARIA fills the entire panel as a cinematic
+ * background layer (video → still, object-contain top-center, full figure
+ * always visible). Chat floats above her with backdrop blur and readability
+ * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, Send, Sparkles, X } from "lucide-react";
+import { Mic, MicOff, RefreshCcw, Send, Sparkles, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
-import { AvatarGreeting } from "./AvatarGreeting";
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
 const ERROR_MASK_AR =
   "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
+const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
+const THINKING_AR = "آريا تفكّر…";
+
+const GREETING_SRC = "/aria-greeting.mp4";
+const STILL_SRC = "/aria.png";
+const SESSION_KEY = "aria-panel-greeted";
 
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
-  // Strip fenced JSON blocks, stack traces, and provider/model identifiers.
   t = t.replace(/```json[\s\S]*?```/gi, "").replace(/```[\s\S]*?```/g, (m) =>
     /error|stack|trace|traceback/i.test(m) ? "" : m,
   );
@@ -32,6 +37,94 @@ function sanitiseAssistantText(raw: string): string {
   t = t.replace(/\bat\s+[\w$.<>]+\s*\([^)]*:\d+:\d+\)/g, "");
   t = t.replace(/\berror:\s*[^\n]{0,200}/gi, ERROR_MASK_AR);
   return t.trim();
+}
+
+/** Full-panel ARIA backdrop — greeting video once, then still. */
+function AriaPanelBackdrop({ active }: { active: boolean }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [mode, setMode] = useState<"video" | "still">("still");
+
+  useEffect(() => {
+    if (!active) return;
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let greeted = false;
+    try {
+      greeted = sessionStorage.getItem(SESSION_KEY) === "1";
+    } catch { /* noop */ }
+    setMode(!reduced && !greeted ? "video" : "still");
+  }, [active]);
+
+  useEffect(() => {
+    if (mode !== "video") return;
+    const v = videoRef.current;
+    if (!v) return;
+    const toStill = () => {
+      try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
+      setMode("still");
+    };
+    v.addEventListener("ended", toStill);
+    v.addEventListener("error", toStill);
+    const timeout = setTimeout(() => {
+      if (v.readyState < 2) toStill();
+    }, 3000);
+    v.play().catch(toStill);
+    return () => {
+      v.removeEventListener("ended", toStill);
+      v.removeEventListener("error", toStill);
+      clearTimeout(timeout);
+    };
+  }, [mode]);
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ background: "#04070F" }}
+    >
+      {/* Cyan radial glow behind her */}
+      <div
+        className="absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(56,225,255,0.18) 0%, rgba(0,212,255,0.08) 45%, transparent 75%)",
+          filter: "blur(24px)",
+        }}
+      />
+      {/* ARIA figure — full height, contained, top-anchored so face is always visible */}
+      {mode === "video" ? (
+        <video
+          ref={videoRef}
+          src={GREETING_SRC}
+          poster={STILL_SRC}
+          muted
+          playsInline
+          autoPlay
+          preload="auto"
+          className="absolute inset-0 h-full w-full opacity-95"
+          style={{ objectFit: "contain", objectPosition: "center top" }}
+          onError={() => setMode("still")}
+        />
+      ) : (
+        <img
+          src={STILL_SRC}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full opacity-90 select-none"
+          style={{ objectFit: "contain", objectPosition: "center top" }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      )}
+      {/* Readability scrims: top /60 → middle /30 → bottom /90 */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
+        }}
+      />
+    </div>
+  );
 }
 
 export function AriaCopilot() {
@@ -44,31 +137,37 @@ export function AriaCopilot() {
   const setVoiceEnabled = useAriaStore((s) => s.setVoiceEnabled);
 
   const [draft, setDraft] = useState("");
+  const [lastUserText, setLastUserText] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
+  const hasError = chat.status === "error" || !!chat.error;
 
-  // Auto-scroll on new messages
   useEffect(() => {
     if (!isOpen) return;
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [chat.messages, isOpen]);
+  }, [chat.messages, isOpen, isBusy, hasError]);
 
-  const submit = () => {
-    const text = draft.trim();
+  const submit = (textOverride?: string) => {
+    const text = (textOverride ?? draft).trim();
     if (!text || isBusy) return;
     setDraft("");
+    setLastUserText(text);
     void chat.sendMessage({ text });
+  };
+
+  const retry = () => {
+    if (lastUserText) submit(lastUserText);
   };
 
   const statusLabel = useMemo(() => {
     switch (voice) {
       case "processing":
-        return "ARIA is thinking…";
+        return THINKING_AR;
       case "speaking":
         return "ARIA is speaking…";
       case "listening":
@@ -109,19 +208,24 @@ export function AriaCopilot() {
         <aside
           role="complementary"
           aria-label="ARIA executive copilot"
+          dir="rtl"
           className={cn(
-            "fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-primary/25",
-            "bg-card/90 shadow-2xl backdrop-blur-2xl",
-            "bottom-6 end-6 h-[min(72vh,640px)] w-[min(96vw,420px)]",
-            "supports-[backdrop-filter]:bg-card/70",
+            "fixed z-50 flex flex-col overflow-hidden border border-primary/25",
+            "shadow-2xl",
+            // Mobile: near-fullscreen. Desktop (sm+): docked, full height.
+            "inset-x-2 top-14 bottom-2 rounded-3xl",
+            "sm:inset-auto sm:end-6 sm:top-6 sm:bottom-6 sm:w-[min(96vw,420px)] sm:rounded-2xl",
           )}
           style={{
             boxShadow:
               "0 20px 60px -20px hsl(var(--primary) / 0.4), 0 0 0 1px hsl(var(--primary) / 0.1)",
           }}
         >
-          {/* Header */}
-          <header className="flex items-center gap-3 border-b border-primary/15 px-4 py-3">
+          {/* LAYER 0 — ARIA cinematic backdrop */}
+          <AriaPanelBackdrop active={isOpen} />
+
+          {/* LAYER 2 — Header */}
+          <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-background/30 px-4 py-3 backdrop-blur-sm">
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" aria-hidden />
               <span
@@ -134,9 +238,7 @@ export function AriaCopilot() {
             </div>
             <div className="flex flex-1 flex-col leading-tight">
               <span className="text-sm font-semibold text-foreground">ARIA</span>
-              <span className="text-[11px] text-muted-foreground">
-                {statusLabel}
-              </span>
+              <span className="text-[11px] text-muted-foreground">{statusLabel}</span>
             </div>
             <button
               type="button"
@@ -145,11 +247,7 @@ export function AriaCopilot() {
               aria-label={voiceEnabled ? "Mute ARIA voice" : "Enable ARIA voice"}
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
             >
-              {voiceEnabled ? (
-                <Mic className="h-4 w-4" aria-hidden />
-              ) : (
-                <MicOff className="h-4 w-4" aria-hidden />
-              )}
+              {voiceEnabled ? <Mic className="h-4 w-4" aria-hidden /> : <MicOff className="h-4 w-4" aria-hidden />}
             </button>
             <button
               type="button"
@@ -161,14 +259,8 @@ export function AriaCopilot() {
             </button>
           </header>
 
-          {/* Greeting avatar (video → still) */}
-          <AvatarGreeting key={isOpen ? "open" : "closed"} />
-
-          {/* Messages */}
-          <div
-            ref={scrollRef}
-            className="flex-1 overflow-y-auto px-4 py-4"
-          >
+          {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
+          <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
             <ul className="space-y-3">
               {chat.messages.map((m) => {
                 const raw = m.parts
@@ -178,22 +270,17 @@ export function AriaCopilot() {
                 const text = mine ? raw : sanitiseAssistantText(raw);
                 if (!text) return null;
                 return (
-                  <li
-                    key={m.id}
-                    className={cn("flex", mine ? "justify-end" : "justify-start")}
-                  >
+                  <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed",
+                        "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-md backdrop-blur-md",
                         mine
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary/40 text-foreground",
+                          ? "bg-primary/90 text-primary-foreground"
+                          : "bg-background/60 text-foreground ring-1 ring-primary/20",
                       )}
                     >
                       <div className="prose prose-sm prose-invert max-w-none break-words">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {text}
-                        </ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                       </div>
                     </div>
                   </li>
@@ -201,28 +288,48 @@ export function AriaCopilot() {
               })}
               {isBusy && (
                 <li className="flex justify-start">
-                  <div className="rounded-2xl bg-secondary/40 px-3 py-2">
+                  <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
                     <div className="flex gap-1">
                       <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
                       <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
                       <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
                     </div>
+                    <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
                   </div>
                 </li>
               )}
-              {!isBusy && chat.messages.length === 0 && (
-                <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground" dir="rtl">
+              {hasError && !isBusy && (
+                <li className="flex justify-start">
+                  <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
+                    <div className="flex items-center gap-2">
+                      <span>{CONNECTION_ERROR_AR}</span>
+                      <button
+                        type="button"
+                        onClick={retry}
+                        className="inline-flex items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
+                      >
+                        <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              )}
+              {!isBusy && !hasError && chat.messages.length === 0 && (
+                <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
                   {EMPTY_STATE_AR}
                 </li>
               )}
             </ul>
           </div>
 
-          <ExecutiveCard />
+          <div className="relative z-10">
+            <ExecutiveCard />
+          </div>
 
-          {/* Composer */}
+          {/* LAYER 4 — Composer, pinned bottom + safe-area */}
           <form
-            className="flex items-end gap-2 border-t border-primary/15 bg-background/40 p-3"
+            className="relative z-10 flex items-end gap-2 border-t border-primary/15 bg-background/40 p-3 backdrop-blur-md"
+            style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
             onSubmit={(e) => {
               e.preventDefault();
               submit();
@@ -239,11 +346,11 @@ export function AriaCopilot() {
                 }
               }}
               rows={1}
-              placeholder="Ask ARIA…"
+              placeholder="اسأل آريا…"
               aria-label="Ask ARIA"
               className={cn(
                 "min-h-[38px] max-h-32 flex-1 resize-none rounded-lg border border-primary/20",
-                "bg-background/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
+                "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
                 "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
               )}
             />
