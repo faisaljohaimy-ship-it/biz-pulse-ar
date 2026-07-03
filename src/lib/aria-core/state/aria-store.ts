@@ -13,6 +13,7 @@ import type {
   AriaTurn,
   AriaVoiceState,
 } from "../types/aria";
+import type { ExecutiveEnvelope } from "../types/executive";
 
 export type PendingCommand =
   | { kind: "open"; options?: AriaOpenOptions }
@@ -26,6 +27,7 @@ interface AriaState {
   voiceEnabled: boolean;
   pageContext: AriaPageContext | null;
   activeTurn: AriaTurn | null;
+  activeEnvelope: ExecutiveEnvelope | null;
   pendingCommands: PendingCommand[];
 
   // Actions
@@ -34,6 +36,7 @@ interface AriaState {
   setVoiceEnabled: (enabled: boolean) => void;
   setPageContext: (ctx: AriaPageContext) => void;
   setActiveTurn: (turn: AriaTurn | null) => void;
+  setActiveEnvelope: (envelope: ExecutiveEnvelope | null) => void;
   enqueue: (cmd: PendingCommand) => void;
   drainCommands: () => PendingCommand[];
 }
@@ -46,6 +49,7 @@ export const useAriaStore = create<AriaState>((set, get) => ({
     window.localStorage.getItem("aria.voiceEnabled") === "true",
   pageContext: null,
   activeTurn: null,
+  activeEnvelope: null,
   pendingCommands: [],
 
   setMode: (mode) => set({ mode }),
@@ -58,6 +62,7 @@ export const useAriaStore = create<AriaState>((set, get) => ({
   },
   setPageContext: (pageContext) => set({ pageContext }),
   setActiveTurn: (activeTurn) => set({ activeTurn }),
+  setActiveEnvelope: (activeEnvelope) => set({ activeEnvelope }),
   enqueue: (cmd) => set({ pendingCommands: [...get().pendingCommands, cmd] }),
   drainCommands: () => {
     const cmds = get().pendingCommands;
