@@ -114,19 +114,9 @@ function DemoCenter() {
           />
         </div>
 
-        {/* Tour + Reset */}
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          <button
-            onClick={() => setTourOpen(true)}
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-primary/40"
-          >
-            <PlayCircle className="h-5 w-5 text-primary" />
-            <div className="flex-1">
-              <div className="text-sm font-semibold">{isAr ? "ابدأ الجولة الإرشادية" : "Start Guided Tour"}</div>
-              <div className="text-[11px] text-muted-foreground">{isAr ? "٦ خطوات · دقيقة واحدة" : "6 steps · ~1 minute"}</div>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
-          </button>
+        {/* Reset */}
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+
 
           <button
             onClick={() => navigate({ to: "/request-demo", search: { mode: "enterprise" } })}
