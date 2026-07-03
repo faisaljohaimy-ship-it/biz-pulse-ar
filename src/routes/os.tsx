@@ -34,7 +34,9 @@ export const Route = createFileRoute("/os")({
         content:
           "Unified runtime: Digital Twin, Operations, Executive KPIs, Hajj 1447, ARIA Runtime, Realtime, Agents.",
       },
+      { property: "og:url", content: "https://neexios.com/os" },
     ],
+    links: [{ rel: "canonical", href: "https://neexios.com/os" }],
   }),
   component: OsHub,
 });
