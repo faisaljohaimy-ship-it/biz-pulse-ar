@@ -2,45 +2,40 @@
  * ARIA voice — server TTS route.
  * POST /api/aria/tts { text }  → audio/mpeg stream (ElevenLabs multilingual v2).
  * Optional env: ELEVENLABS_VOICE_ID (defaults to "Sarah" — Arabic-capable female).
- * Rate limit: 40 requests / 5 minutes per IP.
+ * Requires an authenticated Supabase user; rate limit 40 req / 5 min per user.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 
 const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual, warm female
 const MAX_CHARS = 600;
 const RATE_LIMIT = 40;
-const RATE_WINDOW_MS = 5 * 60 * 1000;
-
-type Bucket = { count: number; resetAt: number };
-const buckets = new Map<string, Bucket>();
-
-function rateLimit(ip: string): boolean {
-  const now = Date.now();
-  const b = buckets.get(ip);
-  if (!b || b.resetAt < now) {
-    buckets.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return true;
-  }
-  if (b.count >= RATE_LIMIT) return false;
-  b.count += 1;
-  return true;
-}
+const RATE_WINDOW_SECONDS = 5 * 60;
 
 export const Route = createFileRoute("/api/aria/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const auth = await verifySupabaseUser(request);
+        if (auth instanceof Response) return auth;
+
         const apiKey = process.env.ELEVENLABS_API_KEY;
         if (!apiKey) {
           return Response.json({ error: "tts_unconfigured" }, { status: 503 });
         }
-        const ip =
-          request.headers.get("cf-connecting-ip") ??
-          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-          "unknown";
-        if (!rateLimit(ip)) {
-          return Response.json({ error: "rate_limited" }, { status: 429 });
-        }
+        const { allowed, unavailable } = await enforceRateLimit(
+          `aria-tts:${auth.userId}`,
+          RATE_LIMIT,
+          RATE_WINDOW_SECONDS,
+        );
+        if (unavailable) return rateLimitUnavailableResponse();
+        if (!allowed) return rateLimitResponse();
+
         let body: { text?: unknown };
         try {
           body = (await request.json()) as { text?: unknown };
