@@ -29,7 +29,9 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "AI-native operating system for industrial security, executive command, and Hajj operations. Powered by ARIA." },
       { property: "og:title", content: "NEXIOS AI OS — Enterprise Industrial Security Operating System" },
       { property: "og:description", content: "Bilingual executive AI platform unifying security operations, digital twin, and real-time intelligence." },
+      { property: "og:url", content: "https://neexios.com/" },
     ],
+    links: [{ rel: "canonical", href: "https://neexios.com/" }],
   }),
   component: IntroLanding,
 });
