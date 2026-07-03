@@ -190,6 +190,11 @@ function LessonPage() {
             />
           </SectionCard>
 
+          {/* Executive Cockpit (Golden-Reference lessons) */}
+          {getCockpitContent(lesson.slug) && (
+            <LessonCockpit slug={lesson.slug} lang={ar ? "ar" : "en"} lessonTitle={title} />
+          )}
+
           {/* Quiz */}
           <SectionCard icon={<Award className="h-4 w-4" />} label={ar ? "اختبار المعرفة" : "Knowledge test"}>
             <LessonQuiz
