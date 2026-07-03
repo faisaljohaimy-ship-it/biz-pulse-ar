@@ -22,6 +22,7 @@
  * pre-submit is exposed via the store so executive UI panels can read it.
  */
 import { aiRouter } from "./ai-router";
+import { avatarBrain } from "./avatar-brain";
 import { confidenceEngine } from "./confidence-engine";
 import { contextAwareness } from "./context-awareness";
 import { contextManager } from "./context-manager";
@@ -115,10 +116,12 @@ export const executiveAiOrchestrator = {
     useAriaStore.getState().setActiveExecution(executionEnvelope);
 
     setPendingRouteHint(hint);
+    avatarBrain.onThinking(envelope);
     return { text: trimmed, turn, envelope, execution: executionEnvelope };
   },
   markStreaming(turnId: string) {
     conversationManager.markStreaming(turnId);
+    avatarBrain.onSpeakingStart(turnId, useAriaStore.getState().activeEnvelope);
   },
   completeTurn(turnId: string, finalText: string) {
     const scrubbed = responsePipeline.finalize(finalText);
