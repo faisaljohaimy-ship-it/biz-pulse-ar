@@ -139,7 +139,9 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
     }
 
     // Audit log + events by correlation/trace id
-    const traceId = data.traceId ?? data.runId ?? data.executionId;
+    const rawTraceId = data.traceId ?? data.runId ?? data.executionId;
+    // Strip PostgREST filter delimiters to prevent OR-clause injection.
+    const traceId = rawTraceId ? rawTraceId.replace(/[,()."\s]/g, "") : undefined;
     if (traceId) {
       const { data: audits } = await sb
         .from("audit_logs")

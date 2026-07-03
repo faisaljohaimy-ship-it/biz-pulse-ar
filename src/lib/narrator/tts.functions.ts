@@ -7,6 +7,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const Input = z.object({
   text: z.string().min(1).max(4000),
@@ -15,8 +16,14 @@ const Input = z.object({
 });
 
 export const ariaSpeak = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => Input.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
+    const rate = await enforceRateLimit(`aria-speak:${context.userId}`, 30, 60);
+    if (rate.unavailable) throw new Error("rate_limit_unavailable");
+    if (!rate.allowed) throw new Error("rate_limited");
+
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
