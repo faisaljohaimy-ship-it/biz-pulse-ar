@@ -12,6 +12,7 @@ import { HeroAIBackground } from "@/components/cinematic/HeroAIBackground";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { AriaHeroPresence } from "@/components/cinematic/AriaHeroPresence";
+import { AriaBackdrop } from "@/components/aria/AriaBackdrop";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
@@ -98,6 +99,7 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className={`relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 transition-opacity duration-1000 sm:max-w-2xl sm:pt-14 ${bootDone ? "opacity-100" : "opacity-0"}`}
       >
+        <AriaBackdrop />
         {/* Status pill — sits above the holographic presence */}
         <div className="relative mb-8 flex flex-col items-center">
           <div className="h-[220px]" aria-hidden />

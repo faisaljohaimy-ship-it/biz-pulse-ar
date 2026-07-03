@@ -651,3 +651,11 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
   .executive-fog { animation: none; }
   .executive-mote { animation: none; opacity: 0.5; }
 }
+
+@keyframes aria-breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.015); filter: brightness(1.08); }
+}
+.animate-aria-breathe { animation: aria-breathe 7s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .animate-aria-breathe { animation: none; } }
+
