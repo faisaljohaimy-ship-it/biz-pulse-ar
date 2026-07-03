@@ -1,7 +1,7 @@
 /**
  * Emotion Director — meaning-driven emotion + semantic head gesture selection.
  *
- * Pure logic module (no DOM). Consumed by HologramFace / GlobalAriaCopilot.
+ * Pure logic module (no DOM). Consumed by HologramFace / AriaCopilot.
  * Sprite generation degraded to procedural-only mode (no AriaAvatarV3 layered
  * rig with pre-baked viseme/emotion sprites exists in the repo); this module
  * still drives the full emotion + head-motion contract via procedural tints

@@ -7,7 +7,7 @@
 //   • demo-controller  (step state, playback)
 //   • camera-director  (route navigation for navigate/highlight actions)
 //   • scenes.ts        (story metadata projection)
-//   • GlobalAriaCopilot's `nexios:aria-focus` widget-pulse system
+//   • AriaCopilot `nexios:aria-focus` widget-pulse system
 //
 // It emits:
 //   • nexios:demo-scene     → { scene: DemoScene }
