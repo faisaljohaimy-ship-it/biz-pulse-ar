@@ -91,8 +91,9 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
-      {isMobile ? (
-        /* Lightweight static gradient hero backdrop — no canvas, no video, no audio */
+      {isMobile !== false ? (
+        /* Lightweight static gradient hero backdrop — no canvas, no video, no audio.
+           Also shown while viewport is unknown so mobile never fetches heavy media. */
         <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[radial-gradient(80%_55%_at_50%_0%,rgba(0,212,255,0.18),transparent_70%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_40%_at_50%_35%,rgba(58,232,255,0.10),transparent_65%)]" />
@@ -126,7 +127,7 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className={`relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 transition-opacity duration-1000 sm:max-w-2xl sm:pt-14 ${bootDone ? "opacity-100" : "opacity-0"}`}
       >
-        {isMobile ? (
+        {isMobile !== false ? (
           /* Static glow disc instead of the orb/video backdrop */
           <div
             aria-hidden
