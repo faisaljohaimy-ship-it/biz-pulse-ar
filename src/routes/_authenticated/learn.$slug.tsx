@@ -20,6 +20,8 @@ import { LessonSimulation } from "@/components/learn/LessonSimulation";
 import { LessonARIAChat } from "@/components/learn/LessonARIAChat";
 import { LessonQuiz } from "@/components/learn/LessonQuiz";
 import { LessonNav } from "@/components/learn/LessonNav";
+import { LessonCockpit } from "@/components/learn/LessonCockpit";
+import { getCockpitContent } from "@/lib/learn/cockpit-content";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/learn/$slug")({
@@ -187,6 +189,11 @@ function LessonPage() {
               onCompleted={invalidate}
             />
           </SectionCard>
+
+          {/* Executive Cockpit (Golden-Reference lessons) */}
+          {getCockpitContent(lesson.slug) && (
+            <LessonCockpit slug={lesson.slug} lang={ar ? "ar" : "en"} lessonTitle={title} />
+          )}
 
           {/* Quiz */}
           <SectionCard icon={<Award className="h-4 w-4" />} label={ar ? "اختبار المعرفة" : "Knowledge test"}>
