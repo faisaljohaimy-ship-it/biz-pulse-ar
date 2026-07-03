@@ -1736,6 +1736,222 @@ export type Database = {
           },
         ]
       }
+      learn_lesson_progress: {
+        Row: {
+          completed_at: string | null
+          last_seen_at: string
+          lesson_id: string
+          quiz_best_score: number
+          quiz_passed: boolean
+          simulation_completed: boolean
+          status: string
+          user_id: string
+          video_watched_seconds: number
+        }
+        Insert: {
+          completed_at?: string | null
+          last_seen_at?: string
+          lesson_id: string
+          quiz_best_score?: number
+          quiz_passed?: boolean
+          simulation_completed?: boolean
+          status?: string
+          user_id: string
+          video_watched_seconds?: number
+        }
+        Update: {
+          completed_at?: string | null
+          last_seen_at?: string
+          lesson_id?: string
+          quiz_best_score?: number
+          quiz_passed?: boolean
+          simulation_completed?: boolean
+          status?: string
+          user_id?: string
+          video_watched_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learn_lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learn_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learn_lessons: {
+        Row: {
+          aria_suggested_prompts: Json
+          aria_system_prompt_ar: string
+          aria_system_prompt_en: string
+          category: string
+          cover_url: string | null
+          created_at: string
+          id: string
+          narration_ar: string
+          narration_en: string
+          objectives_ar: Json
+          objectives_en: Json
+          order_index: number
+          published: boolean
+          quiz_pass_score: number
+          simulation_kind: string | null
+          slug: string
+          subtitle_ar: string
+          subtitle_en: string
+          summary_ar: string
+          summary_en: string
+          title_ar: string
+          title_en: string
+          updated_at: string
+          video_duration_seconds: number
+          video_url: string | null
+        }
+        Insert: {
+          aria_suggested_prompts?: Json
+          aria_system_prompt_ar?: string
+          aria_system_prompt_en?: string
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          narration_ar?: string
+          narration_en?: string
+          objectives_ar?: Json
+          objectives_en?: Json
+          order_index?: number
+          published?: boolean
+          quiz_pass_score?: number
+          simulation_kind?: string | null
+          slug: string
+          subtitle_ar: string
+          subtitle_en: string
+          summary_ar: string
+          summary_en: string
+          title_ar: string
+          title_en: string
+          updated_at?: string
+          video_duration_seconds?: number
+          video_url?: string | null
+        }
+        Update: {
+          aria_suggested_prompts?: Json
+          aria_system_prompt_ar?: string
+          aria_system_prompt_en?: string
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          narration_ar?: string
+          narration_en?: string
+          objectives_ar?: Json
+          objectives_en?: Json
+          order_index?: number
+          published?: boolean
+          quiz_pass_score?: number
+          simulation_kind?: string | null
+          slug?: string
+          subtitle_ar?: string
+          subtitle_en?: string
+          summary_ar?: string
+          summary_en?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+          video_duration_seconds?: number
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      learn_quiz_attempts: {
+        Row: {
+          answers: Json
+          attempted_at: string
+          id: string
+          lesson_id: string
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          attempted_at?: string
+          id?: string
+          lesson_id: string
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          attempted_at?: string
+          id?: string
+          lesson_id?: string
+          passed?: boolean
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learn_quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learn_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learn_quiz_questions: {
+        Row: {
+          correct_index: number
+          created_at: string
+          explanation_ar: string
+          explanation_en: string
+          id: string
+          lesson_id: string
+          options_ar: Json
+          options_en: Json
+          order_index: number
+          prompt_ar: string
+          prompt_en: string
+        }
+        Insert: {
+          correct_index: number
+          created_at?: string
+          explanation_ar?: string
+          explanation_en?: string
+          id?: string
+          lesson_id: string
+          options_ar: Json
+          options_en: Json
+          order_index?: number
+          prompt_ar: string
+          prompt_en: string
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          explanation_ar?: string
+          explanation_en?: string
+          id?: string
+          lesson_id?: string
+          options_ar?: Json
+          options_en?: Json
+          order_index?: number
+          prompt_ar?: string
+          prompt_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learn_quiz_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learn_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           citations: Json | null

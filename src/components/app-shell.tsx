@@ -41,7 +41,7 @@ import {
   MapPin,
   Play,
   Activity,
-  Wrench, Radio, Stethoscope,
+  Wrench, Radio, Stethoscope, GraduationCap,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -199,6 +199,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/prompts", icon: BookMarked, label: t("nav.prompts") },
         { to: "/marketplace", icon: Store, label: t("nav.marketplace") },
         { to: "/knowledge", icon: BookOpen, label: t("nav.knowledge") },
+        { to: "/learn", icon: GraduationCap, label: locale === "ar" ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge" },
         { to: "/analytics", icon: BarChart3, label: t("nav.analytics") },
       ],
     },
