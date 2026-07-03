@@ -91,6 +91,8 @@ export function AriaDock() {
   const seenRef = useRef<Set<string>>(new Set());
   const hydratedRef = useRef(false);
   const listener = useAgentListener();
+  const ariaSpeech = useAriaSpeech();
+
   // The opening greeting is audio-only: ARIA speaks the welcome line before
   // the dock UI (avatar, transcript, controls) becomes visible. We reveal
   // the dock when the welcome turn finishes (or after a safety timeout).
