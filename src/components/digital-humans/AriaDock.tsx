@@ -607,20 +607,39 @@ export function AriaDock() {
                       ? <MicOff className="h-3.5 w-3.5" />
                       : <Mic className="h-3.5 w-3.5" />}
                 </Button>
-                {/* Audio controls intentionally removed for executive minimalism.
-                    Voice playback is auto-managed by the listener pipeline. */}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className={cn(
+                    "h-7 w-7 hover:bg-white/10",
+                    ariaSpeech.muted ? "text-white/60" : "text-cyan-200 hover:text-white",
+                  )}
+                  onClick={() => {
+                    ariaSpeech.setMuted((m) => {
+                      const next = !m;
+                      if (next) ariaSpeech.stop();
+                      setAriaLiveText(next ? (ar ? "صوت آريا مكتوم" : "ARIA voice muted") : (ar ? "صوت آريا مفعّل" : "ARIA voice on"));
+                      return next;
+                    });
+                  }}
+                  aria-label={ar ? "تشغيل/كتم صوت آريا" : "Toggle ARIA voice"}
+                  title={ariaSpeech.muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+                  aria-pressed={!ariaSpeech.muted}
+                >
+                  {ariaSpeech.muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10"
-                  onClick={() => setMinimized(true)}
+                  onClick={() => { ariaSpeech.stop(); setMinimized(true); }}
                   aria-label={ar ? "تصغير" : "Minimize"}
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
                 <button
                   type="button"
-                  onClick={() => setHidden(true)}
+                  onClick={() => { ariaSpeech.stop(); setHidden(true); }}
                   aria-label={ar ? "إخفاء آريا" : "Dismiss ARIA"}
                   title={ar ? "إخفاء" : "Dismiss"}
                   className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/40 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
@@ -630,6 +649,7 @@ export function AriaDock() {
                 </button>
               </div>
             </div>
+
 
             <AriaStatusStrip
               className="mt-2"
