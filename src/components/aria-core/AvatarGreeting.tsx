@@ -2,17 +2,20 @@
  * AvatarGreeting — plays a one-shot MP4 greeting when the ARIA panel opens,
  * then cross-fades to a still image. Fully isolated from HeyGen streaming.
  *
- * Behavior:
- *   • On mount (panel open): autoplay /aria-greeting.mp4 with sound.
- *   • On end: 300ms fade to still image.
- *   • Autoplay-with-sound blocked → fall back to muted autoplay + unmute chip.
- *   • Unmount (panel close): pause + reset instantly. No audio leaks.
- *   • Video error → still image immediately.
+ * Guarantees:
+ *   • Still image is ALWAYS mounted underneath the video — a video failure
+ *     can never expose an empty box.
+ *   • Hard 3s load timeout: if the video hasn't produced a frame by then,
+ *     we fall back to the still image immediately.
+ *   • Panel close → pause, reset, drop audio; no audio leaks.
  */
 import { useEffect, useRef, useState } from "react";
 import ariaStill from "@/assets/aria-hologram.png.asset.json";
 
 const VIDEO_SRC = "/aria-greeting.mp4";
+// Primary still uses the bundled asset URL (guaranteed to exist). We keep a
+// second /aria.png attempt only as a very last resort.
+const STILL_PRIMARY = ariaStill.url;
 const STILL_FALLBACK = "/aria.png";
 
 type Phase = "video" | "fading" | "still" | "error";
@@ -24,18 +27,28 @@ export function AvatarGreeting() {
 
   useEffect(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v) {
+      setPhase("error");
+      return;
+    }
 
     let cancelled = false;
     v.muted = false;
     v.volume = 1;
+
+    // Hard 3s load timeout — if no frame is ready, degrade to still.
+    const loadTimeout = window.setTimeout(() => {
+      if (cancelled) return;
+      if (v.readyState < 2) {
+        setPhase("error");
+      }
+    }, 3000);
 
     const tryPlay = async () => {
       try {
         await v.play();
         if (!cancelled) setNeedsUnmute(false);
       } catch {
-        // Autoplay with sound blocked — fall back to muted autoplay.
         if (cancelled) return;
         v.muted = true;
         setNeedsUnmute(true);
@@ -50,7 +63,7 @@ export function AvatarGreeting() {
 
     return () => {
       cancelled = true;
-      // Hard stop: pause, reset, drop audio immediately.
+      window.clearTimeout(loadTimeout);
       try {
         v.pause();
         v.currentTime = 0;
@@ -83,12 +96,24 @@ export function AvatarGreeting() {
     }
   };
 
-  const showVideo = phase === "video" || phase === "fading";
-  const showStill = phase !== "video";
+  const videoVisible = phase === "video";
+  const videoMounted = phase === "video" || phase === "fading";
 
   return (
     <div className="relative mx-4 mt-3 aspect-video overflow-hidden rounded-xl border border-primary/20 bg-background/50">
-      {showVideo && (
+      {/* Still image is ALWAYS mounted underneath — guarantees no blank box. */}
+      <img
+        src={STILL_PRIMARY}
+        onError={(e) => {
+          const img = e.currentTarget as HTMLImageElement;
+          if (img.src.endsWith(STILL_FALLBACK)) return;
+          img.src = STILL_FALLBACK;
+        }}
+        alt="ARIA"
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      {videoMounted && (
         <video
           ref={videoRef}
           src={VIDEO_SRC}
@@ -98,20 +123,7 @@ export function AvatarGreeting() {
           onEnded={handleEnded}
           onError={handleError}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
-            phase === "fading" ? "opacity-0" : "opacity-100"
-          }`}
-        />
-      )}
-      {showStill && (
-        <img
-          src={STILL_FALLBACK}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = ariaStill.url;
-          }}
-          alt="ARIA"
-          draggable={false}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
-            phase === "still" || phase === "error" ? "opacity-100" : "opacity-0"
+            videoVisible ? "opacity-100" : "opacity-0"
           }`}
         />
       )}
