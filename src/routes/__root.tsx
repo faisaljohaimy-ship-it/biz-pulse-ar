@@ -180,8 +180,11 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <AriaProvider>
+                <AriaSystemBackdrop />
                 <BetaMarqueeBar />
-                <Outlet />
+                <div className="relative z-10">
+                  <Outlet />
+                </div>
                 <AriaCopilot />
                 <Toaster />
               </AriaProvider>
