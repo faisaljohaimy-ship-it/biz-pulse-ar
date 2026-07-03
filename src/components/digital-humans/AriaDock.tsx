@@ -37,6 +37,7 @@ import { HologramFace } from "@/components/digital-humans/HologramFace";
 import { AriaStatusStrip } from "@/components/digital-humans/AriaStatusStrip";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 /** Strip markdown / emoji so TTS reads clean prose. */
 function stripForSpeech(input: string): string {
@@ -429,6 +430,7 @@ export function AriaDock() {
     setTypedLoading(true);
     setTypedError(null);
     // Barge-in: cut any prior ARIA voice the moment the user sends again.
+    AriaAudioBus.unlock();
     ariaSpeech.stop();
     // Route reply audio exclusively through useAriaSpeech (ElevenLabs → browser fallback).
     // Silencing the internal queue speaker prevents double-voicing while keeping the
@@ -517,7 +519,7 @@ export function AriaDock() {
   return (
     <button
         type="button"
-        onClick={() => setHidden(false)}
+        onClick={() => { AriaAudioBus.unlock(); setHidden(false); }}
         className="fixed bottom-4 right-4 z-[60] h-14 w-14 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 backdrop-blur-xl shadow-[0_0_24px_rgba(0,212,255,0.45)] overflow-hidden hover:scale-105 transition-transform"
         aria-label={ar ? "إظهار آريا" : "Show ARIA"}
       >
@@ -632,14 +634,14 @@ export function AriaDock() {
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10"
-                  onClick={() => { ariaSpeech.stop(); setMinimized(true); }}
+                  onClick={() => { AriaAudioBus.stopAll(); ariaSpeech.stop(); setMinimized(true); }}
                   aria-label={ar ? "تصغير" : "Minimize"}
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
                 <button
                   type="button"
-                  onClick={() => { ariaSpeech.stop(); setHidden(true); }}
+                  onClick={() => { AriaAudioBus.stopAll(); ariaSpeech.stop(); setHidden(true); }}
                   aria-label={ar ? "إخفاء آريا" : "Dismiss ARIA"}
                   title={ar ? "إخفاء" : "Dismiss"}
                   className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/40 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
@@ -747,7 +749,7 @@ export function AriaDock() {
               size="icon"
               variant="ghost"
               className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10 self-center"
-              onClick={() => setMinimized(false)}
+              onClick={() => { AriaAudioBus.unlock(); setMinimized(false); }}
               aria-label={ar ? "توسيع" : "Expand"}
             >
               <ChevronUp className="h-3.5 w-3.5" />

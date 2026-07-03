@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 const MUTE_KEY = "aria-voice-muted";
+const TTS_TIMEOUT_MS = 10_000;
+
+type Source = "chat-tts" | "panel-greeting";
 
 /**
- * useAriaSpeech — plays every assistant reply aloud.
+ * useAriaSpeech — every assistant reply spoken aloud, through the
+ * ARIA global audio arbiter (zero overlap guarantee).
  *
- * Primary: streams MP3 from /api/aria/tts (ElevenLabs, Arabic-capable).
- * Fallback: browser `speechSynthesis` (ar-SA) so voice NEVER breaks the chat.
- *
- * Barge-in: any new `speak()` cancels the current utterance. Callers MUST
- * invoke `stop()` on panel close and on component unmount.
+ * Primary: /api/aria/tts (ElevenLabs, Arabic-capable).
+ * Fallback: browser `speechSynthesis` (ar-SA).
+ * Both paths acquire/release the same bus channel.
  */
 export function useAriaSpeech() {
   const [muted, setMutedState] = useState<boolean>(() => {
@@ -23,136 +26,141 @@ export function useAriaSpeech() {
   const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mutedRef = useRef(muted);
-  useEffect(() => {
-    mutedRef.current = muted;
-  }, [muted]);
+  useEffect(() => { mutedRef.current = muted; }, [muted]);
 
   const setMuted = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
     setMutedState((prev) => {
       const next = typeof v === "function" ? (v as (p: boolean) => boolean)(prev) : v;
-      try {
-        window.localStorage.setItem(MUTE_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
+      try { window.localStorage.setItem(MUTE_KEY, next ? "1" : "0"); } catch { /* ignore */ }
       return next;
     });
   }, []);
 
-  const stop = useCallback(() => {
+  const hardStop = useCallback((source: Source) => {
     const a = audioRef.current;
     if (a) {
-      try {
-        a.pause();
-      } catch {
-        /* ignore */
-      }
+      try { a.pause(); } catch { /* ignore */ }
       const src = a.src;
-      try {
-        a.src = "";
-      } catch {
-        /* ignore */
-      }
+      try { a.src = ""; } catch { /* ignore */ }
       if (src && src.startsWith("blob:")) {
-        try {
-          URL.revokeObjectURL(src);
-        } catch {
-          /* ignore */
-        }
+        try { URL.revokeObjectURL(src); } catch { /* ignore */ }
       }
       audioRef.current = null;
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        /* ignore */
-      }
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
+    AriaAudioBus.release(source);
     setSpeaking(false);
   }, []);
 
-  // Auto-mute the moment the user flips the toggle mid-speech.
-  useEffect(() => {
-    if (muted) stop();
-  }, [muted, stop]);
+  const stop = useCallback(() => {
+    hardStop("chat-tts");
+    hardStop("panel-greeting");
+  }, [hardStop]);
 
-  const speakFallback = useCallback((text: string) => {
+  useEffect(() => { if (muted) stop(); }, [muted, stop]);
+
+  const speakFallback = useCallback((text: string, source: Source) => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
+      AriaAudioBus.release(source);
       setSpeaking(false);
       return;
     }
-    try {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "ar-SA";
-      u.rate = 0.95;
-      const voices = window.speechSynthesis.getVoices();
-      const arVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("ar"));
-      if (arVoice) u.voice = arVoice;
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
-      setSpeaking(true);
-      window.speechSynthesis.speak(u);
-    } catch {
-      setSpeaking(false);
+    const trySpeak = () => {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ar-SA";
+        u.rate = 0.95;
+        const voices = window.speechSynthesis.getVoices();
+        const arVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("ar"));
+        if (arVoice) u.voice = arVoice;
+        const cleanup = () => {
+          AriaAudioBus.release(source);
+          setSpeaking(false);
+        };
+        u.onend = cleanup;
+        u.onerror = () => { console.warn("[aria-voice] browser speech error"); cleanup(); };
+        setSpeaking(true);
+        window.speechSynthesis.speak(u);
+      } catch (err) {
+        console.warn("[aria-voice] browser speech threw", err);
+        AriaAudioBus.release(source);
+        setSpeaking(false);
+      }
+    };
+    // iOS voices race: retry once on voiceschanged if list is empty
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) {
+      const onChanged = () => {
+        window.speechSynthesis.removeEventListener("voiceschanged", onChanged);
+        trySpeak();
+      };
+      window.speechSynthesis.addEventListener("voiceschanged", onChanged, { once: true });
+      // Also try immediately as a race guard
+      setTimeout(trySpeak, 250);
+    } else {
+      trySpeak();
     }
   }, []);
 
   const speak = useCallback(
-    async (text: string) => {
+    async (text: string, source: Source = "chat-tts") => {
       const clean = (text ?? "").toString().trim();
       if (!clean || mutedRef.current) return;
-      stop(); // barge-in
+      AriaAudioBus.unlock();
+
+      // Acquire channel — bus stops whatever's playing.
+      const granted = AriaAudioBus.acquire(source, () => hardStop(source));
+      if (!granted) return;
+
       setSpeaking(true);
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
+
       try {
         const res = await fetch("/api/aria/tts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text: clean.slice(0, 600) }),
+          signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (!res.ok) throw new Error(`tts_${res.status}`);
         const blob = await res.blob();
-        if (mutedRef.current) return; // toggled off while fetching
+        if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audioRef.current = audio;
         const finish = () => {
           if (audioRef.current === audio) audioRef.current = null;
-          try {
-            URL.revokeObjectURL(url);
-          } catch {
-            /* ignore */
-          }
+          try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+          AriaAudioBus.release(source);
           setSpeaking(false);
         };
         audio.onended = finish;
-        audio.onerror = finish;
+        audio.onerror = () => { console.warn("[aria-voice] audio playback error"); finish(); };
         await audio.play();
-      } catch {
-        // Graceful fallback: browser TTS keeps voice working even without ElevenLabs.
-        speakFallback(clean);
+      } catch (err) {
+        clearTimeout(timeout);
+        console.warn("[aria-voice] elevenlabs failed, falling back:", err);
+        if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
+        speakFallback(clean, source);
       }
     },
-    [stop, speakFallback],
+    [hardStop, speakFallback],
   );
 
   useEffect(() => {
     return () => {
       const a = audioRef.current;
-      if (a) {
-        try {
-          a.pause();
-        } catch {
-          /* ignore */
-        }
-      }
+      if (a) { try { a.pause(); } catch { /* ignore */ } }
       if (typeof window !== "undefined" && window.speechSynthesis) {
-        try {
-          window.speechSynthesis.cancel();
-        } catch {
-          /* ignore */
-        }
+        try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
       }
+      AriaAudioBus.release("chat-tts");
+      AriaAudioBus.release("panel-greeting");
     };
   }, []);
 
