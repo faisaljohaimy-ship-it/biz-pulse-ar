@@ -42,6 +42,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PromoIndexRouteImport } from './routes/promo/index'
 import { Route as PromoImpactRouteImport } from './routes/promo/impact'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
@@ -330,6 +331,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoIndexRoute = PromoIndexRouteImport.update({
+  id: '/promo/',
+  path: '/promo/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromoImpactRoute = PromoImpactRouteImport.update({
@@ -1101,6 +1107,7 @@ export interface FileRoutesByFullPath {
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/promo/impact': typeof PromoImpactRoute
+  '/promo/': typeof PromoIndexRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1258,6 +1265,7 @@ export interface FileRoutesByTo {
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/promo/impact': typeof PromoImpactRoute
+  '/promo': typeof PromoIndexRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1419,6 +1427,7 @@ export interface FileRoutesById {
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/promo/impact': typeof PromoImpactRoute
+  '/promo/': typeof PromoIndexRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1580,6 +1589,7 @@ export interface FileRouteTypes {
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/promo/impact'
+    | '/promo/'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1737,6 +1747,7 @@ export interface FileRouteTypes {
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/promo/impact'
+    | '/promo'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1897,6 +1908,7 @@ export interface FileRouteTypes {
     | '/api/voice-token'
     | '/email/unsubscribe'
     | '/promo/impact'
+    | '/promo/'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
@@ -1995,6 +2007,7 @@ export interface RootRouteChildren {
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   PromoImpactRoute: typeof PromoImpactRoute
+  PromoIndexRoute: typeof PromoIndexRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
@@ -2250,6 +2263,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/': {
+      id: '/promo/'
+      path: '/promo'
+      fullPath: '/promo/'
+      preLoaderRoute: typeof PromoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/promo/impact': {
@@ -3411,6 +3431,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   PromoImpactRoute: PromoImpactRoute,
+  PromoIndexRoute: PromoIndexRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
