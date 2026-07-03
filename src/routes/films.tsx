@@ -329,16 +329,19 @@ function PlayerModal({ film, isAr, onClose }: { film: Film; isAr: boolean; onClo
           </div>
         </div>
         <div className="bg-black">
-          <video
-            ref={videoRef}
-            src={film.src}
-            poster={film.poster}
-            controls
-            autoPlay
-            playsInline
-            preload="metadata"
-            className="aspect-video h-auto w-full bg-black"
-          />
+          {/* Video removed site-wide — poster still shown. */}
+          {film.poster ? (
+            <img
+              src={film.poster}
+              alt=""
+              className="aspect-video h-auto w-full bg-black object-cover opacity-80"
+            />
+          ) : (
+            <div className="aspect-video w-full bg-black" />
+          )}
+          <div className="px-4 py-3 text-center text-xs text-white/60">
+            {isAr ? "تشغيل الفيديو معطّل — استخدم أريا للشرح المباشر" : "Video playback disabled — ask ARIA for a live walkthrough"}
+          </div>
         </div>
       </div>
     </div>
