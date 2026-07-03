@@ -466,6 +466,7 @@ function PromoImpact() {
       `}</style>
       <div onClick={() => setPaused((v) => !v)} className="cursor-pointer">
         <ScenePlayer scenes={scenes} duration={DURATION} paused={paused} />
+        <HologramOverlay />
       </div>
     </>
   );
