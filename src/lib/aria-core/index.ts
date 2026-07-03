@@ -37,7 +37,6 @@ export { permissionGuard } from "./core/permission-guard";
 export { approvalGate } from "./core/approval-gate";
 export { executionQueue } from "./core/execution-queue";
 export { executionSimulator } from "./core/execution-simulator";
-export { executionSimulator as executionSimulatorEngine } from "./core/execution-simulator";
 export { auditTrail } from "./core/audit-trail";
 export type { ActionType, ActionDefinition } from "./core/action-registry";
 export type { ToolId, ToolDescriptor, ToolCategory } from "./core/tool-registry";
