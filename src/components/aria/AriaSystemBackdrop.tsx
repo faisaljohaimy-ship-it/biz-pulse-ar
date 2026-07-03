@@ -21,14 +21,25 @@ export function AriaSystemBackdrop() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [mode, setMode] = useState<"video" | "still">("still");
   const [voiceOn, setVoiceOn] = useState(false);
+  // Mobile crash guard: on ≤768px viewports never load the greeting video or
+  // the large hologram still — lightweight glow only. `null` = unknown yet.
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Init: decide mode + hydrate voice pref
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || isMobile !== false) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!reduced && sessionStorage.getItem(KEY) !== "1") setMode("video");
     try { setVoiceOn(localStorage.getItem(VOICE_KEY) === "1"); } catch { /* noop */ }
-  }, []);
+  }, [isMobile]);
 
   // Greeting playback lifecycle
   useEffect(() => {
@@ -125,7 +136,7 @@ export function AriaSystemBackdrop() {
           }}
         />
 
-        {mode === "video" ? (
+        {isMobile !== false ? null : mode === "video" ? (
           <video
             ref={videoRef}
             src={GREETING_SRC}
@@ -157,16 +168,18 @@ export function AriaSystemBackdrop() {
         />
       </div>
 
-      {/* Unmute button — only interactive element in the backdrop layer */}
-      <button
-        type="button"
-        onClick={toggleVoice}
-        aria-pressed={voiceOn}
-        aria-label={voiceOn ? "Mute ARIA voice" : "Unmute ARIA voice"}
-        className="pointer-events-auto fixed end-4 top-4 z-40 grid h-9 w-9 place-items-center rounded-full border border-cyan-400/40 bg-black/50 text-cyan-200 backdrop-blur-md transition hover:bg-black/70 hover:text-cyan-100"
-      >
-        {voiceOn ? <Volume2 className="h-4 w-4" aria-hidden /> : <VolumeX className="h-4 w-4" aria-hidden />}
-      </button>
+      {/* Unmute button — only interactive element in the backdrop layer (desktop only) */}
+      {isMobile === false && (
+        <button
+          type="button"
+          onClick={toggleVoice}
+          aria-pressed={voiceOn}
+          aria-label={voiceOn ? "Mute ARIA voice" : "Unmute ARIA voice"}
+          className="pointer-events-auto fixed end-4 top-4 z-40 grid h-9 w-9 place-items-center rounded-full border border-cyan-400/40 bg-black/50 text-cyan-200 backdrop-blur-md transition hover:bg-black/70 hover:text-cyan-100"
+        >
+          {voiceOn ? <Volume2 className="h-4 w-4" aria-hidden /> : <VolumeX className="h-4 w-4" aria-hidden />}
+        </button>
+      )}
     </>
   );
 }
