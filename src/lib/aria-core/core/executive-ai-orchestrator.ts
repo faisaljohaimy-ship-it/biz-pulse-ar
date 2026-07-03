@@ -97,8 +97,22 @@ export const executiveAiOrchestrator = {
     };
     useAriaStore.getState().setActiveEnvelope(envelope);
 
+    // ── Phase 3: Executive Execution Envelope ─────────────────────────
+    const executionEnvelope = executionPlanner.plan({
+      turnId: turn.id,
+      intent: hint.intent,
+      objective_ar: reasoning.executive_summary_ar,
+      objective_en: reasoning.executive_summary_en,
+      decision,
+      risk,
+      priority,
+      confidence,
+      nextActions,
+    });
+    useAriaStore.getState().setActiveExecution(executionEnvelope);
+
     setPendingRouteHint(hint);
-    return { text: trimmed, turn, envelope };
+    return { text: trimmed, turn, envelope, execution: executionEnvelope };
   },
   markStreaming(turnId: string) {
     conversationManager.markStreaming(turnId);
