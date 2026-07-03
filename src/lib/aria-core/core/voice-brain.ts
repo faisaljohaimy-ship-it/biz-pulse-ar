@@ -37,45 +37,15 @@ class VoiceBrain {
   }
 
   /** Attach an audio stream (mic or TTS output) for real lip amplitudes. */
-  attachStream(stream: MediaStream): void {
-    if (typeof window === "undefined") return;
-    this.detachStream();
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.ctx = new AudioCtx();
-      const src = this.ctx.createMediaStreamSource(stream);
-      const analyser = this.ctx.createAnalyser();
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.6;
-      src.connect(analyser);
-      this.analyser = analyser;
-      const data = new Uint8Array(analyser.frequencyBinCount);
-      const tick = () => {
-        if (!this.analyser) return;
-        this.analyser.getByteTimeDomainData(data);
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) {
-          const v = (data[i] - 128) / 128;
-          sum += v * v;
-        }
-        const rms = Math.sqrt(sum / data.length);
-        avatarBrain.pushLipAmplitude(Math.min(1, rms * 3.2));
-        this.ampRaf = window.requestAnimationFrame(tick);
-      };
-      this.ampRaf = window.requestAnimationFrame(tick);
-    } catch {
-      this.detachStream();
-    }
+  attachStream(_stream: MediaStream): void {
+    // AudioContext removed site-wide — lip-sync analyser disabled.
+    // The AriaBackdrop reads presence state directly from `ariaState`.
   }
 
   detachStream(): void {
-    if (this.ampRaf !== null && typeof window !== "undefined") {
-      window.cancelAnimationFrame(this.ampRaf);
-    }
-    this.ampRaf = null;
-    this.analyser = null;
-    if (this.ctx) { this.ctx.close().catch(() => {}); this.ctx = null; }
+    // no-op — nothing to detach.
   }
+
 
   private handleVoiceChange(next: AriaVoiceState): void {
     if (next === this.lastVoice) return;
