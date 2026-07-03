@@ -18,6 +18,7 @@ import { AriaHeroGreeting } from "@/components/aria/AriaHeroGreeting";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,9 +45,16 @@ function IntroLanding() {
   // navigation handled via <Link> below
   const { locale } = useI18n();
   const ar = locale === "ar";
+  // Mobile Safari crash guard: no canvas particles, no orb video, no boot
+  // animation, no AudioContext on viewports ≤768px — static gradient hero only.
+  const isMobile = useIsMobile();
   const [bootDone, setBootDone] = useState(false);
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobile) setBootDone(true);
+  }, [isMobile]);
 
   // Lock dark mode on the executive landing hero — required for delivery.
   useEffect(() => {
