@@ -24,10 +24,8 @@ import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 import { AriaSystemBackdrop } from "@/components/aria/AriaSystemBackdrop";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
-import { TourProvider } from "@/lib/simulation/tour/tour-controller";
-import { TourOverlay } from "@/components/simulation/TourOverlay";
-import { TourLauncher } from "@/components/simulation/TourLauncher";
-import { HighlightSpotlight } from "@/components/simulation/HighlightSpotlight";
+
+
 
 function NotFoundComponent() {
   return (
