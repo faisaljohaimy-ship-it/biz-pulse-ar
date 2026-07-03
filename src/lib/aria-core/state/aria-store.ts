@@ -13,6 +13,7 @@ import type {
   AriaTurn,
   AriaVoiceState,
 } from "../types/aria";
+import type { ExecutiveEnvelope } from "../types/executive";
 
 export type PendingCommand =
   | { kind: "open"; options?: AriaOpenOptions }
