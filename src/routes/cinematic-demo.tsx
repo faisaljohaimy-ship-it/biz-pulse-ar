@@ -144,9 +144,10 @@ function CinematicDemo() {
   const [muted, setMuted] = useState(true);
   const rafRef = useRef<number | null>(null);
   const lastRef = useRef<number | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
+  // Audio/AudioContext removed site-wide. ARIA chat is the only voice.
+  const audioCtxRef = useRef<null>(null);
+  const oscRef = useRef<null>(null);
+  const gainRef = useRef<null>(null);
 
   // RAF clock
   useEffect(() => {
@@ -171,35 +172,6 @@ function CinematicDemo() {
     };
   }, [playing]);
 
-  // Ambient drone (placeholder cinematic sound)
-  useEffect(() => {
-    if (muted) {
-      if (gainRef.current) gainRef.current.gain.value = 0;
-      return;
-    }
-    if (typeof window === "undefined") return;
-    try {
-      if (!audioCtxRef.current) {
-        const AC = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AC();
-        const osc = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine"; osc.frequency.value = 55;
-        osc2.type = "sine"; osc2.frequency.value = 82.4;
-        gain.gain.value = 0;
-        osc.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc2.start();
-        audioCtxRef.current = ctx; oscRef.current = osc; gainRef.current = gain;
-      }
-      audioCtxRef.current?.resume();
-      if (gainRef.current) gainRef.current.gain.linearRampToValueAtTime(0.04, audioCtxRef.current!.currentTime + 1.5);
-    } catch {}
-  }, [muted]);
-
-  useEffect(() => () => {
-    try { oscRef.current?.stop(); audioCtxRef.current?.close(); } catch {}
-  }, []);
 
   // current scene
   const { scene, sceneT, sceneIndex } = useMemo(() => {
