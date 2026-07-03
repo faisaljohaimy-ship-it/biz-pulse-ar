@@ -186,16 +186,12 @@ function RootComponent() {
           <I18nProvider>
             <AriaContextProvider>
               <DemoModeProvider>
-                <BetaMarqueeBar />
-                <Outlet />
-                <GlobalAriaCopilot />
-                <AriaLiveBriefing />
-                <DeveloperBrainToggle />
-                <DemoMotionOverlay />
-                <DemoAriaPresenter />
-                <PresentationLayer />
-                <DemoModeHUD />
-                <Toaster />
+                <AriaProvider>
+                  <BetaMarqueeBar />
+                  <Outlet />
+                  <AriaCopilot />
+                  <Toaster />
+                </AriaProvider>
               </DemoModeProvider>
             </AriaContextProvider>
           </I18nProvider>
