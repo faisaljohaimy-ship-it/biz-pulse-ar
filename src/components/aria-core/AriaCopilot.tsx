@@ -48,7 +48,7 @@ export function AriaCopilot() {
 
   const statusLabel = useMemo(() => {
     switch (voice) {
-      case "thinking":
+      case "processing":
         return "ARIA is thinking…";
       case "speaking":
         return "ARIA is speaking…";
