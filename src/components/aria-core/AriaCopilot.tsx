@@ -25,7 +25,7 @@ const THINKING_AR = "آريا تفكّر…";
 
 const GREETING_SRC = "/aria-greeting.mp4";
 const STILL_SRC = "/aria.png";
-const SESSION_KEY = "aria-panel-greeted";
+const VOICE_OK_KEY = "aria-panel-voice-ok";
 
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
@@ -39,47 +39,77 @@ function sanitiseAssistantText(raw: string): string {
   return t.trim();
 }
 
-/** Full-panel ARIA backdrop — greeting video once, then still. */
+/** Full-panel ARIA backdrop — greeting video every panel-open, then still.
+ *  Attempts audible playback; falls back to a tap-to-listen chip when the
+ *  browser blocks unmuted autoplay. Hard-stops on panel close. */
 function AriaPanelBackdrop({ active }: { active: boolean }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [mode, setMode] = useState<"video" | "still">("still");
+  const [needsTap, setNeedsTap] = useState(false);
 
+  // Panel-open: (re)start greeting every time. prefers-reduced-motion → still.
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      // Panel closed → hard stop
+      const v = videoRef.current;
+      if (v) { try { v.pause(); v.currentTime = 0; } catch { /* noop */ } }
+      setMode("still");
+      setNeedsTap(false);
+      return;
+    }
     if (typeof window === "undefined") return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let greeted = false;
-    try {
-      greeted = sessionStorage.getItem(SESSION_KEY) === "1";
-    } catch { /* noop */ }
-    setMode(!reduced && !greeted ? "video" : "still");
+    setMode(reduced ? "still" : "video");
   }, [active]);
 
   useEffect(() => {
-    if (mode !== "video") return;
+    if (mode !== "video" || !active) return;
     const v = videoRef.current;
     if (!v) return;
-    const toStill = () => {
-      try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-      setMode("still");
-    };
+    const toStill = () => setMode("still");
     v.addEventListener("ended", toStill);
     v.addEventListener("error", toStill);
     const timeout = setTimeout(() => {
       if (v.readyState < 2) toStill();
-    }, 3000);
-    v.play().catch(toStill);
+    }, 4000);
+
+    // Try audible first if user previously approved; else muted autoplay
+    // and offer a tap chip to enable sound.
+    const voiceOk = (() => {
+      try { return localStorage.getItem(VOICE_OK_KEY) === "1"; } catch { return false; }
+    })();
+    v.muted = !voiceOk;
+    v.volume = 1;
+    v.play()
+      .then(() => { if (!v.muted) setNeedsTap(false); else setNeedsTap(true); })
+      .catch(() => {
+        // Autoplay blocked entirely — fall back to muted play + chip.
+        v.muted = true;
+        v.play().then(() => setNeedsTap(true)).catch(toStill);
+      });
+
     return () => {
       v.removeEventListener("ended", toStill);
       v.removeEventListener("error", toStill);
       clearTimeout(timeout);
     };
-  }, [mode]);
+  }, [mode, active]);
+
+  const enableVoice = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.volume = 1;
+    v.play().then(() => {
+      try { localStorage.setItem(VOICE_OK_KEY, "1"); } catch { /* noop */ }
+      setNeedsTap(false);
+    }).catch(() => { /* leave chip visible */ });
+  };
 
   return (
     <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 overflow-hidden"
+      aria-hidden={!needsTap}
+      className="absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
       {/* Cyan radial glow behind her */}
@@ -97,7 +127,6 @@ function AriaPanelBackdrop({ active }: { active: boolean }) {
           ref={videoRef}
           src={GREETING_SRC}
           poster={STILL_SRC}
-          muted
           playsInline
           autoPlay
           preload="auto"
@@ -115,14 +144,24 @@ function AriaPanelBackdrop({ active }: { active: boolean }) {
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
       )}
-      {/* Readability scrims: top /60 → middle /30 → bottom /90 */}
+      {/* Readability scrims */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background:
             "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
         }}
       />
+      {/* Tap-to-listen chip — pointer-events on ONLY when needed */}
+      {needsTap && mode === "video" && (
+        <button
+          type="button"
+          onClick={enableVoice}
+          className="pointer-events-auto absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-cyan-400/40 bg-black/60 px-4 py-1.5 text-xs text-cyan-200 backdrop-blur-md hover:bg-black/80"
+        >
+          🔊 اضغط للاستماع
+        </button>
+      )}
     </div>
   );
 }
