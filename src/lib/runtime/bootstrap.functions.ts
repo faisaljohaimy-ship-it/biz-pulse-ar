@@ -84,7 +84,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
 
     const profile = profileRes.data;
     const orgRow = orgMemberRes.data as
-      | { role: string; org_id: string; organizations: { id: string; name: string; region: string | null } | null }
+      | { role: string; org_id: string; organizations: { id: string; name: string } | null }
       | null;
 
     const incidents = incidentsRes.data ?? [];
