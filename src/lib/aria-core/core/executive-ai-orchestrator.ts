@@ -40,11 +40,13 @@ import { setPendingRouteHint } from "../services/aria-service";
 import { useAriaStore } from "../state/aria-store";
 import type { AriaTurn } from "../types/aria";
 import type { ExecutiveEnvelope } from "../types/executive";
+import type { ExecutionEnvelope } from "./execution-envelope";
 
 export interface OrchestratedSubmission {
   text: string;
   turn: AriaTurn;
   envelope: ExecutiveEnvelope;
+  execution: ExecutionEnvelope;
 }
 
 export const executiveAiOrchestrator = {
