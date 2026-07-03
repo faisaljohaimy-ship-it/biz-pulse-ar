@@ -72,6 +72,28 @@ export function AriaSystemBackdrop() {
     };
   }, [mode, voiceOn]);
 
+  // Zero-collision: mute greeting video when the AudioBus claims the channel
+  // (tour narration or any ARIA voice). Restore previous state on release.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onClaim = () => {
+      const v = videoRef.current;
+      if (v) { try { v.muted = true; v.pause(); } catch { /* noop */ } }
+    };
+    const onRelease = () => {
+      const v = videoRef.current;
+      if (v && mode === "video") {
+        try { v.muted = !voiceOn; v.play().catch(() => { /* noop */ }); } catch { /* noop */ }
+      }
+    };
+    window.addEventListener("nexios:audio-claim", onClaim);
+    window.addEventListener("nexios:audio-release", onRelease);
+    return () => {
+      window.removeEventListener("nexios:audio-claim", onClaim);
+      window.removeEventListener("nexios:audio-release", onRelease);
+    };
+  }, [mode, voiceOn]);
+
   const toggleVoice = () => {
     const next = !voiceOn;
     setVoiceOn(next);
