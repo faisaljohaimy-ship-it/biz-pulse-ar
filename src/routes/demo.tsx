@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+
 import { useI18n } from "@/lib/i18n";
-import { GuidedTour, type TourStep } from "@/components/guided-tour";
+
 import {
-  PlayCircle, RotateCcw, Briefcase, TrendingUp, Users, Building2,
+  RotateCcw, Briefcase, TrendingUp, Users, Building2,
   ArrowRight, Sparkles, Phone, CalendarDays, Mail, Shield, Database,
   Brain, Activity,
 } from "lucide-react";
@@ -29,25 +29,6 @@ function DemoCenter() {
   const { locale } = useI18n();
   const isAr = locale === "ar";
   const navigate = useNavigate();
-  const [tourOpen, setTourOpen] = useState(false);
-
-  const tourSteps: TourStep[] = isAr
-    ? [
-        { title: "أهلاً بك في Nexus AI OS", body: "نظام التشغيل التنفيذي للمؤسسة. سنأخذك في جولة سريعة عبر الميزات الرئيسية." },
-        { title: "الكوكبيت التنفيذي", body: "لوحة قيادة حية تعرض المؤشرات المالية، التشغيلية والمخاطر في الوقت الفعلي." },
-        { title: "ذكاء القرار", body: "ذكاء اصطناعي يحول البيانات إلى توصيات تنفيذية قابلة للتطبيق." },
-        { title: "محرك التنفيذ", body: "من قرار مجلس الإدارة إلى مهمة منجزة — دون فقدان أي التزام." },
-        { title: "غرفة مجلس الإدارة", body: "وضع العرض التنفيذي للاجتماعات الاستراتيجية مع تتبع كامل." },
-        { title: "جاهز للانطلاق", body: "ادخل الآن إلى نسخة العرض الحية واستكشف بنفسك." },
-      ]
-    : [
-        { title: "Welcome to Nexus AI OS", body: "The executive operating system for the enterprise. We'll walk you through the core capabilities in under a minute." },
-        { title: "Executive Cockpit", body: "A live dashboard surfacing financial, operational, and risk signals in real time." },
-        { title: "Decision Intelligence", body: "AI that turns enterprise data into actionable executive recommendations." },
-        { title: "Execution Engine", body: "From boardroom decision to completed task — without losing a single commitment." },
-        { title: "Boardroom Mode", body: "Executive presentation mode for strategic meetings with full traceability." },
-        { title: "You're ready", body: "Enter the live demo environment and explore it yourself." },
-      ];
 
   function requestPersonalDemo(mode: Mode) {
     navigate({ to: "/request-demo", search: { mode } });
@@ -133,19 +114,9 @@ function DemoCenter() {
           />
         </div>
 
-        {/* Tour + Reset */}
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          <button
-            onClick={() => setTourOpen(true)}
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-primary/40"
-          >
-            <PlayCircle className="h-5 w-5 text-primary" />
-            <div className="flex-1">
-              <div className="text-sm font-semibold">{isAr ? "ابدأ الجولة الإرشادية" : "Start Guided Tour"}</div>
-              <div className="text-[11px] text-muted-foreground">{isAr ? "٦ خطوات · دقيقة واحدة" : "6 steps · ~1 minute"}</div>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
-          </button>
+        {/* Reset */}
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+
 
           <button
             onClick={() => navigate({ to: "/request-demo", search: { mode: "enterprise" } })}
@@ -217,7 +188,7 @@ function DemoCenter() {
         </div>
       </main>
 
-      <GuidedTour open={tourOpen} onClose={() => setTourOpen(false)} steps={tourSteps} isAr={isAr} />
+      
     </div>
   );
 }
