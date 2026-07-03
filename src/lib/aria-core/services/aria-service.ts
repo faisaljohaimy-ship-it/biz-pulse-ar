@@ -23,17 +23,19 @@ export function createAriaTransport() {
   return new DefaultChatTransport({
     api: "/api/chat",
     prepareSendMessagesRequest: ({ api, headers, body, messages, id }) => {
-      const nextHeaders: Record<string, string> = { ...(headers ?? {}) };
+      const merged = new Headers(headers as HeadersInit | undefined);
       if (cachedHint) {
-        nextHeaders["x-aria-intent"] = cachedHint.intent;
-        nextHeaders["x-aria-locale"] = cachedHint.locale;
-        if (cachedHint.longContext) {
-          nextHeaders["x-aria-long-context"] = "1";
-        }
+        merged.set("x-aria-intent", cachedHint.intent);
+        merged.set("x-aria-locale", cachedHint.locale);
+        if (cachedHint.longContext) merged.set("x-aria-long-context", "1");
       }
+      const out: Record<string, string> = {};
+      merged.forEach((value, key) => {
+        out[key] = value;
+      });
       return {
         api,
-        headers: nextHeaders,
+        headers: out,
         body: { ...(body ?? {}), messages, id },
       };
     },
