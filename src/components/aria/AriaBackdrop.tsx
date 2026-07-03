@@ -47,7 +47,7 @@ export function AriaBackdrop() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
       {/* ARIA layer — centered, full-height, contained */}
       <div className="absolute left-1/2 top-1/2 h-[110%] w-[min(110%,900px)] -translate-x-1/2 -translate-y-1/2 animate-aria-breathe">
