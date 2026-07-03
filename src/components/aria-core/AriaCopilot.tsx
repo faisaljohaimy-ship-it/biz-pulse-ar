@@ -167,11 +167,12 @@ export function AriaCopilot() {
           >
             <ul className="space-y-3">
               {chat.messages.map((m) => {
-                const text = m.parts
+                const raw = m.parts
                   .map((p) => (p.type === "text" ? p.text : ""))
                   .join("");
-                if (!text) return null;
                 const mine = m.role === "user";
+                const text = mine ? raw : sanitiseAssistantText(raw);
+                if (!text) return null;
                 return (
                   <li
                     key={m.id}
@@ -205,8 +206,15 @@ export function AriaCopilot() {
                   </div>
                 </li>
               )}
+              {!isBusy && chat.messages.length === 0 && (
+                <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground" dir="rtl">
+                  {EMPTY_STATE_AR}
+                </li>
+              )}
             </ul>
           </div>
+
+          <ExecutiveCard />
 
           {/* Composer */}
           <form
