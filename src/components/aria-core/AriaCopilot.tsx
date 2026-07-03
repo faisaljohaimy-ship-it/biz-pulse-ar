@@ -343,12 +343,30 @@ export function AriaCopilot() {
               />
             </div>
             <div className="flex flex-1 flex-col leading-tight">
-              <span className="text-sm font-semibold text-foreground">ARIA</span>
-              <span className="text-[11px] text-muted-foreground">{statusLabel}</span>
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                ARIA
+                <span
+                  title={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "…"}
+                  aria-label={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "checking"}
+                  className={cn(
+                    "inline-block h-1.5 w-1.5 rounded-full",
+                    health === "ok" && "bg-emerald-400",
+                    health === "down" && "bg-red-500 animate-pulse",
+                    health === "unknown" && "bg-muted-foreground/50",
+                  )}
+                />
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {health === "down" ? "غير متصل" : statusLabel}
+              </span>
             </div>
             <button
               type="button"
-              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              onClick={() => {
+                const next = !voiceEnabled;
+                setVoiceEnabled(next);
+                try { localStorage.setItem("aria-voice-on", next ? "1" : "0"); } catch { /* noop */ }
+              }}
               aria-pressed={voiceEnabled}
               aria-label={voiceEnabled ? "Mute ARIA voice" : "Enable ARIA voice"}
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
