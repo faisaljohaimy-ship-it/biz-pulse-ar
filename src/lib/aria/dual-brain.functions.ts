@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * ARIA Dual-Brain Router
@@ -80,8 +81,14 @@ function resolveBrain(brain: "gpt" | "claude" | "auto", task: "code" | "reason" 
 }
 
 export const ariaDualBrain = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
+    const rate = await enforceRateLimit(`aria-dual-brain:${context.userId}`, 20, 60);
+    if (rate.unavailable) throw new Error("rate_limit_unavailable");
+    if (!rate.allowed) throw new Error("rate_limited");
+
     const task = data.task === "detect" ? detectTask(data.prompt) : data.task;
     const chosen = resolveBrain(data.brain, task);
     const started = Date.now();

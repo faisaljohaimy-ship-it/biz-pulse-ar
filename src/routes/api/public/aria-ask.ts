@@ -152,7 +152,9 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         }
         const contextBlock = buildContextBlock();
         // Executive Thinking Loop: Observe → Understand → Analyze → Predict → Recommend → Verify.
-        const brief = await runThinkingLoop(data.question);
+        // Public/unauthenticated marketing endpoint: skip live-data retrieval to
+        // prevent cross-tenant leakage of sec_incidents / pulse_kpis / risks etc.
+        const brief = await runThinkingLoop(data.question, { skipEvidence: true, skipInsights: true });
         const systemForCall = [brief.system, contextBlock]
           .filter(Boolean)
           .join("\n\n");
