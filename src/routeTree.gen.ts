@@ -127,6 +127,7 @@ import { Route as ApiLearnAriaTeachRouteImport } from './routes/api/learn/aria-t
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
+import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
@@ -775,6 +776,11 @@ const ApiHeygenStatusRoute = ApiHeygenStatusRouteImport.update({
   path: '/api/heygen/status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatHealthRoute = ApiChatHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => ApiChatRoute,
+} as any)
 const AuthenticatedSettingsMicrosoftRoute =
   AuthenticatedSettingsMicrosoftRouteImport.update({
     id: '/microsoft',
@@ -1088,7 +1094,7 @@ export interface FileRoutesByFullPath {
   '/voice': typeof AuthenticatedVoiceRoute
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
-  '/api/chat': typeof ApiChatRoute
+  '/api/chat': typeof ApiChatRouteWithChildren
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-stt': typeof ApiVoiceSttRoute
@@ -1124,6 +1130,7 @@ export interface FileRoutesByFullPath {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1244,7 +1251,7 @@ export interface FileRoutesByTo {
   '/voice': typeof AuthenticatedVoiceRoute
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
-  '/api/chat': typeof ApiChatRoute
+  '/api/chat': typeof ApiChatRouteWithChildren
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-stt': typeof ApiVoiceSttRoute
@@ -1280,6 +1287,7 @@ export interface FileRoutesByTo {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1404,7 +1412,7 @@ export interface FileRoutesById {
   '/_authenticated/voice': typeof AuthenticatedVoiceRoute
   '/_authenticated/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
-  '/api/chat': typeof ApiChatRoute
+  '/api/chat': typeof ApiChatRouteWithChildren
   '/api/tts': typeof ApiTtsRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-stt': typeof ApiVoiceSttRoute
@@ -1440,6 +1448,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1600,6 +1609,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/chat/health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -1756,6 +1766,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/chat/health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -1915,6 +1926,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
+    | '/api/chat/health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -1976,7 +1988,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
-  ApiChatRoute: typeof ApiChatRoute
+  ApiChatRoute: typeof ApiChatRouteWithChildren
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
   ApiVoiceSttRoute: typeof ApiVoiceSttRoute
@@ -2835,6 +2847,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHeygenStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat/health': {
+      id: '/api/chat/health'
+      path: '/health'
+      fullPath: '/api/chat/health'
+      preLoaderRoute: typeof ApiChatHealthRouteImport
+      parentRoute: typeof ApiChatRoute
+    }
     '/_authenticated/settings/microsoft': {
       id: '/_authenticated/settings/microsoft'
       path: '/microsoft'
@@ -3340,6 +3359,17 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ApiChatRouteChildren {
+  ApiChatHealthRoute: typeof ApiChatHealthRoute
+}
+
+const ApiChatRouteChildren: ApiChatRouteChildren = {
+  ApiChatHealthRoute: ApiChatHealthRoute,
+}
+
+const ApiChatRouteWithChildren =
+  ApiChatRoute._addFileChildren(ApiChatRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -3374,7 +3404,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
   UnsubscribeRoute: UnsubscribeRoute,
-  ApiChatRoute: ApiChatRoute,
+  ApiChatRoute: ApiChatRouteWithChildren,
   ApiTtsRoute: ApiTtsRoute,
   ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,
   ApiVoiceSttRoute: ApiVoiceSttRoute,
