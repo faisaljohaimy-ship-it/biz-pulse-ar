@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+
 import { useI18n } from "@/lib/i18n";
 
 import {
-  PlayCircle, RotateCcw, Briefcase, TrendingUp, Users, Building2,
+  RotateCcw, Briefcase, TrendingUp, Users, Building2,
   ArrowRight, Sparkles, Phone, CalendarDays, Mail, Shield, Database,
   Brain, Activity,
 } from "lucide-react";
