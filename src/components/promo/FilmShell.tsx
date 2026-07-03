@@ -126,7 +126,7 @@ export function FilmShell({ film }: Props) {
 
   return (
     <div dir="rtl" className="fixed inset-0 z-[100] bg-[#04070F] text-white">
-      <audio ref={audioRef} src={audioUrl} preload="auto" playsInline />
+      {/* Audio removed site-wide — ARIA chat is the only voice. */}
 
       {/* Back link */}
       <Link
