@@ -15,16 +15,15 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
-import { GlobalAriaCopilot } from "@/components/executive/GlobalAriaCopilot";
-import { AriaLiveBriefing } from "@/components/executive/AriaLiveBriefing";
-import { DeveloperBrainToggle } from "@/components/executive/DeveloperBrainToggle";
+
+// ── ARIA Singleton ────────────────────────────────────────────────────
+// ONE ARIA. Do not add a second copilot at the root. See
+// `src/lib/aria-core/README.md` for the migration kill-list.
+import { AriaProvider } from "@/lib/aria-core";
+import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 
 import { AriaContextProvider } from "@/lib/aria/context-engine";
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
-import { DemoModeHUD } from "@/components/executive/DemoModeHUD";
-import { DemoAriaPresenter } from "@/components/executive/DemoAriaPresenter";
-import { DemoMotionOverlay } from "@/lib/demo/motion-director";
-import { PresentationLayer } from "@/components/executive/presentation/PresentationLayer";
 
 function NotFoundComponent() {
   return (
