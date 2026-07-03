@@ -22,6 +22,7 @@
  * pre-submit is exposed via the store so executive UI panels can read it.
  */
 import { aiRouter } from "./ai-router";
+import { avatarBrain } from "./avatar-brain";
 import { confidenceEngine } from "./confidence-engine";
 import { contextAwareness } from "./context-awareness";
 import { contextManager } from "./context-manager";
@@ -115,10 +116,12 @@ export const executiveAiOrchestrator = {
     useAriaStore.getState().setActiveExecution(executionEnvelope);
 
     setPendingRouteHint(hint);
+    avatarBrain.onThinking(envelope);
     return { text: trimmed, turn, envelope, execution: executionEnvelope };
   },
   markStreaming(turnId: string) {
     conversationManager.markStreaming(turnId);
+    avatarBrain.onSpeakingStart(turnId, useAriaStore.getState().activeEnvelope);
   },
   completeTurn(turnId: string, finalText: string) {
     const scrubbed = responsePipeline.finalize(finalText);
@@ -133,12 +136,16 @@ export const executiveAiOrchestrator = {
     }
     conversationManager.completeTurn(turnId);
     setPendingRouteHint(null);
+    avatarBrain.onSpeakingEnd(turnId);
+    avatarBrain.onSuccess();
     return { ok: scrubbed.ok && validated.ok, text: validated.text };
   },
   failTurn(turnId: string, err: unknown, locale: "ar" | "en") {
     const message = responsePipeline.formatError(err, locale);
     conversationManager.failTurn(turnId, message);
     setPendingRouteHint(null);
+    avatarBrain.onSpeakingEnd(turnId);
+    avatarBrain.onError();
     return message;
   },
   /** Read-only accessor for the current executive envelope. */

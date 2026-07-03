@@ -52,6 +52,30 @@ export type {
   AuditRecord,
 } from "./core/execution-envelope";
 
+// ─── Phase 10: Avatar Brain ────────────────────────────────────────────
+export { avatarBrain } from "./core/avatar-brain";
+export { avatarStateManager } from "./core/avatar-state-manager";
+export { emotionEngine } from "./core/emotion-engine";
+export { eyeEngine } from "./core/eye-engine";
+export { headEngine } from "./core/head-engine";
+export { faceEngine } from "./core/face-engine";
+export { lipSyncEngine } from "./core/lip-sync-engine";
+export { gestureEngine } from "./core/gesture-engine";
+export { bodyEngine } from "./core/body-engine";
+export { idleEngine } from "./core/idle-engine";
+export { attentionEngine } from "./core/attention-engine";
+export { transitionEngine } from "./core/transition-engine";
+export { avatarAnimationQueue } from "./core/avatar-animation-queue";
+export { avatarRenderer } from "./core/avatar-renderer";
+export type { AvatarState, Emotion, AvatarEvent } from "./core/avatar-state-manager";
+export type { AvatarFrame } from "./core/avatar-renderer";
+export type { EyeChannel } from "./core/eye-engine";
+export type { HeadChannel } from "./core/head-engine";
+export type { FaceChannel } from "./core/face-engine";
+export type { BodyChannel } from "./core/body-engine";
+export type { GestureId } from "./core/gesture-engine";
+export type { AttentionTarget } from "./core/attention-engine";
+
 export type {
   AriaMode,
   AriaVoiceState,
