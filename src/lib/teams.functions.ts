@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { apiError, input, z } from "@/lib/api";
 import { httpJson } from "@/lib/api/http.server";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_teams";
 
@@ -33,7 +34,8 @@ async function gw<T = unknown>(path: string, init?: RequestInit): Promise<T> {
 
 export const listTeamsChannels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
     const teams = await gw<{ value?: TeamLite[] }>("/me/joinedTeams?$select=id,displayName");
     const items: ChannelLite[] = [];
     for (const t of (teams.value ?? []).slice(0, 8)) {
@@ -58,7 +60,8 @@ export const sendTeamsAlert = createServerFn({ method: "POST" })
       }),
     ),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     await gw(`/teams/${data.teamId}/channels/${data.channelId}/messages`, {
       method: "POST",
       body: JSON.stringify({ body: { contentType: "html", content: data.html } }),

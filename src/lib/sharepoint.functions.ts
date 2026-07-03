@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { apiError, input, z } from "@/lib/api";
 import { httpFetch, httpJson } from "@/lib/api/http.server";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 
@@ -61,7 +62,8 @@ export const uploadReportToSharePoint = createServerFn({ method: "POST" })
       }),
     ),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const bin = Buffer.from(data.base64, "base64");
     const safeName = data.filename.replace(/[/\\]/g, "_");
     const uploadPath = `/sites/${encodeURIComponent(data.siteId)}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(safeName)}:/content`;
