@@ -71,7 +71,8 @@ function IntroLanding() {
   const Arrow = ar ? ArrowLeft : ArrowRight;
 
   return (
-    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
+    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+
       {/* Lightweight gradient hero glow — the single ARIA figure lives in the
           global backdrop rendered from __root.tsx. No canvas, no video, no audio. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
