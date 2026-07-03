@@ -29,6 +29,7 @@ interface AriaState {
   pageContext: AriaPageContext | null;
   activeTurn: AriaTurn | null;
   activeEnvelope: ExecutiveEnvelope | null;
+  activeExecution: ExecutionEnvelope | null;
   pendingCommands: PendingCommand[];
 
   // Actions
@@ -38,6 +39,7 @@ interface AriaState {
   setPageContext: (ctx: AriaPageContext) => void;
   setActiveTurn: (turn: AriaTurn | null) => void;
   setActiveEnvelope: (envelope: ExecutiveEnvelope | null) => void;
+  setActiveExecution: (execution: ExecutionEnvelope | null) => void;
   enqueue: (cmd: PendingCommand) => void;
   drainCommands: () => PendingCommand[];
 }
