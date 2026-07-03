@@ -7,17 +7,13 @@ import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
-import { AriaGenesis } from "@/components/cinematic/AriaGenesis";
-import { HeroAIBackground } from "@/components/cinematic/HeroAIBackground";
 import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
-import { AriaHeroPresence } from "@/components/cinematic/AriaHeroPresence";
-import { AriaBackdrop } from "@/components/aria/AriaBackdrop";
-
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
+
 
 
 export const Route = createFileRoute("/")({
@@ -42,29 +38,14 @@ const PILLARS = [
 ] as const;
 
 function IntroLanding() {
-  // navigation handled via <Link> below
   const { locale } = useI18n();
   const ar = locale === "ar";
-  // Mobile Safari crash guard: no canvas particles, no orb video/still, no
-  // boot animation, no AudioContext on viewports ≤768px — static gradient
-  // hero only. `null` = viewport not yet known → nothing heavy mounts, so
-  // mobile never even starts fetching the large media.
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
-  const [bootDone, setBootDone] = useState(false);
+  // The single global ARIA backdrop is rendered from __root.tsx; this
+  // route only owns the executive hero content. No canvas, no boot
+  // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
 
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-
-  useEffect(() => {
-    if (isMobile) setBootDone(true);
-  }, [isMobile]);
 
   // Lock dark mode on the executive landing hero — required for delivery.
   useEffect(() => {
