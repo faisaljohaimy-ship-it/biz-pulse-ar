@@ -23,7 +23,7 @@ function PromoHub() {
           </div>
           <h1 className="text-4xl font-black md:text-6xl">سلسلة الأفلام التنفيذية</h1>
           <p className="mx-auto mt-4 max-w-xl text-sm text-white/70 md:text-base">
-            أربعة أفلام قصيرة — كل فيلم يحكي زاوية مختلفة من نيكسوس، بلغة تنفيذية وبصريات سينمائية.
+            خمسة أفلام قصيرة — كل فيلم يحكي زاوية مختلفة من نيكسوس، بلغة تنفيذية وبصريات سينمائية.
           </p>
         </header>
 
