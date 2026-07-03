@@ -16,9 +16,9 @@ class EmotionEngine {
   }): Emotion {
     if (input.risk === "critical" || input.priority === "P0") return "critical";
     if (input.risk === "high" || input.priority === "P1") return "concerned";
-    if (input.intent === "analytical" || input.intent === "operational") return "focused";
-    if (input.intent === "strategic") return "executive";
-    if (input.intent === "conversational") return "friendly";
+    if (input.intent === "engineering" || input.intent === "long-context") return "focused";
+    if (input.intent === "executive") return "executive";
+    if (input.intent === "writing") return "friendly";
     if (input.priority === "P3" || input.priority === "INFO") return "confident";
     return "executive";
   }
