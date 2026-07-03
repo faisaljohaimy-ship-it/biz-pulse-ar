@@ -268,3 +268,16 @@ function ProgressPill({
     </div>
   );
 }
+
+// ── Per-lesson executive KPI feed (Golden-Reference lessons only) ──────
+function lessonKpis(slug: string, ar: boolean): LiveKpi[] {
+  if (slug === "digital-twin") {
+    return [
+      { label: ar ? "تزامن التوأم" : "Twin sync", value: "99.4%", hint: ar ? "آخر مزامنة 3 ث" : "last sync 3s ago", tone: "ok" },
+      { label: ar ? "زمن كشف الشذوذ" : "Anomaly latency", value: "1.2s", hint: ar ? "متوسّط آخر ساعة" : "avg last hour", tone: "info" },
+      { label: ar ? "الحسّاسات النشطة" : "Sensors live", value: "128 / 132", hint: ar ? "4 خارج الخدمة" : "4 offline", tone: "warn" },
+      { label: ar ? "الجاهزية التنفيذية" : "Executive readiness", value: "96", hint: ar ? "من 100" : "of 100", tone: "ok" },
+    ];
+  }
+  return [];
+}
