@@ -659,3 +659,10 @@ body.nexus-presenting .nexus-main > div { max-width: none !important; }
 .animate-aria-breathe { animation: aria-breathe 7s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .animate-aria-breathe { animation: none; } }
 
+
+@keyframes aria-sys-breathe {
+  0%,100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+  50%     { transform: translateX(-50%) scale(1.014); filter: brightness(1.07); }
+}
+.animate-aria-sys-breathe { animation: aria-sys-breathe 8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .animate-aria-sys-breathe { animation: none; } }
