@@ -3,7 +3,7 @@ interface Props {
   src?: string;
   lang?: "ar" | "en";
   initialSeconds?: number;
-  poster?: string;
+  poster?: string | null;
 }
 
 /** LessonVideo — site-wide video removed. Renders a static poster (if any)
