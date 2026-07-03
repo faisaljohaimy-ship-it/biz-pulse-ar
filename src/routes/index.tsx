@@ -13,6 +13,12 @@ import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
+import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
+const GREETING_AR =
+  "أَهْلًا بِك. أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِمَنْصَةِ نِيكْسُوس — مَنْصَةٌ وَاحِدَةٌ تُوَحِّدُ الأَمْنَ الصِّنَاعِيَّ بِأَقْسَامِهِ: الصِّيَانَة، وَالمَشَارِيع، وَالبَطَاقَاتِ وَالتَّصَارِيح، وَالحَوَادِثِ الأَمْنِيَّة، عَبْرَ دَوَائِرِ المِنْطَقَةِ الغَرْبِيَّةِ وَتَبُوك. اسْأَلْنِي أَيَّ شَيْء — أَنَا فِي خِدْمَتِك.";
+
 
 
 
@@ -45,9 +51,14 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+  const { speak } = useAriaSpeech();
 
+  const replayGreeting = () => {
+    AriaAudioBus.unlock();
+    try { window.sessionStorage.setItem("aria-demo-greeted", "1"); } catch { /* noop */ }
+    void speak(GREETING_AR, "panel-greeting");
+  };
 
-  // Lock dark mode on the executive landing hero — required for delivery.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
