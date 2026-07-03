@@ -12,6 +12,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, MicOff, RefreshCcw, Send, Sparkles, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
+import { pingChat } from "@/lib/aria-core/services/aria-service";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -177,11 +179,76 @@ export function AriaCopilot() {
 
   const [draft, setDraft] = useState("");
   const [lastUserText, setLastUserText] = useState<string | null>(null);
+  const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
+
+  // Health probe on panel open
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    return () => { cancelled = true; };
+  }, [isOpen]);
+
+  // TTS on assistant reply completion — one playback at a time.
+  useEffect(() => {
+    if (isBusy) return;
+    const voiceOn = (() => {
+      try {
+        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
+      } catch { return voiceEnabled; }
+    })();
+    if (!voiceOn) return;
+    const last = chat.messages[chat.messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    const text = sanitiseAssistantText(
+      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    );
+    if (!text || text.length < 2) return;
+    spokenIdsRef.current.add(last.id);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const r = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ text: text.slice(0, 4000) }),
+        });
+        if (!r.ok || cancelled) return;
+        const blob = await r.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        // Stop any previous playback
+        const prev = audioRef.current;
+        if (prev) { try { prev.pause(); URL.revokeObjectURL(prev.src); } catch { /* noop */ } }
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => { try { URL.revokeObjectURL(url); } catch { /* noop */ } };
+        audio.play().catch(() => { /* autoplay blocked */ });
+      } catch { /* silent — voice is a nice-to-have */ }
+    })();
+    return () => { cancelled = true; };
+  }, [chat.messages, isBusy, voiceEnabled]);
+
+  // Stop TTS when panel closes
+  useEffect(() => {
+    if (isOpen) return;
+    const a = audioRef.current;
+    if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -276,12 +343,30 @@ export function AriaCopilot() {
               />
             </div>
             <div className="flex flex-1 flex-col leading-tight">
-              <span className="text-sm font-semibold text-foreground">ARIA</span>
-              <span className="text-[11px] text-muted-foreground">{statusLabel}</span>
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                ARIA
+                <span
+                  title={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "…"}
+                  aria-label={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "checking"}
+                  className={cn(
+                    "inline-block h-1.5 w-1.5 rounded-full",
+                    health === "ok" && "bg-emerald-400",
+                    health === "down" && "bg-red-500 animate-pulse",
+                    health === "unknown" && "bg-muted-foreground/50",
+                  )}
+                />
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {health === "down" ? "غير متصل" : statusLabel}
+              </span>
             </div>
             <button
               type="button"
-              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              onClick={() => {
+                const next = !voiceEnabled;
+                setVoiceEnabled(next);
+                try { localStorage.setItem("aria-voice-on", next ? "1" : "0"); } catch { /* noop */ }
+              }}
               aria-pressed={voiceEnabled}
               aria-label={voiceEnabled ? "Mute ARIA voice" : "Enable ARIA voice"}
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
