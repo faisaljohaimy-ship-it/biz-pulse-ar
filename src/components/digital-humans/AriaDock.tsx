@@ -37,6 +37,7 @@ import { HologramFace } from "@/components/digital-humans/HologramFace";
 import { AriaStatusStrip } from "@/components/digital-humans/AriaStatusStrip";
 import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 /** Strip markdown / emoji so TTS reads clean prose. */
 function stripForSpeech(input: string): string {
