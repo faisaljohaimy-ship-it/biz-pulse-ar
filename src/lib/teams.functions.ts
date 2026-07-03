@@ -34,7 +34,8 @@ async function gw<T = unknown>(path: string, init?: RequestInit): Promise<T> {
 
 export const listTeamsChannels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
     const teams = await gw<{ value?: TeamLite[] }>("/me/joinedTeams?$select=id,displayName");
     const items: ChannelLite[] = [];
     for (const t of (teams.value ?? []).slice(0, 8)) {
