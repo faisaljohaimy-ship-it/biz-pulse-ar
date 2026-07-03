@@ -122,14 +122,17 @@ export function useAriaSpeech() {
       const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
 
       try {
-        const res = await fetch("/api/aria/tts", {
+        const res = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text: clean.slice(0, 600) }),
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        // 403 = anonymous (Option A): silently fall back to browser voice.
+        if (res.status === 403) { speakFallback(clean, source); return; }
         if (!res.ok) throw new Error(`tts_${res.status}`);
+
         const blob = await res.blob();
         if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
         const url = URL.createObjectURL(blob);
