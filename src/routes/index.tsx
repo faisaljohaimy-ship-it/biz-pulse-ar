@@ -182,6 +182,16 @@ function IntroLanding() {
             <span>{t.cta_depts}</span>
           </button>
           <DemoModeLauncher />
+          <button
+            type="button"
+            onClick={replayGreeting}
+            className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20"
+            aria-label={ar ? "استمع للتعريف" : "Play greeting"}
+          >
+            <span aria-hidden>🔊</span>
+            <span>{ar ? "استمع للتعريف" : "Play greeting"}</span>
+          </button>
+
           <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
             <Command className="h-3 w-3" /> K
           </kbd>
