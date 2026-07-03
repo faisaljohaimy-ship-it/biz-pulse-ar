@@ -182,18 +182,13 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <AriaProvider>
-                <TourProvider>
-                  <AriaSystemBackdrop />
-                  <BetaMarqueeBar />
-                  <div className="relative z-10">
-                    <Outlet />
-                  </div>
-                  <AriaCopilot />
-                  <HighlightSpotlight />
-                  <TourOverlay />
-                  <TourLauncher />
-                  <Toaster />
-                </TourProvider>
+                <AriaSystemBackdrop />
+                <BetaMarqueeBar />
+                <div className="relative z-10">
+                  <Outlet />
+                </div>
+                <AriaCopilot />
+                <Toaster />
               </AriaProvider>
             </DemoModeProvider>
           </I18nProvider>
