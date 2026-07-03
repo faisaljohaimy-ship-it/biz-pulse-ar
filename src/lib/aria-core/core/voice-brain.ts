@@ -82,10 +82,9 @@ class VoiceBrain {
     this.lastVoice = next;
     switch (next) {
       case "listening":  avatarBrain.onListeningStart(); break;
-      case "transcribing":
-      case "thinking":   avatarBrain.onThinking(useAriaStore.getState().activeEnvelope); break;
+      case "processing": avatarBrain.onThinking(useAriaStore.getState().activeEnvelope); break;
       case "speaking":   /* handled by orchestrator.markStreaming */ break;
-      case "error":      avatarBrain.onError(); break;
+      case "unavailable": avatarBrain.onError(); break;
       case "idle":
       default:
         lipSyncEngine.end();

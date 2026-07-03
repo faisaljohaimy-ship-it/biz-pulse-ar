@@ -34,7 +34,7 @@ class ExecutionAnimation {
     if (key === this.lastKey) return;
     this.lastKey = key;
 
-    if (env.permission.decision === "denied" || env.risk.level === "critical") {
+    if (env.permission.decision === "blocked" || env.risk.level === "critical") {
       avatarBrain.onWarning();
       return;
     }
