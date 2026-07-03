@@ -14,6 +14,7 @@ import type {
   AriaVoiceState,
 } from "../types/aria";
 import type { ExecutiveEnvelope } from "../types/executive";
+import type { ExecutionEnvelope } from "../core/execution-envelope";
 
 export type PendingCommand =
   | { kind: "open"; options?: AriaOpenOptions }
