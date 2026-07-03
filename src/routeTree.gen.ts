@@ -42,6 +42,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PromoImpactRouteImport } from './routes/promo/impact'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
 import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
@@ -328,6 +329,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoImpactRoute = PromoImpactRouteImport.update({
+  id: '/promo/impact',
+  path: '/promo/impact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -1088,6 +1094,7 @@ export interface FileRoutesByFullPath {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/promo/impact': typeof PromoImpactRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1243,6 +1250,7 @@ export interface FileRoutesByTo {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/promo/impact': typeof PromoImpactRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1402,6 +1410,7 @@ export interface FileRoutesById {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/promo/impact': typeof PromoImpactRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1561,6 +1570,7 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
+    | '/promo/impact'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1716,6 +1726,7 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
+    | '/promo/impact'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -1874,6 +1885,7 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
+    | '/promo/impact'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
@@ -1970,6 +1982,7 @@ export interface RootRouteChildren {
   ApiVoiceSttRoute: typeof ApiVoiceSttRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  PromoImpactRoute: typeof PromoImpactRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
@@ -2225,6 +2238,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/impact': {
+      id: '/promo/impact'
+      path: '/promo/impact'
+      fullPath: '/promo/impact'
+      preLoaderRoute: typeof PromoImpactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -3360,6 +3380,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceSttRoute: ApiVoiceSttRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  PromoImpactRoute: PromoImpactRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
@@ -3387,3 +3408,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
