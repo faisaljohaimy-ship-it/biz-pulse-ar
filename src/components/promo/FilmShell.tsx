@@ -52,7 +52,7 @@ function usePrefersReducedMotion() {
 
 export function FilmShell({ film }: Props) {
   const audioUrl = `/promo/audio/${film.slug}.mp3`;
-  const videoUrl = `/promo/video/${film.slug}.mp4`;
+  const videoUrl = film.videoOverrideUrl ?? `/promo/video/${film.slug}.mp4`;
   const audioState = useMediaExists(audioUrl);
   const videoState = useMediaExists(videoUrl);
   const reducedMotion = usePrefersReducedMotion();
