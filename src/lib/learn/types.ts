@@ -5,7 +5,11 @@
 
 export type LessonCategory = "core" | "operations" | "intelligence";
 export type LessonStatus = "not_started" | "in_progress" | "completed";
-export type SimulationKind = "meet_aria"; // extended per lesson
+export type SimulationKind =
+  | "meet_aria"
+  | "decision_scenario"
+  | "digital_twin"
+  | "knowledge_graph";
 
 export interface Bilingual {
   ar: string;
