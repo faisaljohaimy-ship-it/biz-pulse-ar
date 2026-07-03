@@ -127,15 +127,8 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className={`relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 transition-opacity duration-1000 sm:max-w-2xl sm:pt-14 ${bootDone ? "opacity-100" : "opacity-0"}`}
       >
-        {isMobile !== false ? (
-          /* Static glow disc instead of the orb/video backdrop */
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(58,232,255,0.22),rgba(0,212,255,0.08)_55%,transparent_75%)]"
-          />
-        ) : (
-          <AriaBackdrop />
-        )}
+        {/* Static ARIA figure — safe on mobile Safari (no video, no audio) */}
+        <AriaBackdrop />
         {/* Status pill — sits above the holographic presence */}
         <div className="relative mb-8 flex flex-col items-center">
           <div className="h-[220px]" aria-hidden />
