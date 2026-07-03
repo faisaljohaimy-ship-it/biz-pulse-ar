@@ -145,9 +145,34 @@ export const Route = createFileRoute("/api/chat")({
         if (!guard.ok) return guard.response;
         const { data: parsedData, authHeader, requestId } = guard;
         const { messages, threadId, model: modelId, grounded } = parsedData;
-        const selectedModelId = useLovable
-          ? modelId && LOVABLE_MODEL_IDS.has(modelId) ? modelId : DEFAULT_LOVABLE_MODEL
-          : modelId && OPENROUTER_MODEL_IDS.has(modelId) ? modelId : DEFAULT_OPENROUTER_MODEL;
+
+        // ── ARIA Brain — server-side AI Router ───────────────────────────
+        // If the client explicitly picked a model (legacy dev/tool path), honor it.
+        // Otherwise resolve from the intent hint the Brain publishes via header.
+        const intentHeader = request.headers.get("x-aria-intent");
+        const routerDecision = resolveModel(parseIntent(intentHeader), {
+          lovable: useLovable,
+          openrouter: !!openrouterKey,
+        });
+
+        let vendor: "lovable" | "openrouter";
+        let selectedModelId: string;
+        if (modelId && useLovable && LOVABLE_MODEL_IDS.has(modelId)) {
+          vendor = "lovable";
+          selectedModelId = modelId;
+        } else if (modelId && !useLovable && OPENROUTER_MODEL_IDS.has(modelId)) {
+          vendor = "openrouter";
+          selectedModelId = modelId;
+        } else if (modelId && useLovable) {
+          vendor = "lovable";
+          selectedModelId = DEFAULT_LOVABLE_MODEL;
+        } else if (modelId) {
+          vendor = "openrouter";
+          selectedModelId = DEFAULT_OPENROUTER_MODEL;
+        } else {
+          vendor = routerDecision.vendor;
+          selectedModelId = routerDecision.modelId;
+        }
 
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
@@ -169,11 +194,16 @@ export const Route = createFileRoute("/api/chat")({
         }
 
 
-        const provider = useLovable
+        const provider = vendor === "lovable"
           ? createLovableAiGatewayProvider(lovableKey!)
           : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
         const model = provider(selectedModelId);
-        console.log("[api/chat] provider", { requestId, provider: useLovable ? "lovable-ai-gateway" : "openrouter", model: selectedModelId });
+        console.log("[api/chat] provider", {
+          requestId,
+          provider: vendor === "lovable" ? "lovable-ai-gateway" : "openrouter",
+          model: selectedModelId,
+          intent: parseIntent(intentHeader),
+        });
 
 
         const uiMessages = messages as UIMessage[];
