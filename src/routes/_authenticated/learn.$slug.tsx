@@ -170,6 +170,13 @@ function LessonPage() {
             </SectionCard>
           )}
 
+          {/* Live executive KPIs (Golden-Reference lessons) */}
+          {lessonKpis(lesson.slug, ar).length > 0 && (
+            <SectionCard icon={<Activity className="h-4 w-4" />} label={ar ? "المؤشرات التنفيذية الحيّة" : "Live executive KPIs"}>
+              <LessonLiveKpis kpis={lessonKpis(lesson.slug, ar)} />
+            </SectionCard>
+          )}
+
           {/* Simulation */}
           <SectionCard icon={<Play className="h-4 w-4" />} label={ar ? "المحاكاة التنفيذية" : "Executive Simulation"}>
             <LessonSimulation
