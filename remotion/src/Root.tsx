@@ -18,6 +18,7 @@ import { RoiFilmAR, ROI_DURATION, ROI_FPS } from "./RoiFilmAR";
 import { SaudiFinal, SAUDI_DURATION, SAUDI_FPS } from "./SaudiFinal";
 import { SeedExplain, SEED_DURATION, SEED_FPS } from "./SeedExplain";
 import { NexiosFilmF1, NexiosFilmF2, NexiosFilmF3, NexiosFilmF4, FILM_DURATION as NX_FILM_DURATION, FILM_FPS as NX_FILM_FPS, FILM_WIDTH as NX_FILM_W, FILM_HEIGHT as NX_FILM_H } from "./NexiosFilms";
+import { NexiosFilmF5, F5_DURATION, F5_FPS, F5_W, F5_H } from "./HolographicSaudi";
 
 export const RemotionRoot = () => (
   <>
@@ -43,5 +44,6 @@ export const RemotionRoot = () => (
     <Composition id="nexios-f2" component={NexiosFilmF2} durationInFrames={NX_FILM_DURATION} fps={NX_FILM_FPS} width={NX_FILM_W} height={NX_FILM_H} />
     <Composition id="nexios-f3" component={NexiosFilmF3} durationInFrames={NX_FILM_DURATION} fps={NX_FILM_FPS} width={NX_FILM_W} height={NX_FILM_H} />
     <Composition id="nexios-f4" component={NexiosFilmF4} durationInFrames={NX_FILM_DURATION} fps={NX_FILM_FPS} width={NX_FILM_W} height={NX_FILM_H} />
+    <Composition id="nexios-f5" component={NexiosFilmF5} durationInFrames={F5_DURATION} fps={F5_FPS} width={F5_W} height={F5_H} />
   </>
 );

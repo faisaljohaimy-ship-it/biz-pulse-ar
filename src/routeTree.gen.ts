@@ -44,6 +44,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PromoIndexRouteImport } from './routes/promo/index'
 import { Route as PromoImpactRouteImport } from './routes/promo/impact'
+import { Route as PromoF5RouteImport } from './routes/promo/f5'
 import { Route as PromoF4RouteImport } from './routes/promo/f4'
 import { Route as PromoF3RouteImport } from './routes/promo/f3'
 import { Route as PromoF2RouteImport } from './routes/promo/f2'
@@ -345,6 +346,11 @@ const PromoIndexRoute = PromoIndexRouteImport.update({
 const PromoImpactRoute = PromoImpactRouteImport.update({
   id: '/promo/impact',
   path: '/promo/impact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoF5Route = PromoF5RouteImport.update({
+  id: '/promo/f5',
+  path: '/promo/f5',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromoF4Route = PromoF4RouteImport.update({
@@ -1134,6 +1140,7 @@ export interface FileRoutesByFullPath {
   '/promo/f2': typeof PromoF2Route
   '/promo/f3': typeof PromoF3Route
   '/promo/f4': typeof PromoF4Route
+  '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo/': typeof PromoIndexRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1296,6 +1303,7 @@ export interface FileRoutesByTo {
   '/promo/f2': typeof PromoF2Route
   '/promo/f3': typeof PromoF3Route
   '/promo/f4': typeof PromoF4Route
+  '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo': typeof PromoIndexRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1462,6 +1470,7 @@ export interface FileRoutesById {
   '/promo/f2': typeof PromoF2Route
   '/promo/f3': typeof PromoF3Route
   '/promo/f4': typeof PromoF4Route
+  '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo/': typeof PromoIndexRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1628,6 +1637,7 @@ export interface FileRouteTypes {
     | '/promo/f2'
     | '/promo/f3'
     | '/promo/f4'
+    | '/promo/f5'
     | '/promo/impact'
     | '/promo/'
     | '/assistant/$threadId'
@@ -1790,6 +1800,7 @@ export interface FileRouteTypes {
     | '/promo/f2'
     | '/promo/f3'
     | '/promo/f4'
+    | '/promo/f5'
     | '/promo/impact'
     | '/promo'
     | '/assistant/$threadId'
@@ -1955,6 +1966,7 @@ export interface FileRouteTypes {
     | '/promo/f2'
     | '/promo/f3'
     | '/promo/f4'
+    | '/promo/f5'
     | '/promo/impact'
     | '/promo/'
     | '/_authenticated/assistant/$threadId'
@@ -2058,6 +2070,7 @@ export interface RootRouteChildren {
   PromoF2Route: typeof PromoF2Route
   PromoF3Route: typeof PromoF3Route
   PromoF4Route: typeof PromoF4Route
+  PromoF5Route: typeof PromoF5Route
   PromoImpactRoute: typeof PromoImpactRoute
   PromoIndexRoute: typeof PromoIndexRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
@@ -2329,6 +2342,13 @@ declare module '@tanstack/react-router' {
       path: '/promo/impact'
       fullPath: '/promo/impact'
       preLoaderRoute: typeof PromoImpactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo/f5': {
+      id: '/promo/f5'
+      path: '/promo/f5'
+      fullPath: '/promo/f5'
+      preLoaderRoute: typeof PromoF5RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/promo/f4': {
@@ -3514,6 +3534,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromoF2Route: PromoF2Route,
   PromoF3Route: PromoF3Route,
   PromoF4Route: PromoF4Route,
+  PromoF5Route: PromoF5Route,
   PromoImpactRoute: PromoImpactRoute,
   PromoIndexRoute: PromoIndexRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
@@ -3543,13 +3564,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

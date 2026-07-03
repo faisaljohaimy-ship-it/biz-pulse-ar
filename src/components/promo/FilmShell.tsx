@@ -7,13 +7,14 @@ import { Link } from "@tanstack/react-router";
 import { ScenePlayer, type Scene } from "@/components/promo/ScenePlayer";
 
 export interface FilmDefinition {
-  slug: string; // f1 | f2 | f3 | f4
+  slug: string; // f1 | f2 | f3 | f4 | f5
   titleAr: string;
   subtitleAr?: string;
   accent: string; // hex
   duration: number; // seconds
   scenes: Scene[];
   captions: { start: number; end: number; text: string }[];
+  videoOverrideUrl?: string; // optional CDN url overriding /promo/video/<slug>.mp4
 }
 
 interface Props {
@@ -51,7 +52,7 @@ function usePrefersReducedMotion() {
 
 export function FilmShell({ film }: Props) {
   const audioUrl = `/promo/audio/${film.slug}.mp3`;
-  const videoUrl = `/promo/video/${film.slug}.mp4`;
+  const videoUrl = film.videoOverrideUrl ?? `/promo/video/${film.slug}.mp4`;
   const audioState = useMediaExists(audioUrl);
   const videoState = useMediaExists(videoUrl);
   const reducedMotion = usePrefersReducedMotion();
