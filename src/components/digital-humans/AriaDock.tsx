@@ -641,7 +641,7 @@ export function AriaDock() {
                 </Button>
                 <button
                   type="button"
-                  onClick={() => { ariaSpeech.stop(); setHidden(true); }}
+                  onClick={() => { AriaAudioBus.stopAll(); ariaSpeech.stop(); setHidden(true); }}
                   aria-label={ar ? "إخفاء آريا" : "Dismiss ARIA"}
                   title={ar ? "إخفاء" : "Dismiss"}
                   className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/40 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
