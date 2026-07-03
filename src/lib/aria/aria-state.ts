@@ -33,6 +33,6 @@ export const ariaState = {
 
 export function useAriaPresenceState(): AriaPresenceState {
   const [s, setS] = useState<AriaPresenceState>(() => ariaState.get());
-  useEffect(() => ariaState.subscribe(setS), []);
+  useEffect(() => { const off = ariaState.subscribe(setS); return () => { off; }; }, []);
   return s;
 }
