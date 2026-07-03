@@ -18,7 +18,7 @@ import { AriaHeroGreeting } from "@/components/aria/AriaHeroGreeting";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
-import { useIsMobile } from "@/hooks/use-mobile";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
