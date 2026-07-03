@@ -106,8 +106,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("key,label,label_en,value,delta,trend,tone")
           .limit(args.limit);
         if (args.name_contains) {
-          const term = `%${args.name_contains}%`;
-          q = q.or(`label.ilike.${term},label_en.ilike.${term},key.ilike.${term}`);
+          const safe = args.name_contains.replace(/[,()*\\]/g, " ").trim();
+          if (safe) {
+            const term = `%${safe}%`;
+            q = q.or(`label.ilike.${term},label_en.ilike.${term},key.ilike.${term}`);
+          }
         }
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
