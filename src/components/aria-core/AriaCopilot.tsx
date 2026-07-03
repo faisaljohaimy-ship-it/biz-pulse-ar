@@ -95,6 +95,16 @@ export function AriaCopilot() {
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
 
+  // Drive ARIA presence state from chat lifecycle.
+  // thinking > listening > idle (speaking is driven by audio events below).
+  useEffect(() => {
+    if (isBusy) { ariaState.set("thinking"); return; }
+    if (draft.trim().length > 0) { ariaState.set("listening"); return; }
+    if (ariaState.get() !== "speaking") ariaState.set("idle");
+  }, [isBusy, draft]);
+  // On unmount / panel close, drop to idle.
+  useEffect(() => () => { ariaState.set("idle"); }, []);
+
   // Health probe on panel open
   useEffect(() => {
     if (!isOpen) return;
