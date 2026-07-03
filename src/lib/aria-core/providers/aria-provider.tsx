@@ -23,6 +23,9 @@ import { useAriaStore } from "../state/aria-store";
 import { createAriaTransport } from "../services/aria-service";
 import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
+import { avatarLifecycle } from "../core/avatar-lifecycle";
+import { avatarBrain } from "../core/avatar-brain";
+import { avatarVoiceSync } from "../core/avatar-voice-sync";
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
@@ -66,6 +69,16 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     });
     return unbind;
   }, [chat]);
+
+  // ── Avatar Runtime lifecycle (mount once; dispose on unmount) ─────────
+  useEffect(() => {
+    avatarBrain.onOpen();
+    const dispose = avatarLifecycle.mount();
+    return () => {
+      avatarBrain.onClose();
+      dispose();
+    };
+  }, []);
 
   // ── Route → ContextManager (via store) ────────────────────────────────
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -151,9 +164,21 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     spokenIdsRef.current.add(last.id);
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = /[\u0600-\u06FF]/.test(text) ? "ar-SA" : "en-US";
-    utter.onstart = () => voiceManager.setState("speaking");
-    utter.onend = () => voiceManager.setState("idle");
-    utter.onerror = () => voiceManager.setState("idle");
+    utter.onstart = () => {
+      voiceManager.setState("speaking");
+      avatarBrain.onSpeakingStart(last.id);
+      avatarVoiceSync.startSynthetic(last.id);
+    };
+    utter.onend = () => {
+      avatarVoiceSync.stopSynthetic();
+      avatarBrain.onSpeakingEnd(last.id);
+      voiceManager.setState("idle");
+    };
+    utter.onerror = () => {
+      avatarVoiceSync.stopSynthetic();
+      avatarBrain.onSpeakingEnd(last.id);
+      voiceManager.setState("idle");
+    };
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);
   }, [chat.messages, chat.status, voiceEnabled]);
