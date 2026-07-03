@@ -45,12 +45,22 @@ function IntroLanding() {
   // navigation handled via <Link> below
   const { locale } = useI18n();
   const ar = locale === "ar";
-  // Mobile Safari crash guard: no canvas particles, no orb video, no boot
-  // animation, no AudioContext on viewports ≤768px — static gradient hero only.
-  const isMobile = useIsMobile();
+  // Mobile Safari crash guard: no canvas particles, no orb video/still, no
+  // boot animation, no AudioContext on viewports ≤768px — static gradient
+  // hero only. `null` = viewport not yet known → nothing heavy mounts, so
+  // mobile never even starts fetching the large media.
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [bootDone, setBootDone] = useState(false);
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     if (isMobile) setBootDone(true);
