@@ -11,6 +11,7 @@
  */
 import { DefaultChatTransport } from "ai";
 import type { AriaRouteHint } from "../types/aria";
+import { supabase } from "@/integrations/supabase/client";
 
 let cachedHint: AriaRouteHint | null = null;
 
@@ -19,9 +20,27 @@ export function setPendingRouteHint(hint: AriaRouteHint | null) {
   cachedHint = hint;
 }
 
+// Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
+// guard accepts the request. Without this the chat is silently rejected 401
+// and the user sees no reply. 30s hard timeout guarantees no infinite wait.
+async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  const headers = new Headers(init.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+  try {
+    return await fetch(input, { ...init, headers, signal: init.signal ?? controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function createAriaTransport() {
   return new DefaultChatTransport({
     api: "/api/chat",
+    fetch: ariaAuthedFetch,
     prepareSendMessagesRequest: ({ api, headers, body, messages, id }) => {
       const merged = new Headers(headers as HeadersInit | undefined);
       if (cachedHint) {
