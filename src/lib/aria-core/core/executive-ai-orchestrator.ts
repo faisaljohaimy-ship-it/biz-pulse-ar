@@ -28,6 +28,7 @@ import { contextManager } from "./context-manager";
 import { conversationIntelligence } from "./conversation-intelligence";
 import { conversationManager } from "./conversation-manager";
 import { decisionEngine } from "./decision-engine";
+import { executionPlanner } from "./execution-planner";
 import { executiveReasoning } from "./executive-reasoning";
 import { memoryManager } from "./memory-manager";
 import { planningEngine } from "./planning-engine";
