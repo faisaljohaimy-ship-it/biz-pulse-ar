@@ -95,7 +95,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     query_kpis: tool({
       description:
-        "Query live enterprise KPIs (value, target, trend, status). Optional name filter (partial match).",
+        "Query live enterprise KPIs (value, delta, trend, tone). Optional label filter (partial match).",
       inputSchema: z.object({
         name_contains: z.string().max(80).optional(),
         limit: z.number().int().min(1).max(50).default(10),
@@ -103,9 +103,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       execute: async (args) => {
         let q = supabase
           .from("pulse_kpis")
-          .select("name,value,target,unit,trend,status,domain")
+          .select("key,label,label_en,value,delta,trend,tone")
           .limit(args.limit);
-        if (args.name_contains) q = q.ilike("name", `%${args.name_contains}%`);
+        if (args.name_contains) {
+          const term = `%${args.name_contains}%`;
+          q = q.or(`label.ilike.${term},label_en.ilike.${term},key.ilike.${term}`);
+        }
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
         return { ok: true, kpis: data ?? [] };
@@ -113,18 +116,19 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     }),
 
     list_open_crises: tool({
-      description: "List currently open crises with severity and owner.",
+      description: "List currently open crises with risk score and owner.",
       inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(8) }),
       execute: async (args) => {
         const { data, error } = await supabase
           .from("pulse_crises")
-          .select("id,title,severity,owner,impact,status")
-          .eq("status", "open")
+          .select("id,title,title_en,risk_score,probability,owner,impact,impact_en,action,action_en,category")
+          .order("risk_score", { ascending: false })
           .limit(args.limit);
         if (error) return { ok: false, error: error.message };
         return { ok: true, crises: data ?? [] };
       },
     }),
+
 
     send_executive_email: tool({
       description:
