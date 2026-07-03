@@ -32,7 +32,8 @@ type SiteLite = { id: string; displayName: string; webUrl: string };
 
 export const listSharePointSites = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.userId);
     const root = await spJson<SiteLite>("/sites/root?$select=id,displayName,webUrl");
     let extra: SiteLite[] = [];
     try {
