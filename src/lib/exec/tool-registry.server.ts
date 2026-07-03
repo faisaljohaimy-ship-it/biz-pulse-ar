@@ -543,15 +543,17 @@ const kbSearch: ToolExecutor = {
       return { output: { mode: "semantic", hits: rows ?? [] } };
     }
 
-    // Keyword fallback
+    // Keyword fallback (sanitize PostgREST filter chars)
+    const kq = data.query.replace(/[,()]/g, " ").trim();
+    if (!kq) return { output: { mode: "keyword", hits: [] } };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const q = (ctx.supabase as any)
       .from("sec_knowledge_articles")
       .select("doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority")
       .eq("status", "published")
       .or(
-        [`title_ar.ilike.%${data.query}%`, `title_en.ilike.%${data.query}%`,
-         `summary_ar.ilike.%${data.query}%`, `summary_en.ilike.%${data.query}%`].join(","),
+        [`title_ar.ilike.%${kq}%`, `title_en.ilike.%${kq}%`,
+         `summary_ar.ilike.%${kq}%`, `summary_en.ilike.%${kq}%`].join(","),
       )
       .limit(data.limit);
     const { data: rows, error } = await q;
