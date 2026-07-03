@@ -101,7 +101,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
         ? {
             id: orgRow.organizations.id,
             name: orgRow.organizations.name,
-            region: orgRow.organizations.region ?? "western",
+            region: "western",
             role: orgRow.role,
           }
         : null,
