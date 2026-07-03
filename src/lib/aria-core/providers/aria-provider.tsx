@@ -164,9 +164,21 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     spokenIdsRef.current.add(last.id);
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = /[\u0600-\u06FF]/.test(text) ? "ar-SA" : "en-US";
-    utter.onstart = () => voiceManager.setState("speaking");
-    utter.onend = () => voiceManager.setState("idle");
-    utter.onerror = () => voiceManager.setState("idle");
+    utter.onstart = () => {
+      voiceManager.setState("speaking");
+      avatarBrain.onSpeakingStart(last.id);
+      avatarVoiceSync.startSynthetic(last.id);
+    };
+    utter.onend = () => {
+      avatarVoiceSync.stopSynthetic();
+      avatarBrain.onSpeakingEnd(last.id);
+      voiceManager.setState("idle");
+    };
+    utter.onerror = () => {
+      avatarVoiceSync.stopSynthetic();
+      avatarBrain.onSpeakingEnd(last.id);
+      voiceManager.setState("idle");
+    };
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);
   }, [chat.messages, chat.status, voiceEnabled]);
