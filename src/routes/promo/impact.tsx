@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ScenePlayer, type Scene } from "@/components/promo/ScenePlayer";
 import { KenBurnsImage } from "@/components/promo/KenBurnsImage";
 import { KSA_IMAGES, preloadKsaImages } from "@/components/promo/ksaImagery";
+import { HologramOverlay } from "@/components/promo/HologramOverlay";
 
 export const Route = createFileRoute("/promo/impact")({
   head: () => ({
