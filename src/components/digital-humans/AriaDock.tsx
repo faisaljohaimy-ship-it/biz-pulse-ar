@@ -634,7 +634,7 @@ export function AriaDock() {
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10"
-                  onClick={() => { ariaSpeech.stop(); setMinimized(true); }}
+                  onClick={() => { AriaAudioBus.stopAll(); ariaSpeech.stop(); setMinimized(true); }}
                   aria-label={ar ? "تصغير" : "Minimize"}
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
