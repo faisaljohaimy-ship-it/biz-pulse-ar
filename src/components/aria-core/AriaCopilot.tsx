@@ -179,11 +179,76 @@ export function AriaCopilot() {
 
   const [draft, setDraft] = useState("");
   const [lastUserText, setLastUserText] = useState<string | null>(null);
+  const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
+
+  // Health probe on panel open
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    return () => { cancelled = true; };
+  }, [isOpen]);
+
+  // TTS on assistant reply completion — one playback at a time.
+  useEffect(() => {
+    if (isBusy) return;
+    const voiceOn = (() => {
+      try {
+        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
+      } catch { return voiceEnabled; }
+    })();
+    if (!voiceOn) return;
+    const last = chat.messages[chat.messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    const text = sanitiseAssistantText(
+      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    );
+    if (!text || text.length < 2) return;
+    spokenIdsRef.current.add(last.id);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const r = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ text: text.slice(0, 4000) }),
+        });
+        if (!r.ok || cancelled) return;
+        const blob = await r.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        // Stop any previous playback
+        const prev = audioRef.current;
+        if (prev) { try { prev.pause(); URL.revokeObjectURL(prev.src); } catch { /* noop */ } }
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => { try { URL.revokeObjectURL(url); } catch { /* noop */ } };
+        audio.play().catch(() => { /* autoplay blocked */ });
+      } catch { /* silent — voice is a nice-to-have */ }
+    })();
+    return () => { cancelled = true; };
+  }, [chat.messages, isBusy, voiceEnabled]);
+
+  // Stop TTS when panel closes
+  useEffect(() => {
+    if (isOpen) return;
+    const a = audioRef.current;
+    if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
