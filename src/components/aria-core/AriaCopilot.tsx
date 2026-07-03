@@ -12,6 +12,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, MicOff, RefreshCcw, Send, Sparkles, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
+import { pingChat } from "@/lib/aria-core/services/aria-service";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
