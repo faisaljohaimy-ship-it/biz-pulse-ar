@@ -21,6 +21,7 @@ import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 // `src/lib/aria-core/README.md` for the migration kill-list.
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
+import { AriaSystemBackdrop } from "@/components/aria/AriaSystemBackdrop";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 
@@ -179,8 +180,11 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <AriaProvider>
+                <AriaSystemBackdrop />
                 <BetaMarqueeBar />
-                <Outlet />
+                <div className="relative z-10">
+                  <Outlet />
+                </div>
                 <AriaCopilot />
                 <Toaster />
               </AriaProvider>
