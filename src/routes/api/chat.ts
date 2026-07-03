@@ -20,6 +20,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { evaluateRagCoverage } from "@/lib/aria/rag.server";
+import { parseIntent, resolveModel } from "@/lib/aria-core/server/ai-router.server";
 
 
 const CORS_HEADERS_OPTIONS = {
