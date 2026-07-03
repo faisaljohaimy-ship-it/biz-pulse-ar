@@ -195,6 +195,7 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
       vec = await embedText(data.query);
     } catch (e) {
       // graceful fallback to keyword search if embedding gateway is down
+      const s = data.query.replace(/[,()]/g, " ");
       const { data: rows, error } = await context.supabase
         .from("sec_knowledge_articles")
         .select(
@@ -203,10 +204,10 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
         .eq("status", "published")
         .or(
           [
-            `title_ar.ilike.%${data.query}%`,
-            `title_en.ilike.%${data.query}%`,
-            `summary_ar.ilike.%${data.query}%`,
-            `summary_en.ilike.%${data.query}%`,
+            `title_ar.ilike.%${s}%`,
+            `title_en.ilike.%${s}%`,
+            `summary_ar.ilike.%${s}%`,
+            `summary_en.ilike.%${s}%`,
           ].join(","),
         )
         .limit(data.limit);
