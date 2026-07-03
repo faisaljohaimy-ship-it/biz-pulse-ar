@@ -153,18 +153,27 @@ export function AriaCopilot() {
         if (prev) { try { prev.pause(); URL.revokeObjectURL(prev.src); } catch { /* noop */ } }
         const audio = new Audio(url);
         audioRef.current = audio;
-        audio.onended = () => { try { URL.revokeObjectURL(url); } catch { /* noop */ } };
-        audio.play().catch(() => { /* autoplay blocked */ });
+        const done = () => {
+          try { URL.revokeObjectURL(url); } catch { /* noop */ }
+          ariaState.set("idle");
+        };
+        audio.onended = done;
+        audio.onerror = done;
+        audio.onpause = () => { if (audio.ended) ariaState.set("idle"); };
+        audio.play()
+          .then(() => ariaState.set("speaking"))
+          .catch(() => { /* autoplay blocked */ ariaState.set("idle"); });
       } catch { /* silent — voice is a nice-to-have */ }
     })();
     return () => { cancelled = true; };
   }, [chat.messages, isBusy, voiceEnabled]);
 
-  // Stop TTS when panel closes
+  // Stop TTS when panel closes — barge-in / silence guarantee.
   useEffect(() => {
     if (isOpen) return;
     const a = audioRef.current;
     if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+    ariaState.set("idle");
   }, [isOpen]);
 
   useEffect(() => {
