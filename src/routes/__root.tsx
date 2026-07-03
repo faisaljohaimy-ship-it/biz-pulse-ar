@@ -22,7 +22,6 @@ import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 
-import { AriaContextProvider } from "@/lib/aria/context-engine";
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 
 function NotFoundComponent() {
@@ -184,16 +183,14 @@ function RootComponent() {
       <AuthProvider>
         <ThemeProvider>
           <I18nProvider>
-            <AriaContextProvider>
-              <DemoModeProvider>
-                <AriaProvider>
-                  <BetaMarqueeBar />
-                  <Outlet />
-                  <AriaCopilot />
-                  <Toaster />
-                </AriaProvider>
-              </DemoModeProvider>
-            </AriaContextProvider>
+            <DemoModeProvider>
+              <AriaProvider>
+                <BetaMarqueeBar />
+                <Outlet />
+                <AriaCopilot />
+                <Toaster />
+              </AriaProvider>
+            </DemoModeProvider>
           </I18nProvider>
         </ThemeProvider>
       </AuthProvider>
