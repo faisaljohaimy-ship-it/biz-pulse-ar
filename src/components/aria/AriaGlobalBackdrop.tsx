@@ -41,9 +41,10 @@ export function AriaGlobalBackdrop() {
           style={{
             objectFit: "contain",
             objectPosition: "center top",
-            opacity: 0.3,
+            opacity: 0.42,
             maxWidth: "min(560px, 92vw)",
           }}
+
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = "none";
           }}

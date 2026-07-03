@@ -13,6 +13,12 @@ import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
+import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
+const GREETING_AR =
+  "أَهْلًا بِك. أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِمَنْصَةِ نِيكْسُوس — مَنْصَةٌ وَاحِدَةٌ تُوَحِّدُ الأَمْنَ الصِّنَاعِيَّ بِأَقْسَامِهِ: الصِّيَانَة، وَالمَشَارِيع، وَالبَطَاقَاتِ وَالتَّصَارِيح، وَالحَوَادِثِ الأَمْنِيَّة، عَبْرَ دَوَائِرِ المِنْطَقَةِ الغَرْبِيَّةِ وَتَبُوك. اسْأَلْنِي أَيَّ شَيْء — أَنَا فِي خِدْمَتِك.";
+
 
 
 
@@ -45,9 +51,14 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+  const { speak } = useAriaSpeech();
 
+  const replayGreeting = () => {
+    AriaAudioBus.unlock();
+    try { window.sessionStorage.setItem("aria-demo-greeted", "1"); } catch { /* noop */ }
+    void speak(GREETING_AR, "panel-greeting");
+  };
 
-  // Lock dark mode on the executive landing hero — required for delivery.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
@@ -71,7 +82,8 @@ function IntroLanding() {
   const Arrow = ar ? ArrowLeft : ArrowRight;
 
   return (
-    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#061A2E] text-white">
+    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+
       {/* Lightweight gradient hero glow — the single ARIA figure lives in the
           global backdrop rendered from __root.tsx. No canvas, no video, no audio. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
@@ -170,6 +182,16 @@ function IntroLanding() {
             <span>{t.cta_depts}</span>
           </button>
           <DemoModeLauncher />
+          <button
+            type="button"
+            onClick={replayGreeting}
+            className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20"
+            aria-label={ar ? "استمع للتعريف" : "Play greeting"}
+          >
+            <span aria-hidden>🔊</span>
+            <span>{ar ? "استمع للتعريف" : "Play greeting"}</span>
+          </button>
+
           <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
             <Command className="h-3 w-3" /> K
           </kbd>
