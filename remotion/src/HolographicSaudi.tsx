@@ -10,6 +10,8 @@ import {
   interpolate,
   spring,
   Sequence,
+  Audio,
+  staticFile,
 } from "remotion";
 import {
   TransitionSeries,
