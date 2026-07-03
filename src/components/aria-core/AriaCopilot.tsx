@@ -14,6 +14,24 @@ import { useAriaStore } from "@/lib/aria-core/store";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ExecutiveCard } from "./ExecutiveCard";
+
+const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
+const ERROR_MASK_AR =
+  "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
+
+function sanitiseAssistantText(raw: string): string {
+  if (!raw) return "";
+  let t = raw;
+  // Strip fenced JSON blocks, stack traces, and provider/model identifiers.
+  t = t.replace(/```json[\s\S]*?```/gi, "").replace(/```[\s\S]*?```/g, (m) =>
+    /error|stack|trace|traceback/i.test(m) ? "" : m,
+  );
+  t = t.replace(/\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi, "");
+  t = t.replace(/\bat\s+[\w$.<>]+\s*\([^)]*:\d+:\d+\)/g, "");
+  t = t.replace(/\berror:\s*[^\n]{0,200}/gi, ERROR_MASK_AR);
+  return t.trim();
+}
 
 export function AriaCopilot() {
   const { chat, composerRef } = useAriaChat();
@@ -149,11 +167,12 @@ export function AriaCopilot() {
           >
             <ul className="space-y-3">
               {chat.messages.map((m) => {
-                const text = m.parts
+                const raw = m.parts
                   .map((p) => (p.type === "text" ? p.text : ""))
                   .join("");
-                if (!text) return null;
                 const mine = m.role === "user";
+                const text = mine ? raw : sanitiseAssistantText(raw);
+                if (!text) return null;
                 return (
                   <li
                     key={m.id}
@@ -187,8 +206,15 @@ export function AriaCopilot() {
                   </div>
                 </li>
               )}
+              {!isBusy && chat.messages.length === 0 && (
+                <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground" dir="rtl">
+                  {EMPTY_STATE_AR}
+                </li>
+              )}
             </ul>
           </div>
+
+          <ExecutiveCard />
 
           {/* Composer */}
           <form
