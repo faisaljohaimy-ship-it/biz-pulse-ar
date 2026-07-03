@@ -13,7 +13,7 @@ const BodySchema = z
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ARIA-Request-ID, Accept",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ARIA-Request-ID, X-ARIA-Intent, X-ARIA-Locale, X-ARIA-Long-Context, Accept",
   "Access-Control-Max-Age": "86400",
 } as const;
 
