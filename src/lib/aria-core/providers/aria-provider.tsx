@@ -70,6 +70,16 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     return unbind;
   }, [chat]);
 
+  // ── Avatar Runtime lifecycle (mount once; dispose on unmount) ─────────
+  useEffect(() => {
+    avatarBrain.onOpen();
+    const dispose = avatarLifecycle.mount();
+    return () => {
+      avatarBrain.onClose();
+      dispose();
+    };
+  }, []);
+
   // ── Route → ContextManager (via store) ────────────────────────────────
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
