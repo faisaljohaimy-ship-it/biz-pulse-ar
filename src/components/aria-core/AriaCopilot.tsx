@@ -235,7 +235,7 @@ export function AriaCopilot() {
           }}
         >
           {/* LAYER 0 — ARIA cinematic backdrop */}
-          <AriaPanelBackdrop active={isOpen} />
+          <AriaPanelBackdrop />
 
           {/* LAYER 2 — Header */}
           <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-background/30 px-4 py-3 backdrop-blur-sm">
