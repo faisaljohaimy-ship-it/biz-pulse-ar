@@ -12,6 +12,8 @@
  *   • Reads only from the ARIA store; writes only through avatarBrain.
  */
 import { avatarBrain } from "./avatar-brain";
+import { avatarHealthMonitor } from "./avatar-health-monitor";
+import { avatarPerformanceEngine } from "./avatar-performance-engine";
 import { conversationAnimation } from "./conversation-animation";
 import { executionAnimation } from "./execution-animation";
 import { executivePresence } from "./executive-presence";
@@ -35,6 +37,8 @@ class AvatarRuntime {
     this.disposers.push(executionAnimation.start());
     this.disposers.push(executivePresence.start());
     this.disposers.push(voiceBrain.start());
+    this.disposers.push(avatarPerformanceEngine.start());
+    this.disposers.push(avatarHealthMonitor.start());
   }
 
   stop(): void {
