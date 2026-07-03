@@ -50,7 +50,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ExecutiveOverlay } from "@/components/executive-overlay";
+// ExecutiveOverlay removed — replaced by the ARIA Singleton (`<AriaCopilot />`
+// mounted once in `src/routes/__root.tsx`). See `src/lib/aria-core/README.md`.
 import { OrgSwitcher } from "@/components/org/org-switcher";
 
 
@@ -104,7 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
-      <ExecutiveOverlay />
+      {/* ExecutiveOverlay removed — ARIA singleton lives at root. */}
     </div>
 
   );
