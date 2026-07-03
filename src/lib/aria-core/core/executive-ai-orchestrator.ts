@@ -28,6 +28,7 @@ import { contextManager } from "./context-manager";
 import { conversationIntelligence } from "./conversation-intelligence";
 import { conversationManager } from "./conversation-manager";
 import { decisionEngine } from "./decision-engine";
+import { executionPlanner } from "./execution-planner";
 import { executiveReasoning } from "./executive-reasoning";
 import { memoryManager } from "./memory-manager";
 import { planningEngine } from "./planning-engine";
@@ -39,11 +40,13 @@ import { setPendingRouteHint } from "../services/aria-service";
 import { useAriaStore } from "../state/aria-store";
 import type { AriaTurn } from "../types/aria";
 import type { ExecutiveEnvelope } from "../types/executive";
+import type { ExecutionEnvelope } from "./execution-envelope";
 
 export interface OrchestratedSubmission {
   text: string;
   turn: AriaTurn;
   envelope: ExecutiveEnvelope;
+  execution: ExecutionEnvelope;
 }
 
 export const executiveAiOrchestrator = {
@@ -97,8 +100,22 @@ export const executiveAiOrchestrator = {
     };
     useAriaStore.getState().setActiveEnvelope(envelope);
 
+    // ── Phase 3: Executive Execution Envelope ─────────────────────────
+    const executionEnvelope = executionPlanner.plan({
+      turnId: turn.id,
+      intent: hint.intent,
+      objective_ar: reasoning.executive_summary_ar,
+      objective_en: reasoning.executive_summary_en,
+      decision,
+      risk,
+      priority,
+      confidence,
+      nextActions,
+    });
+    useAriaStore.getState().setActiveExecution(executionEnvelope);
+
     setPendingRouteHint(hint);
-    return { text: trimmed, turn, envelope };
+    return { text: trimmed, turn, envelope, execution: executionEnvelope };
   },
   markStreaming(turnId: string) {
     conversationManager.markStreaming(turnId);
