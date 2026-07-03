@@ -136,7 +136,7 @@ export function AriaSystemBackdrop() {
           }}
         />
 
-        {mode === "video" ? (
+        {isMobile !== false ? null : mode === "video" ? (
           <video
             ref={videoRef}
             src={GREETING_SRC}
