@@ -76,6 +76,17 @@ export type { BodyChannel } from "./core/body-engine";
 export type { GestureId } from "./core/gesture-engine";
 export type { AttentionTarget } from "./core/attention-engine";
 
+// ─── Phase 11: Avatar Runtime + Voice Brain + Presence ─────────────────
+export { avatarRuntime } from "./core/avatar-runtime";
+export { voiceBrain } from "./core/voice-brain";
+export { realtimeAnimation } from "./core/realtime-animation";
+export { liveEmotion } from "./core/live-emotion";
+export { conversationAnimation } from "./core/conversation-animation";
+export { thinkingAnimation } from "./core/thinking-animation";
+export { executionAnimation } from "./core/execution-animation";
+export { executivePresence } from "./core/executive-presence";
+export type { PresenceSnapshot, PresenceLevel, PresenceGlow } from "./core/executive-presence";
+
 export type {
   AriaMode,
   AriaVoiceState,
