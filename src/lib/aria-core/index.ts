@@ -1,16 +1,32 @@
 /**
  * ARIA Singleton — public barrel.
  *
- * Everything a route/component needs to talk to ARIA is exported here.
- * If you find yourself importing from `src/lib/aria/**` or a legacy
- * copilot module, stop — use these instead.
+ * Every route/component/hook talks to ARIA through these exports. Do NOT
+ * import from `src/lib/aria/**` or from the internal `core/`, `state/`,
+ * `services/`, `providers/`, `hooks/`, `types/` directories — go through
+ * this file.
  */
-export { AriaProvider, useAriaChat } from "./provider";
-export { useAria, setAriaPageContext } from "./use-aria";
-export { useAriaStore } from "./store";
+export { AriaProvider, useAriaChat } from "./providers/aria-provider";
+export { useAria, setAriaPageContext } from "./hooks/useAria";
+export { useAriaStore } from "./state/aria-store";
+export { ariaBrain } from "./core/aria-brain";
+export { aiRouter } from "./core/ai-router";
+export { conversationManager } from "./core/conversation-manager";
+export { contextManager } from "./core/context-manager";
+export { memoryManager } from "./core/memory-manager";
+export { voiceManager } from "./core/voice-manager";
+export { responsePipeline } from "./core/response-pipeline";
+export { executiveAiOrchestrator } from "./core/executive-ai-orchestrator";
 export type {
   AriaMode,
   AriaVoiceState,
   AriaPageContext,
+  AriaContextSnapshot,
   AriaOpenOptions,
-} from "./types";
+  AriaIntent,
+  AriaRouteHint,
+  AriaTurn,
+  AriaTurnStatus,
+  AriaMemoryRecall,
+  AriaVoiceCapabilities,
+} from "./types/aria";

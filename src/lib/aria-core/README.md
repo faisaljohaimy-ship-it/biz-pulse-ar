@@ -1,82 +1,130 @@
-# ARIA Singleton — Architecture
+# ARIA Brain Core — Architecture
 
-> The ONE ARIA. Do not create a second one.
+> The ONE ARIA. Every request routes through the Brain. Do not create a second one.
 
-## Rules
+## Phase 1 — Foundation (this document)
 
-1. **One provider.** `<AriaProvider>` is mounted exactly once in
-   `src/routes/__root.tsx`, above `<Outlet />`. It never unmounts during
-   navigation, so conversation, voice, memory, and context persist across
-   every route change — same instance, same session, same audio pipeline.
-2. **One UI.** `<AriaCopilot />` (dock + composer + launcher) is the ONLY
-   ARIA chrome in the app. No route may render its own copilot, overlay,
-   or command bar.
-3. **One backend.** All ARIA traffic goes to `/api/chat` (auth, RAG,
-   tools, memory, rate-limiting, threads). No other endpoint is spoken
-   to by the singleton.
-4. **One store.** `useAriaStore` (Zustand) owns UI/voice/page-context.
-   Messages live in the singleton `useChat` inside the provider — never
-   duplicated in the store.
-5. **One hook.** Routes and components use `useAria()` from
-   `@/lib/aria-core/use-aria`. There are no other entry points.
+Phase 1 introduces the permanent **Brain Core** — the architecture every future
+ARIA capability (RAG, tools, persistent memory, voice, digital twin, avatar
+motion) will plug into. Phase 1 explicitly does NOT implement any of those
+features; it only builds the seams.
 
-## Enterprise Singleton Guarantees
+## Directory Layout
 
-| Concern           | Owner                                                      |
-| ----------------- | ---------------------------------------------------------- |
-| Conversation      | `useChat` inside `<AriaProvider>` (one instance, app-wide) |
-| Voice pipeline    | `<AriaProvider>` (one MediaRecorder, one audio session)    |
-| Memory            | `/api/chat` server thread (one persistent thread per user) |
-| Context           | `useAriaStore.pageContext` (updated by route adapters)     |
-| Reasoning         | Server-side agent loop on `/api/chat`                      |
-| Execution         | Server-side tool router on `/api/chat`                     |
-| Event bus         | `useAriaStore` command queue (Zustand)                     |
-| WebSocket / SSE   | The `useChat` stream from `<AriaProvider>` only            |
+```
+src/lib/aria-core/
+├── core/                              # brain-internal managers
+│   ├── aria-brain.ts                  # single request entry point + lifecycle
+│   ├── executive-ai-orchestrator.ts   # pipeline: intent → context → route → validate
+│   ├── ai-router.ts                   # client-side intent hint selector
+│   ├── conversation-manager.ts        # turn lifecycle, dedupe, cancel
+│   ├── context-manager.ts             # route/module/screen/locale/permissions
+│   ├── memory-manager.ts              # INTERFACE only (Phase 2)
+│   ├── voice-manager.ts               # INTERFACE only (Phase 2)
+│   └── response-pipeline.ts           # validate + normalize + scrub + format
+├── providers/aria-provider.tsx        # ONE provider, mounted in __root.tsx
+├── hooks/useAria.ts                   # the ONE hook
+├── state/aria-store.ts                # zustand — mode, voice, context, turn
+├── services/aria-service.ts           # the ONLY transport to /api/chat
+├── server/ai-router.server.ts         # server-side model selection + fallback
+├── types/aria.ts                      # canonical types
+├── index.ts                           # public barrel
+└── {provider,use-aria,store,types}.ts # legacy import-path shims (keep working)
+```
 
-## Migration — Turn 2 Complete
+## Execution Flow
 
-All legacy ARIA duplicates have been removed. The following files no
-longer exist in the codebase:
+```
+User
+  ↓
+useAria().ask(text)
+  ↓
+ariaBrain.submit(text)
+  ↓
+ExecutiveAiOrchestrator.prepare()
+  ├─ ConversationManager.beginTurn()      // dedupe + cancel + status
+  ├─ ContextManager.snapshot()            // route/module/screen/locale
+  ├─ MemoryManager.recall()               // no-op in Phase 1
+  └─ AiRouter.selectHint()                // publishes x-aria-intent
+  ↓
+AriaService (transport → /api/chat)
+  ↓
+server/ai-router.server.ts               // OpenAI or Claude, retry+fallback
+  ↓
+OpenAI (Lovable Gateway) / Claude (OpenRouter)
+  ↓
+Stream → provider → ariaBrain.reportCompletion()
+  ↓
+ResponsePipeline.finalize()
+  ↓
+UI
+```
 
-- `src/components/executive/GlobalAriaCopilot.tsx`
-- `src/components/executive/AriaLiveBriefing.tsx`
-- `src/components/executive/DeveloperBrainToggle.tsx`
-- `src/components/executive/DemoAriaPresenter.tsx`
-- `src/components/executive-overlay.tsx`
-- `src/components/aria-command-bar.tsx`
-- `src/lib/aria/context-engine.tsx` (`AriaContextProvider`, `useAriaContext`)
-- `src/lib/aria/session-memory.ts` (client-side memory duplicate)
-- `src/lib/aria/use-auto-scan.ts`
-- `src/lib/aria/index.ts` (legacy barrel)
+## Singleton Guarantees
 
-The remaining `src/lib/aria/**` tree contains server functions,
-domain-specific logic, and avatar/motion helpers — not ARIA runtime
-state. Those are safe to keep.
+| Concern                  | Owner (exactly one)                                    |
+| ------------------------ | ------------------------------------------------------ |
+| ARIA Provider            | `<AriaProvider>` mounted in `src/routes/__root.tsx`    |
+| ARIA Brain               | `ariaBrain` (module singleton)                         |
+| Executive AI Orchestrator| `executiveAiOrchestrator` (module singleton)           |
+| AI Router (client hint)  | `aiRouter` (module singleton)                          |
+| AI Router (server select)| `resolveModel()` in `server/ai-router.server.ts`       |
+| Conversation Manager     | `conversationManager` (module singleton)               |
+| Context Manager          | `contextManager` (module singleton)                    |
+| Memory Interface         | `memoryManager` (Phase 1 no-op)                        |
+| Voice Interface          | `voiceManager` (Phase 1 state-only)                    |
+| Response Pipeline        | `responsePipeline` (module singleton)                  |
+| Transport                | `createAriaTransport()` (one instance per provider)    |
+| Conversation             | `useChat` inside `<AriaProvider>` (one app-wide)       |
+| Store                    | `useAriaStore` (zustand)                               |
+| Event bus                | store command queue + `ariaBrain.onTelemetry`          |
+
+## AI Router — Routing Table (server)
+
+| Intent hint     | Primary model                           | Fallback                     |
+| --------------- | --------------------------------------- | ---------------------------- |
+| `general`       | `openai/gpt-5-mini` (Lovable)           | `openai/gpt-5-nano`          |
+| `executive`     | `openai/gpt-5` (Lovable)                | `openai/gpt-5-mini`          |
+| `long-context`  | `anthropic/claude-3.5-sonnet` (OpenRtr) | `openai/gpt-5`               |
+| `writing`       | `anthropic/claude-3.5-sonnet` (OpenRtr) | `openai/gpt-5`               |
+| `engineering`   | `anthropic/claude-3.5-sonnet` (OpenRtr) | `openai/gpt-5`               |
+| `unknown`       | `openai/gpt-5` (Lovable)                | `openai/gpt-5-mini`          |
+
+Rules:
+- Client never sees model names — only intent + `fallbackUsed` boolean.
+- Client never picks a model. It sends an intent hint via `x-aria-intent`.
+- If OpenRouter is unavailable, Claude intents transparently degrade to OpenAI.
+- Retry once on primary failure, then surface a clean pipeline error.
+
+## Forbidden
+
+- Direct OpenAI / Claude / OpenRouter SDK calls from any component or route.
+- Direct `fetch("/api/chat", ...)` from any component.
+- A second `<AriaProvider>`, `useAriaStore`, `ariaBrain`, or transport.
+- Local per-page conversation, memory, voice, or context state.
+- Exposing raw provider error strings in the UI.
 
 ## Adapter Pattern for Routes
 
-A route that needs to give ARIA page-specific context uses the singleton
-hook, never its own state:
-
 ```tsx
-import { useAria } from "@/lib/aria-core/use-aria";
+import { useAria, setAriaPageContext } from "@/lib/aria-core/use-aria";
 
 function IncidentsPage() {
   const aria = useAria();
   useEffect(() => {
-    aria.setPageContext({
-      section: "security.incidents",
-      title: "Incidents",
-      kpis: [{ id: "open", label: "Open Incidents", value: open }],
+    setAriaPageContext({
+      pathname: "/sec/incidents",
+      label: "Sec · Incidents",
+      locale: "en",
+      facts: { openIncidents },
     });
-  }, [open]);
-  // ...
+  }, [openIncidents]);
+  // aria.ask("...") | aria.open() | aria.close() | aria.focus()
 }
 ```
 
-Route adapters may only:
-- read from `useAria()`
-- call `aria.setPageContext(...)`, `aria.ask(...)`, `aria.open(...)`
+## Non-Goals (deferred to later phases)
 
-They may NOT own conversation state, voice state, memory, or a second
-copilot component.
+RAG · Tool Calling · SAP · Outlook · Teams · Microsoft 365 · Digital Twin ·
+Holograms · Avatar Motion · Live Monitoring · Executive News · Self Learning ·
+Persistent Memory · Full Voice (STT + streaming TTS).
