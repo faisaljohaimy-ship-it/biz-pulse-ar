@@ -21,6 +21,8 @@ import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
+import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
+import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 
 /** iOS Safari blocks speech/audio started outside a user gesture.
  *  Call this synchronously inside every send/mic tap handler to prime
@@ -181,6 +183,7 @@ export function AriaCopilot() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const [pendingRevealId, setPendingRevealId] = useState<string | null>(null);
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
