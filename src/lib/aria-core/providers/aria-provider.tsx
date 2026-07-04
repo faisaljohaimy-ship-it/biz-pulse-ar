@@ -25,8 +25,6 @@ import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
-import { avatarVoiceSync } from "../core/avatar-voice-sync";
-import { ariaState } from "@/lib/aria/aria-state";
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
