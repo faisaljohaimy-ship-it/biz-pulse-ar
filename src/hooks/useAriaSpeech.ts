@@ -156,12 +156,18 @@ export function useAriaSpeech() {
           audioRef.current = audio;
           const finish = () => {
             if (audioRef.current === audio) audioRef.current = null;
+            AriaAudioBus.notifyStopped(source);
             AriaAudioBus.release(source);
             setSpeaking(false);
           };
           audio.onended = finish;
+          audio.onpause = () => { AriaAudioBus.notifyStopped(source); };
           audio.onerror = () => { console.warn("[aria-voice] static greeting playback error"); finish(); };
-          audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`); };
+          audio.onplaying = () => {
+            console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`);
+            AriaAudioBus.notifyPlaying(source, audio);
+          };
+
           await audio.play();
         } catch {
           if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
