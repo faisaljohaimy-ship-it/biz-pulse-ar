@@ -624,8 +624,36 @@ export function AriaCopilot() {
             </button>
           </header>
 
+          {/* Conversation Mode notice + resume chip */}
+          {convMode && (convNotice || convPaused) && (
+            <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
+              {convNotice && (
+                <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[11px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
+                  {convNotice}
+                </div>
+              )}
+              {convPaused && (
+                <button
+                  type="button"
+                  onClick={() => startListening()}
+                  className="rounded-full bg-emerald-500/25 px-4 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/60 backdrop-blur-md hover:bg-emerald-500/35 transition-all animate-pulse"
+                >
+                  اضغط للمتابعة 🎙
+                </button>
+              )}
+            </div>
+          )}
+
           {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
-          <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
+          <div
+            ref={scrollRef}
+            className={cn(
+              "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
+              convMode
+                ? "max-h-[32%] flex-none bg-background/40 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black)]"
+                : "flex-1",
+            )}
+          >
             <ul className="space-y-3">
               {chat.messages.map((m) => {
                 const raw = m.parts
