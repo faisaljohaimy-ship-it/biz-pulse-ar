@@ -12,12 +12,11 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 
+// ARIA voice is HARD-LOCKED to Layan (gVzwmdZzRgBrNjXaTmi5) server-side.
+// This dev tool only exposes the canonical voice — the server ignores any
+// `voiceId` in the request body regardless of what is sent from here.
 const VOICES = [
-  { id: "pNInz6obpgDQGcFmaJgB", label: "Adam — Deep male, فصيح" },
-  { id: "JBFqnCBsd6RMkjVDRZzb", label: "George — Warm male" },
-  { id: "nPczCjzI2devNBz1zQrb", label: "Brian — Narrator male" },
-  { id: "EXAVITQu4vr4xnSDxMaL", label: "Sarah — Clear female" },
-  { id: "XrExE9yKIg1WjnnlVkGX", label: "Matilda — Soft female" },
+  { id: "gVzwmdZzRgBrNjXaTmi5", label: "Layan — ARIA canonical (locked)" },
 ];
 
 const TASHKEEL = "\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652";
