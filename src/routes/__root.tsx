@@ -195,6 +195,7 @@ function RootComponent() {
                 </div>
                 <AriaCopilot />
                 {!isPromo && <AriaGreeter />}
+                {!isPromo && <AriaTalkFab />}
                 <Toaster />
               </AriaProvider>
             </DemoModeProvider>
