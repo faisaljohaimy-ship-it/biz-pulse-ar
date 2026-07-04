@@ -83,8 +83,8 @@ export function useAriaSpeech() {
           AriaAudioBus.release(source);
           setSpeaking(false);
         };
-        u.onend = cleanup;
-        u.onerror = () => { console.warn("[aria-voice] browser speech error"); cleanup(); };
+        setSpeaking(true);
+
         setSpeaking(true);
         u.onstart = () => {
           console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`);
