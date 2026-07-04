@@ -1,11 +1,14 @@
 /**
  * AriaGreeter — director-demo voice greeting.
  *
- * Fires ONCE per session (sessionStorage flag `aria-demo-greeted`) on the
- * FIRST user tap anywhere. Uses the existing `useAriaSpeech` path
- * (ElevenLabs → browser ar-SA fallback) through the `AriaAudioBus`
- * arbiter, so chat replies interrupt it instantly and the mute toggle is
- * respected. Any TTS failure = silent skip; never surfaced to the user.
+ * The SINGLE greeting trigger site-wide. Fires exactly ONCE per session on
+ * the first user pointerdown. The one-shot flag lives at module scope in
+ * `AriaAudioBus` (see `claimGreeting`) so it is immune to React remounts,
+ * StrictMode double-invocation, and multiple listener registrations.
+ *
+ * On-demand replay lives on the hero chip («🔊 استمع للتعريف») and calls
+ * `speak(..., 'panel-greeting')` directly, bypassing the flag but still
+ * going through the audio bus.
  */
 import { useEffect } from "react";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
@@ -22,19 +25,23 @@ export function AriaGreeter() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Skip if already greeted in this session.
+    // Persisted-across-reload flag (best-effort).
     try {
-      if (window.sessionStorage.getItem(SESSION_FLAG) === "1") return;
+      if (window.sessionStorage.getItem(SESSION_FLAG) === "1") {
+        AriaAudioBus.forceReplayGreeting(); // sync module flag
+        return;
+      }
     } catch {
-      /* sessionStorage unavailable — best-effort continue once */
+      /* sessionStorage unavailable — module flag still guards */
     }
 
-    let done = false;
+    // If some other code already claimed the greeting this session, skip.
+    if (AriaAudioBus.hasGreeted()) return;
 
     const onFirstGesture = () => {
-      if (done) return;
-      done = true;
       cleanup();
+      // Atomic claim: only the FIRST caller wins.
+      if (!AriaAudioBus.claimGreeting()) return;
 
       try {
         window.sessionStorage.setItem(SESSION_FLAG, "1");

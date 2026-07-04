@@ -57,9 +57,11 @@ function IntroLanding() {
 
   const replayGreeting = () => {
     AriaAudioBus.unlock();
+    AriaAudioBus.forceReplayGreeting();
     try { window.sessionStorage.setItem("aria-demo-greeted", "1"); } catch { /* noop */ }
     void speak(GREETING_AR, "panel-greeting");
   };
+
 
   useEffect(() => {
     if (typeof document === "undefined") return;
