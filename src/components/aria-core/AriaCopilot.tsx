@@ -252,12 +252,13 @@ export function AriaCopilot() {
       last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
     );
     if (!text || text.length < 2) return;
-    spokenIdsRef.current.add(last.id);
     // Silent-reply skip: text-typed message during Conversation Mode.
-    if (silentReplyRef.current.has(last.id)) {
-      silentReplyRef.current.delete(last.id);
+    if (pendingSilentRef.current) {
+      pendingSilentRef.current = false;
+      spokenIdsRef.current.add(last.id);
       return;
     }
+    spokenIdsRef.current.add(last.id);
 
     let cancelled = false;
     (async () => {
