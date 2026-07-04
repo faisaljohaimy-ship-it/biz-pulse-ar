@@ -11,15 +11,18 @@ import {
 
 const BodySchema = z.object({
   text: z.string().min(1).max(5000),
-  voiceId: z.string().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/).optional(),
   preserveDiacritics: z.boolean().optional(),
-  stability: z.number().min(0).max(1).optional(),
-  similarityBoost: z.number().min(0).max(1).optional(),
-  style: z.number().min(0).max(1).optional(),
-  speed: z.number().min(0.7).max(1.2).optional(),
 });
 
-const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual executive female, AR/EN
+// ARIA canonical voice — Layan (The Professional, ar-SA). LOCKED.
+const ARIA_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5";
+const ARIA_VOICE_SETTINGS = {
+  stability: 0.5,
+  similarity_boost: 0.8,
+  style: 0.45,
+  use_speaker_boost: true,
+  speed: 1.15,
+} as const;
 
 export const Route = createFileRoute("/api/tts")({
   server: {
@@ -41,15 +44,9 @@ export const Route = createFileRoute("/api/tts")({
           return Response.json({ error: parsed.error.message }, { status: 400 });
         }
 
-        const {
-          text,
-          voiceId = process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE,
-          preserveDiacritics = true,
-          stability = 0.5,
-          similarityBoost = 0.8,
-          style = 0.45,
-          speed = 1.15,
-        } = parsed.data;
+        const { text, preserveDiacritics = true } = parsed.data;
+        const voiceId = process.env.ELEVENLABS_VOICE_ID || ARIA_VOICE_ID;
+
 
 
         // CRITICAL: We must NOT normalize/strip Arabic diacritics (tashkeel) when the user wants
