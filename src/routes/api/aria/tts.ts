@@ -21,6 +21,10 @@ export const Route = createFileRoute("/api/aria/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Zero-budget mode: live ElevenLabs disabled. Flip TTS_LIVE=true to re-enable.
+        if (process.env.TTS_LIVE !== "true") {
+          return Response.json({ error: "tts_disabled" }, { status: 503 });
+        }
         // Option A: authenticated-only ElevenLabs. Anonymous callers get 403
         // immediately so the client silently falls back to browser speech —
         // no ElevenLabs call is made.
@@ -28,6 +32,7 @@ export const Route = createFileRoute("/api/aria/tts")({
         if (!authHeader || !/^Bearer\s+/i.test(authHeader)) {
           return Response.json({ error: "auth_required" }, { status: 403 });
         }
+
         const auth = await verifySupabaseUser(request);
         if (auth instanceof Response) {
           return Response.json({ error: "auth_required" }, { status: 403 });

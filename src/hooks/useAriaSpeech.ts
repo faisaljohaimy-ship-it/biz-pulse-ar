@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
-import { authenticatedFetch } from "@/lib/auth-fetch";
 
 
 const MUTE_KEY = "aria-voice-muted";
-const TTS_TIMEOUT_MS = 10_000;
+
 
 type Source = "chat-tts" | "panel-greeting";
 
@@ -125,44 +124,37 @@ export function useAriaSpeech() {
       }
 
       setSpeaking(true);
-
       const t0 = performance.now();
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
+
+      // Zero-budget policy:
+      //  - chat replies (chat-tts): browser voice for everyone. No live TTS.
+      //  - panel-greeting: try static /aria-greeting-voice.mp3 (pre-generated,
+      //    ElevenLabs quality, no per-visitor cost); if missing → browser.
+      if (source === "chat-tts") {
+        speakFallback(clean, source);
+        return;
+      }
 
       try {
-        const res = await authenticatedFetch("/api/aria/tts", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ text: clean.slice(0, 600) }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        // 403 = anonymous (Option A): silently fall back to browser voice.
-        if (res.status === 403) { speakFallback(clean, source); return; }
-        if (!res.ok) throw new Error(`tts_${res.status}`);
-
-        const blob = await res.blob();
+        const head = await fetch("/aria-greeting-voice.mp3", { method: "HEAD" });
+        if (!head.ok) throw new Error("no_static_greeting");
         if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
+        const audio = new Audio("/aria-greeting-voice.mp3");
         audioRef.current = audio;
         const finish = () => {
           if (audioRef.current === audio) audioRef.current = null;
-          try { URL.revokeObjectURL(url); } catch { /* ignore */ }
           AriaAudioBus.release(source);
           setSpeaking(false);
         };
         audio.onended = finish;
-        audio.onerror = () => { console.warn("[aria-voice] audio playback error"); finish(); };
-        audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`); };
+        audio.onerror = () => { console.warn("[aria-voice] static greeting playback error"); finish(); };
+        audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`); };
         await audio.play();
-      } catch (err) {
-        clearTimeout(timeout);
-        console.warn("[aria-voice] elevenlabs failed, falling back:", err);
+      } catch {
         if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
         speakFallback(clean, source);
       }
+
     },
     [hardStop, speakFallback],
   );
