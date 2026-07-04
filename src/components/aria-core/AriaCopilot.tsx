@@ -9,7 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Mic, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
