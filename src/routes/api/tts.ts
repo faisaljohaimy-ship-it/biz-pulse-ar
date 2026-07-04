@@ -43,13 +43,14 @@ export const Route = createFileRoute("/api/tts")({
 
         const {
           text,
-          voiceId = DEFAULT_VOICE,
+          voiceId = process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE,
           preserveDiacritics = true,
-          stability = 0.55,
+          stability = 0.5,
           similarityBoost = 0.8,
-          style = 0.3,
-          speed = 1.0,
+          style = 0.45,
+          speed = 1.15,
         } = parsed.data;
+
 
         // CRITICAL: We must NOT normalize/strip Arabic diacritics (tashkeel) when the user wants
         // فصيح pronunciation. The harakat are in the Unicode range U+064B..U+0652 plus U+0670 and
