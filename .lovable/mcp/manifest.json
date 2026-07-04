@@ -42,7 +42,8 @@
             "question": {
               "type": "string",
               "minLength": 1,
-              "description": "Executive question in Arabic or English."
+              "maxLength": 2000,
+              "description": "Executive question in Arabic or English (max 2000 chars)."
             },
             "language": {
               "type": "string",
