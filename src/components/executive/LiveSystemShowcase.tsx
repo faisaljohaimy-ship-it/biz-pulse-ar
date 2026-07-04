@@ -54,10 +54,7 @@ export function LiveSystemShowcase() {
             <div className="flex flex-1 items-center justify-center">
               <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] text-white/70">
                 <Moon className="h-2.5 w-2.5 text-[#3AE8FF]" />
-                <span className="font-mono">hajj-prime</span>
-                <span className="ml-0.5 rounded-full bg-[#3AE8FF]/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#3AE8FF]">
-                  NIGHT
-                </span>
+                <span>{ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}</span>
                 <Radio className="h-2.5 w-2.5 animate-pulse text-emerald-400" />
               </div>
             </div>
