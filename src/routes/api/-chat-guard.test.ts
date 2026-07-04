@@ -12,32 +12,25 @@ function makeRequest(init: { body?: unknown; auth?: string | null }) {
 }
 
 describe("/api/chat guard", () => {
-  it("rejects missing bearer with JSON 401 and clear message", async () => {
+  it("accepts missing bearer as anonymous (demo mode)", async () => {
     const req = makeRequest({ body: { messages: [{ role: "user", parts: [{ type: "text", text: "hi" }] }] } });
     const result = await validateChatRequest(req);
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.response.status).toBe(401);
-    expect(result.response.headers.get("content-type")).toMatch(/application\/json/);
-    const body = await result.response.json();
-    expect(body).toMatchObject({ ok: false });
-    expect(typeof body.error).toBe("string");
-    expect(body.error).toMatch(/sign in/i);
-    expect(typeof body.requestId).toBe("string");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.authHeader).toBeNull();
   });
 
-  it("rejects non-Bearer auth header with 401 JSON", async () => {
+  it("treats non-Bearer auth header as anonymous", async () => {
     const req = makeRequest({
       body: { messages: [{ role: "user", parts: [{ type: "text", text: "hi" }] }] },
       auth: "Basic abc",
     });
     const result = await validateChatRequest(req);
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.response.status).toBe(401);
-    const body = await result.response.json();
-    expect(body.error).toMatch(/sign in/i);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.authHeader).toBeNull();
   });
+
 
   it("rejects invalid JSON body with 400", async () => {
     const req = new Request("https://app.test/api/chat", {
