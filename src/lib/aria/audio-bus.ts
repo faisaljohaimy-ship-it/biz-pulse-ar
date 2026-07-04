@@ -28,6 +28,27 @@ function emit(e: BusEvent) {
   for (const l of listeners) { try { l(e); } catch { /* ignore */ } }
 }
 
+// Double-voice watchdog — while chat-tts owns the channel, forcibly cancel
+// any rogue browser speechSynthesis every 250ms so ARIA can NEVER be
+// shadowed by a second voice.
+let watchdogTimer: ReturnType<typeof setInterval> | null = null;
+function startWatchdog() {
+  if (watchdogTimer != null) return;
+  if (typeof window === "undefined" || !window.speechSynthesis) return;
+  watchdogTimer = setInterval(() => {
+    if (!current || current.source !== "chat-tts") return;
+    const s = window.speechSynthesis;
+    if (s && (s.speaking || s.pending)) {
+      try { s.cancel(); } catch { /* ignore */ }
+      console.warn("[aria-voice] watchdog killed rogue speechSynthesis");
+    }
+  }, 250);
+}
+function stopWatchdog() {
+  if (watchdogTimer != null) { clearInterval(watchdogTimer); watchdogTimer = null; }
+}
+
+
 
 // Module-scope singleton — survives React remounts, StrictMode double-invoke,
 // and any component re-registration. The ONLY way to reset is a full reload.
@@ -74,9 +95,11 @@ export const AriaAudioBus = {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
     current = { source, stop };
+    if (source === "chat-tts") startWatchdog(); else stopWatchdog();
     emit({ kind: "start", source });
     return true;
   },
+
 
   /**
    * Signal that real audio playback has begun (audio element 'playing' event
@@ -100,6 +123,7 @@ export const AriaAudioBus = {
     if (current?.source === source) {
       if (currentAudioEl) { emit({ kind: "stopped", source }); currentAudioEl = null; }
       current = null;
+      stopWatchdog();
       emit({ kind: "end", source });
     }
   },
@@ -110,11 +134,13 @@ export const AriaAudioBus = {
       try { current.stop(); } catch { /* ignore */ }
       if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
       current = null;
+      stopWatchdog();
       emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
+
   },
 
 
