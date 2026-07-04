@@ -1,20 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
-import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
-import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { AriaPremiumHero } from "@/components/executive/hero/AriaPremiumHero";
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
