@@ -220,7 +220,6 @@ export function AriaCopilot() {
     try { return localStorage.getItem("aria-conv-seen") !== "1"; } catch { return true; }
   });
   const convModeRef = useRef(false);
-  const silentReplyRef = useRef<Set<string>>(new Set());
   const pendingSilentRef = useRef(false);
   const relistenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startListeningRef = useRef<(() => void) | null>(null);
