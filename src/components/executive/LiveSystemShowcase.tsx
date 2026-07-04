@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
+import { Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 
