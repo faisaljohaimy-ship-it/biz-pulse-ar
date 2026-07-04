@@ -105,16 +105,9 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 sm:max-w-2xl sm:pt-14"
       >
-        {/* Status pill — sits above the global ARIA figure */}
+        {/* Status pill removed — hero breathes without it. */}
 
-        <div className="relative mb-8 flex flex-col items-center">
-          <div className="h-[220px]" aria-hidden />
-          <div className="absolute bottom-0 rounded-full border border-[#3AE8FF]/60 bg-[#061A2E]/80 px-3 py-1 shadow-[0_0_18px_rgba(58,232,255,0.4)] backdrop-blur-sm">
-            <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]">
-              {ar ? "آريا نشطة" : "ARIA Active"}
-            </span>
-          </div>
-        </div>
+
 
 
         {/* Product eyebrow */}
