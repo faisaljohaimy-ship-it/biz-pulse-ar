@@ -44,8 +44,48 @@ function getMessageText(message?: UIMessage) {
     .trim();
 }
 
+/**
+ * Sanitize incoming chat history before handing to the model:
+ *  - Strip the hardcoded UI welcome message (id = "aria-welcome"). Gemini
+ *    requires the conversation to START with a `user` turn, and prepending
+ *    an assistant greeting was silently killing every 2nd+ reply.
+ *  - Trim any leading assistant turns so history starts with `user`.
+ *  - Merge consecutive same-role turns (Gemini requires strict alternation).
+ *  - Cap to the last 12 turns to keep payload small.
+ */
+function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
+  const filtered = msgs.filter(
+    (m) =>
+      m.id !== "aria-welcome" &&
+      (m.role === "user" || m.role === "assistant"),
+  );
+  const firstUser = filtered.findIndex((m) => m.role === "user");
+  const trimmed = firstUser === -1 ? [] : filtered.slice(firstUser);
+  const merged: UIMessage[] = [];
+  for (const m of trimmed) {
+    const last = merged[merged.length - 1];
+    if (last && last.role === m.role) {
+      last.parts = [...last.parts, ...m.parts];
+    } else {
+      merged.push({ ...m, parts: [...m.parts] });
+    }
+  }
+  return merged.slice(-12);
+}
 
-// Agentic mode: tools are ALWAYS enabled. ARIA decides whether to call.
+function clientIp(request: Request): string {
+  const xff = request.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]!.trim();
+  return (
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-real-ip") ||
+    "anon"
+  );
+}
+
+// Agentic mode: tools are ALWAYS enabled for authenticated users.
+
+
 
 
 const SYSTEM_PROMPT = `You are ARIA — the Executive AI for the Western Region Industrial Security Department (إدارة الأمن الصناعي بالمنطقة الغربية). You serve the Department Director, Section Heads (Support, Maintenance, Projects), and Circle Managers (Makkah, Jeddah, Madinah, Taif, Tabuk). Tone: precise, decisive, calm, board-room grade. Never hedge with filler. Never apologize. Never say "as an AI".
