@@ -69,11 +69,12 @@ export function useAriaSpeech() {
       setSpeaking(false);
       return;
     }
+    const t0 = performance.now();
     const trySpeak = () => {
       try {
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "ar-SA";
-        u.rate = 0.95;
+        u.rate = 1.15;
         const voices = window.speechSynthesis.getVoices();
         const arVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("ar"));
         if (arVoice) u.voice = arVoice;
@@ -84,6 +85,7 @@ export function useAriaSpeech() {
         u.onend = cleanup;
         u.onerror = () => { console.warn("[aria-voice] browser speech error"); cleanup(); };
         setSpeaking(true);
+        u.onstart = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`); };
         window.speechSynthesis.speak(u);
       } catch (err) {
         console.warn("[aria-voice] browser speech threw", err);
@@ -124,7 +126,7 @@ export function useAriaSpeech() {
 
       setSpeaking(true);
 
-
+      const t0 = performance.now();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
 
@@ -153,6 +155,7 @@ export function useAriaSpeech() {
         };
         audio.onended = finish;
         audio.onerror = () => { console.warn("[aria-voice] audio playback error"); finish(); };
+        audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`); };
         await audio.play();
       } catch (err) {
         clearTimeout(timeout);
