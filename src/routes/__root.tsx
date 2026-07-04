@@ -23,6 +23,7 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
+import { AriaTalkFab } from "@/components/aria/AriaTalkFab";
 import { useRouterState } from "@tanstack/react-router";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
