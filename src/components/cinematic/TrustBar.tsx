@@ -6,8 +6,6 @@ import { ShieldCheck, BadgeCheck, Landmark, Cloud, Building2, Sparkles, Lock, Gl
  */
 export function TrustBar({ isAr }: { isAr: boolean }) {
   const badges = [
-    { icon: ShieldCheck, label: "SOC 2 Type II",      sub: isAr ? "معتمد" : "Certified" },
-    { icon: BadgeCheck,  label: "ISO 27001",           sub: isAr ? "أمن المعلومات" : "Infosec" },
     { icon: Lock,        label: "Saudi NCA",           sub: isAr ? "الأمن السيبراني" : "Cyber Reg." },
     { icon: Landmark,    label: "Vision 2030",         sub: isAr ? "شريك" : "Partner" },
     { icon: Cloud,       label: "Sovereign Cloud",     sub: isAr ? "بيانات داخل المملكة" : "KSA-resident" },
