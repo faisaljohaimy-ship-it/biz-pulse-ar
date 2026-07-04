@@ -23,10 +23,13 @@ import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 type VideoState = "idle" | "speaking" | "greeting";
 
-const SRC: Record<VideoState, string> = {
-  idle: "/aria-idle.mp4",
-  speaking: "/aria-talking.mp4",
-  greeting: "/aria-greeting.mp4",
+// Single clean HeyGen clip drives every non-idle state. Idle shows the
+// static poster only (no video mounted).
+const HERO_MOTION_SRC = "/aria-hero-motion.mp4";
+const SRC: Record<VideoState, string | null> = {
+  idle: null,
+  speaking: HERO_MOTION_SRC,
+  greeting: HERO_MOTION_SRC,
 };
 
 const FADE_MS = 300;
