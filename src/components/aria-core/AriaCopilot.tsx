@@ -251,6 +251,11 @@ export function AriaCopilot() {
     );
     if (!text || text.length < 2) return;
     spokenIdsRef.current.add(last.id);
+    // Silent-reply skip: text-typed message during Conversation Mode.
+    if (silentReplyRef.current.has(last.id)) {
+      silentReplyRef.current.delete(last.id);
+      return;
+    }
 
     let cancelled = false;
     (async () => {
@@ -277,6 +282,13 @@ export function AriaCopilot() {
         const done = () => {
           try { URL.revokeObjectURL(url); } catch { /* noop */ }
           ariaState.set("idle");
+          // Conversation Mode: auto-relisten after reply.
+          if (convModeRef.current && !cancelled) {
+            if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
+            relistenTimerRef.current = setTimeout(() => {
+              startListeningRef.current?.();
+            }, 300);
+          }
         };
         audio.onended = done;
         audio.onerror = done;
