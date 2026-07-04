@@ -74,7 +74,7 @@ const ERROR_MASK_AR =
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
-const STILL_SRC = "/aria-backdrop.webp";
+
 
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
