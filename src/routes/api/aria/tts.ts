@@ -73,10 +73,10 @@ export const Route = createFileRoute("/api/aria/tts")({
               text: rawText,
               model_id: "eleven_multilingual_v2",
               voice_settings: {
-                stability: 0.55,
+                stability: 0.5,
                 similarity_boost: 0.8,
-                style: 0.25,
-                speed: 0.92,
+                style: 0.45,
+                speed: 1.15,
               },
             }),
           },
