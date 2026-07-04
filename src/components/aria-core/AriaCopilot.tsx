@@ -212,11 +212,15 @@ export function AriaCopilot() {
   // On unmount / panel close, drop to idle.
   useEffect(() => () => { ariaState.set("idle"); }, []);
 
-  // Health probe on panel open
+  // Health probe + TTS route warm-up on panel open — pre-open TLS + route so
+  // the first real /api/tts request skips connect handshake latency.
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    try {
+      void fetch("/api/tts", { method: "HEAD", cache: "no-store" }).catch(() => {});
+    } catch { /* ignore */ }
     return () => { cancelled = true; };
   }, [isOpen]);
 
