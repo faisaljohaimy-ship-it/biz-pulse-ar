@@ -54,6 +54,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const drainCommands = useAriaStore((s) => s.drainCommands);
   const pendingCommands = useAriaStore((s) => s.pendingCommands);
+  const { speak: ariaSpeak } = useAriaSpeech();
 
   const transport = useMemo(() => createAriaTransport(), []);
 
