@@ -405,15 +405,37 @@ export function AriaCopilot() {
             <button
               type="button"
               onClick={() => {
+                if (!sttSupported) return;
+                if (listening) stopListening();
+                else startListening();
+              }}
+              disabled={!sttSupported}
+              aria-pressed={listening}
+              aria-label={sttSupported ? (listening ? "إيقاف الإنصات" : "ابدأ الإنصات") : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
+              title={sttSupported ? undefined : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
+              className={cn(
+                "grid h-8 w-8 place-items-center rounded-md transition",
+                sttSupported
+                  ? listening
+                    ? "bg-emerald-500/25 text-emerald-300 ring-2 ring-emerald-400/70 animate-pulse"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                  : "text-muted-foreground/40 cursor-not-allowed",
+              )}
+            >
+              <Mic className="h-4 w-4" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 const next = !voiceEnabled;
                 setVoiceEnabled(next);
                 try { localStorage.setItem("aria-voice-on", next ? "1" : "0"); } catch { /* noop */ }
               }}
               aria-pressed={voiceEnabled}
-              aria-label={voiceEnabled ? "Mute ARIA voice" : "Enable ARIA voice"}
+              aria-label={voiceEnabled ? "كتم الصوت" : "تفعيل الصوت"}
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
             >
-              {voiceEnabled ? <Mic className="h-4 w-4" aria-hidden /> : <MicOff className="h-4 w-4" aria-hidden />}
+              {voiceEnabled ? <Volume2 className="h-4 w-4" aria-hidden /> : <VolumeX className="h-4 w-4" aria-hidden />}
             </button>
             <button
               type="button"
