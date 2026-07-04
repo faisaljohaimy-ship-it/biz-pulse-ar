@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid } from "lucide-react";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
