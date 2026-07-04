@@ -57,7 +57,8 @@ export const Route = createFileRoute("/api/tts")({
           ? text
           : text.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
 
-        const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
+        // mp3_22050_32 → smaller payload, faster first byte for speech.
+        const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_22050_32`;
         try {
           const r = await httpFetch(url, {
             method: "POST",
