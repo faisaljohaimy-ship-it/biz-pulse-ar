@@ -78,6 +78,12 @@ const THINKING_AR = "آريا تفكّر…";
 
 const STILL_SRC = "/aria-backdrop.webp";
 
+// Module-level exactly-once guard — survives StrictMode double-invoke and
+// component remounts. A replyId that has been spoken can NEVER speak again.
+const SPOKEN_REPLY_IDS = new Set<string>();
+// Rolling first-audio latency samples (last 5).
+const FIRST_AUDIO_SAMPLES: number[] = [];
+
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
