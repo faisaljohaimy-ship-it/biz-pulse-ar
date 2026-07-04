@@ -38,13 +38,13 @@ export function getChatRequestId(request: Request) {
 }
 
 export type ChatGuardResult =
-  | { ok: true; data: z.infer<typeof BodySchema>; authHeader: string; requestId: string }
+  | { ok: true; data: z.infer<typeof BodySchema>; authHeader: string | null; requestId: string }
   | { ok: false; response: Response };
 
 /**
- * Validates the /api/chat request shape and bearer presence.
- * Returns a ready-to-send Response on failure with a clear JSON error
- * so the client can surface it in the chat UI instead of a raw 401.
+ * Validates the /api/chat request shape. Bearer auth is OPTIONAL —
+ * anonymous demo visitors get a degraded (no-tools, no-RAG) chat.
+ * The bearer, when present, is validated downstream.
  */
 export async function validateChatRequest(request: Request): Promise<ChatGuardResult> {
   const requestId = getChatRequestId(request);
@@ -62,16 +62,7 @@ export async function validateChatRequest(request: Request): Promise<ChatGuardRe
 
   const authHeader =
     request.headers.get("authorization") ?? request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return {
-      ok: false,
-      response: chatJsonError(
-        "Please sign in again before sending a message.",
-        401,
-        requestId,
-      ),
-    };
-  }
+  const bearer = authHeader?.startsWith("Bearer ") ? authHeader : null;
 
-  return { ok: true, data: parsed.data, authHeader, requestId };
+  return { ok: true, data: parsed.data, authHeader: bearer, requestId };
 }
