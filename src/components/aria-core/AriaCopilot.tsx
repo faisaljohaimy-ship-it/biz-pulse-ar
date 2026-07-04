@@ -87,8 +87,8 @@ function sanitiseAssistantText(raw: string): string {
   return t.trim();
 }
 
-/** Full-panel ARIA backdrop — STATIC image only. No video, no audio,
- *  no AudioContext. State-driven CSS motion via `.aria-presence`. */
+/** Full-panel ARIA backdrop — shares AriaReactiveFigure (still + reactive
+ *  motion clip while speaking). Centered, full-height, no audio. */
 function AriaPanelBackdrop() {
   const state = useAriaPresenceState();
   return (
@@ -99,17 +99,8 @@ function AriaPanelBackdrop() {
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-      <div className="aria-figure absolute inset-0">
-        <img
-          src={STILL_SRC}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full opacity-90 select-none"
-          style={{ objectFit: "contain", objectPosition: "center top" }}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-        <div className="aria-shimmer" aria-hidden />
-      </div>
+      <AriaReactiveFigure stillOpacity={0.9} videoOpacity={0.45} />
+      <div className="aria-shimmer" aria-hidden />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -120,6 +111,7 @@ function AriaPanelBackdrop() {
     </div>
   );
 }
+
 
 
 export function AriaCopilot() {
