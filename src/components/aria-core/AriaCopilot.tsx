@@ -224,10 +224,6 @@ export function AriaCopilot() {
   const relistenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => { convModeRef.current = convMode; }, [convMode]);
 
-  const isOpen = mode !== "collapsed";
-  const isBusy = chat.status === "submitted" || chat.status === "streaming";
-  const hasError = chat.status === "error" || !!chat.error;
-
   const state = useAriaPresenceState();
   const convCaption = useMemo(() => {
     if (!convMode) return null;
