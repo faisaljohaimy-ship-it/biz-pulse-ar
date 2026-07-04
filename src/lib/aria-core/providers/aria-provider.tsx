@@ -26,7 +26,6 @@ import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
 import { avatarVoiceSync } from "../core/avatar-voice-sync";
-import { ariaState } from "@/lib/aria/aria-state";
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
@@ -167,7 +166,6 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     utter.lang = /[\u0600-\u06FF]/.test(text) ? "ar-SA" : "en-US";
     utter.onstart = () => {
       voiceManager.setState("speaking");
-      ariaState.set("speaking");
       avatarBrain.onSpeakingStart(last.id);
       avatarVoiceSync.startSynthetic(last.id);
     };
@@ -175,13 +173,11 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
       avatarVoiceSync.stopSynthetic();
       avatarBrain.onSpeakingEnd(last.id);
       voiceManager.setState("idle");
-      ariaState.set("idle");
     };
     utter.onerror = () => {
       avatarVoiceSync.stopSynthetic();
       avatarBrain.onSpeakingEnd(last.id);
       voiceManager.setState("idle");
-      ariaState.set("idle");
     };
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);

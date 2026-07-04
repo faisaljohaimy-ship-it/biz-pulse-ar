@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
-import { ariaState } from "@/lib/aria/aria-state";
 
 
 const MUTE_KEY = "aria-voice-muted";
@@ -81,15 +80,11 @@ export function useAriaSpeech() {
         const cleanup = () => {
           AriaAudioBus.release(source);
           setSpeaking(false);
-          ariaState.set("idle");
         };
         u.onend = cleanup;
         u.onerror = () => { console.warn("[aria-voice] browser speech error"); cleanup(); };
         setSpeaking(true);
-        u.onstart = () => {
-          ariaState.set("speaking");
-          console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`);
-        };
+        u.onstart = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`); };
         window.speechSynthesis.speak(u);
       } catch (err) {
         console.warn("[aria-voice] browser speech threw", err);
