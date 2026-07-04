@@ -20,6 +20,7 @@ import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { AriaReactiveFigure } from "@/components/aria/AriaReactiveFigure";
 
 /** iOS Safari blocks speech/audio started outside a user gesture.
  *  Call this synchronously inside every send/mic tap handler to prime
@@ -73,7 +74,7 @@ const ERROR_MASK_AR =
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
-const STILL_SRC = "/aria-backdrop.webp";
+
 
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
@@ -87,8 +88,8 @@ function sanitiseAssistantText(raw: string): string {
   return t.trim();
 }
 
-/** Full-panel ARIA backdrop — STATIC image only. No video, no audio,
- *  no AudioContext. State-driven CSS motion via `.aria-presence`. */
+/** Full-panel ARIA backdrop — shares AriaReactiveFigure (still + reactive
+ *  motion clip while speaking). Centered, full-height, no audio. */
 function AriaPanelBackdrop() {
   const state = useAriaPresenceState();
   return (
@@ -99,17 +100,8 @@ function AriaPanelBackdrop() {
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-      <div className="aria-figure absolute inset-0">
-        <img
-          src={STILL_SRC}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full opacity-90 select-none"
-          style={{ objectFit: "contain", objectPosition: "center top" }}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-        <div className="aria-shimmer" aria-hidden />
-      </div>
+      <AriaReactiveFigure stillOpacity={0.9} videoOpacity={0.45} />
+      <div className="aria-shimmer" aria-hidden />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -120,6 +112,7 @@ function AriaPanelBackdrop() {
     </div>
   );
 }
+
 
 
 export function AriaCopilot() {
@@ -327,42 +320,19 @@ export function AriaCopilot() {
 
   return (
     <>
-      {/* Launcher FAB — hidden while docked */}
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setMode("docked")}
-          aria-label="Open ARIA"
-          className={cn(
-            "fixed bottom-6 end-6 z-50 flex h-14 w-14 items-center justify-center",
-            "rounded-full border border-primary/40 bg-card/80 text-primary shadow-lg backdrop-blur-xl",
-            "transition-all hover:scale-105 hover:border-primary hover:shadow-primary/30",
-            "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
-          )}
-        >
-          <Sparkles className="h-6 w-6" aria-hidden />
-          <span
-            className={cn(
-              "absolute inset-0 rounded-full",
-              isBusy && "animate-pulse ring-2 ring-primary/50",
-            )}
-            aria-hidden
-          />
-        </button>
-      )}
+      {/* Launcher is now the site-wide <AriaTalkFab /> in __root; the panel
+          opens automatically when ARIA needs to reply. */}
 
-      {/* Dock */}
+      {/* Dock — centered on all viewports */}
       {isOpen && (
         <aside
           role="complementary"
           aria-label="ARIA executive copilot"
           dir="rtl"
           className={cn(
-            "fixed z-50 flex flex-col overflow-hidden border border-primary/25",
-            "shadow-2xl",
-            // Mobile: near-fullscreen. Desktop (sm+): docked, full height.
-            "inset-x-2 top-14 bottom-2 rounded-3xl",
-            "sm:inset-auto sm:end-6 sm:top-6 sm:bottom-6 sm:w-[min(96vw,420px)] sm:rounded-2xl",
+            "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
+            "flex flex-col overflow-hidden rounded-3xl border border-primary/25 shadow-2xl",
+            "h-[min(86vh,720px)] w-[min(94vw,440px)]",
           )}
           style={{
             boxShadow:
