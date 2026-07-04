@@ -112,11 +112,18 @@ export function useAriaSpeech() {
       if (!clean || mutedRef.current) return;
       AriaAudioBus.unlock();
 
-      // Acquire channel — bus stops whatever's playing.
+      // Acquire channel — bus stops whatever's playing (incl. an in-flight
+      // greeting). chat-tts (priority 3) interrupts panel-greeting (2).
       const granted = AriaAudioBus.acquire(source, () => hardStop(source));
       if (!granted) return;
 
+      if (source === "chat-tts") {
+        // eslint-disable-next-line no-console
+        console.log(`[aria-voice] speaking reply, ${clean.length} chars`);
+      }
+
       setSpeaking(true);
+
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
