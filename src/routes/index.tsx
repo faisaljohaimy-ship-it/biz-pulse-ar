@@ -25,10 +25,10 @@ const GREETING_AR =
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NEXIOS AI OS — Enterprise Industrial Security Operating System" },
-      { name: "description", content: "AI-native operating system for industrial security, executive command, and Hajj operations. Powered by ARIA." },
-      { property: "og:title", content: "NEXIOS AI OS — Enterprise Industrial Security Operating System" },
-      { property: "og:description", content: "Bilingual executive AI platform unifying security operations, digital twin, and real-time intelligence." },
+      { title: "NEXIOS AI OS — نظام التشغيل الذكي للأمن الصناعي" },
+      { name: "description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
+      { property: "og:title", content: "NEXIOS AI OS" },
+      { property: "og:description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
       { property: "og:url", content: "https://neexios.com/" },
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],
@@ -294,7 +294,7 @@ function IntroLanding() {
         </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
-          {ar ? "NEXIOS AI OS · نسخة تنفيذية" : "NEXIOS AI OS · Executive Preview"}
+          {ar ? "NEXIOS AI OS · نسخة تنفيذية · Executive Edition" : "NEXIOS AI OS · Executive Edition"}
         </p>
       </div>
 

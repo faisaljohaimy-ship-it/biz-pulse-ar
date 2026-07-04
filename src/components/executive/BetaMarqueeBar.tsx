@@ -4,21 +4,15 @@
 
 import { useI18n } from "@/lib/i18n";
 
-const MESSAGES_AR = [
-  "نسخة تنفيذية",
-  "منصة إنجاز الأعمال التنفيذية",
-  "رؤية 2030 · NEXIOS",
-];
-const MESSAGES_EN = [
-  "Executive Preview",
-  "Executive Delivery Platform",
-  "Vision 2030 · NEXIOS",
-];
+const MESSAGE_AR = "نسخة تنفيذية · Executive Edition · Vision 2030 · NEXIOS";
+const MESSAGE_EN = "Executive Edition · Vision 2030 · NEXIOS";
 
 export function BetaMarqueeBar() {
   const { locale } = useI18n();
-  const MESSAGES = locale === "ar" ? MESSAGES_AR : MESSAGES_EN;
-  const strip = [...MESSAGES, ...MESSAGES, ...MESSAGES];
+  const message = locale === "ar" ? MESSAGE_AR : MESSAGE_EN;
+  // A single repeated message keeps the DOM lean and makes one truth visible;
+  // three copies are still required so the -33.33% translateX loop is seamless.
+  const strip = [message, message, message];
 
   return (
     <div

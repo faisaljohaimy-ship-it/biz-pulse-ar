@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
+import { Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 
@@ -75,15 +75,6 @@ export function LiveSystemShowcase() {
               >
                 <Expand className="h-2.5 w-2.5" />
               </Link>
-              <a
-                href={LIVE_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 py-1 text-[10px] font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-                aria-label={ar ? "فتح بنافذة خارجية" : "Open in new tab"}
-              >
-                <ExternalLink className="h-2.5 w-2.5" />
-              </a>
 
             </div>
           </div>

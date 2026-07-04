@@ -10,43 +10,10 @@
  *
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
-import { Mail, Database, Monitor, ShieldCheck, Sparkles, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const URGENT_WINDOW_MS = 8 * 60 * 60 * 1000; // 8 hours
-const URGENT_STORAGE_KEY = "aria.urgent.whatsapp.startedAt";
 
-function useUrgentCountdown() {
-  const [remaining, setRemaining] = useState<number>(URGENT_WINDOW_MS);
-  useEffect(() => {
-    let startedAt: number;
-    try {
-      const raw = localStorage.getItem(URGENT_STORAGE_KEY);
-      const parsed = raw ? Number(raw) : NaN;
-      if (Number.isFinite(parsed) && Date.now() - parsed < URGENT_WINDOW_MS) {
-        startedAt = parsed;
-      } else {
-        startedAt = Date.now();
-        localStorage.setItem(URGENT_STORAGE_KEY, String(startedAt));
-      }
-    } catch {
-      startedAt = Date.now();
-    }
-    const tick = () => {
-      const left = Math.max(0, URGENT_WINDOW_MS - (Date.now() - startedAt));
-      setRemaining(left);
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  const h = Math.floor(remaining / 3_600_000);
-  const m = Math.floor((remaining % 3_600_000) / 60_000);
-  const s = Math.floor((remaining % 60_000) / 1000);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return { label: `${pad(h)}:${pad(m)}:${pad(s)}`, remaining };
-}
 
 
 const INTEGRATIONS = [
@@ -86,8 +53,19 @@ export function HajjExecutiveStage() {
         <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">{sub}</p>
       </header>
 
+      <div className="mb-6 flex justify-center sm:mb-8">
+        <button
+          type="button"
+          onClick={() => { try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ } }}
+          aria-label={ar ? "تواصل معنا عبر آريا" : "Contact us via ARIA"}
+          className="group inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/45 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_-6px_rgba(58,232,255,0.5)] transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/20"
+        >
+          <Sparkles className="h-4 w-4 text-[#3AE8FF]" aria-hidden />
+          <span>{ar ? "تواصل معنا · تحدّث مع آريا" : "Contact us · Talk to ARIA"}</span>
+        </button>
+      </div>
 
-      <UrgentWhatsAppBadge ar={ar} />
+
 
       <div className="hes-anim grid grid-cols-1 gap-5">
         {/* Digital integration constellation */}
@@ -189,8 +167,17 @@ export function HajjExecutiveStage() {
         </div>
       </div>
 
-      {/* Integration ribbon */}
-      <div className="mt-5 grid grid-cols-3 gap-2 rounded-2xl border border-[#00D4FF]/25 bg-[#061A2E]/60 p-3 backdrop-blur-md sm:gap-4 sm:p-4">
+      {/* Integration ribbon — planned integrations (roadmap) */}
+      <div className="mt-5 rounded-2xl border border-[#00D4FF]/25 bg-[#061A2E]/60 p-3 backdrop-blur-md sm:p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/80">
+            {ar ? "تكاملات مخطّطة" : "Planned Integrations"}
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[color:var(--nx-warning)]">
+            Roadmap
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {INTEGRATIONS.map((it) => {
           const Icon = it.icon;
           return (
@@ -209,56 +196,8 @@ export function HajjExecutiveStage() {
             </div>
           );
         })}
+        </div>
       </div>
     </section>
-  );
-}
-
-const WHATSAPP_NUMBER = ""; // international format, digits only, e.g. 9665XXXXXXXX
-
-function UrgentWhatsAppBadge({ ar }: { ar: boolean }) {
-  const { label } = useUrgentCountdown();
-  const title = ar ? "مساعد الواتساب" : "WhatsApp Assistant";
-  const urgent = ar ? "طلب عاجل" : "URGENT";
-  // FIX 2 — with no number configured, do not render the button at all.
-  if (!WHATSAPP_NUMBER) return null;
-  return (
-    <div className="mb-6 flex justify-center sm:mb-8">
-      <style>{`
-        @keyframes uw-pulse { 0%,100% { box-shadow: 0 0 40px 6px rgba(239,68,68,0.55), 0 0 90px 20px rgba(239,68,68,0.35), inset 0 0 30px rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 65px 14px rgba(239,68,68,0.85), 0 0 140px 40px rgba(239,68,68,0.55), inset 0 0 45px rgba(239,68,68,0.6); } }
-        @keyframes uw-ring { to { transform: rotate(360deg); } }
-        @media (prefers-reduced-motion: reduce) { .uw-anim, .uw-anim * { animation: none !important; } }
-      `}</style>
-      <a
-        href={`https://wa.me/${WHATSAPP_NUMBER}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`${title} — ${urgent}`}
-        className="uw-anim relative flex h-40 w-40 items-center justify-center rounded-full border-2 border-red-500/80 bg-gradient-to-br from-red-600/40 via-red-700/25 to-[#1a0508] text-center sm:h-44 sm:w-44"
-        style={{ animation: "uw-pulse 2.2s ease-in-out infinite" }}
-      >
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-[-6px] rounded-full border border-red-400/40"
-          style={{ animation: "uw-ring 8s linear infinite" }}
-        />
-        <span className="flex flex-col items-center gap-1.5 px-3">
-          <span className="flex items-center gap-1.5 rounded-full border border-red-300/60 bg-red-600/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.25em] text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-            {urgent}
-          </span>
-          <MessageCircle className="h-7 w-7 text-red-100 drop-shadow-[0_0_10px_rgba(255,120,120,0.95)]" />
-          <span className="text-[13px] font-semibold leading-tight text-white drop-shadow-[0_0_6px_rgba(239,68,68,0.9)]">
-            {title}
-          </span>
-          <span className="font-mono text-[15px] font-bold tabular-nums tracking-widest text-red-100 drop-shadow-[0_0_8px_rgba(255,80,80,0.9)]">
-            {label}
-          </span>
-          <span className="text-[8px] uppercase tracking-[0.3em] text-red-200/80">
-            {ar ? "نافذة 8 ساعات" : "8h window"}
-          </span>
-        </span>
-      </a>
-    </div>
   );
 }
