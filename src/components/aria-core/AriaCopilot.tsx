@@ -20,6 +20,7 @@ import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { AriaReactiveFigure } from "@/components/aria/AriaReactiveFigure";
 
 /** iOS Safari blocks speech/audio started outside a user gesture.
  *  Call this synchronously inside every send/mic tap handler to prime
