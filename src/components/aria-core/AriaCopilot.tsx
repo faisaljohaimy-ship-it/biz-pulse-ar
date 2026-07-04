@@ -261,7 +261,12 @@ export function AriaCopilot() {
     if (!voiceOn) return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
-    if (spokenIdsRef.current.has(last.id)) return;
+    if (spokenIdsRef.current.has(last.id) || SPOKEN_REPLY_IDS.has(last.id)) {
+      if (SPOKEN_REPLY_IDS.has(last.id)) {
+        console.log(`[aria-voice] DUP-CALL blocked id=${last.id}`);
+      }
+      return;
+    }
     const text = sanitiseAssistantText(
       last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
     );
@@ -270,9 +275,11 @@ export function AriaCopilot() {
     if (pendingSilentRef.current) {
       pendingSilentRef.current = false;
       spokenIdsRef.current.add(last.id);
+      SPOKEN_REPLY_IDS.add(last.id);
       return;
     }
     spokenIdsRef.current.add(last.id);
+    SPOKEN_REPLY_IDS.add(last.id);
 
     let cancelled = false;
     const messageId = last.id;
