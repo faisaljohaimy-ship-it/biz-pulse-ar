@@ -4,8 +4,9 @@ import { Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 
-// Always force dark/night theme — the live Hajj system renders in night mode permanently.
-const LIVE_URL = "https://hajj-nexus-prime.lovable.app/?theme=dark&forceDark=1&mode=night#dark";
+// Embed the internal /hajj-prime route only — no external lovable.app URL may
+// appear anywhere in the homepage HTML (MASTER RECONCILIATION item 5).
+const LIVE_URL = "/hajj-prime";
 const INTERNAL_URL = "/hajj-prime";
 
 /**
