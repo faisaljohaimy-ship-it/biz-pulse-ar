@@ -18,7 +18,7 @@
  *   • static poster is always mounted as fallback
  *   • prefers-reduced-motion → static poster only (no video mount)
  */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 type VideoState = "idle" | "speaking" | "greeting";
