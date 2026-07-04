@@ -523,10 +523,34 @@ export function AriaCopilot() {
           }}
         >
           {/* LAYER 0 — ARIA cinematic backdrop */}
-          <AriaPanelBackdrop />
+          <AriaPanelBackdrop convMode={convMode} caption={convCaption} />
 
           {/* LAYER 2 — Header */}
           <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-background/30 px-4 py-3 backdrop-blur-sm">
+            {/* Conversation Mode talk toggle — start side, before mic/close */}
+            <div className="relative flex flex-col items-center gap-0.5">
+              <button
+                type="button"
+                onClick={toggleConversationMode}
+                aria-pressed={convMode}
+                aria-label="وضع المخاطبة الصوتية"
+                title="وضع المخاطبة الصوتية"
+                className={cn(
+                  "relative grid h-10 w-10 place-items-center rounded-full transition-all",
+                  convMode
+                    ? "bg-emerald-400/20 text-emerald-300 ring-2 ring-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.45)]"
+                    : "bg-white/5 text-cyan-200/70 ring-1 ring-white/10 hover:bg-white/10",
+                )}
+              >
+                <AudioWaveform className="h-5 w-5" aria-hidden />
+                {convMode && (
+                  <span className="absolute -bottom-0.5 h-1 w-6 rounded-full bg-emerald-400 animate-pulse" />
+                )}
+              </button>
+              {firstConvOpen && !convMode && (
+                <span className="text-[9px] leading-none text-emerald-200/80">مُخَاطَبَة</span>
+              )}
+            </div>
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" aria-hidden />
               <span
