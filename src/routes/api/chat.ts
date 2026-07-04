@@ -219,18 +219,38 @@ export const Route = createFileRoute("/api/chat")({
 
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
+        // Two clients:
+        //  - `supabase` runs as the caller (RLS applies) when a bearer is
+        //    present; anonymous otherwise.
+        //  - Anonymous requests skip RAG/tools/persistence so RLS never
+        //    blocks a demo reply.
         const supabase = createClient(supabaseUrl, supabasePublishable, {
-          global: { headers: { Authorization: authHeader } },
+          global: authHeader ? { headers: { Authorization: authHeader } } : {},
           auth: { persistSession: false, autoRefreshToken: false },
         });
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData.user) {
-          console.warn("[api/chat] auth rejected", { requestId, threadId, error: userError?.message });
-          return jsonError("Your session expired. Please sign in again.", 401, requestId);
-        }
-        const userId = userData.user.id;
 
-        const rate = await enforceRateLimit(`chat:${userId}`, 60, 60);
+        let userId: string | null = null;
+        if (authHeader) {
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          if (userError || !userData.user) {
+            console.warn("[api/chat] bearer rejected — falling back to anonymous", {
+              requestId,
+              threadId,
+              error: userError?.message,
+            });
+          } else {
+            userId = userData.user.id;
+          }
+        }
+        const isAnonymous = !userId;
+
+        // Demo-friendly limits:
+        //  - authenticated: 60 req / 60s per user
+        //  - anonymous:     40 req / 300s per IP
+        const rateKey = userId ? `chat:${userId}` : `chat:ip:${clientIp(request)}`;
+        const rate = userId
+          ? await enforceRateLimit(rateKey, 60, 60)
+          : await enforceRateLimit(rateKey, 40, 300);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) {
           return jsonError("ARIA is temporarily rate limited. Please retry shortly.", 429, requestId);
@@ -246,17 +266,19 @@ export const Route = createFileRoute("/api/chat")({
           provider: vendor === "lovable" ? "lovable-ai-gateway" : "openrouter",
           model: selectedModelId,
           intent: parseIntent(intentHeader),
+          anonymous: isAnonymous,
         });
 
 
-        const uiMessages = messages as UIMessage[];
+        const uiMessages = sanitizeHistory(messages as UIMessage[]);
         const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
 
         // Inject live enterprise context + semantic RAG (memory / knowledge / documents) unless explicitly disabled.
+        // Anonymous callers skip grounding entirely (no user context / no tools).
         let systemPrompt = SYSTEM_PROMPT;
         let ragCounts = { memories: 0, knowledge: 0, documents: 0 };
         let ragCitations: import("@/lib/aria/rag.server").RagCitation[] = [];
-        if (grounded !== false) {
+        if (userId && grounded !== false) {
           const [{ buildAriaContext }, { gatherRagContext }] = await Promise.all([
             import("@/lib/aria-context.server"),
             import("@/lib/aria/rag.server"),
@@ -283,8 +305,9 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
         }
 
 
-        const { buildAriaTools } = await import("@/lib/aria-tools.server");
-        const tools = buildAriaTools(supabase, userId);
+        const tools = userId
+          ? (await import("@/lib/aria-tools.server")).buildAriaTools(supabase, userId)
+          : undefined;
 
         console.log("[api/chat] streaming", {
           requestId,
@@ -292,8 +315,8 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           threadId,
           model: selectedModelId,
           messages: uiMessages.length,
-          grounded: grounded !== false,
-          toolsEnabled: true,
+          grounded: !!userId && grounded !== false,
+          toolsEnabled: !!tools,
           rag: ragCounts,
         });
 
