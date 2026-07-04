@@ -104,6 +104,12 @@ export function MissionControlStrip() {
   }, [k, loading, ar]);
 
 
+  // FIX 1 — Zero tolerance for dashes on public session. If we have no
+  // authenticated session, no data, an error, or the query is still
+  // resolving without a value, render nothing at all so the section
+  // never appears in the public DOM as placeholders.
+  if (!hasSession || q.isError || !k) return null;
+
   return (
     <section
       aria-label="Mission Control live KPIs"
@@ -121,7 +127,7 @@ export function MissionControlStrip() {
           aria-live="polite"
         >
           <span className={`h-1.5 w-1.5 rounded-full ${q.isFetching ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`} aria-hidden />
-          {q.isFetching ? (ar ? "تحديث…" : "Updating…") : q.isError ? (ar ? "غير متصل" : "Offline") : (ar ? "حي" : "Live")}
+          {q.isFetching ? (ar ? "تحديث…" : "Updating…") : (ar ? "حي" : "Live")}
         </span>
       </div>
 
@@ -134,7 +140,7 @@ export function MissionControlStrip() {
               value={t.value}
               hint={t.hint}
               tone={t.tone}
-              loading={loading}
+              loading={false}
             />
           </li>
         ))}
