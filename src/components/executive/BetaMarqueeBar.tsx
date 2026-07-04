@@ -5,14 +5,14 @@
 import { useI18n } from "@/lib/i18n";
 
 const MESSAGES_AR = [
-  "✦ نسخة تجريبية تنفيذية",
-  "✦ منصة إنجاز الأعمال التنفيذية",
-  "✦ رؤية 2030 · NEXIOS",
+  "نسخة تنفيذية",
+  "منصة إنجاز الأعمال التنفيذية",
+  "رؤية 2030 · NEXIOS",
 ];
 const MESSAGES_EN = [
-  "✦ Executive Beta Preview",
-  "✦ Executive Delivery Platform",
-  "✦ Vision 2030 · NEXIOS",
+  "Executive Preview",
+  "Executive Delivery Platform",
+  "Vision 2030 · NEXIOS",
 ];
 
 export function BetaMarqueeBar() {
