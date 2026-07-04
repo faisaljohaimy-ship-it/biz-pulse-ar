@@ -28,6 +28,7 @@ export interface AriaVideoAvatarProps {
   className?: string;
   style?: React.CSSProperties;
   mediaStyle?: React.CSSProperties;
+  mediaClassName?: string;
   active?: boolean;
 }
 
@@ -36,8 +37,10 @@ export function AriaVideoAvatar({
   className,
   style,
   mediaStyle,
+  mediaClassName,
   active = true,
 }: AriaVideoAvatarProps) {
+
   const [reduced] = useState(prefersReducedMotion);
   const [visible, setVisible] = useState<boolean>(() => {
     if (typeof document === "undefined") return true;
