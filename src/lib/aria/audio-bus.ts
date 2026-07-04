@@ -13,9 +13,16 @@ const PRIORITY: Record<Source, number> = {
 };
 
 type StopFn = () => void;
+type BusEvent = { kind: "start" | "end"; source: Source };
+type Listener = (e: BusEvent) => void;
 
 let current: { source: Source; stop: StopFn } | null = null;
 let unlocked = false;
+const listeners = new Set<Listener>();
+
+function emit(e: BusEvent) {
+  for (const l of listeners) { try { l(e); } catch { /* ignore */ } }
+}
 
 // Module-scope singleton — survives React remounts, StrictMode double-invoke,
 // and any component re-registration. The ONLY way to reset is a full reload.
@@ -53,43 +60,46 @@ export const AriaAudioBus = {
   acquire(source: Source, stop: StopFn): boolean {
     if (current && PRIORITY[source] < PRIORITY[current.source]) return false;
     if (current) {
-      try {
-        current.stop();
-      } catch {
-        /* ignore */
-      }
+      const prev = current.source;
+      try { current.stop(); } catch { /* ignore */ }
+      emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        /* ignore */
-      }
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
     current = { source, stop };
+    emit({ kind: "start", source });
     return true;
   },
 
   release(source: Source) {
-    if (current?.source === source) current = null;
+    if (current?.source === source) {
+      current = null;
+      emit({ kind: "end", source });
+    }
   },
 
   stopAll() {
     if (current) {
-      try {
-        current.stop();
-      } catch {
-        /* ignore */
-      }
+      const prev = current.source;
+      try { current.stop(); } catch { /* ignore */ }
       current = null;
+      emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        /* ignore */
-      }
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
+  },
+
+  /** Subscribe to start/end events. Returns unsubscribe fn. */
+  subscribe(l: Listener): () => void {
+    listeners.add(l);
+    return () => { listeners.delete(l); };
+  },
+
+  /** Current owner source, or null if idle. */
+  currentSource(): Source | null {
+    return current?.source ?? null;
   },
 };
 

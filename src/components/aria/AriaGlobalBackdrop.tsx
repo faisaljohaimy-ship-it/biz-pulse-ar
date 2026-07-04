@@ -1,49 +1,18 @@
 /**
  * AriaGlobalBackdrop — THE ONLY ARIA visual on the site.
  *
- * On the homepage a short muted looped-once motion clip plays first
- * (hand / lips / head), then crossfades to the breathing still. On any
- * other route (or with prefers-reduced-motion / video failure) the still
- * renders immediately. No AudioContext, no particle systems.
+ * Delegates the living-avatar state machine (idle / speaking / greeting)
+ * to AriaVideoAvatar, which drives one <video> element from AriaAudioBus
+ * events. Reduced-motion / video-load failure both fall through to the
+ * static breathing still.
  */
-import { useEffect, useRef, useState } from "react";
-import { useRouterState } from "@tanstack/react-router";
 import { useAriaPresenceState } from "@/lib/aria/aria-state";
+import { AriaVideoAvatar } from "./AriaVideoAvatar";
 
-const MOTION_SRC = "/aria-hero-motion.mp4";
 const STILL_SRC = "/aria-backdrop.webp";
-const MOTION_LOAD_TIMEOUT_MS = 3000;
-
-function prefersReducedMotion(): boolean {
-  if (typeof window === "undefined" || !window.matchMedia) return false;
-  try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
-  catch { return false; }
-}
 
 export function AriaGlobalBackdrop() {
   const state = useAriaPresenceState();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isHome = pathname === "/" || pathname === "";
-
-  const [motionDone, setMotionDone] = useState(false);
-  const [motionFailed, setMotionFailed] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  // Decide whether to attempt motion at all.
-  const wantMotion = isHome && !prefersReducedMotion();
-  const showVideo = wantMotion && !motionDone && !motionFailed;
-
-  // Load timeout safety net — never leave a blank backdrop.
-  useEffect(() => {
-    if (!showVideo) return;
-    const t = window.setTimeout(() => {
-      const v = videoRef.current;
-      if (!v || v.readyState < 2) setMotionFailed(true);
-    }, MOTION_LOAD_TIMEOUT_MS);
-    return () => window.clearTimeout(t);
-  }, [showVideo]);
-
-  const stillOpacity = showVideo ? 0 : 0.42;
 
   return (
     <div
@@ -62,48 +31,14 @@ export function AriaGlobalBackdrop() {
         }}
       />
 
-      {/* Motion (homepage only, once) — crossfades out on end/error */}
-      {wantMotion && !motionFailed && (
-        <video
-          ref={videoRef}
-          src={MOTION_SRC}
-          muted
-          playsInline
-          autoPlay
-          preload="auto"
-          disablePictureInPicture
-          controls={false}
-          onEnded={() => setMotionDone(true)}
-          onError={() => setMotionFailed(true)}
-          onCanPlay={() => { void videoRef.current?.play().catch(() => setMotionFailed(true)); }}
-          className="absolute left-1/2 top-[8%] h-[88%] -translate-x-1/2 select-none transition-opacity duration-500"
-          style={{
-            objectFit: "contain",
-            objectPosition: "center top",
-            opacity: motionDone ? 0 : 0.34,
-            maxWidth: "min(560px, 92vw)",
-          }}
+      <div
+        className="absolute left-1/2 top-[8%] h-[88%] -translate-x-1/2"
+        style={{ width: "min(560px, 92vw)", opacity: 0.42 }}
+      >
+        <AriaVideoAvatar
+          poster={STILL_SRC}
+          className="absolute inset-0"
         />
-      )}
-
-      {/* Still — always mounted; fades in when motion done or on non-home routes */}
-      <div className="aria-figure absolute inset-0">
-        <img
-          src={STILL_SRC}
-          alt=""
-          draggable={false}
-          decoding="async"
-          loading="eager"
-          className="absolute left-1/2 top-[8%] h-[88%] -translate-x-1/2 select-none transition-opacity duration-500"
-          style={{
-            objectFit: "contain",
-            objectPosition: "center top",
-            opacity: stillOpacity,
-            maxWidth: "min(560px, 92vw)",
-          }}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-        <div className="aria-shimmer" aria-hidden />
       </div>
 
       {/* Readability scrims */}

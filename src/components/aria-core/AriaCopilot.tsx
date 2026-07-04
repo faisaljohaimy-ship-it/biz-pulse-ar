@@ -20,6 +20,7 @@ import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 
 /** iOS Safari blocks speech/audio started outside a user gesture.
  *  Call this synchronously inside every send/mic tap handler to prime
@@ -87,10 +88,13 @@ function sanitiseAssistantText(raw: string): string {
   return t.trim();
 }
 
-/** Full-panel ARIA backdrop — STATIC image only. No video, no audio,
- *  no AudioContext. State-driven CSS motion via `.aria-presence`. */
+/** Full-panel ARIA backdrop — living video avatar driven by the
+ *  AriaAudioBus (idle / speaking / greeting). Reduced-motion or a
+ *  video load failure falls back to the static image. */
 function AriaPanelBackdrop() {
   const state = useAriaPresenceState();
+  const mode = useAriaStore((s) => s.mode);
+  const active = mode !== "collapsed";
   return (
     <div
       aria-hidden
@@ -99,15 +103,8 @@ function AriaPanelBackdrop() {
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-      <div className="aria-figure absolute inset-0">
-        <img
-          src={STILL_SRC}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full opacity-90 select-none"
-          style={{ objectFit: "contain", objectPosition: "center top" }}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
+      <div className="aria-figure absolute inset-0" style={{ opacity: 0.9 }}>
+        <AriaVideoAvatar poster={STILL_SRC} className="absolute inset-0" active={active} />
         <div className="aria-shimmer" aria-hidden />
       </div>
       <div
