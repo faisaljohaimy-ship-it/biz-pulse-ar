@@ -260,12 +260,23 @@ export function GenesisIntro() {
 
 function Wordmark({ text, active }: { text: string; active: boolean }) {
   return (
-    <div style={{
-      fontSize: 56, fontWeight: 800, letterSpacing: "0.18em",
-      color: "#FFFFFF", fontFamily: "'Space Grotesk','DM Sans',sans-serif",
-      display: "flex", gap: 2,
-    }}>
-      {text.split("").map((ch, i) => (
+    <div
+      dir="ltr"
+      style={{
+        unicodeBidi: "isolate",
+        direction: "ltr",
+        fontSize: 56,
+        fontWeight: 800,
+        letterSpacing: "0.18em",
+        color: "#FFFFFF",
+        fontFamily: "'Space Grotesk','DM Sans',sans-serif",
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        gap: 2,
+      }}
+    >
+      {[...text].map((ch, i) => (
         <span
           key={i}
           style={{
