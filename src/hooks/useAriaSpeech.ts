@@ -85,7 +85,6 @@ export function useAriaSpeech() {
         };
         setSpeaking(true);
 
-        setSpeaking(true);
         u.onstart = () => {
           console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`);
           AriaAudioBus.notifyPlaying(source, null);
