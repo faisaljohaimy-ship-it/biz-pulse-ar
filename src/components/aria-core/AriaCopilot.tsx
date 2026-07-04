@@ -324,17 +324,6 @@ export function AriaCopilot() {
         return pageContext ? `Context · ${pageContext.label}` : "Ready";
     }
   }, [voice, pageContext, listening]);
-    switch (voice) {
-      case "processing":
-        return THINKING_AR;
-      case "speaking":
-        return "ARIA is speaking…";
-      case "listening":
-        return "Listening…";
-      default:
-        return pageContext ? `Context · ${pageContext.label}` : "Ready";
-    }
-  }, [voice, pageContext]);
 
   return (
     <>
