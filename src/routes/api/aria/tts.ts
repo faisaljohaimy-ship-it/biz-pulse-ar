@@ -12,7 +12,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 
-const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual, warm female
+const DEFAULT_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5"; // ARIA canonical — Layan (The Professional, ar-SA)
 const MAX_CHARS = 600;
 const RATE_LIMIT = 40;
 const RATE_WINDOW_SECONDS = 5 * 60;
