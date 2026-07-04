@@ -535,8 +535,7 @@ function EmptyState() {
   return (
     <div className="text-center">
       <p className="text-xs text-white/65">
-        الوكلاء غير متاحين على الجلسة العامة. سجّل الدخول لعرض الشبكة الحيّة من{" "}
-        <code className="text-white/80">agent_definitions</code>.
+        سجلّ تشغيل الوكلاء فارغ حاليًا.
       </p>
       <Link
         to="/aria"
