@@ -95,6 +95,7 @@ function AriaPanelBackdrop() {
   const state = useAriaPresenceState();
   const mode = useAriaStore((s) => s.mode);
   const active = mode !== "collapsed";
+  const attentive = state === "listening";
   return (
     <div
       aria-hidden
@@ -103,10 +104,23 @@ function AriaPanelBackdrop() {
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-      <div className="aria-figure absolute inset-0" style={{ opacity: 0.9 }}>
-        <AriaVideoAvatar poster={STILL_SRC} className="absolute inset-0" active={active} />
+      <div
+        className={`aria-figure absolute inset-0 transition-transform duration-500 ease-out ${attentive ? "scale-[1.02]" : "scale-100"}`}
+        style={{ opacity: 0.45 }}
+      >
+        <AriaVideoAvatar
+          poster={STILL_SRC}
+          className="absolute inset-0"
+          mediaStyle={{ objectFit: "contain", objectPosition: "center top" }}
+          active={active}
+        />
         <div className="aria-shimmer" aria-hidden />
       </div>
+      {/* Emerald attention ring while listening/typing */}
+      <div
+        className={`pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300 ${attentive ? "opacity-100" : "opacity-0"}`}
+        style={{ boxShadow: "inset 0 0 0 1px rgba(16,185,129,0.55), inset 0 0 40px rgba(16,185,129,0.25)" }}
+      />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
