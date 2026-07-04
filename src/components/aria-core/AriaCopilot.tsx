@@ -8,8 +8,8 @@
  * always visible). Chat floats above her with backdrop blur and readability
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, RefreshCcw, Send, Sparkles, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Mic, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -19,6 +19,53 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
+/** iOS Safari blocks speech/audio started outside a user gesture.
+ *  Call this synchronously inside every send/mic tap handler to prime
+ *  SpeechSynthesis + AudioContext so the async reply can speak. */
+function primeIOSAudio(): void {
+  if (typeof window === "undefined") return;
+  try {
+    AriaAudioBus.unlock();
+    if (window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance("");
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    }
+    const AC: typeof AudioContext | undefined =
+      (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
+        .AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (AC) {
+      const g = window as unknown as { __ariaUnlockCtx?: AudioContext };
+      if (!g.__ariaUnlockCtx) g.__ariaUnlockCtx = new AC();
+      if (g.__ariaUnlockCtx.state === "suspended") void g.__ariaUnlockCtx.resume();
+    }
+    // eslint-disable-next-line no-console
+    console.log("[aria-voice] unlock done");
+  } catch {
+    /* ignore */
+  }
+}
+
+type SR = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string; isFinal?: boolean }> & { isFinal?: boolean }> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+function getSpeechRecognitionCtor(): (new () => SR) | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
 const ERROR_MASK_AR =
@@ -91,6 +138,13 @@ export function AriaCopilot() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
 
+  // STT (mic) state
+  const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
+  const [listening, setListening] = useState(false);
+  const recRef = useRef<SR | null>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finalTranscriptRef = useRef<string>("");
+
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
@@ -161,7 +215,11 @@ export function AriaCopilot() {
         audio.onerror = done;
         audio.onpause = () => { if (audio.ended) ariaState.set("idle"); };
         audio.play()
-          .then(() => ariaState.set("speaking"))
+          .then(() => {
+            // eslint-disable-next-line no-console
+            console.log("[aria-voice] speaking reply");
+            ariaState.set("speaking");
+          })
           .catch(() => { /* autoplay blocked */ ariaState.set("idle"); });
       } catch { /* silent — voice is a nice-to-have */ }
     })();
@@ -184,19 +242,77 @@ export function AriaCopilot() {
     });
   }, [chat.messages, isOpen, isBusy, hasError]);
 
-  const submit = (textOverride?: string) => {
+  const submit = useCallback((textOverride?: string) => {
     const text = (textOverride ?? draft).trim();
     if (!text || isBusy) return;
+    primeIOSAudio();
     setDraft("");
     setLastUserText(text);
     void chat.sendMessage({ text });
-  };
+  }, [draft, isBusy, chat]);
 
   const retry = () => {
     if (lastUserText) submit(lastUserText);
   };
 
+  const stopListening = useCallback(() => {
+    const r = recRef.current;
+    if (r) { try { r.stop(); } catch { /* ignore */ } }
+    if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+    setListening(false);
+  }, []);
+
+  const startListening = useCallback(() => {
+    primeIOSAudio();
+    const Ctor = getSpeechRecognitionCtor();
+    if (!Ctor) return;
+    // Barge-in: silence any ARIA speech instantly.
+    AriaAudioBus.stopAll();
+    const prev = audioRef.current;
+    if (prev) { try { prev.pause(); } catch { /* noop */ } }
+    ariaState.set("listening");
+    try {
+      const r = new Ctor();
+      r.lang = "ar-SA";
+      r.interimResults = true;
+      r.continuous = false;
+      finalTranscriptRef.current = "";
+      const armSilence = () => {
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, 2500);
+      };
+      r.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const res = e.results[i] as ArrayLike<{ transcript: string }> & { isFinal?: boolean };
+          const t = res[0]?.transcript ?? "";
+          if (res.isFinal) finalTranscriptRef.current += t;
+          else interim += t;
+        }
+        setDraft((finalTranscriptRef.current + " " + interim).trim());
+        armSilence();
+      };
+      r.onerror = () => { stopListening(); };
+      r.onend = () => {
+        if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+        setListening(false);
+        recRef.current = null;
+        const finalText = finalTranscriptRef.current.trim();
+        if (finalText) submit(finalText);
+      };
+      recRef.current = r;
+      setListening(true);
+      r.start();
+      armSilence();
+    } catch {
+      setListening(false);
+    }
+  }, [submit, stopListening]);
+
+  useEffect(() => () => { stopListening(); }, [stopListening]);
+
   const statusLabel = useMemo(() => {
+    if (listening) return "Listening…";
     switch (voice) {
       case "processing":
         return THINKING_AR;
@@ -207,7 +323,7 @@ export function AriaCopilot() {
       default:
         return pageContext ? `Context · ${pageContext.label}` : "Ready";
     }
-  }, [voice, pageContext]);
+  }, [voice, pageContext, listening]);
 
   return (
     <>
@@ -289,15 +405,37 @@ export function AriaCopilot() {
             <button
               type="button"
               onClick={() => {
+                if (!sttSupported) return;
+                if (listening) stopListening();
+                else startListening();
+              }}
+              disabled={!sttSupported}
+              aria-pressed={listening}
+              aria-label={sttSupported ? (listening ? "إيقاف الإنصات" : "ابدأ الإنصات") : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
+              title={sttSupported ? undefined : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
+              className={cn(
+                "grid h-8 w-8 place-items-center rounded-md transition",
+                sttSupported
+                  ? listening
+                    ? "bg-emerald-500/25 text-emerald-300 ring-2 ring-emerald-400/70 animate-pulse"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                  : "text-muted-foreground/40 cursor-not-allowed",
+              )}
+            >
+              <Mic className="h-4 w-4" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 const next = !voiceEnabled;
                 setVoiceEnabled(next);
                 try { localStorage.setItem("aria-voice-on", next ? "1" : "0"); } catch { /* noop */ }
               }}
               aria-pressed={voiceEnabled}
-              aria-label={voiceEnabled ? "Mute ARIA voice" : "Enable ARIA voice"}
+              aria-label={voiceEnabled ? "كتم الصوت" : "تفعيل الصوت"}
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
             >
-              {voiceEnabled ? <Mic className="h-4 w-4" aria-hidden /> : <MicOff className="h-4 w-4" aria-hidden />}
+              {voiceEnabled ? <Volume2 className="h-4 w-4" aria-hidden /> : <VolumeX className="h-4 w-4" aria-hidden />}
             </button>
             <button
               type="button"
