@@ -324,10 +324,14 @@ export function AriaCopilot() {
     });
   }, [chat.messages, isOpen, isBusy, hasError]);
 
-  const submit = useCallback((textOverride?: string) => {
+  const submit = useCallback((textOverride?: string, opts?: { fromVoice?: boolean }) => {
     const text = (textOverride ?? draft).trim();
     if (!text || isBusy) return;
     primeIOSAudio();
+    // Conversation Mode + typed (not from voice) → silent reply.
+    if (convModeRef.current && !opts?.fromVoice) {
+      pendingSilentRef.current = true;
+    }
     setDraft("");
     setLastUserText(text);
     void chat.sendMessage({ text });
@@ -352,6 +356,8 @@ export function AriaCopilot() {
     AriaAudioBus.stopAll();
     const prev = audioRef.current;
     if (prev) { try { prev.pause(); } catch { /* noop */ } }
+    if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+    setConvPaused(false);
     ariaState.set("listening");
     try {
       const r = new Ctor();
@@ -359,9 +365,10 @@ export function AriaCopilot() {
       r.interimResults = true;
       r.continuous = false;
       finalTranscriptRef.current = "";
+      const silenceMs = convModeRef.current ? 6000 : 2500;
       const armSilence = () => {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, 2500);
+        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, silenceMs);
       };
       r.onresult = (e) => {
         let interim = "";
@@ -380,7 +387,12 @@ export function AriaCopilot() {
         setListening(false);
         recRef.current = null;
         const finalText = finalTranscriptRef.current.trim();
-        if (finalText) submit(finalText);
+        if (finalText) {
+          submit(finalText, { fromVoice: true });
+        } else if (convModeRef.current) {
+          // Silent user → pause conversation with resume chip.
+          setConvPaused(true);
+        }
       };
       recRef.current = r;
       setListening(true);
@@ -390,6 +402,65 @@ export function AriaCopilot() {
       setListening(false);
     }
   }, [submit, stopListening]);
+
+  useEffect(() => { startListeningRef.current = startListening; }, [startListening]);
+
+  const toggleConversationMode = useCallback(() => {
+    if (convMode) {
+      setConvMode(false);
+      setConvPaused(false);
+      setConvNotice(null);
+      if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+      stopListening();
+      AriaAudioBus.stopAll();
+      const a = audioRef.current;
+      if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+      ariaState.set("idle");
+      return;
+    }
+    primeIOSAudio();
+    if (!sttSupported) {
+      setConvMode(true);
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — استخدم لوحة المفاتيح.");
+      try { composerRef.current?.focus(); } catch { /* noop */ }
+      return;
+    }
+    if (!voiceEnabled) {
+      setConvMode(true);
+      setConvNotice("الصوت مكتوم — فعّله للمخاطبة.");
+      return;
+    }
+    setConvMode(true);
+    setConvNotice(null);
+    try { localStorage.setItem("aria-conv-seen", "1"); } catch { /* noop */ }
+    setFirstConvOpen(false);
+    AriaAudioBus.stopAll();
+    startListening();
+  }, [convMode, sttSupported, voiceEnabled, startListening, stopListening, composerRef]);
+
+  // ESC exits conversation mode first, then closes panel.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (convModeRef.current) {
+        e.preventDefault();
+        toggleConversationMode();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, toggleConversationMode]);
+
+  // Auto-exit conv mode when panel closes.
+  useEffect(() => {
+    if (isOpen) return;
+    if (convModeRef.current) {
+      setConvMode(false);
+      setConvPaused(false);
+      if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+    }
+  }, [isOpen]);
 
   useEffect(() => () => { stopListening(); }, [stopListening]);
 
