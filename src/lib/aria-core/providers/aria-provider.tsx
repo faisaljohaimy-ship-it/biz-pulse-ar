@@ -26,6 +26,7 @@ import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
 import { avatarVoiceSync } from "../core/avatar-voice-sync";
+import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
