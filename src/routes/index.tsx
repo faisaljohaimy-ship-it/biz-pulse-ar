@@ -1,20 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon } from "lucide-react";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
-import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { useI18n } from "@/lib/i18n";
-import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { AriaPremiumHero } from "@/components/executive/hero/AriaPremiumHero";
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
@@ -100,135 +99,12 @@ function IntroLanding() {
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      {/* ══ Executive Hero — Tactical HUD ══ */}
-      <section
-        aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
-        className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-5 pt-8 sm:max-w-2xl sm:pt-14"
-      >
-        {/* Status pill — sits above the global ARIA figure */}
-
-        <div className="relative mb-8 flex flex-col items-center">
-          <div className="h-[220px]" aria-hidden />
-          <div className="absolute bottom-0 rounded-full border border-[#3AE8FF]/60 bg-[#061A2E]/80 px-3 py-1 shadow-[0_0_18px_rgba(58,232,255,0.4)] backdrop-blur-sm">
-            <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]">
-              {ar ? "آريا نشطة" : "ARIA Active"}
-            </span>
-          </div>
-        </div>
-
-
-        {/* Product eyebrow */}
-        <div className="mb-5 flex flex-col items-center gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#3AE8FF]/85">
-            NEXIOS AI OS
-          </span>
-          <div className="h-px w-10 bg-[#3AE8FF]/40" aria-hidden />
-        </div>
-
-        {/* Bilingual headline */}
-        <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
-          {ar ? (
-            <>
-              الذكاء، <span className="text-[#3AE8FF]">تحت القيادة.</span>
-              <br />
-              <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
-                نيكسيوس ينفّذ.
-              </span>
-            </>
-          ) : (
-            <>
-              Intelligence, <span className="text-[#3AE8FF]">in command.</span>
-              <br />
-              <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
-                NEXIOS executes.
-              </span>
-            </>
-          )}
-        </h1>
-
-        {/* Primary + secondary CTAs */}
-        <div className="flex w-full flex-col gap-3">
-          <Link
-            to="/os"
-            className="group inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#3AE8FF] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#061A2E] shadow-[0_6px_28px_rgba(58,232,255,0.35)] transition hover:bg-[#5CEEFF] active:scale-[0.98]"
-          >
-            {ar ? "بدء العملية" : "Start Operation"}
-            <Arrow className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-          </Link>
-          <button
-            type="button"
-            onClick={() => setCinemaOpen(true)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#3AE8FF]/35 bg-[#3AE8FF]/[0.04] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.09]"
-          >
-            <Play className="h-4 w-4" />
-            {ar ? "جسر القيادة التنفيذي" : "Executive Bridge"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ }
-            }}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#00D4FF]/45 bg-[#00D4FF]/[0.06] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/[0.12]"
-          >
-            <Sparkles className="h-4 w-4 text-[#3AE8FF]" />
-            {ar ? "ابدأ محادثة آريا" : "Start Conversation with ARIA"}
-          </button>
-        </div>
-
-        {/* Secondary utility row */}
-        <div className="mt-4 flex w-full items-center justify-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={() => setDeptsOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/35 bg-[#00D4FF]/[0.05] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85 transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/10"
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-            <span>{t.cta_depts}</span>
-          </button>
-          <DemoModeLauncher />
-          <button
-            type="button"
-            onClick={replayGreeting}
-            className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20"
-            aria-label={ar ? "استمع للتعريف" : "Play greeting"}
-          >
-            <span aria-hidden>🔊</span>
-            <span>{ar ? "استمع للتعريف" : "Play greeting"}</span>
-          </button>
-
-        </div>
-
-        {/* Telemetry footer — tabular numerals, executive signal */}
-        <dl
-          aria-label={ar ? "قراءات النظام" : "System readouts"}
-          className="mt-10 grid w-full grid-cols-3 gap-4 border-t border-[#3AE8FF]/12 pt-5 text-center"
-          style={{ fontVariantNumeric: "tabular-nums" }}
-        >
-          <div className="flex flex-col items-center gap-1">
-            <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-              {ar ? "حِمل النواة" : "Core Load"}
-            </dt>
-            <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">1.02%</dd>
-          </div>
-          <div className="flex flex-col items-center gap-1 border-x border-[#3AE8FF]/10">
-            <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-              {ar ? "معدل المزامنة" : "Sync Rate"}
-            </dt>
-            <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">99.9</dd>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-              {ar ? "مستوى الصلاحية" : "Auth Level"}
-            </dt>
-            <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">EXC</dd>
-          </div>
-        </dl>
-
-        {/* Retain the ARIA wordmark as a quiet signature below the hero */}
-        <div className="mt-6 opacity-70">
-          <ExecutiveWordmark title="A R I A" caption={ar ? "الذكاء التنفيذي" : "Executive Intelligence"} size="md" />
-        </div>
-      </section>
+      {/* ══ ARIA Premium Hero — Vision 2030 ══ */}
+      <AriaPremiumHero
+        onOpenCinema={() => setCinemaOpen(true)}
+        onOpenDepartments={() => setDeptsOpen(true)}
+        onReplayGreeting={replayGreeting}
+      />
 
 
       <LiveSystemShowcase />
