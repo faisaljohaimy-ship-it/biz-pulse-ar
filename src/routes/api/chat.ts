@@ -397,6 +397,8 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             return "ARIA could not complete this response. Please retry or open the diagnostics panel with the request ID.";
           },
           onFinish: async ({ messages: finalMessages }) => {
+            // Anonymous visitors: no persistence, no memory writes.
+            if (!userId) return;
             if (!threadId) {
               try {
                 const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
