@@ -49,7 +49,6 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const setMode = useAriaStore((s) => s.setMode);
   const setPageContext = useAriaStore((s) => s.setPageContext);
-  const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const drainCommands = useAriaStore((s) => s.drainCommands);
   const pendingCommands = useAriaStore((s) => s.pendingCommands);
 
