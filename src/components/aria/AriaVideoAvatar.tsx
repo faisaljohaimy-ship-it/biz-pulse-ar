@@ -205,11 +205,11 @@ export function AriaVideoAvatar({
 
   const shouldMountVideo = !reduced && active && !failed;
 
-  const combinedMediaStyle: React.CSSProperties = {
-    objectFit: "contain",
-    objectPosition: "center top",
-    ...mediaStyle,
-  };
+  const defaultMediaClass = "absolute inset-0 h-full w-full select-none pointer-events-none";
+  const mediaCls = mediaClassName ? `${defaultMediaClass} ${mediaClassName}` : defaultMediaClass;
+  const combinedMediaStyle: React.CSSProperties = mediaClassName
+    ? { ...mediaStyle }
+    : { objectFit: "contain", objectPosition: "center top", ...mediaStyle };
 
   return (
     <div className={className} style={style} aria-hidden>
@@ -219,7 +219,7 @@ export function AriaVideoAvatar({
         draggable={false}
         decoding="async"
         loading="eager"
-        className="absolute inset-0 h-full w-full select-none pointer-events-none"
+        className={mediaCls}
         style={combinedMediaStyle}
         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
       />
@@ -233,7 +233,7 @@ export function AriaVideoAvatar({
           playsInline
           disablePictureInPicture
           controls={false}
-          className="absolute inset-0 h-full w-full select-none pointer-events-none"
+          className={mediaCls}
           style={{
             ...combinedMediaStyle,
             opacity: videoOpacity,
@@ -245,5 +245,6 @@ export function AriaVideoAvatar({
     </div>
   );
 }
+
 
 export default AriaVideoAvatar;
