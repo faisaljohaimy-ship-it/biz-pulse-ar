@@ -54,14 +54,15 @@ export function HajjExecutiveStage() {
       </header>
 
       <div className="mb-6 flex justify-center sm:mb-8">
-        <Link
-          to="/aria"
+        <button
+          type="button"
+          onClick={() => { try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ } }}
           aria-label={ar ? "تواصل معنا عبر آريا" : "Contact us via ARIA"}
           className="group inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/45 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_-6px_rgba(58,232,255,0.5)] transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/20"
         >
           <Sparkles className="h-4 w-4 text-[#3AE8FF]" aria-hidden />
           <span>{ar ? "تواصل معنا · تحدّث مع آريا" : "Contact us · Talk to ARIA"}</span>
-        </Link>
+        </button>
       </div>
 
 
