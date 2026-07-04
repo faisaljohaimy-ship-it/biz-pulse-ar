@@ -97,7 +97,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
 
         if (!apiKey) return Response.json({ error: "tts_failed" }, { status: 502 });
 
-        const voiceId = parsed.data.voiceId ?? DEFAULT_VOICE;
+        const voiceId = parsed.data.voiceId ?? process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE;
         const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
         try {
           const r = await fetch(url, {
@@ -107,15 +107,16 @@ export const Route = createFileRoute("/api/public/aria-tts")({
               text,
               model_id: "eleven_multilingual_v2",
               voice_settings: {
-                stability: 0.55,
-                similarity_boost: 0.85,
-                style: 0.35,
+                stability: 0.5,
+                similarity_boost: 0.8,
+                style: 0.45,
                 use_speaker_boost: true,
-                speed: 1.0,
+                speed: 1.15,
               },
             }),
             signal: AbortSignal.timeout(30_000),
           });
+
           if (!r.ok) {
             const detail = (await r.text().catch(() => "")).slice(0, 240);
             console.error("[public/aria-tts] provider", r.status, detail);
