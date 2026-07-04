@@ -149,11 +149,14 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);
 
-  // ── TTS of last assistant message (routes through VoiceManager state) ─
+  // ── TTS of last assistant message — routed through AriaAudioBus so only
+  // ── one voice can play at a time. Auth users get ElevenLabs; anon gets
+  // ── browser ar-SA. The welcome message is skipped (handled by AriaGreeter
+  // ── which plays the pre-generated static MP3).
   const spokenIdsRef = useRef(new Set<string>([WELCOME_AR.id]));
   useEffect(() => {
     if (!voiceEnabled) return;
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (typeof window === "undefined") return;
     if (chat.status !== "ready") return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
@@ -164,26 +167,15 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
       .trim();
     if (!text) return;
     spokenIdsRef.current.add(last.id);
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = /[\u0600-\u06FF]/.test(text) ? "ar-SA" : "en-US";
-    utter.onstart = () => {
-      voiceManager.setState("speaking");
-      avatarBrain.onSpeakingStart(last.id);
-      avatarVoiceSync.startSynthetic(last.id);
-    };
-    utter.onend = () => {
+    voiceManager.setState("speaking");
+    avatarBrain.onSpeakingStart(last.id);
+    avatarVoiceSync.startSynthetic(last.id);
+    void ariaSpeak(text, "chat-tts").finally(() => {
       avatarVoiceSync.stopSynthetic();
       avatarBrain.onSpeakingEnd(last.id);
       voiceManager.setState("idle");
-    };
-    utter.onerror = () => {
-      avatarVoiceSync.stopSynthetic();
-      avatarBrain.onSpeakingEnd(last.id);
-      voiceManager.setState("idle");
-    };
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utter);
-  }, [chat.messages, chat.status, voiceEnabled]);
+    });
+  }, [chat.messages, chat.status, voiceEnabled, ariaSpeak]);
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;
