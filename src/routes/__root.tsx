@@ -87,10 +87,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
+          "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
       },
-      { property: "og:title", content: SITE_NAME },
-      { property: "og:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
+      { property: "og:title", content: "NEXIOS AI OS" },
+      { property: "og:description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
@@ -98,8 +98,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:height", content: "630" },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: SITE_NAME },
-      { name: "twitter:description", content: "An enterprise AI operating system dashboard for managing AI initiatives with a modern, responsive interface." },
+      { name: "twitter:title", content: "NEXIOS AI OS" },
+      { name: "twitter:description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
     links: [
