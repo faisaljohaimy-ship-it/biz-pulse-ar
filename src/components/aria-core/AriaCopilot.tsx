@@ -242,19 +242,88 @@ export function AriaCopilot() {
     });
   }, [chat.messages, isOpen, isBusy, hasError]);
 
-  const submit = (textOverride?: string) => {
+  const submit = useCallback((textOverride?: string) => {
     const text = (textOverride ?? draft).trim();
     if (!text || isBusy) return;
+    primeIOSAudio();
     setDraft("");
     setLastUserText(text);
     void chat.sendMessage({ text });
-  };
+  }, [draft, isBusy, chat]);
 
   const retry = () => {
     if (lastUserText) submit(lastUserText);
   };
 
+  const stopListening = useCallback(() => {
+    const r = recRef.current;
+    if (r) { try { r.stop(); } catch { /* ignore */ } }
+    if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+    setListening(false);
+  }, []);
+
+  const startListening = useCallback(() => {
+    primeIOSAudio();
+    const Ctor = getSpeechRecognitionCtor();
+    if (!Ctor) return;
+    // Barge-in: silence any ARIA speech instantly.
+    AriaAudioBus.stopAll();
+    const prev = audioRef.current;
+    if (prev) { try { prev.pause(); } catch { /* noop */ } }
+    ariaState.set("listening");
+    try {
+      const r = new Ctor();
+      r.lang = "ar-SA";
+      r.interimResults = true;
+      r.continuous = false;
+      finalTranscriptRef.current = "";
+      const armSilence = () => {
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, 2500);
+      };
+      r.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const res = e.results[i] as ArrayLike<{ transcript: string }> & { isFinal?: boolean };
+          const t = res[0]?.transcript ?? "";
+          if (res.isFinal) finalTranscriptRef.current += t;
+          else interim += t;
+        }
+        setDraft((finalTranscriptRef.current + " " + interim).trim());
+        armSilence();
+      };
+      r.onerror = () => { stopListening(); };
+      r.onend = () => {
+        if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+        setListening(false);
+        recRef.current = null;
+        const finalText = finalTranscriptRef.current.trim();
+        if (finalText) submit(finalText);
+      };
+      recRef.current = r;
+      setListening(true);
+      r.start();
+      armSilence();
+    } catch {
+      setListening(false);
+    }
+  }, [submit, stopListening]);
+
+  useEffect(() => () => { stopListening(); }, [stopListening]);
+
   const statusLabel = useMemo(() => {
+    if (listening) return "Listening…";
+    switch (voice) {
+      case "processing":
+        return THINKING_AR;
+      case "speaking":
+        return "ARIA is speaking…";
+      case "listening":
+        return "Listening…";
+      default:
+        return pageContext ? `Context · ${pageContext.label}` : "Ready";
+    }
+  }, [voice, pageContext, listening]);
     switch (voice) {
       case "processing":
         return THINKING_AR;
