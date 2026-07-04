@@ -91,22 +91,38 @@ function sanitiseAssistantText(raw: string): string {
 /** Full-panel ARIA backdrop — living video avatar driven by the
  *  AriaAudioBus (idle / speaking / greeting). Reduced-motion or a
  *  video load failure falls back to the static image. */
-function AriaPanelBackdrop() {
+function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: string | null }) {
   const state = useAriaPresenceState();
   const mode = useAriaStore((s) => s.mode);
   const active = mode !== "collapsed";
   const attentive = state === "listening";
+  // Conversation Mode brings ARIA to the foreground.
+  const figureOpacity = convMode ? 0.85 : 0.45;
+  const figureTransform = convMode
+    ? `scale(1.08) translateY(-2%)`
+    : attentive ? `scale(1.02)` : `scale(1)`;
   return (
     <div
       aria-hidden
       data-aria-state={state}
+      data-conv-mode={convMode ? "on" : "off"}
       className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+      {/* Emerald aurora — only in conversation mode */}
+      {convMode && (
+        <div
+          className="absolute left-1/2 top-[42%] h-[80%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(16,185,129,0.28) 0%, rgba(16,185,129,0.10) 40%, transparent 70%)",
+            filter: "blur(24px)",
+          }}
+        />
+      )}
       <div
-        className={`aria-figure absolute inset-0 transition-transform duration-500 ease-out ${attentive ? "scale-[1.02]" : "scale-100"}`}
-        style={{ opacity: 0.45 }}
+        className="aria-figure absolute inset-0 transition-all duration-[600ms] ease-out motion-reduce:transition-opacity"
+        style={{ opacity: figureOpacity, transform: figureTransform }}
       >
         <AriaVideoAvatar
           poster={STILL_SRC}
@@ -124,10 +140,27 @@ function AriaPanelBackdrop() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
+          background: convMode
+            ? "linear-gradient(180deg, rgba(4,7,15,0.35) 0%, rgba(4,7,15,0.15) 45%, rgba(4,7,15,0.85) 82%, rgba(4,7,15,0.96) 100%)"
+            : "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
         }}
       />
+      {/* Live state caption — only in conversation mode */}
+      {convMode && caption && (
+        <div className="absolute inset-x-0 top-[62%] flex justify-center pointer-events-none">
+          <div
+            className={cn(
+              "rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-md ring-1",
+              state === "listening" && "bg-emerald-500/20 text-emerald-200 ring-emerald-400/40",
+              state === "thinking" && "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 animate-pulse",
+              state === "speaking" && "bg-primary/25 text-primary-foreground ring-primary/50 animate-pulse",
+              state === "idle" && "bg-white/10 text-white/80 ring-white/20",
+            )}
+          >
+            {caption}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
