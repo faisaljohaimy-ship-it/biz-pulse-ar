@@ -104,11 +104,10 @@ export function MissionControlStrip() {
   }, [k, loading, ar]);
 
 
-  // FIX 1 — Zero tolerance for dashes on public session. If we have no
-  // authenticated session, no data, an error, or the query is still
-  // resolving without a value, render nothing at all so the section
-  // never appears in the public DOM as placeholders.
-  if (!hasSession || q.isError || !k) return null;
+  // Public/unauthenticated visitors have no RLS-scoped view of `sec_*`.
+  // Never show em-dashes on the homepage — render an honesty pill instead.
+  const pending = !hasSession || q.isError || !k;
+  const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
 
   return (
     <section
@@ -126,8 +125,8 @@ export function MissionControlStrip() {
           className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
           aria-live="polite"
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${q.isFetching ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`} aria-hidden />
-          {q.isFetching ? (ar ? "تحديث…" : "Updating…") : (ar ? "حي" : "Live")}
+          <span className={`h-1.5 w-1.5 rounded-full ${pending ? "bg-[color:var(--nx-warning)]" : q.isFetching ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`} aria-hidden />
+          {pending ? pendingLabel : q.isFetching ? (ar ? "تحديث…" : "Updating…") : (ar ? "حي" : "Live")}
         </span>
       </div>
 
@@ -137,9 +136,13 @@ export function MissionControlStrip() {
             <KpiTile
               labelAr={t.labelAr}
               labelEn={t.labelEn}
-              value={t.value}
-              hint={t.hint}
-              tone={t.tone}
+              value={pending ? (
+                <span className="inline-flex items-center rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--nx-warning)]">
+                  {pendingLabel}
+                </span>
+              ) : t.value}
+              hint={pending ? undefined : t.hint}
+              tone={pending ? "amber" : t.tone}
               loading={false}
             />
           </li>
