@@ -10,43 +10,10 @@
  *
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
-import { Mail, Database, Monitor, ShieldCheck, Sparkles, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 
-const URGENT_WINDOW_MS = 8 * 60 * 60 * 1000; // 8 hours
-const URGENT_STORAGE_KEY = "aria.urgent.whatsapp.startedAt";
-
-function useUrgentCountdown() {
-  const [remaining, setRemaining] = useState<number>(URGENT_WINDOW_MS);
-  useEffect(() => {
-    let startedAt: number;
-    try {
-      const raw = localStorage.getItem(URGENT_STORAGE_KEY);
-      const parsed = raw ? Number(raw) : NaN;
-      if (Number.isFinite(parsed) && Date.now() - parsed < URGENT_WINDOW_MS) {
-        startedAt = parsed;
-      } else {
-        startedAt = Date.now();
-        localStorage.setItem(URGENT_STORAGE_KEY, String(startedAt));
-      }
-    } catch {
-      startedAt = Date.now();
-    }
-    const tick = () => {
-      const left = Math.max(0, URGENT_WINDOW_MS - (Date.now() - startedAt));
-      setRemaining(left);
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  const h = Math.floor(remaining / 3_600_000);
-  const m = Math.floor((remaining % 3_600_000) / 60_000);
-  const s = Math.floor((remaining % 60_000) / 1000);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return { label: `${pad(h)}:${pad(m)}:${pad(s)}`, remaining };
-}
 
 
 const INTEGRATIONS = [
