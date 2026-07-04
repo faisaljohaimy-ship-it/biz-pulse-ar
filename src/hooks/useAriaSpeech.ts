@@ -12,10 +12,11 @@ type Source = "chat-tts" | "panel-greeting";
  *
  *   • Chat replies (chat-tts):
  *       authenticated → ElevenLabs via /api/aria/tts (MP3 blob).
- *       anonymous / failure → browser speechSynthesis (ar-SA), 1.15x.
+ *       anonymous / failure → browser speechSynthesis (ar-SA), 1.0x.
  *   • Greeting (panel-greeting):
- *       always the pre-generated /aria-greeting-voice.mp3 if present;
- *       missing → browser speechSynthesis. Never calls ElevenLabs.
+ *       gated by VITE_GREETING_ENABLED / aria-greeting-off. Plays the
+ *       pre-generated /aria-greeting-voice.mp3 if present; missing →
+ *       browser speechSynthesis. Never calls ElevenLabs.
  */
 export function useAriaSpeech() {
   const [muted, setMutedState] = useState<boolean>(() => {
@@ -75,7 +76,7 @@ export function useAriaSpeech() {
       try {
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "ar-SA";
-        u.rate = 1.15;
+        u.rate = 1.0;
         const voices = window.speechSynthesis.getVoices();
         const arVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("ar"));
         if (arVoice) u.voice = arVoice;
