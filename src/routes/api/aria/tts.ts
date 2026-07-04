@@ -12,7 +12,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 
-const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual, warm female
+const DEFAULT_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5"; // ARIA canonical — Layan (The Professional, ar-SA)
 const MAX_CHARS = 600;
 const RATE_LIMIT = 40;
 const RATE_WINDOW_SECONDS = 5 * 60;
@@ -77,8 +77,10 @@ export const Route = createFileRoute("/api/aria/tts")({
                 stability: 0.5,
                 similarity_boost: 0.8,
                 style: 0.45,
+                use_speaker_boost: true,
                 speed: 1.15,
               },
+
             }),
           },
         );

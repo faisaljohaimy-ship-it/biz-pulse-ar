@@ -14,10 +14,10 @@ import {
 
 const Input = z.object({
   text: z.string().trim().min(1).max(1200),
-  voiceId: z.string().regex(/^[A-Za-z0-9_-]+$/).max(64).optional(),
 });
 
-const DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"; // Sarah — bilingual AR/EN executive
+const DEFAULT_VOICE = "gVzwmdZzRgBrNjXaTmi5"; // ARIA canonical — Layan (The Professional, ar-SA)
+
 
 async function synthesizeWithGateway(text: string, key: string): Promise<Response | null> {
   const r = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
@@ -97,7 +97,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
 
         if (!apiKey) return Response.json({ error: "tts_failed" }, { status: 502 });
 
-        const voiceId = parsed.data.voiceId ?? process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE;
+        const voiceId = process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE;
         const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
         try {
           const r = await fetch(url, {
