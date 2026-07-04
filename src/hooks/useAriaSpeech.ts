@@ -86,8 +86,14 @@ export function useAriaSpeech() {
         u.onend = cleanup;
         u.onerror = () => { console.warn("[aria-voice] browser speech error"); cleanup(); };
         setSpeaking(true);
-        u.onstart = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`); };
+        u.onstart = () => {
+          console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`);
+          AriaAudioBus.notifyPlaying(source, null);
+        };
+        u.onend = () => { AriaAudioBus.notifyStopped(source); cleanup(); };
+        u.onerror = () => { console.warn("[aria-voice] browser speech error"); AriaAudioBus.notifyStopped(source); cleanup(); };
         window.speechSynthesis.speak(u);
+
       } catch (err) {
         console.warn("[aria-voice] browser speech threw", err);
         AriaAudioBus.release(source);
