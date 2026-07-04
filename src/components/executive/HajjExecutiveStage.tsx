@@ -167,8 +167,17 @@ export function HajjExecutiveStage() {
         </div>
       </div>
 
-      {/* Integration ribbon */}
-      <div className="mt-5 grid grid-cols-3 gap-2 rounded-2xl border border-[#00D4FF]/25 bg-[#061A2E]/60 p-3 backdrop-blur-md sm:gap-4 sm:p-4">
+      {/* Integration ribbon — planned integrations (roadmap) */}
+      <div className="mt-5 rounded-2xl border border-[#00D4FF]/25 bg-[#061A2E]/60 p-3 backdrop-blur-md sm:p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/80">
+            {ar ? "تكاملات مخطّطة" : "Planned Integrations"}
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[color:var(--nx-warning)]">
+            Roadmap
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {INTEGRATIONS.map((it) => {
           const Icon = it.icon;
           return (
