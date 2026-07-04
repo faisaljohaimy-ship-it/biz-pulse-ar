@@ -32,8 +32,8 @@ export function AriaGlobalBackdrop() {
       />
 
       <div
-        className="absolute left-1/2 top-[8%] h-[88%] -translate-x-1/2"
-        style={{ width: "min(560px, 92vw)", opacity: 0.42 }}
+        className={`absolute left-1/2 top-[2%] h-[96%] -translate-x-1/2 transition-transform duration-500 ease-out ${state === "listening" ? "scale-[1.02]" : "scale-100"}`}
+        style={{ width: "min(720px, 96vw)", opacity: 0.38 }}
       >
         <AriaVideoAvatar
           poster={STILL_SRC}
