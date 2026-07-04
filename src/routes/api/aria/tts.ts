@@ -77,8 +77,10 @@ export const Route = createFileRoute("/api/aria/tts")({
                 stability: 0.5,
                 similarity_boost: 0.8,
                 style: 0.45,
+                use_speaker_boost: true,
                 speed: 1.15,
               },
+
             }),
           },
         );
