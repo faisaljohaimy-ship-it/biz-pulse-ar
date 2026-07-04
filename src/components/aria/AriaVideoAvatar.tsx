@@ -23,10 +23,13 @@ import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 type VideoState = "idle" | "speaking" | "greeting";
 
-const SRC: Record<VideoState, string> = {
-  idle: "/aria-idle.mp4",
-  speaking: "/aria-talking.mp4",
-  greeting: "/aria-greeting.mp4",
+// Single clean HeyGen clip drives every non-idle state. Idle shows the
+// static poster only (no video mounted).
+const HERO_MOTION_SRC = "/aria-hero-motion.mp4";
+const SRC: Record<VideoState, string | null> = {
+  idle: null,
+  speaking: HERO_MOTION_SRC,
+  greeting: HERO_MOTION_SRC,
 };
 
 const FADE_MS = 300;
@@ -102,34 +105,31 @@ export function AriaVideoAvatar({
   // ── Drive playback on state / mount changes ────────────────────────
   useEffect(() => {
     const v = videoRef.current;
-    if (!v || !shouldMountVideo) {
+    const src = SRC[state];
+    if (!v || !shouldMountVideo || !src) {
       setVideoOpacity(0);
+      if (v) {
+        try { v.pause(); } catch { /* ignore */ }
+      }
       return;
     }
     // Fade out during swap; the poster below stays visible.
     setVideoOpacity(0);
-    const src = SRC[state];
     if (v.getAttribute("src") !== src) {
       try { v.pause(); } catch { /* ignore */ }
       v.setAttribute("src", src);
       try { v.load(); } catch { /* ignore */ }
     }
-    v.muted = state !== "greeting";
-    v.loop = state !== "greeting";
+    // Muted loop for every state — greeting audio is delivered via the
+    // separate MP3 through AriaAudioBus, and the bus 'end' event returns
+    // the state to idle, so the video length no longer has to match the
+    // audio length.
+    v.muted = true;
+    v.loop = true;
     v.playsInline = true;
     const onReady = () => {
-      // Small delay so the fade-out completes before fade-in.
       window.setTimeout(() => {
-        void v.play().then(() => setVideoOpacity(1)).catch(() => {
-          // Autoplay refused (e.g. unmuted greeting without gesture) —
-          // fall back to muted playback to keep visuals alive.
-          if (!v.muted) {
-            v.muted = true;
-            void v.play().then(() => setVideoOpacity(1)).catch(() => setFailed(true));
-          } else {
-            setFailed(true);
-          }
-        });
+        void v.play().then(() => setVideoOpacity(1)).catch(() => setFailed(true));
       }, 40);
     };
     v.addEventListener("canplay", onReady, { once: true });
