@@ -32,10 +32,9 @@ export function AriaGlobalBackdrop() {
       />
 
       <div
-        className={`absolute left-1/2 top-0 h-[88%] -translate-x-1/2 transition-[transform,opacity] duration-[1100ms] ease-out ${state === "listening" ? "scale-[1.02]" : "scale-100"}`}
+        className={`absolute left-1/2 top-0 h-[90%] -translate-x-1/2 transition-[transform,opacity] duration-[1100ms] ease-out ${state === "speaking" ? "opacity-[0.62] scale-[1.015]" : state === "listening" ? "opacity-[0.48] scale-[1.02]" : "opacity-[0.42] scale-100"}`}
         style={{
           width: "min(720px, 96vw)",
-          opacity: 0.55,
           animation: "aria-figure-reveal 1200ms cubic-bezier(0.22,1,0.36,1) both",
         }}
       >
