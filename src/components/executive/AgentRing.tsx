@@ -192,6 +192,10 @@ export function AgentRing() {
   const [active, setActive] = useState<string | null>(null);
   const activeVM = agents.find((a) => a.id === active) ?? null;
 
+  // Public/anonymous sessions never see this surface — it depends entirely
+  // on authenticated live data. No placeholders, no session-state notice.
+  if (!hasSession) return null;
+
   // Geometry. SVG/positioning lives in a 100x100 normalized coord space so
   // the layer scales fluidly with the container.
   const count = Math.max(agents.length, loading ? 8 : 0);
