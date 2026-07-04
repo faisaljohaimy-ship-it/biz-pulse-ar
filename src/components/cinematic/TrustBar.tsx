@@ -1,4 +1,4 @@
-import { ShieldCheck, BadgeCheck, Landmark, Cloud, Building2, Sparkles, Lock, Globe2 } from "lucide-react";
+import { Landmark, Cloud, Building2, Sparkles, Lock, Globe2 } from "lucide-react";
 
 /**
  * Premium trust & sovereignty bar. Sits below the hero.
