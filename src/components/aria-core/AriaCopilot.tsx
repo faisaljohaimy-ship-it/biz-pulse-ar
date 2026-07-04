@@ -9,7 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Mic, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { AudioWaveform, Mic, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -91,22 +91,38 @@ function sanitiseAssistantText(raw: string): string {
 /** Full-panel ARIA backdrop — living video avatar driven by the
  *  AriaAudioBus (idle / speaking / greeting). Reduced-motion or a
  *  video load failure falls back to the static image. */
-function AriaPanelBackdrop() {
+function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: string | null }) {
   const state = useAriaPresenceState();
   const mode = useAriaStore((s) => s.mode);
   const active = mode !== "collapsed";
   const attentive = state === "listening";
+  // Conversation Mode brings ARIA to the foreground.
+  const figureOpacity = convMode ? 0.85 : 0.45;
+  const figureTransform = convMode
+    ? `scale(1.08) translateY(-2%)`
+    : attentive ? `scale(1.02)` : `scale(1)`;
   return (
     <div
       aria-hidden
       data-aria-state={state}
+      data-conv-mode={convMode ? "on" : "off"}
       className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+      {/* Emerald aurora — only in conversation mode */}
+      {convMode && (
+        <div
+          className="absolute left-1/2 top-[42%] h-[80%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(16,185,129,0.28) 0%, rgba(16,185,129,0.10) 40%, transparent 70%)",
+            filter: "blur(24px)",
+          }}
+        />
+      )}
       <div
-        className={`aria-figure absolute inset-0 transition-transform duration-500 ease-out ${attentive ? "scale-[1.02]" : "scale-100"}`}
-        style={{ opacity: 0.45 }}
+        className="aria-figure absolute inset-0 transition-all duration-[600ms] ease-out motion-reduce:transition-opacity"
+        style={{ opacity: figureOpacity, transform: figureTransform }}
       >
         <AriaVideoAvatar
           poster={STILL_SRC}
@@ -124,10 +140,27 @@ function AriaPanelBackdrop() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
+          background: convMode
+            ? "linear-gradient(180deg, rgba(4,7,15,0.35) 0%, rgba(4,7,15,0.15) 45%, rgba(4,7,15,0.85) 82%, rgba(4,7,15,0.96) 100%)"
+            : "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
         }}
       />
+      {/* Live state caption — only in conversation mode */}
+      {convMode && caption && (
+        <div className="absolute inset-x-0 top-[62%] flex justify-center pointer-events-none">
+          <div
+            className={cn(
+              "rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-md ring-1",
+              state === "listening" && "bg-emerald-500/20 text-emerald-200 ring-emerald-400/40",
+              state === "thinking" && "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 animate-pulse",
+              state === "speaking" && "bg-primary/25 text-primary-foreground ring-primary/50 animate-pulse",
+              state === "idle" && "bg-white/10 text-white/80 ring-white/20",
+            )}
+          >
+            {caption}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -178,6 +211,30 @@ export function AriaCopilot() {
     return () => { cancelled = true; };
   }, [isOpen]);
 
+  // Conversation Mode state
+  const [convMode, setConvMode] = useState(false);
+  const [convPaused, setConvPaused] = useState(false);
+  const [convNotice, setConvNotice] = useState<string | null>(null);
+  const [firstConvOpen, setFirstConvOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try { return localStorage.getItem("aria-conv-seen") !== "1"; } catch { return true; }
+  });
+  const convModeRef = useRef(false);
+  const pendingSilentRef = useRef(false);
+  const relistenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startListeningRef = useRef<(() => void) | null>(null);
+  useEffect(() => { convModeRef.current = convMode; }, [convMode]);
+
+  const state = useAriaPresenceState();
+  const convCaption = useMemo(() => {
+    if (!convMode) return null;
+    if (convPaused) return "اضغط للمتابعة 🎙";
+    if (state === "listening") return "تَسْتَمِع…";
+    if (state === "thinking") return "تُفَكِّر…";
+    if (state === "speaking") return "تَتَحَدَّث…";
+    return "مُخَاطَبَة";
+  }, [convMode, convPaused, state]);
+
   // TTS on assistant reply completion — one playback at a time.
   useEffect(() => {
     if (isBusy) return;
@@ -194,6 +251,12 @@ export function AriaCopilot() {
       last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
     );
     if (!text || text.length < 2) return;
+    // Silent-reply skip: text-typed message during Conversation Mode.
+    if (pendingSilentRef.current) {
+      pendingSilentRef.current = false;
+      spokenIdsRef.current.add(last.id);
+      return;
+    }
     spokenIdsRef.current.add(last.id);
 
     let cancelled = false;
@@ -221,6 +284,13 @@ export function AriaCopilot() {
         const done = () => {
           try { URL.revokeObjectURL(url); } catch { /* noop */ }
           ariaState.set("idle");
+          // Conversation Mode: auto-relisten after reply.
+          if (convModeRef.current && !cancelled) {
+            if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
+            relistenTimerRef.current = setTimeout(() => {
+              startListeningRef.current?.();
+            }, 300);
+          }
         };
         audio.onended = done;
         audio.onerror = done;
@@ -253,10 +323,14 @@ export function AriaCopilot() {
     });
   }, [chat.messages, isOpen, isBusy, hasError]);
 
-  const submit = useCallback((textOverride?: string) => {
+  const submit = useCallback((textOverride?: string, opts?: { fromVoice?: boolean }) => {
     const text = (textOverride ?? draft).trim();
     if (!text || isBusy) return;
     primeIOSAudio();
+    // Conversation Mode + typed (not from voice) → silent reply.
+    if (convModeRef.current && !opts?.fromVoice) {
+      pendingSilentRef.current = true;
+    }
     setDraft("");
     setLastUserText(text);
     void chat.sendMessage({ text });
@@ -281,6 +355,8 @@ export function AriaCopilot() {
     AriaAudioBus.stopAll();
     const prev = audioRef.current;
     if (prev) { try { prev.pause(); } catch { /* noop */ } }
+    if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+    setConvPaused(false);
     ariaState.set("listening");
     try {
       const r = new Ctor();
@@ -288,9 +364,10 @@ export function AriaCopilot() {
       r.interimResults = true;
       r.continuous = false;
       finalTranscriptRef.current = "";
+      const silenceMs = convModeRef.current ? 6000 : 2500;
       const armSilence = () => {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, 2500);
+        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, silenceMs);
       };
       r.onresult = (e) => {
         let interim = "";
@@ -309,7 +386,12 @@ export function AriaCopilot() {
         setListening(false);
         recRef.current = null;
         const finalText = finalTranscriptRef.current.trim();
-        if (finalText) submit(finalText);
+        if (finalText) {
+          submit(finalText, { fromVoice: true });
+        } else if (convModeRef.current) {
+          // Silent user → pause conversation with resume chip.
+          setConvPaused(true);
+        }
       };
       recRef.current = r;
       setListening(true);
@@ -319,6 +401,65 @@ export function AriaCopilot() {
       setListening(false);
     }
   }, [submit, stopListening]);
+
+  useEffect(() => { startListeningRef.current = startListening; }, [startListening]);
+
+  const toggleConversationMode = useCallback(() => {
+    if (convMode) {
+      setConvMode(false);
+      setConvPaused(false);
+      setConvNotice(null);
+      if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+      stopListening();
+      AriaAudioBus.stopAll();
+      const a = audioRef.current;
+      if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+      ariaState.set("idle");
+      return;
+    }
+    primeIOSAudio();
+    if (!sttSupported) {
+      setConvMode(true);
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — استخدم لوحة المفاتيح.");
+      try { composerRef.current?.focus(); } catch { /* noop */ }
+      return;
+    }
+    if (!voiceEnabled) {
+      setConvMode(true);
+      setConvNotice("الصوت مكتوم — فعّله للمخاطبة.");
+      return;
+    }
+    setConvMode(true);
+    setConvNotice(null);
+    try { localStorage.setItem("aria-conv-seen", "1"); } catch { /* noop */ }
+    setFirstConvOpen(false);
+    AriaAudioBus.stopAll();
+    startListening();
+  }, [convMode, sttSupported, voiceEnabled, startListening, stopListening, composerRef]);
+
+  // ESC exits conversation mode first, then closes panel.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (convModeRef.current) {
+        e.preventDefault();
+        toggleConversationMode();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, toggleConversationMode]);
+
+  // Auto-exit conv mode when panel closes.
+  useEffect(() => {
+    if (isOpen) return;
+    if (convModeRef.current) {
+      setConvMode(false);
+      setConvPaused(false);
+      if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+    }
+  }, [isOpen]);
 
   useEffect(() => () => { stopListening(); }, [stopListening]);
 
@@ -381,10 +522,34 @@ export function AriaCopilot() {
           }}
         >
           {/* LAYER 0 — ARIA cinematic backdrop */}
-          <AriaPanelBackdrop />
+          <AriaPanelBackdrop convMode={convMode} caption={convCaption} />
 
           {/* LAYER 2 — Header */}
           <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-background/30 px-4 py-3 backdrop-blur-sm">
+            {/* Conversation Mode talk toggle — start side, before mic/close */}
+            <div className="relative flex flex-col items-center gap-0.5">
+              <button
+                type="button"
+                onClick={toggleConversationMode}
+                aria-pressed={convMode}
+                aria-label="وضع المخاطبة الصوتية"
+                title="وضع المخاطبة الصوتية"
+                className={cn(
+                  "relative grid h-10 w-10 place-items-center rounded-full transition-all",
+                  convMode
+                    ? "bg-emerald-400/20 text-emerald-300 ring-2 ring-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.45)]"
+                    : "bg-white/5 text-cyan-200/70 ring-1 ring-white/10 hover:bg-white/10",
+                )}
+              >
+                <AudioWaveform className="h-5 w-5" aria-hidden />
+                {convMode && (
+                  <span className="absolute -bottom-0.5 h-1 w-6 rounded-full bg-emerald-400 animate-pulse" />
+                )}
+              </button>
+              {firstConvOpen && !convMode && (
+                <span className="text-[9px] leading-none text-emerald-200/80">مُخَاطَبَة</span>
+              )}
+            </div>
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" aria-hidden />
               <span
@@ -458,8 +623,36 @@ export function AriaCopilot() {
             </button>
           </header>
 
+          {/* Conversation Mode notice + resume chip */}
+          {convMode && (convNotice || convPaused) && (
+            <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
+              {convNotice && (
+                <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[11px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
+                  {convNotice}
+                </div>
+              )}
+              {convPaused && (
+                <button
+                  type="button"
+                  onClick={() => startListening()}
+                  className="rounded-full bg-emerald-500/25 px-4 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/60 backdrop-blur-md hover:bg-emerald-500/35 transition-all animate-pulse"
+                >
+                  اضغط للمتابعة 🎙
+                </button>
+              )}
+            </div>
+          )}
+
           {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
-          <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
+          <div
+            ref={scrollRef}
+            className={cn(
+              "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
+              convMode
+                ? "max-h-[32%] flex-none bg-background/40 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black)]"
+                : "flex-1",
+            )}
+          >
             <ul className="space-y-3">
               {chat.messages.map((m) => {
                 const raw = m.parts
