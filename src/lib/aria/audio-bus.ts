@@ -123,6 +123,7 @@ export const AriaAudioBus = {
     if (current?.source === source) {
       if (currentAudioEl) { emit({ kind: "stopped", source }); currentAudioEl = null; }
       current = null;
+      stopWatchdog();
       emit({ kind: "end", source });
     }
   },
@@ -133,11 +134,13 @@ export const AriaAudioBus = {
       try { current.stop(); } catch { /* ignore */ }
       if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
       current = null;
+      stopWatchdog();
       emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
+
   },
 
 
