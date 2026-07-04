@@ -233,8 +233,7 @@ export function AgentRing() {
           آريا — العقل التنفيذي
         </h2>
         <p className="mx-auto mt-1 max-w-xl text-xs text-white/55 sm:text-sm">
-          الوكلاء يعملون بصمت في الخلفية. آريا وحدها تتحدّث إليك — والحالة مستمدة من{" "}
-          <code className="text-white/70">agent_runs</code> الفعلية.
+          الوكلاء يعملون بصمت في الخلفية. آريا وحدها تتحدّث إليك.
         </p>
       </div>
 
