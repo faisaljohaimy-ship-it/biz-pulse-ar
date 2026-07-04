@@ -31,12 +31,15 @@ export function AriaGlobalBackdrop() {
         }}
       />
 
-      <AriaVideoAvatar
-        poster={STILL_SRC}
-        className="aria-figure absolute left-1/2 top-[8%] h-[88%] -translate-x-1/2"
-        style={{ width: "min(560px, 92vw)" }}
-        mediaStyle={{ opacity: 0.42 }}
-      />
+      <div
+        className="absolute left-1/2 top-[8%] h-[88%] -translate-x-1/2"
+        style={{ width: "min(560px, 92vw)", opacity: 0.42 }}
+      >
+        <AriaVideoAvatar
+          poster={STILL_SRC}
+          className="absolute inset-0"
+        />
+      </div>
 
       {/* Readability scrims */}
       <div
