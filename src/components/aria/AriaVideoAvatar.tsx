@@ -104,6 +104,7 @@ export function AriaVideoAvatar({
 
   // ── Drive playback on state / mount changes ────────────────────────
   useEffect(() => {
+    const v = videoRef.current;
     const src = SRC[state];
     if (!v || !shouldMountVideo || !src) {
       setVideoOpacity(0);
