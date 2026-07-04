@@ -364,7 +364,7 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
 
         return result.toUIMessageStreamResponse({
           headers: responseHeaders(requestId),
-          originalMessages: uiMessages,
+          originalMessages: messages as UIMessage[],
           sendReasoning: false,
           messageMetadata: ({ part }) => {
             if (part.type === "start") {
