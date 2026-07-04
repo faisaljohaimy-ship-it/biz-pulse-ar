@@ -396,11 +396,11 @@ export function AriaCopilot() {
           revealAndPlay(audio, "elevenlabs");
         };
         const onReady = () => launch();
-        audio.addEventListener("canplaythrough", onReady, { once: true });
-        // Some browsers never fire canplaythrough for short blobs — loadeddata is enough.
+        // Gate on `canplay` — first playable frame, not full buffer.
+        audio.addEventListener("canplay", onReady, { once: true });
         audio.addEventListener("loadeddata", onReady, { once: true });
-        // 700ms HOLD CAP — text must never feel laggy.
-        setTimeout(() => launch(), 700);
+        // 400ms HOLD CAP — text reveals fast even if audio still loading.
+        setTimeout(() => launch(), 400);
 
         audio.onended = () => {
           try { URL.revokeObjectURL(url); } catch { /* noop */ }
