@@ -294,7 +294,7 @@ function IntroLanding() {
         </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
-          NEXIOS AI OS · v1.0 GA
+          {ar ? "NEXIOS AI OS · نسخة تنفيذية" : "NEXIOS AI OS · Executive Preview"}
         </p>
       </div>
 
