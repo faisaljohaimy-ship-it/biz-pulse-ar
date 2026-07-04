@@ -97,7 +97,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
 
         if (!apiKey) return Response.json({ error: "tts_failed" }, { status: 502 });
 
-        const voiceId = parsed.data.voiceId ?? process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE;
+        const voiceId = process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE;
         const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
         try {
           const r = await fetch(url, {
