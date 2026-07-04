@@ -214,10 +214,14 @@ export function HajjExecutiveStage() {
   );
 }
 
+const WHATSAPP_NUMBER = ""; // international format, digits only, e.g. 9665XXXXXXXX
+
 function UrgentWhatsAppBadge({ ar }: { ar: boolean }) {
   const { label } = useUrgentCountdown();
   const title = ar ? "مساعد الواتساب" : "WhatsApp Assistant";
   const urgent = ar ? "طلب عاجل" : "URGENT";
+  // FIX 2 — with no number configured, do not render the button at all.
+  if (!WHATSAPP_NUMBER) return null;
   return (
     <div className="mb-6 flex justify-center sm:mb-8">
       <style>{`
@@ -226,7 +230,7 @@ function UrgentWhatsAppBadge({ ar }: { ar: boolean }) {
         @media (prefers-reduced-motion: reduce) { .uw-anim, .uw-anim * { animation: none !important; } }
       `}</style>
       <a
-        href="https://wa.me/"
+        href={`https://wa.me/${WHATSAPP_NUMBER}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${title} — ${urgent}`}
