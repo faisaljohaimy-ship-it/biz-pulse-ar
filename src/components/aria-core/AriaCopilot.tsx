@@ -211,6 +211,33 @@ export function AriaCopilot() {
     return () => { cancelled = true; };
   }, [isOpen]);
 
+  // Conversation Mode state
+  const [convMode, setConvMode] = useState(false);
+  const [convPaused, setConvPaused] = useState(false);
+  const [convNotice, setConvNotice] = useState<string | null>(null);
+  const [firstConvOpen, setFirstConvOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try { return localStorage.getItem("aria-conv-seen") !== "1"; } catch { return true; }
+  });
+  const convModeRef = useRef(false);
+  const silentReplyRef = useRef<Set<string>>(new Set());
+  const relistenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { convModeRef.current = convMode; }, [convMode]);
+
+  const isOpen = mode !== "collapsed";
+  const isBusy = chat.status === "submitted" || chat.status === "streaming";
+  const hasError = chat.status === "error" || !!chat.error;
+
+  const state = useAriaPresenceState();
+  const convCaption = useMemo(() => {
+    if (!convMode) return null;
+    if (convPaused) return "اضغط للمتابعة 🎙";
+    if (state === "listening") return "تَسْتَمِع…";
+    if (state === "thinking") return "تُفَكِّر…";
+    if (state === "speaking") return "تَتَحَدَّث…";
+    return "مُخَاطَبَة";
+  }, [convMode, convPaused, state]);
+
   // TTS on assistant reply completion — one playback at a time.
   useEffect(() => {
     if (isBusy) return;
