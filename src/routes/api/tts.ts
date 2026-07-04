@@ -65,13 +65,8 @@ export const Route = createFileRoute("/api/tts")({
             body: JSON.stringify({
               text: cleanText,
               model_id: "eleven_multilingual_v2",
-              voice_settings: {
-                stability,
-                similarity_boost: similarityBoost,
-                style,
-                use_speaker_boost: true,
-                speed,
-              },
+              voice_settings: ARIA_VOICE_SETTINGS,
+
             }),
             label: "elevenlabs/tts",
             timeoutMs: 30_000,
