@@ -78,12 +78,6 @@ const THINKING_AR = "آريا تفكّر…";
 
 const STILL_SRC = "/aria-backdrop.webp";
 
-// Module-level exactly-once guard — survives StrictMode double-invoke and
-// component remounts. A replyId that has been spoken can NEVER speak again.
-const SPOKEN_REPLY_IDS = new Set<string>();
-// Rolling first-audio latency samples (last 5).
-const FIRST_AUDIO_SAMPLES: number[] = [];
-
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
@@ -212,15 +206,11 @@ export function AriaCopilot() {
   // On unmount / panel close, drop to idle.
   useEffect(() => () => { ariaState.set("idle"); }, []);
 
-  // Health probe + TTS route warm-up on panel open — pre-open TLS + route so
-  // the first real /api/tts request skips connect handshake latency.
+  // Health probe on panel open
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
-    try {
-      void fetch("/api/tts", { method: "HEAD", cache: "no-store" }).catch(() => {});
-    } catch { /* ignore */ }
     return () => { cancelled = true; };
   }, [isOpen]);
 
@@ -265,12 +255,7 @@ export function AriaCopilot() {
     if (!voiceOn) return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
-    if (spokenIdsRef.current.has(last.id) || SPOKEN_REPLY_IDS.has(last.id)) {
-      if (SPOKEN_REPLY_IDS.has(last.id)) {
-        console.log(`[aria-voice] DUP-CALL blocked id=${last.id}`);
-      }
-      return;
-    }
+    if (spokenIdsRef.current.has(last.id)) return;
     const text = sanitiseAssistantText(
       last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
     );
@@ -279,11 +264,9 @@ export function AriaCopilot() {
     if (pendingSilentRef.current) {
       pendingSilentRef.current = false;
       spokenIdsRef.current.add(last.id);
-      SPOKEN_REPLY_IDS.add(last.id);
       return;
     }
     spokenIdsRef.current.add(last.id);
-    SPOKEN_REPLY_IDS.add(last.id);
 
     let cancelled = false;
     const messageId = last.id;
@@ -308,10 +291,7 @@ export function AriaCopilot() {
           audio.play()
             .then(() => {
               const tAudio = performance.now();
-              const firstAudioMs = Math.round(tAudio - t0);
-              FIRST_AUDIO_SAMPLES.push(firstAudioMs);
-              if (FIRST_AUDIO_SAMPLES.length > 5) FIRST_AUDIO_SAMPLES.shift();
-              console.log(`[aria-sync] first-audio=${firstAudioMs}ms text↔audio Δ=${Math.round(tAudio - tReveal)}ms samples=${FIRST_AUDIO_SAMPLES.join(",")}`);
+              console.log(`[aria-sync] text↔audio Δ=${Math.round(tAudio - tReveal)}ms`);
               ariaState.set("speaking");
               AriaAudioBus.notifyPlaying("chat-tts", audio);
               const tMotion = performance.now();
@@ -400,11 +380,11 @@ export function AriaCopilot() {
           revealAndPlay(audio, "elevenlabs");
         };
         const onReady = () => launch();
-        // Gate on `canplay` — first playable frame, not full buffer.
-        audio.addEventListener("canplay", onReady, { once: true });
+        audio.addEventListener("canplaythrough", onReady, { once: true });
+        // Some browsers never fire canplaythrough for short blobs — loadeddata is enough.
         audio.addEventListener("loadeddata", onReady, { once: true });
-        // 400ms HOLD CAP — text reveals fast even if audio still loading.
-        setTimeout(() => launch(), 400);
+        // 700ms HOLD CAP — text must never feel laggy.
+        setTimeout(() => launch(), 700);
 
         audio.onended = () => {
           try { URL.revokeObjectURL(url); } catch { /* noop */ }
