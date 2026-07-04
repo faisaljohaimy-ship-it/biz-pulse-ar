@@ -196,6 +196,7 @@ export function HajjExecutiveStage() {
             </div>
           );
         })}
+        </div>
       </div>
     </section>
   );
