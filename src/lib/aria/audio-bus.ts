@@ -13,9 +13,16 @@ const PRIORITY: Record<Source, number> = {
 };
 
 type StopFn = () => void;
+type BusEvent = { kind: "start" | "end"; source: Source };
+type Listener = (e: BusEvent) => void;
 
 let current: { source: Source; stop: StopFn } | null = null;
 let unlocked = false;
+const listeners = new Set<Listener>();
+
+function emit(e: BusEvent) {
+  for (const l of listeners) { try { l(e); } catch { /* ignore */ } }
+}
 
 // Module-scope singleton — survives React remounts, StrictMode double-invoke,
 // and any component re-registration. The ONLY way to reset is a full reload.
