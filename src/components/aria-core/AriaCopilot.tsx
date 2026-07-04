@@ -304,7 +304,10 @@ export function AriaCopilot() {
           audio.play()
             .then(() => {
               const tAudio = performance.now();
-              console.log(`[aria-sync] text↔audio Δ=${Math.round(tAudio - tReveal)}ms`);
+              const firstAudioMs = Math.round(tAudio - t0);
+              FIRST_AUDIO_SAMPLES.push(firstAudioMs);
+              if (FIRST_AUDIO_SAMPLES.length > 5) FIRST_AUDIO_SAMPLES.shift();
+              console.log(`[aria-sync] first-audio=${firstAudioMs}ms text↔audio Δ=${Math.round(tAudio - tReveal)}ms samples=${FIRST_AUDIO_SAMPLES.join(",")}`);
               ariaState.set("speaking");
               AriaAudioBus.notifyPlaying("chat-tts", audio);
               const tMotion = performance.now();
