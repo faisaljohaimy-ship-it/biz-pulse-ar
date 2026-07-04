@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
-
+import { authenticatedFetch } from "@/lib/auth-fetch";
 
 const MUTE_KEY = "aria-voice-muted";
-
 
 type Source = "chat-tts" | "panel-greeting";
 
 /**
- * useAriaSpeech — every assistant reply spoken aloud, through the
- * ARIA global audio arbiter (zero overlap guarantee).
+ * useAriaSpeech — routes every ARIA voice through the global AriaAudioBus
+ * (zero overlap guarantee).
  *
- * Primary: /api/aria/tts (ElevenLabs, Arabic-capable).
- * Fallback: browser `speechSynthesis` (ar-SA).
- * Both paths acquire/release the same bus channel.
+ *   • Chat replies (chat-tts):
+ *       authenticated → ElevenLabs via /api/aria/tts (MP3 blob).
+ *       anonymous / failure → browser speechSynthesis (ar-SA), 1.15x.
+ *   • Greeting (panel-greeting):
+ *       always the pre-generated /aria-greeting-voice.mp3 if present;
+ *       missing → browser speechSynthesis. Never calls ElevenLabs.
  */
 export function useAriaSpeech() {
   const [muted, setMutedState] = useState<boolean>(() => {
@@ -92,7 +94,6 @@ export function useAriaSpeech() {
         setSpeaking(false);
       }
     };
-    // iOS voices race: retry once on voiceschanged if list is empty
     const voices = window.speechSynthesis.getVoices();
     if (!voices || voices.length === 0) {
       const onChanged = () => {
@@ -100,11 +101,26 @@ export function useAriaSpeech() {
         trySpeak();
       };
       window.speechSynthesis.addEventListener("voiceschanged", onChanged, { once: true });
-      // Also try immediately as a race guard
       setTimeout(trySpeak, 250);
     } else {
       trySpeak();
     }
+  }, []);
+
+  const playBlob = useCallback(async (blob: Blob, source: Source, t0: number) => {
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    const finish = () => {
+      if (audioRef.current === audio) audioRef.current = null;
+      try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+      AriaAudioBus.release(source);
+      setSpeaking(false);
+    };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn("[aria-voice] audio playback error"); finish(); };
+    audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`); };
+    await audio.play();
   }, []);
 
   const speak = useCallback(
@@ -113,50 +129,57 @@ export function useAriaSpeech() {
       if (!clean || mutedRef.current) return;
       AriaAudioBus.unlock();
 
-      // Acquire channel — bus stops whatever's playing (incl. an in-flight
-      // greeting). chat-tts (priority 3) interrupts panel-greeting (2).
       const granted = AriaAudioBus.acquire(source, () => hardStop(source));
       if (!granted) return;
-
-      if (source === "chat-tts") {
-        // eslint-disable-next-line no-console
-        console.log(`[aria-voice] speaking reply, ${clean.length} chars`);
-      }
 
       setSpeaking(true);
       const t0 = performance.now();
 
-      // Zero-budget policy:
-      //  - chat replies (chat-tts): browser voice for everyone. No live TTS.
-      //  - panel-greeting: try static /aria-greeting-voice.mp3 (pre-generated,
-      //    ElevenLabs quality, no per-visitor cost); if missing → browser.
-      if (source === "chat-tts") {
-        speakFallback(clean, source);
+      if (source === "panel-greeting") {
+        // Static, pre-generated MP3 only. Never hits ElevenLabs.
+        try {
+          const head = await fetch("/aria-greeting-voice.mp3", { method: "HEAD" });
+          if (!head.ok) throw new Error("no_static_greeting");
+          if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
+          const audio = new Audio("/aria-greeting-voice.mp3");
+          audioRef.current = audio;
+          const finish = () => {
+            if (audioRef.current === audio) audioRef.current = null;
+            AriaAudioBus.release(source);
+            setSpeaking(false);
+          };
+          audio.onended = finish;
+          audio.onerror = () => { console.warn("[aria-voice] static greeting playback error"); finish(); };
+          audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`); };
+          await audio.play();
+        } catch {
+          if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
+          speakFallback(clean, source);
+        }
         return;
       }
 
+      // chat-tts: try ElevenLabs (auth-only). Anonymous → 403 → browser fallback.
+      console.log(`[aria-voice] speaking reply, ${clean.length} chars`);
       try {
-        const head = await fetch("/aria-greeting-voice.mp3", { method: "HEAD" });
-        if (!head.ok) throw new Error("no_static_greeting");
+        const res = await authenticatedFetch("/api/aria/tts", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text: clean }),
+        });
+        if (!res.ok) throw new Error(`tts_status_${res.status}`);
+        const ct = res.headers.get("content-type") || "";
+        if (!ct.includes("audio/")) throw new Error("tts_not_audio");
+        const blob = await res.blob();
         if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
-        const audio = new Audio("/aria-greeting-voice.mp3");
-        audioRef.current = audio;
-        const finish = () => {
-          if (audioRef.current === audio) audioRef.current = null;
-          AriaAudioBus.release(source);
-          setSpeaking(false);
-        };
-        audio.onended = finish;
-        audio.onerror = () => { console.warn("[aria-voice] static greeting playback error"); finish(); };
-        audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`); };
-        await audio.play();
-      } catch {
+        await playBlob(blob, source, t0);
+      } catch (err) {
+        console.log("[aria-voice] elevenlabs unavailable, falling back:", (err as Error).message);
         if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
         speakFallback(clean, source);
       }
-
     },
-    [hardStop, speakFallback],
+    [hardStop, speakFallback, playBlob],
   );
 
   useEffect(() => {
