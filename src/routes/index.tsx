@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Command, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid } from "lucide-react";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
@@ -196,9 +196,6 @@ function IntroLanding() {
             <span>{ar ? "استمع للتعريف" : "Play greeting"}</span>
           </button>
 
-          <kbd className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-white/60 sm:inline-flex">
-            <Command className="h-3 w-3" /> K
-          </kbd>
         </div>
 
         {/* Telemetry footer — tabular numerals, executive signal */}
@@ -297,7 +294,7 @@ function IntroLanding() {
         </section>
 
         <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
-          NEXIOS AI OS · v1.0 GA
+          {ar ? "NEXIOS AI OS · نسخة تنفيذية" : "NEXIOS AI OS · Executive Preview"}
         </p>
       </div>
 

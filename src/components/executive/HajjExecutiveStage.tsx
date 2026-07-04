@@ -180,7 +180,7 @@ export function HajjExecutiveStage() {
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-[#02101e] via-[#02101e]/80 to-transparent p-4">
             <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-white/65">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-              <span>Enterprise · ISO 27001 · SOC 2</span>
+              <span>{ar ? "متوافق مع نظام حماية البيانات الشخصية (PDPL)" : "PDPL-aligned data protection"}</span>
             </div>
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/80">
               Digital Integration
@@ -214,10 +214,14 @@ export function HajjExecutiveStage() {
   );
 }
 
+const WHATSAPP_NUMBER = ""; // international format, digits only, e.g. 9665XXXXXXXX
+
 function UrgentWhatsAppBadge({ ar }: { ar: boolean }) {
   const { label } = useUrgentCountdown();
   const title = ar ? "مساعد الواتساب" : "WhatsApp Assistant";
   const urgent = ar ? "طلب عاجل" : "URGENT";
+  // FIX 2 — with no number configured, do not render the button at all.
+  if (!WHATSAPP_NUMBER) return null;
   return (
     <div className="mb-6 flex justify-center sm:mb-8">
       <style>{`
@@ -226,7 +230,7 @@ function UrgentWhatsAppBadge({ ar }: { ar: boolean }) {
         @media (prefers-reduced-motion: reduce) { .uw-anim, .uw-anim * { animation: none !important; } }
       `}</style>
       <a
-        href="https://wa.me/"
+        href={`https://wa.me/${WHATSAPP_NUMBER}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${title} — ${urgent}`}

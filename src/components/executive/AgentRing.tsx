@@ -192,6 +192,10 @@ export function AgentRing() {
   const [active, setActive] = useState<string | null>(null);
   const activeVM = agents.find((a) => a.id === active) ?? null;
 
+  // Public/anonymous sessions never see this surface — it depends entirely
+  // on authenticated live data. No placeholders, no session-state notice.
+  if (!hasSession) return null;
+
   // Geometry. SVG/positioning lives in a 100x100 normalized coord space so
   // the layer scales fluidly with the container.
   const count = Math.max(agents.length, loading ? 8 : 0);
@@ -229,8 +233,7 @@ export function AgentRing() {
           آريا — العقل التنفيذي
         </h2>
         <p className="mx-auto mt-1 max-w-xl text-xs text-white/55 sm:text-sm">
-          الوكلاء يعملون بصمت في الخلفية. آريا وحدها تتحدّث إليك — والحالة مستمدة من{" "}
-          <code className="text-white/70">agent_runs</code> الفعلية.
+          الوكلاء يعملون بصمت في الخلفية. آريا وحدها تتحدّث إليك.
         </p>
       </div>
 
@@ -532,8 +535,7 @@ function EmptyState() {
   return (
     <div className="text-center">
       <p className="text-xs text-white/65">
-        الوكلاء غير متاحين على الجلسة العامة. سجّل الدخول لعرض الشبكة الحيّة من{" "}
-        <code className="text-white/80">agent_definitions</code>.
+        سجلّ تشغيل الوكلاء فارغ حاليًا.
       </p>
       <Link
         to="/aria"
