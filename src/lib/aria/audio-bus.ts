@@ -17,6 +17,10 @@ type StopFn = () => void;
 let current: { source: Source; stop: StopFn } | null = null;
 let unlocked = false;
 
+// Module-scope singleton — survives React remounts, StrictMode double-invoke,
+// and any component re-registration. The ONLY way to reset is a full reload.
+let greetingPlayedThisSession = false;
+
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
   unlock() {
@@ -25,6 +29,22 @@ export const AriaAudioBus = {
   isUnlocked() {
     return unlocked;
   },
+
+  /** True if the auto-greeting has already been claimed this session. */
+  hasGreeted(): boolean {
+    return greetingPlayedThisSession;
+  },
+  /** Atomic claim — returns true only for the FIRST caller this session. */
+  claimGreeting(): boolean {
+    if (greetingPlayedThisSession) return false;
+    greetingPlayedThisSession = true;
+    return true;
+  },
+  /** For the on-demand replay chip: force replay without resetting the flag. */
+  forceReplayGreeting() {
+    greetingPlayedThisSession = true;
+  },
+
 
   /**
    * Request the voice channel. Returns true if granted.
