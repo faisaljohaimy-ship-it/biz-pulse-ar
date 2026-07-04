@@ -320,42 +320,19 @@ export function AriaCopilot() {
 
   return (
     <>
-      {/* Launcher FAB — hidden while docked */}
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setMode("docked")}
-          aria-label="Open ARIA"
-          className={cn(
-            "fixed bottom-6 end-6 z-50 flex h-14 w-14 items-center justify-center",
-            "rounded-full border border-primary/40 bg-card/80 text-primary shadow-lg backdrop-blur-xl",
-            "transition-all hover:scale-105 hover:border-primary hover:shadow-primary/30",
-            "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
-          )}
-        >
-          <Sparkles className="h-6 w-6" aria-hidden />
-          <span
-            className={cn(
-              "absolute inset-0 rounded-full",
-              isBusy && "animate-pulse ring-2 ring-primary/50",
-            )}
-            aria-hidden
-          />
-        </button>
-      )}
+      {/* Launcher is now the site-wide <AriaTalkFab /> in __root; the panel
+          opens automatically when ARIA needs to reply. */}
 
-      {/* Dock */}
+      {/* Dock — centered on all viewports */}
       {isOpen && (
         <aside
           role="complementary"
           aria-label="ARIA executive copilot"
           dir="rtl"
           className={cn(
-            "fixed z-50 flex flex-col overflow-hidden border border-primary/25",
-            "shadow-2xl",
-            // Mobile: near-fullscreen. Desktop (sm+): docked, full height.
-            "inset-x-2 top-14 bottom-2 rounded-3xl",
-            "sm:inset-auto sm:end-6 sm:top-6 sm:bottom-6 sm:w-[min(96vw,420px)] sm:rounded-2xl",
+            "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
+            "flex flex-col overflow-hidden rounded-3xl border border-primary/25 shadow-2xl",
+            "h-[min(86vh,720px)] w-[min(94vw,440px)]",
           )}
           style={{
             boxShadow:
