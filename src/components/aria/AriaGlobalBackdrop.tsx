@@ -2,10 +2,11 @@
  * AriaGlobalBackdrop — THE ONLY ARIA visual on the site.
  *
  * Full-screen, hard-centered, dir-neutral. Fills every route edge-to-edge
- * behind all content via `object-cover`. No RTL-affected utilities (no
- * me-*/ms-*/start-*/end-*/translate-x). Face stays in frame via responsive
- * object-position (center 20% mobile → center 30% desktop).
+ * behind all content via object-cover. No RTL-affected utilities (no
+ * me-, ms-, start-, end-, translate-x). Face stays in frame via responsive
+ * object-position (center 20% mobile, center 30% desktop).
  */
+
 import { useAriaPresenceState } from "@/lib/aria/aria-state";
 import { AriaVideoAvatar } from "./AriaVideoAvatar";
 
