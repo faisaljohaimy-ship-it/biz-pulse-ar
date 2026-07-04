@@ -238,7 +238,13 @@ export function AriaCopilot() {
     return "مُخَاطَبَة";
   }, [convMode, convPaused, state]);
 
-  // TTS on assistant reply completion — one playback at a time.
+  // HOLD-AND-FIRE chat TTS: fetch audio, hide the bubble until either
+  // 'canplaythrough' OR 700ms elapse — then in a SINGLE requestAnimationFrame:
+  //   (1) reveal the text bubble
+  //   (2) audio.play()
+  //   (3) AriaAudioBus.notifyPlaying → motion starts
+  // Δ ≤ 16ms perceptual simultaneity. On TTS failure: reveal + browser fallback
+  // with the same one-frame contract via utterance.onstart.
   useEffect(() => {
     if (isBusy) return;
     const voiceOn = (() => {
@@ -263,6 +269,74 @@ export function AriaCopilot() {
     spokenIdsRef.current.add(last.id);
 
     let cancelled = false;
+    const messageId = last.id;
+    setPendingRevealId(messageId);
+    const acquired = AriaAudioBus.acquire("chat-tts", () => {
+      const a = audioRef.current;
+      if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        try { window.speechSynthesis.cancel(); } catch { /* noop */ }
+      }
+      setPendingRevealId((cur) => (cur === messageId ? null : cur));
+    });
+    if (!acquired) { setPendingRevealId(null); return; }
+
+    const t0 = performance.now();
+    const revealAndPlay = (audio: HTMLAudioElement | null, mode: "elevenlabs" | "browser-fallback") => {
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        const tReveal = performance.now();
+        setPendingRevealId((cur) => (cur === messageId ? null : cur));
+        if (audio) {
+          audio.play()
+            .then(() => {
+              const tAudio = performance.now();
+              console.log(`[aria-sync] text↔audio Δ=${Math.round(tAudio - tReveal)}ms`);
+              ariaState.set("speaking");
+              AriaAudioBus.notifyPlaying("chat-tts", audio);
+              const tMotion = performance.now();
+              console.log(`[aria-sync] audio↔motion Δ=${Math.round(tMotion - tAudio)}ms`);
+            })
+            .catch(() => {
+              ariaState.set("idle");
+              AriaAudioBus.release("chat-tts");
+            });
+        } else {
+          // browser fallback path: utterance.onstart drives motion start
+          console.log(`[aria-sync] text revealed at Δ=${Math.round(tReveal - t0)}ms (fallback pending)`);
+          startBrowserFallback(text, t0);
+        }
+      });
+    };
+
+    const startBrowserFallback = (utterText: string, tStart: number) => {
+      if (typeof window === "undefined" || !window.speechSynthesis) {
+        ariaState.set("idle");
+        AriaAudioBus.release("chat-tts");
+        return;
+      }
+      AriaVoiceDebug.emit({ source: "browser", reason: "fallback_speechSynthesis" });
+      const u = new SpeechSynthesisUtterance(utterText);
+      u.lang = "ar-SA";
+      u.rate = 1.0;
+      const voices = window.speechSynthesis.getVoices();
+      const arVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("ar"));
+      if (arVoice) u.voice = arVoice;
+      u.onstart = () => {
+        ariaState.set("speaking");
+        AriaAudioBus.notifyPlaying("chat-tts", null);
+        console.log(`[aria-sync] fallback started at Δ=${Math.round(performance.now() - tStart)}ms`);
+      };
+      const done = () => {
+        ariaState.set("idle");
+        AriaAudioBus.notifyStopped("chat-tts");
+        AriaAudioBus.release("chat-tts");
+      };
+      u.onend = done;
+      u.onerror = done;
+      try { window.speechSynthesis.speak(u); } catch { done(); }
+    };
+
     (async () => {
       try {
         const { data } = await supabase.auth.getSession();
@@ -275,19 +349,48 @@ export function AriaCopilot() {
           },
           body: JSON.stringify({ text: text.slice(0, 4000) }),
         });
-        if (!r.ok || cancelled) return;
+        if (cancelled) { AriaAudioBus.release("chat-tts"); return; }
+        if (!r.ok) {
+          AriaVoiceDebug.emit({
+            source: "browser",
+            reason: `tts_http_${r.status}`,
+            status: r.status,
+            failed: true,
+          });
+          revealAndPlay(null, "browser-fallback");
+          return;
+        }
         const blob = await r.blob();
-        if (cancelled) return;
+        if (cancelled) { AriaAudioBus.release("chat-tts"); return; }
         const url = URL.createObjectURL(blob);
-        // Stop any previous playback
         const prev = audioRef.current;
         if (prev) { try { prev.pause(); URL.revokeObjectURL(prev.src); } catch { /* noop */ } }
         const audio = new Audio(url);
         audioRef.current = audio;
-        const done = () => {
+        AriaVoiceDebug.emit({
+          source: "elevenlabs",
+          reason: token ? "authenticated" : "anonymous",
+          voiceId: "gVzwmdZzRgBrNjXaTmi5",
+        });
+
+        let launched = false;
+        const launch = () => {
+          if (launched || cancelled) return;
+          launched = true;
+          revealAndPlay(audio, "elevenlabs");
+        };
+        const onReady = () => launch();
+        audio.addEventListener("canplaythrough", onReady, { once: true });
+        // Some browsers never fire canplaythrough for short blobs — loadeddata is enough.
+        audio.addEventListener("loadeddata", onReady, { once: true });
+        // 700ms HOLD CAP — text must never feel laggy.
+        setTimeout(() => launch(), 700);
+
+        audio.onended = () => {
           try { URL.revokeObjectURL(url); } catch { /* noop */ }
           ariaState.set("idle");
-          // Conversation Mode: auto-relisten after reply.
+          AriaAudioBus.notifyStopped("chat-tts");
+          AriaAudioBus.release("chat-tts");
           if (convModeRef.current && !cancelled) {
             if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
             relistenTimerRef.current = setTimeout(() => {
@@ -295,20 +398,27 @@ export function AriaCopilot() {
             }, 300);
           }
         };
-        audio.onended = done;
-        audio.onerror = done;
-        audio.onpause = () => { if (audio.ended) ariaState.set("idle"); };
-        audio.play()
-          .then(() => {
-            // eslint-disable-next-line no-console
-            console.log("[aria-voice] speaking reply");
-            ariaState.set("speaking");
-          })
-          .catch(() => { /* autoplay blocked */ ariaState.set("idle"); });
-      } catch { /* silent — voice is a nice-to-have */ }
+        audio.onerror = () => {
+          try { URL.revokeObjectURL(url); } catch { /* noop */ }
+          AriaVoiceDebug.emit({ source: "browser", reason: "audio_playback_error", failed: true });
+          revealAndPlay(null, "browser-fallback");
+        };
+      } catch (err) {
+        if (cancelled) return;
+        AriaVoiceDebug.emit({
+          source: "browser",
+          reason: `network:${(err as Error).message ?? "unknown"}`,
+          failed: true,
+        });
+        revealAndPlay(null, "browser-fallback");
+      }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      setPendingRevealId((cur) => (cur === messageId ? null : cur));
+    };
   }, [chat.messages, isBusy, voiceEnabled]);
+
 
   // Stop TTS when panel closes — barge-in / silence guarantee.
   useEffect(() => {
