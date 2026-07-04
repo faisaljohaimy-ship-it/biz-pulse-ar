@@ -69,28 +69,77 @@ export function AriaVideoAvatar({
   const [videoOpacity, setVideoOpacity] = useState(0);
   const [failed, setFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const audioElRef = useRef<HTMLMediaElement | null>(null);
+  const driftTimerRef = useRef<number | null>(null);
+  const correctionCountRef = useRef(0);
 
-  // ── Subscribe to AriaAudioBus for state transitions ─────────────────
+  const freezeMotion = useCallback(() => {
+    const v = videoRef.current;
+    if (v) { try { v.pause(); } catch { /* ignore */ } }
+    setVideoOpacity(0);
+    if (driftTimerRef.current !== null) {
+      window.clearInterval(driftTimerRef.current);
+      driftTimerRef.current = null;
+    }
+    audioElRef.current = null;
+  }, []);
+
+  const startMotionSynced = useCallback((audioEl: HTMLMediaElement | null) => {
+    const v = videoRef.current;
+    if (!v) return;
+    audioElRef.current = audioEl;
+    // Single tick: reset to 0 and play together with the audio clock.
+    try { v.currentTime = 0; } catch { /* ignore */ }
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    void v.play().then(() => setVideoOpacity(1)).catch(() => setFailed(true));
+
+    if (driftTimerRef.current !== null) window.clearInterval(driftTimerRef.current);
+    if (!audioEl) return; // no clock to sync against (SpeechSynthesis fallback)
+    driftTimerRef.current = window.setInterval(() => {
+      const vv = videoRef.current;
+      const ae = audioElRef.current;
+      if (!vv || !ae || ae.paused) return;
+      const audioT = ae.currentTime;
+      const vidDur = vv.duration || 0;
+      if (!Number.isFinite(audioT) || vidDur <= 0) return;
+      const expected = audioT % vidDur;
+      const offsetMs = Math.abs(vv.currentTime - expected) * 1000;
+      if (offsetMs > 80) {
+        try { vv.currentTime = expected; } catch { /* ignore */ }
+        correctionCountRef.current += 1;
+        console.log(`[aria-sync] corrected ${Math.round(offsetMs)}ms`);
+      }
+    }, 500);
+  }, []);
+
+  // ── Subscribe to AriaAudioBus. Motion is driven by playing/stopped
+  //    events — NEVER by fetch, render, or the acquire start event. ────
   useEffect(() => {
     if (reduced) return;
     const unsub = AriaAudioBus.subscribe((e) => {
       if (e.kind === "start") {
-        if (e.source === "panel-greeting" || e.source === "hero-greeting") {
-          setState("greeting");
-        } else if (e.source === "chat-tts") {
-          setState("speaking");
-        }
-      } else if (e.kind === "end") {
+        // Reserve the state (mount the correct src) but don't play yet.
+        if (e.source === "panel-greeting" || e.source === "hero-greeting") setState("greeting");
+        else if (e.source === "chat-tts") setState("speaking");
+      } else if (e.kind === "playing") {
+        // The single clock has begun — start motion in the same tick.
+        if (e.source === "panel-greeting" || e.source === "hero-greeting") setState("greeting");
+        else if (e.source === "chat-tts") setState("speaking");
+        // Defer to next microtask so the <video src=…> swap effect has run.
+        Promise.resolve().then(() => startMotionSynced(e.audioEl ?? null));
+      } else if (e.kind === "stopped" || e.kind === "end") {
+        freezeMotion();
         setState("idle");
       }
     });
-    // Sync current state on mount
     const cur = AriaAudioBus.currentSource();
     if (cur === "chat-tts") setState("speaking");
     else if (cur === "panel-greeting" || cur === "hero-greeting") setState("greeting");
     else setState("idle");
-    return unsub;
-  }, [reduced]);
+    return () => { unsub(); freezeMotion(); };
+  }, [reduced, freezeMotion, startMotionSynced]);
 
   // ── Visibility: pause when tab hidden, resume when visible ─────────
   useEffect(() => {
@@ -102,48 +151,25 @@ export function AriaVideoAvatar({
 
   const shouldMountVideo = !reduced && active && visible && !failed;
 
-  // ── Drive playback on state / mount changes ────────────────────────
+  // ── Mount the correct src for the state (but do NOT autoplay).
+  //    Playback is triggered by the audio 'playing' event above.
   useEffect(() => {
     const v = videoRef.current;
     const src = SRC[state];
     if (!v || !shouldMountVideo || !src) {
       setVideoOpacity(0);
-      if (v) {
-        try { v.pause(); } catch { /* ignore */ }
-      }
+      if (v) { try { v.pause(); } catch { /* ignore */ } }
       return;
     }
-    // Fade out during swap; the poster below stays visible.
-    setVideoOpacity(0);
     if (v.getAttribute("src") !== src) {
       try { v.pause(); } catch { /* ignore */ }
       v.setAttribute("src", src);
       try { v.load(); } catch { /* ignore */ }
     }
-    // Muted loop for every state — greeting audio is delivered via the
-    // separate MP3 through AriaAudioBus, and the bus 'end' event returns
-    // the state to idle, so the video length no longer has to match the
-    // audio length.
     v.muted = true;
     v.loop = true;
     v.playsInline = true;
-    const onReady = () => {
-      window.setTimeout(() => {
-        void v.play().then(() => setVideoOpacity(1)).catch(() => setFailed(true));
-      }, 40);
-    };
-    v.addEventListener("canplay", onReady, { once: true });
-    return () => v.removeEventListener("canplay", onReady);
   }, [state, shouldMountVideo]);
-
-  // ── Greeting one-shot → return to idle when video ends ─────────────
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || state !== "greeting") return;
-    const onEnded = () => setState("idle");
-    v.addEventListener("ended", onEnded);
-    return () => v.removeEventListener("ended", onEnded);
-  }, [state]);
 
   // ── Unmount / dismiss cleanup: release the media element ───────────
   useEffect(() => {
@@ -156,12 +182,14 @@ export function AriaVideoAvatar({
 
   useEffect(() => {
     return () => {
+      freezeMotion();
       const v = videoRef.current;
       if (!v) return;
       try { v.pause(); } catch { /* ignore */ }
       try { v.removeAttribute("src"); v.load(); } catch { /* ignore */ }
     };
-  }, []);
+  }, [freezeMotion]);
+
 
   const combinedMediaStyle: React.CSSProperties = {
     objectFit: "contain",
