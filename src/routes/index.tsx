@@ -7,7 +7,7 @@ import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
 import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
-import { ExecutiveWordmark } from "@/components/cinematic/ExecutiveWordmark";
+
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
