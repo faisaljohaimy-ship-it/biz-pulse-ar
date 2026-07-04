@@ -95,9 +95,11 @@ export const AriaAudioBus = {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
     current = { source, stop };
+    if (source === "chat-tts") startWatchdog(); else stopWatchdog();
     emit({ kind: "start", source });
     return true;
   },
+
 
   /**
    * Signal that real audio playback has begun (audio element 'playing' event
