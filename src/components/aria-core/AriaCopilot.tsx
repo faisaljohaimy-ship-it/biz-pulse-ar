@@ -774,8 +774,13 @@ export function AriaCopilot() {
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
                 if (!text) return null;
+                const hidden = !mine && pendingRevealId === m.id;
                 return (
-                  <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                  <li
+                    key={m.id}
+                    className={cn("flex", mine ? "justify-end" : "justify-start")}
+                    style={hidden ? { visibility: "hidden" } : undefined}
+                  >
                     <div
                       className={cn(
                         "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-md backdrop-blur-md",
