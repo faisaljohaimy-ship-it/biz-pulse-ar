@@ -83,11 +83,16 @@ export function useAriaSpeech() {
           AriaAudioBus.release(source);
           setSpeaking(false);
         };
-        u.onend = cleanup;
-        u.onerror = () => { console.warn("[aria-voice] browser speech error"); cleanup(); };
         setSpeaking(true);
-        u.onstart = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`); };
+
+        u.onstart = () => {
+          console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`);
+          AriaAudioBus.notifyPlaying(source, null);
+        };
+        u.onend = () => { AriaAudioBus.notifyStopped(source); cleanup(); };
+        u.onerror = () => { console.warn("[aria-voice] browser speech error"); AriaAudioBus.notifyStopped(source); cleanup(); };
         window.speechSynthesis.speak(u);
+
       } catch (err) {
         console.warn("[aria-voice] browser speech threw", err);
         AriaAudioBus.release(source);
@@ -114,12 +119,18 @@ export function useAriaSpeech() {
     const finish = () => {
       if (audioRef.current === audio) audioRef.current = null;
       try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+      AriaAudioBus.notifyStopped(source);
       AriaAudioBus.release(source);
       setSpeaking(false);
     };
     audio.onended = finish;
+    audio.onpause = () => { AriaAudioBus.notifyStopped(source); };
     audio.onerror = () => { console.warn("[aria-voice] audio playback error"); finish(); };
-    audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`); };
+    audio.onplaying = () => {
+      console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`);
+      AriaAudioBus.notifyPlaying(source, audio);
+    };
+
     await audio.play();
   }, []);
 
@@ -145,12 +156,18 @@ export function useAriaSpeech() {
           audioRef.current = audio;
           const finish = () => {
             if (audioRef.current === audio) audioRef.current = null;
+            AriaAudioBus.notifyStopped(source);
             AriaAudioBus.release(source);
             setSpeaking(false);
           };
           audio.onended = finish;
+          audio.onpause = () => { AriaAudioBus.notifyStopped(source); };
           audio.onerror = () => { console.warn("[aria-voice] static greeting playback error"); finish(); };
-          audio.onplaying = () => { console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`); };
+          audio.onplaying = () => {
+            console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`);
+            AriaAudioBus.notifyPlaying(source, audio);
+          };
+
           await audio.play();
         } catch {
           if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }

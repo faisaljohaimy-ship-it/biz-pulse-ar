@@ -13,16 +13,21 @@ const PRIORITY: Record<Source, number> = {
 };
 
 type StopFn = () => void;
-type BusEvent = { kind: "start" | "end"; source: Source };
+type BusEvent =
+  | { kind: "start" | "end"; source: Source }
+  | { kind: "playing"; source: Source; audioEl?: HTMLMediaElement | null }
+  | { kind: "stopped"; source: Source };
 type Listener = (e: BusEvent) => void;
 
 let current: { source: Source; stop: StopFn } | null = null;
+let currentAudioEl: HTMLMediaElement | null = null;
 let unlocked = false;
 const listeners = new Set<Listener>();
 
 function emit(e: BusEvent) {
   for (const l of listeners) { try { l(e); } catch { /* ignore */ } }
 }
+
 
 // Module-scope singleton — survives React remounts, StrictMode double-invoke,
 // and any component re-registration. The ONLY way to reset is a full reload.
@@ -62,6 +67,7 @@ export const AriaAudioBus = {
     if (current) {
       const prev = current.source;
       try { current.stop(); } catch { /* ignore */ }
+      if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
       emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -72,8 +78,27 @@ export const AriaAudioBus = {
     return true;
   },
 
+  /**
+   * Signal that real audio playback has begun (audio element 'playing' event
+   * OR SpeechSynthesisUtterance.onstart). This is the single clock that
+   * drives motion — video starts here, never before.
+   */
+  notifyPlaying(source: Source, audioEl?: HTMLMediaElement | null) {
+    if (current?.source !== source) return;
+    currentAudioEl = audioEl ?? null;
+    emit({ kind: "playing", source, audioEl: currentAudioEl });
+  },
+
+  /** Signal audio has stopped (ended / pause / interrupt). Motion freezes. */
+  notifyStopped(source: Source) {
+    if (current?.source !== source) return;
+    if (currentAudioEl) currentAudioEl = null;
+    emit({ kind: "stopped", source });
+  },
+
   release(source: Source) {
     if (current?.source === source) {
+      if (currentAudioEl) { emit({ kind: "stopped", source }); currentAudioEl = null; }
       current = null;
       emit({ kind: "end", source });
     }
@@ -83,6 +108,7 @@ export const AriaAudioBus = {
     if (current) {
       const prev = current.source;
       try { current.stop(); } catch { /* ignore */ }
+      if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
       current = null;
       emit({ kind: "end", source: prev });
     }
@@ -90,6 +116,7 @@ export const AriaAudioBus = {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
   },
+
 
   /** Subscribe to start/end events. Returns unsubscribe fn. */
   subscribe(l: Listener): () => void {
