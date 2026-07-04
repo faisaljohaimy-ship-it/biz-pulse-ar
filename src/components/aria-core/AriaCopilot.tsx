@@ -208,7 +208,11 @@ export function AriaCopilot() {
         audio.onerror = done;
         audio.onpause = () => { if (audio.ended) ariaState.set("idle"); };
         audio.play()
-          .then(() => ariaState.set("speaking"))
+          .then(() => {
+            // eslint-disable-next-line no-console
+            console.log("[aria-voice] speaking reply");
+            ariaState.set("speaking");
+          })
           .catch(() => { /* autoplay blocked */ ariaState.set("idle"); });
       } catch { /* silent — voice is a nice-to-have */ }
     })();
