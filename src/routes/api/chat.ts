@@ -44,8 +44,48 @@ function getMessageText(message?: UIMessage) {
     .trim();
 }
 
+/**
+ * Sanitize incoming chat history before handing to the model:
+ *  - Strip the hardcoded UI welcome message (id = "aria-welcome"). Gemini
+ *    requires the conversation to START with a `user` turn, and prepending
+ *    an assistant greeting was silently killing every 2nd+ reply.
+ *  - Trim any leading assistant turns so history starts with `user`.
+ *  - Merge consecutive same-role turns (Gemini requires strict alternation).
+ *  - Cap to the last 12 turns to keep payload small.
+ */
+function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
+  const filtered = msgs.filter(
+    (m) =>
+      m.id !== "aria-welcome" &&
+      (m.role === "user" || m.role === "assistant"),
+  );
+  const firstUser = filtered.findIndex((m) => m.role === "user");
+  const trimmed = firstUser === -1 ? [] : filtered.slice(firstUser);
+  const merged: UIMessage[] = [];
+  for (const m of trimmed) {
+    const last = merged[merged.length - 1];
+    if (last && last.role === m.role) {
+      last.parts = [...last.parts, ...m.parts];
+    } else {
+      merged.push({ ...m, parts: [...m.parts] });
+    }
+  }
+  return merged.slice(-12);
+}
 
-// Agentic mode: tools are ALWAYS enabled. ARIA decides whether to call.
+function clientIp(request: Request): string {
+  const xff = request.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]!.trim();
+  return (
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-real-ip") ||
+    "anon"
+  );
+}
+
+// Agentic mode: tools are ALWAYS enabled for authenticated users.
+
+
 
 
 const SYSTEM_PROMPT = `You are ARIA — the Executive AI for the Western Region Industrial Security Department (إدارة الأمن الصناعي بالمنطقة الغربية). You serve the Department Director, Section Heads (Support, Maintenance, Projects), and Circle Managers (Makkah, Jeddah, Madinah, Taif, Tabuk). Tone: precise, decisive, calm, board-room grade. Never hedge with filler. Never apologize. Never say "as an AI".
@@ -120,7 +160,10 @@ Executive tools:
 3. After tool execution, render the standard Executive Response Structure and include a final line: \`✅ Executed: <tool1>, <tool2> — <one-line outcome with returned refs/IDs>\`.
 4. If a tool returns \`ok: false\`, surface the error verbatim in a "⚠️ Tool Error" block and propose the fix.
 5. Never fabricate IDs, refs, KPI values, or due dates — only use values the user provided or tools returned.
-6. For trivial greetings, skip tools. For ANY substantive request, tools are the default path.`;
+6. For trivial greetings, skip tools. For ANY substantive request, tools are the default path.
+
+# ARABIC TASHKEEL — MANDATORY
+اكْتُبِي كُلَّ نَصٍّ عَرَبِيٍّ بِالتَّشْكِيلِ الكَامِلِ (فَتْحَة، ضَمَّة، كَسْرَة، سُكُون، شَدَّة) فِي كُلِّ رَدٍّ دُونَ اسْتِثْنَاء، مِنْ أَوَّلِ كَلِمَةٍ إِلَى آخِرِهَا. Applies to every Arabic word in every reply, including headings, table cells, bullet points, greetings, and tool-output narration. Do not skip diacritics for brevity.`;
 
 
 
@@ -176,18 +219,38 @@ export const Route = createFileRoute("/api/chat")({
 
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
+        // Two clients:
+        //  - `supabase` runs as the caller (RLS applies) when a bearer is
+        //    present; anonymous otherwise.
+        //  - Anonymous requests skip RAG/tools/persistence so RLS never
+        //    blocks a demo reply.
         const supabase = createClient(supabaseUrl, supabasePublishable, {
-          global: { headers: { Authorization: authHeader } },
+          global: authHeader ? { headers: { Authorization: authHeader } } : {},
           auth: { persistSession: false, autoRefreshToken: false },
         });
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData.user) {
-          console.warn("[api/chat] auth rejected", { requestId, threadId, error: userError?.message });
-          return jsonError("Your session expired. Please sign in again.", 401, requestId);
-        }
-        const userId = userData.user.id;
 
-        const rate = await enforceRateLimit(`chat:${userId}`, 60, 60);
+        let userId: string | null = null;
+        if (authHeader) {
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          if (userError || !userData.user) {
+            console.warn("[api/chat] bearer rejected — falling back to anonymous", {
+              requestId,
+              threadId,
+              error: userError?.message,
+            });
+          } else {
+            userId = userData.user.id;
+          }
+        }
+        const isAnonymous = !userId;
+
+        // Demo-friendly limits:
+        //  - authenticated: 60 req / 60s per user
+        //  - anonymous:     40 req / 300s per IP
+        const rateKey = userId ? `chat:${userId}` : `chat:ip:${clientIp(request)}`;
+        const rate = userId
+          ? await enforceRateLimit(rateKey, 60, 60)
+          : await enforceRateLimit(rateKey, 40, 300);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) {
           return jsonError("ARIA is temporarily rate limited. Please retry shortly.", 429, requestId);
@@ -203,17 +266,19 @@ export const Route = createFileRoute("/api/chat")({
           provider: vendor === "lovable" ? "lovable-ai-gateway" : "openrouter",
           model: selectedModelId,
           intent: parseIntent(intentHeader),
+          anonymous: isAnonymous,
         });
 
 
-        const uiMessages = messages as UIMessage[];
+        const uiMessages = sanitizeHistory(messages as UIMessage[]);
         const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
 
         // Inject live enterprise context + semantic RAG (memory / knowledge / documents) unless explicitly disabled.
+        // Anonymous callers skip grounding entirely (no user context / no tools).
         let systemPrompt = SYSTEM_PROMPT;
         let ragCounts = { memories: 0, knowledge: 0, documents: 0 };
         let ragCitations: import("@/lib/aria/rag.server").RagCitation[] = [];
-        if (grounded !== false) {
+        if (userId && grounded !== false) {
           const [{ buildAriaContext }, { gatherRagContext }] = await Promise.all([
             import("@/lib/aria-context.server"),
             import("@/lib/aria/rag.server"),
@@ -240,8 +305,9 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
         }
 
 
-        const { buildAriaTools } = await import("@/lib/aria-tools.server");
-        const tools = buildAriaTools(supabase, userId);
+        const tools = userId
+          ? (await import("@/lib/aria-tools.server")).buildAriaTools(supabase, userId)
+          : undefined;
 
         console.log("[api/chat] streaming", {
           requestId,
@@ -249,8 +315,8 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           threadId,
           model: selectedModelId,
           messages: uiMessages.length,
-          grounded: grounded !== false,
-          toolsEnabled: true,
+          grounded: !!userId && grounded !== false,
+          toolsEnabled: !!tools,
           rag: ragCounts,
         });
 
@@ -298,7 +364,7 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
 
         return result.toUIMessageStreamResponse({
           headers: responseHeaders(requestId),
-          originalMessages: uiMessages,
+          originalMessages: messages as UIMessage[],
           sendReasoning: false,
           messageMetadata: ({ part }) => {
             if (part.type === "start") {
@@ -331,6 +397,8 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             return "ARIA could not complete this response. Please retry or open the diagnostics panel with the request ID.";
           },
           onFinish: async ({ messages: finalMessages }) => {
+            // Anonymous visitors: no persistence, no memory writes.
+            if (!userId) return;
             if (!threadId) {
               try {
                 const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
