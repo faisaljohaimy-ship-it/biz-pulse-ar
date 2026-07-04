@@ -23,6 +23,7 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
+import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
 import { useRouterState } from "@tanstack/react-router";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -194,6 +195,7 @@ function RootComponent() {
                 </div>
                 <AriaCopilot />
                 {!isPromo && <AriaGreeter />}
+                {!isPromo && <GenesisIntro />}
                 <Toaster />
               </AriaProvider>
             </DemoModeProvider>
