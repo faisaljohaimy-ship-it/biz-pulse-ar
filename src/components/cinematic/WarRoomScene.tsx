@@ -61,7 +61,7 @@ export default function WarRoomScene({ isAr }: { isAr: boolean }) {
         return {
           accent: "cyan",
           kpis: [
-            { en: "Governance Score",  ar: "حوكمة المؤسسة", value: "A+",   sub: "ISO 27k · SOC 2", tone: "text-cyan-300" },
+            { en: "Governance Score",  ar: "حوكمة المؤسسة", value: "A+",   sub: "PDPL · NCA ECC", tone: "text-cyan-300" },
             { en: "Audit Readiness",   ar: "جاهزية التدقيق", value: "100%", sub: "Q3 close",         tone: "text-emerald-300" },
             { en: "Board Pack Sync",   ar: "ملف المجلس",     value: "Live", sub: "ARIA-curated",     tone: "text-white" },
             { en: "Risk Posture",      ar: "وضع المخاطر",    value: "Low",  sub: "↓ 18% YoY",        tone: "text-emerald-300" },
