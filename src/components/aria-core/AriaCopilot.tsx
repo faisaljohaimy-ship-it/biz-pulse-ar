@@ -8,8 +8,8 @@
  * always visible). Chat floats above her with backdrop blur and readability
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, RefreshCcw, Send, Sparkles, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Mic, MicOff, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -19,6 +19,53 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
+/** iOS Safari blocks speech/audio started outside a user gesture.
+ *  Call this synchronously inside every send/mic tap handler to prime
+ *  SpeechSynthesis + AudioContext so the async reply can speak. */
+function primeIOSAudio(): void {
+  if (typeof window === "undefined") return;
+  try {
+    AriaAudioBus.unlock();
+    if (window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance("");
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    }
+    const AC: typeof AudioContext | undefined =
+      (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
+        .AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (AC) {
+      const g = window as unknown as { __ariaUnlockCtx?: AudioContext };
+      if (!g.__ariaUnlockCtx) g.__ariaUnlockCtx = new AC();
+      if (g.__ariaUnlockCtx.state === "suspended") void g.__ariaUnlockCtx.resume();
+    }
+    // eslint-disable-next-line no-console
+    console.log("[aria-voice] unlock done");
+  } catch {
+    /* ignore */
+  }
+}
+
+type SR = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string; isFinal?: boolean }> & { isFinal?: boolean }> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+function getSpeechRecognitionCtor(): (new () => SR) | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
 const ERROR_MASK_AR =
