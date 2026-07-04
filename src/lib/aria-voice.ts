@@ -15,7 +15,7 @@ type Opts = {
   onFinal?: (text: string) => void;
 };
 
-const ARIA_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah — multilingual executive female, AR/EN bilingual
+const ARIA_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5"; // Layan — ARIA canonical voice (ar-SA, professional)
 
 function isArabic(t: string) {
   return /[\u0600-\u06FF]/.test(t);
