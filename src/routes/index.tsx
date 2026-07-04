@@ -99,6 +99,8 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+      {showIntro && <IntroSplash onDone={() => setShowIntro(false)} />}
+
 
       {/* Lightweight gradient hero glow — the single ARIA figure lives in the
           global backdrop rendered from __root.tsx. No canvas, no video, no audio. */}
