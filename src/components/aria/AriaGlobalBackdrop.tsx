@@ -32,8 +32,12 @@ export function AriaGlobalBackdrop() {
       />
 
       <div
-        className={`absolute left-1/2 top-[2%] h-[96%] -translate-x-1/2 transition-transform duration-500 ease-out ${state === "listening" ? "scale-[1.02]" : "scale-100"}`}
-        style={{ width: "min(720px, 96vw)", opacity: 0.38 }}
+        className={`absolute left-1/2 top-0 h-[88%] -translate-x-1/2 transition-[transform,opacity] duration-[1100ms] ease-out ${state === "listening" ? "scale-[1.02]" : "scale-100"}`}
+        style={{
+          width: "min(720px, 96vw)",
+          opacity: 0.55,
+          animation: "aria-figure-reveal 1200ms cubic-bezier(0.22,1,0.36,1) both",
+        }}
       >
         <AriaVideoAvatar
           poster={STILL_SRC}
@@ -41,14 +45,31 @@ export function AriaGlobalBackdrop() {
         />
       </div>
 
-      {/* Readability scrims */}
+      {/* Readability scrims — top for header, bottom for content stack. No middle band. */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-x-0 top-0 h-[22%]"
         style={{
           background:
-            "linear-gradient(180deg, rgba(4,7,15,0.55) 0%, rgba(4,7,15,0.15) 32%, rgba(4,7,15,0.35) 70%, rgba(4,7,15,0.85) 100%)",
+            "linear-gradient(180deg, rgba(4,7,15,0.65) 0%, rgba(4,7,15,0.15) 70%, transparent 100%)",
         }}
       />
+      <div
+        className="absolute inset-x-0 bottom-0 h-[44%]"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, rgba(4,7,15,0.55) 45%, rgba(4,7,15,0.92) 100%)",
+        }}
+      />
+
+      <style>{`
+        @keyframes aria-figure-reveal {
+          from { opacity: 0; transform: translate(-50%, 2vh) scale(1.02); }
+          to   { opacity: 0.55; transform: translate(-50%, 0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .aria-presence [style*="aria-figure-reveal"] { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 }
