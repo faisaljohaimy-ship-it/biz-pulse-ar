@@ -138,6 +138,13 @@ export function AriaCopilot() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
 
+  // STT (mic) state
+  const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
+  const [listening, setListening] = useState(false);
+  const recRef = useRef<SR | null>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finalTranscriptRef = useRef<string>("");
+
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
