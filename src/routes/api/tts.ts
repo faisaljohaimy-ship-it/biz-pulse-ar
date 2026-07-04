@@ -21,7 +21,7 @@ const ARIA_VOICE_SETTINGS = {
   similarity_boost: 0.8,
   style: 0.45,
   use_speaker_boost: true,
-  speed: 1.15,
+  speed: 1.0,
 } as const;
 
 export const Route = createFileRoute("/api/tts")({

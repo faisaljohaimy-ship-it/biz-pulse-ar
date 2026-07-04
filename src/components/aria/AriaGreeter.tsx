@@ -13,6 +13,7 @@
 import { useEffect } from "react";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { AriaVoiceDebug, isGreetingEnabled } from "@/lib/aria/voice-debug";
 
 const SESSION_FLAG = "aria-demo-greeted";
 
@@ -24,6 +25,7 @@ export function AriaGreeter() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!isGreetingEnabled()) return;
 
     // Persisted-across-reload flag (best-effort).
     try {
@@ -52,6 +54,7 @@ export function AriaGreeter() {
       AriaAudioBus.unlock();
 
       // Silent skip on any failure — never surface to the user.
+      AriaVoiceDebug.emit({ source: "greeting", reason: "first-gesture" });
       Promise.resolve()
         .then(() => speak(GREETING_AR, "panel-greeting"))
         .catch(() => {
