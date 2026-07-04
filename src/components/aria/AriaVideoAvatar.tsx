@@ -1,38 +1,21 @@
 /**
- * AriaVideoAvatar — reusable, single-<video> state machine for ARIA's
- * living presence. Applies to BOTH the full-page backdrop and the panel
- * background.
+ * AriaVideoAvatar — HOT-ELEMENT motion clip. The <video> is mounted
+ * PERMANENTLY with the motion src attached, preload="auto", muted, looped,
+ * paused at frame 0 with opacity 0. On the first user gesture the decoder
+ * is primed (play → pause → currentTime=0). Speech start = opacity flip +
+ * currentTime=0 + play() on the already-hot element in the SAME tick as
+ * the audio 'playing' event. No src swaps, no mount/unmount per utterance.
  *
- * States (driven by AriaAudioBus events, never timers):
- *   • greeting  → aria-greeting.mp4 once WITH audio, then → idle
- *   • speaking  → aria-talking.mp4 muted loop while TTS is playing
- *   • idle      → aria-idle.mp4 muted loop
+ * Instrumentation: logs "[aria-motion] Δ=Xms" per utterance (delta between
+ * audio 'playing' and video 'playing' events). Target ≤ 33ms.
  *
- * Crossfade 300ms between switches via opacity on the video AND a
- * poster image layered beneath it that stays visible whenever the
- * video is faded out or has failed to load.
- *
- * Mobile Safari memory discipline:
- *   • preload="metadata" only
- *   • pause + release src when tab hidden or component unmounts
- *   • static poster is always mounted as fallback
- *   • prefers-reduced-motion → static poster only (no video mount)
+ * Reduced-motion / video load failure → static poster only.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
-type VideoState = "idle" | "speaking" | "greeting";
-
-// Single clean HeyGen clip drives every non-idle state. Idle shows the
-// static poster only (no video mounted).
 const HERO_MOTION_SRC = "/aria-hero-motion.mp4";
-const SRC: Record<VideoState, string | null> = {
-  idle: null,
-  speaking: HERO_MOTION_SRC,
-  greeting: HERO_MOTION_SRC,
-};
-
-const FADE_MS = 300;
+const FADE_MS = 220;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -41,15 +24,10 @@ function prefersReducedMotion(): boolean {
 }
 
 export interface AriaVideoAvatarProps {
-  /** Static image URL used as poster and fallback. */
   poster: string;
-  /** Extra class names on the outer wrapper. */
   className?: string;
-  /** Inline style overrides on the outer wrapper. */
   style?: React.CSSProperties;
-  /** Style overrides applied to both <video> and <img> (position / sizing). */
   mediaStyle?: React.CSSProperties;
-  /** If false, the avatar unmounts video and shows poster only (dismiss). */
   active?: boolean;
 }
 
@@ -61,7 +39,6 @@ export function AriaVideoAvatar({
   active = true,
 }: AriaVideoAvatarProps) {
   const [reduced] = useState(prefersReducedMotion);
-  const [state, setState] = useState<VideoState>("idle");
   const [visible, setVisible] = useState<boolean>(() => {
     if (typeof document === "undefined") return true;
     return document.visibilityState !== "hidden";
@@ -71,32 +48,83 @@ export function AriaVideoAvatar({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioElRef = useRef<HTMLMediaElement | null>(null);
   const driftTimerRef = useRef<number | null>(null);
-  const correctionCountRef = useRef(0);
+  const primedRef = useRef(false);
+  const pendingStartAtRef = useRef<number | null>(null);
+
+  // ── Decoder prime: on first user gesture, warm the codec so the FIRST
+  //    speech has zero cold-start latency. play() → immediately pause →
+  //    currentTime=0. This is the only place we may briefly play before
+  //    speech. Once primed, we never touch the element until speech.
+  const primeDecoder = useCallback(() => {
+    if (primedRef.current) return;
+    const v = videoRef.current;
+    if (!v) return;
+    primedRef.current = true;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    // Kick off decode by playing one frame silently, then hard-reset.
+    v.play().then(() => {
+      try { v.pause(); v.currentTime = 0; } catch { /* noop */ }
+      setVideoOpacity(0);
+      // If a speech 'playing' event arrived while we were priming, honor it now.
+      if (pendingStartAtRef.current !== null) {
+        const t = pendingStartAtRef.current;
+        pendingStartAtRef.current = null;
+        startMotionAt(t, audioElRef.current);
+      }
+      // eslint-disable-next-line no-console
+      console.log("[aria-motion] decoder primed");
+    }).catch(() => {
+      // Autoplay policy still blocks — will retry on next gesture.
+      primedRef.current = false;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const freezeMotion = useCallback(() => {
     const v = videoRef.current;
-    if (v) { try { v.pause(); } catch { /* ignore */ } }
+    if (v) {
+      try { v.pause(); v.currentTime = 0; } catch { /* noop */ }
+    }
     setVideoOpacity(0);
     if (driftTimerRef.current !== null) {
       window.clearInterval(driftTimerRef.current);
       driftTimerRef.current = null;
     }
     audioElRef.current = null;
+    pendingStartAtRef.current = null;
   }, []);
 
-  const startMotionSynced = useCallback((audioEl: HTMLMediaElement | null) => {
+  const startMotionAt = useCallback((audioPlayingT: number, audioEl: HTMLMediaElement | null) => {
     const v = videoRef.current;
     if (!v) return;
     audioElRef.current = audioEl;
-    // Single tick: reset to 0 and play together with the audio clock.
-    try { v.currentTime = 0; } catch { /* ignore */ }
+    // Frame-lock: same tick reset + play + opacity flip in a single rAF.
+    try { v.currentTime = 0; } catch { /* noop */ }
     v.muted = true;
     v.loop = true;
     v.playsInline = true;
-    void v.play().then(() => setVideoOpacity(1)).catch(() => setFailed(true));
+
+    const onPlaying = () => {
+      const dt = Math.round(performance.now() - audioPlayingT);
+      // eslint-disable-next-line no-console
+      console.log(`[aria-motion] Δ=${dt}ms`);
+      v.removeEventListener("playing", onPlaying);
+    };
+    v.addEventListener("playing", onPlaying);
+
+    requestAnimationFrame(() => {
+      setVideoOpacity(1);
+    });
+
+    v.play().catch(() => {
+      v.removeEventListener("playing", onPlaying);
+      setFailed(true);
+    });
 
     if (driftTimerRef.current !== null) window.clearInterval(driftTimerRef.current);
-    if (!audioEl) return; // no clock to sync against (SpeechSynthesis fallback)
+    if (!audioEl) return;
     driftTimerRef.current = window.setInterval(() => {
       const vv = videoRef.current;
       const ae = audioElRef.current;
@@ -107,41 +135,53 @@ export function AriaVideoAvatar({
       const expected = audioT % vidDur;
       const offsetMs = Math.abs(vv.currentTime - expected) * 1000;
       if (offsetMs > 80) {
-        try { vv.currentTime = expected; } catch { /* ignore */ }
-        correctionCountRef.current += 1;
-        console.log(`[aria-sync] corrected ${Math.round(offsetMs)}ms`);
+        try { vv.currentTime = expected; } catch { /* noop */ }
       }
     }, 500);
   }, []);
 
-  // ── Subscribe to AriaAudioBus. Motion is driven by playing/stopped
-  //    events — NEVER by fetch, render, or the acquire start event. ────
+  // ── Subscribe to AriaAudioBus. Motion is driven ONLY by 'playing' /
+  //    'stopped' events. Frame-lock: capture audio-playing timestamp at
+  //    event dispatch time; start video in the same tick.
   useEffect(() => {
     if (reduced) return;
     const unsub = AriaAudioBus.subscribe((e) => {
-      if (e.kind === "start") {
-        // Reserve the state (mount the correct src) but don't play yet.
-        if (e.source === "panel-greeting" || e.source === "hero-greeting") setState("greeting");
-        else if (e.source === "chat-tts") setState("speaking");
-      } else if (e.kind === "playing") {
-        // The single clock has begun — start motion in the same tick.
-        if (e.source === "panel-greeting" || e.source === "hero-greeting") setState("greeting");
-        else if (e.source === "chat-tts") setState("speaking");
-        // Defer to next microtask so the <video src=…> swap effect has run.
-        Promise.resolve().then(() => startMotionSynced(e.audioEl ?? null));
+      if (e.kind === "playing") {
+        const t0 = performance.now();
+        if (!primedRef.current) {
+          // Decoder cold — defer the start until prime resolves, then honor it.
+          pendingStartAtRef.current = t0;
+          audioElRef.current = e.audioEl ?? null;
+          primeDecoder();
+          return;
+        }
+        startMotionAt(t0, e.audioEl ?? null);
       } else if (e.kind === "stopped" || e.kind === "end") {
         freezeMotion();
-        setState("idle");
       }
     });
-    const cur = AriaAudioBus.currentSource();
-    if (cur === "chat-tts") setState("speaking");
-    else if (cur === "panel-greeting" || cur === "hero-greeting") setState("greeting");
-    else setState("idle");
     return () => { unsub(); freezeMotion(); };
-  }, [reduced, freezeMotion, startMotionSynced]);
+  }, [reduced, freezeMotion, startMotionAt, primeDecoder]);
 
-  // ── Visibility: pause when tab hidden, resume when visible ─────────
+  // ── First-gesture decoder prime. Also unlocks on AriaAudioBus.unlock().
+  useEffect(() => {
+    if (reduced) return;
+    const handler = () => primeDecoder();
+    if (AriaAudioBus.isUnlocked()) {
+      // Already unlocked earlier this session — prime on mount next tick.
+      Promise.resolve().then(primeDecoder);
+    }
+    document.addEventListener("pointerdown", handler, { once: false, passive: true });
+    document.addEventListener("touchstart", handler, { once: false, passive: true });
+    document.addEventListener("keydown", handler, { once: false });
+    return () => {
+      document.removeEventListener("pointerdown", handler);
+      document.removeEventListener("touchstart", handler);
+      document.removeEventListener("keydown", handler);
+    };
+  }, [reduced, primeDecoder]);
+
+  // ── Visibility: pause when tab hidden.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const onVis = () => setVisible(document.visibilityState !== "hidden");
@@ -149,47 +189,18 @@ export function AriaVideoAvatar({
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  const shouldMountVideo = !reduced && active && visible && !failed;
-
-  // ── Mount the correct src for the state (but do NOT autoplay).
-  //    Playback is triggered by the audio 'playing' event above.
+  // When tab hides, pause; when it returns and speech is active, the next
+  // 'playing' event will re-arm. Never rip the src.
   useEffect(() => {
-    const v = videoRef.current;
-    const src = SRC[state];
-    if (!v || !shouldMountVideo || !src) {
-      setVideoOpacity(0);
-      if (v) { try { v.pause(); } catch { /* ignore */ } }
-      return;
-    }
-    if (v.getAttribute("src") !== src) {
-      try { v.pause(); } catch { /* ignore */ }
-      v.setAttribute("src", src);
-      try { v.load(); } catch { /* ignore */ }
-    }
-    v.muted = true;
-    v.loop = true;
-    v.playsInline = true;
-  }, [state, shouldMountVideo]);
-
-  // ── Unmount / dismiss cleanup: release the media element ───────────
-  useEffect(() => {
-    if (shouldMountVideo) return;
     const v = videoRef.current;
     if (!v) return;
-    try { v.pause(); } catch { /* ignore */ }
-    try { v.removeAttribute("src"); v.load(); } catch { /* ignore */ }
-  }, [shouldMountVideo]);
+    if (!visible) {
+      try { v.pause(); } catch { /* noop */ }
+      setVideoOpacity(0);
+    }
+  }, [visible]);
 
-  useEffect(() => {
-    return () => {
-      freezeMotion();
-      const v = videoRef.current;
-      if (!v) return;
-      try { v.pause(); } catch { /* ignore */ }
-      try { v.removeAttribute("src"); v.load(); } catch { /* ignore */ }
-    };
-  }, [freezeMotion]);
-
+  const shouldMountVideo = !reduced && active && !failed;
 
   const combinedMediaStyle: React.CSSProperties = {
     objectFit: "contain",
@@ -199,7 +210,6 @@ export function AriaVideoAvatar({
 
   return (
     <div className={className} style={style} aria-hidden>
-      {/* Poster / fallback — ALWAYS mounted. */}
       <img
         src={poster}
         alt=""
@@ -213,7 +223,10 @@ export function AriaVideoAvatar({
       {shouldMountVideo && (
         <video
           ref={videoRef}
-          preload="metadata"
+          src={HERO_MOTION_SRC}
+          preload="auto"
+          muted
+          loop
           playsInline
           disablePictureInPicture
           controls={false}
