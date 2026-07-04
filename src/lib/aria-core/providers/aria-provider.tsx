@@ -148,44 +148,12 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);
 
-  // ── TTS of last assistant message (routes through VoiceManager state) ─
-  const spokenIdsRef = useRef(new Set<string>([WELCOME_AR.id]));
-  useEffect(() => {
-    if (!voiceEnabled) return;
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    if (chat.status !== "ready") return;
-    const last = chat.messages[chat.messages.length - 1];
-    if (!last || last.role !== "assistant") return;
-    if (spokenIdsRef.current.has(last.id)) return;
-    const text = last.parts
-      .map((p) => (p.type === "text" ? p.text : ""))
-      .join("")
-      .trim();
-    if (!text) return;
-    spokenIdsRef.current.add(last.id);
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = /[\u0600-\u06FF]/.test(text) ? "ar-SA" : "en-US";
-    utter.onstart = () => {
-      voiceManager.setState("speaking");
-      ariaState.set("speaking");
-      avatarBrain.onSpeakingStart(last.id);
-      avatarVoiceSync.startSynthetic(last.id);
-    };
-    utter.onend = () => {
-      avatarVoiceSync.stopSynthetic();
-      avatarBrain.onSpeakingEnd(last.id);
-      voiceManager.setState("idle");
-      ariaState.set("idle");
-    };
-    utter.onerror = () => {
-      avatarVoiceSync.stopSynthetic();
-      avatarBrain.onSpeakingEnd(last.id);
-      voiceManager.setState("idle");
-      ariaState.set("idle");
-    };
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utter);
-  }, [chat.messages, chat.status, voiceEnabled]);
+  // ── TTS is owned exclusively by <AriaCopilot /> to guarantee a single
+  //    voice per reply (ElevenLabs via /api/tts, browser fallback). The
+  //    old provider-side `speechSynthesis.speak` effect was removed —
+  //    it duplicated playback and read markdown verbatim over the
+  //    ElevenLabs audio.
+
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;
