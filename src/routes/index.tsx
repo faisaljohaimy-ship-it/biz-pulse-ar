@@ -90,6 +90,9 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+      {/* Fullscreen NEXIOS letters intro (once per session) */}
+      <NexiosGenesisIntro />
+
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
           at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
       <AriaGlobalBackdrop />
@@ -105,7 +108,7 @@ function IntroLanding() {
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      {/* ══ Executive Hero — Cinematic Orb ══ */}
+      {/* ══ Executive Hero — Tactical HUD ══ */}
       <section
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
@@ -117,8 +120,32 @@ function IntroLanding() {
             willChange: "transform, opacity",
           }}
         >
-          {/* Cinematic orb video + narration audio, with top descriptor */}
-          <NexiosHeroOrb ar={ar} />
+          {/* Static assembled NEXIOS wordmark — glowing chrome */}
+          <div className="relative mb-6 w-full">
+            <NexiosWordmark />
+          </div>
+
+          {/* Bilingual headline */}
+          <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
+            {ar ? (
+              <>
+                الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
+                <br />
+                <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
+                  نيكسيوس ينفّذ.
+                </span>
+              </>
+            ) : (
+              <>
+                Intelligence, <span className="text-[#3AE8FF]">in command.</span>
+                <br />
+                <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
+                  NEXIOS executes.
+                </span>
+              </>
+            )}
+          </h1>
+
 
 
 
