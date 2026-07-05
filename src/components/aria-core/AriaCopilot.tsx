@@ -415,12 +415,19 @@ export function AriaCopilot() {
               VoiceTimeline.push("AUDIO_PLAY", `[0] instant-start total=${total}ms`, { total, firstTok, sent1, tts });
               setPendingRevealId((cur) => (cur === messageId ? null : cur));
             }
-            audio.play().then(() => {
-              if (idx === 0) {
+            // Frame-perfect sync: motion is driven by the audio element's
+            // real 'playing' event, not the play() promise (which resolves
+            // later). Fire notifyPlaying only for the first segment of a
+            // reply so a multi-sentence answer plays as ONE continuous
+            // speaking session (no motion reset between segments).
+            if (idx === 0) {
+              const onPlaying = () => {
                 ariaState.set("speaking");
                 AriaAudioBus.notifyPlaying("chat-tts", audio);
-              }
-            }).catch(() => resolve());
+              };
+              audio.addEventListener("playing", onPlaying, { once: true });
+            }
+            audio.play().catch(() => resolve());
           };
           audio.addEventListener("canplay", kick, { once: true });
           audio.addEventListener("loadeddata", kick, { once: true });
