@@ -492,6 +492,8 @@ export function AriaCopilot() {
 
     let s = streamStateRef.current.get(last.id);
     if (!s) {
+      // Exactly-once gate — module-level so StrictMode/remount can't dup.
+      if (!markSpokenOrDrop(last.id)) return;
       s = {
         sendAt: pendingSendAtRef.current,
         firstTokenAt: performance.now(),
