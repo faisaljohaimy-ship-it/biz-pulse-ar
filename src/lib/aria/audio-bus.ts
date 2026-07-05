@@ -43,7 +43,8 @@ function startWatchdog() {
     const s = window.speechSynthesis;
     if (s && (s.speaking || s.pending)) {
       try { s.cancel(); } catch { /* ignore */ }
-      console.warn("[aria-voice] watchdog killed rogue speechSynthesis");
+      // eslint-disable-next-line no-console
+      console.warn("[aria] OVERLAP killed (rogue speechSynthesis while chat-tts owns bus)");
     }
   }, 250);
 }

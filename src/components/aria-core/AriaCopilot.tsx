@@ -75,6 +75,20 @@ const THINKING_AR = "آريا تفكّر…";
 
 const STILL_SRC = "/aria-backdrop.webp";
 
+// Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
+// and provider re-renders. Any second speak(replyId) for the same id is dropped
+// with a '[aria] DUP blocked' log — exactly-once guarantee per reply.
+const SPOKEN_REPLY_IDS: Set<string> = new Set();
+function markSpokenOrDrop(replyId: string): boolean {
+  if (SPOKEN_REPLY_IDS.has(replyId)) {
+    // eslint-disable-next-line no-console
+    console.warn(`[aria] DUP blocked replyId=${replyId}`);
+    return false;
+  }
+  SPOKEN_REPLY_IDS.add(replyId);
+  return true;
+}
+
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
@@ -267,11 +281,22 @@ export function AriaCopilot() {
   // On unmount / panel close, drop to idle.
   useEffect(() => () => { ariaState.set("idle"); }, []);
 
-  // Health probe on panel open
+  // Health probe on panel open + TTS/ElevenLabs TLS preconnect warmup so the
+  // first sentence audio round-trip pays zero TLS handshake latency.
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    if (typeof document !== "undefined") {
+      const heads: HTMLLinkElement[] = [];
+      for (const href of [window.location.origin, "https://api.elevenlabs.io"]) {
+        const l = document.createElement("link");
+        l.rel = "preconnect"; l.href = href; l.crossOrigin = "";
+        document.head.appendChild(l);
+        heads.push(l);
+      }
+      return () => { cancelled = true; heads.forEach((h) => h.remove()); };
+    }
     return () => { cancelled = true; };
   }, [isOpen]);
 
@@ -411,6 +436,8 @@ export function AriaCopilot() {
               const sent1 = s.firstTokenAt && s.firstSentenceAt ? Math.round(s.firstSentenceAt - s.firstTokenAt) : -1;
               const tts = s.firstSentenceAt ? Math.round(t0 - s.firstSentenceAt) : -1;
               // eslint-disable-next-line no-console
+              console.log(`[aria-latency] send→first-audio ${total}ms`);
+              // eslint-disable-next-line no-console
               console.log(`[aria-latency] send→first-token ${firstTok}ms | first-token→sentence1 ${sent1}ms | tts ${tts}ms | TOTAL ${total}ms`);
               VoiceTimeline.push("AUDIO_PLAY", `[0] instant-start total=${total}ms`, { total, firstTok, sent1, tts });
               setPendingRevealId((cur) => (cur === messageId ? null : cur));
@@ -478,6 +505,8 @@ export function AriaCopilot() {
 
     let s = streamStateRef.current.get(last.id);
     if (!s) {
+      // Exactly-once gate — module-level so StrictMode/remount can't dup.
+      if (!markSpokenOrDrop(last.id)) return;
       s = {
         sendAt: pendingSendAtRef.current,
         firstTokenAt: performance.now(),
