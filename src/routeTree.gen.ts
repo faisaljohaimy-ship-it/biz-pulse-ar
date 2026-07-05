@@ -69,6 +69,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSituationRoomRouteImport } from './routes/_authenticated/situation-room'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSelfEvolutionRouteImport } from './routes/_authenticated/self-evolution'
 import { Route as AuthenticatedSecRouteImport } from './routes/_authenticated/sec'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
 import { Route as AuthenticatedReadinessRouteImport } from './routes/_authenticated/readiness'
@@ -481,6 +482,12 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSelfEvolutionRoute =
+  AuthenticatedSelfEvolutionRouteImport.update({
+    id: '/self-evolution',
+    path: '/self-evolution',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSecRoute = AuthenticatedSecRouteImport.update({
   id: '/sec',
   path: '/sec',
@@ -1161,6 +1168,7 @@ export interface FileRoutesByFullPath {
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/sec': typeof AuthenticatedSecRouteWithChildren
+  '/self-evolution': typeof AuthenticatedSelfEvolutionRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/situation-room': typeof AuthenticatedSituationRoomRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -1330,6 +1338,7 @@ export interface FileRoutesByTo {
   '/prompts': typeof AuthenticatedPromptsRoute
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
+  '/self-evolution': typeof AuthenticatedSelfEvolutionRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/situation-room': typeof AuthenticatedSituationRoomRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -1503,6 +1512,7 @@ export interface FileRoutesById {
   '/_authenticated/readiness': typeof AuthenticatedReadinessRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
+  '/_authenticated/self-evolution': typeof AuthenticatedSelfEvolutionRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/situation-room': typeof AuthenticatedSituationRoomRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
@@ -1676,6 +1686,7 @@ export interface FileRouteTypes {
     | '/readiness'
     | '/risk'
     | '/sec'
+    | '/self-evolution'
     | '/settings'
     | '/situation-room'
     | '/tasks'
@@ -1845,6 +1856,7 @@ export interface FileRouteTypes {
     | '/prompts'
     | '/readiness'
     | '/risk'
+    | '/self-evolution'
     | '/settings'
     | '/situation-room'
     | '/tasks'
@@ -2017,6 +2029,7 @@ export interface FileRouteTypes {
     | '/_authenticated/readiness'
     | '/_authenticated/risk'
     | '/_authenticated/sec'
+    | '/_authenticated/self-evolution'
     | '/_authenticated/settings'
     | '/_authenticated/situation-room'
     | '/_authenticated/tasks'
@@ -2598,6 +2611,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/self-evolution': {
+      id: '/_authenticated/self-evolution'
+      path: '/self-evolution'
+      fullPath: '/self-evolution'
+      preLoaderRoute: typeof AuthenticatedSelfEvolutionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/sec': {
@@ -3514,6 +3534,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedReadinessRoute: typeof AuthenticatedReadinessRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
+  AuthenticatedSelfEvolutionRoute: typeof AuthenticatedSelfEvolutionRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedSituationRoomRoute: typeof AuthenticatedSituationRoomRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
@@ -3582,6 +3603,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedReadinessRoute: AuthenticatedReadinessRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
+  AuthenticatedSelfEvolutionRoute: AuthenticatedSelfEvolutionRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedSituationRoomRoute: AuthenticatedSituationRoomRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
