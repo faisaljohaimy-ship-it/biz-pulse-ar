@@ -578,7 +578,7 @@ function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
         {rows.map((r) => (
           <div key={r.id} className="flex items-start justify-between gap-2 rounded border border-rose-500/20 bg-rose-500/5 px-2 py-1.5">
             <div className="min-w-0">
-              <div className="text-xs text-foreground truncate">{r.title}</div>
+              <div className="text-xs text-foreground truncate">{r.title_ar ?? "حادثة"}</div>
               <div className="text-[10px] text-muted-foreground">{relTime(r.created_at)} ago</div>
             </div>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-rose-400 border-rose-500/40">
