@@ -62,20 +62,32 @@ let greetingPlayedThisSession = false;
 // it) throws immediately, naming the offender via stack trace.
 if (typeof window !== "undefined" && window.speechSynthesis) {
   const nativeSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+  const nativeCancel = window.speechSynthesis.cancel.bind(window.speechSynthesis);
   window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
     const owner = current?.source ?? null;
     const isGreeting = owner === "hero-greeting" || owner === "panel-greeting";
+    const stack = new Error().stack?.split("\n").slice(2, 6).join(" | ");
+    VoiceTimeline.push("SPEECH_SYNTH", "speak() called", {
+      owner,
+      lang: u.lang, voice: u.voice?.name, text: u.text?.slice(0, 60),
+      allowed: isGreeting, stack,
+    });
     if (!isGreeting) {
       const err = new Error(
         `[aria-voice] ASSERTION: browser SpeechSynthesis invoked outside Greeting Mode (owner=${owner ?? "none"})`,
       );
+      VoiceTimeline.push("ASSERTION", "SpeechSynthesis blocked", { owner, stack });
       console.error(err);
       throw err;
     }
-    console.log("[aria-voice] speechSynthesis.speak allowed (greeting mode)", { owner });
     return nativeSpeak(u);
   };
+  window.speechSynthesis.cancel = () => {
+    VoiceTimeline.push("CANCEL", "speechSynthesis.cancel()", { owner: current?.source ?? null });
+    return nativeCancel();
+  };
 }
+
 
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
