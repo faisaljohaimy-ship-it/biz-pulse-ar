@@ -150,14 +150,13 @@ function IntroLanding() {
               {ar ? "بدء العملية" : "Start Operation"}
               <Arrow className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
             </Link>
-            <button
-              type="button"
-              onClick={() => setCinemaOpen(true)}
+            <Link
+              to="/executive-bridge"
               className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#3AE8FF]/35 bg-[#3AE8FF]/[0.04] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.09]"
             >
               <Play className="h-4 w-4" />
               {ar ? "جسر القيادة التنفيذي" : "Executive Bridge"}
-            </button>
+            </Link>
             <button
               type="button"
               onClick={() => {
