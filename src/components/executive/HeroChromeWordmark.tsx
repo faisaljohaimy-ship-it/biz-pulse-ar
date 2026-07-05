@@ -243,6 +243,36 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
         .hero-chrome-forge--assembling { opacity: 0.6;  transform: scale(0.95); }
         .hero-chrome-forge--done       { opacity: 0.28; transform: scale(0.82); }
 
+        /* ── Unmute chip (only shown if autoplay was force-muted) ─── */
+        .hero-chrome-unmute {
+          position: absolute;
+          bottom: -2.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 5;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.45rem 0.95rem;
+          border-radius: 9999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          color: rgba(240, 245, 255, 0.92);
+          background: linear-gradient(180deg, rgba(30,36,48,0.85), rgba(12,16,24,0.85));
+          border: 1px solid rgba(200, 220, 255, 0.25);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+          cursor: pointer;
+          backdrop-filter: blur(8px);
+          animation: chromeUnmutePulse 2.4s ease-in-out infinite;
+        }
+        .hero-chrome-unmute:hover { color: #fff; border-color: rgba(255,220,180,0.5); }
+        @keyframes chromeUnmutePulse {
+          0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 0 rgba(255,180,110,0.4); }
+          50%      { box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 10px rgba(255,180,110,0); }
+        }
+
+
         /* ── Energy rings ───────────────────────────────────── */
         .hero-chrome-rings {
           position: absolute;
