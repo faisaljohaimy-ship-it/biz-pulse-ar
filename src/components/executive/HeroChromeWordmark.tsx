@@ -419,7 +419,31 @@ async function playAudio(ref: React.MutableRefObject<HTMLAudioElement | null>) {
     a.muted = false;
     a.volume = 0.9;
     await a.play();
-  } catch { /* autoplay blocked — silent fail per spec */ }
+  } catch { /* autoplay blocked — silent fail */ }
+}
+
+type AutoplayState = "unmuted" | "muted-fallback" | "failed";
+async function autoplayAudio(
+  ref: React.MutableRefObject<HTMLAudioElement | null>,
+): Promise<AutoplayState> {
+  const a = ref.current;
+  if (!a) return "failed";
+  a.currentTime = 0;
+  a.volume = 0.9;
+  // Try unmuted first — works if the user has any prior interaction on the origin.
+  try {
+    a.muted = false;
+    await a.play();
+    return "unmuted";
+  } catch { /* fall through to muted */ }
+  // Muted autoplay is universally allowed; surface a one-tap unmute chip.
+  try {
+    a.muted = true;
+    await a.play();
+    return "muted-fallback";
+  } catch {
+    return "failed";
+  }
 }
 
 function useReducedMotion(): boolean {
