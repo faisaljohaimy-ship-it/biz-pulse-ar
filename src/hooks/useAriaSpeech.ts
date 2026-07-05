@@ -183,9 +183,12 @@ export function useAriaSpeech() {
           };
           await audio.play();
         } catch (err) {
-          VoiceTimeline.push("FALLBACK", "greeting mp3 unavailable — speakFallback", { err: (err as Error).message });
-          if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
-          speakFallback(clean, source);
+          // NO browser speechSynthesis fallback — greeting is silent if MP3 unavailable.
+          VoiceTimeline.push("FALLBACK", "greeting mp3 unavailable — silent (no browser TTS)", { err: (err as Error).message });
+          console.warn("[aria-voice] greeting mp3 unavailable — staying silent:", (err as Error).message);
+          AriaAudioBus.notifyStopped(source);
+          AriaAudioBus.release(source);
+          setSpeaking(false);
         }
         return;
       }
