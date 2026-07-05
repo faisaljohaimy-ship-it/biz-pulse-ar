@@ -90,8 +90,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
       },
-      { property: "og:title", content: "NEXIOS AI OS —" },
-      { property: "og:description", content: "· Intelligent operating system for industrial security." },
+      { property: "og:title", content: SITE_NAME },
+      {
+        property: "og:description",
+        content:
+          "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
@@ -99,13 +103,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:height", content: "630" },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "NEXIOS AI OS —" },
-      { name: "twitter:description", content: "· Intelligent operating system for industrial security." },
+      { name: "twitter:title", content: SITE_NAME },
+      {
+        name: "twitter:description",
+        content:
+          "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
+      },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
-      { title: "NEXIOS AI OS —" },
-      { name: "description", content: "· Intelligent operating system for industrial security." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f924ae2a-4872-4f4f-93c5-2a8479760214" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f924ae2a-4872-4f4f-93c5-2a8479760214" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
