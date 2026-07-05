@@ -57,30 +57,20 @@ function stopWatchdog() {
 // and any component re-registration. The ONLY way to reset is a full reload.
 let greetingPlayedThisSession = false;
 
-// ── Runtime assertion: browser SpeechSynthesis is ONLY legal in Greeting
-// Mode. Any speak() while chat-tts owns the channel (or no greeting owns
-// it) throws immediately, naming the offender via stack trace.
+// ── Runtime assertion: browser SpeechSynthesis is FULLY BANNED. ARIA speaks
+// only through pre-generated MP3 (greeting) or ElevenLabs (chat). Any call
+// is dropped and logged with a stack trace — never robotic voice again.
 if (typeof window !== "undefined" && window.speechSynthesis) {
-  const nativeSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
   const nativeCancel = window.speechSynthesis.cancel.bind(window.speechSynthesis);
   window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
     const owner = current?.source ?? null;
-    const isGreeting = owner === "hero-greeting" || owner === "panel-greeting";
     const stack = new Error().stack?.split("\n").slice(2, 6).join(" | ");
-    VoiceTimeline.push("SPEECH_SYNTH", "speak() called", {
-      owner,
-      lang: u.lang, voice: u.voice?.name, text: u.text?.slice(0, 60),
-      allowed: isGreeting, stack,
+    VoiceTimeline.push("SPEECH_SYNTH", "speak() BLOCKED (browser TTS banned)", {
+      owner, lang: u.lang, voice: u.voice?.name, text: u.text?.slice(0, 60), stack,
     });
-    if (!isGreeting) {
-      const err = new Error(
-        `[aria-voice] ASSERTION: browser SpeechSynthesis invoked outside Greeting Mode (owner=${owner ?? "none"})`,
-      );
-      VoiceTimeline.push("ASSERTION", "SpeechSynthesis blocked", { owner, stack });
-      console.error(err);
-      throw err;
-    }
-    return nativeSpeak(u);
+    console.warn("[aria-voice] browser SpeechSynthesis blocked — no robotic voice", { owner });
+    // swallow silently: do NOT call nativeSpeak, do NOT throw.
+    return;
   };
   window.speechSynthesis.cancel = () => {
     VoiceTimeline.push("CANCEL", "speechSynthesis.cancel()", { owner: current?.source ?? null });
