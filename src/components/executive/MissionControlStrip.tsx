@@ -28,7 +28,21 @@ export function MissionControlStrip() {
 
   const k = q.data;
   const loading = q.isLoading;
-  const failed = !loading && !k;
+
+  // Zero-tolerance policy: the entire section is hidden unless every KPI
+  // resolved to a real, finite numeric value from the database. Evaluated
+  // below the hooks so React's rules-of-hooks aren't violated.
+  const isFiniteNumber = (v: unknown): v is number =>
+    typeof v === "number" && Number.isFinite(v);
+  const allReady =
+    !!k &&
+    isFiniteNumber(k.incidents_total) &&
+    isFiniteNumber(k.incidents_open) &&
+    isFiniteNumber(k.incidents_critical) &&
+    isFiniteNumber(k.incidents_resolution_rate) &&
+    isFiniteNumber(k.work_orders_active) &&
+    isFiniteNumber(k.maintenance_pending) &&
+    isFiniteNumber(k.projects_in_progress);
 
   const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
 
@@ -96,8 +110,12 @@ export function MissionControlStrip() {
     ] as const;
   }, [k, ar]);
 
+  if (!allReady) return null;
+  const failed = false;
+
   return (
     <section aria-label="Mission Control live KPIs" className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6">
+
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
