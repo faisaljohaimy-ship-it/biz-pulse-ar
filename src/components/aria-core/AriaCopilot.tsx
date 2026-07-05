@@ -425,6 +425,8 @@ export function AriaCopilot() {
               const sent1 = s.firstTokenAt && s.firstSentenceAt ? Math.round(s.firstSentenceAt - s.firstTokenAt) : -1;
               const tts = s.firstSentenceAt ? Math.round(t0 - s.firstSentenceAt) : -1;
               // eslint-disable-next-line no-console
+              console.log(`[aria-latency] send→first-audio ${total}ms`);
+              // eslint-disable-next-line no-console
               console.log(`[aria-latency] send→first-token ${firstTok}ms | first-token→sentence1 ${sent1}ms | tts ${tts}ms | TOTAL ${total}ms`);
               VoiceTimeline.push("AUDIO_PLAY", `[0] instant-start total=${total}ms`, { total, firstTok, sent1, tts });
               setPendingRevealId((cur) => (cur === messageId ? null : cur));
