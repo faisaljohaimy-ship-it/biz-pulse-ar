@@ -743,26 +743,7 @@ export function AriaCopilot() {
         </button>
       )}
 
-      {/* Desktop-only ARIA side column (visible beside the chat panel) */}
-      {isOpen && (
-        <aside
-          aria-hidden
-          dir="ltr"
-          className={cn(
-            "fixed z-40 hidden lg:flex flex-col overflow-hidden rounded-3xl border border-primary/25",
-            "top-6 bottom-6 w-[320px] right-[calc(1.5rem+420px+0.75rem)]",
-            "transition-opacity duration-[400ms] ease-out",
-          )}
-          style={{
-            boxShadow:
-              "0 20px 60px -20px hsl(var(--primary) / 0.4), 0 0 0 1px hsl(var(--primary) / 0.1)",
-          }}
-        >
-          <AriaSideFigure />
-        </aside>
-      )}
-
-      {/* Dock */}
+      {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (
 
         <aside
@@ -770,11 +751,9 @@ export function AriaCopilot() {
           aria-label="ARIA executive copilot"
           dir="rtl"
           className={cn(
-            "fixed z-50 flex flex-col overflow-hidden border border-primary/25",
+            "fixed left-1/2 top-1/2 z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl border border-primary/25",
             "shadow-2xl",
-            // Mobile: near-fullscreen. Desktop (sm+): docked, full height.
-            "inset-x-2 top-14 bottom-2 rounded-3xl",
-            "sm:inset-auto sm:end-6 sm:top-6 sm:bottom-6 sm:w-[min(96vw,420px)] sm:rounded-2xl",
+            "w-[min(94vw,440px)] h-[min(92vh,760px)]",
           )}
           style={{
             boxShadow:
