@@ -29,6 +29,7 @@ import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
+import { Route as ExecutiveBridgeRouteImport } from './routes/executive-bridge'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoVideosRouteImport } from './routes/demo-videos'
@@ -277,6 +278,11 @@ const FilmsRoute = FilmsRouteImport.update({
 const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
   id: '/executive-briefing',
   path: '/executive-briefing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecutiveBridgeRoute = ExecutiveBridgeRouteImport.update({
+  id: '/executive-bridge',
+  path: '/executive-bridge',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
@@ -1081,6 +1087,7 @@ export interface FileRoutesByFullPath {
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
   '/executive-booking': typeof ExecutiveBookingRoute
+  '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
@@ -1251,6 +1258,7 @@ export interface FileRoutesByTo {
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
   '/executive-booking': typeof ExecutiveBookingRoute
+  '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
@@ -1421,6 +1429,7 @@ export interface FileRoutesById {
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
   '/executive-booking': typeof ExecutiveBookingRoute
+  '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
@@ -1593,6 +1602,7 @@ export interface FileRouteTypes {
     | '/demo-videos'
     | '/dpa'
     | '/executive-booking'
+    | '/executive-bridge'
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
@@ -1763,6 +1773,7 @@ export interface FileRouteTypes {
     | '/demo-videos'
     | '/dpa'
     | '/executive-booking'
+    | '/executive-bridge'
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
@@ -1932,6 +1943,7 @@ export interface FileRouteTypes {
     | '/demo-videos'
     | '/dpa'
     | '/executive-booking'
+    | '/executive-bridge'
     | '/executive-briefing'
     | '/films'
     | '/government-brief'
@@ -2104,6 +2116,7 @@ export interface RootRouteChildren {
   DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
+  ExecutiveBridgeRoute: typeof ExecutiveBridgeRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
@@ -2305,6 +2318,13 @@ declare module '@tanstack/react-router' {
       path: '/executive-briefing'
       fullPath: '/executive-briefing'
       preLoaderRoute: typeof ExecutiveBriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/executive-bridge': {
+      id: '/executive-bridge'
+      path: '/executive-bridge'
+      fullPath: '/executive-bridge'
+      preLoaderRoute: typeof ExecutiveBridgeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/executive-booking': {
@@ -3608,6 +3628,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
   ExecutiveBookingRoute: ExecutiveBookingRoute,
+  ExecutiveBridgeRoute: ExecutiveBridgeRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
