@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
+import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 
 const MUTE_KEY = "aria-voice-muted";
 
