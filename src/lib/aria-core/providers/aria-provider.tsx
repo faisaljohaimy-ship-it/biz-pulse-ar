@@ -25,8 +25,7 @@ import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
-import { avatarVoiceSync } from "../core/avatar-voice-sync";
-import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
@@ -54,7 +53,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const drainCommands = useAriaStore((s) => s.drainCommands);
   const pendingCommands = useAriaStore((s) => s.pendingCommands);
-  const { speak: ariaSpeak } = useAriaSpeech();
+
 
   const transport = useMemo(() => createAriaTransport(), []);
 
@@ -149,33 +148,14 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);
 
-  // ── TTS of last assistant message — routed through AriaAudioBus so only
-  // ── one voice can play at a time. Auth users get ElevenLabs; anon gets
-  // ── browser ar-SA. The welcome message is skipped (handled by AriaGreeter
-  // ── which plays the pre-generated static MP3).
-  const spokenIdsRef = useRef(new Set<string>([WELCOME_AR.id]));
-  useEffect(() => {
-    if (!voiceEnabled) return;
-    if (typeof window === "undefined") return;
-    if (chat.status !== "ready") return;
-    const last = chat.messages[chat.messages.length - 1];
-    if (!last || last.role !== "assistant") return;
-    if (spokenIdsRef.current.has(last.id)) return;
-    const text = last.parts
-      .map((p) => (p.type === "text" ? p.text : ""))
-      .join("")
-      .trim();
-    if (!text) return;
-    spokenIdsRef.current.add(last.id);
-    voiceManager.setState("speaking");
-    avatarBrain.onSpeakingStart(last.id);
-    avatarVoiceSync.startSynthetic(last.id);
-    void ariaSpeak(text, "chat-tts").finally(() => {
-      avatarVoiceSync.stopSynthetic();
-      avatarBrain.onSpeakingEnd(last.id);
-      voiceManager.setState("idle");
-    });
-  }, [chat.messages, chat.status, voiceEnabled, ariaSpeak]);
+  // ── TTS is owned EXCLUSIVELY by <AriaCopilot> (sentence-queued ElevenLabs
+  // ── pipeline via /api/tts on a single AriaAudioBus "chat-tts" token).
+  // ── A second speak() path here caused the "first sentence clean, rest
+  // ── robotic" bug: both pipelines called AriaAudioBus.acquire("chat-tts"),
+  // ── stomped each other, and the loser dropped into browser
+  // ── SpeechSynthesis fallback mid-reply. Do NOT re-add speak here.
+  void voiceEnabled;
+
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;
