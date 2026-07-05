@@ -75,6 +75,20 @@ const THINKING_AR = "آريا تفكّر…";
 
 const STILL_SRC = "/aria-backdrop.webp";
 
+// Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
+// and provider re-renders. Any second speak(replyId) for the same id is dropped
+// with a '[aria] DUP blocked' log — exactly-once guarantee per reply.
+const SPOKEN_REPLY_IDS: Set<string> = new Set();
+function markSpokenOrDrop(replyId: string): boolean {
+  if (SPOKEN_REPLY_IDS.has(replyId)) {
+    // eslint-disable-next-line no-console
+    console.warn(`[aria] DUP blocked replyId=${replyId}`);
+    return false;
+  }
+  SPOKEN_REPLY_IDS.add(replyId);
+  return true;
+}
+
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
