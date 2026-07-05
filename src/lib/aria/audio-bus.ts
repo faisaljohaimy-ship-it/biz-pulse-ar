@@ -4,6 +4,8 @@
  * whatever is currently playing (unless the caller has a lower priority
  * than the current owner).
  */
+import { VoiceTimeline } from "./voice-timeline";
+
 type Source = "hero-greeting" | "panel-greeting" | "chat-tts";
 
 const PRIORITY: Record<Source, number> = {
@@ -11,6 +13,7 @@ const PRIORITY: Record<Source, number> = {
   "panel-greeting": 2,
   "chat-tts": 3,
 };
+
 
 type StopFn = () => void;
 type BusEvent =
@@ -59,20 +62,32 @@ let greetingPlayedThisSession = false;
 // it) throws immediately, naming the offender via stack trace.
 if (typeof window !== "undefined" && window.speechSynthesis) {
   const nativeSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+  const nativeCancel = window.speechSynthesis.cancel.bind(window.speechSynthesis);
   window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
     const owner = current?.source ?? null;
     const isGreeting = owner === "hero-greeting" || owner === "panel-greeting";
+    const stack = new Error().stack?.split("\n").slice(2, 6).join(" | ");
+    VoiceTimeline.push("SPEECH_SYNTH", "speak() called", {
+      owner,
+      lang: u.lang, voice: u.voice?.name, text: u.text?.slice(0, 60),
+      allowed: isGreeting, stack,
+    });
     if (!isGreeting) {
       const err = new Error(
         `[aria-voice] ASSERTION: browser SpeechSynthesis invoked outside Greeting Mode (owner=${owner ?? "none"})`,
       );
+      VoiceTimeline.push("ASSERTION", "SpeechSynthesis blocked", { owner, stack });
       console.error(err);
       throw err;
     }
-    console.log("[aria-voice] speechSynthesis.speak allowed (greeting mode)", { owner });
     return nativeSpeak(u);
   };
+  window.speechSynthesis.cancel = () => {
+    VoiceTimeline.push("CANCEL", "speechSynthesis.cancel()", { owner: current?.source ?? null });
+    return nativeCancel();
+  };
 }
+
 
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
@@ -104,13 +119,14 @@ export const AriaAudioBus = {
    * Granting ALWAYS hard-stops whatever is playing first.
    */
   acquire(source: Source, stop: StopFn): boolean {
+    const stack = new Error().stack?.split("\n").slice(2, 5).join(" | ");
     if (current && PRIORITY[source] < PRIORITY[current.source]) {
-      console.log("[aria-bus] acquire DENIED", { requested: source, owner: current.source });
+      VoiceTimeline.push("OWNER", "acquire DENIED (lower priority)", { requested: source, owner: current.source, stack });
       return false;
     }
     if (current) {
       const prev = current.source;
-      console.log("[aria-bus] preempting owner", { prev, next: source });
+      VoiceTimeline.push("PREEMPT", "owner preempted", { prev, next: source, stack });
       try { current.stop(); } catch { /* ignore */ }
       if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
       emit({ kind: "end", source: prev });
@@ -119,7 +135,7 @@ export const AriaAudioBus = {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
     current = { source, stop };
-    console.log("[aria-bus] ACQUIRED", { owner: source, provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting" });
+    VoiceTimeline.push("OWNER", "ACQUIRED", { owner: source, provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting", stack });
     if (source === "chat-tts") startWatchdog(); else stopWatchdog();
     emit({ kind: "start", source });
     return true;
@@ -134,6 +150,7 @@ export const AriaAudioBus = {
   notifyPlaying(source: Source, audioEl?: HTMLMediaElement | null) {
     if (current?.source !== source) return;
     currentAudioEl = audioEl ?? null;
+    VoiceTimeline.push("BUS", "notifyPlaying", { source, hasEl: !!audioEl });
     emit({ kind: "playing", source, audioEl: currentAudioEl });
   },
 
@@ -141,12 +158,13 @@ export const AriaAudioBus = {
   notifyStopped(source: Source) {
     if (current?.source !== source) return;
     if (currentAudioEl) currentAudioEl = null;
+    VoiceTimeline.push("BUS", "notifyStopped", { source });
     emit({ kind: "stopped", source });
   },
 
   release(source: Source) {
     if (current?.source === source) {
-      console.log("[aria-bus] RELEASED", { owner: source });
+      VoiceTimeline.push("RELEASE", "released", { owner: source });
       if (currentAudioEl) { emit({ kind: "stopped", source }); currentAudioEl = null; }
       current = null;
       stopWatchdog();

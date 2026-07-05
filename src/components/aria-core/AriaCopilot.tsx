@@ -23,6 +23,7 @@ import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
+import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -278,6 +279,8 @@ export function AriaCopilot() {
       return out.length ? out : [t.trim()];
     };
     const sentences = splitSentences(fullText);
+    VoiceTimeline.push("STREAM", "assistant message ready", { messageId: last.id, textLen: fullText.length, sentences: sentences.length });
+    sentences.forEach((s, i) => VoiceTimeline.push("SENTENCE", `[${i}] ${s.length}c`, { idx: i, preview: s.slice(0, 40) }));
 
     let cancelled = false;
     const abortCtrls: AbortController[] = [];
@@ -285,22 +288,28 @@ export function AriaCopilot() {
     setPendingRevealId(messageId);
 
     const acquired = AriaAudioBus.acquire("chat-tts", () => {
+      VoiceTimeline.push("INTERRUPT", "chat-tts owner stop invoked (bus preempted)", { messageId });
       cancelled = true;
       for (const c of abortCtrls) { try { c.abort(); } catch { /* noop */ } }
       const a = audioRef.current;
-      if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+      if (a) {
+        VoiceTimeline.push("HTMLAUDIO", "pause via bus preempt", { src: a.src?.slice(-20), paused: a.paused, currentTime: a.currentTime });
+        try { a.pause(); a.currentTime = 0; } catch { /* noop */ }
+      }
       if (typeof window !== "undefined" && window.speechSynthesis) {
         try { window.speechSynthesis.cancel(); } catch { /* noop */ }
       }
       setPendingRevealId((cur) => (cur === messageId ? null : cur));
     });
-    if (!acquired) { setPendingRevealId(null); return; }
+    if (!acquired) { VoiceTimeline.push("OWNER", "chat-tts acquire FAILED", { messageId }); setPendingRevealId(null); return; }
 
     const t0 = performance.now();
 
     const fetchTTS = async (text: string, idx: number): Promise<HTMLAudioElement | null> => {
       const ctrl = new AbortController();
       abortCtrls.push(ctrl);
+      const reqT = performance.now();
+      VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/tts`, { idx, chars: text.length });
       try {
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
@@ -313,12 +322,19 @@ export function AriaCopilot() {
           body: JSON.stringify({ text: text.slice(0, 4000) }),
           signal: ctrl.signal,
         });
+        VoiceTimeline.push("TTS_RES", `[${idx}] ${r.status} in ${Math.round(performance.now() - reqT)}ms`, {
+          idx, status: r.status, ok: r.ok,
+          contentType: r.headers.get("content-type"),
+          contentLength: r.headers.get("content-length"),
+          authed: !!token,
+        });
         if (!r.ok) {
           console.warn(`[aria-queue] segment ${idx} http_${r.status} — skipped`);
           AriaVoiceDebug.emit({ source: "browser", reason: `tts_http_${r.status}_seg_${idx}`, status: r.status, failed: true });
           return null;
         }
         const blob = await r.blob();
+        VoiceTimeline.push("AUDIO_CREATED", `[${idx}] blob ${blob.size}B ${blob.type}`, { idx, size: blob.size, type: blob.type });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audio.preload = "auto";
@@ -328,7 +344,11 @@ export function AriaCopilot() {
         }
         return audio;
       } catch (err) {
-        if ((err as { name?: string }).name === "AbortError") return null;
+        if ((err as { name?: string }).name === "AbortError") {
+          VoiceTimeline.push("CANCEL", `[${idx}] fetch aborted`, { idx });
+          return null;
+        }
+        VoiceTimeline.push("FETCH", `[${idx}] network fail`, { idx, err: (err as Error).message });
         console.warn(`[aria-queue] segment ${idx} network — skipped`, err);
         AriaVoiceDebug.emit({ source: "browser", reason: `network_seg_${idx}:${(err as Error).message ?? "unknown"}`, failed: true });
         return null;
@@ -346,6 +366,7 @@ export function AriaCopilot() {
     };
 
     const finish = () => {
+      VoiceTimeline.push("QUEUE", "queue finished — releasing bus", { messageId });
       ariaState.set("idle");
       AriaAudioBus.notifyStopped("chat-tts");
       AriaAudioBus.release("chat-tts");
@@ -356,11 +377,11 @@ export function AriaCopilot() {
     };
 
     const playAt = async (idx: number, prevEndedAt: number | null) => {
-      if (cancelled) { finish(); return; }
+      if (cancelled) { VoiceTimeline.push("QUEUE", `[${idx}] cancelled before play`, { idx }); finish(); return; }
       if (idx >= audioPromises.length) { finish(); return; }
       const audio = await audioPromises[idx];
-      if (cancelled) { finish(); return; }
-      if (!audio) { void playAt(idx + 1, prevEndedAt); return; } // skip failed segment
+      if (cancelled) { VoiceTimeline.push("QUEUE", `[${idx}] cancelled after await`, { idx }); finish(); return; }
+      if (!audio) { VoiceTimeline.push("QUEUE", `[${idx}] SKIP (null audio)`, { idx }); void playAt(idx + 1, prevEndedAt); return; }
       audioRef.current = audio;
 
       const start = () => {
@@ -368,30 +389,44 @@ export function AriaCopilot() {
         const tPlay = performance.now();
         if (idx === 0) {
           revealNow();
+          VoiceTimeline.push("AUDIO_PLAY", `[0] first-audio start +${Math.round(tPlay - t0)}ms`, { idx, segments: sentences.length });
           console.log(`[aria-sync] first-audio ${Math.round(tPlay - t0)}ms segments=${sentences.length}`);
         } else if (prevEndedAt !== null) {
           const gap = Math.round(tPlay - prevEndedAt);
-          console.log(`[aria-gap] ${gap}ms (seg ${idx})`);
+          VoiceTimeline.push("AUDIO_PLAY", `[${idx}] gap ${gap}ms`, { idx, gap });
+        } else {
+          VoiceTimeline.push("AUDIO_PLAY", `[${idx}] start`, { idx });
         }
         audio.play()
           .then(() => {
+            VoiceTimeline.push("HTMLAUDIO", `[${idx}] play() resolved`, { idx, duration: audio.duration, src: audio.src.slice(-16) });
             if (idx === 0) {
               ariaState.set("speaking");
               AriaAudioBus.notifyPlaying("chat-tts", audio);
             }
           })
-          .catch(() => { finish(); });
+          .catch((err) => {
+            VoiceTimeline.push("AUDIO_ERROR", `[${idx}] play() rejected: ${(err as Error).message}`, { idx, err: (err as Error).name });
+            finish();
+          });
       };
 
       audio.onended = () => {
         const tEnd = performance.now();
+        VoiceTimeline.push("AUDIO_END", `[${idx}] ended (dur ${audio.duration.toFixed(2)}s)`, { idx, duration: audio.duration });
         try { URL.revokeObjectURL(audio.src); } catch { /* noop */ }
         void playAt(idx + 1, tEnd);
       };
       audio.onerror = () => {
+        VoiceTimeline.push("AUDIO_ERROR", `[${idx}] element error`, { idx, error: audio.error?.code, message: audio.error?.message });
         console.warn(`[aria-queue] segment ${idx} playback error — skipping`);
         try { URL.revokeObjectURL(audio.src); } catch { /* noop */ }
         void playAt(idx + 1, performance.now());
+      };
+      audio.onpause = () => {
+        VoiceTimeline.push("HTMLAUDIO", `[${idx}] onpause (t=${audio.currentTime.toFixed(2)}/${audio.duration.toFixed(2)})`, {
+          idx, currentTime: audio.currentTime, duration: audio.duration, ended: audio.ended,
+        });
       };
 
       if (idx === 0) {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
+import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 
 const MUTE_KEY = "aria-voice-muted";
 
@@ -145,11 +146,15 @@ export function useAriaSpeech() {
   const speak = useCallback(
     async (text: string, source: Source = "chat-tts") => {
       const clean = (text ?? "").toString().trim();
+      VoiceTimeline.push("VOICE", `useAriaSpeech.speak(${source})`, {
+        source, chars: clean.length, muted: mutedRef.current,
+        stack: new Error().stack?.split("\n").slice(2, 5).join(" | "),
+      });
       if (!clean || mutedRef.current) return;
       AriaAudioBus.unlock();
 
       const granted = AriaAudioBus.acquire(source, () => hardStop(source));
-      if (!granted) return;
+      if (!granted) { VoiceTimeline.push("VOICE", "acquire not granted", { source }); return; }
 
       setSpeaking(true);
       const t0 = performance.now();
@@ -158,6 +163,7 @@ export function useAriaSpeech() {
         // Static, pre-generated MP3 only. Never hits ElevenLabs.
         try {
           const head = await fetch("/aria-greeting-voice.mp3", { method: "HEAD" });
+          VoiceTimeline.push("FETCH", `greeting HEAD ${head.status}`, { ok: head.ok });
           if (!head.ok) throw new Error("no_static_greeting");
           if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
           const audio = new Audio("/aria-greeting-voice.mp3");
@@ -168,30 +174,31 @@ export function useAriaSpeech() {
             AriaAudioBus.release(source);
             setSpeaking(false);
           };
-          audio.onended = finish;
-          audio.onpause = () => { AriaAudioBus.notifyStopped(source); };
-          audio.onerror = () => { console.warn("[aria-voice] static greeting playback error"); finish(); };
+          audio.onended = () => { VoiceTimeline.push("AUDIO_END", "greeting ended"); finish(); };
+          audio.onpause = () => { VoiceTimeline.push("HTMLAUDIO", "greeting onpause", { t: audio.currentTime, d: audio.duration }); AriaAudioBus.notifyStopped(source); };
+          audio.onerror = () => { VoiceTimeline.push("AUDIO_ERROR", "greeting element error"); finish(); };
           audio.onplaying = () => {
-            console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (static)`);
+            VoiceTimeline.push("AUDIO_PLAY", `greeting playing +${Math.round(performance.now() - t0)}ms`);
             AriaAudioBus.notifyPlaying(source, audio);
           };
-
           await audio.play();
-        } catch {
+        } catch (err) {
+          VoiceTimeline.push("FALLBACK", "greeting mp3 unavailable — speakFallback", { err: (err as Error).message });
           if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
           speakFallback(clean, source);
         }
         return;
       }
 
-      // chat-tts: try ElevenLabs (auth-only). Anonymous → 403 → browser fallback.
-      console.log(`[aria-voice] speaking reply, ${clean.length} chars`);
+      // chat-tts: try ElevenLabs (auth-only). Anonymous → 403 → silence.
+      VoiceTimeline.push("TTS_REQ", "useAriaSpeech → /api/aria/tts", { chars: clean.length });
       try {
         const res = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text: clean }),
         });
+        VoiceTimeline.push("TTS_RES", `useAriaSpeech ${res.status}`, { status: res.status, ct: res.headers.get("content-type") });
         if (!res.ok) throw new Error(`tts_status_${res.status}`);
         const ct = res.headers.get("content-type") || "";
         if (!ct.includes("audio/")) throw new Error("tts_not_audio");
@@ -200,6 +207,7 @@ export function useAriaSpeech() {
         await playBlob(blob, source, t0);
       } catch (err) {
         // NO browser fallback for chat replies — silence beats a robotic voice.
+        VoiceTimeline.push("FALLBACK", "chat-tts silent (no elevenlabs)", { err: (err as Error).message });
         console.warn("[aria-voice] elevenlabs unavailable — reply stays silent:", (err as Error).message);
         AriaAudioBus.release(source);
         setSpeaking(false);
