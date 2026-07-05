@@ -555,11 +555,11 @@ function IntegrationRow({ label, connected, fallback }: { label: string; connect
 /* ─────────── risk center ─────────── */
 
 function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
-  const { rows } = useLiveRows<{ id: string; title: string; severity: string; created_at: string }>(
+  const { rows } = useLiveRows<{ id: string; title_ar: string | null; severity: string; created_at: string }>(
     "sec_incidents",
     (q) =>
       q
-        .select("id, title, severity, created_at")
+        .select("id, title_ar, severity, created_at")
         .in("severity", ["high", "critical"])
         .neq("status", "closed")
         .order("created_at", { ascending: false })
