@@ -62,6 +62,8 @@ export const Route = createFileRoute("/api/aria/tts")({
           return Response.json({ error: "text_too_long" }, { status: 400 });
         }
         const voiceId = process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
+        // Auto-diacritize unvocalized Arabic (display text unaffected).
+        const ttsText = await diacritizeForTts(rawText);
         const upstream = await fetch(
           `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_22050_32`,
           {
@@ -72,7 +74,7 @@ export const Route = createFileRoute("/api/aria/tts")({
               accept: "audio/mpeg",
             },
             body: JSON.stringify({
-              text: rawText,
+              text: ttsText,
               model_id: "eleven_multilingual_v2",
               voice_settings: {
                 stability: 0.5,
