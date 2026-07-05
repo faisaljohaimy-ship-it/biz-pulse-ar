@@ -154,8 +154,8 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   // ── robotic" bug: both pipelines called AriaAudioBus.acquire("chat-tts"),
   // ── stomped each other, and the loser dropped into browser
   // ── SpeechSynthesis fallback mid-reply. Do NOT re-add speak here.
-  // ── (`useAriaSpeech` is still imported for the greeting path only.)
-  void ariaSpeak;
+  void voiceEnabled;
+
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;
