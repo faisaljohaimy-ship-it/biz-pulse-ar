@@ -143,25 +143,21 @@ function SelfEvolutionPage() {
 
       {report && (
         <>
-
-
-      {q.data && (
-        <>
           <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Decision / القرار</h2>
-            <Card className={`glass-card p-4 border ${decisionTone(q.data.decision)}`}>
+            <Card className={`glass-card p-4 border ${decisionTone(report.decision)}`}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xs uppercase tracking-wide text-slate-400">Overall</div>
-                  <div className="text-2xl font-bold">{q.data.decision}</div>
+                  <div className="text-2xl font-bold">{report.decision}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs uppercase tracking-wide text-slate-400">Readiness score</div>
-                  <div className="text-2xl font-bold">{Math.round(q.data.readinessScore * 100)}%</div>
+                  <div className="text-2xl font-bold">{Math.round(report.readinessScore * 100)}%</div>
                 </div>
               </div>
-              <Progress value={q.data.readinessScore * 100} className="h-1.5 mt-3" />
+              <Progress value={report.readinessScore * 100} className="h-1.5 mt-3" />
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {q.data.reasons.map((r) => (
+                {report.reasons.map((r) => (
                   <Badge key={r} variant="outline" className="text-[11px]">{r}</Badge>
                 ))}
               </div>
@@ -171,7 +167,7 @@ function SelfEvolutionPage() {
           <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Pipeline stages / مراحل الأنبوب</h2>
             <Card className="glass-card p-4">
               <ol className="space-y-2">
-                {q.data.stages.map((s) => (
+                {report.stages.map((s) => (
                   <li key={`${s.stage}-${s.startedAt}`} className="flex items-start gap-2 text-sm">
                     {stageIcon(s.status)}
                     <div className="flex-1">
@@ -187,11 +183,11 @@ function SelfEvolutionPage() {
 
           <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Issues detected / المشكلات المكتشفة</h2>
             <Card className="glass-card p-4">
-              {q.data.issues.length === 0 ? (
+              {report.issues.length === 0 ? (
                 <div className="text-sm text-emerald-300">No issues detected in this cycle. / لا توجد مشكلات في هذه الدورة.</div>
               ) : (
                 <ul className="space-y-2">
-                  {q.data.issues.map((i) => (
+                  {report.issues.map((i) => (
                     <li key={i.id} className="flex items-start gap-2 text-sm">
                       <Badge variant="outline" className={`text-[10px] ${severityTone(i.severity)}`}>{i.severity}</Badge>
                       <div className="flex-1">
@@ -205,42 +201,42 @@ function SelfEvolutionPage() {
             </Card>
           </section>
 
-          {q.data.readiness && (
+          {report.readiness && (
             <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Release gate / بوابة الإصدار</h2>
               <Card className="glass-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold">Release decision: {q.data.readiness.decision}</div>
-                  <Badge variant="outline">{Math.round(q.data.readiness.overall_score * 100)}%</Badge>
+                  <div className="text-sm font-semibold">Release decision: {report.readiness.decision}</div>
+                  <Badge variant="outline">{Math.round(report.readiness.overall_score * 100)}%</Badge>
                 </div>
-                {q.data.readiness.blockers.length > 0 && (
+                {report.readiness.blockers.length > 0 && (
                   <>
                     <Separator />
                     <div>
                       <div className="text-xs uppercase text-rose-300 mb-1">Blockers</div>
                       <ul className="text-sm space-y-1">
-                        {q.data.readiness.blockers.map((b, i) => <li key={i}>• {b}</li>)}
+                        {report.readiness.blockers.map((b, i) => <li key={i}>• {b}</li>)}
                       </ul>
                     </div>
                   </>
                 )}
-                {q.data.readiness.warnings.length > 0 && (
+                {report.readiness.warnings.length > 0 && (
                   <>
                     <Separator />
                     <div>
                       <div className="text-xs uppercase text-amber-300 mb-1">Warnings</div>
                       <ul className="text-sm space-y-1">
-                        {q.data.readiness.warnings.map((w, i) => <li key={i}>• {w}</li>)}
+                        {report.readiness.warnings.map((w, i) => <li key={i}>• {w}</li>)}
                       </ul>
                     </div>
                   </>
                 )}
-                {q.data.readiness.next_actions.length > 0 && (
+                {report.readiness.next_actions.length > 0 && (
                   <>
                     <Separator />
                     <div>
                       <div className="text-xs uppercase text-cyan-300 mb-1">Next actions</div>
                       <ul className="text-sm space-y-1">
-                        {q.data.readiness.next_actions.map((a, i) => <li key={i}>• {a}</li>)}
+                        {report.readiness.next_actions.map((a, i) => <li key={i}>• {a}</li>)}
                       </ul>
                     </div>
                   </>
@@ -251,7 +247,7 @@ function SelfEvolutionPage() {
 
           <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Invariants / الثوابت المحمية</h2>
             <Card className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-              {Object.entries(q.data.invariants).map(([k, v]) => (
+              {Object.entries(report.invariants).map(([k, v]) => (
                 <div key={k} className="flex items-center gap-1.5">
                   <CheckCircle2 className={`h-3.5 w-3.5 ${v ? "text-emerald-400" : "text-rose-400"}`} />
                   <span className="text-slate-300">{k}</span>
@@ -261,11 +257,13 @@ function SelfEvolutionPage() {
           </section>
 
           <div className="text-[11px] text-slate-500">
-            Cycle {new Date(q.data.startedAt).toLocaleString()} → {new Date(q.data.finishedAt).toLocaleString()} ·
-            Applied: {q.data.applied.length} · Deferred: {q.data.deferred.length}
+            Cycle {new Date(report.startedAt).toLocaleString()} → {new Date(report.finishedAt).toLocaleString()} ·
+            Applied: {report.applied.length} · Deferred: {report.deferred.length}
+            {cycle.data?.persistedId && <> · Saved id: <span className="font-mono">{cycle.data.persistedId.slice(0, 8)}</span></>}
           </div>
         </>
       )}
     </div>
   );
 }
+
