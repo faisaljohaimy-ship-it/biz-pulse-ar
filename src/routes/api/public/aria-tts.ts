@@ -76,7 +76,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
-        const text = parsed.data.text;
+        const text = await diacritizeForTts(parsed.data.text);
         if (lovableKey) {
           try {
             const gatewayAudio = await synthesizeWithGateway(text, lovableKey);
