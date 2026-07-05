@@ -16,8 +16,8 @@ import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
-import { HeroChromeWordmark } from "@/components/executive/HeroChromeWordmark";
-import heroVideo from "@/assets/hero-assembly-video.mp4.asset.json";
+import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
+import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
@@ -56,8 +56,6 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
-  const [heroReady, setHeroReady] = useState(false);
-  const [heroReplay, setHeroReplay] = useState(0);
   const { speak } = useAriaSpeech();
 
   const replayGreeting = () => {
@@ -92,6 +90,8 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+      <NexiosGenesisIntro />
+
 
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
           at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
@@ -113,19 +113,6 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
       >
-        {/* Hero-only cinematic background video (pre-system landing hero) */}
-        <video
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-[1] h-full w-full object-cover opacity-40 mix-blend-screen"
-          src={heroVideo.url}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        />
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-[1] bg-gradient-to-b from-[#04070F]/40 via-transparent to-[#04070F]" />
-
         <div
           className="mx-auto flex w-full max-w-[420px] flex-col items-center sm:max-w-2xl"
           style={{
@@ -133,33 +120,13 @@ function IntroLanding() {
             willChange: "transform, opacity",
           }}
         >
-          {/* Cinematic Chrome Assembly wordmark */}
+          {/* Static assembled NEXIOS wordmark — glowing chrome */}
           <div className="relative mb-6 w-full">
-            <HeroChromeWordmark
-              onAssembled={() => setHeroReady(true)}
-              replayToken={heroReplay}
-            />
-            <button
-              type="button"
-              onClick={() => setHeroReplay((n) => n + 1)}
-              aria-label={ar ? "إعادة التشغيل مع الصوت" : "Replay with sound"}
-              className="absolute bottom-0 right-0 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-gradient-to-b from-white/15 to-white/[0.02] text-white/80 backdrop-blur-sm transition hover:border-white/50 hover:text-white active:scale-95 rtl:right-auto rtl:left-0"
-            >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
-                <path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.23v2.06A7 7 0 0 1 14 18.7v2.06a9 9 0 0 0 0-17.54z" />
-              </svg>
-            </button>
+            <NexiosWordmark />
           </div>
 
-          {/* Bilingual headline (fades up after assembly) */}
-          <h1
-            className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl"
-            style={{
-              opacity: heroReady ? 1 : 0,
-              transform: heroReady ? "translateY(0)" : "translateY(8px)",
-              transition: "opacity 400ms ease-out, transform 400ms ease-out",
-            }}
-          >
+          {/* Bilingual headline */}
+          <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
             {ar ? (
               <>
                 الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
@@ -178,6 +145,7 @@ function IntroLanding() {
               </>
             )}
           </h1>
+
 
           {/* Primary + secondary CTAs */}
           <div className="flex w-full flex-col gap-3">
