@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import * as React from "react";
 import { z } from "zod";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import ariaMotionAsset from "@/assets/bridge-aria-motion.mp4.asset.json";
+import narrationAsset from "@/assets/bridge-narration.mp3.asset.json";
 
 export const Route = createFileRoute("/executive-bridge")({
   validateSearch: (s) => z.object({ p: z.coerce.number().int().min(0).max(6).optional() }).parse(s),
@@ -14,6 +17,8 @@ export const Route = createFileRoute("/executive-bridge")({
   }),
   component: ExecutiveBridgePage,
 });
+
+const NARRATION_SECONDS = 99;
 
 /* ─────────── Content ─────────── */
 
@@ -75,7 +80,7 @@ const PARTS: Part[] = [
   },
 ];
 
-const AUTO_MS = 12_000; // ≤ 90s, comfortable pace
+
 
 /* ─────────── Page ─────────── */
 
@@ -84,9 +89,14 @@ function ExecutiveBridgePage() {
   const navigate = useNavigate({ from: "/executive-bridge" });
   const initial = Math.min(Math.max(search.p ?? 0, 0), PARTS.length - 1);
   const [idx, setIdx] = React.useState(initial);
-  const [playing, setPlaying] = React.useState(true);
+  const [playing, setPlaying] = React.useState(false);
+  const [started, setStarted] = React.useState(false);
+  const [speaking, setSpeaking] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const reduced = usePrefersReducedMotion();
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const partSeconds = NARRATION_SECONDS / PARTS.length;
 
   // Deep link sync
   React.useEffect(() => {
@@ -96,38 +106,84 @@ function ExecutiveBridgePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx]);
 
-  // Auto-advance progress
+  // Drive part index from narration currentTime while playing
   React.useEffect(() => {
-    if (!playing || reduced) return;
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / AUTO_MS);
-      setProgress(t);
-      if (t >= 1) {
-        setIdx((i) => (i + 1) % PARTS.length);
-        setProgress(0);
-      } else {
-        raf = requestAnimationFrame(tick);
-      }
+    const a = audioRef.current;
+    if (!a || !playing) return;
+    const onTime = () => {
+      const t = a.currentTime;
+      const next = Math.min(PARTS.length - 1, Math.floor(t / partSeconds));
+      setIdx((cur) => (cur === next ? cur : next));
+      const withinPart = (t % partSeconds) / partSeconds;
+      setProgress(withinPart);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [playing, idx, reduced]);
+    const onEnd = () => {
+      setPlaying(false);
+      setSpeaking(false);
+      setProgress(1);
+    };
+    const onPlay = () => setSpeaking(true);
+    const onPause = () => setSpeaking(false);
+    a.addEventListener("timeupdate", onTime);
+    a.addEventListener("ended", onEnd);
+    a.addEventListener("play", onPlay);
+    a.addEventListener("pause", onPause);
+    return () => {
+      a.removeEventListener("timeupdate", onTime);
+      a.removeEventListener("ended", onEnd);
+      a.removeEventListener("play", onPlay);
+      a.removeEventListener("pause", onPause);
+    };
+  }, [playing, partSeconds]);
+
+  const start = React.useCallback(async () => {
+    if (started) return;
+    // Ensure exclusive voice channel
+    try { AriaAudioBus.unlock(); AriaAudioBus.stopAll(); } catch { /* noop */ }
+    setStarted(true);
+    const a = audioRef.current;
+    const v = videoRef.current;
+    if (v) { try { await v.play(); } catch { /* muted autoplay should work */ } }
+    if (reduced) return;
+    if (a) {
+      try {
+        a.currentTime = 0;
+        await a.play();
+        setPlaying(true);
+      } catch { /* gesture required — user can tap play */ }
+    }
+  }, [started, reduced]);
+
+  const pauseNarration = React.useCallback(() => {
+    const a = audioRef.current;
+    if (a && !a.paused) a.pause();
+    setPlaying(false);
+  }, []);
+
+  const resumeNarration = React.useCallback(async () => {
+    const a = audioRef.current;
+    if (!a) return;
+    try { await a.play(); setPlaying(true); } catch { /* noop */ }
+  }, []);
+
+  const goTo = React.useCallback((next: number) => {
+    setIdx(((next % PARTS.length) + PARTS.length) % PARTS.length);
+    pauseNarration();
+  }, [pauseNarration]);
 
   // Keyboard
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") setIdx((i) => (i + 1) % PARTS.length);
-      else if (e.key === "ArrowLeft") setIdx((i) => (i - 1 + PARTS.length) % PARTS.length);
+      if (e.key === "ArrowRight") goTo(idx + 1);
+      else if (e.key === "ArrowLeft") goTo(idx - 1);
       else if (e.key === " ") {
         e.preventDefault();
-        setPlaying((p) => !p);
+        playing ? pauseNarration() : (started ? resumeNarration() : start());
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [idx, playing, started, start, goTo, pauseNarration, resumeNarration]);
 
   // Parallax pointer
   const [px, setPx] = React.useState(0.5);
@@ -138,12 +194,59 @@ function ExecutiveBridgePage() {
     return () => window.removeEventListener("pointermove", onMove);
   }, [reduced]);
 
-  const overallProgress = ((idx + (playing ? progress : 0)) / PARTS.length) * 100;
+  // Hard-stop everything on unmount / page hide
+  React.useEffect(() => {
+    const stopAll = () => {
+      const a = audioRef.current; const v = videoRef.current;
+      if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+      if (v) { try { v.pause(); } catch { /* noop */ } }
+      try { AriaAudioBus.stopAll(); } catch { /* noop */ }
+    };
+    window.addEventListener("pagehide", stopAll);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") stopAll(); });
+    return () => {
+      window.removeEventListener("pagehide", stopAll);
+      stopAll();
+    };
+  }, []);
+
+  const overallProgress = ((idx + progress) / PARTS.length) * 100;
 
   return (
     <div dir="rtl" lang="ar" className="fixed inset-0 z-[100] overflow-hidden bg-[#03111f] text-white select-none">
+      {/* ARIA muted motion backdrop */}
+      <video
+        ref={videoRef}
+        src={ariaMotionAsset.url}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        autoPlay={!reduced}
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-700"
+        style={{ opacity: speaking ? 0.7 : 0.5, filter: "saturate(1.05) contrast(1.05)" }}
+      />
+      {/* Narration audio (hidden) */}
+      <audio ref={audioRef} src={narrationAsset.url} preload="auto" playsInline />
+
       <SkylineBackground px={px} reduced={reduced} accent={PARTS[idx].accent} />
       <Scrim />
+
+      {/* Start gate — needed for autoplay-with-sound */}
+      {!started && !reduced && (
+        <button
+          type="button"
+          onClick={start}
+          className="absolute inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-[#03111f]/70 backdrop-blur-sm"
+        >
+          <span className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#F5C560]">اضغط لبدء العرض</span>
+          <span className="flex h-20 w-20 items-center justify-center rounded-full border border-[#F5C560]/60 bg-black/50 text-3xl text-white shadow-[0_0_40px_rgba(245,197,96,0.45)]">▶</span>
+          <span className="max-w-md px-6 text-center text-[15px] font-semibold text-white/85">
+            ابدأ العرض — تروي «آريا» جسر القيادة التنفيذي فوق أفق الرياض
+          </span>
+        </button>
+      )}
 
       {/* Top bar: progress + brand */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between px-5 pt-4 sm:px-8 sm:pt-6">
@@ -179,17 +282,20 @@ function ExecutiveBridgePage() {
               key={i}
               type="button"
               aria-label={`الجزء ${i + 1}`}
-              onClick={() => setIdx(i)}
+              onClick={() => goTo(i)}
               className={`h-2 rounded-full transition-all ${i === idx ? "w-8 bg-[#F5C560] shadow-[0_0_10px_#F5C560]" : "w-2 bg-white/30 hover:bg-white/60"}`}
             />
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <ControlBtn onClick={() => setIdx((i) => (i - 1 + PARTS.length) % PARTS.length)} label="السابق">‹</ControlBtn>
-          <ControlBtn onClick={() => setPlaying((p) => !p)} label={playing ? "إيقاف" : "تشغيل"}>
+          <ControlBtn onClick={() => goTo(idx - 1)} label="السابق">‹</ControlBtn>
+          <ControlBtn
+            onClick={() => (playing ? pauseNarration() : (started ? resumeNarration() : start()))}
+            label={playing ? "إيقاف" : "تشغيل"}
+          >
             {playing ? "❚❚" : "▶"}
           </ControlBtn>
-          <ControlBtn onClick={() => setIdx((i) => (i + 1) % PARTS.length)} label="التالي">›</ControlBtn>
+          <ControlBtn onClick={() => goTo(idx + 1)} label="التالي">›</ControlBtn>
           <a
             href="/"
             className="ml-2 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur transition hover:border-[#F5C560]/70 hover:text-white"
