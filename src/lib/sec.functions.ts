@@ -499,7 +499,7 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
           .not("status", "in", "(resolved,closed)");
         return count ?? 0;
       })(),
-      countIn("sec_work_orders", "status", ["open", "in_progress", "assigned", "scheduled"]),
+      countIn("sec_work_orders", "status", ["open", "in-progress", "assigned", "scheduled"]),
       countIn("sec_projects", "status", ["in-progress"]),
       countIn("sec_permits", "status", ["active", "approved"]),
       (async () => {
