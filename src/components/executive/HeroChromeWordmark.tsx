@@ -65,11 +65,18 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
   const [phase, setPhase] = useState<"scatter" | "assembling" | "done">(
     reducedMotion ? "done" : "scatter",
   );
+  const [needsUnmute, setNeedsUnmute] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (reducedMotion) { onAssembled?.(); return; }
+    // Auto-play from the start of the hero. Try unmuted first; if the browser
+    // blocks (no prior gesture), fall back to muted autoplay and surface a
+    // one-tap unmute chip so sound still starts as early as possible.
+    void autoplayAudio(audioRef).then((state) => {
+      if (state === "muted-fallback") setNeedsUnmute(true);
+    });
     const t1 = window.setTimeout(() => setPhase("assembling"), T_SCATTER_END);
     const t2 = window.setTimeout(() => setPhase("done"), T_ASSEMBLE_END);
     const t3 = window.setTimeout(() => onAssembled?.(), T_TOTAL);
@@ -78,15 +85,23 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
 
   useEffect(() => {
     if (!replayToken) return;
-    if (reducedMotion) { void playAudio(audioRef); return; }
+    if (reducedMotion) { void playAudio(audioRef); setNeedsUnmute(false); return; }
     scatterRef.current = makeScatter(letters.length, isMobile);
     setPhase("scatter");
     void playAudio(audioRef);
+    setNeedsUnmute(false);
     const t1 = window.setTimeout(() => setPhase("assembling"), T_SCATTER_END);
     const t2 = window.setTimeout(() => setPhase("done"), T_ASSEMBLE_END);
     const t3 = window.setTimeout(() => onAssembled?.(), T_TOTAL);
     return () => { window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3); };
   }, [replayToken, isMobile, letters.length, onAssembled, reducedMotion]);
+
+  const handleUnmute = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    try { a.muted = false; a.volume = 0.9; void a.play(); } catch { /* noop */ }
+    setNeedsUnmute(false);
+  };
 
   useEffect(() => {
     return () => {
