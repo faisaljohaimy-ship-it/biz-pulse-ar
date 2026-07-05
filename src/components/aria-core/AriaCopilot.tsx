@@ -165,6 +165,70 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
 }
 
 
+/** Desktop-only ARIA figure column — full opacity beside the chat panel.
+ *  Reuses the AriaVideoAvatar so the audio bus drives motion identically. */
+function AriaSideFigure() {
+  const state = useAriaPresenceState();
+  const speaking = state === "speaking";
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-[#04070F]">
+      <div
+        className="absolute inset-0 pointer-events-none motion-reduce:hidden transition-opacity duration-300"
+        style={{
+          opacity: speaking ? 1 : 0,
+          background:
+            "radial-gradient(ellipse at 50% 45%, rgba(16,185,129,0.35) 0%, rgba(16,185,129,0.10) 45%, transparent 72%)",
+          filter: "blur(28px)",
+        }}
+        aria-hidden
+      />
+      <AriaVideoAvatar
+        poster={STILL_SRC}
+        className="absolute inset-0"
+        mediaStyle={{ objectFit: "contain", objectPosition: "center bottom" }}
+        active
+      />
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300",
+          speaking ? "opacity-100" : "opacity-0",
+        )}
+        style={{ boxShadow: "inset 0 0 0 1px rgba(16,185,129,0.5), inset 0 0 60px rgba(16,185,129,0.25)" }}
+        aria-hidden
+      />
+    </div>
+  );
+}
+
+/** Compact top avatar for mobile — 96px circle above the messages. */
+function AriaTopAvatar() {
+  const state = useAriaPresenceState();
+  const speaking = state === "speaking";
+  return (
+    <div className="relative z-10 flex justify-center pt-2 pb-1 lg:hidden">
+      <div
+        className={cn(
+          "relative h-24 w-24 overflow-hidden rounded-full border bg-[#04070F] transition-all duration-300",
+          speaking
+            ? "border-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.55)]"
+            : "border-primary/40",
+        )}
+      >
+        <AriaVideoAvatar
+          poster={STILL_SRC}
+          className="absolute inset-0"
+          mediaStyle={{ objectFit: "cover", objectPosition: "center 20%" }}
+          active
+        />
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
 export function AriaCopilot() {
   const { chat, composerRef } = useAriaChat();
   const mode = useAriaStore((s) => s.mode);
