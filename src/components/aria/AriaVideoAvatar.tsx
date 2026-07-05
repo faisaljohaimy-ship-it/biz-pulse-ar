@@ -77,7 +77,7 @@ export function AriaVideoAvatar({
         startMotionAt(t, audioElRef.current);
       }
       // eslint-disable-next-line no-console
-      console.log("[aria-motion] decoder primed");
+      console.log("[aria-sync] decoder primed");
     }).catch(() => {
       // Autoplay policy still blocks — will retry on next gesture.
       primedRef.current = false;
@@ -112,7 +112,7 @@ export function AriaVideoAvatar({
     const onPlaying = () => {
       const dt = Math.round(performance.now() - audioPlayingT);
       // eslint-disable-next-line no-console
-      console.log(`[aria-motion] Δ=${dt}ms`);
+      console.log(`[aria-sync] Δ=${dt}ms`);
       v.removeEventListener("playing", onPlaying);
     };
     v.addEventListener("playing", onPlaying);
