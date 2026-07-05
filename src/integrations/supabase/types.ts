@@ -365,6 +365,54 @@ export type Database = {
           },
         ]
       }
+      aria_evolution_cycles: {
+        Row: {
+          applied_count: number
+          created_at: string
+          critical_count: number
+          decision: string
+          deferred_count: number
+          finished_at: string
+          id: string
+          issues_count: number
+          readiness_score: number
+          reasons: string[]
+          report: Json
+          started_at: string
+          trigger: string
+        }
+        Insert: {
+          applied_count?: number
+          created_at?: string
+          critical_count?: number
+          decision: string
+          deferred_count?: number
+          finished_at: string
+          id?: string
+          issues_count?: number
+          readiness_score?: number
+          reasons?: string[]
+          report: Json
+          started_at: string
+          trigger: string
+        }
+        Update: {
+          applied_count?: number
+          created_at?: string
+          critical_count?: number
+          decision?: string
+          deferred_count?: number
+          finished_at?: string
+          id?: string
+          issues_count?: number
+          readiness_score?: number
+          reasons?: string[]
+          report?: Json
+          started_at?: string
+          trigger?: string
+        }
+        Relationships: []
+      }
       aria_knowledge: {
         Row: {
           content: string
