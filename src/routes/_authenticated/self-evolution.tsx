@@ -1,16 +1,16 @@
 // ARIA Self-Evolution — Operator UI (analyze-only report renderer).
 // Bilingual AR/EN. No autonomous mutations. Full-sweep readout.
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, CheckCircle2, XCircle, AlertTriangle, RotateCcw, ShieldCheck } from "lucide-react";
+import { Activity, CheckCircle2, XCircle, AlertTriangle, RotateCcw, ShieldCheck, History } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { runSelfEvolutionFn } from "@/lib/self-evolution.functions";
+import { runSelfEvolutionFn, listEvolutionCyclesFn } from "@/lib/self-evolution.functions";
 
 export const Route = createFileRoute("/_authenticated/self-evolution")({
   component: SelfEvolutionPage,
