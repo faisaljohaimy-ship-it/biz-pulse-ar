@@ -16,7 +16,7 @@ export function AriaGlobalBackdrop() {
   const state = useAriaPresenceState();
 
   const mediaOpacity =
-    state === "speaking" ? 0.62 : state === "listening" ? 0.5 : 0.45;
+    state === "speaking" ? 0.62 : state === "listening" ? 0.5 : 0.38;
 
   return (
     <div
