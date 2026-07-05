@@ -65,13 +65,37 @@ function severityTone(sev: string) {
   return "bg-slate-500/15 text-slate-300 border-slate-500/40";
 }
 
+type CycleRow = {
+  id: string;
+  started_at: string;
+  finished_at: string;
+  trigger: "cron" | "manual" | "bootstrap";
+  decision: EvolutionReport["decision"];
+  readiness_score: number;
+  issues_count: number;
+  critical_count: number;
+  applied_count: number;
+  deferred_count: number;
+  reasons: string[];
+};
+
 function SelfEvolutionPage() {
   const run = useServerFn(runSelfEvolutionFn);
-  const q = useQuery({
-    queryKey: ["self-evolution"],
-    queryFn: async () => (await run({ data: { enableApply: false } })) as unknown as EvolutionReport,
-    staleTime: 30_000,
+  const list = useServerFn(listEvolutionCyclesFn);
+  const qc = useQueryClient();
+
+  const cycles = useQuery({
+    queryKey: ["evolution-cycles"],
+    queryFn: async () => (await list({ data: { limit: 25 } })).cycles as CycleRow[],
+    staleTime: 15_000,
   });
+
+  const cycle = useMutation({
+    mutationFn: async () => (await run({ data: { enableApply: false, persist: true } })) as { report: EvolutionReport; persistedId: string | null; persistError: string | null },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["evolution-cycles"] }),
+  });
+
+  const report = cycle.data?.report;
 
   return (
     <div className="space-y-6 p-4 md:p-6" dir="ltr">
@@ -80,15 +104,46 @@ function SelfEvolutionPage() {
         subtitle="Continuous engineering loop — analyze → plan → validate → benchmark → report. Analyze-only mode."
         icon={ShieldCheck}
         actions={
-          <Button size="sm" variant="secondary" onClick={() => q.refetch()} disabled={q.isFetching}>
-            <RotateCcw className={`h-4 w-4 mr-1.5 ${q.isFetching ? "animate-spin" : ""}`} />
+          <Button size="sm" variant="secondary" onClick={() => cycle.mutate()} disabled={cycle.isPending}>
+            <RotateCcw className={`h-4 w-4 mr-1.5 ${cycle.isPending ? "animate-spin" : ""}`} />
             Run cycle / تشغيل دورة
           </Button>
         }
       />
 
-      {q.isLoading && <Card className="glass-card p-4 text-sm text-slate-300">Running engineering loop… / جارٍ تنفيذ الدورة…</Card>}
-      {q.error && <Card className="glass-card p-4 text-sm text-rose-300">Failed to run engine: {(q.error as Error).message}</Card>}
+      {cycle.isPending && <Card className="glass-card p-4 text-sm text-slate-300">Running engineering loop… / جارٍ تنفيذ الدورة…</Card>}
+      {cycle.error && <Card className="glass-card p-4 text-sm text-rose-300">Failed to run engine: {(cycle.error as Error).message}</Card>}
+      {cycle.data?.persistError && <Card className="glass-card p-4 text-sm text-amber-300">Persist warning: {cycle.data.persistError}</Card>}
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-1.5"><History className="h-3.5 w-3.5" /> Cycle history / سجل الدورات</h2>
+        <Card className="glass-card p-4">
+          {cycles.isLoading ? (
+            <div className="text-xs text-slate-400">Loading history…</div>
+          ) : (cycles.data?.length ?? 0) === 0 ? (
+            <div className="text-xs text-slate-400">No cycles yet. Run one above or wait for the cron tick. / لا توجد دورات بعد.</div>
+          ) : (
+            <ul className="space-y-1.5">
+              {cycles.data!.map((c) => (
+                <li key={c.id} className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline" className={`text-[10px] uppercase ${decisionTone(c.decision)}`}>{c.decision}</Badge>
+                  <span className="text-slate-400 tabular-nums">{new Date(c.started_at).toLocaleString()}</span>
+                  <span className="text-slate-500">·</span>
+                  <span className="text-slate-300">{Math.round(c.readiness_score * 100)}%</span>
+                  <span className="text-slate-500">·</span>
+                  <span className="text-slate-300">issues {c.issues_count}{c.critical_count > 0 && <span className="text-rose-300"> ({c.critical_count} crit)</span>}</span>
+                  <span className="text-slate-500">·</span>
+                  <span className="text-slate-400">{c.trigger}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </section>
+
+      {report && (
+        <>
+
 
       {q.data && (
         <>
