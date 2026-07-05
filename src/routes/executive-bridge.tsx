@@ -80,7 +80,7 @@ const PARTS: Part[] = [
   },
 ];
 
-const AUTO_MS = 12_000; // ≤ 90s, comfortable pace
+
 
 /* ─────────── Page ─────────── */
 
