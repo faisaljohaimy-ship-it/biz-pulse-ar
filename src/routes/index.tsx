@@ -17,6 +17,7 @@ import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { HeroChromeWordmark } from "@/components/executive/HeroChromeWordmark";
+import heroVideo from "@/assets/hero-assembly-video.mp4.asset.json";
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
@@ -112,6 +113,19 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
       >
+        {/* Hero-only cinematic background video (pre-system landing hero) */}
+        <video
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-[1] h-full w-full object-cover opacity-40 mix-blend-screen"
+          src={heroVideo.url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-[1] bg-gradient-to-b from-[#04070F]/40 via-transparent to-[#04070F]" />
+
         <div
           className="mx-auto flex w-full max-w-[420px] flex-col items-center sm:max-w-2xl"
           style={{
