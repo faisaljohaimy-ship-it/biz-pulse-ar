@@ -66,13 +66,11 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
   const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
-  let utterance: SpeechSynthesisUtterance | null = null;
   let raf = 0;
 
   const stop = () => {
     stopped = true;
     try { source?.stop(); } catch { /* already stopped */ }
-    try { if (utterance && "speechSynthesis" in window) window.speechSynthesis.cancel(); } catch { /* noop */ }
     cancelAnimationFrame(raf);
     opts.onAmplitude?.(0);
   };
