@@ -555,11 +555,11 @@ function IntegrationRow({ label, connected, fallback }: { label: string; connect
 /* ─────────── risk center ─────────── */
 
 function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
-  const { rows } = useLiveRows<{ id: string; title: string; severity: string; created_at: string }>(
+  const { rows } = useLiveRows<{ id: string; title_ar: string | null; severity: string; created_at: string }>(
     "sec_incidents",
     (q) =>
       q
-        .select("id, title, severity, created_at")
+        .select("id, title_ar, severity, created_at")
         .in("severity", ["high", "critical"])
         .neq("status", "closed")
         .order("created_at", { ascending: false })
@@ -578,7 +578,7 @@ function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
         {rows.map((r) => (
           <div key={r.id} className="flex items-start justify-between gap-2 rounded border border-rose-500/20 bg-rose-500/5 px-2 py-1.5">
             <div className="min-w-0">
-              <div className="text-xs text-foreground truncate">{r.title}</div>
+              <div className="text-xs text-foreground truncate">{r.title_ar ?? "حادثة"}</div>
               <div className="text-[10px] text-muted-foreground">{relTime(r.created_at)} ago</div>
             </div>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-rose-400 border-rose-500/40">
@@ -618,11 +618,11 @@ function DigitalTwinPanel({ kpis }: { kpis: KpiShape }) {
 /* ─────────── notifications ─────────── */
 
 function NotificationCenterPanel() {
-  const { rows } = useLiveRows<{ id: string; title: string | null; severity: string | null; created_at: string }>(
+  const { rows } = useLiveRows<{ id: string; alert_type: string; camera_code: string; status: string | null; created_at: string }>(
     "sec_cctv_alerts",
     (q) =>
       q
-        .select("id, title, severity, created_at")
+        .select("id, alert_type, camera_code, status, created_at")
         .order("created_at", { ascending: false })
         .limit(5),
   );
@@ -638,9 +638,9 @@ function NotificationCenterPanel() {
       <div className="space-y-1.5">
         {rows.map((n) => (
           <div key={n.id} className="rounded border border-border/40 bg-background/40 px-2 py-1.5">
-            <div className="text-[11px] text-foreground truncate">{n.title ?? "Alert"}</div>
+            <div className="text-[11px] text-foreground truncate">{n.alert_type} · {n.camera_code}</div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-              <span>{n.severity ?? "info"}</span>
+              <span>{n.status ?? "new"}</span>
               <span>{relTime(n.created_at)} ago</span>
             </div>
           </div>
