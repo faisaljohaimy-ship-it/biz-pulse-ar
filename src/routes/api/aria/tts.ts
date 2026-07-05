@@ -11,6 +11,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 
 const DEFAULT_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5"; // ARIA canonical — Layan (The Professional, ar-SA)
 const MAX_CHARS = 600;
