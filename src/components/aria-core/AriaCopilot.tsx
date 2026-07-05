@@ -281,11 +281,22 @@ export function AriaCopilot() {
   // On unmount / panel close, drop to idle.
   useEffect(() => () => { ariaState.set("idle"); }, []);
 
-  // Health probe on panel open
+  // Health probe on panel open + TTS/ElevenLabs TLS preconnect warmup so the
+  // first sentence audio round-trip pays zero TLS handshake latency.
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    if (typeof document !== "undefined") {
+      const heads: HTMLLinkElement[] = [];
+      for (const href of [window.location.origin, "https://api.elevenlabs.io"]) {
+        const l = document.createElement("link");
+        l.rel = "preconnect"; l.href = href; l.crossOrigin = "";
+        document.head.appendChild(l);
+        heads.push(l);
+      }
+      return () => { cancelled = true; heads.forEach((h) => h.remove()); };
+    }
     return () => { cancelled = true; };
   }, [isOpen]);
 
