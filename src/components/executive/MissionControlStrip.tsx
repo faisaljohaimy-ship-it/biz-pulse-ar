@@ -110,7 +110,9 @@ export function MissionControlStrip() {
     ] as const;
   }, [k, ar]);
 
-  return (
+  if (!allReady) return null;
+  const failed = false;
+
     <section aria-label="Mission Control live KPIs" className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6">
       <div className="mb-3 flex items-center justify-between">
         <div>
