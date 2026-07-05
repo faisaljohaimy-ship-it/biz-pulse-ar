@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import * as React from "react";
 import { z } from "zod";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import ariaMotionAsset from "@/assets/bridge-aria-motion.mp4.asset.json";
+import narrationAsset from "@/assets/bridge-narration.mp3.asset.json";
 
 export const Route = createFileRoute("/executive-bridge")({
   validateSearch: (s) => z.object({ p: z.coerce.number().int().min(0).max(6).optional() }).parse(s),
@@ -14,6 +17,8 @@ export const Route = createFileRoute("/executive-bridge")({
   }),
   component: ExecutiveBridgePage,
 });
+
+const NARRATION_SECONDS = 99;
 
 /* ─────────── Content ─────────── */
 
