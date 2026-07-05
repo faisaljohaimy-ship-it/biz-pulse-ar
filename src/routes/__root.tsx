@@ -196,7 +196,7 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <AriaProvider>
-                {!isPromo && <AriaGlobalBackdrop />}
+                {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
                 <BetaMarqueeBar />
                 <div className="relative z-10">
                   <Outlet />
