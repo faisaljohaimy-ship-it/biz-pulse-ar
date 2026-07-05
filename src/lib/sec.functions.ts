@@ -507,7 +507,7 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
           .from("sec_work_orders")
           .select("*", { count: "exact", head: true })
           .eq("kind", "preventive")
-          .in("status", ["open", "scheduled", "assigned", "in_progress"]);
+          .in("status", ["open", "scheduled", "assigned", "in-progress"]);
         return count ?? 0;
       })(),
     ]);
