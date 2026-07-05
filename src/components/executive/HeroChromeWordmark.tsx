@@ -129,7 +129,18 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
       role="img"
       style={{ perspective: "1400px" }}
     >
-      <audio ref={audioRef} src={AUDIO_SRC} preload="none" playsInline />
+      <audio ref={audioRef} src={AUDIO_SRC} preload="auto" playsInline autoPlay />
+      {needsUnmute && (
+        <button
+          type="button"
+          onClick={handleUnmute}
+          className="hero-chrome-unmute"
+          aria-label="Enable sound"
+        >
+          <span aria-hidden>🔊</span>
+          <span>Tap for sound</span>
+        </button>
+      )}
 
       {/* Ember / forge glow behind the wordmark. */}
       <div className={`hero-chrome-forge hero-chrome-forge--${phase}`} aria-hidden />
