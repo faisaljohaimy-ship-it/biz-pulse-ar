@@ -54,6 +54,26 @@ function stopWatchdog() {
 // and any component re-registration. The ONLY way to reset is a full reload.
 let greetingPlayedThisSession = false;
 
+// ── Runtime assertion: browser SpeechSynthesis is ONLY legal in Greeting
+// Mode. Any speak() while chat-tts owns the channel (or no greeting owns
+// it) throws immediately, naming the offender via stack trace.
+if (typeof window !== "undefined" && window.speechSynthesis) {
+  const nativeSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+  window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+    const owner = current?.source ?? null;
+    const isGreeting = owner === "hero-greeting" || owner === "panel-greeting";
+    if (!isGreeting) {
+      const err = new Error(
+        `[aria-voice] ASSERTION: browser SpeechSynthesis invoked outside Greeting Mode (owner=${owner ?? "none"})`,
+      );
+      console.error(err);
+      throw err;
+    }
+    console.log("[aria-voice] speechSynthesis.speak allowed (greeting mode)", { owner });
+    return nativeSpeak(u);
+  };
+}
+
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
   unlock() {
