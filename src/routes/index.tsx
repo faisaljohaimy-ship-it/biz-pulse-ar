@@ -120,11 +120,21 @@ function IntroLanding() {
           }}
         >
           {/* Cinematic Chrome Assembly wordmark */}
-          <div className="mb-6 w-full">
+          <div className="relative mb-6 w-full">
             <HeroChromeWordmark
               onAssembled={() => setHeroReady(true)}
               replayToken={heroReplay}
             />
+            <button
+              type="button"
+              onClick={() => setHeroReplay((n) => n + 1)}
+              aria-label={ar ? "إعادة التشغيل مع الصوت" : "Replay with sound"}
+              className="absolute bottom-0 right-0 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-gradient-to-b from-white/15 to-white/[0.02] text-white/80 backdrop-blur-sm transition hover:border-white/50 hover:text-white active:scale-95 rtl:right-auto rtl:left-0"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
+                <path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.23v2.06A7 7 0 0 1 14 18.7v2.06a9 9 0 0 0 0-17.54z" />
+              </svg>
+            </button>
           </div>
 
           {/* Bilingual headline (fades up after assembly) */}
