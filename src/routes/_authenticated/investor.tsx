@@ -618,11 +618,11 @@ function DigitalTwinPanel({ kpis }: { kpis: KpiShape }) {
 /* ─────────── notifications ─────────── */
 
 function NotificationCenterPanel() {
-  const { rows } = useLiveRows<{ id: string; title: string | null; severity: string | null; created_at: string }>(
+  const { rows } = useLiveRows<{ id: string; alert_type: string; camera_code: string; status: string | null; created_at: string }>(
     "sec_cctv_alerts",
     (q) =>
       q
-        .select("id, title, severity, created_at")
+        .select("id, alert_type, camera_code, status, created_at")
         .order("created_at", { ascending: false })
         .limit(5),
   );
@@ -638,9 +638,9 @@ function NotificationCenterPanel() {
       <div className="space-y-1.5">
         {rows.map((n) => (
           <div key={n.id} className="rounded border border-border/40 bg-background/40 px-2 py-1.5">
-            <div className="text-[11px] text-foreground truncate">{n.title ?? "Alert"}</div>
+            <div className="text-[11px] text-foreground truncate">{n.alert_type} · {n.camera_code}</div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-              <span>{n.severity ?? "info"}</span>
+              <span>{n.status ?? "new"}</span>
               <span>{relTime(n.created_at)} ago</span>
             </div>
           </div>
