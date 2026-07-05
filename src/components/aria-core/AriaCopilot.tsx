@@ -329,8 +329,14 @@ export function AriaCopilot() {
           authed: !!token,
         });
         if (!r.ok) {
-          console.warn(`[aria-queue] segment ${idx} http_${r.status} — skipped`);
-          AriaVoiceDebug.emit({ source: "browser", reason: `tts_http_${r.status}_seg_${idx}`, status: r.status, failed: true });
+          let reason = "";
+          try {
+            const j = await r.clone().json() as { providerStatus?: string; providerReason?: string; error?: string };
+            reason = j.providerStatus ? `${j.providerStatus}:${j.providerReason ?? ""}` : (j.providerReason ?? j.error ?? "");
+          } catch { /* non-JSON */ }
+          VoiceTimeline.push("TTS_RES", `[${idx}] FAIL ${r.status} ${reason.slice(0, 160)}`, { idx, status: r.status, reason });
+          console.warn(`[aria-queue] segment ${idx} http_${r.status} ${reason} — skipped`);
+          AriaVoiceDebug.emit({ source: "browser", reason: `tts_http_${r.status}_seg_${idx}:${reason}`, status: r.status, failed: true });
           return null;
         }
         const blob = await r.blob();
