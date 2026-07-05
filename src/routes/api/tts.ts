@@ -3,6 +3,7 @@ import { z } from "zod";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError, toApiErrorShape } from "@/lib/api";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
