@@ -57,21 +57,23 @@ export const Route = createFileRoute("/api/tts")({
           ? text
           : text.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
 
-        const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
+        // FAST-PATH: eleven_flash_v2_5 + mp3_22050_32 + optimize_streaming_latency=3
+        // — cuts TTFB by ~50% vs multilingual_v2/mp3_44100_128 for the demo path.
+        const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_22050_32&optimize_streaming_latency=3`;
         try {
           const r = await httpFetch(url, {
             method: "POST",
             headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
             body: JSON.stringify({
               text: cleanText,
-              model_id: "eleven_multilingual_v2",
+              model_id: "eleven_flash_v2_5",
               voice_settings: ARIA_VOICE_SETTINGS,
-
             }),
             label: "elevenlabs/tts",
             timeoutMs: 30_000,
             retries: 1,
           });
+
 
           if (!r.ok) {
             const err = await r.text().catch(() => "");
