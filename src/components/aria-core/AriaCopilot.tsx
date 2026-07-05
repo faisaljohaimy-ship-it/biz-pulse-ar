@@ -101,19 +101,11 @@ function sanitiseAssistantText(raw: string): string {
   return t.trim();
 }
 
-/** Full-panel ARIA backdrop — living video avatar driven by the
- *  AriaAudioBus (idle / speaking / greeting). Reduced-motion or a
- *  video load failure falls back to the static image. */
+/** Panel backdrop — dark surface with an optional emerald aurora when in
+ *  conversation mode. The figure lives ONLY in the top-circle avatar; no
+ *  full-panel video variant, so placement stays identical across breakpoints. */
 function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: string | null }) {
   const state = useAriaPresenceState();
-  const mode = useAriaStore((s) => s.mode);
-  const active = mode !== "collapsed";
-  const attentive = state === "listening";
-  // Conversation Mode brings ARIA to the foreground.
-  const figureOpacity = convMode ? 0.85 : 0.45;
-  const figureTransform = convMode
-    ? `scale(1.08) translateY(-2%)`
-    : attentive ? `scale(1.02)` : `scale(1)`;
   return (
     <div
       aria-hidden
@@ -123,50 +115,23 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
       style={{ background: "#04070F" }}
     >
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
-      {/* Emerald aurora — only in conversation mode */}
       {convMode && (
         <div
-          className="absolute left-1/2 top-[42%] h-[80%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
+          className="absolute left-1/2 top-[30%] h-[60%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(16,185,129,0.28) 0%, rgba(16,185,129,0.10) 40%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(16,185,129,0.22) 0%, rgba(16,185,129,0.08) 40%, transparent 70%)",
             filter: "blur(24px)",
           }}
         />
       )}
-      <div
-        className="aria-figure absolute inset-0 transition-all duration-[600ms] ease-out motion-reduce:transition-opacity"
-        style={{ opacity: figureOpacity, transform: figureTransform }}
-      >
-        <AriaVideoAvatar
-          poster={STILL_SRC}
-          className="absolute inset-0"
-          mediaStyle={{ objectFit: "contain", objectPosition: "center top" }}
-          active={active}
-        />
-        <div className="aria-shimmer" aria-hidden />
-      </div>
-      {/* Emerald attention ring while listening/typing */}
-      <div
-        className={`pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300 ${attentive ? "opacity-100" : "opacity-0"}`}
-        style={{ boxShadow: "inset 0 0 0 1px rgba(16,185,129,0.55), inset 0 0 40px rgba(16,185,129,0.25)" }}
-      />
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: convMode
-            ? "linear-gradient(180deg, rgba(4,7,15,0.35) 0%, rgba(4,7,15,0.15) 45%, rgba(4,7,15,0.85) 82%, rgba(4,7,15,0.96) 100%)"
-            : "linear-gradient(180deg, rgba(4,7,15,0.60) 0%, rgba(4,7,15,0.30) 40%, rgba(4,7,15,0.75) 78%, rgba(4,7,15,0.94) 100%)",
-        }}
-      />
-      {/* Live state caption — only in conversation mode */}
       {convMode && caption && (
-        <div className="absolute inset-x-0 top-[62%] flex justify-center pointer-events-none">
+        <div className="absolute inset-x-0 top-[36%] flex justify-center pointer-events-none">
           <div
             className={cn(
               "rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-md ring-1",
               state === "listening" && "bg-emerald-500/20 text-emerald-200 ring-emerald-400/40",
-              state === "thinking" && "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 animate-pulse",
-              state === "speaking" && "bg-primary/25 text-primary-foreground ring-primary/50 animate-pulse",
+              state === "thinking" && "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 motion-safe:animate-pulse",
+              state === "speaking" && "bg-primary/25 text-primary-foreground ring-primary/50 motion-safe:animate-pulse",
               state === "idle" && "bg-white/10 text-white/80 ring-white/20",
             )}
           >
@@ -179,65 +144,34 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
 }
 
 
-/** Desktop-only ARIA figure column — full opacity beside the chat panel.
- *  Reuses the AriaVideoAvatar so the audio bus drives motion identically. */
-function AriaSideFigure() {
-  const state = useAriaPresenceState();
-  const speaking = state === "speaking";
-  return (
-    <div className="relative h-full w-full overflow-hidden bg-[#04070F]">
-      <div
-        className="absolute inset-0 pointer-events-none motion-reduce:hidden transition-opacity duration-300"
-        style={{
-          opacity: speaking ? 1 : 0,
-          background:
-            "radial-gradient(ellipse at 50% 45%, rgba(16,185,129,0.35) 0%, rgba(16,185,129,0.10) 45%, transparent 72%)",
-          filter: "blur(28px)",
-        }}
-        aria-hidden
-      />
-      <AriaVideoAvatar
-        poster={STILL_SRC}
-        className="absolute inset-0"
-        mediaStyle={{ objectFit: "contain", objectPosition: "center bottom" }}
-        active
-      />
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300",
-          speaking ? "opacity-100" : "opacity-0",
-        )}
-        style={{ boxShadow: "inset 0 0 0 1px rgba(16,185,129,0.5), inset 0 0 60px rgba(16,185,129,0.25)" }}
-        aria-hidden
-      />
-    </div>
-  );
-}
 
-/** Compact top avatar for mobile — 96px circle above the messages. */
+/** Unified ARIA top-circle avatar — identical on mobile and desktop.
+ *  A 96px circular figure pinned to the top-center of the chat panel.
+ *  Emerald ring pulses while speaking; static under prefers-reduced-motion. */
 function AriaTopAvatar() {
   const state = useAriaPresenceState();
   const speaking = state === "speaking";
   return (
-    <div className="relative z-10 flex justify-center pt-2 pb-1 lg:hidden">
+    <div className="relative z-10 flex justify-center pt-3 pb-2">
       <div
         className={cn(
-          "relative h-24 w-24 overflow-hidden rounded-full border bg-[#04070F] transition-all duration-300",
+          "relative h-24 w-24 overflow-hidden rounded-full border-2 bg-[#04070F] transition-all duration-300",
           speaking
-            ? "border-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.55)]"
-            : "border-primary/40",
+            ? "border-emerald-400/80 shadow-[0_0_28px_rgba(16,185,129,0.55)] motion-safe:animate-pulse"
+            : "border-emerald-400/40",
         )}
       >
         <AriaVideoAvatar
           poster={STILL_SRC}
           className="absolute inset-0"
-          mediaStyle={{ objectFit: "cover", objectPosition: "center 20%" }}
+          mediaStyle={{ objectFit: "cover", objectPosition: "center top" }}
           active
         />
       </div>
     </div>
   );
 }
+
 
 
 
@@ -775,26 +709,7 @@ export function AriaCopilot() {
         </button>
       )}
 
-      {/* Desktop-only ARIA side column (visible beside the chat panel) */}
-      {isOpen && (
-        <aside
-          aria-hidden
-          dir="ltr"
-          className={cn(
-            "fixed z-40 hidden lg:flex flex-col overflow-hidden rounded-3xl border border-primary/25",
-            "top-6 bottom-6 w-[320px] right-[calc(1.5rem+420px+0.75rem)]",
-            "transition-opacity duration-[400ms] ease-out",
-          )}
-          style={{
-            boxShadow:
-              "0 20px 60px -20px hsl(var(--primary) / 0.4), 0 0 0 1px hsl(var(--primary) / 0.1)",
-          }}
-        >
-          <AriaSideFigure />
-        </aside>
-      )}
-
-      {/* Dock */}
+      {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (
 
         <aside
@@ -802,11 +717,9 @@ export function AriaCopilot() {
           aria-label="ARIA executive copilot"
           dir="rtl"
           className={cn(
-            "fixed z-50 flex flex-col overflow-hidden border border-primary/25",
+            "fixed left-1/2 top-1/2 z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl border border-primary/25",
             "shadow-2xl",
-            // Mobile: near-fullscreen. Desktop (sm+): docked, full height.
-            "inset-x-2 top-14 bottom-2 rounded-3xl",
-            "sm:inset-auto sm:end-6 sm:top-6 sm:bottom-6 sm:w-[min(96vw,420px)] sm:rounded-2xl",
+            "w-[min(94vw,440px)] h-[min(92vh,760px)]",
           )}
           style={{
             boxShadow:
