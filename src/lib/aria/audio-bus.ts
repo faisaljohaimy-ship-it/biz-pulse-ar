@@ -4,6 +4,8 @@
  * whatever is currently playing (unless the caller has a lower priority
  * than the current owner).
  */
+import { VoiceTimeline } from "./voice-timeline";
+
 type Source = "hero-greeting" | "panel-greeting" | "chat-tts";
 
 const PRIORITY: Record<Source, number> = {
@@ -11,6 +13,7 @@ const PRIORITY: Record<Source, number> = {
   "panel-greeting": 2,
   "chat-tts": 3,
 };
+
 
 type StopFn = () => void;
 type BusEvent =
