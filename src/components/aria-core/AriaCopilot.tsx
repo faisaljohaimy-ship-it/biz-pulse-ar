@@ -739,8 +739,28 @@ export function AriaCopilot() {
         </button>
       )}
 
+      {/* Desktop-only ARIA side column (visible beside the chat panel) */}
+      {isOpen && (
+        <aside
+          aria-hidden
+          dir="ltr"
+          className={cn(
+            "fixed z-40 hidden lg:flex flex-col overflow-hidden rounded-3xl border border-primary/25",
+            "top-6 bottom-6 w-[320px] right-[calc(1.5rem+420px+0.75rem)]",
+            "transition-opacity duration-[400ms] ease-out",
+          )}
+          style={{
+            boxShadow:
+              "0 20px 60px -20px hsl(var(--primary) / 0.4), 0 0 0 1px hsl(var(--primary) / 0.1)",
+          }}
+        >
+          <AriaSideFigure />
+        </aside>
+      )}
+
       {/* Dock */}
       {isOpen && (
+
         <aside
           role="complementary"
           aria-label="ARIA executive copilot"
