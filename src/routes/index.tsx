@@ -16,8 +16,7 @@ import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
-import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
+import { NexiosHeroOrb } from "@/components/executive/NexiosHeroOrb";
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
@@ -90,9 +89,6 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
-      <NexiosGenesisIntro />
-
-
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
           at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
       <AriaGlobalBackdrop />
@@ -108,7 +104,7 @@ function IntroLanding() {
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      {/* ══ Executive Hero — Tactical HUD ══ */}
+      {/* ══ Executive Hero — Cinematic Orb ══ */}
       <section
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
@@ -120,31 +116,9 @@ function IntroLanding() {
             willChange: "transform, opacity",
           }}
         >
-          {/* Static assembled NEXIOS wordmark — glowing chrome */}
-          <div className="relative mb-6 w-full">
-            <NexiosWordmark />
-          </div>
+          {/* Cinematic orb video + narration audio, with top descriptor */}
+          <NexiosHeroOrb ar={ar} />
 
-          {/* Bilingual headline */}
-          <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
-            {ar ? (
-              <>
-                الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
-                <br />
-                <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
-                  نيكسيوس ينفّذ.
-                </span>
-              </>
-            ) : (
-              <>
-                Intelligence, <span className="text-[#3AE8FF]">in command.</span>
-                <br />
-                <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
-                  NEXIOS executes.
-                </span>
-              </>
-            )}
-          </h1>
 
 
           {/* Primary + secondary CTAs */}
