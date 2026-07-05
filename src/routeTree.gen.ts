@@ -175,6 +175,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksSelfEvolutionTickRouteImport } from './routes/api/public/hooks/self-evolution-tick'
 import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api/public/hooks/runtime-bootstrap'
 import { Route as ApiPublicHooksRunAgentRouteImport } from './routes/api/public/hooks/run-agent'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
@@ -1050,6 +1051,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksSelfEvolutionTickRoute =
+  ApiPublicHooksSelfEvolutionTickRouteImport.update({
+    id: '/api/public/hooks/self-evolution-tick',
+    path: '/api/public/hooks/self-evolution-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksRuntimeBootstrapRoute =
   ApiPublicHooksRuntimeBootstrapRouteImport.update({
     id: '/api/public/hooks/runtime-bootstrap',
@@ -1246,6 +1253,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
+  '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1416,6 +1424,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
+  '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1590,6 +1599,7 @@ export interface FileRoutesById {
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
+  '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1764,6 +1774,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
+    | '/api/public/hooks/self-evolution-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -1934,6 +1945,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
+    | '/api/public/hooks/self-evolution-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -2107,6 +2119,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
+    | '/api/public/hooks/self-evolution-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -2184,6 +2197,7 @@ export interface RootRouteChildren {
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
   ApiPublicHooksRunAgentRoute: typeof ApiPublicHooksRunAgentRoute
   ApiPublicHooksRuntimeBootstrapRoute: typeof ApiPublicHooksRuntimeBootstrapRoute
+  ApiPublicHooksSelfEvolutionTickRoute: typeof ApiPublicHooksSelfEvolutionTickRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -3355,6 +3369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/self-evolution-tick': {
+      id: '/api/public/hooks/self-evolution-tick'
+      path: '/api/public/hooks/self-evolution-tick'
+      fullPath: '/api/public/hooks/self-evolution-tick'
+      preLoaderRoute: typeof ApiPublicHooksSelfEvolutionTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/runtime-bootstrap': {
       id: '/api/public/hooks/runtime-bootstrap'
       path: '/api/public/hooks/runtime-bootstrap'
@@ -3707,6 +3728,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
   ApiPublicHooksRunAgentRoute: ApiPublicHooksRunAgentRoute,
   ApiPublicHooksRuntimeBootstrapRoute: ApiPublicHooksRuntimeBootstrapRoute,
+  ApiPublicHooksSelfEvolutionTickRoute: ApiPublicHooksSelfEvolutionTickRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
