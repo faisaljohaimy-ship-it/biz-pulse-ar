@@ -454,8 +454,10 @@ export const getExecKpis = createServerFn({ method: "GET" })
 // Uses the admin client (server-only, loaded inside handler) to bypass RLS
 // safely because only COUNT(*) is returned.
 export type PublicKpis = {
+  incidents_total: number;
   incidents_open: number;
   incidents_critical: number;
+  incidents_resolution_rate: number;
   work_orders_active: number;
   projects_in_progress: number;
   permits_active: number;
@@ -469,7 +471,7 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const s = supabaseAdmin as unknown as {
       from: (t: string) => {
-        select: (c: string, o?: { count?: "exact"; head?: boolean }) => {
+        select: (c: string, o?: { count?: "exact"; head?: boolean }) => Promise<{ count: number | null }> & {
           in: (col: string, vals: string[]) => Promise<{ count: number | null }>;
           eq: (col: string, val: string) => {
             in: (col: string, vals: string[]) => Promise<{ count: number | null }>;
@@ -482,15 +484,23 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
       const { count } = await s.from(table).select("*", { count: "exact", head: true }).in(col, values);
       return count ?? 0;
     };
+    const countAll = async (table: string): Promise<number> => {
+      const { count } = await s.from(table).select("*", { count: "exact", head: true });
+      return count ?? 0;
+    };
     const [
+      incidentsTotal,
       incidentsOpen,
+      incidentsResolved,
       incidentsCritical,
       workOrdersActive,
       projectsInProgress,
       permitsActive,
       maintenancePending,
     ] = await Promise.all([
+      countAll("sec_incidents"),
       countIn("sec_incidents", "status", ["open", "investigating", "contained", "triage", "assigned"]),
+      countIn("sec_incidents", "status", ["resolved", "closed"]),
       (async () => {
         const { count } = await s
           .from("sec_incidents")
@@ -511,11 +521,15 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
         return count ?? 0;
       })(),
     ]);
+    const resolutionRate =
+      incidentsTotal > 0 ? Math.round((incidentsResolved / incidentsTotal) * 100) : 0;
     const risk_level: PublicKpis["risk_level"] =
       incidentsCritical > 0 ? "critical" : incidentsOpen > 5 ? "elevated" : "low";
     return {
+      incidents_total: incidentsTotal,
       incidents_open: incidentsOpen,
       incidents_critical: incidentsCritical,
+      incidents_resolution_rate: resolutionRate,
       work_orders_active: workOrdersActive,
       projects_in_progress: projectsInProgress,
       permits_active: permitsActive,

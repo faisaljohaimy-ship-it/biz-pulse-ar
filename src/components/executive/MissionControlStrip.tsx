@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, ShieldCheck, Siren, Wrench, Bot } from "lucide-react";
+import { Activity, AlertTriangle, Siren, Wrench, Bot, CheckCircle2 } from "lucide-react";
 import { getPublicKpis, type PublicKpis } from "@/lib/sec.functions";
 import { KpiTile, type KpiTone } from "./KpiTile";
 import { useI18n } from "@/lib/i18n";
@@ -30,81 +30,71 @@ export function MissionControlStrip() {
   const loading = q.isLoading;
   const failed = !loading && !k;
 
+  const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
+
   const tiles = useMemo(() => {
-    const riskTone: KpiTone =
-      k?.risk_level === "critical" ? "rose" : k?.risk_level === "elevated" ? "amber" : "emerald";
-    const riskLabel = k
-      ? k.risk_level === "critical"
-        ? ar ? "حرج" : "Critical"
-        : k.risk_level === "elevated"
-          ? ar ? "متوسط" : "Elevated"
-          : ar ? "منخفض" : "Low"
-      : "—";
+    const has = (v: number | null | undefined): v is number =>
+      typeof v === "number" && Number.isFinite(v);
+
     return [
       {
-        key: "risk",
+        key: "incidents_total",
         Icon: AlertTriangle,
-        labelAr: "مستوى المخاطر",
-        labelEn: "Risk Level",
-        value: riskLabel,
-        hint: k ? (ar ? `${k.incidents_critical} حرج · ${k.incidents_open} مفتوح` : `${k.incidents_critical} critical · ${k.incidents_open} open`) : undefined,
-        tone: riskTone,
-        bound: true,
+        labelAr: "إجمالي الحوادث",
+        labelEn: "Total Incidents",
+        value: has(k?.incidents_total) ? k!.incidents_total : null,
+        hint: undefined,
+        tone: "cyan" as KpiTone,
       },
       {
-        key: "incidents",
+        key: "resolution",
+        Icon: CheckCircle2,
+        labelAr: "معدّل الحل",
+        labelEn: "Resolution Rate",
+        value: has(k?.incidents_resolution_rate) ? `${k!.incidents_resolution_rate}%` : null,
+        hint: undefined,
+        tone: "emerald" as KpiTone,
+      },
+      {
+        key: "incidents_open",
         Icon: Siren,
         labelAr: "حوادث مفتوحة",
         labelEn: "Open Incidents",
-        value: k?.incidents_open ?? 0,
-        hint: k ? (ar ? `${k.incidents_critical} حرج` : `${k.incidents_critical} critical`) : undefined,
-        tone: (k?.incidents_open ?? 0) > 5 ? "amber" as KpiTone : "cyan" as KpiTone,
-        bound: true,
+        value: has(k?.incidents_open) ? k!.incidents_open : null,
+        hint: has(k?.incidents_critical)
+          ? (ar ? `${k!.incidents_critical} حرج` : `${k!.incidents_critical} critical`)
+          : undefined,
+        tone: (k?.incidents_open ?? 0) > 5 ? ("amber" as KpiTone) : ("cyan" as KpiTone),
       },
       {
         key: "wo",
         Icon: Wrench,
-        labelAr: "أوامر عمل نشطة",
-        labelEn: "Active Work Orders",
-        value: k?.work_orders_active ?? 0,
+        labelAr: "أوامر عمل مفتوحة",
+        labelEn: "Open Work Orders",
+        value: has(k?.work_orders_active) ? k!.work_orders_active : null,
         hint: undefined,
         tone: "cyan" as KpiTone,
-        bound: true,
       },
       {
         key: "maintenance",
         Icon: Activity,
-        labelAr: "صيانة وقائية معلّقة",
-        labelEn: "Preventive Pending",
-        value: k?.maintenance_pending ?? 0,
+        labelAr: "صيانة وقائية",
+        labelEn: "Preventive WO",
+        value: has(k?.maintenance_pending) ? k!.maintenance_pending : null,
         hint: undefined,
         tone: "violet" as KpiTone,
-        bound: true,
-      },
-      {
-        key: "permits",
-        Icon: ShieldCheck,
-        labelAr: "تصاريح سارية",
-        labelEn: "Active Permits",
-        value: k?.permits_active ?? 0,
-        hint: undefined,
-        tone: "emerald" as KpiTone,
-        bound: true,
       },
       {
         key: "projects",
         Icon: Bot,
-        labelAr: "مشاريع جارية",
+        labelAr: "مشاريع نشطة",
         labelEn: "Active Projects",
-        value: k?.projects_in_progress ?? 0,
+        value: has(k?.projects_in_progress) ? k!.projects_in_progress : null,
         hint: undefined,
         tone: "emerald" as KpiTone,
-        bound: true,
       },
     ] as const;
   }, [k, ar]);
-
-  const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
 
   return (
     <section aria-label="Mission Control live KPIs" className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6">
@@ -128,24 +118,29 @@ export function MissionControlStrip() {
       </div>
 
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
-        {tiles.map((t) => (
-          <li key={t.key}>
-            <KpiTile
-              labelAr={t.labelAr}
-              labelEn={t.labelEn}
-              value={
-                failed ? (
-                  <span className="inline-flex items-center rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--nx-warning)]">
-                    {pendingLabel}
-                  </span>
-                ) : t.value
-              }
-              hint={failed ? undefined : t.hint}
-              tone={failed ? "amber" : t.tone}
-              loading={loading}
-            />
-          </li>
-        ))}
+        {tiles.map((t) => {
+          const isPending = failed || t.value === null;
+          return (
+            <li key={t.key}>
+              <KpiTile
+                labelAr={t.labelAr}
+                labelEn={t.labelEn}
+                value={
+                  isPending ? (
+                    <span className="inline-flex items-center rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--nx-warning)]">
+                      {pendingLabel}
+                    </span>
+                  ) : (
+                    t.value
+                  )
+                }
+                hint={isPending ? undefined : t.hint}
+                tone={isPending ? "amber" : t.tone}
+                loading={loading}
+              />
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
