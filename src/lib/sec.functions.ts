@@ -490,7 +490,7 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
       permitsActive,
       maintenancePending,
     ] = await Promise.all([
-      countIn("sec_incidents", "status", ["open", "in_progress", "triage", "assigned"]),
+      countIn("sec_incidents", "status", ["open", "investigating", "contained", "triage", "assigned"]),
       (async () => {
         const { count } = await s
           .from("sec_incidents")
