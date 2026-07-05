@@ -377,11 +377,11 @@ export function AriaCopilot() {
     };
 
     const playAt = async (idx: number, prevEndedAt: number | null) => {
-      if (cancelled) { VoiceTimeline.push("QUEUE", `[${idx}] cancelled before play`, { idx }); finish(); return; }
-      if (idx >= audioPromises.length) { finish(); return; }
+      if (cancelled) { VoiceTimeline.push("QUEUE", `[${idx}] cancelled before play`, { idx }); revealNow(); finish(); return; }
+      if (idx >= audioPromises.length) { revealNow(); finish(); return; }
       const audio = await audioPromises[idx];
-      if (cancelled) { VoiceTimeline.push("QUEUE", `[${idx}] cancelled after await`, { idx }); finish(); return; }
-      if (!audio) { VoiceTimeline.push("QUEUE", `[${idx}] SKIP (null audio)`, { idx }); void playAt(idx + 1, prevEndedAt); return; }
+      if (cancelled) { VoiceTimeline.push("QUEUE", `[${idx}] cancelled after await`, { idx }); revealNow(); finish(); return; }
+      if (!audio) { VoiceTimeline.push("QUEUE", `[${idx}] SKIP (null audio)`, { idx }); revealNow(); void playAt(idx + 1, prevEndedAt); return; }
       audioRef.current = audio;
 
       const start = () => {
