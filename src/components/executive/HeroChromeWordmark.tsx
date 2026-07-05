@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import heroAudio from "@/assets/hero-assembly-audio.mp3.asset.json";
 
 /**
  * Cinematic "Chrome Assembly" wordmark.
@@ -14,7 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
  */
 
 const WORD = "NEXIOS AI";
-const AUDIO_SRC = "/hero-assembly-audio.mp3";
+const AUDIO_SRC = heroAudio.url;
 
 type Scatter = {
   x: string;
