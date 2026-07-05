@@ -3,6 +3,7 @@ import { z } from "zod";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError, toApiErrorShape } from "@/lib/api";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -53,9 +54,12 @@ export const Route = createFileRoute("/api/tts")({
         // فصيح pronunciation. The harakat are in the Unicode range U+064B..U+0652 plus U+0670 and
         // U+0671 (and shadda U+0651). Passing them through verbatim lets eleven_multilingual_v2
         // disambiguate words like دخَلَ vs دخُلَ.
-        const cleanText = preserveDiacritics
+        const preTts = preserveDiacritics
           ? text
           : text.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
+        // Auto-diacritize unvocalized Arabic so ElevenLabs pronounces correctly.
+        // Only affects the TTS payload — the on-screen bubble uses `text` unchanged.
+        const cleanText = await diacritizeForTts(preTts);
 
         // FAST-PATH: eleven_flash_v2_5 + mp3_22050_32 + optimize_streaming_latency=3
         // — cuts TTFB by ~50% vs multilingual_v2/mp3_44100_128 for the demo path.

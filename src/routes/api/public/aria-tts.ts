@@ -11,6 +11,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 
 const Input = z.object({
   text: z.string().trim().min(1).max(1200),
@@ -75,7 +76,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
-        const text = parsed.data.text;
+        const text = await diacritizeForTts(parsed.data.text);
         if (lovableKey) {
           try {
             const gatewayAudio = await synthesizeWithGateway(text, lovableKey);
