@@ -92,7 +92,7 @@ function SelfEvolutionPage() {
 
       {q.data && (
         <>
-          <Section title="Decision / القرار">
+          <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Decision / القرار</h2>
             <Card className={`glass-card p-4 border ${decisionTone(q.data.decision)}`}>
               <div className="flex items-center justify-between">
                 <div>
@@ -111,9 +111,9 @@ function SelfEvolutionPage() {
                 ))}
               </div>
             </Card>
-          </Section>
+          </section>
 
-          <Section title="Pipeline stages / مراحل الأنبوب">
+          <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Pipeline stages / مراحل الأنبوب</h2>
             <Card className="glass-card p-4">
               <ol className="space-y-2">
                 {q.data.stages.map((s) => (
@@ -128,9 +128,9 @@ function SelfEvolutionPage() {
                 ))}
               </ol>
             </Card>
-          </Section>
+          </section>
 
-          <Section title="Issues detected / المشكلات المكتشفة">
+          <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Issues detected / المشكلات المكتشفة</h2>
             <Card className="glass-card p-4">
               {q.data.issues.length === 0 ? (
                 <div className="text-sm text-emerald-300">No issues detected in this cycle. / لا توجد مشكلات في هذه الدورة.</div>
@@ -148,10 +148,10 @@ function SelfEvolutionPage() {
                 </ul>
               )}
             </Card>
-          </Section>
+          </section>
 
           {q.data.readiness && (
-            <Section title="Release gate / بوابة الإصدار">
+            <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Release gate / بوابة الإصدار</h2>
               <Card className="glass-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold">Release decision: {q.data.readiness.decision}</div>
@@ -191,10 +191,10 @@ function SelfEvolutionPage() {
                   </>
                 )}
               </Card>
-            </Section>
+            </section>
           )}
 
-          <Section title="Invariants / الثوابت المحمية">
+          <section className="space-y-2"><h2 className="text-sm font-semibold text-slate-300">Invariants / الثوابت المحمية</h2>
             <Card className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
               {Object.entries(q.data.invariants).map(([k, v]) => (
                 <div key={k} className="flex items-center gap-1.5">
@@ -203,7 +203,7 @@ function SelfEvolutionPage() {
                 </div>
               ))}
             </Card>
-          </Section>
+          </section>
 
           <div className="text-[11px] text-slate-500">
             Cycle {new Date(q.data.startedAt).toLocaleString()} → {new Date(q.data.finishedAt).toLocaleString()} ·
