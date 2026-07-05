@@ -21,7 +21,7 @@ import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 // `src/lib/aria-core/README.md` for the migration kill-list.
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
-import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
+// AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
 import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
 import { useRouterState } from "@tanstack/react-router";
