@@ -77,8 +77,8 @@ function SelfEvolutionPage() {
     <div className="space-y-6 p-4 md:p-6" dir="ltr">
       <PageHeader
         title="ARIA Self-Evolution / محرك التطور الذاتي"
-        description="Continuous engineering loop — analyze → plan → validate → benchmark → report. Analyze-only mode."
-        icon={<ShieldCheck className="h-5 w-5" />}
+        subtitle="Continuous engineering loop — analyze → plan → validate → benchmark → report. Analyze-only mode."
+        icon={ShieldCheck}
         actions={
           <Button size="sm" variant="secondary" onClick={() => q.refetch()} disabled={q.isFetching}>
             <RotateCcw className={`h-4 w-4 mr-1.5 ${q.isFetching ? "animate-spin" : ""}`} />
