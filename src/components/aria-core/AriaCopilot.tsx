@@ -900,7 +900,11 @@ export function AriaCopilot() {
             </div>
           )}
 
+          {/* Mobile-only compact ARIA top avatar */}
+          <AriaTopAvatar />
+
           {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
+
           <div
             ref={scrollRef}
             className={cn(
