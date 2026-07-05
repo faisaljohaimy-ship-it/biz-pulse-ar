@@ -24,18 +24,14 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 
-/** iOS Safari blocks speech/audio started outside a user gesture.
- *  Call this synchronously inside every send/mic tap handler to prime
- *  SpeechSynthesis + AudioContext so the async reply can speak. */
+/** iOS Safari blocks audio started outside a user gesture. Call this
+ *  synchronously inside every send/mic tap handler to prime the
+ *  AudioContext so the async reply can speak. NOTE: SpeechSynthesis is
+ *  intentionally NOT primed — chat replies never use browser speech. */
 function primeIOSAudio(): void {
   if (typeof window === "undefined") return;
   try {
     AriaAudioBus.unlock();
-    if (window.speechSynthesis) {
-      const u = new SpeechSynthesisUtterance("");
-      u.volume = 0;
-      window.speechSynthesis.speak(u);
-    }
     const AC: typeof AudioContext | undefined =
       (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
         .AudioContext ??

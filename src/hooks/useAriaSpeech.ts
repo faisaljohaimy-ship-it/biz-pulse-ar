@@ -65,7 +65,14 @@ export function useAriaSpeech() {
 
   useEffect(() => { if (muted) stop(); }, [muted, stop]);
 
+  // Browser SpeechSynthesis is ONLY permitted for Greeting Mode.
   const speakFallback = useCallback((text: string, source: Source) => {
+    if (source !== "panel-greeting") {
+      console.error("[aria-voice] BLOCKED browser speech outside Greeting Mode", { source });
+      AriaAudioBus.release(source);
+      setSpeaking(false);
+      return;
+    }
     if (typeof window === "undefined" || !window.speechSynthesis) {
       AriaAudioBus.release(source);
       setSpeaking(false);
@@ -192,9 +199,10 @@ export function useAriaSpeech() {
         if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
         await playBlob(blob, source, t0);
       } catch (err) {
-        console.log("[aria-voice] elevenlabs unavailable, falling back:", (err as Error).message);
-        if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
-        speakFallback(clean, source);
+        // NO browser fallback for chat replies — silence beats a robotic voice.
+        console.warn("[aria-voice] elevenlabs unavailable — reply stays silent:", (err as Error).message);
+        AriaAudioBus.release(source);
+        setSpeaking(false);
       }
     },
     [hardStop, speakFallback, playBlob],

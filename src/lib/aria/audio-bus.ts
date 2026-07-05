@@ -54,6 +54,26 @@ function stopWatchdog() {
 // and any component re-registration. The ONLY way to reset is a full reload.
 let greetingPlayedThisSession = false;
 
+// ── Runtime assertion: browser SpeechSynthesis is ONLY legal in Greeting
+// Mode. Any speak() while chat-tts owns the channel (or no greeting owns
+// it) throws immediately, naming the offender via stack trace.
+if (typeof window !== "undefined" && window.speechSynthesis) {
+  const nativeSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+  window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+    const owner = current?.source ?? null;
+    const isGreeting = owner === "hero-greeting" || owner === "panel-greeting";
+    if (!isGreeting) {
+      const err = new Error(
+        `[aria-voice] ASSERTION: browser SpeechSynthesis invoked outside Greeting Mode (owner=${owner ?? "none"})`,
+      );
+      console.error(err);
+      throw err;
+    }
+    console.log("[aria-voice] speechSynthesis.speak allowed (greeting mode)", { owner });
+    return nativeSpeak(u);
+  };
+}
+
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
   unlock() {
@@ -84,9 +104,13 @@ export const AriaAudioBus = {
    * Granting ALWAYS hard-stops whatever is playing first.
    */
   acquire(source: Source, stop: StopFn): boolean {
-    if (current && PRIORITY[source] < PRIORITY[current.source]) return false;
+    if (current && PRIORITY[source] < PRIORITY[current.source]) {
+      console.log("[aria-bus] acquire DENIED", { requested: source, owner: current.source });
+      return false;
+    }
     if (current) {
       const prev = current.source;
+      console.log("[aria-bus] preempting owner", { prev, next: source });
       try { current.stop(); } catch { /* ignore */ }
       if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
       emit({ kind: "end", source: prev });
@@ -95,6 +119,7 @@ export const AriaAudioBus = {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
     current = { source, stop };
+    console.log("[aria-bus] ACQUIRED", { owner: source, provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting" });
     if (source === "chat-tts") startWatchdog(); else stopWatchdog();
     emit({ kind: "start", source });
     return true;
@@ -121,6 +146,7 @@ export const AriaAudioBus = {
 
   release(source: Source) {
     if (current?.source === source) {
+      console.log("[aria-bus] RELEASED", { owner: source });
       if (currentAudioEl) { emit({ kind: "stopped", source }); currentAudioEl = null; }
       current = null;
       stopWatchdog();
