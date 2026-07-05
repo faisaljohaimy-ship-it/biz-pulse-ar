@@ -113,6 +113,19 @@ function IntroLanding() {
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
       >
+        {/* Hero-only cinematic background video (pre-system landing hero) */}
+        <video
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-[1] h-full w-full object-cover opacity-40 mix-blend-screen"
+          src={heroVideo.url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-[1] bg-gradient-to-b from-[#04070F]/40 via-transparent to-[#04070F]" />
+
         <div
           className="mx-auto flex w-full max-w-[420px] flex-col items-center sm:max-w-2xl"
           style={{
