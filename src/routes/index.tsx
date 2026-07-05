@@ -89,8 +89,11 @@ function IntroLanding() {
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
 
-      {/* Lightweight gradient hero glow — the single ARIA figure lives in the
-          global backdrop rendered from __root.tsx. No canvas, no video, no audio. */}
+      {/* ARIA transparent full-screen backdrop — homepage only. Face centered
+          at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
+      <AriaGlobalBackdrop />
+
+      {/* Lightweight gradient hero glow layered above her, still behind content. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(80%_55%_at_50%_0%,rgba(0,212,255,0.18),transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(60%_40%_at_50%_35%,rgba(58,232,255,0.10),transparent_65%)]" />
