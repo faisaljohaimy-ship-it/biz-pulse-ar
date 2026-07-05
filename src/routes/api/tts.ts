@@ -75,8 +75,23 @@ export const Route = createFileRoute("/api/tts")({
 
           if (!r.ok) {
             const err = await r.text().catch(() => "");
-            console.error("[api/tts] provider", r.status, err.slice(0, 240));
-            return Response.json({ error: "tts_failed", status: r.status }, { status: r.status });
+            console.error("[api/tts] provider", r.status, err.slice(0, 400));
+            // Surface provider reason so the client (and Playwright timeline)
+            // can see quota_exceeded / voice_not_found / rate_limit, instead
+            // of an opaque tts_failed.
+            let providerReason: string | undefined;
+            let providerStatus: string | undefined;
+            try {
+              const j = JSON.parse(err) as { detail?: { status?: string; message?: string } };
+              providerStatus = j.detail?.status;
+              providerReason = j.detail?.message;
+            } catch { /* non-JSON */ }
+            return Response.json({
+              error: "tts_failed",
+              status: r.status,
+              providerStatus,
+              providerReason: providerReason ?? err.slice(0, 200),
+            }, { status: r.status });
           }
 
           const audio = await r.arrayBuffer();
