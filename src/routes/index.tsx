@@ -56,8 +56,6 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
-  const [heroReady, setHeroReady] = useState(false);
-  const [heroReplay, setHeroReplay] = useState(0);
   const { speak } = useAriaSpeech();
 
   const replayGreeting = () => {
