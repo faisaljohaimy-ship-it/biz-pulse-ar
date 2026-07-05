@@ -503,7 +503,9 @@ export function AriaCopilot() {
     }
     setDraft("");
     setLastUserText(text);
+    pendingSendAtRef.current = performance.now();
     void chat.sendMessage({ text });
+
   }, [draft, isBusy, chat]);
 
   const retry = () => {
