@@ -90,6 +90,8 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+      <NexiosGenesisIntro />
+
 
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
           at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
