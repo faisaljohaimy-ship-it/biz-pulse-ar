@@ -121,10 +121,10 @@ function issuesFrom(
   if (improvement) {
     for (const r of improvement.regressions) {
       issues.push({
-        id: `regression-${r.benchmarkId}`,
+        id: `regression-${r.id}`,
         area: "performance",
-        severity: r.severity === "critical" ? "critical" : "high",
-        summary: `regression on ${r.benchmarkId}`,
+        severity: r.severity === "critical" ? "critical" : r.severity === "high" ? "high" : "medium",
+        summary: `regression on ${r.subject}:${r.metric}`,
         evidenceRefs: r.evidence.map((e) => `${e.source}:${e.ref}`),
       });
     }
@@ -133,7 +133,7 @@ function issuesFrom(
         id: `gap-${g.id}`,
         area: g.kind === "performance" ? "performance" : "code_quality",
         severity: g.severity === "critical" ? "critical" : g.severity === "high" ? "high" : "medium",
-        summary: g.summary,
+        summary: g.detail,
         evidenceRefs: g.evidence.map((e) => `${e.source}:${e.ref}`),
       });
     }
