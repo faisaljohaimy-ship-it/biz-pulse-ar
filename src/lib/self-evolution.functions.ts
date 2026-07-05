@@ -22,6 +22,6 @@ export const runSelfEvolutionFn = createServerFn({ method: "POST" })
     const report = await runSelfEvolution({
       enableApply: data?.enableApply ?? false,
     });
-    // Serialize to plain DTO (already plain — types are readonly interfaces).
-    return report;
+    // Serialize through JSON to strip unknown-typed evidence bags.
+    return JSON.parse(JSON.stringify(report)) as Record<string, unknown>;
   });
