@@ -116,16 +116,23 @@ function IntroLanding() {
             willChange: "transform, opacity",
           }}
         >
-          {/* Product eyebrow */}
-          <div className="mb-5 flex flex-col items-center gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#3AE8FF]/85">
-              NEXIOS AI OS
-            </span>
-            <div className="h-px w-10 bg-[#3AE8FF]/40" aria-hidden />
+          {/* Cinematic Chrome Assembly wordmark */}
+          <div className="mb-6 w-full">
+            <HeroChromeWordmark
+              onAssembled={() => setHeroReady(true)}
+              replayToken={heroReplay}
+            />
           </div>
 
-          {/* Bilingual headline */}
-          <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
+          {/* Bilingual headline (fades up after assembly) */}
+          <h1
+            className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              transform: heroReady ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 400ms ease-out, transform 400ms ease-out",
+            }}
+          >
             {ar ? (
               <>
                 الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
