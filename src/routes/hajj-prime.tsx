@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Radio } from "lucide-react";
+import { ArrowLeft, Radio } from "lucide-react";
 
-const LIVE_URL = "https://hajj-nexus-prime.lovable.app/?theme=dark&forceDark=1#dark";
+// Internal-only route surface. No external lovable.app URL is printed or
+// linked anywhere on this page — the embedded module is treated as an
+// internal iframe target and the URL is never exposed to the user.
+const EMBED_URL = "https://hajj-nexus-prime.lovable.app/?theme=dark&forceDark=1#dark";
 
 function HajjPrimeWindow() {
   return (
@@ -22,27 +25,18 @@ function HajjPrimeWindow() {
           </Link>
           <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] text-white/70 sm:flex">
             <Radio className="h-3 w-3 animate-pulse text-[#3AE8FF]" />
-            <span className="font-mono">neexios.com / hajj-prime</span>
+            <Link to="/hajj-prime" className="font-mono hover:text-white">/hajj-prime</Link>
             <span className="ml-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300">
               LIVE
             </span>
           </div>
         </div>
-        <a
-          href={LIVE_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-md border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#3AE8FF]/20"
-        >
-          <ExternalLink className="h-3 w-3" />
-          <span>فتح في نافذة جديدة</span>
-        </a>
       </div>
 
       {/* Iframe fills the rest */}
       <div className="relative flex-1 overflow-hidden bg-[#04111f]" style={{ colorScheme: "dark" }}>
         <iframe
-          src={LIVE_URL}
+          src={EMBED_URL}
           title="Hajj Nexus Prime · Live System"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
           allow="clipboard-read; clipboard-write; fullscreen"
