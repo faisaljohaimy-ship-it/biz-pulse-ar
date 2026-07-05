@@ -16,6 +16,7 @@ import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
+import { HeroChromeWordmark } from "@/components/executive/HeroChromeWordmark";
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
@@ -54,6 +55,8 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+  const [heroReady, setHeroReady] = useState(false);
+  const [heroReplay, setHeroReplay] = useState(0);
   const { speak } = useAriaSpeech();
 
   const replayGreeting = () => {
@@ -116,16 +119,33 @@ function IntroLanding() {
             willChange: "transform, opacity",
           }}
         >
-          {/* Product eyebrow */}
-          <div className="mb-5 flex flex-col items-center gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#3AE8FF]/85">
-              NEXIOS AI OS
-            </span>
-            <div className="h-px w-10 bg-[#3AE8FF]/40" aria-hidden />
+          {/* Cinematic Chrome Assembly wordmark */}
+          <div className="relative mb-6 w-full">
+            <HeroChromeWordmark
+              onAssembled={() => setHeroReady(true)}
+              replayToken={heroReplay}
+            />
+            <button
+              type="button"
+              onClick={() => setHeroReplay((n) => n + 1)}
+              aria-label={ar ? "إعادة التشغيل مع الصوت" : "Replay with sound"}
+              className="absolute bottom-0 right-0 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-gradient-to-b from-white/15 to-white/[0.02] text-white/80 backdrop-blur-sm transition hover:border-white/50 hover:text-white active:scale-95 rtl:right-auto rtl:left-0"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
+                <path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.23v2.06A7 7 0 0 1 14 18.7v2.06a9 9 0 0 0 0-17.54z" />
+              </svg>
+            </button>
           </div>
 
-          {/* Bilingual headline */}
-          <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
+          {/* Bilingual headline (fades up after assembly) */}
+          <h1
+            className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              transform: heroReady ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 400ms ease-out, transform 400ms ease-out",
+            }}
+          >
             {ar ? (
               <>
                 الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
