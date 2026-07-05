@@ -22,6 +22,15 @@ export const runSelfEvolutionFn = createServerFn({ method: "POST" })
     const report = await runSelfEvolution({
       enableApply: data?.enableApply ?? false,
     });
-    // Serialize through JSON to strip unknown-typed evidence bags.
-    return JSON.parse(JSON.stringify(report)) as Record<string, unknown>;
+    // Round-trip through JSON so the response is a plain serializable tree
+    // (strips readonly index signatures on evidence bags).
+    return JSON.parse(JSON.stringify(report)) as JsonValue;
   });
+
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [k: string]: JsonValue };
