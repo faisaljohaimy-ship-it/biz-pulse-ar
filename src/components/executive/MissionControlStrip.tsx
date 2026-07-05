@@ -30,7 +30,8 @@ export function MissionControlStrip() {
   const loading = q.isLoading;
 
   // Zero-tolerance policy: the entire section is hidden unless every KPI
-  // resolved to a real, finite numeric value from the database.
+  // resolved to a real, finite numeric value from the database. Evaluated
+  // below the hooks so React's rules-of-hooks aren't violated.
   const isFiniteNumber = (v: unknown): v is number =>
     typeof v === "number" && Number.isFinite(v);
   const allReady =
@@ -42,8 +43,6 @@ export function MissionControlStrip() {
     isFiniteNumber(k.work_orders_active) &&
     isFiniteNumber(k.maintenance_pending) &&
     isFiniteNumber(k.projects_in_progress);
-  if (!allReady) return null;
-  const failed = !loading && !k;
 
   const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
 
