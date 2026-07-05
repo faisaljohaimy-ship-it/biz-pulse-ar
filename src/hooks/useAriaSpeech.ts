@@ -67,58 +67,13 @@ export function useAriaSpeech() {
   useEffect(() => { if (muted) stop(); }, [muted, stop]);
 
   // Browser SpeechSynthesis is ONLY permitted for Greeting Mode.
-  const speakFallback = useCallback((text: string, source: Source) => {
-    if (source !== "panel-greeting") {
-      console.error("[aria-voice] BLOCKED browser speech outside Greeting Mode", { source });
-      AriaAudioBus.release(source);
-      setSpeaking(false);
-      return;
-    }
-    if (typeof window === "undefined" || !window.speechSynthesis) {
-      AriaAudioBus.release(source);
-      setSpeaking(false);
-      return;
-    }
-    const t0 = performance.now();
-    const trySpeak = () => {
-      try {
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = "ar-SA";
-        u.rate = 1.0;
-        const voices = window.speechSynthesis.getVoices();
-        const arVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("ar"));
-        if (arVoice) u.voice = arVoice;
-        const cleanup = () => {
-          AriaAudioBus.release(source);
-          setSpeaking(false);
-        };
-        setSpeaking(true);
-
-        u.onstart = () => {
-          console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (fallback)`);
-          AriaAudioBus.notifyPlaying(source, null);
-        };
-        u.onend = () => { AriaAudioBus.notifyStopped(source); cleanup(); };
-        u.onerror = () => { console.warn("[aria-voice] browser speech error"); AriaAudioBus.notifyStopped(source); cleanup(); };
-        window.speechSynthesis.speak(u);
-
-      } catch (err) {
-        console.warn("[aria-voice] browser speech threw", err);
-        AriaAudioBus.release(source);
-        setSpeaking(false);
-      }
-    };
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices || voices.length === 0) {
-      const onChanged = () => {
-        window.speechSynthesis.removeEventListener("voiceschanged", onChanged);
-        trySpeak();
-      };
-      window.speechSynthesis.addEventListener("voiceschanged", onChanged, { once: true });
-      setTimeout(trySpeak, 250);
-    } else {
-      trySpeak();
-    }
+  // Browser speechSynthesis fallback is PERMANENTLY DISABLED (robotic voice).
+  // Kept as a no-op so any legacy caller stays silent instead of ever speaking.
+  const speakFallback = useCallback((_text: string, source: Source) => {
+    console.warn("[aria-voice] speakFallback disabled — staying silent", { source });
+    VoiceTimeline.push("FALLBACK", "speakFallback disabled — silent", { source });
+    AriaAudioBus.release(source);
+    setSpeaking(false);
   }, []);
 
   const playBlob = useCallback(async (blob: Blob, source: Source, t0: number) => {
