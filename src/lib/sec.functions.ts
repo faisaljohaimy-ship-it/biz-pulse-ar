@@ -449,3 +449,81 @@ export const getExecKpis = createServerFn({ method: "GET" })
     return computeExecKpis(sources);
   });
 
+// ============= PUBLIC KPIS =============
+// Aggregate-only counts for the public homepage strip. No PII — just numbers.
+// Uses the admin client (server-only, loaded inside handler) to bypass RLS
+// safely because only COUNT(*) is returned.
+export type PublicKpis = {
+  incidents_open: number;
+  incidents_critical: number;
+  work_orders_active: number;
+  projects_in_progress: number;
+  permits_active: number;
+  maintenance_pending: number;
+  risk_level: "low" | "elevated" | "critical";
+  generated_at: string;
+};
+
+export const getPublicKpis = createServerFn({ method: "GET" }).handler(
+  async (): Promise<PublicKpis> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const s = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (c: string, o?: { count?: "exact"; head?: boolean }) => {
+          in: (col: string, vals: string[]) => Promise<{ count: number | null }>;
+          eq: (col: string, val: string) => {
+            in: (col: string, vals: string[]) => Promise<{ count: number | null }>;
+            not: (col: string, op: string, val: string) => Promise<{ count: number | null }>;
+          };
+        };
+      };
+    };
+    const countIn = async (table: string, col: string, values: string[]): Promise<number> => {
+      const { count } = await s.from(table).select("*", { count: "exact", head: true }).in(col, values);
+      return count ?? 0;
+    };
+    const [
+      incidentsOpen,
+      incidentsCritical,
+      workOrdersActive,
+      projectsInProgress,
+      permitsActive,
+      maintenancePending,
+    ] = await Promise.all([
+      countIn("sec_incidents", "status", ["open", "in_progress", "triage", "assigned"]),
+      (async () => {
+        const { count } = await s
+          .from("sec_incidents")
+          .select("*", { count: "exact", head: true })
+          .eq("severity", "critical")
+          .not("status", "in", "(resolved,closed)");
+        return count ?? 0;
+      })(),
+      countIn("sec_work_orders", "status", ["open", "in_progress", "assigned", "scheduled"]),
+      countIn("sec_projects", "status", ["in-progress"]),
+      countIn("sec_permits", "status", ["active", "approved"]),
+      (async () => {
+        const { count } = await s
+          .from("sec_work_orders")
+          .select("*", { count: "exact", head: true })
+          .eq("kind", "preventive")
+          .in("status", ["open", "scheduled", "assigned", "in_progress"]);
+        return count ?? 0;
+      })(),
+    ]);
+    const risk_level: PublicKpis["risk_level"] =
+      incidentsCritical > 0 ? "critical" : incidentsOpen > 5 ? "elevated" : "low";
+    return {
+      incidents_open: incidentsOpen,
+      incidents_critical: incidentsCritical,
+      work_orders_active: workOrdersActive,
+      projects_in_progress: projectsInProgress,
+      permits_active: permitsActive,
+      maintenance_pending: maintenancePending,
+      risk_level,
+      generated_at: new Date().toISOString(),
+    };
+  },
+);
+
+
