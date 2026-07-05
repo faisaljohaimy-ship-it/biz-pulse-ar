@@ -65,11 +65,18 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
   const [phase, setPhase] = useState<"scatter" | "assembling" | "done">(
     reducedMotion ? "done" : "scatter",
   );
+  const [needsUnmute, setNeedsUnmute] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (reducedMotion) { onAssembled?.(); return; }
+    // Auto-play from the start of the hero. Try unmuted first; if the browser
+    // blocks (no prior gesture), fall back to muted autoplay and surface a
+    // one-tap unmute chip so sound still starts as early as possible.
+    void autoplayAudio(audioRef).then((state) => {
+      if (state === "muted-fallback") setNeedsUnmute(true);
+    });
     const t1 = window.setTimeout(() => setPhase("assembling"), T_SCATTER_END);
     const t2 = window.setTimeout(() => setPhase("done"), T_ASSEMBLE_END);
     const t3 = window.setTimeout(() => onAssembled?.(), T_TOTAL);
@@ -78,15 +85,23 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
 
   useEffect(() => {
     if (!replayToken) return;
-    if (reducedMotion) { void playAudio(audioRef); return; }
+    if (reducedMotion) { void playAudio(audioRef); setNeedsUnmute(false); return; }
     scatterRef.current = makeScatter(letters.length, isMobile);
     setPhase("scatter");
     void playAudio(audioRef);
+    setNeedsUnmute(false);
     const t1 = window.setTimeout(() => setPhase("assembling"), T_SCATTER_END);
     const t2 = window.setTimeout(() => setPhase("done"), T_ASSEMBLE_END);
     const t3 = window.setTimeout(() => onAssembled?.(), T_TOTAL);
     return () => { window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3); };
   }, [replayToken, isMobile, letters.length, onAssembled, reducedMotion]);
+
+  const handleUnmute = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    try { a.muted = false; a.volume = 0.9; void a.play(); } catch { /* noop */ }
+    setNeedsUnmute(false);
+  };
 
   useEffect(() => {
     return () => {
@@ -114,7 +129,18 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
       role="img"
       style={{ perspective: "1400px" }}
     >
-      <audio ref={audioRef} src={AUDIO_SRC} preload="none" playsInline />
+      <audio ref={audioRef} src={AUDIO_SRC} preload="auto" playsInline autoPlay />
+      {needsUnmute && (
+        <button
+          type="button"
+          onClick={handleUnmute}
+          className="hero-chrome-unmute"
+          aria-label="Enable sound"
+        >
+          <span aria-hidden>🔊</span>
+          <span>Tap for sound</span>
+        </button>
+      )}
 
       {/* Ember / forge glow behind the wordmark. */}
       <div className={`hero-chrome-forge hero-chrome-forge--${phase}`} aria-hidden />
@@ -216,6 +242,36 @@ export function HeroChromeWordmark({ onAssembled, replayToken }: HeroChromeWordm
         .hero-chrome-forge--scatter    { opacity: 0.85; transform: scale(1.15); }
         .hero-chrome-forge--assembling { opacity: 0.6;  transform: scale(0.95); }
         .hero-chrome-forge--done       { opacity: 0.28; transform: scale(0.82); }
+
+        /* ── Unmute chip (only shown if autoplay was force-muted) ─── */
+        .hero-chrome-unmute {
+          position: absolute;
+          bottom: -2.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 5;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.45rem 0.95rem;
+          border-radius: 9999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          color: rgba(240, 245, 255, 0.92);
+          background: linear-gradient(180deg, rgba(30,36,48,0.85), rgba(12,16,24,0.85));
+          border: 1px solid rgba(200, 220, 255, 0.25);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+          cursor: pointer;
+          backdrop-filter: blur(8px);
+          animation: chromeUnmutePulse 2.4s ease-in-out infinite;
+        }
+        .hero-chrome-unmute:hover { color: #fff; border-color: rgba(255,220,180,0.5); }
+        @keyframes chromeUnmutePulse {
+          0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 0 rgba(255,180,110,0.4); }
+          50%      { box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 10px rgba(255,180,110,0); }
+        }
+
 
         /* ── Energy rings ───────────────────────────────────── */
         .hero-chrome-rings {
@@ -404,7 +460,31 @@ async function playAudio(ref: React.MutableRefObject<HTMLAudioElement | null>) {
     a.muted = false;
     a.volume = 0.9;
     await a.play();
-  } catch { /* autoplay blocked — silent fail per spec */ }
+  } catch { /* autoplay blocked — silent fail */ }
+}
+
+type AutoplayState = "unmuted" | "muted-fallback" | "failed";
+async function autoplayAudio(
+  ref: React.MutableRefObject<HTMLAudioElement | null>,
+): Promise<AutoplayState> {
+  const a = ref.current;
+  if (!a) return "failed";
+  a.currentTime = 0;
+  a.volume = 0.9;
+  // Try unmuted first — works if the user has any prior interaction on the origin.
+  try {
+    a.muted = false;
+    await a.play();
+    return "unmuted";
+  } catch { /* fall through to muted */ }
+  // Muted autoplay is universally allowed; surface a one-tap unmute chip.
+  try {
+    a.muted = true;
+    await a.play();
+    return "muted-fallback";
+  } catch {
+    return "failed";
+  }
 }
 
 function useReducedMotion(): boolean {
