@@ -28,6 +28,21 @@ export function MissionControlStrip() {
 
   const k = q.data;
   const loading = q.isLoading;
+
+  // Zero-tolerance policy: the entire section is hidden unless every KPI
+  // resolved to a real, finite numeric value from the database.
+  const isFiniteNumber = (v: unknown): v is number =>
+    typeof v === "number" && Number.isFinite(v);
+  const allReady =
+    !!k &&
+    isFiniteNumber(k.incidents_total) &&
+    isFiniteNumber(k.incidents_open) &&
+    isFiniteNumber(k.incidents_critical) &&
+    isFiniteNumber(k.incidents_resolution_rate) &&
+    isFiniteNumber(k.work_orders_active) &&
+    isFiniteNumber(k.maintenance_pending) &&
+    isFiniteNumber(k.projects_in_progress);
+  if (!allReady) return null;
   const failed = !loading && !k;
 
   const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
