@@ -11,6 +11,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 
 const Input = z.object({
   text: z.string().trim().min(1).max(1200),
