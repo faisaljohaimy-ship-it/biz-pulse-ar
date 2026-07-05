@@ -104,7 +104,6 @@ export function LiveSystemShowcase() {
             </div>
 
             <div className="hidden sm:block">TLS 1.3</div>
-            <div>UPTIME 99.97%</div>
           </div>
         </div>
       </div>
