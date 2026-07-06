@@ -375,9 +375,9 @@ export function HeroZeroIntro() {
           so ARIA's face remains fully visible below. No text overlay. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 z-40 flex justify-center"
+        className="hero-zero-emblem-top pointer-events-none absolute inset-x-0 z-40 flex justify-center"
         style={{
-          top: "calc(env(safe-area-inset-top) + clamp(0.5rem, 2vh, 1.25rem))",
+          top: "calc(env(safe-area-inset-top) + clamp(0.35rem, 1.4vh, 1rem))",
         }}
       >
         <img
