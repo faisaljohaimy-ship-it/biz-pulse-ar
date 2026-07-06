@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
-import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
+import audioAsset from "@/assets/hero-assembly-audio-12.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
 import saudiEmblem from "@/assets/saudi-emblem.png";
 import { setIntroActive } from "@/lib/intro-store";
