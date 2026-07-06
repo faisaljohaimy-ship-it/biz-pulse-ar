@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
-import audioAsset from "@/assets/hero-assembly.mp3.asset.json";
+// hero narration audio intentionally not imported — ARIA voice is user-triggered only
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 
