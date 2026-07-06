@@ -667,7 +667,7 @@ export function HeroZeroIntro() {
           .hero-zero-video { object-position: center 22%; }
         }
         /* Laptop landscape: tighten top emblem and bottom stack so the entire
-           composition (emblem → figure → wordmark → crest → tagline) fits
+           composition (emblem → figure → wordmark → tagline) fits
            within a single laptop viewport without vertical clipping. */
         @media (min-width: 1024px) and (max-height: 900px) {
           .hero-zero-emblem-top { top: calc(env(safe-area-inset-top) + 0.25rem) !important; }
