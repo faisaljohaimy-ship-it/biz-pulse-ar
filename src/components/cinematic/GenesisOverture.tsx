@@ -73,6 +73,7 @@ export function GenesisOverture() {
       window.setTimeout(() => {
         setPhase("done");
         setIntroActive(false);
+        markPlayed();
       }, TOTAL_MS),
     );
 
