@@ -98,7 +98,7 @@ function IntroLanding() {
   const Arrow = ar ? ArrowLeft : ArrowRight;
 
   return (
-    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+    <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
       {/* System-page announcement strip — mounted here so it appears at the
           top of the system homepage only. The cinematic intro is a fixed
           overlay above it, so first-session visitors see the intro clean
