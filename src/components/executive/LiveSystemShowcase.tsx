@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import hajjDashboardPoster from "@/assets/hajj-dashboard-poster.png.asset.json";
 
 
 // Embed the internal /hajj-prime route only — no external lovable.app URL may
