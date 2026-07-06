@@ -1,20 +1,30 @@
 /**
- * AriaTourController — Executive Voice Tour layer.
+ * AriaTourController — Continuous Video Tour panel.
  *
- * Additive-only. Walks an ordered list of section anchors, applies a soft
- * emerald ring, and narrates via ARIA voice (public TTS endpoint). One
- * global audio instance via AriaAudioBus (owner "tour-tts"). Any other ARIA
- * audio source preempts and ends the tour instantly.
+ * ARIA speaks the entire scripted tour in a single pre-rendered video with
+ * lip-sync baked in (/tour/aria-tour-full.mp4). While the video plays, the
+ * page auto-scrolls between named sections using a fixed timestamp map. The
+ * user can only mute or close; there are no per-section stops, no next/prev,
+ * no progress bar.
  *
- * Dual-field pattern: `display` is UI text, `tts` is fully diacritized text
- * sent to the voice pipeline.
+ * Discipline:
+ *  • Starts ONLY on explicit user tap (the hero "Voice tour with ARIA" btn).
+ *  • Single audio owner via AriaAudioBus ("tour-video"). Any other ARIA audio
+ *    or route change closes the tour instantly.
+ *  • Manual user scroll pauses auto-scroll for 5s, then resumes at the
+ *    current narration point. Narration itself never stops.
+ *  • prefers-reduced-motion: no auto-scroll (panel plays in place).
+ *  • video preload="none" until the button tap. Zero layout shift.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pause, Play, SkipForward, X } from "lucide-react";
+import { X, Volume2, VolumeX } from "lucide-react";
+import { useRouterState } from "@tanstack/react-router";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 export type TourLang = "ar" | "en";
 
+// Legacy prop shape kept so existing call sites compile without change.
+// stops/lang are informational only — the video is the tour.
 export interface TourStop {
   readonly id: string;
   readonly anchorId: string;
@@ -24,41 +34,37 @@ export interface TourStop {
 
 interface Props {
   readonly open: boolean;
-  readonly lang: TourLang;
-  readonly stops: readonly TourStop[];
+  readonly lang?: TourLang;
+  readonly stops?: readonly TourStop[];
   readonly onClose: () => void;
 }
 
+const VIDEO_SRC = "/tour/aria-tour-full.mp4";
 const HIGHLIGHT_CLASS = "aria-tour-ring";
-const SCROLL_OFFSET = 96; // sticky header safe zone
-const PREFETCH_HEADROOM_MS = 600;
+const SCROLL_OFFSET = 96;
+const USER_SCROLL_RESUME_MS = 5000;
+const FADE_MS = 250;
 
-const audioCache = new Map<string, string>(); // tts text → object URL
+/**
+ * Fixed narration timeline (section anchor id → video currentTime seconds).
+ * Ordered by time. Adjust these to the real video timing once uploaded.
+ */
+const TOUR_TIMELINE: ReadonlyArray<{ readonly t: number; readonly anchorId: string }> = [
+  { t: 0,  anchorId: "tour-hero" },
+  { t: 7,  anchorId: "tour-positioning" },
+  { t: 15, anchorId: "tour-pillar-security" },
+  { t: 22, anchorId: "tour-pillar-agents" },
+  { t: 30, anchorId: "tour-pillar-twin" },
+  { t: 37, anchorId: "tour-pillar-reports" },
+  { t: 44, anchorId: "tour-pillar-hajj" },
+  { t: 52, anchorId: "tour-pillar-aria" },
+  { t: 59, anchorId: "tour-compliance" },
+  { t: 66, anchorId: "tour-closing" },
+] as const;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-}
-
-async function fetchClip(text: string): Promise<string | null> {
-  const cached = audioCache.get(text);
-  if (cached) return cached;
-  try {
-    const res = await fetch("/api/public/aria-tts", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    if (!res.ok) return null;
-    const ct = res.headers.get("content-type") || "";
-    if (!ct.includes("audio/")) return null;
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    audioCache.set(text, url);
-    return url;
-  } catch {
-    return null;
-  }
 }
 
 function scrollToAnchor(id: string, reduced: boolean): HTMLElement | null {
@@ -70,63 +76,70 @@ function scrollToAnchor(id: string, reduced: boolean): HTMLElement | null {
   return el;
 }
 
-function applyRing(el: HTMLElement | null, reduced: boolean) {
-  if (!el) return;
-  el.classList.add(HIGHLIGHT_CLASS);
-  if (reduced) el.classList.add("aria-tour-ring--static");
-}
-function clearRing(el: HTMLElement | null) {
-  if (!el) return;
-  el.classList.remove(HIGHLIGHT_CLASS);
-  el.classList.remove("aria-tour-ring--static");
-}
 function clearAllRings() {
   if (typeof document === "undefined") return;
   document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((n) => {
     n.classList.remove(HIGHLIGHT_CLASS);
-    n.classList.remove("aria-tour-ring--static");
   });
 }
 
-export function AriaTourController({ open, lang, stops, onClose }: Props) {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const activeElRef = useRef<HTMLElement | null>(null);
-  const abortRef = useRef<{ token: number }>({ token: 0 });
-  const reduced = useMemo(prefersReducedMotion, [open]);
+function currentIndexFor(time: number): number {
+  let idx = 0;
+  for (let i = 0; i < TOUR_TIMELINE.length; i++) {
+    if (time + 0.05 >= TOUR_TIMELINE[i].t) idx = i;
+    else break;
+  }
+  return idx;
+}
+
+export function AriaTourController({ open, lang = "en", onClose }: Props) {
   const ar = lang === "ar";
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const activeSectionRef = useRef<string | null>(null);
+  const userScrollPausedUntilRef = useRef<number>(0);
+  const programmaticScrollRef = useRef<boolean>(false);
+  const [muted, setMuted] = useState(false);
+  const [fading, setFading] = useState(false);
+  const reduced = useMemo(prefersReducedMotion, [open]);
 
-  const stopAudio = useCallback(() => {
-    const a = audioRef.current;
-    if (a) {
-      try { a.pause(); } catch { /* noop */ }
-      audioRef.current = null;
+  // Watch route changes → same as pressing X.
+  const routePath = useRouterState({ select: (s) => s.location.pathname });
+  const initialRouteRef = useRef<string | null>(null);
+
+  const handleClose = useCallback(() => {
+    setFading(true);
+    const v = videoRef.current;
+    if (v) {
+      try { v.pause(); } catch { /* noop */ }
+      try { v.removeAttribute("src"); v.load(); } catch { /* noop */ }
     }
-  }, []);
-
-  const endTour = useCallback(() => {
-    abortRef.current.token += 1;
-    stopAudio();
-    AriaAudioBus.release("tour-tts");
-    clearRing(activeElRef.current);
+    AriaAudioBus.release("tour-video");
     clearAllRings();
-    activeElRef.current = null;
-    setPaused(false);
-    setIndex(0);
-    onClose();
-  }, [onClose, stopAudio]);
+    activeSectionRef.current = null;
+    window.setTimeout(() => {
+      setFading(false);
+      onClose();
+    }, FADE_MS);
+  }, [onClose]);
 
-  // Kill the tour if any other ARIA source takes the bus (chat, greeting).
+  // Close on route change (after initial mount).
+  useEffect(() => {
+    if (!open) { initialRouteRef.current = null; return; }
+    if (initialRouteRef.current === null) {
+      initialRouteRef.current = routePath;
+      return;
+    }
+    if (routePath !== initialRouteRef.current) handleClose();
+  }, [routePath, open, handleClose]);
+
+  // Ownership: any other ARIA source or explicit ARIA-open event closes.
   useEffect(() => {
     if (!open) return;
     const unsub = AriaAudioBus.subscribe((e) => {
-      if (e.kind === "start" && e.source !== "tour-tts") {
-        endTour();
-      }
+      if (e.kind === "start" && e.source !== "tour-video") handleClose();
     });
-    const onAriaOpen = () => endTour();
-    const onHide = () => endTour();
+    const onAriaOpen = () => handleClose();
+    const onHide = () => handleClose();
     window.addEventListener("aria:open", onAriaOpen);
     window.addEventListener("pagehide", onHide);
     return () => {
@@ -134,168 +147,192 @@ export function AriaTourController({ open, lang, stops, onClose }: Props) {
       window.removeEventListener("aria:open", onAriaOpen);
       window.removeEventListener("pagehide", onHide);
     };
-  }, [open, endTour]);
+  }, [open, handleClose]);
 
-  // Cleanup on unmount / close.
+  // User-scroll detection → pause auto-scroll for 5s.
   useEffect(() => {
-    if (!open) {
-      stopAudio();
-      clearAllRings();
-    }
-    return () => { stopAudio(); clearAllRings(); };
-  }, [open, stopAudio]);
+    if (!open || reduced) return;
+    const onWheel = () => {
+      if (programmaticScrollRef.current) return;
+      userScrollPausedUntilRef.current = Date.now() + USER_SCROLL_RESUME_MS;
+    };
+    const onTouch = onWheel;
+    const onKey = (e: KeyboardEvent) => {
+      if (["PageDown","PageUp","ArrowDown","ArrowUp","Home","End"," "].includes(e.key)) onWheel();
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchmove", onTouch);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, reduced]);
 
-  // Advance through stops.
+  // Start video + acquire audio bus on open.
   useEffect(() => {
     if (!open) return;
-    if (index >= stops.length) { endTour(); return; }
+    const v = videoRef.current;
+    if (!v) return;
 
-    const token = ++abortRef.current.token;
-    const stop = stops[index];
-
-    // Preempt any other audio and take ownership.
     AriaAudioBus.unlock();
-    const granted = AriaAudioBus.acquire("tour-tts", () => {
-      // Preempted from outside — end.
-      abortRef.current.token += 1;
-      stopAudio();
-      clearRing(activeElRef.current);
+    const granted = AriaAudioBus.acquire("tour-video", () => {
+      // Preempted from outside.
+      try { v.pause(); } catch { /* noop */ }
     });
-    if (!granted) { endTour(); return; }
+    if (!granted) { handleClose(); return; }
 
-    // Scroll + highlight
-    clearRing(activeElRef.current);
-    const el = scrollToAnchor(stop.anchorId, reduced);
-    activeElRef.current = el;
-    applyRing(el, reduced);
+    v.muted = false;
+    v.currentTime = 0;
+    v.play().then(() => {
+      AriaAudioBus.notifyPlaying("tour-video", v);
+    }).catch(() => {
+      // Autoplay blocked despite user tap — retry muted so the panel isn't dead.
+      v.muted = true;
+      setMuted(true);
+      v.play().catch(() => handleClose());
+    });
 
-    let cancelled = false;
-    void (async () => {
-      const url = await fetchClip(stop.tts);
-      if (cancelled || token !== abortRef.current.token) return;
+    const onTime = () => {
+      const idx = currentIndexFor(v.currentTime);
+      const target = TOUR_TIMELINE[idx];
+      if (!target) return;
+      if (activeSectionRef.current === target.anchorId) return;
+      activeSectionRef.current = target.anchorId;
 
-      const audio = new Audio(url ?? undefined);
-      audioRef.current = audio;
-      audio.onended = () => {
-        if (token !== abortRef.current.token) return;
-        AriaAudioBus.notifyStopped("tour-tts");
-        setIndex((i) => i + 1);
-      };
-      audio.onerror = () => {
-        if (token !== abortRef.current.token) return;
-        AriaAudioBus.notifyStopped("tour-tts");
-        setIndex((i) => i + 1);
-      };
-      audio.onplaying = () => AriaAudioBus.notifyPlaying("tour-tts", audio);
+      // Refresh ring.
+      clearAllRings();
+      const el = document.getElementById(target.anchorId);
+      if (el) el.classList.add(HIGHLIGHT_CLASS);
 
-      if (paused || !url) {
-        // If paused before starting or no clip returned, still advance after
-        // a short delay so the tour doesn't stall.
-        if (!url) {
-          window.setTimeout(() => {
-            if (token === abortRef.current.token) setIndex((i) => i + 1);
-          }, 2500);
-        }
-        return;
-      }
-      try { await audio.play(); } catch { /* autoplay may fail */ }
+      // Auto-scroll unless reduced-motion or user just scrolled.
+      if (reduced) return;
+      if (Date.now() < userScrollPausedUntilRef.current) return;
+      programmaticScrollRef.current = true;
+      scrollToAnchor(target.anchorId, false);
+      window.setTimeout(() => { programmaticScrollRef.current = false; }, 900);
+    };
+    const onEnded = () => handleClose();
+    const onStopped = () => AriaAudioBus.notifyStopped("tour-video");
 
-      // Prefetch next clip while this one plays.
-      const next = stops[index + 1];
-      if (next) {
-        window.setTimeout(() => { void fetchClip(next.tts); }, PREFETCH_HEADROOM_MS);
-      }
-    })();
+    v.addEventListener("timeupdate", onTime);
+    v.addEventListener("ended", onEnded);
+    v.addEventListener("pause", onStopped);
 
-    return () => { cancelled = true; };
+    return () => {
+      v.removeEventListener("timeupdate", onTime);
+      v.removeEventListener("ended", onEnded);
+      v.removeEventListener("pause", onStopped);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, index, stops, reduced]);
+  }, [open]);
 
-  // Pause/resume without restarting audio.
+  // Cleanup any lingering ring when closed/unmounted.
   useEffect(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    if (paused) { try { a.pause(); } catch { /* noop */ } }
-    else { void a.play().catch(() => { /* noop */ }); }
-  }, [paused]);
+    if (!open) clearAllRings();
+    return () => clearAllRings();
+  }, [open]);
+
+  const toggleMute = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const next = !v.muted;
+    v.muted = next;
+    setMuted(next);
+  }, []);
 
   if (!open) return null;
 
-  const current = stops[index];
-  const label = {
-    pause: ar ? "إيقاف مؤقت" : "Pause",
-    resume: ar ? "متابعة" : "Resume",
-    next: ar ? "التالي" : "Next",
-    end: ar ? "إنهاء الجولة" : "End tour",
-    counter: ar ? `${index + 1} من ${stops.length}` : `${index + 1} of ${stops.length}`,
-  };
-
   return (
     <>
-      {/* Ring style (scoped, additive) */}
       <style>{`
         .${HIGHLIGHT_CLASS} {
           position: relative;
           transition: box-shadow 420ms ease, outline-color 420ms ease;
           outline: 2px solid rgba(52, 211, 153, 0.55);
           outline-offset: 6px;
-          box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.14), 0 0 46px rgba(16, 185, 129, 0.28);
+          box-shadow: 0 0 0 6px rgba(16,185,129,0.14), 0 0 46px rgba(16,185,129,0.28);
           border-radius: 18px;
           animation: aria-tour-pulse 2600ms ease-in-out infinite;
         }
-        .${HIGHLIGHT_CLASS}--static { animation: none !important; }
         @keyframes aria-tour-pulse {
-          0%, 100% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.12), 0 0 40px rgba(16, 185, 129, 0.22); }
-          50%      { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.20), 0 0 62px rgba(16, 185, 129, 0.38); }
+          0%, 100% { box-shadow: 0 0 0 6px rgba(16,185,129,0.12), 0 0 40px rgba(16,185,129,0.22); }
+          50%      { box-shadow: 0 0 0 8px rgba(16,185,129,0.20), 0 0 62px rgba(16,185,129,0.38); }
         }
         @media (prefers-reduced-motion: reduce) {
           .${HIGHLIGHT_CLASS} { animation: none !important; }
         }
+        .aria-tour-panel {
+          position: fixed;
+          z-index: 70;
+          border-radius: 22px;
+          overflow: hidden;
+          background: #041a12;
+          border: 1px solid rgba(52,211,153,0.35);
+          box-shadow:
+            0 0 0 1px rgba(52,211,153,0.15),
+            0 18px 60px rgba(6,26,20,0.55),
+            0 0 80px rgba(16,185,129,0.35);
+          transition: opacity ${FADE_MS}ms ease-out, transform ${FADE_MS}ms ease-out;
+        }
+        /* Desktop: bottom-right */
+        @media (min-width: 768px) {
+          .aria-tour-panel {
+            right: 24px;
+            bottom: 24px;
+            width: 240px;
+          }
+          [dir="rtl"] .aria-tour-panel { right: auto; left: 24px; }
+        }
+        /* Mobile: bottom-center, above safe-area */
+        @media (max-width: 767.98px) {
+          .aria-tour-panel {
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: calc(16px + env(safe-area-inset-bottom));
+            width: 40vw;
+            min-width: 180px;
+            max-width: 260px;
+          }
+          .aria-tour-panel.aria-tour-fading { transform: translateX(-50%) scale(0.96); }
+        }
+        .aria-tour-panel.aria-tour-fading { opacity: 0; }
       `}</style>
 
-      {/* Floating pill — bottom center, thumb-reachable on mobile */}
       <div
-        role="toolbar"
-        aria-label={ar ? "تحكم الجولة الصوتية" : "Voice tour controls"}
+        role="dialog"
+        aria-label={ar ? "جولة آريا التقديمية" : "ARIA guided tour"}
         dir={ar ? "rtl" : "ltr"}
-        className="fixed inset-x-0 z-[70] flex justify-center px-3"
-        style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        className={`aria-tour-panel ${fading ? "aria-tour-fading" : ""}`}
       >
-        <div className="pointer-events-auto flex max-w-[92vw] items-center gap-2 rounded-full border border-emerald-400/40 bg-[#04111f]/95 px-3 py-2 text-white shadow-[0_10px_40px_rgba(16,185,129,0.25)] backdrop-blur-xl">
-          <span className="hidden max-w-[38ch] truncate text-xs text-white/75 sm:inline">
-            {current?.display}
-          </span>
-          <span className="mx-1 hidden text-[10px] uppercase tracking-[0.2em] text-emerald-300/80 sm:inline">
-            {label.counter}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPaused((p) => !p)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/10"
-            aria-label={paused ? label.resume : label.pause}
-          >
-            {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              abortRef.current.token += 1;
-              stopAudio();
-              setIndex((i) => i + 1);
-            }}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/10"
-            aria-label={label.next}
-          >
-            <SkipForward className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={endTour}
-            className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/45 bg-emerald-400/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 transition hover:bg-emerald-400/20"
-          >
-            <X className="h-3.5 w-3.5" />
-            <span>{label.end}</span>
-          </button>
+        <div style={{ position: "relative", width: "100%", aspectRatio: "9 / 16", background: "#000" }}>
+          <video
+            ref={videoRef}
+            src={VIDEO_SRC}
+            playsInline
+            preload="none"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+          {/* Corner controls */}
+          <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 6 }}>
+            <button
+              type="button"
+              onClick={toggleMute}
+              aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-300/40 bg-black/55 text-white backdrop-blur-md transition hover:bg-black/75"
+            >
+              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label={ar ? "إغلاق الجولة" : "Close tour"}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-300/40 bg-black/55 text-white backdrop-blur-md transition hover:bg-black/75"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
     </>
