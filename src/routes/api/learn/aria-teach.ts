@@ -63,9 +63,10 @@ export const Route = createFileRoute("/api/learn/aria-teach")({
         const provider = createLovableAiGatewayProvider(lovableKey);
         const model = provider(DEFAULT_LOVABLE_MODEL);
 
+        const { ARIA_IDENTITY_PREAMBLE } = await import("@/lib/aria/identity");
         const result = streamText({
           model,
-          system: baseInstructor + contextLine,
+          system: `${ARIA_IDENTITY_PREAMBLE}\n\n---\n\n# LESSON INSTRUCTOR ROLE\n${baseInstructor}${contextLine}`,
           messages: await convertToModelMessages(body.messages),
         });
         return result.toUIMessageStreamResponse({ originalMessages: body.messages });
