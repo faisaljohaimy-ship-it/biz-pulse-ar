@@ -415,7 +415,7 @@ export function HeroZeroIntro() {
       {!reducedMotion.current && (
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 h-[26%] w-[42%] -translate-x-1/2"
+          className="pointer-events-none absolute left-1/2 z-20 h-[26%] w-[42%] -translate-x-1/2"
           style={{
             bottom: "22%",
             filter: "url(#hero-zero-turbulence) blur(2px)",
