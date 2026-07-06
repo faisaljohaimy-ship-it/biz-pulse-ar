@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import sentinelUrl from "@/assets/genesis-sentinel.png";
+import { setIntroActive } from "@/lib/intro-store";
 
 /**
  * GenesisOverture — pre-system cinematic overture.
