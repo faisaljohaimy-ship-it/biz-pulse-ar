@@ -482,9 +482,16 @@ export function HeroZeroIntro() {
       </button>
 
       <style>{`
+        /* Fullscreen framing: portrait viewports show the film near-native,
+           landscape/laptop viewports anchor the crop 28% from the top so the
+           winged figure's head and wings stay in frame under object-cover. */
+        .hero-zero-video { object-position: center center; }
+        @media (min-aspect-ratio: 1/1) {
+          .hero-zero-video { object-position: center 28%; }
+        }
         @keyframes hero-zero-fadein {
           from { opacity: 0; }
-          to   { opacity: 0.28; }
+          to   { opacity: 1; }
         }
         @keyframes hero-zero-wordmark {
           0%   { opacity: 0; transform: translateY(28px) scale(0.92); filter: blur(14px); }
