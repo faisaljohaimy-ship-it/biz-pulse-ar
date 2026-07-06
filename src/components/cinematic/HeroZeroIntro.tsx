@@ -39,12 +39,17 @@ function shouldSkipInitial(): boolean {
 
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
+  // Sound OFF by default — per browser autoplay policy, we never start audio
+  // without an explicit user gesture. The button below flips this on.
+  const [soundOn, setSoundOn] = useState(false);
+  const soundOnRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
   const hardCapRef = useRef<number | null>(null);
   const reducedMotion = useRef(false);
+
 
   // Client-only mount decision (avoids SSR flash).
   useEffect(() => {
