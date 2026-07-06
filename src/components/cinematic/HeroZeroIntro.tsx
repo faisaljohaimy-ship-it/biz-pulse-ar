@@ -628,12 +628,35 @@ export function HeroZeroIntro() {
 
 
 
+      {/* Sound toggle — the only trigger that starts audio (browser policy).
+          Placed opposite Skip so both remain thumb-reachable on mobile
+          without overlapping. Pulses gently while muted so the user
+          notices it exists. */}
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-label={soundOn ? "Mute · كتم الصوت" : "Play sound · تشغيل الصوت"}
+        aria-pressed={soundOn}
+        className={`group absolute z-30 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF] ${
+          soundOn
+            ? "border-[#00D4FF]/60 bg-[#00D4FF]/15 text-white shadow-[0_0_20px_rgba(0,212,255,0.35)]"
+            : "border-white/25 bg-white/[0.08] text-white/85 hover:border-white/50 hover:bg-white/[0.14] hover:text-white animate-[hero-zero-sound-pulse_2.4s_ease-in-out_infinite]"
+        }`}
+        style={{
+          bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+          left: "1.5rem",
+        }}
+      >
+        {soundOn ? <Volume2 size={16} strokeWidth={2.4} /> : <VolumeX size={16} strokeWidth={2.4} />}
+        <span>{soundOn ? "كتم · Mute" : "الصوت · Sound"}</span>
+      </button>
+
       {/* Skip chip */}
       <button
         type="button"
         onClick={finish}
         aria-label="Skip intro · تخطّي المقدمة"
-        className="group absolute z-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-white/80 backdrop-blur-md transition hover:border-white/40 hover:bg-white/[0.12] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
+        className="group absolute z-30 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-white/80 backdrop-blur-md transition hover:border-white/40 hover:bg-white/[0.12] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
         style={{
           bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
           right: "1.5rem",
