@@ -375,9 +375,9 @@ export function HeroZeroIntro() {
           so ARIA's face remains fully visible below. No text overlay. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 z-40 flex justify-center"
+        className="hero-zero-emblem-top pointer-events-none absolute inset-x-0 z-40 flex justify-center"
         style={{
-          top: "calc(env(safe-area-inset-top) + clamp(0.5rem, 2vh, 1.25rem))",
+          top: "calc(env(safe-area-inset-top) + clamp(0.35rem, 1.4vh, 1rem))",
         }}
       >
         <img
@@ -431,9 +431,9 @@ export function HeroZeroIntro() {
         role="img"
         aria-label="NEXIOS AI · نكسيوس — رؤية 2030 — Enterprise AI · Executive OS"
         dir="ltr"
-        className="pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
+        className="hero-zero-bottom-stack pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
         style={{
-          bottom: "clamp(5dvh, 7dvh, 10dvh)",
+          bottom: "clamp(3dvh, 6dvh, 9dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
           unicodeBidi: "isolate",
         }}
@@ -558,10 +558,31 @@ export function HeroZeroIntro() {
       <style>{`
         /* Fullscreen framing: portrait viewports show the film near-native,
            landscape/laptop viewports anchor the crop 28% from the top so the
-           winged figure's head and wings stay in frame under object-cover. */
+           winged figure's head and wings stay in frame under object-cover.
+           On typical laptop aspect ratios (16:9 / 16:10) we pull the anchor
+           slightly higher so the full figure — head to base — remains
+           centered without being cropped by the bottom stack. */
         .hero-zero-video { object-position: center center; }
         @media (min-aspect-ratio: 1/1) {
-          .hero-zero-video { object-position: center 28%; }
+          .hero-zero-video { object-position: center 32%; }
+        }
+        @media (min-width: 1024px) and (max-height: 900px) {
+          .hero-zero-video { object-position: center 34%; }
+        }
+        @media (min-width: 1280px) and (max-height: 820px) {
+          .hero-zero-video { object-position: center 36%; }
+        }
+        /* Laptop landscape: tighten top emblem and bottom stack so the entire
+           composition (emblem → figure → wordmark → crest → tagline) fits
+           within a single laptop viewport without vertical clipping. */
+        @media (min-width: 1024px) and (max-height: 900px) {
+          .hero-zero-emblem-top { top: calc(env(safe-area-inset-top) + 0.25rem) !important; }
+          .hero-zero-emblem-top img { width: clamp(72px, 10vh, 128px) !important; }
+          .hero-zero-bottom-stack { bottom: clamp(2dvh, 3.5dvh, 5dvh) !important; }
+        }
+        @media (min-width: 1280px) and (max-height: 820px) {
+          .hero-zero-emblem-top img { width: clamp(64px, 9vh, 112px) !important; }
+          .hero-zero-bottom-stack { bottom: clamp(1.5dvh, 2.5dvh, 4dvh) !important; }
         }
         @keyframes hero-zero-fadein {
           from { opacity: 0; }
@@ -633,6 +654,12 @@ export function HeroZeroIntro() {
         @media (max-height: 620px) {
           .hero-zero-wordmark-glow { font-size: clamp(1.1rem, 3.6vw, 1.85rem) !important; }
         }
+        @media (min-width: 1024px) and (max-height: 900px) {
+          .hero-zero-wordmark-glow { font-size: clamp(1.4rem, 3vw, 2.4rem) !important; }
+        }
+        @media (min-width: 1280px) and (max-height: 820px) {
+          .hero-zero-wordmark-glow { font-size: clamp(1.25rem, 2.4vw, 2rem) !important; }
+        }
 
         @keyframes hero-zero-tagline {
           from { opacity: 0; transform: translateY(6px); }
@@ -649,9 +676,6 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-
-        /* (top-center emblem removed — ARIA's face stays clean) */
-
 
         /* Sound toggle idle pulse — gently signals "tap to hear ARIA"
            without being noisy. Stops the moment the user enables sound. */
