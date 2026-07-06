@@ -1,7 +1,7 @@
 /** DepartmentsLauncher — Industrial Security: 4 sections × 6 districts. Compact centered modal. */
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Wrench, FolderKanban, BadgeCheck, ShieldAlert, X } from "lucide-react";
+import { Wrench, FolderKanban, BadgeCheck, ShieldAlert, LifeBuoy, Siren, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const DISTRICTS = [
