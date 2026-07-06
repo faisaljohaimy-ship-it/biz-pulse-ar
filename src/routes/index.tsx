@@ -131,18 +131,33 @@ function IntroLanding() {
       <section
         id="tour-hero"
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
-        className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
+        className="relative z-10 flex min-h-[100svh] w-full flex-col px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+        style={{ paddingTop: "clamp(30dvh, 34dvh, 38dvh)" }}
       >
+        {/* Face-safe scrim — starts BELOW the top 34dvh so ARIA's face stays
+            unobstructed while buttons below remain readable. */}
         <div
-          className="mx-auto flex w-full max-w-[420px] flex-col items-center sm:max-w-2xl"
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0"
+          style={{
+            top: "34dvh",
+            background:
+              "linear-gradient(to bottom, rgba(4,7,15,0) 0%, rgba(4,7,15,0.55) 40%, rgba(4,7,15,0.85) 100%)",
+          }}
+        />
+        <div
+          className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center sm:max-w-2xl"
           style={{
             animation: "hero-stack-settle 1100ms cubic-bezier(0.22,1,0.36,1) both",
             willChange: "transform, opacity",
           }}
         >
-          {/* Chrome NEXIOS wordmark — moved to the TOP as the hero's opening
-              statement. Preserves original chrome material + responsive sizing. */}
-          <div className="relative mb-8 w-full">
+          {/* Chrome NEXIOS wordmark — sits just below the face-safe zone.
+              Glow contained so text-shadow cannot bleed upward into her face. */}
+          <div
+            className="relative mb-8 w-full"
+            style={{ isolation: "isolate", filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.35))" }}
+          >
             <NexiosWordmark />
           </div>
 
