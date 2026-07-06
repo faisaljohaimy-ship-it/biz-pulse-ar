@@ -54,12 +54,12 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
       .select("user_id,org_id,role,joined_at")
       .order("joined_at", { ascending: true });
 
-    // Resolve emails/names via profiles (RLS-scoped)
+    // Resolve display names via profiles (RLS-scoped)
     const userIds = Array.from(new Set((members ?? []).map((m) => m.user_id)));
     const { data: profs } = userIds.length
-      ? await supabase.from("profiles").select("id,email,display_name").in("id", userIds)
-      : { data: [] as Array<{ id: string; email: string | null; display_name: string | null }> };
-    const profMap = new Map(profs?.map((p) => [p.id, p]) ?? []);
+      ? await supabase.from("profiles").select("user_id,display_name").in("user_id", userIds)
+      : { data: [] as Array<{ user_id: string; display_name: string | null }> };
+    const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
 
     const rows: MemberRow[] = (members ?? []).map((m) => {
       const p = profMap.get(m.user_id);
@@ -68,7 +68,7 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
         org_id: m.org_id,
         role: m.role as OrgRole,
         joined_at: m.joined_at,
-        email: p?.email ?? null,
+        email: null,
         display_name: p?.display_name ?? null,
       };
     });
