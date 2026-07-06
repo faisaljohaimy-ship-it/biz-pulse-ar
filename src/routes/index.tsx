@@ -60,7 +60,9 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
   const { speak } = useAriaSpeech();
+  const tourStops = tourStopsFor(ar ? "ar" : "en");
 
   const replayGreeting = () => {
     AriaAudioBus.unlock();
