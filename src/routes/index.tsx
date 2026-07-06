@@ -204,21 +204,9 @@ function IntroLanding() {
           {/* Telemetry footer — tabular numerals, executive signal */}
           <dl
             aria-label={ar ? "قراءات النظام" : "System readouts"}
-            className="mt-8 grid w-full grid-cols-3 gap-4 border-t border-[#3AE8FF]/12 pt-4 text-center"
+            className="mt-8 grid w-full grid-cols-1 gap-4 border-t border-[#3AE8FF]/12 pt-4 text-center"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
-            <div className="flex flex-col items-center gap-1">
-              <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-                {ar ? "حِمل النواة" : "Core Load"}
-              </dt>
-              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">1.02%</dd>
-            </div>
-            <div className="flex flex-col items-center gap-1 border-x border-[#3AE8FF]/10">
-              <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-                {ar ? "معدل المزامنة" : "Sync Rate"}
-              </dt>
-              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">99.9</dd>
-            </div>
             <div className="flex flex-col items-center gap-1">
               <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
                 {ar ? "مستوى الصلاحية" : "Auth Level"}
