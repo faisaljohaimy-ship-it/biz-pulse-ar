@@ -420,15 +420,25 @@ export function HeroZeroIntro() {
 
 
       {/* NEXIOS AI wordmark — lower third across all devices. Safe-area
-          padding keeps clear of the iPhone home indicator. */}
+          padding keeps clear of the iPhone home indicator.
+
+          Accessibility: the whole block is a single `role="img"` region with
+          a bilingual aria-label so a screen reader announces
+          "NEXIOS AI, Enterprise AI Executive OS" once, in one voice, instead
+          of reading the decorative letters and dot separator. The individual
+          visual glyphs are marked `aria-hidden` and an `.sr-only` string
+          carries the canonical bilingual label. */}
       <div
+        role="img"
+        aria-label="NEXIOS AI · نكسيوس — Enterprise AI · Executive OS"
         className="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center text-center"
         style={{
           bottom: "clamp(8dvh, 12dvh, 16dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div
+        <span
+          aria-hidden="true"
           className="font-black uppercase leading-none"
           style={{
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
@@ -450,8 +460,9 @@ export function HeroZeroIntro() {
           }}
         >
           NEXIOS AI
-        </div>
-        <div
+        </span>
+        <span
+          aria-hidden="true"
           className="mt-2 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
           style={{
             opacity: 0,
@@ -459,8 +470,12 @@ export function HeroZeroIntro() {
           }}
         >
           Enterprise AI · Executive OS
-        </div>
+        </span>
+        <span className="sr-only">
+          NEXIOS AI · نكسيوس — Enterprise AI · Executive OS
+        </span>
       </div>
+
 
 
 
