@@ -1,1 +1,102 @@
-[]
+[
+  {
+    "viewport": "iphone-se",
+    "checks": [
+      "face-clear=ok",
+      "skip-separate=ok",
+      "z-range=ok (6 nodes)"
+    ],
+    "emblemBox": {
+      "x": 139.5,
+      "y": 13.328125,
+      "w": 96,
+      "h": 96
+    },
+    "crestBox": {
+      "x": 71.046875,
+      "y": 561.3125,
+      "w": 232.890625,
+      "h": 32
+    }
+  },
+  {
+    "viewport": "iphone-14-pro",
+    "checks": [
+      "face-clear=ok",
+      "skip-separate=ok",
+      "z-range=ok (6 nodes)"
+    ],
+    "emblemBox": {
+      "x": 148.5,
+      "y": 17.03125,
+      "w": 96,
+      "h": 96
+    },
+    "crestBox": {
+      "x": 80.046875,
+      "y": 733.375,
+      "w": 232.890625,
+      "h": 32
+    }
+  },
+  {
+    "viewport": "pixel-7",
+    "checks": [
+      "face-clear=ok",
+      "skip-separate=ok",
+      "z-range=ok (6 nodes)"
+    ],
+    "emblemBox": {
+      "x": 158,
+      "y": 18.296875,
+      "w": 96,
+      "h": 96
+    },
+    "crestBox": {
+      "x": 89.546875,
+      "y": 791.953125,
+      "w": 232.890625,
+      "h": 32
+    }
+  },
+  {
+    "viewport": "ipad-mini",
+    "checks": [
+      "face-clear=ok",
+      "skip-separate=ok",
+      "z-range=ok (6 nodes)"
+    ],
+    "emblemBox": {
+      "x": 326.40625,
+      "y": 20,
+      "w": 115.1875,
+      "h": 115.1875
+    },
+    "crestBox": {
+      "x": 267.546875,
+      "y": 889.359375,
+      "w": 232.890625,
+      "h": 35.96875
+    }
+  },
+  {
+    "viewport": "desktop-1440",
+    "checks": [
+      "face-clear=ok",
+      "skip-separate=ok",
+      "z-range=ok (6 nodes)"
+    ],
+    "emblemBox": {
+      "x": 639,
+      "y": 18,
+      "w": 162,
+      "h": 162
+    },
+    "crestBox": {
+      "x": 548.8125,
+      "y": 758.328125,
+      "w": 342.359375,
+      "h": 51.671875
+    }
+  }
+]
