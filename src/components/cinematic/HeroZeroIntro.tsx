@@ -198,15 +198,38 @@ export function HeroZeroIntro() {
     video.addEventListener("waiting", onVideoWaiting);
     video.addEventListener("playing", onVideoPlaying);
 
+    // Tab-switch / backgrounding — iOS Safari and Android Chrome both pause
+    // media aggressively when hidden and often resume the muted video
+    // slightly ahead of the audio. Sequence matters: resume audio FIRST,
+    // wait a tick for its clock to advance, then snap the video to the
+    // real audio time so we come back locked to the voice.
+    let resuming = false;
     const onVisibility = () => {
-      if (document.hidden) { video.pause(); audio.pause(); }
-      else {
-        try { video.currentTime = audio.currentTime; } catch { /* noop */ }
-        void audio.play().catch(() => {});
-        void video.play().catch(() => {});
+      if (document.hidden) {
+        try { video.pause(); audio.pause(); } catch { /* noop */ }
+        return;
       }
+      if (resuming) return;
+      resuming = true;
+      (async () => {
+        try {
+          video.playbackRate = 1;
+          await audio.play().catch(() => {});
+          // Two rAFs so the audio decoder has a moment to advance its clock
+          // before we snap the muted video onto it.
+          await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+          try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+          await video.play().catch(() => {});
+        } finally {
+          resuming = false;
+        }
+      })();
     };
     document.addEventListener("visibilitychange", onVisibility);
+    // iOS bfcache / page-freeze recovery
+    window.addEventListener("pageshow", onVisibility);
+    cleanupFns.push(() => window.removeEventListener("pageshow", onVisibility));
+
 
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
