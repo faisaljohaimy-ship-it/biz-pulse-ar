@@ -39,11 +39,12 @@ function shouldSkipInitial(): boolean {
 
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
-  // Sound ON by default — the intro tries to autoplay audio immediately, and
-  // falls back to unlocking on the first user gesture if the browser blocks
-  // silent-media autoplay (iOS/Safari). No visible mute button.
-  // No React state needed — `soundOnRef` is the single source of truth for
-  // the media effect. Audio is always ON by default.
+  // ENTRY-GATED audio: audio playback is FORBIDDEN until the user taps the
+  // «دخول» button. The muted video may autoplay (browser policy allows this),
+  // but no sound of any kind — greeting, narration, TTS — starts on mount.
+  const [entered, setEntered] = useState(false);
+  const enteredRef = useRef(false);
+  const startAudioRef = useRef<null | (() => Promise<void>)>(null);
   const soundOnRef = useRef(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
