@@ -223,7 +223,7 @@ function IntroLanding() {
               }}
               className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#00D4FF]/45 bg-[#00D4FF]/[0.06] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/[0.12]"
             >
-              <Sparkles className="h-4 w-4 text-[#3AE8FF]" />
+              
               {ar ? "ابدأ محادثة آريا" : "Start Conversation with ARIA"}
             </button>
             <button
