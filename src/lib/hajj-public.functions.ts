@@ -18,6 +18,30 @@ export type HajjPublicKpi = {
   has_data: boolean;  // false when nothing was returned
 };
 
+export type HajjPublicStation = {
+  id: string;
+  code: string | null;
+  name_ar: string | null;
+  name_en: string | null;
+  status: string | null;
+  staff_count: number | null;
+};
+
+export type HajjPublicTask = {
+  id: string;
+  title_ar: string | null;
+  title_en: string | null;
+  priority: string | null;
+  status: string | null;
+  reported_at: string | null;
+};
+
+export type HajjExecSummary = {
+  kpi: HajjPublicKpi;
+  stations: HajjPublicStation[];
+  top_tasks: HajjPublicTask[];
+};
+
 export const getHajjPublicOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<HajjPublicKpi> => {
     // supabaseAdmin is server-only; load inside handler so it never ships to
