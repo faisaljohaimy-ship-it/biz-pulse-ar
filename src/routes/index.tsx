@@ -192,6 +192,7 @@ function IntroLanding() {
             >
               <Mic className="h-4 w-4 text-[#3AE8FF]" />
               {ar ? "جولة صوتية مع آريا" : "Voice tour with ARIA"}
+            </button>
           </div>
 
           {/* Secondary utility row */}
