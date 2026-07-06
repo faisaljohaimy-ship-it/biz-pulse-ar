@@ -99,8 +99,9 @@ function IntroLanding() {
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
       {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
-      {/* Genesis Overture — pre-system cinematic (plays once per session) */}
-      <GenesisOverture />
+      {/* Genesis Overture is mounted globally in __root.tsx. */}
+
+
 
 
 
