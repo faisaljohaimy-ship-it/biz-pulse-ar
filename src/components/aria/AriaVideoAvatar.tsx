@@ -76,8 +76,6 @@ export function AriaVideoAvatar({
         pendingStartAtRef.current = null;
         startMotionAt(t, audioElRef.current);
       }
-      // eslint-disable-next-line no-console
-      console.log("[aria-sync] decoder primed");
     }).catch(() => {
       // Autoplay policy still blocks — will retry on next gesture.
       primedRef.current = false;
