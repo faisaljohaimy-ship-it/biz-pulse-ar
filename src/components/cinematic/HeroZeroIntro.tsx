@@ -282,7 +282,22 @@ export function HeroZeroIntro() {
   // scene. The canvas element is kept in the JSX only as a transparent
   // no-op layer to preserve stacking; no effect is attached.
   useEffect(() => {
-    // no-op
+    if (mounted !== "playing") return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const sync = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    };
+    sync();
+    window.addEventListener("resize", sync);
+    window.addEventListener("orientationchange", sync);
+    return () => {
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("orientationchange", sync);
+    };
   }, [mounted]);
 
 
