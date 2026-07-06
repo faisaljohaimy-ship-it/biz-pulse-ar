@@ -274,7 +274,14 @@ function IntroLanding() {
               <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">EXC</dd>
             </div>
           </dl>
+
+          {/* NEXIOS wordmark — moved to the very bottom of the hero, well
+              below ARIA's face, so it reads as an executive signature. */}
+          <div className="relative mt-10 w-full sm:mt-14">
+            <NexiosWordmark />
+          </div>
         </div>
+
 
         <style>{`
           @keyframes hero-stack-settle {
