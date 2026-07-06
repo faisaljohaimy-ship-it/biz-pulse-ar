@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { toast } from "sonner";
+import { TenantSwitcher } from "@/components/simulation/TenantSwitcher";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
