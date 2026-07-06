@@ -56,7 +56,14 @@ const ExplanationEnvelope = z.object({
   steps_ar: z.array(z.string()).default([]),
 });
 
-const SYSTEM = `You are ARIA — Executive AI for NEXIOS / NEXUS AI OS. Expand a director's recommendation into an executive rationale.
+import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+
+const SYSTEM = `${ARIA_IDENTITY_PREAMBLE}
+
+---
+
+# TASK — EXECUTIVE EXPLANATION
+Expand a director's recommendation into an executive rationale.
 
 ${ARIA_VOICE_CONTRACT}
 
