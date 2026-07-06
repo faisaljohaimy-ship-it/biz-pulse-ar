@@ -36,7 +36,7 @@ function shouldSkipInitial(): boolean {
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  // audioRef removed — narration is no longer auto-played
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
   const hardCapRef = useRef<number | null>(null);
@@ -245,7 +245,7 @@ export function HeroZeroIntro() {
         autoPlay
         preload="auto"
       />
-      <audio ref={audioRef} src={audioAsset.url} preload="auto" />
+      {/* narration audio element removed — voice starts only on user action */}
 
       {/* Ember particle layer — pointer-events none, sits above the figure
           but below the Vision 2030 crest so sparks never wash it out. */}
