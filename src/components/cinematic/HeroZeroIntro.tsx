@@ -256,14 +256,40 @@ export function HeroZeroIntro() {
         pointerEvents: closing ? "none" : "auto",
       }}
     >
+      {/* Deep cosmic backdrop — sits BEHIND the transparent winged figure so
+          the scene has depth even when the video is faded to ~25%. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: [
+            "radial-gradient(ellipse 90% 60% at 50% 40%, rgba(0,212,255,0.18) 0%, rgba(6,26,46,0.0) 55%)",
+            "radial-gradient(ellipse 70% 50% at 50% 78%, rgba(255,120,30,0.22) 0%, rgba(0,0,0,0) 60%)",
+            "radial-gradient(circle at 50% 50%, #061A2E 0%, #02070E 70%, #000 100%)",
+          ].join(","),
+        }}
+      />
+      {/* Subtle horizon light beam */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-1/2 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.55) 50%, transparent 100%)",
+          boxShadow: "0 0 60px 8px rgba(0,212,255,0.35)",
+          opacity: 0.7,
+        }}
+      />
+
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover mix-blend-screen"
         style={{
           animation: reducedMotion.current
             ? undefined
-            : "hero-zero-fadein 700ms 350ms both ease-out",
-          opacity: reducedMotion.current ? 1 : 0,
+            : "hero-zero-fadein 1400ms 300ms both ease-out",
+          opacity: reducedMotion.current ? 0.28 : 0,
+          filter: "contrast(1.05) brightness(1.1)",
         }}
         src={videoAsset.url}
         poster={posterAsset.url}
