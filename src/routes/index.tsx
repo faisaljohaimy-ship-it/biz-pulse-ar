@@ -116,6 +116,7 @@ function IntroLanding() {
 
       {/* ══ Executive Hero — Tactical HUD ══ */}
       <section
+        id="tour-hero"
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
       >
