@@ -72,29 +72,37 @@ export function HeroZeroIntro() {
     }, CROSSFADE_MS);
   };
 
-  // Start playback + sync loop + hard cap + Esc-to-skip.
+  // Body scroll lock while the intro is mounted — no scrollbars, no jump.
+  useEffect(() => {
+    if (mounted !== "playing") return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mounted]);
+
+  // Playback contract — the video and audio behave as ONE synchronized unit.
+  //  1. Both tracks start together in the SAME event tick via
+  //     Promise.all([video.play(), audio.play()]) after resetting both to 0.
+  //  2. Audio is the master clock; every 2s we snap the video to audio when
+  //     drift > 0.15s.
+  //  3. Buffer stalls: video "waiting" pauses audio; video "playing" resumes
+  //     both from audio.currentTime — one never runs while the other stalls.
+  //  4. Tab hidden / visible: both pause and resume from the audio master.
+  //  5. Audio "ended" triggers the 700ms crossfade exit; skip kills instantly.
   useEffect(() => {
     if (mounted !== "playing") return;
     const video = videoRef.current;
     const audio = audioRef.current;
     if (!video || !audio) return;
 
-    // Playback contract:
-    //  - Both tracks always start together from t=0 (fresh mount and replays).
-    //  - We wait until BOTH elements can play through the first frame/sample
-    //    (readyState >= HAVE_CURRENT_DATA) before firing playback, so a slow
-    //    network never lets the video run silent ahead of the audio.
-    //  - If the browser blocks unmuted audio autoplay, we arm a one-shot
-    //    gesture unlock and reset BOTH clocks to 0 on unlock.
-    //  - Any seek on the video (user, devtools, browser buffer skip) is
-    //    mirrored to the audio so narration stays locked to picture.
-
     let cancelled = false;
     const cleanupFns: Array<() => void> = [];
 
     const waitReady = (el: HTMLMediaElement) =>
       new Promise<void>((resolve) => {
-        if (el.readyState >= 2 /* HAVE_CURRENT_DATA */) {
+        if (el.readyState >= 2) {
           resolve();
           return;
         }
@@ -105,7 +113,6 @@ export function HeroZeroIntro() {
         };
         el.addEventListener("canplay", onReady, { once: true });
         el.addEventListener("loadeddata", onReady, { once: true });
-        // Nudge the loader in case the element hasn't started buffering yet.
         try {
           el.load();
         } catch {
@@ -125,18 +132,23 @@ export function HeroZeroIntro() {
       }
     };
 
-    const startBoth = () => {
+    // Start BOTH in the same event handler — never sequential awaits.
+    const startBoth = async () => {
       resetClocks();
-      void video.play().catch(() => {});
-      void audio.play().catch(() => {});
+      try {
+        await Promise.all([video.play(), audio.play()]);
+        return true;
+      } catch {
+        return false;
+      }
     };
 
     const armUnlock = () => {
-      const unlock = () => {
-        startBoth();
+      const unlock = async () => {
         window.removeEventListener("pointerdown", unlock);
         window.removeEventListener("keydown", unlock);
         window.removeEventListener("touchstart", unlock);
+        await startBoth();
       };
       window.addEventListener("pointerdown", unlock, { once: true });
       window.addEventListener("keydown", unlock, { once: true });
@@ -150,26 +162,47 @@ export function HeroZeroIntro() {
 
     const kick = async () => {
       resetClocks();
-      // Wait for both tracks to be ready before firing playback. This makes
-      // slow networks and cold caches behave the same as a warm reload.
       await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
-      try {
-        // Attempt audio first so we know whether autoplay is unlocked.
-        await audio.play();
-        void video.play().catch(() => {});
-      } catch {
-        // Audio blocked. Keep the muted video running so the scene is alive,
-        // but arm a gesture unlock that resets both clocks to 0 together.
+      const ok = await startBoth();
+      if (!ok) {
+        // Autoplay of unmuted audio blocked. Keep the muted video alive so
+        // the scene shows, then wait for a gesture that starts BOTH together.
         void video.play().catch(() => {});
         armUnlock();
       }
     };
     void kick();
 
+    // Audio-master drift correction every 2s (spec: >0.15s → snap video).
+    const driftInterval = window.setInterval(() => {
+      if (video.paused || audio.paused) return;
+      const drift = video.currentTime - audio.currentTime;
+      if (Math.abs(drift) > 0.15) {
+        try {
+          video.currentTime = audio.currentTime;
+        } catch {
+          /* noop */
+        }
+      }
+    }, 2000);
 
-    // Mirror any video seek onto the audio so a browser buffer skip or a
-    // devtools scrub cannot desync the narration.
+    // Buffer stall handling — never let one run while the other stalls.
+    const onVideoWaiting = () => {
+      if (!audio.paused) audio.pause();
+    };
+    const onVideoPlaying = () => {
+      try {
+        video.currentTime = audio.currentTime;
+      } catch {
+        /* noop */
+      }
+      if (audio.paused) void audio.play().catch(() => {});
+    };
+    video.addEventListener("waiting", onVideoWaiting);
+    video.addEventListener("playing", onVideoPlaying);
+
+    // Mirror explicit seeks onto audio (dev-tools scrub / native controls).
     const onVideoSeeked = () => {
       if (Math.abs(video.currentTime - audio.currentTime) > 0.1) {
         try {
@@ -181,26 +214,30 @@ export function HeroZeroIntro() {
     };
     video.addEventListener("seeked", onVideoSeeked);
 
-    // Continuous drift correction — audio is the master clock (never scrubbed
-    // by browsers), so we correct the video toward the audio position.
-    const syncTick = () => {
-      if (!video.paused && !audio.paused) {
-        const drift = video.currentTime - audio.currentTime;
-        if (Math.abs(drift) > 0.25) video.currentTime = audio.currentTime;
+    // Tab visibility — pause/resume BOTH from the audio master clock.
+    const onVisibility = () => {
+      if (document.hidden) {
+        video.pause();
+        audio.pause();
+      } else {
+        try {
+          video.currentTime = audio.currentTime;
+        } catch {
+          /* noop */
+        }
+        void audio.play().catch(() => {});
+        void video.play().catch(() => {});
       }
-      rafRef.current = window.requestAnimationFrame(syncTick);
     };
-    rafRef.current = window.requestAnimationFrame(syncTick);
+    document.addEventListener("visibilitychange", onVisibility);
 
-    // Hard cap.
+    // Hard cap — safety net if audio never ends.
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
-    // Finish when EITHER the narration or the video ends — whichever runs
-    // longest wins, so the audio never gets cut mid-sentence and never
-    // lingers after the hero disappears.
-    const onEnded = () => finish();
-    video.addEventListener("ended", onEnded);
-    audio.addEventListener("ended", onEnded);
+    // Audio ended → 700ms crossfade exit (per spec). Video ended alone does
+    // NOT exit — audio is the master and may be longer.
+    const onAudioEnded = () => finish();
+    audio.addEventListener("ended", onAudioEnded);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") finish();
@@ -211,36 +248,31 @@ export function HeroZeroIntro() {
     return () => {
       cancelled = true;
       cleanupFns.forEach((fn) => fn());
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      window.clearInterval(driftInterval);
       if (hardCapRef.current !== null) clearTimeout(hardCapRef.current);
-      video.removeEventListener("ended", onEnded);
-      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("ended", onAudioEnded);
+      video.removeEventListener("waiting", onVideoWaiting);
+      video.removeEventListener("playing", onVideoPlaying);
       video.removeEventListener("seeked", onVideoSeeked);
+      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("keydown", onKey);
-      // Hard stop audio the moment the hero disappears — quick fade to avoid
-      // a click, then pause + reset.
+      // Skip / exit — kill BOTH tracks instantly (no fade on skip path).
       try {
-        const startVol = audio.volume;
-        const steps = 8;
-        let i = 0;
-        const fade = window.setInterval(() => {
-          i += 1;
-          audio.volume = Math.max(0, startVol * (1 - i / steps));
-          if (i >= steps) {
-            window.clearInterval(fade);
-            audio.pause();
-            audio.currentTime = 0;
-            audio.volume = startVol;
-          }
-        }, 25);
-      } catch {
         audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* noop */
       }
-      video.pause();
+      try {
+        video.pause();
+      } catch {
+        /* noop */
+      }
     };
     // finish is stable via setState functional pattern
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
+
 
 
   // Ember/fire particle canvas — intentionally disabled. The wordmark now
@@ -261,13 +293,17 @@ export function HeroZeroIntro() {
       role="dialog"
       aria-label="NEXIOS AI · Cinematic intro"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden bg-black"
+      className="hero-zero-shell fixed inset-0 z-[80] overflow-hidden"
       style={{
+        width: "100vw",
+        height: "100dvh",
+        background: "#05070B",
         opacity: closing ? 0 : 1,
         transition: `opacity ${CROSSFADE_MS}ms ease-out`,
         pointerEvents: closing ? "none" : "auto",
       }}
     >
+
       {/* Deep cosmic backdrop — sits BEHIND the transparent winged figure so
           the scene has depth even when the video is faded to ~25%. */}
       <div
@@ -295,12 +331,15 @@ export function HeroZeroIntro() {
 
       <video
         ref={videoRef}
-        className="absolute inset-0 z-10 h-full w-full object-cover object-center mix-blend-screen md:object-contain"
+        className="hero-zero-video absolute inset-0 z-10"
         style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
           animation: reducedMotion.current
             ? undefined
             : "hero-zero-fadein 1400ms 300ms both ease-out",
-          opacity: reducedMotion.current ? 0.28 : 0,
+          opacity: reducedMotion.current ? 1 : 0,
           filter: "contrast(1.05) brightness(1.1)",
         }}
         src={videoAsset.url}
@@ -320,83 +359,74 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
-      {/* Vision 2030 crest — pinned inside a wrapper that mirrors the video's
-          rendered box. On desktop/laptop the video is object-contain, so the
-          wrapper uses aspect-[9/16] to match the video's letterboxed box. On
-          mobile the video is object-cover filling the viewport, so the wrapper
-          fills the viewport and the crest sits at a viewport-relative offset
-          that lands right above the figure's head. dir="ltr" prevents RTL
-          flex reordering from shifting the crest off-center. */}
+      {/* Vision 2030 crest — video is fullscreen object-cover, so the crest
+          is positioned relative to the viewport. Portrait viewports sit near
+          the very top; landscape viewports drop slightly to clear the head. */}
       <div
         dir="ltr"
-        className="pointer-events-none absolute inset-0 z-40 flex items-start justify-center"
+        aria-hidden
+        className="hero-zero-crest pointer-events-none absolute left-1/2 z-40 -translate-x-1/2 text-center"
+        style={{
+          top: "4dvh",
+          opacity: 0,
+          animation: reducedMotion.current
+            ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
+            : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
+          willChange: "opacity, transform, filter",
+        }}
       >
-        <div className="relative h-full w-full md:aspect-[9/16] md:w-auto md:max-h-screen">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-[4%] -translate-x-1/2 text-center md:top-[7%]"
-            style={{
-              opacity: 0,
-              animation: reducedMotion.current
-                ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
-                : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
-              willChange: "opacity, transform, filter",
-            }}
-          >
-            {/* Soft dark halo scrim so sparks/flame never bleed into the type */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
-                filter: "blur(6px)",
-              }}
-            />
-
-            <div
-              dir="rtl"
-              className="whitespace-nowrap font-black leading-none"
-              style={{
-                fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
-                fontWeight: 900,
-                letterSpacing: "0.06em",
-                fontSize: "clamp(1.15rem, 3.2vw, 2.4rem)",
-                color: "#F5FBFF",
-                textShadow: [
-                  "0 0 4px rgba(220,240,255,0.9)",
-                  "0 0 18px rgba(0,180,120,0.65)",
-                  "0 0 40px rgba(0,140,90,0.55)",
-                  "0 0 90px rgba(0,120,80,0.35)",
-                ].join(","),
-              }}
-            >
-              رؤية <span style={{ color: "#4ADE80" }}>2030</span>
-            </div>
-            <div
-              className="mt-1 whitespace-nowrap font-bold uppercase"
-              style={{
-                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-                fontWeight: 800,
-                letterSpacing: "0.28em",
-                fontSize: "clamp(0.55rem, 1.05vw, 0.8rem)",
-                color: "rgba(220,240,230,0.85)",
-                textShadow: "0 0 12px rgba(0,180,120,0.55)",
-              }}
-            >
-              Vision 2030 · Kingdom of Saudi Arabia
-            </div>
-          </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+            filter: "blur(6px)",
+          }}
+        />
+        <div
+          dir="rtl"
+          className="whitespace-nowrap font-black leading-none"
+          style={{
+            fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+            fontWeight: 900,
+            letterSpacing: "0.06em",
+            fontSize: "clamp(1.15rem, 3.2vw, 2.4rem)",
+            color: "#F5FBFF",
+            textShadow: [
+              "0 0 4px rgba(220,240,255,0.9)",
+              "0 0 18px rgba(0,180,120,0.65)",
+              "0 0 40px rgba(0,140,90,0.55)",
+              "0 0 90px rgba(0,120,80,0.35)",
+            ].join(","),
+          }}
+        >
+          رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+        </div>
+        <div
+          className="mt-1 whitespace-nowrap font-bold uppercase"
+          style={{
+            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+            fontWeight: 800,
+            letterSpacing: "0.28em",
+            fontSize: "clamp(0.55rem, 1.05vw, 0.8rem)",
+            color: "rgba(220,240,230,0.85)",
+            textShadow: "0 0 12px rgba(0,180,120,0.55)",
+          }}
+        >
+          Vision 2030 · Kingdom of Saudi Arabia
         </div>
       </div>
 
 
-
-      {/* NEXIOS AI wordmark — pinned to the bottom of the hero, aligned with
-          the video's lower edge. Cool cyan/white palette instead of fire, so
-          it reads as an executive signature rather than a flame. */}
+      {/* NEXIOS AI wordmark — lower third across all devices. Safe-area
+          padding keeps clear of the iPhone home indicator. */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[3%] z-30 flex flex-col items-center text-center md:bottom-[4%]"
+        className="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center text-center"
+        style={{
+          bottom: "clamp(8dvh, 12dvh, 16dvh)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         <div
           className="font-black uppercase leading-none"
@@ -404,7 +434,7 @@ export function HeroZeroIntro() {
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
-            fontSize: "clamp(2rem, 7vw, 5.5rem)",
+            fontSize: "clamp(2rem, 8vw, 4.5rem)",
             color: "#F5FBFF",
             textShadow: [
               "0 0 2px rgba(220,240,255,0.9)",
@@ -433,12 +463,17 @@ export function HeroZeroIntro() {
       </div>
 
 
+
       {/* Skip chip */}
       <button
         type="button"
         onClick={finish}
         aria-label="Skip intro · تخطّي المقدمة"
-        className="group absolute bottom-6 right-6 z-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-white/80 backdrop-blur-md transition hover:border-white/40 hover:bg-white/[0.12] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF] rtl:right-auto rtl:left-6"
+        className="group absolute z-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-white/80 backdrop-blur-md transition hover:border-white/40 hover:bg-white/[0.12] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
+        style={{
+          bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+          right: "1.5rem",
+        }}
       >
         <span>تخطّي · Skip</span>
         <span className="inline-block transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5">
@@ -447,9 +482,16 @@ export function HeroZeroIntro() {
       </button>
 
       <style>{`
+        /* Fullscreen framing: portrait viewports show the film near-native,
+           landscape/laptop viewports anchor the crop 28% from the top so the
+           winged figure's head and wings stay in frame under object-cover. */
+        .hero-zero-video { object-position: center center; }
+        @media (min-aspect-ratio: 1/1) {
+          .hero-zero-video { object-position: center 28%; }
+        }
         @keyframes hero-zero-fadein {
           from { opacity: 0; }
-          to   { opacity: 0.28; }
+          to   { opacity: 1; }
         }
         @keyframes hero-zero-wordmark {
           0%   { opacity: 0; transform: translateY(28px) scale(0.92); filter: blur(14px); }
