@@ -24,6 +24,7 @@ import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
 import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
+import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -198,6 +199,7 @@ function RootComponent() {
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
                 <BetaMarqueeBar />
+                {!isPromo && <AriaWatermark />}
                 <div className="relative z-10">
                   <Outlet />
                 </div>
