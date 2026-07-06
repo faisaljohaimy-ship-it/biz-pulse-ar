@@ -558,10 +558,31 @@ export function HeroZeroIntro() {
       <style>{`
         /* Fullscreen framing: portrait viewports show the film near-native,
            landscape/laptop viewports anchor the crop 28% from the top so the
-           winged figure's head and wings stay in frame under object-cover. */
+           winged figure's head and wings stay in frame under object-cover.
+           On typical laptop aspect ratios (16:9 / 16:10) we pull the anchor
+           slightly higher so the full figure — head to base — remains
+           centered without being cropped by the bottom stack. */
         .hero-zero-video { object-position: center center; }
         @media (min-aspect-ratio: 1/1) {
-          .hero-zero-video { object-position: center 28%; }
+          .hero-zero-video { object-position: center 32%; }
+        }
+        @media (min-width: 1024px) and (max-height: 900px) {
+          .hero-zero-video { object-position: center 34%; }
+        }
+        @media (min-width: 1280px) and (max-height: 820px) {
+          .hero-zero-video { object-position: center 36%; }
+        }
+        /* Laptop landscape: tighten top emblem and bottom stack so the entire
+           composition (emblem → figure → wordmark → crest → tagline) fits
+           within a single laptop viewport without vertical clipping. */
+        @media (min-width: 1024px) and (max-height: 900px) {
+          .hero-zero-emblem-top { top: calc(env(safe-area-inset-top) + 0.25rem) !important; }
+          .hero-zero-emblem-top img { width: clamp(72px, 10vh, 128px) !important; }
+          .hero-zero-bottom-stack { bottom: clamp(2dvh, 3.5dvh, 5dvh) !important; }
+        }
+        @media (min-width: 1280px) and (max-height: 820px) {
+          .hero-zero-emblem-top img { width: clamp(64px, 9vh, 112px) !important; }
+          .hero-zero-bottom-stack { bottom: clamp(1.5dvh, 2.5dvh, 4dvh) !important; }
         }
         @keyframes hero-zero-fadein {
           from { opacity: 0; }
