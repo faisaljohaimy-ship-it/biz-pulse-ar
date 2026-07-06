@@ -26,6 +26,8 @@ import { AriaGreeter } from "@/components/aria/AriaGreeter";
 import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
+import { useIntroActive } from "@/lib/intro-store";
+
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 
@@ -214,6 +216,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
+  const introActive = useIntroActive();
+  const suppressOverlays = isPromo || introActive;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -224,13 +228,13 @@ function RootComponent() {
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
                 <BetaMarqueeBar />
-                {!isPromo && <AriaWatermark />}
+                {!suppressOverlays && <AriaWatermark />}
                 <div className="relative z-10">
                   <Outlet />
                 </div>
-                <AriaCopilot />
-                {!isPromo && <AriaGreeter />}
-                {!isPromo && <GenesisIntro />}
+                {!introActive && <AriaCopilot />}
+                {!suppressOverlays && <AriaGreeter />}
+                {!suppressOverlays && <GenesisIntro />}
                 <Toaster />
               </AriaProvider>
             </DemoModeProvider>
@@ -240,4 +244,5 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
 
