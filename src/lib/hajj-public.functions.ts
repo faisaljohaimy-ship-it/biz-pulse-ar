@@ -42,59 +42,29 @@ export type HajjExecSummary = {
   top_tasks: HajjPublicTask[];
 };
 
+// Public, unauthenticated endpoint used by the /hajj-prime marketing shell.
+// Returns a fixed synthetic sample payload — never live operational metrics —
+// so anonymous visitors cannot infer real-time security posture (open
+// incidents, active alerts, compliance) of the tenant. Authenticated,
+// org-scoped live figures are served by getHajjExecSummary and the
+// authenticated dashboards, protected by RLS.
 export const getHajjPublicOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<HajjPublicKpi> => {
-    // supabaseAdmin is server-only; load inside handler so it never ships to
-    // the client bundle from this .functions.ts module.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const empty: HajjPublicKpi = {
-      field_staff: null,
-      stations_online: null,
-      stations_total: null,
-      tasks_done_today: null,
-      active_alerts: null,
-      open_incidents: null,
-      compliance_pct: null,
-      snapshot_at: null,
-      is_sample: false,
-      has_data: false,
+    return {
+      field_staff: 1240,
+      stations_online: 42,
+      stations_total: 48,
+      tasks_done_today: 318,
+      active_alerts: 3,
+      open_incidents: 2,
+      compliance_pct: 97.5,
+      snapshot_at: new Date().toISOString(),
+      is_sample: true,
+      has_data: true,
     };
-
-    try {
-      // Latest KPI snapshot — safe aggregate columns only.
-      const { data: kpi } = await supabaseAdmin
-        .from("hajj_kpi_snapshots")
-        .select(
-          "field_staff, stations_online, stations_total, tasks_done, active_alerts, open_incidents, compliance_pct, snapshot_at, notes",
-        )
-        .order("snapshot_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (!kpi) return empty;
-
-      const notes = (kpi.notes ?? "") as string;
-      const isSample = notes.includes("[SAMPLE]");
-
-      return {
-        field_staff: kpi.field_staff ?? null,
-        stations_online: kpi.stations_online ?? null,
-        stations_total: kpi.stations_total ?? null,
-        tasks_done_today: kpi.tasks_done ?? null,
-        active_alerts: kpi.active_alerts ?? null,
-        open_incidents: kpi.open_incidents ?? null,
-        compliance_pct:
-          kpi.compliance_pct != null ? Number(kpi.compliance_pct) : null,
-        snapshot_at: kpi.snapshot_at ?? null,
-        is_sample: isSample,
-        has_data: true,
-      };
-    } catch {
-      return empty;
-    }
   },
 );
+
 
 export const getHajjExecSummary = createServerFn({ method: "GET" }).handler(
   async (): Promise<HajjExecSummary> => {
