@@ -4,6 +4,7 @@ import {
   Activity, AlertTriangle, ShieldAlert, Radar, KeyRound, UserCheck, HardHat,
   Car, FileBadge, Siren, Camera, Eye, ListChecks, BarChart3, FileText,
   Clock, Boxes, Building2, Brain, ShieldCheck, Plug, Network, Wrench, Rocket, Crown, Building, BookOpen,
+  LifeBuoy, Zap,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -16,6 +17,8 @@ const ITEMS: Item[] = [
   { to: "/sec/projects", label: "المشاريع", icon: Rocket },
   { to: "/sec/maintenance", label: "أوامر العمل", icon: Wrench },
   { to: "/sec/incidents", label: "البلاغات", icon: AlertTriangle },
+  { to: "/sec/urgent", label: "العاجل", icon: Zap },
+  { to: "/sec/support", label: "المساندة", icon: LifeBuoy },
   { to: "/sec/patrols", label: "الدوريات", icon: Radar },
   { to: "/sec/access", label: "التحكم بالدخول", icon: KeyRound },
   { to: "/sec/visitors", label: "الزوار", icon: UserCheck },
