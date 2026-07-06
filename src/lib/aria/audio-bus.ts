@@ -6,16 +6,30 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-type Source = "hero-greeting" | "genesis-intro" | "panel-greeting" | "chat-tts" | "tour-tts" | "tour-video";
+type Source =
+  | "hero-greeting"
+  | "genesis-intro"
+  | "hero-soundtrack"
+  | "panel-greeting"
+  | "chat-tts"
+  | "tour-tts"
+  | "tour-video";
 
 const PRIORITY: Record<Source, number> = {
   "hero-greeting": 1,
   "genesis-intro": 1,
+  "hero-soundtrack": 1,
   "panel-greeting": 2,
   "chat-tts": 3,
   "tour-tts": 3,
   "tour-video": 3,
 };
+
+// Owners allowed to bypass the "no gesture yet" guard when they pass
+// { bypassGesture: true }. Only the hero soundtrack's optimistic first
+// autoplay may do this — every ARIA / tour owner MUST wait for a real
+// user gesture (via AriaAudioBus.unlock()).
+const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
 
 
 
