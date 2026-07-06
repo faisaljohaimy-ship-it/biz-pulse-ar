@@ -293,13 +293,17 @@ export function HeroZeroIntro() {
       role="dialog"
       aria-label="NEXIOS AI · Cinematic intro"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden bg-black"
+      className="hero-zero-shell fixed inset-0 z-[80] overflow-hidden"
       style={{
+        width: "100vw",
+        height: "100dvh",
+        background: "#05070B",
         opacity: closing ? 0 : 1,
         transition: `opacity ${CROSSFADE_MS}ms ease-out`,
         pointerEvents: closing ? "none" : "auto",
       }}
     >
+
       {/* Deep cosmic backdrop — sits BEHIND the transparent winged figure so
           the scene has depth even when the video is faded to ~25%. */}
       <div
