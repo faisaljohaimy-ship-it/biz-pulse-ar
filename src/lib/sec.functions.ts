@@ -466,78 +466,39 @@ export type PublicKpis = {
   generated_at: string;
 };
 
+/**
+ * Public marketing KPIs for the anonymous landing page (MissionControlStrip).
+ *
+ * SECURITY: this endpoint is intentionally unauthenticated, so it MUST NOT
+ * query real tenant data. Previously it aggregated counts across
+ * `sec_incidents` / `sec_work_orders` / `sec_projects` / `sec_permits` with
+ * the service-role client and no `org_id` filter, which leaked live
+ * cross-tenant operational posture (open/critical incident counts) to any
+ * anonymous internet visitor. That is competitive and adversarial signal
+ * for an industrial physical-security product.
+ *
+ * The public strip is a marketing surface, not an operations dashboard —
+ * real numbers belong behind auth + org scope in `/sec/*`. We return a
+ * fixed, plausible synthetic snapshot here. If richer public metrics are
+ * ever needed, add an authenticated variant scoped through
+ * `is_org_member(org_id,'viewer')` against the RLS-scoped client.
+ */
 export const getPublicKpis = createServerFn({ method: "GET" }).handler(
   async (): Promise<PublicKpis> => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const s = supabaseAdmin as unknown as {
-      from: (t: string) => {
-        select: (c: string, o?: { count?: "exact"; head?: boolean }) => Promise<{ count: number | null }> & {
-          in: (col: string, vals: string[]) => Promise<{ count: number | null }>;
-          eq: (col: string, val: string) => {
-            in: (col: string, vals: string[]) => Promise<{ count: number | null }>;
-            not: (col: string, op: string, val: string) => Promise<{ count: number | null }>;
-          };
-        };
-      };
-    };
-    const countIn = async (table: string, col: string, values: string[]): Promise<number> => {
-      const { count } = await s.from(table).select("*", { count: "exact", head: true }).in(col, values);
-      return count ?? 0;
-    };
-    const countAll = async (table: string): Promise<number> => {
-      const { count } = await s.from(table).select("*", { count: "exact", head: true });
-      return count ?? 0;
-    };
-    const [
-      incidentsTotal,
-      incidentsOpen,
-      incidentsResolved,
-      incidentsCritical,
-      workOrdersActive,
-      projectsInProgress,
-      permitsActive,
-      maintenancePending,
-    ] = await Promise.all([
-      countAll("sec_incidents"),
-      countIn("sec_incidents", "status", ["open", "investigating", "contained", "triage", "assigned"]),
-      countIn("sec_incidents", "status", ["resolved", "closed"]),
-      (async () => {
-        const { count } = await s
-          .from("sec_incidents")
-          .select("*", { count: "exact", head: true })
-          .eq("severity", "critical")
-          .not("status", "in", "(resolved,closed)");
-        return count ?? 0;
-      })(),
-      countIn("sec_work_orders", "status", ["open", "in-progress", "assigned", "scheduled"]),
-      countIn("sec_projects", "status", ["in-progress"]),
-      countIn("sec_permits", "status", ["active", "approved"]),
-      (async () => {
-        const { count } = await s
-          .from("sec_work_orders")
-          .select("*", { count: "exact", head: true })
-          .eq("kind", "preventive")
-          .in("status", ["open", "scheduled", "assigned", "in-progress"]);
-        return count ?? 0;
-      })(),
-    ]);
-    const resolutionRate =
-      incidentsTotal > 0 ? Math.round((incidentsResolved / incidentsTotal) * 100) : 0;
-    const risk_level: PublicKpis["risk_level"] =
-      incidentsCritical > 0 ? "critical" : incidentsOpen > 5 ? "elevated" : "low";
     return {
-      incidents_total: incidentsTotal,
-      incidents_open: incidentsOpen,
-      incidents_critical: incidentsCritical,
-      incidents_resolution_rate: resolutionRate,
-      work_orders_active: workOrdersActive,
-      projects_in_progress: projectsInProgress,
-      permits_active: permitsActive,
-      maintenance_pending: maintenancePending,
-      risk_level,
+      incidents_total: 128,
+      incidents_open: 6,
+      incidents_critical: 0,
+      incidents_resolution_rate: 95,
+      work_orders_active: 18,
+      projects_in_progress: 4,
+      permits_active: 12,
+      maintenance_pending: 9,
+      risk_level: "low",
       generated_at: new Date().toISOString(),
     };
   },
 );
+
 
 
