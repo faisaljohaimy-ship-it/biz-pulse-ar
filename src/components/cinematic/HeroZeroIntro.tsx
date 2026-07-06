@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
-// hero narration audio intentionally not imported — ARIA voice is user-triggered only
+import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
 
 /**
  * HeroZeroIntro — cinematic "assembly" hero that plays once per session
@@ -36,7 +38,7 @@ function shouldSkipInitial(): boolean {
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  // audioRef removed — narration is no longer auto-played
+  const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
   const hardCapRef = useRef<number | null>(null);
@@ -82,24 +84,25 @@ export function HeroZeroIntro() {
     };
   }, [mounted]);
 
-  // Playback contract — video-only. The narration audio track is NEVER
-  // auto-started; ARIA only speaks when the user explicitly presses the
-  // greeting / conversation buttons in the executive hero. The muted video
-  // plays under browser autoplay policy; audio element is kept in the DOM
-  // (for potential future manual playback) but no code calls audio.play().
+  // Playback contract — video + hero narration audio start together on the
+  // same event tick and stay in sync. The audio is the master clock; the
+  // muted video is snapped to it on drift > 0.15s. Autoplay-with-sound may
+  // be blocked by the browser — we then keep the muted video alive and
+  // start the audio on the first user gesture so both begin from t=0
+  // together. ARIA's audio bus is acquired as "hero-greeting" so any other
+  // ARIA source (chat, panel greeting, tour) preempts cleanly.
   useEffect(() => {
     if (mounted !== "playing") return;
     const video = videoRef.current;
-    if (!video) return;
+    const audio = audioRef.current;
+    if (!video || !audio) return;
 
     let cancelled = false;
+    const cleanupFns: Array<() => void> = [];
 
     const waitReady = (el: HTMLMediaElement) =>
       new Promise<void>((resolve) => {
-        if (el.readyState >= 2) {
-          resolve();
-          return;
-        }
+        if (el.readyState >= 2) { resolve(); return; }
         const onReady = () => {
           el.removeEventListener("canplay", onReady);
           el.removeEventListener("loadeddata", onReady);
@@ -107,64 +110,119 @@ export function HeroZeroIntro() {
         };
         el.addEventListener("canplay", onReady, { once: true });
         el.addEventListener("loadeddata", onReady, { once: true });
-        try {
-          el.load();
-        } catch {
-          /* noop */
-        }
+        try { el.load(); } catch { /* noop */ }
       });
 
-    const kick = async () => {
+    const resetClocks = () => {
       try {
-        video.pause();
-        video.currentTime = 0;
+        video.pause(); audio.pause();
+        video.currentTime = 0; audio.currentTime = 0;
+        audio.volume = 1;
+      } catch { /* noop */ }
+    };
+
+    const startBoth = async () => {
+      resetClocks();
+      try {
+        await Promise.all([video.play(), audio.play()]);
+        AriaAudioBus.notifyPlaying("hero-greeting", audio);
+        return true;
       } catch {
-        /* noop */
+        return false;
       }
-      await waitReady(video);
+    };
+
+    const armUnlock = () => {
+      const unlock = async () => {
+        window.removeEventListener("pointerdown", unlock);
+        window.removeEventListener("keydown", unlock);
+        window.removeEventListener("touchstart", unlock);
+        await startBoth();
+      };
+      window.addEventListener("pointerdown", unlock, { once: true });
+      window.addEventListener("keydown", unlock, { once: true });
+      window.addEventListener("touchstart", unlock, { once: true });
+      cleanupFns.push(() => {
+        window.removeEventListener("pointerdown", unlock);
+        window.removeEventListener("keydown", unlock);
+        window.removeEventListener("touchstart", unlock);
+      });
+    };
+
+    // Acquire the ARIA bus — hero narration is the lowest-priority source,
+    // so any other ARIA voice (chat, tour) will preempt and stop us.
+    AriaAudioBus.unlock();
+    const granted = AriaAudioBus.acquire("hero-greeting", () => {
+      try { audio.pause(); } catch { /* noop */ }
+    });
+
+    const kick = async () => {
+      await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
-      void video.play().catch(() => {});
+      const ok = granted ? await startBoth() : false;
+      if (!ok) {
+        void video.play().catch(() => {});
+        if (granted) armUnlock();
+      }
     };
     void kick();
 
-    // Tab visibility — pause/resume the muted video.
+    // Audio-master drift correction.
+    const driftInterval = window.setInterval(() => {
+      if (video.paused || audio.paused) return;
+      const drift = video.currentTime - audio.currentTime;
+      if (Math.abs(drift) > 0.15) {
+        try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+      }
+    }, 2000);
+
+    const onVideoWaiting = () => { if (!audio.paused) audio.pause(); };
+    const onVideoPlaying = () => {
+      try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+      if (audio.paused) void audio.play().catch(() => {});
+    };
+    video.addEventListener("waiting", onVideoWaiting);
+    video.addEventListener("playing", onVideoPlaying);
+
     const onVisibility = () => {
-      if (document.hidden) {
-        video.pause();
-      } else {
+      if (document.hidden) { video.pause(); audio.pause(); }
+      else {
+        try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+        void audio.play().catch(() => {});
         void video.play().catch(() => {});
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Hard cap — safety net so the intro always exits.
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
-    // Video ended → exit via the same crossfade path.
-    const onVideoEnded = () => finish();
+    const onAudioEnded = () => finish();
+    const onVideoEnded = () => { /* audio is master — let it finish */ };
+    audio.addEventListener("ended", onAudioEnded);
     video.addEventListener("ended", onVideoEnded);
 
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") finish();
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") finish(); };
     window.addEventListener("keydown", onKey);
-
 
     return () => {
       cancelled = true;
+      cleanupFns.forEach((fn) => fn());
+      window.clearInterval(driftInterval);
       if (hardCapRef.current !== null) clearTimeout(hardCapRef.current);
+      audio.removeEventListener("ended", onAudioEnded);
       video.removeEventListener("ended", onVideoEnded);
+      video.removeEventListener("waiting", onVideoWaiting);
+      video.removeEventListener("playing", onVideoPlaying);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("keydown", onKey);
-      try {
-        video.pause();
-      } catch {
-        /* noop */
-      }
+      try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
+      try { video.pause(); } catch { /* noop */ }
+      AriaAudioBus.release("hero-greeting");
     };
     // finish is stable via setState functional pattern
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
+
 
 
 
@@ -245,7 +303,7 @@ export function HeroZeroIntro() {
         autoPlay
         preload="auto"
       />
-      {/* narration audio element removed — voice starts only on user action */}
+      <audio ref={audioRef} src={audioAsset.url} preload="auto" />
 
       {/* Ember particle layer — pointer-events none, sits above the figure
           but below the Vision 2030 crest so sparks never wash it out. */}
