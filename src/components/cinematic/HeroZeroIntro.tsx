@@ -478,18 +478,18 @@ export function HeroZeroIntro() {
         <div
           dir="rtl"
           className="hero-zero-vision2030 relative inline-block whitespace-nowrap text-center"
-          data-text="رؤية المملكة العربية السعودية 2030"
+          data-text="2030"
           style={{
             maxWidth: "92vw",
             marginTop: "clamp(8px, 1.2dvh, 16px)",
             fontFamily: '"IBM Plex Sans Arabic", "Tajawal", ui-sans-serif, system-ui',
-            fontWeight: 700,
-            fontSize: "clamp(0.95rem, 3.2vw, 1.5rem)",
-            letterSpacing: "0.04em",
-            lineHeight: 1.15,
+            fontWeight: 900,
+            fontSize: "clamp(3.5rem, 12vw, 7rem)",
+            letterSpacing: "0.02em",
+            lineHeight: 1,
           }}
         >
-          رؤية المملكة العربية السعودية 2030
+          2030
         </div>
       </div>
 
