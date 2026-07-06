@@ -293,6 +293,7 @@ export function HeroZeroIntro() {
       role="dialog"
       aria-label="NEXIOS AI · Cinematic intro"
       aria-modal="true"
+      dir="ltr"
       className="hero-zero-shell fixed inset-0 z-[80] overflow-hidden"
       style={{
         width: "100vw",
@@ -303,6 +304,7 @@ export function HeroZeroIntro() {
         pointerEvents: closing ? "none" : "auto",
       }}
     >
+
 
       {/* Deep cosmic backdrop — sits BEHIND the transparent winged figure so
           the scene has depth even when the video is faded to ~25%. */}
@@ -431,12 +433,15 @@ export function HeroZeroIntro() {
       <div
         role="img"
         aria-label="NEXIOS AI · نكسيوس — Enterprise AI · Executive OS"
+        dir="ltr"
         className="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center text-center"
         style={{
           bottom: "clamp(8dvh, 12dvh, 16dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
+          unicodeBidi: "isolate",
         }}
       >
+
         <span
           aria-hidden="true"
           className="font-black uppercase leading-none"
