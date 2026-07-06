@@ -139,11 +139,15 @@ export function HeroZeroIntro() {
       setAudioStarted(true);
     };
 
+    // Tier 2/3 igniter — invoked ONLY from real user gestures (document
+    // event listeners below or the chip's onClick). Calls AriaAudioBus.unlock()
+    // because this IS a real gesture. ARIA/tour sources remain silent — they
+    // require their own explicit user actions to acquire the bus.
     const igniteAudio = async (resnap: boolean) => {
       if (audioStartedRef.current) return;
       if (!soundOnRef.current) return;
-      AriaAudioBus.unlock();
-      const granted = AriaAudioBus.acquire("genesis-intro", () => {
+      AriaAudioBus.unlock(); // real user gesture — safe to unlock the bus
+      const granted = AriaAudioBus.acquire("hero-soundtrack", () => {
         try { audio.pause(); } catch { /* noop */ }
       });
       if (!granted) return;
@@ -156,18 +160,17 @@ export function HeroZeroIntro() {
         }
         await audio.play();
         if (resnap) { try { await video.play(); } catch { /* noop */ } }
-        AriaAudioBus.notifyPlaying("genesis-intro", audio);
+        AriaAudioBus.notifyPlaying("hero-soundtrack", audio);
         markStarted();
       } catch {
-        // Playback still blocked — leave chip visible; a later gesture will retry.
-        AriaAudioBus.release("genesis-intro");
+        AriaAudioBus.release("hero-soundtrack");
       }
     };
     igniteAudioRef.current = () => igniteAudio(true);
 
     const attachGestureListeners = () => {
       const events: Array<keyof DocumentEventMap> = [
-        "pointerdown", "touchstart", "keydown", "wheel", "scroll",
+        "pointerdown", "touchstart", "keydown", "wheel",
       ];
       const onFirst = () => {
         for (const ev of events) {
@@ -191,25 +194,31 @@ export function HeroZeroIntro() {
         // Reduced motion: no optimistic audio try. Chip tap only.
         return;
       }
-      // Tier 1: exactly ONE optimistic play attempt.
+      // Tier 1: exactly ONE optimistic play attempt. This is NOT a real
+      // user gesture, so we do NOT call AriaAudioBus.unlock(). We acquire
+      // the bus using the "hero-soundtrack" gesture-bypass exemption —
+      // ARIA/tour sources are NOT exempt and remain fully locked.
       try {
-        AriaAudioBus.unlock();
-        const granted = AriaAudioBus.acquire("genesis-intro", () => {
-          try { audio.pause(); } catch { /* noop */ }
-        });
+        const granted = AriaAudioBus.acquire(
+          "hero-soundtrack",
+          () => { try { audio.pause(); } catch { /* noop */ } },
+          { bypassGesture: true },
+        );
         if (!granted) { attachGestureListeners(); return; }
         await waitReady(audio);
         audio.currentTime = 0;
         await audio.play();
-        AriaAudioBus.notifyPlaying("genesis-intro", audio);
+        AriaAudioBus.notifyPlaying("hero-soundtrack", audio);
         markStarted();
       } catch {
-        // Tier 1 refused by browser. Release the bus so a real gesture can re-acquire.
-        AriaAudioBus.release("genesis-intro");
+        // Browser refused Tier 1. Release the bus so a real gesture path
+        // (Tier 2 / chip) can re-acquire and legitimately unlock().
+        AriaAudioBus.release("hero-soundtrack");
         attachGestureListeners();
       }
     };
     void kick();
+
 
 
 
