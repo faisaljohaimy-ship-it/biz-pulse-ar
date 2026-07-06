@@ -55,11 +55,13 @@ import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
 import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
 import { Route as ApiVoiceDiagnosticsRouteImport } from './routes/api/voice-diagnostics'
+import { Route as ApiUrgentSummaryRouteImport } from './routes/api/urgent-summary'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
 import { Route as AuthenticatedVoiceSetupRouteImport } from './routes/_authenticated/voice-setup'
 import { Route as AuthenticatedVoiceRouteImport } from './routes/_authenticated/voice'
+import { Route as AuthenticatedUrgentOpsRouteImport } from './routes/_authenticated/urgent-ops'
 import { Route as AuthenticatedTtsRouteImport } from './routes/_authenticated/tts'
 import { Route as AuthenticatedTransformationRouteImport } from './routes/_authenticated/transformation'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
@@ -411,6 +413,11 @@ const ApiVoiceDiagnosticsRoute = ApiVoiceDiagnosticsRouteImport.update({
   path: '/api/voice-diagnostics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUrgentSummaryRoute = ApiUrgentSummaryRouteImport.update({
+  id: '/api/urgent-summary',
+  path: '/api/urgent-summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
@@ -434,6 +441,11 @@ const AuthenticatedVoiceSetupRoute = AuthenticatedVoiceSetupRouteImport.update({
 const AuthenticatedVoiceRoute = AuthenticatedVoiceRouteImport.update({
   id: '/voice',
   path: '/voice',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUrgentOpsRoute = AuthenticatedUrgentOpsRouteImport.update({
+  id: '/urgent-ops',
+  path: '/urgent-ops',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTtsRoute = AuthenticatedTtsRouteImport.update({
@@ -1185,11 +1197,13 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
+  '/urgent-ops': typeof AuthenticatedUrgentOpsRoute
   '/voice': typeof AuthenticatedVoiceRoute
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
   '/api/tts': typeof ApiTtsRoute
+  '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
@@ -1356,11 +1370,13 @@ export interface FileRoutesByTo {
   '/tools': typeof AuthenticatedToolsRoute
   '/transformation': typeof AuthenticatedTransformationRoute
   '/tts': typeof AuthenticatedTtsRoute
+  '/urgent-ops': typeof AuthenticatedUrgentOpsRoute
   '/voice': typeof AuthenticatedVoiceRoute
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
   '/api/tts': typeof ApiTtsRoute
+  '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
@@ -1531,11 +1547,13 @@ export interface FileRoutesById {
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transformation': typeof AuthenticatedTransformationRoute
   '/_authenticated/tts': typeof AuthenticatedTtsRoute
+  '/_authenticated/urgent-ops': typeof AuthenticatedUrgentOpsRoute
   '/_authenticated/voice': typeof AuthenticatedVoiceRoute
   '/_authenticated/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
   '/api/tts': typeof ApiTtsRoute
+  '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
@@ -1706,11 +1724,13 @@ export interface FileRouteTypes {
     | '/tools'
     | '/transformation'
     | '/tts'
+    | '/urgent-ops'
     | '/voice'
     | '/voice-setup'
     | '/workflows'
     | '/api/chat'
     | '/api/tts'
+    | '/api/urgent-summary'
     | '/api/voice-diagnostics'
     | '/api/voice-stt'
     | '/api/voice-token'
@@ -1877,11 +1897,13 @@ export interface FileRouteTypes {
     | '/tools'
     | '/transformation'
     | '/tts'
+    | '/urgent-ops'
     | '/voice'
     | '/voice-setup'
     | '/workflows'
     | '/api/chat'
     | '/api/tts'
+    | '/api/urgent-summary'
     | '/api/voice-diagnostics'
     | '/api/voice-stt'
     | '/api/voice-token'
@@ -2051,11 +2073,13 @@ export interface FileRouteTypes {
     | '/_authenticated/tools'
     | '/_authenticated/transformation'
     | '/_authenticated/tts'
+    | '/_authenticated/urgent-ops'
     | '/_authenticated/voice'
     | '/_authenticated/voice-setup'
     | '/_authenticated/workflows'
     | '/api/chat'
     | '/api/tts'
+    | '/api/urgent-summary'
     | '/api/voice-diagnostics'
     | '/api/voice-stt'
     | '/api/voice-token'
@@ -2167,6 +2191,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRouteWithChildren
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiUrgentSummaryRoute: typeof ApiUrgentSummaryRoute
   ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
   ApiVoiceSttRoute: typeof ApiVoiceSttRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
@@ -2529,6 +2554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVoiceDiagnosticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/urgent-summary': {
+      id: '/api/urgent-summary'
+      path: '/api/urgent-summary'
+      fullPath: '/api/urgent-summary'
+      preLoaderRoute: typeof ApiUrgentSummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tts': {
       id: '/api/tts'
       path: '/api/tts'
@@ -2562,6 +2594,13 @@ declare module '@tanstack/react-router' {
       path: '/voice'
       fullPath: '/voice'
       preLoaderRoute: typeof AuthenticatedVoiceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/urgent-ops': {
+      id: '/_authenticated/urgent-ops'
+      path: '/urgent-ops'
+      fullPath: '/urgent-ops'
+      preLoaderRoute: typeof AuthenticatedUrgentOpsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tts': {
@@ -3565,6 +3604,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTransformationRoute: typeof AuthenticatedTransformationRoute
   AuthenticatedTtsRoute: typeof AuthenticatedTtsRoute
+  AuthenticatedUrgentOpsRoute: typeof AuthenticatedUrgentOpsRoute
   AuthenticatedVoiceRoute: typeof AuthenticatedVoiceRoute
   AuthenticatedVoiceSetupRoute: typeof AuthenticatedVoiceSetupRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
@@ -3634,6 +3674,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTransformationRoute: AuthenticatedTransformationRoute,
   AuthenticatedTtsRoute: AuthenticatedTtsRoute,
+  AuthenticatedUrgentOpsRoute: AuthenticatedUrgentOpsRoute,
   AuthenticatedVoiceRoute: AuthenticatedVoiceRoute,
   AuthenticatedVoiceSetupRoute: AuthenticatedVoiceSetupRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
@@ -3697,6 +3738,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRouteWithChildren,
   ApiTtsRoute: ApiTtsRoute,
+  ApiUrgentSummaryRoute: ApiUrgentSummaryRoute,
   ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,
   ApiVoiceSttRoute: ApiVoiceSttRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,

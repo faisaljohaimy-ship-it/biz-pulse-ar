@@ -413,6 +413,39 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_improvement_proposals: {
+        Row: {
+          area: string
+          created_at: string
+          decided_by: string | null
+          id: string
+          impact: string
+          proposal_ar: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          created_at?: string
+          decided_by?: string | null
+          id?: string
+          impact: string
+          proposal_ar: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          decided_by?: string | null
+          id?: string
+          impact?: string
+          proposal_ar?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       aria_knowledge: {
         Row: {
           content: string
@@ -5160,6 +5193,42 @@ export type Database = {
           },
         ]
       }
+      support_requests: {
+        Row: {
+          assigned_to: string | null
+          channel: string
+          created_at: string
+          id: string
+          is_simulation: boolean
+          requester: string
+          status: string
+          topic_ar: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          channel: string
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          requester: string
+          status?: string
+          topic_ar: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          channel?: string
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          requester?: string
+          status?: string
+          topic_ar?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -5517,6 +5586,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      urgent_tasks: {
+        Row: {
+          created_at: string
+          department: string
+          due_at: string | null
+          id: string
+          is_simulation: boolean
+          owner_name: string | null
+          priority: string
+          sla_hours: number | null
+          status: string
+          title_ar: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          due_at?: string | null
+          id?: string
+          is_simulation?: boolean
+          owner_name?: string | null
+          priority: string
+          sla_hours?: number | null
+          status?: string
+          title_ar: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          due_at?: string | null
+          id?: string
+          is_simulation?: boolean
+          owner_name?: string | null
+          priority?: string
+          sla_hours?: number | null
+          status?: string
+          title_ar?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
