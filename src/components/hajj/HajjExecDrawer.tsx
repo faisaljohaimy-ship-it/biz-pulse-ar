@@ -137,7 +137,7 @@ function DrawerBody({ ar, onOpenChange }: { ar: boolean; onOpenChange: (o: boole
 
   const { kpi, stations, top_tasks } = data;
 
-  const kpis: Array<{ label: string; value: string; icon: React.ComponentType<{ className?: string }>; hue: string }> = [
+  const kpis: Array<{ label: string; value: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; hue: string }> = [
     { label: ar ? "الطاقم الميداني" : "Field staff", value: fmt(kpi.field_staff, ar), icon: Users, hue: GOLD },
     {
       label: ar ? "المحطات التشغيلية" : "Stations",
