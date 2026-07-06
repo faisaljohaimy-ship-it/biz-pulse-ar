@@ -18,7 +18,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/urgent-ops")({
   component: UrgentOpsPage,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorBoundary error={error} reset={reset} routeLabel="/urgent-ops" />
+  ),
 });
+
 
 type Priority = "عاجل جدًا" | "عاجل" | "متابعة";
 type TaskStatus = "جديد" | "قيد المعالجة" | "بانتظار اعتماد" | "مغلق";
