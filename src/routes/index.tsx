@@ -216,11 +216,66 @@ function IntroLanding() {
             </div>
           </dl>
 
-          {/* NEXIOS wordmark — moved to the very bottom of the hero, well
-              below ARIA's face, so it reads as an executive signature. */}
-          <div className="relative mt-10 w-full sm:mt-14">
-            <NexiosWordmark />
+          {/* Glowing headline + Digital Transformation subtitle — moved to the
+              BOTTOM, below the EXC readout. Styling unchanged. */}
+          <div dir="ltr" className="relative mt-10 flex w-full flex-col items-center text-center sm:mt-14">
+            {/* Soft dark halo scrim so the crest lifts off the ARIA backdrop */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+                filter: "blur(6px)",
+              }}
+            />
+            <h1
+              dir={ar ? "rtl" : "ltr"}
+              className="whitespace-nowrap font-black leading-none"
+              style={{
+                fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+                fontWeight: 900,
+                letterSpacing: "0.04em",
+                fontSize: "clamp(1.9rem, 7vw, 4.4rem)",
+                color: "#F5FBFF",
+                textShadow: [
+                  "0 0 4px rgba(220,240,255,0.9)",
+                  "0 0 22px rgba(0,180,120,0.7)",
+                  "0 0 50px rgba(0,140,90,0.55)",
+                  "0 0 110px rgba(0,120,80,0.35)",
+                ].join(","),
+              }}
+            >
+              {ar ? (
+                <>الذكاء، تحت <span style={{ color: "#4ADE80" }}>القيادة</span>.</>
+              ) : (
+                <>Intelligence, Under <span style={{ color: "#4ADE80" }}>Command</span>.</>
+              )}
+            </h1>
+            <span
+              aria-hidden
+              className="mt-3 block h-px w-24 sm:w-32"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(74,222,128,0.85) 50%, transparent 100%)",
+                boxShadow: "0 0 18px rgba(74,222,128,0.55)",
+              }}
+            />
+            <p
+              className="mt-3 whitespace-nowrap font-bold uppercase"
+              style={{
+                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+                fontWeight: 800,
+                letterSpacing: "0.32em",
+                fontSize: "clamp(0.7rem, 1.6vw, 1rem)",
+                color: "rgba(220,240,230,0.9)",
+                textShadow: "0 0 14px rgba(0,180,120,0.55)",
+              }}
+            >
+              Digital Transformation
+            </p>
           </div>
+
         </div>
 
 
