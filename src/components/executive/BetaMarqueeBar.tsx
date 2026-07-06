@@ -4,8 +4,8 @@
 
 import { useI18n } from "@/lib/i18n";
 
-const MESSAGE_AR = "منصة إنجاز الأعمال التنفيذية ✦ رؤية 2030 · NEXIOS";
-const MESSAGE_EN = "Executive Business Execution Platform ✦ Vision 2030 · NEXIOS";
+const MESSAGE_AR = "منصة إنجاز الأعمال التنفيذية ✦ NEXIOS AI";
+const MESSAGE_EN = "Executive Business Execution Platform ✦ NEXIOS AI";
 
 export function BetaMarqueeBar() {
   const { locale } = useI18n();
