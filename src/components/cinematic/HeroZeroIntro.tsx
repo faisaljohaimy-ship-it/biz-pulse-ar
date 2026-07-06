@@ -447,15 +447,26 @@ export function HeroZeroIntro() {
         }
         @keyframes hero-zero-flicker {
           0%,100% { text-shadow:
-            0 0 8px rgba(255,179,71,0.9),
-            0 0 24px rgba(255,106,0,0.85),
-            0 0 60px rgba(230,58,11,0.7),
-            0 0 110px rgba(230,58,11,0.55); }
-          50%     { text-shadow:
-            0 0 10px rgba(255,190,90,1),
-            0 0 30px rgba(255,120,20,0.95),
-            0 0 72px rgba(230,58,11,0.85),
-            0 0 130px rgba(230,58,11,0.6); }
+            0 0 4px rgba(255,220,140,1),
+            0 0 14px rgba(255,180,60,1),
+            0 0 36px rgba(255,110,20,0.95),
+            0 0 80px rgba(240,70,15,0.85),
+            0 0 140px rgba(220,45,10,0.75),
+            0 0 220px rgba(200,30,5,0.55); }
+          45%     { text-shadow:
+            0 0 6px rgba(255,235,170,1),
+            0 0 20px rgba(255,200,80,1),
+            0 0 50px rgba(255,130,30,1),
+            0 0 110px rgba(245,80,20,0.95),
+            0 0 180px rgba(225,50,12,0.85),
+            0 0 280px rgba(200,30,5,0.7); }
+          70%     { text-shadow:
+            0 0 5px rgba(255,225,150,1),
+            0 0 18px rgba(255,190,70,1),
+            0 0 44px rgba(255,120,25,1),
+            0 0 96px rgba(240,70,15,0.9),
+            0 0 160px rgba(220,45,10,0.8),
+            0 0 240px rgba(200,30,5,0.6); }
         }
         @keyframes hero-zero-flame {
           from { opacity: 0; transform: translateX(-50%) scaleY(0.6); }
