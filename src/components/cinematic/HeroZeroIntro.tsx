@@ -123,56 +123,43 @@ export function HeroZeroIntro() {
         try { el.load(); } catch { /* noop */ }
       });
 
-    // Acquire the ARIA bus — hero narration is the lowest-priority source,
-    // so any other ARIA voice (chat, tour) will preempt and stop us.
-
-    AriaAudioBus.unlock();
-    const granted = AriaAudioBus.acquire("hero-greeting", () => {
-      try { audio.pause(); } catch { /* noop */ }
-    });
-
-    // Autoplay contract: video is muted (always allowed). Audio tries to
-    // start immediately; if the browser blocks it (iOS/Safari), we attach a
-    // one-shot gesture listener that unlocks and starts audio on the first
-    // pointer/key/touch anywhere on the page.
+    // AUDIO IS ENTRY-GATED. We do NOT unlock the audio bus on mount and we
+    // do NOT try to play audio on mount. The muted video may run (browser
+    // policy allows silent-media autoplay). Audio only starts inside
+    // `startAudio`, which is invoked from the «دخول» tap handler.
+    let audioStarted = false;
     const startAudio = async () => {
-      if (!soundOnRef.current || !granted) return;
+      if (audioStarted) return;
+      audioStarted = true;
+      if (!soundOnRef.current) return;
+      AriaAudioBus.unlock(); // called from within a real user gesture
+      const granted = AriaAudioBus.acquire("hero-greeting", () => {
+        try { audio.pause(); } catch { /* noop */ }
+      });
+      if (!granted) return;
       try {
+        await waitReady(audio);
         audio.currentTime = video.currentTime;
         await audio.play();
         AriaAudioBus.notifyPlaying("hero-greeting", audio);
       } catch {
-        // Blocked — wait for first user gesture, then retry once.
-        const unlock = () => {
-          window.removeEventListener("pointerdown", unlock, true);
-          window.removeEventListener("keydown", unlock, true);
-          window.removeEventListener("touchstart", unlock, true);
-          if (!soundOnRef.current) return;
-          try {
-            audio.currentTime = video.currentTime;
-            void audio.play().then(() => {
-              AriaAudioBus.notifyPlaying("hero-greeting", audio);
-            }).catch(() => {});
-          } catch { /* noop */ }
-        };
-        window.addEventListener("pointerdown", unlock, { capture: true, once: true });
-        window.addEventListener("keydown", unlock, { capture: true, once: true });
-        window.addEventListener("touchstart", unlock, { capture: true, once: true });
-        cleanupFns.push(() => {
-          window.removeEventListener("pointerdown", unlock, true);
-          window.removeEventListener("keydown", unlock, true);
-          window.removeEventListener("touchstart", unlock, true);
-        });
+        // Should not happen since we're inside a gesture, but stay silent.
       }
     };
+    startAudioRef.current = startAudio;
+
     const kick = async () => {
-      await Promise.all([waitReady(video), waitReady(audio)]);
+      await waitReady(video);
       if (cancelled) return;
       try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
       void video.play().catch(() => {});
-      void startAudio();
+      // If the user has already tapped «دخول» before video was ready, honour
+      // that gesture now.
+      if (enteredRef.current) void startAudio();
     };
     void kick();
+
+
 
 
     // Audio-master drift correction — only runs while the user has enabled
