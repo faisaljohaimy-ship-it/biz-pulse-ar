@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
-import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
+import audioAsset from "@/assets/hero-assembly-audio-12.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
 import saudiEmblem from "@/assets/saudi-emblem.png";
 import { setIntroActive } from "@/lib/intro-store";
@@ -39,12 +39,11 @@ function shouldSkipInitial(): boolean {
 
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
-  // ENTRY-GATED audio: audio playback is FORBIDDEN until the user taps the
-  // «دخول» button. The muted video may autoplay (browser policy allows this),
-  // but no sound of any kind — greeting, narration, TTS — starts on mount.
-  const [entered, setEntered] = useState(false);
-  const enteredRef = useRef(false);
-  const startAudioRef = useRef<null | (() => Promise<void>)>(null);
+  // MAXIMUM-LEGAL AUTOPLAY: video is muted+autoplay on mount (always allowed).
+  // Audio uses a three-tier ignition strategy — see the media effect below.
+  const [audioStarted, setAudioStarted] = useState(false);
+  const audioStartedRef = useRef(false);
+  const igniteAudioRef = useRef<null | (() => Promise<void>)>(null);
   const soundOnRef = useRef(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -123,41 +122,95 @@ export function HeroZeroIntro() {
         try { el.load(); } catch { /* noop */ }
       });
 
-    // AUDIO IS ENTRY-GATED. We do NOT unlock the audio bus on mount and we
-    // do NOT try to play audio on mount. The muted video may run (browser
-    // policy allows silent-media autoplay). Audio only starts inside
-    // `startAudio`, which is invoked from the «دخول» tap handler.
-    let audioStarted = false;
-    const startAudio = async () => {
-      if (audioStarted) return;
-      audioStarted = true;
+    // ── THREE-TIER AUDIO IGNITION ────────────────────────────────────────
+    // Tier 1: optimistic autoplay() on mount. If the browser grants sound
+    //         autoplay (returning/engaged users, PWA), audio starts at t=0.
+    // Tier 2: on rejection, attach ONE-TIME listeners for the FIRST natural
+    //         interaction (pointerdown / touchstart / keydown / wheel /
+    //         scroll) anywhere on document. First fire → snap both media to
+    //         t=0 → play together. Listeners self-remove.
+    // Tier 3: while audio is silent, a small pulsing chip is visible in JSX;
+    //         its own tap is a valid gesture and reuses igniteAudioRef.
+    // Discipline: exactly ONE optimistic try (no repeated blocked play()
+    // calls). prefers-reduced-motion skips Tier 1 — chip tap only.
+    const markStarted = () => {
+      if (audioStartedRef.current) return;
+      audioStartedRef.current = true;
+      setAudioStarted(true);
+    };
+
+    const igniteAudio = async (resnap: boolean) => {
+      if (audioStartedRef.current) return;
       if (!soundOnRef.current) return;
-      AriaAudioBus.unlock(); // called from within a real user gesture
-      const granted = AriaAudioBus.acquire("hero-greeting", () => {
+      AriaAudioBus.unlock();
+      const granted = AriaAudioBus.acquire("genesis-intro", () => {
         try { audio.pause(); } catch { /* noop */ }
       });
       if (!granted) return;
       try {
         await waitReady(audio);
-        audio.currentTime = video.currentTime;
+        if (resnap) {
+          try { video.currentTime = 0; audio.currentTime = 0; } catch { /* noop */ }
+        } else {
+          try { audio.currentTime = video.currentTime; } catch { /* noop */ }
+        }
         await audio.play();
-        AriaAudioBus.notifyPlaying("hero-greeting", audio);
+        if (resnap) { try { await video.play(); } catch { /* noop */ } }
+        AriaAudioBus.notifyPlaying("genesis-intro", audio);
+        markStarted();
       } catch {
-        // Should not happen since we're inside a gesture, but stay silent.
+        // Playback still blocked — leave chip visible; a later gesture will retry.
+        AriaAudioBus.release("genesis-intro");
       }
     };
-    startAudioRef.current = startAudio;
+    igniteAudioRef.current = () => igniteAudio(true);
+
+    const attachGestureListeners = () => {
+      const events: Array<keyof DocumentEventMap> = [
+        "pointerdown", "touchstart", "keydown", "wheel", "scroll",
+      ];
+      const onFirst = () => {
+        for (const ev of events) {
+          document.removeEventListener(ev, onFirst, true);
+        }
+        void igniteAudio(true);
+      };
+      for (const ev of events) {
+        document.addEventListener(ev, onFirst, { capture: true, passive: true, once: true });
+      }
+      cleanupFns.push(() => {
+        for (const ev of events) document.removeEventListener(ev, onFirst, true);
+      });
+    };
 
     const kick = async () => {
       await waitReady(video);
       if (cancelled) return;
-      try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
       void video.play().catch(() => {});
-      // If the user has already tapped «دخول» before video was ready, honour
-      // that gesture now.
-      if (enteredRef.current) void startAudio();
+      if (reducedMotion.current) {
+        // Reduced motion: no optimistic audio try. Chip tap only.
+        return;
+      }
+      // Tier 1: exactly ONE optimistic play attempt.
+      try {
+        AriaAudioBus.unlock();
+        const granted = AriaAudioBus.acquire("genesis-intro", () => {
+          try { audio.pause(); } catch { /* noop */ }
+        });
+        if (!granted) { attachGestureListeners(); return; }
+        await waitReady(audio);
+        audio.currentTime = 0;
+        await audio.play();
+        AriaAudioBus.notifyPlaying("genesis-intro", audio);
+        markStarted();
+      } catch {
+        // Tier 1 refused by browser. Release the bus so a real gesture can re-acquire.
+        AriaAudioBus.release("genesis-intro");
+        attachGestureListeners();
+      }
     };
     void kick();
+
 
 
 
@@ -289,14 +342,9 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Entry gate — the ONLY path that unlocks ARIA audio for the hero intro.
-  // Must run inside a real click/tap handler so mobile browsers grant
-  // autoplay-with-sound.
-  const handleEnter = () => {
-    if (enteredRef.current) return;
-    enteredRef.current = true;
-    setEntered(true);
-    void startAudioRef.current?.();
+  // Chip tap = valid user gesture. Re-uses the same ignition path (Tier 2/3).
+  const handleChipTap = () => {
+    void igniteAudioRef.current?.();
   };
 
 
@@ -544,37 +592,27 @@ export function HeroZeroIntro() {
 
 
 
-      {/* ENTRY GATE — audio starts ONLY when the user taps «دخول». No sound
-          of any kind plays before this tap. */}
-      {!entered && (
+      {/* TIER 3 — pulsing speaker hint. Any interaction anywhere ignites
+          audio (Tier 2). Tapping the chip itself also counts as a gesture.
+          Fades out the instant audio starts. */}
+      {!audioStarted && (
         <button
           type="button"
-          onClick={handleEnter}
-          aria-label="دخول · Enter"
-          className="absolute inset-0 z-[70] flex flex-col items-center justify-center gap-5 bg-[#03111f]/55 backdrop-blur-[2px] focus:outline-none"
+          onClick={handleChipTap}
+          aria-label="اضغط لتشغيل الصوت · Tap for sound"
+          className="absolute z-[65] inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/55 bg-[#03111f]/80 px-4 py-2 text-[12px] font-semibold text-white backdrop-blur-md shadow-[0_0_28px_rgba(0,212,255,0.35)] transition hover:border-[#3AE8FF] hover:bg-[#03111f] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
+          style={{
+            bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+            left: "1.5rem",
+            animation: "hero-zero-chip-pulse 1.8s ease-in-out infinite",
+          }}
+          dir="rtl"
         >
-          <span className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#00D4FF]">
-            NEXIOS AI · Executive Intro
-          </span>
-          <span
-            aria-hidden
-            className="flex h-24 w-24 items-center justify-center rounded-full border border-[#00D4FF]/60 bg-black/50 text-4xl font-black text-white shadow-[0_0_50px_rgba(0,212,255,0.55)] transition-transform hover:scale-105"
-            style={{ fontFamily: '"Space Grotesk", ui-sans-serif, system-ui' }}
-          >
-            ▶
-          </span>
-          <span
-            dir="rtl"
-            className="max-w-md px-6 text-center text-[17px] font-semibold text-white/90"
-            style={{ fontFamily: '"Tajawal", "Space Grotesk", ui-sans-serif' }}
-          >
-            اضغط <span className="text-[#00D4FF]">دخول</span> لبدء العرض بالصوت
-          </span>
-          <span className="text-[10px] font-medium uppercase tracking-[0.36em] text-white/55">
-            Tap to Enter · with Sound
-          </span>
+          <span aria-hidden className="text-[15px]">🔊</span>
+          <span>اضغط في أي مكان لتشغيل الصوت</span>
         </button>
       )}
+
 
 
 
@@ -720,6 +758,10 @@ export function HeroZeroIntro() {
         @keyframes hero-zero-sound-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.35); }
           50%      { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+        }
+        @keyframes hero-zero-chip-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.45), 0 0 28px rgba(0, 212, 255, 0.35); transform: translateY(0); }
+          50%      { box-shadow: 0 0 0 14px rgba(0, 212, 255, 0), 0 0 32px rgba(0, 212, 255, 0.55); transform: translateY(-2px); }
         }
       `}</style>
 
