@@ -311,7 +311,7 @@ export function HeroZeroIntro() {
 
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover mix-blend-screen"
+        className="absolute inset-0 h-full w-full object-cover object-center mix-blend-screen md:object-contain"
         style={{
           animation: reducedMotion.current
             ? undefined
