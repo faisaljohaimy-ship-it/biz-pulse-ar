@@ -54,6 +54,7 @@ export function HajjExecutiveStage() {
     : "End-to-end digital integration between Hajj operations, enterprise systems, and executive intelligence — a single cockpit linking Outlook, SAP, and Windows 365 with ARIA's agent fabric.";
 
   return (
+    <>
     <section
       dir={ar ? "rtl" : "ltr"}
       aria-label={heading}
