@@ -563,6 +563,78 @@ export function HeroZeroIntro() {
       </button>
 
       <style>{`
+        /* ── Chrome NEXIOS AI wordmark ─────────────────────────────
+           Cold silver background-clip:text, entrance fade-up, and a
+           diagonal light sweep every 5s. Reduced-motion: static. */
+        .hero-zero-chrome-wordmark {
+          background: linear-gradient(178deg,
+            #ffffff 0%, #e3e8ee 14%, #aab3bf 32%, #5e6672 48%,
+            #2e343d 56%, #8b94a1 70%, #dfe4ea 86%, #f7f9fb 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          filter:
+            drop-shadow(0 1px 0 rgba(255,255,255,0.35))
+            drop-shadow(0 0 22px rgba(190,205,225,0.45))
+            drop-shadow(0 0 60px rgba(140,160,190,0.25));
+          opacity: 0;
+          transform: translateY(14px);
+          animation: hero-zero-chrome-in 700ms 9200ms ease-out forwards;
+        }
+        .hero-zero-chrome-wordmark::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 22%);
+          -webkit-mask: linear-gradient(#000, #000);
+                  mask: linear-gradient(#000, #000);
+          mix-blend-mode: screen;
+          opacity: 0.5;
+        }
+        .hero-zero-chrome-wordmark::after {
+          content: attr(data-text);
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          font: inherit;
+          letter-spacing: inherit;
+          text-transform: inherit;
+          color: transparent;
+          background: linear-gradient(115deg,
+            transparent 30%,
+            rgba(255,255,255,0.15) 42%,
+            rgba(255,255,255,0.85) 50%,
+            rgba(255,255,255,0.15) 58%,
+            transparent 70%);
+          background-size: 300% 100%;
+          background-position: 150% 0;
+          -webkit-background-clip: text;
+                  background-clip: text;
+          -webkit-text-fill-color: transparent;
+          mix-blend-mode: screen;
+          animation: hero-zero-chrome-sweep 5s 10000ms linear infinite;
+        }
+        @keyframes hero-zero-chrome-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hero-zero-chrome-sweep {
+          0%   { background-position: 150% 0; }
+          22%  { background-position: -150% 0; }
+          100% { background-position: -150% 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-zero-chrome-wordmark {
+            opacity: 1;
+            transform: none;
+            animation: none;
+          }
+          .hero-zero-chrome-wordmark::after { animation: none; opacity: 0; }
+        }
+
+
         /* Universal full-bleed fit. Portrait viewports render the portrait
            film near-native; landscape viewports crop top/bottom so the winged
            figure stays framed. Ultrawide steps the anchor further up so the
