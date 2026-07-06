@@ -311,7 +311,7 @@ export function HeroZeroIntro() {
 
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover object-center mix-blend-screen md:object-contain"
+        className="absolute inset-0 z-10 h-full w-full object-cover object-center mix-blend-screen md:object-contain"
         style={{
           animation: reducedMotion.current
             ? undefined
@@ -328,18 +328,20 @@ export function HeroZeroIntro() {
       />
       <audio ref={audioRef} src={audioAsset.url} preload="auto" />
 
-      {/* Ember particle layer — pointer-events none */}
+      {/* Ember particle layer — pointer-events none, sits above the figure
+          but below the Vision 2030 crest so sparks never wash it out. */}
       <canvas
         ref={canvasRef}
         aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full mix-blend-screen"
+        className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
       {/* Vision 2030 crest — appears with the winged figure, starts far
-          (small + blurred) and dollies in until it locks in place above him. */}
+          (small + blurred) and dollies in until it locks in place above him.
+          z-40 keeps it crisp above sparks, flame stripe and wordmark glow. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[6%] -translate-x-1/2 text-center"
+        className="pointer-events-none absolute left-1/2 top-[6%] z-40 -translate-x-1/2 text-center"
         style={{
           opacity: 0,
           animation: reducedMotion.current
@@ -348,6 +350,17 @@ export function HeroZeroIntro() {
           willChange: "opacity, transform, filter",
         }}
       >
+        {/* Soft dark halo scrim so sparks/flame never bleed into the type */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+            filter: "blur(6px)",
+          }}
+        />
+
         <div
           className="font-black leading-none"
           style={{
