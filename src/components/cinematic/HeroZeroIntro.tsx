@@ -79,52 +79,114 @@ export function HeroZeroIntro() {
     const audio = audioRef.current;
     if (!video || !audio) return;
 
-    // Kick playback. Video is muted so autoplay is allowed. Audio may need
-    // a user gesture on some browsers; if it fails silently, the visual
-    // still plays.
-    // Start audio + video together from t=0. If the browser blocks unmuted
-    // audio autoplay, hold the video at 0 and arm a one-shot unlock so both
-    // tracks start together on the first user gesture — narration is never
-    // out of sync with the visual.
-    video.pause();
-    video.currentTime = 0;
-    audio.pause();
-    audio.currentTime = 0;
-    audio.volume = 1;
+    // Playback contract:
+    //  - Both tracks always start together from t=0 (fresh mount and replays).
+    //  - We wait until BOTH elements can play through the first frame/sample
+    //    (readyState >= HAVE_CURRENT_DATA) before firing playback, so a slow
+    //    network never lets the video run silent ahead of the audio.
+    //  - If the browser blocks unmuted audio autoplay, we arm a one-shot
+    //    gesture unlock and reset BOTH clocks to 0 on unlock.
+    //  - Any seek on the video (user, devtools, browser buffer skip) is
+    //    mirrored to the audio so narration stays locked to picture.
+
+    let cancelled = false;
+    const cleanupFns: Array<() => void> = [];
+
+    const waitReady = (el: HTMLMediaElement) =>
+      new Promise<void>((resolve) => {
+        if (el.readyState >= 2 /* HAVE_CURRENT_DATA */) {
+          resolve();
+          return;
+        }
+        const onReady = () => {
+          el.removeEventListener("canplay", onReady);
+          el.removeEventListener("loadeddata", onReady);
+          resolve();
+        };
+        el.addEventListener("canplay", onReady, { once: true });
+        el.addEventListener("loadeddata", onReady, { once: true });
+        // Nudge the loader in case the element hasn't started buffering yet.
+        try {
+          el.load();
+        } catch {
+          /* noop */
+        }
+      });
+
+    const resetClocks = () => {
+      try {
+        video.pause();
+        audio.pause();
+        video.currentTime = 0;
+        audio.currentTime = 0;
+        audio.volume = 1;
+      } catch {
+        /* noop */
+      }
+    };
+
     const startBoth = () => {
-      audio.currentTime = 0;
-      video.currentTime = 0;
+      resetClocks();
       void video.play().catch(() => {});
       void audio.play().catch(() => {});
     };
+
+    const armUnlock = () => {
+      const unlock = () => {
+        startBoth();
+        window.removeEventListener("pointerdown", unlock);
+        window.removeEventListener("keydown", unlock);
+        window.removeEventListener("touchstart", unlock);
+      };
+      window.addEventListener("pointerdown", unlock, { once: true });
+      window.addEventListener("keydown", unlock, { once: true });
+      window.addEventListener("touchstart", unlock, { once: true });
+      cleanupFns.push(() => {
+        window.removeEventListener("pointerdown", unlock);
+        window.removeEventListener("keydown", unlock);
+        window.removeEventListener("touchstart", unlock);
+      });
+    };
+
     const kick = async () => {
+      resetClocks();
+      // Wait for both tracks to be ready before firing playback. This makes
+      // slow networks and cold caches behave the same as a warm reload.
+      await Promise.all([waitReady(video), waitReady(audio)]);
+      if (cancelled) return;
       try {
+        // Attempt audio first so we know whether autoplay is unlocked.
         await audio.play();
         void video.play().catch(() => {});
       } catch {
-        // Audio blocked — keep video paused at frame 0 so both start together.
-        const unlock = () => {
-          startBoth();
-          window.removeEventListener("pointerdown", unlock);
-          window.removeEventListener("keydown", unlock);
-          window.removeEventListener("touchstart", unlock);
-        };
-        window.addEventListener("pointerdown", unlock, { once: true });
-        window.addEventListener("keydown", unlock, { once: true });
-        window.addEventListener("touchstart", unlock, { once: true });
-        // Also try muted video so the poster+ambient light is alive while we
-        // wait for the gesture; audio + full video reset together on unlock.
+        // Audio blocked. Keep the muted video running so the scene is alive,
+        // but arm a gesture unlock that resets both clocks to 0 together.
         void video.play().catch(() => {});
+        armUnlock();
       }
     };
     void kick();
 
 
-    // Video follows audio — audio is never scrubbed, so narration stays clean.
+    // Mirror any video seek onto the audio so a browser buffer skip or a
+    // devtools scrub cannot desync the narration.
+    const onVideoSeeked = () => {
+      if (Math.abs(video.currentTime - audio.currentTime) > 0.1) {
+        try {
+          audio.currentTime = video.currentTime;
+        } catch {
+          /* noop */
+        }
+      }
+    };
+    video.addEventListener("seeked", onVideoSeeked);
+
+    // Continuous drift correction — audio is the master clock (never scrubbed
+    // by browsers), so we correct the video toward the audio position.
     const syncTick = () => {
       if (!video.paused && !audio.paused) {
         const drift = video.currentTime - audio.currentTime;
-        if (Math.abs(drift) > 0.3) video.currentTime = audio.currentTime;
+        if (Math.abs(drift) > 0.25) video.currentTime = audio.currentTime;
       }
       rafRef.current = window.requestAnimationFrame(syncTick);
     };
@@ -144,6 +206,7 @@ export function HeroZeroIntro() {
       if (e.key === "Escape") finish();
     };
     window.addEventListener("keydown", onKey);
+
 
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
