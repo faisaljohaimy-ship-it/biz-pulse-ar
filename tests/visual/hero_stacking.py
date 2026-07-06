@@ -103,6 +103,17 @@ PROBE_JS = r"""
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   };
 
+  // Ancestry-aware hit-tests (a descendant of the crest counts as the crest).
+  const hitBelongsTo = (point, sel) => {
+    const els = document.elementsFromPoint(point.x, point.y).filter(el => shell.contains(el));
+    return els.length > 0 && !!els[0].closest(sel);
+  };
+  const anyHitBelongsTo = (point, sel) => {
+    return document.elementsFromPoint(point.x, point.y)
+      .filter(el => shell.contains(el))
+      .some(el => !!el.closest(sel));
+  };
+
   const result = {
     ready: true,
     emblemBox: { x: eb.x, y: eb.y, w: eb.width, h: eb.height },
@@ -111,6 +122,10 @@ PROBE_JS = r"""
     stackAtEmblem: stackAt(emblemCenter),
     stackAtCrest:  stackAt(crestCenter),
     stackAtFace:   stackAt(faceCenter),
+    emblemIsTopAtEmblem: hitBelongsTo(emblemCenter, '[data-testid="hero-saudi-emblem"]'),
+    crestIsTopAtCrest:   hitBelongsTo(crestCenter,  '[data-testid="hero-vision-2030-crest"]'),
+    emblemHitsFace:      anyHitBelongsTo(faceCenter, '[data-testid="hero-saudi-emblem"]'),
+    crestHitsFace:       anyHitBelongsTo(faceCenter, '[data-testid="hero-vision-2030-crest"]'),
     zIndexed,
     skipBox:  bbox('button[aria-label*="Skip intro"]'),
   };
