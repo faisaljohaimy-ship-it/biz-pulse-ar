@@ -397,11 +397,12 @@ function ExecutiveBridgePage() {
             ›
           </ControlBtn>
           <ControlBtn
-            onClick={() => setAutoAdvance((a) => !a)}
-            label={autoAdvance ? "إيقاف التقديم | Pause auto" : "تقديم تلقائي | Auto-advance"}
+            onClick={() => setNarrating((a: boolean) => !a)}
+            label={narrating ? "إيقاف السرد | Pause narration" : "استئناف السرد | Resume narration"}
           >
-            {autoAdvance ? "❚❚" : "▶"}
+            {narrating ? "❚❚" : "▶"}
           </ControlBtn>
+
           <ControlBtn onClick={() => goTo(idx + 1)} label="التالي | Next">
             ‹
           </ControlBtn>
