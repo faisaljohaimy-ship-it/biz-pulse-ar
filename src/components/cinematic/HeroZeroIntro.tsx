@@ -680,7 +680,27 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
+
+        /* Top-center Vision 2030 emblem — descends from above with a soft
+           bloom, then rests. Reduced-motion variant just fades in. */
+        @keyframes hero-zero-topcrest {
+          0%   { opacity: 0;   transform: translateY(-14px) scale(0.94); filter: blur(6px); }
+          45%  { opacity: 0.9; filter: blur(1.5px); }
+          100% { opacity: 1;   transform: translateY(0) scale(1);       filter: blur(0); }
+        }
+        @keyframes hero-zero-topcrest-quiet {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        /* On very short viewports (landscape phones) tighten the top crest
+           so it never crowds the ARIA figure. */
+        @media (max-height: 620px) {
+          .hero-zero-topcrest-sigil { width: clamp(40px, 8vw, 64px) !important; }
+          .hero-zero-topcrest-ar    { font-size: clamp(0.7rem, 1.6vw, 1rem) !important; }
+          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 0.7vw, 0.58rem) !important; }
+        }
       `}</style>
+
     </div>
   );
 }
