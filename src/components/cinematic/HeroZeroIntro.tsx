@@ -626,38 +626,8 @@ export function HeroZeroIntro() {
           to   { opacity: 1; }
         }
 
-        /* Top-center Vision 2030 emblem — descends from above with a soft
-           bloom, then rests. Reduced-motion variant just fades in. */
-        @keyframes hero-zero-topcrest {
-          0%   { opacity: 0;   transform: translateY(-14px) scale(0.94); filter: blur(6px); }
-          45%  { opacity: 0.9; filter: blur(1.5px); }
-          100% { opacity: 1;   transform: translateY(0) scale(1);       filter: blur(0); }
-        }
-        @keyframes hero-zero-topcrest-quiet {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        /* Keep the top crest perfectly centered inside the safe area on
-           every viewport. The translate-x -50% + left-1/2 pattern is
-           direction-agnostic (works identically in RTL and LTR). */
-        .hero-zero-topcrest { transform: translateX(-50%); }
+        /* (top-center emblem removed — ARIA's face stays clean) */
 
-        /* Narrow phones (≤380px): shrink and let the Arabic line breathe. */
-        @media (max-width: 380px) {
-          .hero-zero-topcrest-sigil { width: clamp(44px, 14vw, 60px) !important; }
-          .hero-zero-topcrest-ar    { font-size: clamp(0.72rem, 3.6vw, 0.95rem) !important; letter-spacing: 0.02em !important; }
-          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 1.8vw, 0.56rem) !important; letter-spacing: 0.22em !important; }
-        }
-        /* Short viewports (landscape phones, small laptops): compress
-           vertical rhythm so the emblem never crowds ARIA's face. */
-        @media (max-height: 620px) {
-          .hero-zero-topcrest-sigil { width: clamp(38px, 7vw, 58px) !important; }
-          .hero-zero-topcrest-ar    { font-size: clamp(0.66rem, 1.5vw, 0.95rem) !important; }
-          .hero-zero-topcrest-en    { font-size: clamp(0.4rem, 0.7vw, 0.56rem) !important; }
-        }
-        @media (max-height: 480px) {
-          .hero-zero-topcrest-sigil { width: clamp(32px, 6vw, 48px) !important; }
-        }
 
         /* Sound toggle idle pulse — gently signals "tap to hear ARIA"
            without being noisy. Stops the moment the user enables sound. */
