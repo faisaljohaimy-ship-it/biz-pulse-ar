@@ -28,6 +28,26 @@ const INTEGRATIONS = [
 export function HajjExecutiveStage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const longPressTimer = useRef<number | null>(null);
+  const longPressFired = useRef(false);
+
+  const startLongPress = () => {
+    longPressFired.current = false;
+    if (typeof window === "undefined") return;
+    longPressTimer.current = window.setTimeout(() => {
+      longPressFired.current = true;
+      void navigate({ to: "/hajj-prime" });
+    }, 600);
+  };
+  const cancelLongPress = () => {
+    if (longPressTimer.current != null) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   const heading = ar ? "منصة إنجاز الأعمال التنفيذية" : "Executive Delivery Platform";
   const sub = ar
     ? "تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط Outlook، SAP، و Windows 365 مع منظومة وكلاء آريا."
