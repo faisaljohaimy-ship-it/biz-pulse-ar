@@ -45,17 +45,16 @@ export function GenesisOverture() {
     }
     if (reduced || alreadyPlayed) {
       setPhase("done");
+      setIntroActive(false);
       return;
     }
 
-    // phase is already "playing" from initial state — this prevents a flash of
-    // the executive hero before the overture mounts on the client.
+    setIntroActive(true);
     try {
       window.sessionStorage.setItem(SESSION_KEY, "1");
     } catch {
       /* noop */
     }
-
 
     // Scene timeline (ms offsets)
     const marks: Array<[number, number]> = [
@@ -72,11 +71,17 @@ export function GenesisOverture() {
     });
     timers.current.push(window.setTimeout(() => setShowSkip(true), SKIP_VISIBLE_AT));
     timers.current.push(window.setTimeout(() => setPhase("dissolving"), TOTAL_MS - 500));
-    timers.current.push(window.setTimeout(() => setPhase("done"), TOTAL_MS));
+    timers.current.push(
+      window.setTimeout(() => {
+        setPhase("done");
+        setIntroActive(false);
+      }, TOTAL_MS),
+    );
 
     return () => {
       timers.current.forEach(clearTimeout);
       timers.current = [];
+      setIntroActive(false);
     };
   }, []);
 
