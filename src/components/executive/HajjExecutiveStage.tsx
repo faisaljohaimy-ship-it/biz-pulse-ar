@@ -10,7 +10,8 @@
  *
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
-import { Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
+import { Mail, Database, Monitor, ShieldCheck, Sparkles, Moon, ArrowUpRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 
 
