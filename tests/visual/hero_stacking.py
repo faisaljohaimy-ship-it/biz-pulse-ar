@@ -124,7 +124,8 @@ async def run() -> int:
                 )
                 page = await ctx.new_page()
                 await page.goto(URL, wait_until="domcontentloaded")
-                await page.wait_for_timeout(1500)
+                await page.wait_for_selector('[data-testid="hero-saudi-emblem"]', state="visible", timeout=8000)
+                await page.wait_for_timeout(400)
 
                 probe = await page.evaluate(PROBE_JS)
                 if not probe.get("ready"):
