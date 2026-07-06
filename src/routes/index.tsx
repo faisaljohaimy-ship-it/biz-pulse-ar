@@ -314,6 +314,13 @@ function IntroLanding() {
 
       {/* Grand closing wordmark */}
       <NexiosFootermark caption={ar ? "منصة الذكاء التنفيذي" : "Enterprise AI Operating System"} />
+
+      <AriaTourController
+        open={tourOpen}
+        lang={ar ? "ar" : "en"}
+        stops={tourStops}
+        onClose={() => setTourOpen(false)}
+      />
     </div>
   );
 }
