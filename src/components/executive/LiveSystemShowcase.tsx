@@ -20,7 +20,7 @@ const INTERNAL_URL = "/hajj-prime";
  *  • No layout shift on small screens — gracefully recenters.
  */
 export function LiveSystemShowcase() {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const { locale } = useI18n();
   const ar = locale === "ar";
 
