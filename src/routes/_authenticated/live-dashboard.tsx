@@ -30,9 +30,15 @@ import {
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
 import { getExecTimeseries } from "@/lib/sec.functions";
+import { getSystemPulse, getBusinessKpis } from "@/lib/executive-presentation.functions";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
+import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
+import { BusinessKpiPanel } from "@/components/executive/BusinessKpiPanel";
+import { DecisionCenter } from "@/components/executive/DecisionCenter";
+import { ExecutiveTimeline } from "@/components/executive/ExecutiveTimeline";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 
 export const Route = createFileRoute("/_authenticated/live-dashboard")({
   head: () => ({
