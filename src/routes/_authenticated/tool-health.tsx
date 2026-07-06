@@ -25,15 +25,24 @@ function classify(err: string | null | undefined): ErrClass {
 
 const fetchHealth = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+
+    // Admin-only endpoint: exposes tool identifiers, failure counts, and raw error text.
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+
     const sinceDay = new Date(Date.now() - 24 * 3600_000).toISOString();
     const sinceHour = new Date(Date.now() - 3600_000).toISOString();
 
+    // Use the RLS-scoped client so tenant_isolation policies apply.
     const [day, hour] = await Promise.all([
-      supabaseAdmin.from("tool_executions").select("status, duration_ms, error, tool_id").gte("created_at", sinceDay).limit(50_000),
-      supabaseAdmin.from("tool_executions").select("status, duration_ms, error, tool_id").gte("created_at", sinceHour).limit(10_000),
+      supabase.from("tool_executions").select("status, duration_ms, error, tool_id").gte("created_at", sinceDay).limit(50_000),
+      supabase.from("tool_executions").select("status, duration_ms, error, tool_id").gte("created_at", sinceHour).limit(10_000),
     ]);
+
 
     const summarize = (rows: { status: string; duration_ms: number | null; error: string | null; tool_id: string }[]) => {
       const total = rows.length;
