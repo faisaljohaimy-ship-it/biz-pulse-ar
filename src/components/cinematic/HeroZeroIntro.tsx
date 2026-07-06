@@ -209,10 +209,13 @@ export function HeroZeroIntro() {
 
 
     return () => {
+      cancelled = true;
+      cleanupFns.forEach((fn) => fn());
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       if (hardCapRef.current !== null) clearTimeout(hardCapRef.current);
       video.removeEventListener("ended", onEnded);
       audio.removeEventListener("ended", onEnded);
+      video.removeEventListener("seeked", onVideoSeeked);
       window.removeEventListener("keydown", onKey);
       // Hard stop audio the moment the hero disappears — quick fade to avoid
       // a click, then pause + reset.
