@@ -6,14 +6,16 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-type Source = "hero-greeting" | "panel-greeting" | "chat-tts" | "tour-tts";
+type Source = "hero-greeting" | "panel-greeting" | "chat-tts" | "tour-tts" | "tour-video";
 
 const PRIORITY: Record<Source, number> = {
   "hero-greeting": 1,
   "panel-greeting": 2,
   "chat-tts": 3,
   "tour-tts": 3,
+  "tour-video": 3,
 };
+
 
 
 type StopFn = () => void;
