@@ -429,8 +429,7 @@ export function HeroZeroIntro() {
       />
       <audio ref={audioRef} src={audioAsset.url} preload="auto" />
 
-      {/* Ember particle layer — pointer-events none, sits above the figure
-          but below the Vision 2030 crest so sparks never wash it out. */}
+      {/* Ember particle layer — pointer-events none, sits above the figure. */}
       <canvas
         ref={canvasRef}
         aria-hidden
@@ -475,22 +474,6 @@ export function HeroZeroIntro() {
             willChange: "opacity, transform, filter",
           }}
         />
-        <div
-          dir="rtl"
-          className="hero-zero-vision2030 relative inline-block whitespace-nowrap text-center"
-          data-text="2030"
-          style={{
-            maxWidth: "92vw",
-            marginTop: "clamp(8px, 1.2dvh, 16px)",
-            fontFamily: '"IBM Plex Sans Arabic", "Tajawal", ui-sans-serif, system-ui',
-            fontWeight: 900,
-            fontSize: "clamp(3.5rem, 12vw, 7rem)",
-            letterSpacing: "0.02em",
-            lineHeight: 1,
-          }}
-        >
-          2030
-        </div>
       </div>
 
 
@@ -664,54 +647,6 @@ export function HeroZeroIntro() {
           .hero-zero-chrome-wordmark::after { animation: none; opacity: 0; }
         }
 
-        /* ── Vision 2030 nickel inscription ─────────────────── */
-        .hero-zero-vision2030 {
-          background: linear-gradient(178deg,
-            #f4f5f6 0%, #d8dadd 16%, #a9adb3 34%, #6f747b 48%,
-            #3a3e44 56%, #9599a0 70%, #e8eaec 86%, #c4c7cb 100%);
-          -webkit-background-clip: text;
-                  background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
-          text-shadow:
-            0 1px 0 rgba(255,255,255,0.30),
-            0 0 16px rgba(200,205,212,0.40),
-            0 0 40px rgba(150,155,165,0.22);
-          opacity: 0;
-          transform: translateY(8px);
-          animation: hero-zero-vision2030-in 600ms 1500ms ease-out forwards;
-        }
-        .hero-zero-vision2030::after {
-          content: attr(data-text);
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background: linear-gradient(115deg,
-            transparent 35%,
-            rgba(255,255,255,0.80) 50%,
-            transparent 65%);
-          background-size: 300% 100%;
-          background-position: 150% 0;
-          -webkit-background-clip: text;
-                  background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
-          mix-blend-mode: screen;
-          animation: hero-zero-vision2030-sweep 6s 12500ms linear infinite;
-        }
-        @keyframes hero-zero-vision2030-in {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes hero-zero-vision2030-sweep {
-          0%   { background-position: 150% 0; }
-          17%  { background-position: -150% 0; }
-          100% { background-position: -150% 0; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .hero-zero-vision2030 { opacity: 1; transform: none; animation: none; }
-          .hero-zero-vision2030::after { animation: none; opacity: 0; }
-        }
 
 
 
@@ -731,7 +666,7 @@ export function HeroZeroIntro() {
           .hero-zero-video { object-position: center 22%; }
         }
         /* Laptop landscape: tighten top emblem and bottom stack so the entire
-           composition (emblem → figure → wordmark → crest → tagline) fits
+           composition (emblem → figure → wordmark → tagline) fits
            within a single laptop viewport without vertical clipping. */
         @media (min-width: 1024px) and (max-height: 900px) {
           .hero-zero-emblem-top { top: calc(env(safe-area-inset-top) + 0.25rem) !important; }
