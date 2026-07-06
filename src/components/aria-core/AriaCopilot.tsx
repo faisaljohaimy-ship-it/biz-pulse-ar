@@ -305,6 +305,10 @@ export function AriaCopilot() {
   }, []);
 
   const fetchTTS = useCallback(async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
+    // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
+    // at 5. Serialize to max 3 in-flight so long replies with many sentences
+    // never trigger `concurrent_limit_exceeded` (429).
+    await ttsGate.acquire(ctrl.signal);
     const reqT = performance.now();
     VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/tts`, { idx, chars: text.length });
     try {
@@ -344,6 +348,8 @@ export function AriaCopilot() {
       if ((err as { name?: string }).name === "AbortError") return null;
       AriaVoiceDebug.emit({ source: "browser", reason: `network_seg_${idx}:${(err as Error).message ?? "unknown"}`, failed: true });
       return null;
+    } finally {
+      ttsGate.release();
     }
   }, []);
 
