@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
 import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
@@ -40,10 +39,12 @@ function shouldSkipInitial(): boolean {
 
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
-  // Sound OFF by default — per browser autoplay policy, we never start audio
-  // without an explicit user gesture. The button below flips this on.
-  const [soundOn, setSoundOn] = useState(false);
-  const soundOnRef = useRef(false);
+  // Sound ON by default — the intro tries to autoplay audio immediately, and
+  // falls back to unlocking on the first user gesture if the browser blocks
+  // silent-media autoplay (iOS/Safari). No visible mute button.
+  // No React state needed — `soundOnRef` is the single source of truth for
+  // the media effect. Audio is always ON by default.
+  const soundOnRef = useRef(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -129,22 +130,46 @@ export function HeroZeroIntro() {
       try { audio.pause(); } catch { /* noop */ }
     });
 
-    // Autoplay contract: video-only (muted), always allowed. Audio is armed
-    // but silent until the user taps the sound toggle — see toggleSound().
+    // Autoplay contract: video is muted (always allowed). Audio tries to
+    // start immediately; if the browser blocks it (iOS/Safari), we attach a
+    // one-shot gesture listener that unlocks and starts audio on the first
+    // pointer/key/touch anywhere on the page.
+    const startAudio = async () => {
+      if (!soundOnRef.current || !granted) return;
+      try {
+        audio.currentTime = video.currentTime;
+        await audio.play();
+        AriaAudioBus.notifyPlaying("hero-greeting", audio);
+      } catch {
+        // Blocked — wait for first user gesture, then retry once.
+        const unlock = () => {
+          window.removeEventListener("pointerdown", unlock, true);
+          window.removeEventListener("keydown", unlock, true);
+          window.removeEventListener("touchstart", unlock, true);
+          if (!soundOnRef.current) return;
+          try {
+            audio.currentTime = video.currentTime;
+            void audio.play().then(() => {
+              AriaAudioBus.notifyPlaying("hero-greeting", audio);
+            }).catch(() => {});
+          } catch { /* noop */ }
+        };
+        window.addEventListener("pointerdown", unlock, { capture: true, once: true });
+        window.addEventListener("keydown", unlock, { capture: true, once: true });
+        window.addEventListener("touchstart", unlock, { capture: true, once: true });
+        cleanupFns.push(() => {
+          window.removeEventListener("pointerdown", unlock, true);
+          window.removeEventListener("keydown", unlock, true);
+          window.removeEventListener("touchstart", unlock, true);
+        });
+      }
+    };
     const kick = async () => {
       await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
       try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
       void video.play().catch(() => {});
-      // If the user had already flipped sound on before the media was ready
-      // (e.g. rapid tap), honor it now.
-      if (soundOnRef.current && granted) {
-        try {
-          audio.currentTime = video.currentTime;
-          await audio.play();
-          AriaAudioBus.notifyPlaying("hero-greeting", audio);
-        } catch { /* noop — button remains available */ }
-      }
+      void startAudio();
     };
     void kick();
 
@@ -261,37 +286,11 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Sound toggle — the ONLY path that starts audio. Called from the button
-  // (a real user gesture), so the browser's autoplay policy is satisfied.
-  // On enable we align audio.currentTime to the video's current frame so
-  // the voice picks up exactly where the picture is; on disable we simply
-  // pause (keeping position, so re-enable resumes in place).
-  const toggleSound = useCallback(async () => {
-    const audio = audioRef.current;
-    const video = videoRef.current;
-    if (!audio || !video) return;
-    if (soundOnRef.current) {
-      soundOnRef.current = false;
-      setSoundOn(false);
-      try { audio.pause(); } catch { /* noop */ }
-      try { video.playbackRate = 1; } catch { /* noop */ }
-      return;
-    }
-    soundOnRef.current = true;
-    setSoundOn(true);
-    AriaAudioBus.unlock();
-    try {
-      audio.muted = false;
-      audio.volume = 1;
-      audio.currentTime = video.currentTime;
-      await audio.play();
-      AriaAudioBus.notifyPlaying("hero-greeting", audio);
-    } catch {
-      // If the browser still refuses (rare after a gesture), revert state.
-      soundOnRef.current = false;
-      setSoundOn(false);
-    }
-  }, []);
+  // Sound toggle removed — audio autoplays and is unlocked on first user
+  // gesture inside the mount effect above. `soundOn` remains `true` for the
+  // lifetime of the intro so drift/visibility logic keeps audio as master.
+
+
 
   if (mounted === null || mounted === "done") return null;
 
@@ -535,28 +534,9 @@ export function HeroZeroIntro() {
 
 
 
-      {/* Sound toggle — the only trigger that starts audio (browser policy).
-          Placed opposite Skip so both remain thumb-reachable on mobile
-          without overlapping. Pulses gently while muted so the user
-          notices it exists. */}
-      <button
-        type="button"
-        onClick={toggleSound}
-        aria-label={soundOn ? "Mute · كتم الصوت" : "Play sound · تشغيل الصوت"}
-        aria-pressed={soundOn}
-        className={`group absolute z-30 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF] ${
-          soundOn
-            ? "border-[#00D4FF]/60 bg-[#00D4FF]/15 text-white shadow-[0_0_20px_rgba(0,212,255,0.35)]"
-            : "border-white/25 bg-white/[0.08] text-white/85 hover:border-white/50 hover:bg-white/[0.14] hover:text-white animate-[hero-zero-sound-pulse_2.4s_ease-in-out_infinite]"
-        }`}
-        style={{
-          bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
-          left: "1.5rem",
-        }}
-      >
-        {soundOn ? <Volume2 size={16} strokeWidth={2.4} /> : <VolumeX size={16} strokeWidth={2.4} />}
-        <span>{soundOn ? "كتم · Mute" : "الصوت · Sound"}</span>
-      </button>
+      {/* (Mute/Sound toggle removed — audio autoplays and unlocks on first
+          user gesture if the browser blocks silent-media autoplay.) */}
+
 
       {/* Skip chip */}
       <button
