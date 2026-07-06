@@ -377,22 +377,26 @@ export function HeroZeroIntro() {
         }}
       >
         <div
-          className="font-[800] uppercase leading-none"
+          className="font-black uppercase leading-none"
           style={{
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-            letterSpacing: "0.18em",
-            fontSize: "clamp(2.25rem, 7vw, 5.5rem)",
+            fontWeight: 900,
+            letterSpacing: "0.14em",
+            fontSize: "clamp(2.75rem, 8.5vw, 6.75rem)",
+            WebkitTextStroke: "1px rgba(255,190,90,0.55)",
             background:
-              "linear-gradient(180deg, #FFF6C7 0%, #FFC24C 32%, #FF6A00 66%, #C0290A 100%)",
+              "linear-gradient(180deg, #FFFBE6 0%, #FFD066 28%, #FF7A18 62%, #B31E05 100%)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
             color: "transparent",
             textShadow: [
-              "0 0 8px rgba(255,179,71,0.9)",
-              "0 0 24px rgba(255,106,0,0.85)",
-              "0 0 60px rgba(230,58,11,0.7)",
-              "0 0 110px rgba(230,58,11,0.55)",
+              "0 0 4px rgba(255,220,140,1)",
+              "0 0 14px rgba(255,180,60,1)",
+              "0 0 36px rgba(255,110,20,0.95)",
+              "0 0 80px rgba(240,70,15,0.85)",
+              "0 0 140px rgba(220,45,10,0.75)",
+              "0 0 220px rgba(200,30,5,0.55)",
             ].join(","),
             opacity: 0,
             animation: reducedMotion.current
