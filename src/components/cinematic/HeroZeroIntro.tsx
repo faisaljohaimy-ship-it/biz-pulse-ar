@@ -357,15 +357,20 @@ export function HeroZeroIntro() {
           browser chrome on iOS. Pointer-events none — purely decorative. */}
       <div
         aria-hidden
-        className="hero-zero-topcrest pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
+        dir="rtl"
+        className="hero-zero-topcrest pointer-events-none absolute left-1/2 z-40 flex -translate-x-1/2 flex-col items-center text-center"
         style={{
-          top: "calc(env(safe-area-inset-top) + clamp(0.75rem, 2.4dvh, 1.75rem))",
+          top: "calc(env(safe-area-inset-top) + clamp(0.5rem, 2dvh, 1.5rem))",
+          paddingInline: "max(env(safe-area-inset-left), env(safe-area-inset-right), 0.75rem)",
+          maxWidth: "min(92vw, 560px)",
+          unicodeBidi: "isolate",
           opacity: 0,
           animation: reducedMotion.current
             ? "hero-zero-topcrest-quiet 700ms 300ms forwards ease-out"
             : "hero-zero-topcrest 2200ms 900ms forwards cubic-bezier(0.22,1,0.36,1)",
         }}
       >
+
         {/* Sigil — palm frond with two crossed swords, drawn in Saudi green
             with a soft gold rim-light. Sized responsively. */}
         <svg
