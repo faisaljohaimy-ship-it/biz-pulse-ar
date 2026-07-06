@@ -1,20 +1,39 @@
-import { useEffect, useRef, useState } from "react";
-import heroVideo from "@/assets/hero-intro-video.mp4.asset.json";
-import heroAudio from "@/assets/hero-intro-audio.mp3.asset.json";
+import { useEffect, useMemo, useRef, useState } from "react";
+import backdrop from "@/assets/hero-intro-backdrop.mp4.asset.json";
+import assemblyAudio from "@/assets/hero-assembly-audio.mp3.asset.json";
 import { useI18n } from "@/lib/i18n";
 
 /**
- * NEXIOS cinematic intro — pre-page shown once per session.
- * A vertical video of the fiery blue orb plays fullscreen with the
- * narration audio autoplayed in sync. A bilingual descriptor sits at
- * the top; a subtle "Skip" chip appears after 1s. The intro auto-
- * dismisses when the video ends (hard cap 34s) and crossfades into
- * the system homepage.
+ * NEXIOS AI cinematic pre-system intro.
+ * — Fullscreen backdrop video (silent, autoplays) + gated soundtrack.
+ * — Single "Enter" tap unlocks audio + triggers 3-phase letter assembly.
+ * — Crossfades into the system homepage. Once per session.
  */
 
 const SEEN_KEY = "nexios-genesis-seen";
-const T_FADE = 700;
-const T_MAX = 34000;
+const WORD = "NEXIOS AI";
+const T_FADE = 600;
+const T_MAX = 10_000; // hard cap after tap
+const T_A = 1200;
+const T_B = 800;
+const T_C = 2000;
+const T_TAIL = 2000;
+
+type Scatter = { x: number; y: number; z: number; rx: number; ry: number; rz: number };
+
+function makeScatter(mobile: boolean): Scatter {
+  const rx = () => (Math.random() * 2 - 1);
+  const xr = mobile ? 20 : 40;
+  const yr = mobile ? 15 : 30;
+  return {
+    x: rx() * xr,
+    y: rx() * yr,
+    z: -600 + Math.random() * 900,
+    rx: rx() * 180,
+    ry: rx() * 180,
+    rz: rx() * 90,
+  };
+}
 
 function useReducedMotion() {
   const [rm, setRm] = useState(false);
@@ -35,246 +54,290 @@ export function NexiosGenesisIntro() {
   const reducedMotion = useReducedMotion();
 
   const [mounted, setMounted] = useState(false);
+  const [started, setStarted] = useState(false); // tap happened
+  const [phase, setPhase] = useState<0 | 1 | 2 | 3>(0);
   const [fading, setFading] = useState(false);
   const [gone, setGone] = useState(false);
-  const [needsUnmute, setNeedsUnmute] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timersRef = useRef<number[]>([]);
+  const dismissedRef = useRef(false);
+
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  const letters = useMemo(() => WORD.split(""), []);
+  const scatterRef = useRef<Scatter[]>(letters.map(() => makeScatter(isMobile)));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       if (window.sessionStorage.getItem(SEEN_KEY)) return;
     } catch { /* noop */ }
-    if (reducedMotion) {
-      try { window.sessionStorage.setItem(SEEN_KEY, "1"); } catch { /* noop */ }
-      return;
-    }
     setMounted(true);
-  }, [reducedMotion]);
+  }, []);
 
-  const dismiss = () => {
+  const dismiss = (instant = false) => {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
     try { window.sessionStorage.setItem(SEEN_KEY, "1"); } catch { /* noop */ }
     const a = audioRef.current, v = videoRef.current;
-    if (a) { try { a.pause(); } catch { /* noop */ } }
-    if (v) { try { v.pause(); } catch { /* noop */ } }
+    if (instant) {
+      if (a) { try { a.pause(); a.src = ""; } catch { /* noop */ } }
+      if (v) { try { v.pause(); v.removeAttribute("src"); v.load(); } catch { /* noop */ } }
+    } else if (a) {
+      // fade audio
+      const start = a.volume || 0.9;
+      const t0 = performance.now();
+      const step = (t: number) => {
+        const k = Math.min(1, (t - t0) / T_FADE);
+        try { a.volume = start * (1 - k); } catch { /* noop */ }
+        if (k < 1) requestAnimationFrame(step); else { try { a.pause(); } catch { /* noop */ } }
+      };
+      requestAnimationFrame(step);
+    }
     setFading(true);
-    window.setTimeout(() => setGone(true), T_FADE);
+    window.setTimeout(() => {
+      setGone(true);
+      const v2 = videoRef.current; if (v2) { try { v2.pause(); v2.removeAttribute("src"); v2.load(); } catch { /* noop */ } }
+    }, T_FADE);
   };
 
+  // Start backdrop immediately on mount (muted autoplay allowed).
   useEffect(() => {
     if (!mounted) return;
-    const a = audioRef.current;
     const v = videoRef.current;
-
-    // Try unmuted audio autoplay; if blocked, offer one-tap unmute.
-    const tryAudio = async () => {
-      if (!a) return;
-      a.volume = 0.9;
-      a.muted = false;
-      try { await a.play(); }
-      catch {
-        try { a.muted = true; await a.play(); setNeedsUnmute(true); }
-        catch { setNeedsUnmute(true); }
-      }
-    };
-    void tryAudio();
     if (v) { try { void v.play(); } catch { /* noop */ } }
-
-    const skipT = window.setTimeout(() => setShowSkip(true), 1000);
-    const capT = window.setTimeout(dismiss, T_MAX);
-    timersRef.current.push(skipT, capT);
-    const onEnded = () => dismiss();
-    v?.addEventListener("ended", onEnded, { once: true });
-    a?.addEventListener("ended", onEnded, { once: true });
-    return () => {
-      timersRef.current.forEach((t) => window.clearTimeout(t));
-      timersRef.current = [];
-      v?.removeEventListener("ended", onEnded);
-      a?.removeEventListener("ended", onEnded);
-    };
   }, [mounted]);
 
-  const handleUnmute = () => {
+  // Skip chip after 1s of intro visible
+  useEffect(() => {
+    if (!mounted) return;
+    const t = window.setTimeout(() => setShowSkip(true), 1000);
+    timersRef.current.push(t);
+    return () => window.clearTimeout(t);
+  }, [mounted]);
+
+  // Stop everything on unmount / navigation away
+  useEffect(() => {
+    return () => {
+      const a = audioRef.current, v = videoRef.current;
+      try { a?.pause(); } catch { /* noop */ }
+      try { v?.pause(); } catch { /* noop */ }
+      timersRef.current.forEach((t) => window.clearTimeout(t));
+    };
+  }, []);
+
+  const beginSequence = () => {
+    if (started) return;
+    setStarted(true);
+    // authorize audio in same gesture
     const a = audioRef.current;
-    if (!a) return;
-    try { a.muted = false; a.volume = 0.9; void a.play(); } catch { /* noop */ }
-    setNeedsUnmute(false);
+    if (a) {
+      a.volume = 0.9;
+      a.muted = false;
+      try { void a.play(); } catch { /* noop */ }
+    }
+    setPhase(1);
+    const t1 = window.setTimeout(() => setPhase(2), T_A);
+    const t2 = window.setTimeout(() => setPhase(3), T_A + T_B);
+    const t3 = window.setTimeout(() => dismiss(false), T_A + T_B + T_C + T_TAIL);
+    const cap = window.setTimeout(() => dismiss(false), T_MAX);
+    const onEnd = () => dismiss(false);
+    a?.addEventListener("ended", onEnd, { once: true });
+    timersRef.current.push(t1, t2, t3, cap);
   };
 
   if (!mounted || gone) return null;
 
+  const backdropUrl = backdrop.url;
+  const audioUrl = assemblyAudio.url;
+
   return (
     <div
-      className="nx-genesis"
-      data-fading={fading ? "1" : "0"}
-      role="dialog"
-      aria-modal="true"
-      aria-label="NEXIOS"
+      onPointerDown={beginSequence}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "#07090D",
+        opacity: fading ? 0 : 1,
+        transition: `opacity ${T_FADE}ms ease`,
+        overflow: "hidden",
+        cursor: started ? "default" : "pointer",
+      }}
+      aria-hidden={fading}
     >
-      <video
-        ref={videoRef}
-        className="nx-genesis__video"
-        src={heroVideo.url}
-        autoPlay
-        muted
-        playsInline
-        preload="auto"
-        aria-hidden
+      {!reducedMotion && (
+        <video
+          ref={videoRef}
+          src={backdropUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster=""
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", pointerEvents: "none",
+          }}
+        />
+      )}
+      <div
+        style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, rgba(7,9,13,.55) 0%, rgba(7,9,13,.40) 40%, rgba(7,9,13,.75) 100%)",
+          pointerEvents: "none",
+        }}
       />
-      <audio ref={audioRef} src={heroAudio.url} preload="auto" playsInline />
 
-      {/* Vignette + gradient wash for readability */}
-      <div className="nx-genesis__wash" aria-hidden />
+      <audio ref={audioRef} src={audioUrl} preload="auto" playsInline />
 
-      {/* Top descriptor */}
-      <header className="nx-genesis__top" dir={ar ? "rtl" : "ltr"}>
-        <div className="nx-genesis__brand">NEXIOS</div>
-        <div className="nx-genesis__tagline">
-          {ar
-            ? "منصة إنجاز الأعمال التنفيذية · رؤية 2030"
-            : "Executive Execution Platform · Vision 2030"}
-        </div>
-        <div className="nx-genesis__rule" aria-hidden />
-      </header>
-
-      {needsUnmute && (
+      {/* Enter button */}
+      {!started && (
         <button
           type="button"
-          onClick={handleUnmute}
-          className="nx-genesis__unmute"
-          aria-label={ar ? "تشغيل الصوت" : "Enable sound"}
+          onClick={beginSequence}
+          className="nx-enter-btn"
+          aria-label={ar ? "دخول" : "Enter"}
         >
-          <span aria-hidden>🔊</span>
-          <span>{ar ? "تشغيل الصوت" : "Tap for sound"}</span>
+          <span className="nx-enter-ring" />
+          <span className="nx-enter-label">{ar ? "دخول" : "Enter"}</span>
         </button>
+      )}
+
+      {/* Letters */}
+      {started && (
+        <div className="nx-stage" aria-label={WORD}>
+          <div className="nx-word">
+            {letters.map((ch, i) => {
+              const s = scatterRef.current[i];
+              const isSpace = ch === " ";
+              const style: React.CSSProperties = phase === 1
+                ? {
+                    transform: `translate3d(${s.x}vw, ${s.y}vh, ${s.z}px) rotateX(${s.rx}deg) rotateY(${s.ry}deg) rotateZ(${s.rz}deg)`,
+                    opacity: 0.9,
+                    filter: "blur(1px)",
+                    transition: "none",
+                  }
+                : phase === 2
+                ? {
+                    transform: `translate3d(${s.x * 0.4}vw, ${s.y * 0.4}vh, ${s.z * 0.3}px) rotateX(${s.rx * 0.3}deg) rotateY(${s.ry * 0.3}deg) rotateZ(${s.rz * 0.3}deg)`,
+                    opacity: 1,
+                    filter: "blur(0.4px)",
+                    transition: `transform ${T_B}ms ease-out, filter ${T_B}ms ease-out, opacity ${T_B}ms ease-out`,
+                  }
+                : {
+                    transform: "translate3d(0,0,0) rotateX(0) rotateY(0) rotateZ(0)",
+                    opacity: 1,
+                    filter: "blur(0)",
+                    transition: `transform ${T_C}ms cubic-bezier(0.16,1,0.3,1) ${i * 70}ms, filter ${T_C}ms ease-out ${i * 70}ms, opacity ${T_C}ms ease-out ${i * 70}ms`,
+                  };
+              return (
+                <span
+                  key={i}
+                  className={`nx-letter${phase === 3 ? " nx-letter--settled" : ""}`}
+                  style={{ ...style, width: isSpace ? "0.4em" : undefined }}
+                >
+                  {isSpace ? "\u00A0" : ch}
+                </span>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {showSkip && (
         <button
           type="button"
-          onClick={dismiss}
-          className="nx-genesis__skip"
-          aria-label={ar ? "تخطي" : "Skip"}
+          onClick={(e) => { e.stopPropagation(); dismiss(true); }}
+          className="nx-skip"
         >
           {ar ? "تخطي" : "Skip"}
         </button>
       )}
 
       <style>{`
-        .nx-genesis {
-          position: fixed;
-          inset: 0;
-          z-index: 9999;
-          background: #04070F;
-          overflow: hidden;
-          transition: opacity ${T_FADE}ms ease;
-          opacity: 1;
+        .nx-enter-btn {
+          position: absolute; left: 50%; top: 50%;
+          transform: translate(-50%, -50%);
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 168px; height: 168px; border-radius: 999px;
+          border: 1px solid rgba(16,185,129,0.55);
+          background: radial-gradient(circle at 30% 25%, #e6eaf0 0%, #9ea4b0 45%, #2b3038 100%);
+          color: #0b1220; font-weight: 800; letter-spacing: 0.12em;
+          font-size: 22px; cursor: pointer;
+          box-shadow:
+            0 0 0 6px rgba(16,185,129,0.10),
+            0 0 40px rgba(16,185,129,0.35),
+            0 0 80px rgba(34,211,238,0.20),
+            inset 0 2px 8px rgba(255,255,255,0.6),
+            inset 0 -8px 22px rgba(0,0,0,0.45);
+          animation: nxEnterFade 400ms ease-out both;
         }
-        .nx-genesis[data-fading="1"] { opacity: 0; pointer-events: none; }
-        .nx-genesis__video {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: center;
-        }
-        .nx-genesis__wash {
-          position: absolute; inset: 0; pointer-events: none;
-          background:
-            radial-gradient(60% 40% at 50% 55%, transparent 0%, rgba(4,7,15,0.35) 70%, rgba(4,7,15,0.75) 100%),
-            linear-gradient(180deg, rgba(4,7,15,0.55) 0%, transparent 22%, transparent 70%, rgba(4,7,15,0.7) 100%);
-        }
-
-        /* Top descriptor */
-        .nx-genesis__top {
-          position: absolute;
-          top: calc(1.4rem + env(safe-area-inset-top));
-          left: 0; right: 0;
-          padding: 0 1.25rem;
-          text-align: center;
-          color: #eaf6ff;
-          text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+        .nx-enter-btn:focus-visible { outline: 2px solid #34d399; outline-offset: 4px; }
+        .nx-enter-ring {
+          position: absolute; inset: -14px; border-radius: 999px;
+          border: 2px solid rgba(16,185,129,0.75);
+          animation: nxEnterPulse 1800ms ease-out infinite;
           pointer-events: none;
         }
-        .nx-genesis__brand {
-          font-weight: 900;
-          letter-spacing: 0.42em;
-          font-size: 0.9rem;
-          color: #eaf6ff;
-        }
-        .nx-genesis__tagline {
-          margin-top: 0.55rem;
-          font-size: 0.8rem;
-          font-weight: 500;
-          letter-spacing: 0.06em;
-          color: rgba(220,235,250,0.88);
-        }
-        .nx-genesis__rule {
-          margin: 0.85rem auto 0;
-          width: 44px; height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(58,232,255,0.75), transparent);
-        }
-        @media (min-width: 640px) {
-          .nx-genesis__brand   { font-size: 1.1rem; letter-spacing: 0.5em; }
-          .nx-genesis__tagline { font-size: 0.95rem; }
+        .nx-enter-label { position: relative; z-index: 1; }
+        @keyframes nxEnterFade { from { opacity: 0; transform: translate(-50%, -46%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+        @keyframes nxEnterPulse {
+          0% { transform: scale(1); opacity: 0.9; }
+          70% { transform: scale(1.35); opacity: 0; }
+          100% { transform: scale(1.35); opacity: 0; }
         }
 
-        /* Unmute chip */
-        .nx-genesis__unmute {
-          position: absolute;
-          left: 50%;
-          bottom: calc(4.5rem + env(safe-area-inset-bottom));
-          transform: translateX(-50%);
-          appearance: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.55rem 1.1rem;
-          border-radius: 9999px;
-          border: 1px solid rgba(58,232,255,0.45);
-          background: rgba(6,10,18,0.75);
-          color: #eaf6ff;
-          font-size: 0.78rem;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          cursor: pointer;
-          backdrop-filter: blur(10px);
-          box-shadow: 0 8px 30px rgba(0,0,0,0.55), 0 0 24px rgba(58,232,255,0.28);
-          animation: nxPulse 2.4s ease-in-out infinite;
+        .nx-stage {
+          position: absolute; inset: 0;
+          display: flex; align-items: center; justify-content: center;
+          perspective: 1200px;
         }
-        @keyframes nxPulse {
-          0%, 100% { box-shadow: 0 8px 30px rgba(0,0,0,0.55), 0 0 0 0 rgba(58,232,255,0.5); }
-          50%      { box-shadow: 0 8px 30px rgba(0,0,0,0.55), 0 0 0 14px rgba(58,232,255,0); }
+        .nx-word {
+          display: inline-flex; align-items: baseline;
+          transform-style: preserve-3d;
+          font-weight: 900; letter-spacing: 0.06em; line-height: 1;
+          font-size: clamp(2.6rem, 8vw, 5.8rem);
+        }
+        @media (max-width: 639px) {
+          .nx-word { font-size: clamp(2rem, 11vw, 4rem); }
+        }
+        .nx-letter {
+          display: inline-block;
+          background: linear-gradient(175deg,#f8f9fb 0%,#c8ccd4 18%,#6e7480 38%,#2a2e36 50%,#9aa0ac 64%,#eef0f4 82%,#b8bcc6 100%);
+          -webkit-background-clip: text; background-clip: text;
+          color: transparent; -webkit-text-fill-color: transparent;
+          text-shadow:
+            0 0 14px rgba(16,185,129,0.55),
+            0 0 28px rgba(34,211,238,0.35);
+          will-change: transform, opacity, filter;
+        }
+        .nx-letter--settled {
+          animation: nxSettleGlow 900ms ease-out;
+        }
+        @keyframes nxSettleGlow {
+          0% { text-shadow: 0 0 30px rgba(16,185,129,0.95), 0 0 60px rgba(34,211,238,0.75); }
+          100% { text-shadow: 0 0 14px rgba(16,185,129,0.55), 0 0 28px rgba(34,211,238,0.35); }
         }
 
-        /* Skip */
-        .nx-genesis__skip {
-          position: absolute;
-          bottom: calc(1.25rem + env(safe-area-inset-bottom));
-          right: 1.25rem;
-          appearance: none;
-          border: 1px solid rgba(255,255,255,0.2);
-          background: rgba(10,14,20,0.55);
-          color: rgba(240,245,255,0.9);
-          font-size: 0.72rem;
-          font-weight: 600;
-          letter-spacing: 0.24em;
-          text-transform: uppercase;
-          padding: 0.5rem 0.95rem;
-          border-radius: 9999px;
-          cursor: pointer;
-          backdrop-filter: blur(8px);
-          animation: nxFadeIn 300ms ease-out both;
+        .nx-skip {
+          position: absolute; bottom: 20px;
+          ${ar ? "left" : "right"}: 20px;
+          padding: 8px 14px; border-radius: 999px;
+          background: rgba(15,20,28,0.6);
+          border: 1px solid rgba(148,163,184,0.35);
+          color: #e2e8f0; font-size: 12px; letter-spacing: 0.08em;
+          cursor: pointer; backdrop-filter: blur(6px);
         }
-        .nx-genesis__skip:hover { background: rgba(20,26,36,0.75); border-color: rgba(255,255,255,0.4); }
-        [dir="rtl"] .nx-genesis__skip { right: auto; left: 1.25rem; }
-        @keyframes nxFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .nx-skip:hover { background: rgba(15,20,28,0.85); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .nx-enter-ring { animation: none; }
+          .nx-letter { transition: none !important; animation: none !important; transform: none !important; filter: none !important; opacity: 1 !important; }
+        }
       `}</style>
     </div>
   );
