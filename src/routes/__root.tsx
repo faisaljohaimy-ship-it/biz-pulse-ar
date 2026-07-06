@@ -88,13 +88,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
+          "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { property: "og:title", content: SITE_NAME },
       {
         property: "og:description",
         content:
-          "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
+          "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
@@ -107,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "twitter:description",
         content:
-          "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security.",
+          "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
