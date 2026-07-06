@@ -36,7 +36,11 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorBoundary error={error} reset={reset} routeLabel="/command-center" />
+  ),
 });
+
 
 /* ═══════════════════════ Types ═══════════════════════ */
 
