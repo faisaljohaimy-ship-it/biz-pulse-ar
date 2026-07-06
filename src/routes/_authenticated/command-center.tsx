@@ -165,12 +165,11 @@ function CommandCenterPage() {
       supabase.from("support_requests").select("*", { count: "exact", head: true }).neq("status", "مغلق"),
     ]);
     const [aRes, eRes, aiRes, uRes, sRes] = runs;
-    const readCount = (r: PromiseSettledResult<{ count: number | null; error: unknown }>): number | null => {
+    const readCount = (r: PromiseSettledResult<unknown>): number | null => {
       if (r.status !== "fulfilled") return null;
-      // @ts-expect-error runtime shape
-      if (r.value?.error) return null;
-      // @ts-expect-error runtime shape
-      return typeof r.value?.count === "number" ? r.value.count : null;
+      const v = r.value as { count?: number | null; error?: unknown };
+      if (v?.error) return null;
+      return typeof v?.count === "number" ? v.count : null;
     };
     const agentCount = readCount(aRes);
     const eCount = readCount(eRes) ?? 0;
