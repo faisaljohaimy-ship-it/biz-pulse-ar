@@ -85,6 +85,7 @@ import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authen
 import { Route as AuthenticatedMissionControlRouteImport } from './routes/_authenticated/mission-control'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
+import { Route as AuthenticatedLiveDashboardRouteImport } from './routes/_authenticated/live-dashboard'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedKnowledgeUploadRouteImport } from './routes/_authenticated/knowledge-upload'
@@ -569,6 +570,12 @@ const AuthenticatedMarketplaceRoute =
   AuthenticatedMarketplaceRouteImport.update({
     id: '/marketplace',
     path: '/marketplace',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedLiveDashboardRoute =
+  AuthenticatedLiveDashboardRouteImport.update({
+    id: '/live-dashboard',
+    path: '/live-dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
@@ -1182,6 +1189,7 @@ export interface FileRoutesByFullPath {
   '/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/learn': typeof AuthenticatedLearnRouteWithChildren
+  '/live-dashboard': typeof AuthenticatedLiveDashboardRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/mission-control': typeof AuthenticatedMissionControlRoute
@@ -1357,6 +1365,7 @@ export interface FileRoutesByTo {
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/live-dashboard': typeof AuthenticatedLiveDashboardRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/mission-control': typeof AuthenticatedMissionControlRoute
@@ -1534,6 +1543,7 @@ export interface FileRoutesById {
   '/_authenticated/knowledge-upload': typeof AuthenticatedKnowledgeUploadRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
+  '/_authenticated/live-dashboard': typeof AuthenticatedLiveDashboardRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/mission-control': typeof AuthenticatedMissionControlRoute
@@ -1712,6 +1722,7 @@ export interface FileRouteTypes {
     | '/knowledge-upload'
     | '/leads'
     | '/learn'
+    | '/live-dashboard'
     | '/marketplace'
     | '/memory'
     | '/mission-control'
@@ -1887,6 +1898,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/knowledge-upload'
     | '/leads'
+    | '/live-dashboard'
     | '/marketplace'
     | '/memory'
     | '/mission-control'
@@ -2063,6 +2075,7 @@ export interface FileRouteTypes {
     | '/_authenticated/knowledge-upload'
     | '/_authenticated/leads'
     | '/_authenticated/learn'
+    | '/_authenticated/live-dashboard'
     | '/_authenticated/marketplace'
     | '/_authenticated/memory'
     | '/_authenticated/mission-control'
@@ -2775,6 +2788,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof AuthenticatedMarketplaceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/live-dashboard': {
+      id: '/_authenticated/live-dashboard'
+      path: '/live-dashboard'
+      fullPath: '/live-dashboard'
+      preLoaderRoute: typeof AuthenticatedLiveDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/learn': {
@@ -3602,6 +3622,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKnowledgeUploadRoute: typeof AuthenticatedKnowledgeUploadRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
+  AuthenticatedLiveDashboardRoute: typeof AuthenticatedLiveDashboardRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedMissionControlRoute: typeof AuthenticatedMissionControlRoute
@@ -3672,6 +3693,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKnowledgeUploadRoute: AuthenticatedKnowledgeUploadRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
+  AuthenticatedLiveDashboardRoute: AuthenticatedLiveDashboardRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedMissionControlRoute: AuthenticatedMissionControlRoute,
