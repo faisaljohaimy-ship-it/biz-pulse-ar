@@ -243,107 +243,14 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Ember particle canvas — additive orange sparks rising from the figure.
+  // Ember/fire particle canvas — intentionally disabled. The wordmark now
+  // uses a cool cyan palette, and the orange sparks were clashing with the
+  // scene. The canvas element is kept in the JSX only as a transparent
+  // no-op layer to preserve stacking; no effect is attached.
   useEffect(() => {
-    if (mounted !== "playing") return;
-    if (reducedMotion.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let width = 0;
-    let height = 0;
-    const setSize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    setSize();
-    const onResize = () => setSize();
-    window.addEventListener("resize", onResize);
-
-    interface Particle {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      life: number;
-      maxLife: number;
-      size: number;
-      hue: number;
-    }
-    const particles: Particle[] = [];
-    let startedAt: number | null = null;
-    let raf = 0;
-
-    const spawn = () => {
-      // Emitter: horizontal band around the wingman's torso.
-      const cx = width * 0.5 + (Math.random() - 0.5) * width * 0.28;
-      const cy = height * 0.62 + (Math.random() - 0.5) * height * 0.08;
-      particles.push({
-        x: cx,
-        y: cy,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: -0.4 - Math.random() * 0.9,
-        life: 0,
-        maxLife: 900 + Math.random() * 900,
-        size: 1 + Math.random() * 2.2,
-        hue: 18 + Math.random() * 22,
-      });
-    };
-
-    const tick = (t: number) => {
-      if (startedAt === null) startedAt = t;
-      const elapsed = t - startedAt;
-      // Start emitting shortly before ignition, ramp with intensity.
-      if (elapsed > IGNITION_MS - 2500) {
-        const spawnCount = elapsed < IGNITION_MS ? 1 : 3;
-        for (let i = 0; i < spawnCount; i++) spawn();
-      }
-
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(4,7,15,0.18)";
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.globalCompositeOperation = "lighter";
-      const dt = 16;
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life += dt;
-        if (p.life >= p.maxLife) {
-          particles.splice(i, 1);
-          continue;
-        }
-        p.vy += -0.008; // buoyancy
-        p.vx += Math.sin((t + i) * 0.002) * 0.02; // gentle sway
-        p.x += p.vx;
-        p.y += p.vy;
-        const lifeRatio = 1 - p.life / p.maxLife;
-        const alpha = lifeRatio * 0.9;
-        const r = p.size * (0.6 + lifeRatio * 0.8);
-        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 4);
-        grad.addColorStop(0, `hsla(${p.hue}, 100%, 70%, ${alpha})`);
-        grad.addColorStop(0.4, `hsla(${p.hue - 6}, 100%, 55%, ${alpha * 0.5})`);
-        grad.addColorStop(1, "hsla(15, 100%, 40%, 0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
+    // no-op
   }, [mounted]);
+
 
   if (mounted === null || mounted === "done") return null;
 
@@ -485,46 +392,11 @@ export function HeroZeroIntro() {
 
 
 
-      {/* SVG turbulence filter for the flame stripe */}
-      <svg aria-hidden width="0" height="0" className="absolute">
-        <defs>
-          <filter id="hero-zero-turbulence" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7">
-              <animate
-                attributeName="baseFrequency"
-                dur="6s"
-                values="0.9;1.1;0.9"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="6" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Flame stripe rising from the figure into the wordmark */}
-      {!reducedMotion.current && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 z-20 h-[26%] w-[42%] -translate-x-1/2"
-          style={{
-            bottom: "22%",
-            filter: "url(#hero-zero-turbulence) blur(2px)",
-            background:
-              "linear-gradient(180deg, rgba(255,180,60,0) 0%, rgba(255,140,40,0.35) 35%, rgba(230,60,10,0.55) 70%, rgba(255,220,120,0.85) 100%)",
-            mixBlendMode: "screen",
-            opacity: 0,
-            animation: "hero-zero-flame 900ms 8600ms forwards ease-out",
-          }}
-        />
-      )}
-
-      {/* NEXIOS AI wordmark — fire */}
+      {/* NEXIOS AI wordmark — pinned to the bottom of the hero, aligned with
+          the video's lower edge. Cool cyan/white palette instead of fire, so
+          it reads as an executive signature rather than a flame. */}
       <div
-        className="pointer-events-none absolute left-1/2 z-30 -translate-x-1/2 text-center"
-        style={{
-          bottom: "clamp(12%, 18%, 22%)",
-        }}
+        className="pointer-events-none absolute inset-x-0 bottom-[3%] z-30 flex flex-col items-center text-center md:bottom-[4%]"
       >
         <div
           className="font-black uppercase leading-none"
@@ -532,33 +404,25 @@ export function HeroZeroIntro() {
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
-            fontSize: "clamp(2.75rem, 8.5vw, 6.75rem)",
-            WebkitTextStroke: "1px rgba(255,190,90,0.55)",
-            background:
-              "linear-gradient(180deg, #FFFBE6 0%, #FFD066 28%, #FF7A18 62%, #B31E05 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            color: "transparent",
+            fontSize: "clamp(2rem, 7vw, 5.5rem)",
+            color: "#F5FBFF",
             textShadow: [
-              "0 0 4px rgba(255,220,140,1)",
-              "0 0 14px rgba(255,180,60,1)",
-              "0 0 36px rgba(255,110,20,0.95)",
-              "0 0 80px rgba(240,70,15,0.85)",
-              "0 0 140px rgba(220,45,10,0.75)",
-              "0 0 220px rgba(200,30,5,0.55)",
+              "0 0 2px rgba(220,240,255,0.9)",
+              "0 0 14px rgba(0,212,255,0.55)",
+              "0 0 44px rgba(0,180,220,0.35)",
+              "0 0 90px rgba(0,140,200,0.25)",
             ].join(","),
             opacity: 0,
             animation: reducedMotion.current
               ? "hero-zero-wordmark-quiet 400ms 200ms forwards ease-out"
-              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-flicker 4s 10200ms infinite ease-in-out",
+              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1)",
             willChange: "opacity, transform, filter",
           }}
         >
           NEXIOS AI
         </div>
         <div
-          className="mt-3 text-[10px] font-medium uppercase tracking-[0.4em] text-white/50"
+          className="mt-2 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
           style={{
             opacity: 0,
             animation: "hero-zero-tagline 800ms 9800ms forwards ease-out",
@@ -567,6 +431,7 @@ export function HeroZeroIntro() {
           Enterprise AI · Executive OS
         </div>
       </div>
+
 
       {/* Skip chip */}
       <button
