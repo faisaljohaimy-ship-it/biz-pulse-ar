@@ -359,83 +359,74 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
-      {/* Vision 2030 crest — pinned inside a wrapper that mirrors the video's
-          rendered box. On desktop/laptop the video is object-contain, so the
-          wrapper uses aspect-[9/16] to match the video's letterboxed box. On
-          mobile the video is object-cover filling the viewport, so the wrapper
-          fills the viewport and the crest sits at a viewport-relative offset
-          that lands right above the figure's head. dir="ltr" prevents RTL
-          flex reordering from shifting the crest off-center. */}
+      {/* Vision 2030 crest — video is fullscreen object-cover, so the crest
+          is positioned relative to the viewport. Portrait viewports sit near
+          the very top; landscape viewports drop slightly to clear the head. */}
       <div
         dir="ltr"
-        className="pointer-events-none absolute inset-0 z-40 flex items-start justify-center"
+        aria-hidden
+        className="hero-zero-crest pointer-events-none absolute left-1/2 z-40 -translate-x-1/2 text-center"
+        style={{
+          top: "4dvh",
+          opacity: 0,
+          animation: reducedMotion.current
+            ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
+            : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
+          willChange: "opacity, transform, filter",
+        }}
       >
-        <div className="relative h-full w-full md:aspect-[9/16] md:w-auto md:max-h-screen">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-[4%] -translate-x-1/2 text-center md:top-[7%]"
-            style={{
-              opacity: 0,
-              animation: reducedMotion.current
-                ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
-                : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
-              willChange: "opacity, transform, filter",
-            }}
-          >
-            {/* Soft dark halo scrim so sparks/flame never bleed into the type */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
-                filter: "blur(6px)",
-              }}
-            />
-
-            <div
-              dir="rtl"
-              className="whitespace-nowrap font-black leading-none"
-              style={{
-                fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
-                fontWeight: 900,
-                letterSpacing: "0.06em",
-                fontSize: "clamp(1.15rem, 3.2vw, 2.4rem)",
-                color: "#F5FBFF",
-                textShadow: [
-                  "0 0 4px rgba(220,240,255,0.9)",
-                  "0 0 18px rgba(0,180,120,0.65)",
-                  "0 0 40px rgba(0,140,90,0.55)",
-                  "0 0 90px rgba(0,120,80,0.35)",
-                ].join(","),
-              }}
-            >
-              رؤية <span style={{ color: "#4ADE80" }}>2030</span>
-            </div>
-            <div
-              className="mt-1 whitespace-nowrap font-bold uppercase"
-              style={{
-                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-                fontWeight: 800,
-                letterSpacing: "0.28em",
-                fontSize: "clamp(0.55rem, 1.05vw, 0.8rem)",
-                color: "rgba(220,240,230,0.85)",
-                textShadow: "0 0 12px rgba(0,180,120,0.55)",
-              }}
-            >
-              Vision 2030 · Kingdom of Saudi Arabia
-            </div>
-          </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+            filter: "blur(6px)",
+          }}
+        />
+        <div
+          dir="rtl"
+          className="whitespace-nowrap font-black leading-none"
+          style={{
+            fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+            fontWeight: 900,
+            letterSpacing: "0.06em",
+            fontSize: "clamp(1.15rem, 3.2vw, 2.4rem)",
+            color: "#F5FBFF",
+            textShadow: [
+              "0 0 4px rgba(220,240,255,0.9)",
+              "0 0 18px rgba(0,180,120,0.65)",
+              "0 0 40px rgba(0,140,90,0.55)",
+              "0 0 90px rgba(0,120,80,0.35)",
+            ].join(","),
+          }}
+        >
+          رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+        </div>
+        <div
+          className="mt-1 whitespace-nowrap font-bold uppercase"
+          style={{
+            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+            fontWeight: 800,
+            letterSpacing: "0.28em",
+            fontSize: "clamp(0.55rem, 1.05vw, 0.8rem)",
+            color: "rgba(220,240,230,0.85)",
+            textShadow: "0 0 12px rgba(0,180,120,0.55)",
+          }}
+        >
+          Vision 2030 · Kingdom of Saudi Arabia
         </div>
       </div>
 
 
-
-      {/* NEXIOS AI wordmark — pinned to the bottom of the hero, aligned with
-          the video's lower edge. Cool cyan/white palette instead of fire, so
-          it reads as an executive signature rather than a flame. */}
+      {/* NEXIOS AI wordmark — lower third across all devices. Safe-area
+          padding keeps clear of the iPhone home indicator. */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[3%] z-30 flex flex-col items-center text-center md:bottom-[4%]"
+        className="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center text-center"
+        style={{
+          bottom: "clamp(8dvh, 12dvh, 16dvh)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         <div
           className="font-black uppercase leading-none"
@@ -443,7 +434,7 @@ export function HeroZeroIntro() {
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
-            fontSize: "clamp(2rem, 7vw, 5.5rem)",
+            fontSize: "clamp(2rem, 8vw, 4.5rem)",
             color: "#F5FBFF",
             textShadow: [
               "0 0 2px rgba(220,240,255,0.9)",
@@ -470,6 +461,7 @@ export function HeroZeroIntro() {
           Enterprise AI · Executive OS
         </div>
       </div>
+
 
 
       {/* Skip chip */}
