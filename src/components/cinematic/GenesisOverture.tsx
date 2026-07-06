@@ -143,6 +143,7 @@ export function GenesisOverture() {
     timers.current.forEach(clearTimeout);
     timers.current = [];
     setPhase("dissolving");
+    try { window.sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
     window.setTimeout(() => {
       setPhase("done");
       setIntroActive(false);
