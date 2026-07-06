@@ -1,79 +1,91 @@
-# خطة التنفيذ — Master Elevation Run
+# خطة التنفيذ الكاملة — Entra ID × ARIA × Microsoft 365 × SAP × Enterprise DB
 
-نطاق ضخم يمتد عبر 5 مراحل + إصدار نهائي. أطلب الموافقة قبل البدء لأن التنفيذ سيلمس ~40 ملفاً، migrations متعددة للـ Supabase، بيانات seed، ومسارات جديدة.
+## المعمارية المستهدفة
 
----
+```text
+[User Browser]
+     │  (Sign-in with Microsoft)
+     ▼
+[Entra ID / Azure AD] ──OAuth2 Auth Code + PKCE──▶ [/auth/ms/callback]
+     │                                                     │
+     │                                              exchange code
+     ▼                                                     ▼
+[ARIA Orchestrator] ◀── delegated user token ── [ms_user_tokens (RLS, encrypted)]
+     │
+     ├─▶ Microsoft Graph  (Outlook / Teams / SharePoint / OneDrive / Calendar)
+     ├─▶ SAP Gateway      (OData v2/v4 via SAP_BASE_URL + service user)
+     └─▶ Supabase (Enterprise DB)  — sec_*, integration_*, ms_*, sap_* tables
+```
 
-## STAGE 0 — إصلاحات لم تُشحن
-- فحص/تصحيح فاصلة "الذكاء، تحت القيادة"
-- إزالة أي نص ظاهر `/aria-hero-motion.mp4`
-- تسمية روابط `/hajj-prime` بـ "منصة نُسك الحج"
-- تعيين `<title>`/meta في `__root.tsx` = "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform"
-- حذف "حِمل النواة 1.02%" و"معدل المزامنة 99.9"
+## المكوّنات المضافة
 
-**دليل:** grep قبل/بعد + مسارات ملفات مع أرقام أسطر.
+1. **مصادقة Entra (Per-user OAuth Delegated)**
+   - تسجيل تطبيق في Entra بصلاحيات: `openid profile email offline_access User.Read Mail.Read Mail.Send Calendars.ReadWrite Files.ReadWrite.All Sites.Read.All ChannelMessage.Send Channel.ReadBasic.All`.
+   - Route عام: `/auth/ms/start` → يبني رابط `authorize` مع PKCE و state.
+   - Route عام: `/auth/ms/callback` → يبادل الكود بالتوكن ويخزّنه.
+   - جدول `ms_user_tokens` (user_id, tenant_id, access_token, refresh_token, expires_at, scope) مع RLS صارم (المستخدم يقرأ سجله فقط، الكتابة service_role فقط).
+   - مُحدِّث خلفي `refreshMsToken(userId)` server-fn يعيد التوكن قبل انتهائه.
 
----
+2. **Graph Client موحّد** — `src/lib/ms/graph.server.ts`
+   - `graphFetch(userId, path, init)` يحقن التوكن ويتعامل مع 401/refresh وrate-limit.
+   - Server-fns مُغلّفة بـ `requireSupabaseAuth`:
+     - `listOutlookMessages`, `sendOutlookMail`
+     - `listTeamsChannels`, `postTeamsMessage`
+     - `listSharePointSites`, `listSiteFiles`, `uploadSiteFile`
+     - `listCalendarEvents`, `createCalendarEvent`
 
-## STAGE 1 — سطح المرونة والثقة
-- `src/components/ErrorBoundary.tsx` عام + غلاف `errorComponent` موحّد لكل route ذي loader (رسالة عربية موسومة)
-- `src/routes/api/health.ts` → server route يفحص Supabase (`select 1`) ويعيد `{ ok, version, timestamp, db_ms }`
-- رؤوس أمان عبر `src/routes/__root.tsx` head + `_headers` file: CSP، `X-Frame-Options: DENY`، `X-Content-Type-Options: nosniff`، `Referrer-Policy: strict-origin-when-cross-origin`
-- تحقق grep لأي مفتاح خدمة/سر في bundle العميل
-- صفحة `/status` تقرأ `/api/health` مع نص "بدون ادعاء توفر تاريخي"
-- `public/robots.txt` + `public/sitemap.xml` محدّثان للهوية الجديدة
+3. **جسر SAP** — `src/lib/sap/client.server.ts`
+   - HTTP client يستخدم `SAP_BASE_URL` + `SAP_CLIENT_ID` + `SAP_CLIENT_SECRET` (OAuth2 client credentials عبر SAP BTP) أو Basic حسب البيئة.
+   - Server-fns: `sapListBusinessPartners`, `sapListSalesOrders`, `sapGetMaterial`, `sapExecute(entity, query)` عام مع validator.
+   - جدول `sap_sync_log` لحفظ نتائج المزامنة.
 
----
+4. **تكامل ARIA**
+   - أدوات جديدة في `src/lib/aria/tools/`:
+     `ms.outlook.read`, `ms.outlook.send`, `ms.teams.post`, `ms.sharepoint.search`, `ms.calendar.next`, `sap.query`, `sap.orders.list`.
+   - تُسجَّل في `tool_registry` وتُستدعى عبر orchestrator الموجود؛ التنفيذ يمرّ بـ `authenticate` (Phase 9.3) ويستخدم توكن المستخدم الحالي.
+   - ARIA تستطيع الآن الإجابة على: "اقرأ آخر بريد لي"، "أرسل تحديث للفريق"، "أعطني آخر أوامر البيع من SAP".
 
-## STAGE 2 — عميل مرجعي محاكى (موسوم)
-Migration واحد يُنشئ (إن لم توجد) ويعبّئ:
-- منظمة: "شركة الطاقة النموذجية (بيئة محاكاة)"
-- `client_sites` × 6, `client_personnel` × 48, `client_incidents` × 14 (بدورة حياة كاملة), `client_work_orders` × 22 (بـ SLAs)
-- كل الصفوف `is_simulation = true` (إضافة العمود إن لزم)
-- شريط ثابت `<SimulationRibbon />` يظهر على كل شاشات المستأجر
-- محوّل مستأجرين في `/command-center` يقرأ الصفوف الحقيقية عبر استعلامات الإنتاج
+5. **واجهة الإدارة** — `/integrations/microsoft` و`/integrations/sap`
+   - زر "Connect Microsoft" (يبدأ OAuth)، حالة الاتصال، آخر مزامنة، الصلاحيات الممنوحة، فصل الاتصال (revoke + delete token).
+   - إعدادات SAP: base URL، اختبار الاتصال، سجل آخر عمليات.
 
----
+6. **قاعدة البيانات (Migration واحدة)**
+   - `ms_user_tokens` (RLS: user_id = auth.uid() للقراءة؛ الكتابة service_role).
+   - `sap_connections` (org_id, base_url, auth_mode, service_user_ref) — RLS org-scoped عبر `has_org_role`.
+   - `sap_sync_log`, `ms_activity_log` — للتدقيق.
+   - GRANTs كاملة + سياسات + triggers لـ `updated_at`.
 
-## STAGE 3 — تدقيق داخلي موثّق
-- استعلام `pg_policies` لعدّ السياسات لكل جدول
-- التحقق من الرؤوس/الحدود/الصحة/السرّية
-- إصلاح كل فشل وإعادة الفحص
-- كتابة `docs/INTERNAL_AUDIT_REPORT.md` (عربي أولاً، جدول نتائج، السطر الإلزامي حول عدم إغناء التدقيق الخارجي)
+7. **الأسرار المطلوبة**
+   - `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_TENANT_ID`, `MICROSOFT_REDIRECT_URI`.
+   - `SAP_BASE_URL`, `SAP_CLIENT_ID`, `SAP_CLIENT_SECRET` (أو `SAP_USERNAME`/`SAP_PASSWORD`).
+   - `MS_TOKEN_ENCRYPTION_KEY` (يُولَّد تلقائياً 64ch).
 
----
+## بروتوكول التنفيذ (مراحل قابلة للتحقق)
 
-## STAGE 4 — `/readiness` (محمي بالمصادقة)
-مسار جديد تحت `_authenticated/readiness.tsx` مع شارات:
-- التدقيق الداخلي ✓ → يربط بـ `docs/INTERNAL_AUDIT_REPORT.md`
-- التدقيق الخارجي ○ مجدول
-- Microsoft 365 → قراءة حقيقية لوجود أسرار `MICROSOFT_*` عبر server fn؛ الواجهة كاملة في الحالتين
-- العميل المرجعي ● محاكاة
-- PDPL ◐ مسودة v0.9
+1. **DB Migration** — إنشاء الجداول والسياسات (خطوة واحدة، انتظار الموافقة).
+2. **الأسرار** — طلب أسرار Microsoft وSAP من المستخدم عبر `add_secret`، وتوليد مفتاح التشفير.
+3. **Entra OAuth flow** — routes `/auth/ms/start`, `/auth/ms/callback`, tokens store + refresh helper.
+4. **Graph server-fns + UI Microsoft integration page** (اختبار حي بجلب inbox).
+5. **SAP client + server-fns + UI SAP integration page** (اختبار GET على `$metadata`).
+6. **ربط ARIA (tools + registry)** واختبار جملة عربية end-to-end.
+7. **Playwright**: مسارات OAuth (mock)، جلب بريد، إرسال Teams، استعلام SAP.
+8. **Typecheck + مراجعة أمنية** (RLS scanner) + تحديث `AI_ARCHITECTURE.md`.
 
----
+## تفاصيل تقنية
 
-## STAGE 5 — حلقة التطور الذاتي (محكومة)
-- تشغيل عند mount في `/command-center`
-- server fn `analyzeAndPropose` يقرأ heuristics حقيقية: خروقات SLA في `client_work_orders`، طلبات غير مسندة، ارتفاعات أخطاء من `enterprise_events`
-- يُدرج صفوفاً في جدول `evolution_proposals` (موجود)
-- **يقترح فقط** — لا تنفيذ ذاتي. أزرار الموافقة الموجودة هي المسار الوحيد
-- كل قرار يُسجّل في `evolution_log`
+- كل التوكنات مشفّرة AES-256-GCM باستخدام `MS_TOKEN_ENCRYPTION_KEY` قبل الإدراج.
+- `refresh` يتم تلقائياً إذا `expires_at - now() < 120s`.
+- كل طلب Graph يمرّ عبر `httpFetch` الموجود (retries + timeouts).
+- SAP يستخدم نفس نمط `httpFetch` مع CSRF token fetch للطرق غير الآمنة.
+- لا يوجد أي service-role في متصفح؛ التوكن لا يُعاد للواجهة، فقط النتائج.
+- كل استدعاءات ARIA تُسجَّل في `tool_executions` (موجود).
 
----
+## معايير القبول
 
-## FINAL — النشر
-- typecheck + build شامل
-- Playwright: لقطات لـ `/`, `/status`, `/readiness`, `/command-center`
-- `security--run_security_scan` → إصلاح كل ما هو حرج
-- `preview_ui--publish` → نشر
-- تقرير نهائي مع جدول المراحل + رؤوس HTTP حية من `curl -I` للعنوان المنشور
+- تسجيل دخول Microsoft يعمل ويخزّن التوكن مشفراً.
+- صفحة `/integrations/microsoft` تُظهر الحالة والصلاحيات، وتعرض آخر 10 رسائل inbox حياً.
+- إرسال رسالة Teams من ARIA بأمر عربي.
+- استعلام SAP يرجع بيانات فعلية أو خطأ واضح مع معرّف السجل في `sap_sync_log`.
+- Typecheck نظيف، لا تحذيرات RLS جديدة، ولا أسرار في الواجهة.
 
----
-
-## التقديرات
-- ~15 ملف جديد, ~25 ملف معدّل
-- 2 migrations (seed + عمود `is_simulation` إن لزم)
-- زمن تنفيذ متوقع: طويل، أرد بعد كل مرحلة بدليل مختصر
-
-**هل أبدأ بالمرحلة 0 الآن، أم تريد تعديل الأولويات/إسقاط مرحلة؟**
+هل أبدأ بالمرحلة 1 (Migration) الآن؟
