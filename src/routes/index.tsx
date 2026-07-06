@@ -19,7 +19,8 @@ import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-
+import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
+import { HeroZeroIntro } from "@/components/cinematic/HeroZeroIntro";
 
 
 
@@ -99,10 +100,12 @@ function IntroLanding() {
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
       {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
-      {/* Genesis Overture is mounted globally in __root.tsx. */}
 
+      {/* Cinematic Hero-Zero — plays once per session BEFORE the executive hero */}
+      <HeroZeroIntro />
 
-
+      {/* Fullscreen NEXIOS letters intro (once per session) */}
+      <NexiosGenesisIntro />
 
 
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered

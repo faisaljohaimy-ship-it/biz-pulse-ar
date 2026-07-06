@@ -58,7 +58,6 @@ import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
 import { Route as ApiVoiceDiagnosticsRouteImport } from './routes/api/voice-diagnostics'
 import { Route as ApiUrgentSummaryRouteImport } from './routes/api/urgent-summary'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
-import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
 import { Route as AuthenticatedVoiceSetupRouteImport } from './routes/_authenticated/voice-setup'
@@ -147,10 +146,8 @@ import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
-import { Route as AuthenticatedSecUrgentRouteImport } from './routes/_authenticated/sec.urgent'
 import { Route as AuthenticatedSecTwinRouteImport } from './routes/_authenticated/sec.twin'
 import { Route as AuthenticatedSecTimelineRouteImport } from './routes/_authenticated/sec.timeline'
-import { Route as AuthenticatedSecSupportRouteImport } from './routes/_authenticated/sec.support'
 import { Route as AuthenticatedSecShiftsRouteImport } from './routes/_authenticated/sec.shifts'
 import { Route as AuthenticatedSecSectionsRouteImport } from './routes/_authenticated/sec.sections'
 import { Route as AuthenticatedSecSafetyRouteImport } from './routes/_authenticated/sec.safety'
@@ -430,11 +427,6 @@ const ApiUrgentSummaryRoute = ApiUrgentSummaryRouteImport.update({
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiHealthRoute = ApiHealthRouteImport.update({
-  id: '/api/health',
-  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -902,11 +894,6 @@ const AuthenticatedSecVehiclesRoute =
     path: '/vehicles',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
-const AuthenticatedSecUrgentRoute = AuthenticatedSecUrgentRouteImport.update({
-  id: '/urgent',
-  path: '/urgent',
-  getParentRoute: () => AuthenticatedSecRoute,
-} as any)
 const AuthenticatedSecTwinRoute = AuthenticatedSecTwinRouteImport.update({
   id: '/twin',
   path: '/twin',
@@ -918,11 +905,6 @@ const AuthenticatedSecTimelineRoute =
     path: '/timeline',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
-const AuthenticatedSecSupportRoute = AuthenticatedSecSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => AuthenticatedSecRoute,
-} as any)
 const AuthenticatedSecShiftsRoute = AuthenticatedSecShiftsRouteImport.update({
   id: '/shifts',
   path: '/shifts',
@@ -1227,7 +1209,6 @@ export interface FileRoutesByFullPath {
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
-  '/api/health': typeof ApiHealthRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
@@ -1266,10 +1247,8 @@ export interface FileRoutesByFullPath {
   '/sec/safety': typeof AuthenticatedSecSafetyRoute
   '/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/sec/shifts': typeof AuthenticatedSecShiftsRoute
-  '/sec/support': typeof AuthenticatedSecSupportRoute
   '/sec/timeline': typeof AuthenticatedSecTimelineRoute
   '/sec/twin': typeof AuthenticatedSecTwinRoute
-  '/sec/urgent': typeof AuthenticatedSecUrgentRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
@@ -1404,7 +1383,6 @@ export interface FileRoutesByTo {
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
-  '/api/health': typeof ApiHealthRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
@@ -1443,10 +1421,8 @@ export interface FileRoutesByTo {
   '/sec/safety': typeof AuthenticatedSecSafetyRoute
   '/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/sec/shifts': typeof AuthenticatedSecShiftsRoute
-  '/sec/support': typeof AuthenticatedSecSupportRoute
   '/sec/timeline': typeof AuthenticatedSecTimelineRoute
   '/sec/twin': typeof AuthenticatedSecTwinRoute
-  '/sec/urgent': typeof AuthenticatedSecUrgentRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
@@ -1585,7 +1561,6 @@ export interface FileRoutesById {
   '/_authenticated/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
-  '/api/health': typeof ApiHealthRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
@@ -1624,10 +1599,8 @@ export interface FileRoutesById {
   '/_authenticated/sec/safety': typeof AuthenticatedSecSafetyRoute
   '/_authenticated/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/_authenticated/sec/shifts': typeof AuthenticatedSecShiftsRoute
-  '/_authenticated/sec/support': typeof AuthenticatedSecSupportRoute
   '/_authenticated/sec/timeline': typeof AuthenticatedSecTimelineRoute
   '/_authenticated/sec/twin': typeof AuthenticatedSecTwinRoute
-  '/_authenticated/sec/urgent': typeof AuthenticatedSecUrgentRoute
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
@@ -1766,7 +1739,6 @@ export interface FileRouteTypes {
     | '/voice-setup'
     | '/workflows'
     | '/api/chat'
-    | '/api/health'
     | '/api/tts'
     | '/api/urgent-summary'
     | '/api/voice-diagnostics'
@@ -1805,10 +1777,8 @@ export interface FileRouteTypes {
     | '/sec/safety'
     | '/sec/sections'
     | '/sec/shifts'
-    | '/sec/support'
     | '/sec/timeline'
     | '/sec/twin'
-    | '/sec/urgent'
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
@@ -1943,7 +1913,6 @@ export interface FileRouteTypes {
     | '/voice-setup'
     | '/workflows'
     | '/api/chat'
-    | '/api/health'
     | '/api/tts'
     | '/api/urgent-summary'
     | '/api/voice-diagnostics'
@@ -1982,10 +1951,8 @@ export interface FileRouteTypes {
     | '/sec/safety'
     | '/sec/sections'
     | '/sec/shifts'
-    | '/sec/support'
     | '/sec/timeline'
     | '/sec/twin'
-    | '/sec/urgent'
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
@@ -2123,7 +2090,6 @@ export interface FileRouteTypes {
     | '/_authenticated/voice-setup'
     | '/_authenticated/workflows'
     | '/api/chat'
-    | '/api/health'
     | '/api/tts'
     | '/api/urgent-summary'
     | '/api/voice-diagnostics'
@@ -2162,10 +2128,8 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/safety'
     | '/_authenticated/sec/sections'
     | '/_authenticated/sec/shifts'
-    | '/_authenticated/sec/support'
     | '/_authenticated/sec/timeline'
     | '/_authenticated/sec/twin'
-    | '/_authenticated/sec/urgent'
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
@@ -2239,7 +2203,6 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRouteWithChildren
-  ApiHealthRoute: typeof ApiHealthRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiUrgentSummaryRoute: typeof ApiUrgentSummaryRoute
   ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
@@ -2623,13 +2586,6 @@ declare module '@tanstack/react-router' {
       path: '/api/tts'
       fullPath: '/api/tts'
       preLoaderRoute: typeof ApiTtsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/health': {
-      id: '/api/health'
-      path: '/api/health'
-      fullPath: '/api/health'
-      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -3248,13 +3204,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecVehiclesRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
-    '/_authenticated/sec/urgent': {
-      id: '/_authenticated/sec/urgent'
-      path: '/urgent'
-      fullPath: '/sec/urgent'
-      preLoaderRoute: typeof AuthenticatedSecUrgentRouteImport
-      parentRoute: typeof AuthenticatedSecRoute
-    }
     '/_authenticated/sec/twin': {
       id: '/_authenticated/sec/twin'
       path: '/twin'
@@ -3267,13 +3216,6 @@ declare module '@tanstack/react-router' {
       path: '/timeline'
       fullPath: '/sec/timeline'
       preLoaderRoute: typeof AuthenticatedSecTimelineRouteImport
-      parentRoute: typeof AuthenticatedSecRoute
-    }
-    '/_authenticated/sec/support': {
-      id: '/_authenticated/sec/support'
-      path: '/support'
-      fullPath: '/sec/support'
-      preLoaderRoute: typeof AuthenticatedSecSupportRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
     '/_authenticated/sec/shifts': {
@@ -3567,10 +3509,8 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecSafetyRoute: typeof AuthenticatedSecSafetyRoute
   AuthenticatedSecSectionsRoute: typeof AuthenticatedSecSectionsRoute
   AuthenticatedSecShiftsRoute: typeof AuthenticatedSecShiftsRoute
-  AuthenticatedSecSupportRoute: typeof AuthenticatedSecSupportRoute
   AuthenticatedSecTimelineRoute: typeof AuthenticatedSecTimelineRoute
   AuthenticatedSecTwinRoute: typeof AuthenticatedSecTwinRoute
-  AuthenticatedSecUrgentRoute: typeof AuthenticatedSecUrgentRoute
   AuthenticatedSecVehiclesRoute: typeof AuthenticatedSecVehiclesRoute
   AuthenticatedSecVisitorsRoute: typeof AuthenticatedSecVisitorsRoute
   AuthenticatedSecIndexRoute: typeof AuthenticatedSecIndexRoute
@@ -3599,10 +3539,8 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecSafetyRoute: AuthenticatedSecSafetyRoute,
   AuthenticatedSecSectionsRoute: AuthenticatedSecSectionsRoute,
   AuthenticatedSecShiftsRoute: AuthenticatedSecShiftsRoute,
-  AuthenticatedSecSupportRoute: AuthenticatedSecSupportRoute,
   AuthenticatedSecTimelineRoute: AuthenticatedSecTimelineRoute,
   AuthenticatedSecTwinRoute: AuthenticatedSecTwinRoute,
-  AuthenticatedSecUrgentRoute: AuthenticatedSecUrgentRoute,
   AuthenticatedSecVehiclesRoute: AuthenticatedSecVehiclesRoute,
   AuthenticatedSecVisitorsRoute: AuthenticatedSecVisitorsRoute,
   AuthenticatedSecIndexRoute: AuthenticatedSecIndexRoute,
@@ -3820,7 +3758,6 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRouteWithChildren,
-  ApiHealthRoute: ApiHealthRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiUrgentSummaryRoute: ApiUrgentSummaryRoute,
   ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,

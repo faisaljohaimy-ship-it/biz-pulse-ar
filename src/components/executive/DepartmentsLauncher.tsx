@@ -14,12 +14,12 @@ const DISTRICTS = [
 ] as const;
 
 const SECTIONS = [
-  { key: "maintenance", to: "/sec/maintenance", icon: Wrench,       ar: "الصيانة",             en: "Maintenance" },
-  { key: "projects",    to: "/sec/projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
-  { key: "permits",     to: "/sec/permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
-  { key: "incidents",   to: "/sec/incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
-  { key: "support",     to: "/sec/support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
-  { key: "urgent",      to: "/sec/urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
+  { key: "maintenance", icon: Wrench,       ar: "الصيانة",             en: "Maintenance" },
+  { key: "projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
+  { key: "permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
+  { key: "incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
+  { key: "support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
+  { key: "urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
 ] as const;
 
 export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -96,7 +96,8 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
             return (
               <li key={s.key}>
                 <Link
-                  to={s.to}
+                  to="/runtime-hub"
+                  search={{ district, section: s.key }}
                   onClick={onClose}
                   className="group flex h-full flex-col items-start gap-2 rounded-xl border border-[#00D4FF]/25 bg-[#02101e]/70 p-3 transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.06] hover:shadow-[0_0_24px_rgba(58,232,255,0.35)]"
                 >

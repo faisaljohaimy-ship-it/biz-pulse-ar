@@ -53,7 +53,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 // Legacy ExecutiveOverlay removed — replaced by the ARIA Singleton (`<AriaCopilot />`
 // mounted once in `src/routes/__root.tsx`). See `src/lib/aria-core/README.md`.
 import { OrgSwitcher } from "@/components/org/org-switcher";
-import { SimulationRibbon } from "@/components/simulation/SimulationRibbon";
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
@@ -101,9 +100,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="nexus-main min-w-0 flex-1">
-          {/* Persistent simulation ribbon — only visible when the active
-              tenant is a simulated reference client. Zero-height when hidden. */}
-          <SimulationRibbon />
           <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
             {children}
           </div>

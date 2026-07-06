@@ -24,7 +24,6 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
-import { HeroDashboardDrawer } from "@/components/executive/HeroDashboardDrawer";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -221,7 +220,6 @@ export function AriaCopilot() {
   const setMode = useAriaStore((s) => s.setMode);
   const setVoiceEnabled = useAriaStore((s) => s.setVoiceEnabled);
 
-  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
@@ -727,22 +725,12 @@ export function AriaCopilot() {
 
   return (
     <>
-      {/* Executive dashboard drawer — opened from the hero launcher */}
-      <HeroDashboardDrawer
-        open={dashboardOpen}
-        onClose={() => setDashboardOpen(false)}
-        onOpenAria={() => setMode("docked")}
-      />
-
-      {/* Launcher FAB — hidden while docked. Click opens the executive
-          dashboard drawer; long-press / right-click opens ARIA directly. */}
+      {/* Launcher FAB — hidden while docked */}
       {!isOpen && (
         <button
           type="button"
-          onClick={() => setDashboardOpen(true)}
-          onContextMenu={(e) => { e.preventDefault(); setMode("docked"); }}
-          aria-label="Open executive dashboard"
-          title="Open executive dashboard · right-click to talk to ARIA"
+          onClick={() => setMode("docked")}
+          aria-label="Open ARIA"
           className={cn(
             "fixed bottom-6 end-6 z-50 flex h-14 w-14 items-center justify-center",
             "rounded-full border border-primary/40 bg-card/80 text-primary shadow-lg backdrop-blur-xl",
@@ -760,7 +748,6 @@ export function AriaCopilot() {
           />
         </button>
       )}
-
 
       {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (

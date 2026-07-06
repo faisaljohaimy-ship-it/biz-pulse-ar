@@ -23,7 +23,7 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
-import { GenesisOverture } from "@/components/cinematic/GenesisOverture";
+import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
@@ -218,13 +218,9 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
-  // /hajj-prime is a full-viewport takeover — suppress every global overlay
-  // (marquee, watermark, ARIA copilot chip, greeter, genesis) so the shell
-  // owns the entire screen exactly like the reference command dashboard.
-  const isTakeover = pathname.startsWith("/hajj-prime");
   const introActive = useIntroActive();
-  const suppressOverlays = isPromo || isTakeover || introActive;
-  const suppressMarquee = introActive || isHero || isTakeover;
+  const suppressOverlays = isPromo || introActive;
+  const suppressMarquee = introActive || isHero;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -240,9 +236,9 @@ function RootComponent() {
                 <div className="relative z-10">
                   <Outlet />
                 </div>
-                {!introActive && !isTakeover && <AriaCopilot />}
+                {!introActive && <AriaCopilot />}
                 {!suppressOverlays && <AriaGreeter />}
-                {!suppressOverlays && <GenesisOverture />}
+                {!suppressOverlays && <GenesisIntro />}
                 <Toaster />
               </AriaProvider>
             </DemoModeProvider>

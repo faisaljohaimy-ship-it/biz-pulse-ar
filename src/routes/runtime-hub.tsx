@@ -20,7 +20,7 @@ const STAGES = [
   { key: "org",      label_ar: "بيانات المؤسسة", label_en: "Organization",   icon: Building2,   to: "/command-center" },
   { key: "twin",     label_ar: "التوأم الرقمي",  label_en: "Digital Twin",   icon: Radar,       to: "/operations" },
   { key: "ops",      label_ar: "العمليات",        label_en: "Operations",     icon: Activity,    to: "/operations" },
-  { key: "hajj",     label_ar: "نظام الحج",       label_en: "Hajj 1447",      icon: Moon,        to: "/hajj-prime", featured: true },
+  { key: "hajj",     label_ar: "نظام الحج",       label_en: "Hajj 1447",      icon: Moon,        to: "/hajj", featured: true },
   { key: "kpi",      label_ar: "مؤشرات الأداء",  label_en: "Executive KPIs", icon: BarChart3,   to: "/executive-reports" },
   { key: "agents",   label_ar: "الوكلاء",         label_en: "Agents",         icon: Bot,         to: "/exec" },
   { key: "realtime", label_ar: "البث اللحظي",    label_en: "Realtime",       icon: Radio,       to: "/operations" },
