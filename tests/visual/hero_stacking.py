@@ -61,12 +61,17 @@ PROBE_JS = r"""
   // ARIA face approximation: centered horizontally, ~28-50% down the video.
   const faceCenter   = { x: vb.x + vb.width/2, y: vb.y + vb.height*0.38 };
 
-  const stackAt = (p) => Array.from(document.elementsFromPoint(p.x, p.y)).map(el => ({
-    tag: el.tagName,
-    testid: el.getAttribute('data-testid') || '',
-    cls: (el.className && el.className.baseVal !== undefined) ? el.className.baseVal : String(el.className || ''),
-    zIndex: getComputedStyle(el).zIndex,
-  }));
+  // Only elements that live inside the intro shell count — dev tooling
+  // overlays (Vite HMR, lovable-tagger, etc.) can float above with huge
+  // z-indexes but are irrelevant to production stacking.
+  const stackAt = (p) => Array.from(document.elementsFromPoint(p.x, p.y))
+    .filter(el => shell.contains(el))
+    .map(el => ({
+      tag: el.tagName,
+      testid: el.getAttribute('data-testid') || '',
+      cls: (el.className && el.className.baseVal !== undefined) ? el.className.baseVal : String(el.className || ''),
+      zIndex: getComputedStyle(el).zIndex,
+    }));
 
   // Enumerate every descendant of the shell with an explicit z-index so we
   // can flag anything that climbs above the shell itself.
