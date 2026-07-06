@@ -420,6 +420,7 @@ export type Database = {
           decided_by: string | null
           id: string
           impact: string
+          org_id: string
           proposal_ar: string
           status: string
           updated_at: string
@@ -430,6 +431,7 @@ export type Database = {
           decided_by?: string | null
           id?: string
           impact: string
+          org_id?: string
           proposal_ar: string
           status?: string
           updated_at?: string
@@ -440,6 +442,7 @@ export type Database = {
           decided_by?: string | null
           id?: string
           impact?: string
+          org_id?: string
           proposal_ar?: string
           status?: string
           updated_at?: string
@@ -3592,6 +3595,7 @@ export type Database = {
           id: string
           name_ar: string
           name_en: string
+          org_id: string | null
           sort_order: number
         }
         Insert: {
@@ -3603,6 +3607,7 @@ export type Database = {
           id?: string
           name_ar: string
           name_en: string
+          org_id?: string | null
           sort_order?: number
         }
         Update: {
@@ -3614,6 +3619,7 @@ export type Database = {
           id?: string
           name_ar?: string
           name_en?: string
+          org_id?: string | null
           sort_order?: number
         }
         Relationships: []
@@ -5200,6 +5206,7 @@ export type Database = {
           created_at: string
           id: string
           is_simulation: boolean
+          org_id: string
           requester: string
           status: string
           topic_ar: string
@@ -5211,6 +5218,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_simulation?: boolean
+          org_id?: string
           requester: string
           status?: string
           topic_ar: string
@@ -5222,6 +5230,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_simulation?: boolean
+          org_id?: string
           requester?: string
           status?: string
           topic_ar?: string
@@ -5594,6 +5603,7 @@ export type Database = {
           due_at: string | null
           id: string
           is_simulation: boolean
+          org_id: string
           owner_name: string | null
           priority: string
           sla_hours: number | null
@@ -5607,6 +5617,7 @@ export type Database = {
           due_at?: string | null
           id?: string
           is_simulation?: boolean
+          org_id?: string
           owner_name?: string | null
           priority: string
           sla_hours?: number | null
@@ -5620,6 +5631,7 @@ export type Database = {
           due_at?: string | null
           id?: string
           is_simulation?: boolean
+          org_id?: string
           owner_name?: string | null
           priority?: string
           sla_hours?: number | null
