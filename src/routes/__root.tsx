@@ -28,6 +28,7 @@ import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
+import { LiveClock } from "@/components/LiveClock";
 
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
