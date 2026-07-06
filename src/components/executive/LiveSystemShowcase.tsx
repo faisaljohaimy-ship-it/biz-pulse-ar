@@ -81,35 +81,47 @@ export function LiveSystemShowcase() {
             </div>
           </div>
 
-          {/* Live iframe stage — locked dark surface. Poster image of the
-              Hajj command dashboard sits behind the iframe so the system is
-              visibly identifiable as an "icon" from the outside, even before
-              the embedded live view finishes mounting. */}
+          {/* Live iframe stage — the actual /hajj-prime dashboard renders
+              inside the icon so viewers see the system LIVE from the outside.
+              The poster image sits behind as an instant fallback until the
+              live route finishes hydrating (no black flash on slow networks). */}
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#02101e]">
-            {/* Poster layer — real dashboard preview, tinted to blend with hero */}
+            {/* Poster fallback — dimmed, sits behind the live iframe */}
             <img
               src={hajjDashboardPoster.url}
-              alt={ar ? "معاينة لوحة قيادة نظام الحج" : "Hajj command dashboard preview"}
+              alt=""
+              aria-hidden
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-95"
+              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-60"
               style={{ filter: "saturate(1.05) contrast(1.02)" }}
             />
-            {/* Cinematic overlays */}
-            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(2,16,30,0.15)_0%,transparent_35%,transparent_75%,rgba(2,16,30,0.55)_100%)]" />
-            <div className="pointer-events-none absolute inset-0 z-10 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.022)_0px,rgba(255,255,255,0.022)_1px,transparent_1px,transparent_3px)] mix-blend-overlay" />
-            <div className="pointer-events-none absolute inset-0 z-10 shadow-[inset_0_0_100px_rgba(2,16,30,0.85)]" />
 
+            {/* Live dashboard — always visible, scaled to fit the icon frame */}
             <iframe
               src={LIVE_URL}
-              title={ar ? "منصة نُسك الحج — الوضع الليلي" : "Hajj Nexus Platform — Night Mode"}
+              title={ar ? "منصة نُسك الحج — بث مباشر" : "Hajj Nexus Platform — Live"}
               loading="lazy"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
               style={{ colorScheme: "dark", backgroundColor: "transparent" }}
-              className="absolute left-1/2 top-1/2 z-[5] h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.5] border-0 opacity-0 transition-opacity duration-700 [&:not([data-loading])]:opacity-100"
-              onLoad={(e) => { (e.currentTarget as HTMLIFrameElement).style.opacity = "1"; }}
+              className="absolute left-1/2 top-1/2 z-[5] h-[250%] w-[250%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.4] border-0"
             />
+
+            {/* Subtle cinematic overlays — kept thin so the live feed stays readable */}
+            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(2,16,30,0.05)_0%,transparent_35%,transparent_80%,rgba(2,16,30,0.35)_100%)]" />
+            <div className="pointer-events-none absolute inset-0 z-10 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.02)_0px,rgba(255,255,255,0.02)_1px,transparent_1px,transparent_3px)] mix-blend-overlay" />
+
+            {/* Live badge — overlaid on the icon so the "outside" viewer
+                immediately reads it as a real, ticking system */}
+            <div
+              dir="ltr"
+              className="pointer-events-none absolute right-2 top-2 z-20 flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.4)] backdrop-blur"
+            >
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
+              LIVE
+            </div>
           </div>
+
 
           {/* Footer telemetry strip */}
           <div dir="ltr" className="relative flex items-center justify-between gap-2 border-t border-white/10 bg-black/40 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] text-white/55">
