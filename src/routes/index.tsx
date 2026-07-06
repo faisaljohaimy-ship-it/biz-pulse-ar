@@ -255,7 +255,7 @@ function IntroLanding() {
 
       <div id="tour-hajj"><HajjExecutiveStage /></div>
 
-      <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
+      <div id="tour-positioning" className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
       </div>
 
