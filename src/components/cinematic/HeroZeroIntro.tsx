@@ -654,6 +654,12 @@ export function HeroZeroIntro() {
         @media (max-height: 620px) {
           .hero-zero-wordmark-glow { font-size: clamp(1.1rem, 3.6vw, 1.85rem) !important; }
         }
+        @media (min-width: 1024px) and (max-height: 900px) {
+          .hero-zero-wordmark-glow { font-size: clamp(1.4rem, 3vw, 2.4rem) !important; }
+        }
+        @media (min-width: 1280px) and (max-height: 820px) {
+          .hero-zero-wordmark-glow { font-size: clamp(1.25rem, 2.4vw, 2rem) !important; }
+        }
 
         @keyframes hero-zero-tagline {
           from { opacity: 0; transform: translateY(6px); }
