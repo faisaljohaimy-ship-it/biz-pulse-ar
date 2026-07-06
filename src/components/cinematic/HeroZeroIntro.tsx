@@ -431,9 +431,9 @@ export function HeroZeroIntro() {
         role="img"
         aria-label="NEXIOS AI · نكسيوس — رؤية 2030 — Enterprise AI · Executive OS"
         dir="ltr"
-        className="pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
+        className="hero-zero-bottom-stack pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
         style={{
-          bottom: "clamp(5dvh, 7dvh, 10dvh)",
+          bottom: "clamp(3dvh, 6dvh, 9dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
           unicodeBidi: "isolate",
         }}
