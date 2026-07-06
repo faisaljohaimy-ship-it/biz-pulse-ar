@@ -341,7 +341,7 @@ export function HeroZeroIntro() {
           z-40 keeps it crisp above sparks, flame stripe and wordmark glow. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[6%] z-40 -translate-x-1/2 text-center"
+        className="pointer-events-none absolute left-1/2 top-[5%] z-40 -translate-x-1/2 text-center md:top-[9%] lg:top-[11%] xl:top-[12%]"
         style={{
           opacity: 0,
           animation: reducedMotion.current
