@@ -515,6 +515,13 @@ function LiveExecutiveDashboard() {
         </aside>
       </div>
 
+      {/* Decision Center + Executive Timeline */}
+      <div className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <DecisionCenter />
+        <ExecutiveTimeline />
+      </div>
+
+
       {tsQ.isError && (
         <div className="mt-4 text-xs text-rose-400 font-mono">
           {String((tsQ.error as Error).message)}
