@@ -122,41 +122,95 @@ export function HeroZeroIntro() {
         try { el.load(); } catch { /* noop */ }
       });
 
-    // AUDIO IS ENTRY-GATED. We do NOT unlock the audio bus on mount and we
-    // do NOT try to play audio on mount. The muted video may run (browser
-    // policy allows silent-media autoplay). Audio only starts inside
-    // `startAudio`, which is invoked from the «دخول» tap handler.
-    let audioStarted = false;
-    const startAudio = async () => {
-      if (audioStarted) return;
-      audioStarted = true;
+    // ── THREE-TIER AUDIO IGNITION ────────────────────────────────────────
+    // Tier 1: optimistic autoplay() on mount. If the browser grants sound
+    //         autoplay (returning/engaged users, PWA), audio starts at t=0.
+    // Tier 2: on rejection, attach ONE-TIME listeners for the FIRST natural
+    //         interaction (pointerdown / touchstart / keydown / wheel /
+    //         scroll) anywhere on document. First fire → snap both media to
+    //         t=0 → play together. Listeners self-remove.
+    // Tier 3: while audio is silent, a small pulsing chip is visible in JSX;
+    //         its own tap is a valid gesture and reuses igniteAudioRef.
+    // Discipline: exactly ONE optimistic try (no repeated blocked play()
+    // calls). prefers-reduced-motion skips Tier 1 — chip tap only.
+    const markStarted = () => {
+      if (audioStartedRef.current) return;
+      audioStartedRef.current = true;
+      setAudioStarted(true);
+    };
+
+    const igniteAudio = async (resnap: boolean) => {
+      if (audioStartedRef.current) return;
       if (!soundOnRef.current) return;
-      AriaAudioBus.unlock(); // called from within a real user gesture
-      const granted = AriaAudioBus.acquire("hero-greeting", () => {
+      AriaAudioBus.unlock();
+      const granted = AriaAudioBus.acquire("genesis-intro", () => {
         try { audio.pause(); } catch { /* noop */ }
       });
       if (!granted) return;
       try {
         await waitReady(audio);
-        audio.currentTime = video.currentTime;
+        if (resnap) {
+          try { video.currentTime = 0; audio.currentTime = 0; } catch { /* noop */ }
+        } else {
+          try { audio.currentTime = video.currentTime; } catch { /* noop */ }
+        }
         await audio.play();
-        AriaAudioBus.notifyPlaying("hero-greeting", audio);
+        if (resnap) { try { await video.play(); } catch { /* noop */ } }
+        AriaAudioBus.notifyPlaying("genesis-intro", audio);
+        markStarted();
       } catch {
-        // Should not happen since we're inside a gesture, but stay silent.
+        // Playback still blocked — leave chip visible; a later gesture will retry.
+        AriaAudioBus.release("genesis-intro");
       }
     };
-    startAudioRef.current = startAudio;
+    igniteAudioRef.current = () => igniteAudio(true);
+
+    const attachGestureListeners = () => {
+      const events: Array<keyof DocumentEventMap> = [
+        "pointerdown", "touchstart", "keydown", "wheel", "scroll",
+      ];
+      const onFirst = () => {
+        for (const ev of events) {
+          document.removeEventListener(ev, onFirst, true);
+        }
+        void igniteAudio(true);
+      };
+      for (const ev of events) {
+        document.addEventListener(ev, onFirst, { capture: true, passive: true, once: true });
+      }
+      cleanupFns.push(() => {
+        for (const ev of events) document.removeEventListener(ev, onFirst, true);
+      });
+    };
 
     const kick = async () => {
       await waitReady(video);
       if (cancelled) return;
-      try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
       void video.play().catch(() => {});
-      // If the user has already tapped «دخول» before video was ready, honour
-      // that gesture now.
-      if (enteredRef.current) void startAudio();
+      if (reducedMotion.current) {
+        // Reduced motion: no optimistic audio try. Chip tap only.
+        return;
+      }
+      // Tier 1: exactly ONE optimistic play attempt.
+      try {
+        AriaAudioBus.unlock();
+        const granted = AriaAudioBus.acquire("genesis-intro", () => {
+          try { audio.pause(); } catch { /* noop */ }
+        });
+        if (!granted) { attachGestureListeners(); return; }
+        await waitReady(audio);
+        audio.currentTime = 0;
+        await audio.play();
+        AriaAudioBus.notifyPlaying("genesis-intro", audio);
+        markStarted();
+      } catch {
+        // Tier 1 refused by browser. Release the bus so a real gesture can re-acquire.
+        AriaAudioBus.release("genesis-intro");
+        attachGestureListeners();
+      }
     };
     void kick();
+
 
 
 
