@@ -54,9 +54,9 @@ export function LiveSystemShowcase() {
 
             <div className="flex flex-1 items-center justify-center">
               <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] text-white/70">
-                <Moon className="h-2.5 w-2.5 text-[#3AE8FF]" />
-                <span>{ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}</span>
-                <Radio className="h-2.5 w-2.5 animate-pulse text-emerald-400" />
+                <Moon className="h-3 w-3 shrink-0 text-[#3AE8FF] drop-shadow-[0_0_6px_rgba(58,232,255,0.9)]" aria-hidden />
+                <span className="text-center">{ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}</span>
+                <Radio className="h-2.5 w-2.5 shrink-0 animate-pulse text-emerald-400" aria-hidden />
               </div>
             </div>
 
