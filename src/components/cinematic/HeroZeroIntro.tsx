@@ -82,30 +82,34 @@ export function HeroZeroIntro() {
     // Kick playback. Video is muted so autoplay is allowed. Audio may need
     // a user gesture on some browsers; if it fails silently, the visual
     // still plays.
+    // Try to start audio + video together. Browsers require a user gesture
+    // for unmuted audio; if blocked, we arm a one-shot unlock on the next
+    // interaction so the narration still fires the moment the user moves.
+    audio.currentTime = 0;
+    audio.volume = 1;
     const kick = async () => {
       try {
         await video.play();
       } catch {
-        /* browser refused muted video autoplay; user will see the poster */
+        /* muted autoplay refused — poster remains */
       }
       try {
         await audio.play();
       } catch {
-        /* fall back: unlock on first pointer/key event */
         const unlock = () => {
           audio.play().catch(() => {});
           window.removeEventListener("pointerdown", unlock);
           window.removeEventListener("keydown", unlock);
+          window.removeEventListener("touchstart", unlock);
         };
         window.addEventListener("pointerdown", unlock, { once: true });
         window.addEventListener("keydown", unlock, { once: true });
+        window.addEventListener("touchstart", unlock, { once: true });
       }
     };
     void kick();
 
-    // A/V drift correction — audio is the master narration track (never
-    // scrubbed, so it stays perfectly clear). We only nudge the video if it
-    // drifts more than 300 ms, which is inaudible to the viewer.
+    // Video follows audio — audio is never scrubbed, so narration stays clean.
     const syncTick = () => {
       if (!video.paused && !audio.paused) {
         const drift = video.currentTime - audio.currentTime;
@@ -118,8 +122,12 @@ export function HeroZeroIntro() {
     // Hard cap.
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
+    // Finish when EITHER the narration or the video ends — whichever runs
+    // longest wins, so the audio never gets cut mid-sentence and never
+    // lingers after the hero disappears.
     const onEnded = () => finish();
     video.addEventListener("ended", onEnded);
+    audio.addEventListener("ended", onEnded);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") finish();
@@ -130,13 +138,33 @@ export function HeroZeroIntro() {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       if (hardCapRef.current !== null) clearTimeout(hardCapRef.current);
       video.removeEventListener("ended", onEnded);
+      audio.removeEventListener("ended", onEnded);
       window.removeEventListener("keydown", onKey);
-      audio.pause();
+      // Hard stop audio the moment the hero disappears — quick fade to avoid
+      // a click, then pause + reset.
+      try {
+        const startVol = audio.volume;
+        const steps = 8;
+        let i = 0;
+        const fade = window.setInterval(() => {
+          i += 1;
+          audio.volume = Math.max(0, startVol * (1 - i / steps));
+          if (i >= steps) {
+            window.clearInterval(fade);
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = startVol;
+          }
+        }, 25);
+      } catch {
+        audio.pause();
+      }
       video.pause();
     };
     // finish is stable via setState functional pattern
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
+
 
   // Ember particle canvas — additive orange sparks rising from the figure.
   useEffect(() => {
