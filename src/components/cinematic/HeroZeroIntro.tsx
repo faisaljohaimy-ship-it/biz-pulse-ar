@@ -260,9 +260,42 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
+  // Sound toggle — the ONLY path that starts audio. Called from the button
+  // (a real user gesture), so the browser's autoplay policy is satisfied.
+  // On enable we align audio.currentTime to the video's current frame so
+  // the voice picks up exactly where the picture is; on disable we simply
+  // pause (keeping position, so re-enable resumes in place).
+  const toggleSound = useCallback(async () => {
+    const audio = audioRef.current;
+    const video = videoRef.current;
+    if (!audio || !video) return;
+    if (soundOnRef.current) {
+      soundOnRef.current = false;
+      setSoundOn(false);
+      try { audio.pause(); } catch { /* noop */ }
+      try { video.playbackRate = 1; } catch { /* noop */ }
+      return;
+    }
+    soundOnRef.current = true;
+    setSoundOn(true);
+    AriaAudioBus.unlock();
+    try {
+      audio.muted = false;
+      audio.volume = 1;
+      audio.currentTime = video.currentTime;
+      await audio.play();
+      AriaAudioBus.notifyPlaying("hero-greeting", audio);
+    } catch {
+      // If the browser still refuses (rare after a gesture), revert state.
+      soundOnRef.current = false;
+      setSoundOn(false);
+    }
+  }, []);
+
   if (mounted === null || mounted === "done") return null;
 
   const closing = mounted === "closing";
+
 
   return (
     <div
