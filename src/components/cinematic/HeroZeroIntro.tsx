@@ -128,18 +128,8 @@ export function HeroZeroIntro() {
       } catch { /* noop */ }
     };
 
-    const startBoth = async () => {
-      resetClocks();
-      try {
-        await Promise.all([video.play(), audio.play()]);
-        AriaAudioBus.notifyPlaying("hero-greeting", audio);
-        return true;
-      } catch {
-        return false;
-      }
-    };
-
     // Acquire the ARIA bus — hero narration is the lowest-priority source,
+
     // so any other ARIA voice (chat, tour) will preempt and stop us.
     AriaAudioBus.unlock();
     const granted = AriaAudioBus.acquire("hero-greeting", () => {
