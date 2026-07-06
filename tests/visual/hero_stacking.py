@@ -52,13 +52,25 @@ PROBE_JS = r"""
   if (!emblem || !crest || !video || !shell) {
     return { ready: false };
   }
+
+  // `pointer-events: none` (used to keep the emblems non-interactive) also
+  // hides them from elementsFromPoint hit-testing, which would give a false
+  // "video is topmost" reading even though paint order is correct. Force
+  // pointer-events on for the probe window, then restore.
+  const pierce = document.createElement('style');
+  pierce.id = '__stacking_probe__';
+  pierce.textContent = `
+    .hero-zero-shell, .hero-zero-shell * { pointer-events: auto !important; }
+  `;
+  document.head.appendChild(pierce);
+
   const eb = emblem.getBoundingClientRect();
   const cb = crest.getBoundingClientRect();
   const vb = video.getBoundingClientRect();
 
   const emblemCenter = { x: eb.x + eb.width/2, y: eb.y + eb.height/2 };
   const crestCenter  = { x: cb.x + cb.width/2, y: cb.y + cb.height/2 };
-  // ARIA face approximation: centered horizontally, ~28-50% down the video.
+  // ARIA face approximation: centered horizontally, ~38% down the video.
   const faceCenter   = { x: vb.x + vb.width/2, y: vb.y + vb.height*0.38 };
 
   // Only elements that live inside the intro shell count — dev tooling
