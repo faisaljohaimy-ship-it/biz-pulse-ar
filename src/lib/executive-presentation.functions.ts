@@ -306,7 +306,7 @@ export type ExecutiveDecision = {
   confidence: number | null;
   status: "pending" | "approved" | "executed" | "dismissed" | "failed";
   executed_tool: string | null;
-  tool_payload: Record<string, unknown> | null;
+  has_workflow: boolean;
   created_at: string;
 };
 
@@ -320,17 +320,21 @@ export const listPendingDecisions = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((d) => ({
-      id: d.id,
-      recommendation: d.recommendation,
-      rationale: d.rationale,
-      confidence: d.confidence == null ? null : Number(d.confidence),
-      status: d.status as ExecutiveDecision["status"],
-      executed_tool: d.executed_tool,
-      tool_payload: (d.tool_payload as Record<string, unknown> | null) ?? null,
-      created_at: d.created_at,
-    }));
+    return (data ?? []).map((d) => {
+      const p = (d.tool_payload as Record<string, unknown> | null) ?? null;
+      return {
+        id: d.id,
+        recommendation: d.recommendation,
+        rationale: d.rationale,
+        confidence: d.confidence == null ? null : Number(d.confidence),
+        status: d.status as ExecutiveDecision["status"],
+        executed_tool: d.executed_tool,
+        has_workflow: Boolean(p && typeof (p as { workflow_id?: unknown }).workflow_id === "string"),
+        created_at: d.created_at,
+      };
+    });
   });
+
 
 const DecisionActionSchema = z.object({ id: z.string().uuid() });
 
