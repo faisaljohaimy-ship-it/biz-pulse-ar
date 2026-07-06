@@ -125,6 +125,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
         { to: "/investor", icon: Presentation, label: ar(locale, "مركز القيادة الاستثماري", "Investor Command Center") },
         { to: "/tasks", icon: ListChecks, label: t("nav.tasks") },
+        { to: "/urgent-ops", icon: Zap, label: ar(locale, "المساندة والأعمال العاجلة", "Urgent Ops & Support") },
         { to: "/files", icon: FolderUp, label: t("nav.files") },
       ],
     },

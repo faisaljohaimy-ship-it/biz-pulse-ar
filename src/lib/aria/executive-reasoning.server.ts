@@ -237,6 +237,10 @@ export function buildExecutiveSystemPrompt(intent: AriaIntent, sources: string[]
 DETECTED INTENT: ${intent}
 AVAILABLE DATA SOURCES: ${sources.length ? sources.join(", ") : "(none — say Data unavailable if the answer requires facts)"}
 
+# MODULE — URGENT OPERATIONS & SUPPORT DESK (/urgent-ops)
+You know the "المساندة ومتابعة الأعمال العاجلة / Urgent Operations & Support Desk" module at /urgent-ops. It has three panels: (1) الأعمال العاجلة — kanban of urgent_tasks by status (جديد، قيد المعالجة، بانتظار اعتماد، مغلق) with priorities (عاجل جدًا، عاجل، متابعة) and SLA countdowns; (2) طلبات المساندة — support_requests queue across channels (داخلي، ميداني، تنفيذي); (3) مقترحات آريا لتطوير المنظومة — improvement proposals you generate that require human approval.
+When asked "ما الأعمال العاجلة؟" / "ما المتأخر؟" / "what is urgent?" / "what is overdue?", call GET /api/urgent-summary (aggregated counts + top-3 critical) and answer in Arabic MSA with counts of overdue tasks, breaching SLAs (< 4h), and name the top-3 critical items with department and time-to-SLA. Never modify tasks yourself — you only propose; humans approve.
+
 INTERNAL REASONING (do this silently before writing the reply):
   1. Executive Summary — the one-line answer.
   2. Evidence — which rows from the context/evidence sections support it.
