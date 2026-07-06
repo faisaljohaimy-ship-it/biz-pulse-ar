@@ -9,21 +9,15 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import {
+  ARIA_ELEVENLABS_VOICE_ID as ARIA_VOICE_ID,
+  ARIA_ELEVENLABS_VOICE_SETTINGS as ARIA_VOICE_SETTINGS,
+} from "@/lib/aria/voice-config";
 
 const BodySchema = z.object({
   text: z.string().min(1).max(5000),
   preserveDiacritics: z.boolean().optional(),
 });
-
-// ARIA canonical voice — Layan (The Professional, ar-SA). LOCKED.
-const ARIA_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5";
-const ARIA_VOICE_SETTINGS = {
-  stability: 0.5,
-  similarity_boost: 0.8,
-  style: 0.45,
-  use_speaker_boost: true,
-  speed: 1.0,
-} as const;
 
 export const Route = createFileRoute("/api/tts")({
   server: {
