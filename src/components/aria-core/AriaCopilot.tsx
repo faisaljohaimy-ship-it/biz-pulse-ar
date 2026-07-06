@@ -49,6 +49,40 @@ function primeIOSAudio(): void {
   }
 }
 
+/** Semaphore limiting concurrent /api/tts requests. ElevenLabs subscription
+ *  caps parallel calls at 5; we use 3 to stay safely under while multiple
+ *  sentence-level TTS requests are in-flight. */
+const ttsGate = (() => {
+  const MAX = 3;
+  let active = 0;
+  const waiters: Array<() => void> = [];
+  return {
+    async acquire(signal?: AbortSignal): Promise<void> {
+      if (active < MAX) { active++; return; }
+      await new Promise<void>((resolve, reject) => {
+        const onAbort = () => {
+          const i = waiters.indexOf(run);
+          if (i >= 0) waiters.splice(i, 1);
+          reject(new DOMException("Aborted", "AbortError"));
+        };
+        const run = () => {
+          signal?.removeEventListener("abort", onAbort);
+          active++;
+          resolve();
+        };
+        if (signal?.aborted) { onAbort(); return; }
+        signal?.addEventListener("abort", onAbort, { once: true });
+        waiters.push(run);
+      });
+    },
+    release(): void {
+      active = Math.max(0, active - 1);
+      const next = waiters.shift();
+      if (next) next();
+    },
+  };
+})();
+
 type SR = {
   lang: string;
   interimResults: boolean;
