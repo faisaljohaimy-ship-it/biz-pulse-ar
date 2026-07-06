@@ -54,7 +54,16 @@ export function HajjExecutiveStage() {
         <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">{sub}</p>
       </header>
 
-      <div className="mb-6 flex justify-center sm:mb-8">
+      <div className="mb-6 flex flex-wrap items-center justify-center gap-3 sm:mb-8">
+        <Link
+          to="/hajj-prime"
+          aria-label={ar ? "افتح منصة نسك الحج 1447 هـ" : "Open Hajj Nusuk 1447 Platform"}
+          className="group inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/60 bg-gradient-to-r from-[#00D4FF]/25 via-[#3AE8FF]/15 to-[#00D4FF]/25 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_28px_-6px_rgba(58,232,255,0.65)] transition hover:border-[#3AE8FF] hover:shadow-[0_0_36px_-4px_rgba(58,232,255,0.9)]"
+        >
+          <Moon className="h-4 w-4 text-[#3AE8FF] drop-shadow-[0_0_8px_rgba(58,232,255,0.9)]" aria-hidden />
+          <span>{ar ? "منصة نسك الحج · 1447 هـ" : "Hajj Nusuk Platform · 1447 AH"}</span>
+          <ArrowUpRight className="h-3.5 w-3.5 text-[#3AE8FF] transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+        </Link>
         <button
           type="button"
           onClick={() => { try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ } }}
