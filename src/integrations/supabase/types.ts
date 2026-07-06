@@ -2569,7 +2569,7 @@ export type Database = {
           error: string | null
           id: string
           items_count: number | null
-          org_id: string | null
+          org_id: string
           path: string | null
           service: string
           status: number | null
@@ -2583,7 +2583,7 @@ export type Database = {
           error?: string | null
           id?: string
           items_count?: number | null
-          org_id?: string | null
+          org_id: string
           path?: string | null
           service: string
           status?: number | null
@@ -2597,7 +2597,7 @@ export type Database = {
           error?: string | null
           id?: string
           items_count?: number | null
-          org_id?: string | null
+          org_id?: string
           path?: string | null
           service?: string
           status?: number | null
