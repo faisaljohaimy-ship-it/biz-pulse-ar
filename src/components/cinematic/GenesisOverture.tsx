@@ -50,11 +50,9 @@ export function GenesisOverture() {
     }
 
     setIntroActive(true);
-    try {
-      window.sessionStorage.setItem(SESSION_KEY, "1");
-    } catch {
-      /* noop */
-    }
+    const markPlayed = () => {
+      try { window.sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
+    };
 
     // Scene timeline (ms offsets)
     const marks: Array<[number, number]> = [
