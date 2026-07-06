@@ -759,6 +759,10 @@ export function HeroZeroIntro() {
           0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.35); }
           50%      { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
         }
+        @keyframes hero-zero-chip-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.45), 0 0 28px rgba(0, 212, 255, 0.35); transform: translateY(0); }
+          50%      { box-shadow: 0 0 0 14px rgba(0, 212, 255, 0), 0 0 32px rgba(0, 212, 255, 0.55); transform: translateY(-2px); }
+        }
       `}</style>
 
     </div>
