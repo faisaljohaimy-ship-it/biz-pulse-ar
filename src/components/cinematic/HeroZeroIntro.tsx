@@ -430,7 +430,7 @@ export function HeroZeroIntro() {
 
       {/* NEXIOS AI wordmark — fire */}
       <div
-        className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center"
+        className="pointer-events-none absolute left-1/2 z-30 -translate-x-1/2 text-center"
         style={{
           bottom: "clamp(12%, 18%, 22%)",
         }}
