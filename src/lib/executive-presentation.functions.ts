@@ -52,24 +52,24 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     const now = new Date().toISOString();
 
     const [aiUsage, tools, agents, runs, incidents, audits, memory] = await Promise.all([
-      supabase.from("ai_usage").select("status,latency_ms,cost_credits,created_at").gte("created_at", sinceDay).limit(5000),
+      supabase.from("ai_usage").select("latency_ms,total_tokens,created_at").gte("created_at", sinceDay).limit(5000),
       supabase.from("tool_executions").select("status,duration_ms,created_at").gte("created_at", sinceHour).limit(5000),
-      supabase.from("agent_runs").select("status,created_at").gte("created_at", sinceDay).limit(2000),
+      supabase.from("agent_runs").select("status,started_at").gte("started_at", sinceDay).limit(2000),
       supabase.from("workflow_runs").select("status,started_at").gte("started_at", sinceDay).limit(2000),
       supabase.from("sec_incidents").select("severity,status").in("status", ["open", "in_progress", "escalated"]).limit(2000),
       supabase.from("audit_logs").select("status,occurred_at").gte("occurred_at", sinceDay).limit(2000),
       supabase.from("aria_memory").select("id,importance,updated_at").gte("updated_at", sinceDay).limit(2000),
     ]);
 
-    const aiRows = aiUsage.data ?? [];
+    const aiRows = (aiUsage.data ?? []) as { latency_ms: number | null; total_tokens: number }[];
     const aiTotal = aiRows.length;
-    const aiOk = aiRows.filter((r) => r.status === "success" || r.status === "ok").length;
-    const aiRate = aiTotal ? Math.round((aiOk * 100) / aiTotal) : 100;
+    // Health signal for AI = presence of traffic + latency band (no status col in ai_usage).
     const aiLatency = aiRows.length
       ? Math.round(aiRows.reduce((s, r) => s + (r.latency_ms ?? 0), 0) / aiRows.length)
       : 0;
+    const aiRate = aiTotal === 0 ? 100 : aiLatency > 8000 ? 60 : aiLatency > 4000 ? 85 : 99;
 
-    const toolRows = tools.data ?? [];
+    const toolRows = (tools.data ?? []) as { status: string; duration_ms: number | null }[];
     const toolTotal = toolRows.length;
     const toolFail = toolRows.filter((r) => r.status === "failed").length;
     const toolFailPct = toolTotal ? (toolFail * 100) / toolTotal : 0;
@@ -77,29 +77,30 @@ export const getSystemPulse = createServerFn({ method: "GET" })
       ? Math.round(toolRows.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / toolRows.length)
       : 0;
 
-    const agentRows = agents.data ?? [];
+    const agentRows = (agents.data ?? []) as { status: string }[];
     const agentActive = agentRows.filter((r) => r.status === "running" || r.status === "queued").length;
     const agentFail = agentRows.filter((r) => r.status === "failed").length;
     const agentTotal = agentRows.length || 1;
     const agentFailPct = (agentFail * 100) / agentTotal;
 
-    const runRows = runs.data ?? [];
+    const runRows = (runs.data ?? []) as { status: string }[];
     const runsRunning = runRows.filter((r) => r.status === "running").length;
     const runsFailed = runRows.filter((r) => r.status === "failed").length;
     const runsTotal = runRows.length || 1;
     const runsFailPct = (runsFailed * 100) / runsTotal;
 
-    const incRows = incidents.data ?? [];
+    const incRows = (incidents.data ?? []) as { severity: string; status: string }[];
     const critical = incRows.filter((i) => i.severity === "critical").length;
     const openIncidents = incRows.length;
 
-    const auditRows = audits.data ?? [];
+    const auditRows = (audits.data ?? []) as { status: string | null }[];
     const auditFail = auditRows.filter((a) => a.status === "failed" || a.status === "error").length;
     const auditTotal = auditRows.length || 1;
     const auditFailPct = (auditFail * 100) / auditTotal;
 
     const memRows = memory.data ?? [];
     const memActive = memRows.length;
+
 
     // Voice / Avatar readiness: verify configured secrets exist server-side.
     const voiceReady = Boolean(process.env.ELEVENLABS_API_KEY);
