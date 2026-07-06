@@ -442,7 +442,7 @@ export function HeroZeroIntro() {
           so ARIA's face remains fully visible below. No text overlay. */}
       <div
         aria-hidden
-        className="hero-zero-emblem-top pointer-events-none absolute inset-x-0 z-40 flex justify-center"
+        className="hero-zero-emblem-top pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center"
         style={{
           top: "calc(env(safe-area-inset-top) + clamp(0.35rem, 1.4vh, 1rem))",
         }}
@@ -457,13 +457,9 @@ export function HeroZeroIntro() {
           decoding="async"
           fetchPriority="high"
           style={{
-            // Scale locked inside vertical safe-area: never taller than 18vh so
-            // the emblem cannot spill past the top inset on short viewports.
             width: "clamp(96px, min(15vw, 18vh), 200px)",
             height: "auto",
             opacity: 0,
-            // Sharpness: tight inner shadow for edge definition + soft outer
-            // glow. Avoid large blur radii that would smear the swords/leaves.
             filter: [
               "drop-shadow(0 0 1px rgba(255,255,255,0.55))",
               "drop-shadow(0 0 6px rgba(74,222,128,0.55))",
@@ -471,7 +467,7 @@ export function HeroZeroIntro() {
               "contrast(1.06) saturate(1.08)",
             ].join(" "),
             imageRendering: "auto",
-            transform: "translateZ(0)", // GPU raster on hi-DPI for crisp edges
+            transform: "translateZ(0)",
             backfaceVisibility: "hidden",
             animation: reducedMotion.current
               ? "hero-zero-vision-quiet 600ms 300ms forwards ease-out"
@@ -479,6 +475,22 @@ export function HeroZeroIntro() {
             willChange: "opacity, transform, filter",
           }}
         />
+        <div
+          dir="rtl"
+          className="hero-zero-vision2030 relative inline-block whitespace-nowrap text-center"
+          data-text="رؤية المملكة العربية السعودية 2030"
+          style={{
+            maxWidth: "92vw",
+            marginTop: "clamp(8px, 1.2dvh, 16px)",
+            fontFamily: '"IBM Plex Sans Arabic", "Tajawal", ui-sans-serif, system-ui',
+            fontWeight: 700,
+            fontSize: "clamp(0.95rem, 3.2vw, 1.5rem)",
+            letterSpacing: "0.04em",
+            lineHeight: 1.15,
+          }}
+        >
+          رؤية المملكة العربية السعودية 2030
+        </div>
       </div>
 
 
