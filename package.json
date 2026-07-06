@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:visual": "python3 tests/visual/hero_emblem_visual.py",
     "test:visual:update": "UPDATE_BASELINES=1 python3 tests/visual/hero_emblem_visual.py",
+    "test:stacking": "python3 tests/visual/hero_stacking.py",
     "format": "prettier --write ."
   },
   "dependencies": {
