@@ -23,7 +23,8 @@ const RunInput = z
 export const runSelfEvolutionFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => RunInput.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const report = await runSelfEvolution({
       enableApply: data?.enableApply ?? false,
     });
