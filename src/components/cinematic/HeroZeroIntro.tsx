@@ -433,12 +433,15 @@ export function HeroZeroIntro() {
       <div
         role="img"
         aria-label="NEXIOS AI · نكسيوس — Enterprise AI · Executive OS"
+        dir="ltr"
         className="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center text-center"
         style={{
           bottom: "clamp(8dvh, 12dvh, 16dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
+          unicodeBidi: "isolate",
         }}
       >
+
         <span
           aria-hidden="true"
           className="font-black uppercase leading-none"
