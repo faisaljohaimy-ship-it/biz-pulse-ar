@@ -130,22 +130,46 @@ export function HeroZeroIntro() {
       try { audio.pause(); } catch { /* noop */ }
     });
 
-    // Autoplay contract: video-only (muted), always allowed. Audio is armed
-    // but silent until the user taps the sound toggle — see toggleSound().
+    // Autoplay contract: video is muted (always allowed). Audio tries to
+    // start immediately; if the browser blocks it (iOS/Safari), we attach a
+    // one-shot gesture listener that unlocks and starts audio on the first
+    // pointer/key/touch anywhere on the page.
+    const startAudio = async () => {
+      if (!soundOnRef.current || !granted) return;
+      try {
+        audio.currentTime = video.currentTime;
+        await audio.play();
+        AriaAudioBus.notifyPlaying("hero-greeting", audio);
+      } catch {
+        // Blocked — wait for first user gesture, then retry once.
+        const unlock = () => {
+          window.removeEventListener("pointerdown", unlock, true);
+          window.removeEventListener("keydown", unlock, true);
+          window.removeEventListener("touchstart", unlock, true);
+          if (!soundOnRef.current) return;
+          try {
+            audio.currentTime = video.currentTime;
+            void audio.play().then(() => {
+              AriaAudioBus.notifyPlaying("hero-greeting", audio);
+            }).catch(() => {});
+          } catch { /* noop */ }
+        };
+        window.addEventListener("pointerdown", unlock, { capture: true, once: true });
+        window.addEventListener("keydown", unlock, { capture: true, once: true });
+        window.addEventListener("touchstart", unlock, { capture: true, once: true });
+        cleanupFns.push(() => {
+          window.removeEventListener("pointerdown", unlock, true);
+          window.removeEventListener("keydown", unlock, true);
+          window.removeEventListener("touchstart", unlock, true);
+        });
+      }
+    };
     const kick = async () => {
       await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
       try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
       void video.play().catch(() => {});
-      // If the user had already flipped sound on before the media was ready
-      // (e.g. rapid tap), honor it now.
-      if (soundOnRef.current && granted) {
-        try {
-          audio.currentTime = video.currentTime;
-          await audio.play();
-          AriaAudioBus.notifyPlaying("hero-greeting", audio);
-        } catch { /* noop — button remains available */ }
-      }
+      void startAudio();
     };
     void kick();
 
