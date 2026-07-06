@@ -53,6 +53,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 // Legacy ExecutiveOverlay removed — replaced by the ARIA Singleton (`<AriaCopilot />`
 // mounted once in `src/routes/__root.tsx`). See `src/lib/aria-core/README.md`.
 import { OrgSwitcher } from "@/components/org/org-switcher";
+import { SimulationRibbon } from "@/components/simulation/SimulationRibbon";
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
