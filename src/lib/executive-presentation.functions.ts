@@ -403,7 +403,7 @@ export const approveDecision = createServerFn({ method: "POST" })
         org_id: decision.org_id,
         subject_type: "aria_decision",
         subject_id: decision.id,
-        payload_json: { decision_id: decision.id, executed_tool: decision.executed_tool, payload },
+        payload_json: JSON.parse(JSON.stringify({ decision_id: decision.id, executed_tool: decision.executed_tool, payload })),
       });
     }
 
