@@ -15,7 +15,10 @@
     "test:visual": "python3 tests/visual/hero_emblem_visual.py",
     "test:visual:update": "UPDATE_BASELINES=1 python3 tests/visual/hero_emblem_visual.py",
     "test:stacking": "python3 tests/visual/hero_stacking.py",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.48",
@@ -112,6 +115,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.7.0",
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
