@@ -20,7 +20,7 @@ const INTERNAL_URL = "/hajj-prime";
  *  • No layout shift on small screens — gracefully recenters.
  */
 export function LiveSystemShowcase() {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const { locale } = useI18n();
   const ar = locale === "ar";
 
@@ -38,7 +38,7 @@ export function LiveSystemShowcase() {
 
         <div
           className={`group relative overflow-hidden rounded-2xl border border-[#3AE8FF]/35 bg-gradient-to-b from-[#02101e] via-[#04111f] to-[#02101e] shadow-[0_0_50px_-10px_rgba(0,212,255,0.55),inset_0_0_40px_rgba(0,212,255,0.08)] backdrop-blur-xl transition-all duration-500 ${
-            expanded ? "w-full max-w-3xl" : "w-full max-w-[520px]"
+            expanded ? "w-full max-w-6xl" : "w-full max-w-[520px]"
           }`}
           style={{ colorScheme: "dark" }}
         >
@@ -93,19 +93,21 @@ export function LiveSystemShowcase() {
               aria-hidden
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-60"
+              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-40"
               style={{ filter: "saturate(1.05) contrast(1.02)" }}
             />
 
-            {/* Live dashboard — always visible, scaled to fit the icon frame */}
+            {/* Live dashboard — fully visible at native scale, interactive so viewers
+                can scroll and inspect every detail from outside the icon frame. */}
             <iframe
               src={LIVE_URL}
               title={ar ? "منصة نُسك الحج — بث مباشر" : "Hajj Nexus Platform — Live"}
-              loading="lazy"
+              loading="eager"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
               style={{ colorScheme: "dark", backgroundColor: "transparent" }}
-              className="absolute left-1/2 top-1/2 z-[5] h-[250%] w-[250%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.4] border-0"
+              className="absolute inset-0 z-[5] h-full w-full border-0"
             />
+
 
             {/* Subtle cinematic overlays — kept thin so the live feed stays readable */}
             <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(2,16,30,0.05)_0%,transparent_35%,transparent_80%,rgba(2,16,30,0.35)_100%)]" />
