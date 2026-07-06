@@ -336,20 +336,25 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
-      {/* Vision 2030 crest — appears with the winged figure, starts far
-          (small + blurred) and dollies in until it locks in place above him.
-          z-40 keeps it crisp above sparks, flame stripe and wordmark glow. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[5%] z-40 -translate-x-1/2 text-center md:top-[9%] lg:top-[11%] xl:top-[12%]"
-        style={{
-          opacity: 0,
-          animation: reducedMotion.current
-            ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
-            : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
-          willChange: "opacity, transform, filter",
-        }}
-      >
+      {/* Vision 2030 crest — pinned inside a 9:16 wrapper that matches the
+          hero video's intrinsic aspect ratio (576×1024). On desktop the video
+          is object-contain, so this wrapper exactly overlays the rendered
+          video box and the crest stays locked above the figure's head
+          regardless of viewport size. On mobile the viewport is already
+          near-portrait, so the wrapper still tracks the figure closely. */}
+      <div className="pointer-events-none absolute inset-0 z-40 flex items-start justify-center">
+        <div className="relative h-full aspect-[9/16] max-h-screen">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-[7%] -translate-x-1/2 text-center"
+            style={{
+              opacity: 0,
+              animation: reducedMotion.current
+                ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
+                : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
+              willChange: "opacity, transform, filter",
+            }}
+          >
         {/* Soft dark halo scrim so sparks/flame never bleed into the type */}
         <div
           aria-hidden
