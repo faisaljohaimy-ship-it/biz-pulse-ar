@@ -557,21 +557,19 @@ export function HeroZeroIntro() {
       </button>
 
       <style>{`
-        /* Fullscreen framing: portrait viewports show the film near-native,
-           landscape/laptop viewports anchor the crop 28% from the top so the
-           winged figure's head and wings stay in frame under object-cover.
-           On typical laptop aspect ratios (16:9 / 16:10) we pull the anchor
-           slightly higher so the full figure — head to base — remains
-           centered without being cropped by the bottom stack. */
+        /* Universal full-bleed fit. Portrait viewports render the portrait
+           film near-native; landscape viewports crop top/bottom so the winged
+           figure stays framed. Ultrawide steps the anchor further up so the
+           head + wings survive very wide aspect ratios. */
         .hero-zero-video { object-position: center center; }
-        @media (min-aspect-ratio: 1/1) {
-          .hero-zero-video { object-position: center 32%; }
+        @media (orientation: portrait) {
+          .hero-zero-video { object-position: center center; }
         }
-        @media (min-width: 1024px) and (max-height: 900px) {
-          .hero-zero-video { object-position: center 34%; }
+        @media (orientation: landscape) {
+          .hero-zero-video { object-position: center 28%; }
         }
-        @media (min-width: 1280px) and (max-height: 820px) {
-          .hero-zero-video { object-position: center 36%; }
+        @media (orientation: landscape) and (min-aspect-ratio: 2/1) {
+          .hero-zero-video { object-position: center 22%; }
         }
         /* Laptop landscape: tighten top emblem and bottom stack so the entire
            composition (emblem → figure → wordmark → crest → tagline) fits
