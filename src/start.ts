@@ -37,14 +37,9 @@ const errorMiddleware = createMiddleware().server(async ({ request, next }) => {
   }
   try {
     const res = await next();
-    // `next()` in request middleware returns `{ response }` on this version;
-    // handle both shapes defensively so future TanStack upgrades don't break.
-    const response = res instanceof Response ? res : (res as { response?: Response }).response;
-    if (response instanceof Response) {
-      const hardened = withSecurityHeaders(response);
-      return res instanceof Response ? hardened : { ...(res as object), response: hardened };
-    }
-    return res;
+    // TanStack request middleware returns `{ response, request, pathname, context }`.
+    // Rewrap the response with hardened headers, preserving the rest of the shape.
+    return { ...res, response: withSecurityHeaders(res.response) };
   } catch (error) {
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
@@ -58,6 +53,7 @@ const errorMiddleware = createMiddleware().server(async ({ request, next }) => {
     );
   }
 });
+
 
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware],
