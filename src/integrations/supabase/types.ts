@@ -1037,18 +1037,21 @@ export type Database = {
         Row: {
           applied_at: string
           id: string
+          org_id: string
           proposal_id: string | null
           summary_ar: string
         }
         Insert: {
           applied_at?: string
           id?: string
+          org_id?: string
           proposal_id?: string | null
           summary_ar: string
         }
         Update: {
           applied_at?: string
           id?: string
+          org_id?: string
           proposal_id?: string | null
           summary_ar?: string
         }
@@ -1070,6 +1073,7 @@ export type Database = {
           decided_by: string | null
           description_ar: string | null
           id: string
+          org_id: string
           priority: string
           status: string
           title_ar: string
@@ -1082,6 +1086,7 @@ export type Database = {
           decided_by?: string | null
           description_ar?: string | null
           id?: string
+          org_id?: string
           priority?: string
           status?: string
           title_ar: string
@@ -1094,6 +1099,7 @@ export type Database = {
           decided_by?: string | null
           description_ar?: string | null
           id?: string
+          org_id?: string
           priority?: string
           status?: string
           title_ar?: string
@@ -1594,6 +1600,7 @@ export type Database = {
           id: string
           name_ar: string
           name_en: string
+          org_id: string
           role: string
           status: string
         }
@@ -1603,6 +1610,7 @@ export type Database = {
           id?: string
           name_ar: string
           name_en: string
+          org_id?: string
           role: string
           status?: string
         }
@@ -1612,6 +1620,7 @@ export type Database = {
           id?: string
           name_ar?: string
           name_en?: string
+          org_id?: string
           role?: string
           status?: string
         }
