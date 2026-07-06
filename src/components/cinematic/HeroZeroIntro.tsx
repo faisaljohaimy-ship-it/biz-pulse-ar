@@ -515,6 +515,24 @@ export function HeroZeroIntro() {
           NEXIOS AI
         </span>
         <span className="sr-only">NEXIOS AI</span>
+        <p
+          aria-hidden="true"
+          className="whitespace-nowrap"
+          style={{
+            marginTop: "clamp(6px, 1dvh, 12px)",
+            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+            fontWeight: 700,
+            fontSize: "clamp(0.65rem, 2vw, 0.9rem)",
+            letterSpacing: "0.35em",
+            textTransform: "uppercase",
+            color: "rgba(227,232,238,0.85)",
+            textShadow: "0 0 12px rgba(190,205,225,0.35)",
+            opacity: 0,
+            animation: "hero-zero-chrome-in 700ms 9400ms ease-out forwards",
+          }}
+        >
+          Digital Transformation
+        </p>
       </div>
 
 

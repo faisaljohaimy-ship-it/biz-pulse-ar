@@ -159,6 +159,22 @@ function IntroLanding() {
             style={{ isolation: "isolate", filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.35))" }}
           >
             <NexiosWordmark />
+            <p
+              dir="ltr"
+              className="whitespace-nowrap text-center"
+              style={{
+                marginTop: "clamp(6px, 1dvh, 12px)",
+                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+                fontWeight: 700,
+                fontSize: "clamp(0.65rem, 2vw, 0.9rem)",
+                letterSpacing: "0.35em",
+                textTransform: "uppercase",
+                color: "rgba(227,232,238,0.85)",
+                textShadow: "0 0 12px rgba(190,205,225,0.35)",
+              }}
+            >
+              Digital Transformation
+            </p>
           </div>
 
 
@@ -276,19 +292,6 @@ function IntroLanding() {
                 boxShadow: "0 0 18px rgba(74,222,128,0.55)",
               }}
             />
-            <p
-              className="mt-3 whitespace-nowrap font-bold uppercase"
-              style={{
-                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-                fontWeight: 800,
-                letterSpacing: "0.32em",
-                fontSize: "clamp(0.7rem, 1.6vw, 1rem)",
-                color: "rgba(220,240,230,0.9)",
-                textShadow: "0 0 14px rgba(0,180,120,0.55)",
-              }}
-            >
-              Digital Transformation
-            </p>
           </div>
 
         </div>
