@@ -38,7 +38,7 @@ export function LiveSystemShowcase() {
 
         <div
           className={`group relative overflow-hidden rounded-2xl border border-[#3AE8FF]/35 bg-gradient-to-b from-[#02101e] via-[#04111f] to-[#02101e] shadow-[0_0_50px_-10px_rgba(0,212,255,0.55),inset_0_0_40px_rgba(0,212,255,0.08)] backdrop-blur-xl transition-all duration-500 ${
-            expanded ? "w-full max-w-3xl" : "w-full max-w-[520px]"
+            expanded ? "w-full max-w-6xl" : "w-full max-w-[520px]"
           }`}
           style={{ colorScheme: "dark" }}
         >
