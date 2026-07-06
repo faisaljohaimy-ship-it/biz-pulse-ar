@@ -731,13 +731,28 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        /* On very short viewports (landscape phones) tighten the top crest
-           so it never crowds the ARIA figure. */
-        @media (max-height: 620px) {
-          .hero-zero-topcrest-sigil { width: clamp(40px, 8vw, 64px) !important; }
-          .hero-zero-topcrest-ar    { font-size: clamp(0.7rem, 1.6vw, 1rem) !important; }
-          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 0.7vw, 0.58rem) !important; }
+        /* Keep the top crest perfectly centered inside the safe area on
+           every viewport. The translate-x -50% + left-1/2 pattern is
+           direction-agnostic (works identically in RTL and LTR). */
+        .hero-zero-topcrest { transform: translateX(-50%); }
+
+        /* Narrow phones (≤380px): shrink and let the Arabic line breathe. */
+        @media (max-width: 380px) {
+          .hero-zero-topcrest-sigil { width: clamp(44px, 14vw, 60px) !important; }
+          .hero-zero-topcrest-ar    { font-size: clamp(0.72rem, 3.6vw, 0.95rem) !important; letter-spacing: 0.02em !important; }
+          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 1.8vw, 0.56rem) !important; letter-spacing: 0.22em !important; }
         }
+        /* Short viewports (landscape phones, small laptops): compress
+           vertical rhythm so the emblem never crowds ARIA's face. */
+        @media (max-height: 620px) {
+          .hero-zero-topcrest-sigil { width: clamp(38px, 7vw, 58px) !important; }
+          .hero-zero-topcrest-ar    { font-size: clamp(0.66rem, 1.5vw, 0.95rem) !important; }
+          .hero-zero-topcrest-en    { font-size: clamp(0.4rem, 0.7vw, 0.56rem) !important; }
+        }
+        @media (max-height: 480px) {
+          .hero-zero-topcrest-sigil { width: clamp(32px, 6vw, 48px) !important; }
+        }
+
       `}</style>
 
     </div>
