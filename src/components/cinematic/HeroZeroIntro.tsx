@@ -82,22 +82,29 @@ export function HeroZeroIntro() {
     // Kick playback. Video is muted so autoplay is allowed. Audio may need
     // a user gesture on some browsers; if it fails silently, the visual
     // still plays.
-    // Try to start audio + video together. Browsers require a user gesture
-    // for unmuted audio; if blocked, we arm a one-shot unlock on the next
-    // interaction so the narration still fires the moment the user moves.
+    // Start audio + video together from t=0. If the browser blocks unmuted
+    // audio autoplay, hold the video at 0 and arm a one-shot unlock so both
+    // tracks start together on the first user gesture — narration is never
+    // out of sync with the visual.
+    video.pause();
+    video.currentTime = 0;
+    audio.pause();
     audio.currentTime = 0;
     audio.volume = 1;
+    const startBoth = () => {
+      audio.currentTime = 0;
+      video.currentTime = 0;
+      void video.play().catch(() => {});
+      void audio.play().catch(() => {});
+    };
     const kick = async () => {
       try {
-        await video.play();
-      } catch {
-        /* muted autoplay refused — poster remains */
-      }
-      try {
         await audio.play();
+        void video.play().catch(() => {});
       } catch {
+        // Audio blocked — keep video paused at frame 0 so both start together.
         const unlock = () => {
-          audio.play().catch(() => {});
+          startBoth();
           window.removeEventListener("pointerdown", unlock);
           window.removeEventListener("keydown", unlock);
           window.removeEventListener("touchstart", unlock);
@@ -105,9 +112,13 @@ export function HeroZeroIntro() {
         window.addEventListener("pointerdown", unlock, { once: true });
         window.addEventListener("keydown", unlock, { once: true });
         window.addEventListener("touchstart", unlock, { once: true });
+        // Also try muted video so the poster+ambient light is alive while we
+        // wait for the gesture; audio + full video reset together on unlock.
+        void video.play().catch(() => {});
       }
     };
     void kick();
+
 
     // Video follows audio — audio is never scrubbed, so narration stays clean.
     const syncTick = () => {
@@ -336,17 +347,21 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
-      {/* Vision 2030 crest — pinned inside a 9:16 wrapper that matches the
-          hero video's intrinsic aspect ratio (576×1024). On desktop the video
-          is object-contain, so this wrapper exactly overlays the rendered
-          video box and the crest stays locked above the figure's head
-          regardless of viewport size. On mobile the viewport is already
-          near-portrait, so the wrapper still tracks the figure closely. */}
-      <div className="pointer-events-none absolute inset-0 z-40 flex items-start justify-center">
-        <div className="relative h-full aspect-[9/16] max-h-screen">
+      {/* Vision 2030 crest — pinned inside a wrapper that mirrors the video's
+          rendered box. On desktop/laptop the video is object-contain, so the
+          wrapper uses aspect-[9/16] to match the video's letterboxed box. On
+          mobile the video is object-cover filling the viewport, so the wrapper
+          fills the viewport and the crest sits at a viewport-relative offset
+          that lands right above the figure's head. dir="ltr" prevents RTL
+          flex reordering from shifting the crest off-center. */}
+      <div
+        dir="ltr"
+        className="pointer-events-none absolute inset-0 z-40 flex items-start justify-center"
+      >
+        <div className="relative h-full w-full md:aspect-[9/16] md:w-auto md:max-h-screen">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-[7%] -translate-x-1/2 text-center"
+            className="pointer-events-none absolute left-1/2 top-[4%] -translate-x-1/2 text-center md:top-[7%]"
             style={{
               opacity: 0,
               animation: reducedMotion.current
@@ -355,51 +370,53 @@ export function HeroZeroIntro() {
               willChange: "opacity, transform, filter",
             }}
           >
-        {/* Soft dark halo scrim so sparks/flame never bleed into the type */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
-            filter: "blur(6px)",
-          }}
-        />
+            {/* Soft dark halo scrim so sparks/flame never bleed into the type */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+                filter: "blur(6px)",
+              }}
+            />
 
-        <div
-          className="font-black leading-none"
-          style={{
-            fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
-            fontWeight: 900,
-            letterSpacing: "0.08em",
-            fontSize: "clamp(1.35rem, 3.6vw, 2.6rem)",
-            color: "#F5FBFF",
-            textShadow: [
-              "0 0 4px rgba(220,240,255,0.9)",
-              "0 0 18px rgba(0,180,120,0.65)",
-              "0 0 40px rgba(0,140,90,0.55)",
-              "0 0 90px rgba(0,120,80,0.35)",
-            ].join(","),
-          }}
-        >
-          رؤية <span style={{ color: "#4ADE80" }}>2030</span>
-        </div>
-        <div
-          className="mt-1 font-bold uppercase"
-          style={{
-            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-            fontWeight: 800,
-            letterSpacing: "0.32em",
-            fontSize: "clamp(0.6rem, 1.15vw, 0.85rem)",
-            color: "rgba(220,240,230,0.85)",
-            textShadow: "0 0 12px rgba(0,180,120,0.55)",
-          }}
-        >
-          Vision 2030 · Kingdom of Saudi Arabia
-        </div>
+            <div
+              dir="rtl"
+              className="whitespace-nowrap font-black leading-none"
+              style={{
+                fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+                fontWeight: 900,
+                letterSpacing: "0.06em",
+                fontSize: "clamp(1.15rem, 3.2vw, 2.4rem)",
+                color: "#F5FBFF",
+                textShadow: [
+                  "0 0 4px rgba(220,240,255,0.9)",
+                  "0 0 18px rgba(0,180,120,0.65)",
+                  "0 0 40px rgba(0,140,90,0.55)",
+                  "0 0 90px rgba(0,120,80,0.35)",
+                ].join(","),
+              }}
+            >
+              رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+            </div>
+            <div
+              className="mt-1 whitespace-nowrap font-bold uppercase"
+              style={{
+                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+                fontWeight: 800,
+                letterSpacing: "0.28em",
+                fontSize: "clamp(0.55rem, 1.05vw, 0.8rem)",
+                color: "rgba(220,240,230,0.85)",
+                textShadow: "0 0 12px rgba(0,180,120,0.55)",
+              }}
+            >
+              Vision 2030 · Kingdom of Saudi Arabia
+            </div>
           </div>
         </div>
       </div>
+
 
 
       {/* SVG turbulence filter for the flame stripe */}
