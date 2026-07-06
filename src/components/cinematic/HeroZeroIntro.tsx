@@ -313,87 +313,27 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
-      {/* Vision 2030 crest — video is fullscreen object-cover, so the crest
-          is positioned relative to the viewport. Portrait viewports sit near
-          the very top; landscape viewports drop slightly to clear the head. */}
-      <div
-        dir="ltr"
-        aria-hidden
-        className="hero-zero-crest pointer-events-none absolute left-1/2 z-40 -translate-x-1/2 text-center"
-        style={{
-          top: "4dvh",
-          opacity: 0,
-          animation: reducedMotion.current
-            ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
-            : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
-          willChange: "opacity, transform, filter",
-        }}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
-            filter: "blur(6px)",
-          }}
-        />
-        <div
-          dir="rtl"
-          className="whitespace-nowrap font-black leading-none"
-          style={{
-            fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
-            fontWeight: 900,
-            letterSpacing: "0.06em",
-            fontSize: "clamp(1.15rem, 3.2vw, 2.4rem)",
-            color: "#F5FBFF",
-            textShadow: [
-              "0 0 4px rgba(220,240,255,0.9)",
-              "0 0 18px rgba(0,180,120,0.65)",
-              "0 0 40px rgba(0,140,90,0.55)",
-              "0 0 90px rgba(0,120,80,0.35)",
-            ].join(","),
-          }}
-        >
-          رؤية <span style={{ color: "#4ADE80" }}>2030</span>
-        </div>
-        <div
-          className="mt-1 whitespace-nowrap font-bold uppercase"
-          style={{
-            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-            fontWeight: 800,
-            letterSpacing: "0.28em",
-            fontSize: "clamp(0.55rem, 1.05vw, 0.8rem)",
-            color: "rgba(220,240,230,0.85)",
-            textShadow: "0 0 12px rgba(0,180,120,0.55)",
-          }}
-        >
-          Vision 2030 · Kingdom of Saudi Arabia
-        </div>
-      </div>
+      {/* Lower stack — NEXIOS AI wordmark on top, then Vision 2030 crest,
+          then the tagline. Anchored to the bottom of the viewport so the
+          winged ARIA figure in the center of the frame stays clear while
+          she speaks. Safe-area padding keeps clear of the iPhone home
+          indicator.
 
-
-      {/* NEXIOS AI wordmark — lower third across all devices. Safe-area
-          padding keeps clear of the iPhone home indicator.
-
-          Accessibility: the whole block is a single `role="img"` region with
-          a bilingual aria-label so a screen reader announces
-          "NEXIOS AI, Enterprise AI Executive OS" once, in one voice, instead
-          of reading the decorative letters and dot separator. The individual
-          visual glyphs are marked `aria-hidden` and an `.sr-only` string
-          carries the canonical bilingual label. */}
+          Accessibility: single `role="img"` region with a bilingual
+          aria-label; decorative glyphs are `aria-hidden` and an `.sr-only`
+          string carries the canonical label. */}
       <div
         role="img"
-        aria-label="NEXIOS AI · نكسيوس — Enterprise AI · Executive OS"
+        aria-label="NEXIOS AI · نكسيوس — رؤية 2030 — Enterprise AI · Executive OS"
         dir="ltr"
-        className="pointer-events-none absolute inset-x-0 z-30 flex flex-col items-center text-center"
+        className="pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
         style={{
-          bottom: "clamp(8dvh, 12dvh, 16dvh)",
+          bottom: "clamp(5dvh, 7dvh, 10dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
           unicodeBidi: "isolate",
         }}
       >
-
+        {/* 1) NEXIOS AI wordmark (top of the stack) */}
         <span
           aria-hidden="true"
           className="hero-zero-wordmark-glow font-black uppercase leading-none"
@@ -412,9 +352,65 @@ export function HeroZeroIntro() {
           NEXIOS AI
         </span>
 
+        {/* 2) رؤية 2030 crest — sits directly beneath the wordmark */}
+        <div
+          aria-hidden
+          className="hero-zero-crest relative mt-3"
+          style={{
+            opacity: 0,
+            animation: reducedMotion.current
+              ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
+              : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
+            willChange: "opacity, transform, filter",
+          }}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+              filter: "blur(6px)",
+            }}
+          />
+          <div
+            dir="rtl"
+            className="whitespace-nowrap font-black leading-none"
+            style={{
+              fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+              fontWeight: 900,
+              letterSpacing: "0.06em",
+              fontSize: "clamp(1rem, 2.6vw, 1.9rem)",
+              color: "#F5FBFF",
+              textShadow: [
+                "0 0 4px rgba(220,240,255,0.9)",
+                "0 0 18px rgba(0,180,120,0.65)",
+                "0 0 40px rgba(0,140,90,0.55)",
+                "0 0 90px rgba(0,120,80,0.35)",
+              ].join(","),
+            }}
+          >
+            رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+          </div>
+          <div
+            className="mt-1 whitespace-nowrap font-bold uppercase"
+            style={{
+              fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+              fontWeight: 800,
+              letterSpacing: "0.28em",
+              fontSize: "clamp(0.5rem, 0.95vw, 0.72rem)",
+              color: "rgba(220,240,230,0.85)",
+              textShadow: "0 0 12px rgba(0,180,120,0.55)",
+            }}
+          >
+            Vision 2030 · Kingdom of Saudi Arabia
+          </div>
+        </div>
+
+        {/* 3) Tagline */}
         <span
           aria-hidden="true"
-          className="mt-2 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
+          className="mt-3 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
           style={{
             opacity: 0,
             animation: "hero-zero-tagline 800ms 9800ms forwards ease-out",
@@ -423,7 +419,7 @@ export function HeroZeroIntro() {
           Enterprise AI · Executive OS
         </span>
         <span className="sr-only">
-          NEXIOS AI · نكسيوس — Enterprise AI · Executive OS
+          NEXIOS AI · نكسيوس — رؤية 2030 — Enterprise AI · Executive OS
         </span>
       </div>
 
