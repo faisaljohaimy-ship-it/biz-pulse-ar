@@ -167,14 +167,28 @@ export function HeroZeroIntro() {
     };
     void kick();
 
-    // Audio-master drift correction.
+    // Audio-master drift correction — smooth, continuous. We check frequently
+    // and nudge the muted video's playbackRate for sub-frame drift; only
+    // hard-seek when drift exceeds ~0.35s (a real stall). This keeps the
+    // picture from ever "snapping" and staying visually married to the voice.
     const driftInterval = window.setInterval(() => {
       if (video.paused || audio.paused) return;
-      const drift = video.currentTime - audio.currentTime;
-      if (Math.abs(drift) > 0.15) {
-        try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+      const drift = video.currentTime - audio.currentTime; // +ve = video ahead
+      const abs = Math.abs(drift);
+      if (abs > 0.35) {
+        try {
+          video.currentTime = audio.currentTime;
+          video.playbackRate = 1;
+        } catch { /* noop */ }
+      } else if (abs > 0.04) {
+        // 4% max nudge — imperceptible, gently converges within ~1s.
+        const target = drift > 0 ? 0.96 : 1.04;
+        try { video.playbackRate = target; } catch { /* noop */ }
+      } else if (video.playbackRate !== 1) {
+        try { video.playbackRate = 1; } catch { /* noop */ }
       }
-    }, 2000);
+    }, 250);
+
 
     const onVideoWaiting = () => { if (!audio.paused) audio.pause(); };
     const onVideoPlaying = () => {
