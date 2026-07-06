@@ -14,12 +14,12 @@ const DISTRICTS = [
 ] as const;
 
 const SECTIONS = [
-  { key: "maintenance", icon: Wrench,       ar: "الصيانة",             en: "Maintenance" },
-  { key: "projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
-  { key: "permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
-  { key: "incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
-  { key: "support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
-  { key: "urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
+  { key: "maintenance", to: "/sec/maintenance", icon: Wrench,       ar: "الصيانة",             en: "Maintenance" },
+  { key: "projects",    to: "/sec/projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
+  { key: "permits",     to: "/sec/permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
+  { key: "incidents",   to: "/sec/incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
+  { key: "support",     to: "/sec/support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
+  { key: "urgent",      to: "/sec/urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
 ] as const;
 
 export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose: () => void }) {
