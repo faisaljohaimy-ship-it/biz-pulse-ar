@@ -148,15 +148,16 @@ function IntroLanding() {
               }}
             />
 
-            {/* Vision 2030 wordmark — Arabic + numerals */}
+            {/* Hero headline — bilingual, RTL-safe. Arabic uses the Arabic
+                comma «،». Emerald token highlights the operative word. */}
             <h1
-              dir="rtl"
+              dir={ar ? "rtl" : "ltr"}
               className="whitespace-nowrap font-black leading-none"
               style={{
                 fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
                 fontWeight: 900,
-                letterSpacing: "0.06em",
-                fontSize: "clamp(2.2rem, 8vw, 5rem)",
+                letterSpacing: "0.04em",
+                fontSize: "clamp(1.9rem, 7vw, 4.4rem)",
                 color: "#F5FBFF",
                 textShadow: [
                   "0 0 4px rgba(220,240,255,0.9)",
@@ -166,7 +167,11 @@ function IntroLanding() {
                 ].join(","),
               }}
             >
-              NEXIOS <span style={{ color: "#4ADE80" }}>AI</span>
+              {ar ? (
+                <>الذكاء، تحت <span style={{ color: "#4ADE80" }}>القيادة</span>.</>
+              ) : (
+                <>Intelligence, Under <span style={{ color: "#4ADE80" }}>Command</span>.</>
+              )}
             </h1>
 
             {/* Emerald underline accent */}
