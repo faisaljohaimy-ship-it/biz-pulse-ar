@@ -1,0 +1,128 @@
+/**
+ * LiveClock — global live Gregorian clock strip.
+ *
+ * Single source of truth for the platform's date/time chip. Mounted once
+ * from src/routes/__root.tsx so it appears on every route.
+ *
+ * Rules (per spec):
+ *  • Gregorian only, both AR + EN labels.
+ *  • Digits are ALWAYS Latin (0–9) via `numberingSystem: "latn"` —
+ *    never Arabic-Indic (٠-٩), even when the surrounding UI is RTL.
+ *  • Ticks every 1000 ms via setInterval (cleaned on unmount).
+ *  • Standardized on Asia/Riyadh so the executive audience sees one wall
+ *    clock regardless of the viewer's laptop timezone.
+ *  • tabular-nums for stable width — the seconds do not cause jitter.
+ */
+import { useEffect, useState } from "react";
+
+const TZ = "Asia/Riyadh";
+
+// Explicit `numberingSystem: "latn"` forces English digits even under ar-*.
+const gregDateEn = new Intl.DateTimeFormat("en-GB-u-nu-latn", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: TZ,
+  numberingSystem: "latn",
+});
+const gregDateAr = new Intl.DateTimeFormat("ar-u-nu-latn", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: TZ,
+  numberingSystem: "latn",
+});
+const timeFmt = new Intl.DateTimeFormat("en-GB-u-nu-latn", {
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+  timeZone: TZ,
+  numberingSystem: "latn",
+});
+
+interface LiveClockProps {
+  readonly variant?: "chip" | "inline";
+  readonly showArabic?: boolean;
+  readonly className?: string;
+}
+
+export function LiveClock({
+  variant = "chip",
+  showArabic = true,
+  className = "",
+}: LiveClockProps) {
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Reserve stable width before mount so hydration doesn't shift layout.
+  if (!now) {
+    return (
+      <div
+        aria-hidden
+        className={
+          variant === "chip"
+            ? `inline-flex h-[28px] w-[190px] rounded-full border border-white/10 bg-white/[0.04] ${className}`
+            : `inline-flex h-[16px] w-[150px] ${className}`
+        }
+      />
+    );
+  }
+
+  const dEn = gregDateEn.format(now);
+  const dAr = showArabic ? gregDateAr.format(now) : "";
+  const t = timeFmt.format(now);
+
+  if (variant === "inline") {
+    return (
+      <span
+        dir="ltr"
+        className={`inline-flex items-center gap-2 text-[11px] font-medium tabular-nums text-white/70 ${className}`}
+        aria-label="Live Gregorian date and time (Asia/Riyadh)"
+      >
+        <span className="whitespace-nowrap">{dEn}</span>
+        <span aria-hidden className="text-white/30">·</span>
+        <span className="whitespace-nowrap text-white/90">{t}</span>
+      </span>
+    );
+  }
+
+  return (
+    <div
+      role="group"
+      aria-label="Live Gregorian date and time (Asia/Riyadh)"
+      dir="ltr"
+      className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] font-medium tabular-nums text-white/80 shadow-[0_0_18px_rgba(0,212,255,0.10)] backdrop-blur-md ${className}`}
+    >
+      <span
+        aria-hidden
+        className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_8px_#3AE8FF]"
+      />
+      <span className="whitespace-nowrap text-white/90">{t}</span>
+      <span aria-hidden className="text-white/25">·</span>
+      <span className="whitespace-nowrap">{dEn}</span>
+      {showArabic && dAr && (
+        <>
+          <span aria-hidden className="text-white/25">·</span>
+          <span
+            dir="rtl"
+            lang="ar"
+            className="whitespace-nowrap text-white/70"
+            style={{ fontFamily: '"IBM Plex Sans Arabic","Tajawal",ui-sans-serif,system-ui' }}
+          >
+            {dAr}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default LiveClock;
