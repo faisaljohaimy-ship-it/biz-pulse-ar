@@ -93,19 +93,21 @@ export function LiveSystemShowcase() {
               aria-hidden
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-60"
+              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-40"
               style={{ filter: "saturate(1.05) contrast(1.02)" }}
             />
 
-            {/* Live dashboard — always visible, scaled to fit the icon frame */}
+            {/* Live dashboard — fully visible at native scale, interactive so viewers
+                can scroll and inspect every detail from outside the icon frame. */}
             <iframe
               src={LIVE_URL}
               title={ar ? "منصة نُسك الحج — بث مباشر" : "Hajj Nexus Platform — Live"}
-              loading="lazy"
+              loading="eager"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
               style={{ colorScheme: "dark", backgroundColor: "transparent" }}
-              className="absolute left-1/2 top-1/2 z-[5] h-[250%] w-[250%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.4] border-0"
+              className="absolute inset-0 z-[5] h-full w-full border-0"
             />
+
 
             {/* Subtle cinematic overlays — kept thin so the live feed stays readable */}
             <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(2,16,30,0.05)_0%,transparent_35%,transparent_80%,rgba(2,16,30,0.35)_100%)]" />
