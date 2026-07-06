@@ -72,29 +72,37 @@ export function HeroZeroIntro() {
     }, CROSSFADE_MS);
   };
 
-  // Start playback + sync loop + hard cap + Esc-to-skip.
+  // Body scroll lock while the intro is mounted — no scrollbars, no jump.
+  useEffect(() => {
+    if (mounted !== "playing") return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mounted]);
+
+  // Playback contract — the video and audio behave as ONE synchronized unit.
+  //  1. Both tracks start together in the SAME event tick via
+  //     Promise.all([video.play(), audio.play()]) after resetting both to 0.
+  //  2. Audio is the master clock; every 2s we snap the video to audio when
+  //     drift > 0.15s.
+  //  3. Buffer stalls: video "waiting" pauses audio; video "playing" resumes
+  //     both from audio.currentTime — one never runs while the other stalls.
+  //  4. Tab hidden / visible: both pause and resume from the audio master.
+  //  5. Audio "ended" triggers the 700ms crossfade exit; skip kills instantly.
   useEffect(() => {
     if (mounted !== "playing") return;
     const video = videoRef.current;
     const audio = audioRef.current;
     if (!video || !audio) return;
 
-    // Playback contract:
-    //  - Both tracks always start together from t=0 (fresh mount and replays).
-    //  - We wait until BOTH elements can play through the first frame/sample
-    //    (readyState >= HAVE_CURRENT_DATA) before firing playback, so a slow
-    //    network never lets the video run silent ahead of the audio.
-    //  - If the browser blocks unmuted audio autoplay, we arm a one-shot
-    //    gesture unlock and reset BOTH clocks to 0 on unlock.
-    //  - Any seek on the video (user, devtools, browser buffer skip) is
-    //    mirrored to the audio so narration stays locked to picture.
-
     let cancelled = false;
     const cleanupFns: Array<() => void> = [];
 
     const waitReady = (el: HTMLMediaElement) =>
       new Promise<void>((resolve) => {
-        if (el.readyState >= 2 /* HAVE_CURRENT_DATA */) {
+        if (el.readyState >= 2) {
           resolve();
           return;
         }
@@ -105,7 +113,6 @@ export function HeroZeroIntro() {
         };
         el.addEventListener("canplay", onReady, { once: true });
         el.addEventListener("loadeddata", onReady, { once: true });
-        // Nudge the loader in case the element hasn't started buffering yet.
         try {
           el.load();
         } catch {
@@ -125,18 +132,23 @@ export function HeroZeroIntro() {
       }
     };
 
-    const startBoth = () => {
+    // Start BOTH in the same event handler — never sequential awaits.
+    const startBoth = async () => {
       resetClocks();
-      void video.play().catch(() => {});
-      void audio.play().catch(() => {});
+      try {
+        await Promise.all([video.play(), audio.play()]);
+        return true;
+      } catch {
+        return false;
+      }
     };
 
     const armUnlock = () => {
-      const unlock = () => {
-        startBoth();
+      const unlock = async () => {
         window.removeEventListener("pointerdown", unlock);
         window.removeEventListener("keydown", unlock);
         window.removeEventListener("touchstart", unlock);
+        await startBoth();
       };
       window.addEventListener("pointerdown", unlock, { once: true });
       window.addEventListener("keydown", unlock, { once: true });
@@ -150,26 +162,47 @@ export function HeroZeroIntro() {
 
     const kick = async () => {
       resetClocks();
-      // Wait for both tracks to be ready before firing playback. This makes
-      // slow networks and cold caches behave the same as a warm reload.
       await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
-      try {
-        // Attempt audio first so we know whether autoplay is unlocked.
-        await audio.play();
-        void video.play().catch(() => {});
-      } catch {
-        // Audio blocked. Keep the muted video running so the scene is alive,
-        // but arm a gesture unlock that resets both clocks to 0 together.
+      const ok = await startBoth();
+      if (!ok) {
+        // Autoplay of unmuted audio blocked. Keep the muted video alive so
+        // the scene shows, then wait for a gesture that starts BOTH together.
         void video.play().catch(() => {});
         armUnlock();
       }
     };
     void kick();
 
+    // Audio-master drift correction every 2s (spec: >0.15s → snap video).
+    const driftInterval = window.setInterval(() => {
+      if (video.paused || audio.paused) return;
+      const drift = video.currentTime - audio.currentTime;
+      if (Math.abs(drift) > 0.15) {
+        try {
+          video.currentTime = audio.currentTime;
+        } catch {
+          /* noop */
+        }
+      }
+    }, 2000);
 
-    // Mirror any video seek onto the audio so a browser buffer skip or a
-    // devtools scrub cannot desync the narration.
+    // Buffer stall handling — never let one run while the other stalls.
+    const onVideoWaiting = () => {
+      if (!audio.paused) audio.pause();
+    };
+    const onVideoPlaying = () => {
+      try {
+        video.currentTime = audio.currentTime;
+      } catch {
+        /* noop */
+      }
+      if (audio.paused) void audio.play().catch(() => {});
+    };
+    video.addEventListener("waiting", onVideoWaiting);
+    video.addEventListener("playing", onVideoPlaying);
+
+    // Mirror explicit seeks onto audio (dev-tools scrub / native controls).
     const onVideoSeeked = () => {
       if (Math.abs(video.currentTime - audio.currentTime) > 0.1) {
         try {
@@ -181,26 +214,30 @@ export function HeroZeroIntro() {
     };
     video.addEventListener("seeked", onVideoSeeked);
 
-    // Continuous drift correction — audio is the master clock (never scrubbed
-    // by browsers), so we correct the video toward the audio position.
-    const syncTick = () => {
-      if (!video.paused && !audio.paused) {
-        const drift = video.currentTime - audio.currentTime;
-        if (Math.abs(drift) > 0.25) video.currentTime = audio.currentTime;
+    // Tab visibility — pause/resume BOTH from the audio master clock.
+    const onVisibility = () => {
+      if (document.hidden) {
+        video.pause();
+        audio.pause();
+      } else {
+        try {
+          video.currentTime = audio.currentTime;
+        } catch {
+          /* noop */
+        }
+        void audio.play().catch(() => {});
+        void video.play().catch(() => {});
       }
-      rafRef.current = window.requestAnimationFrame(syncTick);
     };
-    rafRef.current = window.requestAnimationFrame(syncTick);
+    document.addEventListener("visibilitychange", onVisibility);
 
-    // Hard cap.
+    // Hard cap — safety net if audio never ends.
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
-    // Finish when EITHER the narration or the video ends — whichever runs
-    // longest wins, so the audio never gets cut mid-sentence and never
-    // lingers after the hero disappears.
-    const onEnded = () => finish();
-    video.addEventListener("ended", onEnded);
-    audio.addEventListener("ended", onEnded);
+    // Audio ended → 700ms crossfade exit (per spec). Video ended alone does
+    // NOT exit — audio is the master and may be longer.
+    const onAudioEnded = () => finish();
+    audio.addEventListener("ended", onAudioEnded);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") finish();
@@ -211,36 +248,31 @@ export function HeroZeroIntro() {
     return () => {
       cancelled = true;
       cleanupFns.forEach((fn) => fn());
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      window.clearInterval(driftInterval);
       if (hardCapRef.current !== null) clearTimeout(hardCapRef.current);
-      video.removeEventListener("ended", onEnded);
-      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("ended", onAudioEnded);
+      video.removeEventListener("waiting", onVideoWaiting);
+      video.removeEventListener("playing", onVideoPlaying);
       video.removeEventListener("seeked", onVideoSeeked);
+      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("keydown", onKey);
-      // Hard stop audio the moment the hero disappears — quick fade to avoid
-      // a click, then pause + reset.
+      // Skip / exit — kill BOTH tracks instantly (no fade on skip path).
       try {
-        const startVol = audio.volume;
-        const steps = 8;
-        let i = 0;
-        const fade = window.setInterval(() => {
-          i += 1;
-          audio.volume = Math.max(0, startVol * (1 - i / steps));
-          if (i >= steps) {
-            window.clearInterval(fade);
-            audio.pause();
-            audio.currentTime = 0;
-            audio.volume = startVol;
-          }
-        }, 25);
-      } catch {
         audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* noop */
       }
-      video.pause();
+      try {
+        video.pause();
+      } catch {
+        /* noop */
+      }
     };
     // finish is stable via setState functional pattern
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
+
 
 
   // Ember/fire particle canvas — intentionally disabled. The wordmark now
