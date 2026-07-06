@@ -592,37 +592,27 @@ export function HeroZeroIntro() {
 
 
 
-      {/* ENTRY GATE — audio starts ONLY when the user taps «دخول». No sound
-          of any kind plays before this tap. */}
-      {!entered && (
+      {/* TIER 3 — pulsing speaker hint. Any interaction anywhere ignites
+          audio (Tier 2). Tapping the chip itself also counts as a gesture.
+          Fades out the instant audio starts. */}
+      {!audioStarted && (
         <button
           type="button"
-          onClick={handleEnter}
-          aria-label="دخول · Enter"
-          className="absolute inset-0 z-[70] flex flex-col items-center justify-center gap-5 bg-[#03111f]/55 backdrop-blur-[2px] focus:outline-none"
+          onClick={handleChipTap}
+          aria-label="اضغط لتشغيل الصوت · Tap for sound"
+          className="absolute z-[65] inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/55 bg-[#03111f]/80 px-4 py-2 text-[12px] font-semibold text-white backdrop-blur-md shadow-[0_0_28px_rgba(0,212,255,0.35)] transition hover:border-[#3AE8FF] hover:bg-[#03111f] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
+          style={{
+            bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+            left: "1.5rem",
+            animation: "hero-zero-chip-pulse 1.8s ease-in-out infinite",
+          }}
+          dir="rtl"
         >
-          <span className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#00D4FF]">
-            NEXIOS AI · Executive Intro
-          </span>
-          <span
-            aria-hidden
-            className="flex h-24 w-24 items-center justify-center rounded-full border border-[#00D4FF]/60 bg-black/50 text-4xl font-black text-white shadow-[0_0_50px_rgba(0,212,255,0.55)] transition-transform hover:scale-105"
-            style={{ fontFamily: '"Space Grotesk", ui-sans-serif, system-ui' }}
-          >
-            ▶
-          </span>
-          <span
-            dir="rtl"
-            className="max-w-md px-6 text-center text-[17px] font-semibold text-white/90"
-            style={{ fontFamily: '"Tajawal", "Space Grotesk", ui-sans-serif' }}
-          >
-            اضغط <span className="text-[#00D4FF]">دخول</span> لبدء العرض بالصوت
-          </span>
-          <span className="text-[10px] font-medium uppercase tracking-[0.36em] text-white/55">
-            Tap to Enter · with Sound
-          </span>
+          <span aria-hidden className="text-[15px]">🔊</span>
+          <span>اضغط في أي مكان لتشغيل الصوت</span>
         </button>
       )}
+
 
 
 
