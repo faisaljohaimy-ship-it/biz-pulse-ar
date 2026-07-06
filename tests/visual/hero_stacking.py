@@ -169,35 +169,36 @@ async def run() -> int:
 
                 checks: list[str] = []
 
-                # 1) Emblem is topmost at its own center.
-                top_emblem = probe["stackAtEmblem"][0] if probe["stackAtEmblem"] else {}
-                if top_emblem.get("testid") != "hero-saudi-emblem":
+                # 1) Emblem paints above every other intro layer at its own center.
+                if not probe["emblemIsTopAtEmblem"]:
+                    top = probe["stackAtEmblem"][0] if probe["stackAtEmblem"] else {}
                     failures.append(
                         f"{label}: emblem NOT topmost at own center — top was "
-                        f"{top_emblem.get('tag')}.{top_emblem.get('cls')[:40]} "
-                        f"testid={top_emblem.get('testid')!r}"
+                        f"{top.get('tag')}.{top.get('cls','')[:40]} testid={top.get('testid')!r}"
                     )
                 else:
                     checks.append("emblem-topmost=ok")
 
-                # 2) Crest is topmost at its own center (or a child of it).
-                stack_crest_ids = [e.get("testid") for e in probe["stackAtCrest"][:3]]
-                if "hero-vision-2030-crest" not in stack_crest_ids:
+                # 2) Crest (or one of its descendants) paints above every other
+                #    intro layer at the crest's own center point.
+                if not probe["crestIsTopAtCrest"]:
                     failures.append(
-                        f"{label}: crest not in top-3 stack at own center — "
+                        f"{label}: crest not topmost at own center — "
                         f"got {probe['stackAtCrest'][:3]}"
                     )
                 else:
                     checks.append("crest-topmost=ok")
 
-                # 3) Neither emblem occludes ARIA's face.
-                face_ids = [e.get("testid") for e in probe["stackAtFace"]]
-                if "hero-saudi-emblem" in face_ids or "hero-vision-2030-crest" in face_ids:
+                # 3) Neither emblem occludes ARIA's face at the approximate
+                #    face center point.
+                if probe["emblemHitsFace"] or probe["crestHitsFace"]:
                     failures.append(
-                        f"{label}: emblem/crest appears in stack at ARIA face — {face_ids}"
+                        f"{label}: emblem/crest occludes ARIA face — "
+                        f"emblem={probe['emblemHitsFace']} crest={probe['crestHitsFace']}"
                     )
                 else:
                     checks.append("face-clear=ok")
+
 
                 # 4) Skip button (if present) must not overlap emblem/crest bounding boxes.
                 skip = probe.get("skipBox")
