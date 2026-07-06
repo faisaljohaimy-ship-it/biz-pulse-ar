@@ -30,10 +30,10 @@ export function LiveSystemShowcase() {
       aria-label={ar ? "نافذة نظام الحج المباشرة" : "Live Hajj system window"}
     >
 
-      {/* Right-aligned flex wrapper so the window sits on the right side (RTL = visual right). */}
-      <div className="flex w-full justify-center lg:justify-start">
-        {/* Ambient halo behind the small window only */}
-        <div className="pointer-events-none absolute -z-10 hidden h-[320px] w-[520px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.28),transparent_65%)] blur-3xl lg:block" />
+      {/* Right-anchored on ALL devices (RTL start = visual right). No breakpoint switches this. */}
+      <div className="flex w-full justify-start">
+        {/* Ambient halo behind the window — visible on all breakpoints */}
+        <div className="pointer-events-none absolute -z-10 h-[280px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.28),transparent_65%)] blur-3xl sm:h-[320px] sm:w-[520px]" />
 
         <div
           className={`group relative overflow-hidden rounded-2xl border border-[#3AE8FF]/35 bg-gradient-to-b from-[#02101e] via-[#04111f] to-[#02101e] shadow-[0_0_50px_-10px_rgba(0,212,255,0.55),inset_0_0_40px_rgba(0,212,255,0.08)] backdrop-blur-xl transition-all duration-500 ${
@@ -54,9 +54,9 @@ export function LiveSystemShowcase() {
 
             <div className="flex flex-1 items-center justify-center">
               <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] text-white/70">
-                <Moon className="h-2.5 w-2.5 text-[#3AE8FF]" />
-                <span>{ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}</span>
-                <Radio className="h-2.5 w-2.5 animate-pulse text-emerald-400" />
+                <Moon className="h-3 w-3 shrink-0 text-[#3AE8FF] drop-shadow-[0_0_6px_rgba(58,232,255,0.9)]" aria-hidden />
+                <span className="text-center">{ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}</span>
+                <Radio className="h-2.5 w-2.5 shrink-0 animate-pulse text-emerald-400" aria-hidden />
               </div>
             </div>
 
