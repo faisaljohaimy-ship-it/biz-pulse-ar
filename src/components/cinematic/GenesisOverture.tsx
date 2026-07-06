@@ -144,7 +144,10 @@ export function GenesisOverture() {
     timers.current.forEach(clearTimeout);
     timers.current = [];
     setPhase("dissolving");
-    window.setTimeout(() => setPhase("done"), 320);
+    window.setTimeout(() => {
+      setPhase("done");
+      setIntroActive(false);
+    }, 320);
   };
 
   if (phase === "hidden" || phase === "done") return null;
