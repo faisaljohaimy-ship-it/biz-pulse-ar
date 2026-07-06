@@ -338,28 +338,22 @@ export function HeroZeroIntro() {
 
         <span
           aria-hidden="true"
-          className="font-black uppercase leading-none"
+          className="hero-zero-wordmark-glow font-black uppercase leading-none"
           style={{
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
             fontSize: "clamp(2rem, 8vw, 4.5rem)",
-            color: "#F5FBFF",
-            textShadow: [
-              "0 0 2px rgba(220,240,255,0.9)",
-              "0 0 14px rgba(0,212,255,0.55)",
-              "0 0 44px rgba(0,180,220,0.35)",
-              "0 0 90px rgba(0,140,200,0.25)",
-            ].join(","),
             opacity: 0,
             animation: reducedMotion.current
               ? "hero-zero-wordmark-quiet 400ms 200ms forwards ease-out"
-              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1)",
+              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-wordmark-pulse 3.6s 10200ms ease-in-out infinite, hero-zero-wordmark-shimmer 4.8s 10200ms linear infinite",
             willChange: "opacity, transform, filter",
           }}
         >
           NEXIOS AI
         </span>
+
         <span
           aria-hidden="true"
           className="mt-2 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
@@ -416,6 +410,57 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
+        /* Cyan glow matched to the winged figure's aura (#00D4FF / #3AE8FF).
+           Base fill is a pale cyan-white with a live shimmer sweep clipped to
+           the glyphs; the pulse animation breathes the outer halo. */
+        .hero-zero-wordmark-glow {
+          color: #EAFBFF;
+          background-image: linear-gradient(
+            110deg,
+            rgba(234,251,255,0) 0%,
+            rgba(234,251,255,0) 38%,
+            rgba(180,240,255,0.95) 48%,
+            #FFFFFF 50%,
+            rgba(120,225,255,0.95) 52%,
+            rgba(58,232,255,0) 62%,
+            rgba(58,232,255,0) 100%
+          );
+          background-size: 220% 100%;
+          background-position: -60% 0;
+          background-repeat: no-repeat;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow:
+            0 0 3px rgba(220,245,255,0.95),
+            0 0 16px rgba(0,212,255,0.85),
+            0 0 42px rgba(58,232,255,0.75),
+            0 0 90px rgba(0,180,220,0.55),
+            0 0 160px rgba(0,140,200,0.4);
+        }
+        @keyframes hero-zero-wordmark-pulse {
+          0%,100% {
+            text-shadow:
+              0 0 3px rgba(220,245,255,0.95),
+              0 0 16px rgba(0,212,255,0.85),
+              0 0 42px rgba(58,232,255,0.75),
+              0 0 90px rgba(0,180,220,0.55),
+              0 0 160px rgba(0,140,200,0.4);
+          }
+          50% {
+            text-shadow:
+              0 0 5px rgba(235,250,255,1),
+              0 0 24px rgba(80,230,255,1),
+              0 0 60px rgba(58,232,255,0.95),
+              0 0 130px rgba(0,200,240,0.75),
+              0 0 220px rgba(0,160,220,0.55);
+          }
+        }
+        @keyframes hero-zero-wordmark-shimmer {
+          0%   { background-position: -60% 0; }
+          100% { background-position: 160% 0; }
+        }
+
         @keyframes hero-zero-flicker {
           0%,100% { text-shadow:
             0 0 4px rgba(255,220,140,1),
