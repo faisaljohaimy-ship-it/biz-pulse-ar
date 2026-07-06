@@ -103,11 +103,13 @@ export function HeroZeroIntro() {
     };
     void kick();
 
-    // A/V drift correction (±80 ms).
+    // A/V drift correction — audio is the master narration track (never
+    // scrubbed, so it stays perfectly clear). We only nudge the video if it
+    // drifts more than 300 ms, which is inaudible to the viewer.
     const syncTick = () => {
       if (!video.paused && !audio.paused) {
-        const drift = Math.abs(video.currentTime - audio.currentTime);
-        if (drift > 0.08) audio.currentTime = video.currentTime;
+        const drift = video.currentTime - audio.currentTime;
+        if (Math.abs(drift) > 0.3) video.currentTime = audio.currentTime;
       }
       rafRef.current = window.requestAnimationFrame(syncTick);
     };
