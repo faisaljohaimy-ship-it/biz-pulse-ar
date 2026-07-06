@@ -14,7 +14,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorBoundary error={error} reset={reset} routeLabel="/intelligence" />
+  ),
 });
+
 
 type Agent = {
   id: string;
