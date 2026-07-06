@@ -796,6 +796,12 @@ export function HeroZeroIntro() {
           .hero-zero-topcrest-sigil { width: clamp(32px, 6vw, 48px) !important; }
         }
 
+        /* Sound toggle idle pulse — gently signals "tap to hear ARIA"
+           without being noisy. Stops the moment the user enables sound. */
+        @keyframes hero-zero-sound-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.35); }
+          50%      { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+        }
       `}</style>
 
     </div>
