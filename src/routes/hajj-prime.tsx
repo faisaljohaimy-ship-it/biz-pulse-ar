@@ -25,7 +25,7 @@ function HajjPrimeWindow() {
           </Link>
           <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] text-white/70 sm:flex">
             <Radio className="h-3 w-3 animate-pulse text-[#3AE8FF]" />
-            <Link to="/hajj-prime" className="font-mono hover:text-white">/hajj-prime</Link>
+            <Link to="/hajj-prime" className="hover:text-white">منصة نُسك الحج · Hajj Nexus Platform</Link>
             <span className="ml-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300">
               LIVE
             </span>
