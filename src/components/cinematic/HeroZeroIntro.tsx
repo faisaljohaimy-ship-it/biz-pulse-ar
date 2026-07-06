@@ -3,6 +3,7 @@ import { Volume2, VolumeX } from "lucide-react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
 import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
+import saudiEmblem from "@/assets/saudi-emblem.png";
 import { setIntroActive } from "@/lib/intro-store";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
@@ -370,9 +371,37 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
 
-      {/* NOTE: no top-center emblem — ARIA's face MUST remain fully visible
-          without any text overlay. The Vision 2030 crest lives only in the
-          bottom stack below, underneath the NEXIOS AI wordmark. */}
+      {/* Top-center Saudi national emblem (crossed swords + palm tree).
+          Rendered above the figure but sized/placed inside the top safe-area
+          so ARIA's face remains fully visible below. No text overlay. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 z-40 flex justify-center"
+        style={{
+          top: "calc(env(safe-area-inset-top) + clamp(0.5rem, 2vh, 1.25rem))",
+        }}
+      >
+        <img
+          src={saudiEmblem}
+          alt=""
+          width={512}
+          height={512}
+          decoding="async"
+          style={{
+            width: "clamp(84px, 13vw, 168px)",
+            height: "auto",
+            opacity: 0,
+            filter:
+              "drop-shadow(0 0 12px rgba(74,222,128,0.55)) drop-shadow(0 0 28px rgba(0,140,90,0.35))",
+            animation: reducedMotion.current
+              ? "hero-zero-vision-quiet 600ms 300ms forwards ease-out"
+              : "hero-zero-vision 3200ms 1200ms forwards cubic-bezier(0.22,1,0.36,1)",
+            willChange: "opacity, transform, filter",
+          }}
+        />
+      </div>
+
+
 
 
 
