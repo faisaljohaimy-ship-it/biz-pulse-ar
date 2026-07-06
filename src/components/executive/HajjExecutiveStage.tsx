@@ -11,7 +11,9 @@
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
 import { Mail, Database, Monitor, ShieldCheck, Sparkles, Moon, ArrowUpRight } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { HajjExecDrawer } from "@/components/hajj/HajjExecDrawer";
 import { useI18n } from "@/lib/i18n";
 
 
@@ -26,12 +28,33 @@ const INTEGRATIONS = [
 export function HajjExecutiveStage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const longPressTimer = useRef<number | null>(null);
+  const longPressFired = useRef(false);
+
+  const startLongPress = () => {
+    longPressFired.current = false;
+    if (typeof window === "undefined") return;
+    longPressTimer.current = window.setTimeout(() => {
+      longPressFired.current = true;
+      void navigate({ to: "/hajj-prime" });
+    }, 600);
+  };
+  const cancelLongPress = () => {
+    if (longPressTimer.current != null) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   const heading = ar ? "منصة إنجاز الأعمال التنفيذية" : "Executive Delivery Platform";
   const sub = ar
     ? "تكامل رقمي كامل بين عمليات الحج، أنظمة المؤسسة، والذكاء التنفيذي — لوحة قيادة واحدة تربط Outlook، SAP، و Windows 365 مع منظومة وكلاء آريا."
     : "End-to-end digital integration between Hajj operations, enterprise systems, and executive intelligence — a single cockpit linking Outlook, SAP, and Windows 365 with ARIA's agent fabric.";
 
   return (
+    <>
     <section
       dir={ar ? "rtl" : "ltr"}
       aria-label={heading}
@@ -55,15 +78,21 @@ export function HajjExecutiveStage() {
       </header>
 
       <div className="mb-6 flex flex-wrap items-center justify-center gap-3 sm:mb-8">
-        <Link
-          to="/hajj-prime"
-          aria-label={ar ? "افتح منصة نسك الحج 1447 هـ" : "Open Hajj Nusuk 1447 Platform"}
+        <button
+          type="button"
+          onClick={() => { if (!longPressFired.current) setDrawerOpen(true); }}
+          onContextMenu={(e) => { e.preventDefault(); void navigate({ to: "/hajj-prime" }); }}
+          onPointerDown={startLongPress}
+          onPointerUp={cancelLongPress}
+          onPointerLeave={cancelLongPress}
+          onPointerCancel={cancelLongPress}
+          aria-label={ar ? "افتح لوحة نسك الحج · اضغط مطولاً للانتقال المباشر" : "Open Hajj Nusuk panel · long-press to open full platform"}
           className="group inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/60 bg-gradient-to-r from-[#00D4FF]/25 via-[#3AE8FF]/15 to-[#00D4FF]/25 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_28px_-6px_rgba(58,232,255,0.65)] transition hover:border-[#3AE8FF] hover:shadow-[0_0_36px_-4px_rgba(58,232,255,0.9)]"
         >
           <Moon className="h-4 w-4 text-[#3AE8FF] drop-shadow-[0_0_8px_rgba(58,232,255,0.9)]" aria-hidden />
           <span>{ar ? "منصة نسك الحج · 1447 هـ" : "Hajj Nusuk Platform · 1447 AH"}</span>
           <ArrowUpRight className="h-3.5 w-3.5 text-[#3AE8FF] transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-        </Link>
+        </button>
         <button
           type="button"
           onClick={() => { try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ } }}
@@ -209,5 +238,7 @@ export function HajjExecutiveStage() {
         </div>
       </div>
     </section>
+    <HajjExecDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+    </>
   );
 }
