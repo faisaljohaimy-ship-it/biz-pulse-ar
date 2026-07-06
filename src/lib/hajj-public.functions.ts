@@ -111,7 +111,7 @@ export const getHajjExecSummary = createServerFn({ method: "GET" }).handler(
         .select("id, code, name_ar, name_en, status, staff_count")
         .order("code", { ascending: true })
         .limit(6);
-      stations = (st ?? []) as HajjPublicStation[];
+      stations = ((st ?? []) as unknown) as HajjPublicStation[];
     } catch { /* leave empty */ }
 
     try {
