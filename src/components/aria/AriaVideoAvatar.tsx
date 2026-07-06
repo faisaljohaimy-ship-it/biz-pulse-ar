@@ -108,9 +108,6 @@ export function AriaVideoAvatar({
     v.playsInline = true;
 
     const onPlaying = () => {
-      const dt = Math.round(performance.now() - audioPlayingT);
-      // eslint-disable-next-line no-console
-      console.log(`[aria-sync] Δ=${dt}ms`);
       v.removeEventListener("playing", onPlaying);
     };
     v.addEventListener("playing", onPlaying);
