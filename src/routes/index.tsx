@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid, Mic } from "lucide-react";
+import { AriaTourController } from "@/components/aria/AriaTourController";
+import { tourStopsFor } from "@/lib/aria/tour-narration";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
@@ -58,7 +60,9 @@ function IntroLanding() {
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
   const [deptsOpen, setDeptsOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
   const { speak } = useAriaSpeech();
+  const tourStops = tourStopsFor(ar ? "ar" : "en");
 
   const replayGreeting = () => {
     AriaAudioBus.unlock();
@@ -112,6 +116,7 @@ function IntroLanding() {
 
       {/* ══ Executive Hero — Tactical HUD ══ */}
       <section
+        id="tour-hero"
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
         className="relative z-10 flex min-h-[100svh] w-full flex-col justify-end px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6"
       >
@@ -177,6 +182,17 @@ function IntroLanding() {
               <Sparkles className="h-4 w-4 text-[#3AE8FF]" />
               {ar ? "ابدأ محادثة آريا" : "Start Conversation with ARIA"}
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                AriaAudioBus.unlock();
+                setTourOpen(true);
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#00D4FF]/45 bg-[#00D4FF]/[0.06] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/[0.12]"
+            >
+              <Mic className="h-4 w-4 text-[#3AE8FF]" />
+              {ar ? "جولة صوتية مع آريا" : "Voice tour with ARIA"}
+            </button>
           </div>
 
           {/* Secondary utility row */}
@@ -231,16 +247,16 @@ function IntroLanding() {
 
       <LiveSystemShowcase />
 
-      <HajjExecutiveStage />
+      <div id="tour-hajj"><HajjExecutiveStage /></div>
 
       <div className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6">
         <MissionControlStrip />
       </div>
 
-      <AgentRing />
+      <div id="tour-agents"><AgentRing /></div>
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        <section className="mt-6 sm:mt-16">
+        <section id="tour-capabilities" className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">Capabilities</div>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t.capabilities}</h2>
@@ -272,7 +288,7 @@ function IntroLanding() {
           </ul>
         </section>
 
-        <section className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
+        <section id="tour-closing" className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
           <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
           <div className="mt-5">
@@ -284,10 +300,10 @@ function IntroLanding() {
               <Arrow className="h-4 w-4" />
             </Link>
           </div>
-          <p className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]">
+          <p id="tour-compliance" className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]">
             {ar
-              ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
-              : "Aligned with Saudi Vision 2030 · Digital transformation & industrial leadership"}
+              ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية · نظام حماية البيانات الشخصية"
+              : "Aligned with Saudi Vision 2030 · Digital transformation · KSA Personal Data Protection Law"}
           </p>
         </section>
 
@@ -298,6 +314,13 @@ function IntroLanding() {
 
       {/* Grand closing wordmark */}
       <NexiosFootermark caption={ar ? "منصة الذكاء التنفيذي" : "Enterprise AI Operating System"} />
+
+      <AriaTourController
+        open={tourOpen}
+        lang={ar ? "ar" : "en"}
+        stops={tourStops}
+        onClose={() => setTourOpen(false)}
+      />
     </div>
   );
 }
