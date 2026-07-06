@@ -397,7 +397,10 @@ export function HeroZeroIntro() {
         >
           Vision 2030 · Kingdom of Saudi Arabia
         </div>
+          </div>
+        </div>
       </div>
+
 
       {/* SVG turbulence filter for the flame stripe */}
       <svg aria-hidden width="0" height="0" className="absolute">
