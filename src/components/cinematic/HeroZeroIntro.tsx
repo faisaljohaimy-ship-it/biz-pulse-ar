@@ -485,118 +485,38 @@ export function HeroZeroIntro() {
 
 
 
-      {/* Lower stack — NEXIOS AI wordmark on top, then Vision 2030 crest,
-          then the tagline. Anchored to the bottom of the viewport so the
-          winged ARIA figure in the center of the frame stays clear while
-          she speaks. Safe-area padding keeps clear of the iPhone home
-          indicator.
-
-          Accessibility: single `role="img"` region with a bilingual
-          aria-label; decorative glyphs are `aria-hidden` and an `.sr-only`
-          string carries the canonical label. */}
+      {/* Lower stack — ONE chrome "NEXIOS AI" wordmark, cold silver to match
+          the winged figure. Sweep + gleam via ::after. All other lines
+          (green-AI crest, KSA line, tagline) removed for a single statement. */}
       <div
         role="img"
-        aria-label="NEXIOS AI · نكسيوس — Enterprise AI · Executive OS"
+        aria-label="NEXIOS AI"
         dir="ltr"
         className="hero-zero-bottom-stack pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
         style={{
-          bottom: "clamp(3dvh, 6dvh, 9dvh)",
+          bottom: "clamp(10dvh, 14dvh, 18dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
           unicodeBidi: "isolate",
         }}
       >
-        {/* 1) NEXIOS AI wordmark (top of the stack) — brushed-nickel metallic
-            treatment with a moving shine sweep. Halo intentionally tight so
-            it never spills upward onto ARIA's face on any viewport. */}
         <span
           aria-hidden="true"
-          className="hero-zero-wordmark-glow font-black uppercase leading-none"
+          data-chrome-wordmark
+          className="hero-zero-chrome-wordmark relative inline-block whitespace-nowrap uppercase leading-none"
+          data-text="NEXIOS AI"
           style={{
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-            fontWeight: 900,
-            letterSpacing: "0.14em",
-            fontSize: "clamp(1.5rem, 6vw, 3.25rem)",
-            opacity: 0,
-            animation: reducedMotion.current
-              ? "hero-zero-wordmark-quiet 400ms 200ms forwards ease-out"
-              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-wordmark-pulse 4.8s 10200ms ease-in-out infinite, hero-zero-wordmark-shimmer 5.6s 10200ms linear infinite",
-            willChange: "opacity, transform, filter",
+            fontWeight: 800,
+            letterSpacing: "0.06em",
+            fontSize: "clamp(2.6rem, 11vw, 6rem)",
+            maxWidth: "90vw",
           }}
         >
           NEXIOS AI
         </span>
-
-        {/* 2) رؤية 2030 crest — sits directly beneath the wordmark */}
-        <div
-          aria-hidden
-          data-testid="hero-vision-2030-crest"
-          className="hero-zero-crest relative mt-3"
-          style={{
-            opacity: 0,
-            animation: reducedMotion.current
-              ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
-              : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
-            willChange: "opacity, transform, filter",
-          }}
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
-              filter: "blur(6px)",
-            }}
-          />
-          <div
-            dir="rtl"
-            className="whitespace-nowrap font-black leading-none"
-            style={{
-              fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
-              fontWeight: 900,
-              letterSpacing: "0.06em",
-              fontSize: "clamp(1rem, 2.6vw, 1.9rem)",
-              color: "#F5FBFF",
-              textShadow: [
-                "0 0 4px rgba(220,240,255,0.9)",
-                "0 0 18px rgba(0,180,120,0.65)",
-                "0 0 40px rgba(0,140,90,0.55)",
-                "0 0 90px rgba(0,120,80,0.35)",
-              ].join(","),
-            }}
-          >
-            NEXIOS <span style={{ color: "#4ADE80" }}>AI</span>
-          </div>
-          <div
-            className="mt-1 whitespace-nowrap font-bold uppercase"
-            style={{
-              fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-              fontWeight: 800,
-              letterSpacing: "0.28em",
-              fontSize: "clamp(0.5rem, 0.95vw, 0.72rem)",
-              color: "rgba(220,240,230,0.85)",
-              textShadow: "0 0 12px rgba(0,180,120,0.55)",
-            }}
-          >
-            NEXIOS AI · Kingdom of Saudi Arabia
-          </div>
-        </div>
-
-        {/* 3) Tagline */}
-        <span
-          aria-hidden="true"
-          className="mt-3 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
-          style={{
-            opacity: 0,
-            animation: "hero-zero-tagline 800ms 9800ms forwards ease-out",
-          }}
-        >
-          Enterprise AI · Executive OS
-        </span>
-        <span className="sr-only">
-          NEXIOS AI · نكسيوس — Enterprise AI · Executive OS
-        </span>
+        <span className="sr-only">NEXIOS AI</span>
       </div>
+
 
 
 
@@ -643,6 +563,78 @@ export function HeroZeroIntro() {
       </button>
 
       <style>{`
+        /* ── Chrome NEXIOS AI wordmark ─────────────────────────────
+           Cold silver background-clip:text, entrance fade-up, and a
+           diagonal light sweep every 5s. Reduced-motion: static. */
+        .hero-zero-chrome-wordmark {
+          background: linear-gradient(178deg,
+            #ffffff 0%, #e3e8ee 14%, #aab3bf 32%, #5e6672 48%,
+            #2e343d 56%, #8b94a1 70%, #dfe4ea 86%, #f7f9fb 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          filter:
+            drop-shadow(0 1px 0 rgba(255,255,255,0.35))
+            drop-shadow(0 0 22px rgba(190,205,225,0.45))
+            drop-shadow(0 0 60px rgba(140,160,190,0.25));
+          opacity: 0;
+          transform: translateY(14px);
+          animation: hero-zero-chrome-in 700ms 9200ms ease-out forwards;
+        }
+        .hero-zero-chrome-wordmark::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 22%);
+          -webkit-mask: linear-gradient(#000, #000);
+                  mask: linear-gradient(#000, #000);
+          mix-blend-mode: screen;
+          opacity: 0.5;
+        }
+        .hero-zero-chrome-wordmark::after {
+          content: attr(data-text);
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          font: inherit;
+          letter-spacing: inherit;
+          text-transform: inherit;
+          color: transparent;
+          background: linear-gradient(115deg,
+            transparent 30%,
+            rgba(255,255,255,0.15) 42%,
+            rgba(255,255,255,0.85) 50%,
+            rgba(255,255,255,0.15) 58%,
+            transparent 70%);
+          background-size: 300% 100%;
+          background-position: 150% 0;
+          -webkit-background-clip: text;
+                  background-clip: text;
+          -webkit-text-fill-color: transparent;
+          mix-blend-mode: screen;
+          animation: hero-zero-chrome-sweep 5s 10000ms linear infinite;
+        }
+        @keyframes hero-zero-chrome-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hero-zero-chrome-sweep {
+          0%   { background-position: 150% 0; }
+          22%  { background-position: -150% 0; }
+          100% { background-position: -150% 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-zero-chrome-wordmark {
+            opacity: 1;
+            transform: none;
+            animation: none;
+          }
+          .hero-zero-chrome-wordmark::after { animation: none; opacity: 0; }
+        }
+
+
         /* Universal full-bleed fit. Portrait viewports render the portrait
            film near-native; landscape viewports crop top/bottom so the winged
            figure stays framed. Ultrawide steps the anchor further up so the
