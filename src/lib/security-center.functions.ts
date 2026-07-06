@@ -115,9 +115,9 @@ export const listAuditLogs = createServerFn({ method: "GET" })
     const rows = data ?? [];
     const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter((x): x is string => Boolean(x))));
     const { data: profs } = actorIds.length
-      ? await supabase.from("profiles").select("id,email").in("id", actorIds)
-      : { data: [] as Array<{ id: string; email: string | null }> };
-    const emailMap = new Map(profs?.map((p) => [p.id, p.email]) ?? []);
+      ? await supabase.from("profiles").select("user_id,display_name").in("user_id", actorIds)
+      : { data: [] as Array<{ user_id: string; display_name: string | null }> };
+    const nameMap = new Map((profs ?? []).map((p) => [p.user_id, p.display_name]));
 
     return rows.map((r) => ({
       id: r.id,
@@ -127,7 +127,7 @@ export const listAuditLogs = createServerFn({ method: "GET" })
       status: r.status,
       source: r.source,
       actor_id: r.actor_id,
-      actor_email: r.actor_id ? emailMap.get(r.actor_id) ?? null : null,
+      actor_email: r.actor_id ? nameMap.get(r.actor_id) ?? null : null,
       occurred_at: r.occurred_at,
       route: r.route,
       duration_ms: r.duration_ms,
