@@ -140,7 +140,11 @@ function HajjPrimeWindow() {
 
 export const Route = createFileRoute("/hajj-prime")({
   component: HajjPrimeWindow,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorBoundary error={error} reset={reset} routeLabel="/hajj-prime" />
+  ),
   head: () => ({
+
     meta: [
       { title: "منصة نُسك الحج · Hajj Nexus Prime — Neexios" },
       { name: "description", content: "منصة نُسك الحج — تجربة Hajj Nexus Prime كاملة داخل Neexios بوضع داكن دائم." },
