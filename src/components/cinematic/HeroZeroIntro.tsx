@@ -437,13 +437,18 @@ export function HeroZeroIntro() {
         {/* Bilingual wordmark — Arabic on top, English underneath */}
         <div
           dir="rtl"
-          className="hero-zero-topcrest-ar mt-2 whitespace-nowrap font-black leading-none"
+          lang="ar"
+          className="hero-zero-topcrest-ar font-black leading-tight"
           style={{
+            marginTop: "clamp(0.35rem, 1dvh, 0.6rem)",
             fontFamily: '"Tajawal", "Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
-            letterSpacing: "0.04em",
+            letterSpacing: "0.03em",
             fontSize: "clamp(0.78rem, 2.1vw, 1.35rem)",
             color: "#F5FBFF",
+            textAlign: "center",
+            textWrap: "balance" as const,
+            unicodeBidi: "isolate",
             textShadow: [
               "0 0 4px rgba(220,240,255,0.9)",
               "0 0 16px rgba(74,222,128,0.6)",
@@ -455,13 +460,18 @@ export function HeroZeroIntro() {
           <span style={{ color: "#4ADE80" }}>2030</span>
         </div>
         <div
-          className="hero-zero-topcrest-en mt-1 whitespace-nowrap font-bold uppercase"
+          dir="ltr"
+          lang="en"
+          className="hero-zero-topcrest-en font-bold uppercase"
           style={{
+            marginTop: "clamp(0.2rem, 0.6dvh, 0.35rem)",
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 700,
-            letterSpacing: "0.32em",
+            letterSpacing: "0.28em",
             fontSize: "clamp(0.46rem, 0.9vw, 0.68rem)",
             color: "rgba(230,245,235,0.88)",
+            textAlign: "center",
+            unicodeBidi: "isolate",
             textShadow: "0 0 12px rgba(74,222,128,0.55)",
           }}
         >
@@ -469,10 +479,11 @@ export function HeroZeroIntro() {
         </div>
         {/* Gold underline — a subtle regal accent */}
         <div
-          className="mt-2"
           style={{
+            marginTop: "clamp(0.35rem, 1dvh, 0.6rem)",
             width: "clamp(52px, 9vw, 92px)",
             height: "1.5px",
+
             background:
               "linear-gradient(90deg, rgba(184,137,47,0) 0%, #F6D07A 50%, rgba(184,137,47,0) 100%)",
             boxShadow: "0 0 8px rgba(246,208,122,0.7)",
