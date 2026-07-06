@@ -18,6 +18,7 @@ import {
 import { useI18n } from "@/lib/i18n";
 
 import { RuntimeTile } from "@/components/os/RuntimeTile";
+import { LiveDateTime } from "@/components/os/LiveDateTime";
 
 export const Route = createFileRoute("/os")({
   head: () => ({
