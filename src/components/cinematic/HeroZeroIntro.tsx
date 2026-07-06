@@ -139,23 +139,6 @@ export function HeroZeroIntro() {
       }
     };
 
-    const armUnlock = () => {
-      const unlock = async () => {
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-        window.removeEventListener("touchstart", unlock);
-        await startBoth();
-      };
-      window.addEventListener("pointerdown", unlock, { once: true });
-      window.addEventListener("keydown", unlock, { once: true });
-      window.addEventListener("touchstart", unlock, { once: true });
-      cleanupFns.push(() => {
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-        window.removeEventListener("touchstart", unlock);
-      });
-    };
-
     // Acquire the ARIA bus — hero narration is the lowest-priority source,
     // so any other ARIA voice (chat, tour) will preempt and stop us.
     AriaAudioBus.unlock();
@@ -163,16 +146,25 @@ export function HeroZeroIntro() {
       try { audio.pause(); } catch { /* noop */ }
     });
 
+    // Autoplay contract: video-only (muted), always allowed. Audio is armed
+    // but silent until the user taps the sound toggle — see toggleSound().
     const kick = async () => {
       await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
-      const ok = granted ? await startBoth() : false;
-      if (!ok) {
-        void video.play().catch(() => {});
-        if (granted) armUnlock();
+      try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
+      void video.play().catch(() => {});
+      // If the user had already flipped sound on before the media was ready
+      // (e.g. rapid tap), honor it now.
+      if (soundOnRef.current && granted) {
+        try {
+          audio.currentTime = video.currentTime;
+          await audio.play();
+          AriaAudioBus.notifyPlaying("hero-greeting", audio);
+        } catch { /* noop — button remains available */ }
       }
     };
     void kick();
+
 
     // Audio-master drift correction — smooth, continuous. We check frequently
     // and nudge the muted video's playbackRate for sub-frame drift; only
