@@ -18,6 +18,8 @@ const SECTIONS = [
   { key: "projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
   { key: "permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
   { key: "incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
+  { key: "support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
+  { key: "urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
 ] as const;
 
 export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose: () => void }) {
