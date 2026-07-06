@@ -166,7 +166,7 @@ function IntroLanding() {
                 ].join(","),
               }}
             >
-              رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+              NEXIOS <span style={{ color: "#4ADE80" }}>AI</span>
             </h1>
 
             {/* Emerald underline accent */}
@@ -216,16 +216,6 @@ function IntroLanding() {
               <Play className="h-4 w-4" />
               {ar ? "جسر القيادة التنفيذي" : "Executive Bridge"}
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ }
-              }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#00D4FF]/45 bg-[#00D4FF]/[0.06] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/[0.12]"
-            >
-              
-              {ar ? "ابدأ محادثة آريا" : "Start Conversation with ARIA"}
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -354,8 +344,8 @@ function IntroLanding() {
           </div>
           <p id="tour-compliance" className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]">
             {ar
-              ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية · نظام حماية البيانات الشخصية"
-              : "Aligned with Saudi Vision 2030 · Digital transformation · KSA Personal Data Protection Law"}
+              ? "متوائم مع NEXIOS AI · التحول الرقمي والريادة الصناعية · نظام حماية البيانات الشخصية"
+              : "Aligned with NEXIOS AI · Digital transformation · KSA Personal Data Protection Law"}
           </p>
         </section>
 

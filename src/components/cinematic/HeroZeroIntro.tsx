@@ -439,7 +439,7 @@ export function HeroZeroIntro() {
           string carries the canonical label. */}
       <div
         role="img"
-        aria-label="NEXIOS AI · نكسيوس — رؤية 2030 — Enterprise AI · Executive OS"
+        aria-label="NEXIOS AI · نكسيوس — Enterprise AI · Executive OS"
         dir="ltr"
         className="hero-zero-bottom-stack pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
         style={{
@@ -508,7 +508,7 @@ export function HeroZeroIntro() {
               ].join(","),
             }}
           >
-            رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+            NEXIOS <span style={{ color: "#4ADE80" }}>AI</span>
           </div>
           <div
             className="mt-1 whitespace-nowrap font-bold uppercase"
@@ -521,7 +521,7 @@ export function HeroZeroIntro() {
               textShadow: "0 0 12px rgba(0,180,120,0.55)",
             }}
           >
-            Vision 2030 · Kingdom of Saudi Arabia
+            NEXIOS AI · Kingdom of Saudi Arabia
           </div>
         </div>
 
@@ -537,7 +537,7 @@ export function HeroZeroIntro() {
           Enterprise AI · Executive OS
         </span>
         <span className="sr-only">
-          NEXIOS AI · نكسيوس — رؤية 2030 — Enterprise AI · Executive OS
+          NEXIOS AI · نكسيوس — Enterprise AI · Executive OS
         </span>
       </div>
 
