@@ -11,7 +11,9 @@
  * Pure presentation — no auth, no protected calls. Safe on public landing.
  */
 import { Mail, Database, Monitor, ShieldCheck, Sparkles, Moon, ArrowUpRight } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { HajjExecDrawer } from "@/components/hajj/HajjExecDrawer";
 import { useI18n } from "@/lib/i18n";
 
 
