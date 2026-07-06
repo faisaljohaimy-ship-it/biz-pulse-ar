@@ -402,7 +402,7 @@ export function HeroZeroIntro() {
       <style>{`
         @keyframes hero-zero-fadein {
           from { opacity: 0; }
-          to   { opacity: 1; }
+          to   { opacity: 0.28; }
         }
         @keyframes hero-zero-wordmark {
           0%   { opacity: 0; transform: translateY(28px) scale(0.92); filter: blur(14px); }
