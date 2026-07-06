@@ -216,9 +216,14 @@ export function HeroZeroIntro() {
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
     const onAudioEnded = () => finish();
-    const onVideoEnded = () => { /* audio is master — let it finish */ };
+    const onVideoEnded = () => {
+      // When sound is on, audio is master and will fire its own `ended`.
+      // When sound is off, the video is the only clock — end when it ends.
+      if (!soundOnRef.current) finish();
+    };
     audio.addEventListener("ended", onAudioEnded);
     video.addEventListener("ended", onVideoEnded);
+
 
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") finish(); };
     window.addEventListener("keydown", onKey);
