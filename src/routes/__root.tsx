@@ -217,8 +217,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
+  const isHero = pathname === "/" || pathname === "";
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || introActive;
+  const suppressMarquee = introActive || isHero;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -228,8 +230,8 @@ function RootComponent() {
             <DemoModeProvider>
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
-                {/* Global beta marquee — hidden only while the intro overlay is playing. */}
-                {!introActive && <BetaMarqueeBar />}
+                {/* Global beta marquee — hidden on the hero (index) route on ALL devices, and while the intro plays. Visible on every system page. */}
+                {!suppressMarquee && <BetaMarqueeBar />}
                 {!suppressOverlays && <AriaWatermark />}
                 <div className="relative z-10">
                   <Outlet />
