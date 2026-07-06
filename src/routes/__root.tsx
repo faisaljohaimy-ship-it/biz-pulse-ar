@@ -28,6 +28,7 @@ import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
+import { LiveClock } from "@/components/LiveClock";
 
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -218,9 +219,11 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
+  const isBridge = pathname.startsWith("/executive-bridge");
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || introActive;
   const suppressMarquee = introActive || isHero;
+  const suppressClock = isPromo || isBridge;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -233,6 +236,19 @@ function RootComponent() {
                 {/* Global beta marquee — hidden on the hero (index) route on ALL devices, and while the intro plays. Visible on every system page. */}
                 {!suppressMarquee && <BetaMarqueeBar />}
                 {!suppressOverlays && <AriaWatermark />}
+                {!suppressClock && (
+                  <div
+                    className="pointer-events-none fixed left-3 top-3 z-[55] sm:left-4 sm:top-4"
+                    style={{
+                      marginTop: suppressMarquee ? 0 : 32,
+                      paddingTop: "env(safe-area-inset-top)",
+                    }}
+                  >
+                    <div className="pointer-events-auto">
+                      <LiveClock />
+                    </div>
+                  </div>
+                )}
                 <div className="relative z-10">
                   <Outlet />
                 </div>
