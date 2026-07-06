@@ -55,6 +55,7 @@ export const listEvolutionCyclesFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => ListInput.parse(data))
   .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const limit = data?.limit ?? 25;
     const { data: rows, error } = await context.supabase
       .from("aria_evolution_cycles")
