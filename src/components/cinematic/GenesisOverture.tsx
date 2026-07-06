@@ -30,6 +30,7 @@ export function GenesisOverture() {
   const [showSkip, setShowSkip] = useState(false);
   const timers = useRef<number[]>([]);
   const starCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const bootedRef = useRef(false);
 
   // Boot decision — SSR-safe, avoids hydration mismatch.
   useEffect(() => {
