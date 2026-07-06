@@ -96,8 +96,8 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
             return (
               <li key={s.key}>
                 <Link
-                  to="/runtime-hub"
-                  search={{ district, section: s.key }}
+                  to={s.to}
+                  search={{ district }}
                   onClick={onClose}
                   className="group flex h-full flex-col items-start gap-2 rounded-xl border border-[#00D4FF]/25 bg-[#02101e]/70 p-3 transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.06] hover:shadow-[0_0_24px_rgba(58,232,255,0.35)]"
                 >
