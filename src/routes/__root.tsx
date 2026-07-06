@@ -236,6 +236,19 @@ function RootComponent() {
                 {/* Global beta marquee — hidden on the hero (index) route on ALL devices, and while the intro plays. Visible on every system page. */}
                 {!suppressMarquee && <BetaMarqueeBar />}
                 {!suppressOverlays && <AriaWatermark />}
+                {!suppressClock && (
+                  <div
+                    className="pointer-events-none fixed left-3 top-3 z-[55] sm:left-4 sm:top-4"
+                    style={{
+                      marginTop: suppressMarquee ? 0 : 32,
+                      paddingTop: "env(safe-area-inset-top)",
+                    }}
+                  >
+                    <div className="pointer-events-auto">
+                      <LiveClock />
+                    </div>
+                  </div>
+                )}
                 <div className="relative z-10">
                   <Outlet />
                 </div>
