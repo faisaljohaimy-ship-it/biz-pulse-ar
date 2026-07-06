@@ -318,7 +318,8 @@ function CommandCenterPage() {
       decided_at: now,
     };
     if (userId) patch.decided_by = p.origin === "evolution" ? userId : (session.session?.user?.email ?? userId);
-    const { error } = await supabase.from(table).update(patch).eq("id", p.id);
+    // Runtime union across two tables — cast is narrow and local.
+    const { error } = await supabase.from(table).update(patch as never).eq("id", p.id);
     if (error) {
       toast.error("تعذّر حفظ القرار", { description: error.message });
       return;
