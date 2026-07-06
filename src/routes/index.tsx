@@ -292,19 +292,6 @@ function IntroLanding() {
                 boxShadow: "0 0 18px rgba(74,222,128,0.55)",
               }}
             />
-            <p
-              className="mt-3 whitespace-nowrap font-bold uppercase"
-              style={{
-                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
-                fontWeight: 800,
-                letterSpacing: "0.32em",
-                fontSize: "clamp(0.7rem, 1.6vw, 1rem)",
-                color: "rgba(220,240,230,0.9)",
-                textShadow: "0 0 14px rgba(0,180,120,0.55)",
-              }}
-            >
-              Digital Transformation
-            </p>
           </div>
 
         </div>
