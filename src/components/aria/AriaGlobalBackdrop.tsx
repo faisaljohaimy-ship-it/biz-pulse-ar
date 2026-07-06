@@ -44,7 +44,7 @@ export function AriaGlobalBackdrop() {
         <AriaVideoAvatar
           poster={STILL_SRC}
           className="relative h-full w-full"
-          mediaClassName="h-full w-full object-cover object-[center_20%] md:object-[center_30%]"
+          mediaClassName="h-full w-full object-cover object-[center_20%] md:object-contain md:object-center"
         />
       </div>
 
