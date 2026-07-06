@@ -331,12 +331,15 @@ export function HeroZeroIntro() {
 
       <video
         ref={videoRef}
-        className="absolute inset-0 z-10 h-full w-full object-cover object-center mix-blend-screen md:object-contain"
+        className="hero-zero-video absolute inset-0 z-10"
         style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
           animation: reducedMotion.current
             ? undefined
             : "hero-zero-fadein 1400ms 300ms both ease-out",
-          opacity: reducedMotion.current ? 0.28 : 0,
+          opacity: reducedMotion.current ? 1 : 0,
           filter: "contrast(1.05) brightness(1.1)",
         }}
         src={videoAsset.url}
