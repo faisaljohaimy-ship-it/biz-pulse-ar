@@ -288,7 +288,7 @@ function IntroLanding() {
           </ul>
         </section>
 
-        <section className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
+        <section id="tour-closing" className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8">
           <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
           <div className="mt-5">
@@ -300,10 +300,10 @@ function IntroLanding() {
               <Arrow className="h-4 w-4" />
             </Link>
           </div>
-          <p className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]">
+          <p id="tour-compliance" className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]">
             {ar
-              ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية"
-              : "Aligned with Saudi Vision 2030 · Digital transformation & industrial leadership"}
+              ? "متوائم مع رؤية المملكة 2030 · التحول الرقمي والريادة الصناعية · نظام حماية البيانات الشخصية"
+              : "Aligned with Saudi Vision 2030 · Digital transformation · KSA Personal Data Protection Law"}
           </p>
         </section>
 
