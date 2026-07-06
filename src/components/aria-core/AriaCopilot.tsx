@@ -220,6 +220,7 @@ export function AriaCopilot() {
   const setMode = useAriaStore((s) => s.setMode);
   const setVoiceEnabled = useAriaStore((s) => s.setVoiceEnabled);
 
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
