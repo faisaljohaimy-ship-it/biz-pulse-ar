@@ -222,7 +222,7 @@ function RootComponent() {
   const isBridge = pathname.startsWith("/executive-bridge");
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || introActive;
-  const suppressMarquee = introActive || isHero;
+  const suppressMarquee = introActive;
   const suppressClock = isPromo || isBridge;
 
   return (
