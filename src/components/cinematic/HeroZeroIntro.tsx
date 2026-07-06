@@ -357,15 +357,20 @@ export function HeroZeroIntro() {
           browser chrome on iOS. Pointer-events none — purely decorative. */}
       <div
         aria-hidden
-        className="hero-zero-topcrest pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
+        dir="rtl"
+        className="hero-zero-topcrest pointer-events-none absolute left-1/2 z-40 flex -translate-x-1/2 flex-col items-center text-center"
         style={{
-          top: "calc(env(safe-area-inset-top) + clamp(0.75rem, 2.4dvh, 1.75rem))",
+          top: "calc(env(safe-area-inset-top) + clamp(0.5rem, 2dvh, 1.5rem))",
+          paddingInline: "max(env(safe-area-inset-left), env(safe-area-inset-right), 0.75rem)",
+          maxWidth: "min(92vw, 560px)",
+          unicodeBidi: "isolate",
           opacity: 0,
           animation: reducedMotion.current
             ? "hero-zero-topcrest-quiet 700ms 300ms forwards ease-out"
             : "hero-zero-topcrest 2200ms 900ms forwards cubic-bezier(0.22,1,0.36,1)",
         }}
       >
+
         {/* Sigil — palm frond with two crossed swords, drawn in Saudi green
             with a soft gold rim-light. Sized responsively. */}
         <svg
@@ -432,13 +437,18 @@ export function HeroZeroIntro() {
         {/* Bilingual wordmark — Arabic on top, English underneath */}
         <div
           dir="rtl"
-          className="hero-zero-topcrest-ar mt-2 whitespace-nowrap font-black leading-none"
+          lang="ar"
+          className="hero-zero-topcrest-ar font-black leading-tight"
           style={{
+            marginTop: "clamp(0.35rem, 1dvh, 0.6rem)",
             fontFamily: '"Tajawal", "Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
-            letterSpacing: "0.04em",
+            letterSpacing: "0.03em",
             fontSize: "clamp(0.78rem, 2.1vw, 1.35rem)",
             color: "#F5FBFF",
+            textAlign: "center",
+            textWrap: "balance" as const,
+            unicodeBidi: "isolate",
             textShadow: [
               "0 0 4px rgba(220,240,255,0.9)",
               "0 0 16px rgba(74,222,128,0.6)",
@@ -450,13 +460,18 @@ export function HeroZeroIntro() {
           <span style={{ color: "#4ADE80" }}>2030</span>
         </div>
         <div
-          className="hero-zero-topcrest-en mt-1 whitespace-nowrap font-bold uppercase"
+          dir="ltr"
+          lang="en"
+          className="hero-zero-topcrest-en font-bold uppercase"
           style={{
+            marginTop: "clamp(0.2rem, 0.6dvh, 0.35rem)",
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 700,
-            letterSpacing: "0.32em",
+            letterSpacing: "0.28em",
             fontSize: "clamp(0.46rem, 0.9vw, 0.68rem)",
             color: "rgba(230,245,235,0.88)",
+            textAlign: "center",
+            unicodeBidi: "isolate",
             textShadow: "0 0 12px rgba(74,222,128,0.55)",
           }}
         >
@@ -464,10 +479,11 @@ export function HeroZeroIntro() {
         </div>
         {/* Gold underline — a subtle regal accent */}
         <div
-          className="mt-2"
           style={{
+            marginTop: "clamp(0.35rem, 1dvh, 0.6rem)",
             width: "clamp(52px, 9vw, 92px)",
             height: "1.5px",
+
             background:
               "linear-gradient(90deg, rgba(184,137,47,0) 0%, #F6D07A 50%, rgba(184,137,47,0) 100%)",
             boxShadow: "0 0 8px rgba(246,208,122,0.7)",
@@ -715,13 +731,28 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        /* On very short viewports (landscape phones) tighten the top crest
-           so it never crowds the ARIA figure. */
-        @media (max-height: 620px) {
-          .hero-zero-topcrest-sigil { width: clamp(40px, 8vw, 64px) !important; }
-          .hero-zero-topcrest-ar    { font-size: clamp(0.7rem, 1.6vw, 1rem) !important; }
-          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 0.7vw, 0.58rem) !important; }
+        /* Keep the top crest perfectly centered inside the safe area on
+           every viewport. The translate-x -50% + left-1/2 pattern is
+           direction-agnostic (works identically in RTL and LTR). */
+        .hero-zero-topcrest { transform: translateX(-50%); }
+
+        /* Narrow phones (≤380px): shrink and let the Arabic line breathe. */
+        @media (max-width: 380px) {
+          .hero-zero-topcrest-sigil { width: clamp(44px, 14vw, 60px) !important; }
+          .hero-zero-topcrest-ar    { font-size: clamp(0.72rem, 3.6vw, 0.95rem) !important; letter-spacing: 0.02em !important; }
+          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 1.8vw, 0.56rem) !important; letter-spacing: 0.22em !important; }
         }
+        /* Short viewports (landscape phones, small laptops): compress
+           vertical rhythm so the emblem never crowds ARIA's face. */
+        @media (max-height: 620px) {
+          .hero-zero-topcrest-sigil { width: clamp(38px, 7vw, 58px) !important; }
+          .hero-zero-topcrest-ar    { font-size: clamp(0.66rem, 1.5vw, 0.95rem) !important; }
+          .hero-zero-topcrest-en    { font-size: clamp(0.4rem, 0.7vw, 0.56rem) !important; }
+        }
+        @media (max-height: 480px) {
+          .hero-zero-topcrest-sigil { width: clamp(32px, 6vw, 48px) !important; }
+        }
+
       `}</style>
 
     </div>
