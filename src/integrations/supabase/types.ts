@@ -2560,6 +2560,116 @@ export type Database = {
           },
         ]
       }
+      ms_activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          duration_ms: number | null
+          error: string | null
+          id: string
+          items_count: number | null
+          org_id: string | null
+          path: string | null
+          service: string
+          status: number | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          items_count?: number | null
+          org_id?: string | null
+          path?: string | null
+          service: string
+          status?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          items_count?: number | null
+          org_id?: string | null
+          path?: string | null
+          service?: string
+          status?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ms_activity_log_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ms_user_tokens: {
+        Row: {
+          access_token_ct: string
+          access_token_iv: string
+          access_token_tag: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_refresh_at: string | null
+          ms_account_id: string | null
+          ms_upn: string | null
+          refresh_token_ct: string | null
+          refresh_token_iv: string | null
+          refresh_token_tag: string | null
+          scope: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_ct: string
+          access_token_iv: string
+          access_token_tag: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_refresh_at?: string | null
+          ms_account_id?: string | null
+          ms_upn?: string | null
+          refresh_token_ct?: string | null
+          refresh_token_iv?: string | null
+          refresh_token_tag?: string | null
+          scope?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_ct?: string
+          access_token_iv?: string
+          access_token_tag?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_refresh_at?: string | null
+          ms_account_id?: string | null
+          ms_upn?: string | null
+          refresh_token_ct?: string | null
+          refresh_token_iv?: string | null
+          refresh_token_tag?: string | null
+          scope?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       org_invitations: {
         Row: {
           accepted_at: string | null
@@ -3159,6 +3269,140 @@ export type Database = {
           weekday?: number | null
         }
         Relationships: []
+      }
+      sap_connections: {
+        Row: {
+          auth_mode: string
+          base_url: string
+          client_id_ref: string | null
+          client_secret_ref: string | null
+          created_at: string
+          created_by: string | null
+          default_service: string | null
+          enabled: boolean
+          id: string
+          label: string
+          last_test_at: string | null
+          last_test_error: string | null
+          last_test_status: string | null
+          org_id: string
+          password_ref: string | null
+          token_url: string | null
+          updated_at: string
+          username_ref: string | null
+        }
+        Insert: {
+          auth_mode: string
+          base_url: string
+          client_id_ref?: string | null
+          client_secret_ref?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_service?: string | null
+          enabled?: boolean
+          id?: string
+          label?: string
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_status?: string | null
+          org_id: string
+          password_ref?: string | null
+          token_url?: string | null
+          updated_at?: string
+          username_ref?: string | null
+        }
+        Update: {
+          auth_mode?: string
+          base_url?: string
+          client_id_ref?: string | null
+          client_secret_ref?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_service?: string | null
+          enabled?: boolean
+          id?: string
+          label?: string
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_status?: string | null
+          org_id?: string
+          password_ref?: string | null
+          token_url?: string | null
+          updated_at?: string
+          username_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sap_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sap_sync_log: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          details: Json
+          duration_ms: number | null
+          entity: string
+          error: string | null
+          id: string
+          items_count: number | null
+          method: string
+          org_id: string
+          path: string | null
+          status: number | null
+          user_id: string | null
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          entity: string
+          error?: string | null
+          id?: string
+          items_count?: number | null
+          method?: string
+          org_id: string
+          path?: string | null
+          status?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          entity?: string
+          error?: string | null
+          id?: string
+          items_count?: number | null
+          method?: string
+          org_id?: string
+          path?: string | null
+          status?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sap_sync_log_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "sap_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sap_sync_log_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sec_activity_events: {
         Row: {
