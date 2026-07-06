@@ -28,11 +28,13 @@ const GREETING_AR =
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NEXIOS AI OS — نظام التشغيل الذكي للأمن الصناعي" },
-      { name: "description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
-      { property: "og:title", content: "NEXIOS AI OS" },
-      { property: "og:description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
+      { title: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { name: "description", content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:description", content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
       { property: "og:url", content: "https://neexios.com/" },
+      { name: "twitter:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { name: "twitter:description", content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],
   }),
