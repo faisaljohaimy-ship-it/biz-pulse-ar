@@ -97,24 +97,33 @@ export function LiveClock({
   return (
     <div
       role="group"
-      aria-label="Live Gregorian date and time (Asia/Riyadh)"
+      aria-label="Live platform · Gregorian date and time (Asia/Riyadh)"
       dir="ltr"
-      className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] font-medium tabular-nums text-white/80 shadow-[0_0_18px_rgba(0,212,255,0.10)] backdrop-blur-md ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/30 bg-black/50 px-3 py-1 text-[11px] font-medium tabular-nums text-white/85 shadow-[0_0_20px_rgba(0,212,255,0.18)] backdrop-blur-md ${className}`}
     >
-      <span
-        aria-hidden
-        className="inline-block h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_8px_#3AE8FF]"
-      />
-      <span className="whitespace-nowrap text-white/90">{t}</span>
-      <span aria-hidden className="text-white/25">·</span>
-      <span className="whitespace-nowrap">{dEn}</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span
+          aria-hidden
+          className="relative inline-flex h-2 w-2"
+        >
+          <span className="absolute inset-0 animate-ping rounded-full bg-[#3AE8FF]/60" />
+          <span className="relative inline-block h-2 w-2 rounded-full bg-[#3AE8FF] shadow-[0_0_10px_#3AE8FF]" />
+        </span>
+        <span className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">
+          Live
+        </span>
+      </span>
+      <span aria-hidden className="text-white/20">·</span>
+      <span className="whitespace-nowrap text-white">{t}</span>
+      <span aria-hidden className="text-white/20">·</span>
+      <span className="whitespace-nowrap text-white/80">{dEn}</span>
       {showArabic && dAr && (
         <>
-          <span aria-hidden className="text-white/25">·</span>
+          <span aria-hidden className="hidden text-white/20 sm:inline">·</span>
           <span
             dir="rtl"
             lang="ar"
-            className="whitespace-nowrap text-white/70"
+            className="hidden whitespace-nowrap text-white/70 sm:inline"
             style={{ fontFamily: '"IBM Plex Sans Arabic","Tajawal",ui-sans-serif,system-ui' }}
           >
             {dAr}
