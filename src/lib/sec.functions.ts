@@ -500,5 +500,157 @@ export const getPublicKpis = createServerFn({ method: "GET" }).handler(
   },
 );
 
+// ============= EXECUTIVE TIME SERIES =============
+// Daily buckets of incidents, work orders, patrols and resolution over a window.
+// Used by the Live Executive Dashboard charts. RLS-scoped as the caller.
+export type ExecTimeseriesPoint = {
+  day: string; // YYYY-MM-DD (UTC)
+  incidents_total: number;
+  incidents_critical: number;
+  incidents_high: number;
+  incidents_resolved: number;
+  work_orders_opened: number;
+  work_orders_closed: number;
+  patrols_completed: number;
+  avg_response_minutes: number | null;
+};
+
+export type ExecTimeseries = {
+  from: string;
+  to: string;
+  days: number;
+  points: ExecTimeseriesPoint[];
+  totals: {
+    incidents: number;
+    incidents_resolved: number;
+    resolution_rate: number; // 0..100
+    work_orders_opened: number;
+    work_orders_closed: number;
+    patrols_completed: number;
+    avg_response_minutes: number | null;
+  };
+};
+
+export const getExecTimeseries = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { days?: number } | undefined) =>
+    z.object({ days: z.number().int().min(1).max(180).default(30) }).parse(input ?? {}),
+  )
+  .handler(async ({ context, data }): Promise<ExecTimeseries> => {
+    const { supabase } = context;
+    const days = data.days;
+    const to = new Date();
+    const from = new Date(to.getTime() - days * 86_400_000);
+    const fromIso = from.toISOString();
+
+    const [incRes, woOpened, woClosed, patrolRes] = await Promise.all([
+      supabase
+        .from("sec_incidents")
+        .select("reported_at,resolved_at,severity,status,response_minutes")
+        .gte("reported_at", fromIso)
+        .limit(5000),
+      supabase.from("sec_work_orders").select("opened_at").gte("opened_at", fromIso).limit(5000),
+      supabase
+        .from("sec_work_orders")
+        .select("closed_at")
+        .not("closed_at", "is", null)
+        .gte("closed_at", fromIso)
+        .limit(5000),
+      supabase
+        .from("sec_patrols")
+        .select("ended_at,status")
+        .not("ended_at", "is", null)
+        .gte("ended_at", fromIso)
+        .limit(5000),
+    ]);
+
+    const buckets = new Map<string, ExecTimeseriesPoint>();
+    for (let i = 0; i <= days; i++) {
+      const d = new Date(from.getTime() + i * 86_400_000);
+      const key = d.toISOString().slice(0, 10);
+      buckets.set(key, {
+        day: key,
+        incidents_total: 0,
+        incidents_critical: 0,
+        incidents_high: 0,
+        incidents_resolved: 0,
+        work_orders_opened: 0,
+        work_orders_closed: 0,
+        patrols_completed: 0,
+        avg_response_minutes: null,
+      });
+    }
+
+    const respSum = new Map<string, { sum: number; n: number }>();
+
+    for (const row of incRes.data ?? []) {
+      const key = (row.reported_at as string).slice(0, 10);
+      const b = buckets.get(key);
+      if (!b) continue;
+      b.incidents_total += 1;
+      if (row.severity === "critical") b.incidents_critical += 1;
+      if (row.severity === "high") b.incidents_high += 1;
+      if (row.status === "resolved" || row.status === "closed") b.incidents_resolved += 1;
+      if (typeof row.response_minutes === "number") {
+        const cur = respSum.get(key) ?? { sum: 0, n: 0 };
+        cur.sum += row.response_minutes;
+        cur.n += 1;
+        respSum.set(key, cur);
+      }
+    }
+    for (const [key, agg] of respSum) {
+      const b = buckets.get(key);
+      if (b && agg.n > 0) b.avg_response_minutes = Math.round(agg.sum / agg.n);
+    }
+    for (const row of woOpened.data ?? []) {
+      const key = (row.opened_at as string).slice(0, 10);
+      const b = buckets.get(key);
+      if (b) b.work_orders_opened += 1;
+    }
+    for (const row of woClosed.data ?? []) {
+      const key = (row.closed_at as string).slice(0, 10);
+      const b = buckets.get(key);
+      if (b) b.work_orders_closed += 1;
+    }
+    for (const row of patrolRes.data ?? []) {
+      if (row.status !== "completed") continue;
+      const key = (row.ended_at as string).slice(0, 10);
+      const b = buckets.get(key);
+      if (b) b.patrols_completed += 1;
+    }
+
+    const points = Array.from(buckets.values()).sort((a, b) => a.day.localeCompare(b.day));
+    const incidents = points.reduce((s, p) => s + p.incidents_total, 0);
+    const incidents_resolved = points.reduce((s, p) => s + p.incidents_resolved, 0);
+    const wo_opened = points.reduce((s, p) => s + p.work_orders_opened, 0);
+    const wo_closed = points.reduce((s, p) => s + p.work_orders_closed, 0);
+    const patrols = points.reduce((s, p) => s + p.patrols_completed, 0);
+    const respAll = Array.from(respSum.values());
+    const avg =
+      respAll.length === 0
+        ? null
+        : Math.round(
+            respAll.reduce((s, a) => s + a.sum, 0) /
+              Math.max(1, respAll.reduce((s, a) => s + a.n, 0)),
+          );
+
+    return {
+      from: from.toISOString(),
+      to: to.toISOString(),
+      days,
+      points,
+      totals: {
+        incidents,
+        incidents_resolved,
+        resolution_rate: incidents === 0 ? 0 : Math.round((incidents_resolved / incidents) * 100),
+        work_orders_opened: wo_opened,
+        work_orders_closed: wo_closed,
+        patrols_completed: patrols,
+        avg_response_minutes: avg,
+      },
+    };
+  });
+
+
 
 
