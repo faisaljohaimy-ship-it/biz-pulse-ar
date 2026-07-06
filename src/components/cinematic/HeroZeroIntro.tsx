@@ -333,7 +333,9 @@ export function HeroZeroIntro() {
           unicodeBidi: "isolate",
         }}
       >
-        {/* 1) NEXIOS AI wordmark (top of the stack) */}
+        {/* 1) NEXIOS AI wordmark (top of the stack) — brushed-nickel metallic
+            treatment with a moving shine sweep. Halo intentionally tight so
+            it never spills upward onto ARIA's face on any viewport. */}
         <span
           aria-hidden="true"
           className="hero-zero-wordmark-glow font-black uppercase leading-none"
@@ -341,11 +343,11 @@ export function HeroZeroIntro() {
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
-            fontSize: "clamp(2rem, 8vw, 4.5rem)",
+            fontSize: "clamp(1.5rem, 6vw, 3.25rem)",
             opacity: 0,
             animation: reducedMotion.current
               ? "hero-zero-wordmark-quiet 400ms 200ms forwards ease-out"
-              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-wordmark-pulse 3.6s 10200ms ease-in-out infinite, hero-zero-wordmark-shimmer 4.8s 10200ms linear infinite",
+              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-wordmark-pulse 4.8s 10200ms ease-in-out infinite, hero-zero-wordmark-shimmer 5.6s 10200ms linear infinite",
             willChange: "opacity, transform, filter",
           }}
         >
