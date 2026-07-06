@@ -243,110 +243,14 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Ember/fire particle canvas — disabled. The wordmark now uses a cool
-  // cyan palette, and the orange sparks were clashing with the scene.
+  // Ember/fire particle canvas — intentionally disabled. The wordmark now
+  // uses a cool cyan palette, and the orange sparks were clashing with the
+  // scene. The canvas element is kept in the JSX only as a transparent
+  // no-op layer to preserve stacking; no effect is attached.
   useEffect(() => {
-    return;
-    // eslint-disable-next-line no-unreachable
-    if (mounted !== "playing") return;
-    if (reducedMotion.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let width = 0;
-    let height = 0;
-    const setSize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    setSize();
-    const onResize = () => setSize();
-    window.addEventListener("resize", onResize);
-
-    interface Particle {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      life: number;
-      maxLife: number;
-      size: number;
-      hue: number;
-    }
-    const particles: Particle[] = [];
-    let startedAt: number | null = null;
-    let raf = 0;
-
-    const spawn = () => {
-      // Emitter: horizontal band around the wingman's torso.
-      const cx = width * 0.5 + (Math.random() - 0.5) * width * 0.28;
-      const cy = height * 0.62 + (Math.random() - 0.5) * height * 0.08;
-      particles.push({
-        x: cx,
-        y: cy,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: -0.4 - Math.random() * 0.9,
-        life: 0,
-        maxLife: 900 + Math.random() * 900,
-        size: 1 + Math.random() * 2.2,
-        hue: 18 + Math.random() * 22,
-      });
-    };
-
-    const tick = (t: number) => {
-      if (startedAt === null) startedAt = t;
-      const elapsed = t - startedAt;
-      // Start emitting shortly before ignition, ramp with intensity.
-      if (elapsed > IGNITION_MS - 2500) {
-        const spawnCount = elapsed < IGNITION_MS ? 1 : 3;
-        for (let i = 0; i < spawnCount; i++) spawn();
-      }
-
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(4,7,15,0.18)";
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.globalCompositeOperation = "lighter";
-      const dt = 16;
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life += dt;
-        if (p.life >= p.maxLife) {
-          particles.splice(i, 1);
-          continue;
-        }
-        p.vy += -0.008; // buoyancy
-        p.vx += Math.sin((t + i) * 0.002) * 0.02; // gentle sway
-        p.x += p.vx;
-        p.y += p.vy;
-        const lifeRatio = 1 - p.life / p.maxLife;
-        const alpha = lifeRatio * 0.9;
-        const r = p.size * (0.6 + lifeRatio * 0.8);
-        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 4);
-        grad.addColorStop(0, `hsla(${p.hue}, 100%, 70%, ${alpha})`);
-        grad.addColorStop(0.4, `hsla(${p.hue - 6}, 100%, 55%, ${alpha * 0.5})`);
-        grad.addColorStop(1, "hsla(15, 100%, 40%, 0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
+    // no-op
   }, [mounted]);
+
 
   if (mounted === null || mounted === "done") return null;
 
