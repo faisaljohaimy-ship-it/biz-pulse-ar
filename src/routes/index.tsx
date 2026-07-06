@@ -21,6 +21,7 @@ import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
 import { HeroZeroIntro } from "@/components/cinematic/HeroZeroIntro";
+import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 
 
 const GREETING_AR =
@@ -98,6 +99,12 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+      {/* System-page announcement strip — mounted here so it appears at the
+          top of the system homepage only. The cinematic intro is a fixed
+          overlay above it, so first-session visitors see the intro clean
+          edge-to-edge, and the marquee is revealed once the intro exits. */}
+      <BetaMarqueeBar />
+
       {/* Cinematic Hero-Zero — plays once per session BEFORE the executive hero */}
       <HeroZeroIntro />
 

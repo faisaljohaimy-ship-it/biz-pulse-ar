@@ -14,7 +14,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
-import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
+
 
 // ── ARIA Singleton ────────────────────────────────────────────────────
 // ONE ARIA. Do not add a second copilot at the root. See
@@ -227,7 +227,7 @@ function RootComponent() {
             <DemoModeProvider>
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
-                <BetaMarqueeBar />
+                {/* BetaMarqueeBar moved to the system homepage (src/routes/index.tsx) so the intro plays clean, edge-to-edge. */}
                 {!suppressOverlays && <AriaWatermark />}
                 <div className="relative z-10">
                   <Outlet />
