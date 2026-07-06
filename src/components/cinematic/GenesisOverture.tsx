@@ -68,7 +68,6 @@ export function GenesisOverture() {
     // No cleanup — we deliberately outlive StrictMode's synthetic unmount so
     // the overture completes its single-session run.
   }, []);
-  }, []);
 
   // Keyboard skip
   useEffect(() => {
