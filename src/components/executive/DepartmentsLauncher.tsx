@@ -1,7 +1,7 @@
 /** DepartmentsLauncher — Industrial Security: 4 sections × 6 districts. Compact centered modal. */
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Wrench, FolderKanban, BadgeCheck, ShieldAlert, X } from "lucide-react";
+import { Wrench, FolderKanban, BadgeCheck, ShieldAlert, LifeBuoy, Siren, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const DISTRICTS = [
@@ -18,6 +18,8 @@ const SECTIONS = [
   { key: "projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
   { key: "permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
   { key: "incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
+  { key: "support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
+  { key: "urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
 ] as const;
 
 export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose: () => void }) {
