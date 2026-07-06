@@ -47,7 +47,7 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
     const wanted = new Set<SearchSource>(data.sources ?? ["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"]);
     const perSourceLimit = Math.max(3, Math.ceil(data.limit / Math.max(1, wanted.size)));
 
-    const tasks: Promise<SearchHit[]>[] = [];
+    const tasks: PromiseLike<SearchHit[]>[] = [];
 
     if (wanted.has("incident")) {
       tasks.push(
