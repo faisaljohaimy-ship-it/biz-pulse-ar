@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
+
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
