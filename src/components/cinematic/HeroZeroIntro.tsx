@@ -376,7 +376,6 @@ export function HeroZeroIntro() {
           so ARIA's face remains fully visible below. No text overlay. */}
       <div
         aria-hidden
-        data-testid="hero-saudi-emblem"
         className="pointer-events-none absolute inset-x-0 z-40 flex justify-center"
         style={{
           top: "calc(env(safe-area-inset-top) + clamp(0.5rem, 2vh, 1.25rem))",
@@ -385,6 +384,7 @@ export function HeroZeroIntro() {
         <img
           src={saudiEmblem}
           alt=""
+          data-testid="hero-saudi-emblem"
           width={512}
           height={512}
           decoding="async"
