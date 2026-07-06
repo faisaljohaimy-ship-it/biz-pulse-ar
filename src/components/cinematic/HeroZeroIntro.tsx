@@ -342,14 +342,9 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Entry gate — the ONLY path that unlocks ARIA audio for the hero intro.
-  // Must run inside a real click/tap handler so mobile browsers grant
-  // autoplay-with-sound.
-  const handleEnter = () => {
-    if (enteredRef.current) return;
-    enteredRef.current = true;
-    setEntered(true);
-    void startAudioRef.current?.();
+  // Chip tap = valid user gesture. Re-uses the same ignition path (Tier 2/3).
+  const handleChipTap = () => {
+    void igniteAudioRef.current?.();
   };
 
 
