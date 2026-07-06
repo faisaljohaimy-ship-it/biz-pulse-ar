@@ -148,11 +148,12 @@ export function HeroZeroIntro() {
     void kick();
 
 
-    // Audio-master drift correction — smooth, continuous. We check frequently
-    // and nudge the muted video's playbackRate for sub-frame drift; only
-    // hard-seek when drift exceeds ~0.35s (a real stall). This keeps the
-    // picture from ever "snapping" and staying visually married to the voice.
+    // Audio-master drift correction — only runs while the user has enabled
+    // sound. Nudges the muted video's playbackRate for sub-frame drift; hard
+    // seek only when drift exceeds ~0.35s. When sound is off there is no
+    // clock to lock to, so the video simply runs on its own.
     const driftInterval = window.setInterval(() => {
+      if (!soundOnRef.current) return;
       if (video.paused || audio.paused) return;
       const drift = video.currentTime - audio.currentTime; // +ve = video ahead
       const abs = Math.abs(drift);
@@ -162,7 +163,6 @@ export function HeroZeroIntro() {
           video.playbackRate = 1;
         } catch { /* noop */ }
       } else if (abs > 0.04) {
-        // 4% max nudge — imperceptible, gently converges within ~1s.
         const target = drift > 0 ? 0.96 : 1.04;
         try { video.playbackRate = target; } catch { /* noop */ }
       } else if (video.playbackRate !== 1) {
@@ -170,24 +170,24 @@ export function HeroZeroIntro() {
       }
     }, 250);
 
-
-    const onVideoWaiting = () => { if (!audio.paused) audio.pause(); };
+    const onVideoWaiting = () => {
+      if (soundOnRef.current && !audio.paused) audio.pause();
+    };
     const onVideoPlaying = () => {
+      if (!soundOnRef.current) return;
       try { video.currentTime = audio.currentTime; } catch { /* noop */ }
       if (audio.paused) void audio.play().catch(() => {});
     };
     video.addEventListener("waiting", onVideoWaiting);
     video.addEventListener("playing", onVideoPlaying);
 
-    // Tab-switch / backgrounding — iOS Safari and Android Chrome both pause
-    // media aggressively when hidden and often resume the muted video
-    // slightly ahead of the audio. Sequence matters: resume audio FIRST,
-    // wait a tick for its clock to advance, then snap the video to the
-    // real audio time so we come back locked to the voice.
+    // Tab-switch / backgrounding — pause both while hidden. On resume, if
+    // sound is on, restart audio first (master clock) then snap the muted
+    // video to it. If sound is off, just resume the video.
     let resuming = false;
     const onVisibility = () => {
       if (document.hidden) {
-        try { video.pause(); audio.pause(); } catch { /* noop */ }
+        try { video.pause(); if (soundOnRef.current) audio.pause(); } catch { /* noop */ }
         return;
       }
       if (resuming) return;
@@ -195,11 +195,11 @@ export function HeroZeroIntro() {
       (async () => {
         try {
           video.playbackRate = 1;
-          await audio.play().catch(() => {});
-          // Two rAFs so the audio decoder has a moment to advance its clock
-          // before we snap the muted video onto it.
-          await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-          try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+          if (soundOnRef.current) {
+            await audio.play().catch(() => {});
+            await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+            try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+          }
           await video.play().catch(() => {});
         } finally {
           resuming = false;
@@ -210,6 +210,7 @@ export function HeroZeroIntro() {
     // iOS bfcache / page-freeze recovery
     window.addEventListener("pageshow", onVisibility);
     cleanupFns.push(() => window.removeEventListener("pageshow", onVisibility));
+
 
 
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
