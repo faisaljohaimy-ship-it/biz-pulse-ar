@@ -544,8 +544,38 @@ export function HeroZeroIntro() {
 
 
 
-      {/* (Mute/Sound toggle removed — audio autoplays and unlocks on first
-          user gesture if the browser blocks silent-media autoplay.) */}
+      {/* ENTRY GATE — audio starts ONLY when the user taps «دخول». No sound
+          of any kind plays before this tap. */}
+      {!entered && (
+        <button
+          type="button"
+          onClick={handleEnter}
+          aria-label="دخول · Enter"
+          className="absolute inset-0 z-[70] flex flex-col items-center justify-center gap-5 bg-[#03111f]/55 backdrop-blur-[2px] focus:outline-none"
+        >
+          <span className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#00D4FF]">
+            NEXIOS AI · Executive Intro
+          </span>
+          <span
+            aria-hidden
+            className="flex h-24 w-24 items-center justify-center rounded-full border border-[#00D4FF]/60 bg-black/50 text-4xl font-black text-white shadow-[0_0_50px_rgba(0,212,255,0.55)] transition-transform hover:scale-105"
+            style={{ fontFamily: '"Space Grotesk", ui-sans-serif, system-ui' }}
+          >
+            ▶
+          </span>
+          <span
+            dir="rtl"
+            className="max-w-md px-6 text-center text-[17px] font-semibold text-white/90"
+            style={{ fontFamily: '"Tajawal", "Space Grotesk", ui-sans-serif' }}
+          >
+            اضغط <span className="text-[#00D4FF]">دخول</span> لبدء العرض بالصوت
+          </span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.36em] text-white/55">
+            Tap to Enter · with Sound
+          </span>
+        </button>
+      )}
+
 
 
       {/* Skip chip */}
