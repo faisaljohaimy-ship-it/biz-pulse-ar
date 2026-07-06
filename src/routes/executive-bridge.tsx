@@ -261,7 +261,7 @@ function ExecutiveBridgePage() {
       else if (e.key === "ArrowLeft") goTo(idx + 1);
       else if (e.key === " ") {
         e.preventDefault();
-        setAutoAdvance((a) => !a);
+        setNarrating((a: boolean) => !a);
       } else if (e.key.toLowerCase() === "l") {
         setPrimary((p) => (p === "ar" ? "en" : "ar"));
       } else if (e.key === "Escape") {
