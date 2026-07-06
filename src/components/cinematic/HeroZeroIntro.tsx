@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
 import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
 
 
 /**
@@ -37,12 +39,17 @@ function shouldSkipInitial(): boolean {
 
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
+  // Sound OFF by default — per browser autoplay policy, we never start audio
+  // without an explicit user gesture. The button below flips this on.
+  const [soundOn, setSoundOn] = useState(false);
+  const soundOnRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
   const hardCapRef = useRef<number | null>(null);
   const reducedMotion = useRef(false);
+
 
   // Client-only mount decision (avoids SSR flash).
   useEffect(() => {
@@ -113,65 +120,40 @@ export function HeroZeroIntro() {
         try { el.load(); } catch { /* noop */ }
       });
 
-    const resetClocks = () => {
-      try {
-        video.pause(); audio.pause();
-        video.currentTime = 0; audio.currentTime = 0;
-        audio.volume = 1;
-      } catch { /* noop */ }
-    };
-
-    const startBoth = async () => {
-      resetClocks();
-      try {
-        await Promise.all([video.play(), audio.play()]);
-        AriaAudioBus.notifyPlaying("hero-greeting", audio);
-        return true;
-      } catch {
-        return false;
-      }
-    };
-
-    const armUnlock = () => {
-      const unlock = async () => {
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-        window.removeEventListener("touchstart", unlock);
-        await startBoth();
-      };
-      window.addEventListener("pointerdown", unlock, { once: true });
-      window.addEventListener("keydown", unlock, { once: true });
-      window.addEventListener("touchstart", unlock, { once: true });
-      cleanupFns.push(() => {
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-        window.removeEventListener("touchstart", unlock);
-      });
-    };
-
     // Acquire the ARIA bus — hero narration is the lowest-priority source,
     // so any other ARIA voice (chat, tour) will preempt and stop us.
+
     AriaAudioBus.unlock();
     const granted = AriaAudioBus.acquire("hero-greeting", () => {
       try { audio.pause(); } catch { /* noop */ }
     });
 
+    // Autoplay contract: video-only (muted), always allowed. Audio is armed
+    // but silent until the user taps the sound toggle — see toggleSound().
     const kick = async () => {
       await Promise.all([waitReady(video), waitReady(audio)]);
       if (cancelled) return;
-      const ok = granted ? await startBoth() : false;
-      if (!ok) {
-        void video.play().catch(() => {});
-        if (granted) armUnlock();
+      try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
+      void video.play().catch(() => {});
+      // If the user had already flipped sound on before the media was ready
+      // (e.g. rapid tap), honor it now.
+      if (soundOnRef.current && granted) {
+        try {
+          audio.currentTime = video.currentTime;
+          await audio.play();
+          AriaAudioBus.notifyPlaying("hero-greeting", audio);
+        } catch { /* noop — button remains available */ }
       }
     };
     void kick();
 
-    // Audio-master drift correction — smooth, continuous. We check frequently
-    // and nudge the muted video's playbackRate for sub-frame drift; only
-    // hard-seek when drift exceeds ~0.35s (a real stall). This keeps the
-    // picture from ever "snapping" and staying visually married to the voice.
+
+    // Audio-master drift correction — only runs while the user has enabled
+    // sound. Nudges the muted video's playbackRate for sub-frame drift; hard
+    // seek only when drift exceeds ~0.35s. When sound is off there is no
+    // clock to lock to, so the video simply runs on its own.
     const driftInterval = window.setInterval(() => {
+      if (!soundOnRef.current) return;
       if (video.paused || audio.paused) return;
       const drift = video.currentTime - audio.currentTime; // +ve = video ahead
       const abs = Math.abs(drift);
@@ -181,7 +163,6 @@ export function HeroZeroIntro() {
           video.playbackRate = 1;
         } catch { /* noop */ }
       } else if (abs > 0.04) {
-        // 4% max nudge — imperceptible, gently converges within ~1s.
         const target = drift > 0 ? 0.96 : 1.04;
         try { video.playbackRate = target; } catch { /* noop */ }
       } else if (video.playbackRate !== 1) {
@@ -189,24 +170,24 @@ export function HeroZeroIntro() {
       }
     }, 250);
 
-
-    const onVideoWaiting = () => { if (!audio.paused) audio.pause(); };
+    const onVideoWaiting = () => {
+      if (soundOnRef.current && !audio.paused) audio.pause();
+    };
     const onVideoPlaying = () => {
+      if (!soundOnRef.current) return;
       try { video.currentTime = audio.currentTime; } catch { /* noop */ }
       if (audio.paused) void audio.play().catch(() => {});
     };
     video.addEventListener("waiting", onVideoWaiting);
     video.addEventListener("playing", onVideoPlaying);
 
-    // Tab-switch / backgrounding — iOS Safari and Android Chrome both pause
-    // media aggressively when hidden and often resume the muted video
-    // slightly ahead of the audio. Sequence matters: resume audio FIRST,
-    // wait a tick for its clock to advance, then snap the video to the
-    // real audio time so we come back locked to the voice.
+    // Tab-switch / backgrounding — pause both while hidden. On resume, if
+    // sound is on, restart audio first (master clock) then snap the muted
+    // video to it. If sound is off, just resume the video.
     let resuming = false;
     const onVisibility = () => {
       if (document.hidden) {
-        try { video.pause(); audio.pause(); } catch { /* noop */ }
+        try { video.pause(); if (soundOnRef.current) audio.pause(); } catch { /* noop */ }
         return;
       }
       if (resuming) return;
@@ -214,11 +195,11 @@ export function HeroZeroIntro() {
       (async () => {
         try {
           video.playbackRate = 1;
-          await audio.play().catch(() => {});
-          // Two rAFs so the audio decoder has a moment to advance its clock
-          // before we snap the muted video onto it.
-          await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-          try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+          if (soundOnRef.current) {
+            await audio.play().catch(() => {});
+            await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+            try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+          }
           await video.play().catch(() => {});
         } finally {
           resuming = false;
@@ -231,12 +212,18 @@ export function HeroZeroIntro() {
     cleanupFns.push(() => window.removeEventListener("pageshow", onVisibility));
 
 
+
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
     const onAudioEnded = () => finish();
-    const onVideoEnded = () => { /* audio is master — let it finish */ };
+    const onVideoEnded = () => {
+      // When sound is on, audio is master and will fire its own `ended`.
+      // When sound is off, the video is the only clock — end when it ends.
+      if (!soundOnRef.current) finish();
+    };
     audio.addEventListener("ended", onAudioEnded);
     video.addEventListener("ended", onVideoEnded);
+
 
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") finish(); };
     window.addEventListener("keydown", onKey);
@@ -273,9 +260,42 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
+  // Sound toggle — the ONLY path that starts audio. Called from the button
+  // (a real user gesture), so the browser's autoplay policy is satisfied.
+  // On enable we align audio.currentTime to the video's current frame so
+  // the voice picks up exactly where the picture is; on disable we simply
+  // pause (keeping position, so re-enable resumes in place).
+  const toggleSound = useCallback(async () => {
+    const audio = audioRef.current;
+    const video = videoRef.current;
+    if (!audio || !video) return;
+    if (soundOnRef.current) {
+      soundOnRef.current = false;
+      setSoundOn(false);
+      try { audio.pause(); } catch { /* noop */ }
+      try { video.playbackRate = 1; } catch { /* noop */ }
+      return;
+    }
+    soundOnRef.current = true;
+    setSoundOn(true);
+    AriaAudioBus.unlock();
+    try {
+      audio.muted = false;
+      audio.volume = 1;
+      audio.currentTime = video.currentTime;
+      await audio.play();
+      AriaAudioBus.notifyPlaying("hero-greeting", audio);
+    } catch {
+      // If the browser still refuses (rare after a gesture), revert state.
+      soundOnRef.current = false;
+      setSoundOn(false);
+    }
+  }, []);
+
   if (mounted === null || mounted === "done") return null;
 
   const closing = mounted === "closing";
+
 
   return (
     <div
@@ -608,12 +628,35 @@ export function HeroZeroIntro() {
 
 
 
+      {/* Sound toggle — the only trigger that starts audio (browser policy).
+          Placed opposite Skip so both remain thumb-reachable on mobile
+          without overlapping. Pulses gently while muted so the user
+          notices it exists. */}
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-label={soundOn ? "Mute · كتم الصوت" : "Play sound · تشغيل الصوت"}
+        aria-pressed={soundOn}
+        className={`group absolute z-30 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF] ${
+          soundOn
+            ? "border-[#00D4FF]/60 bg-[#00D4FF]/15 text-white shadow-[0_0_20px_rgba(0,212,255,0.35)]"
+            : "border-white/25 bg-white/[0.08] text-white/85 hover:border-white/50 hover:bg-white/[0.14] hover:text-white animate-[hero-zero-sound-pulse_2.4s_ease-in-out_infinite]"
+        }`}
+        style={{
+          bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+          left: "1.5rem",
+        }}
+      >
+        {soundOn ? <Volume2 size={16} strokeWidth={2.4} /> : <VolumeX size={16} strokeWidth={2.4} />}
+        <span>{soundOn ? "كتم · Mute" : "الصوت · Sound"}</span>
+      </button>
+
       {/* Skip chip */}
       <button
         type="button"
         onClick={finish}
         aria-label="Skip intro · تخطّي المقدمة"
-        className="group absolute z-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-white/80 backdrop-blur-md transition hover:border-white/40 hover:bg-white/[0.12] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
+        className="group absolute z-30 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-white/80 backdrop-blur-md transition hover:border-white/40 hover:bg-white/[0.12] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
         style={{
           bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
           right: "1.5rem",
@@ -753,6 +796,12 @@ export function HeroZeroIntro() {
           .hero-zero-topcrest-sigil { width: clamp(32px, 6vw, 48px) !important; }
         }
 
+        /* Sound toggle idle pulse — gently signals "tap to hear ARIA"
+           without being noisy. Stops the moment the user enables sound. */
+        @keyframes hero-zero-sound-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.35); }
+          50%      { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+        }
       `}</style>
 
     </div>
