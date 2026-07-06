@@ -28,11 +28,13 @@ const GREETING_AR =
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NEXIOS AI OS — نظام التشغيل الذكي للأمن الصناعي" },
-      { name: "description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
-      { property: "og:title", content: "NEXIOS AI OS" },
-      { property: "og:description", content: "نظام التشغيل الذكي للأمن الصناعي · Intelligent operating system for industrial security." },
+      { title: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { name: "description", content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:description", content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
       { property: "og:url", content: "https://neexios.com/" },
+      { name: "twitter:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { name: "twitter:description", content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],
   }),
@@ -129,7 +131,7 @@ function IntroLanding() {
           <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
             {ar ? (
               <>
-                الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
+                الذكاء، <span className="text-[#3AE8FF]">تحت القيادة.</span>
                 <br />
                 <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
                   نيكسيوس ينفّذ.
@@ -202,21 +204,9 @@ function IntroLanding() {
           {/* Telemetry footer — tabular numerals, executive signal */}
           <dl
             aria-label={ar ? "قراءات النظام" : "System readouts"}
-            className="mt-8 grid w-full grid-cols-3 gap-4 border-t border-[#3AE8FF]/12 pt-4 text-center"
+            className="mt-8 grid w-full grid-cols-1 gap-4 border-t border-[#3AE8FF]/12 pt-4 text-center"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
-            <div className="flex flex-col items-center gap-1">
-              <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-                {ar ? "حِمل النواة" : "Core Load"}
-              </dt>
-              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">1.02%</dd>
-            </div>
-            <div className="flex flex-col items-center gap-1 border-x border-[#3AE8FF]/10">
-              <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-                {ar ? "معدل المزامنة" : "Sync Rate"}
-              </dt>
-              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">99.9</dd>
-            </div>
             <div className="flex flex-col items-center gap-1">
               <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
                 {ar ? "مستوى الصلاحية" : "Auth Level"}
