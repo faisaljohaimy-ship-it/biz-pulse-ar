@@ -450,6 +450,7 @@ export function HeroZeroIntro() {
         {/* 2) رؤية 2030 crest — sits directly beneath the wordmark */}
         <div
           aria-hidden
+          data-testid="hero-vision-2030-crest"
           className="hero-zero-crest relative mt-3"
           style={{
             opacity: 0,
