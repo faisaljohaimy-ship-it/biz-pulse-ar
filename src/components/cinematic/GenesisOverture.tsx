@@ -32,18 +32,16 @@ export function GenesisOverture() {
   const starCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const bootedRef = useRef(false);
 
-  // Boot decision — SSR-safe, avoids hydration mismatch.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (bootedRef.current) return; // survive StrictMode double-invoke
+    bootedRef.current = true;
 
-    // Reduced motion → skip entirely.
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     let alreadyPlayed = false;
     try {
       alreadyPlayed = window.sessionStorage.getItem(SESSION_KEY) === "1";
-    } catch {
-      /* private mode */
-    }
+    } catch { /* noop */ }
     if (reduced || alreadyPlayed) {
       setPhase("done");
       setIntroActive(false);
@@ -51,22 +49,12 @@ export function GenesisOverture() {
     }
 
     setIntroActive(true);
-    const markPlayed = () => {
-      try { window.sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
-    };
 
-    // Scene timeline (ms offsets)
     const marks: Array<[number, number]> = [
-      [0, 0],       // Void
-      [1000, 1],    // Spark
-      [2200, 2],    // Orbital
-      [4000, 3],    // Sentinel
-      [6500, 4],    // Crest
-      [7500, 5],    // Dissolve
+      [0, 0], [1000, 1], [2200, 2], [4000, 3], [6500, 4], [7500, 5],
     ];
     marks.forEach(([t, s]) => {
-      const id = window.setTimeout(() => setScene(s), t);
-      timers.current.push(id);
+      timers.current.push(window.setTimeout(() => setScene(s), t));
     });
     timers.current.push(window.setTimeout(() => setShowSkip(true), SKIP_VISIBLE_AT));
     timers.current.push(window.setTimeout(() => setPhase("dissolving"), TOTAL_MS - 500));
@@ -74,15 +62,12 @@ export function GenesisOverture() {
       window.setTimeout(() => {
         setPhase("done");
         setIntroActive(false);
-        markPlayed();
+        try { window.sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* noop */ }
       }, TOTAL_MS),
     );
-
-    return () => {
-      timers.current.forEach(clearTimeout);
-      timers.current = [];
-      setIntroActive(false);
-    };
+    // No cleanup — we deliberately outlive StrictMode's synthetic unmount so
+    // the overture completes its single-session run.
+  }, []);
   }, []);
 
   // Keyboard skip
