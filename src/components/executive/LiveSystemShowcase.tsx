@@ -32,7 +32,7 @@ export function LiveSystemShowcase() {
     >
 
       {/* Right-anchored on ALL devices (RTL start = visual right). No breakpoint switches this. */}
-      <div className="flex w-full justify-start">
+      <div className="flex w-full justify-center">
         {/* Ambient halo behind the window — visible on all breakpoints */}
         <div className="pointer-events-none absolute -z-10 h-[280px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,212,255,0.28),transparent_65%)] blur-3xl sm:h-[320px] sm:w-[520px]" />
 
