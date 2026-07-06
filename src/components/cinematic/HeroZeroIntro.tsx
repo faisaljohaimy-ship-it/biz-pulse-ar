@@ -39,12 +39,11 @@ function shouldSkipInitial(): boolean {
 
 export function HeroZeroIntro() {
   const [mounted, setMounted] = useState<null | "playing" | "closing" | "done">(null);
-  // ENTRY-GATED audio: audio playback is FORBIDDEN until the user taps the
-  // «دخول» button. The muted video may autoplay (browser policy allows this),
-  // but no sound of any kind — greeting, narration, TTS — starts on mount.
-  const [entered, setEntered] = useState(false);
-  const enteredRef = useRef(false);
-  const startAudioRef = useRef<null | (() => Promise<void>)>(null);
+  // MAXIMUM-LEGAL AUTOPLAY: video is muted+autoplay on mount (always allowed).
+  // Audio uses a three-tier ignition strategy — see the media effect below.
+  const [audioStarted, setAudioStarted] = useState(false);
+  const audioStartedRef = useRef(false);
+  const igniteAudioRef = useRef<null | (() => Promise<void>)>(null);
   const soundOnRef = useRef(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
