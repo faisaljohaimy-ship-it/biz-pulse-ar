@@ -81,19 +81,33 @@ export function LiveSystemShowcase() {
             </div>
           </div>
 
-          {/* Live iframe stage — locked dark surface */}
+          {/* Live iframe stage — locked dark surface. Poster image of the
+              Hajj command dashboard sits behind the iframe so the system is
+              visibly identifiable as an "icon" from the outside, even before
+              the embedded live view finishes mounting. */}
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#02101e]">
-            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,transparent_0%,transparent_92%,rgba(0,212,255,0.08)_100%)]" />
+            {/* Poster layer — real dashboard preview, tinted to blend with hero */}
+            <img
+              src={hajjDashboardPoster.url}
+              alt={ar ? "معاينة لوحة قيادة نظام الحج" : "Hajj command dashboard preview"}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-95"
+              style={{ filter: "saturate(1.05) contrast(1.02)" }}
+            />
+            {/* Cinematic overlays */}
+            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(2,16,30,0.15)_0%,transparent_35%,transparent_75%,rgba(2,16,30,0.55)_100%)]" />
             <div className="pointer-events-none absolute inset-0 z-10 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.022)_0px,rgba(255,255,255,0.022)_1px,transparent_1px,transparent_3px)] mix-blend-overlay" />
-            <div className="pointer-events-none absolute inset-0 z-10 shadow-[inset_0_0_100px_rgba(2,16,30,0.9)]" />
+            <div className="pointer-events-none absolute inset-0 z-10 shadow-[inset_0_0_100px_rgba(2,16,30,0.85)]" />
 
             <iframe
               src={LIVE_URL}
               title={ar ? "منصة نُسك الحج — الوضع الليلي" : "Hajj Nexus Platform — Night Mode"}
               loading="lazy"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              style={{ colorScheme: "dark", backgroundColor: "#02101e" }}
-              className="absolute left-1/2 top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.5] border-0"
+              style={{ colorScheme: "dark", backgroundColor: "transparent" }}
+              className="absolute left-1/2 top-1/2 z-[5] h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 origin-center scale-[0.5] border-0 opacity-0 transition-opacity duration-700 [&:not([data-loading])]:opacity-100"
+              onLoad={(e) => { (e.currentTarget as HTMLIFrameElement).style.opacity = "1"; }}
             />
           </div>
 
