@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
+
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Brain, ShieldCheck, Cpu, Layers, Activity, Sparkles, LineChart, Palette, CheckCircle2, XCircle, Clock, History } from "lucide-react";
