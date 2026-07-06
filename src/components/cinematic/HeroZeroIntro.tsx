@@ -82,23 +82,17 @@ export function HeroZeroIntro() {
     };
   }, [mounted]);
 
-  // Playback contract — the video and audio behave as ONE synchronized unit.
-  //  1. Both tracks start together in the SAME event tick via
-  //     Promise.all([video.play(), audio.play()]) after resetting both to 0.
-  //  2. Audio is the master clock; every 2s we snap the video to audio when
-  //     drift > 0.15s.
-  //  3. Buffer stalls: video "waiting" pauses audio; video "playing" resumes
-  //     both from audio.currentTime — one never runs while the other stalls.
-  //  4. Tab hidden / visible: both pause and resume from the audio master.
-  //  5. Audio "ended" triggers the 700ms crossfade exit; skip kills instantly.
+  // Playback contract — video-only. The narration audio track is NEVER
+  // auto-started; ARIA only speaks when the user explicitly presses the
+  // greeting / conversation buttons in the executive hero. The muted video
+  // plays under browser autoplay policy; audio element is kept in the DOM
+  // (for potential future manual playback) but no code calls audio.play().
   useEffect(() => {
     if (mounted !== "playing") return;
     const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video || !audio) return;
+    if (!video) return;
 
     let cancelled = false;
-    const cleanupFns: Array<() => void> = [];
 
     const waitReady = (el: HTMLMediaElement) =>
       new Promise<void>((resolve) => {
@@ -120,124 +114,35 @@ export function HeroZeroIntro() {
         }
       });
 
-    const resetClocks = () => {
+    const kick = async () => {
       try {
         video.pause();
-        audio.pause();
         video.currentTime = 0;
-        audio.currentTime = 0;
-        audio.volume = 1;
       } catch {
         /* noop */
       }
-    };
-
-    // Start BOTH in the same event handler — never sequential awaits.
-    const startBoth = async () => {
-      resetClocks();
-      try {
-        await Promise.all([video.play(), audio.play()]);
-        return true;
-      } catch {
-        return false;
-      }
-    };
-
-    const armUnlock = () => {
-      const unlock = async () => {
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-        window.removeEventListener("touchstart", unlock);
-        await startBoth();
-      };
-      window.addEventListener("pointerdown", unlock, { once: true });
-      window.addEventListener("keydown", unlock, { once: true });
-      window.addEventListener("touchstart", unlock, { once: true });
-      cleanupFns.push(() => {
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-        window.removeEventListener("touchstart", unlock);
-      });
-    };
-
-    const kick = async () => {
-      resetClocks();
-      await Promise.all([waitReady(video), waitReady(audio)]);
+      await waitReady(video);
       if (cancelled) return;
-      const ok = await startBoth();
-      if (!ok) {
-        // Autoplay of unmuted audio blocked. Keep the muted video alive so
-        // the scene shows, then wait for a gesture that starts BOTH together.
-        void video.play().catch(() => {});
-        armUnlock();
-      }
+      void video.play().catch(() => {});
     };
     void kick();
 
-    // Audio-master drift correction every 2s (spec: >0.15s → snap video).
-    const driftInterval = window.setInterval(() => {
-      if (video.paused || audio.paused) return;
-      const drift = video.currentTime - audio.currentTime;
-      if (Math.abs(drift) > 0.15) {
-        try {
-          video.currentTime = audio.currentTime;
-        } catch {
-          /* noop */
-        }
-      }
-    }, 2000);
-
-    // Buffer stall handling — never let one run while the other stalls.
-    const onVideoWaiting = () => {
-      if (!audio.paused) audio.pause();
-    };
-    const onVideoPlaying = () => {
-      try {
-        video.currentTime = audio.currentTime;
-      } catch {
-        /* noop */
-      }
-      if (audio.paused) void audio.play().catch(() => {});
-    };
-    video.addEventListener("waiting", onVideoWaiting);
-    video.addEventListener("playing", onVideoPlaying);
-
-    // Mirror explicit seeks onto audio (dev-tools scrub / native controls).
-    const onVideoSeeked = () => {
-      if (Math.abs(video.currentTime - audio.currentTime) > 0.1) {
-        try {
-          audio.currentTime = video.currentTime;
-        } catch {
-          /* noop */
-        }
-      }
-    };
-    video.addEventListener("seeked", onVideoSeeked);
-
-    // Tab visibility — pause/resume BOTH from the audio master clock.
+    // Tab visibility — pause/resume the muted video.
     const onVisibility = () => {
       if (document.hidden) {
         video.pause();
-        audio.pause();
       } else {
-        try {
-          video.currentTime = audio.currentTime;
-        } catch {
-          /* noop */
-        }
-        void audio.play().catch(() => {});
         void video.play().catch(() => {});
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Hard cap — safety net if audio never ends.
+    // Hard cap — safety net so the intro always exits.
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
-    // Audio ended → 700ms crossfade exit (per spec). Video ended alone does
-    // NOT exit — audio is the master and may be longer.
-    const onAudioEnded = () => finish();
-    audio.addEventListener("ended", onAudioEnded);
+    // Video ended → exit via the same crossfade path.
+    const onVideoEnded = () => finish();
+    video.addEventListener("ended", onVideoEnded);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") finish();
@@ -247,22 +152,10 @@ export function HeroZeroIntro() {
 
     return () => {
       cancelled = true;
-      cleanupFns.forEach((fn) => fn());
-      window.clearInterval(driftInterval);
       if (hardCapRef.current !== null) clearTimeout(hardCapRef.current);
-      audio.removeEventListener("ended", onAudioEnded);
-      video.removeEventListener("waiting", onVideoWaiting);
-      video.removeEventListener("playing", onVideoPlaying);
-      video.removeEventListener("seeked", onVideoSeeked);
+      video.removeEventListener("ended", onVideoEnded);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("keydown", onKey);
-      // Skip / exit — kill BOTH tracks instantly (no fade on skip path).
-      try {
-        audio.pause();
-        audio.currentTime = 0;
-      } catch {
-        /* noop */
-      }
       try {
         video.pause();
       } catch {
@@ -272,6 +165,7 @@ export function HeroZeroIntro() {
     // finish is stable via setState functional pattern
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
+
 
 
 
