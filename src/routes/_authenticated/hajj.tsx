@@ -90,6 +90,31 @@ function HajjCommandCenter() {
         badge={ar ? "حي" : "Live"}
       />
 
+      {/* Launch external Hajj Nexus Prime platform */}
+      <Card className="p-4 glass-card border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-cyan-500/5 to-transparent">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-300">
+              <Sparkles className="h-4 w-4" />
+              {ar ? "منصة نُسك الحج · Hajj Nexus Prime" : "Hajj Nexus Prime Platform"}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {ar
+                ? "افتح المنصة الميدانية الكاملة لإدارة الحج بواجهة مخصّصة."
+                : "Open the full Hajj field platform in a dedicated dark experience."}
+            </p>
+          </div>
+          <Link
+            to="/hajj-prime"
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-400/50 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 shadow-[0_6px_24px_rgba(16,185,129,0.25)] transition hover:border-emerald-300 hover:bg-emerald-500/25"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {ar ? "فتح المنصة" : "Launch Platform"}
+          </Link>
+        </div>
+      </Card>
+
+
       {/* KPI WALL */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         <KpiCell label={ar ? "الحوادث المفتوحة" : "Open incidents"} value={kpi?.open_incidents ?? 0} icon={AlertTriangle} tone="rose" />
