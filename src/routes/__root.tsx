@@ -218,9 +218,13 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
+  // /hajj-prime is a full-viewport takeover — suppress every global overlay
+  // (marquee, watermark, ARIA copilot chip, greeter, genesis) so the shell
+  // owns the entire screen exactly like the reference command dashboard.
+  const isTakeover = pathname.startsWith("/hajj-prime");
   const introActive = useIntroActive();
-  const suppressOverlays = isPromo || introActive;
-  const suppressMarquee = introActive || isHero;
+  const suppressOverlays = isPromo || isTakeover || introActive;
+  const suppressMarquee = introActive || isHero || isTakeover;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -236,7 +240,7 @@ function RootComponent() {
                 <div className="relative z-10">
                   <Outlet />
                 </div>
-                {!introActive && <AriaCopilot />}
+                {!introActive && !isTakeover && <AriaCopilot />}
                 {!suppressOverlays && <AriaGreeter />}
                 {!suppressOverlays && <GenesisOverture />}
                 <Toaster />
