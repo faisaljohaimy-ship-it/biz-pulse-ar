@@ -335,6 +335,52 @@ export function HeroZeroIntro() {
         className="pointer-events-none absolute inset-0 h-full w-full mix-blend-screen"
       />
 
+      {/* Vision 2030 crest — appears with the winged figure, starts far
+          (small + blurred) and dollies in until it locks in place above him. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[6%] -translate-x-1/2 text-center"
+        style={{
+          opacity: 0,
+          animation: reducedMotion.current
+            ? "hero-zero-vision-quiet 600ms 400ms forwards ease-out"
+            : "hero-zero-vision 4200ms 2400ms forwards cubic-bezier(0.22,1,0.36,1)",
+          willChange: "opacity, transform, filter",
+        }}
+      >
+        <div
+          className="font-black leading-none"
+          style={{
+            fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+            fontWeight: 900,
+            letterSpacing: "0.08em",
+            fontSize: "clamp(1.35rem, 3.6vw, 2.6rem)",
+            color: "#F5FBFF",
+            textShadow: [
+              "0 0 4px rgba(220,240,255,0.9)",
+              "0 0 18px rgba(0,180,120,0.65)",
+              "0 0 40px rgba(0,140,90,0.55)",
+              "0 0 90px rgba(0,120,80,0.35)",
+            ].join(","),
+          }}
+        >
+          رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+        </div>
+        <div
+          className="mt-1 font-bold uppercase"
+          style={{
+            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+            fontWeight: 800,
+            letterSpacing: "0.32em",
+            fontSize: "clamp(0.6rem, 1.15vw, 0.85rem)",
+            color: "rgba(220,240,230,0.85)",
+            textShadow: "0 0 12px rgba(0,180,120,0.55)",
+          }}
+        >
+          Vision 2030 · Kingdom of Saudi Arabia
+        </div>
+      </div>
+
       {/* SVG turbulence filter for the flame stripe */}
       <svg aria-hidden width="0" height="0" className="absolute">
         <defs>
@@ -475,6 +521,16 @@ export function HeroZeroIntro() {
         @keyframes hero-zero-tagline {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hero-zero-vision {
+          0%   { opacity: 0;   transform: translateX(-50%) translateY(-14px) scale(0.42); filter: blur(10px); }
+          35%  { opacity: 0.85; filter: blur(4px); }
+          75%  { opacity: 1;   transform: translateX(-50%) translateY(0) scale(1.02); filter: blur(0.4px); }
+          100% { opacity: 1;   transform: translateX(-50%) translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes hero-zero-vision-quiet {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
     </div>
