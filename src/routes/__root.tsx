@@ -57,27 +57,52 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <div
+      dir="rtl"
+      className="flex min-h-dvh items-center justify-center bg-[#04070F] px-4 text-right"
+    >
+      <div className="max-w-md">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/30 bg-[#00D4FF]/5 px-3 py-1 text-xs font-medium text-[#00D4FF]">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00D4FF]" />
+          NEXIOS AI OS
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-white">
+          حدث خطأ — جارٍ الاستعادة
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <p className="mt-2 text-sm leading-relaxed text-white/60">
+          واجهت المنصة عائقًا مؤقتًا. يمكنك المحاولة مجددًا الآن، ولن تُفقد
+          بياناتك. تم تسجيل الحدث في سجل التدقيق تلقائيًا.
+        </p>
+        {error?.message && (
+          <p
+            dir="ltr"
+            className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left font-mono text-[11px] text-white/40"
+          >
+            {error.message}
+          </p>
+        )}
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-[#00D4FF] px-4 py-2 text-sm font-semibold text-[#04070F] transition-colors hover:bg-[#3AE8FF]"
           >
-            Try again
+            المحاولة مجددًا
           </button>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10"
+          >
+            العودة للصفحة الرئيسية
+          </Link>
         </div>
       </div>
     </div>
   );
 }
+
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({

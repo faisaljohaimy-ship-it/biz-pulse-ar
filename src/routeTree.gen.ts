@@ -13,6 +13,7 @@ import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SubprocessorsRouteImport } from './routes/subprocessors'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -202,6 +203,11 @@ const TermsRoute = TermsRouteImport.update({
 const SubprocessorsRoute = SubprocessorsRouteImport.update({
   id: '/subprocessors',
   path: '/subprocessors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SlaRoute = SlaRouteImport.update({
@@ -1130,6 +1136,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
+  '/status': typeof StatusRoute
   '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
@@ -1305,6 +1312,7 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
+  '/status': typeof StatusRoute
   '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
@@ -1480,6 +1488,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
+  '/status': typeof StatusRoute
   '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
@@ -1657,6 +1666,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/sitemap.xml'
     | '/sla'
+    | '/status'
     | '/subprocessors'
     | '/terms'
     | '/trust'
@@ -1832,6 +1842,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/sitemap.xml'
     | '/sla'
+    | '/status'
     | '/subprocessors'
     | '/terms'
     | '/trust'
@@ -2006,6 +2017,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/sitemap.xml'
     | '/sla'
+    | '/status'
     | '/subprocessors'
     | '/terms'
     | '/trust'
@@ -2183,6 +2195,7 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SlaRoute: typeof SlaRoute
+  StatusRoute: typeof StatusRoute
   SubprocessorsRoute: typeof SubprocessorsRoute
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
@@ -2258,6 +2271,13 @@ declare module '@tanstack/react-router' {
       path: '/subprocessors'
       fullPath: '/subprocessors'
       preLoaderRoute: typeof SubprocessorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sla': {
@@ -3729,6 +3749,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SlaRoute: SlaRoute,
+  StatusRoute: StatusRoute,
   SubprocessorsRoute: SubprocessorsRoute,
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
