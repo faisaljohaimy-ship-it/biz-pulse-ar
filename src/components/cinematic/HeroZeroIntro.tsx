@@ -82,22 +82,29 @@ export function HeroZeroIntro() {
     // Kick playback. Video is muted so autoplay is allowed. Audio may need
     // a user gesture on some browsers; if it fails silently, the visual
     // still plays.
-    // Try to start audio + video together. Browsers require a user gesture
-    // for unmuted audio; if blocked, we arm a one-shot unlock on the next
-    // interaction so the narration still fires the moment the user moves.
+    // Start audio + video together from t=0. If the browser blocks unmuted
+    // audio autoplay, hold the video at 0 and arm a one-shot unlock so both
+    // tracks start together on the first user gesture — narration is never
+    // out of sync with the visual.
+    video.pause();
+    video.currentTime = 0;
+    audio.pause();
     audio.currentTime = 0;
     audio.volume = 1;
+    const startBoth = () => {
+      audio.currentTime = 0;
+      video.currentTime = 0;
+      void video.play().catch(() => {});
+      void audio.play().catch(() => {});
+    };
     const kick = async () => {
       try {
-        await video.play();
-      } catch {
-        /* muted autoplay refused — poster remains */
-      }
-      try {
         await audio.play();
+        void video.play().catch(() => {});
       } catch {
+        // Audio blocked — keep video paused at frame 0 so both start together.
         const unlock = () => {
-          audio.play().catch(() => {});
+          startBoth();
           window.removeEventListener("pointerdown", unlock);
           window.removeEventListener("keydown", unlock);
           window.removeEventListener("touchstart", unlock);
@@ -105,9 +112,13 @@ export function HeroZeroIntro() {
         window.addEventListener("pointerdown", unlock, { once: true });
         window.addEventListener("keydown", unlock, { once: true });
         window.addEventListener("touchstart", unlock, { once: true });
+        // Also try muted video so the poster+ambient light is alive while we
+        // wait for the gesture; audio + full video reset together on unlock.
+        void video.play().catch(() => {});
       }
     };
     void kick();
+
 
     // Video follows audio — audio is never scrubbed, so narration stays clean.
     const syncTick = () => {
