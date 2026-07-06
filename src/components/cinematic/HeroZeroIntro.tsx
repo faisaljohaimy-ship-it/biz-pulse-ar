@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import videoAsset from "@/assets/hero-assembly.mp4.asset.json";
 import audioAsset from "@/assets/hero-assembly-11.mp3.asset.json";
 import posterAsset from "@/assets/hero-assembly-poster.jpg.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
+
 
 
 /**
