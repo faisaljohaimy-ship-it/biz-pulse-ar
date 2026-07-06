@@ -864,6 +864,365 @@ export type Database = {
           },
         ]
       }
+      client_incidents: {
+        Row: {
+          category_ar: string
+          closed_at: string | null
+          created_at: string
+          id: string
+          incident_code: string
+          is_simulation: boolean
+          org_id: string
+          priority: string
+          reported_at: string
+          reported_by: string | null
+          site_id: string | null
+          status: string
+          tenant_id: string
+          title_ar: string
+          updated_at: string
+        }
+        Insert: {
+          category_ar: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          incident_code: string
+          is_simulation?: boolean
+          org_id: string
+          priority: string
+          reported_at?: string
+          reported_by?: string | null
+          site_id?: string | null
+          status: string
+          tenant_id: string
+          title_ar: string
+          updated_at?: string
+        }
+        Update: {
+          category_ar?: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          incident_code?: string
+          is_simulation?: boolean
+          org_id?: string
+          priority?: string
+          reported_at?: string
+          reported_by?: string | null
+          site_id?: string | null
+          status?: string
+          tenant_id?: string
+          title_ar?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_incidents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_incidents_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "client_personnel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_incidents_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_incidents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "client_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_personnel: {
+        Row: {
+          created_at: string
+          employee_code: string
+          full_name_ar: string
+          id: string
+          is_simulation: boolean
+          org_id: string
+          role_ar: string
+          shift: string
+          site_id: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_code: string
+          full_name_ar: string
+          id?: string
+          is_simulation?: boolean
+          org_id: string
+          role_ar: string
+          shift: string
+          site_id?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_code?: string
+          full_name_ar?: string
+          id?: string
+          is_simulation?: boolean
+          org_id?: string
+          role_ar?: string
+          shift?: string
+          site_id?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_personnel_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_personnel_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_personnel_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "client_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_profile: {
+        Row: {
+          created_at: string
+          id: string
+          industry_ar: string
+          is_default_view: boolean
+          is_simulation: boolean
+          name_ar: string
+          name_en: string
+          org_id: string
+          region_ar: string
+          ribbon_text_ar: string
+          tenant_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry_ar: string
+          is_default_view?: boolean
+          is_simulation?: boolean
+          name_ar: string
+          name_en: string
+          org_id: string
+          region_ar: string
+          ribbon_text_ar?: string
+          tenant_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry_ar?: string
+          is_default_view?: boolean
+          is_simulation?: boolean
+          name_ar?: string
+          name_en?: string
+          org_id?: string
+          region_ar?: string
+          ribbon_text_ar?: string
+          tenant_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_profile_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_sites: {
+        Row: {
+          capacity_label_ar: string | null
+          code: string
+          created_at: string
+          headcount: number
+          id: string
+          is_simulation: boolean
+          name_ar: string
+          org_id: string
+          region_ar: string
+          site_kind: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          capacity_label_ar?: string | null
+          code: string
+          created_at?: string
+          headcount?: number
+          id?: string
+          is_simulation?: boolean
+          name_ar: string
+          org_id: string
+          region_ar: string
+          site_kind: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          capacity_label_ar?: string | null
+          code?: string
+          created_at?: string
+          headcount?: number
+          id?: string
+          is_simulation?: boolean
+          name_ar?: string
+          org_id?: string
+          region_ar?: string
+          site_kind?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_sites_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_sites_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "client_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_work_orders: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          due_at: string
+          id: string
+          is_simulation: boolean
+          org_id: string
+          priority: string
+          site_id: string | null
+          sla_hours: number
+          source_incident_id: string | null
+          status: string
+          tenant_id: string
+          title_ar: string
+          updated_at: string
+          wo_code: string
+          wo_type: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          due_at: string
+          id?: string
+          is_simulation?: boolean
+          org_id: string
+          priority: string
+          site_id?: string | null
+          sla_hours: number
+          source_incident_id?: string | null
+          status: string
+          tenant_id: string
+          title_ar: string
+          updated_at?: string
+          wo_code: string
+          wo_type: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string
+          id?: string
+          is_simulation?: boolean
+          org_id?: string
+          priority?: string
+          site_id?: string | null
+          sla_hours?: number
+          source_incident_id?: string | null
+          status?: string
+          tenant_id?: string
+          title_ar?: string
+          updated_at?: string
+          wo_code?: string
+          wo_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_work_orders_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "client_personnel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_work_orders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_work_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_work_orders_source_incident_id_fkey"
+            columns: ["source_incident_id"]
+            isOneToOne: false
+            referencedRelation: "client_incidents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_work_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "client_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cost_budgets: {
         Row: {
           alert_threshold_pct: number
