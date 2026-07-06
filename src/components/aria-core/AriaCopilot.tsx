@@ -49,6 +49,40 @@ function primeIOSAudio(): void {
   }
 }
 
+/** Semaphore limiting concurrent /api/tts requests. ElevenLabs subscription
+ *  caps parallel calls at 5; we use 3 to stay safely under while multiple
+ *  sentence-level TTS requests are in-flight. */
+const ttsGate = (() => {
+  const MAX = 3;
+  let active = 0;
+  const waiters: Array<() => void> = [];
+  return {
+    async acquire(signal?: AbortSignal): Promise<void> {
+      if (active < MAX) { active++; return; }
+      await new Promise<void>((resolve, reject) => {
+        const onAbort = () => {
+          const i = waiters.indexOf(run);
+          if (i >= 0) waiters.splice(i, 1);
+          reject(new DOMException("Aborted", "AbortError"));
+        };
+        const run = () => {
+          signal?.removeEventListener("abort", onAbort);
+          active++;
+          resolve();
+        };
+        if (signal?.aborted) { onAbort(); return; }
+        signal?.addEventListener("abort", onAbort, { once: true });
+        waiters.push(run);
+      });
+    },
+    release(): void {
+      active = Math.max(0, active - 1);
+      const next = waiters.shift();
+      if (next) next();
+    },
+  };
+})();
+
 type SR = {
   lang: string;
   interimResults: boolean;
@@ -305,6 +339,10 @@ export function AriaCopilot() {
   }, []);
 
   const fetchTTS = useCallback(async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
+    // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
+    // at 5. Serialize to max 3 in-flight so long replies with many sentences
+    // never trigger `concurrent_limit_exceeded` (429).
+    await ttsGate.acquire(ctrl.signal);
     const reqT = performance.now();
     VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/tts`, { idx, chars: text.length });
     try {
@@ -344,6 +382,8 @@ export function AriaCopilot() {
       if ((err as { name?: string }).name === "AbortError") return null;
       AriaVoiceDebug.emit({ source: "browser", reason: `network_seg_${idx}:${(err as Error).message ?? "unknown"}`, failed: true });
       return null;
+    } finally {
+      ttsGate.release();
     }
   }, []);
 

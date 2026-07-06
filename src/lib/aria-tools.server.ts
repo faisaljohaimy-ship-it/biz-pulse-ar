@@ -282,8 +282,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         if (!q) return { ok: true, results: [], count: 0 };
         const { data, error } = await supabase
           .from("knowledge_docs")
-          .select("id,title,summary")
-          .or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
+          .select("id,title,content")
+          .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
           .limit(args.limit);
         if (error) return { ok: false, error: error.message };
         return { ok: true, results: data ?? [], count: data?.length ?? 0 };
