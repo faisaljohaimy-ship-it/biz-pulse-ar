@@ -286,14 +286,10 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Sound toggle — the ONLY path that starts audio. Called from the button
-  // (a real user gesture), so the browser's autoplay policy is satisfied.
-  // On enable we align audio.currentTime to the video's current frame so
-  // the voice picks up exactly where the picture is; on disable we simply
-  // pause (keeping position, so re-enable resumes in place).
-  // (Sound toggle removed — audio autoplays and is unlocked on first gesture
-  // inside the mount effect above. `soundOn` remains `true` for the lifetime
-  // of the intro so the drift/visibility logic keeps audio as master clock.)
+  // Sound toggle removed — audio autoplays and is unlocked on first user
+  // gesture inside the mount effect above. `soundOn` remains `true` for the
+  // lifetime of the intro so drift/visibility logic keeps audio as master.
+
 
 
   if (mounted === null || mounted === "done") return null;
