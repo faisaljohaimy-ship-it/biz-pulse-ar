@@ -506,7 +506,7 @@ export function HeroZeroIntro() {
         dir="ltr"
         className="hero-zero-bottom-stack pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
         style={{
-          bottom: "clamp(10dvh, 14dvh, 18dvh)",
+          bottom: "clamp(10dvh, 22dvh, 34dvh)",
           paddingBottom: "env(safe-area-inset-bottom)",
           unicodeBidi: "isolate",
         }}
