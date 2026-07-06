@@ -167,14 +167,28 @@ export function HeroZeroIntro() {
     };
     void kick();
 
-    // Audio-master drift correction.
+    // Audio-master drift correction — smooth, continuous. We check frequently
+    // and nudge the muted video's playbackRate for sub-frame drift; only
+    // hard-seek when drift exceeds ~0.35s (a real stall). This keeps the
+    // picture from ever "snapping" and staying visually married to the voice.
     const driftInterval = window.setInterval(() => {
       if (video.paused || audio.paused) return;
-      const drift = video.currentTime - audio.currentTime;
-      if (Math.abs(drift) > 0.15) {
-        try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+      const drift = video.currentTime - audio.currentTime; // +ve = video ahead
+      const abs = Math.abs(drift);
+      if (abs > 0.35) {
+        try {
+          video.currentTime = audio.currentTime;
+          video.playbackRate = 1;
+        } catch { /* noop */ }
+      } else if (abs > 0.04) {
+        // 4% max nudge — imperceptible, gently converges within ~1s.
+        const target = drift > 0 ? 0.96 : 1.04;
+        try { video.playbackRate = target; } catch { /* noop */ }
+      } else if (video.playbackRate !== 1) {
+        try { video.playbackRate = 1; } catch { /* noop */ }
       }
-    }, 2000);
+    }, 250);
+
 
     const onVideoWaiting = () => { if (!audio.paused) audio.pause(); };
     const onVideoPlaying = () => {
@@ -312,6 +326,133 @@ export function HeroZeroIntro() {
         aria-hidden
         className="pointer-events-none absolute inset-0 z-20 h-full w-full mix-blend-screen"
       />
+
+      {/* TOP-CENTER Vision 2030 emblem — the crown of the hero. A hand-drawn
+          SVG sigil (palm + crossed swords motif) sits above a bilingual
+          wordmark set in Saudi-green with a warm gold underline. Anchored to
+          the top with safe-area padding so it never collides with the
+          browser chrome on iOS. Pointer-events none — purely decorative. */}
+      <div
+        aria-hidden
+        className="hero-zero-topcrest pointer-events-none absolute inset-x-0 z-40 flex flex-col items-center text-center"
+        style={{
+          top: "calc(env(safe-area-inset-top) + clamp(0.75rem, 2.4dvh, 1.75rem))",
+          opacity: 0,
+          animation: reducedMotion.current
+            ? "hero-zero-topcrest-quiet 700ms 300ms forwards ease-out"
+            : "hero-zero-topcrest 2200ms 900ms forwards cubic-bezier(0.22,1,0.36,1)",
+        }}
+      >
+        {/* Sigil — palm frond with two crossed swords, drawn in Saudi green
+            with a soft gold rim-light. Sized responsively. */}
+        <svg
+          viewBox="0 0 120 84"
+          className="hero-zero-topcrest-sigil"
+          style={{
+            width: "clamp(56px, 12vw, 96px)",
+            height: "auto",
+            filter:
+              "drop-shadow(0 0 6px rgba(74,222,128,0.55)) drop-shadow(0 0 22px rgba(0,140,90,0.45))",
+          }}
+        >
+          <defs>
+            <linearGradient id="v2030-blade" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#F5FBFF" stopOpacity="0.95" />
+              <stop offset="55%" stopColor="#D9E4EC" stopOpacity="0.85" />
+              <stop offset="100%" stopColor="#8FA0AE" stopOpacity="0.8" />
+            </linearGradient>
+            <linearGradient id="v2030-hilt" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#F6D07A" />
+              <stop offset="100%" stopColor="#B8892F" />
+            </linearGradient>
+            <linearGradient id="v2030-palm" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0%" stopColor="#7EE9A6" />
+              <stop offset="50%" stopColor="#22C55E" />
+              <stop offset="100%" stopColor="#0F7A3B" />
+            </linearGradient>
+          </defs>
+
+          {/* Crossed swords */}
+          <g strokeLinecap="round" strokeLinejoin="round">
+            <path
+              d="M18 62 L88 14"
+              stroke="url(#v2030-blade)"
+              strokeWidth="3.2"
+              fill="none"
+            />
+            <path
+              d="M32 14 L102 62"
+              stroke="url(#v2030-blade)"
+              strokeWidth="3.2"
+              fill="none"
+            />
+            {/* Hilts */}
+            <circle cx="16" cy="64" r="3.2" fill="url(#v2030-hilt)" />
+            <circle cx="104" cy="64" r="3.2" fill="url(#v2030-hilt)" />
+            <rect x="12" y="66" width="8" height="2.4" rx="1.2" fill="url(#v2030-hilt)" />
+            <rect x="100" y="66" width="8" height="2.4" rx="1.2" fill="url(#v2030-hilt)" />
+          </g>
+
+          {/* Palm frond — layered leaflets rising from the crossing point */}
+          <g fill="url(#v2030-palm)">
+            <path d="M60 46 C58 34 54 26 46 20 C52 26 55 34 56 44 Z" />
+            <path d="M60 46 C62 34 66 26 74 20 C68 26 65 34 64 44 Z" />
+            <path d="M60 44 C58 30 52 22 42 16 C50 22 54 30 56 42 Z" />
+            <path d="M60 44 C62 30 68 22 78 16 C70 22 66 30 64 42 Z" />
+            <path d="M60 42 C59 26 52 18 40 12 C50 18 55 26 57 40 Z" />
+            <path d="M60 42 C61 26 68 18 80 12 C70 18 65 26 63 40 Z" />
+            {/* Trunk */}
+            <path d="M58.5 46 L58.5 60 L61.5 60 L61.5 46 Z" />
+          </g>
+        </svg>
+
+        {/* Bilingual wordmark — Arabic on top, English underneath */}
+        <div
+          dir="rtl"
+          className="hero-zero-topcrest-ar mt-2 whitespace-nowrap font-black leading-none"
+          style={{
+            fontFamily: '"Tajawal", "Space Grotesk", ui-sans-serif, system-ui',
+            fontWeight: 900,
+            letterSpacing: "0.04em",
+            fontSize: "clamp(0.78rem, 2.1vw, 1.35rem)",
+            color: "#F5FBFF",
+            textShadow: [
+              "0 0 4px rgba(220,240,255,0.9)",
+              "0 0 16px rgba(74,222,128,0.6)",
+              "0 0 34px rgba(0,140,90,0.45)",
+            ].join(","),
+          }}
+        >
+          رؤية المملكة العربية السعودية{" "}
+          <span style={{ color: "#4ADE80" }}>2030</span>
+        </div>
+        <div
+          className="hero-zero-topcrest-en mt-1 whitespace-nowrap font-bold uppercase"
+          style={{
+            fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+            fontWeight: 700,
+            letterSpacing: "0.32em",
+            fontSize: "clamp(0.46rem, 0.9vw, 0.68rem)",
+            color: "rgba(230,245,235,0.88)",
+            textShadow: "0 0 12px rgba(74,222,128,0.55)",
+          }}
+        >
+          Vision 2030 · Kingdom of Saudi Arabia
+        </div>
+        {/* Gold underline — a subtle regal accent */}
+        <div
+          className="mt-2"
+          style={{
+            width: "clamp(52px, 9vw, 92px)",
+            height: "1.5px",
+            background:
+              "linear-gradient(90deg, rgba(184,137,47,0) 0%, #F6D07A 50%, rgba(184,137,47,0) 100%)",
+            boxShadow: "0 0 8px rgba(246,208,122,0.7)",
+            opacity: 0.9,
+          }}
+        />
+      </div>
+
 
       {/* Lower stack — NEXIOS AI wordmark on top, then Vision 2030 crest,
           then the tagline. Anchored to the bottom of the viewport so the
@@ -539,7 +680,27 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
+
+        /* Top-center Vision 2030 emblem — descends from above with a soft
+           bloom, then rests. Reduced-motion variant just fades in. */
+        @keyframes hero-zero-topcrest {
+          0%   { opacity: 0;   transform: translateY(-14px) scale(0.94); filter: blur(6px); }
+          45%  { opacity: 0.9; filter: blur(1.5px); }
+          100% { opacity: 1;   transform: translateY(0) scale(1);       filter: blur(0); }
+        }
+        @keyframes hero-zero-topcrest-quiet {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        /* On very short viewports (landscape phones) tighten the top crest
+           so it never crowds the ARIA figure. */
+        @media (max-height: 620px) {
+          .hero-zero-topcrest-sigil { width: clamp(40px, 8vw, 64px) !important; }
+          .hero-zero-topcrest-ar    { font-size: clamp(0.7rem, 1.6vw, 1rem) !important; }
+          .hero-zero-topcrest-en    { font-size: clamp(0.42rem, 0.7vw, 0.58rem) !important; }
+        }
       `}</style>
+
     </div>
   );
 }
