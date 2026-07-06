@@ -671,17 +671,7 @@ export function HeroZeroIntro() {
           to   { opacity: 1; }
         }
 
-        /* Shorter viewports: shrink the wordmark further so it can never
-           reach the ARIA figure's face on landscape phones or laptops. */
-        @media (max-height: 620px) {
-          .hero-zero-wordmark-glow { font-size: clamp(1.1rem, 3.6vw, 1.85rem) !important; }
-        }
-        @media (min-width: 1024px) and (max-height: 900px) {
-          .hero-zero-wordmark-glow { font-size: clamp(1.4rem, 3vw, 2.4rem) !important; }
-        }
-        @media (min-width: 1280px) and (max-height: 820px) {
-          .hero-zero-wordmark-glow { font-size: clamp(1.25rem, 2.4vw, 2rem) !important; }
-        }
+        /* Sound toggle idle pulse — gently signals "tap to hear ARIA"
            without being noisy. Stops the moment the user enables sound. */
         @keyframes hero-zero-sound-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.35); }
