@@ -275,6 +275,7 @@ function IntroLanding() {
               const desc = ar ? p.desc_ar : p.desc_en;
               return (
                 <li
+                  id={p.anchor}
                   key={p.title_en}
                   className="group rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-4 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)] sm:p-5"
                 >
