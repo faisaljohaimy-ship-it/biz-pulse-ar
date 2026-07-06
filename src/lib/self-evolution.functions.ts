@@ -10,6 +10,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 import { runSelfEvolution } from "@/lib/aria/self-evolution";
 
 const RunInput = z
@@ -22,7 +23,8 @@ const RunInput = z
 export const runSelfEvolutionFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => RunInput.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const report = await runSelfEvolution({
       enableApply: data?.enableApply ?? false,
     });
@@ -53,6 +55,7 @@ export const listEvolutionCyclesFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => ListInput.parse(data))
   .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.userId);
     const limit = data?.limit ?? 25;
     const { data: rows, error } = await context.supabase
       .from("aria_evolution_cycles")
