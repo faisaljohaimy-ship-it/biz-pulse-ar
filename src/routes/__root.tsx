@@ -223,7 +223,7 @@ function RootComponent() {
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || introActive;
   const suppressMarquee = introActive || isHero;
-  const suppressClock = isPromo || introActive || isBridge;
+  const suppressClock = isPromo || isBridge;
 
   return (
     <QueryClientProvider client={queryClient}>
