@@ -485,46 +485,11 @@ export function HeroZeroIntro() {
 
 
 
-      {/* SVG turbulence filter for the flame stripe */}
-      <svg aria-hidden width="0" height="0" className="absolute">
-        <defs>
-          <filter id="hero-zero-turbulence" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7">
-              <animate
-                attributeName="baseFrequency"
-                dur="6s"
-                values="0.9;1.1;0.9"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="6" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Flame stripe rising from the figure into the wordmark */}
-      {!reducedMotion.current && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 z-20 h-[26%] w-[42%] -translate-x-1/2"
-          style={{
-            bottom: "22%",
-            filter: "url(#hero-zero-turbulence) blur(2px)",
-            background:
-              "linear-gradient(180deg, rgba(255,180,60,0) 0%, rgba(255,140,40,0.35) 35%, rgba(230,60,10,0.55) 70%, rgba(255,220,120,0.85) 100%)",
-            mixBlendMode: "screen",
-            opacity: 0,
-            animation: "hero-zero-flame 900ms 8600ms forwards ease-out",
-          }}
-        />
-      )}
-
-      {/* NEXIOS AI wordmark — fire */}
+      {/* NEXIOS AI wordmark — pinned to the bottom of the hero, aligned with
+          the video's lower edge. Cool cyan/white palette instead of fire, so
+          it reads as an executive signature rather than a flame. */}
       <div
-        className="pointer-events-none absolute left-1/2 z-30 -translate-x-1/2 text-center"
-        style={{
-          bottom: "clamp(12%, 18%, 22%)",
-        }}
+        className="pointer-events-none absolute inset-x-0 bottom-[3%] z-30 flex flex-col items-center text-center md:bottom-[4%]"
       >
         <div
           className="font-black uppercase leading-none"
@@ -532,33 +497,25 @@ export function HeroZeroIntro() {
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
-            fontSize: "clamp(2.75rem, 8.5vw, 6.75rem)",
-            WebkitTextStroke: "1px rgba(255,190,90,0.55)",
-            background:
-              "linear-gradient(180deg, #FFFBE6 0%, #FFD066 28%, #FF7A18 62%, #B31E05 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            color: "transparent",
+            fontSize: "clamp(2rem, 7vw, 5.5rem)",
+            color: "#F5FBFF",
             textShadow: [
-              "0 0 4px rgba(255,220,140,1)",
-              "0 0 14px rgba(255,180,60,1)",
-              "0 0 36px rgba(255,110,20,0.95)",
-              "0 0 80px rgba(240,70,15,0.85)",
-              "0 0 140px rgba(220,45,10,0.75)",
-              "0 0 220px rgba(200,30,5,0.55)",
+              "0 0 2px rgba(220,240,255,0.9)",
+              "0 0 14px rgba(0,212,255,0.55)",
+              "0 0 44px rgba(0,180,220,0.35)",
+              "0 0 90px rgba(0,140,200,0.25)",
             ].join(","),
             opacity: 0,
             animation: reducedMotion.current
               ? "hero-zero-wordmark-quiet 400ms 200ms forwards ease-out"
-              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-flicker 4s 10200ms infinite ease-in-out",
+              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1)",
             willChange: "opacity, transform, filter",
           }}
         >
           NEXIOS AI
         </div>
         <div
-          className="mt-3 text-[10px] font-medium uppercase tracking-[0.4em] text-white/50"
+          className="mt-2 text-[10px] font-medium uppercase tracking-[0.4em] text-white/60"
           style={{
             opacity: 0,
             animation: "hero-zero-tagline 800ms 9800ms forwards ease-out",
@@ -567,6 +524,7 @@ export function HeroZeroIntro() {
           Enterprise AI · Executive OS
         </div>
       </div>
+
 
       {/* Skip chip */}
       <button
