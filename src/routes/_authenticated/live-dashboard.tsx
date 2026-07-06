@@ -314,8 +314,23 @@ function LiveExecutiveDashboard() {
         </div>
       </header>
 
+      {/* Executive System Pulse */}
+      {pulseQ.data && (
+        <div className="mb-6">
+          <SystemPulseStrip chips={pulseQ.data.chips} confidence={pulseQ.data.confidence} />
+        </div>
+      )}
+
+      {/* Business KPIs */}
+      {bizQ.data && (
+        <div className="mb-6">
+          <BusinessKpiPanel data={bizQ.data} />
+        </div>
+      )}
+
       {/* KPI strip */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+
         <KpiCard
           label="Open Incidents"
           value={String(k?.incidents_open ?? "—")}
