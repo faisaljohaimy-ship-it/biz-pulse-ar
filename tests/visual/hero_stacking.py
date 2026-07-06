@@ -103,7 +103,7 @@ PROBE_JS = r"""
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   };
 
-  return {
+  const result = {
     ready: true,
     emblemBox: { x: eb.x, y: eb.y, w: eb.width, h: eb.height },
     crestBox:  { x: cb.x, y: cb.y, w: cb.width, h: cb.height },
@@ -114,6 +114,8 @@ PROBE_JS = r"""
     zIndexed,
     skipBox:  bbox('button[aria-label*="Skip intro"]'),
   };
+  pierce.remove();
+  return result;
 }
 """
 
