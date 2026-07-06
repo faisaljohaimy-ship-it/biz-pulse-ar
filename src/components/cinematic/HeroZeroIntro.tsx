@@ -429,8 +429,7 @@ export function HeroZeroIntro() {
       />
       <audio ref={audioRef} src={audioAsset.url} preload="auto" />
 
-      {/* Ember particle layer — pointer-events none, sits above the figure
-          but below the Vision 2030 crest so sparks never wash it out. */}
+      {/* Ember particle layer — pointer-events none, sits above the figure. */}
       <canvas
         ref={canvasRef}
         aria-hidden
