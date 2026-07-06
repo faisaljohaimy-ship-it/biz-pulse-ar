@@ -289,9 +289,15 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Sound toggle removed — audio autoplays and is unlocked on first user
-  // gesture inside the mount effect above. `soundOn` remains `true` for the
-  // lifetime of the intro so drift/visibility logic keeps audio as master.
+  // Entry gate — the ONLY path that unlocks ARIA audio for the hero intro.
+  // Must run inside a real click/tap handler so mobile browsers grant
+  // autoplay-with-sound.
+  const handleEnter = () => {
+    if (enteredRef.current) return;
+    enteredRef.current = true;
+    setEntered(true);
+    void startAudioRef.current?.();
+  };
 
 
 
