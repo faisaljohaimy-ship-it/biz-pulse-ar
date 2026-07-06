@@ -33,16 +33,46 @@ function HajjPrimeWindow() {
         </div>
       </div>
 
-      {/* Iframe fills the rest */}
-      <div className="relative flex-1 overflow-hidden bg-[#04111f]" style={{ colorScheme: "dark" }}>
-        <iframe
-          src={EMBED_URL}
-          title="Hajj Nexus Prime · Live System"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-          allow="clipboard-read; clipboard-write; fullscreen"
-          className="h-full w-full border-0"
-          style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
-        />
+      {/* Iframe fills the rest. On narrow viewports we render the embedded
+          platform at a fixed desktop width and CSS-scale it down so the full
+          UI stays aligned and visible — same layout the user had before,
+          just fitted to the mobile screen. */}
+      <div
+        className="hajj-embed-shell relative flex-1 overflow-hidden bg-[#04111f]"
+        style={{ colorScheme: "dark" }}
+      >
+        <div className="hajj-embed-scale">
+          <iframe
+            src={EMBED_URL}
+            title="Hajj Nexus Prime · Live System"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            allow="clipboard-read; clipboard-write; fullscreen"
+            className="hajj-embed-iframe border-0"
+            style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
+          />
+        </div>
+        <style>{`
+          .hajj-embed-shell { container-type: inline-size; }
+          .hajj-embed-scale {
+            width: 100%;
+            height: 100%;
+          }
+          .hajj-embed-iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+          }
+          /* Mobile: render at desktop width and scale down so the entire
+             Hajj platform fits horizontally and stays perfectly aligned. */
+          @media (max-width: 767.98px) {
+            .hajj-embed-scale {
+              width: 1280px;
+              height: calc((100dvh - 46px) * (1280 / 100vw));
+              transform: scale(calc(100vw / 1280));
+              transform-origin: top left;
+            }
+          }
+        `}</style>
       </div>
     </div>
   );
