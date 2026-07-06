@@ -42,7 +42,7 @@ export function HeroZeroIntro() {
   // Sound ON by default — the intro tries to autoplay audio immediately, and
   // falls back to unlocking on the first user gesture if the browser blocks
   // silent-media autoplay (iOS/Safari). No visible mute button.
-  const [soundOn, setSoundOn] = useState(true);
+  const [, setSoundOn] = useState(true); void setSoundOn;
   const soundOnRef = useRef(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
