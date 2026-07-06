@@ -333,7 +333,9 @@ export function HeroZeroIntro() {
           unicodeBidi: "isolate",
         }}
       >
-        {/* 1) NEXIOS AI wordmark (top of the stack) */}
+        {/* 1) NEXIOS AI wordmark (top of the stack) — brushed-nickel metallic
+            treatment with a moving shine sweep. Halo intentionally tight so
+            it never spills upward onto ARIA's face on any viewport. */}
         <span
           aria-hidden="true"
           className="hero-zero-wordmark-glow font-black uppercase leading-none"
@@ -341,11 +343,11 @@ export function HeroZeroIntro() {
             fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
             fontWeight: 900,
             letterSpacing: "0.14em",
-            fontSize: "clamp(2rem, 8vw, 4.5rem)",
+            fontSize: "clamp(1.5rem, 6vw, 3.25rem)",
             opacity: 0,
             animation: reducedMotion.current
               ? "hero-zero-wordmark-quiet 400ms 200ms forwards ease-out"
-              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-wordmark-pulse 3.6s 10200ms ease-in-out infinite, hero-zero-wordmark-shimmer 4.8s 10200ms linear infinite",
+              : "hero-zero-wordmark 1400ms 8800ms forwards cubic-bezier(0.22,1,0.36,1), hero-zero-wordmark-pulse 4.8s 10200ms ease-in-out infinite, hero-zero-wordmark-shimmer 5.6s 10200ms linear infinite",
             willChange: "opacity, transform, filter",
           }}
         >
@@ -464,50 +466,51 @@ export function HeroZeroIntro() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        /* Cyan glow matched to the winged figure's aura (#00D4FF / #3AE8FF).
-           Base fill is a pale cyan-white with a live shimmer sweep clipped to
-           the glyphs; the pulse animation breathes the outer halo. */
+        /* Brushed-nickel metallic wordmark. A cool neutral gradient (silver
+           → white highlight → nickel-graphite → silver) is clipped to the
+           glyphs and animated by a shimmering background-position sweep.
+           The outer halo is intentionally small so it never spills upward
+           onto the ARIA figure on any viewport. */
         .hero-zero-wordmark-glow {
-          color: #EAFBFF;
+          color: #E6E9EE;
           background-image: linear-gradient(
             110deg,
-            rgba(234,251,255,0) 0%,
-            rgba(234,251,255,0) 38%,
-            rgba(180,240,255,0.95) 48%,
-            #FFFFFF 50%,
-            rgba(120,225,255,0.95) 52%,
-            rgba(58,232,255,0) 62%,
-            rgba(58,232,255,0) 100%
+            #C7CDD4 0%,
+            #E8ECEF 18%,
+            #FAFBFC 30%,
+            #FFFFFF 34%,
+            #FAFBFC 38%,
+            #B7BEC6 55%,
+            #8E959D 68%,
+            #C7CDD4 82%,
+            #E8ECEF 100%
           );
-          background-size: 220% 100%;
+          background-size: 240% 100%;
           background-position: -60% 0;
           background-repeat: no-repeat;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
           text-shadow:
-            0 0 3px rgba(220,245,255,0.95),
-            0 0 16px rgba(0,212,255,0.85),
-            0 0 42px rgba(58,232,255,0.75),
-            0 0 90px rgba(0,180,220,0.55),
-            0 0 160px rgba(0,140,200,0.4);
+            0 0 1px rgba(240,244,248,0.85),
+            0 0 6px rgba(210,220,230,0.55),
+            0 0 18px rgba(170,185,200,0.35),
+            0 0 36px rgba(120,140,160,0.22);
         }
         @keyframes hero-zero-wordmark-pulse {
           0%,100% {
             text-shadow:
-              0 0 3px rgba(220,245,255,0.95),
-              0 0 16px rgba(0,212,255,0.85),
-              0 0 42px rgba(58,232,255,0.75),
-              0 0 90px rgba(0,180,220,0.55),
-              0 0 160px rgba(0,140,200,0.4);
+              0 0 1px rgba(240,244,248,0.85),
+              0 0 6px rgba(210,220,230,0.55),
+              0 0 18px rgba(170,185,200,0.35),
+              0 0 36px rgba(120,140,160,0.22);
           }
           50% {
             text-shadow:
-              0 0 5px rgba(235,250,255,1),
-              0 0 24px rgba(80,230,255,1),
-              0 0 60px rgba(58,232,255,0.95),
-              0 0 130px rgba(0,200,240,0.75),
-              0 0 220px rgba(0,160,220,0.55);
+              0 0 2px rgba(250,252,255,1),
+              0 0 10px rgba(225,235,245,0.75),
+              0 0 26px rgba(190,205,220,0.5),
+              0 0 52px rgba(140,160,180,0.32);
           }
         }
         @keyframes hero-zero-wordmark-shimmer {
@@ -515,42 +518,22 @@ export function HeroZeroIntro() {
           100% { background-position: 160% 0; }
         }
 
-        @keyframes hero-zero-flicker {
-          0%,100% { text-shadow:
-            0 0 4px rgba(255,220,140,1),
-            0 0 14px rgba(255,180,60,1),
-            0 0 36px rgba(255,110,20,0.95),
-            0 0 80px rgba(240,70,15,0.85),
-            0 0 140px rgba(220,45,10,0.75),
-            0 0 220px rgba(200,30,5,0.55); }
-          45%     { text-shadow:
-            0 0 6px rgba(255,235,170,1),
-            0 0 20px rgba(255,200,80,1),
-            0 0 50px rgba(255,130,30,1),
-            0 0 110px rgba(245,80,20,0.95),
-            0 0 180px rgba(225,50,12,0.85),
-            0 0 280px rgba(200,30,5,0.7); }
-          70%     { text-shadow:
-            0 0 5px rgba(255,225,150,1),
-            0 0 18px rgba(255,190,70,1),
-            0 0 44px rgba(255,120,25,1),
-            0 0 96px rgba(240,70,15,0.9),
-            0 0 160px rgba(220,45,10,0.8),
-            0 0 240px rgba(200,30,5,0.6); }
+        /* Shorter viewports: shrink the wordmark further so it can never
+           reach the ARIA figure's face on landscape phones or laptops. */
+        @media (max-height: 620px) {
+          .hero-zero-wordmark-glow { font-size: clamp(1.1rem, 3.6vw, 1.85rem) !important; }
         }
-        @keyframes hero-zero-flame {
-          from { opacity: 0; transform: translateX(-50%) scaleY(0.6); }
-          to   { opacity: 0.85; transform: translateX(-50%) scaleY(1); }
-        }
+
         @keyframes hero-zero-tagline {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        /* Crest now lives inside a flex column — no horizontal translate. */
         @keyframes hero-zero-vision {
-          0%   { opacity: 0;   transform: translateX(-50%) translateY(-14px) scale(0.42); filter: blur(10px); }
-          35%  { opacity: 0.85; filter: blur(4px); }
-          75%  { opacity: 1;   transform: translateX(-50%) translateY(0) scale(1.02); filter: blur(0.4px); }
-          100% { opacity: 1;   transform: translateX(-50%) translateY(0) scale(1); filter: blur(0); }
+          0%   { opacity: 0;   transform: translateY(-8px) scale(0.72); filter: blur(8px); }
+          35%  { opacity: 0.85; filter: blur(3px); }
+          75%  { opacity: 1;   transform: translateY(0) scale(1.02); filter: blur(0.4px); }
+          100% { opacity: 1;   transform: translateY(0) scale(1); filter: blur(0); }
         }
         @keyframes hero-zero-vision-quiet {
           from { opacity: 0; }
