@@ -6,16 +6,30 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-type Source = "hero-greeting" | "genesis-intro" | "panel-greeting" | "chat-tts" | "tour-tts" | "tour-video";
+type Source =
+  | "hero-greeting"
+  | "genesis-intro"
+  | "hero-soundtrack"
+  | "panel-greeting"
+  | "chat-tts"
+  | "tour-tts"
+  | "tour-video";
 
 const PRIORITY: Record<Source, number> = {
   "hero-greeting": 1,
   "genesis-intro": 1,
+  "hero-soundtrack": 1,
   "panel-greeting": 2,
   "chat-tts": 3,
   "tour-tts": 3,
   "tour-video": 3,
 };
+
+// Owners allowed to bypass the "no gesture yet" guard when they pass
+// { bypassGesture: true }. Only the hero soundtrack's optimistic first
+// autoplay may do this — every ARIA / tour owner MUST wait for a real
+// user gesture (via AriaAudioBus.unlock()).
+const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
 
 
 
@@ -113,13 +127,16 @@ export const AriaAudioBus = {
    * Request the voice channel. Returns true if granted.
    * Granting ALWAYS hard-stops whatever is playing first.
    */
-  acquire(source: Source, stop: StopFn): boolean {
+  acquire(source: Source, stop: StopFn, opts?: { bypassGesture?: boolean }): boolean {
     const stack = new Error().stack?.split("\n").slice(2, 5).join(" | ");
     // Global no-autoplay guard: refuse any AUDIBLE source unless the bus has
     // been unlocked by a real user gesture. AriaAudioBus.unlock() MUST be
     // called from inside a click / tap / keydown handler. This blocks all
     // on-mount / on-load / on-scroll audio, no matter which component tries.
-    if (!unlocked) {
+    // EXEMPTION: the hero soundtrack's ONE optimistic mount-time attempt may
+    // pass { bypassGesture: true }. No ARIA / tour source is ever exempt.
+    const bypass = opts?.bypassGesture === true && BYPASS_ALLOWED.has(source);
+    if (!unlocked && !bypass) {
       // eslint-disable-next-line no-console
       console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", { source, stack });
       VoiceTimeline.push("OWNER", "acquire REFUSED (no gesture)", { source, stack });
@@ -140,7 +157,7 @@ export const AriaAudioBus = {
       try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     }
     current = { source, stop };
-    VoiceTimeline.push("OWNER", "ACQUIRED", { owner: source, provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting", stack });
+    VoiceTimeline.push("OWNER", "ACQUIRED", { owner: source, provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting", stack, bypass });
     if (source === "chat-tts") startWatchdog(); else stopWatchdog();
     emit({ kind: "start", source });
     return true;
