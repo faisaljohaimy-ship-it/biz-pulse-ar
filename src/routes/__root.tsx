@@ -27,6 +27,7 @@ import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
+import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -227,7 +228,8 @@ function RootComponent() {
             <DemoModeProvider>
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
-                {/* BetaMarqueeBar moved to the system homepage (src/routes/index.tsx) so the intro plays clean, edge-to-edge. */}
+                {/* Global beta marquee — hidden only while the intro overlay is playing. */}
+                {!introActive && <BetaMarqueeBar />}
                 {!suppressOverlays && <AriaWatermark />}
                 <div className="relative z-10">
                   <Outlet />
