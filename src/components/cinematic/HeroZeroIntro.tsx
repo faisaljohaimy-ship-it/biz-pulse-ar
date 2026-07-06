@@ -243,8 +243,11 @@ export function HeroZeroIntro() {
   }, [mounted]);
 
 
-  // Ember particle canvas — additive orange sparks rising from the figure.
+  // Ember/fire particle canvas — disabled. The wordmark now uses a cool
+  // cyan palette, and the orange sparks were clashing with the scene.
   useEffect(() => {
+    return;
+    // eslint-disable-next-line no-unreachable
     if (mounted !== "playing") return;
     if (reducedMotion.current) return;
     const canvas = canvasRef.current;
