@@ -120,17 +120,9 @@ export function HeroZeroIntro() {
         try { el.load(); } catch { /* noop */ }
       });
 
-    const resetClocks = () => {
-      try {
-        video.pause(); audio.pause();
-        video.currentTime = 0; audio.currentTime = 0;
-        audio.volume = 1;
-      } catch { /* noop */ }
-    };
-
     // Acquire the ARIA bus — hero narration is the lowest-priority source,
-
     // so any other ARIA voice (chat, tour) will preempt and stop us.
+
     AriaAudioBus.unlock();
     const granted = AriaAudioBus.acquire("hero-greeting", () => {
       try { audio.pause(); } catch { /* noop */ }
