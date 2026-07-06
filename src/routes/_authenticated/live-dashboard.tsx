@@ -148,8 +148,23 @@ function LiveExecutiveDashboard() {
     staleTime: 30_000,
   });
 
+  const pulseQ = useQuery({
+    queryKey: ["exec-pulse"],
+    queryFn: () => getSystemPulse(),
+    refetchInterval: 20_000,
+    staleTime: 10_000,
+  });
+
+  const bizQ = useQuery({
+    queryKey: ["exec-business-kpis"],
+    queryFn: () => getBusinessKpis(),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
   const k = kpisQ.data;
   const ts = tsQ.data;
+
 
   const filteredPoints = useMemo(() => {
     if (!ts) return [];
