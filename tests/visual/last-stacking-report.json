@@ -2,6 +2,8 @@
   {
     "viewport": "iphone-se",
     "checks": [
+      "emblem-topmost=ok",
+      "crest-topmost=ok",
       "face-clear=ok",
       "skip-separate=ok",
       "z-range=ok (6 nodes)"
@@ -22,6 +24,8 @@
   {
     "viewport": "iphone-14-pro",
     "checks": [
+      "emblem-topmost=ok",
+      "crest-topmost=ok",
       "face-clear=ok",
       "skip-separate=ok",
       "z-range=ok (6 nodes)"
@@ -42,6 +46,7 @@
   {
     "viewport": "pixel-7",
     "checks": [
+      "emblem-topmost=ok",
       "face-clear=ok",
       "skip-separate=ok",
       "z-range=ok (6 nodes)"
@@ -62,6 +67,7 @@
   {
     "viewport": "ipad-mini",
     "checks": [
+      "emblem-topmost=ok",
       "face-clear=ok",
       "skip-separate=ok",
       "z-range=ok (6 nodes)"
@@ -82,6 +88,7 @@
   {
     "viewport": "desktop-1440",
     "checks": [
+      "emblem-topmost=ok",
       "face-clear=ok",
       "skip-separate=ok",
       "z-range=ok (6 nodes)"
