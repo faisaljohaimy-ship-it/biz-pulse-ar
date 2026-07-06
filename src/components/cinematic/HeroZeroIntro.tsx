@@ -664,6 +664,57 @@ export function HeroZeroIntro() {
           .hero-zero-chrome-wordmark::after { animation: none; opacity: 0; }
         }
 
+        /* ── Vision 2030 nickel inscription ─────────────────── */
+        .hero-zero-vision2030 {
+          background: linear-gradient(178deg,
+            #f4f5f6 0%, #d8dadd 16%, #a9adb3 34%, #6f747b 48%,
+            #3a3e44 56%, #9599a0 70%, #e8eaec 86%, #c4c7cb 100%);
+          -webkit-background-clip: text;
+                  background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          text-shadow:
+            0 1px 0 rgba(255,255,255,0.30),
+            0 0 16px rgba(200,205,212,0.40),
+            0 0 40px rgba(150,155,165,0.22);
+          opacity: 0;
+          transform: translateY(8px);
+          animation: hero-zero-vision2030-in 600ms 1500ms ease-out forwards;
+        }
+        .hero-zero-vision2030::after {
+          content: attr(data-text);
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(115deg,
+            transparent 35%,
+            rgba(255,255,255,0.80) 50%,
+            transparent 65%);
+          background-size: 300% 100%;
+          background-position: 150% 0;
+          -webkit-background-clip: text;
+                  background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          mix-blend-mode: screen;
+          animation: hero-zero-vision2030-sweep 6s 12500ms linear infinite;
+        }
+        @keyframes hero-zero-vision2030-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hero-zero-vision2030-sweep {
+          0%   { background-position: 150% 0; }
+          17%  { background-position: -150% 0; }
+          100% { background-position: -150% 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-zero-vision2030 { opacity: 1; transform: none; animation: none; }
+          .hero-zero-vision2030::after { animation: none; opacity: 0; }
+        }
+
+
+
 
         /* Universal full-bleed fit. Portrait viewports render the portrait
            film near-native; landscape viewports crop top/bottom so the winged
