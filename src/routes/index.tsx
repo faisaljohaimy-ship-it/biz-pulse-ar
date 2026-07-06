@@ -20,6 +20,8 @@ import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
+import { HeroZeroIntro } from "@/components/cinematic/HeroZeroIntro";
+
 
 const GREETING_AR =
   "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
@@ -96,8 +98,12 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-transparent text-white">
+      {/* Cinematic Hero-Zero — plays once per session BEFORE the executive hero */}
+      <HeroZeroIntro />
+
       {/* Fullscreen NEXIOS letters intro (once per session) */}
       <NexiosGenesisIntro />
+
 
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
           at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
