@@ -219,9 +219,11 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
+  const isBridge = pathname.startsWith("/executive-bridge");
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || introActive;
   const suppressMarquee = introActive || isHero;
+  const suppressClock = isPromo || introActive || isBridge;
 
   return (
     <QueryClientProvider client={queryClient}>
