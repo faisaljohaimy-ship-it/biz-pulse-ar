@@ -24,6 +24,7 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
+import { HeroDashboardDrawer } from "@/components/executive/HeroDashboardDrawer";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
