@@ -95,3 +95,41 @@ export const getHajjPublicOverview = createServerFn({ method: "GET" }).handler(
     }
   },
 );
+
+export const getHajjExecSummary = createServerFn({ method: "GET" }).handler(
+  async (): Promise<HajjExecSummary> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const kpi = await getHajjPublicOverview();
+
+    let stations: HajjPublicStation[] = [];
+    let top_tasks: HajjPublicTask[] = [];
+
+    try {
+      const { data: st } = await supabaseAdmin
+        .from("hajj_stations")
+        .select("id, code, name_ar, name_en, status, staff_count")
+        .order("code", { ascending: true })
+        .limit(6);
+      stations = (st ?? []) as HajjPublicStation[];
+    } catch { /* leave empty */ }
+
+    try {
+      // Open tasks ordered by priority weight then most recent.
+      const { data: tk } = await supabaseAdmin
+        .from("hajj_tasks")
+        .select("id, title_ar, title_en, priority, status, reported_at")
+        .neq("status", "completed")
+        .order("reported_at", { ascending: false })
+        .limit(20);
+      const weight: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+      top_tasks = ((tk ?? []) as HajjPublicTask[])
+        .slice()
+        .sort((a, b) => (weight[a.priority ?? "low"] ?? 9) - (weight[b.priority ?? "low"] ?? 9))
+        .slice(0, 3);
+    } catch { /* leave empty */ }
+
+    return { kpi, stations, top_tasks };
+  },
+);
+
