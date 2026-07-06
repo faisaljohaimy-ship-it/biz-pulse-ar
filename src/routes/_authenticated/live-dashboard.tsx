@@ -30,9 +30,15 @@ import {
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
 import { getExecTimeseries } from "@/lib/sec.functions";
+import { getSystemPulse, getBusinessKpis } from "@/lib/executive-presentation.functions";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
+import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
+import { BusinessKpiPanel } from "@/components/executive/BusinessKpiPanel";
+import { DecisionCenter } from "@/components/executive/DecisionCenter";
+import { ExecutiveTimeline } from "@/components/executive/ExecutiveTimeline";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 
 export const Route = createFileRoute("/_authenticated/live-dashboard")({
   head: () => ({
@@ -142,8 +148,23 @@ function LiveExecutiveDashboard() {
     staleTime: 30_000,
   });
 
+  const pulseQ = useQuery({
+    queryKey: ["exec-pulse"],
+    queryFn: () => getSystemPulse(),
+    refetchInterval: 20_000,
+    staleTime: 10_000,
+  });
+
+  const bizQ = useQuery({
+    queryKey: ["exec-business-kpis"],
+    queryFn: () => getBusinessKpis(),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
   const k = kpisQ.data;
   const ts = tsQ.data;
+
 
   const filteredPoints = useMemo(() => {
     if (!ts) return [];
@@ -293,8 +314,23 @@ function LiveExecutiveDashboard() {
         </div>
       </header>
 
+      {/* Executive System Pulse */}
+      {pulseQ.data && (
+        <div className="mb-6">
+          <SystemPulseStrip chips={pulseQ.data.chips} confidence={pulseQ.data.confidence} />
+        </div>
+      )}
+
+      {/* Business KPIs */}
+      {bizQ.data && (
+        <div className="mb-6">
+          <BusinessKpiPanel data={bizQ.data} />
+        </div>
+      )}
+
       {/* KPI strip */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+
         <KpiCard
           label="Open Incidents"
           value={String(k?.incidents_open ?? "—")}
@@ -478,6 +514,13 @@ function LiveExecutiveDashboard() {
           <EnterpriseActivityFeed height="h-[520px]" compact filter={{ limit: 60 }} />
         </aside>
       </div>
+
+      {/* Decision Center + Executive Timeline */}
+      <div className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <DecisionCenter />
+        <ExecutiveTimeline />
+      </div>
+
 
       {tsQ.isError && (
         <div className="mt-4 text-xs text-rose-400 font-mono">
