@@ -146,8 +146,10 @@ import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
+import { Route as AuthenticatedSecUrgentRouteImport } from './routes/_authenticated/sec.urgent'
 import { Route as AuthenticatedSecTwinRouteImport } from './routes/_authenticated/sec.twin'
 import { Route as AuthenticatedSecTimelineRouteImport } from './routes/_authenticated/sec.timeline'
+import { Route as AuthenticatedSecSupportRouteImport } from './routes/_authenticated/sec.support'
 import { Route as AuthenticatedSecShiftsRouteImport } from './routes/_authenticated/sec.shifts'
 import { Route as AuthenticatedSecSectionsRouteImport } from './routes/_authenticated/sec.sections'
 import { Route as AuthenticatedSecSafetyRouteImport } from './routes/_authenticated/sec.safety'
@@ -894,6 +896,11 @@ const AuthenticatedSecVehiclesRoute =
     path: '/vehicles',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
+const AuthenticatedSecUrgentRoute = AuthenticatedSecUrgentRouteImport.update({
+  id: '/urgent',
+  path: '/urgent',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
 const AuthenticatedSecTwinRoute = AuthenticatedSecTwinRouteImport.update({
   id: '/twin',
   path: '/twin',
@@ -905,6 +912,11 @@ const AuthenticatedSecTimelineRoute =
     path: '/timeline',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
+const AuthenticatedSecSupportRoute = AuthenticatedSecSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AuthenticatedSecRoute,
+} as any)
 const AuthenticatedSecShiftsRoute = AuthenticatedSecShiftsRouteImport.update({
   id: '/shifts',
   path: '/shifts',
@@ -1247,8 +1259,10 @@ export interface FileRoutesByFullPath {
   '/sec/safety': typeof AuthenticatedSecSafetyRoute
   '/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/sec/shifts': typeof AuthenticatedSecShiftsRoute
+  '/sec/support': typeof AuthenticatedSecSupportRoute
   '/sec/timeline': typeof AuthenticatedSecTimelineRoute
   '/sec/twin': typeof AuthenticatedSecTwinRoute
+  '/sec/urgent': typeof AuthenticatedSecUrgentRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
@@ -1421,8 +1435,10 @@ export interface FileRoutesByTo {
   '/sec/safety': typeof AuthenticatedSecSafetyRoute
   '/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/sec/shifts': typeof AuthenticatedSecShiftsRoute
+  '/sec/support': typeof AuthenticatedSecSupportRoute
   '/sec/timeline': typeof AuthenticatedSecTimelineRoute
   '/sec/twin': typeof AuthenticatedSecTwinRoute
+  '/sec/urgent': typeof AuthenticatedSecUrgentRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
@@ -1599,8 +1615,10 @@ export interface FileRoutesById {
   '/_authenticated/sec/safety': typeof AuthenticatedSecSafetyRoute
   '/_authenticated/sec/sections': typeof AuthenticatedSecSectionsRoute
   '/_authenticated/sec/shifts': typeof AuthenticatedSecShiftsRoute
+  '/_authenticated/sec/support': typeof AuthenticatedSecSupportRoute
   '/_authenticated/sec/timeline': typeof AuthenticatedSecTimelineRoute
   '/_authenticated/sec/twin': typeof AuthenticatedSecTwinRoute
+  '/_authenticated/sec/urgent': typeof AuthenticatedSecUrgentRoute
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
@@ -1777,8 +1795,10 @@ export interface FileRouteTypes {
     | '/sec/safety'
     | '/sec/sections'
     | '/sec/shifts'
+    | '/sec/support'
     | '/sec/timeline'
     | '/sec/twin'
+    | '/sec/urgent'
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
@@ -1951,8 +1971,10 @@ export interface FileRouteTypes {
     | '/sec/safety'
     | '/sec/sections'
     | '/sec/shifts'
+    | '/sec/support'
     | '/sec/timeline'
     | '/sec/twin'
+    | '/sec/urgent'
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
@@ -2128,8 +2150,10 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/safety'
     | '/_authenticated/sec/sections'
     | '/_authenticated/sec/shifts'
+    | '/_authenticated/sec/support'
     | '/_authenticated/sec/timeline'
     | '/_authenticated/sec/twin'
+    | '/_authenticated/sec/urgent'
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
@@ -3204,6 +3228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecVehiclesRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/urgent': {
+      id: '/_authenticated/sec/urgent'
+      path: '/urgent'
+      fullPath: '/sec/urgent'
+      preLoaderRoute: typeof AuthenticatedSecUrgentRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/twin': {
       id: '/_authenticated/sec/twin'
       path: '/twin'
@@ -3216,6 +3247,13 @@ declare module '@tanstack/react-router' {
       path: '/timeline'
       fullPath: '/sec/timeline'
       preLoaderRoute: typeof AuthenticatedSecTimelineRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
+    '/_authenticated/sec/support': {
+      id: '/_authenticated/sec/support'
+      path: '/support'
+      fullPath: '/sec/support'
+      preLoaderRoute: typeof AuthenticatedSecSupportRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
     '/_authenticated/sec/shifts': {
@@ -3509,8 +3547,10 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecSafetyRoute: typeof AuthenticatedSecSafetyRoute
   AuthenticatedSecSectionsRoute: typeof AuthenticatedSecSectionsRoute
   AuthenticatedSecShiftsRoute: typeof AuthenticatedSecShiftsRoute
+  AuthenticatedSecSupportRoute: typeof AuthenticatedSecSupportRoute
   AuthenticatedSecTimelineRoute: typeof AuthenticatedSecTimelineRoute
   AuthenticatedSecTwinRoute: typeof AuthenticatedSecTwinRoute
+  AuthenticatedSecUrgentRoute: typeof AuthenticatedSecUrgentRoute
   AuthenticatedSecVehiclesRoute: typeof AuthenticatedSecVehiclesRoute
   AuthenticatedSecVisitorsRoute: typeof AuthenticatedSecVisitorsRoute
   AuthenticatedSecIndexRoute: typeof AuthenticatedSecIndexRoute
@@ -3539,8 +3579,10 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecSafetyRoute: AuthenticatedSecSafetyRoute,
   AuthenticatedSecSectionsRoute: AuthenticatedSecSectionsRoute,
   AuthenticatedSecShiftsRoute: AuthenticatedSecShiftsRoute,
+  AuthenticatedSecSupportRoute: AuthenticatedSecSupportRoute,
   AuthenticatedSecTimelineRoute: AuthenticatedSecTimelineRoute,
   AuthenticatedSecTwinRoute: AuthenticatedSecTwinRoute,
+  AuthenticatedSecUrgentRoute: AuthenticatedSecUrgentRoute,
   AuthenticatedSecVehiclesRoute: AuthenticatedSecVehiclesRoute,
   AuthenticatedSecVisitorsRoute: AuthenticatedSecVisitorsRoute,
   AuthenticatedSecIndexRoute: AuthenticatedSecIndexRoute,
