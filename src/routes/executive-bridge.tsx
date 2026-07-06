@@ -143,9 +143,12 @@ function ExecutiveBridgePage() {
   const initial = Math.min(Math.max(search.p ?? 0, 0), SCENES.length - 1);
   const [idx, setIdx] = React.useState(initial);
   const [primary, setPrimary] = React.useState<"ar" | "en">(search.lang ?? "ar");
-  const [autoAdvance, setAutoAdvance] = React.useState(false);
+  // Continuous narration mode: ARIA reads each scene, then auto-advances
+  // on audio-ended. Falls back to a silent timer if audio is unavailable.
+  const [narrating, setNarrating] = React.useState(true);
   const [progress, setProgress] = React.useState(0);
   const reduced = usePrefersReducedMotion();
+  const narrationAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
   // URL sync
   React.useEffect(() => {
@@ -155,26 +158,96 @@ function ExecutiveBridgePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, primary]);
 
-  // Auto-advance timer
+  // Continuous narration: fetch this scene's TTS, play, then advance.
   React.useEffect(() => {
-    if (!autoAdvance) {
+    if (!narrating) {
+      narrationAudioRef.current?.pause();
+      narrationAudioRef.current = null;
       setProgress(0);
       return;
     }
-    const t0 = performance.now();
+    let cancelled = false;
+    let fallbackTimer: number | null = null;
     let raf = 0;
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - t0) / AUTO_ADVANCE_MS);
-      setProgress(p);
-      if (p >= 1) {
-        setIdx((i) => (i + 1) % SCENES.length);
-      } else {
-        raf = requestAnimationFrame(tick);
-      }
+    const scene = SCENES[idx];
+    const text =
+      primary === "ar"
+        ? `${scene.title_ar} ${scene.body_ar}`
+        : `${scene.title_en}. ${scene.body_en}`;
+
+    const advance = () => {
+      if (cancelled) return;
+      if (idx < SCENES.length - 1) setIdx(idx + 1);
+      else setNarrating(false);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [autoAdvance, idx]);
+
+    const startVisualProgress = (durationMs: number) => {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        if (cancelled) return;
+        const p = Math.min(1, (now - t0) / durationMs);
+        setProgress(p);
+        if (p < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    };
+
+    (async () => {
+      try {
+        AriaAudioBus.unlock();
+        AriaAudioBus.stopAll();
+      } catch {
+        /* noop */
+      }
+      try {
+        const r = await fetch("/api/public/aria-tts", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (!r.ok || cancelled) throw new Error(`tts ${r.status}`);
+        const blob = await r.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        const a = new Audio(url);
+        a.preload = "auto";
+        narrationAudioRef.current = a;
+        a.onloadedmetadata = () => {
+          if (!cancelled && isFinite(a.duration) && a.duration > 0) {
+            startVisualProgress(a.duration * 1000);
+          }
+        };
+        a.onended = () => {
+          URL.revokeObjectURL(url);
+          advance();
+        };
+        a.onerror = () => {
+          URL.revokeObjectURL(url);
+          fallbackTimer = window.setTimeout(advance, AUTO_ADVANCE_MS);
+          startVisualProgress(AUTO_ADVANCE_MS);
+        };
+        try {
+          await a.play();
+        } catch {
+          // Autoplay blocked — surface pause state so the user can resume.
+          if (!cancelled) setNarrating(false);
+        }
+      } catch {
+        // TTS unavailable — advance on the fallback timer to keep the tour moving.
+        fallbackTimer = window.setTimeout(advance, AUTO_ADVANCE_MS);
+        startVisualProgress(AUTO_ADVANCE_MS);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      cancelAnimationFrame(raf);
+      narrationAudioRef.current?.pause();
+      narrationAudioRef.current = null;
+    };
+  }, [narrating, idx, primary]);
+
 
   const goTo = React.useCallback((next: number) => {
     setIdx(((next % SCENES.length) + SCENES.length) % SCENES.length);
@@ -188,7 +261,7 @@ function ExecutiveBridgePage() {
       else if (e.key === "ArrowLeft") goTo(idx + 1);
       else if (e.key === " ") {
         e.preventDefault();
-        setAutoAdvance((a) => !a);
+        setNarrating((a: boolean) => !a);
       } else if (e.key.toLowerCase() === "l") {
         setPrimary((p) => (p === "ar" ? "en" : "ar"));
       } else if (e.key === "Escape") {
@@ -324,11 +397,12 @@ function ExecutiveBridgePage() {
             ›
           </ControlBtn>
           <ControlBtn
-            onClick={() => setAutoAdvance((a) => !a)}
-            label={autoAdvance ? "إيقاف التقديم | Pause auto" : "تقديم تلقائي | Auto-advance"}
+            onClick={() => setNarrating((a: boolean) => !a)}
+            label={narrating ? "إيقاف السرد | Pause narration" : "استئناف السرد | Resume narration"}
           >
-            {autoAdvance ? "❚❚" : "▶"}
+            {narrating ? "❚❚" : "▶"}
           </ControlBtn>
+
           <ControlBtn onClick={() => goTo(idx + 1)} label="التالي | Next">
             ‹
           </ControlBtn>
