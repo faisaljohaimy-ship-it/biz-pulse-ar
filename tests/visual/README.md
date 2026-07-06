@@ -38,3 +38,27 @@ Artifacts:
 
 - **RED**: run against `main` without the emblem `data-testid`s or with the top emblem removed → both targets fail visibility / safe-area assertions.
 - **GREEN**: with the current implementation and freshly written baselines, all 10 checks (2 targets × 5 viewports) pass.
+
+---
+
+## Stacking assertions — `hero_stacking.py`
+
+Programmatic z-order / stacking-context contract, run via
+`npm run test:stacking` (or `python3 tests/visual/hero_stacking.py`).
+
+For every viewport it asserts:
+
+1. **`emblem-topmost`** — at the Saudi emblem's own center, `elementsFromPoint`
+   returns the emblem `<img>` (or a descendant) as the topmost intro-shell
+   element. Dev-tooling overlays and `pointer-events: none` are neutralized
+   during the probe so paint order is measured, not hit-testing quirks.
+2. **`crest-topmost`** — same, for the Vision 2030 crest wrapper and its
+   descendants.
+3. **`face-clear`** — neither emblem appears anywhere in the hit-stack at
+   ARIA's approximate face center (video-center, 38% down).
+4. **`skip-separate`** — the Skip button (when present) does not overlap the
+   emblem or crest bounding boxes.
+5. **`z-range`** — every element inside `.hero-zero-shell` with an explicit
+   `z-index` stays inside `[10, 80]`. Nothing climbs above the shell itself.
+
+Current baseline: **25 checks passing across 5 viewports**.
