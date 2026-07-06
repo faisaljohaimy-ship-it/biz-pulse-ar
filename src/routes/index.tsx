@@ -133,31 +133,69 @@ function IntroLanding() {
             willChange: "transform, opacity",
           }}
         >
-          {/* Static assembled NEXIOS wordmark — glowing chrome */}
-          <div className="relative mb-6 w-full">
-            <NexiosWordmark />
+          {/* Vision 2030 crest — replaces the old headline. Typographic
+              emblem with soft green halo, followed by the English
+              "Digital Transformation" tagline. Bilingual, RTL-safe. */}
+          <div dir="ltr" className="relative mb-8 flex w-full flex-col items-center text-center">
+            {/* Soft dark halo scrim so the crest lifts off the ARIA backdrop */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(3,10,18,0.55) 0%, rgba(3,10,18,0.28) 45%, rgba(3,10,18,0) 75%)",
+                filter: "blur(6px)",
+              }}
+            />
+
+            {/* Vision 2030 wordmark — Arabic + numerals */}
+            <h1
+              dir="rtl"
+              className="whitespace-nowrap font-black leading-none"
+              style={{
+                fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+                fontWeight: 900,
+                letterSpacing: "0.06em",
+                fontSize: "clamp(2.2rem, 8vw, 5rem)",
+                color: "#F5FBFF",
+                textShadow: [
+                  "0 0 4px rgba(220,240,255,0.9)",
+                  "0 0 22px rgba(0,180,120,0.7)",
+                  "0 0 50px rgba(0,140,90,0.55)",
+                  "0 0 110px rgba(0,120,80,0.35)",
+                ].join(","),
+              }}
+            >
+              رؤية <span style={{ color: "#4ADE80" }}>2030</span>
+            </h1>
+
+            {/* Emerald underline accent */}
+            <span
+              aria-hidden
+              className="mt-3 block h-px w-24 sm:w-32"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(74,222,128,0.85) 50%, transparent 100%)",
+                boxShadow: "0 0 18px rgba(74,222,128,0.55)",
+              }}
+            />
+
+            {/* Digital Transformation — English tagline under the crest */}
+            <p
+              className="mt-3 whitespace-nowrap font-bold uppercase"
+              style={{
+                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+                fontWeight: 800,
+                letterSpacing: "0.32em",
+                fontSize: "clamp(0.7rem, 1.6vw, 1rem)",
+                color: "rgba(220,240,230,0.9)",
+                textShadow: "0 0 14px rgba(0,180,120,0.55)",
+              }}
+            >
+              Digital Transformation
+            </p>
           </div>
 
-          {/* Bilingual headline */}
-          <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
-            {ar ? (
-              <>
-                الذكاء، <span className="text-[#3AE8FF]">تحت القيادة.</span>
-                <br />
-                <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
-                  نيكسيوس ينفّذ.
-                </span>
-              </>
-            ) : (
-              <>
-                Intelligence, <span className="text-[#3AE8FF]">in command.</span>
-                <br />
-                <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
-                  NEXIOS executes.
-                </span>
-              </>
-            )}
-          </h1>
 
 
 
