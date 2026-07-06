@@ -237,5 +237,7 @@ export function HajjExecutiveStage() {
         </div>
       </div>
     </section>
+    <HajjExecDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+    </>
   );
 }
