@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { toast } from "sonner";
+import { TenantSwitcher } from "@/components/simulation/TenantSwitcher";
 
 export const Route = createFileRoute("/_authenticated/command-center")({
   component: CommandCenterPage,
@@ -381,9 +382,12 @@ function CommandCenterPage() {
       {/* Header */}
       <header className="border-b border-emerald-400/15 bg-[#061A2E]/80 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-lg font-bold tracking-tight sm:text-xl">مركز القيادة الذكي</h1>
-            <p className="mt-1 text-xs text-white/50">{dateLabel}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <h1 className="text-lg font-bold tracking-tight sm:text-xl">مركز القيادة الذكي</h1>
+              <p className="mt-1 text-xs text-white/50">{dateLabel}</p>
+            </div>
+            <TenantSwitcher />
           </div>
           <button
             type="button"

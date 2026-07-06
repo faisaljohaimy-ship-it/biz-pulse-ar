@@ -58,6 +58,7 @@ import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
 import { Route as ApiVoiceDiagnosticsRouteImport } from './routes/api/voice-diagnostics'
 import { Route as ApiUrgentSummaryRouteImport } from './routes/api/urgent-summary'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
 import { Route as AuthenticatedVoiceSetupRouteImport } from './routes/_authenticated/voice-setup'
@@ -429,6 +430,11 @@ const ApiUrgentSummaryRoute = ApiUrgentSummaryRouteImport.update({
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -1221,6 +1227,7 @@ export interface FileRoutesByFullPath {
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
@@ -1397,6 +1404,7 @@ export interface FileRoutesByTo {
   '/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
@@ -1577,6 +1585,7 @@ export interface FileRoutesById {
   '/_authenticated/voice-setup': typeof AuthenticatedVoiceSetupRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRoute
   '/api/chat': typeof ApiChatRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/urgent-summary': typeof ApiUrgentSummaryRoute
   '/api/voice-diagnostics': typeof ApiVoiceDiagnosticsRoute
@@ -1757,6 +1766,7 @@ export interface FileRouteTypes {
     | '/voice-setup'
     | '/workflows'
     | '/api/chat'
+    | '/api/health'
     | '/api/tts'
     | '/api/urgent-summary'
     | '/api/voice-diagnostics'
@@ -1933,6 +1943,7 @@ export interface FileRouteTypes {
     | '/voice-setup'
     | '/workflows'
     | '/api/chat'
+    | '/api/health'
     | '/api/tts'
     | '/api/urgent-summary'
     | '/api/voice-diagnostics'
@@ -2112,6 +2123,7 @@ export interface FileRouteTypes {
     | '/_authenticated/voice-setup'
     | '/_authenticated/workflows'
     | '/api/chat'
+    | '/api/health'
     | '/api/tts'
     | '/api/urgent-summary'
     | '/api/voice-diagnostics'
@@ -2227,6 +2239,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRouteWithChildren
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiUrgentSummaryRoute: typeof ApiUrgentSummaryRoute
   ApiVoiceDiagnosticsRoute: typeof ApiVoiceDiagnosticsRoute
@@ -2610,6 +2623,13 @@ declare module '@tanstack/react-router' {
       path: '/api/tts'
       fullPath: '/api/tts'
       preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -3800,6 +3820,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRouteWithChildren,
+  ApiHealthRoute: ApiHealthRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiUrgentSummaryRoute: ApiUrgentSummaryRoute,
   ApiVoiceDiagnosticsRoute: ApiVoiceDiagnosticsRoute,
