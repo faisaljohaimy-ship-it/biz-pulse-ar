@@ -522,6 +522,16 @@ export function HeroZeroIntro() {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes hero-zero-vision {
+          0%   { opacity: 0;   transform: translateX(-50%) translateY(-14px) scale(0.42); filter: blur(10px); }
+          35%  { opacity: 0.85; filter: blur(4px); }
+          75%  { opacity: 1;   transform: translateX(-50%) translateY(0) scale(1.02); filter: blur(0.4px); }
+          100% { opacity: 1;   transform: translateX(-50%) translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes hero-zero-vision-quiet {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
       `}</style>
     </div>
   );
