@@ -159,6 +159,22 @@ function IntroLanding() {
             style={{ isolation: "isolate", filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.35))" }}
           >
             <NexiosWordmark />
+            <p
+              dir="ltr"
+              className="whitespace-nowrap text-center"
+              style={{
+                marginTop: "clamp(6px, 1dvh, 12px)",
+                fontFamily: '"Space Grotesk", ui-sans-serif, system-ui',
+                fontWeight: 700,
+                fontSize: "clamp(0.65rem, 2vw, 0.9rem)",
+                letterSpacing: "0.35em",
+                textTransform: "uppercase",
+                color: "rgba(227,232,238,0.85)",
+                textShadow: "0 0 12px rgba(190,205,225,0.35)",
+              }}
+            >
+              Digital Transformation
+            </p>
           </div>
 
 
