@@ -4,6 +4,7 @@ import {
   Activity, AlertTriangle, ShieldAlert, Radar, KeyRound, UserCheck, HardHat,
   Car, FileBadge, Siren, Camera, Eye, ListChecks, BarChart3, FileText,
   Clock, Boxes, Building2, Brain, ShieldCheck, Plug, Network, Wrench, Rocket, Crown, Building, BookOpen,
+  LifeBuoy, Zap,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
