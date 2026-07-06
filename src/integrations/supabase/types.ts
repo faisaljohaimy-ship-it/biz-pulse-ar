@@ -1033,6 +1033,82 @@ export type Database = {
           },
         ]
       }
+      evolution_log: {
+        Row: {
+          applied_at: string
+          id: string
+          proposal_id: string | null
+          summary_ar: string
+        }
+        Insert: {
+          applied_at?: string
+          id?: string
+          proposal_id?: string | null
+          summary_ar: string
+        }
+        Update: {
+          applied_at?: string
+          id?: string
+          proposal_id?: string | null
+          summary_ar?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolution_log_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "evolution_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evolution_proposals: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          description_ar: string | null
+          id: string
+          priority: string
+          status: string
+          title_ar: string
+          title_en: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          description_ar?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title_ar: string
+          title_en: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          description_ar?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title_ar?: string
+          title_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolution_proposals_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "intelligence_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       executive_briefings: {
         Row: {
           created_at: string
@@ -1507,6 +1583,36 @@ export type Database = {
           kind?: string
           org_id?: string
           started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      intelligence_agents: {
+        Row: {
+          created_at: string
+          focus_area: string
+          id: string
+          name_ar: string
+          name_en: string
+          role: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          focus_area: string
+          id?: string
+          name_ar: string
+          name_en: string
+          role: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          focus_area?: string
+          id?: string
+          name_ar?: string
+          name_en?: string
+          role?: string
           status?: string
         }
         Relationships: []

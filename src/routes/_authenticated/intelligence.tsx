@@ -1,175 +1,312 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Brain, ShieldCheck, Cpu, Layers, Activity, Sparkles, LineChart, Palette, CheckCircle2, XCircle, Clock, History } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { useEnterprisePulse } from "@/lib/enterprise-pulse";
-import { useFabricSnapshot, metric } from "@/lib/use-fabric";
-import { PredictionsPanel } from "@/components/predictions-panel";
-import { Brain, TrendingUp, ShieldAlert, Lightbulb, Sparkles } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
+import { PageHeader, Section } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
 });
 
+type Agent = {
+  id: string;
+  name_ar: string;
+  name_en: string;
+  role: string;
+  focus_area: string;
+  status: "active" | "standby";
+};
+
+type Proposal = {
+  id: string;
+  agent_id: string | null;
+  title_ar: string;
+  title_en: string;
+  description_ar: string | null;
+  priority: "critical" | "high" | "medium";
+  status: "proposed" | "approved" | "rejected" | "applied";
+  created_at: string;
+  decided_at: string | null;
+};
+
+type LogEntry = {
+  id: string;
+  proposal_id: string | null;
+  summary_ar: string;
+  applied_at: string;
+};
+
+const ROLE_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+  Executive: Brain,
+  CTO: Cpu,
+  Architect: Layers,
+  DevOps: Activity,
+  Security: ShieldCheck,
+  Product: Sparkles,
+  Analytics: LineChart,
+  "UI/UX": Palette,
+};
 
 function IntelligencePage() {
   const { locale } = useI18n();
+  const { user } = useAuth();
   const ar = locale === "ar";
-  const pulse = useEnterprisePulse();
-  const { data: fabric } = useFabricSnapshot();
-  const navigate = useNavigate();
-  const signals = fabric.counts.events;
-  const risksFlagged = fabric.topAlerts.filter((a) => a.severity === "critical" || a.severity === "high").length;
-  const opportunities = metric(fabric, "opportunityIndex");
-  const health = metric(fabric, "enterpriseHealth");
+  const qc = useQueryClient();
 
+  const { data: agents = [] } = useQuery({
+    queryKey: ["intel-agents"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("intelligence_agents").select("*").order("created_at");
+      if (error) throw error;
+      return data as Agent[];
+    },
+  });
 
-  const predictions = [
-    { t: ar ? "إيرادات Q4 ستتجاوز الخطة بنسبة 6.2٪" : "Q4 revenue likely to beat plan by 6.2%", c: 91 },
-    { t: ar ? "ارتفاع متوقع في الطلب على دعم العملاء بنسبة 18٪" : "18% surge expected in support demand", c: 84 },
-    { t: ar ? "احتمال تأخر مشروع SAP إلى Q1" : "SAP rollout likely to slip into Q1", c: 76 },
-    { t: ar ? "نمو 12٪ في تبني AI Copilot الداخلي" : "12% growth in internal AI Copilot adoption", c: 88 },
-  ];
+  const { data: proposals = [] } = useQuery({
+    queryKey: ["intel-proposals"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("evolution_proposals").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Proposal[];
+    },
+  });
 
-  const risks = [
-    { t: ar ? "تذبذب سعر العملة قد يكلف SAR 1.8M" : "FX volatility may cost SAR 1.8M", sev: ar ? "حرج" : "Critical", tone: "rose" as const },
-    { t: ar ? "ضعف خطة استمرارية مزود سحابي" : "Single-cloud BCP weakness", sev: ar ? "مرتفع" : "High", tone: "amber" as const },
-    { t: ar ? "مخاطر تنظيمية في سوق جديدة" : "Regulatory risk in new market", sev: ar ? "متوسط" : "Medium", tone: "amber" as const },
-  ];
+  const { data: logs = [] } = useQuery({
+    queryKey: ["intel-log"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("evolution_log").select("*").order("applied_at", { ascending: false }).limit(50);
+      if (error) throw error;
+      return data as LogEntry[];
+    },
+  });
 
-  const opps = [
-    { t: ar ? "إطلاق منتج جديد في سوق الإمارات" : "Launch new product in UAE market", up: "SAR 12M" },
-    { t: ar ? "أتمتة 14 عملية متبقية في المالية" : "Automate 14 remaining finance processes", up: "SAR 4.6M" },
-    { t: ar ? "إعادة التفاوض على 3 عقود كبرى" : "Renegotiate 3 major contracts", up: "SAR 2.9M" },
-  ];
+  useEffect(() => {
+    const ch = supabase
+      .channel("evolution_proposals_rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "evolution_proposals" }, () => {
+        qc.invalidateQueries({ queryKey: ["intel-proposals"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "evolution_log" }, () => {
+        qc.invalidateQueries({ queryKey: ["intel-log"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [qc]);
 
-  const recs = [
-    ar ? "قفل عقود تحوط للعملة لمدة 6 أشهر" : "Lock 6-month FX hedging contracts",
-    ar ? "تفعيل مزود سحابي ثانوي خلال 30 يوماً" : "Activate secondary cloud provider within 30 days",
-    ar ? "بدء حملة مسبقة لدعم العملاء قبل ذروة Q4" : "Pre-stage support capacity before Q4 peak",
-    ar ? "تسريع نشر AI Copilot لأقسام التشغيل" : "Accelerate AI Copilot rollout to ops divisions",
-  ];
+  const decide = useMutation({
+    mutationFn: async (vars: { id: string; status: "approved" | "rejected" }) => {
+      const { error } = await supabase
+        .from("evolution_proposals")
+        .update({ status: vars.status, decided_at: new Date().toISOString(), decided_by: user?.id ?? null })
+        .eq("id", vars.id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["intel-proposals"] });
+      toast.success(vars.status === "approved" ? (ar ? "تم الاعتماد" : "Approved") : ar ? "تم الرفض" : "Rejected");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const agentById = new Map(agents.map((a) => [a.id, a]));
+  const byStatus = (s: Proposal["status"]) => proposals.filter((p) => p.status === s);
 
   return (
-    <NexusPage
-      eyebrow="DECISION INTELLIGENCE"
-      title={ar ? "طبقة ذكاء القرارات" : "Decision Intelligence Layer"}
-      subtitle={ar ? "تنبؤات، مخاطر، فرص، وتوصيات استراتيجية مدعومة بالذكاء الاصطناعي." : "Predictions, risks, opportunities and strategic AI recommendations."}
-      actions={<NexusPill tone="violet"><Brain className="h-3 w-3" /> AI MODELED</NexusPill>}
-      status={pulse.status}
-      lastRefreshed={pulse.lastRefreshed}
-      owner={ar ? "وحدة استخبارات الأعمال" : "Business Intelligence Unit"}
-      nextAction={{
-        label: ar ? "افتح أعلى توصية" : "Open top recommendation",
-        onClick: () => navigate({ to: "/decisions" }),
-      }}
-      why={
-        ar
-          ? `النماذج رصدت ${pulse.intel.length} إشارات استراتيجية بثقة تتجاوز 80٪، أهمها تسارع تبني الذكاء الاصطناعي.`
-          : `Models flagged ${pulse.intel.length} strategic signals above 80% confidence, led by accelerating AI adoption.`
-      }
-      whatNext={
-        ar
-          ? "حوّل أعلى توصية إلى قرار رسمي، وعيّن المسؤول، وحدّد موعد المراجعة في لوحة القرارات."
-          : "Convert the top recommendation into a formal decision, assign an owner, and schedule review on the Decisions board."
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "إشارات نشطة" : "Live signals"} value={String(signals)} tone="cyan" />
-        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise health"} value={`${health}%`} tone={health >= 70 ? "emerald" : "amber"} />
-        <NexusStat label={ar ? "مخاطر مرصودة" : "Risks flagged"} value={String(risksFlagged)} tone="rose" />
-        <NexusStat label={ar ? "فرص مكتشفة" : "Opportunities"} value={String(opportunities)} tone="violet" />
+    <Section>
+      <PageHeader
+        icon={Brain}
+        title={ar ? "منظمة الذكاء ذاتية التطور" : "Self-Evolving Intelligence Organization"}
+        subtitle={ar ? "منظومة ذكاء تقترح وتتطوّر تحت اعتماد بشري · Proposes, evolves, human-approved" : "Proposes, evolves, human-approved"}
+        badge={ar ? "داخلي" : "Internal"}
+      />
+
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200">
+        {ar
+          ? "الاعتماد النهائي بشري — الوكلاء يقترحون ولا ينفّذون على الإنتاج."
+          : "Final approval is human — agents propose, they do not act on production."}
       </div>
 
-      <PredictionsPanel compact />
-
-
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <NexusCard>
-          <Header icon={TrendingUp} label={ar ? "تنبؤات استراتيجية" : "STRATEGIC PREDICTIONS"} tone="cyan" />
-          <ul className="mt-3 space-y-3">
-            {predictions.map((p, i) => (
-              <li key={i} className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
+      {/* Panel 1 — Agent Council */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{ar ? "مجلس الوكلاء" : "Agent Council"}</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {agents.map((a) => {
+            const Icon = ROLE_ICON[a.role] ?? Brain;
+            return (
+              <div
+                key={a.id}
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl transition hover:border-primary/40 hover:shadow-glow"
+              >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-sm text-slate-200">{p.t}</span>
-                  <NexusPill tone="cyan">{p.c}%</NexusPill>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">{ar ? a.name_ar : a.name_en}</div>
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{a.role}</div>
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-1 text-[10px] text-emerald-300">
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full",
+                        a.status === "active" ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)] animate-pulse" : "bg-muted",
+                      )}
+                    />
+                    {a.status === "active" ? (ar ? "نشط" : "Active") : ar ? "استعداد" : "Standby"}
+                  </span>
                 </div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/5">
-                  <div className="h-full rounded-full bg-cyan-400/80" style={{ width: `${p.c}%` }} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </NexusCard>
-
-        <NexusCard>
-          <Header icon={ShieldAlert} label={ar ? "كشف المخاطر" : "RISK DETECTION"} tone="rose" />
-          <ul className="mt-3 space-y-2">
-            {risks.map((r, i) => (
-              <li key={i} className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3">
-                <NexusPill tone={r.tone}>{r.sev}</NexusPill>
-                <span className="text-sm text-slate-200">{r.t}</span>
-              </li>
-            ))}
-          </ul>
-        </NexusCard>
-
-        <NexusCard>
-          <Header icon={Lightbulb} label={ar ? "اكتشاف الفرص" : "OPPORTUNITY DETECTION"} tone="emerald" />
-          <ul className="mt-3 space-y-2">
-            {opps.map((o, i) => (
-              <li key={i} className="flex items-start justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3">
-                <span className="text-sm text-slate-200">{o.t}</span>
-                <NexusPill tone="emerald">+{o.up}</NexusPill>
-              </li>
-            ))}
-          </ul>
-        </NexusCard>
-
-        <NexusCard>
-          <Header icon={Sparkles} label={ar ? "توصيات الذكاء" : "AI RECOMMENDATIONS"} tone="violet" />
-          <ul className="mt-3 space-y-2">
-            {recs.map((r, i) => (
-              <li key={i} className="flex items-start gap-3 rounded-lg border border-violet-400/15 bg-violet-500/[0.04] p-3 text-sm text-slate-200">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-violet-400/40 text-[10px] font-bold text-violet-300">
-                  {i + 1}
-                </span>
-                {r}
-              </li>
-            ))}
-          </ul>
-        </NexusCard>
+                <p className="mt-3 text-xs text-muted-foreground">{a.focus_area}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Intelligence stream */}
-      <NexusCard glow>
-        <Header icon={Brain} label={ar ? "تيار الذكاء الاستراتيجي" : "STRATEGIC INTELLIGENCE STREAM"} tone="cyan" />
-        <div className="mt-3 grid gap-3 lg:grid-cols-3">
-          {[
-            { l: ar ? "اتجاه السوق" : "Market trend", v: ar ? "الطلب على AI يتسارع 2.3x" : "AI demand accelerating 2.3x", tone: "cyan" },
-            { l: ar ? "حركة منافس" : "Competitor move", v: ar ? "Acme أطلقت منتجاً مماثلاً" : "Acme launched a rival product", tone: "amber" },
-            { l: ar ? "تنبيه تنظيمي" : "Regulatory alert", v: ar ? "تحديث لائحة حماية البيانات" : "Data protection regulation update", tone: "rose" },
-            { l: ar ? "شذوذ تشغيلي" : "Operational anomaly", v: ar ? "هبوط مفاجئ في معدل تحويل قمع البيع" : "Funnel conversion dropped sharply", tone: "amber" },
-            { l: ar ? "نمو داخلي" : "Internal growth", v: ar ? "تبني AI الداخلي +14٪" : "Internal AI adoption +14%", tone: "emerald" },
-            { l: ar ? "إشارة استثمار" : "Investment signal", v: ar ? "تدفقات رأسمالية إلى قطاع الطاقة" : "Capital inflows into energy sector", tone: "violet" },
-          ].map((s, i) => (
-            <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-              <NexusPill tone={s.tone as "cyan" | "amber" | "rose" | "emerald" | "violet"}>{s.l}</NexusPill>
-              <div className="mt-2 text-sm text-slate-200">{s.v}</div>
-            </div>
-          ))}
+      {/* Panel 2 — Proposals Pipeline */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{ar ? "مقترحات التطوّر" : "Evolution Proposals"}</h2>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <ProposalColumn
+            title={ar ? "قيد الاقتراح" : "Proposed"}
+            icon={Clock}
+            proposals={byStatus("proposed")}
+            agentById={agentById}
+            ar={ar}
+            actions={(p) => (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => decide.mutate({ id: p.id, status: "approved" })}
+                  disabled={decide.isPending}
+                  className="bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+                >
+                  <CheckCircle2 className="me-1 h-3.5 w-3.5" /> {ar ? "اعتماد" : "Approve"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => decide.mutate({ id: p.id, status: "rejected" })}
+                  disabled={decide.isPending}
+                  className="border-rose-500/40 text-rose-200 hover:bg-rose-500/10"
+                >
+                  <XCircle className="me-1 h-3.5 w-3.5" /> {ar ? "رفض" : "Reject"}
+                </Button>
+              </div>
+            )}
+          />
+          <ProposalColumn
+            title={ar ? "معتمد — بانتظار التنفيذ" : "Approved — Awaiting Execution"}
+            icon={CheckCircle2}
+            proposals={[...byStatus("approved"), ...byStatus("applied")]}
+            agentById={agentById}
+            ar={ar}
+          />
+          <ProposalColumn
+            title={ar ? "مرفوض" : "Rejected"}
+            icon={XCircle}
+            proposals={byStatus("rejected")}
+            agentById={agentById}
+            ar={ar}
+          />
         </div>
-      </NexusCard>
-    </NexusPage>
+      </div>
+
+      {/* Panel 3 — Evolution Log */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{ar ? "سجلّ التطوّر" : "Evolution Log"}</h2>
+        {logs.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center text-sm text-muted-foreground">
+            <History className="mx-auto mb-2 h-5 w-5 opacity-60" />
+            {ar ? "لا تحسينات مطبّقة بعد — بانتظار الاعتماد والتنفيذ." : "No improvements applied yet — awaiting approval & execution."}
+          </div>
+        ) : (
+          <ol className="relative space-y-4 border-s-2 border-primary/20 ps-5">
+            {logs.map((l) => (
+              <li key={l.id} className="relative">
+                <span className="absolute -start-[27px] top-1.5 h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <div className="text-sm">{l.summary_ar}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{new Date(l.applied_at).toLocaleString(ar ? "ar-SA" : "en-US")}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+    </Section>
   );
 }
 
-function Header({ icon: Icon, label, tone }: { icon: React.ComponentType<{ className?: string }>; label: string; tone: "cyan" | "rose" | "emerald" | "violet" }) {
-  const c = tone === "cyan" ? "text-cyan-300" : tone === "rose" ? "text-rose-300" : tone === "emerald" ? "text-emerald-300" : "text-violet-300";
+function ProposalColumn({
+  title,
+  icon: Icon,
+  proposals,
+  agentById,
+  ar,
+  actions,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  proposals: Proposal[];
+  agentById: Map<string, Agent>;
+  ar: boolean;
+  actions?: (p: Proposal) => React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-2">
-      <Icon className={`h-4 w-4 ${c}`} />
-      <div className={`text-[11px] font-bold tracking-[0.25em] ${c}/80`}>{label}</div>
+    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+        <Icon className="h-4 w-4" />
+        {title}
+        <span className="ms-auto rounded-full bg-white/5 px-2 py-0.5 text-[10px]">{proposals.length}</span>
+      </div>
+      {proposals.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-white/10 p-4 text-center text-xs text-muted-foreground">
+          {ar ? "لا مقترحات جديدة — المنظومة تراقب" : "No new proposals — the system is watching"}
+        </div>
+      ) : (
+        proposals.map((p) => {
+          const agent = p.agent_id ? agentById.get(p.agent_id) : null;
+          return (
+            <div key={p.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                  {agent ? (ar ? agent.name_ar : agent.name_en) : ar ? "وكيل" : "Agent"}
+                </span>
+                <PriorityChip priority={p.priority} ar={ar} />
+              </div>
+              <div className="mt-2 text-sm font-semibold">{ar ? p.title_ar : p.title_en}</div>
+              {p.description_ar && ar && <p className="mt-1 text-xs text-muted-foreground">{p.description_ar}</p>}
+              {actions && <div className="mt-3">{actions(p)}</div>}
+              {p.decided_at && !actions && (
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  {ar ? "تم القرار: " : "Decided: "}
+                  {new Date(p.decided_at).toLocaleString(ar ? "ar-SA" : "en-US")}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
     </div>
   );
+}
+
+function PriorityChip({ priority, ar }: { priority: Proposal["priority"]; ar: boolean }) {
+  const map = {
+    critical: { cls: "bg-rose-500/15 text-rose-300 border-rose-500/30", ar: "حرج", en: "Critical" },
+    high: { cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", ar: "مرتفع", en: "High" },
+    medium: { cls: "bg-sky-500/15 text-sky-300 border-sky-500/30", ar: "متوسط", en: "Medium" },
+  } as const;
+  const c = map[priority];
+  return <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-semibold", c.cls)}>{ar ? c.ar : c.en}</span>;
 }
