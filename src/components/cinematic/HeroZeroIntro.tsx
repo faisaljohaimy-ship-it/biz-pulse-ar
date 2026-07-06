@@ -342,11 +342,12 @@ export function HeroZeroIntro() {
 
       <video
         ref={videoRef}
-        className="hero-zero-video absolute inset-0 z-10"
+        className="hero-zero-video absolute inset-0 z-10 block"
         style={{
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          display: "block",
           animation: reducedMotion.current
             ? undefined
             : "hero-zero-fadein 1400ms 300ms both ease-out",
