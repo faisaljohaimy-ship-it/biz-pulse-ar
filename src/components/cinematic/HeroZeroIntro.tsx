@@ -475,22 +475,6 @@ export function HeroZeroIntro() {
             willChange: "opacity, transform, filter",
           }}
         />
-        <div
-          dir="rtl"
-          className="hero-zero-vision2030 relative inline-block whitespace-nowrap text-center"
-          data-text="2030"
-          style={{
-            maxWidth: "92vw",
-            marginTop: "clamp(8px, 1.2dvh, 16px)",
-            fontFamily: '"IBM Plex Sans Arabic", "Tajawal", ui-sans-serif, system-ui',
-            fontWeight: 900,
-            fontSize: "clamp(3.5rem, 12vw, 7rem)",
-            letterSpacing: "0.02em",
-            lineHeight: 1,
-          }}
-        >
-          2030
-        </div>
       </div>
 
 
