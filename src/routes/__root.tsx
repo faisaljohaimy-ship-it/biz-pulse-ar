@@ -103,13 +103,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:height", content: "630" },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "NEXIOS AI OS" },
+      { name: "twitter:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
       {
         name: "twitter:description",
         content:
           "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { title: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { name: "description", content: "· Executive Delivery Platform" },
+      { property: "og:description", content: "· Executive Delivery Platform" },
+      { name: "twitter:description", content: "· Executive Delivery Platform" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b326ec2f-bd42-42d8-afb3-c87a96d20558/id-preview-1d263371--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1783342512899.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b326ec2f-bd42-42d8-afb3-c87a96d20558/id-preview-1d263371--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app-1783342512899.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
