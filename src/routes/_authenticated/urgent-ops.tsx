@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
+
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +18,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/urgent-ops")({
   component: UrgentOpsPage,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorBoundary error={error} reset={reset} routeLabel="/urgent-ops" />
+  ),
 });
+
 
 type Priority = "عاجل جدًا" | "عاجل" | "متابعة";
 type TaskStatus = "جديد" | "قيد المعالجة" | "بانتظار اعتماد" | "مغلق";
