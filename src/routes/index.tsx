@@ -131,7 +131,7 @@ function IntroLanding() {
           <h1 className="mb-8 text-center text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl">
             {ar ? (
               <>
-                الذكاء, <span className="text-[#3AE8FF]">تحت القيادة.</span>
+                الذكاء، <span className="text-[#3AE8FF]">تحت القيادة.</span>
                 <br />
                 <span className="text-lg font-medium uppercase tracking-widest text-white/60 sm:text-xl">
                   نيكسيوس ينفّذ.
