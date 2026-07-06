@@ -383,17 +383,30 @@ export function HeroZeroIntro() {
       >
         <img
           src={saudiEmblem}
+          srcSet={`${saudiEmblem} 1x, ${saudiEmblem} 2x`}
           alt=""
           data-testid="hero-saudi-emblem"
-          width={512}
-          height={512}
+          width={768}
+          height={768}
           decoding="async"
+          fetchPriority="high"
           style={{
-            width: "clamp(84px, 13vw, 168px)",
+            // Scale locked inside vertical safe-area: never taller than 18vh so
+            // the emblem cannot spill past the top inset on short viewports.
+            width: "clamp(96px, min(15vw, 18vh), 200px)",
             height: "auto",
             opacity: 0,
-            filter:
-              "drop-shadow(0 0 12px rgba(74,222,128,0.55)) drop-shadow(0 0 28px rgba(0,140,90,0.35))",
+            // Sharpness: tight inner shadow for edge definition + soft outer
+            // glow. Avoid large blur radii that would smear the swords/leaves.
+            filter: [
+              "drop-shadow(0 0 1px rgba(255,255,255,0.55))",
+              "drop-shadow(0 0 6px rgba(74,222,128,0.55))",
+              "drop-shadow(0 0 22px rgba(0,140,90,0.32))",
+              "contrast(1.06) saturate(1.08)",
+            ].join(" "),
+            imageRendering: "auto",
+            transform: "translateZ(0)", // GPU raster on hi-DPI for crisp edges
+            backfaceVisibility: "hidden",
             animation: reducedMotion.current
               ? "hero-zero-vision-quiet 600ms 300ms forwards ease-out"
               : "hero-zero-vision 3200ms 1200ms forwards cubic-bezier(0.22,1,0.36,1)",
