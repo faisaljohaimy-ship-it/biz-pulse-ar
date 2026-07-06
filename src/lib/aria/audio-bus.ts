@@ -114,6 +114,16 @@ export const AriaAudioBus = {
    */
   acquire(source: Source, stop: StopFn): boolean {
     const stack = new Error().stack?.split("\n").slice(2, 5).join(" | ");
+    // Global no-autoplay guard: refuse any AUDIBLE source unless the bus has
+    // been unlocked by a real user gesture. AriaAudioBus.unlock() MUST be
+    // called from inside a click / tap / keydown handler. This blocks all
+    // on-mount / on-load / on-scroll audio, no matter which component tries.
+    if (!unlocked) {
+      // eslint-disable-next-line no-console
+      console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", { source, stack });
+      VoiceTimeline.push("OWNER", "acquire REFUSED (no gesture)", { source, stack });
+      return false;
+    }
     if (current && PRIORITY[source] < PRIORITY[current.source]) {
       VoiceTimeline.push("OWNER", "acquire DENIED (lower priority)", { requested: source, owner: current.source, stack });
       return false;
