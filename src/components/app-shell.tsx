@@ -2,57 +2,40 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   BarChart3,
-  Sparkles,
   Settings,
   LogOut,
   Menu,
   Bot,
   Users,
-  Mic,
   FolderUp,
-  Store,
-  BookOpen,
   Workflow,
-  BookMarked,
   Shield,
   ListChecks,
   Sun,
   Moon,
   FileText,
-  Crown,
-  Boxes,
   Plug,
   Network,
-  GitMerge,
   Brain,
-  Presentation,
-  Briefcase,
-  Gavel,
   Building2,
   Rocket,
   ShieldAlert,
   ShieldCheck,
-  TrendingUp,
-  Ghost,
-  Zap,
-  GitBranch,
-  Volume2,
   Layers,
   MapPin,
-  Play,
-  Activity,
-  Wrench, Radio, Stethoscope, GraduationCap,
+  Home,
+  Crown,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
+import { useRegion } from "@/lib/region-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-// Legacy ExecutiveOverlay removed — replaced by the ARIA Singleton (`<AriaCopilot />`
-// mounted once in `src/routes/__root.tsx`). See `src/lib/aria-core/README.md`.
 import { OrgSwitcher } from "@/components/org/org-switcher";
+import { RegionSwitcher } from "@/components/RegionSwitcher";
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
@@ -113,25 +96,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function useNavGroups(): NavGroup[] {
   const { t, locale } = useI18n();
+  const { region } = useRegion();
   const ar = (loc: string, arText: string, enText: string) => (loc === "ar" ? arText : enText);
   return [
     {
+      // Home + shared executive command surfaces (deduped: one Command Center).
       label: t("nav.group.workspace"),
       items: [
-        { to: "/theater", icon: Crown, label: ar(locale, "مسرح القيادة التنفيذية", "Executive Theater") },
-        { to: "/situation-room", icon: Crown, label: ar(locale, "غرفة الموقف التنفيذية", "Executive Situation Room") },
-        { to: "/bridge", icon: Crown, label: ar(locale, "جسر القيادة التنفيذي", "Executive Command Bridge") },
-        { to: "/mission-control", icon: ShieldCheck, label: ar(locale, "مركز القيادة التنفيذي", "Mission Control") },
+        { to: "/", icon: Home, label: ar(locale, "الرئيسية", "Home") },
+        { to: "/mission-control", icon: Crown, label: ar(locale, "مركز القيادة", "Command Center") },
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
-        { to: "/investor", icon: Presentation, label: ar(locale, "مركز القيادة الاستثماري", "Investor Command Center") },
         { to: "/tasks", icon: ListChecks, label: t("nav.tasks") },
-        { to: "/urgent-ops", icon: Zap, label: ar(locale, "المساندة والأعمال العاجلة", "Urgent Ops & Support") },
-        { to: "/command-center", icon: Brain, label: ar(locale, "مركز القيادة", "AI Command Center") },
-        { to: "/files", icon: FolderUp, label: t("nav.files") },
       ],
     },
     {
-      label: ar(locale, "الأمن الصناعي - المنطقة الغربية", "Industrial Security - Western Region"),
+      // Industrial Security — same full system, region-scoped label.
+      label: locale === "ar" ? region.labelAr : region.labelEn,
       items: [
         { to: "/sec", icon: ShieldCheck, label: ar(locale, "غرفة العمليات", "Ops Room") },
         { to: "/sec/exec", icon: Crown, label: ar(locale, "اللوحة التنفيذية", "Exec Dashboard") },
@@ -141,6 +121,9 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/projects", icon: Rocket, label: ar(locale, "المشاريع", "Projects") },
         { to: "/sec/maintenance", icon: Workflow, label: ar(locale, "أوامر العمل", "Work Orders") },
         { to: "/sec/incidents", icon: ShieldAlert, label: ar(locale, "البلاغات", "Incidents") },
+        { to: "/sec/patrols", icon: Shield, label: ar(locale, "الدوريات", "Patrols") },
+        { to: "/sec/permits", icon: FileText, label: ar(locale, "التصاريح", "Permits") },
+        { to: "/sec/visitors", icon: Users, label: ar(locale, "الزوّار", "Visitors") },
         { to: "/sec/cctv", icon: Layers, label: ar(locale, "CCTV", "CCTV") },
         { to: "/sec/kpi", icon: BarChart3, label: ar(locale, "مؤشرات الأداء", "KPIs") },
         { to: "/sec/ai", icon: Brain, label: ar(locale, "توصيات ARIA", "ARIA Recos") },
@@ -148,63 +131,29 @@ function useNavGroups(): NavGroup[] {
       ],
     },
     {
-      label: t("nav.group.executive"),
+      label: ar(locale, "الذكاء", "Intelligence"),
       items: [
-        { to: "/live-dashboard", icon: Activity, label: ar(locale, "العرض التنفيذي الحي", "Live Executive Presentation") },
-        { to: "/executive", icon: Crown, label: ar(locale, "غرفة القيادة التنفيذية", "Executive HQ") },
-        { to: "/fabric", icon: Layers, label: ar(locale, "النسيج الذكي", "Intelligence Fabric") },
-        { to: "/briefing", icon: FileText, label: t("nav.briefing") },
-        { to: "/chief-of-staff", icon: Crown, label: t("nav.chief") },
-        { to: "/intelligence", icon: Brain, label: t("nav.intelligence") },
-        { to: "/boardroom", icon: Presentation, label: t("nav.boardroom") },
-        { to: "/memory", icon: Brain, label: ar(locale, "ذاكرة المؤسسة", "Memory") },
-        { to: "/crisis", icon: Zap, label: ar(locale, "تنبؤ الأزمات", "Crisis") },
-        { to: "/execution", icon: GitBranch, label: ar(locale, "ذكاء التنفيذ", "Execution") },
-        { to: "/forgotten", icon: Ghost, label: ar(locale, "ما الذي نُسي؟", "Forgotten") },
-        { to: "/executive-map", icon: MapPin, label: ar(locale, "الخريطة التنفيذية", "Executive Map") },
+        { to: "/aria", icon: Brain, label: ar(locale, "ARIA — مركز الذكاء", "ARIA Console") },
+        { to: "/agents", icon: Bot, label: t("nav.agents") },
+        { to: "/workflows", icon: Workflow, label: t("nav.workflows") },
+      ],
+    },
+    {
+      label: ar(locale, "التقارير", "Reports"),
+      items: [
         { to: "/executive-reports", icon: FileText, label: ar(locale, "التقارير التنفيذية", "Executive Reports") },
       ],
     },
     {
-      label: t("nav.group.enterprise"),
+      label: ar(locale, "التكاملات", "Integrations"),
       items: [
-        { to: "/cockpit", icon: Crown, label: ar(locale, "قمرة القيادة", "Cockpit") },
-        { to: "/portfolio", icon: Briefcase, label: ar(locale, "المحفظة", "Portfolio") },
-        { to: "/decisions", icon: Gavel, label: ar(locale, "القرارات", "Decisions") },
-        { to: "/departments", icon: Building2, label: ar(locale, "الأقسام", "Departments") },
-        { to: "/transformation", icon: Rocket, label: ar(locale, "التحول", "Transformation") },
-        { to: "/risk", icon: ShieldAlert, label: ar(locale, "المخاطر", "Risk") },
-        { to: "/governance", icon: ShieldCheck, label: ar(locale, "الحوكمة", "Governance") },
-        { to: "/outcomes", icon: TrendingUp, label: ar(locale, "النتائج", "Outcomes") },
-        { to: "/analyst", icon: Brain, label: ar(locale, "محلل AI", "AI Analyst") },
-        { to: "/digital-twin", icon: Boxes, label: t("nav.twin") },
         { to: "/integrations", icon: Plug, label: t("nav.integrations") },
-        { to: "/ai-ops", icon: Network, label: t("nav.aiops") },
-        { to: "/orchestration", icon: GitMerge, label: t("nav.orchestration") },
       ],
     },
     {
-      label: t("nav.group.intelligence"),
+      label: ar(locale, "الملفات", "Files"),
       items: [
-        { to: "/aria", icon: Brain, label: ar(locale, "ARIA — مركز الذكاء", "ARIA Console") },
-        { to: "/assistant", icon: Sparkles, label: t("nav.assistant") },
-        { to: "/agents", icon: Bot, label: t("nav.agents") },
-        { to: "/voice", icon: Mic, label: t("nav.voice") },
-        { to: "/tts", icon: Volume2, label: t("nav.tts") },
-        { to: "/workflows", icon: Workflow, label: t("nav.workflows") },
-        { to: "/tools", icon: Wrench, label: ar(locale, "الأدوات", "Tools") },
-        { to: "/execution", icon: Activity, label: ar(locale, "مركز التنفيذ الحي", "Execution Center") },
-        { to: "/events", icon: Radio, label: ar(locale, "بث الأحداث", "Event Stream") },
-        { to: "/exec", icon: Play, label: ar(locale, "وحدة تحكم التنفيذ", "Execution Console") },
-        { to: "/operations", icon: Activity, label: ar(locale, "مركز العمليات الحي", "Operations Center") },
-        { to: "/health", icon: ShieldCheck, label: ar(locale, "صحة المنظومة", "Enterprise Health") },
-        { to: "/diagnostics", icon: Stethoscope, label: ar(locale, "تشخيصات التشغيل", "Runtime Diagnostics") },
-        { to: "/readiness", icon: ShieldCheck, label: ar(locale, "جاهزية الإنتاج", "Production Readiness") },
-        { to: "/prompts", icon: BookMarked, label: t("nav.prompts") },
-        { to: "/marketplace", icon: Store, label: t("nav.marketplace") },
-        { to: "/knowledge", icon: BookOpen, label: t("nav.knowledge") },
-        { to: "/learn", icon: GraduationCap, label: locale === "ar" ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge" },
-        { to: "/analytics", icon: BarChart3, label: t("nav.analytics") },
+        { to: "/files", icon: FolderUp, label: t("nav.files") },
       ],
     },
     {
@@ -238,8 +187,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <div className="border-b border-sidebar-border px-3 py-3">
+      <div className="space-y-2 border-b border-sidebar-border px-3 py-3">
         <OrgSwitcher />
+        <RegionSwitcher onNavigate={onNavigate} />
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3">
@@ -320,8 +270,11 @@ function LangToggle() {
 
 function UserChip() {
   const { user, signOut } = useAuth();
-  const { t } = useI18n();
-  const displayName = "إدارة الأمن الصناعي بالمنطقة الغربية";
+  const { t, locale } = useI18n();
+  const { region } = useRegion();
+  const displayName = locale === "ar"
+    ? `إدارة ${region.labelAr.replace(/^الأمن الصناعي — /, "الأمن الصناعي بالمنطقة ").replace("المنطقة المنطقة", "المنطقة")}`
+    : region.labelEn;
   return (
     <div className="nexus-user-meta flex min-w-0 items-center gap-2" title={user?.email ?? undefined}>
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">

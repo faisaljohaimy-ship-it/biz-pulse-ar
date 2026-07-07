@@ -32,6 +32,7 @@ import { LiveClock } from "@/components/LiveClock";
 
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
+import { RegionProvider } from "@/lib/region-context";
 
 
 
@@ -231,6 +232,7 @@ function RootComponent() {
         <ThemeProvider>
           <I18nProvider>
             <DemoModeProvider>
+              <RegionProvider>
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
                 {/* Global beta marquee — hidden on the hero (index) route on ALL devices, and while the intro plays. Visible on every system page. */}
@@ -257,6 +259,7 @@ function RootComponent() {
                 {!suppressOverlays && <GenesisIntro />}
                 <Toaster />
               </AriaProvider>
+              </RegionProvider>
             </DemoModeProvider>
           </I18nProvider>
         </ThemeProvider>
