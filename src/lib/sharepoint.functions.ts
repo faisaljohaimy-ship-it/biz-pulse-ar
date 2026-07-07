@@ -34,17 +34,30 @@ export const listSharePointSites = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requirePlatformAdmin(context.userId);
-    const root = await spJson<SiteLite>("/sites/root?$select=id,displayName,webUrl");
-    let extra: SiteLite[] = [];
     try {
-      const r = await spJson<{ value?: SiteLite[] }>(
-        "/sites?search=*&$select=id,displayName,webUrl&$top=20",
-      );
-      extra = r.value ?? [];
-    } catch { /* ignore */ }
-    const all = [root, ...extra.filter((s) => s.id !== root.id)];
-    return { sites: all };
+      const root = await spJson<SiteLite>("/sites/root?$select=id,displayName,webUrl");
+      let extra: SiteLite[] = [];
+      try {
+        const r = await spJson<{ value?: SiteLite[] }>(
+          "/sites?search=*&$select=id,displayName,webUrl&$top=20",
+        );
+        extra = r.value ?? [];
+      } catch { /* ignore */ }
+      const all = [root, ...extra.filter((s) => s.id !== root.id)];
+      return { sites: all, unavailable: false as const, reason: null };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const isMsa = /MSA account|not supported for MSA/i.test(message);
+      return {
+        sites: [] as SiteLite[],
+        unavailable: true as const,
+        reason: isMsa
+          ? "The linked Microsoft account is a personal (MSA) account. SharePoint requires a work/school (Entra ID) account."
+          : "SharePoint is temporarily unavailable.",
+      };
+    }
   });
+
 
 export const uploadReportToSharePoint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
