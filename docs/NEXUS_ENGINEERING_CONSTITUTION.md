@@ -101,6 +101,7 @@ Any of these reappearing = release-blocking bug. **Never re-litigate.**
 | **FR-14** | Public schema table without RLS or GRANT | `CREATE TABLE` migration missing GRANT block |
 | **FR-15** | Google OAuth calling `supabase.auth.signInWithOAuth` directly | Bypassing `lovable.auth.signInWithOAuth` broker |
 | **FR-16** | Cinematic intro flashes then disappears / never appears on laptop or mobile | Root shell hides `WelcomeThenGenesis` behind `suppressOverlays`/`introActive`, or marks session complete before `onDone` |
+| **FR-19** | Unverified metric, status, or certification badge shown to user | Static "UPTIME 99.97%", "TLS 1.3", "ISO 27001", "LIVE", "بث مباشر" rendered without an `Evidence` object from `src/lib/evidence/gate.ts` |
 
 Every fix touching these areas MUST cite the FR ID(s) it protects.
 The self-evolution engine's `proposalRespectsIntroConstitution` gate blocks
