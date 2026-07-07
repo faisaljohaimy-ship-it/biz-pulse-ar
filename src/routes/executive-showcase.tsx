@@ -1,6 +1,6 @@
 // Executive Showcase — full-screen cinematic auto-play tour of the NEXIOS
-// platform components. RTL-first, bilingual, sim-tagged, respects
-// prefers-reduced-motion (no autoplay when reduced).
+// platform components, narrated end-to-end by ARIA (voice + captions).
+// RTL-first, bilingual, sim-tagged, respects prefers-reduced-motion.
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 import {
@@ -16,8 +16,12 @@ import {
   SkipBack,
   X,
   ArrowLeft,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 
 export const Route = createFileRoute("/executive-showcase")({
   head: () => ({
@@ -41,10 +45,15 @@ type Scene = {
   title_en: string;
   value_ar: string;
   value_en: string;
+  /** ARIA narration text (Arabic, fully diacritized for TTS). */
+  narration_ar: string;
+  /** ARIA narration text (English fallback / captions). */
+  narration_en: string;
   accent: string; // hex
-  durationMs: number;
+  durationMs: number; // fallback when narration audio is unavailable
   visual: () => React.ReactNode;
 };
+
 
 const ACCENT_NAVY = "#3AE8FF";
 const ACCENT_EMERALD = "#34D399";
