@@ -12,23 +12,25 @@ const RAW_EMBED_URL =
   (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
   "/hajj-prime";
 function withDarkParams(url: string): string {
+  // Deterministic: identical output on server + client to avoid hydration mismatch.
+  // If the value is absolute (external override), preserve origin; otherwise keep it relative.
+  const isAbsolute = /^https?:\/\//i.test(url);
   try {
-    const u = new URL(url, typeof window !== "undefined" ? window.location.href : "https://neexios.com");
+    const base = "https://internal.local";
+    const u = new URL(url, base);
     u.searchParams.set("theme", "dark");
     u.searchParams.set("forceDark", "1");
     u.searchParams.set("embed", "1");
     if (!u.hash) u.hash = "dark";
-    // Return a relative URL for same-origin sources so nothing leaks to the UI.
-    if (typeof window !== "undefined" && u.origin === window.location.origin) {
-      return `${u.pathname}${u.search}${u.hash}`;
-    }
-    return u.toString();
+    if (isAbsolute) return u.toString();
+    return `${u.pathname}${u.search}${u.hash}`;
   } catch {
     return url;
   }
 }
 const LIVE_URL = withDarkParams(RAW_EMBED_URL);
 const INTERNAL_URL = "/hajj-prime";
+
 
 
 /**
