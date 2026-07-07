@@ -43,7 +43,8 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
     const started = Date.now();
     const supabase = context.supabase;
     const q = data.q;
-    const like = `%${q.replace(/[%_]/g, (m) => `\\${m}`)}%`;
+    const safeQ = q.replace(/[,()]/g, " ");
+    const like = `%${safeQ.replace(/[%_]/g, (m) => `\\${m}`)}%`;
     const wanted = new Set<SearchSource>(data.sources ?? ["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"]);
     const perSourceLimit = Math.max(3, Math.ceil(data.limit / Math.max(1, wanted.size)));
 
