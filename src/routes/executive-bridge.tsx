@@ -146,6 +146,7 @@ function ExecutiveBridgePage() {
   // Continuous narration mode: ARIA reads each scene, then auto-advances
   // on audio-ended. Falls back to a silent timer if audio is unavailable.
   const [narrating, setNarrating] = React.useState(true);
+  const [completed, setCompleted] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const reduced = usePrefersReducedMotion();
   const narrationAudioRef = React.useRef<HTMLAudioElement | null>(null);
