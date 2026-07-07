@@ -111,19 +111,10 @@ function IntroLanding() {
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
       {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
 
-      {/* ARIA Cinematic Overture — mounts first, blocks legacy intros while active */}
-      {!introDone && (
-        <AriaCinematicIntro
-          onEnter={finishIntro}
-          videoSrc="/aria-hero-motion.mp4"
-          posterSrc="/aria-backdrop.webp"
-          audioSrc="/aria-greeting-voice.mp3"
-        />
-      )}
+      {/* Pre-hero intros retired. The single ARIA welcome video is mounted
+          globally in __root.tsx via <WelcomeThenGenesis />. */}
 
-      {/* Legacy intros only after the overture finishes */}
-      {introDone && <HeroZeroIntro />}
-      {introDone && <NexiosGenesisIntro />}
+
 
 
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
