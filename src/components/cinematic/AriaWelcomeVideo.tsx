@@ -49,18 +49,32 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   const [showSoundChip, setShowSoundChip] = useState(false);
   const [statusOnline, setStatusOnline] = useState(false);
   const [bars, setBars] = useState<number[]>(() => Array(BAR_COUNT).fill(0.15));
+  const [videoFailed, setVideoFailed] = useState(false);
   const finishedRef = useRef(false);
+  const mountedAtRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : 0);
+  const pendingFinishRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
 
   const reduced = useMemo(() => {
+    if (typeof window === "undefined") return false;
     try { return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false; }
     catch { return false; }
   }, []);
 
+  // INVARIANT-3 + INVARIANT-4: single-source finalizer, honors MIN_DISPLAY_MS.
   const finish = () => {
     if (finishedRef.current) return;
+    const elapsed = performance.now() - mountedAtRef.current;
+    if (elapsed < MIN_DISPLAY_MS) {
+      if (pendingFinishRef.current != null) return;
+      pendingFinishRef.current = window.setTimeout(() => {
+        pendingFinishRef.current = null;
+        finish();
+      }, MIN_DISPLAY_MS - elapsed);
+      return;
+    }
     finishedRef.current = true;
     const v = videoRef.current;
     const bg = bgVideoRef.current;
@@ -75,6 +89,12 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       setIntroActive(false);
       onDone();
     }, FADE_MS);
+  };
+
+  // Soft handler: on error, keep HUD/poster visible until MIN_DISPLAY_MS.
+  const onVideoError = () => {
+    setVideoFailed(true);
+    finish();
   };
 
   // Attach WebAudio analyser once video is playing with sound.
