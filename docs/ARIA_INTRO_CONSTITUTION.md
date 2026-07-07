@@ -9,6 +9,7 @@ invariant below. Violations are release-blockers.
 Files under jurisdiction:
 - `src/components/cinematic/AriaWelcomeVideo.tsx`
 - `src/components/cinematic/WelcomeThenGenesis.tsx`
+- `src/routes/__root.tsx` (mount order; MUST NOT hide the gate when `introActive=true`)
 - `src/lib/user-interaction.ts` (interaction tracker used by the gate)
 - `src/lib/intro-store.ts` (intro-active flag consumed by the shell)
 
@@ -16,7 +17,8 @@ Files under jurisdiction:
 
 - **INVARIANT-1 — Single gate.** `WelcomeThenGenesis` is the ONLY pre-system
   gate. No sibling intro, splash, curtain, or hero-zero may mount before the
-  landing route. The session guard key is `sessionStorage["nexios-welcome"]`.
+  landing route. The session guard key is `sessionStorage["nexios-welcome"]`;
+  only value `complete:v2` may skip the intro. Interrupted/stale values MUST replay.
 - **INVARIANT-2 — Fast paint.** A visible layer (poster, HUD, or video)
   must reach the screen within ≤200ms of mount. A blank frame is a bug.
 - **INVARIANT-3 — Minimum display.** `finish()` MUST NOT run before
@@ -36,6 +38,9 @@ Files under jurisdiction:
   button). None of them cause the gate to disappear early.
 - **INVARIANT-8 — Skip is explicit.** The Skip button is the only user
   action that may bypass INVARIANT-3.
+- **INVARIANT-13 — No self-unmount.** The root shell may hide marquee, chat,
+  watermark, and greeter while `introActive=true`, but it MUST keep
+  `WelcomeThenGenesis` mounted independently of `suppressOverlays`.
 
 ## Enforcement
 
@@ -155,9 +160,10 @@ and MUST be reverted or hot-fixed, never re-litigated:
 | FR-6  | React hydration mismatch on first paint                                  | Reading `window` / `matchMedia` outside a `useEffect`                      |
 | FR-7  | Intro replays on every hard refresh in the same session                  | Writing the session-guard key AFTER flipping state, or not writing at all  |
 | FR-8  | Chat/composer or marquee ribbon covers the intro                         | Any element with `z-index > 100` mounted at the same time as the intro    |
+| FR-9  | Intro flashes then disappears / never appears on laptop or mobile         | Root shell gates `WelcomeThenGenesis` behind `!introActive`/`suppressOverlays`, or writes completion before `onDone` |
 
 Every future fix that touches `AriaCinematicIntro.tsx` MUST cite the FR
-ID(s) it protects in the commit / proposal rationale. `PROTECTED_PATHS`
+  ID(s) it protects in the commit / proposal rationale. `PROTECTED_PATHS`
 in `src/lib/aria/self-evolution/engine.server.ts` blocks self-evolution
 proposals that do not.
 

@@ -57,6 +57,8 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/components/cinematic/AriaWelcomeVideo.tsx",
   "src/components/cinematic/WelcomeThenGenesis.tsx",
   "src/components/intro/AriaCinematicIntro.tsx",
+  "src/routes/__root.tsx",
+  "src/routes/index.tsx",
   "src/lib/aria/learning/interaction-log.server.ts",
   "src/lib/aria/learning/pattern-miner.server.ts",
   "src/lib/aria/learning/prompt-injector.server.ts",

@@ -50,6 +50,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   const [statusOnline, setStatusOnline] = useState(false);
   const [bars, setBars] = useState<number[]>(() => Array(BAR_COUNT).fill(0.15));
   const [videoFailed, setVideoFailed] = useState(false);
+  const [fitMode, setFitMode] = useState<"cover" | "contain">("contain");
   const finishedRef = useRef(false);
   const mountedAtRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : 0);
   const pendingFinishRef = useRef<number | null>(null);
@@ -63,11 +64,12 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     catch { return false; }
   }, []);
 
-  // INVARIANT-3 + INVARIANT-4: single-source finalizer, honors MIN_DISPLAY_MS.
-  const finish = () => {
+  // INVARIANT-3 + INVARIANT-4: single-source finalizer. Only explicit Skip
+  // may bypass MIN_DISPLAY_MS; video/error/timeout paths may not.
+  const finish = (options?: { bypassMinDisplay?: boolean }) => {
     if (finishedRef.current) return;
     const elapsed = performance.now() - mountedAtRef.current;
-    if (elapsed < MIN_DISPLAY_MS) {
+    if (!options?.bypassMinDisplay && elapsed < MIN_DISPLAY_MS) {
       if (pendingFinishRef.current != null) return;
       pendingFinishRef.current = window.setTimeout(() => {
         pendingFinishRef.current = null;
@@ -90,6 +92,20 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       onDone();
     }, FADE_MS);
   };
+
+  // Cross-device rendering constitution: portrait mobile fills the frame;
+  // laptop/tablet/landscape preserves the full body with the blurred backdrop.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px) and (orientation: portrait)");
+    const apply = () => setFitMode(mq.matches ? "cover" : "contain");
+    apply();
+    mq.addEventListener?.("change", apply);
+    window.addEventListener("resize", apply);
+    return () => {
+      mq.removeEventListener?.("change", apply);
+      window.removeEventListener("resize", apply);
+    };
+  }, []);
 
   // Soft handler: on error, keep HUD/poster visible until MIN_DISPLAY_MS.
   const onVideoError = () => {
@@ -253,6 +269,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   return (
     <div
       dir="rtl"
+      role="dialog"
+      aria-modal="true"
       className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden"
       style={{
         background:
@@ -263,7 +281,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         pointerEvents: visible ? "auto" : "none",
         maxHeight: "100dvh",
       }}
-      aria-label="ترحيب آريا"
+      aria-label="مقدّمة سينمائية · Cinematic intro"
       onPointerDown={() => { if (muted) unmute(); }}
     >
       {/* Layer A — HUD grid + ambient glow */}
@@ -296,7 +314,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         className="absolute inset-0 h-full w-full"
         style={{
           objectFit: "cover",
-          objectPosition: "center 18%",
+          objectPosition: fitMode === "cover" ? "center 30%" : "center",
           opacity: videoFailed ? 1 : 0.001,
           transition: "opacity 400ms ease",
           filter: "contrast(1.05) saturate(1.05)",
@@ -340,8 +358,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
             onError={onVideoError}
             className="h-full w-full"
             style={{
-              objectFit: "cover",
-              objectPosition: "center 18%",
+              objectFit: fitMode,
+              objectPosition: fitMode === "cover" ? "center 30%" : "center",
               background: "transparent",
               maxHeight: "100dvh",
               filter: "contrast(1.05) saturate(1.05)",
@@ -429,8 +447,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         <button
           type="button"
           onClick={unmute}
-          className="absolute top-5 end-5 z-20 inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#04111f]/70 px-4 py-2 text-xs font-semibold text-[#3AE8FF] shadow-[0_0_28px_rgba(58,232,255,0.45)] backdrop-blur transition hover:bg-[#04111f]/90 sm:text-sm"
-          style={{ animation: "ariaChipPulse 1.6s ease-in-out infinite" }}
+          className="absolute end-5 z-20 inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#04111f]/70 px-4 py-2 text-xs font-semibold text-[#3AE8FF] shadow-[0_0_28px_rgba(58,232,255,0.45)] backdrop-blur transition hover:bg-[#04111f]/90 sm:text-sm"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)", animation: "ariaChipPulse 1.6s ease-in-out infinite" }}
         >
           <Volume2 className="size-4" />
           <span>اضغط لتفعيل الصوت · Tap for sound</span>
@@ -444,7 +462,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           onClick={toggleMute}
           aria-label={muted ? "تشغيل الصوت" : "كتم الصوت"}
           aria-pressed={!muted}
-          className="absolute top-5 end-5 z-20 inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/30 bg-[#04111f]/55 px-3 py-2 text-xs font-medium text-[#3AE8FF] backdrop-blur transition hover:bg-[#04111f]/80"
+          className="absolute end-5 z-20 inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/30 bg-[#04111f]/55 px-3 py-2 text-xs font-medium text-[#3AE8FF] backdrop-blur transition hover:bg-[#04111f]/80"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
         >
           {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
         </button>
@@ -466,8 +485,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       {/* Skip — always visible */}
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); finish(); }}
-        className="absolute bottom-6 start-6 z-30 rounded-full border border-white/25 bg-black/40 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur transition hover:bg-black/60 sm:text-sm"
+        onClick={(e) => { e.stopPropagation(); finish({ bypassMinDisplay: true }); }}
+        className="absolute start-6 z-30 rounded-full border border-white/25 bg-black/40 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur transition hover:bg-black/60 sm:text-sm"
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}
       >
         تخطّي · Skip
       </button>

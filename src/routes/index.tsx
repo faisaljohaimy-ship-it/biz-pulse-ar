@@ -20,7 +20,6 @@ import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { AriaCinematicIntro } from "@/components/intro/AriaCinematicIntro";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />.
 
@@ -104,7 +103,6 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
-      <AriaCinematicIntro surface="home" />
       {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
 
       {/* Pre-hero intros retired. The single ARIA welcome video is mounted

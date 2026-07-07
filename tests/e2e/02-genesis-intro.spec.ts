@@ -20,12 +20,13 @@ test.describe("Genesis intro — once per session", () => {
       await skip.click();
     }
 
-    // Read the session flag set by the intro controller (best-effort key names).
+    await page.waitForTimeout(800);
+
+    // Read the canonical session flag set only after the intro is completed.
     const flag = await page.evaluate(() => {
-      const keys = Object.keys(sessionStorage);
-      return keys.find((k) => /genesis|intro|hero/i.test(k)) ?? null;
+      return sessionStorage.getItem("nexios-welcome");
     });
-    expect(flag, "expected an intro-seen flag in sessionStorage").not.toBeNull();
+    expect(flag, "expected the intro completion flag in sessionStorage").toBe("complete:v2");
 
     // Second navigation in the same session must not re-mount the intro.
     await page.goto("/", { waitUntil: "domcontentloaded" });

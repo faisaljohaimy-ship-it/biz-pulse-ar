@@ -263,7 +263,7 @@ function RootComponent() {
                 </div>
                 {!introActive && <AriaCopilot />}
                 {!suppressOverlays && <AriaGreeter />}
-                {!suppressOverlays && <WelcomeThenGenesis />}
+                <WelcomeThenGenesis />
                 <Toaster />
               </AriaProvider>
               </RegionProvider>

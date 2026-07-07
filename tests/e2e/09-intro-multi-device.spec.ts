@@ -26,6 +26,7 @@ for (const vp of VIEWPORTS) {
       // Fresh session — intro must show.
       await context.clearCookies();
       await page.addInitScript(() => {
+        try { window.sessionStorage.removeItem("nexios-welcome"); } catch { /* noop */ }
         try { window.localStorage.removeItem("aria_intro_seen_v1"); } catch { /* noop */ }
       });
 
@@ -57,6 +58,7 @@ for (const vp of VIEWPORTS) {
       // FR-7: after Skip + reload, session guard prevents re-show.
       await skip.click();
       await page.waitForTimeout(700);
+      await expect(intro).toBeHidden({ timeout: 1500 });
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(page.getByRole("dialog", { name: /cinematic intro|مقدّمة/i }))
         .toHaveCount(0, { timeout: 1500 });

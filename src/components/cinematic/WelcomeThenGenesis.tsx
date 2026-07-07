@@ -6,30 +6,49 @@
 import { useEffect, useState } from "react";
 import { AriaWelcomeVideo } from "./AriaWelcomeVideo";
 
+const INTRO_SESSION_KEY = "nexios-welcome";
+const INTRO_COMPLETE_VALUE = "complete:v2";
+const INTRO_SHOWING_VALUE = "showing:v2";
+
+function setIntroSessionValue(value: string) {
+  try {
+    window.sessionStorage.setItem(INTRO_SESSION_KEY, value);
+  } catch {
+    /* private-mode / disabled storage → rely on mounted state */
+  }
+}
+
 export function WelcomeThenGenesis() {
   const [decided, setDecided] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-    // Read the guard, then IMMEDIATELY write it back before flipping state.
-    // This makes React 19 Strict Mode's double-effect a no-op: the second
-    // pass sees the key already set and never re-mounts the welcome video.
+    // Constitution: the guard is complete-only. Older value "1" and any
+    // interrupted "showing" state must replay, because a previous shell bug
+    // could set the key before the cinematic surface actually reached screen.
     let skip = false;
     try {
       const ss = window.sessionStorage;
-      if (ss.getItem("nexios-welcome") === "1") {
+      if (ss.getItem(INTRO_SESSION_KEY) === INTRO_COMPLETE_VALUE) {
         skip = true;
       } else {
-        ss.setItem("nexios-welcome", "1");
+        ss.setItem(INTRO_SESSION_KEY, INTRO_SHOWING_VALUE);
       }
-    } catch { /* private-mode / disabled storage → show once, then rely on state */ }
+    } catch {
+      /* private-mode / disabled storage → show once, then rely on state */
+    }
     setShowWelcome(!skip);
     setDecided(true);
   }, []);
 
+  const completeWelcome = () => {
+    setIntroSessionValue(INTRO_COMPLETE_VALUE);
+    setShowWelcome(false);
+  };
+
   if (!decided) return null;
   if (!showWelcome) return null;
-  return <AriaWelcomeVideo onDone={() => setShowWelcome(false)} />;
+  return <AriaWelcomeVideo onDone={completeWelcome} />;
 }
 
 
