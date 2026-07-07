@@ -167,22 +167,31 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       aria-label="ترحيب آريا"
       onPointerDown={() => { if (muted) unmute(); }}
     >
-      {/* Cinematic blurred backdrop (same source, muted, cover) */}
+      {/* Cinematic hero backdrop (silent, looped, covers full viewport) */}
       <video
         ref={bgVideoRef}
-        src={welcomeAsset.url}
+        src={heroBackdropAsset.url}
         playsInline
         muted
+        loop
         preload="auto"
         aria-hidden
         className="absolute inset-0 h-full w-full"
         style={{
           objectFit: "cover",
-          filter: "blur(28px) brightness(0.55) saturate(1.05)",
-          transform: "scale(1.15)",
+          filter: "blur(2px) brightness(0.55) saturate(1.1)",
           background: "#04111f",
+          zIndex: 0,
         }}
       />
+
+      {/* Contrast wash over the hero backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent"
+        style={{ zIndex: 1 }}
+      />
+
 
       {/* Main video — fully visible, letterboxed against the blur */}
       <video
