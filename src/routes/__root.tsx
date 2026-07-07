@@ -224,6 +224,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Article III (self-healing): install the client watchdog once at root.
+  useEffect(() => {
+    const cleanup = installAriaWatchdog();
+    return cleanup;
+  }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
