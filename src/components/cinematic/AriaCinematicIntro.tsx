@@ -28,6 +28,8 @@ export interface AriaCinematicIntroProps {
   posterSrc?: string;
   /** ARIA greeting audio, played on the Enter gesture. */
   audioSrc?: string;
+  /** Optional ambient bed played under the intro after the first user gesture. */
+  ambientSrc?: string;
   /** Wordmark text assembled at the climax. */
   wordmark?: string;
   tagline?: string;
@@ -42,13 +44,18 @@ export function AriaCinematicIntro({
   videoSrc = "/aria-hero-motion.mp4",
   posterSrc = "/aria-backdrop.webp",
   audioSrc = "/aria-greeting-voice.mp3",
+  ambientSrc = "/aria-ambient.mp3",
   wordmark = "NEXIOS",
   tagline = "منظومة الذكاء التنفيذية · إدارة الأمن الصناعي",
 }: AriaCinematicIntroProps) {
   const [phase, setPhase] = useState<Phase>("black");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ambientRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const [ambientReady, setAmbientReady] = useState(false);
+  const [ambientOn, setAmbientOn] = useState(false);
+  const [userMuted, setUserMuted] = useState(false);
 
   // Mark the intro active so the rest of the shell (watermark, greeter) can hide.
   useEffect(() => {
@@ -119,7 +126,83 @@ export function AriaCinematicIntro({
     };
   }, []);
 
+  // Ambient bed — arm on the first user gesture (browser autoplay policy).
+  // Silent no-op if the file is missing or blocked; a tiny toggle exposes it.
+  const startAmbient = useCallback(() => {
+    if (REDUCED || userMuted) return;
+    const el = ambientRef.current;
+    if (!el || ambientOn) return;
+    el.volume = 0;
+    el.loop = true;
+    el.muted = false;
+    const p = el.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        setAmbientOn(true);
+        // Gentle fade-in to ~22% so it never fights ARIA's voice.
+        const target = 0.22;
+        const step = () => {
+          if (!ambientRef.current) return;
+          const next = Math.min(target, ambientRef.current.volume + 0.02);
+          ambientRef.current.volume = next;
+          if (next < target) window.setTimeout(step, 90);
+        };
+        step();
+      }).catch(() => {
+        /* blocked or file missing — stay silent, hide toggle */
+      });
+    }
+  }, [ambientOn, userMuted]);
+
+  const stopAmbient = useCallback(() => {
+    const el = ambientRef.current;
+    if (!el) return;
+    // Quick fade-out then pause, so it never overlaps ARIA's voice.
+    const fade = () => {
+      if (!ambientRef.current) return;
+      const next = Math.max(0, ambientRef.current.volume - 0.06);
+      ambientRef.current.volume = next;
+      if (next > 0) window.setTimeout(fade, 50);
+      else {
+        try { ambientRef.current.pause(); } catch { /* noop */ }
+        setAmbientOn(false);
+      }
+    };
+    fade();
+  }, []);
+
+  // Listen for the first user gesture on the intro root and arm the ambient bed.
+  useEffect(() => {
+    if (REDUCED || userMuted) return;
+    const arm = () => {
+      startAmbient();
+    };
+    const opts: AddEventListenerOptions = { once: true, passive: true };
+    window.addEventListener("pointerdown", arm, opts);
+    window.addEventListener("touchstart", arm, opts);
+    window.addEventListener("keydown", arm, opts);
+    window.addEventListener("wheel", arm, opts);
+    return () => {
+      window.removeEventListener("pointerdown", arm);
+      window.removeEventListener("touchstart", arm);
+      window.removeEventListener("keydown", arm);
+      window.removeEventListener("wheel", arm);
+    };
+  }, [startAmbient, userMuted]);
+
+  // Clean up ambient on unmount.
+  useEffect(() => {
+    return () => {
+      const el = ambientRef.current;
+      if (el) {
+        try { el.pause(); } catch { /* noop */ }
+      }
+    };
+  }, []);
+
   const handleEnter = useCallback(() => {
+    // Stop ambient cleanly so it never overlaps ARIA's greeting.
+    stopAmbient();
     // Arm ARIA's voice on the user gesture (autoplay-policy compliant).
     const audio = audioRef.current;
     if (audio) {
@@ -133,7 +216,17 @@ export function AriaCinematicIntro({
       setIntroActive(false);
       onEnter?.();
     }, 900);
-  }, [onEnter]);
+  }, [onEnter, stopAmbient]);
+
+  const toggleAmbient = useCallback(() => {
+    if (ambientOn) {
+      setUserMuted(true);
+      stopAmbient();
+    } else {
+      setUserMuted(false);
+      startAmbient();
+    }
+  }, [ambientOn, startAmbient, stopAmbient]);
 
   const showFigure = phase !== "black";
   const showWord = phase === "wordmark" || phase === "ready" || phase === "exit";
@@ -196,6 +289,30 @@ export function AriaCinematicIntro({
       )}
 
       <audio ref={audioRef} src={audioSrc} preload="auto" className="sr-only" />
+      <audio
+        ref={ambientRef}
+        src={ambientSrc}
+        preload="auto"
+        loop
+        className="sr-only"
+        onCanPlayThrough={() => setAmbientReady(true)}
+        onError={() => setAmbientReady(false)}
+      />
+
+      {/* Ambient sound toggle — only surfaces when the file loads. */}
+      {!REDUCED && ambientReady && (
+        <button
+          type="button"
+          className="aci-sound"
+          onClick={toggleAmbient}
+          aria-pressed={ambientOn}
+          aria-label={ambientOn ? "كتم الصوت الأجواء" : "تشغيل صوت الأجواء"}
+          title={ambientOn ? "كتم الصوت" : "تشغيل الصوت"}
+        >
+          <span aria-hidden>{ambientOn ? "🔊" : "🔈"}</span>
+          <span className="aci-sound-lbl">صوت</span>
+        </button>
+      )}
 
       <style>{`
         .aci-root{
@@ -256,6 +373,17 @@ export function AriaCinematicIntro({
         .aci-enter-en{ font-size:10px; font-weight:600; letter-spacing:.34em;
           text-transform:uppercase; color:rgba(230,255,246,.55); }
         @keyframes aci-pulse{ 0%,100%{box-shadow:0 8px 40px rgba(16,185,129,.22)} 50%{box-shadow:0 8px 54px rgba(16,185,129,.45)} }
+
+        .aci-sound{ position:absolute; top:14px; inset-inline-start:14px; z-index:4;
+          display:inline-flex; align-items:center; gap:6px;
+          padding:8px 12px; min-height:36px; cursor:pointer;
+          border-radius:9999px; border:1px solid rgba(52,211,153,.35);
+          background:rgba(4,17,31,.55); backdrop-filter:blur(8px);
+          color:#E6FFF6; font-size:12px; font-weight:600; letter-spacing:.02em;
+          transition:border-color .2s, background .2s, transform .15s; }
+        .aci-sound:hover{ border-color:#34D399; background:rgba(4,17,31,.85); }
+        .aci-sound:focus-visible{ outline:2px solid #34D399; outline-offset:2px; }
+        .aci-sound-lbl{ font-family:"Tajawal",ui-sans-serif; }
 
         .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 
