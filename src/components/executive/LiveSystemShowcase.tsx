@@ -37,6 +37,24 @@ const INTERNAL_URL = "/hajj-prime";
  */
 export function LiveSystemShowcase() {
   const [expanded, setExpanded] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const failTimerRef = useRef<number | null>(null);
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+
+  useEffect(() => {
+    // If the iframe hasn't reported `load` within 8s, surface the dark
+    // fallback card instead of leaving viewers staring at a white/empty box.
+    failTimerRef.current = window.setTimeout(() => {
+      setFailed((prev) => (loaded ? prev : true));
+    }, 8000);
+    return () => {
+      if (failTimerRef.current !== null) window.clearTimeout(failTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const { locale } = useI18n();
   const ar = locale === "ar";
 
