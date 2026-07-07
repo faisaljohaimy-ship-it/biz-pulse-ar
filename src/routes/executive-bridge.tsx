@@ -396,8 +396,16 @@ function ExecutiveBridgePage() {
             />
           ))}
         </div>
+        {completed && (
+          <div
+            role="status"
+            className="rounded-full border border-[#F5C560]/60 bg-[#F5C560]/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[#F5C560]"
+          >
+            انتهت الجولة · Tour ended
+          </div>
+        )}
         <div className="flex items-center gap-2 sm:gap-3">
-          <ControlBtn onClick={() => goTo(idx - 1)} label="السابق | Previous">
+          <ControlBtn onClick={() => { setCompleted(false); goTo(idx - 1); }} label="السابق | Previous">
             ›
           </ControlBtn>
           <ControlBtn
@@ -407,8 +415,19 @@ function ExecutiveBridgePage() {
             {narrating ? "❚❚" : "▶"}
           </ControlBtn>
 
-          <ControlBtn onClick={() => goTo(idx + 1)} label="التالي | Next">
+          <ControlBtn onClick={() => { setCompleted(false); goTo(idx + 1); }} label="التالي · تخطّي | Next · Skip">
             ‹
+          </ControlBtn>
+          <ControlBtn
+            onClick={() => {
+              setCompleted(false);
+              setProgress(0);
+              setIdx(0);
+              setNarrating(true);
+            }}
+            label="إعادة الجولة | Restart"
+          >
+            ↻
           </ControlBtn>
           <a
             href="/"
