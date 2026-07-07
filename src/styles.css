@@ -387,6 +387,29 @@
   .delay-300 { animation-delay: 0.3s }
   .delay-400 { animation-delay: 0.4s }
 
+  /* SecCommandLiveCard */
+  @keyframes pulse-cyan {
+    0%, 100% { box-shadow: 0 0 24px rgba(0, 212, 255, 0.15), 0 0 0 1px rgba(58, 232, 255, 0.15) inset }
+    50%      { box-shadow: 0 0 48px rgba(0, 212, 255, 0.35), 0 0 0 1px rgba(58, 232, 255, 0.35) inset }
+  }
+  @keyframes sec-stream {
+    0%   { background-position: 0% 50% }
+    100% { background-position: 200% 50% }
+  }
+  @keyframes live-flash {
+    0%   { background-color: rgba(52, 211, 153, 0.45) }
+    100% { background-color: rgba(52, 211, 153, 0.10) }
+  }
+  .animate-pulse-cyan { animation: pulse-cyan 3.2s ease-in-out infinite }
+  .animate-sec-stream { animation: sec-stream 6s linear infinite }
+  .animate-live-flash { animation: live-flash 200ms ease-out both }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse-cyan,
+    .animate-sec-stream,
+    .animate-live-flash { animation: none !important }
+  }
+
   .shadow-exec {
     box-shadow:
       0 30px 80px -30px rgba(0, 212, 255, 0.40),
