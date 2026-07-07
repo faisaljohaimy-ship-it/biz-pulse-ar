@@ -17,6 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import welcomeAsset from "@/assets/aria-welcome.mp4.asset.json";
+import posterAsset from "@/assets/aria-hero-presence.png.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import {
   hasPriorInteraction,
@@ -28,7 +29,14 @@ interface Props {
   onDone: () => void;
 }
 
+/**
+ * Engineering constitution — see docs/ARIA_INTRO_CONSTITUTION.md
+ *   INVARIANT-1 single intro gate  INVARIANT-2 visual ≤200ms
+ *   INVARIANT-3 no finish before MIN_DISPLAY_MS  INVARIANT-4 finishOnce
+ *   INVARIANT-5 setIntroActive paired  INVARIANT-6 SSR-safe
+ */
 const FADE_MS = 600;
+const MIN_DISPLAY_MS = 3_500; // never disappear before this
 const MAX_MS = 12_000; // hard cap safety
 const BAR_COUNT = 14;
 
