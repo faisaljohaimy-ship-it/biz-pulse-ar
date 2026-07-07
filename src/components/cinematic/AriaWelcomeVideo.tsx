@@ -46,7 +46,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
 
   useEffect(() => {
     setIntroActive(true);
-    try { window.sessionStorage.setItem("nexios-welcome", "1"); } catch { /* ignore */ }
+    // sessionStorage guard is owned by <WelcomeThenGenesis /> (parent) so
+    // that Strict Mode's double-effect does not race with our own write.
+
 
     const reduced = (() => {
       try { return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false; }
