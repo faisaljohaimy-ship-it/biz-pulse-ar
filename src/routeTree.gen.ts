@@ -178,6 +178,7 @@ import { Route as AuthenticatedSecAccessRouteImport } from './routes/_authentica
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -1074,6 +1075,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -1259,6 +1265,7 @@ export interface FileRoutesByFullPath {
   '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo/': typeof PromoIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -1438,6 +1445,7 @@ export interface FileRoutesByTo {
   '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo': typeof PromoIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -1621,6 +1629,7 @@ export interface FileRoutesById {
   '/promo/f5': typeof PromoF5Route
   '/promo/impact': typeof PromoImpactRoute
   '/promo/': typeof PromoIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -1804,6 +1813,7 @@ export interface FileRouteTypes {
     | '/promo/f5'
     | '/promo/impact'
     | '/promo/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
     | '/learn/$slug'
@@ -1983,6 +1993,7 @@ export interface FileRouteTypes {
     | '/promo/f5'
     | '/promo/impact'
     | '/promo'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
     | '/learn/$slug'
@@ -2165,6 +2176,7 @@ export interface FileRouteTypes {
     | '/promo/f5'
     | '/promo/impact'
     | '/promo/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
@@ -2280,6 +2292,7 @@ export interface RootRouteChildren {
   PromoF5Route: typeof PromoF5Route
   PromoImpactRoute: typeof PromoImpactRoute
   PromoIndexRoute: typeof PromoIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAriaTtsRoute: typeof ApiAriaTtsRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
@@ -3493,6 +3506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -3878,6 +3898,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromoF5Route: PromoF5Route,
   PromoImpactRoute: PromoImpactRoute,
   PromoIndexRoute: PromoIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAriaTtsRoute: ApiAriaTtsRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
