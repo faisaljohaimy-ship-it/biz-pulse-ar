@@ -36,6 +36,7 @@ import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
 import { BusinessKpiPanel } from "@/components/executive/BusinessKpiPanel";
 import { DecisionCenter } from "@/components/executive/DecisionCenter";
 import { ExecutiveTimeline } from "@/components/executive/ExecutiveTimeline";
+import { LivePipelinesPanel } from "@/components/executive/LivePipelinesPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
