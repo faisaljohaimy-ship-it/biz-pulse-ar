@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { getSections } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { ShieldCheck, Wrench, Rocket } from "lucide-react";
+import { useRegion } from "@/lib/region-context";
+import { regionSim } from "@/lib/sec/region-sim-data";
 
 export const Route = createFileRoute("/_authenticated/sec/sections")({
   component: Sections,
@@ -16,16 +15,15 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 function Sections() {
-  const fetchSections = useServerFn(getSections);
-  const { data } = useQuery({ queryKey: ["sec-sections"], queryFn: () => fetchSections() });
-  const rows = data ?? [];
+  const { region, regionId } = useRegion();
+  const rows = regionSim(regionId).sections;
   return (
     <div className="space-y-4">
-      <SecPageHeader title="الأقسام" subtitle="إدارة الأمن الصناعي — المنطقة الغربية" />
+      <SecPageHeader title="الأقسام" subtitle={region.labelAr} />
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <StatCard label="إجمالي الأقسام" value={rows.length} />
-        <StatCard label="إجمالي الموظفين" value={rows.reduce((s, x) => s + x.staff_count, 0)} />
-        <StatCard label="مدير الإدارة" value="منطقة غرب" />
+        <StatCard label="إجمالي الأقسام" value={rows.length} sim />
+        <StatCard label="إجمالي الموظفين" value={rows.reduce((s, x) => s + x.staff_count, 0)} sim />
+        <StatCard label="مدير الإدارة" value={region.shortAr} sim />
       </div>
       <div className="grid gap-3 md:grid-cols-3">
         {rows.map((s) => {
@@ -42,7 +40,7 @@ function Sections() {
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div><div className="text-xs text-muted-foreground">رئيس القسم</div><div className="font-semibold text-foreground">{s.head ?? "—"}</div></div>
+                <div><div className="text-xs text-muted-foreground">رئيس القسم</div><div className="font-semibold text-foreground">{s.head}</div></div>
                 <div><div className="text-xs text-muted-foreground">عدد الموظفين</div><div className="font-semibold text-foreground">{s.staff_count}</div></div>
               </div>
             </div>
