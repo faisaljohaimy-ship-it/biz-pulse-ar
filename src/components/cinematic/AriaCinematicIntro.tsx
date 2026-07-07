@@ -28,6 +28,8 @@ export interface AriaCinematicIntroProps {
   posterSrc?: string;
   /** ARIA greeting audio, played on the Enter gesture. */
   audioSrc?: string;
+  /** Optional ambient bed played under the intro after the first user gesture. */
+  ambientSrc?: string;
   /** Wordmark text assembled at the climax. */
   wordmark?: string;
   tagline?: string;
