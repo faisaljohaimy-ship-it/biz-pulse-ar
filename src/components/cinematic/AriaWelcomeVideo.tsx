@@ -183,6 +183,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const startBg = () => { if (bg) { bg.muted = true; bg.play().catch(() => {}); } };
 
     const tryWithSound = async () => {
+      // Mobile-safe path: iOS/Android block createMediaElementSource before a
+      // user gesture and route audio through a suspended AudioContext even
+      // after unmute. Never touch WebAudio until we truly have unmuted audio.
       v.muted = false;
       v.volume = 1;
       try {
@@ -193,12 +196,12 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         attachAnalyser();
       } catch {
         v.muted = true;
+        (v as HTMLVideoElement).setAttribute("muted", "");
         setMuted(true);
         setShowSoundChip(true);
         try { await v.play(); } catch { /* ignore */ }
         startBg();
-        // Idle bars until user unmutes
-        attachAnalyser();
+        // DO NOT attachAnalyser here — waits for the unmute gesture.
       }
     };
 
