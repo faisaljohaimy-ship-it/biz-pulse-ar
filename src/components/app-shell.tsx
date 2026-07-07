@@ -270,8 +270,11 @@ function LangToggle() {
 
 function UserChip() {
   const { user, signOut } = useAuth();
-  const { t } = useI18n();
-  const displayName = "إدارة الأمن الصناعي بالمنطقة الغربية";
+  const { t, locale } = useI18n();
+  const { region } = useRegion();
+  const displayName = locale === "ar"
+    ? `إدارة ${region.labelAr.replace(/^الأمن الصناعي — /, "الأمن الصناعي بالمنطقة ").replace("المنطقة المنطقة", "المنطقة")}`
+    : region.labelEn;
   return (
     <div className="nexus-user-meta flex min-w-0 items-center gap-2" title={user?.email ?? undefined}>
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
