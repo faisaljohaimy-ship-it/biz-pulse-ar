@@ -27,6 +27,9 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
   const [fading, setFading] = useState(false);
   const [muted, setMuted] = useState(true);
   const [showSoundChip, setShowSoundChip] = useState(false);
+  // FR-1/FR-2: choose object-fit per device class. Portrait mobile → cover
+  // (fills, face in upper third). Everything else → contain (no cropping).
+  const [fitMode, setFitMode] = useState<"cover" | "contain">("contain");
 
 
   // Decide on mount whether to show.
@@ -50,6 +53,21 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
     }
     setVisible(true);
   }, [surface]);
+
+  // FR-1/FR-2: recompute fit mode on mount + on resize/orientation change.
+  // Portrait AND ≤768px  → cover ; otherwise contain (laptop/desktop/tablet/landscape).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 768px) and (orientation: portrait)");
+    const apply = () => setFitMode(mq.matches ? "cover" : "contain");
+    apply();
+    mq.addEventListener?.("change", apply);
+    window.addEventListener("resize", apply);
+    return () => {
+      mq.removeEventListener?.("change", apply);
+      window.removeEventListener("resize", apply);
+    };
+  }, []);
 
 
 
@@ -165,11 +183,13 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           finish();
         }}
         className="relative h-full w-full"
-        // Mobile portrait: fill the screen (cover) so ARIA is not letterboxed.
-        // ≥sm: contain, preserving the cinematic composition.
+        // FR-1: portrait mobile → cover + face-in-upper-third.
+        // FR-2: laptop/desktop/tablet/landscape → contain (no cropping);
+        // the blurred bgVideo fills any letterbox area so the frame is
+        // never bare black bars.
         style={{
-          objectFit: "cover",
-          objectPosition: "center",
+          objectFit: fitMode,
+          objectPosition: fitMode === "cover" ? "center 30%" : "center",
           maxHeight: "100dvh",
         }}
       />
@@ -186,7 +206,10 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
 
 
 
-      <div className="absolute top-4 end-4 z-30 flex items-center gap-2">
+      <div
+        className="absolute end-4 z-30 flex items-center gap-2"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+      >
         <button
           type="button"
           onClick={(e) => {

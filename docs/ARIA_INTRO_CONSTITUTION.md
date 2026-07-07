@@ -118,3 +118,71 @@ propagating a bad answer forever. Measuring on every turn, gating
 injection behind safety+confidence+hits, and renewing patterns weekly
 turns ARIA into a self-improving agent WITHOUT introducing drift.
 
+---
+
+# ARIA Cross-Device Rendering Constitution (Intro)
+
+**Status:** Immutable engineering rule. Applies to `AriaCinematicIntro`
+and any future pre-hero cinematic gate. Governs how ARIA appears on
+mobile, tablet, laptop, and desktop.
+
+## Rendering Contract
+
+- **Portrait mobile (`≤768px` AND orientation:portrait):** `object-fit: cover`
+  with `object-position: center 30%`. ARIA fills the frame; her face sits
+  in the upper third; no letterbox.
+- **Landscape mobile, tablet, laptop, desktop, ultrawide:** `object-fit: contain`.
+  A blurred, scaled copy of the same video renders behind it as a full-bleed
+  backdrop so the frame is never bare black bars.
+- **Safe-area:** every top-anchored control uses
+  `top: calc(env(safe-area-inset-top, 0px) + 16px)` so notch/dynamic-island
+  devices do not clip the Skip / Sound buttons.
+- **z-index:** intro layer `z-[100]`, controls `z-30` inside it. Nothing in
+  the app may render above the intro while it is visible.
+
+## Forbidden Regressions (FR)
+
+Any of the following reappearing in production is a release-blocking bug
+and MUST be reverted or hot-fixed, never re-litigated:
+
+| ID    | Regression                                                               | Root cause to avoid                                                        |
+|-------|--------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| FR-1  | ARIA cropped at the head on portrait mobile                              | `object-fit: contain` on portrait mobile, or `object-position: center`     |
+| FR-2  | Large black letterbox bars on laptop / desktop / ultrawide               | `object-fit: cover` forced on wide viewports, or missing blurred backdrop  |
+| FR-3  | Intro disappears entirely when the video errors / CDN fails              | `onError` calling `finish()` before `MIN_DISPLAY_MS`, or no poster/HUD     |
+| FR-4  | Skip / Sound button hidden behind the iOS notch                          | Top-anchored control without `env(safe-area-inset-top)`                    |
+| FR-5  | Intro auto-dismisses before 3500 ms on any failure path                  | Any `finish()` path not routed through the `finishOnce` guard              |
+| FR-6  | React hydration mismatch on first paint                                  | Reading `window` / `matchMedia` outside a `useEffect`                      |
+| FR-7  | Intro replays on every hard refresh in the same session                  | Writing the session-guard key AFTER flipping state, or not writing at all  |
+| FR-8  | Chat/composer or marquee ribbon covers the intro                         | Any element with `z-index > 100` mounted at the same time as the intro    |
+
+Every future fix that touches `AriaCinematicIntro.tsx` MUST cite the FR
+ID(s) it protects in the commit / proposal rationale. `PROTECTED_PATHS`
+in `src/lib/aria/self-evolution/engine.server.ts` blocks self-evolution
+proposals that do not.
+
+## Enforcement
+
+1. `bunx tsgo --noEmit` MUST be green.
+2. `tests/e2e/09-intro-multi-device.spec.ts` MUST pass on all listed
+   viewports (390×844, 440×799, 844×390, 1024×1366, 1440×900, 1920×1080).
+   It asserts: visible surface ≤500ms, no cropping, Skip button reachable,
+   no early dismissal, session-guard on refresh.
+3. Self-healing watchdog logs every `videoerror` / `autoplay-blocked` event
+   into `aria_incidents` with `severity`, `device_class`, `viewport`,
+   `user_agent`, and `failure_mode`. Repeated patterns (`hits ≥ 3`) become
+   `aria_learned_patterns` proposals gated by INVARIANT-10.
+4. Self-evolution engine (`src/lib/aria/self-evolution/*`) treats every
+   file listed in `PROTECTED_PATHS` as protected. Proposals mutating them
+   must cite this document AND preserve every FR-1..8 above.
+
+## Rationale
+
+ARIA is the executive face of NEXUS AI OS. A cropped head on mobile, a
+black bar on a boardroom laptop, or a chat modal covering her presence
+each cost more than a first impression — they signal an unfinished
+product. Codifying the rendering contract + forbidden regressions turns
+these into deterministic, machine-enforceable invariants that the
+self-evolution loop cannot silently undo.
+
+

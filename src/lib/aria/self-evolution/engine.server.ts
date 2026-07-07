@@ -54,6 +54,11 @@ const INVARIANTS: EvolutionInvariants = {
 export const PROTECTED_PATHS: readonly string[] = [
   "src/components/cinematic/AriaWelcomeVideo.tsx",
   "src/components/cinematic/WelcomeThenGenesis.tsx",
+  "src/components/intro/AriaCinematicIntro.tsx",
+  "src/lib/aria/learning/interaction-log.server.ts",
+  "src/lib/aria/learning/pattern-miner.server.ts",
+  "src/lib/aria/learning/prompt-injector.server.ts",
+  "src/lib/aria/self-healing/watchdog.client.ts",
   "docs/ARIA_INTRO_CONSTITUTION.md",
 ];
 
