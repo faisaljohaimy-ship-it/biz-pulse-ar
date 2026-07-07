@@ -29,6 +29,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
+import { Route as ExecutiveShowcaseRouteImport } from './routes/executive-showcase'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as ExecutiveBridgeRouteImport } from './routes/executive-bridge'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
@@ -286,6 +287,11 @@ const GovernmentBriefRoute = GovernmentBriefRouteImport.update({
 const FilmsRoute = FilmsRouteImport.update({
   id: '/films',
   path: '/films',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecutiveShowcaseRoute = ExecutiveShowcaseRouteImport.update({
+  id: '/executive-showcase',
+  path: '/executive-showcase',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
@@ -1142,6 +1148,7 @@ export interface FileRoutesByFullPath {
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
+  '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
@@ -1321,6 +1328,7 @@ export interface FileRoutesByTo {
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
+  '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
@@ -1500,6 +1508,7 @@ export interface FileRoutesById {
   '/executive-booking': typeof ExecutiveBookingRoute
   '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
+  '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
@@ -1681,6 +1690,7 @@ export interface FileRouteTypes {
     | '/executive-booking'
     | '/executive-bridge'
     | '/executive-briefing'
+    | '/executive-showcase'
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
@@ -1860,6 +1870,7 @@ export interface FileRouteTypes {
     | '/executive-booking'
     | '/executive-bridge'
     | '/executive-briefing'
+    | '/executive-showcase'
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
@@ -2038,6 +2049,7 @@ export interface FileRouteTypes {
     | '/executive-booking'
     | '/executive-bridge'
     | '/executive-briefing'
+    | '/executive-showcase'
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
@@ -2219,6 +2231,7 @@ export interface RootRouteChildren {
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
   ExecutiveBridgeRoute: typeof ExecutiveBridgeRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
+  ExecutiveShowcaseRoute: typeof ExecutiveShowcaseRoute
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   HajjPrimeRoute: typeof HajjPrimeRoute
@@ -2422,6 +2435,13 @@ declare module '@tanstack/react-router' {
       path: '/films'
       fullPath: '/films'
       preLoaderRoute: typeof FilmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/executive-showcase': {
+      id: '/executive-showcase'
+      path: '/executive-showcase'
+      fullPath: '/executive-showcase'
+      preLoaderRoute: typeof ExecutiveShowcaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/executive-briefing': {
@@ -3800,6 +3820,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveBookingRoute: ExecutiveBookingRoute,
   ExecutiveBridgeRoute: ExecutiveBridgeRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
+  ExecutiveShowcaseRoute: ExecutiveShowcaseRoute,
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
   HajjPrimeRoute: HajjPrimeRoute,

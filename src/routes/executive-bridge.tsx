@@ -146,6 +146,7 @@ function ExecutiveBridgePage() {
   // Continuous narration mode: ARIA reads each scene, then auto-advances
   // on audio-ended. Falls back to a silent timer if audio is unavailable.
   const [narrating, setNarrating] = React.useState(true);
+  const [completed, setCompleted] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const reduced = usePrefersReducedMotion();
   const narrationAudioRef = React.useRef<HTMLAudioElement | null>(null);
@@ -178,7 +179,10 @@ function ExecutiveBridgePage() {
     const advance = () => {
       if (cancelled) return;
       if (idx < SCENES.length - 1) setIdx(idx + 1);
-      else setNarrating(false);
+      else {
+        setNarrating(false);
+        setCompleted(true);
+      }
     };
 
     const startVisualProgress = (durationMs: number) => {
@@ -392,8 +396,16 @@ function ExecutiveBridgePage() {
             />
           ))}
         </div>
+        {completed && (
+          <div
+            role="status"
+            className="rounded-full border border-[#F5C560]/60 bg-[#F5C560]/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[#F5C560]"
+          >
+            انتهت الجولة · Tour ended
+          </div>
+        )}
         <div className="flex items-center gap-2 sm:gap-3">
-          <ControlBtn onClick={() => goTo(idx - 1)} label="السابق | Previous">
+          <ControlBtn onClick={() => { setCompleted(false); goTo(idx - 1); }} label="السابق | Previous">
             ›
           </ControlBtn>
           <ControlBtn
@@ -403,8 +415,19 @@ function ExecutiveBridgePage() {
             {narrating ? "❚❚" : "▶"}
           </ControlBtn>
 
-          <ControlBtn onClick={() => goTo(idx + 1)} label="التالي | Next">
+          <ControlBtn onClick={() => { setCompleted(false); goTo(idx + 1); }} label="التالي · تخطّي | Next · Skip">
             ‹
+          </ControlBtn>
+          <ControlBtn
+            onClick={() => {
+              setCompleted(false);
+              setProgress(0);
+              setIdx(0);
+              setNarrating(true);
+            }}
+            label="إعادة الجولة | Restart"
+          >
+            ↻
           </ControlBtn>
           <a
             href="/"
