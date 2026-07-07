@@ -205,8 +205,20 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       }
     };
 
-    void hasPriorInteraction();
+    // FR-20 continuity: if the session already has a prior gesture, the
+    // bus is unlocked and iOS/Android will honour unmuted autoplay. We
+    // still call tryWithSound() which does the unmuted-first attempt —
+    // the presence of a prior gesture means the fallback branch will
+    // rarely fire on repeat navigations within the same tab session.
+    if (hasPriorInteraction()) {
+      // Belt-and-suspenders: ensure the bus is unlocked even if the
+      // root-level tracker somehow missed this render (SSR hydration edge).
+      void import("@/lib/aria/audio-bus").then((m) => {
+        try { m.AriaAudioBus.unlock(); } catch { /* ignore */ }
+      });
+    }
     void tryWithSound();
+
 
     return () => {
       window.clearTimeout(onlineT);
