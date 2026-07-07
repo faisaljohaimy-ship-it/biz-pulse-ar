@@ -169,57 +169,199 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
+/** ARIA narrator for the showcase — public TTS + audio playback. */
+function useNarrator(muted: boolean) {
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const abortRef = React.useRef<AbortController | null>(null);
+  const [speaking, setSpeaking] = React.useState(false);
+  const stop = React.useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    const a = audioRef.current;
+    if (a) {
+      try { a.pause(); } catch { /* ignore */ }
+      const src = a.src;
+      try { a.src = ""; } catch { /* ignore */ }
+      if (src && src.startsWith("blob:")) {
+        try { URL.revokeObjectURL(src); } catch { /* ignore */ }
+      }
+      audioRef.current = null;
+    }
+    AriaAudioBus.release("tour-tts");
+    setSpeaking(false);
+  }, []);
+  const pause = React.useCallback(() => {
+    const a = audioRef.current;
+    if (a && !a.paused) try { a.pause(); } catch { /* ignore */ }
+  }, []);
+  const resume = React.useCallback(async (): Promise<boolean> => {
+    const a = audioRef.current;
+    if (!a || !a.paused) return true;
+    try { await a.play(); return true; } catch { return false; }
+  }, []);
+  /**
+   * Speak a line. Resolves with `true` when audio played to end (or ended
+   * cleanly), `false` when playback was blocked / cancelled / TTS failed.
+   */
+  const speak = React.useCallback(async (text: string): Promise<boolean> => {
+    stop();
+    if (muted) return false;
+    AriaAudioBus.unlock();
+    const granted = AriaAudioBus.acquire("tour-tts", () => stop());
+    if (!granted) return false;
+    setSpeaking(true);
+    const ac = new AbortController();
+    abortRef.current = ac;
+    try {
+      const r = await fetch("/api/public/aria-tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+        signal: ac.signal,
+      });
+      if (!r.ok) throw new Error(`tts_${r.status}`);
+      const blob = await r.blob();
+      if (ac.signal.aborted) throw new Error("aborted");
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      const ended = new Promise<boolean>((resolve) => {
+        const done = (ok: boolean) => {
+          if (audioRef.current === audio) audioRef.current = null;
+          try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+          AriaAudioBus.release("tour-tts");
+          setSpeaking(false);
+          resolve(ok);
+        };
+        audio.onended = () => done(true);
+        audio.onerror = () => done(false);
+        ac.signal.addEventListener("abort", () => {
+          try { audio.pause(); } catch { /* ignore */ }
+          done(false);
+        }, { once: true });
+      });
+      try {
+        await audio.play();
+      } catch {
+        // Autoplay blocked — leave the audio primed; caller shows Start button.
+        AriaAudioBus.release("tour-tts");
+        setSpeaking(false);
+        return false;
+      }
+      return await ended;
+    } catch {
+      AriaAudioBus.release("tour-tts");
+      setSpeaking(false);
+      return false;
+    }
+  }, [muted, stop]);
+  React.useEffect(() => () => { stop(); }, [stop]);
+  return { speak, pause, resume, stop, speaking };
+}
+
 function ExecutiveShowcasePage() {
   const navigate = useNavigate();
   const reduced = usePrefersReducedMotion();
   const [idx, setIdx] = React.useState(0);
-  // Do not autoplay when the user prefers reduced motion — require manual nav.
   const [playing, setPlaying] = React.useState(!reduced);
   const [progress, setProgress] = React.useState(0);
   const [ended, setEnded] = React.useState(false);
+  const [muted, setMuted] = React.useState(false);
+  const [intro, setIntro] = React.useState(true);
+  const [needsStart, setNeedsStart] = React.useState(false);
+  const [caption, setCaption] = React.useState<string>(INTRO_NARRATION_AR);
   const isFinale = idx >= SCENES.length;
+  const narrator = useNarrator(muted);
 
-  // Keep playing state in sync if the media pref flips at runtime.
+  // Refs to freshest values inside async narration loop (no re-run per idx).
+  const idxRef = React.useRef(idx);
+  const playingRef = React.useRef(playing);
+  const endedRef = React.useRef(ended);
+  const runIdRef = React.useRef(0);
+  React.useEffect(() => { idxRef.current = idx; }, [idx]);
+  React.useEffect(() => { playingRef.current = playing; }, [playing]);
+  React.useEffect(() => { endedRef.current = ended; }, [ended]);
+
   React.useEffect(() => {
     if (reduced) setPlaying(false);
   }, [reduced]);
 
-  // Auto-advance timer + progress ticker.
+  // Cinematic intro fade: 2s then reveal scenes.
   React.useEffect(() => {
-    if (!playing || ended || isFinale) return;
+    if (reduced) { setIntro(false); return; }
+    const t = window.setTimeout(() => setIntro(false), 2000);
+    return () => window.clearTimeout(t);
+  }, [reduced]);
+
+  // Freshest scene text (for progress-based visual only). Advance is
+  // controlled by the narration loop below, not this ticker.
+  React.useEffect(() => {
+    if (intro || !playing || ended || isFinale || reduced) { setProgress(0); return; }
     const scene = SCENES[idx];
     const t0 = performance.now();
     let raf = 0;
     const tick = (now: number) => {
       const p = Math.min(1, (now - t0) / scene.durationMs);
       setProgress(p);
-      if (p >= 1) {
-        if (idx < SCENES.length - 1) {
-          setIdx((n) => n + 1);
-          setProgress(0);
-        } else {
-          setEnded(true);
-          setIdx(SCENES.length); // finale
-          setPlaying(false);
-        }
-        return;
-      }
-      raf = requestAnimationFrame(tick);
+      if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, idx, ended, isFinale]);
+  }, [intro, playing, idx, ended, isFinale, reduced]);
+
+  // Narration loop: after intro, ARIA speaks each scene and advances on end.
+  React.useEffect(() => {
+    if (intro || isFinale || endedRef.current) return;
+    if (reduced || muted) { setCaption(SCENES[idx].narration_ar); return; }
+    const runId = ++runIdRef.current;
+    let cancelled = false;
+    (async () => {
+      // Intro narration on first scene of a run.
+      if (idx === 0 && !isFinale) {
+        setCaption(INTRO_NARRATION_AR);
+        const ok = await narrator.speak(INTRO_NARRATION_AR);
+        if (cancelled || runId !== runIdRef.current) return;
+        if (!ok) { setNeedsStart(true); return; }
+      }
+      // Per-scene loop — read from refs so we don't re-enter on idx change.
+      while (!cancelled && runId === runIdRef.current) {
+        const cur = idxRef.current;
+        if (cur >= SCENES.length) break;
+        if (!playingRef.current || endedRef.current) return;
+        const s = SCENES[cur];
+        setCaption(s.narration_ar);
+        const ok = await narrator.speak(s.narration_ar);
+        if (cancelled || runId !== runIdRef.current) return;
+        if (!ok) {
+          // TTS failed — fall through to timer-based advance for this scene.
+          await new Promise((res) => setTimeout(res, s.durationMs));
+          if (cancelled || runId !== runIdRef.current) return;
+        }
+        if (idxRef.current !== cur) continue; // user navigated during the wait
+        if (cur >= SCENES.length - 1) {
+          setEnded(true);
+          setIdx(SCENES.length);
+          setPlaying(false);
+          return;
+        }
+        setIdx((n) => n + 1);
+        setProgress(0);
+        // give React a tick to apply the new idx before next iteration
+        await new Promise((res) => setTimeout(res, 30));
+      }
+    })();
+    return () => { cancelled = true; };
+    // Only re-run when the show restarts, not on every idx change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intro, playing, ended, isFinale, reduced, muted]);
 
   // Keyboard controls
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") navigate({ to: "/" });
+      if (e.key === "Escape") { narrator.stop(); navigate({ to: "/" }); }
       else if (e.key === "ArrowLeft") setIdx((i) => Math.min(SCENES.length - 1, i + 1));
       else if (e.key === "ArrowRight") setIdx((i) => Math.max(0, i - 1));
-      else if (e.key === " ") {
-        e.preventDefault();
-        setPlaying((p) => !p);
-      }
+      else if (e.key === " ") { e.preventDefault(); setPlaying((p) => !p); }
     };
     window.addEventListener("keydown", onKey);
     document.documentElement.style.overflow = "hidden";
@@ -227,14 +369,36 @@ function ExecutiveShowcasePage() {
       window.removeEventListener("keydown", onKey);
       document.documentElement.style.overflow = "";
     };
-  }, [navigate]);
+  }, [navigate, narrator]);
+
+  // Clean up narrator on unmount / route leave.
+  React.useEffect(() => () => { narrator.stop(); }, [narrator]);
+
+  // Pause narrator when user pauses.
+  React.useEffect(() => {
+    if (!playing) narrator.pause();
+    else void narrator.resume();
+  }, [playing, narrator]);
+
+  const startShow = () => {
+    setNeedsStart(false);
+    setIntro(false);
+    setPlaying(true);
+    // bump run id so the effect re-enters
+    runIdRef.current++;
+    // Speak intro then run — effect deps includes `playing`, so toggling
+    // triggers the async loop.
+    setIdx(0);
+  };
 
   const goPrev = () => {
+    narrator.stop();
     setEnded(false);
     setProgress(0);
     setIdx((i) => Math.max(0, (isFinale ? SCENES.length - 1 : i - 1)));
   };
   const goNext = () => {
+    narrator.stop();
     if (idx >= SCENES.length - 1) {
       setEnded(true);
       setIdx(SCENES.length);
@@ -245,10 +409,19 @@ function ExecutiveShowcasePage() {
     setIdx((i) => i + 1);
   };
   const restart = () => {
+    narrator.stop();
     setEnded(false);
     setIdx(0);
     setProgress(0);
     setPlaying(!reduced);
+    runIdRef.current++;
+  };
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      if (next) narrator.stop();
+      return next;
+    });
   };
 
   const shownIdx = isFinale ? SCENES.length - 1 : idx;
@@ -283,6 +456,32 @@ function ExecutiveShowcasePage() {
         />
       </div>
 
+      {/* Cinematic intro overlay */}
+      {intro && !reduced && (
+        <div
+          className="absolute inset-0 z-[110] flex flex-col items-center justify-center bg-black"
+          style={{ animation: "intro-fade 2000ms ease forwards" }}
+          aria-hidden
+        >
+          <div
+            className="relative h-32 w-32 rounded-full"
+            style={{
+              backgroundImage: `url(${ariaHologram.url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              boxShadow: "0 0 90px rgba(58,232,255,0.7), inset 0 0 60px rgba(0,212,255,0.4)",
+              animation: "aria-pop 1800ms cubic-bezier(0.22,1,0.36,1) both",
+            }}
+          />
+          <div
+            className="mt-6 text-[10px] font-bold uppercase tracking-[0.4em] text-[#3AE8FF]"
+            style={{ animation: "intro-word 1800ms ease-out 300ms both" }}
+          >
+            NEXIOS · AI OPERATING SYSTEM
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <header className="relative z-30 flex items-center justify-between gap-3 px-4 pt-3 sm:px-8 sm:pt-4">
         <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-white/80">
@@ -293,12 +492,21 @@ function ExecutiveShowcasePage() {
           نيكسيوس · NEXIOS
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muted ? "تشغيل الصوت · Unmute" : "كتم الصوت · Mute"}
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
           <span className="hidden font-mono text-[11px] text-white/60 sm:inline">
             {String(Math.min(idx + 1, SCENES.length)).padStart(2, "0")} / {String(SCENES.length).padStart(2, "0")}
           </span>
           <Link
             to="/"
             aria-label="خروج · Exit"
+            onClick={() => narrator.stop()}
             className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
           >
             <X className="h-4 w-4" />
@@ -328,6 +536,43 @@ function ExecutiveShowcasePage() {
         )}
       </main>
 
+      {/* ARIA caption bar (bilingual) */}
+      {!isFinale && !intro && (
+        <div className="relative z-30 mx-auto mb-2 max-w-4xl px-4 sm:px-8">
+          <div
+            className="rounded-2xl border border-[#3AE8FF]/25 bg-black/50 px-4 py-3 backdrop-blur-md"
+            style={{ boxShadow: `0 0 24px ${scene.accent}22` }}
+          >
+            <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.32em] text-[#3AE8FF]/90">
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{
+                  background: narrator.speaking ? "#3AE8FF" : "#94A3B8",
+                  boxShadow: narrator.speaking ? "0 0 10px #3AE8FF" : undefined,
+                  animation: narrator.speaking ? "pulse-dot 1.2s ease-in-out infinite" : undefined,
+                }}
+              />
+              ARIA · آريا {narrator.speaking && "· تتحدّث"}
+            </div>
+            <p dir="rtl" className="mt-1.5 text-sm leading-relaxed text-white sm:text-base">
+              {caption}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Start-audio fallback (autoplay blocked) */}
+      {needsStart && !intro && !isFinale && (
+        <button
+          type="button"
+          onClick={startShow}
+          className="absolute inset-x-0 top-1/3 z-[105] mx-auto flex w-fit items-center gap-3 rounded-full border border-[#3AE8FF]/60 bg-black/70 px-6 py-3 text-sm font-bold uppercase tracking-[0.24em] text-[#3AE8FF] backdrop-blur transition hover:-translate-y-0.5 hover:bg-black/85"
+          style={{ boxShadow: "0 0 30px rgba(58,232,255,0.35)" }}
+        >
+          <Play className="h-4 w-4" /> ابدأ العرض · Start Show
+        </button>
+      )}
+
       {/* Bottom controls */}
       <footer className="relative z-30 flex flex-col items-center gap-3 pb-4 sm:pb-6">
         <div className="flex items-center gap-2" aria-hidden={isFinale}>
@@ -336,6 +581,7 @@ function ExecutiveShowcasePage() {
               key={s.id}
               type="button"
               onClick={() => {
+                narrator.stop();
                 setEnded(false);
                 setProgress(0);
                 setIdx(i);
@@ -375,15 +621,24 @@ function ExecutiveShowcasePage() {
           </CtrlBtn>
           <Link
             to="/"
+            onClick={() => narrator.stop()}
             className="mr-1 rounded-full border border-white/20 bg-black/40 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white sm:px-4 sm:text-[11px]"
           >
             خروج · Exit
           </Link>
         </div>
       </footer>
+
+      <style>{`
+        @keyframes intro-fade { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
+        @keyframes aria-pop { 0% { transform: scale(0.6); opacity: 0; filter: blur(8px); } 100% { transform: scale(1); opacity: 1; filter: blur(0); } }
+        @keyframes intro-word { 0% { opacity: 0; letter-spacing: 0.2em; } 100% { opacity: 1; letter-spacing: 0.4em; } }
+        @keyframes pulse-dot { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.6; } }
+      `}</style>
     </div>
   );
 }
+
 
 function CtrlBtn({
   onClick,
