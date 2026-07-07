@@ -228,10 +228,19 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const v = videoRef.current;
     if (!v) return;
     markInteracted();
-    v.muted = false;
-    v.volume = 1;
-    v.play().catch(() => { /* ignore */ });
+    // Resume AudioContext first (must happen inside the user gesture on iOS),
+    // then unmute the element, then attach the analyser lazily so the WebAudio
+    // graph is never built in a suspended state on mobile.
     try { audioCtxRef.current?.resume(); } catch { /* ignore */ }
+    v.muted = false;
+    (v as HTMLVideoElement).removeAttribute("muted");
+    v.volume = 1;
+    const p = v.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => { attachAnalyser(); }).catch(() => { /* ignore */ });
+    } else {
+      attachAnalyser();
+    }
     setMuted(false);
     setShowSoundChip(false);
   };
