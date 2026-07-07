@@ -90,7 +90,7 @@ function IntroLanding() {
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
-    cta_depts:      ar ? "نوافذ الإدارات" : "Department Windows",
+    cta_depts:      ar ? "القائمة · الإدارات" : "Menu · Departments",
     capabilities:   ar ? "مكوّنات النظام" : "Platform Capabilities",
     cta_title:      ar ? "جاهز للدخول إلى مركز القيادة؟" : "Ready to enter the Command Center?",
     cta_body:       ar
