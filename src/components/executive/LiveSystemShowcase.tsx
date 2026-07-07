@@ -179,14 +179,7 @@ export function LiveSystemShowcase() {
             </div>
 
             {/* Bottom action row */}
-            <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-black/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-300 backdrop-blur">
-                <span
-                  className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]"
-                  style={{ opacity: tick % 2 === 0 ? 1 : 0.35, transition: "opacity 400ms" }}
-                />
-                {ar ? "بث حي" : "Live"}
-              </div>
+            <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-end gap-2">
               <Link
                 to={INTERNAL_URL}
                 className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-2 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
@@ -196,8 +189,7 @@ export function LiveSystemShowcase() {
               </Link>
             </div>
 
-            {/* Live badge (top-end) */}
-            {/* FR-19: LIVE/TLS badges removed — no verified Evidence source on this surface. */}
+            {/* FR-19: static "LIVE/Live/TLS 1.3" badges removed — no verified Evidence source on this surface. */}
           </div>
         </div>
       </div>
