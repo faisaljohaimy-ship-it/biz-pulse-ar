@@ -126,7 +126,83 @@ export function AriaCinematicIntro({
     };
   }, []);
 
+  // Ambient bed — arm on the first user gesture (browser autoplay policy).
+  // Silent no-op if the file is missing or blocked; a tiny toggle exposes it.
+  const startAmbient = useCallback(() => {
+    if (REDUCED || userMuted) return;
+    const el = ambientRef.current;
+    if (!el || ambientOn) return;
+    el.volume = 0;
+    el.loop = true;
+    el.muted = false;
+    const p = el.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        setAmbientOn(true);
+        // Gentle fade-in to ~22% so it never fights ARIA's voice.
+        const target = 0.22;
+        const step = () => {
+          if (!ambientRef.current) return;
+          const next = Math.min(target, ambientRef.current.volume + 0.02);
+          ambientRef.current.volume = next;
+          if (next < target) window.setTimeout(step, 90);
+        };
+        step();
+      }).catch(() => {
+        /* blocked or file missing — stay silent, hide toggle */
+      });
+    }
+  }, [ambientOn, userMuted]);
+
+  const stopAmbient = useCallback(() => {
+    const el = ambientRef.current;
+    if (!el) return;
+    // Quick fade-out then pause, so it never overlaps ARIA's voice.
+    const fade = () => {
+      if (!ambientRef.current) return;
+      const next = Math.max(0, ambientRef.current.volume - 0.06);
+      ambientRef.current.volume = next;
+      if (next > 0) window.setTimeout(fade, 50);
+      else {
+        try { ambientRef.current.pause(); } catch { /* noop */ }
+        setAmbientOn(false);
+      }
+    };
+    fade();
+  }, []);
+
+  // Listen for the first user gesture on the intro root and arm the ambient bed.
+  useEffect(() => {
+    if (REDUCED || userMuted) return;
+    const arm = () => {
+      startAmbient();
+    };
+    const opts: AddEventListenerOptions = { once: true, passive: true };
+    window.addEventListener("pointerdown", arm, opts);
+    window.addEventListener("touchstart", arm, opts);
+    window.addEventListener("keydown", arm, opts);
+    window.addEventListener("wheel", arm, opts);
+    return () => {
+      window.removeEventListener("pointerdown", arm);
+      window.removeEventListener("touchstart", arm);
+      window.removeEventListener("keydown", arm);
+      window.removeEventListener("wheel", arm);
+    };
+  }, [startAmbient, userMuted]);
+
+  // Clean up ambient on unmount.
+  useEffect(() => {
+    return () => {
+      const el = ambientRef.current;
+      if (el) {
+        try { el.pause(); } catch { /* noop */ }
+      }
+    };
+  }, []);
+
   const handleEnter = useCallback(() => {
+    // Stop ambient cleanly so it never overlaps ARIA's greeting.
+    stopAmbient();
     // Arm ARIA's voice on the user gesture (autoplay-policy compliant).
     const audio = audioRef.current;
     if (audio) {
@@ -140,7 +216,17 @@ export function AriaCinematicIntro({
       setIntroActive(false);
       onEnter?.();
     }, 900);
-  }, [onEnter]);
+  }, [onEnter, stopAmbient]);
+
+  const toggleAmbient = useCallback(() => {
+    if (ambientOn) {
+      setUserMuted(true);
+      stopAmbient();
+    } else {
+      setUserMuted(false);
+      startAmbient();
+    }
+  }, [ambientOn, startAmbient, stopAmbient]);
 
   const showFigure = phase !== "black";
   const showWord = phase === "wordmark" || phase === "ready" || phase === "exit";
