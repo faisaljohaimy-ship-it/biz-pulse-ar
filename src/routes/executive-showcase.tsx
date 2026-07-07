@@ -242,15 +242,24 @@ function ExecutiveShowcasePage() {
       {/* Body: split-screen (video left, content right). Mobile: stacked. */}
       <main className="relative z-20 flex flex-1 flex-col gap-4 overflow-hidden px-3 py-3 sm:px-6 md:flex-row md:gap-6 md:px-8 md:py-4">
         {/* Left: ARIA video */}
-        <div className="relative order-1 flex h-[42vh] w-full shrink-0 items-center justify-center md:h-full md:w-[42%]">
+        <div className="relative order-1 flex w-full shrink-0 items-center justify-center md:h-full md:w-[42%]">
           <div
-            className="relative h-full w-full max-h-full overflow-hidden rounded-2xl border border-emerald-400/25 bg-[#04111f]"
-            style={{ boxShadow: `0 30px 80px ${ACCENT_EMERALD}22, 0 0 0 1px ${ACCENT_EMERALD}22 inset` }}
+            className="relative h-[48vh] w-auto max-w-full overflow-hidden rounded-2xl border border-emerald-400/25 bg-[#04111f] md:h-full md:w-auto"
+            style={{
+              aspectRatio: "1080 / 1590",
+              boxShadow: `0 30px 80px ${ACCENT_EMERALD}22, 0 0 0 1px ${ACCENT_EMERALD}22 inset, 0 0 60px -10px ${ACCENT_EMERALD}33`,
+            }}
           >
+            {/* Soft emerald glow that draws attention to Aria's face */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1/2"
+              style={{ background: `radial-gradient(ellipse 80% 55% at 50% 0%, ${ACCENT_EMERALD}25, transparent 70%)` }}
+            />
             <video
               ref={videoRef}
               src={ariaBriefAsset.url}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain object-top"
               style={{ backgroundColor: "#04111f" }}
               playsInline
               preload="metadata"
@@ -270,7 +279,7 @@ function ExecutiveShowcasePage() {
                 type="button"
                 onClick={startShow}
                 aria-label="ابدأ العرض · Start Show"
-                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/45"
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/45"
               >
                 <span className="grid h-16 w-16 place-items-center rounded-full border border-emerald-300/60 bg-black/60" style={{ boxShadow: "0 0 30px rgba(52,211,153,0.45)" }}>
                   <Play className="h-6 w-6 text-emerald-200" />
