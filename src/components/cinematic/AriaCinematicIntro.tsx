@@ -289,6 +289,30 @@ export function AriaCinematicIntro({
       )}
 
       <audio ref={audioRef} src={audioSrc} preload="auto" className="sr-only" />
+      <audio
+        ref={ambientRef}
+        src={ambientSrc}
+        preload="auto"
+        loop
+        className="sr-only"
+        onCanPlayThrough={() => setAmbientReady(true)}
+        onError={() => setAmbientReady(false)}
+      />
+
+      {/* Ambient sound toggle — only surfaces when the file loads. */}
+      {!REDUCED && ambientReady && (
+        <button
+          type="button"
+          className="aci-sound"
+          onClick={toggleAmbient}
+          aria-pressed={ambientOn}
+          aria-label={ambientOn ? "كتم الصوت الأجواء" : "تشغيل صوت الأجواء"}
+          title={ambientOn ? "كتم الصوت" : "تشغيل الصوت"}
+        >
+          <span aria-hidden>{ambientOn ? "🔊" : "🔈"}</span>
+          <span className="aci-sound-lbl">صوت</span>
+        </button>
+      )}
 
       <style>{`
         .aci-root{
