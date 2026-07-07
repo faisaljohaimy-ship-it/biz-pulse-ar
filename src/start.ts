@@ -10,7 +10,7 @@ import { renderErrorPage } from "./lib/error-page";
  * and edge widgets is a white-screen risk. Ship it in a dedicated turn.
  */
 const SECURITY_HEADERS: Record<string, string> = {
-  "X-Frame-Options": "DENY",
+  "X-Frame-Options": "SAMEORIGIN",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy":
