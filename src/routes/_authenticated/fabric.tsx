@@ -27,7 +27,7 @@ import {
   resolveAlert,
 } from "@/lib/intelligence.functions";
 
-const fabricQuery = queryOptions({
+export const fabricQuery = queryOptions({
   queryKey: ["fabric-snapshot"],
   queryFn: () => getFabricSnapshot(),
   staleTime: 60_000,

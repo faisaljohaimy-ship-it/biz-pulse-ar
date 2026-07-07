@@ -45,9 +45,10 @@ export function BetaMarqueeBar() {
         <div className="beta-marquee-track flex w-max items-center gap-12 whitespace-nowrap px-6 text-[12px] font-semibold tracking-wide text-white/90 sm:text-[13px]">
           {strip.map((msg, i) => (
             <span key={i} className="inline-flex items-center gap-3 text-white/90 drop-shadow-[0_0_6px_rgba(58,232,255,0.45)]">
-              <span className="text-[#3AE8FF]/80">{msg}</span>
+              <span className="text-[#3AE8FF]/80" suppressHydrationWarning>{msg}</span>
             </span>
           ))}
+
         </div>
 
       </div>

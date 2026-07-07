@@ -112,7 +112,8 @@ export function SecCommandLiveCard() {
 
   return (
     <Link
-      to="/_authenticated/sec"
+      to="/sec"
+
       aria-label={title}
       className="group block overflow-hidden rounded-2xl border border-emerald-400/25 bg-[#04111f] shadow-[0_0_40px_rgba(0,212,255,0.15)] backdrop-blur-sm transition duration-300 hover:scale-[1.01] hover:border-[#3AE8FF]/60 hover:shadow-[0_0_60px_rgba(58,232,255,0.35)] animate-pulse-cyan"
     >
