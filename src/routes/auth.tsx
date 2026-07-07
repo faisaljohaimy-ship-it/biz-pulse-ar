@@ -47,7 +47,7 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/command-center", replace: true });
+      goNext();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Sign-in error");
       setBusy(false);
@@ -69,7 +69,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/command-center", replace: true });
+        goNext();
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication error");
