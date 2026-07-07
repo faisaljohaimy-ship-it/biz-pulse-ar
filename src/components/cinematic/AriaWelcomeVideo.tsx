@@ -1,20 +1,23 @@
 /**
- * AriaWelcomeVideo — full-screen ARIA welcome clip that plays before the
- * Genesis cinematic intro. Once per session (sessionStorage "nexios-welcome").
+ * AriaWelcomeVideo — the SINGLE pre-system intro. Full-screen ARIA welcome
+ * clip that plays once per browser session, then crossfades to the app.
  *
  * Contract:
- *   • Fullscreen dark backdrop (#04111f), object-fit: cover with
+ *   • Full-screen dark backdrop (#04111f), object-fit: cover with
  *     object-position: top center so ARIA's face is never cropped.
  *   • Attempts autoplay with sound after any prior user interaction; if
- *     the browser blocks it, shows a "ابدأ" button that starts playback
+ *     the browser blocks it, shows a "دخول" button that starts playback
  *     with sound on click.
- *   • prefers-reduced-motion: no autoplay, manual "ابدأ" button.
- *   • Skip button (تخطّي) always visible → jumps straight to Genesis.
+ *   • prefers-reduced-motion: no autoplay, static first-frame + "دخول" button.
+ *   • Skip button (تخطّي) always visible → jumps straight to the app.
  *   • Clean pause + unmount on exit (no double-audio).
  *   • Crossfade (~0.6s) to next stage via parent-controlled opacity.
+ *   • Calls setIntroActive(true/false) on the intro-store so the rest of
+ *     the shell hides while playing.
  */
 import { useEffect, useRef, useState } from "react";
 import welcomeAsset from "@/assets/aria-welcome.mp4.asset.json";
+import { setIntroActive } from "@/lib/intro-store";
 
 interface Props {
   onDone: () => void;
@@ -33,34 +36,42 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     finishedRef.current = true;
     const v = videoRef.current;
     try { v?.pause(); } catch { /* ignore */ }
-    if (v) { try { v.src = ""; v.removeAttribute("src"); v.load(); } catch { /* ignore */ } }
+    if (v) { try { v.removeAttribute("src"); v.load(); } catch { /* ignore */ } }
     setVisible(false);
-    window.setTimeout(onDone, FADE_MS);
+    window.setTimeout(() => {
+      setIntroActive(false);
+      onDone();
+    }, FADE_MS);
   };
 
   useEffect(() => {
+    setIntroActive(true);
     try { window.sessionStorage.setItem("nexios-welcome", "1"); } catch { /* ignore */ }
+
     const reduced = (() => {
       try { return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false; }
       catch { return false; }
     })();
 
     const v = videoRef.current;
-    if (!v) return;
+    if (!v) {
+      return () => { setIntroActive(false); };
+    }
     v.muted = false;
     v.volume = 1;
 
     if (reduced) {
       setNeedsGesture(true);
-      return;
-    }
-    const p = v.play();
-    if (p && typeof p.then === "function") {
-      p.catch(() => setNeedsGesture(true));
+    } else {
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.catch(() => setNeedsGesture(true));
+      }
     }
 
     return () => {
       try { v.pause(); } catch { /* ignore */ }
+      setIntroActive(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -95,7 +106,6 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         ref={videoRef}
         src={welcomeAsset.url}
         playsInline
-        autoPlay
         preload="auto"
         onEnded={finish}
         onError={finish}
@@ -117,7 +127,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         }}
       />
 
-      {/* Start-with-sound button (shown when autoplay blocked or reduced-motion) */}
+      {/* Enter-with-sound button (shown when autoplay blocked or reduced-motion) */}
       {needsGesture && (
         <button
           type="button"
@@ -125,7 +135,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           className="absolute inset-0 z-10 flex items-center justify-center bg-[#04111f]/60 text-white backdrop-blur-sm"
         >
           <span className="rounded-full border border-emerald-400/60 bg-emerald-400/15 px-8 py-4 text-lg font-semibold shadow-[0_0_32px_rgba(52,211,153,0.35)] transition hover:bg-emerald-400/25">
-            ابدأ ترحيب آريا
+            دخول
           </span>
         </button>
       )}

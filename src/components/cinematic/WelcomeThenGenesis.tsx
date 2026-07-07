@@ -1,15 +1,14 @@
 /**
- * WelcomeThenGenesis — sequences the ARIA welcome video → Genesis intro.
- * Once per session (sessionStorage "nexios-welcome").
+ * WelcomeThenGenesis — the SINGLE pre-system intro gate. Shows the ARIA
+ * welcome video once per browser session, then unmounts and reveals the
+ * app. Legacy Genesis / HeroZero / AriaCinematic intros are retired.
  */
 import { useEffect, useState } from "react";
 import { AriaWelcomeVideo } from "./AriaWelcomeVideo";
-import { GenesisIntro } from "./GenesisIntro";
 
 export function WelcomeThenGenesis() {
   const [decided, setDecided] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [welcomeDone, setWelcomeDone] = useState(false);
 
   useEffect(() => {
     let skip = false;
@@ -17,19 +16,12 @@ export function WelcomeThenGenesis() {
       if (window.sessionStorage.getItem("nexios-welcome") === "1") skip = true;
     } catch { /* ignore */ }
     setShowWelcome(!skip);
-    if (skip) setWelcomeDone(true);
     setDecided(true);
   }, []);
 
   if (!decided) return null;
-  return (
-    <>
-      {showWelcome && !welcomeDone && (
-        <AriaWelcomeVideo onDone={() => setWelcomeDone(true)} />
-      )}
-      {welcomeDone && <GenesisIntro />}
-    </>
-  );
+  if (!showWelcome) return null;
+  return <AriaWelcomeVideo onDone={() => setShowWelcome(false)} />;
 }
 
 export default WelcomeThenGenesis;

@@ -19,9 +19,8 @@ import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
-import { HeroZeroIntro } from "@/components/cinematic/HeroZeroIntro";
-import { AriaCinematicIntro } from "@/components/cinematic/AriaCinematicIntro";
+// Pre-hero intros retired — the single ARIA welcome video mounts globally
+// from __root.tsx via <WelcomeThenGenesis />.
 
 
 
@@ -63,16 +62,9 @@ function IntroLanding() {
   // route only owns the executive hero content. No canvas, no boot
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
-  // Cinematic overture — plays once per browser session before anything else.
-  const [introDone, setIntroDone] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    try { return window.sessionStorage.getItem("nexios-aria-overture") === "1"; }
-    catch { return false; }
-  });
-  const finishIntro = () => {
-    setIntroDone(true);
-    try { window.sessionStorage.setItem("nexios-aria-overture", "1"); } catch { /* noop */ }
-  };
+  // The pre-hero intro is owned globally by <WelcomeThenGenesis /> in
+  // __root.tsx (single ARIA welcome video, once per session).
+
   const [deptsOpen, setDeptsOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const { speak } = useAriaSpeech();
@@ -112,19 +104,10 @@ function IntroLanding() {
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
       {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
 
-      {/* ARIA Cinematic Overture — mounts first, blocks legacy intros while active */}
-      {!introDone && (
-        <AriaCinematicIntro
-          onEnter={finishIntro}
-          videoSrc="/aria-hero-motion.mp4"
-          posterSrc="/aria-backdrop.webp"
-          audioSrc="/aria-greeting-voice.mp3"
-        />
-      )}
+      {/* Pre-hero intros retired. The single ARIA welcome video is mounted
+          globally in __root.tsx via <WelcomeThenGenesis />. */}
 
-      {/* Legacy intros only after the overture finishes */}
-      {introDone && <HeroZeroIntro />}
-      {introDone && <NexiosGenesisIntro />}
+
 
 
       {/* ARIA transparent full-screen backdrop — homepage only. Face centered
