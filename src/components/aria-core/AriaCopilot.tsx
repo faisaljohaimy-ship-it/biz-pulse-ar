@@ -757,9 +757,14 @@ export function AriaCopilot() {
           aria-label="ARIA executive copilot"
           dir="rtl"
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl border border-primary/25",
+            // Mobile: dock sits BELOW the marquee/date-time strip so the header
+            // (including the Close X) is always tappable. Desktop: centered.
+            "fixed left-1/2 z-[110] flex -translate-x-1/2 flex-col overflow-hidden rounded-3xl border border-primary/25",
             "shadow-2xl",
-            "w-[min(94vw,440px)] h-[min(92vh,760px)]",
+            "top-[calc(52px+env(safe-area-inset-top))]",
+            "w-[min(94vw,440px)]",
+            "h-[calc(100dvh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]",
+            "sm:top-1/2 sm:-translate-y-1/2 sm:h-[min(92vh,760px)]",
           )}
           style={{
             boxShadow:

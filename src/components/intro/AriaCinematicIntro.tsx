@@ -126,19 +126,36 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         autoPlay
         muted={muted}
         playsInline
+        // iOS/Android Safari: `webkit-playsinline` is required on some older
+        // engines; harmless elsewhere. Also disable picture-in-picture and
+        // remote playback so the intro cannot be minimised by the OS.
+        {...({ "webkit-playsinline": "true", "x5-playsinline": "true" } as Record<string, string>)}
+        disablePictureInPicture
+        disableRemotePlayback
+        controls={false}
         preload="auto"
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
-          v.muted = false;
-          v.volume = 1;
-          const p = v.play();
-          if (p && typeof p.then === "function") {
-            p.then(() => { setMuted(false); setShowSoundChip(false); }).catch(() => {
-              v.muted = true;
-              setMuted(true);
-              setShowSoundChip(true);
-              v.play().catch(() => { /* noop */ });
-            });
+          // First, guarantee playback (muted always works on mobile).
+          v.play().catch(() => { /* noop */ });
+          // Then attempt to unmute. If the browser blocks it (iOS), stay
+          // muted and surface the "Tap for sound" chip.
+          try {
+            v.muted = false;
+            v.volume = 1;
+            const p = v.play();
+            if (p && typeof p.then === "function") {
+              p.then(() => { setMuted(false); setShowSoundChip(false); }).catch(() => {
+                v.muted = true;
+                setMuted(true);
+                setShowSoundChip(true);
+                v.play().catch(() => { /* noop */ });
+              });
+            }
+          } catch {
+            v.muted = true;
+            setMuted(true);
+            setShowSoundChip(true);
           }
         }}
         onEnded={finish}
@@ -148,7 +165,13 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           finish();
         }}
         className="relative h-full w-full"
-        style={{ objectFit: "contain", maxHeight: "100dvh" }}
+        // Mobile portrait: fill the screen (cover) so ARIA is not letterboxed.
+        // ≥sm: contain, preserving the cinematic composition.
+        style={{
+          objectFit: "cover",
+          objectPosition: "center",
+          maxHeight: "100dvh",
+        }}
       />
 
       {/* Edge-only vignette (does not cover the face) */}
