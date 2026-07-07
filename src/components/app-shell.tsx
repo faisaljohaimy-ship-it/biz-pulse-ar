@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   return (
-    <div className="nexus-app-shell relative flex min-h-screen bg-[#04070F]/55 backdrop-blur-[2px]">
+    <div className="nexus-app-shell relative flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#04070F]/55 backdrop-blur-[2px]">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 start-[-10%] h-[480px] w-[480px] rounded-full bg-primary/20 blur-3xl" />
         <div className="absolute bottom-[-160px] end-[-10%] h-[420px] w-[420px] rounded-full bg-accent/20 blur-3xl" />
@@ -58,8 +58,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarBody />
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="nexus-mobile-header sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
+        <header className="nexus-mobile-header sticky top-0 z-40 flex h-14 w-full max-w-[100vw] items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button
