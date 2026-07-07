@@ -36,9 +36,24 @@ export const listTeamsChannels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requirePlatformAdmin(context.userId);
-    const teams = await gw<{ value?: TeamLite[] }>("/me/joinedTeams?$select=id,displayName");
+    let teams: TeamLite[] = [];
+    try {
+      const res = await gw<{ value?: TeamLite[] }>("/me/joinedTeams?$select=id,displayName");
+      teams = res.value ?? [];
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const isMsa = /403|MSA account|not supported for MSA|Forbidden/i.test(message);
+      return {
+        teams: [] as TeamLite[],
+        channels: [] as ChannelLite[],
+        unavailable: true as const,
+        reason: isMsa
+          ? "The linked Microsoft account is personal (MSA) or lacks Teams access. Microsoft Teams requires a work/school (Entra ID) account with Teams enabled."
+          : "Microsoft Teams is temporarily unavailable.",
+      };
+    }
     const items: ChannelLite[] = [];
-    for (const t of (teams.value ?? []).slice(0, 8)) {
+    for (const t of teams.slice(0, 8)) {
       try {
         const ch = await gw<{ value?: Array<{ id: string; displayName: string }> }>(
           `/teams/${t.id}/channels?$select=id,displayName`,
@@ -46,8 +61,9 @@ export const listTeamsChannels = createServerFn({ method: "GET" })
         for (const c of ch.value ?? []) items.push({ id: c.id, displayName: c.displayName, teamId: t.id });
       } catch { /* skip team */ }
     }
-    return { teams: teams.value ?? [], channels: items };
+    return { teams, channels: items, unavailable: false as const, reason: null };
   });
+
 
 export const sendTeamsAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
