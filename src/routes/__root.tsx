@@ -28,7 +28,7 @@ import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
-import { LiveClock } from "@/components/LiveClock";
+
 
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -240,21 +240,9 @@ function RootComponent() {
               <RegionProvider>
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
-                {/* Global beta marquee — hidden on the hero (index) route on ALL devices, and while the intro plays. Visible on every system page. */}
-                {!suppressMarquee && <BetaMarqueeBar />}
+                {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
+                {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
                 {!suppressOverlays && <AriaWatermark />}
-                {!suppressClock && (
-                  <div
-                    className="sticky top-[36px] z-[55] w-full border-b border-border/40 bg-card/60 backdrop-blur-md supports-[backdrop-filter]:bg-card/50"
-                    style={{ paddingTop: "env(safe-area-inset-top)" }}
-                    role="region"
-                    aria-label="Live status strip"
-                  >
-                    <div className="mx-auto flex h-9 w-full max-w-[1680px] items-center justify-center px-3 sm:justify-start sm:px-4">
-                      <LiveClock className="!bg-transparent !border-transparent !shadow-none !px-0 !py-0" />
-                    </div>
-                  </div>
-                )}
                 <div className="relative z-10">
                   <Outlet />
                 </div>
