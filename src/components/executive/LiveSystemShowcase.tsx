@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
+import { Maximize2, Minimize2, Radio, Expand, Moon, ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import hajjDashboardPoster from "@/assets/hajj-dashboard-poster.png.asset.json";
 
 
-// Embed the internal /hajj-prime route only — no external lovable.app URL may
-// appear anywhere in the homepage HTML (MASTER RECONCILIATION item 5).
-const LIVE_URL = "/hajj-prime";
+// Live embed URL — same source configured for /hajj-prime, kept in an env
+// var so it can be re-pointed without a code change. Dark-theme params are
+// appended so the platform boots in permanent night mode inside the frame.
+const RAW_EMBED_URL =
+  (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
+  "https://hajj.neexios.com/?theme=dark&forceDark=1#dark";
+function withDarkParams(url: string): string {
+  try {
+    const u = new URL(url, typeof window !== "undefined" ? window.location.href : "https://neexios.com");
+    u.searchParams.set("theme", "dark");
+    u.searchParams.set("forceDark", "1");
+    if (!u.hash) u.hash = "dark";
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+const LIVE_URL = withDarkParams(RAW_EMBED_URL);
 const INTERNAL_URL = "/hajj-prime";
+
 
 /**
  * LiveSystemShowcase — compact, right-aligned (RTL) Hajj night-mode window.
@@ -21,8 +37,25 @@ const INTERNAL_URL = "/hajj-prime";
  */
 export function LiveSystemShowcase() {
   const [expanded, setExpanded] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const failTimerRef = useRef<number | null>(null);
   const { locale } = useI18n();
   const ar = locale === "ar";
+
+  useEffect(() => {
+    // If the iframe hasn't reported `load` within 8s, surface the dark
+    // fallback card instead of leaving viewers staring at a white/empty box.
+    failTimerRef.current = window.setTimeout(() => {
+      setFailed((prev) => (loaded ? prev : true));
+    }, 8000);
+    return () => {
+      if (failTimerRef.current !== null) window.clearTimeout(failTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
 
   return (
     <section
@@ -81,11 +114,13 @@ export function LiveSystemShowcase() {
             </div>
           </div>
 
-          {/* Live iframe stage — the actual /hajj-prime dashboard renders
-              inside the icon so viewers see the system LIVE from the outside.
-              The poster image sits behind as an instant fallback until the
-              live route finishes hydrating (no black flash on slow networks). */}
-          <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#02101e]">
+          {/* Live iframe stage — external Hajj Nexus platform, dark-forced.
+              Container background matches the app so no white flash ever
+              appears; loading/failure overlays are dark-themed. */}
+          <div
+            className="relative aspect-[16/10] w-full overflow-hidden"
+            style={{ backgroundColor: "#04111f", colorScheme: "dark" }}
+          >
             {/* Poster fallback — dimmed, sits behind the live iframe */}
             <img
               src={hajjDashboardPoster.url}
@@ -104,7 +139,10 @@ export function LiveSystemShowcase() {
               title={ar ? "منصة نُسك الحج — بث مباشر" : "Hajj Nexus Platform — Live"}
               loading="eager"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              style={{ colorScheme: "dark", backgroundColor: "transparent" }}
+              onLoad={() => { setLoaded(true); setFailed(false); }}
+              onError={() => setFailed(true)}
+              style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
+
               className="absolute inset-0 z-[5] h-full w-full border-0"
             />
 
@@ -122,7 +160,57 @@ export function LiveSystemShowcase() {
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
               LIVE
             </div>
+
+            {/* Dark loading overlay — visible until the frame reports load. */}
+            {!loaded && !failed && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center gap-3"
+                style={{ background: "linear-gradient(180deg,#04111f 0%,#061A2E 55%,#04111f 100%)" }}
+              >
+                <div
+                  aria-hidden
+                  className="h-10 w-10 rounded-full border-[3px] border-emerald-400/20"
+                  style={{
+                    borderTopColor: "#34D399",
+                    borderRightColor: "#10B981",
+                    animation: "hajj-showcase-spin 900ms linear infinite",
+                    boxShadow: "0 0 28px rgba(16,185,129,0.35)",
+                  }}
+                />
+                <div dir="rtl" className="text-[12px] font-semibold text-emerald-100/90">
+                  {ar ? "جارٍ فتح منصة نُسك الحج…" : "Opening Hajj Nexus Platform…"}
+                </div>
+                <style>{`@keyframes hajj-showcase-spin{to{transform:rotate(360deg)}}`}</style>
+              </div>
+            )}
+
+            {/* Dark failure card — replaces the (invisible) white iframe when
+                loading fails or exceeds the 8s budget. Never white. */}
+            {failed && (
+              <div
+                role="alert"
+                className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 p-6 text-center"
+                style={{ background: "linear-gradient(180deg,#04111f 0%,#061A2E 55%,#04111f 100%)" }}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-[0.32em] text-emerald-300">
+                  {ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}
+                </div>
+                <div className="text-sm text-white/85">
+                  {ar ? "جارٍ الاتصال بالبث الحيّ…" : "Connecting to the live feed…"}
+                </div>
+                <Link
+                  to={INTERNAL_URL}
+                  className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-400/60 bg-emerald-400/10 px-4 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-400/20"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {ar ? "فتح المنصة" : "Open the platform"}
+                </Link>
+              </div>
+            )}
           </div>
+
 
 
           {/* Footer telemetry strip */}
