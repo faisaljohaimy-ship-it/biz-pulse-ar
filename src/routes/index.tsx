@@ -240,9 +240,11 @@ function IntroLanding() {
           >
             <div className="flex flex-col items-center gap-1">
               <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-                {ar ? "مستوى الصلاحية" : "Auth Level"}
+                {ar ? "مستوى العرض" : "View Mode"}
               </dt>
-              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">EXC</dd>
+              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">
+                {ar ? "تنفيذي · Executive" : "Executive"}
+              </dd>
             </div>
           </dl>
 
