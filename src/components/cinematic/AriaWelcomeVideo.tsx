@@ -354,7 +354,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
             src={welcomeAsset.url}
             playsInline
             preload="auto"
-            onEnded={finish}
+            onEnded={() => finish()}
             onError={onVideoError}
             className="h-full w-full"
             style={{
