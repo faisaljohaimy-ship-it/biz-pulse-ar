@@ -232,6 +232,7 @@ function RootComponent() {
         <ThemeProvider>
           <I18nProvider>
             <DemoModeProvider>
+              <RegionProvider>
               <AriaProvider>
                 {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
                 {/* Global beta marquee — hidden on the hero (index) route on ALL devices, and while the intro plays. Visible on every system page. */}
