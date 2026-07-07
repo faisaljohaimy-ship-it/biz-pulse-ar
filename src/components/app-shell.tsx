@@ -38,6 +38,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
+import { NexusOrb } from "@/components/executive/NexusOrb";
+
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
@@ -62,16 +64,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="nexus-mobile-header sticky top-0 z-40 flex h-14 w-full max-w-[100vw] items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Open navigation menu"
-                aria-expanded={open}
-                aria-controls="nexus-mobile-nav"
-                className="relative z-10 min-h-11 min-w-11"
-              >
-                <Menu />
-              </Button>
+              <NexusOrb
+                isOpen={open}
+                onClick={() => setOpen((v) => !v)}
+                controls="nexus-mobile-nav"
+              />
             </SheetTrigger>
             <SheetContent
               id="nexus-mobile-nav"
@@ -81,6 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarBody onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
+
           <div className="flex items-center gap-2">
             <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img src="/nexus-icon.png" alt="Nexus AI OS Logo" className="h-full w-full object-cover" />
