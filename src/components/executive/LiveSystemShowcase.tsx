@@ -160,7 +160,57 @@ export function LiveSystemShowcase() {
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
               LIVE
             </div>
+
+            {/* Dark loading overlay — visible until the frame reports load. */}
+            {!loaded && !failed && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center gap-3"
+                style={{ background: "linear-gradient(180deg,#04111f 0%,#061A2E 55%,#04111f 100%)" }}
+              >
+                <div
+                  aria-hidden
+                  className="h-10 w-10 rounded-full border-[3px] border-emerald-400/20"
+                  style={{
+                    borderTopColor: "#34D399",
+                    borderRightColor: "#10B981",
+                    animation: "hajj-showcase-spin 900ms linear infinite",
+                    boxShadow: "0 0 28px rgba(16,185,129,0.35)",
+                  }}
+                />
+                <div dir="rtl" className="text-[12px] font-semibold text-emerald-100/90">
+                  {ar ? "جارٍ فتح منصة نُسك الحج…" : "Opening Hajj Nexus Platform…"}
+                </div>
+                <style>{`@keyframes hajj-showcase-spin{to{transform:rotate(360deg)}}`}</style>
+              </div>
+            )}
+
+            {/* Dark failure card — replaces the (invisible) white iframe when
+                loading fails or exceeds the 8s budget. Never white. */}
+            {failed && (
+              <div
+                role="alert"
+                className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 p-6 text-center"
+                style={{ background: "linear-gradient(180deg,#04111f 0%,#061A2E 55%,#04111f 100%)" }}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-[0.32em] text-emerald-300">
+                  {ar ? "منصة نُسك الحج" : "Hajj Nexus Platform"}
+                </div>
+                <div className="text-sm text-white/85">
+                  {ar ? "جارٍ الاتصال بالبث الحيّ…" : "Connecting to the live feed…"}
+                </div>
+                <Link
+                  to={INTERNAL_URL}
+                  className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-400/60 bg-emerald-400/10 px-4 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-400/20"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {ar ? "فتح المنصة" : "Open the platform"}
+                </Link>
+              </div>
+            )}
           </div>
+
 
 
           {/* Footer telemetry strip */}
