@@ -948,12 +948,27 @@ export function AriaCopilot() {
               {hasError && !isBusy && (
                 <li className="flex justify-start">
                   <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
-                    <div className="flex items-center gap-2">
-                      <span>{CONNECTION_ERROR_AR}</span>
+                    <div className="flex items-start gap-2">
+                      <span className="leading-relaxed">
+                        {(() => {
+                          const raw = (chat.error?.message || "").trim();
+                          if (!raw) return CONNECTION_ERROR_AR;
+                          // Extract server-provided reason from `{ok:false,error:"..."}` payloads
+                          try {
+                            const parsed = JSON.parse(raw) as { error?: string };
+                            if (parsed?.error) return parsed.error;
+                          } catch { /* not JSON — fall through */ }
+                          // Scrub any accidental provider/model names before showing
+                          const safe = raw
+                            .replace(/\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi, "")
+                            .trim();
+                          return safe || CONNECTION_ERROR_AR;
+                        })()}
+                      </span>
                       <button
                         type="button"
                         onClick={retry}
-                        className="inline-flex items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
                       >
                         <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
                       </button>
