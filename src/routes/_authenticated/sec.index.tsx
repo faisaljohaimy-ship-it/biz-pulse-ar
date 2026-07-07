@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-import { Activity, AlertTriangle, Radar, UserCheck, Camera, FileBadge, ShieldAlert, Boxes, HardHat } from "lucide-react";
+import { AlertTriangle, Radar, UserCheck, Camera } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
+import { useRegion } from "@/lib/region-context";
+import { regionSim } from "@/lib/sec/region-sim-data";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   component: OpsRoom,
@@ -13,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/sec/")({
 
 function OpsRoom() {
   const router = useRouter();
+  const { region, regionId } = useRegion();
+  const sim = regionSim(regionId).counts;
   const fetchOverview = useServerFn(getSecOverview);
   const { data, isLoading } = useQuery({
     queryKey: ["sec-overview"],
@@ -20,12 +24,14 @@ function OpsRoom() {
     refetchInterval: 30_000,
   });
 
+
   return (
     <div className="space-y-4">
       <SecPageHeader
-        title="غرفة العمليات — الأمن الصناعي بالمنطقة الغربية"
+        title={`غرفة العمليات — ${region.labelAr}`}
         subtitle="نظرة فورية على البلاغات والدوريات والزوار والتصاريح والكاميرات والأصول"
       >
+
         <button
           onClick={() => router.invalidate()}
           className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
@@ -43,17 +49,18 @@ function OpsRoom() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
-            <StatCard label="مواقع" value={data.counts.sites} hint="إجمالي مواقع المنطقة" />
-            <StatCard label="بلاغات مفتوحة" value={data.counts.incidents_open} tone={data.counts.incidents_open > 0 ? "warning" : "default"} />
-            <StatCard label="بلاغات حرجة" value={data.counts.incidents_critical} tone={data.counts.incidents_critical > 0 ? "danger" : "success"} />
-            <StatCard label="دوريات نشطة" value={data.counts.patrols_active} tone="success" />
-            <StatCard label="زوّار بالداخل" value={data.counts.visitors_inside} />
-            <StatCard label="تصاريح فعّالة" value={data.counts.permits_active} />
-            <StatCard label="تنبيهات CCTV جديدة" value={data.counts.cctv_new} tone={data.counts.cctv_new > 0 ? "warning" : "default"} />
-            <StatCard label="أصول متعطلة/متدنية" value={data.counts.assets_offline} tone={data.counts.assets_offline > 0 ? "warning" : "success"} />
-            <StatCard label="مقاولون نشطون" value={data.counts.contractors_active} />
+            <StatCard label="مواقع" value={sim.sites} hint="إجمالي مواقع المنطقة" sim />
+            <StatCard label="بلاغات مفتوحة" value={sim.incidents_open} tone={sim.incidents_open > 0 ? "warning" : "default"} sim />
+            <StatCard label="بلاغات حرجة" value={sim.incidents_critical} tone={sim.incidents_critical > 0 ? "danger" : "success"} sim />
+            <StatCard label="دوريات نشطة" value={sim.patrols_active} tone="success" sim />
+            <StatCard label="زوّار بالداخل" value={sim.visitors_inside} sim />
+            <StatCard label="تصاريح فعّالة" value={sim.permits_active} sim />
+            <StatCard label="تنبيهات CCTV جديدة" value={sim.cctv_new} tone={sim.cctv_new > 0 ? "warning" : "default"} sim />
+            <StatCard label="أصول متعطلة/متدنية" value={sim.assets_offline} tone={sim.assets_offline > 0 ? "warning" : "success"} sim />
+            <StatCard label="مقاولون نشطون" value={sim.contractors_active} sim />
             <StatCard label="إجمالي البلاغات اليوم" value={data.incidents.length} />
           </div>
+
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel icon={AlertTriangle} title="آخر البلاغات">

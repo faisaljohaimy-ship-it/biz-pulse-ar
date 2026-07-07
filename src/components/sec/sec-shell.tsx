@@ -89,8 +89,8 @@ export function SecPageHeader({
 }
 
 export function StatCard({
-  label, value, hint, tone = "default",
-}: { label: string; value: string | number; hint?: string; tone?: "default" | "danger" | "warning" | "success" }) {
+  label, value, hint, tone = "default", sim = false,
+}: { label: string; value: string | number; hint?: string; tone?: "default" | "danger" | "warning" | "success"; sim?: boolean }) {
   const toneCls = {
     default: "border-border",
     danger: "border-red-500/40 bg-red-500/5",
@@ -98,11 +98,25 @@ export function StatCard({
     success: "border-emerald-500/40 bg-emerald-500/5",
   }[tone];
   return (
-    <div className={cn("rounded-xl border bg-card p-4 shadow-sm", toneCls)}>
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+    <div className={cn("relative rounded-xl border bg-card p-4 shadow-sm", toneCls)}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+        {sim && <SimTag />}
+      </div>
       <div className="mt-1 text-2xl font-bold text-foreground">{value}</div>
       {hint && <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div>}
     </div>
+  );
+}
+
+export function SimTag() {
+  return (
+    <span
+      className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-600 dark:text-amber-400"
+      title="بيانات محاكاة لأغراض العرض التوضيحي"
+    >
+      عرض توضيحي · محاكاة
+    </span>
   );
 }
 
@@ -113,6 +127,7 @@ export function SampleBadge() {
     </span>
   );
 }
+
 
 export function severityClass(sev: string) {
   switch (sev) {
