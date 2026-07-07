@@ -50,6 +50,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   const [statusOnline, setStatusOnline] = useState(false);
   const [bars, setBars] = useState<number[]>(() => Array(BAR_COUNT).fill(0.15));
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const [fitMode, setFitMode] = useState<"cover" | "contain">("contain");
   const finishedRef = useRef(false);
   const mountedAtRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : 0);
@@ -313,9 +314,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         aria-hidden
         className="absolute inset-0 h-full w-full"
         style={{
-          objectFit: "cover",
+          objectFit: fitMode,
           objectPosition: fitMode === "cover" ? "center 30%" : "center",
-          opacity: videoFailed ? 1 : 0.001,
+          opacity: videoReady && !videoFailed ? 0.38 : 1,
           transition: "opacity 400ms ease",
           filter: "contrast(1.05) saturate(1.05)",
         }}
@@ -354,6 +355,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
             src={welcomeAsset.url}
             playsInline
             preload="auto"
+            onLoadedData={() => setVideoReady(true)}
+            onPlaying={() => setVideoReady(true)}
             onEnded={() => finish()}
             onError={onVideoError}
             className="h-full w-full"
@@ -363,6 +366,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
               background: "transparent",
               maxHeight: "100dvh",
               filter: "contrast(1.05) saturate(1.05)",
+              opacity: videoReady ? 1 : 0,
+              transition: "opacity 420ms ease",
             }}
           />
         )}
