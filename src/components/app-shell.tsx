@@ -1,30 +1,31 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
+  Activity,
   BarChart3,
-  Settings,
-  LogOut,
-  Menu,
   Bot,
-  Users,
-  FolderUp,
-  Workflow,
-  Shield,
-  ListChecks,
-  Sun,
-  Moon,
-  FileText,
-  Plug,
-  Network,
   Brain,
   Building2,
-  Rocket,
-  ShieldAlert,
-  ShieldCheck,
-  Layers,
-  MapPin,
-  Home,
+  Camera,
   Crown,
+  FileText,
+  FolderOpen,
+  Grid3x3,
+  Home,
+  LogOut,
+  MapPin,
+  Menu,
+  Mic,
+  Moon,
+  Network,
+  Plug,
+  Radar,
+  Rocket,
+  Settings,
+  Shield,
+  ShieldAlert,
+  Sparkles,
+  Sun,
+  Wrench,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { useRegion } from "@/lib/region-context";
+
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
@@ -40,6 +42,7 @@ import { RegionSwitcher } from "@/components/RegionSwitcher";
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
+
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
@@ -95,80 +98,59 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 function useNavGroups(): NavGroup[] {
-  const { t, locale } = useI18n();
-  const { region } = useRegion();
-  const ar = (loc: string, arText: string, enText: string) => (loc === "ar" ? arText : enText);
+  const { locale } = useI18n();
+  const ar = (arText: string, enText: string) => (locale === "ar" ? arText : enText);
   return [
     {
-      // Home + shared executive command surfaces (deduped: one Command Center).
-      label: t("nav.group.workspace"),
+      label: ar("الرئيسية", "Home"),
       items: [
-        { to: "/", icon: Home, label: ar(locale, "الرئيسية", "Home") },
-        { to: "/mission-control", icon: Crown, label: ar(locale, "مركز القيادة", "Command Center") },
-        { to: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
-        { to: "/tasks", icon: ListChecks, label: t("nav.tasks") },
+        { to: "/", icon: Home, label: ar("الرئيسية", "Home") },
       ],
     },
     {
-      // Industrial Security — same full system, region-scoped label.
-      label: locale === "ar" ? region.labelAr : region.labelEn,
+      label: ar("العمليات", "Operations"),
       items: [
-        { to: "/sec", icon: ShieldCheck, label: ar(locale, "غرفة العمليات", "Ops Room") },
-        { to: "/sec/exec", icon: Crown, label: ar(locale, "اللوحة التنفيذية", "Exec Dashboard") },
-        { to: "/sec/twin", icon: Network, label: ar(locale, "التوأم الرقمي", "Digital Twin") },
-        { to: "/sec/circles", icon: Building2, label: ar(locale, "الدوائر", "Circles") },
-        { to: "/sec/sections", icon: Shield, label: ar(locale, "الأقسام", "Sections") },
-        { to: "/sec/projects", icon: Rocket, label: ar(locale, "المشاريع", "Projects") },
-        { to: "/sec/maintenance", icon: Workflow, label: ar(locale, "أوامر العمل", "Work Orders") },
-        { to: "/sec/incidents", icon: ShieldAlert, label: ar(locale, "البلاغات", "Incidents") },
-        { to: "/sec/patrols", icon: Shield, label: ar(locale, "الدوريات", "Patrols") },
-        { to: "/sec/permits", icon: FileText, label: ar(locale, "التصاريح", "Permits") },
-        { to: "/sec/visitors", icon: Users, label: ar(locale, "الزوّار", "Visitors") },
-        { to: "/sec/cctv", icon: Layers, label: ar(locale, "CCTV", "CCTV") },
-        { to: "/sec/kpi", icon: BarChart3, label: ar(locale, "مؤشرات الأداء", "KPIs") },
-        { to: "/sec/ai", icon: Brain, label: ar(locale, "توصيات ARIA", "ARIA Recos") },
-        { to: "/hajj", icon: MapPin, label: ar(locale, "عمليات الحج — مشاعر 1447", "Hajj Ops — Mashaer 1447") },
+        { to: "/sec",             icon: Activity,    label: ar("غرفة العمليات", "Ops Room") },
+        { to: "/sec/exec",        icon: Crown,       label: ar("اللوحة التنفيذية", "Exec Dashboard") },
+        { to: "/sec/circles",     icon: Building2,   label: ar("الدوائر", "Circles") },
+        { to: "/sec/sections",    icon: Grid3x3,     label: ar("الأقسام", "Sections") },
+        { to: "/sec/projects",    icon: Rocket,      label: ar("المشاريع", "Projects") },
+        { to: "/sec/maintenance", icon: Wrench,      label: ar("أوامر العمل", "Work Orders") },
+        { to: "/sec/incidents",   icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
+        { to: "/sec/patrols",     icon: Radar,       label: ar("الدوريات", "Patrols") },
+        { to: "/sec/cctv",        icon: Camera,      label: ar("CCTV", "CCTV") },
+        { to: "/sec/kpi",         icon: BarChart3,   label: ar("مؤشرات الأداء", "KPIs") },
+        { to: "/sec/twin",        icon: Network,     label: ar("التوأم الرقمي", "Digital Twin") },
+        { to: "/hajj",            icon: MapPin,      label: ar("عمليات الحج", "Hajj Ops") },
       ],
     },
     {
-      label: ar(locale, "الذكاء", "Intelligence"),
+      label: ar("الذكاء", "Intelligence"),
       items: [
-        { to: "/aria", icon: Brain, label: ar(locale, "ARIA — مركز الذكاء", "ARIA Console") },
-        { to: "/agents", icon: Bot, label: t("nav.agents") },
-        { to: "/workflows", icon: Workflow, label: t("nav.workflows") },
+        { to: "/aria",    icon: Sparkles, label: ar("ARIA", "ARIA") },
+        { to: "/voice",   icon: Mic,      label: ar("المساعد الصوتي", "Voice Assistant") },
+        { to: "/agents",  icon: Bot,      label: ar("الوكلاء", "Agents") },
+        { to: "/sec/ai",  icon: Brain,    label: ar("توصيات ARIA", "ARIA Recos") },
       ],
     },
     {
-      label: ar(locale, "التقارير", "Reports"),
+      label: ar("المعرفة", "Knowledge"),
       items: [
-        { to: "/executive-reports", icon: FileText, label: ar(locale, "التقارير التنفيذية", "Executive Reports") },
+        { to: "/executive-reports", icon: FileText,    label: ar("التقارير", "Reports") },
+        { to: "/integrations",      icon: Plug,        label: ar("التكاملات", "Integrations") },
+        { to: "/files",             icon: FolderOpen,  label: ar("الملفات", "Files") },
       ],
     },
     {
-      label: ar(locale, "التكاملات", "Integrations"),
+      label: ar("الإدارة", "Administration"),
       items: [
-        { to: "/integrations", icon: Plug, label: t("nav.integrations") },
-      ],
-    },
-    {
-      label: ar(locale, "الملفات", "Files"),
-      items: [
-        { to: "/files", icon: FolderUp, label: t("nav.files") },
-      ],
-    },
-    {
-      label: t("nav.group.collab"),
-      items: [{ to: "/team", icon: Users, label: t("nav.team") }],
-    },
-    {
-      label: t("nav.group.admin"),
-      items: [
-        { to: "/admin", icon: Shield, label: t("nav.admin") },
-        { to: "/settings", icon: Settings, label: t("nav.settings") },
+        { to: "/admin",    icon: Shield,   label: ar("لوحة الإدارة", "Admin Panel") },
+        { to: "/settings", icon: Settings, label: ar("الإعدادات", "Settings") },
       ],
     },
   ];
 }
+
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n();
