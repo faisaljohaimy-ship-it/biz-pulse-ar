@@ -245,14 +245,13 @@ function RootComponent() {
                 {!suppressOverlays && <AriaWatermark />}
                 {!suppressClock && (
                   <div
-                    className="pointer-events-none fixed left-3 top-3 z-[55] sm:left-4 sm:top-4"
-                    style={{
-                      marginTop: suppressMarquee ? 0 : 32,
-                      paddingTop: "env(safe-area-inset-top)",
-                    }}
+                    className="sticky top-[36px] z-[55] w-full border-b border-border/40 bg-card/60 backdrop-blur-md supports-[backdrop-filter]:bg-card/50"
+                    style={{ paddingTop: "env(safe-area-inset-top)" }}
+                    role="region"
+                    aria-label="Live status strip"
                   >
-                    <div className="pointer-events-auto">
-                      <LiveClock />
+                    <div className="mx-auto flex h-9 w-full max-w-[1680px] items-center justify-center px-3 sm:justify-start sm:px-4">
+                      <LiveClock className="!bg-transparent !border-transparent !shadow-none !px-0 !py-0" />
                     </div>
                   </div>
                 )}
