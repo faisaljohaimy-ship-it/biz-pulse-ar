@@ -66,8 +66,12 @@ const SCENES: Scene[] = [
     title_en: "Industrial Security",
     value_ar: "حوادث، دوريات، تصاريح، زوّار ومركبات في منصة موحّدة.",
     value_en: "Incidents, patrols, permits, visitors and vehicles — one unified surface.",
+    narration_ar:
+      "نَبْدَأُ بِالْأَمْنِ الصِّنَاعِيِّ. مِنَصَّةٌ مُوَحَّدَةٌ لِلْحَوَادِثِ وَالدَّوْرِيَّاتِ وَالتَّصَارِيحِ وَالزُّوَّارِ وَالْمَرْكَبَاتِ، مَعَ اسْتِجَابَةٍ لَحْظِيَّةٍ عَبْرَ كُلِّ الْمَوَاقِعِ.",
+    narration_en:
+      "We begin with Industrial Security — one unified surface for incidents, patrols, permits, visitors and vehicles with real-time response across every site.",
     accent: ACCENT_NAVY,
-    durationMs: 6500,
+    durationMs: 8500,
     visual: () => <SecurityHUD />,
   },
   {
@@ -77,8 +81,12 @@ const SCENES: Scene[] = [
     title_en: "Executive Agents",
     value_ar: "14+ وكيل ذكاء مع تنسيق أدوات وسجل شرعي للأحداث.",
     value_en: "14+ AI agents with tool orchestration and an immutable event ledger.",
+    narration_ar:
+      "الْوُكَلَاءُ التَّنْفِيذِيُّونَ: أَكْثَرُ مِنْ أَرْبَعَةَ عَشَرَ وَكِيلَ ذَكَاءٍ يَعْمَلُونَ بِتَنْسِيقِ أَدَوَاتٍ دَقِيقٍ وَسِجِلٍّ شَرْعِيٍّ لِكُلِّ حَدَثٍ يَجْرِي فِي الْمُؤَسَّسَةِ.",
+    narration_en:
+      "Executive Agents: more than fourteen AI agents working with precise tool orchestration and an immutable event ledger for every action in the enterprise.",
     accent: ACCENT_NAVY,
-    durationMs: 6500,
+    durationMs: 8500,
     visual: () => <AgentsHUD />,
   },
   {
@@ -88,8 +96,12 @@ const SCENES: Scene[] = [
     title_en: "Digital Twin",
     value_ar: "نبض حي للأصول والمواقع والعمليات عبر المؤسسة.",
     value_en: "Live pulse of assets, sites and operations across the enterprise.",
+    narration_ar:
+      "التَّوْأَمُ الرَّقْمِيُّ: نَبْضٌ حَيٌّ لِأُصُولِكَ وَمَوَاقِعِكَ وَعَمَلِيَّاتِكَ، يَكْشِفُ الْمُخَاطَرَ قَبْلَ وُقُوعِهَا وَيُوَجِّهُ الْقَرَارَ التَّنْفِيذِيَّ لَحْظَةً بِلَحْظَةٍ.",
+    narration_en:
+      "The Digital Twin: a live pulse of your assets, sites and operations — surfacing risks before they land and guiding executive decisions moment by moment.",
     accent: ACCENT_EMERALD,
-    durationMs: 6500,
+    durationMs: 8500,
     visual: () => <TwinHUD />,
   },
   {
@@ -99,8 +111,12 @@ const SCENES: Scene[] = [
     title_en: "Executive Reports",
     value_ar: "مؤشرات أداء لحظية، ذاكرة إنتاجية، وتسليم عبر Outlook.",
     value_en: "Real-time KPIs, production memory, and Outlook delivery.",
+    narration_ar:
+      "التَّقَارِيرُ التَّنْفِيذِيَّةُ: مُؤَشِّرَاتُ أَدَاءٍ لَحْظِيَّةٌ، وَذَاكِرَةٌ إِنْتَاجِيَّةٌ، وَتَسْلِيمٌ مُبَاشِرٌ إِلَى بَرِيدِكَ التَّنْفِيذِيِّ عَبْرَ آوتْلُوك.",
+    narration_en:
+      "Executive Reports: real-time KPIs, production memory, and direct delivery into your executive inbox via Outlook.",
     accent: ACCENT_EMERALD,
-    durationMs: 6500,
+    durationMs: 8000,
     visual: () => <ReportsHUD />,
   },
   {
@@ -110,8 +126,12 @@ const SCENES: Scene[] = [
     title_en: "Hajj Operations",
     value_ar: "وحدة مشاعر 1447 لإدارة العمليات الميدانية في الموسم.",
     value_en: "Mashaer 1447 module for field operations during the season.",
+    narration_ar:
+      "مِنَصَّةُ الْحَجِّ: وَحْدَةُ مَشَاعِرَ أَلْفٍ وَأَرْبَعِ مِئَةٍ وَسَبْعٍ وَأَرْبَعِينَ لِإِدَارَةِ الْعَمَلِيَّاتِ الْمَيْدَانِيَّةِ فِي الْمَوْسِمِ بِأَعْلَى مُعَدَّلَاتِ الْجَاهِزِيَّةِ.",
+    narration_en:
+      "Hajj Operations: the Mashaer fourteen forty-seven module for managing field operations at the highest readiness through the season.",
     accent: ACCENT_NAVY,
-    durationMs: 6500,
+    durationMs: 8500,
     visual: () => <HajjHUD />,
   },
   {
@@ -121,11 +141,21 @@ const SCENES: Scene[] = [
     title_en: "ARIA — Executive Intelligence",
     value_ar: "محرك تنفيذي ثنائي اللغة بصوت طبيعي وذاكرة حيّة.",
     value_en: "Bilingual executive engine with natural voice and live memory.",
+    narration_ar:
+      "وَأَخِيرًا، أَنَا آرْيَا: الذَّكَاءُ التَّنْفِيذِيُّ لِنِكْسِيُوس. صَوْتٌ طَبِيعِيٌّ، وَذَاكِرَةٌ حَيَّةٌ، وَتَحْلِيلٌ ثُنَائِيُّ اللُّغَةِ فِي خِدْمَةِ الْقَرَارِ.",
+    narration_en:
+      "And finally, I am ARIA — the executive intelligence of NEXIOS. A natural voice, live memory, and bilingual analysis in service of the decision.",
     accent: ACCENT_EMERALD,
-    durationMs: 7000,
+    durationMs: 9000,
     visual: () => <AriaHUD />,
   },
 ];
+
+const INTRO_NARRATION_AR =
+  "أَهْلًا بِكَ فِي نِكْسِيُوس، نِظَامُ التَّشْغِيلِ التَّنْفِيذِيِّ لِلذَّكَاءِ الِاصْطِنَاعِيِّ. سَأَصْطَحِبُكَ الْآنَ خِلَالَ مُكَوِّنَاتِ النِّظَامِ وَاحِدًا تِلْوَ الْآخَرِ.";
+const INTRO_NARRATION_EN =
+  "Welcome to NEXIOS — the AI executive operating system. I will now take you through the platform, component by component.";
+
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = React.useState(false);
