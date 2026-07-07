@@ -10,20 +10,30 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { redirect: redirectTo } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const goNext = () => {
+    const target = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/command-center";
+    navigate({ to: target, replace: true });
+  };
+
   useEffect(() => {
-    if (!authLoading && user) navigate({ to: "/command-center", replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user) goNext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading]);
 
   async function handleGoogle() {
     setBusy(true);
