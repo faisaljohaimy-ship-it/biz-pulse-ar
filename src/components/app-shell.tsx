@@ -165,32 +165,33 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const loc = useLocation();
   const groups = useNavGroups();
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-        <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-glow">
-          <img src="/nexus-icon.png" alt="Nexus AI OS" className="h-full w-full object-cover" />
-          <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
+    <div className="flex h-full flex-col bg-sidebar">
+      {/* Sticky header — org identity + region switcher */}
+      <div className="sticky top-0 z-10 border-b border-sidebar-border bg-sidebar/95 backdrop-blur">
+        <div className="flex items-center gap-3 px-4 py-4">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-glow">
+            <img src="/nexus-icon.png" alt="Nexus AI OS" className="h-full w-full object-cover" />
+            <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
+            <div className="truncate text-[11px] text-muted-foreground">{t("app.tagline")}</div>
+          </div>
         </div>
-        <div className="nexus-brand-text min-w-0">
-          <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
-          <div className="truncate text-[11px] text-muted-foreground">{t("app.tagline")}</div>
+        <div className="space-y-2 px-3 pb-3">
+          <OrgSwitcher />
+          <RegionSwitcher onNavigate={onNavigate} />
         </div>
       </div>
 
-      <div className="space-y-2 border-b border-sidebar-border px-3 py-3">
-        <OrgSwitcher />
-        <RegionSwitcher onNavigate={onNavigate} />
-      </div>
-
-      <nav className="flex-1 overflow-y-auto p-3">
-
-
+      {/* Scrollable middle */}
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {groups.map((g) => (
-          <div key={g.label} className="mb-4">
-            <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          <div key={g.label} className="mb-5">
+            <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
               {g.label}
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {g.items.map((it) => {
                 const active = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
                 return (
@@ -199,19 +200,29 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                     to={it.to}
                     onClick={onNavigate}
                     className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                      "group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-all",
                       active
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                        ? "bg-gradient-to-l from-primary/15 to-transparent text-sidebar-foreground"
+                        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
                     )}
                   >
-                    <it.icon
+                    {active && (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-2 end-0 w-1 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.6)]"
+                      />
+                    )}
+                    <span
                       className={cn(
-                        "h-4 w-4 shrink-0",
-                        active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+                        "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
+                        active
+                          ? "bg-primary/15 text-primary"
+                          : "bg-muted/30 text-muted-foreground group-hover:bg-muted/50 group-hover:text-foreground",
                       )}
-                    />
-                    <span className="truncate">{it.label}</span>
+                    >
+                      <it.icon className="size-4" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{it.label}</span>
                   </Link>
                 );
               })}
@@ -220,12 +231,16 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      <div className="space-y-2 border-t border-sidebar-border p-3">
-        <div className="flex items-center justify-between gap-2">
-          <ThemeToggle />
-          <LangToggle />
+      {/* Sticky footer — user chip + round icon actions */}
+      <div className="sticky bottom-0 border-t border-sidebar-border bg-sidebar/95 px-3 py-3 backdrop-blur">
+        <div className="flex items-center gap-2">
+          <UserChip />
+          <div className="ms-auto flex shrink-0 items-center gap-1.5">
+            <LangIconToggle />
+            <ThemeIconToggle />
+            <SignOutIcon />
+          </div>
         </div>
-        <UserChip />
       </div>
     </div>
   );
@@ -245,6 +260,48 @@ function ThemeToggle() {
   );
 }
 
+function ThemeIconToggle() {
+  const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+      aria-label={t("theme.toggle")}
+    >
+      {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+    </button>
+  );
+}
+
+function LangIconToggle() {
+  const { locale, setLocale, t } = useI18n();
+  return (
+    <button
+      onClick={() => setLocale(locale === "ar" ? "en" : "ar")}
+      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+      aria-label={t("lang.label")}
+    >
+      {locale === "ar" ? "EN" : "AR"}
+    </button>
+  );
+}
+
+function SignOutIcon() {
+  const { signOut } = useAuth();
+  const { t } = useI18n();
+  return (
+    <button
+      onClick={() => signOut()}
+      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-muted-foreground transition hover:border-destructive/50 hover:text-destructive"
+      aria-label={t("auth.signout")}
+      title={t("auth.signout")}
+    >
+      <LogOut className="size-4" data-flip-rtl />
+    </button>
+  );
+}
+
 function LangToggle() {
   const { locale, setLocale, t } = useI18n();
   return (
@@ -259,22 +316,18 @@ function LangToggle() {
 }
 
 function UserChip() {
-  const { user, signOut } = useAuth();
-  const { t, locale } = useI18n();
+  const { user } = useAuth();
+  const { locale } = useI18n();
   const { region } = useRegion();
   const displayName = locale === "ar"
     ? `إدارة ${region.labelAr.replace(/^الأمن الصناعي — /, "الأمن الصناعي بالمنطقة ").replace("المنطقة المنطقة", "المنطقة")}`
     : region.labelEn;
   return (
-    <div className="nexus-user-meta flex min-w-0 items-center gap-2" title={user?.email ?? undefined}>
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">
+    <div className="flex min-w-0 flex-1 items-center gap-2" title={user?.email ?? undefined}>
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">
         أ
       </div>
       <div className="min-w-0 flex-1 truncate text-xs text-muted-foreground" dir="rtl">{displayName}</div>
-      <Button variant="ghost" size="icon-sm" onClick={() => signOut()} title={t("auth.signout")}>
-        <LogOut className="h-3.5 w-3.5" data-flip-rtl />
-      </Button>
     </div>
-
   );
 }
