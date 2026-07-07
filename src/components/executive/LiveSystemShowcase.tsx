@@ -2,21 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Maximize2, Minimize2, Radio, Expand, Moon, ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import hajjDashboardPoster from "@/assets/hajj-dashboard-poster.png.asset.json";
 
 
-// Live embed URL — same source configured for /hajj-prime, kept in an env
-// var so it can be re-pointed without a code change. Dark-theme params are
-// appended so the platform boots in permanent night mode inside the frame.
+
+// Default to the internal, same-origin dashboard so the preview is always the
+// real live board (never a blocked/opaque external frame). An env override can
+// re-point to a different origin without a code change.
 const RAW_EMBED_URL =
   (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
-  "https://hajj.neexios.com/?theme=dark&forceDark=1#dark";
+  "/hajj-prime";
 function withDarkParams(url: string): string {
   try {
     const u = new URL(url, typeof window !== "undefined" ? window.location.href : "https://neexios.com");
     u.searchParams.set("theme", "dark");
     u.searchParams.set("forceDark", "1");
+    u.searchParams.set("embed", "1");
     if (!u.hash) u.hash = "dark";
+    // Return a relative URL for same-origin sources so nothing leaks to the UI.
+    if (typeof window !== "undefined" && u.origin === window.location.origin) {
+      return `${u.pathname}${u.search}${u.hash}`;
+    }
     return u.toString();
   } catch {
     return url;
@@ -114,24 +119,15 @@ export function LiveSystemShowcase() {
             </div>
           </div>
 
-          {/* Live iframe stage — external Hajj Nexus platform, dark-forced.
+          {/* Live iframe stage — same-origin Hajj Nexus dashboard, dark-forced.
+              Taller on mobile (comfortable vertical), 16:10 on tablet/laptop.
               Container background matches the app so no white flash ever
-              appears; loading/failure overlays are dark-themed. */}
+              appears; loading/failure overlays are dark-themed. Clicking the
+              overlay opens the full-screen dashboard. */}
           <div
-            className="relative aspect-[16/10] w-full overflow-hidden"
+            className="relative aspect-[4/5] w-full overflow-hidden sm:aspect-[16/10]"
             style={{ backgroundColor: "#04111f", colorScheme: "dark" }}
           >
-            {/* Poster fallback — dimmed, sits behind the live iframe */}
-            <img
-              src={hajjDashboardPoster.url}
-              alt=""
-              aria-hidden
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 z-0 h-full w-full object-cover object-top opacity-40"
-              style={{ filter: "saturate(1.05) contrast(1.02)" }}
-            />
-
             {/* Live dashboard — fully visible at native scale, interactive so viewers
                 can scroll and inspect every detail from outside the icon frame. */}
             <iframe
@@ -142,10 +138,16 @@ export function LiveSystemShowcase() {
               onLoad={() => { setLoaded(true); setFailed(false); }}
               onError={() => setFailed(true)}
               style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
-
               className="absolute inset-0 z-[5] h-full w-full border-0"
             />
 
+            {/* Click-to-open overlay — sits above the iframe near the top so
+                the frame itself remains scrollable/interactive below. */}
+            <Link
+              to={INTERNAL_URL}
+              aria-label={ar ? "فتح لوحة الحج بملء الشاشة" : "Open Hajj dashboard fullscreen"}
+              className="absolute inset-x-0 top-0 z-20 block h-10 cursor-zoom-in"
+            />
 
             {/* Subtle cinematic overlays — kept thin so the live feed stays readable */}
             <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(2,16,30,0.05)_0%,transparent_35%,transparent_80%,rgba(2,16,30,0.35)_100%)]" />
