@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ariaIntro from "@/assets/aria-intro.mp4.asset.json";
 
