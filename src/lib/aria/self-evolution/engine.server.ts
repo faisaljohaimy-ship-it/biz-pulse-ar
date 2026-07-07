@@ -64,8 +64,10 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/lib/aria/learning/prompt-injector.server.ts",
   "src/lib/aria/self-healing/watchdog.ts",
   "src/routes/api/chat.ts",
+  "src/lib/user-interaction.ts",
   "docs/ARIA_INTRO_CONSTITUTION.md",
   "docs/NEXUS_ENGINEERING_CONSTITUTION.md",
+  "docs/NEXUS_READINESS_PROMPT.md",
 ];
 
 export function proposalRespectsIntroConstitution(p: {
