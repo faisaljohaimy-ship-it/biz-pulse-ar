@@ -44,13 +44,18 @@ export function AriaCinematicIntro({
   videoSrc = "/aria-hero-motion.mp4",
   posterSrc = "/aria-backdrop.webp",
   audioSrc = "/aria-greeting-voice.mp3",
+  ambientSrc = "/aria-ambient.mp3",
   wordmark = "NEXIOS",
   tagline = "منظومة الذكاء التنفيذية · إدارة الأمن الصناعي",
 }: AriaCinematicIntroProps) {
   const [phase, setPhase] = useState<Phase>("black");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ambientRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const [ambientReady, setAmbientReady] = useState(false);
+  const [ambientOn, setAmbientOn] = useState(false);
+  const [userMuted, setUserMuted] = useState(false);
 
   // Mark the intro active so the rest of the shell (watermark, greeter) can hide.
   useEffect(() => {
