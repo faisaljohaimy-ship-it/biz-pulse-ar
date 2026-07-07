@@ -19,6 +19,7 @@ import { useI18n } from "@/lib/i18n";
 
 import { RuntimeTile } from "@/components/os/RuntimeTile";
 import { LiveDateTime } from "@/components/os/LiveDateTime";
+import { AriaCinematicIntro } from "@/components/intro/AriaCinematicIntro";
 
 export const Route = createFileRoute("/os")({
   head: () => ({
