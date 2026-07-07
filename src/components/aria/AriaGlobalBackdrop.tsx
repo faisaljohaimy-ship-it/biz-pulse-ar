@@ -29,7 +29,9 @@ export function AriaGlobalBackdrop() {
       dir="ltr"
       className="aria-presence pointer-events-none fixed inset-0 z-0 overflow-hidden"
       style={{ background: "transparent" }}
+      suppressHydrationWarning
     >
+
       {/* Soft radial cyan glow behind her */}
       <div
         className="absolute left-1/2 top-[38%] h-[75vh] w-[95vw] max-w-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full"
