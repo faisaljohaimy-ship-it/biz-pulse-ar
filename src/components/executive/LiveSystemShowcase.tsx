@@ -55,8 +55,7 @@ export function LiveSystemShowcase() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { locale } = useI18n();
-  const ar = locale === "ar";
+
 
   return (
     <section
