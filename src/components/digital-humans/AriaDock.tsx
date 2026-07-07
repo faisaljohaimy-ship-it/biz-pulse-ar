@@ -470,8 +470,8 @@ export function AriaDock() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q, lang, context, history }),
       });
-      const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string; error?: string };
-      if (!r.ok) throw new Error(j.error || `ask_${r.status}`);
+      const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string; error?: string; message_ar?: string; message_en?: string };
+      if (!r.ok) throw new Error((ar ? j.message_ar : j.message_en) || j.error || `ask_${r.status}`);
       const text_ar = j.text_ar || j.text_en || "تم استلام سؤالك، لكن لم يصل نص الرد. أعد المحاولة.";
       const text_en = j.text_en || j.text_ar || "I received your question, but the reply text was empty. Please retry.";
       w.__aria_context?.pushTurn({ role: "assistant", text: lang === "ar" ? text_ar : text_en, page: snap?.page?.path });
@@ -483,9 +483,9 @@ export function AriaDock() {
       });
       // Speak the reply aloud (barge-in-safe, mute-aware, fallback-safe).
       void ariaSpeech.speak(stripForSpeech(lang === "ar" ? text_ar : text_en));
-    } catch {
+    } catch (error) {
       setState("idle");
-      setTypedError(ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
+      setTypedError(error instanceof Error && error.message ? error.message : ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
     } finally {
       setTypedLoading(false);
     }

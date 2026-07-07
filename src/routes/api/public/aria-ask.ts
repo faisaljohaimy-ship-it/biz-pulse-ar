@@ -57,6 +57,57 @@ const Input = z.object({
   history: z.array(TurnSchema).max(12).optional(),
 });
 
+const GATEWAY_TIMEOUT_MS = 35_000;
+
+type PublicAskErrorCode =
+  | "missing_provider_key"
+  | "quota_exceeded"
+  | "rate_limited"
+  | "provider_auth_failed"
+  | "provider_error"
+  | "network_error"
+  | "timeout"
+  | "empty_response";
+
+function errorPayload(error: PublicAskErrorCode, status?: number) {
+  const message_ar: Record<PublicAskErrorCode, string> = {
+    missing_provider_key: "إعداد آريا غير مكتمل: مفتاح مزوّد الذكاء غير مفعّل.",
+    quota_exceeded: "رصيد الذكاء الاصطناعي مستنفد مؤقتًا.",
+    rate_limited: "تم تجاوز حد الطلبات مؤقتًا. أعد المحاولة بعد قليل.",
+    provider_auth_failed: "تعذّر توثيق آريا مع مزوّد الذكاء.",
+    provider_error: "مزوّد الذكاء أعاد خطأ مؤقتًا.",
+    network_error: "انقطع الاتصال بمزوّد الذكاء مؤقتًا.",
+    timeout: "استغرقت آريا وقتًا أطول من المتوقع.",
+    empty_response: "وصل رد فارغ من مزوّد الذكاء.",
+  };
+  const message_en: Record<PublicAskErrorCode, string> = {
+    missing_provider_key: "ARIA is not fully configured: the AI provider key is missing.",
+    quota_exceeded: "AI credits are temporarily exhausted.",
+    rate_limited: "The request limit was reached temporarily. Please retry shortly.",
+    provider_auth_failed: "ARIA could not authenticate with the AI provider.",
+    provider_error: "The AI provider returned a temporary error.",
+    network_error: "The connection to the AI provider was interrupted.",
+    timeout: "ARIA took longer than expected to respond.",
+    empty_response: "The AI provider returned an empty response.",
+  };
+  return { error, message_ar: message_ar[error], message_en: message_en[error], status };
+}
+
+function statusToError(status: number): PublicAskErrorCode {
+  if (status === 401 || status === 403) return "provider_auth_failed";
+  if (status === 402) return "quota_exceeded";
+  if (status === 429) return "rate_limited";
+  return "provider_error";
+}
+
+function isRetryableStatus(status: number) {
+  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+}
+
+function isTimeoutError(error: unknown) {
+  return error instanceof DOMException && error.name === "TimeoutError";
+}
+
 function clientIp(req: Request): string {
   const h = req.headers;
   return (
@@ -77,7 +128,8 @@ export const Route = createFileRoute("/api/public/aria-ask")({
       POST: async ({ request }) => {
         const key = process.env.LOVABLE_API_KEY;
         if (!key) {
-          return Response.json({ error: "missing_lovable_api_key" }, { status: 500 });
+          console.error("[public/aria-ask] missing AI provider key");
+          return Response.json(errorPayload("missing_provider_key"), { status: 500 });
         }
         const lovableKey = key;
 
@@ -160,25 +212,47 @@ export const Route = createFileRoute("/api/public/aria-ask")({
           .join("\n\n");
 
         async function callModel(model: string, maxTokens: number) {
-          const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Lovable-API-Key": lovableKey,
-              "X-Lovable-AIG-SDK": "nexios-public-aria",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model,
-              max_completion_tokens: maxTokens,
-              messages: [
-                { role: "system", content: systemForCall },
-                { role: "user", content: data.question },
-              ],
-              response_format: { type: "json_object" },
-            }),
-            signal: AbortSignal.timeout(40_000),
+          const payload = JSON.stringify({
+            model,
+            max_completion_tokens: maxTokens,
+            messages: [
+              { role: "system", content: systemForCall },
+              { role: "user", content: data.question },
+            ],
+            response_format: { type: "json_object" },
           });
-          return r;
+
+          let lastError: unknown;
+          for (let attempt = 1; attempt <= 2; attempt += 1) {
+            try {
+              const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "Lovable-API-Key": lovableKey,
+                  "X-Lovable-AIG-SDK": "nexios-public-aria",
+                  "Content-Type": "application/json",
+                },
+                body: payload,
+                signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+              });
+              if (attempt === 1 && isRetryableStatus(r.status)) {
+                const detail = (await r.clone().text().catch(() => "")).slice(0, 240);
+                console.warn("[public/aria-ask] gateway retry", { model, status: r.status, detail });
+                continue;
+              }
+              return r;
+            } catch (error) {
+              lastError = error;
+              console.warn("[public/aria-ask] gateway attempt failed", {
+                model,
+                attempt,
+                timeout: isTimeoutError(error),
+                error: error instanceof Error ? error.message : String(error),
+              });
+              if (attempt === 2) break;
+            }
+          }
+          throw lastError instanceof Error ? lastError : new Error("gateway_fetch_failed");
         }
 
         async function extract(r: Response) {
@@ -214,13 +288,14 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             const detail = (await r.text().catch(() => "")).slice(0, 240);
             console.error("[public/aria-ask] gateway gpt-5", r.status, detail);
             if (r.status === 429 || r.status === 402) {
-              return Response.json({ error: "ask_failed", status: r.status }, { status: r.status });
+              return Response.json(errorPayload(statusToError(r.status), r.status), { status: r.status });
             }
             r = await callModel("openai/gpt-5-mini", 1200);
             if (!r.ok) {
               const d2 = (await r.text().catch(() => "")).slice(0, 240);
               console.error("[public/aria-ask] gateway gpt-5-mini", r.status, d2);
-              return Response.json({ error: "ask_failed", status: r.status }, { status: 502 });
+              const code = statusToError(r.status);
+              return Response.json(errorPayload(code, r.status), { status: code === "provider_auth_failed" ? 502 : r.status === 402 || r.status === 429 ? r.status : 502 });
             }
           }
           let parsed = await extract(r);
@@ -229,7 +304,8 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             if (r2.ok) parsed = await extract(r2);
           }
           if (!parsed.ar && !parsed.en) {
-            return Response.json({ error: "empty_response" }, { status: 502 });
+            console.error("[public/aria-ask] empty model response");
+            return Response.json(errorPayload("empty_response"), { status: 502 });
           }
           return Response.json({
             text_ar: parsed.ar || parsed.en,
@@ -256,8 +332,12 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             },
           });
         } catch (e) {
-          console.error("[public/aria-ask]", e instanceof Error ? e.message : e);
-          return Response.json({ error: "network_error" }, { status: 502 });
+          const code = isTimeoutError(e) ? "timeout" : "network_error";
+          console.error("[public/aria-ask]", {
+            code,
+            error: e instanceof Error ? e.message : String(e),
+          });
+          return Response.json(errorPayload(code), { status: 502 });
         }
       },
     },
