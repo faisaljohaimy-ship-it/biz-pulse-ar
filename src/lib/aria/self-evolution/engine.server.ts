@@ -60,7 +60,7 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/lib/aria/learning/interaction-log.server.ts",
   "src/lib/aria/learning/pattern-miner.server.ts",
   "src/lib/aria/learning/prompt-injector.server.ts",
-  "src/lib/aria/self-healing/watchdog.client.ts",
+  "src/lib/aria/self-healing/watchdog.ts",
   "src/routes/api/chat.ts",
   "docs/ARIA_INTRO_CONSTITUTION.md",
   "docs/NEXUS_ENGINEERING_CONSTITUTION.md",

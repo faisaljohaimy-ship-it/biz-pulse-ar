@@ -228,7 +228,7 @@ function RootComponent() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let cancelled = false;
-    import("@/lib/aria/self-healing/watchdog.client").then((m) => {
+    import("@/lib/aria/self-healing/watchdog").then((m) => {
       if (cancelled) return;
       cleanup = m.installAriaWatchdog();
     });
