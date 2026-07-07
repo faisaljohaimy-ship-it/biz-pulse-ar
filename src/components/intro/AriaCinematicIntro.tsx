@@ -22,9 +22,12 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const bgVideoRef = useRef<HTMLVideoElement | null>(null);
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [showSoundChip, setShowSoundChip] = useState(false);
+
 
   // Decide on mount whether to show.
   useEffect(() => {
