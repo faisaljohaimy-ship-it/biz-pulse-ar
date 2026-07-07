@@ -32,6 +32,7 @@ import { LiveClock } from "@/components/LiveClock";
 
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
+import { RegionProvider } from "@/lib/region-context";
 
 
 
