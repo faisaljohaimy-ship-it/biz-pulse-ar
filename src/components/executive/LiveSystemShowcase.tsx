@@ -114,11 +114,13 @@ export function LiveSystemShowcase() {
             </div>
           </div>
 
-          {/* Live iframe stage — the actual /hajj-prime dashboard renders
-              inside the icon so viewers see the system LIVE from the outside.
-              The poster image sits behind as an instant fallback until the
-              live route finishes hydrating (no black flash on slow networks). */}
-          <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#02101e]">
+          {/* Live iframe stage — external Hajj Nexus platform, dark-forced.
+              Container background matches the app so no white flash ever
+              appears; loading/failure overlays are dark-themed. */}
+          <div
+            className="relative aspect-[16/10] w-full overflow-hidden"
+            style={{ backgroundColor: "#04111f", colorScheme: "dark" }}
+          >
             {/* Poster fallback — dimmed, sits behind the live iframe */}
             <img
               src={hajjDashboardPoster.url}
@@ -137,7 +139,10 @@ export function LiveSystemShowcase() {
               title={ar ? "منصة نُسك الحج — بث مباشر" : "Hajj Nexus Platform — Live"}
               loading="eager"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              style={{ colorScheme: "dark", backgroundColor: "transparent" }}
+              onLoad={() => { setLoaded(true); setFailed(false); }}
+              onError={() => setFailed(true)}
+              style={{ colorScheme: "dark", backgroundColor: "#04111f" }}
+
               className="absolute inset-0 z-[5] h-full w-full border-0"
             />
 
