@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ariaIntro from "@/assets/aria-intro.mp4.asset.json";
+import { installInteractionTracker, markInteracted } from "@/lib/user-interaction";
 
 const STORAGE_KEY = "aria_intro_seen_v1";
+
 
 type Props = {
   /** Optional identifier to scope replay state per surface. */
