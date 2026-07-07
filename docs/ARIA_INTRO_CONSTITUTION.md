@@ -192,3 +192,45 @@ these into deterministic, machine-enforceable invariants that the
 self-evolution loop cannot silently undo.
 
 
+
+---
+
+## INVARIANT-14 — Mobile Audio Gesture Contract (LOCKED)
+
+Mobile browsers (iOS Safari, Android Chrome, WebView) forbid autoplay with
+sound and route `<video>` audio through a *suspended* `AudioContext` when
+`createMediaElementSource()` is called before a user gesture. The intro
+therefore obeys these rules — permanently:
+
+1. **Never create the WebAudio graph before verified audible playback.**
+   `attachAnalyser()` MUST NOT be called from the muted-autoplay fallback
+   branch. It is called only after:
+   - the initial `v.play()` resolves with `v.muted === false`, OR
+   - the user gesture (`unmute`, `toggleMute`, `startReduced`) completes
+     `v.play()` unmuted.
+
+2. **Resume the AudioContext synchronously inside the user gesture.**
+   Every unmute entry point calls `audioCtxRef.current?.resume()` BEFORE
+   mutating `v.muted`, `v.volume`, or calling `v.play()`.
+
+3. **Mirror the muted state to the DOM attribute.** iOS observes the
+   `muted` attribute, not just the property. Fallback sets it; every
+   unmute path removes it.
+
+4. **Sound chip is always tappable.** Placed above safe-area-inset-top,
+   z-index ≥ 20, pointer events enabled, min 44×44px tap target. Never
+   suppressed behind the video layer or hero card.
+
+5. **The wrapper `onPointerDown={unmute}` remains the fallback gesture**
+   so any tap anywhere on the intro unlocks sound.
+
+### Enforcement
+- `PROTECTED_PATHS` in `src/lib/aria/self-evolution/engine.server.ts`
+  includes `src/components/cinematic/AriaWelcomeVideo.tsx`.
+- Self-healing watchdog logs a `mobile_audio_locked` incident if the
+  intro reports `showSoundChip=true` for > MIN_DISPLAY_MS on a touch
+  device without a subsequent unmute event, so the pattern miner can
+  surface regressions immediately.
+
+Violation of any rule above is a Constitution-level bug and must be
+reverted, not "worked around."

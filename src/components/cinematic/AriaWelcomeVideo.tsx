@@ -183,6 +183,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const startBg = () => { if (bg) { bg.muted = true; bg.play().catch(() => {}); } };
 
     const tryWithSound = async () => {
+      // Mobile-safe path: iOS/Android block createMediaElementSource before a
+      // user gesture and route audio through a suspended AudioContext even
+      // after unmute. Never touch WebAudio until we truly have unmuted audio.
       v.muted = false;
       v.volume = 1;
       try {
@@ -193,12 +196,12 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         attachAnalyser();
       } catch {
         v.muted = true;
+        (v as HTMLVideoElement).setAttribute("muted", "");
         setMuted(true);
         setShowSoundChip(true);
         try { await v.play(); } catch { /* ignore */ }
         startBg();
-        // Idle bars until user unmutes
-        attachAnalyser();
+        // DO NOT attachAnalyser here — waits for the unmute gesture.
       }
     };
 
@@ -225,10 +228,19 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const v = videoRef.current;
     if (!v) return;
     markInteracted();
-    v.muted = false;
-    v.volume = 1;
-    v.play().catch(() => { /* ignore */ });
+    // Resume AudioContext first (must happen inside the user gesture on iOS),
+    // then unmute the element, then attach the analyser lazily so the WebAudio
+    // graph is never built in a suspended state on mobile.
     try { audioCtxRef.current?.resume(); } catch { /* ignore */ }
+    v.muted = false;
+    (v as HTMLVideoElement).removeAttribute("muted");
+    v.volume = 1;
+    const p = v.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => { attachAnalyser(); }).catch(() => { /* ignore */ });
+    } else {
+      attachAnalyser();
+    }
     setMuted(false);
     setShowSoundChip(false);
   };
@@ -257,14 +269,23 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const v = videoRef.current;
     if (!v) return;
     const next = !muted;
-    v.muted = next;
     if (!next) {
-      v.volume = 1;
-      v.play().catch(() => {});
+      // unmuting — resume audio context inside the gesture
       try { audioCtxRef.current?.resume(); } catch { /* ignore */ }
+      v.muted = false;
+      (v as HTMLVideoElement).removeAttribute("muted");
+      v.volume = 1;
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => attachAnalyser()).catch(() => {});
+      } else {
+        attachAnalyser();
+      }
+      setShowSoundChip(false);
+    } else {
+      v.muted = true;
     }
     setMuted(next);
-    if (!next) setShowSoundChip(false);
   };
 
   return (
