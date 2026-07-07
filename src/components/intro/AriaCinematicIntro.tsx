@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ariaIntro from "@/assets/aria-intro.mp4.asset.json";
+import { installInteractionTracker, markInteracted } from "@/lib/user-interaction";
 
 const STORAGE_KEY = "aria_intro_seen_v1";
+
 
 type Props = {
   /** Optional identifier to scope replay state per surface. */
@@ -20,13 +22,17 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const bgVideoRef = useRef<HTMLVideoElement | null>(null);
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [showSoundChip, setShowSoundChip] = useState(false);
+
 
   // Decide on mount whether to show.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    installInteractionTracker();
     try {
       const seen = window.localStorage.getItem(STORAGE_KEY);
       if (seen === "1") return;
@@ -44,6 +50,8 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
     }
     setVisible(true);
   }, [surface]);
+
+
 
   const finish = () => {
     if (fading) return;
@@ -78,12 +86,40 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
       aria-modal="true"
       aria-label={ar ? "مقدّمة سينمائية" : "Cinematic intro"}
       dir={ar ? "rtl" : "ltr"}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-background"
       style={{
         opacity: fading ? 0 : 1,
         transition: "opacity 600ms cubic-bezier(0.22,1,0.36,1)",
+        maxHeight: "100dvh",
+      }}
+      onPointerDown={() => {
+        if (!muted) return;
+        const v = videoRef.current;
+        if (!v) return;
+        markInteracted();
+        v.muted = false;
+        v.volume = 1;
+        v.play().catch(() => {});
+        setMuted(false);
+        setShowSoundChip(false);
       }}
     >
+      {/* Cinematic blurred backdrop */}
+      <video
+        ref={bgVideoRef}
+        src={ariaIntro.url}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden
+        className="absolute inset-0 h-full w-full"
+        style={{
+          objectFit: "cover",
+          filter: "blur(28px) brightness(0.55) saturate(1.05)",
+          transform: "scale(1.15)",
+        }}
+      />
       <video
         ref={videoRef}
         src={ariaIntro.url}
@@ -93,15 +129,14 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         preload="auto"
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
-          // Try to play with sound. Browsers usually block this without a
-          // user gesture; on failure, retry muted and let the viewer unmute
-          // via the on-screen button.
           v.muted = false;
+          v.volume = 1;
           const p = v.play();
           if (p && typeof p.then === "function") {
-            p.then(() => setMuted(false)).catch(() => {
+            p.then(() => { setMuted(false); setShowSoundChip(false); }).catch(() => {
               v.muted = true;
               setMuted(true);
+              setShowSoundChip(true);
               v.play().catch(() => { /* noop */ });
             });
           }
@@ -112,51 +147,55 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           console.warn("[AriaCinematicIntro] video failed to load");
           finish();
         }}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="relative h-full w-full"
+        style={{ objectFit: "contain", maxHeight: "100dvh" }}
       />
 
-      {/* HUD tint overlay — semantic tokens */}
+      {/* Edge-only vignette (does not cover the face) */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% 50%, transparent 55%, hsl(var(--background) / 0.55) 100%), linear-gradient(180deg, hsl(var(--background) / 0.35) 0%, hsl(var(--background) / 0.15) 45%, hsl(var(--background) / 0.75) 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          background:
-            "radial-gradient(60% 40% at 50% 100%, hsl(var(--primary) / 0.35), transparent 70%), radial-gradient(50% 30% at 0% 0%, hsl(var(--primary) / 0.20), transparent 70%), radial-gradient(50% 30% at 100% 0%, hsl(var(--primary) / 0.20), transparent 70%)",
+            "radial-gradient(120% 90% at 50% 50%, transparent 65%, hsl(var(--background) / 0.7) 100%)",
         }}
       />
 
-      <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
+
+
+      <div className="absolute top-4 end-4 z-30 flex items-center gap-2">
         <button
           type="button"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             const v = videoRef.current;
             if (!v) return;
+            markInteracted();
             const next = !muted;
             v.muted = next;
+            if (!next) v.volume = 1;
             setMuted(next);
             if (!next) {
-              // Ensure playback resumes after user gesture unmute.
+              setShowSoundChip(false);
               v.play().catch(() => { /* noop */ });
             }
           }}
           aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
           aria-pressed={!muted}
-          className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-          <span>{muted ? (ar ? "تشغيل الصوت" : "Sound on") : (ar ? "كتم" : "Mute")}</span>
+          <span>
+            {showSoundChip
+              ? (ar ? "اضغط لتفعيل الصوت" : "Tap for sound")
+              : muted
+                ? (ar ? "تشغيل الصوت" : "Sound on")
+                : (ar ? "كتم" : "Mute")}
+          </span>
         </button>
         <button
           type="button"
-          onClick={finish}
+          onClick={(e) => { e.stopPropagation(); finish(); }}
           aria-label={ar ? "تخطّي المقدّمة · Skip intro" : "Skip intro · تخطّي المقدّمة"}
           className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
@@ -166,6 +205,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           </span>
         </button>
       </div>
+
     </div>
   );
 }
