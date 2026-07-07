@@ -118,13 +118,15 @@ export function LiveSystemShowcase() {
               >
                 {expanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
               </button>
-              <Link
-                to={INTERNAL_URL}
+              <a
+                href={HAJJ_PLATFORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
-                aria-label={ar ? "فتح كامل" : "Open full screen"}
+                aria-label={ar ? "فتح منصة الحج في نافذة جديدة" : "Open Hajj platform in new tab"}
               >
-                <Expand className="h-2.5 w-2.5" />
-              </Link>
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
             </div>
           </div>
 
