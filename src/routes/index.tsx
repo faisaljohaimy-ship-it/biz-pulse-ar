@@ -48,12 +48,12 @@ export const Route = createFileRoute("/")({
 });
 
 const PILLARS = [
-  { anchor: "tour-pillar-security", icon: Shield,    title_ar: "أمن صناعي",         title_en: "Industrial Security", desc_ar: "حوادث، دوريات، تصاريح، زوار ومركبات في منصة موحّدة.", desc_en: "Incidents, patrols, permits, visitors, and vehicles on a unified surface." },
-  { anchor: "tour-pillar-agents",   icon: Bot,       title_ar: "وكلاء ذكاء",        title_en: "AI Agents",           desc_ar: "11 وكيلاً تنفيذياً مع تنسيق أدوات وسجل شرعي للأحداث.",     desc_en: "11 executive agents with tool orchestration and an immutable event ledger." },
-  { anchor: "tour-pillar-twin",     icon: Radar,     title_ar: "توأم رقمي حي",     title_en: "Live Digital Twin",   desc_ar: "تحديث لحظي للأصول والمواقع والعمليات عبر نبض المؤسسة.", desc_en: "Real-time pulse of assets, sites, and operations across the enterprise." },
-  { anchor: "tour-pillar-reports",  icon: BarChart3, title_ar: "تقارير تنفيذية",    title_en: "Executive Reports",   desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",    desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery." },
-  { anchor: "tour-pillar-hajj",     icon: Moon,      title_ar: "نظام الحج",          title_en: "Hajj Operations",     desc_ar: "وحدة مشاعر 1447 لإدارة العمليات الميدانية في الموسم.",  desc_en: "Mashaer 1447 module for field operations during the Hajj season." },
-  { anchor: "tour-pillar-aria",     icon: Sparkles,  title_ar: "ARIA التنفيذية",    title_en: "ARIA Engine",         desc_ar: "محرك تنفيذي ثنائي اللغة مع صوت طبيعي وذاكرة حية.",     desc_en: "Bilingual executive engine with natural voice and live executive memory." },
+  { anchor: "tour-pillar-security", to: "/_authenticated/sec",               icon: Shield,    title_ar: "أمن صناعي",         title_en: "Industrial Security", desc_ar: "حوادث، دوريات، تصاريح، زوار ومركبات في منصة موحّدة.", desc_en: "Incidents, patrols, permits, visitors, and vehicles on a unified surface." },
+  { anchor: "tour-pillar-agents",   to: "/_authenticated/agents",            icon: Bot,       title_ar: "وكلاء ذكاء",        title_en: "AI Agents",           desc_ar: "11 وكيلاً تنفيذياً مع تنسيق أدوات وسجل شرعي للأحداث.",     desc_en: "11 executive agents with tool orchestration and an immutable event ledger." },
+  { anchor: "tour-pillar-twin",     to: "/_authenticated/digital-twin",      icon: Radar,     title_ar: "توأم رقمي حي",     title_en: "Live Digital Twin",   desc_ar: "تحديث لحظي للأصول والمواقع والعمليات عبر نبض المؤسسة.", desc_en: "Real-time pulse of assets, sites, and operations across the enterprise." },
+  { anchor: "tour-pillar-reports",  to: "/_authenticated/executive-reports", icon: BarChart3, title_ar: "تقارير تنفيذية",    title_en: "Executive Reports",   desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",    desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery." },
+  { anchor: "tour-pillar-hajj",     to: "/_authenticated/hajj",              icon: Moon,      title_ar: "نظام الحج",          title_en: "Hajj Operations",     desc_ar: "وحدة مشاعر 1447 لإدارة العمليات الميدانية في الموسم.",  desc_en: "Mashaer 1447 module for field operations during the Hajj season." },
+  { anchor: "tour-pillar-aria",     to: "/_authenticated/aria",              icon: Sparkles,  title_ar: "ARIA التنفيذية",    title_en: "ARIA Engine",         desc_ar: "محرك تنفيذي ثنائي اللغة مع صوت طبيعي وذاكرة حية.",     desc_en: "Bilingual executive engine with natural voice and live executive memory." },
 ] as const;
 
 function IntroLanding() {
