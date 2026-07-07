@@ -2,57 +2,40 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   BarChart3,
-  Sparkles,
   Settings,
   LogOut,
   Menu,
   Bot,
   Users,
-  Mic,
   FolderUp,
-  Store,
-  BookOpen,
   Workflow,
-  BookMarked,
   Shield,
   ListChecks,
   Sun,
   Moon,
   FileText,
-  Crown,
-  Boxes,
   Plug,
   Network,
-  GitMerge,
   Brain,
-  Presentation,
-  Briefcase,
-  Gavel,
   Building2,
   Rocket,
   ShieldAlert,
   ShieldCheck,
-  TrendingUp,
-  Ghost,
-  Zap,
-  GitBranch,
-  Volume2,
   Layers,
   MapPin,
-  Play,
-  Activity,
-  Wrench, Radio, Stethoscope, GraduationCap,
+  Home,
+  Crown,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
+import { useRegion } from "@/lib/region-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-// Legacy ExecutiveOverlay removed — replaced by the ARIA Singleton (`<AriaCopilot />`
-// mounted once in `src/routes/__root.tsx`). See `src/lib/aria-core/README.md`.
 import { OrgSwitcher } from "@/components/org/org-switcher";
+import { RegionSwitcher } from "@/components/RegionSwitcher";
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
