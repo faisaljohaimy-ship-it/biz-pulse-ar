@@ -343,18 +343,24 @@ function IntroLanding() {
                 <li
                   id={p.anchor}
                   key={p.title_en}
-                  className="group rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-4 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)] sm:p-5"
+                  className="group"
                 >
-                  <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#00D4FF]/20 text-[#3AE8FF] shadow-[0_0_18px_rgba(0,212,255,0.5)]">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div className={`min-w-0 ${ar ? "text-right" : "text-left"}`}>
-                      <div className="truncate text-sm font-semibold">{title}</div>
-                      <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{sub}</div>
+                  <Link
+                    to={p.to}
+                    aria-label={title}
+                    className="block h-full rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-4 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 sm:p-5"
+                  >
+                    <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#00D4FF]/20 text-[#3AE8FF] shadow-[0_0_18px_rgba(0,212,255,0.5)]">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div className={`min-w-0 ${ar ? "text-right" : "text-left"}`}>
+                        <div className="truncate text-sm font-semibold">{title}</div>
+                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{sub}</div>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-white/65">{desc}</p>
+                    <p className="text-sm leading-relaxed text-white/65">{desc}</p>
+                  </Link>
                 </li>
               );
             })}
