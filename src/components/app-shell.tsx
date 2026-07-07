@@ -59,14 +59,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="nexus-mobile-header sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
+        <header className="nexus-mobile-header sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border glass px-4 md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Open navigation menu">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open navigation menu"
+                aria-expanded={open}
+                aria-controls="nexus-mobile-nav"
+                className="relative z-10 min-h-11 min-w-11"
+              >
                 <Menu />
               </Button>
             </SheetTrigger>
             <SheetContent
+              id="nexus-mobile-nav"
               side={locale === "ar" ? "right" : "left"}
               className="w-72 glass-sidebar p-0 text-sidebar-foreground"
             >
