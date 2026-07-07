@@ -19,9 +19,8 @@ import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { NexiosGenesisIntro } from "@/components/executive/NexiosGenesisIntro";
-import { HeroZeroIntro } from "@/components/cinematic/HeroZeroIntro";
-import { AriaCinematicIntro } from "@/components/cinematic/AriaCinematicIntro";
+// Pre-hero intros retired — the single ARIA welcome video mounts globally
+// from __root.tsx via <WelcomeThenGenesis />.
 
 
 
