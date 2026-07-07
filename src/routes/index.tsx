@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, LayoutGrid, Mic } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Shield, Bot, Radar, BarChart3, Moon, Play, Menu, Mic } from "lucide-react";
 import { AriaTourController } from "@/components/aria/AriaTourController";
 import { tourStopsFor } from "@/lib/aria/tour-narration";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
@@ -48,12 +48,12 @@ export const Route = createFileRoute("/")({
 });
 
 const PILLARS = [
-  { anchor: "tour-pillar-security", icon: Shield,    title_ar: "أمن صناعي",         title_en: "Industrial Security", desc_ar: "حوادث، دوريات، تصاريح، زوار ومركبات في منصة موحّدة.", desc_en: "Incidents, patrols, permits, visitors, and vehicles on a unified surface." },
-  { anchor: "tour-pillar-agents",   icon: Bot,       title_ar: "وكلاء ذكاء",        title_en: "AI Agents",           desc_ar: "14+ وكيل تنفيذي مع تنسيق أدوات وسجل شرعي للأحداث.",     desc_en: "14+ executive agents with tool orchestration and an immutable event ledger." },
-  { anchor: "tour-pillar-twin",     icon: Radar,     title_ar: "توأم رقمي حي",     title_en: "Live Digital Twin",   desc_ar: "تحديث لحظي للأصول والمواقع والعمليات عبر نبض المؤسسة.", desc_en: "Real-time pulse of assets, sites, and operations across the enterprise." },
-  { anchor: "tour-pillar-reports",  icon: BarChart3, title_ar: "تقارير تنفيذية",    title_en: "Executive Reports",   desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",    desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery." },
-  { anchor: "tour-pillar-hajj",     icon: Moon,      title_ar: "نظام الحج",          title_en: "Hajj Operations",     desc_ar: "وحدة مشاعر 1447 لإدارة العمليات الميدانية في الموسم.",  desc_en: "Mashaer 1447 module for field operations during the Hajj season." },
-  { anchor: "tour-pillar-aria",     icon: Sparkles,  title_ar: "ARIA التنفيذية",    title_en: "ARIA Engine",         desc_ar: "محرك تنفيذي ثنائي اللغة مع صوت طبيعي وذاكرة حية.",     desc_en: "Bilingual executive engine with natural voice and live executive memory." },
+  { anchor: "tour-pillar-security", to: "/_authenticated/sec",               icon: Shield,    title_ar: "أمن صناعي",         title_en: "Industrial Security", desc_ar: "حوادث، دوريات، تصاريح، زوار ومركبات في منصة موحّدة.", desc_en: "Incidents, patrols, permits, visitors, and vehicles on a unified surface." },
+  { anchor: "tour-pillar-agents",   to: "/_authenticated/agents",            icon: Bot,       title_ar: "وكلاء ذكاء",        title_en: "AI Agents",           desc_ar: "11 وكيلاً تنفيذياً مع تنسيق أدوات وسجل شرعي للأحداث.",     desc_en: "11 executive agents with tool orchestration and an immutable event ledger." },
+  { anchor: "tour-pillar-twin",     to: "/_authenticated/digital-twin",      icon: Radar,     title_ar: "توأم رقمي حي",     title_en: "Live Digital Twin",   desc_ar: "تحديث لحظي للأصول والمواقع والعمليات عبر نبض المؤسسة.", desc_en: "Real-time pulse of assets, sites, and operations across the enterprise." },
+  { anchor: "tour-pillar-reports",  to: "/_authenticated/executive-reports", icon: BarChart3, title_ar: "تقارير تنفيذية",    title_en: "Executive Reports",   desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",    desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery." },
+  { anchor: "tour-pillar-hajj",     to: "/_authenticated/hajj",              icon: Moon,      title_ar: "نظام الحج",          title_en: "Hajj Operations",     desc_ar: "وحدة مشاعر 1447 لإدارة العمليات الميدانية في الموسم.",  desc_en: "Mashaer 1447 module for field operations during the Hajj season." },
+  { anchor: "tour-pillar-aria",     to: "/_authenticated/aria",              icon: Sparkles,  title_ar: "ARIA التنفيذية",    title_en: "ARIA Engine",         desc_ar: "محرك تنفيذي ثنائي اللغة مع صوت طبيعي وذاكرة حية.",     desc_en: "Bilingual executive engine with natural voice and live executive memory." },
 ] as const;
 
 function IntroLanding() {
@@ -90,7 +90,7 @@ function IntroLanding() {
 
   const t = {
     cta_experience: ar ? "التجربة التنفيذية" : "Executive Experience",
-    cta_depts:      ar ? "نوافذ الإدارات" : "Department Windows",
+    cta_depts:      ar ? "القائمة · الإدارات" : "Menu · Departments",
     capabilities:   ar ? "مكوّنات النظام" : "Platform Capabilities",
     cta_title:      ar ? "جاهز للدخول إلى مركز القيادة؟" : "Ready to enter the Command Center?",
     cta_body:       ar
@@ -217,7 +217,7 @@ function IntroLanding() {
               onClick={() => setDeptsOpen(true)}
               className="inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/35 bg-[#00D4FF]/[0.05] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85 transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/10"
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <Menu className="h-3.5 w-3.5" />
               <span>{t.cta_depts}</span>
             </button>
             <DemoModeLauncher />
@@ -240,9 +240,11 @@ function IntroLanding() {
           >
             <div className="flex flex-col items-center gap-1">
               <dt className="text-[9px] font-medium uppercase tracking-[0.2em] text-white/45">
-                {ar ? "مستوى الصلاحية" : "Auth Level"}
+                {ar ? "مستوى العرض" : "View Mode"}
               </dt>
-              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">EXC</dd>
+              <dd className="font-mono text-xs font-semibold text-[#3AE8FF]">
+                {ar ? "تنفيذي · Executive" : "Executive"}
+              </dd>
             </div>
           </dl>
 
@@ -341,18 +343,24 @@ function IntroLanding() {
                 <li
                   id={p.anchor}
                   key={p.title_en}
-                  className="group rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-4 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)] sm:p-5"
+                  className="group"
                 >
-                  <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#00D4FF]/20 text-[#3AE8FF] shadow-[0_0_18px_rgba(0,212,255,0.5)]">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div className={`min-w-0 ${ar ? "text-right" : "text-left"}`}>
-                      <div className="truncate text-sm font-semibold">{title}</div>
-                      <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{sub}</div>
+                  <Link
+                    to={p.to}
+                    aria-label={title}
+                    className="block h-full rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-4 shadow-[0_0_24px_rgba(0,212,255,0.15)] transition hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.08] hover:shadow-[0_0_40px_rgba(58,232,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 sm:p-5"
+                  >
+                    <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#00D4FF]/20 text-[#3AE8FF] shadow-[0_0_18px_rgba(0,212,255,0.5)]">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div className={`min-w-0 ${ar ? "text-right" : "text-left"}`}>
+                        <div className="truncate text-sm font-semibold">{title}</div>
+                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{sub}</div>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-white/65">{desc}</p>
+                    <p className="text-sm leading-relaxed text-white/65">{desc}</p>
+                  </Link>
                 </li>
               );
             })}
