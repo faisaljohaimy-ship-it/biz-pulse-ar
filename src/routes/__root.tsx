@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { installAriaWatchdog } from "@/lib/aria/self-healing/watchdog.client";
+// watchdog.client is loaded dynamically inside useEffect (client-only module)
 
 import appCss from "../styles.css?url";
 import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME } from "@/lib/domain";
@@ -226,8 +226,16 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   // Article III (self-healing): install the client watchdog once at root.
   useEffect(() => {
-    const cleanup = installAriaWatchdog();
-    return cleanup;
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    import("@/lib/aria/self-healing/watchdog.client").then((m) => {
+      if (cancelled) return;
+      cleanup = m.installAriaWatchdog();
+    });
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
   }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
