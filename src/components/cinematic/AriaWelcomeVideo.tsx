@@ -269,14 +269,23 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const v = videoRef.current;
     if (!v) return;
     const next = !muted;
-    v.muted = next;
     if (!next) {
-      v.volume = 1;
-      v.play().catch(() => {});
+      // unmuting — resume audio context inside the gesture
       try { audioCtxRef.current?.resume(); } catch { /* ignore */ }
+      v.muted = false;
+      (v as HTMLVideoElement).removeAttribute("muted");
+      v.volume = 1;
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => attachAnalyser()).catch(() => {});
+      } else {
+        attachAnalyser();
+      }
+      setShowSoundChip(false);
+    } else {
+      v.muted = true;
     }
     setMuted(next);
-    if (!next) setShowSoundChip(false);
   };
 
   return (
