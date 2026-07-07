@@ -197,22 +197,7 @@ export function LiveSystemShowcase() {
             </div>
 
             {/* Live badge (top-end) */}
-            <div
-              dir="ltr"
-              className="pointer-events-none absolute end-3 top-14 flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.4)] backdrop-blur"
-            >
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
-              LIVE
-            </div>
-          </div>
-
-          {/* Footer telemetry strip */}
-          <div dir="ltr" className="relative flex items-center justify-between gap-2 border-t border-white/10 bg-black/40 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] text-white/55">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-400" />
-              <span>LIVE · {ar ? "بث مباشر" : "Streaming"}</span>
-            </div>
-            <div className="hidden sm:block">TLS 1.3</div>
+            {/* FR-19: LIVE/TLS badges removed — no verified Evidence source on this surface. */}
           </div>
         </div>
       </div>

@@ -65,6 +65,8 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/lib/aria/self-healing/watchdog.ts",
   "src/routes/api/chat.ts",
   "src/lib/user-interaction.ts",
+  "src/lib/evidence/gate.ts",
+  "src/components/evidence/EvidenceBadge.tsx",
   "docs/ARIA_INTRO_CONSTITUTION.md",
   "docs/NEXUS_ENGINEERING_CONSTITUTION.md",
   "docs/NEXUS_READINESS_PROMPT.md",
