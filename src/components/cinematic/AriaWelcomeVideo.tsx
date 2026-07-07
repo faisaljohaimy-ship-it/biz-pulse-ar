@@ -287,21 +287,40 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         }}
       />
 
-      {/* Blurred cover backdrop for cinematic depth */}
-      <video
-        ref={bgVideoRef}
-        src={welcomeAsset.url}
-        playsInline
-        muted
-        preload="auto"
+      {/* Poster fallback — guarantees INVARIANT-2 (visual ≤200ms) and stays
+          on-screen if the video source fails to load. */}
+      <img
+        src={posterAsset.url}
+        alt=""
         aria-hidden
-        className="absolute inset-0 h-full w-full opacity-70"
+        className="absolute inset-0 h-full w-full"
         style={{
           objectFit: "cover",
-          filter: "blur(28px) brightness(0.5) saturate(1.1)",
-          transform: "scale(1.15)",
+          objectPosition: "center 18%",
+          opacity: videoFailed ? 1 : 0.001,
+          transition: "opacity 400ms ease",
+          filter: "contrast(1.05) saturate(1.05)",
         }}
       />
+
+      {/* Blurred cover backdrop for cinematic depth */}
+      {!videoFailed && (
+        <video
+          ref={bgVideoRef}
+          src={welcomeAsset.url}
+          playsInline
+          muted
+          preload="auto"
+          aria-hidden
+          onError={() => { /* backdrop is decorative; ignore */ }}
+          className="absolute inset-0 h-full w-full opacity-70"
+          style={{
+            objectFit: "cover",
+            filter: "blur(28px) brightness(0.5) saturate(1.1)",
+            transform: "scale(1.15)",
+          }}
+        />
+      )}
 
       {/* Layer B — Hero video (face-priority framing) */}
       <div
@@ -311,22 +330,24 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           maxHeight: "100dvh",
         }}
       >
-        <video
-          ref={videoRef}
-          src={welcomeAsset.url}
-          playsInline
-          preload="auto"
-          onEnded={finish}
-          onError={finish}
-          className="h-full w-full"
-          style={{
-            objectFit: "cover",
-            objectPosition: "center 18%",
-            background: "transparent",
-            maxHeight: "100dvh",
-            filter: "contrast(1.05) saturate(1.05)",
-          }}
-        />
+        {!videoFailed && (
+          <video
+            ref={videoRef}
+            src={welcomeAsset.url}
+            playsInline
+            preload="auto"
+            onEnded={finish}
+            onError={onVideoError}
+            className="h-full w-full"
+            style={{
+              objectFit: "cover",
+              objectPosition: "center 18%",
+              background: "transparent",
+              maxHeight: "100dvh",
+              filter: "contrast(1.05) saturate(1.05)",
+            }}
+          />
+        )}
         {/* Cinematic edge fade */}
         <div
           aria-hidden
