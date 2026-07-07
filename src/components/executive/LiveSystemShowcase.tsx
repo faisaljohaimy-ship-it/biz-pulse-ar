@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import {
   Maximize2,
   Minimize2,
   Radio,
-  Expand,
+  ExternalLink,
   Moon,
   AlertTriangle,
   CheckCircle2,
@@ -15,7 +14,9 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const INTERNAL_URL = "/hajj";
+// External Hajj Nusuk platform — kept as its own standalone deployment,
+// intentionally NOT merged into the neexios.com domain.
+const HAJJ_PLATFORM_URL = "https://hajj-nexus-prime.lovable.app/";
 
 /**
  * LiveSystemShowcase — inline Hajj Nexus preview card.
