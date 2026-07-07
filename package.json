@@ -10,6 +10,7 @@
     "build:dev": "NODE_OPTIONS=--max-old-space-size=8192 vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "typecheck": "tsgo --noEmit",
     "check:svg": "node scripts/check-svg.mjs",
     "test": "vitest run",
     "test:visual": "python3 tests/visual/hero_emblem_visual.py",

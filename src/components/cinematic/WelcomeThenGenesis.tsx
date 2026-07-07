@@ -11,10 +11,18 @@ export function WelcomeThenGenesis() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
+    // Read the guard, then IMMEDIATELY write it back before flipping state.
+    // This makes React 19 Strict Mode's double-effect a no-op: the second
+    // pass sees the key already set and never re-mounts the welcome video.
     let skip = false;
     try {
-      if (window.sessionStorage.getItem("nexios-welcome") === "1") skip = true;
-    } catch { /* ignore */ }
+      const ss = window.sessionStorage;
+      if (ss.getItem("nexios-welcome") === "1") {
+        skip = true;
+      } else {
+        ss.setItem("nexios-welcome", "1");
+      }
+    } catch { /* private-mode / disabled storage → show once, then rely on state */ }
     setShowWelcome(!skip);
     setDecided(true);
   }, []);
@@ -23,5 +31,6 @@ export function WelcomeThenGenesis() {
   if (!showWelcome) return null;
   return <AriaWelcomeVideo onDone={() => setShowWelcome(false)} />;
 }
+
 
 export default WelcomeThenGenesis;
