@@ -191,6 +191,10 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     return () => {
       window.clearTimeout(onlineT);
       window.clearTimeout(capT);
+      if (pendingFinishRef.current != null) {
+        window.clearTimeout(pendingFinishRef.current);
+        pendingFinishRef.current = null;
+      }
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       try { audioCtxRef.current?.close(); } catch { /* ignore */ }
       try { v.pause(); } catch { /* ignore */ }
