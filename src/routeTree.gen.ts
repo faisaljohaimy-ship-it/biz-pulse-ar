@@ -137,6 +137,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
+import { Route as ApiPublicAriaStreamRouteImport } from './routes/api/public/aria-stream'
 import { Route as ApiPublicAriaPresenceRouteImport } from './routes/api/public/aria-presence'
 import { Route as ApiPublicAriaExplainRouteImport } from './routes/api/public/aria-explain'
 import { Route as ApiPublicAriaBriefingRouteImport } from './routes/api/public/aria-briefing'
@@ -853,6 +854,11 @@ const ApiPublicAriaTtsRoute = ApiPublicAriaTtsRouteImport.update({
   path: '/api/public/aria-tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAriaStreamRoute = ApiPublicAriaStreamRouteImport.update({
+  id: '/api/public/aria-stream',
+  path: '/api/public/aria-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAriaPresenceRoute = ApiPublicAriaPresenceRouteImport.update({
   id: '/api/public/aria-presence',
   path: '/api/public/aria-presence',
@@ -1293,6 +1299,7 @@ export interface FileRoutesByFullPath {
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
+  '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1471,6 +1478,7 @@ export interface FileRoutesByTo {
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
+  '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1653,6 +1661,7 @@ export interface FileRoutesById {
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
+  '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1835,6 +1844,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-briefing'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
+    | '/api/public/aria-stream'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/version'
@@ -2013,6 +2023,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-briefing'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
+    | '/api/public/aria-stream'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/version'
@@ -2194,6 +2205,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-briefing'
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
+    | '/api/public/aria-stream'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/version'
@@ -2278,6 +2290,7 @@ export interface RootRouteChildren {
   ApiPublicAriaBriefingRoute: typeof ApiPublicAriaBriefingRoute
   ApiPublicAriaExplainRoute: typeof ApiPublicAriaExplainRoute
   ApiPublicAriaPresenceRoute: typeof ApiPublicAriaPresenceRoute
+  ApiPublicAriaStreamRoute: typeof ApiPublicAriaStreamRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
@@ -3193,6 +3206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAriaTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/aria-stream': {
+      id: '/api/public/aria-stream'
+      path: '/api/public/aria-stream'
+      fullPath: '/api/public/aria-stream'
+      preLoaderRoute: typeof ApiPublicAriaStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/aria-presence': {
       id: '/api/public/aria-presence'
       path: '/api/public/aria-presence'
@@ -3868,6 +3888,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAriaBriefingRoute: ApiPublicAriaBriefingRoute,
   ApiPublicAriaExplainRoute: ApiPublicAriaExplainRoute,
   ApiPublicAriaPresenceRoute: ApiPublicAriaPresenceRoute,
+  ApiPublicAriaStreamRoute: ApiPublicAriaStreamRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
