@@ -465,26 +465,148 @@ export function AriaDock() {
         : undefined;
       const history = snap?.history?.slice(-8);
       w.__aria_context?.pushTurn({ role: "user", text: q, page: snap?.page?.path });
-      const r = await fetch("/api/public/aria-ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, lang, context, history }),
+      void context; void history; // (stream endpoint uses question + lang only; context handled by future authenticated route)
+
+      const streamOnce = async (): Promise<Response> => {
+        return fetch("/api/public/aria-stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q, lang }),
+          signal: AbortSignal.timeout(50_000),
+        });
+      };
+
+      let r: Response;
+      try {
+        r = await streamOnce();
+        if (!r.ok || !r.body) {
+          // one silent retry on network / 5xx
+          await new Promise((res) => setTimeout(res, 250));
+          r = await streamOnce();
+        }
+      } catch {
+        await new Promise((res) => setTimeout(res, 250));
+        r = await streamOnce();
+      }
+      if (!r.ok || !r.body) {
+        const j = (await r.json().catch(() => ({}))) as { error?: string };
+        throw new Error(j.error || `stream_${r.status}`);
+      }
+
+      // Show a streaming bubble; bypass the enqueue/silent-narration path.
+      const streamId = `stream-${Date.now()}`;
+      const initial: QueuedLine = { id: streamId, text_ar: "", text_en: "", speaker: ARIA };
+      setCurrent(initial);
+      lastLineRef.current = initial;
+      setState("speaking");
+
+      // Sequential sentence-level speech chain (barge-in safe).
+      let speechChain: Promise<void> = Promise.resolve();
+      const speakSentence = (sentence: string) => {
+        const clean = stripForSpeech(sentence).trim();
+        if (!clean) return;
+        speechChain = speechChain.then(
+          () =>
+            new Promise<void>((resolve) => {
+              let settled = false;
+              const finish = () => {
+                if (settled) return;
+                settled = true;
+                unsub();
+                resolve();
+              };
+              const unsub = AriaAudioBus.subscribe((e) => {
+                if (e.source !== "chat-tts") return;
+                if (e.kind === "stopped" || e.kind === "end") {
+                  // small tail so tokens don't collide
+                  setTimeout(finish, 30);
+                }
+              });
+              // If the bus never acquires (mute, no auth, fallback silent),
+              // don't block the chain forever.
+              const guard = setTimeout(() => {
+                if (AriaAudioBus.currentSource() !== "chat-tts") finish();
+              }, 500);
+              // Absolute safety cap proportional to text length.
+              const cap = setTimeout(finish, Math.max(3500, clean.length * 95));
+              void ariaSpeech.speak(clean).finally(() => {
+                clearTimeout(guard);
+                clearTimeout(cap);
+              });
+            }),
+        );
+      };
+
+      const reader = r.body.getReader();
+      const dec = new TextDecoder();
+      let sseBuf = "";
+      let full = "";
+      let spokenUpTo = 0;
+      const SENT_RE = /[^.!?؟\n]+[.!?؟]+|[^.!?؟\n]+\n{2,}/g;
+
+      const flushSentences = (final: boolean) => {
+        const pending = full.slice(spokenUpTo);
+        if (final) {
+          const rest = pending.trim();
+          if (rest) {
+            speakSentence(rest);
+            spokenUpTo = full.length;
+          }
+          return;
+        }
+        let lastEnd = 0;
+        SENT_RE.lastIndex = 0;
+        let m: RegExpExecArray | null;
+        while ((m = SENT_RE.exec(pending)) !== null) {
+          lastEnd = m.index + m[0].length;
+          speakSentence(m[0]);
+        }
+        if (lastEnd > 0) spokenUpTo += lastEnd;
+      };
+
+      let streamErr: string | null = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        sseBuf += dec.decode(value, { stream: true });
+        const parts = sseBuf.split("\n\n");
+        sseBuf = parts.pop() ?? "";
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith("data:")) continue;
+          const payloadRaw = line.slice(5).trim();
+          if (!payloadRaw) continue;
+          let payload: { delta?: string; error?: string; done?: boolean };
+          try { payload = JSON.parse(payloadRaw); } catch { continue; }
+          if (payload.error) { streamErr = payload.error; continue; }
+          if (payload.done) continue;
+          if (typeof payload.delta === "string" && payload.delta.length > 0) {
+            full += payload.delta;
+            setCurrent((prev) =>
+              prev && prev.id === streamId
+                ? { ...prev, text_ar: full, text_en: full }
+                : prev,
+            );
+            flushSentences(false);
+          }
+        }
+      }
+      flushSentences(true);
+
+      if (!full.trim()) {
+        throw new Error(streamErr || "empty_response");
+      }
+
+      const finalLine: QueuedLine = { id: streamId, text_ar: full, text_en: full, speaker: ARIA };
+      lastLineRef.current = finalLine;
+      w.__aria_context?.pushTurn({ role: "assistant", text: full, page: snap?.page?.path });
+      // Let the speech chain finish naturally; UI returns to idle after last sentence.
+      speechChain.finally(() => {
+        setState("idle");
       });
-      const j = (await r.json().catch(() => ({}))) as { text_ar?: string; text_en?: string; error?: string; message_ar?: string; message_en?: string };
-      if (!r.ok) throw new Error((ar ? j.message_ar : j.message_en) || j.error || `ask_${r.status}`);
-      const text_ar = j.text_ar || j.text_en || "تم استلام سؤالك، لكن لم يصل نص الرد. أعد المحاولة.";
-      const text_en = j.text_en || j.text_ar || "I received your question, but the reply text was empty. Please retry.";
-      w.__aria_context?.pushTurn({ role: "assistant", text: lang === "ar" ? text_ar : text_en, page: snap?.page?.path });
-      enqueue({
-        id: `typed-${Date.now()}`,
-        text_ar,
-        text_en,
-        speaker: ARIA,
-      });
-      // Speak the reply aloud (barge-in-safe, mute-aware, fallback-safe).
-      void ariaSpeech.speak(stripForSpeech(lang === "ar" ? text_ar : text_en));
     } catch (error) {
       setState("idle");
+      setCurrent(null);
       setTypedError(error instanceof Error && error.message ? error.message : ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
     } finally {
       setTypedLoading(false);
