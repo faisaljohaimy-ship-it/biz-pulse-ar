@@ -179,7 +179,10 @@ function ExecutiveBridgePage() {
     const advance = () => {
       if (cancelled) return;
       if (idx < SCENES.length - 1) setIdx(idx + 1);
-      else setNarrating(false);
+      else {
+        setNarrating(false);
+        setCompleted(true);
+      }
     };
 
     const startVisualProgress = (durationMs: number) => {
