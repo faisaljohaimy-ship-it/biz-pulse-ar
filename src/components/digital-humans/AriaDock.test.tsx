@@ -83,15 +83,14 @@ describe("AriaDock — a11y", () => {
     }
   });
 
-  it("tab order visits Ask → Mute → Replay → Minimize → Hide", async () => {
+  it("tab order visits Ask → Voice → Minimize → Dismiss", async () => {
     const user = userEvent.setup();
     render(<AriaDock />);
     const expected = [
       /Ask agent|Stop listening/i,
-      /Enable voice|Mute/i,
-      /Replay welcome/i,
+      /Toggle ARIA voice|Enable voice|Mute/i,
       /Minimize/i,
-      /Hide/i,
+      /Dismiss ARIA|Hide/i,
     ];
     for (const matcher of expected) {
       await user.tab();
