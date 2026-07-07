@@ -23,7 +23,7 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
-import { GenesisIntro } from "@/components/cinematic/GenesisIntro";
+import { WelcomeThenGenesis } from "@/components/cinematic/WelcomeThenGenesis";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
@@ -256,7 +256,7 @@ function RootComponent() {
                 </div>
                 {!introActive && <AriaCopilot />}
                 {!suppressOverlays && <AriaGreeter />}
-                {!suppressOverlays && <GenesisIntro />}
+                {!suppressOverlays && <WelcomeThenGenesis />}
                 <Toaster />
               </AriaProvider>
               </RegionProvider>
