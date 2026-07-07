@@ -88,9 +88,24 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         ref={videoRef}
         src={ariaIntro.url}
         autoPlay
-        muted
+        muted={muted}
         playsInline
-        preload="metadata"
+        preload="auto"
+        onLoadedMetadata={(e) => {
+          const v = e.currentTarget;
+          // Try to play with sound. Browsers usually block this without a
+          // user gesture; on failure, retry muted and let the viewer unmute
+          // via the on-screen button.
+          v.muted = false;
+          const p = v.play();
+          if (p && typeof p.then === "function") {
+            p.then(() => setMuted(false)).catch(() => {
+              v.muted = true;
+              setMuted(true);
+              v.play().catch(() => { /* noop */ });
+            });
+          }
+        }}
         onEnded={finish}
         onError={() => {
           // eslint-disable-next-line no-console
@@ -118,17 +133,39 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         }}
       />
 
-      <button
-        type="button"
-        onClick={finish}
-        aria-label={ar ? "تخطّي المقدّمة · Skip intro" : "Skip intro · تخطّي المقدّمة"}
-        className="absolute top-4 end-4 z-10 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      >
-        <span>{ar ? "تخطّي" : "Skip"}</span>
-        <span aria-hidden className="text-[10px] opacity-70">
-          {ar ? "Skip" : "تخطّي"}
-        </span>
-      </button>
+      <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            const v = videoRef.current;
+            if (!v) return;
+            const next = !muted;
+            v.muted = next;
+            setMuted(next);
+            if (!next) {
+              // Ensure playback resumes after user gesture unmute.
+              v.play().catch(() => { /* noop */ });
+            }
+          }}
+          aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+          aria-pressed={!muted}
+          className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+          <span>{muted ? (ar ? "تشغيل الصوت" : "Sound on") : (ar ? "كتم" : "Mute")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={finish}
+          aria-label={ar ? "تخطّي المقدّمة · Skip intro" : "Skip intro · تخطّي المقدّمة"}
+          className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <span>{ar ? "تخطّي" : "Skip"}</span>
+          <span aria-hidden className="text-[10px] opacity-70">
+            {ar ? "Skip" : "تخطّي"}
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
