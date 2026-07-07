@@ -45,6 +45,30 @@ const INVARIANTS: EvolutionInvariants = {
   zeroDuplicateEngines: true,
 };
 
+/**
+ * Protected paths — enforced by the ARIA Intro Constitution
+ * (docs/ARIA_INTRO_CONSTITUTION.md). Any self-evolution proposal that
+ * touches these files MUST cite the constitution in its `rationale` and
+ * explicitly promise to preserve INVARIANT-1..8, or it is auto-deferred.
+ */
+export const PROTECTED_PATHS: readonly string[] = [
+  "src/components/cinematic/AriaWelcomeVideo.tsx",
+  "src/components/cinematic/WelcomeThenGenesis.tsx",
+  "docs/ARIA_INTRO_CONSTITUTION.md",
+];
+
+export function proposalRespectsIntroConstitution(p: {
+  readonly filesTouched?: readonly string[];
+  readonly rationale?: string;
+}): boolean {
+  const files = p.filesTouched ?? [];
+  const touchesProtected = files.some((f) => PROTECTED_PATHS.includes(f));
+  if (!touchesProtected) return true;
+  const r = (p.rationale ?? "").toLowerCase();
+  return r.includes("aria_intro_constitution") && r.includes("invariant");
+}
+
+
 export interface RunSelfEvolutionInput {
   /**
    * Optional self-improvement pipeline input. When omitted the engine runs in
@@ -207,12 +231,16 @@ export async function runSelfEvolution(
       t = new Date().toISOString();
       if (input.enableApply) {
         for (const p of improvement.proposals) {
-          if (p.status === "approved") applied.push(p.id);
+          const respects = proposalRespectsIntroConstitution(
+            p as unknown as { filesTouched?: readonly string[]; rationale?: string },
+          );
+          if (p.status === "approved" && respects) applied.push(p.id);
           else deferred.push(p.id);
         }
       } else {
         for (const p of improvement.proposals) deferred.push(p.id);
       }
+
       stages.push(
         stage(
           "apply_safe_changes",
