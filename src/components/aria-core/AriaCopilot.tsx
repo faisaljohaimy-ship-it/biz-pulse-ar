@@ -249,12 +249,20 @@ export function AriaCopilot() {
   // On unmount / panel close, drop to idle.
   useEffect(() => () => { ariaState.set("idle"); }, []);
 
-  // Health probe on panel open + TTS/ElevenLabs TLS preconnect warmup so the
-  // first sentence audio round-trip pays zero TLS handshake latency.
+  // Health probe + TLS preconnect + iOS audio unlock + composer focus on open.
+  // INVARIANT-9 (speed): unlock everything BEFORE the user's first keystroke
+  // so the first turn pays zero setup latency.
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    // iOS Safari: prime AudioContext on the same task as the open gesture
+    // so the FIRST TTS clip plays with no autoplay block.
+    try { primeIOSAudio(); } catch { /* noop */ }
+    // Autofocus composer so the user starts typing immediately.
+    requestAnimationFrame(() => {
+      composerRef.current?.focus({ preventScroll: true });
+    });
     if (typeof document !== "undefined") {
       const heads: HTMLLinkElement[] = [];
       for (const href of [window.location.origin, "https://api.elevenlabs.io"]) {
@@ -266,7 +274,8 @@ export function AriaCopilot() {
       return () => { cancelled = true; heads.forEach((h) => h.remove()); };
     }
     return () => { cancelled = true; };
-  }, [isOpen]);
+  }, [isOpen, composerRef]);
+
 
   // Conversation Mode state
   const [convMode, setConvMode] = useState(false);
@@ -329,13 +338,15 @@ export function AriaCopilot() {
       lastIdx = re.lastIndex;
     }
     const tail = t.slice(lastIdx).trim();
-    // Merge fragments <12 chars into previous.
+    // Merge fragments <8 chars into previous (was 12 — lower threshold ships
+    // first TTS ~30% sooner). INVARIANT-9: faster first-audio.
     const merged: string[] = [];
     for (const s of complete) {
-      if (merged.length && s.length < 12) merged[merged.length - 1] += " " + s;
+      if (merged.length && s.length < 8) merged[merged.length - 1] += " " + s;
       else merged.push(s);
     }
     return { complete: merged, tail };
+
   }, []);
 
   const fetchTTS = useCallback(async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
@@ -579,8 +590,13 @@ export function AriaCopilot() {
     setLastUserText(text);
     pendingSendAtRef.current = performance.now();
     void chat.sendMessage({ text });
+    // Keep composer focused across turns (chat-agent-ui-contract requirement).
+    // rAF avoids fighting React's re-render focus loss.
+    requestAnimationFrame(() => {
+      composerRef.current?.focus({ preventScroll: true });
+    });
+  }, [draft, isBusy, chat, composerRef]);
 
-  }, [draft, isBusy, chat]);
 
   const retry = () => {
     if (lastUserText) submit(lastUserText);

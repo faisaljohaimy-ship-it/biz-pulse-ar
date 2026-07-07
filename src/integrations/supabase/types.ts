@@ -455,6 +455,90 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_incidents: {
+        Row: {
+          detail: string
+          device_class: string | null
+          id: string
+          kind: string
+          model: string | null
+          occurred_at: string
+          resolved: boolean
+          user_id: string | null
+        }
+        Insert: {
+          detail: string
+          device_class?: string | null
+          id?: string
+          kind: string
+          model?: string | null
+          occurred_at?: string
+          resolved?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          detail?: string
+          device_class?: string | null
+          id?: string
+          kind?: string
+          model?: string | null
+          occurred_at?: string
+          resolved?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      aria_interactions: {
+        Row: {
+          answer: string
+          created_at: string
+          device_class: string | null
+          first_token_ms: number | null
+          id: string
+          latency_ms: number
+          model: string
+          question: string
+          retried: boolean
+          satisfied: boolean | null
+          thread_id: string | null
+          tokens_in: number | null
+          tokens_out: number | null
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          device_class?: string | null
+          first_token_ms?: number | null
+          id?: string
+          latency_ms?: number
+          model: string
+          question: string
+          retried?: boolean
+          satisfied?: boolean | null
+          thread_id?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          device_class?: string | null
+          first_token_ms?: number | null
+          id?: string
+          latency_ms?: number
+          model?: string
+          question?: string
+          retried?: boolean
+          satisfied?: boolean | null
+          thread_id?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       aria_knowledge: {
         Row: {
           content: string
@@ -498,6 +582,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      aria_learned_patterns: {
+        Row: {
+          confidence: number
+          created_at: string
+          domain: string
+          hits: number
+          id: string
+          last_seen: string
+          pattern_key: string
+          pattern_value: string
+          safety_passed: boolean
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          domain?: string
+          hits?: number
+          id?: string
+          last_seen?: string
+          pattern_key: string
+          pattern_value: string
+          safety_passed?: boolean
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          domain?: string
+          hits?: number
+          id?: string
+          last_seen?: string
+          pattern_key?: string
+          pattern_value?: string
+          safety_passed?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       aria_memory: {
         Row: {

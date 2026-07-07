@@ -329,6 +329,47 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           rag: ragCounts,
         });
 
+        // ─── Latency + priority tier ────────────────────────────────────
+        // INVARIANT-9 (measure every reply): capture start / first-token /
+        // finish times to persist into aria_interactions.
+        const startAt = Date.now();
+        let firstTokenAt: number | null = null;
+
+        // Fast mode: gpt-5 family (except nano variants) supports the
+        // OpenAI priority serving tier — halves p50 latency for a small
+        // premium. See ai-models-chat catalog (Fast mode ✓).
+        const PRIORITY_MODELS = new Set<string>([
+          "openai/gpt-5",
+          "openai/gpt-5-mini",
+          "openai/gpt-5.2",
+          "openai/gpt-5.4",
+          "openai/gpt-5.4-mini",
+          "openai/gpt-5.5",
+        ]);
+        const usePriority = vendor === "lovable" && PRIORITY_MODELS.has(selectedModelId);
+
+        // ─── Inject top learned patterns (INVARIANT-10 safe injection) ──
+        if (userId) {
+          try {
+            const { data: patterns } = await supabase
+              .from("aria_learned_patterns")
+              .select("pattern_key,pattern_value,confidence")
+              .eq("user_id", userId)
+              .eq("safety_passed", true)
+              .gte("confidence", 0.7)
+              .order("confidence", { ascending: false })
+              .limit(5);
+            if (patterns && patterns.length > 0) {
+              const block = patterns
+                .map((p) => `- (${Number(p.confidence).toFixed(2)}) ${p.pattern_key}: ${p.pattern_value}`)
+                .join("\n");
+              systemPrompt = `${systemPrompt}\n\n# ARIA LEARNED INSTINCTS (per-user, confidence≥0.7)\n${block}`;
+            }
+          } catch (patErr) {
+            console.warn("[api/chat] pattern injection skipped", patErr);
+          }
+        }
+
         const result = streamText({
           model,
           system: systemPrompt,
@@ -340,16 +381,31 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           toolChoice: "auto",
           stopWhen: stepCountIs(50),
           maxRetries: 2,
+          abortSignal: request.signal,
           // Reasoning models (gpt-5*) count reasoning tokens toward output; keep headroom.
           maxOutputTokens: selectedModelId.startsWith("openai/gpt-5") ? 8000 : 4000,
           // GPT-5 only accepts the default temperature (1); omit for that family.
           ...(selectedModelId.startsWith("openai/gpt-5") ? {} : { temperature: 0.3 }),
-
+          // Priority serving tier (Fast mode) — reaches the gateway as a
+          // top-level `service_tier` field. Silently ignored on models that
+          // do not support it, but we already gated with PRIORITY_MODELS.
+          ...(usePriority ? { providerOptions: { lovable: { service_tier: "priority" as const } } } : {}),
 
           onError: ({ error }) => {
             console.error("[api/chat] streamText error", { requestId, error });
+            // INVARIANT-11 (self-healing ledger): record model errors so the
+            // evolution engine can react.
+            if (userId) {
+              void supabase.from("aria_incidents").insert({
+                user_id: userId,
+                kind: "model_error",
+                detail: (error instanceof Error ? error.message : String(error)).slice(0, 500),
+                model: selectedModelId,
+              });
+            }
           },
           onStepFinish: ({ text, toolCalls, toolResults, finishReason }) => {
+            if (firstTokenAt === null && text.length > 0) firstTokenAt = Date.now();
             console.log("[api/chat] step", {
               requestId,
               finishReason,
@@ -365,9 +421,13 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
               finishReason,
               textChars: text.length,
               usage,
+              latencyMs: Date.now() - startAt,
+              firstTokenMs: firstTokenAt ? firstTokenAt - startAt : null,
+              priority: usePriority,
             });
           },
         });
+
 
         let finalAssistantText = "";
 
@@ -408,6 +468,39 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           onFinish: async ({ messages: finalMessages }) => {
             // Anonymous visitors: no persistence, no memory writes.
             if (!userId) return;
+
+            // ── INVARIANT-9: log every interaction (latency, model, device) ──
+            try {
+              const lastUserForLog = [...uiMessages].reverse().find((m) => m.role === "user");
+              const newAssistantForLog = finalMessages[finalMessages.length - 1];
+              const q = (lastUserForLog?.parts ?? [])
+                .map((p) => (p.type === "text" ? p.text : ""))
+                .join("").trim();
+              const a = (newAssistantForLog?.role === "assistant"
+                ? (newAssistantForLog.parts ?? [])
+                    .map((p) => (p.type === "text" ? p.text : ""))
+                    .join("")
+                : "").trim();
+              if (q && a) {
+                const ua = request.headers.get("user-agent") ?? "";
+                const deviceClass = /Mobi|Android|iPhone/i.test(ua)
+                  ? "mobile"
+                  : /iPad|Tablet/i.test(ua) ? "tablet" : "desktop";
+                void supabase.from("aria_interactions").insert({
+                  user_id: userId,
+                  thread_id: threadId ?? null,
+                  question: q.slice(0, 4000),
+                  answer: a.slice(0, 8000),
+                  model: selectedModelId,
+                  latency_ms: Date.now() - startAt,
+                  first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
+                  device_class: deviceClass,
+                });
+              }
+            } catch (logErr) {
+              console.warn("[api/chat] interaction log skipped", logErr);
+            }
+
             if (!threadId) {
               try {
                 const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
