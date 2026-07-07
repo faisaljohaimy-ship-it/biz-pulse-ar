@@ -36,6 +36,7 @@ import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
 import { BusinessKpiPanel } from "@/components/executive/BusinessKpiPanel";
 import { DecisionCenter } from "@/components/executive/DecisionCenter";
 import { ExecutiveTimeline } from "@/components/executive/ExecutiveTimeline";
+import { LivePipelinesPanel } from "@/components/executive/LivePipelinesPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -327,6 +328,12 @@ function LiveExecutiveDashboard() {
           <BusinessKpiPanel data={bizQ.data} />
         </div>
       )}
+
+      {/* Live Pipelines — Runtime / Voice / Avatar */}
+      <div className="mb-6">
+        <LivePipelinesPanel />
+      </div>
+
 
       {/* KPI strip */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">

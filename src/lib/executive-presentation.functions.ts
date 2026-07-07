@@ -208,6 +208,181 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     return { generated_at: now, chips, confidence: conf };
   });
 
+// ---------- Live Pipelines (Runtime / Voice / Avatar) ----------
+
+export type LivePipelineBucket = {
+  t: string; // ISO bucket start
+  label: string; // HH:mm
+  runs: number; // total events in bucket
+  errors: number; // failed / errored events in bucket
+};
+
+export type LivePipelineSeries = {
+  key: "runtime" | "voice" | "avatar";
+  label_ar: string;
+  label_en: string;
+  totalRuns: number;
+  totalErrors: number;
+  errorRate: number; // 0-100
+  avgPerMin: number;
+  status: PulseTone;
+  ready: boolean;
+  buckets: LivePipelineBucket[];
+};
+
+export type LivePipelines = {
+  generated_at: string;
+  window_minutes: number;
+  bucket_minutes: number;
+  series: LivePipelineSeries[];
+};
+
+const PIPELINE_WINDOW_MIN = 60;
+const PIPELINE_BUCKET_MIN = 5;
+
+function emptyBuckets(now: Date): LivePipelineBucket[] {
+  const buckets: LivePipelineBucket[] = [];
+  const n = Math.floor(PIPELINE_WINDOW_MIN / PIPELINE_BUCKET_MIN);
+  const base = Math.floor(now.getTime() / (PIPELINE_BUCKET_MIN * 60_000)) * (PIPELINE_BUCKET_MIN * 60_000);
+  for (let i = n - 1; i >= 0; i--) {
+    const t = new Date(base - i * PIPELINE_BUCKET_MIN * 60_000);
+    const hh = String(t.getUTCHours()).padStart(2, "0");
+    const mm = String(t.getUTCMinutes()).padStart(2, "0");
+    buckets.push({ t: t.toISOString(), label: `${hh}:${mm}`, runs: 0, errors: 0 });
+  }
+  return buckets;
+}
+
+function fillBuckets(
+  buckets: LivePipelineBucket[],
+  rows: readonly { at: string | null; failed: boolean }[],
+): void {
+  if (buckets.length === 0) return;
+  const step = PIPELINE_BUCKET_MIN * 60_000;
+  const startMs = new Date(buckets[0].t).getTime();
+  for (const r of rows) {
+    if (!r.at) continue;
+    const idx = Math.floor((new Date(r.at).getTime() - startMs) / step);
+    if (idx < 0 || idx >= buckets.length) continue;
+    buckets[idx].runs += 1;
+    if (r.failed) buckets[idx].errors += 1;
+  }
+}
+
+function summarize(buckets: LivePipelineBucket[]): {
+  totalRuns: number; totalErrors: number; errorRate: number; avgPerMin: number;
+} {
+  const totalRuns = buckets.reduce((s, b) => s + b.runs, 0);
+  const totalErrors = buckets.reduce((s, b) => s + b.errors, 0);
+  const errorRate = totalRuns ? (totalErrors * 100) / totalRuns : 0;
+  const avgPerMin = totalRuns / PIPELINE_WINDOW_MIN;
+  return { totalRuns, totalErrors, errorRate, avgPerMin };
+}
+
+function pipelineTone(errorRate: number, ready: boolean, totalRuns: number): PulseTone {
+  if (!ready) return "warning";
+  if (totalRuns === 0) return "unknown";
+  return tone(errorRate, 5, 15, true);
+}
+
+export const getLivePipelines = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<LivePipelines> => {
+    const { supabase } = context;
+    const now = new Date();
+    const sinceMs = now.getTime() - PIPELINE_WINDOW_MIN * 60_000;
+    const since = new Date(sinceMs).toISOString();
+
+    const [runs, voiceEvents, avatarEvents] = await Promise.all([
+      supabase
+        .from("workflow_runs")
+        .select("status,started_at")
+        .gte("started_at", since)
+        .limit(5000),
+      supabase
+        .from("enterprise_events")
+        .select("status,severity,topic,occurred_at")
+        .or("topic.ilike.voice.%,topic.ilike.aria.voice%,topic.ilike.tts.%,topic.ilike.stt.%")
+        .gte("occurred_at", since)
+        .limit(5000),
+      supabase
+        .from("enterprise_events")
+        .select("status,severity,topic,occurred_at")
+        .or("topic.ilike.avatar.%,topic.ilike.heygen.%,topic.ilike.aria.avatar%")
+        .gte("occurred_at", since)
+        .limit(5000),
+    ]);
+
+    const runtimeBuckets = emptyBuckets(now);
+    fillBuckets(
+      runtimeBuckets,
+      ((runs.data ?? []) as { status: string; started_at: string | null }[]).map((r) => ({
+        at: r.started_at,
+        failed: r.status === "failed",
+      })),
+    );
+
+    const voiceBuckets = emptyBuckets(now);
+    fillBuckets(
+      voiceBuckets,
+      ((voiceEvents.data ?? []) as { status: string | null; severity: string | null; occurred_at: string | null }[]).map((r) => ({
+        at: r.occurred_at,
+        failed: r.status === "failed" || r.severity === "critical" || r.severity === "warn",
+      })),
+    );
+
+    const avatarBuckets = emptyBuckets(now);
+    fillBuckets(
+      avatarBuckets,
+      ((avatarEvents.data ?? []) as { status: string | null; severity: string | null; occurred_at: string | null }[]).map((r) => ({
+        at: r.occurred_at,
+        failed: r.status === "failed" || r.severity === "critical" || r.severity === "warn",
+      })),
+    );
+
+    const voiceReady = Boolean(process.env.ELEVENLABS_API_KEY);
+    const avatarReady = Boolean(process.env.HEYGEN_API_KEY || process.env.LIVEAVATAR_API_KEY);
+
+    const runtimeSum = summarize(runtimeBuckets);
+    const voiceSum = summarize(voiceBuckets);
+    const avatarSum = summarize(avatarBuckets);
+
+    return {
+      generated_at: now.toISOString(),
+      window_minutes: PIPELINE_WINDOW_MIN,
+      bucket_minutes: PIPELINE_BUCKET_MIN,
+      series: [
+        {
+          key: "runtime",
+          label_ar: "حياة وقت التشغيل",
+          label_en: "Runtime Lifeline",
+          ...runtimeSum,
+          ready: true,
+          status: pipelineTone(runtimeSum.errorRate, true, runtimeSum.totalRuns),
+          buckets: runtimeBuckets,
+        },
+        {
+          key: "voice",
+          label_ar: "خط أنابيب الصوت",
+          label_en: "Voice Pipeline",
+          ...voiceSum,
+          ready: voiceReady,
+          status: pipelineTone(voiceSum.errorRate, voiceReady, voiceSum.totalRuns),
+          buckets: voiceBuckets,
+        },
+        {
+          key: "avatar",
+          label_ar: "دورة حياة الأڤاتار",
+          label_en: "Avatar Lifecycle",
+          ...avatarSum,
+          ready: avatarReady,
+          status: pipelineTone(avatarSum.errorRate, avatarReady, avatarSum.totalRuns),
+          buckets: avatarBuckets,
+        },
+      ],
+    };
+  });
+
 // ---------- Business KPIs ----------
 
 export type BusinessKpi = {
