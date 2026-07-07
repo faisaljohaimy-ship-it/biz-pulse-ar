@@ -31,6 +31,7 @@ All clauses are release-blocking. CI MUST fail if any is violated.
 
 ### §1. Intro Gate (from ARIA Intro Constitution)
 - **INV-1** Single pre-system gate: `WelcomeThenGenesis` only. No siblings.
+- **INV-1A** `WelcomeThenGenesis` remains mounted while `introActive=true`; root may hide siblings, never the gate.
 - **INV-2** Visible surface within ≤200ms of mount. No blank frame.
 - **INV-3** `MIN_DISPLAY_MS = 3500ms` before any `finish()` — enforced in code.
 - **INV-4** `finishOnce` guarded by `finishedRef` — exactly one terminal path.
@@ -99,6 +100,7 @@ Any of these reappearing = release-blocking bug. **Never re-litigate.**
 | **FR-13** | Service-role key in loader/component | Top-level `client.server` import in `*.functions.ts` |
 | **FR-14** | Public schema table without RLS or GRANT | `CREATE TABLE` migration missing GRANT block |
 | **FR-15** | Google OAuth calling `supabase.auth.signInWithOAuth` directly | Bypassing `lovable.auth.signInWithOAuth` broker |
+| **FR-16** | Cinematic intro flashes then disappears / never appears on laptop or mobile | Root shell hides `WelcomeThenGenesis` behind `suppressOverlays`/`introActive`, or marks session complete before `onDone` |
 
 Every fix touching these areas MUST cite the FR ID(s) it protects.
 The self-evolution engine's `proposalRespectsIntroConstitution` gate blocks
@@ -112,7 +114,7 @@ The system MUST detect, isolate, and recover from its own failures without
 human intervention, within bounded time budgets.
 
 ### §1. Failure detection
-- **Client watchdog** (`src/lib/aria/self-healing/watchdog.client.ts`) monitors
+- **Client watchdog** (`src/lib/aria/self-healing/watchdog.ts`) monitors
   `chat.status`, video events, TTS pipeline, AudioContext state, and gateway
   responses. Every anomaly → `aria_incidents` row with:
   `severity`, `device_class`, `viewport`, `user_agent`, `network`, `failure_mode`.
@@ -202,10 +204,12 @@ mutation surface. It MUST:
 src/components/cinematic/AriaWelcomeVideo.tsx
 src/components/cinematic/WelcomeThenGenesis.tsx
 src/components/intro/AriaCinematicIntro.tsx
+src/routes/__root.tsx
+src/routes/index.tsx
 src/lib/aria/learning/interaction-log.server.ts
 src/lib/aria/learning/pattern-miner.server.ts
 src/lib/aria/learning/prompt-injector.server.ts
-src/lib/aria/self-healing/watchdog.client.ts
+src/lib/aria/self-healing/watchdog.ts
 docs/ARIA_INTRO_CONSTITUTION.md
 docs/NEXUS_ENGINEERING_CONSTITUTION.md
 ```
