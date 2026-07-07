@@ -19,7 +19,7 @@ export function BetaMarqueeBar() {
       dir="ltr"
       role="status"
       aria-label="Beta preview banner"
-      className="sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] backdrop-blur-xl shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
+      className="pointer-events-none sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] backdrop-blur-xl shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
     >
       <style>{`
         @keyframes beta-marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-33.3333%); } }
