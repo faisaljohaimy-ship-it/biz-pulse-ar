@@ -13,6 +13,7 @@ import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
+import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
