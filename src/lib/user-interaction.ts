@@ -72,8 +72,20 @@ export function installInteractionTracker(): void {
   if (installed || typeof window === "undefined") return;
   installed = true;
   const handler = () => {
+    // CONSTITUTION FR-20 — Universal First-Gesture Audio Unlock.
+    // A single user gesture MUST unlock the ENTIRE audio pipeline in one
+    // synchronous tick: (1) prime shared AudioContext (iOS unlock buffer),
+    // (2) unlock the ARIA global audio bus, (3) mark the session as
+    // interacted. Any of the three missing → mobile devices refuse voice
+    // even though the user tapped. Never split these across async work.
     markInteracted();
     primeAudio();
+    // Lazy import to avoid a module cycle (audio-bus imports voice-timeline
+    // which is fine, but user-interaction.ts must stay dependency-free at
+    // module scope so it can be imported anywhere, including SSR paths).
+    void import("./aria/audio-bus")
+      .then((m) => { try { m.AriaAudioBus.unlock(); } catch { /* ignore */ } })
+      .catch(() => { /* bus unavailable — audio prime alone still helps */ });
     window.removeEventListener("pointerdown", handler);
     window.removeEventListener("keydown", handler);
     window.removeEventListener("touchstart", handler);
@@ -84,3 +96,4 @@ export function installInteractionTracker(): void {
   window.addEventListener("touchstart", handler, { once: true, passive: true });
   window.addEventListener("click", handler, { once: true });
 }
+

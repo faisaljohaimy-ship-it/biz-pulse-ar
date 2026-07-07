@@ -225,6 +225,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   // Article III (self-healing): install the client watchdog once at root.
+  // FR-20: also install the universal first-gesture audio unlock so that
+  // ANY tap anywhere on the app primes AudioContext + unlocks AriaAudioBus
+  // in the same synchronous tick — required for iOS/Android autoplay policy.
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let cancelled = false;
@@ -232,11 +235,17 @@ function RootComponent() {
       if (cancelled) return;
       cleanup = m.installAriaWatchdog();
     });
+    // Fire-and-forget: dynamic import keeps SSR bundle unchanged.
+    void import("@/lib/user-interaction").then((m) => {
+      if (cancelled) return;
+      try { m.installInteractionTracker(); } catch { /* ignore */ }
+    });
     return () => {
       cancelled = true;
       cleanup?.();
     };
   }, []);
+
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
