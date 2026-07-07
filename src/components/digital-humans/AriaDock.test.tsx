@@ -88,7 +88,7 @@ describe("AriaDock — a11y", () => {
     render(<AriaDock />);
     const expected = [
       /Ask agent|Stop listening/i,
-      /Enable voice|Mute/i,
+      /Enable voice|Mute|Toggle ARIA voice/i,
       /Replay welcome/i,
       /Minimize/i,
       /Hide/i,
