@@ -1,37 +1,37 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
+  Activity,
   BarChart3,
-  Settings,
-  LogOut,
-  Menu,
   Bot,
-  Users,
-  FolderUp,
-  Workflow,
-  Shield,
-  ListChecks,
-  Sun,
-  Moon,
-  FileText,
-  Plug,
-  Network,
   Brain,
   Building2,
-  Rocket,
-  ShieldAlert,
-  ShieldCheck,
-  Layers,
-  MapPin,
-  Home,
+  Camera,
   Crown,
+  FileText,
+  FolderOpen,
+  Grid3x3,
+  Home,
+  LogOut,
+  MapPin,
+  Menu,
+  Mic,
+  Moon,
+  Network,
+  Plug,
+  Radar,
+  Rocket,
+  Settings,
+  Shield,
+  ShieldAlert,
+  Sparkles,
+  Sun,
+  Wrench,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
-import { useRegion } from "@/lib/region-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
@@ -40,6 +40,7 @@ import { RegionSwitcher } from "@/components/RegionSwitcher";
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
+
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
