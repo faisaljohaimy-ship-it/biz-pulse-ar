@@ -467,6 +467,12 @@ body.nexus-presenting .nexus-chrome { display: none !important; }
 body.nexus-presenting main { padding: 0 !important; }
 body.nexus-presenting .nexus-main > div { max-width: none !important; }
 
+/* Global horizontal-overflow guard: prevents rogue wide children (charts,
+   raw tables, marquees inside authenticated shells) from pushing the sticky
+   mobile header's Menu button and the right-side Sheet off-viewport.
+   Vertical scrolling is preserved. */
+html, body { overflow-x: hidden; }
+
 /* ── Executive Cockpit (mobile landscape) ─────────────────────────
    When phone is rotated, we abandon the stacked-mobile UI and render
    a compact desktop-style cockpit: collapsed icon rail + hidden mobile
