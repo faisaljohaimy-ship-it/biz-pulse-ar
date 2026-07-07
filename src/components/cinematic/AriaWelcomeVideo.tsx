@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import welcomeAsset from "@/assets/aria-welcome.mp4.asset.json";
+import heroBackdropAsset from "@/assets/hero-intro-backdrop.mp4.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import {
   hasPriorInteraction,
