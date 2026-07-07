@@ -189,6 +189,7 @@ import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api
 import { Route as ApiPublicHooksRunAgentRouteImport } from './routes/api/public/hooks/run-agent'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
+import { Route as ApiPublicHooksAriaPatternMinerRouteImport } from './routes/api/public/hooks/aria-pattern-miner'
 import { Route as ApiPublicHooksAriaIncidentRouteImport } from './routes/api/public/hooks/aria-incident'
 import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
 
@@ -1138,6 +1139,12 @@ const ApiPublicHooksExecutiveReportsRunRoute =
     path: '/api/public/hooks/executive-reports-run',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAriaPatternMinerRoute =
+  ApiPublicHooksAriaPatternMinerRouteImport.update({
+    id: '/api/public/hooks/aria-pattern-miner',
+    path: '/api/public/hooks/aria-pattern-miner',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksAriaIncidentRoute =
   ApiPublicHooksAriaIncidentRouteImport.update({
     id: '/api/public/hooks/aria-incident',
@@ -1323,6 +1330,7 @@ export interface FileRoutesByFullPath {
   '/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
+  '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1504,6 +1512,7 @@ export interface FileRoutesByTo {
   '/sec': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
+  '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1689,6 +1698,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
+  '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1874,6 +1884,7 @@ export interface FileRouteTypes {
     | '/sec/'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
+    | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
@@ -2055,6 +2066,7 @@ export interface FileRouteTypes {
     | '/sec'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
+    | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
@@ -2239,6 +2251,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
+    | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
@@ -2323,6 +2336,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksAriaIncidentRoute: typeof ApiPublicHooksAriaIncidentRoute
+  ApiPublicHooksAriaPatternMinerRoute: typeof ApiPublicHooksAriaPatternMinerRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
   ApiPublicHooksRunAgentRoute: typeof ApiPublicHooksRunAgentRoute
@@ -3597,6 +3611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksExecutiveReportsRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/aria-pattern-miner': {
+      id: '/api/public/hooks/aria-pattern-miner'
+      path: '/api/public/hooks/aria-pattern-miner'
+      fullPath: '/api/public/hooks/aria-pattern-miner'
+      preLoaderRoute: typeof ApiPublicHooksAriaPatternMinerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/aria-incident': {
       id: '/api/public/hooks/aria-incident'
       path: '/api/public/hooks/aria-incident'
@@ -3937,6 +3958,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
   ApiPublicHooksAriaIncidentRoute: ApiPublicHooksAriaIncidentRoute,
+  ApiPublicHooksAriaPatternMinerRoute: ApiPublicHooksAriaPatternMinerRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
