@@ -42,7 +42,8 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SearchResponse> => {
     const started = Date.now();
     const supabase = context.supabase;
-    const q = data.q;
+    // Sanitize PostgREST filter control chars (,()) before interpolating into .or() filter strings
+    const q = data.q.replace(/[,()]/g, " ");
     const like = `%${q.replace(/[%_]/g, (m) => `\\${m}`)}%`;
     const wanted = new Set<SearchSource>(data.sources ?? ["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"]);
     const perSourceLimit = Math.max(3, Math.ceil(data.limit / Math.max(1, wanted.size)));
