@@ -206,6 +206,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           objectFit: "contain",
           background: "transparent",
           maxHeight: "100dvh",
+          zIndex: 10,
         }}
       />
 
