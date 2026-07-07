@@ -17,6 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import welcomeAsset from "@/assets/aria-welcome.mp4.asset.json";
+import posterAsset from "@/assets/aria-hero-presence.png.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import {
   hasPriorInteraction,
@@ -28,7 +29,14 @@ interface Props {
   onDone: () => void;
 }
 
+/**
+ * Engineering constitution — see docs/ARIA_INTRO_CONSTITUTION.md
+ *   INVARIANT-1 single intro gate  INVARIANT-2 visual ≤200ms
+ *   INVARIANT-3 no finish before MIN_DISPLAY_MS  INVARIANT-4 finishOnce
+ *   INVARIANT-5 setIntroActive paired  INVARIANT-6 SSR-safe
+ */
 const FADE_MS = 600;
+const MIN_DISPLAY_MS = 3_500; // never disappear before this
 const MAX_MS = 12_000; // hard cap safety
 const BAR_COUNT = 14;
 
@@ -41,18 +49,32 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   const [showSoundChip, setShowSoundChip] = useState(false);
   const [statusOnline, setStatusOnline] = useState(false);
   const [bars, setBars] = useState<number[]>(() => Array(BAR_COUNT).fill(0.15));
+  const [videoFailed, setVideoFailed] = useState(false);
   const finishedRef = useRef(false);
+  const mountedAtRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : 0);
+  const pendingFinishRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
 
   const reduced = useMemo(() => {
+    if (typeof window === "undefined") return false;
     try { return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false; }
     catch { return false; }
   }, []);
 
+  // INVARIANT-3 + INVARIANT-4: single-source finalizer, honors MIN_DISPLAY_MS.
   const finish = () => {
     if (finishedRef.current) return;
+    const elapsed = performance.now() - mountedAtRef.current;
+    if (elapsed < MIN_DISPLAY_MS) {
+      if (pendingFinishRef.current != null) return;
+      pendingFinishRef.current = window.setTimeout(() => {
+        pendingFinishRef.current = null;
+        finish();
+      }, MIN_DISPLAY_MS - elapsed);
+      return;
+    }
     finishedRef.current = true;
     const v = videoRef.current;
     const bg = bgVideoRef.current;
@@ -67,6 +89,12 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       setIntroActive(false);
       onDone();
     }, FADE_MS);
+  };
+
+  // Soft handler: on error, keep HUD/poster visible until MIN_DISPLAY_MS.
+  const onVideoError = () => {
+    setVideoFailed(true);
+    finish();
   };
 
   // Attach WebAudio analyser once video is playing with sound.
@@ -163,6 +191,10 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     return () => {
       window.clearTimeout(onlineT);
       window.clearTimeout(capT);
+      if (pendingFinishRef.current != null) {
+        window.clearTimeout(pendingFinishRef.current);
+        pendingFinishRef.current = null;
+      }
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       try { audioCtxRef.current?.close(); } catch { /* ignore */ }
       try { v.pause(); } catch { /* ignore */ }
@@ -255,21 +287,40 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         }}
       />
 
-      {/* Blurred cover backdrop for cinematic depth */}
-      <video
-        ref={bgVideoRef}
-        src={welcomeAsset.url}
-        playsInline
-        muted
-        preload="auto"
+      {/* Poster fallback — guarantees INVARIANT-2 (visual ≤200ms) and stays
+          on-screen if the video source fails to load. */}
+      <img
+        src={posterAsset.url}
+        alt=""
         aria-hidden
-        className="absolute inset-0 h-full w-full opacity-70"
+        className="absolute inset-0 h-full w-full"
         style={{
           objectFit: "cover",
-          filter: "blur(28px) brightness(0.5) saturate(1.1)",
-          transform: "scale(1.15)",
+          objectPosition: "center 18%",
+          opacity: videoFailed ? 1 : 0.001,
+          transition: "opacity 400ms ease",
+          filter: "contrast(1.05) saturate(1.05)",
         }}
       />
+
+      {/* Blurred cover backdrop for cinematic depth */}
+      {!videoFailed && (
+        <video
+          ref={bgVideoRef}
+          src={welcomeAsset.url}
+          playsInline
+          muted
+          preload="auto"
+          aria-hidden
+          onError={() => { /* backdrop is decorative; ignore */ }}
+          className="absolute inset-0 h-full w-full opacity-70"
+          style={{
+            objectFit: "cover",
+            filter: "blur(28px) brightness(0.5) saturate(1.1)",
+            transform: "scale(1.15)",
+          }}
+        />
+      )}
 
       {/* Layer B — Hero video (face-priority framing) */}
       <div
@@ -279,22 +330,24 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           maxHeight: "100dvh",
         }}
       >
-        <video
-          ref={videoRef}
-          src={welcomeAsset.url}
-          playsInline
-          preload="auto"
-          onEnded={finish}
-          onError={finish}
-          className="h-full w-full"
-          style={{
-            objectFit: "cover",
-            objectPosition: "center 18%",
-            background: "transparent",
-            maxHeight: "100dvh",
-            filter: "contrast(1.05) saturate(1.05)",
-          }}
-        />
+        {!videoFailed && (
+          <video
+            ref={videoRef}
+            src={welcomeAsset.url}
+            playsInline
+            preload="auto"
+            onEnded={finish}
+            onError={onVideoError}
+            className="h-full w-full"
+            style={{
+              objectFit: "cover",
+              objectPosition: "center 18%",
+              background: "transparent",
+              maxHeight: "100dvh",
+              filter: "contrast(1.05) saturate(1.05)",
+            }}
+          />
+        )}
         {/* Cinematic edge fade */}
         <div
           aria-hidden
