@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import {
   Maximize2,
   Minimize2,
   Radio,
-  Expand,
+  ExternalLink,
   Moon,
   AlertTriangle,
   CheckCircle2,
@@ -15,7 +14,9 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const INTERNAL_URL = "/hajj";
+// External Hajj Nusuk platform — kept as its own standalone deployment,
+// intentionally NOT merged into the neexios.com domain.
+const HAJJ_PLATFORM_URL = "https://hajj-nexus-prime.lovable.app/";
 
 /**
  * LiveSystemShowcase — inline Hajj Nexus preview card.
@@ -117,54 +118,25 @@ export function LiveSystemShowcase() {
               >
                 {expanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
               </button>
-              <Link
-                to={INTERNAL_URL}
+              <a
+                href={HAJJ_PLATFORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
-                aria-label={ar ? "فتح كامل" : "Open full screen"}
+                aria-label={ar ? "فتح منصة الحج في نافذة جديدة" : "Open Hajj platform in new tab"}
               >
-                <Expand className="h-2.5 w-2.5" />
-              </Link>
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
             </div>
           </div>
 
           {/* Preview stage — real inline UI, not an iframe */}
           <div
-            className="relative aspect-[4/5] w-full overflow-hidden sm:aspect-[16/10]"
+            className="relative w-full overflow-hidden"
             style={{ backgroundColor: "#04111f", colorScheme: "dark" }}
           >
-            {/* Grid backdrop */}
-            <svg aria-hidden className="absolute inset-0 h-full w-full opacity-20" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="hajj-preview-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M40 0H0V40" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#hajj-preview-grid)" className="text-primary" />
-            </svg>
-
-            {/* Radial glows */}
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,hsl(var(--primary)/0.15),transparent_60%),radial-gradient(circle_at_70%_65%,hsl(var(--primary)/0.10),transparent_55%)]" />
-
-            {/* Site markers */}
-            {sites.map((s) => (
-              <div
-                key={s.key}
-                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${s.x}%`, top: `${s.y}%` }}
-              >
-                <div className="relative flex flex-col items-center">
-                  <span className={`relative block size-4 rounded-full border ${toneCls[s.tone]}`}>
-                    <span className={`absolute inset-0 rounded-full ${toneCls[s.tone]} animate-ping opacity-60`} />
-                  </span>
-                  <div className={`mt-1 whitespace-nowrap rounded border px-2 py-0.5 text-[10px] font-medium backdrop-blur-md ${toneCls[s.tone]}`}>
-                    {ar ? s.ar : s.en}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* KPI strip */}
-            <div className="absolute inset-x-3 top-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {/* KPI strip — top toolbar, never overlapping the map */}
+            <div className="flex flex-wrap items-center gap-1.5 border-b border-white/10 bg-black/50 px-3 py-2 sm:gap-2">
               <KpiChip icon={AlertTriangle} tone="rose" label={ar ? "حوادث" : "Incidents"} value={snapshot.openIncidents} />
               <KpiChip icon={Radio} tone="amber" label={ar ? "تنبيهات" : "Alerts"} value={snapshot.activeAlerts} />
               <KpiChip icon={CheckCircle2} tone="emerald" label={ar ? "منجزة" : "Done"} value={snapshot.tasksDone} />
@@ -178,15 +150,55 @@ export function LiveSystemShowcase() {
               <KpiChip icon={Sparkles} tone="emerald" label={ar ? "امتثال" : "Compliance"} value={`${snapshot.compliance}%`} />
             </div>
 
+            {/* Map canvas */}
+            <div className="relative aspect-[16/11] w-full sm:aspect-[16/9]">
+              {/* Grid backdrop */}
+              <svg aria-hidden className="absolute inset-0 h-full w-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="hajj-preview-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M40 0H0V40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#hajj-preview-grid)" className="text-primary" />
+              </svg>
+
+              {/* Radial glows */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,hsl(var(--primary)/0.15),transparent_60%),radial-gradient(circle_at_70%_65%,hsl(var(--primary)/0.10),transparent_55%)]" />
+
+              {/* Site markers */}
+              {sites.map((s) => (
+                <div
+                  key={s.key}
+                  className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
+                  style={{ left: `${s.x}%`, top: `${s.y}%` }}
+                >
+                  <div className="relative flex flex-col items-center">
+                    <span className={`relative block size-3 rounded-full border sm:size-4 ${toneCls[s.tone]}`}>
+                      <span className={`absolute inset-0 rounded-full ${toneCls[s.tone]} animate-ping opacity-60`} />
+                    </span>
+                    <div className={`mt-1 whitespace-nowrap rounded border px-1.5 py-0.5 text-[9px] font-medium backdrop-blur-md sm:px-2 sm:text-[10px] ${toneCls[s.tone]}`}>
+                      {ar ? s.ar : s.en}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Bottom action row */}
-            <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-end gap-2">
-              <Link
-                to={INTERNAL_URL}
-                className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-2 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-white/50">
+                {ar ? "منصة مستقلة · نُسك الحج" : "Standalone · Nusuk Hajj"}
+              </span>
+              <a
+                href={HAJJ_PLATFORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-1.5 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
               >
                 <MapPin className="h-3.5 w-3.5" />
-                {ar ? "فتح مركز قيادة الحج" : "Open Hajj Command Center"}
-              </Link>
+                {ar ? "فتح منصة نُسك الحج" : "Open Hajj Nusuk Platform"}
+                <ExternalLink className="h-3 w-3 opacity-80" />
+              </a>
             </div>
 
             {/* FR-19: static "LIVE/Live/TLS 1.3" badges removed — no verified Evidence source on this surface. */}
