@@ -6,8 +6,11 @@ import { ArrowLeft } from "lucide-react";
 
 // Hajj Nexus Prime is an EXTERNAL deployment. The /hajj-prime route is a
 // full-viewport iframe shell — no scaling hacks, no half-height frames,
-// no letterboxing. The embed URL is never printed in the UI.
-const EMBED_URL = "https://hajj-nexus-prime.lovable.app/?theme=dark&forceDark=1#dark";
+// no letterboxing. The embed URL is never printed in the UI and comes
+// from VITE_HAJJ_EMBED_URL so it can be re-pointed without a code change.
+const EMBED_URL =
+  (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
+  "https://hajj.neexios.com/?theme=dark&forceDark=1#dark";
 
 function HajjPrimeWindow() {
   const [loaded, setLoaded] = useState(false);

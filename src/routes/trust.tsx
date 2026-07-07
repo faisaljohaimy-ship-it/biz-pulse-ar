@@ -10,7 +10,7 @@ export const Route = createFileRoute("/trust")({
   head: () => ({
     meta: [
       { title: "Trust & Security — Nexus AI OS" },
-      { name: "description", content: "Trust, security, and compliance posture for Nexus AI OS — SOC 2, ISO 27001, NCA ECC, Saudi Vision 2030 alignment, data residency, encryption, audit logging, and incident response." },
+      { name: "description", content: "Trust, security, and compliance posture for Nexus AI OS — designed to align with SOC 2, ISO 27001, NCA ECC, and Saudi PDPL. Certifications in-progress. Covers data residency, encryption, audit logging, and incident response." },
       { property: "og:title", content: "Trust & Security — Nexus AI OS" },
       { property: "og:description", content: "Procurement-ready security & compliance overview." },
       { property: "og:url", content: `${DOMAIN_URL}/trust` },
