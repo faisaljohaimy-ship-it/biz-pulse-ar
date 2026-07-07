@@ -32,6 +32,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
   // Decide on mount whether to show.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    installInteractionTracker();
     try {
       const seen = window.localStorage.getItem(STORAGE_KEY);
       if (seen === "1") return;
@@ -49,6 +50,8 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
     }
     setVisible(true);
   }, [surface]);
+
+
 
   const finish = () => {
     if (fading) return;
