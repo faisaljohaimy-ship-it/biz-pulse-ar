@@ -423,3 +423,63 @@ reverted. Where legacy surfaces still emit unverified strings, the
 Readiness Loop MUST prioritize migrating them to `EvidenceBadge` (or
 removing them) — silent tolerance is a Definition-of-Done violation.
 
+---
+
+## FR-20 — Universal First-Gesture Audio Unlock (permanent, all devices)
+
+### Principle
+On every device (mobile, tablet, laptop, desktop), the FIRST user gesture
+in a session MUST unlock the ENTIRE audio pipeline atomically. Splitting
+the unlock across async work is a constitutional violation, because
+iOS Safari and Chrome Mobile enforce autoplay policy per **synchronous
+gesture tick** — anything after `await` no longer counts as user-initiated.
+
+### The three atomic steps (single tick, no `await` between them)
+1. `primeAudio()` — construct/resume shared `AudioContext`, play a 1-frame
+   silent buffer to fully unlock iOS WebAudio.
+2. `AriaAudioBus.unlock()` — flip the global bus flag so every subsequent
+   voice source (`chat-tts`, `tour-tts`, `panel-greeting`, greeting mp3,
+   ElevenLabs, gateway TTS) is granted the channel instead of refused.
+3. `markInteracted()` — persist the gesture in `sessionStorage` so later
+   navigations skip the "waiting for first tap" state.
+
+### Enforcement (non-negotiable)
+- The universal listener lives in `src/lib/user-interaction.ts` →
+  `installInteractionTracker()`. It MUST be installed at
+  `src/routes/__root.tsx` on mount — never conditionally, never behind an
+  intro component.
+- `installInteractionTracker` is added to `PROTECTED_PATHS` of the
+  self-evolution engine. Any diff that:
+  - splits the three steps across async boundaries,
+  - drops `AriaAudioBus.unlock()` from the handler,
+  - removes the root-level install,
+  - or gates the listener behind a specific route
+  is auto-flagged as a regression and reverted.
+- Per-component ARIA buttons (Copilot, Dock, Greeter, Tour) MUST still
+  call `AriaAudioBus.unlock()` in their own click handlers as a
+  belt-and-suspenders — the root listener is the safety net, not the
+  primary path.
+
+### Forbidden patterns
+- Creating `new Audio()` / `new SpeechSynthesisUtterance()` AFTER `await`
+  in a handler that started from a user click. Construct **synchronously**
+  in the gesture tick, then populate `.src` / `.text` later.
+- Adding a "click to enable sound" chip as the only unlock path — the
+  gesture must count no matter which element the user tapped first.
+- Leaving `AriaAudioBus.unlock()` out of a new interactive surface on the
+  assumption that "some other component will unlock it" — every entry
+  point unlocks.
+
+### Definition of done
+A device is considered constitutionally compliant only when:
+- Mobile Safari (iOS 17+) plays ARIA voice on the second tap without
+  requiring a specific ARIA button.
+- Chrome Android plays ARIA voice on the first tap on any element.
+- Desktop Chrome/Safari/Firefox play ARIA voice on the first click.
+- `VoiceTimeline` shows `OWNER: ACQUIRED` (never `acquire REFUSED — no
+  user gesture yet`) after any tap.
+
+Any bug report of "voice doesn't work on mobile" is treated as an
+FR-20 violation and takes priority over feature work until the Readiness
+Loop closes it.
+
