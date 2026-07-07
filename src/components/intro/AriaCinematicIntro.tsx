@@ -129,9 +129,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         // iOS/Android Safari: `webkit-playsinline` is required on some older
         // engines; harmless elsewhere. Also disable picture-in-picture and
         // remote playback so the intro cannot be minimised by the OS.
-        // @ts-expect-error — non-standard iOS attribute
-        webkit-playsinline="true"
-        x5-playsinline="true"
+        {...({ "webkit-playsinline": "true", "x5-playsinline": "true" } as Record<string, string>)}
         disablePictureInPicture
         disableRemotePlayback
         controls={false}
