@@ -114,7 +114,7 @@ function GovernmentBriefPage() {
         {/* KPI strip */}
         <section className="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { k: isAr ? "جاهزية" : "Readiness", v: "SOC2 · ISO27001 · ECC" },
+            { k: isAr ? "الجاهزية" : "Readiness", v: isAr ? "مصمَّم بما يتوائم مع SOC2 · ISO27001 · ECC" : "Aligned to SOC2 · ISO27001 · ECC (in progress)" },
             { k: isAr ? "السيادة" : "Sovereignty", v: isAr ? "استضافة سعودية 100%" : "100% In-Kingdom" },
             { k: isAr ? "العائد التشغيلي" : "Operational Return", v: "22–48%" },
             { k: isAr ? "فترة الاسترداد" : "Payback", v: isAr ? "4–9 أشهر" : "4–9 months" },
