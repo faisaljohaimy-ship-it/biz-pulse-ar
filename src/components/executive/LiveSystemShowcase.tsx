@@ -183,13 +183,16 @@ export function LiveSystemShowcase() {
 
             {/* Bottom action row */}
             <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-end gap-2">
-              <Link
-                to={INTERNAL_URL}
+              <a
+                href={HAJJ_PLATFORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-2 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
               >
                 <MapPin className="h-3.5 w-3.5" />
-                {ar ? "فتح مركز قيادة الحج" : "Open Hajj Command Center"}
-              </Link>
+                {ar ? "فتح منصة نُسك الحج" : "Open Hajj Nusuk Platform"}
+                <ExternalLink className="h-3 w-3 opacity-80" />
+              </a>
             </div>
 
             {/* FR-19: static "LIVE/Live/TLS 1.3" badges removed — no verified Evidence source on this surface. */}
