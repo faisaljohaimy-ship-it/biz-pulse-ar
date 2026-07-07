@@ -17,7 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import welcomeAsset from "@/assets/aria-welcome.mp4.asset.json";
-import posterAsset from "@/assets/aria-hero-presence.png.asset.json";
+import posterAsset from "@/assets/aria-holo-v2.png.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import {
   hasPriorInteraction,
@@ -316,9 +316,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         style={{
           objectFit: fitMode,
           objectPosition: fitMode === "cover" ? "center 30%" : "center",
-          opacity: videoReady && !videoFailed ? 0.38 : 1,
+          opacity: videoReady && !videoFailed ? 0.58 : 1,
           transition: "opacity 400ms ease",
-          filter: "contrast(1.05) saturate(1.05)",
+          filter: "brightness(1.03) contrast(1.04) saturate(1.08)",
         }}
       />
 
