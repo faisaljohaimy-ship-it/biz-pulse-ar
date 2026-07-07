@@ -202,9 +202,11 @@ export type Database = {
           created_at: string
           executed_tool: string | null
           id: string
+          next_step: string | null
           org_id: string
           rationale: string | null
           recommendation: string
+          recommended_action: string | null
           status: string
           thread_id: string | null
           tool_payload: Json | null
@@ -216,9 +218,11 @@ export type Database = {
           created_at?: string
           executed_tool?: string | null
           id?: string
+          next_step?: string | null
           org_id?: string
           rationale?: string | null
           recommendation: string
+          recommended_action?: string | null
           status?: string
           thread_id?: string | null
           tool_payload?: Json | null
@@ -230,9 +234,11 @@ export type Database = {
           created_at?: string
           executed_tool?: string | null
           id?: string
+          next_step?: string | null
           org_id?: string
           rationale?: string | null
           recommendation?: string
+          recommended_action?: string | null
           status?: string
           thread_id?: string | null
           tool_payload?: Json | null

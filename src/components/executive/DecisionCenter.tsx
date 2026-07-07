@@ -141,6 +141,18 @@ export function DecisionCenter() {
                     )}
                   </div>
                   <div className="text-sm font-semibold text-foreground truncate">{d.recommendation}</div>
+                  {d.recommended_action && (
+                    <div className="mt-1.5 rounded-md border border-primary/30 bg-primary/5 px-2 py-1">
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-primary/80">Recommended Action · الإجراء الموصى به</div>
+                      <div className="text-xs text-foreground mt-0.5 line-clamp-2">{d.recommended_action}</div>
+                    </div>
+                  )}
+                  {d.next_step && (
+                    <div className="mt-1 rounded-md border border-secondary/30 bg-secondary/5 px-2 py-1">
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-secondary/80">Next Step · الخطوة التالية</div>
+                      <div className="text-xs text-foreground mt-0.5 line-clamp-2">{d.next_step}</div>
+                    </div>
+                  )}
                   {d.rationale && (
                     <div className="text-xs text-foreground/60 mt-1 line-clamp-2">{d.rationale}</div>
                   )}

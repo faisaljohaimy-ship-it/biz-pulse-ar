@@ -303,6 +303,8 @@ export type ExecutiveDecision = {
   id: string;
   recommendation: string;
   rationale: string | null;
+  recommended_action: string | null;
+  next_step: string | null;
   confidence: number | null;
   status: "pending" | "approved" | "executed" | "dismissed" | "failed";
   executed_tool: string | null;
@@ -315,7 +317,7 @@ export const listPendingDecisions = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<ExecutiveDecision[]> => {
     const { data, error } = await context.supabase
       .from("aria_decisions")
-      .select("id,recommendation,rationale,confidence,status,executed_tool,tool_payload,created_at")
+      .select("id,recommendation,rationale,recommended_action,next_step,confidence,status,executed_tool,tool_payload,created_at")
       .in("status", ["pending", "approved"])
       .order("created_at", { ascending: false })
       .limit(20);
@@ -326,6 +328,8 @@ export const listPendingDecisions = createServerFn({ method: "GET" })
         id: d.id,
         recommendation: d.recommendation,
         rationale: d.rationale,
+        recommended_action: (d as { recommended_action: string | null }).recommended_action ?? null,
+        next_step: (d as { next_step: string | null }).next_step ?? null,
         confidence: d.confidence == null ? null : Number(d.confidence),
         status: d.status as ExecutiveDecision["status"],
         executed_tool: d.executed_tool,
