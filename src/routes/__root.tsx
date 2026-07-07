@@ -259,6 +259,7 @@ function RootComponent() {
                 {!suppressOverlays && <GenesisIntro />}
                 <Toaster />
               </AriaProvider>
+              </RegionProvider>
             </DemoModeProvider>
           </I18nProvider>
         </ThemeProvider>
