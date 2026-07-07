@@ -38,6 +38,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
+import { NexusOrb } from "@/components/executive/NexusOrb";
+
 
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
