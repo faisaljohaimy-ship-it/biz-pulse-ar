@@ -101,6 +101,7 @@ Any of these reappearing = release-blocking bug. **Never re-litigate.**
 | **FR-14** | Public schema table without RLS or GRANT | `CREATE TABLE` migration missing GRANT block |
 | **FR-15** | Google OAuth calling `supabase.auth.signInWithOAuth` directly | Bypassing `lovable.auth.signInWithOAuth` broker |
 | **FR-16** | Cinematic intro flashes then disappears / never appears on laptop or mobile | Root shell hides `WelcomeThenGenesis` behind `suppressOverlays`/`introActive`, or marks session complete before `onDone` |
+| **FR-19** | Unverified metric, status, or certification badge shown to user | Static "UPTIME 99.97%", "TLS 1.3", "ISO 27001", "LIVE", "بث مباشر" rendered without an `Evidence` object from `src/lib/evidence/gate.ts` |
 
 Every fix touching these areas MUST cite the FR ID(s) it protects.
 The self-evolution engine's `proposalRespectsIntroConstitution` gate blocks
@@ -376,3 +377,49 @@ browser; it cannot be bypassed and MUST NOT be simulated with fake voices.
 
 FR-18 is enforced permanently. Any diff violating it is auto-flagged by the
 self-evolution engine and reverted.
+
+---
+
+## FR-19 — Evidence Gate (permanent, all product surfaces)
+
+**Principle.** Trust is earned by verifiable evidence, never by decoration.
+No numeric metric, status indicator, uptime figure, certification mark,
+compliance shield, or "LIVE / بث مباشر" pill may be rendered to any user
+unless it carries a resolved `Evidence` object naming its source, timestamp,
+and (where applicable) a link a reviewer can open.
+
+**Canonical primitives** (single source of truth — do not fork):
+- `src/lib/evidence/gate.ts` — `Evidence`, `hasEvidence`, `isFresh`.
+- `src/components/evidence/EvidenceBadge.tsx` — the ONLY approved renderer
+  for a metric/status/certification/LIVE claim. Returns `null` without
+  valid evidence. Marks stale evidence visibly (>5 min by default).
+
+**Contract.**
+1. Any badge asserting "LIVE", uptime %, TLS/ISO/SOC/PDPL/NCA claim, or a
+   count/percentage MUST use `<EvidenceBadge evidence={…} />`.
+2. Evidence MUST originate from one of: a Supabase `sec_*` query, a real
+   runtime probe (`probeEvidence(...)`), an immutable audit log row, a
+   public certificate URL, or a verified external API response.
+3. Fabricating an `Evidence` object (hardcoded `observedAt: new Date()`
+   with no probe, or `source` that names a nonexistent table/endpoint) is
+   treated identically to shipping a fake KPI (see FR-12) and reverted.
+4. Static decorative strings such as "UPTIME 99.97%", "TLS 1.3",
+   "ISO 27001", "LIVE", "بث مباشر" in JSX are FORBIDDEN outside
+   `EvidenceBadge`. The self-evolution engine grep-scans for these tokens.
+
+**Forbidden.**
+- Handwritten badge markup that duplicates `EvidenceBadge` styling to
+  bypass the null-guard.
+- "Aspirational" certifications (marks the org is pursuing but has not
+  received). Copy MUST say "in-progress" and cite the target framework,
+  never render the certification mark.
+- Blinking green dots labelled "LIVE" on surfaces that perform no fetch.
+
+**Enforcement.** `src/lib/evidence/gate.ts` and
+`src/components/evidence/EvidenceBadge.tsx` are in `PROTECTED_PATHS`.
+Any diff that reintroduces a forbidden static badge, or that widens the
+gate to accept a missing/invalid `Evidence`, is auto-flagged and
+reverted. Where legacy surfaces still emit unverified strings, the
+Readiness Loop MUST prioritize migrating them to `EvidenceBadge` (or
+removing them) — silent tolerance is a Definition-of-Done violation.
+
