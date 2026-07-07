@@ -288,3 +288,27 @@ proposals against it require human `applyApproved` flag.
 
 **Ratified.** Every engineer, every agent, and every future proposal in this
 repository operates under this constitution. There is no exception clause.
+
+---
+
+## FR-17 — Mobile Audio Gesture Contract (permanent)
+
+Extends INVARIANT-14 in `docs/ARIA_INTRO_CONSTITUTION.md`. Every video/audio
+surface in the product MUST:
+
+1. Never call `AudioContext.createMediaElementSource()` before verified
+   unmuted playback.
+2. Resume any `AudioContext` synchronously *inside* the originating user
+   gesture, BEFORE mutating `muted`/`volume` or calling `play()`.
+3. Mirror `muted` as both the property AND the DOM attribute so iOS
+   honours the state.
+4. Expose an always-tappable unmute affordance (min 44×44px, above
+   safe-area-inset-top, z-index ≥ 20) whenever muted-autoplay fallback
+   was taken.
+5. Log a self-healing incident (`mobile_audio_locked`) when the fallback
+   persists past `MIN_DISPLAY_MS` on a touch device without a follow-up
+   unmute — so the ARIA pattern miner escalates it as a regression.
+
+Enforcement: `PROTECTED_PATHS` covers the intro; new media components
+must add themselves to this list on creation. Reviewers reject any diff
+that violates FR-17.
