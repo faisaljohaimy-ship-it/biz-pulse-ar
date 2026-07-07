@@ -62,16 +62,9 @@ function IntroLanding() {
   // route only owns the executive hero content. No canvas, no boot
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
-  // Cinematic overture — plays once per browser session before anything else.
-  const [introDone, setIntroDone] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    try { return window.sessionStorage.getItem("nexios-aria-overture") === "1"; }
-    catch { return false; }
-  });
-  const finishIntro = () => {
-    setIntroDone(true);
-    try { window.sessionStorage.setItem("nexios-aria-overture", "1"); } catch { /* noop */ }
-  };
+  // The pre-hero intro is owned globally by <WelcomeThenGenesis /> in
+  // __root.tsx (single ARIA welcome video, once per session).
+
   const [deptsOpen, setDeptsOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const { speak } = useAriaSpeech();
