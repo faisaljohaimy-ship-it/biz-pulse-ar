@@ -231,12 +231,16 @@ export async function runSelfEvolution(
       t = new Date().toISOString();
       if (input.enableApply) {
         for (const p of improvement.proposals) {
-          if (p.status === "approved") applied.push(p.id);
+          const respects = proposalRespectsIntroConstitution(
+            p as unknown as { filesTouched?: readonly string[]; rationale?: string },
+          );
+          if (p.status === "approved" && respects) applied.push(p.id);
           else deferred.push(p.id);
         }
       } else {
         for (const p of improvement.proposals) deferred.push(p.id);
       }
+
       stages.push(
         stage(
           "apply_safe_changes",
