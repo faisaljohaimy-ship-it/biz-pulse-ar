@@ -189,6 +189,7 @@ import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api
 import { Route as ApiPublicHooksRunAgentRouteImport } from './routes/api/public/hooks/run-agent'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
+import { Route as ApiPublicHooksAriaIncidentRouteImport } from './routes/api/public/hooks/aria-incident'
 import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -1137,6 +1138,12 @@ const ApiPublicHooksExecutiveReportsRunRoute =
     path: '/api/public/hooks/executive-reports-run',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAriaIncidentRoute =
+  ApiPublicHooksAriaIncidentRouteImport.update({
+    id: '/api/public/hooks/aria-incident',
+    path: '/api/public/hooks/aria-incident',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksAriaDocsIngestRoute =
   ApiPublicHooksAriaDocsIngestRouteImport.update({
     id: '/api/public/hooks/aria-docs-ingest',
@@ -1315,6 +1322,7 @@ export interface FileRoutesByFullPath {
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
+  '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1495,6 +1503,7 @@ export interface FileRoutesByTo {
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
+  '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1679,6 +1688,7 @@ export interface FileRoutesById {
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
+  '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1863,6 +1873,7 @@ export interface FileRouteTypes {
     | '/learn/'
     | '/sec/'
     | '/api/public/hooks/aria-docs-ingest'
+    | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
@@ -2043,6 +2054,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/sec'
     | '/api/public/hooks/aria-docs-ingest'
+    | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
@@ -2226,6 +2238,7 @@ export interface FileRouteTypes {
     | '/_authenticated/learn/'
     | '/_authenticated/sec/'
     | '/api/public/hooks/aria-docs-ingest'
+    | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/run-agent'
@@ -2309,6 +2322,7 @@ export interface RootRouteChildren {
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
+  ApiPublicHooksAriaIncidentRoute: typeof ApiPublicHooksAriaIncidentRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
   ApiPublicHooksRunAgentRoute: typeof ApiPublicHooksRunAgentRoute
@@ -3583,6 +3597,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksExecutiveReportsRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/aria-incident': {
+      id: '/api/public/hooks/aria-incident'
+      path: '/api/public/hooks/aria-incident'
+      fullPath: '/api/public/hooks/aria-incident'
+      preLoaderRoute: typeof ApiPublicHooksAriaIncidentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/aria-docs-ingest': {
       id: '/api/public/hooks/aria-docs-ingest'
       path: '/api/public/hooks/aria-docs-ingest'
@@ -3915,6 +3936,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
+  ApiPublicHooksAriaIncidentRoute: ApiPublicHooksAriaIncidentRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
