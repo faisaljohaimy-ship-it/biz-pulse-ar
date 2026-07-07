@@ -104,6 +104,7 @@ function IntroLanding() {
 
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-screen overflow-x-hidden bg-transparent text-white">
+      <AriaCinematicIntro surface="home" />
       {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
 
       {/* Pre-hero intros retired. The single ARIA welcome video is mounted
