@@ -19,6 +19,7 @@ import { useI18n } from "@/lib/i18n";
 
 import { RuntimeTile } from "@/components/os/RuntimeTile";
 import { LiveDateTime } from "@/components/os/LiveDateTime";
+import { AriaCinematicIntro } from "@/components/intro/AriaCinematicIntro";
 
 export const Route = createFileRoute("/os")({
   head: () => ({
@@ -105,6 +106,7 @@ function OsHub() {
       className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-[#0a0e1a] text-white"
       style={{ background: "radial-gradient(1200px 600px at 50% -10%, rgba(0,212,255,0.10), transparent 60%), linear-gradient(180deg, #0a0e1a 0%, #0f1729 100%)" }}
     >
+      <AriaCinematicIntro surface="os" />
       {/* Dot-grid ambient overlay */}
       <div
         aria-hidden
