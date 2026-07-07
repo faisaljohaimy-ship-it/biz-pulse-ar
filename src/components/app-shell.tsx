@@ -187,8 +187,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <div className="border-b border-sidebar-border px-3 py-3">
+      <div className="space-y-2 border-b border-sidebar-border px-3 py-3">
         <OrgSwitcher />
+        <RegionSwitcher onNavigate={onNavigate} />
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3">
