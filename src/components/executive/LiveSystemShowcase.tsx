@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Maximize2, Minimize2, Radio, Expand, Moon, ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import hajjDashboardPoster from "@/assets/hajj-dashboard-poster.png.asset.json";
+
 
 
 // Default to the internal, same-origin dashboard so the preview is always the
