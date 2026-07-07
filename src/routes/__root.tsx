@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import {
   Outlet,
   Link,
@@ -7,6 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { installAriaWatchdog } from "@/lib/aria/self-healing/watchdog.client";
 
 import appCss from "../styles.css?url";
 import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME } from "@/lib/domain";
@@ -222,6 +224,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Article III (self-healing): install the client watchdog once at root.
+  useEffect(() => {
+    const cleanup = installAriaWatchdog();
+    return cleanup;
+  }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";

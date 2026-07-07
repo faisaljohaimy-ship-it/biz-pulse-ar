@@ -46,10 +46,12 @@ const INVARIANTS: EvolutionInvariants = {
 };
 
 /**
- * Protected paths — enforced by the ARIA Intro Constitution
- * (docs/ARIA_INTRO_CONSTITUTION.md). Any self-evolution proposal that
- * touches these files MUST cite the constitution in its `rationale` and
- * explicitly promise to preserve INVARIANT-1..8, or it is auto-deferred.
+ * Protected paths — enforced by the NEXUS Master Engineering Constitution
+ * (docs/NEXUS_ENGINEERING_CONSTITUTION.md) which subsumes the intro
+ * constitution (docs/ARIA_INTRO_CONSTITUTION.md). Any self-evolution
+ * proposal that touches these files MUST cite one of those documents in
+ * its `rationale` AND explicitly promise to preserve the listed
+ * INVARIANTs / Forbidden Regressions, or it is auto-deferred.
  */
 export const PROTECTED_PATHS: readonly string[] = [
   "src/components/cinematic/AriaWelcomeVideo.tsx",
@@ -59,7 +61,9 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/lib/aria/learning/pattern-miner.server.ts",
   "src/lib/aria/learning/prompt-injector.server.ts",
   "src/lib/aria/self-healing/watchdog.client.ts",
+  "src/routes/api/chat.ts",
   "docs/ARIA_INTRO_CONSTITUTION.md",
+  "docs/NEXUS_ENGINEERING_CONSTITUTION.md",
 ];
 
 export function proposalRespectsIntroConstitution(p: {
@@ -70,7 +74,14 @@ export function proposalRespectsIntroConstitution(p: {
   const touchesProtected = files.some((f) => PROTECTED_PATHS.includes(f));
   if (!touchesProtected) return true;
   const r = (p.rationale ?? "").toLowerCase();
-  return r.includes("aria_intro_constitution") && r.includes("invariant");
+  // Accept either constitution as a valid citation; both require an
+  // explicit INVARIANT / FR promise.
+  const citesConstitution =
+    r.includes("aria_intro_constitution") ||
+    r.includes("nexus_engineering_constitution") ||
+    r.includes("nexus master constitution");
+  const promisesInvariant = r.includes("invariant") || r.includes("fr-");
+  return citesConstitution && promisesInvariant;
 }
 
 
