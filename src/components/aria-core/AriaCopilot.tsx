@@ -579,8 +579,13 @@ export function AriaCopilot() {
     setLastUserText(text);
     pendingSendAtRef.current = performance.now();
     void chat.sendMessage({ text });
+    // Keep composer focused across turns (chat-agent-ui-contract requirement).
+    // rAF avoids fighting React's re-render focus loss.
+    requestAnimationFrame(() => {
+      composerRef.current?.focus({ preventScroll: true });
+    });
+  }, [draft, isBusy, chat, composerRef]);
 
-  }, [draft, isBusy, chat]);
 
   const retry = () => {
     if (lastUserText) submit(lastUserText);
