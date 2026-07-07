@@ -374,6 +374,17 @@ export function AriaCinematicIntro({
           text-transform:uppercase; color:rgba(230,255,246,.55); }
         @keyframes aci-pulse{ 0%,100%{box-shadow:0 8px 40px rgba(16,185,129,.22)} 50%{box-shadow:0 8px 54px rgba(16,185,129,.45)} }
 
+        .aci-sound{ position:absolute; top:14px; inset-inline-start:14px; z-index:4;
+          display:inline-flex; align-items:center; gap:6px;
+          padding:8px 12px; min-height:36px; cursor:pointer;
+          border-radius:9999px; border:1px solid rgba(52,211,153,.35);
+          background:rgba(4,17,31,.55); backdrop-filter:blur(8px);
+          color:#E6FFF6; font-size:12px; font-weight:600; letter-spacing:.02em;
+          transition:border-color .2s, background .2s, transform .15s; }
+        .aci-sound:hover{ border-color:#34D399; background:rgba(4,17,31,.85); }
+        .aci-sound:focus-visible{ outline:2px solid #34D399; outline-offset:2px; }
+        .aci-sound-lbl{ font-family:"Tajawal",ui-sans-serif; }
+
         .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 
         @media (prefers-reduced-motion: reduce){
