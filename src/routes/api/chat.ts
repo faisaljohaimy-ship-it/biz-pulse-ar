@@ -468,6 +468,39 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           onFinish: async ({ messages: finalMessages }) => {
             // Anonymous visitors: no persistence, no memory writes.
             if (!userId) return;
+
+            // ── INVARIANT-9: log every interaction (latency, model, device) ──
+            try {
+              const lastUserForLog = [...uiMessages].reverse().find((m) => m.role === "user");
+              const newAssistantForLog = finalMessages[finalMessages.length - 1];
+              const q = (lastUserForLog?.parts ?? [])
+                .map((p) => (p.type === "text" ? p.text : ""))
+                .join("").trim();
+              const a = (newAssistantForLog?.role === "assistant"
+                ? (newAssistantForLog.parts ?? [])
+                    .map((p) => (p.type === "text" ? p.text : ""))
+                    .join("")
+                : "").trim();
+              if (q && a) {
+                const ua = request.headers.get("user-agent") ?? "";
+                const deviceClass = /Mobi|Android|iPhone/i.test(ua)
+                  ? "mobile"
+                  : /iPad|Tablet/i.test(ua) ? "tablet" : "desktop";
+                void supabase.from("aria_interactions").insert({
+                  user_id: userId,
+                  thread_id: threadId ?? null,
+                  question: q.slice(0, 4000),
+                  answer: a.slice(0, 8000),
+                  model: selectedModelId,
+                  latency_ms: Date.now() - startAt,
+                  first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
+                  device_class: deviceClass,
+                });
+              }
+            } catch (logErr) {
+              console.warn("[api/chat] interaction log skipped", logErr);
+            }
+
             if (!threadId) {
               try {
                 const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
