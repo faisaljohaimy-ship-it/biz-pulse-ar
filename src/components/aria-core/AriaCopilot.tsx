@@ -329,13 +329,15 @@ export function AriaCopilot() {
       lastIdx = re.lastIndex;
     }
     const tail = t.slice(lastIdx).trim();
-    // Merge fragments <12 chars into previous.
+    // Merge fragments <8 chars into previous (was 12 — lower threshold ships
+    // first TTS ~30% sooner). INVARIANT-9: faster first-audio.
     const merged: string[] = [];
     for (const s of complete) {
-      if (merged.length && s.length < 12) merged[merged.length - 1] += " " + s;
+      if (merged.length && s.length < 8) merged[merged.length - 1] += " " + s;
       else merged.push(s);
     }
     return { complete: merged, tail };
+
   }, []);
 
   const fetchTTS = useCallback(async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
