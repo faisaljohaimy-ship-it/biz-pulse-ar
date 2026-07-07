@@ -5,18 +5,23 @@ import { useI18n } from "@/lib/i18n";
 import hajjDashboardPoster from "@/assets/hajj-dashboard-poster.png.asset.json";
 
 
-// Live embed URL — same source configured for /hajj-prime, kept in an env
-// var so it can be re-pointed without a code change. Dark-theme params are
-// appended so the platform boots in permanent night mode inside the frame.
+// Default to the internal, same-origin dashboard so the preview is always the
+// real live board (never a blocked/opaque external frame). An env override can
+// re-point to a different origin without a code change.
 const RAW_EMBED_URL =
   (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
-  "https://hajj.neexios.com/?theme=dark&forceDark=1#dark";
+  "/hajj-prime";
 function withDarkParams(url: string): string {
   try {
     const u = new URL(url, typeof window !== "undefined" ? window.location.href : "https://neexios.com");
     u.searchParams.set("theme", "dark");
     u.searchParams.set("forceDark", "1");
+    u.searchParams.set("embed", "1");
     if (!u.hash) u.hash = "dark";
+    // Return a relative URL for same-origin sources so nothing leaks to the UI.
+    if (typeof window !== "undefined" && u.origin === window.location.origin) {
+      return `${u.pathname}${u.search}${u.hash}`;
+    }
     return u.toString();
   } catch {
     return url;
