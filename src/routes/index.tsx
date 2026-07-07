@@ -13,6 +13,7 @@ import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
+import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
@@ -324,6 +325,12 @@ function IntroLanding() {
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">Capabilities</div>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t.capabilities}</h2>
           </div>
+
+          {/* Featured: Industrial Security live command preview */}
+          <div className="mb-4 sm:mb-6">
+            <SecCommandLiveCard />
+          </div>
+
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {PILLARS.map((p) => {
               const Icon = p.icon;
