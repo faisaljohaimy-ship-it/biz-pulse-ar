@@ -86,12 +86,40 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
       aria-modal="true"
       aria-label={ar ? "مقدّمة سينمائية" : "Cinematic intro"}
       dir={ar ? "rtl" : "ltr"}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-background"
       style={{
         opacity: fading ? 0 : 1,
         transition: "opacity 600ms cubic-bezier(0.22,1,0.36,1)",
+        maxHeight: "100dvh",
+      }}
+      onPointerDown={() => {
+        if (!muted) return;
+        const v = videoRef.current;
+        if (!v) return;
+        markInteracted();
+        v.muted = false;
+        v.volume = 1;
+        v.play().catch(() => {});
+        setMuted(false);
+        setShowSoundChip(false);
       }}
     >
+      {/* Cinematic blurred backdrop */}
+      <video
+        ref={bgVideoRef}
+        src={ariaIntro.url}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden
+        className="absolute inset-0 h-full w-full"
+        style={{
+          objectFit: "cover",
+          filter: "blur(28px) brightness(0.55) saturate(1.05)",
+          transform: "scale(1.15)",
+        }}
+      />
       <video
         ref={videoRef}
         src={ariaIntro.url}
@@ -101,15 +129,14 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         preload="auto"
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
-          // Try to play with sound. Browsers usually block this without a
-          // user gesture; on failure, retry muted and let the viewer unmute
-          // via the on-screen button.
           v.muted = false;
+          v.volume = 1;
           const p = v.play();
           if (p && typeof p.then === "function") {
-            p.then(() => setMuted(false)).catch(() => {
+            p.then(() => { setMuted(false); setShowSoundChip(false); }).catch(() => {
               v.muted = true;
               setMuted(true);
+              setShowSoundChip(true);
               v.play().catch(() => { /* noop */ });
             });
           }
@@ -120,26 +147,21 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           console.warn("[AriaCinematicIntro] video failed to load");
           finish();
         }}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="relative h-full w-full"
+        style={{ objectFit: "contain", maxHeight: "100dvh" }}
       />
 
-      {/* HUD tint overlay — semantic tokens */}
+      {/* Edge-only vignette (does not cover the face) */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% 50%, transparent 55%, hsl(var(--background) / 0.55) 100%), linear-gradient(180deg, hsl(var(--background) / 0.35) 0%, hsl(var(--background) / 0.15) 45%, hsl(var(--background) / 0.75) 100%)",
+            "radial-gradient(120% 90% at 50% 50%, transparent 65%, hsl(var(--background) / 0.7) 100%)",
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          background:
-            "radial-gradient(60% 40% at 50% 100%, hsl(var(--primary) / 0.35), transparent 70%), radial-gradient(50% 30% at 0% 0%, hsl(var(--primary) / 0.20), transparent 70%), radial-gradient(50% 30% at 100% 0%, hsl(var(--primary) / 0.20), transparent 70%)",
-        }}
-      />
+
+
 
       <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
         <button
