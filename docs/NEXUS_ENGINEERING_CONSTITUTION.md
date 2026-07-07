@@ -312,3 +312,67 @@ surface in the product MUST:
 Enforcement: `PROTECTED_PATHS` covers the intro; new media components
 must add themselves to this list on creation. Reviewers reject any diff
 that violates FR-17.
+
+---
+
+## FR-18 — Automatic Audio Activation Policy (permanent, all devices)
+
+Objective: ARIA speaks **automatically with sound** on mobile, laptop, and
+desktop wherever the browser permits, and with a single-tap unlock where the
+browser policy forbids autoplay-with-sound. Zero silent surprises. Zero
+robotic fallbacks.
+
+### Ground truth (non-negotiable)
+
+Per WHATWG HTML autoplay spec, Chrome autoplay policy, Safari WebKit media
+policy, and Android WebView, `play()` with audible sound BEFORE the first
+user activation in the current document MUST fail. This law binds every
+browser; it cannot be bypassed and MUST NOT be simulated with fake voices.
+
+### Enforcement contract
+
+1. **Session-wide audio primer** (`src/lib/user-interaction.ts`)
+   - On the first `pointerdown | touchstart | keydown | click` anywhere in
+     the document, `installInteractionTracker`:
+     - marks `sessionStorage["nexios-user-interacted"] = "1"`,
+     - constructs a shared `AudioContext`, calls `resume()` inside the
+       gesture, and plays a 1-frame silent buffer (iOS unlock),
+     - marks `sessionStorage["nexios-audio-primed"] = "1"`.
+   - Every subsequent ARIA voice / intro / TTS surface inherits that
+     unlocked context — no further gesture required for that session.
+
+2. **First-load unlock affordance**
+   - Any surface that would autoplay MUST attempt unmuted `play()` first.
+   - On rejection, it MUST fall back to muted autoplay + a prominent
+     always-tappable unmute chip (INVARIANT-14 / FR-17). The wrapper
+     `onPointerDown` MUST also unmute.
+   - The muted state MUST be reflected as BOTH the `muted` property and
+     the DOM `muted` attribute (iOS).
+
+3. **Return visitors / second-navigation**
+   - If `hasPriorInteraction()` or `isAudioPrimed()` returns true, the
+     surface MUST call `play()` unmuted directly; any muted fallback in
+     this case is a regression.
+
+4. **Persistence across route navigation**
+   - The primer is `sessionStorage`-scoped; SPA route changes preserve it.
+   - Hard reloads reset it — same policy applies to any new document.
+
+5. **Constitution self-healing**
+   - `PROTECTED_PATHS` in `src/lib/aria/self-evolution/engine.server.ts`
+     covers `src/lib/user-interaction.ts` and every media surface using it.
+   - The watchdog logs `audio_autoplay_failed` when unmuted `play()` is
+     rejected on a session where `isAudioPrimed()` is true — pattern miner
+     escalates as a Constitution violation.
+
+### Forbidden
+
+- Faking speech with `SpeechSynthesis` or robotic fallback when TTS fails.
+- Instructing the user to "enable autoplay in browser settings."
+- Removing the muted-fallback chip in an attempt to force sound.
+- Creating an `AudioContext` outside of a user gesture (starts suspended,
+  breaks iOS).
+- Calling `createMediaElementSource()` before verified unmuted playback.
+
+FR-18 is enforced permanently. Any diff violating it is auto-flagged by the
+self-evolution engine and reverted.
