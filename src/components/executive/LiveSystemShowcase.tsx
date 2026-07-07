@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Maximize2, Minimize2, Radio, Expand, Moon } from "lucide-react";
+import { Maximize2, Minimize2, Radio, Expand, Moon, ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import hajjDashboardPoster from "@/assets/hajj-dashboard-poster.png.asset.json";
 
 
-// Embed the internal /hajj-prime route only — no external lovable.app URL may
-// appear anywhere in the homepage HTML (MASTER RECONCILIATION item 5).
-const LIVE_URL = "/hajj-prime";
+// Live embed URL — same source configured for /hajj-prime, kept in an env
+// var so it can be re-pointed without a code change. Dark-theme params are
+// appended so the platform boots in permanent night mode inside the frame.
+const RAW_EMBED_URL =
+  (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
+  "https://hajj.neexios.com/?theme=dark&forceDark=1#dark";
+function withDarkParams(url: string): string {
+  try {
+    const u = new URL(url, typeof window !== "undefined" ? window.location.href : "https://neexios.com");
+    u.searchParams.set("theme", "dark");
+    u.searchParams.set("forceDark", "1");
+    if (!u.hash) u.hash = "dark";
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+const LIVE_URL = withDarkParams(RAW_EMBED_URL);
 const INTERNAL_URL = "/hajj-prime";
+
 
 /**
  * LiveSystemShowcase — compact, right-aligned (RTL) Hajj night-mode window.
