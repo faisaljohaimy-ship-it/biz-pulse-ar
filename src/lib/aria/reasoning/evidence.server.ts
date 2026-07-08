@@ -34,9 +34,7 @@ export function collectEvidence(input: ReasonInputParsed): EvidenceReport {
   });
 
   const quality =
-    evidence.length === 0
-      ? 0
-      : evidence.reduce((sum, e) => sum + e.weight, 0) / evidence.length;
+    evidence.length === 0 ? 0 : evidence.reduce((sum, e) => sum + e.weight, 0) / evidence.length;
 
   return {
     evidence,
@@ -66,8 +64,7 @@ export function scoreEvidenceAgainstClaim(
     else if (overlap >= 0.15) opposing.push(e); // marginal / possibly opposing
   }
   const weight =
-    supporting.reduce((s, e) => s + e.weight, 0) -
-    0.5 * opposing.reduce((s, e) => s + e.weight, 0);
+    supporting.reduce((s, e) => s + e.weight, 0) - 0.5 * opposing.reduce((s, e) => s + e.weight, 0);
   return { supporting, opposing, weight: clamp01(weight) };
 }
 

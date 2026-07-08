@@ -55,8 +55,9 @@ export function evaluateSecurityBaseline(): SecurityBaseline {
   // a production deploy, warn. If DEBUG is set, warn.
   let unsafe: GateStatus = "pass";
   try {
-    const env = (globalThis as unknown as { process?: { env?: Record<string, string | undefined> } })
-      .process?.env ?? {};
+    const env =
+      (globalThis as unknown as { process?: { env?: Record<string, string | undefined> } }).process
+        ?.env ?? {};
     if (env.DEBUG) {
       unsafe = "warn";
       notes.push("DEBUG is set — verify not enabled in production.");

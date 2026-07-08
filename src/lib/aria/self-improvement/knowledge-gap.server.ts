@@ -13,9 +13,7 @@ export function detectKnowledgeGaps(input: {
   const gaps: Gap[] = [];
   for (const subject of input.subjects) {
     for (const metric of input.requiredMetrics) {
-      const covered = input.samples.some(
-        (s) => s.subject === subject && s.metric === metric,
-      );
+      const covered = input.samples.some((s) => s.subject === subject && s.metric === metric);
       if (covered) continue;
       seq += 1;
       const gap = {

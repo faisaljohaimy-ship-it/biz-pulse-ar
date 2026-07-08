@@ -13,7 +13,7 @@ export function refreshMetrics(sessionId: string): ExecutionMetrics | null {
   const completed = s.progress.completed;
   const failed = s.progress.failed;
   const attempts = completed + failed || 1;
-  const throughput = duration > 0 ? (completed / (duration / 1000)) : 0;
+  const throughput = duration > 0 ? completed / (duration / 1000) : 0;
   const critical = criticalPathDelay(s.progress.critical_path.length, completed);
 
   s.metrics = {
@@ -43,7 +43,9 @@ export interface AggregateExecutionMetrics {
 
 export function aggregateMetrics(): AggregateExecutionMetrics {
   const all = listSessions();
-  const active = all.filter((s) => s.state === "running" || s.state === "paused" || s.state === "recovering").length;
+  const active = all.filter(
+    (s) => s.state === "running" || s.state === "paused" || s.state === "recovering",
+  ).length;
   const completed = all.filter((s) => s.state === "completed").length;
   const failed = all.filter((s) => s.state === "failed").length;
   const rates = all.map((s) => s.metrics.success_rate).filter((n) => Number.isFinite(n) && n > 0);

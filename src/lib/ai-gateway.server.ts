@@ -31,10 +31,7 @@ export const LOVABLE_MODELS = [
 // Keep gpt-5 selectable, but not the default until upstream accepts the shape.
 export const DEFAULT_LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
-export const createOpenRouterProvider = (
-  apiKey: string,
-  siteUrl = resolvePublicSiteUrl(),
-) =>
+export const createOpenRouterProvider = (apiKey: string, siteUrl = resolvePublicSiteUrl()) =>
   createOpenAICompatible({
     name: "openrouter",
     baseURL: "https://openrouter.ai/api/v1",

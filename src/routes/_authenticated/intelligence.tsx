@@ -3,7 +3,20 @@ import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Brain, ShieldCheck, Cpu, Layers, Activity, Sparkles, LineChart, Palette, CheckCircle2, XCircle, Clock, History } from "lucide-react";
+import {
+  Brain,
+  ShieldCheck,
+  Cpu,
+  Layers,
+  Activity,
+  Sparkles,
+  LineChart,
+  Palette,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  History,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +31,6 @@ export const Route = createFileRoute("/_authenticated/intelligence")({
     <RouteErrorBoundary error={error} reset={reset} routeLabel="/intelligence" />
   ),
 });
-
 
 type Agent = {
   id: string;
@@ -68,7 +80,10 @@ function IntelligencePage() {
   const { data: agents = [] } = useQuery({
     queryKey: ["intel-agents"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("intelligence_agents").select("*").order("created_at");
+      const { data, error } = await supabase
+        .from("intelligence_agents")
+        .select("*")
+        .order("created_at");
       if (error) throw error;
       return data as Agent[];
     },
@@ -77,7 +92,10 @@ function IntelligencePage() {
   const { data: proposals = [] } = useQuery({
     queryKey: ["intel-proposals"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("evolution_proposals").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("evolution_proposals")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Proposal[];
     },
@@ -86,7 +104,11 @@ function IntelligencePage() {
   const { data: logs = [] } = useQuery({
     queryKey: ["intel-log"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("evolution_log").select("*").order("applied_at", { ascending: false }).limit(50);
+      const { data, error } = await supabase
+        .from("evolution_log")
+        .select("*")
+        .order("applied_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
       return data as LogEntry[];
     },
@@ -95,9 +117,13 @@ function IntelligencePage() {
   useEffect(() => {
     const ch = supabase
       .channel("evolution_proposals_rt")
-      .on("postgres_changes", { event: "*", schema: "public", table: "evolution_proposals" }, () => {
-        qc.invalidateQueries({ queryKey: ["intel-proposals"] });
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "evolution_proposals" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["intel-proposals"] });
+        },
+      )
       .on("postgres_changes", { event: "*", schema: "public", table: "evolution_log" }, () => {
         qc.invalidateQueries({ queryKey: ["intel-log"] });
       })
@@ -111,13 +137,25 @@ function IntelligencePage() {
     mutationFn: async (vars: { id: string; status: "approved" | "rejected" }) => {
       const { error } = await supabase
         .from("evolution_proposals")
-        .update({ status: vars.status, decided_at: new Date().toISOString(), decided_by: user?.id ?? null })
+        .update({
+          status: vars.status,
+          decided_at: new Date().toISOString(),
+          decided_by: user?.id ?? null,
+        })
         .eq("id", vars.id);
       if (error) throw error;
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["intel-proposals"] });
-      toast.success(vars.status === "approved" ? (ar ? "تم الاعتماد" : "Approved") : ar ? "تم الرفض" : "Rejected");
+      toast.success(
+        vars.status === "approved"
+          ? ar
+            ? "تم الاعتماد"
+            : "Approved"
+          : ar
+            ? "تم الرفض"
+            : "Rejected",
+      );
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -130,7 +168,11 @@ function IntelligencePage() {
       <PageHeader
         icon={Brain}
         title={ar ? "منظمة الذكاء ذاتية التطور" : "Self-Evolving Intelligence Organization"}
-        subtitle={ar ? "منظومة ذكاء تقترح وتتطوّر تحت اعتماد بشري · Proposes, evolves, human-approved" : "Proposes, evolves, human-approved"}
+        subtitle={
+          ar
+            ? "منظومة ذكاء تقترح وتتطوّر تحت اعتماد بشري · Proposes, evolves, human-approved"
+            : "Proposes, evolves, human-approved"
+        }
         badge={ar ? "داخلي" : "Internal"}
       />
 
@@ -158,14 +200,18 @@ function IntelligencePage() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold">{ar ? a.name_ar : a.name_en}</div>
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{a.role}</div>
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                        {a.role}
+                      </div>
                     </div>
                   </div>
                   <span className="flex items-center gap-1 text-[10px] text-emerald-300">
                     <span
                       className={cn(
                         "h-2 w-2 rounded-full",
-                        a.status === "active" ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)] animate-pulse" : "bg-muted",
+                        a.status === "active"
+                          ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)] animate-pulse"
+                          : "bg-muted",
                       )}
                     />
                     {a.status === "active" ? (ar ? "نشط" : "Active") : ar ? "استعداد" : "Standby"}
@@ -233,7 +279,9 @@ function IntelligencePage() {
         {logs.length === 0 ? (
           <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center text-sm text-muted-foreground">
             <History className="mx-auto mb-2 h-5 w-5 opacity-60" />
-            {ar ? "لا تحسينات مطبّقة بعد — بانتظار الاعتماد والتنفيذ." : "No improvements applied yet — awaiting approval & execution."}
+            {ar
+              ? "لا تحسينات مطبّقة بعد — بانتظار الاعتماد والتنفيذ."
+              : "No improvements applied yet — awaiting approval & execution."}
           </div>
         ) : (
           <ol className="relative space-y-4 border-s-2 border-primary/20 ps-5">
@@ -242,7 +290,9 @@ function IntelligencePage() {
                 <span className="absolute -start-[27px] top-1.5 h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                   <div className="text-sm">{l.summary_ar}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{new Date(l.applied_at).toLocaleString(ar ? "ar-SA" : "en-US")}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {new Date(l.applied_at).toLocaleString(ar ? "ar-SA" : "en-US")}
+                  </div>
                 </div>
               </li>
             ))}
@@ -273,7 +323,9 @@ function ProposalColumn({
       <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
         <Icon className="h-4 w-4" />
         {title}
-        <span className="ms-auto rounded-full bg-white/5 px-2 py-0.5 text-[10px]">{proposals.length}</span>
+        <span className="ms-auto rounded-full bg-white/5 px-2 py-0.5 text-[10px]">
+          {proposals.length}
+        </span>
       </div>
       {proposals.length === 0 ? (
         <div className="rounded-lg border border-dashed border-white/10 p-4 text-center text-xs text-muted-foreground">
@@ -283,7 +335,10 @@ function ProposalColumn({
         proposals.map((p) => {
           const agent = p.agent_id ? agentById.get(p.agent_id) : null;
           return (
-            <div key={p.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 shadow-sm">
+            <div
+              key={p.id}
+              className="rounded-xl border border-white/10 bg-white/[0.04] p-3 shadow-sm"
+            >
               <div className="flex items-center justify-between gap-2">
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                   {agent ? (ar ? agent.name_ar : agent.name_en) : ar ? "وكيل" : "Agent"}
@@ -291,7 +346,9 @@ function ProposalColumn({
                 <PriorityChip priority={p.priority} ar={ar} />
               </div>
               <div className="mt-2 text-sm font-semibold">{ar ? p.title_ar : p.title_en}</div>
-              {p.description_ar && ar && <p className="mt-1 text-xs text-muted-foreground">{p.description_ar}</p>}
+              {p.description_ar && ar && (
+                <p className="mt-1 text-xs text-muted-foreground">{p.description_ar}</p>
+              )}
               {actions && <div className="mt-3">{actions(p)}</div>}
               {p.decided_at && !actions && (
                 <div className="mt-2 text-[11px] text-muted-foreground">
@@ -314,5 +371,9 @@ function PriorityChip({ priority, ar }: { priority: Proposal["priority"]; ar: bo
     medium: { cls: "bg-sky-500/15 text-sky-300 border-sky-500/30", ar: "متوسط", en: "Medium" },
   } as const;
   const c = map[priority];
-  return <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-semibold", c.cls)}>{ar ? c.ar : c.en}</span>;
+  return (
+    <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-semibold", c.cls)}>
+      {ar ? c.ar : c.en}
+    </span>
+  );
 }

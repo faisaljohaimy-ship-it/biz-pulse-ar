@@ -16,7 +16,9 @@ export class ConversationStateMachine {
   private history: { from: ConversationState; to: ConversationState; ts: number }[] = [];
   private listeners = new Set<(s: ConversationState) => void>();
 
-  get current(): ConversationState { return this.state; }
+  get current(): ConversationState {
+    return this.state;
+  }
 
   canTransition(to: ConversationState): boolean {
     return TRANSITIONS[this.state].includes(to);
@@ -28,18 +30,29 @@ export class ConversationStateMachine {
     this.state = to;
     this.history.push({ from, to, ts });
     if (this.history.length > 200) this.history.shift();
-    for (const l of this.listeners) { try { l(to); } catch { /* isolated */ } }
+    for (const l of this.listeners) {
+      try {
+        l(to);
+      } catch {
+        /* isolated */
+      }
+    }
     return true;
   }
 
   subscribe(l: (s: ConversationState) => void): () => void {
     this.listeners.add(l);
-    return () => { this.listeners.delete(l); };
+    return () => {
+      this.listeners.delete(l);
+    };
   }
 
   getHistory(): readonly { from: ConversationState; to: ConversationState; ts: number }[] {
     return this.history;
   }
 
-  reset(): void { this.state = "idle"; this.history = []; }
+  reset(): void {
+    this.state = "idle";
+    this.history = [];
+  }
 }

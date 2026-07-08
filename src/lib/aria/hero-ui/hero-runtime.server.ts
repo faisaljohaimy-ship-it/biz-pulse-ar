@@ -1,10 +1,25 @@
 // Composes every hero directive into a single frame the UI can consume.
 import type {
-  HeroBackgroundDirective, HeroCameraDirective, HeroCaptionDirective, HeroDepthDirective,
-  HeroEntranceDirective, HeroEnvironment, HeroLayoutDirective, HeroLightingDirective,
-  HeroListeningDirective, HeroOverlayDirective, HeroPanelDirective, HeroParticleDirective,
-  HeroPerformanceBudget, HeroPresenceDirective, HeroSpeakingDirective, HeroState,
-  HeroThinkingDirective, HeroTransitionDirective, HeroWaveformDirective, HeroAnimationTick,
+  HeroBackgroundDirective,
+  HeroCameraDirective,
+  HeroCaptionDirective,
+  HeroDepthDirective,
+  HeroEntranceDirective,
+  HeroEnvironment,
+  HeroLayoutDirective,
+  HeroLightingDirective,
+  HeroListeningDirective,
+  HeroOverlayDirective,
+  HeroPanelDirective,
+  HeroParticleDirective,
+  HeroPerformanceBudget,
+  HeroPresenceDirective,
+  HeroSpeakingDirective,
+  HeroState,
+  HeroThinkingDirective,
+  HeroTransitionDirective,
+  HeroWaveformDirective,
+  HeroAnimationTick,
   HeroLanguage,
 } from "./types";
 import { computeHeroLayout } from "./hero-layout.server";
@@ -120,7 +135,10 @@ export function updateHero(instanceId: string, patch: HeroUpdate): void {
   if (patch.language) row.language = patch.language;
   if (typeof patch.captionText === "string") {
     row.captionText = patch.captionText;
-    if (patch.captionText.length > 0) { noteCaption(); logHero(instanceId, "caption"); }
+    if (patch.captionText.length > 0) {
+      noteCaption();
+      logHero(instanceId, "caption");
+    }
   }
   if (typeof patch.streaming === "boolean") row.streaming = patch.streaming;
   if (typeof patch.voiceLevel === "number") row.voiceLevel = patch.voiceLevel;
@@ -137,9 +155,8 @@ export function renderHeroFrame(instanceId: string, env: HeroEnvironment): HeroF
   noteFrame(instanceId, tick.fps);
   noteFpsSample(tick.fps);
   const budget = computePerformanceBudget(env);
-  const transition = row.prev !== row.state
-    ? computeTransition(row.prev, row.state, env.motion)
-    : null;
+  const transition =
+    row.prev !== row.state ? computeTransition(row.prev, row.state, env.motion) : null;
   const frame: HeroFrame = {
     instanceId,
     tick,
@@ -152,11 +169,20 @@ export function renderHeroFrame(instanceId: string, env: HeroEnvironment): HeroF
     lighting: computeLighting(row.state, env.contrast === "high"),
     background: computeBackground(env, row.state),
     particles: computeParticles(env, row.state, budget),
-    camera: computeCamera({ env, state: row.state, pointerX: row.pointerX, pointerY: row.pointerY }),
+    camera: computeCamera({
+      env,
+      state: row.state,
+      pointerX: row.pointerX,
+      pointerY: row.pointerY,
+    }),
     depth: computeDepth(env),
     overlay: computeOverlay(row.state),
     panels: computePanels(row.state),
-    caption: computeCaption({ text: row.captionText, language: row.language, streaming: row.streaming }),
+    caption: computeCaption({
+      text: row.captionText,
+      language: row.language,
+      streaming: row.streaming,
+    }),
     waveform: computeWaveform(row.state, row.voiceLevel),
     thinking: computeThinking(row.state),
     listening: computeListening(row.state, row.voiceLevel),

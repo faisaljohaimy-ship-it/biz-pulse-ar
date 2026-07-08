@@ -10,8 +10,7 @@ export function makeRng(seed: number) {
   };
   return {
     next,
-    int: (min: number, maxInclusive: number) =>
-      Math.floor(next() * (maxInclusive - min + 1)) + min,
+    int: (min: number, maxInclusive: number) => Math.floor(next() * (maxInclusive - min + 1)) + min,
     pick: <T>(arr: readonly T[]): T => arr[Math.floor(next() * arr.length)],
     pickN: <T>(arr: readonly T[], n: number): T[] => {
       const a = [...arr];

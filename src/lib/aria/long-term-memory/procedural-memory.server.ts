@@ -7,9 +7,7 @@ import { captureRecord } from "./capture.server";
 import { listRecords } from "./memory-store.server";
 import type { MemoryRecord } from "./types";
 
-export function captureProcedure(
-  input: Omit<CaptureInput, "kind">,
-): MemoryRecord {
+export function captureProcedure(input: Omit<CaptureInput, "kind">): MemoryRecord {
   return captureRecord("procedural", input);
 }
 

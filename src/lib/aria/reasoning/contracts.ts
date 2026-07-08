@@ -56,10 +56,7 @@ export const ReasonInputSchema = z.object({
 export type ReasonInputParsed = z.infer<typeof ReasonInputSchema>;
 
 export const MultiPerspectiveInputSchema = ReasonInputSchema.extend({
-  perspectives: z
-    .array(ReasoningModeSchema)
-    .min(2)
-    .max(6),
+  perspectives: z.array(ReasoningModeSchema).min(2).max(6),
 });
 
 export type MultiPerspectiveInputParsed = z.infer<typeof MultiPerspectiveInputSchema>;

@@ -49,15 +49,26 @@ function heuristic(inc: AriaIncidentInput): AriaIncidentAnalysis {
   const sev: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
   const prio: Record<string, number> = { low: 0, medium: 5, high: 10, critical: 15 };
   const cat = (inc.category || "").toLowerCase();
-  const catBoost = ["intrusion", "fire", "explosion", "weapon", "theft"].some((k) => cat.includes(k)) ? 10 : 0;
-  const risk = Math.min(100, (sev[inc.severity] ?? 40) + (prio[inc.priority ?? "medium"] ?? 5) + catBoost);
+  const catBoost = ["intrusion", "fire", "explosion", "weapon", "theft"].some((k) =>
+    cat.includes(k),
+  )
+    ? 10
+    : 0;
+  const risk = Math.min(
+    100,
+    (sev[inc.severity] ?? 40) + (prio[inc.priority ?? "medium"] ?? 5) + catBoost,
+  );
   const recs: string[] = [];
   const acts: string[] = [];
-  if (risk >= 75) { acts.push("تصعيد فوري للقيادة وتفعيل غرفة العمليات"); }
-  if (inc.severity === "critical" || inc.severity === "high") acts.push("إنشاء أمر عمل تصحيحي بأولوية حرجة");
+  if (risk >= 75) {
+    acts.push("تصعيد فوري للقيادة وتفعيل غرفة العمليات");
+  }
+  if (inc.severity === "critical" || inc.severity === "high")
+    acts.push("إنشاء أمر عمل تصحيحي بأولوية حرجة");
   if (!inc.assigned_to) acts.push("تعيين مسؤول مباشر خلال 15 دقيقة");
   if (cat.includes("fire")) acts.push("إخطار الدفاع المدني وفريق السلامة");
-  if (cat.includes("intrusion")) acts.push("تفعيل البروتوكول الأمني للمحيط ومراجعة كاميرات البوابة");
+  if (cat.includes("intrusion"))
+    acts.push("تفعيل البروتوكول الأمني للمحيط ومراجعة كاميرات البوابة");
   recs.push("توثيق جميع الإجراءات في الخط الزمني للبلاغ");
   recs.push("جمع الأدلة والمرفقات قبل إغلاق البلاغ");
   if (acts.length === 0) acts.push("متابعة دورية كل ساعة حتى السيطرة");
@@ -124,8 +135,12 @@ export async function ariaAnalyseIncident(
     const cleaned = text.replace(/```json\s*|\s*```/g, "").trim();
     const parsed = JSON.parse(cleaned) as Partial<AriaIncidentAnalysis>;
     const risk = Math.max(0, Math.min(100, Math.round(Number(parsed.risk_score) || 0)));
-    const recs = Array.isArray(parsed.recommendations) ? parsed.recommendations.filter((r): r is string => typeof r === "string").slice(0, 6) : [];
-    const acts = Array.isArray(parsed.immediate_actions) ? parsed.immediate_actions.filter((r): r is string => typeof r === "string").slice(0, 6) : [];
+    const recs = Array.isArray(parsed.recommendations)
+      ? parsed.recommendations.filter((r): r is string => typeof r === "string").slice(0, 6)
+      : [];
+    const acts = Array.isArray(parsed.immediate_actions)
+      ? parsed.immediate_actions.filter((r): r is string => typeof r === "string").slice(0, 6)
+      : [];
     if (!parsed.summary_ar || !recs.length) throw new Error("aria_invalid_response");
     return {
       summary_ar: String(parsed.summary_ar).slice(0, 600),

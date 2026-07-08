@@ -20,12 +20,11 @@ function decomposePath(pathname: string): { module: string; screen: string } {
 
 export const contextManager = {
   snapshot(): AriaContextSnapshot {
-    const page: AriaPageContext =
-      useAriaStore.getState().pageContext ?? {
-        pathname: typeof window !== "undefined" ? window.location.pathname : "/",
-        label: "UNKNOWN",
-        locale: "en",
-      };
+    const page: AriaPageContext = useAriaStore.getState().pageContext ?? {
+      pathname: typeof window !== "undefined" ? window.location.pathname : "/",
+      label: "UNKNOWN",
+      locale: "en",
+    };
     const { module, screen } = decomposePath(page.pathname);
     return {
       ...page,

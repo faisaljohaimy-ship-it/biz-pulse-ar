@@ -57,17 +57,30 @@ export function RuntimeTile({
               : "h-11 w-11 bg-[#00D4FF]/20 shadow-[0_0_18px_rgba(0,212,255,0.5)] motion-safe:animate-pulse",
           )}
         >
-          <Icon className={featured ? "h-7 w-7 drop-shadow-[0_0_12px_rgba(58,232,255,0.9)]" : "h-5 w-5"} strokeWidth={1.75} />
+          <Icon
+            className={featured ? "h-7 w-7 drop-shadow-[0_0_12px_rgba(58,232,255,0.9)]" : "h-5 w-5"}
+            strokeWidth={1.75}
+          />
         </span>
         <span className="min-w-0">
-          <span className={cn("block truncate font-semibold text-white", featured ? "text-base sm:text-lg" : "text-sm sm:text-[15px]")}>{labelPrimary}</span>
+          <span
+            className={cn(
+              "block truncate font-semibold text-white",
+              featured ? "text-base sm:text-lg" : "text-sm sm:text-[15px]",
+            )}
+          >
+            {labelPrimary}
+          </span>
           <span className="mt-0.5 block truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/45 sm:text-[11px]">
             {labelSecondary}
           </span>
         </span>
       </span>
       <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF] sm:text-[11px]">
-        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_8px_#3AE8FF] motion-safe:animate-pulse" />
+        <span
+          aria-hidden
+          className="h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_8px_#3AE8FF] motion-safe:animate-pulse"
+        />
         {status}
       </span>
     </Link>

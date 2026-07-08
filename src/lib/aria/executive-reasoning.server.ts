@@ -45,21 +45,27 @@ interface IntentRule {
 
 // Bilingual keyword rules. Deterministic and cheap — no extra LLM hop.
 const RULES: IntentRule[] = [
-  { intent: "root_cause",       patterns: [/root\s*cause|why did|why is|why the|السبب|لماذا|جذر/i] },
-  { intent: "incident_review",  patterns: [/incident|near[-\s]?miss|accident|حادث|وشيك|بلاغ/i] },
-  { intent: "risk_assessment",  patterns: [/risk|hazard|exposure|مخاطر|خطر|تعرض/i] },
-  { intent: "trend_analysis",   patterns: [/trend|over time|weekly|monthly|اتجاه|منحنى|تطور/i] },
-  { intent: "comparison",       patterns: [/compare|versus|vs\.?|difference|قارن|مقارنة|الفرق/i] },
-  { intent: "prediction",       patterns: [/predict|forecast|next\s+(week|month|quarter)|توقع|تنبؤ/i] },
-  { intent: "investigation",    patterns: [/investigat|deep\s*dive|drill\s*down|تحقيق|تعمق/i] },
-  { intent: "recommendation",   patterns: [/recommend|should we|advice|توصية|أوصي|ماذا نفعل/i] },
+  { intent: "root_cause", patterns: [/root\s*cause|why did|why is|why the|السبب|لماذا|جذر/i] },
+  { intent: "incident_review", patterns: [/incident|near[-\s]?miss|accident|حادث|وشيك|بلاغ/i] },
+  { intent: "risk_assessment", patterns: [/risk|hazard|exposure|مخاطر|خطر|تعرض/i] },
+  { intent: "trend_analysis", patterns: [/trend|over time|weekly|monthly|اتجاه|منحنى|تطور/i] },
+  { intent: "comparison", patterns: [/compare|versus|vs\.?|difference|قارن|مقارنة|الفرق/i] },
+  { intent: "prediction", patterns: [/predict|forecast|next\s+(week|month|quarter)|توقع|تنبؤ/i] },
+  { intent: "investigation", patterns: [/investigat|deep\s*dive|drill\s*down|تحقيق|تعمق/i] },
+  { intent: "recommendation", patterns: [/recommend|should we|advice|توصية|أوصي|ماذا نفعل/i] },
   { intent: "decision_support", patterns: [/decide|decision|approve|reject|قرار|اعتماد|رفض/i] },
-  { intent: "executive_summary",patterns: [/summary|brief|overview|ملخص|إيجاز|نظرة عامة/i] },
-  { intent: "meeting_brief",    patterns: [/meeting|agenda|brief for|اجتماع|أجندة/i] },
-  { intent: "kpi_explanation",  patterns: [/kpi|metric|indicator|score|مؤشر|قياس/i] },
-  { intent: "operational_status",patterns:[/status|current|right now|today|اليوم|الحالة|الوضع الآن/i] },
-  { intent: "analysis",         patterns: [/analy[sz]e|breakdown|حلل|تحليل|تفصيل/i] },
-  { intent: "command",          patterns: [/^(open|show|create|start|stop|assign|افتح|أظهر|أنشئ|ابدأ|أوقف|كلّف)/i] },
+  { intent: "executive_summary", patterns: [/summary|brief|overview|ملخص|إيجاز|نظرة عامة/i] },
+  { intent: "meeting_brief", patterns: [/meeting|agenda|brief for|اجتماع|أجندة/i] },
+  { intent: "kpi_explanation", patterns: [/kpi|metric|indicator|score|مؤشر|قياس/i] },
+  {
+    intent: "operational_status",
+    patterns: [/status|current|right now|today|اليوم|الحالة|الوضع الآن/i],
+  },
+  { intent: "analysis", patterns: [/analy[sz]e|breakdown|حلل|تحليل|تفصيل/i] },
+  {
+    intent: "command",
+    patterns: [/^(open|show|create|start|stop|assign|افتح|أظهر|أنشئ|ابدأ|أوقف|كلّف)/i],
+  },
 ];
 
 export function classifyIntent(question: string): AriaIntent {
@@ -78,7 +84,13 @@ function retrievalPlan(intent: AriaIntent): {
   risks: boolean;
   workOrders: boolean;
 } {
-  const base = { incidents: false, kpis: false, notifications: false, risks: false, workOrders: false };
+  const base = {
+    incidents: false,
+    kpis: false,
+    notifications: false,
+    risks: false,
+    workOrders: false,
+  };
   switch (intent) {
     case "incident_review":
     case "root_cause":
@@ -121,7 +133,9 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
   const sections: string[] = [];
   const plan = retrievalPlan(intent);
 
-  let admin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"] | null = null;
+  let admin:
+    | Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"]
+    | null = null;
   try {
     ({ supabaseAdmin: admin } = await import("@/integrations/supabase/client.server"));
   } catch {
@@ -132,89 +146,111 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
   const jobs: Promise<void>[] = [];
 
   if (plan.incidents) {
-    jobs.push((async () => {
-      const { data } = await admin!
-        .from("sec_incidents")
-        .select("id,title_ar,title_en,severity,status,site_id,reported_at")
-        .order("reported_at", { ascending: false })
-        .limit(6);
-      if (data?.length) {
-        sources.push("sec_incidents");
-        sections.push(
-          `## Recent incidents (sec_incidents)\n${data
-            .map((r) => `- [${r.severity ?? "?"}/${r.status ?? "?"}] ${r.title_en ?? r.title_ar ?? r.id} · site=${r.site_id ?? "?"} · ${r.reported_at ?? ""}`)
-            .join("\n")}`,
-        );
-      }
-    })());
+    jobs.push(
+      (async () => {
+        const { data } = await admin!
+          .from("sec_incidents")
+          .select("id,title_ar,title_en,severity,status,site_id,reported_at")
+          .order("reported_at", { ascending: false })
+          .limit(6);
+        if (data?.length) {
+          sources.push("sec_incidents");
+          sections.push(
+            `## Recent incidents (sec_incidents)\n${data
+              .map(
+                (r) =>
+                  `- [${r.severity ?? "?"}/${r.status ?? "?"}] ${r.title_en ?? r.title_ar ?? r.id} · site=${r.site_id ?? "?"} · ${r.reported_at ?? ""}`,
+              )
+              .join("\n")}`,
+          );
+        }
+      })(),
+    );
   }
   if (plan.kpis) {
-    jobs.push((async () => {
-      const { data } = await admin!
-        .from("pulse_kpis")
-        .select("key,label,label_en,value,delta,trend,tone,updated_at")
-        .order("updated_at", { ascending: false })
-        .limit(10);
-      if (data?.length) {
-        sources.push("pulse_kpis");
-        sections.push(
-          `## Latest KPIs (pulse_kpis)\n${data
-            .map((r) => `- ${r.label_en ?? r.label ?? r.key} = ${r.value ?? "?"} · Δ=${r.delta ?? "?"} · trend=${r.trend ?? "?"} · tone=${r.tone ?? "?"}`)
-            .join("\n")}`,
-        );
-      }
-    })());
+    jobs.push(
+      (async () => {
+        const { data } = await admin!
+          .from("pulse_kpis")
+          .select("key,label,label_en,value,delta,trend,tone,updated_at")
+          .order("updated_at", { ascending: false })
+          .limit(10);
+        if (data?.length) {
+          sources.push("pulse_kpis");
+          sections.push(
+            `## Latest KPIs (pulse_kpis)\n${data
+              .map(
+                (r) =>
+                  `- ${r.label_en ?? r.label ?? r.key} = ${r.value ?? "?"} · Δ=${r.delta ?? "?"} · trend=${r.trend ?? "?"} · tone=${r.tone ?? "?"}`,
+              )
+              .join("\n")}`,
+          );
+        }
+      })(),
+    );
   }
   if (plan.notifications) {
-    jobs.push((async () => {
-      const { data } = await admin!
-        .from("sim_notifications")
-        .select("title,severity,body,created_at")
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (data?.length) {
-        sources.push("sim_notifications");
-        sections.push(
-          `## Live alerts (sim_notifications)\n${data
-            .map((r) => `- [${r.severity ?? "?"}] ${r.title ?? ""} · ${r.created_at ?? ""}`)
-            .join("\n")}`,
-        );
-      }
-    })());
+    jobs.push(
+      (async () => {
+        const { data } = await admin!
+          .from("sim_notifications")
+          .select("title,severity,body,created_at")
+          .order("created_at", { ascending: false })
+          .limit(6);
+        if (data?.length) {
+          sources.push("sim_notifications");
+          sections.push(
+            `## Live alerts (sim_notifications)\n${data
+              .map((r) => `- [${r.severity ?? "?"}] ${r.title ?? ""} · ${r.created_at ?? ""}`)
+              .join("\n")}`,
+          );
+        }
+      })(),
+    );
   }
   if (plan.risks) {
-    jobs.push((async () => {
-      const { data } = await admin!
-        .from("sim_risks")
-        .select("title,category,likelihood,impact,status")
-        .order("impact", { ascending: false })
-        .limit(6);
-      if (data?.length) {
-        sources.push("sim_risks");
-        sections.push(
-          `## Top risks (sim_risks)\n${data
-            .map((r) => `- ${r.title ?? ""} · ${r.category ?? ""} · L=${r.likelihood ?? "?"} I=${r.impact ?? "?"} · ${r.status ?? ""}`)
-            .join("\n")}`,
-        );
-      }
-    })());
+    jobs.push(
+      (async () => {
+        const { data } = await admin!
+          .from("sim_risks")
+          .select("title,category,likelihood,impact,status")
+          .order("impact", { ascending: false })
+          .limit(6);
+        if (data?.length) {
+          sources.push("sim_risks");
+          sections.push(
+            `## Top risks (sim_risks)\n${data
+              .map(
+                (r) =>
+                  `- ${r.title ?? ""} · ${r.category ?? ""} · L=${r.likelihood ?? "?"} I=${r.impact ?? "?"} · ${r.status ?? ""}`,
+              )
+              .join("\n")}`,
+          );
+        }
+      })(),
+    );
   }
   if (plan.workOrders) {
-    jobs.push((async () => {
-      const { data } = await admin!
-        .from("sec_work_orders")
-        .select("id,title_ar,title_en,priority,status,due_at")
-        .order("due_at", { ascending: true })
-        .limit(6);
-      if (data?.length) {
-        sources.push("sec_work_orders");
-        sections.push(
-          `## Open work orders (sec_work_orders)\n${data
-            .map((r) => `- [${r.priority ?? "?"}/${r.status ?? "?"}] ${r.title_en ?? r.title_ar ?? r.id} · due=${r.due_at ?? "?"}`)
-            .join("\n")}`,
-        );
-      }
-    })());
+    jobs.push(
+      (async () => {
+        const { data } = await admin!
+          .from("sec_work_orders")
+          .select("id,title_ar,title_en,priority,status,due_at")
+          .order("due_at", { ascending: true })
+          .limit(6);
+        if (data?.length) {
+          sources.push("sec_work_orders");
+          sections.push(
+            `## Open work orders (sec_work_orders)\n${data
+              .map(
+                (r) =>
+                  `- [${r.priority ?? "?"}/${r.status ?? "?"}] ${r.title_en ?? r.title_ar ?? r.id} · due=${r.due_at ?? "?"}`,
+              )
+              .join("\n")}`,
+          );
+        }
+      })(),
+    );
   }
 
   await Promise.allSettled(jobs);

@@ -40,7 +40,7 @@ export interface TtsRequest {
 }
 
 export interface VadFrame {
-  readonly rms: number;    // 0..1 root-mean-square amplitude
+  readonly rms: number; // 0..1 root-mean-square amplitude
   readonly ts: number;
 }
 

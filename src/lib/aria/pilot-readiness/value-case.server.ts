@@ -1,10 +1,5 @@
 // Value case — aggregates value drivers with confidence rollup.
-import type {
-  ConfidenceBucket,
-  EvidenceRef,
-  ValueCase,
-  ValueDriver,
-} from "./types";
+import type { ConfidenceBucket, EvidenceRef, ValueCase, ValueDriver } from "./types";
 import { ValueDriverZ } from "./contracts";
 
 const CONF_RANK: Record<ConfidenceBucket, number> = {
@@ -33,9 +28,7 @@ export function buildValueCase(input: {
     }
   }
   const anyUnknown = drivers.some((d) => d.confidence === "unknown");
-  const total = anyUnknown
-    ? null
-    : drivers.reduce((acc, d) => acc + d.annualValue, 0);
+  const total = anyUnknown ? null : drivers.reduce((acc, d) => acc + d.annualValue, 0);
   const confidence: ConfidenceBucket =
     drivers.length === 0 ? "unknown" : worstConfidence(drivers.map((d) => d.confidence));
   return {

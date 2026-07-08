@@ -11,7 +11,10 @@ export const Route = createFileRoute("/_authenticated/sec/integrations")({
 
 function Integrations() {
   const fetchList = useServerFn(listIntegrations);
-  const { data: providers } = useQuery({ queryKey: ["sec-integrations"], queryFn: () => fetchList() });
+  const { data: providers } = useQuery({
+    queryKey: ["sec-integrations"],
+    queryFn: () => fetchList(),
+  });
   return (
     <div className="space-y-4">
       <SecPageHeader
@@ -20,9 +23,16 @@ function Integrations() {
       />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {(providers ?? []).map((p) => {
-          const Icon = p.status === "configured" ? CheckCircle2 : p.status === "error" ? AlertCircle : XCircle;
-          const color = p.status === "configured" ? "text-emerald-500" : p.status === "error" ? "text-red-500" : "text-muted-foreground";
-          const label = p.status === "configured" ? "متّصل" : p.status === "error" ? "خطأ" : "Disabled";
+          const Icon =
+            p.status === "configured" ? CheckCircle2 : p.status === "error" ? AlertCircle : XCircle;
+          const color =
+            p.status === "configured"
+              ? "text-emerald-500"
+              : p.status === "error"
+                ? "text-red-500"
+                : "text-muted-foreground";
+          const label =
+            p.status === "configured" ? "متّصل" : p.status === "error" ? "خطأ" : "Disabled";
           return (
             <div key={p.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between">
@@ -31,13 +41,20 @@ function Integrations() {
                   <Icon className="h-3.5 w-3.5" /> {label}
                 </span>
               </div>
-              <div className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{p.category}</div>
+              <div className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+                {p.category}
+              </div>
               <p className="mt-2 text-xs text-muted-foreground">{p.note}</p>
               <div className="mt-3 text-[11px]">
                 <div className="text-muted-foreground">Scopes:</div>
                 <div className="mt-1 flex flex-wrap gap-1">
-                  {p.scopes.map(s => (
-                    <span key={s} className="rounded border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[10px]">{s}</span>
+                  {p.scopes.map((s) => (
+                    <span
+                      key={s}
+                      className="rounded border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[10px]"
+                    >
+                      {s}
+                    </span>
                   ))}
                 </div>
               </div>

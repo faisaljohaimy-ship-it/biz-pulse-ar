@@ -15,11 +15,7 @@ const MAX_MEM = 100;
 const MAX_PERSIST = 50;
 
 function makeSid(): string {
-  return (
-    Date.now().toString(36) +
-    "-" +
-    Math.random().toString(36).slice(2, 8)
-  );
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
 }
 
 function getSid(): string {
@@ -76,7 +72,7 @@ export function authLog(ev: string, data?: Record<string, unknown>) {
   const entry: DiagEntry = { t: Date.now(), sid: getSid(), ev, data };
   ringPush(entry);
   // Single tagged console line — easy to grep in Safari Web Inspector.
-  // eslint-disable-next-line no-console
+
   console.info(`[nx-auth ${entry.sid}] ${ev}`, data ?? "");
 }
 

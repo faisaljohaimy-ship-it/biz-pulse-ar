@@ -45,12 +45,21 @@ export class HeroStateSynchronizer {
 
   patch(p: HeroChannelPatch): HeroAvatarSample {
     if (
-      p.presence === undefined && p.emotion === undefined && p.breath === undefined &&
-      p.blink === undefined && p.eye === undefined && p.head === undefined &&
-      p.lip === undefined && p.gesture === undefined && p.glow === undefined &&
-      p.listeningRing === undefined && p.thinkingHalo === undefined &&
-      p.speakingBars === undefined && p.cameraDolly === undefined
-    ) return this.sample;
+      p.presence === undefined &&
+      p.emotion === undefined &&
+      p.breath === undefined &&
+      p.blink === undefined &&
+      p.eye === undefined &&
+      p.head === undefined &&
+      p.lip === undefined &&
+      p.gesture === undefined &&
+      p.glow === undefined &&
+      p.listeningRing === undefined &&
+      p.thinkingHalo === undefined &&
+      p.speakingBars === undefined &&
+      p.cameraDolly === undefined
+    )
+      return this.sample;
     this.sample = {
       presence: p.presence ?? this.sample.presence,
       emotion: p.emotion ?? this.sample.emotion,
@@ -67,14 +76,20 @@ export class HeroStateSynchronizer {
       cameraDolly: clampBipolar(p.cameraDolly ?? this.sample.cameraDolly),
     };
     for (const l of this.listeners) {
-      try { l(this.sample); } catch { /* isolated */ }
+      try {
+        l(this.sample);
+      } catch {
+        /* isolated */
+      }
     }
     return this.sample;
   }
 
   subscribe(l: (s: HeroAvatarSample) => void): () => void {
     this.listeners.add(l);
-    return () => { this.listeners.delete(l); };
+    return () => {
+      this.listeners.delete(l);
+    };
   }
 }
 

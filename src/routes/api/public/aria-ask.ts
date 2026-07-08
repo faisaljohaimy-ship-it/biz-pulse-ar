@@ -141,7 +141,10 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         }
         const parsed = Input.safeParse(body);
         if (!parsed.success) {
-          return Response.json({ error: "invalid_input", detail: parsed.error.flatten() }, { status: 400 });
+          return Response.json(
+            { error: "invalid_input", detail: parsed.error.flatten() },
+            { status: 400 },
+          );
         }
         const data = parsed.data;
 
@@ -198,7 +201,7 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             );
           }
           parts.push(
-            "GROUND every claim in the sections above. If a required datum is not present, say once: \"Data unavailable / بيانات غير متوفرة\" and stop. Never invent numbers, names, dates, or sources.",
+            'GROUND every claim in the sections above. If a required datum is not present, say once: "Data unavailable / بيانات غير متوفرة" and stop. Never invent numbers, names, dates, or sources.',
           );
           return parts.join("\n\n");
         }
@@ -206,10 +209,11 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         // Executive Thinking Loop: Observe → Understand → Analyze → Predict → Recommend → Verify.
         // Public/unauthenticated marketing endpoint: skip live-data retrieval to
         // prevent cross-tenant leakage of sec_incidents / pulse_kpis / risks etc.
-        const brief = await runThinkingLoop(data.question, { skipEvidence: true, skipInsights: true });
-        const systemForCall = [brief.system, contextBlock]
-          .filter(Boolean)
-          .join("\n\n");
+        const brief = await runThinkingLoop(data.question, {
+          skipEvidence: true,
+          skipInsights: true,
+        });
+        const systemForCall = [brief.system, contextBlock].filter(Boolean).join("\n\n");
 
         async function callModel(model: string, maxTokens: number) {
           const payload = JSON.stringify({
@@ -236,8 +240,17 @@ export const Route = createFileRoute("/api/public/aria-ask")({
                 signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
               });
               if (attempt === 1 && isRetryableStatus(r.status)) {
-                const detail = (await r.clone().text().catch(() => "")).slice(0, 240);
-                console.warn("[public/aria-ask] gateway retry", { model, status: r.status, detail });
+                const detail = (
+                  await r
+                    .clone()
+                    .text()
+                    .catch(() => "")
+                ).slice(0, 240);
+                console.warn("[public/aria-ask] gateway retry", {
+                  model,
+                  status: r.status,
+                  detail,
+                });
                 continue;
               }
               return r;
@@ -268,16 +281,23 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             next_action?: unknown;
             confidence?: number;
           } = {};
-          try { p = JSON.parse(raw); } catch { p = {}; }
+          try {
+            p = JSON.parse(raw);
+          } catch {
+            p = {};
+          }
           return {
             ar: (p.text_ar ?? "").trim(),
             en: (p.text_en ?? "").trim(),
             summary: typeof p.summary === "string" ? p.summary : "",
-            evidence: Array.isArray(p.evidence) ? p.evidence.filter((x) => typeof x === "string").slice(0, 8) : [],
+            evidence: Array.isArray(p.evidence)
+              ? p.evidence.filter((x) => typeof x === "string").slice(0, 8)
+              : [],
             reasoning: typeof p.reasoning === "string" ? p.reasoning : "",
             recommendation: typeof p.recommendation === "string" ? p.recommendation : "",
-            next_action: (p.next_action && typeof p.next_action === "object") ? p.next_action : null,
-            confidence: typeof p.confidence === "number" ? Math.max(0, Math.min(1, p.confidence)) : 0,
+            next_action: p.next_action && typeof p.next_action === "object" ? p.next_action : null,
+            confidence:
+              typeof p.confidence === "number" ? Math.max(0, Math.min(1, p.confidence)) : 0,
           };
         }
 
@@ -288,14 +308,23 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             const detail = (await r.text().catch(() => "")).slice(0, 240);
             console.error("[public/aria-ask] gateway gpt-5", r.status, detail);
             if (r.status === 429 || r.status === 402) {
-              return Response.json(errorPayload(statusToError(r.status), r.status), { status: r.status });
+              return Response.json(errorPayload(statusToError(r.status), r.status), {
+                status: r.status,
+              });
             }
             r = await callModel("openai/gpt-5-mini", 1200);
             if (!r.ok) {
               const d2 = (await r.text().catch(() => "")).slice(0, 240);
               console.error("[public/aria-ask] gateway gpt-5-mini", r.status, d2);
               const code = statusToError(r.status);
-              return Response.json(errorPayload(code, r.status), { status: code === "provider_auth_failed" ? 502 : r.status === 402 || r.status === 429 ? r.status : 502 });
+              return Response.json(errorPayload(code, r.status), {
+                status:
+                  code === "provider_auth_failed"
+                    ? 502
+                    : r.status === 402 || r.status === 429
+                      ? r.status
+                      : 502,
+              });
             }
           }
           let parsed = await extract(r);

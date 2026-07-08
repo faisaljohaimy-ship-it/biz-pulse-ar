@@ -12,13 +12,24 @@ export interface ListeningSnapshot {
 
 export class ListeningStateStore {
   private snap: ListeningSnapshot = {
-    active: false, interim: "", final: "", lang: "en",
-    startedAt: null, lastUpdate: null,
+    active: false,
+    interim: "",
+    final: "",
+    lang: "en",
+    startedAt: null,
+    lastUpdate: null,
   };
   private listeners = new Set<(s: ListeningSnapshot) => void>();
 
   start(lang: Lang): void {
-    this.snap = { active: true, interim: "", final: "", lang, startedAt: Date.now(), lastUpdate: Date.now() };
+    this.snap = {
+      active: true,
+      interim: "",
+      final: "",
+      lang,
+      startedAt: Date.now(),
+      lastUpdate: Date.now(),
+    };
     this.publish();
   }
 
@@ -42,13 +53,24 @@ export class ListeningStateStore {
     return final;
   }
 
-  get(): ListeningSnapshot { return this.snap; }
+  get(): ListeningSnapshot {
+    return this.snap;
+  }
 
   subscribe(l: (s: ListeningSnapshot) => void): () => void {
-    this.listeners.add(l); return () => { this.listeners.delete(l); };
+    this.listeners.add(l);
+    return () => {
+      this.listeners.delete(l);
+    };
   }
 
   private publish(): void {
-    for (const l of this.listeners) { try { l(this.snap); } catch { /* isolated */ } }
+    for (const l of this.listeners) {
+      try {
+        l(this.snap);
+      } catch {
+        /* isolated */
+      }
+    }
   }
 }

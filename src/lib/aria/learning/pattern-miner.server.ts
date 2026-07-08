@@ -16,11 +16,9 @@ import type { Database } from "@/integrations/supabase/types";
 function admin() {
   // Miner needs to UPSERT across all users — service role required.
   // Safe: no user input; only aggregate patterns; explicit column projection.
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 interface PatternDraft {

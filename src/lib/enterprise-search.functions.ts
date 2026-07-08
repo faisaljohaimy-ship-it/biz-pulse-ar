@@ -5,7 +5,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type SearchSource = "incident" | "work_order" | "kb_article" | "aria_document" | "knowledge_doc";
+export type SearchSource =
+  | "incident"
+  | "work_order"
+  | "kb_article"
+  | "aria_document"
+  | "knowledge_doc";
 
 export type SearchHit = {
   id: string;
@@ -28,12 +33,18 @@ export type SearchResponse = {
 
 const schema = z.object({
   q: z.string().trim().min(2).max(200),
-  sources: z.array(z.enum(["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"])).optional(),
+  sources: z
+    .array(z.enum(["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"]))
+    .optional(),
   limit: z.number().int().min(1).max(50).default(20),
 });
 
 const emptyBySource: Record<SearchSource, number> = {
-  incident: 0, work_order: 0, kb_article: 0, aria_document: 0, knowledge_doc: 0,
+  incident: 0,
+  work_order: 0,
+  kb_article: 0,
+  aria_document: 0,
+  knowledge_doc: 0,
 };
 
 export const enterpriseSearch = createServerFn({ method: "POST" })
@@ -45,7 +56,9 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
     // Sanitize PostgREST filter control chars (,()) before interpolating into .or() filter strings
     const q = data.q.replace(/[,()]/g, " ");
     const like = `%${q.replace(/[%_]/g, (m) => `\\${m}`)}%`;
-    const wanted = new Set<SearchSource>(data.sources ?? ["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"]);
+    const wanted = new Set<SearchSource>(
+      data.sources ?? ["incident", "work_order", "kb_article", "aria_document", "knowledge_doc"],
+    );
     const perSourceLimit = Math.max(3, Math.ceil(data.limit / Math.max(1, wanted.size)));
 
     const tasks: PromiseLike<SearchHit[]>[] = [];
@@ -55,19 +68,23 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
         supabase
           .from("sec_incidents")
           .select("id,ref,title_ar,title_en,ai_summary,severity,status,reported_at")
-          .or(`title_en.ilike.${like},title_ar.ilike.${like},ai_summary.ilike.${like},ref.ilike.${like}`)
+          .or(
+            `title_en.ilike.${like},title_ar.ilike.${like},ai_summary.ilike.${like},ref.ilike.${like}`,
+          )
           .order("reported_at", { ascending: false })
           .limit(perSourceLimit)
-          .then(({ data: rows }) => (rows ?? []).map<SearchHit>((r) => ({
-            id: r.id,
-            source: "incident",
-            title: r.title_en || r.title_ar || r.ref,
-            snippet: r.ai_summary ?? "",
-            meta: `${r.severity} · ${r.status}`,
-            ref: r.ref,
-            at: r.reported_at,
-            href: `/incidents/${r.id}`,
-          }))),
+          .then(({ data: rows }) =>
+            (rows ?? []).map<SearchHit>((r) => ({
+              id: r.id,
+              source: "incident",
+              title: r.title_en || r.title_ar || r.ref,
+              snippet: r.ai_summary ?? "",
+              meta: `${r.severity} · ${r.status}`,
+              ref: r.ref,
+              at: r.reported_at,
+              href: `/incidents/${r.id}`,
+            })),
+          ),
       );
     }
 
@@ -79,16 +96,18 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
           .or(`title_en.ilike.${like},title_ar.ilike.${like},notes.ilike.${like},ref.ilike.${like}`)
           .order("opened_at", { ascending: false })
           .limit(perSourceLimit)
-          .then(({ data: rows }) => (rows ?? []).map<SearchHit>((r) => ({
-            id: r.id,
-            source: "work_order",
-            title: r.title_en || r.title_ar || r.ref,
-            snippet: r.notes ?? "",
-            meta: `${r.priority} · ${r.status}`,
-            ref: r.ref,
-            at: r.opened_at,
-            href: `/work-orders/${r.id}`,
-          }))),
+          .then(({ data: rows }) =>
+            (rows ?? []).map<SearchHit>((r) => ({
+              id: r.id,
+              source: "work_order",
+              title: r.title_en || r.title_ar || r.ref,
+              snippet: r.notes ?? "",
+              meta: `${r.priority} · ${r.status}`,
+              ref: r.ref,
+              at: r.opened_at,
+              href: `/work-orders/${r.id}`,
+            })),
+          ),
       );
     }
 
@@ -96,19 +115,25 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
       tasks.push(
         supabase
           .from("sec_knowledge_articles")
-          .select("id,doc_code,title_ar,title_en,summary_ar,summary_en,risk_level,priority,updated_at")
-          .or(`title_en.ilike.${like},title_ar.ilike.${like},summary_en.ilike.${like},summary_ar.ilike.${like},doc_code.ilike.${like}`)
+          .select(
+            "id,doc_code,title_ar,title_en,summary_ar,summary_en,risk_level,priority,updated_at",
+          )
+          .or(
+            `title_en.ilike.${like},title_ar.ilike.${like},summary_en.ilike.${like},summary_ar.ilike.${like},doc_code.ilike.${like}`,
+          )
           .limit(perSourceLimit)
-          .then(({ data: rows }) => (rows ?? []).map<SearchHit>((r) => ({
-            id: r.id,
-            source: "kb_article",
-            title: r.title_en || r.title_ar || r.doc_code,
-            snippet: r.summary_en || r.summary_ar || "",
-            meta: `${r.risk_level ?? ""}${r.priority ? " · " + r.priority : ""}`.trim() || null,
-            ref: r.doc_code,
-            at: r.updated_at,
-            href: `/knowledge?doc=${encodeURIComponent(r.doc_code)}`,
-          }))),
+          .then(({ data: rows }) =>
+            (rows ?? []).map<SearchHit>((r) => ({
+              id: r.id,
+              source: "kb_article",
+              title: r.title_en || r.title_ar || r.doc_code,
+              snippet: r.summary_en || r.summary_ar || "",
+              meta: `${r.risk_level ?? ""}${r.priority ? " · " + r.priority : ""}`.trim() || null,
+              ref: r.doc_code,
+              at: r.updated_at,
+              href: `/knowledge?doc=${encodeURIComponent(r.doc_code)}`,
+            })),
+          ),
       );
     }
 
@@ -120,16 +145,18 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
           .or(`title.ilike.${like},summary.ilike.${like}`)
           .order("updated_at", { ascending: false })
           .limit(perSourceLimit)
-          .then(({ data: rows }) => (rows ?? []).map<SearchHit>((r) => ({
-            id: r.id,
-            source: "aria_document",
-            title: r.title,
-            snippet: r.summary ?? "",
-            meta: `${r.mime_type ?? "doc"} · ${r.status}`,
-            ref: (r.tags ?? []).join(", ") || null,
-            at: r.updated_at,
-            href: `/aria-documents?doc=${r.id}`,
-          }))),
+          .then(({ data: rows }) =>
+            (rows ?? []).map<SearchHit>((r) => ({
+              id: r.id,
+              source: "aria_document",
+              title: r.title,
+              snippet: r.summary ?? "",
+              meta: `${r.mime_type ?? "doc"} · ${r.status}`,
+              ref: (r.tags ?? []).join(", ") || null,
+              at: r.updated_at,
+              href: `/aria-documents?doc=${r.id}`,
+            })),
+          ),
       );
     }
 
@@ -141,16 +168,18 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
           .or(`title.ilike.${like},content.ilike.${like}`)
           .order("created_at", { ascending: false })
           .limit(perSourceLimit)
-          .then(({ data: rows }) => (rows ?? []).map<SearchHit>((r) => ({
-            id: r.id,
-            source: "knowledge_doc",
-            title: r.title,
-            snippet: (r.content ?? "").slice(0, 280),
-            meta: (r.tags ?? []).slice(0, 3).join(", ") || null,
-            ref: null,
-            at: r.created_at,
-            href: `/knowledge?item=${r.id}`,
-          }))),
+          .then(({ data: rows }) =>
+            (rows ?? []).map<SearchHit>((r) => ({
+              id: r.id,
+              source: "knowledge_doc",
+              title: r.title,
+              snippet: (r.content ?? "").slice(0, 280),
+              meta: (r.tags ?? []).slice(0, 3).join(", ") || null,
+              ref: null,
+              at: r.created_at,
+              href: `/knowledge?item=${r.id}`,
+            })),
+          ),
       );
     }
 

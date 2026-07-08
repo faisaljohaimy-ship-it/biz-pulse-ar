@@ -52,13 +52,7 @@ export const RelationshipKindSchema = z.enum([
 ]);
 
 export const ConfidenceSchema = z.enum(["low", "medium", "high", "unknown"]);
-export const SeveritySchema = z.enum([
-  "info",
-  "notice",
-  "warn",
-  "error",
-  "critical",
-]);
+export const SeveritySchema = z.enum(["info", "notice", "warn", "error", "critical"]);
 
 export const EvidenceRefSchema = z.object({
   id: z.string().min(1),

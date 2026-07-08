@@ -50,7 +50,10 @@ export function enforceBytes(
     return { ok: false, reason: `input ${bytesIn}b exceeds max_bytes_in ${budget.max_bytes_in}` };
   }
   if (budget.max_bytes_out !== null && bytesOut > budget.max_bytes_out) {
-    return { ok: false, reason: `output ${bytesOut}b exceeds max_bytes_out ${budget.max_bytes_out}` };
+    return {
+      ok: false,
+      reason: `output ${bytesOut}b exceeds max_bytes_out ${budget.max_bytes_out}`,
+    };
   }
   return { ok: true, reason: "bytes within budget" };
 }

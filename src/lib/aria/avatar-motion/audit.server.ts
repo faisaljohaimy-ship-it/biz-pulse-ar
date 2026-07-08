@@ -25,6 +25,10 @@ export class MotionAudit {
     if (this.entries.length > MAX) this.entries.shift();
     return e;
   }
-  recent(n = 100): readonly MotionAuditEntry[] { return this.entries.slice(-n); }
-  clear(): void { this.entries = []; }
+  recent(n = 100): readonly MotionAuditEntry[] {
+    return this.entries.slice(-n);
+  }
+  clear(): void {
+    this.entries = [];
+  }
 }

@@ -80,7 +80,11 @@ export function retrieve(raw: RetrievalQueryInput): RetrievalReport {
   }
 
   const uncertainty = bucketUncertainty(ranked);
-  audit("retrieve", `q:${query.workspace_id}`, ranked.map((r) => r.record.id));
+  audit(
+    "retrieve",
+    `q:${query.workspace_id}`,
+    ranked.map((r) => r.record.id),
+  );
   emitTelemetry(
     "retrieve.ok",
     "info",

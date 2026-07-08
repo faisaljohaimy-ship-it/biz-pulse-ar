@@ -71,8 +71,7 @@ export function AriaHoloBackdrop({ opacity = 0.9 }: { opacity?: number }) {
             draggable={false}
             className="absolute inset-0 h-full w-full object-contain object-top select-none"
             style={{
-              filter:
-                "drop-shadow(0 0 24px rgba(58,232,255,0.55)) brightness(1.08) saturate(1.15)",
+              filter: "drop-shadow(0 0 24px rgba(58,232,255,0.55)) brightness(1.08) saturate(1.15)",
               mixBlendMode: "screen",
               opacity: 0.55,
             }}
@@ -114,8 +113,7 @@ export function AriaHoloBackdrop({ opacity = 0.9 }: { opacity?: number }) {
       <div
         className="absolute inset-x-0 top-0 h-[18%]"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%)",
+          background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%)",
         }}
       />
 

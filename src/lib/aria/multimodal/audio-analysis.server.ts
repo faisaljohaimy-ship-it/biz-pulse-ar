@@ -17,10 +17,7 @@ export interface AudioInputs {
   readonly language?: string;
 }
 
-export function analyzeAudio(
-  input: MultimodalInput,
-  audio: AudioInputs,
-): MultimodalFinding {
+export function analyzeAudio(input: MultimodalInput, audio: AudioInputs): MultimodalFinding {
   const signals: Signal[] = audio.utterances.map((u, i) => {
     const c = clamp01(u.confidence ?? 0.6);
     return {

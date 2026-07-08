@@ -9,15 +9,8 @@ import { registerAgent } from "../orchestrator/registry";
 import { getActive, setActive, pickNewestCompatible } from "./version.server";
 import { emitMarketplaceEvent } from "./events";
 import { recordPermissions, clearPermissions } from "./permission.server";
-import {
-  registerCapability,
-  unregisterAgentCapabilities,
-} from "./capability-index.server";
-import {
-  markAvailable,
-  noteInstalledAgent,
-  noteUninstalledAgent,
-} from "./health.server";
+import { registerCapability, unregisterAgentCapabilities } from "./capability-index.server";
+import { markAvailable, noteInstalledAgent, noteUninstalledAgent } from "./health.server";
 import { noteActive } from "./telemetry.server";
 
 // The orchestrator registry has no `unregister`; keep a shadow set so

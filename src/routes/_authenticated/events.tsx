@@ -16,14 +16,31 @@ export const Route = createFileRoute("/_authenticated/events")({
 });
 
 type EventRow = {
-  id: string; topic: string; source: string | null; status: string | null;
-  severity: string | null; occurred_at: string;
-  subject_type: string | null; subject_id: string | null;
+  id: string;
+  topic: string;
+  source: string | null;
+  status: string | null;
+  severity: string | null;
+  occurred_at: string;
+  subject_type: string | null;
+  subject_id: string | null;
   payload_json: Record<string, unknown> | null;
 };
 
-const CATEGORIES = ["all", "incident", "workflow", "agent", "notification", "ai", "sap", "microsoft", "security", "audit", "integration"] as const;
-type Category = typeof CATEGORIES[number];
+const CATEGORIES = [
+  "all",
+  "incident",
+  "workflow",
+  "agent",
+  "notification",
+  "ai",
+  "sap",
+  "microsoft",
+  "security",
+  "audit",
+  "integration",
+] as const;
+type Category = (typeof CATEGORIES)[number];
 
 function categorize(topic: string): string {
   const t = topic.toLowerCase();
@@ -33,14 +50,22 @@ function categorize(topic: string): string {
   if (t.includes("notification") || t.includes("email")) return "notification";
   if (t.startsWith("ai") || t.includes("aria")) return "ai";
   if (t.includes("sap")) return "sap";
-  if (t.includes("microsoft") || t.includes("outlook") || t.includes("sharepoint") || t.includes("teams")) return "microsoft";
+  if (
+    t.includes("microsoft") ||
+    t.includes("outlook") ||
+    t.includes("sharepoint") ||
+    t.includes("teams")
+  )
+    return "microsoft";
   if (t.startsWith("security") || t.startsWith("sec.")) return "security";
   if (t.startsWith("audit")) return "audit";
   if (t.includes("integration") || t.includes("sync")) return "integration";
   return "other";
 }
 
-function severityTone(sev: string | null | undefined): "default" | "destructive" | "secondary" | "outline" {
+function severityTone(
+  sev: string | null | undefined,
+): "default" | "destructive" | "secondary" | "outline" {
   if (!sev) return "outline";
   const s = sev.toLowerCase();
   if (s === "critical" || s === "high") return "destructive";
@@ -53,9 +78,11 @@ function EventsRuntime() {
   const ar = locale === "ar";
   const [filter, setFilter] = useState<Category>("all");
 
-  const { rows: events, loading } = useLiveRows<EventRow>(
-    "enterprise_events",
-    (q) => q.select("id,topic,source,status,severity,occurred_at,subject_type,subject_id,payload_json").order("occurred_at", { ascending: false }).limit(200),
+  const { rows: events, loading } = useLiveRows<EventRow>("enterprise_events", (q) =>
+    q
+      .select("id,topic,source,status,severity,occurred_at,subject_type,subject_id,payload_json")
+      .order("occurred_at", { ascending: false })
+      .limit(200),
   );
 
   const filtered = useMemo(() => {
@@ -78,7 +105,11 @@ function EventsRuntime() {
       <PageHeader
         icon={Radio}
         title={ar ? "بثّ الأحداث المؤسسية" : "Enterprise Event Stream"}
-        subtitle={ar ? "كل ما يحدث في النظام لحظياً." : "Everything happening across the system, in realtime."}
+        subtitle={
+          ar
+            ? "كل ما يحدث في النظام لحظياً."
+            : "Everything happening across the system, in realtime."
+        }
         badge={ar ? "حي" : "Live"}
       />
 
@@ -94,7 +125,9 @@ function EventsRuntime() {
               className="shrink-0"
             >
               <span className="capitalize">{c}</span>
-              <Badge variant="secondary" className="ms-2 text-[10px]">{counts[c] ?? 0}</Badge>
+              <Badge variant="secondary" className="ms-2 text-[10px]">
+                {counts[c] ?? 0}
+              </Badge>
             </Button>
           ))}
         </div>
@@ -102,27 +135,49 @@ function EventsRuntime() {
 
       <Card className="p-4 glass-card">
         {loading ? (
-          <LiveStatus variant="initializing" label={ar ? "الاتصال بالناقل..." : "Connecting to event bus..."} />
+          <LiveStatus
+            variant="initializing"
+            label={ar ? "الاتصال بالناقل..." : "Connecting to event bus..."}
+          />
         ) : filtered.length === 0 ? (
-          <LiveStatus variant="monitoring" label={ar ? "بانتظار الأحداث..." : "Waiting for events..."} />
+          <LiveStatus
+            variant="monitoring"
+            label={ar ? "بانتظار الأحداث..." : "Waiting for events..."}
+          />
         ) : (
           <ScrollArea className="h-[640px] pr-2">
             <div className="space-y-1">
               {filtered.map((e) => (
-                <div key={e.id} className="flex items-start gap-3 rounded-md border border-border/30 bg-background/30 p-2 text-sm">
-                  <div className="w-20 shrink-0 text-[10px] text-muted-foreground tabular-nums">{fmtRel(e.occurred_at)}</div>
-                  <Badge variant="outline" className="shrink-0 text-[10px] uppercase">{categorize(e.topic)}</Badge>
+                <div
+                  key={e.id}
+                  className="flex items-start gap-3 rounded-md border border-border/30 bg-background/30 p-2 text-sm"
+                >
+                  <div className="w-20 shrink-0 text-[10px] text-muted-foreground tabular-nums">
+                    {fmtRel(e.occurred_at)}
+                  </div>
+                  <Badge variant="outline" className="shrink-0 text-[10px] uppercase">
+                    {categorize(e.topic)}
+                  </Badge>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{e.topic}</div>
                     {e.subject_type && (
                       <div className="truncate text-[11px] text-muted-foreground">
-                        {e.subject_type}{e.subject_id ? `:${e.subject_id.slice(0, 8)}` : ""}
+                        {e.subject_type}
+                        {e.subject_id ? `:${e.subject_id.slice(0, 8)}` : ""}
                         {e.source && <> · {e.source}</>}
                       </div>
                     )}
                   </div>
-                  {e.severity && <Badge variant={severityTone(e.severity)} className="shrink-0">{e.severity}</Badge>}
-                  {e.status && <Badge variant="secondary" className="shrink-0">{e.status}</Badge>}
+                  {e.severity && (
+                    <Badge variant={severityTone(e.severity)} className="shrink-0">
+                      {e.severity}
+                    </Badge>
+                  )}
+                  {e.status && (
+                    <Badge variant="secondary" className="shrink-0">
+                      {e.status}
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>

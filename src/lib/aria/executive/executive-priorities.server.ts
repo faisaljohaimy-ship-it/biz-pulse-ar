@@ -6,8 +6,8 @@ export interface PrioritySource {
   readonly title_ar: string;
   readonly title_en: string;
   readonly severity: "info" | "watch" | "warn" | "critical";
-  readonly impact: number;    // 0..100
-  readonly urgency: number;   // 0..100
+  readonly impact: number; // 0..100
+  readonly urgency: number; // 0..100
   readonly evidence: readonly EvidenceRef[];
 }
 
@@ -22,13 +22,22 @@ export function rankPriorities(sources: readonly PrioritySource[]): readonly Pri
   const scored = sources
     .filter((s) => s.evidence.length > 0)
     .map((s) => {
-      const sevBoost = s.severity === "critical" ? 20 : s.severity === "warn" ? 10 : s.severity === "watch" ? 5 : 0;
-      const score = Math.min(100, Math.max(0,
-        Math.round(s.impact * 0.5 + s.urgency * 0.5) + sevBoost,
-      ));
+      const sevBoost =
+        s.severity === "critical"
+          ? 20
+          : s.severity === "warn"
+            ? 10
+            : s.severity === "watch"
+              ? 5
+              : 0;
+      const score = Math.min(
+        100,
+        Math.max(0, Math.round(s.impact * 0.5 + s.urgency * 0.5) + sevBoost),
+      );
       const item: PriorityItem = {
         id: s.id,
-        title_ar: s.title_ar, title_en: s.title_en,
+        title_ar: s.title_ar,
+        title_en: s.title_en,
         priority: levelForScore(score),
         score,
         evidence: s.evidence,

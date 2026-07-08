@@ -7,10 +7,7 @@
  * mutates production code paths. Every proposal is evidence-first and requires
  * a human approval before it becomes actionable.
  */
-import type {
-  SelfImprovementReport,
-  EngineDecision,
-} from "../self-improvement/types";
+import type { SelfImprovementReport, EngineDecision } from "../self-improvement/types";
 import type { ReleaseDecisionReport } from "../production/types";
 
 export type EvolutionStage =

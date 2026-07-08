@@ -7,9 +7,16 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — Nexus AI OS" },
-      { name: "description", content: "Transparent enterprise pricing for Nexus AI OS — the executive intelligence operating system. Starter, Growth, and Enterprise tiers." },
+      {
+        name: "description",
+        content:
+          "Transparent enterprise pricing for Nexus AI OS — the executive intelligence operating system. Starter, Growth, and Enterprise tiers.",
+      },
       { property: "og:title", content: "Pricing — Nexus AI OS" },
-      { property: "og:description", content: "Enterprise pricing for the executive AI operating system." },
+      {
+        property: "og:description",
+        content: "Enterprise pricing for the executive AI operating system.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/pricing` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -162,8 +169,12 @@ function PricingPage() {
               <h2 className="text-xl font-semibold">{isAr ? t.nameAr : t.name}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{isAr ? t.blurbAr : t.blurb}</p>
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-bold tracking-tight">{isAr ? t.priceAr : t.price}</span>
-                <span className="text-sm text-muted-foreground">{isAr ? t.cadenceAr : t.cadence}</span>
+                <span className="text-4xl font-bold tracking-tight">
+                  {isAr ? t.priceAr : t.price}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {isAr ? t.cadenceAr : t.cadence}
+                </span>
               </div>
               <ul className="mt-6 space-y-3 text-sm">
                 {(isAr ? t.featuresAr : t.features).map((f) => (

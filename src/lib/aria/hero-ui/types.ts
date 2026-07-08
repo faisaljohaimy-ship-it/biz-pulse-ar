@@ -1,7 +1,14 @@
 // Phase 11.8 — Cinematic Hero UI directive types (server-only).
 export type HeroState =
-  | "idle" | "greeting" | "listening" | "thinking"
-  | "speaking" | "explaining" | "success" | "warning" | "unavailable";
+  | "idle"
+  | "greeting"
+  | "listening"
+  | "thinking"
+  | "speaking"
+  | "explaining"
+  | "success"
+  | "warning"
+  | "unavailable";
 
 export type HeroLanguage = "ar" | "en";
 export type HeroDevice = "mobile" | "tablet" | "desktop";
@@ -40,39 +47,39 @@ export interface HeroPresenceDirective {
 
 export interface HeroEntranceDirective {
   readonly phase: "off" | "reveal" | "settle" | "ready";
-  readonly progress: number;    // 0..1
+  readonly progress: number; // 0..1
   readonly durationMs: number;
   readonly startedAt: number | null;
 }
 
 export interface HeroLightingDirective {
-  readonly key: string;    // css color token
+  readonly key: string; // css color token
   readonly rim: string;
   readonly fill: string;
-  readonly bloomStrength: number;   // 0..1
-  readonly saturation: number;      // 0..1.5
-  readonly warmth: number;          // -1..1
+  readonly bloomStrength: number; // 0..1
+  readonly saturation: number; // 0..1.5
+  readonly warmth: number; // -1..1
 }
 
 export interface HeroBackgroundDirective {
   readonly layers: readonly ("gradient" | "aurora" | "grid" | "vignette")[];
   readonly hueShiftDeg: number;
-  readonly speed: number;    // 0..1
+  readonly speed: number; // 0..1
   readonly intensity: number; // 0..1
 }
 
 export interface HeroParticleDirective {
   readonly enabled: boolean;
   readonly count: number;
-  readonly speed: number;    // 0..1
-  readonly size: number;     // px
-  readonly opacity: number;  // 0..1
+  readonly speed: number; // 0..1
+  readonly size: number; // px
+  readonly opacity: number; // 0..1
 }
 
 export interface HeroCameraDirective {
-  readonly parallaxX: number;   // -1..1
+  readonly parallaxX: number; // -1..1
   readonly parallaxY: number;
-  readonly zoom: number;        // 0.9..1.1
+  readonly zoom: number; // 0.9..1.1
   readonly focusPoint: "avatar" | "caption" | "panel";
   readonly easingMs: number;
 }
@@ -96,7 +103,7 @@ export interface HeroPanelDirective {
   readonly title_ar: string;
   readonly title_en: string;
   readonly variant: "kpi" | "action" | "insight" | "trust";
-  readonly priority: number;   // higher first
+  readonly priority: number; // higher first
 }
 
 export interface HeroCaptionDirective {
@@ -110,15 +117,15 @@ export interface HeroCaptionDirective {
 
 export interface HeroWaveformDirective {
   readonly active: boolean;
-  readonly amplitude: number;   // 0..1
+  readonly amplitude: number; // 0..1
   readonly bars: number;
-  readonly smoothing: number;   // 0..1
+  readonly smoothing: number; // 0..1
 }
 
 export interface HeroThinkingDirective {
   readonly active: boolean;
   readonly haloIntensity: number; // 0..1
-  readonly ringSpeed: number;     // rot/sec
+  readonly ringSpeed: number; // rot/sec
 }
 
 export interface HeroListeningDirective {
@@ -130,7 +137,7 @@ export interface HeroListeningDirective {
 export interface HeroSpeakingDirective {
   readonly active: boolean;
   readonly lipAmplitude: number; // 0..1
-  readonly gestureBias: number;  // -1..1
+  readonly gestureBias: number; // -1..1
 }
 
 export interface HeroTransitionDirective {

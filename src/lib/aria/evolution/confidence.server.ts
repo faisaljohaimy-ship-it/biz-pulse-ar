@@ -46,8 +46,7 @@ export function deriveConfidence(input: ConfidenceInput): ConfidenceReport {
     input.coverage,
   ];
   const known = signals.filter((s) => s >= 0);
-  const score =
-    known.length === 0 ? -1 : known.reduce((a, b) => a + b, 0) / known.length;
+  const score = known.length === 0 ? -1 : known.reduce((a, b) => a + b, 0) / known.length;
   return Object.freeze({
     id: idFrom(input.subject_id, created_at),
     subject_id: input.subject_id,

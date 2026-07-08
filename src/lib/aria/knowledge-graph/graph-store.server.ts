@@ -17,9 +17,7 @@ function freezeEntity(e: EntityRecord): EntityRecord {
     aliases: Object.freeze([...e.aliases]) as readonly string[],
     attributes: Object.freeze({ ...e.attributes }),
     evidence: Object.freeze([...e.evidence]) as EntityRecord["evidence"],
-    contradiction_partner_ids: Object.freeze([
-      ...e.contradiction_partner_ids,
-    ]) as readonly string[],
+    contradiction_partner_ids: Object.freeze([...e.contradiction_partner_ids]) as readonly string[],
     merged_from: Object.freeze([...e.merged_from]) as readonly string[],
   });
 }
@@ -29,9 +27,7 @@ function freezeRelationship(r: RelationshipRecord): RelationshipRecord {
     ...r,
     attributes: Object.freeze({ ...r.attributes }),
     evidence: Object.freeze([...r.evidence]) as RelationshipRecord["evidence"],
-    contradiction_partner_ids: Object.freeze([
-      ...r.contradiction_partner_ids,
-    ]) as readonly string[],
+    contradiction_partner_ids: Object.freeze([...r.contradiction_partner_ids]) as readonly string[],
   });
 }
 
@@ -59,16 +55,14 @@ export function listEntities(workspace_id?: string): readonly EntityRecord[] {
 }
 
 export function putRelationship(rel: RelationshipRecord): RelationshipRecord {
-  if (RELATIONSHIPS.has(rel.id))
-    throw new Error(`graph-store: duplicate relationship ${rel.id}`);
+  if (RELATIONSHIPS.has(rel.id)) throw new Error(`graph-store: duplicate relationship ${rel.id}`);
   const frozen = freezeRelationship(rel);
   RELATIONSHIPS.set(frozen.id, frozen);
   return frozen;
 }
 
 export function replaceRelationship(rel: RelationshipRecord): RelationshipRecord {
-  if (!RELATIONSHIPS.has(rel.id))
-    throw new Error(`graph-store: unknown relationship ${rel.id}`);
+  if (!RELATIONSHIPS.has(rel.id)) throw new Error(`graph-store: unknown relationship ${rel.id}`);
   const frozen = freezeRelationship(rel);
   RELATIONSHIPS.set(frozen.id, frozen);
   return frozen;

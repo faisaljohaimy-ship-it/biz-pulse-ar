@@ -17,8 +17,7 @@ export function verifyPermission(p: ExecutionPermission): VerificationResult {
   const reasons: string[] = [];
   if (p.ok && !p.authority) reasons.push("granted_without_authority");
   if (p.ok && !p.approval_id) reasons.push("granted_without_approval_ref");
-  if (p.expires_at && Date.parse(p.expires_at) < Date.now())
-    reasons.push("expired_permission");
+  if (p.expires_at && Date.parse(p.expires_at) < Date.now()) reasons.push("expired_permission");
   return { ok: reasons.length === 0, reasons };
 }
 

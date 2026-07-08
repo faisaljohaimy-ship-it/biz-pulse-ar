@@ -22,16 +22,13 @@ export function verifyReport(report: Rc1Report): VerificationResult {
   }
 
   const criticalOpen = report.gates.some(
-    (g) =>
-      g.severity === "critical" && (g.status === "fail" || g.status === "unknown"),
+    (g) => g.severity === "critical" && (g.status === "fail" || g.status === "unknown"),
   );
   if (criticalOpen && report.decision === "GO") {
     notes.push("Decision GO issued while critical gates remain open.");
   }
 
-  const hasCriticalBlocker = report.blockers.some(
-    (b: Blocker) => b.severity === "critical",
-  );
+  const hasCriticalBlocker = report.blockers.some((b: Blocker) => b.severity === "critical");
   if (hasCriticalBlocker && report.decision !== "NO-GO") {
     notes.push("Critical blocker present but decision is not NO-GO.");
   }

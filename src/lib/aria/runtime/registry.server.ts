@@ -5,12 +5,7 @@
  */
 
 import { AgentRuntimeSpecSchema } from "./contracts";
-import type {
-  AgentRuntimeRecord,
-  AgentRuntimeSpec,
-  BudgetUsage,
-  AgentHealth,
-} from "./types";
+import type { AgentRuntimeRecord, AgentRuntimeSpec, BudgetUsage, AgentHealth } from "./types";
 
 const registry = new Map<string, AgentRuntimeRecord>();
 

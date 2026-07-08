@@ -9,10 +9,7 @@ export interface VerificationResult {
   readonly notes: ReadonlyArray<string>;
 }
 
-export function verifyRuntime(
-  state: RuntimeState,
-  health: HealthReport,
-): VerificationResult {
+export function verifyRuntime(state: RuntimeState, health: HealthReport): VerificationResult {
   const notes: string[] = [];
 
   if (

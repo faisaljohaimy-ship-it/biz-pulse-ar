@@ -16,7 +16,11 @@ export interface PaginatedSource<T> {
   fetchPage(req: PageRequest): Promise<Page<T>>;
 }
 
-export async function collectAll<T>(source: PaginatedSource<T>, pageSize = 100, maxPages = 1000): Promise<T[]> {
+export async function collectAll<T>(
+  source: PaginatedSource<T>,
+  pageSize = 100,
+  maxPages = 1000,
+): Promise<T[]> {
   const out: T[] = [];
   let cursor: string | null = null;
   for (let i = 0; i < maxPages; i++) {

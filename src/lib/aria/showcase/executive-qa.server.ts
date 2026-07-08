@@ -3,7 +3,9 @@ import type { QaTurn, ShowcaseLanguage } from "./types";
 const TURNS = new Map<string, QaTurn[]>();
 
 export function recordQuestion(
-  instanceId: string, question: string, language: ShowcaseLanguage,
+  instanceId: string,
+  question: string,
+  language: ShowcaseLanguage,
 ): QaTurn {
   const arr = TURNS.get(instanceId) ?? [];
   const turn: QaTurn = {
@@ -33,4 +35,6 @@ export function qaHistory(instanceId: string, n = 20): readonly QaTurn[] {
   return arr.slice(-n);
 }
 
-export function clearQa(instanceId: string): void { TURNS.delete(instanceId); }
+export function clearQa(instanceId: string): void {
+  TURNS.delete(instanceId);
+}

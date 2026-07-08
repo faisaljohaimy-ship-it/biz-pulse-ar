@@ -6,15 +6,8 @@
  * invents a failure to justify a proposal.
  */
 
-import {
-  ExecutionEvidenceSchema,
-  type ExecutionEvidenceInput,
-} from "./contracts";
-import type {
-  EvidenceRef,
-  FailureAnalysis,
-  Severity,
-} from "./types";
+import { ExecutionEvidenceSchema, type ExecutionEvidenceInput } from "./contracts";
+import type { EvidenceRef, FailureAnalysis, Severity } from "./types";
 
 function analysisId(execution_id: string, ts: string): string {
   let h = 5381;
@@ -41,9 +34,7 @@ function classifyStage(tags: readonly string[]): FailureAnalysis["stage"] {
   return "unknown";
 }
 
-export function analyzeFailure(
-  raw: ExecutionEvidenceInput,
-): FailureAnalysis | undefined {
+export function analyzeFailure(raw: ExecutionEvidenceInput): FailureAnalysis | undefined {
   const evidence = ExecutionEvidenceSchema.parse(raw);
   if (evidence.outcome === "success") return undefined;
   if (evidence.errors.length === 0 && evidence.retries === 0) return undefined;

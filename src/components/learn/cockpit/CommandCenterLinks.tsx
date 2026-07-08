@@ -29,9 +29,7 @@ export function CommandCenterLinks({ links, lang }: Props) {
               <div className="truncate text-sm font-semibold text-white">
                 {ar ? l.label_ar : l.label_en}
               </div>
-              <div className="mt-1 text-xs text-white/60">
-                {ar ? l.hint_ar : l.hint_en}
-              </div>
+              <div className="mt-1 text-xs text-white/60">{ar ? l.hint_ar : l.hint_en}</div>
             </div>
             <Arrow className="mt-1 h-4 w-4 shrink-0 text-cyan-300 transition-transform group-hover:translate-x-0.5 group-hover:rtl:-translate-x-0.5" />
           </div>

@@ -9,12 +9,7 @@
  * isolate for the lifetime of the isolate; downstream we can wire this
  * to `pulse_memory` without changing the public shape.
  */
-import type {
-  BrainTurn,
-  DecisionProposal,
-  ExecutiveBrainMemory,
-  Recommendation,
-} from "./types";
+import type { BrainTurn, DecisionProposal, ExecutiveBrainMemory, Recommendation } from "./types";
 
 const STORE = new Map<string, ExecutiveBrainMemory>();
 const MAX_TURNS = 12;
@@ -66,7 +61,9 @@ export function saveIncidents(sessionId: string | undefined, ids: string[]): voi
 
 export function setFocus(
   sessionId: string | undefined,
-  patch: Partial<Pick<ExecutiveBrainMemory, "active_mission" | "focused_site" | "focused_department">>,
+  patch: Partial<
+    Pick<ExecutiveBrainMemory, "active_mission" | "focused_site" | "focused_department">
+  >,
 ): void {
   if (!sessionId) return;
   const m = STORE.get(sessionId) ?? empty();
@@ -79,7 +76,8 @@ export function buildMemoryBlock(mem: ExecutiveBrainMemory): string {
   if (mem.active_mission) lines.push(`Active mission: ${mem.active_mission}`);
   if (mem.focused_site) lines.push(`Focused site: ${mem.focused_site}`);
   if (mem.focused_department) lines.push(`Focused department: ${mem.focused_department}`);
-  if (mem.last_incidents.length) lines.push(`Recent incident IDs: ${mem.last_incidents.slice(0, 5).join(", ")}`);
+  if (mem.last_incidents.length)
+    lines.push(`Recent incident IDs: ${mem.last_incidents.slice(0, 5).join(", ")}`);
   if (mem.last_recommendations.length) {
     lines.push(
       `Last recommendations (do not repeat verbatim):\n${mem.last_recommendations

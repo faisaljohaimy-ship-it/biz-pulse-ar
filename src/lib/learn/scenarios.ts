@@ -15,9 +15,9 @@ export interface Bi {
 }
 
 export interface KpiChange {
-  key: string;         // machine key
+  key: string; // machine key
   label: Bi;
-  delta: number;       // absolute delta applied to running KPI (0..100 clamp)
+  delta: number; // absolute delta applied to running KPI (0..100 clamp)
 }
 
 export interface DecisionOption {
@@ -29,7 +29,7 @@ export interface DecisionOption {
 
 export interface DecisionStep {
   headline: Bi;
-  briefing: Bi;                // executive brief for the step
+  briefing: Bi; // executive brief for the step
   metrics: Array<{ label: Bi; value: string; tone?: "good" | "warn" | "bad" }>;
   options: DecisionOption[];
 }
@@ -52,19 +52,37 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "ارتفاع تدريجي في درجة الحرارة بغرفة المحوّلات", en: "Gradual temperature climb in transformer room" },
+        headline: {
+          ar: "ارتفاع تدريجي في درجة الحرارة بغرفة المحوّلات",
+          en: "Gradual temperature climb in transformer room",
+        },
         briefing: {
           ar: "ترصد ARIA ارتفاعاً في حرارة المحوّل بمعدل 0.4 درجة/ساعة على مدى 6 ساعات، مع تذبذب في القراءات الاهتزازية. لا يوجد إنذار حرج، لكن النمط يطابق 84% من الأعطال السابقة.",
           en: "ARIA detects a 0.4°C/hour rise on a transformer over 6 hours, with vibration jitter. No critical alarm yet, but the pattern matches 84% of prior failure signatures.",
         },
         metrics: [
-          { label: { ar: "الاحتمالية التنبؤية", en: "Predictive probability" }, value: "84%", tone: "warn" },
-          { label: { ar: "الوقت المتوقّع للفشل", en: "Time-to-failure" }, value: "18–36h", tone: "warn" },
-          { label: { ar: "التكلفة عند الفشل", en: "Cost if failure" }, value: "SAR 1.2M", tone: "bad" },
+          {
+            label: { ar: "الاحتمالية التنبؤية", en: "Predictive probability" },
+            value: "84%",
+            tone: "warn",
+          },
+          {
+            label: { ar: "الوقت المتوقّع للفشل", en: "Time-to-failure" },
+            value: "18–36h",
+            tone: "warn",
+          },
+          {
+            label: { ar: "التكلفة عند الفشل", en: "Cost if failure" },
+            value: "SAR 1.2M",
+            tone: "bad",
+          },
         ],
         options: [
           {
-            label: { ar: "تجاهل التنبيه — لا يوجد إنذار حرج", en: "Dismiss — no critical alarm yet" },
+            label: {
+              ar: "تجاهل التنبيه — لا يوجد إنذار حرج",
+              en: "Dismiss — no critical alarm yet",
+            },
             correct: false,
             feedback: {
               ar: "قرار خاطئ. التنبيه التنبؤي مصمّم للتحرّك قبل الوصول إلى الحد الحرج. الفشل التالي كلّف مليون ريال وأدّى إلى توقف الإنتاج لـ 9 ساعات.",
@@ -76,7 +94,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "جدولة صيانة وقائية في نافذة صيانة الليل", en: "Schedule preventive maintenance in night window" },
+            label: {
+              ar: "جدولة صيانة وقائية في نافذة صيانة الليل",
+              en: "Schedule preventive maintenance in night window",
+            },
             correct: true,
             feedback: {
               ar: "قرار تنفيذي صحيح. الصيانة في نافذة منخفضة الحمل تجنّبت التوقف، ووفّرت 1.1 مليون ريال، وحسّنت مؤشّر الجاهزية.",
@@ -89,7 +110,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "إيقاف المحوّل فوراً واستدعاء طاقم الطوارئ", en: "Shut down transformer now and dispatch emergency crew" },
+            label: {
+              ar: "إيقاف المحوّل فوراً واستدعاء طاقم الطوارئ",
+              en: "Shut down transformer now and dispatch emergency crew",
+            },
             correct: false,
             feedback: {
               ar: "ردّ فعل مبالَغ فيه. إيقاف الإنتاج بلا داعٍ كلّف 340 ألف ريال في ساعات إنتاج فُقدت.",
@@ -103,7 +127,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
         ],
       },
       {
-        headline: { ar: "تنبّؤ ARIA بذروة استهلاك في يوم الجمعة", en: "ARIA forecasts a Friday peak demand" },
+        headline: {
+          ar: "تنبّؤ ARIA بذروة استهلاك في يوم الجمعة",
+          en: "ARIA forecasts a Friday peak demand",
+        },
         briefing: {
           ar: "توقّع ARIA يشير إلى ارتفاع 22% في الأحمال يوم الجمعة القادم، متزامناً مع فعالية اجتماعية بالموقع. الطاقة الاحتياطية الحالية تكفي لـ 91% من السيناريو الأسوأ.",
           en: "ARIA forecasts a 22% load spike next Friday, coinciding with an on-site event. Current reserve covers 91% of the worst case.",
@@ -128,7 +155,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "المضيّ دون تحرّك — الاحتياطي يكفي عادة", en: "Do nothing — reserve is usually enough" },
+            label: {
+              ar: "المضيّ دون تحرّك — الاحتياطي يكفي عادة",
+              en: "Do nothing — reserve is usually enough",
+            },
             correct: false,
             feedback: {
               ar: "قرار محفوف بالمخاطر. 9% احتمال انقطاع خلال فعالية عالية الحساسية غير مقبول تنفيذياً.",
@@ -146,9 +176,7 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
               ar: "غير مبرَّر. المخاطر قابلة للإدارة بحلّ تشغيلي أرخص وأقل ضجيجاً تنفيذياً.",
               en: "Unjustified. The risk is manageable with a cheaper operational fix.",
             },
-            kpiChanges: [
-              { key: "cost", label: { ar: "كفاءة", en: "Cost" }, delta: -8 },
-            ],
+            kpiChanges: [{ key: "cost", label: { ar: "كفاءة", en: "Cost" }, delta: -8 }],
           },
         ],
       },
@@ -169,7 +197,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "دخول مركبة مقاول دون تصريح مسبق", en: "Contractor vehicle enters without pre-authorization" },
+        headline: {
+          ar: "دخول مركبة مقاول دون تصريح مسبق",
+          en: "Contractor vehicle enters without pre-authorization",
+        },
         briefing: {
           ar: "كاميرا البوابة الشمالية رصدت شاحنة مقاول تدخل بلوحة تطابق قائمتنا لكن دون تصريح صادر لهذا اليوم. السائق يدّعي أن التصريح 'قادم عبر البريد'.",
           en: "North-gate camera catches a contractor truck with a plate matching our roster but no permit issued for today. Driver claims the permit is 'coming via email'.",
@@ -177,11 +208,18 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
         metrics: [
           { label: { ar: "توافق اللوحة", en: "Plate match" }, value: "✓", tone: "good" },
           { label: { ar: "تصريح اليوم", en: "Today's permit" }, value: "None", tone: "bad" },
-          { label: { ar: "منطقة الوجهة", en: "Destination zone" }, value: "Turbine Hall", tone: "warn" },
+          {
+            label: { ar: "منطقة الوجهة", en: "Destination zone" },
+            value: "Turbine Hall",
+            tone: "warn",
+          },
         ],
         options: [
           {
-            label: { ar: "السماح بالدخول لعدم تعطيل جدول المقاول", en: "Allow entry — don't disrupt the contractor schedule" },
+            label: {
+              ar: "السماح بالدخول لعدم تعطيل جدول المقاول",
+              en: "Allow entry — don't disrupt the contractor schedule",
+            },
             correct: false,
             feedback: {
               ar: "خرق للامتثال. التصريح المسبق ليس بيروقراطياً — إنه سلسلة المساءلة إذا حدث حادث.",
@@ -193,7 +231,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "احتجاز عند البوابة، تفعيل تصريح طارئ عبر ARIA خلال 3 دقائق", en: "Hold at gate, fast-track permit via ARIA in 3 min" },
+            label: {
+              ar: "احتجاز عند البوابة، تفعيل تصريح طارئ عبر ARIA خلال 3 دقائق",
+              en: "Hold at gate, fast-track permit via ARIA in 3 min",
+            },
             correct: true,
             feedback: {
               ar: "الخيار التنفيذي الصحيح. إجراء صارم بلا تعطيل — ARIA أصدرت تصريحاً موقّعاً رقمياً في 2:14 دقيقة.",
@@ -206,26 +247,34 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "رفض المركبة وإرسالها للمكتب البعيد", en: "Reject the vehicle back to the far office" },
+            label: {
+              ar: "رفض المركبة وإرسالها للمكتب البعيد",
+              en: "Reject the vehicle back to the far office",
+            },
             correct: false,
             feedback: {
               ar: "قاسٍ بلا داعٍ. تسبّب في تأخير 4 ساعات وخسارة إنتاج لأن التصريح كان جاهزاً فعلاً في النظام.",
               en: "Needlessly harsh. Caused a 4-hour delay because the permit was in fact ready in the system.",
             },
-            kpiChanges: [
-              { key: "morale", label: { ar: "معنويات", en: "Morale" }, delta: -8 },
-            ],
+            kpiChanges: [{ key: "morale", label: { ar: "معنويات", en: "Morale" }, delta: -8 }],
           },
         ],
       },
       {
-        headline: { ar: "تنبيه CCTV: حركة داخل مستودع المواد الخطرة بعد ساعات العمل", en: "CCTV alert: motion inside hazardous-materials store after hours" },
+        headline: {
+          ar: "تنبيه CCTV: حركة داخل مستودع المواد الخطرة بعد ساعات العمل",
+          en: "CCTV alert: motion inside hazardous-materials store after hours",
+        },
         briefing: {
           ar: "تحليل ARIA للحركة: 78% ثقة أنه شخص واحد، 22% أنه حيوان. لا بطاقة وصول مُسجّلة. أقرب دورية على بُعد 4 دقائق.",
           en: "ARIA motion analysis: 78% confidence single human, 22% animal. No badge scan. Nearest patrol 4 min away.",
         },
         metrics: [
-          { label: { ar: "ثقة الاكتشاف", en: "Detection confidence" }, value: "78% human", tone: "warn" },
+          {
+            label: { ar: "ثقة الاكتشاف", en: "Detection confidence" },
+            value: "78% human",
+            tone: "warn",
+          },
           { label: { ar: "أقرب دورية", en: "Nearest patrol" }, value: "4 min", tone: "warn" },
           { label: { ar: "خطر المواد", en: "Material hazard" }, value: "Class 3", tone: "bad" },
         ],
@@ -243,7 +292,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "إرسال دورية + قفل تلقائي للأبواب + بثّ مباشر لغرفة التحكّم", en: "Dispatch patrol + auto-lock doors + live-stream to control room" },
+            label: {
+              ar: "إرسال دورية + قفل تلقائي للأبواب + بثّ مباشر لغرفة التحكّم",
+              en: "Dispatch patrol + auto-lock doors + live-stream to control room",
+            },
             correct: true,
             feedback: {
               ar: "استجابة تنفيذية طبقية. تبيّن أنه فنّي منسيّ على قائمة الإخلاء — تمّ التحقّق بأمان.",
@@ -285,7 +337,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "حريق في الوحدة الفرعية للمعدّات الميكانيكية", en: "Fire in mechanical sub-unit" },
+        headline: {
+          ar: "حريق في الوحدة الفرعية للمعدّات الميكانيكية",
+          en: "Fire in mechanical sub-unit",
+        },
         briefing: {
           ar: "كاشف الدخان + كاميرا حرارية أكّدا حريقاً في الطابق الأرضي. 14 موظفاً في الطابق العلوي. طاقم الإطفاء في الموقع بعد 6 دقائق.",
           en: "Smoke sensor + thermal cam confirm ground-floor fire. 14 staff on the floor above. Fire crew on-site in 6 min.",
@@ -293,11 +348,18 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
         metrics: [
           { label: { ar: "أشخاص في خطر", en: "People at risk" }, value: "14", tone: "bad" },
           { label: { ar: "وقت وصول الإطفاء", en: "Fire crew ETA" }, value: "6 min", tone: "warn" },
-          { label: { ar: "مسارات الإخلاء الآمنة", en: "Safe evac paths" }, value: "2 of 3", tone: "warn" },
+          {
+            label: { ar: "مسارات الإخلاء الآمنة", en: "Safe evac paths" },
+            value: "2 of 3",
+            tone: "warn",
+          },
         ],
         options: [
           {
-            label: { ar: "انتظار وصول طاقم الإطفاء لإصدار أمر الإخلاء", en: "Wait for fire crew to authorize evacuation" },
+            label: {
+              ar: "انتظار وصول طاقم الإطفاء لإصدار أمر الإخلاء",
+              en: "Wait for fire crew to authorize evacuation",
+            },
             correct: false,
             feedback: {
               ar: "تأخير قاتل محتمل. سلطة الإخلاء داخلية عندما يكون التهديد مؤكداً. فقدت دقيقتين حرجتين.",
@@ -309,7 +371,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "إخلاء فوري عبر المسارين الآمنين + توجيه ARIA للطاقم عبر الاتصال المباشر", en: "Evacuate now via 2 safe paths + ARIA guides staff via live comms" },
+            label: {
+              ar: "إخلاء فوري عبر المسارين الآمنين + توجيه ARIA للطاقم عبر الاتصال المباشر",
+              en: "Evacuate now via 2 safe paths + ARIA guides staff via live comms",
+            },
             correct: true,
             feedback: {
               ar: "قرار قيادي. ARIA وجّهت 14 موظفاً في 3:20 دقيقة، مع خارطة تُحدَّث لحظياً حسب انتشار الدخان.",
@@ -322,7 +387,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "إخلاء المبنى بأكمله دون إعطاء الأولوية للطابق المُهدَّد", en: "Evacuate the entire building without prioritizing the at-risk floor" },
+            label: {
+              ar: "إخلاء المبنى بأكمله دون إعطاء الأولوية للطابق المُهدَّد",
+              en: "Evacuate the entire building without prioritizing the at-risk floor",
+            },
             correct: false,
             feedback: {
               ar: "تدفّق فوضوي. الطابق العلوي عالق خلف الدرج الرئيسي مع الآخرين — تأخّر الوصول 90 ثانية.",
@@ -336,19 +404,33 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
         ],
       },
       {
-        headline: { ar: "بعد الإخلاء: فرد مفقود من قائمة الحضور", en: "Post-evac: one person missing from headcount" },
+        headline: {
+          ar: "بعد الإخلاء: فرد مفقود من قائمة الحضور",
+          en: "Post-evac: one person missing from headcount",
+        },
         briefing: {
           ar: "13 من 14 خارج المبنى بأمان. آخر ظهور لـ 'م. الأحمدي' على بطاقة الوصول: 08:14 في القسم الميكانيكي. الدخان يملأ الطابق الأرضي.",
           en: "13 of 14 safely outside. 'M. Alahmadi' last badge-scan 08:14 in mechanical wing. Smoke fills ground floor.",
         },
         metrics: [
           { label: { ar: "خارج بأمان", en: "Safely out" }, value: "13/14", tone: "warn" },
-          { label: { ar: "آخر موقع مؤكّد", en: "Last known" }, value: "Mech wing 08:14", tone: "bad" },
-          { label: { ar: "الرؤية للمنقذين", en: "Rescuer visibility" }, value: "< 2m", tone: "bad" },
+          {
+            label: { ar: "آخر موقع مؤكّد", en: "Last known" },
+            value: "Mech wing 08:14",
+            tone: "bad",
+          },
+          {
+            label: { ar: "الرؤية للمنقذين", en: "Rescuer visibility" },
+            value: "< 2m",
+            tone: "bad",
+          },
         ],
         options: [
           {
-            label: { ar: "توجيه فرق الإطفاء مباشرة إلى آخر موقع مسجّل", en: "Direct firefighters straight to last badge location" },
+            label: {
+              ar: "توجيه فرق الإطفاء مباشرة إلى آخر موقع مسجّل",
+              en: "Direct firefighters straight to last badge location",
+            },
             correct: true,
             feedback: {
               ar: "دقيق تنفيذياً. البيانات الحيّة من ARIA وفّرت 4–6 دقائق بحث في الدخان.",
@@ -360,7 +442,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "بدء بحث في كل الطوابق بترتيب عشوائي", en: "Start random floor-by-floor search" },
+            label: {
+              ar: "بدء بحث في كل الطوابق بترتيب عشوائي",
+              en: "Start random floor-by-floor search",
+            },
             correct: false,
             feedback: {
               ar: "إهدار للحياة. البيانات موجودة — استخدمها.",
@@ -402,19 +487,29 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "إحاطة تنفيذية قبل اجتماع المجلس بعد ساعة", en: "Executive briefing 1 hour before board meeting" },
+        headline: {
+          ar: "إحاطة تنفيذية قبل اجتماع المجلس بعد ساعة",
+          en: "Executive briefing 1 hour before board meeting",
+        },
         briefing: {
           ar: "المجلس سيسأل عن حادث الأمس. لديك 6 مصادر بيانات، 3 روايات متضاربة، و60 دقيقة. ARIA اقترحت ثلاث طرق للإحاطة.",
           en: "Board will ask about yesterday's incident. You have 6 data sources, 3 conflicting narratives, and 60 minutes. ARIA proposes three briefing paths.",
         },
         metrics: [
           { label: { ar: "مصادر البيانات", en: "Data sources" }, value: "6", tone: "warn" },
-          { label: { ar: "روايات متضاربة", en: "Conflicting narratives" }, value: "3", tone: "bad" },
+          {
+            label: { ar: "روايات متضاربة", en: "Conflicting narratives" },
+            value: "3",
+            tone: "bad",
+          },
           { label: { ar: "زمن التحضير", en: "Prep time" }, value: "60 min", tone: "warn" },
         ],
         options: [
           {
-            label: { ar: "قراءة كل التقارير الست والدمج يدوياً", en: "Read all 6 reports and merge manually" },
+            label: {
+              ar: "قراءة كل التقارير الست والدمج يدوياً",
+              en: "Read all 6 reports and merge manually",
+            },
             correct: false,
             feedback: {
               ar: "ستستنفد الساعة كاملة، وستقدّم إحاطة نصف مطبوخة. هذا هو بالضبط ما بُنيت ARIA لإلغائه.",
@@ -426,7 +521,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "طلب إحاطة موحّدة من ARIA مع الاستشهادات + مراجعتها 15 دقيقة", en: "Ask ARIA for a unified brief with citations + 15 min review" },
+            label: {
+              ar: "طلب إحاطة موحّدة من ARIA مع الاستشهادات + مراجعتها 15 دقيقة",
+              en: "Ask ARIA for a unified brief with citations + 15 min review",
+            },
             correct: true,
             feedback: {
               ar: "استخدام تنفيذي مثالي. الإحاطة في 4 دقائق، والاستشهادات القابلة للتدقيق كسبت ثقة المجلس فوراً.",
@@ -439,20 +537,24 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "تفويض مدير العمليات لتقديم الإحاطة بدلاً منك", en: "Delegate — let COO brief instead" },
+            label: {
+              ar: "تفويض مدير العمليات لتقديم الإحاطة بدلاً منك",
+              en: "Delegate — let COO brief instead",
+            },
             correct: false,
             feedback: {
               ar: "خطأ سياسي. المجلس يريد أن يسمع من مالك المخاطرة.",
               en: "Political misstep. The board wants to hear from the risk owner.",
             },
-            kpiChanges: [
-              { key: "trust", label: { ar: "ثقة", en: "Trust" }, delta: -12 },
-            ],
+            kpiChanges: [{ key: "trust", label: { ar: "ثقة", en: "Trust" }, delta: -12 }],
           },
         ],
       },
       {
-        headline: { ar: "المجلس يسأل: 'ما هو أسوأ سيناريو الأسبوع القادم؟'", en: "Board asks: 'What is next week's worst case?'" },
+        headline: {
+          ar: "المجلس يسأل: 'ما هو أسوأ سيناريو الأسبوع القادم؟'",
+          en: "Board asks: 'What is next week's worst case?'",
+        },
         briefing: {
           ar: "هذا سؤال تنبؤي، لا تاريخي. لديك 40 ثانية للردّ.",
           en: "This is a forward-looking question, not historical. You have 40 seconds to reply.",
@@ -464,7 +566,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
         ],
         options: [
           {
-            label: { ar: "طلب سيناريو الأسبوع القادم مع نسبة الاحتمال من ARIA لحظياً", en: "Ask ARIA live: 'next-week scenario with probability'" },
+            label: {
+              ar: "طلب سيناريو الأسبوع القادم مع نسبة الاحتمال من ARIA لحظياً",
+              en: "Ask ARIA live: 'next-week scenario with probability'",
+            },
             correct: true,
             feedback: {
               ar: "استخدام قيادي في اللحظة. الإجابة: 'تركّز المخاطر يوم الجمعة (34%) بسبب فعالية + طقس'. المجلس اطمأنّ.",
@@ -476,7 +581,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "تجنّب السؤال بعبارة 'سنعود إليكم'", en: "Deflect: 'we'll come back to you'" },
+            label: {
+              ar: "تجنّب السؤال بعبارة 'سنعود إليكم'",
+              en: "Deflect: 'we'll come back to you'",
+            },
             correct: false,
             feedback: {
               ar: "فقدان لحظة قيادية. المجلس رأى إحجاماً، لا تحفّظاً.",
@@ -494,9 +602,7 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
               ar: "خطر تنفيذي عالٍ. رقم من الذاكرة قد يُقتبس ضدّك.",
               en: "High executive risk. A memory-number will be quoted back at you.",
             },
-            kpiChanges: [
-              { key: "trust", label: { ar: "ثقة", en: "Trust" }, delta: -6 },
-            ],
+            kpiChanges: [{ key: "trust", label: { ar: "ثقة", en: "Trust" }, delta: -6 }],
           },
         ],
       },
@@ -517,7 +623,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "طلب تصريح عمل ساخن قبل بدء الوردية بـ 20 دقيقة", en: "Hot-work permit request 20 min before shift start" },
+        headline: {
+          ar: "طلب تصريح عمل ساخن قبل بدء الوردية بـ 20 دقيقة",
+          en: "Hot-work permit request 20 min before shift start",
+        },
         briefing: {
           ar: "المقاول يطلب تصريحاً للحام في منطقة تخزين وقود. الجار (خزان الغاز) بمسافة 12 متراً. المطلوب قانونياً 15 متراً.",
           en: "Contractor requests welding near fuel storage. Adjacent gas tank is 12m away. Legal minimum is 15m.",
@@ -525,11 +634,18 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
         metrics: [
           { label: { ar: "المسافة الفعلية", en: "Actual distance" }, value: "12m", tone: "bad" },
           { label: { ar: "الحدّ القانوني", en: "Legal minimum" }, value: "15m", tone: "warn" },
-          { label: { ar: "تكلفة تأخير الوردية", en: "Shift-delay cost" }, value: "SAR 85K", tone: "warn" },
+          {
+            label: { ar: "تكلفة تأخير الوردية", en: "Shift-delay cost" },
+            value: "SAR 85K",
+            tone: "warn",
+          },
         ],
         options: [
           {
-            label: { ar: "منح التصريح — سنراقب عن كثب", en: "Grant permit — we'll monitor closely" },
+            label: {
+              ar: "منح التصريح — سنراقب عن كثب",
+              en: "Grant permit — we'll monitor closely",
+            },
             correct: false,
             feedback: {
               ar: "خرق قانوني موثّق. تدقيق مستقبلي سيسحب رخصة الموقع.",
@@ -541,7 +657,10 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
             ],
           },
           {
-            label: { ar: "رفض التصريح + اقتراح ARIA لموقع بديل بمسافة 22م", en: "Deny permit + accept ARIA's alt-location suggestion at 22m" },
+            label: {
+              ar: "رفض التصريح + اقتراح ARIA لموقع بديل بمسافة 22م",
+              en: "Deny permit + accept ARIA's alt-location suggestion at 22m",
+            },
             correct: true,
             feedback: {
               ar: "قرار تنفيذي محترف. الموقع البديل جاهز في 40 دقيقة — الامتثال محفوظ، والوردية استأنفت.",
@@ -584,19 +703,33 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "3 تنبيهات متزامنة، دوريّتان فقط متاحتان", en: "3 concurrent alerts, only 2 patrols available" },
+        headline: {
+          ar: "3 تنبيهات متزامنة، دوريّتان فقط متاحتان",
+          en: "3 concurrent alerts, only 2 patrols available",
+        },
         briefing: {
           ar: "التنبيهات: (A) باب مفتوح في مستودع، (B) شخص غير معروف قرب البوابة الغربية، (C) حسّاس دخان انذار كاذب متكرّر.",
           en: "Alerts: (A) door left open in warehouse, (B) unknown person near west gate, (C) smoke sensor with frequent false alarms.",
         },
         metrics: [
-          { label: { ar: "أولوية ARIA", en: "ARIA priority ranking" }, value: "B > A > C", tone: "warn" },
+          {
+            label: { ar: "أولوية ARIA", en: "ARIA priority ranking" },
+            value: "B > A > C",
+            tone: "warn",
+          },
           { label: { ar: "دوريّات متاحة", en: "Patrols available" }, value: "2", tone: "warn" },
-          { label: { ar: "معدّل الإنذار الكاذب لـ C", en: "C false-alarm rate" }, value: "87%", tone: "good" },
+          {
+            label: { ar: "معدّل الإنذار الكاذب لـ C", en: "C false-alarm rate" },
+            value: "87%",
+            tone: "good",
+          },
         ],
         options: [
           {
-            label: { ar: "إرسال دوريّة لكل من A و B، وإرجاء C لبثّ CCTV", en: "Send patrols to A + B, defer C to CCTV live feed" },
+            label: {
+              ar: "إرسال دوريّة لكل من A و B، وإرجاء C لبثّ CCTV",
+              en: "Send patrols to A + B, defer C to CCTV live feed",
+            },
             correct: true,
             feedback: {
               ar: "قرار مبنيّ على البيانات. C كان كاذباً مجدداً — ما كانت هناك حاجة لإرسال طاقم.",
@@ -650,30 +783,41 @@ export const DECISION_SCENARIOS: Record<string, DecisionScenario> = {
     ],
     steps: [
       {
-        headline: { ar: "وفد رسمي يصل بلا موعد سابق مسجّل", en: "Official delegation arrives with no prior appointment" },
+        headline: {
+          ar: "وفد رسمي يصل بلا موعد سابق مسجّل",
+          en: "Official delegation arrives with no prior appointment",
+        },
         briefing: {
           ar: "8 زوّار مع دبلوماسي معروف. الاستقبال لم يستلم إشعاراً. الفعالية المقصودة تبدأ خلال 25 دقيقة.",
           en: "8 visitors with a known diplomat. Reception got no notice. Target event starts in 25 min.",
         },
         metrics: [
-          { label: { ar: "التحقق من الهوية", en: "ID verification" }, value: "Pending", tone: "warn" },
+          {
+            label: { ar: "التحقق من الهوية", en: "ID verification" },
+            value: "Pending",
+            tone: "warn",
+          },
           { label: { ar: "الفعالية المقصودة", en: "Target event" }, value: "25 min", tone: "warn" },
           { label: { ar: "مضيف داخلي", en: "Internal host" }, value: "Not confirmed", tone: "bad" },
         ],
         options: [
           {
-            label: { ar: "إدخالهم فوراً لتجنّب الإحراج", en: "Admit immediately to avoid embarrassment" },
+            label: {
+              ar: "إدخالهم فوراً لتجنّب الإحراج",
+              en: "Admit immediately to avoid embarrassment",
+            },
             correct: false,
             feedback: {
               ar: "خرق أمني. الاحترام لا يُلغي البروتوكول.",
               en: "Security breach. Respect doesn't override protocol.",
             },
-            kpiChanges: [
-              { key: "security", label: { ar: "أمان", en: "Security" }, delta: -18 },
-            ],
+            kpiChanges: [{ key: "security", label: { ar: "أمان", en: "Security" }, delta: -18 }],
           },
           {
-            label: { ar: "التحقّق من ARIA للمضيف الداخلي + بدء تصاريح سريعة موقّعة رقمياً", en: "Ask ARIA to locate internal host + start fast-track e-permits" },
+            label: {
+              ar: "التحقّق من ARIA للمضيف الداخلي + بدء تصاريح سريعة موقّعة رقمياً",
+              en: "Ask ARIA to locate internal host + start fast-track e-permits",
+            },
             correct: true,
             feedback: {
               ar: "قرار تنفيذي مصقول. ARIA حدّدت المضيف، والوفد دخل خلال 8 دقائق بمعرفات صحيحة.",

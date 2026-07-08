@@ -103,12 +103,7 @@ export interface ReviewFinding {
 }
 
 export interface ReviewReport {
-  readonly domain:
-    | "security"
-    | "performance"
-    | "accessibility"
-    | "observability"
-    | "dependency";
+  readonly domain: "security" | "performance" | "accessibility" | "observability" | "dependency";
   readonly status: GateStatus;
   readonly findings: ReadonlyArray<ReviewFinding>;
   readonly evidence: ReadonlyArray<EvidenceRef>;

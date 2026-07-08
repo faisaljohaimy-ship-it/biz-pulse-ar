@@ -63,8 +63,11 @@ export function AriaWelcomeVideo({ onDone }: Props) {
 
   const reduced = useMemo(() => {
     if (typeof window === "undefined") return false;
-    try { return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false; }
-    catch { return false; }
+    try {
+      return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    } catch {
+      return false;
+    }
   }, []);
 
   // INVARIANT-3 + INVARIANT-4: single-source finalizer. Only explicit Skip
@@ -83,12 +86,38 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     finishedRef.current = true;
     const v = videoRef.current;
     const bg = bgVideoRef.current;
-    try { v?.pause(); } catch { /* ignore */ }
-    try { bg?.pause(); } catch { /* ignore */ }
+    try {
+      v?.pause();
+    } catch {
+      /* ignore */
+    }
+    try {
+      bg?.pause();
+    } catch {
+      /* ignore */
+    }
     if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-    try { audioCtxRef.current?.close(); } catch { /* ignore */ }
-    if (v) { try { v.removeAttribute("src"); v.load(); } catch { /* ignore */ } }
-    if (bg) { try { bg.removeAttribute("src"); bg.load(); } catch { /* ignore */ } }
+    try {
+      audioCtxRef.current?.close();
+    } catch {
+      /* ignore */
+    }
+    if (v) {
+      try {
+        v.removeAttribute("src");
+        v.load();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (bg) {
+      try {
+        bg.removeAttribute("src");
+        bg.load();
+      } catch {
+        /* ignore */
+      }
+    }
     setVisible(false);
     window.setTimeout(() => {
       setIntroActive(false);
@@ -126,23 +155,32 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   const attachAnalyser = () => {
     const v = videoRef.current;
     if (!v || analyserRef.current) return;
-    const isTouch = typeof window !== "undefined"
-      && (("ontouchstart" in window) || (navigator.maxTouchPoints ?? 0) > 0);
+    const isTouch =
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || (navigator.maxTouchPoints ?? 0) > 0);
     const startFallbackBars = () => {
       const start = performance.now();
       const tick = () => {
         const t = (performance.now() - start) / 1000;
-        setBars(Array.from({ length: BAR_COUNT }, (_, i) =>
-          0.25 + 0.35 * Math.abs(Math.sin(t * 2 + i * 0.4))
-        ));
+        setBars(
+          Array.from(
+            { length: BAR_COUNT },
+            (_, i) => 0.25 + 0.35 * Math.abs(Math.sin(t * 2 + i * 0.4)),
+          ),
+        );
         rafRef.current = requestAnimationFrame(tick);
       };
       rafRef.current = requestAnimationFrame(tick);
     };
-    if (isTouch) { startFallbackBars(); return; }
+    if (isTouch) {
+      startFallbackBars();
+      return;
+    }
     try {
       const primed = getPrimedAudioContext();
-      const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = primed ?? new Ctx();
       // Resume synchronously — if the caller is still inside a gesture,
       // this is what actually turns audio output back on.
@@ -181,7 +219,10 @@ export function AriaWelcomeVideo({ onDone }: Props) {
 
     const v = videoRef.current;
     const bg = bgVideoRef.current;
-    if (!v) return () => { setIntroActive(false); };
+    if (!v)
+      return () => {
+        setIntroActive(false);
+      };
 
     // "Online" status glow after 2.4s
     const onlineT = window.setTimeout(() => setStatusOnline(true), 2400);
@@ -193,13 +234,26 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       return () => {
         window.clearTimeout(onlineT);
         window.clearTimeout(capT);
-        try { v.pause(); } catch { /* ignore */ }
-        try { bg?.pause(); } catch { /* ignore */ }
+        try {
+          v.pause();
+        } catch {
+          /* ignore */
+        }
+        try {
+          bg?.pause();
+        } catch {
+          /* ignore */
+        }
         setIntroActive(false);
       };
     }
 
-    const startBg = () => { if (bg) { bg.muted = true; bg.play().catch(() => {}); } };
+    const startBg = () => {
+      if (bg) {
+        bg.muted = true;
+        bg.play().catch(() => {});
+      }
+    };
 
     const tryWithSound = async () => {
       // Mobile-safe path: iOS/Android block createMediaElementSource before a
@@ -218,7 +272,11 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         (v as HTMLVideoElement).setAttribute("muted", "");
         setMuted(true);
         setShowSoundChip(true);
-        try { await v.play(); } catch { /* ignore */ }
+        try {
+          await v.play();
+        } catch {
+          /* ignore */
+        }
         startBg();
         // DO NOT attachAnalyser here — waits for the unmute gesture.
       }
@@ -233,10 +291,13 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       // Belt-and-suspenders: ensure the bus is unlocked even if the
       // root-level tracker somehow missed this render (SSR hydration edge).
       // Synchronous — never break the gesture chain with async import().
-      try { AriaAudioBus.unlock(); } catch { /* ignore */ }
+      try {
+        AriaAudioBus.unlock();
+      } catch {
+        /* ignore */
+      }
     }
     void tryWithSound();
-
 
     return () => {
       window.clearTimeout(onlineT);
@@ -246,9 +307,21 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         pendingFinishRef.current = null;
       }
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-      try { audioCtxRef.current?.close(); } catch { /* ignore */ }
-      try { v.pause(); } catch { /* ignore */ }
-      try { bg?.pause(); } catch { /* ignore */ }
+      try {
+        audioCtxRef.current?.close();
+      } catch {
+        /* ignore */
+      }
+      try {
+        v.pause();
+      } catch {
+        /* ignore */
+      }
+      try {
+        bg?.pause();
+      } catch {
+        /* ignore */
+      }
       setIntroActive(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,13 +334,21 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     // Resume AudioContext first (must happen inside the user gesture on iOS),
     // then unmute the element, then attach the analyser lazily so the WebAudio
     // graph is never built in a suspended state on mobile.
-    try { audioCtxRef.current?.resume(); } catch { /* ignore */ }
+    try {
+      audioCtxRef.current?.resume();
+    } catch {
+      /* ignore */
+    }
     v.muted = false;
     (v as HTMLVideoElement).removeAttribute("muted");
     v.volume = 1;
     const p = v.play();
     if (p && typeof p.then === "function") {
-      p.then(() => { attachAnalyser(); }).catch(() => { /* ignore */ });
+      p.then(() => {
+        attachAnalyser();
+      }).catch(() => {
+        /* ignore */
+      });
     } else {
       attachAnalyser();
     }
@@ -284,7 +365,10 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       v.volume = 1;
       await v.play();
       const bg = bgVideoRef.current;
-      if (bg) { bg.muted = true; bg.play().catch(() => {}); }
+      if (bg) {
+        bg.muted = true;
+        bg.play().catch(() => {});
+      }
       setMuted(false);
       setNeedsGesture(false);
       setShowSoundChip(false);
@@ -301,7 +385,11 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const next = !muted;
     if (!next) {
       // unmuting — resume audio context inside the gesture
-      try { audioCtxRef.current?.resume(); } catch { /* ignore */ }
+      try {
+        audioCtxRef.current?.resume();
+      } catch {
+        /* ignore */
+      }
       v.muted = false;
       (v as HTMLVideoElement).removeAttribute("muted");
       v.volume = 1;
@@ -325,8 +413,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       aria-modal="true"
       className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden"
       style={{
-        background:
-          "radial-gradient(120% 90% at 50% 40%, #06213b 0%, #04111f 55%, #010814 100%)",
+        background: "radial-gradient(120% 90% at 50% 40%, #06213b 0%, #04111f 55%, #010814 100%)",
         colorScheme: "dark",
         opacity: visible ? 1 : 0,
         transition: `opacity ${FADE_MS}ms ease`,
@@ -334,7 +421,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         maxHeight: "100dvh",
       }}
       aria-label="مقدّمة سينمائية · Cinematic intro"
-      onPointerDown={() => { if (muted) unmute(); }}
+      onPointerDown={() => {
+        if (muted) unmute();
+      }}
     >
       {/* Layer A — HUD grid + ambient glow */}
       <div
@@ -344,8 +433,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           backgroundImage:
             "linear-gradient(rgba(0,212,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.08) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-          maskImage:
-            "radial-gradient(120% 90% at 50% 45%, black 40%, transparent 85%)",
+          maskImage: "radial-gradient(120% 90% at 50% 45%, black 40%, transparent 85%)",
         }}
       />
       <div
@@ -382,7 +470,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           muted
           preload="auto"
           aria-hidden
-          onError={() => { /* backdrop is decorative; ignore */ }}
+          onError={() => {
+            /* backdrop is decorative; ignore */
+          }}
           className="absolute inset-0 h-full w-full opacity-70"
           style={{
             objectFit: "cover",
@@ -486,8 +576,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
                   height: `${Math.max(10, amp * 100)}%`,
                   width: 3,
                   borderRadius: 2,
-                  background:
-                    "linear-gradient(180deg, #3AE8FF 0%, #00D4FF 60%, #0891b2 100%)",
+                  background: "linear-gradient(180deg, #3AE8FF 0%, #00D4FF 60%, #0891b2 100%)",
                   boxShadow: "0 0 6px rgba(58,232,255,0.55)",
                   transition: "height 90ms linear",
                   opacity: muted ? 0.5 : 1,
@@ -504,7 +593,10 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           type="button"
           onClick={unmute}
           className="absolute end-5 z-20 inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#04111f]/70 px-4 py-2 text-xs font-semibold text-[#3AE8FF] shadow-[0_0_28px_rgba(58,232,255,0.45)] backdrop-blur transition hover:bg-[#04111f]/90 sm:text-sm"
-          style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)", animation: "ariaChipPulse 1.6s ease-in-out infinite" }}
+          style={{
+            top: "calc(env(safe-area-inset-top, 0px) + 16px)",
+            animation: "ariaChipPulse 1.6s ease-in-out infinite",
+          }}
         >
           <Volume2 className="size-4" />
           <span>اضغط لتفعيل الصوت · Tap for sound</span>
@@ -541,7 +633,10 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       {/* Skip — always visible */}
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); finish({ bypassMinDisplay: true }); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          finish({ bypassMinDisplay: true });
+        }}
         className="absolute start-6 z-30 rounded-full border border-white/25 bg-black/40 px-4 py-2 text-xs font-medium text-white/85 backdrop-blur transition hover:bg-black/60 sm:text-sm"
         style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}
       >

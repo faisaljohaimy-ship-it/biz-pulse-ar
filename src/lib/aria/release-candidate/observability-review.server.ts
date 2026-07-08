@@ -1,12 +1,7 @@
 /**
  * Phase 10.0 — Observability review summarizer.
  */
-import type {
-  EvidenceRef,
-  GateStatus,
-  ReviewFinding,
-  ReviewReport,
-} from "./types";
+import type { EvidenceRef, GateStatus, ReviewFinding, ReviewReport } from "./types";
 
 export interface ObservabilityInput {
   readonly logs_enabled?: boolean;
@@ -15,9 +10,7 @@ export interface ObservabilityInput {
   readonly evidence: ReadonlyArray<EvidenceRef>;
 }
 
-export function summarizeObservability(
-  input: ObservabilityInput,
-): ReviewReport {
+export function summarizeObservability(input: ObservabilityInput): ReviewReport {
   const findings: ReviewFinding[] = [];
   const anyUnknown =
     input.logs_enabled === undefined ||

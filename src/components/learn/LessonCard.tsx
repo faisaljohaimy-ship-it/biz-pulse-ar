@@ -33,7 +33,10 @@ export function LessonCard({ lesson, lang }: Props) {
           : "border-white/10 bg-white/[0.02] opacity-70",
       )}
     >
-      <div aria-hidden className="pointer-events-none absolute -inset-32 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-32 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      >
         <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
       </div>
 
@@ -87,7 +90,11 @@ export function LessonCard({ lesson, lang }: Props) {
 
   if (!lesson.published) return card;
   return (
-    <Link to="/learn/$slug" params={{ slug: lesson.slug }} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-3xl">
+    <Link
+      to="/learn/$slug"
+      params={{ slug: lesson.slug }}
+      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-3xl"
+    >
       {card}
     </Link>
   );

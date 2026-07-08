@@ -15,7 +15,10 @@ import type {
 } from "./types";
 import { classifyPriority } from "./control-plane.server";
 
-function pickSeverity(items: ReadonlyArray<NormalizedSignal>, subject: string): {
+function pickSeverity(
+  items: ReadonlyArray<NormalizedSignal>,
+  subject: string,
+): {
   severity: NormalizedSignal["severity"];
   priority: Priority;
   detail: string;

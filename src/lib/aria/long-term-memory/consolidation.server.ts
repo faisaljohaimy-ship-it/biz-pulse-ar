@@ -56,7 +56,11 @@ export function consolidate(): ConsolidationReport {
       replaceRecord({ ...other, status: "compressed", updated_at: created_at });
     }
     merged.push({ kept_id: kept.id, merged_ids: others.map((r) => r.id) });
-    audit("consolidate.merge", kept.id, others.map((r) => r.id));
+    audit(
+      "consolidate.merge",
+      kept.id,
+      others.map((r) => r.id),
+    );
   }
 
   // 2) conflicts
@@ -90,16 +94,20 @@ export function consolidate(): ConsolidationReport {
     id: reportId(created_at),
     created_at,
     merged: Object.freeze(
-      merged.map((m) => Object.freeze({
-        kept_id: m.kept_id,
-        merged_ids: Object.freeze(m.merged_ids) as readonly string[],
-      })),
+      merged.map((m) =>
+        Object.freeze({
+          kept_id: m.kept_id,
+          merged_ids: Object.freeze(m.merged_ids) as readonly string[],
+        }),
+      ),
     ) as ConsolidationReport["merged"],
     compressed: Object.freeze(
-      compressed.map((c) => Object.freeze({
-        new_id: c.new_id,
-        source_ids: Object.freeze(c.source_ids) as readonly string[],
-      })),
+      compressed.map((c) =>
+        Object.freeze({
+          new_id: c.new_id,
+          source_ids: Object.freeze(c.source_ids) as readonly string[],
+        }),
+      ),
     ) as ConsolidationReport["compressed"],
     conflicts,
   });

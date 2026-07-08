@@ -29,7 +29,11 @@ export function PredictionsPanel({ compact = false }: { compact?: boolean }) {
           </div>
         </div>
         <NexusPill tone="violet">
-          {isLoading ? (ar ? "تحليل..." : "Analyzing...") : `${preds.length} ${ar ? "إشارة" : "signals"}`}
+          {isLoading
+            ? ar
+              ? "تحليل..."
+              : "Analyzing..."
+            : `${preds.length} ${ar ? "إشارة" : "signals"}`}
         </NexusPill>
       </div>
 
@@ -64,7 +68,9 @@ export function PredictionsPanel({ compact = false }: { compact?: boolean }) {
               </div>
               <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                 <NexusPill tone={p.tone}>{p.kind}</NexusPill>
-                <NexusPill tone="cyan">{p.confidence}% {ar ? "ثقة" : "conf"}</NexusPill>
+                <NexusPill tone="cyan">
+                  {p.confidence}% {ar ? "ثقة" : "conf"}
+                </NexusPill>
                 <NexusPill tone={p.impact === "critical" || p.impact === "high" ? "rose" : "amber"}>
                   {p.impact}
                 </NexusPill>

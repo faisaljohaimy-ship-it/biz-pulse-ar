@@ -33,34 +33,19 @@ export {
 // Workspace
 // ---------------------------------------------------------------------------
 
-export {
-  loadWorkspace,
-  getWorkspace,
-  saveWorkspace,
-  listWorkspaces,
-} from "./workspace.server";
+export { loadWorkspace, getWorkspace, saveWorkspace, listWorkspaces } from "./workspace.server";
 
 // ---------------------------------------------------------------------------
 // Objectives
 // ---------------------------------------------------------------------------
 
-export {
-  createObjective,
-  updateObjective,
-  getObjective,
-  listObjectives,
-} from "./objective.server";
+export { createObjective, updateObjective, getObjective, listObjectives } from "./objective.server";
 
 // ---------------------------------------------------------------------------
 // Artifacts
 // ---------------------------------------------------------------------------
 
-export {
-  storeArtifact,
-  updateArtifact,
-  getArtifact,
-  listArtifacts,
-} from "./artifact.server";
+export { storeArtifact, updateArtifact, getArtifact, listArtifacts } from "./artifact.server";
 
 // ---------------------------------------------------------------------------
 // Timeline

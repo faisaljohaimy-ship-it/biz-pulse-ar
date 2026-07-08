@@ -2,18 +2,9 @@
 
 export type TriState = "pass" | "fail" | "unknown";
 export type ConfidenceBucket = "low" | "medium" | "high" | "unknown";
-export type CommercialDecision =
-  | "GO"
-  | "NO_GO"
-  | "GO_WITH_KNOWN_LIMITATIONS"
-  | "UNKNOWN";
+export type CommercialDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 export type Severity = "low" | "medium" | "high" | "critical" | "unknown";
-export type LicensingModel =
-  | "subscription"
-  | "usage_based"
-  | "perpetual"
-  | "hybrid"
-  | "unknown";
+export type LicensingModel = "subscription" | "usage_based" | "perpetual" | "hybrid" | "unknown";
 export type BillingCycle = "monthly" | "quarterly" | "annual" | "multi_year" | "unknown";
 export type PricingTier = "starter" | "professional" | "enterprise" | "custom" | "unknown";
 export type ProcurementItemState = "not_started" | "in_progress" | "ready" | "blocked" | "unknown";

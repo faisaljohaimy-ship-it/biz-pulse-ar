@@ -2,7 +2,16 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, BellRing, Camera, KeyRound, ShieldAlert, Wrench, Filter, ArrowUpRight } from "lucide-react";
+import {
+  AlertTriangle,
+  BellRing,
+  Camera,
+  KeyRound,
+  ShieldAlert,
+  Wrench,
+  Filter,
+  ArrowUpRight,
+} from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
 
 type Priority = "critical" | "high" | "medium" | "low";
@@ -19,18 +28,48 @@ type AlertItem = {
   to: string;
 };
 
-const PRIO_STYLE: Record<Priority, { dot: string; text: string; border: string; bg: string; label: string }> = {
-  critical: { dot: "bg-rose-500",   text: "text-rose-300",   border: "border-rose-500/40",   bg: "bg-rose-500/10",   label: "حرج" },
-  high:     { dot: "bg-amber-400",  text: "text-amber-300",  border: "border-amber-400/40",  bg: "bg-amber-400/10",  label: "مرتفع" },
-  medium:   { dot: "bg-sky-400",    text: "text-sky-300",    border: "border-sky-400/40",    bg: "bg-sky-400/10",    label: "متوسط" },
-  low:      { dot: "bg-emerald-400",text: "text-emerald-300",border: "border-emerald-400/40",bg: "bg-emerald-400/10",label: "منخفض" },
+const PRIO_STYLE: Record<
+  Priority,
+  { dot: string; text: string; border: string; bg: string; label: string }
+> = {
+  critical: {
+    dot: "bg-rose-500",
+    text: "text-rose-300",
+    border: "border-rose-500/40",
+    bg: "bg-rose-500/10",
+    label: "حرج",
+  },
+  high: {
+    dot: "bg-amber-400",
+    text: "text-amber-300",
+    border: "border-amber-400/40",
+    bg: "bg-amber-400/10",
+    label: "مرتفع",
+  },
+  medium: {
+    dot: "bg-sky-400",
+    text: "text-sky-300",
+    border: "border-sky-400/40",
+    bg: "bg-sky-400/10",
+    label: "متوسط",
+  },
+  low: {
+    dot: "bg-emerald-400",
+    text: "text-emerald-300",
+    border: "border-emerald-400/40",
+    bg: "bg-emerald-400/10",
+    label: "منخفض",
+  },
 };
 
-const SOURCE_META: Record<Source, { icon: React.ComponentType<{ className?: string }>; label: string }> = {
+const SOURCE_META: Record<
+  Source,
+  { icon: React.ComponentType<{ className?: string }>; label: string }
+> = {
   incident: { icon: AlertTriangle, label: "بلاغات" },
-  cctv:     { icon: Camera,        label: "مراقبة" },
-  permit:   { icon: KeyRound,      label: "تصاريح" },
-  asset:    { icon: Wrench,        label: "أصول" },
+  cctv: { icon: Camera, label: "مراقبة" },
+  permit: { icon: KeyRound, label: "تصاريح" },
+  asset: { icon: Wrench, label: "أصول" },
 };
 
 function timeAgo(iso: string) {
@@ -44,10 +83,14 @@ function timeAgo(iso: string) {
 
 function severityToPriority(sev: string | null | undefined): Priority {
   switch ((sev ?? "").toLowerCase()) {
-    case "critical": return "critical";
-    case "high": return "high";
-    case "medium": return "medium";
-    default: return "low";
+    case "critical":
+      return "critical";
+    case "high":
+      return "high";
+    case "medium":
+      return "medium";
+    default:
+      return "low";
   }
 }
 
@@ -83,7 +126,8 @@ export function AlertsPanel() {
 
     for (const c of data.cctv) {
       if (c.status === "resolved" || c.status === "dismissed") continue;
-      const p: Priority = c.confidence >= 0.9 ? "critical" : c.confidence >= 0.75 ? "high" : "medium";
+      const p: Priority =
+        c.confidence >= 0.9 ? "critical" : c.confidence >= 0.75 ? "high" : "medium";
       out.push({
         id: `cctv-${c.id}`,
         source: "cctv",
@@ -117,8 +161,8 @@ export function AlertsPanel() {
 
     for (const a of data.assets) {
       if (a.status === "operational" && a.health >= 60) continue;
-      const p: Priority = a.status === "offline" || a.health < 30 ? "critical"
-        : a.health < 50 ? "high" : "medium";
+      const p: Priority =
+        a.status === "offline" || a.health < 30 ? "critical" : a.health < 50 ? "high" : "medium";
       out.push({
         id: `ast-${a.id}`,
         source: "asset",
@@ -137,7 +181,10 @@ export function AlertsPanel() {
   }, [data]);
 
   const counts = useMemo(() => {
-    const c = { all: items.length, critical: 0, high: 0, medium: 0, low: 0 } as Record<string, number>;
+    const c = { all: items.length, critical: 0, high: 0, medium: 0, low: 0 } as Record<
+      string,
+      number
+    >;
     for (const i of items) c[i.priority]++;
     return c;
   }, [items]);
@@ -158,12 +205,18 @@ export function AlertsPanel() {
               <span className="absolute -top-1 -left-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_currentColor]" />
             )}
           </div>
-          <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">Live Alerts</span>
+          <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">
+            Live Alerts
+          </span>
           <span className="text-xs text-foreground/40 font-mono">· {items.length}</span>
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-mono">
-          <span className={`w-1.5 h-1.5 rounded-full ${isFetching ? "bg-primary animate-pulse" : "bg-emerald-400"}`} />
-          <span className="text-foreground/50 uppercase tracking-widest">{isFetching ? "SYNC" : "LIVE"}</span>
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${isFetching ? "bg-primary animate-pulse" : "bg-emerald-400"}`}
+          />
+          <span className="text-foreground/50 uppercase tracking-widest">
+            {isFetching ? "SYNC" : "LIVE"}
+          </span>
         </div>
       </header>
 
@@ -198,18 +251,25 @@ export function AlertsPanel() {
         <button
           onClick={() => setSource("all")}
           className={`rounded-md px-2 py-0.5 text-[10px] font-mono border transition-colors ${
-            source === "all" ? "border-primary/40 text-primary bg-primary/10" : "border-white/5 text-foreground/50 hover:text-foreground/80"
+            source === "all"
+              ? "border-primary/40 text-primary bg-primary/10"
+              : "border-white/5 text-foreground/50 hover:text-foreground/80"
           }`}
-        >جميع المصادر</button>
+        >
+          جميع المصادر
+        </button>
         {(Object.keys(SOURCE_META) as Source[]).map((s) => {
-          const M = SOURCE_META[s]; const Icon = M.icon;
+          const M = SOURCE_META[s];
+          const Icon = M.icon;
           const active = source === s;
           return (
             <button
               key={s}
               onClick={() => setSource(s)}
               className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-mono border transition-colors ${
-                active ? "border-secondary/40 text-secondary bg-secondary/10" : "border-white/5 text-foreground/50 hover:text-foreground/80"
+                active
+                  ? "border-secondary/40 text-secondary bg-secondary/10"
+                  : "border-white/5 text-foreground/50 hover:text-foreground/80"
               }`}
             >
               <Icon className="w-3 h-3" /> {M.label}
@@ -235,17 +295,25 @@ export function AlertsPanel() {
                 to={a.to}
                 className="group flex items-start gap-3 px-4 py-2.5 hover:bg-white/[0.03] transition-colors"
               >
-                <span className={`mt-1.5 w-2 h-2 rounded-full ${style.dot} shadow-[0_0_6px_currentColor] shrink-0`} />
+                <span
+                  className={`mt-1.5 w-2 h-2 rounded-full ${style.dot} shadow-[0_0_6px_currentColor] shrink-0`}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <Icon className={`w-3 h-3 ${style.text} shrink-0`} />
-                    <span className={`text-[9px] font-mono uppercase tracking-widest px-1.5 py-px rounded border ${style.border} ${style.text}`}>
+                    <span
+                      className={`text-[9px] font-mono uppercase tracking-widest px-1.5 py-px rounded border ${style.border} ${style.text}`}
+                    >
                       {style.label}
                     </span>
-                    <span className="text-[10px] font-mono text-foreground/40 truncate">{a.ref}</span>
+                    <span className="text-[10px] font-mono text-foreground/40 truncate">
+                      {a.ref}
+                    </span>
                   </div>
                   <div className="text-xs text-foreground/90 truncate">{a.title}</div>
-                  <div className="text-[10px] text-foreground/40 font-mono mt-0.5 truncate">{a.meta}</div>
+                  <div className="text-[10px] text-foreground/40 font-mono mt-0.5 truncate">
+                    {a.meta}
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className="text-[10px] font-mono text-foreground/40">{timeAgo(a.ts)}</span>

@@ -50,9 +50,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   errorComponent: ({ error }) => (
     <main className="mx-auto max-w-lg p-6">
       <h1 className="text-xl font-semibold">Authorization error</h1>
-      <p className="mt-2 text-muted-foreground">
-        {String((error as Error)?.message ?? error)}
-      </p>
+      <p className="mt-2 text-muted-foreground">{String((error as Error)?.message ?? error)}</p>
     </main>
   ),
 });
@@ -88,12 +86,10 @@ function Consent() {
 
   return (
     <main className="mx-auto max-w-lg p-6">
-      <h1 className="text-2xl font-semibold">
-        Connect {clientName} to NEXUS AI OS
-      </h1>
+      <h1 className="text-2xl font-semibold">Connect {clientName} to NEXUS AI OS</h1>
       <p className="mt-3 text-muted-foreground">
-        {clientName} will be able to call this app's enabled MCP tools while you are signed in.
-        This does not bypass this app's permissions or backend policies.
+        {clientName} will be able to call this app's enabled MCP tools while you are signed in. This
+        does not bypass this app's permissions or backend policies.
       </p>
       {details?.scope && (
         <p className="mt-2 text-sm text-muted-foreground">

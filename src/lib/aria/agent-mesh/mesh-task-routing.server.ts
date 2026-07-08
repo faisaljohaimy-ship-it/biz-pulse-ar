@@ -1,11 +1,5 @@
 // Batched mission routing on top of routing.server. Prevents duplicate execution across the batch.
-import type {
-  AgentDescriptor,
-  CapabilityMap,
-  MeshNode,
-  Mission,
-  RouteDecision,
-} from "./types";
+import type { AgentDescriptor, CapabilityMap, MeshNode, Mission, RouteDecision } from "./types";
 import { routeMission } from "./routing.server";
 
 export function routeMissionBatch(input: {

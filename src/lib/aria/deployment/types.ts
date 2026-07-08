@@ -7,13 +7,7 @@ export type EnvironmentKind = "development" | "staging" | "production" | "unknow
 
 export type NodeRole = "leader" | "follower" | "candidate" | "unknown";
 
-export type NodeStatus =
-  | "registering"
-  | "ready"
-  | "draining"
-  | "unhealthy"
-  | "offline"
-  | "unknown";
+export type NodeStatus = "registering" | "ready" | "draining" | "unhealthy" | "offline" | "unknown";
 
 export type ReleaseChannel = "canary" | "beta" | "stable" | "rollback" | "unknown";
 
@@ -21,18 +15,9 @@ export type ProbeKind = "health" | "readiness" | "liveness";
 
 export type ProbeState = "healthy" | "unhealthy" | "unknown";
 
-export type LoadStrategy =
-  | "round_robin"
-  | "least_loaded"
-  | "hash"
-  | "sticky"
-  | "unknown";
+export type LoadStrategy = "round_robin" | "least_loaded" | "hash" | "sticky" | "unknown";
 
-export type DeploymentDecision =
-  | "GO"
-  | "NO_GO"
-  | "GO_WITH_KNOWN_LIMITATIONS"
-  | "UNKNOWN";
+export type DeploymentDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 
 export interface EvidenceRef {
   readonly source: string;

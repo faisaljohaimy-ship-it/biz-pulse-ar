@@ -1,11 +1,5 @@
 // Cost-benefit aggregation. Unknown-confidence benefit ⇒ total is null.
-import type {
-  BenefitItem,
-  ConfidenceBucket,
-  CostBenefit,
-  CostItem,
-  EvidenceRef,
-} from "./types";
+import type { BenefitItem, ConfidenceBucket, CostBenefit, CostItem, EvidenceRef } from "./types";
 import { BenefitItemZ, CostItemZ } from "./contracts";
 
 const RANK: Record<ConfidenceBucket, number> = { high: 3, medium: 2, low: 1, unknown: 0 };

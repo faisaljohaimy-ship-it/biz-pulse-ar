@@ -11,21 +11,38 @@ export const Route = createFileRoute("/_authenticated/sec/permits")({
 });
 
 type Permit = {
-  id: string; ref: string; work_type: string; contractor: string;
-  risk_level: string; status: string; starts_at: string; ends_at: string;
+  id: string;
+  ref: string;
+  work_type: string;
+  contractor: string;
+  risk_level: string;
+  status: string;
+  starts_at: string;
+  ends_at: string;
   approver: string | null;
 };
 
 function Permits() {
   const fetchPermits = useServerFn(listPermits);
   const fetchKpis = useServerFn(getOmsKpis);
-  const { data } = useQuery({ queryKey: ["oms-permits"], queryFn: () => fetchPermits(), refetchInterval: 30_000 });
-  const { data: kpis } = useQuery({ queryKey: ["oms-kpis"], queryFn: () => fetchKpis(), refetchInterval: 30_000 });
+  const { data } = useQuery({
+    queryKey: ["oms-permits"],
+    queryFn: () => fetchPermits(),
+    refetchInterval: 30_000,
+  });
+  const { data: kpis } = useQuery({
+    queryKey: ["oms-kpis"],
+    queryFn: () => fetchKpis(),
+    refetchInterval: 30_000,
+  });
   const rows = (data ?? []) as Permit[];
 
   return (
     <div className="space-y-4">
-      <SecPageHeader title="إدارة التصاريح (Permit to Work)" subtitle={`${rows.length} تصريح — اعتماد متعدد المستويات`}>
+      <SecPageHeader
+        title="إدارة التصاريح (Permit to Work)"
+        subtitle={`${rows.length} تصريح — اعتماد متعدد المستويات`}
+      >
         <NewPermitDialog />
       </SecPageHeader>
 
@@ -58,16 +75,42 @@ function Permits() {
                 <td className="px-3 py-2 font-mono text-xs">{p.ref}</td>
                 <td className="px-3 py-2">{p.work_type}</td>
                 <td className="px-3 py-2 text-muted-foreground">{p.contractor}</td>
-                <td className="px-3 py-2"><span className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(p.risk_level)}`}>{p.risk_level}</span></td>
-                <td className="px-3 py-2"><span className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}>{p.status}</span></td>
-                <td className="px-3 py-2 text-xs">{new Date(p.starts_at).toLocaleDateString("ar-SA")}</td>
-                <td className="px-3 py-2 text-xs">{new Date(p.ends_at).toLocaleDateString("ar-SA")}</td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(p.risk_level)}`}
+                  >
+                    {p.risk_level}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}
+                  >
+                    {p.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-xs">
+                  {new Date(p.starts_at).toLocaleDateString("ar-SA")}
+                </td>
+                <td className="px-3 py-2 text-xs">
+                  {new Date(p.ends_at).toLocaleDateString("ar-SA")}
+                </td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">{p.approver ?? "—"}</td>
-                <td className="px-3 py-2"><PermitActions id={p.id} status={p.status} /></td>
+                <td className="px-3 py-2">
+                  <PermitActions id={p.id} status={p.status} />
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={9} className="py-8 text-center"><LiveStatus variant="monitoring" hint="نظام التصاريح متصل — لا تصاريح نشطة الآن" size="sm" /></td></tr>
+              <tr>
+                <td colSpan={9} className="py-8 text-center">
+                  <LiveStatus
+                    variant="monitoring"
+                    hint="نظام التصاريح متصل — لا تصاريح نشطة الآن"
+                    size="sm"
+                  />
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

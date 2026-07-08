@@ -39,12 +39,25 @@ export function LessonCinematicHero({ title, subtitle, order, lang }: Props) {
         }}
       />
       {/* Orbs */}
-      <div aria-hidden className="absolute -left-24 top-1/3 h-[420px] w-[420px] rounded-full bg-cyan-500/25 blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
-      <div aria-hidden className="absolute -right-16 bottom-0 h-[360px] w-[360px] rounded-full bg-blue-500/20 blur-[120px] animate-[pulse_8s_ease-in-out_infinite]" />
+      <div
+        aria-hidden
+        className="absolute -left-24 top-1/3 h-[420px] w-[420px] rounded-full bg-cyan-500/25 blur-[120px] animate-[pulse_6s_ease-in-out_infinite]"
+      />
+      <div
+        aria-hidden
+        className="absolute -right-16 bottom-0 h-[360px] w-[360px] rounded-full bg-blue-500/20 blur-[120px] animate-[pulse_8s_ease-in-out_infinite]"
+      />
 
       {/* HUD frame */}
-      <div aria-hidden className="pointer-events-none absolute inset-4 rounded-2xl border border-cyan-400/20" />
-      <div aria-hidden className="pointer-events-none absolute inset-4 rounded-2xl border-2 border-transparent [background:linear-gradient(120deg,transparent_20%,rgba(0,212,255,0.15)_40%,transparent_60%)_border-box]" style={{ maskImage: "linear-gradient(#000 0 0)" }} />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-4 rounded-2xl border border-cyan-400/20"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-4 rounded-2xl border-2 border-transparent [background:linear-gradient(120deg,transparent_20%,rgba(0,212,255,0.15)_40%,transparent_60%)_border-box]"
+        style={{ maskImage: "linear-gradient(#000 0 0)" }}
+      />
 
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col justify-between p-8">

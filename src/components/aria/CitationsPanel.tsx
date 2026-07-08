@@ -35,11 +35,34 @@ const KIND_ICON = {
   memory: Brain,
 } as const;
 
-const STATUS_LABEL: Record<CoverageInfo["status"], { ar: string; en: string; tone: string; Icon: typeof ShieldCheck }> = {
-  grounded: { ar: "موثّق بالمصادر", en: "Grounded", tone: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30", Icon: ShieldCheck },
-  partial:  { ar: "موثّق جزئياً", en: "Partially grounded", tone: "bg-amber-500/15 text-amber-300 border-amber-500/30", Icon: ShieldAlert },
-  uncited:  { ar: "بدون اقتباس",  en: "Sources uncited", tone: "bg-rose-500/15 text-rose-300 border-rose-500/30", Icon: ShieldAlert },
-  "no-sources": { ar: "لا مصادر", en: "No retrieved sources", tone: "bg-muted text-muted-foreground border-border", Icon: ShieldQuestion },
+const STATUS_LABEL: Record<
+  CoverageInfo["status"],
+  { ar: string; en: string; tone: string; Icon: typeof ShieldCheck }
+> = {
+  grounded: {
+    ar: "موثّق بالمصادر",
+    en: "Grounded",
+    tone: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+    Icon: ShieldCheck,
+  },
+  partial: {
+    ar: "موثّق جزئياً",
+    en: "Partially grounded",
+    tone: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+    Icon: ShieldAlert,
+  },
+  uncited: {
+    ar: "بدون اقتباس",
+    en: "Sources uncited",
+    tone: "bg-rose-500/15 text-rose-300 border-rose-500/30",
+    Icon: ShieldAlert,
+  },
+  "no-sources": {
+    ar: "لا مصادر",
+    en: "No retrieved sources",
+    tone: "bg-muted text-muted-foreground border-border",
+    Icon: ShieldQuestion,
+  },
 };
 
 export function CitationsPanel({
@@ -65,11 +88,18 @@ export function CitationsPanel({
       <div className="mt-3 rounded-xl border border-border/60 bg-card/50 p-3 backdrop-blur">
         <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
           {status && (
-            <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium", status.tone)}>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium",
+                status.tone,
+              )}
+            >
               <status.Icon className="h-3 w-3" />
               {locale === "ar" ? status.ar : status.en}
               {coverage && coverage.available > 0 && (
-                <span className="opacity-70">· {coverage.cited}/{coverage.available}</span>
+                <span className="opacity-70">
+                  · {coverage.cited}/{coverage.available}
+                </span>
               )}
             </span>
           )}
@@ -120,7 +150,10 @@ export function CitationsPanel({
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  {(() => { const I = KIND_ICON[open.kind]; return <I className="h-4 w-4 text-primary" />; })()}
+                  {(() => {
+                    const I = KIND_ICON[open.kind];
+                    return <I className="h-4 w-4 text-primary" />;
+                  })()}
                   {open.title}
                 </DialogTitle>
                 <DialogDescription className="flex flex-wrap items-center gap-2 text-xs">
@@ -130,7 +163,8 @@ export function CitationsPanel({
                 </DialogDescription>
               </DialogHeader>
               <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/30 p-3 text-sm leading-relaxed">
-                {open.excerpt || (locale === "ar" ? "لا يوجد مقتطف متاح." : "No excerpt available.")}
+                {open.excerpt ||
+                  (locale === "ar" ? "لا يوجد مقتطف متاح." : "No excerpt available.")}
               </div>
               <p className="text-[11px] text-muted-foreground">
                 {locale === "ar"

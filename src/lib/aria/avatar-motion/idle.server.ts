@@ -10,5 +10,7 @@ export class IdleEngine {
     const pitch = Math.sin(this.phase * 0.6) * 0.03 * scale;
     return { headYaw: yaw, headPitch: pitch };
   }
-  reset(): void { this.phase = 0; }
+  reset(): void {
+    this.phase = 0;
+  }
 }

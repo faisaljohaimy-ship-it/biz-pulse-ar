@@ -9,9 +9,9 @@ import type {
 } from "./types";
 
 const BIAS_MARKERS = [
-  { pattern: /\balways\b/i, note: "Absolute language (\"always\") — potential confirmation bias." },
-  { pattern: /\bnever\b/i, note: "Absolute language (\"never\") — potential availability bias." },
-  { pattern: /\bobvious(ly)?\b/i, note: "Framing bias — \"obvious\" claim without evidence trace." },
+  { pattern: /\balways\b/i, note: 'Absolute language ("always") — potential confirmation bias.' },
+  { pattern: /\bnever\b/i, note: 'Absolute language ("never") — potential availability bias.' },
+  { pattern: /\bobvious(ly)?\b/i, note: 'Framing bias — "obvious" claim without evidence trace.' },
 ];
 
 export interface ReflectionReport {
@@ -90,8 +90,10 @@ export function reflect(input: {
   }
 
   const notes: string[] = [];
-  if (input.confidence.overall < 0.4) notes.push("Overall confidence low — recommend deferral or evidence acquisition.");
-  if (input.confidence.contradictionPenalty > 0.2) notes.push("Contradiction penalty material — resolve conflicts before commit.");
+  if (input.confidence.overall < 0.4)
+    notes.push("Overall confidence low — recommend deferral or evidence acquisition.");
+  if (input.confidence.contradictionPenalty > 0.2)
+    notes.push("Contradiction penalty material — resolve conflicts before commit.");
 
   return { biases, uncertainties, risks, assumptions, notes };
 }

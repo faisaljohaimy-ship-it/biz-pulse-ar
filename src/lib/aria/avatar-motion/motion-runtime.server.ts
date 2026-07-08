@@ -19,9 +19,16 @@ import { MotionMetrics } from "./metrics.server";
 import type { EmotionCue, MotionSample, MotionState, MotionTick, SpeechChunkInput } from "./types";
 
 const STATE_GLOW: Record<MotionState, number> = {
-  idle: 0.3, greeting: 0.7, listening: 0.55, thinking: 0.75,
-  speaking: 0.85, explaining: 0.75, interrupted: 0.4,
-  warning: 0.7, success: 0.65, error: 0.6,
+  idle: 0.3,
+  greeting: 0.7,
+  listening: 0.55,
+  thinking: 0.75,
+  speaking: 0.85,
+  explaining: 0.75,
+  interrupted: 0.4,
+  warning: 0.7,
+  success: 0.65,
+  error: 0.6,
 };
 
 export interface MotionRuntimeOptions {
@@ -46,20 +53,33 @@ export class MotionRuntime {
   private emotion = new EmotionSync(this.expression);
 
   private sample: MotionSample = {
-    state: "idle", emotion: "confident",
-    breath: 0, blink: 0, gazeX: 0, gazeY: 0,
-    headYaw: 0, headPitch: 0, gesture: 0, gestureId: null,
-    lip: 0, glow: STATE_GLOW.idle, ts: 0,
+    state: "idle",
+    emotion: "confident",
+    breath: 0,
+    blink: 0,
+    gazeX: 0,
+    gazeY: 0,
+    headYaw: 0,
+    headPitch: 0,
+    gesture: 0,
+    gestureId: null,
+    lip: 0,
+    glow: STATE_GLOW.idle,
+    ts: 0,
   };
   private lastNow = 0;
   private reducedMotion: boolean;
 
   constructor(opts: MotionRuntimeOptions = {}) {
     this.reducedMotion = !!opts.reducedMotion;
-    this.fsm.subscribe(() => { this.metrics.recordTransition(); });
+    this.fsm.subscribe(() => {
+      this.metrics.recordTransition();
+    });
   }
 
-  setReducedMotion(v: boolean): void { this.reducedMotion = v; }
+  setReducedMotion(v: boolean): void {
+    this.reducedMotion = v;
+  }
 
   transition(to: MotionState): boolean {
     const ok = this.fsm.transition(to);
@@ -89,7 +109,9 @@ export class MotionRuntime {
     this.audit.log("emotion_cue", { emotion: cue.emotion, intensity: cue.intensity });
   }
 
-  setGazeTarget(x: number, y: number): void { this.eyes.setTarget(x, y); }
+  setGazeTarget(x: number, y: number): void {
+    this.eyes.setTarget(x, y);
+  }
 
   tick(nowMs: number = Date.now()): MotionSample {
     const dtMs = this.lastNow === 0 ? 16 : Math.max(1, nowMs - this.lastNow);
@@ -116,8 +138,12 @@ export class MotionRuntime {
       blink: clamp01(clampChannelDelta("blink", prev.blink, nextBlink)),
       gazeX: clampBipolar(clampChannelDelta("gaze", prev.gazeX, gaze.gazeX)),
       gazeY: clampBipolar(clampChannelDelta("gaze", prev.gazeY, gaze.gazeY)),
-      headYaw: clampBipolar(clampChannelDelta("head", prev.headYaw, idleSway.headYaw + headOff.yaw)),
-      headPitch: clampBipolar(clampChannelDelta("head", prev.headPitch, idleSway.headPitch + headOff.pitch)),
+      headYaw: clampBipolar(
+        clampChannelDelta("head", prev.headYaw, idleSway.headYaw + headOff.yaw),
+      ),
+      headPitch: clampBipolar(
+        clampChannelDelta("head", prev.headPitch, idleSway.headPitch + headOff.pitch),
+      ),
       gesture: clamp01(clampChannelDelta("gesture", prev.gesture, gest.amplitude)),
       gestureId: gest.id,
       lip: clamp01(clampChannelDelta("lip", prev.lip, nextLip)),
@@ -135,5 +161,7 @@ export class MotionRuntime {
     return next;
   }
 
-  getSample(): MotionSample { return this.sample; }
+  getSample(): MotionSample {
+    return this.sample;
+  }
 }

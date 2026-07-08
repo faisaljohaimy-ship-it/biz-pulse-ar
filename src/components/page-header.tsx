@@ -31,9 +31,7 @@ export function PageHeader({
               </span>
             )}
           </div>
-          {subtitle && (
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>
-          )}
+          {subtitle && <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

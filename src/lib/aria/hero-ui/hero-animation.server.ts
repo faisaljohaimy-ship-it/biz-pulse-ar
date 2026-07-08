@@ -11,4 +11,6 @@ export function tickAnimation(id: string, now = Date.now()): HeroAnimationTick {
   return { frame, tSec: (now - cur.started) / 1000, deltaMs: delta, fps };
 }
 
-export function resetAnimation(id: string): void { CLOCKS.delete(id); }
+export function resetAnimation(id: string): void {
+  CLOCKS.delete(id);
+}

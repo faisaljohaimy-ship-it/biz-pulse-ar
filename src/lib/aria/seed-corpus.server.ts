@@ -60,7 +60,10 @@ const STARTER_CORPUS: Entry[] = [
 type AdminClient = {
   from: (t: string) => {
     select: (s: string) => {
-      eq: (col: string, val: string) => {
+      eq: (
+        col: string,
+        val: string,
+      ) => {
         limit: (n: number) => Promise<{ data: Array<{ id?: string; title?: string }> | null }>;
       };
     };

@@ -12,9 +12,7 @@ export class JobQueue {
 
   enqueue(job: Job): JobRecord {
     if (this.store.queueDepth() >= this.maxDepth) {
-      throw new Error(
-        `Queue full: depth=${this.store.queueDepth()} max=${this.maxDepth}`,
-      );
+      throw new Error(`Queue full: depth=${this.store.queueDepth()} max=${this.maxDepth}`);
     }
     return this.store.enqueue(job);
   }

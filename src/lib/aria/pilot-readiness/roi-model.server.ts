@@ -1,12 +1,6 @@
 // ROI model — deterministic NPV / ROI / payback with confidence bucket.
 // No fabricated cash flows: caller-supplied inputs only.
-import type {
-  ConfidenceBucket,
-  EvidenceRef,
-  RoiInputs,
-  RoiResult,
-  ValueCase,
-} from "./types";
+import type { ConfidenceBucket, EvidenceRef, RoiInputs, RoiResult, ValueCase } from "./types";
 import { RoiInputsZ } from "./contracts";
 
 export function computeRoi(input: {
@@ -28,7 +22,8 @@ export function computeRoi(input: {
     npv += netAnnual / Math.pow(1 + parsed.discountRate, y);
   }
   const totalNet = netAnnual * parsed.horizonYears;
-  const roiPct = parsed.investment === 0 ? null : (totalNet - parsed.investment) / parsed.investment;
+  const roiPct =
+    parsed.investment === 0 ? null : (totalNet - parsed.investment) / parsed.investment;
 
   let paybackYears: number | null = null;
   if (netAnnual > 0) {

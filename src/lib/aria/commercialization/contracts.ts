@@ -9,13 +9,7 @@ export const EvidenceRefZ = z.object({
 
 export const ConfidenceZ = z.enum(["low", "medium", "high", "unknown"]);
 export const SeverityZ = z.enum(["low", "medium", "high", "critical", "unknown"]);
-export const BillingCycleZ = z.enum([
-  "monthly",
-  "quarterly",
-  "annual",
-  "multi_year",
-  "unknown",
-]);
+export const BillingCycleZ = z.enum(["monthly", "quarterly", "annual", "multi_year", "unknown"]);
 export const TierZ = z.enum(["starter", "professional", "enterprise", "custom", "unknown"]);
 export const LicensingModelZ = z.enum([
   "subscription",

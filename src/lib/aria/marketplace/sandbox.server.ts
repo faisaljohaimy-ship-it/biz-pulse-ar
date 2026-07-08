@@ -47,8 +47,7 @@ export async function runInSandbox<T>(
     };
   } catch (err) {
     const timedOut = ctrl.signal.aborted && String(ctrl.signal.reason) === "timeout";
-    const cancelled =
-      ctrl.signal.aborted && String(ctrl.signal.reason) === "cancelled";
+    const cancelled = ctrl.signal.aborted && String(ctrl.signal.reason) === "cancelled";
     return {
       ok: false,
       error: err instanceof Error ? err.message : String(err),

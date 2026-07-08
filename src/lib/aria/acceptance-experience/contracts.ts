@@ -4,7 +4,11 @@ export const LangSchema = z.enum(["ar", "en"]);
 export const SystemHealthSchema = z.enum(["green", "amber", "red", "unknown"]);
 export const ResponseModeSchema = z.enum(["brief", "detailed"]);
 export const AcceptanceStepSchema = z.enum([
-  "welcome", "system_health", "top_risks", "recommendations", "ask_next",
+  "welcome",
+  "system_health",
+  "top_risks",
+  "recommendations",
+  "ask_next",
 ]);
 
 export const ExecutiveGreetingInputSchema = z.object({

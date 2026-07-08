@@ -58,9 +58,9 @@ const RAW: AvatarIdentity = {
   ],
   expressions: [
     { mood: "confident", brow_lift: 0.05, mouth_curve: 0.35, eye_openness: 0.85, head_tilt_deg: 0 },
-    { mood: "warm",      brow_lift: 0.15, mouth_curve: 0.55, eye_openness: 0.9,  head_tilt_deg: 3 },
-    { mood: "focused",   brow_lift: -0.1, mouth_curve: 0.1,  eye_openness: 0.8,  head_tilt_deg: -2 },
-    { mood: "alert",     brow_lift: 0.25, mouth_curve: 0.05, eye_openness: 1,    head_tilt_deg: 0 },
+    { mood: "warm", brow_lift: 0.15, mouth_curve: 0.55, eye_openness: 0.9, head_tilt_deg: 3 },
+    { mood: "focused", brow_lift: -0.1, mouth_curve: 0.1, eye_openness: 0.8, head_tilt_deg: -2 },
+    { mood: "alert", brow_lift: 0.25, mouth_curve: 0.05, eye_openness: 1, head_tilt_deg: 0 },
   ],
   lip_sync: {
     viseme_set: "hybrid",
@@ -74,8 +74,12 @@ const RAW: AvatarIdentity = {
     speaking_rate_wpm: { ar: 135, en: 155 },
     tone: "warm_confident",
     disallow: [
-      "casual slang", "childish tone", "robotic monotone",
-      "playful giggling", "sarcasm", "aggressive raise",
+      "casual slang",
+      "childish tone",
+      "robotic monotone",
+      "playful giggling",
+      "sarcasm",
+      "aggressive raise",
     ],
   },
   rendering: [

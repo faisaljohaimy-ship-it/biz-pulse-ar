@@ -49,22 +49,11 @@ export {
   countErrorsSince,
   clearLogs,
 } from "./logging.server";
-export {
-  beginTrace,
-  traced,
-  classifyError,
-  recentActivity,
-} from "./observability.server";
+export { beginTrace, traced, classifyError, recentActivity } from "./observability.server";
 export type { ErrorClass } from "./observability.server";
 
 // Audit
-export {
-  audit,
-  recordAudit,
-  listAudits,
-  auditCount,
-  clearAudits,
-} from "./audit.server";
+export { audit, recordAudit, listAudits, auditCount, clearAudits } from "./audit.server";
 
 // Performance
 export {
@@ -88,12 +77,7 @@ export {
 } from "./resilience.server";
 
 // Testing registry
-export {
-  registerTest,
-  updateTestStatus,
-  listTests,
-  testingSummary,
-} from "./testing.server";
+export { registerTest, updateTestStatus, listTests, testingSummary } from "./testing.server";
 
 // Health + metrics
 export { evaluateHealth } from "./health.server";

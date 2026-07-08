@@ -6,12 +6,12 @@ import { Landmark, Cloud, Building2, Sparkles, Lock, Globe2 } from "lucide-react
  */
 export function TrustBar({ isAr }: { isAr: boolean }) {
   const badges = [
-    { icon: Lock,        label: "Saudi NCA",           sub: isAr ? "الأمن السيبراني" : "Cyber Reg." },
-    { icon: Landmark,    label: "Vision 2030",         sub: isAr ? "شريك" : "Partner" },
-    { icon: Cloud,       label: "Sovereign Cloud",     sub: isAr ? "بيانات داخل المملكة" : "KSA-resident" },
-    { icon: Building2,   label: isAr ? "جاهز حكومياً" : "Government Ready", sub: "Tier-1" },
-    { icon: Globe2,      label: isAr ? "جاهز للمؤسسات" : "Enterprise Ready", sub: "Fortune 500" },
-    { icon: Sparkles,    label: "Powered by ARIA",     sub: isAr ? "ذكاء تنفيذي" : "Executive AI" },
+    { icon: Lock, label: "Saudi NCA", sub: isAr ? "الأمن السيبراني" : "Cyber Reg." },
+    { icon: Landmark, label: "Vision 2030", sub: isAr ? "شريك" : "Partner" },
+    { icon: Cloud, label: "Sovereign Cloud", sub: isAr ? "بيانات داخل المملكة" : "KSA-resident" },
+    { icon: Building2, label: isAr ? "جاهز حكومياً" : "Government Ready", sub: "Tier-1" },
+    { icon: Globe2, label: isAr ? "جاهز للمؤسسات" : "Enterprise Ready", sub: "Fortune 500" },
+    { icon: Sparkles, label: "Powered by ARIA", sub: isAr ? "ذكاء تنفيذي" : "Executive AI" },
   ];
 
   return (
@@ -38,7 +38,9 @@ export function TrustBar({ isAr }: { isAr: boolean }) {
             </span>
             {isAr ? "موثوق · سيادي · معتمد" : "Trusted · Sovereign · Certified"}
           </span>
-          <span className="hidden sm:inline">{isAr ? "تدقيق مستمر · ٢٤/٧" : "Continuous attestation · 24/7"}</span>
+          <span className="hidden sm:inline">
+            {isAr ? "تدقيق مستمر · ٢٤/٧" : "Continuous attestation · 24/7"}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
@@ -59,8 +61,12 @@ export function TrustBar({ isAr }: { isAr: boolean }) {
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <div className="truncate text-[11px] font-semibold text-white/90">{b.label}</div>
-                    <div className="truncate text-[9px] uppercase tracking-[0.18em] text-white/45">{b.sub}</div>
+                    <div className="truncate text-[11px] font-semibold text-white/90">
+                      {b.label}
+                    </div>
+                    <div className="truncate text-[9px] uppercase tracking-[0.18em] text-white/45">
+                      {b.sub}
+                    </div>
                   </div>
                 </div>
               </div>

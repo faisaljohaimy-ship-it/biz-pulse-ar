@@ -187,11 +187,7 @@ export interface RollbackStep {
 // Approval, verification, decisions
 // ---------------------------------------------------------------------------
 
-export type ApprovalMode =
-  | "required"
-  | "optional"
-  | "auto_approved"
-  | "conditional";
+export type ApprovalMode = "required" | "optional" | "auto_approved" | "conditional";
 
 export interface ApprovalGate {
   id: string;

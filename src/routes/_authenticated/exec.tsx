@@ -8,7 +8,6 @@ import {
   listWorkflows,
   listWorkflowRuns,
   listRecentEvents,
-  
   approveToolExecution,
   rollbackToolExecution,
   triggerWorkflowWithDefaultsFn,
@@ -29,9 +28,18 @@ import { ToolRunner } from "@/components/runtime/ToolRunner";
 import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Play, ShieldAlert, CheckCircle2, XCircle, Clock, Workflow, Bot, Sparkles, RotateCcw } from "lucide-react";
+import {
+  Play,
+  ShieldAlert,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Workflow,
+  Bot,
+  Sparkles,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
-
 
 export const Route = createFileRoute("/_authenticated/exec")({
   component: ExecConsole,
@@ -95,7 +103,7 @@ function statusBadge(status: string) {
 function ExecConsole() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
-  
+
   const [openRunId, setOpenRunId] = useState<string | null>(null);
 
   // Realtime: invalidate queries on workflow_runs / tool_executions changes.
@@ -107,21 +115,35 @@ function ExecConsole() {
     let ch: any = null;
     try {
       ch = supabase.channel(topic);
-      ch.on("postgres_changes", { event: "*", schema: "public", table: "workflow_runs" },
-        () => void qc.invalidateQueries({ queryKey: ["exec", "runs"] }));
-      ch.on("postgres_changes", { event: "*", schema: "public", table: "tool_executions" },
-        () => void qc.invalidateQueries({ queryKey: ["exec", "execs"] }));
-      ch.on("postgres_changes", { event: "INSERT", schema: "public", table: "enterprise_events" },
-        () => void qc.invalidateQueries({ queryKey: ["exec", "events"] }));
+      ch.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "workflow_runs" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "runs"] }),
+      );
+      ch.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tool_executions" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "execs"] }),
+      );
+      ch.on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "enterprise_events" },
+        () => void qc.invalidateQueries({ queryKey: ["exec", "events"] }),
+      );
       ch.subscribe();
     } catch (err) {
       console.warn("[exec] realtime unavailable", err);
     }
     return () => {
-      if (ch) { try { void supabase.removeChannel(ch); } catch { /* noop */ } }
+      if (ch) {
+        try {
+          void supabase.removeChannel(ch);
+        } catch {
+          /* noop */
+        }
+      }
     };
   }, [qc]);
-
 
   const tools = useQuery({
     queryKey: ["exec", "tools"],
@@ -156,12 +178,10 @@ function ExecConsole() {
     refetchInterval: 5000,
   });
 
-  
   const approveFn = useServerFn(approveToolExecution);
   const rollbackFn = useServerFn(rollbackToolExecution);
-  
-  const runAgentSF = useServerFn(runAgentFn);
 
+  const runAgentSF = useServerFn(runAgentFn);
 
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentGoal, setAgentGoal] = useState("");
@@ -184,7 +204,6 @@ function ExecConsole() {
     onError: (err: Error) => toast.error(err.message),
   });
 
-
   const approveMut = useMutation({
     mutationFn: (vars: { id: string; decision: "approve" | "reject" }) =>
       approveFn({ data: { executionId: vars.id, decision: vars.decision } }),
@@ -202,7 +221,6 @@ function ExecConsole() {
     },
     onError: (err: Error) => toast.error(err.message),
   });
-
 
   const triggerWithDefaultsSF = useServerFn(triggerWorkflowWithDefaultsFn);
   const triggerAllSF = useServerFn(triggerAllWorkflowsFn);
@@ -233,9 +251,7 @@ function ExecConsole() {
     <div className="container mx-auto p-4 lg:p-6 space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            مركز التنفيذ المؤسسي
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">مركز التنفيذ المؤسسي</h1>
           <p className="text-sm text-muted-foreground">
             Enterprise Execution Console — tools, workflows, events
           </p>
@@ -273,9 +289,7 @@ function ExecConsole() {
                         <div className="flex items-center justify-between gap-2">
                           <div>
                             <div className="font-medium text-sm">{t.name}</div>
-                            <div className="text-xs text-muted-foreground font-mono">
-                              {t.id}
-                            </div>
+                            <div className="text-xs text-muted-foreground font-mono">{t.id}</div>
                           </div>
                           <div className="flex items-center gap-1">
                             <Badge variant="secondary" className="text-xs">
@@ -295,9 +309,7 @@ function ExecConsole() {
                           </div>
                         </div>
                         {t.description && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t.description}
-                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">{t.description}</p>
                         )}
                       </button>
                     </li>
@@ -333,18 +345,13 @@ function ExecConsole() {
             <ScrollArea className="h-[60vh]">
               <ul className="space-y-2">
                 {(execs.data ?? []).map((e: ExecRow) => (
-                  <li
-                    key={e.id}
-                    className="p-3 rounded-md border border-border space-y-2"
-                  >
+                  <li key={e.id} className="p-3 rounded-md border border-border space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         {e.status === "succeeded" && (
                           <CheckCircle2 className="size-4 text-emerald-400" />
                         )}
-                        {e.status === "failed" && (
-                          <XCircle className="size-4 text-red-400" />
-                        )}
+                        {e.status === "failed" && <XCircle className="size-4 text-red-400" />}
                         {(e.status === "running" ||
                           e.status === "queued" ||
                           e.status === "pending_approval") && (
@@ -357,25 +364,19 @@ function ExecConsole() {
                         {e.duration_ms ? `${e.duration_ms}ms` : ""}
                       </span>
                     </div>
-                    {e.error && (
-                      <p className="text-xs text-red-300">{e.error}</p>
-                    )}
+                    {e.error && <p className="text-xs text-red-300">{e.error}</p>}
                     {e.status === "pending_approval" && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onClick={() =>
-                            approveMut.mutate({ id: e.id, decision: "approve" })
-                          }
+                          onClick={() => approveMut.mutate({ id: e.id, decision: "approve" })}
                         >
                           Approve
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            approveMut.mutate({ id: e.id, decision: "reject" })
-                          }
+                          onClick={() => approveMut.mutate({ id: e.id, decision: "reject" })}
                         >
                           Reject
                         </Button>
@@ -395,22 +396,20 @@ function ExecConsole() {
                     )}
 
                     <details className="text-xs">
-                      <summary className="cursor-pointer text-muted-foreground">
-                        I/O
-                      </summary>
+                      <summary className="cursor-pointer text-muted-foreground">I/O</summary>
                       <pre className="mt-1 p-2 bg-muted rounded overflow-auto max-h-40">
-                        {JSON.stringify(
-                          { in: e.input_json, out: e.output_json },
-                          null,
-                          2,
-                        )}
+                        {JSON.stringify({ in: e.input_json, out: e.output_json }, null, 2)}
                       </pre>
                     </details>
                   </li>
                 ))}
                 {!execs.data?.length && (
                   <li className="p-4 text-center">
-                    <LiveStatus variant="monitoring" hint="Tool runtime online · awaiting executions" size="sm" />
+                    <LiveStatus
+                      variant="monitoring"
+                      hint="Tool runtime online · awaiting executions"
+                      size="sm"
+                    />
                   </li>
                 )}
               </ul>
@@ -442,28 +441,35 @@ function ExecConsole() {
                 </Button>
               </div>
               <ul className="space-y-2">
-                {(wfs.data ?? []).map((w: { id: string; name: string; enabled: boolean; trigger_topic?: string | null }) => (
-                  <li
-                    key={w.id}
-                    className="flex items-center justify-between p-3 rounded-md border"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{w.name}</div>
-                      <div className="text-[11px] text-muted-foreground font-mono truncate">
-                        {w.trigger_topic ?? "manual"} · {w.id.slice(0, 8)}…
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      disabled={!w.enabled || triggerMut.isPending}
-                      onClick={() => triggerMut.mutate(w.id)}
-                      className="gap-1 shrink-0"
+                {(wfs.data ?? []).map(
+                  (w: {
+                    id: string;
+                    name: string;
+                    enabled: boolean;
+                    trigger_topic?: string | null;
+                  }) => (
+                    <li
+                      key={w.id}
+                      className="flex items-center justify-between p-3 rounded-md border"
                     >
-                      <Workflow className="size-3" />
-                      Trigger
-                    </Button>
-                  </li>
-                ))}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">{w.name}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono truncate">
+                          {w.trigger_topic ?? "manual"} · {w.id.slice(0, 8)}…
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        disabled={!w.enabled || triggerMut.isPending}
+                        onClick={() => triggerMut.mutate(w.id)}
+                        className="gap-1 shrink-0"
+                      >
+                        <Workflow className="size-3" />
+                        Trigger
+                      </Button>
+                    </li>
+                  ),
+                )}
                 {wfs.isLoading && !(wfs.data as unknown[] | undefined)?.length && (
                   <li className="text-center p-4">
                     <LiveStatus variant="initializing" hint="Workflow registry loading" size="sm" />
@@ -476,8 +482,6 @@ function ExecConsole() {
                 )}
               </ul>
             </Card>
-
-
 
             <Card className="p-3">
               <h3 className="font-semibold text-sm mb-2">Recent runs</h3>
@@ -499,9 +503,7 @@ function ExecConsole() {
                           className="w-full text-start p-3 rounded-md border space-y-1 hover:bg-accent/30 transition-colors"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs">
-                              {r.workflow_id.slice(0, 8)}…
-                            </span>
+                            <span className="font-mono text-xs">{r.workflow_id.slice(0, 8)}…</span>
                             {statusBadge(r.status)}
                           </div>
                           <div className="text-[11px] text-muted-foreground font-mono">
@@ -513,9 +515,7 @@ function ExecConsole() {
                             </div>
                           )}
                           {r.error && (
-                            <div className="text-xs text-red-300 line-clamp-2">
-                              {r.error}
-                            </div>
+                            <div className="text-xs text-red-300 line-clamp-2">{r.error}</div>
                           )}
                         </button>
                       </li>
@@ -523,7 +523,11 @@ function ExecConsole() {
                   )}
                   {!runs.data?.length && (
                     <li className="text-center p-4">
-                      <LiveStatus variant="monitoring" hint="Scheduler online · awaiting first run" size="sm" />
+                      <LiveStatus
+                        variant="monitoring"
+                        hint="Scheduler online · awaiting first run"
+                        size="sm"
+                      />
                     </li>
                   )}
                 </ul>
@@ -531,7 +535,6 @@ function ExecConsole() {
             </Card>
           </div>
         </TabsContent>
-
 
         <TabsContent value="agents">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -561,9 +564,7 @@ function ExecConsole() {
                         <div className="flex items-center justify-between gap-2">
                           <div>
                             <div className="font-medium text-sm">{a.name}</div>
-                            <div className="text-xs text-muted-foreground font-mono">
-                              {a.id}
-                            </div>
+                            <div className="text-xs text-muted-foreground font-mono">{a.id}</div>
                           </div>
                           <div className="flex items-center gap-1">
                             <Badge variant="secondary" className="text-xs">
@@ -576,9 +577,7 @@ function ExecConsole() {
                             )}
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {a.goal}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{a.goal}</p>
                         <div className="flex flex-wrap gap-1 mt-2">
                           {(a.tool_allowlist ?? []).map((t) => (
                             <span
@@ -627,9 +626,7 @@ function ExecConsole() {
                   </Button>
                 </>
               ) : (
-                <div className="text-xs text-muted-foreground">
-                  Select an agent to run.
-                </div>
+                <div className="text-xs text-muted-foreground">Select an agent to run.</div>
               )}
             </Card>
 
@@ -648,16 +645,11 @@ function ExecConsole() {
                       started_at: string;
                       goal_override: string | null;
                     }) => (
-                      <li
-                        key={r.id}
-                        className="p-3 rounded-md border space-y-1"
-                      >
+                      <li key={r.id} className="p-3 rounded-md border space-y-1">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <Bot className="size-3 text-cyan-300" />
-                            <span className="text-xs font-medium">
-                              {r.agent_id}
-                            </span>
+                            <span className="text-xs font-medium">{r.agent_id}</span>
                             <span className="text-[10px] text-muted-foreground">
                               {new Date(r.started_at).toLocaleString()}
                             </span>
@@ -674,14 +666,8 @@ function ExecConsole() {
                             goal: {r.goal_override}
                           </div>
                         )}
-                        {r.summary && (
-                          <p className="text-xs whitespace-pre-wrap">
-                            {r.summary}
-                          </p>
-                        )}
-                        {r.error && (
-                          <div className="text-xs text-red-300">{r.error}</div>
-                        )}
+                        {r.summary && <p className="text-xs whitespace-pre-wrap">{r.summary}</p>}
+                        {r.error && <div className="text-xs text-red-300">{r.error}</div>}
                       </li>
                     ),
                   )}
@@ -697,7 +683,11 @@ function ExecConsole() {
         </TabsContent>
 
         <TabsContent value="events">
-          <EventTimeline title="Enterprise Event Stream" height="h-[60vh]" filter={{ limit: 200 }} />
+          <EventTimeline
+            title="Enterprise Event Stream"
+            height="h-[60vh]"
+            filter={{ limit: 200 }}
+          />
         </TabsContent>
       </Tabs>
       <WorkflowRunDetail
@@ -708,4 +698,3 @@ function ExecConsole() {
     </div>
   );
 }
-

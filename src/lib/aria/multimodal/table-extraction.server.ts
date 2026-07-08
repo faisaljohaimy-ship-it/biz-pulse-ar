@@ -15,10 +15,7 @@ export interface TableInputs {
   readonly cells: readonly TableCell[];
 }
 
-export function extractTable(
-  input: MultimodalInput,
-  table: TableInputs,
-): MultimodalFinding {
+export function extractTable(input: MultimodalInput, table: TableInputs): MultimodalFinding {
   const signals: Signal[] = table.cells.map((c, i) => {
     const conf = clamp01(c.confidence ?? 0.65);
     return {

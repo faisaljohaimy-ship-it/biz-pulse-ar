@@ -5,21 +5,21 @@ import { Wrench, FolderKanban, BadgeCheck, ShieldAlert, LifeBuoy, Siren, X } fro
 import { useI18n } from "@/lib/i18n";
 
 const DISTRICTS = [
-  { key: "jeddah",  ar: "جدة",             en: "Jeddah"  },
-  { key: "makkah",  ar: "مكة المكرمة",     en: "Makkah"  },
-  { key: "taif",    ar: "الطائف",          en: "Taif"    },
+  { key: "jeddah", ar: "جدة", en: "Jeddah" },
+  { key: "makkah", ar: "مكة المكرمة", en: "Makkah" },
+  { key: "taif", ar: "الطائف", en: "Taif" },
   { key: "madinah", ar: "المدينة المنورة", en: "Madinah" },
-  { key: "rabigh",  ar: "رابغ",            en: "Rabigh"  },
-  { key: "tabuk",   ar: "تبوك",            en: "Tabuk"   },
+  { key: "rabigh", ar: "رابغ", en: "Rabigh" },
+  { key: "tabuk", ar: "تبوك", en: "Tabuk" },
 ] as const;
 
 const SECTIONS = [
-  { key: "maintenance", icon: Wrench,       ar: "الصيانة",             en: "Maintenance" },
-  { key: "projects",    icon: FolderKanban, ar: "المشاريع",            en: "Projects" },
-  { key: "permits",     icon: BadgeCheck,   ar: "البطاقات والتصاريح",  en: "Cards & Permits" },
-  { key: "incidents",   icon: ShieldAlert,  ar: "الحوادث الأمنية",     en: "Security Incidents" },
-  { key: "support",     icon: LifeBuoy,     ar: "المساندة",            en: "Support" },
-  { key: "urgent",      icon: Siren,        ar: "العاجل",              en: "Urgent" },
+  { key: "maintenance", icon: Wrench, ar: "الصيانة", en: "Maintenance" },
+  { key: "projects", icon: FolderKanban, ar: "المشاريع", en: "Projects" },
+  { key: "permits", icon: BadgeCheck, ar: "البطاقات والتصاريح", en: "Cards & Permits" },
+  { key: "incidents", icon: ShieldAlert, ar: "الحوادث الأمنية", en: "Security Incidents" },
+  { key: "support", icon: LifeBuoy, ar: "المساندة", en: "Support" },
+  { key: "urgent", icon: Siren, ar: "العاجل", en: "Urgent" },
 ] as const;
 
 export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -29,7 +29,9 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
@@ -53,7 +55,9 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/80">Industrial Security</div>
+            <div className="text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/80">
+              Industrial Security
+            </div>
             <h2 className="mt-1 text-lg font-semibold text-white">{heading}</h2>
           </div>
           <button

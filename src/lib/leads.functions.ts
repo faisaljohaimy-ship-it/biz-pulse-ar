@@ -67,8 +67,14 @@ async function sendNotificationEmails(args: {
     provider: "lovable-email" as const,
     internal_ok: internalRes.status === "fulfilled" && !!internalRes.value.ok,
     confirm_ok: confirmRes.status === "fulfilled" && !!confirmRes.value.ok,
-    internal_error: internalRes.status === "fulfilled" ? internalRes.value.error : String((internalRes as PromiseRejectedResult).reason),
-    confirm_error: confirmRes.status === "fulfilled" ? confirmRes.value.error : String((confirmRes as PromiseRejectedResult).reason),
+    internal_error:
+      internalRes.status === "fulfilled"
+        ? internalRes.value.error
+        : String((internalRes as PromiseRejectedResult).reason),
+    confirm_error:
+      confirmRes.status === "fulfilled"
+        ? confirmRes.value.error
+        : String((confirmRes as PromiseRejectedResult).reason),
   };
 }
 
@@ -86,7 +92,9 @@ export const submitLead = createServerFn({ method: "POST" })
       ip = getRequestIP({ xForwardedFor: true }) ?? null;
       country = getRequestHeader("cf-ipcountry") ?? getRequestHeader("x-vercel-ip-country") ?? null;
       userAgent = req?.headers.get("user-agent") ?? null;
-    } catch { /* not in request context */ }
+    } catch {
+      /* not in request context */
+    }
 
     const { data: inserted, error } = await supabaseAdmin
       .from("leads")
@@ -123,8 +131,11 @@ export const submitLead = createServerFn({ method: "POST" })
     // call up to 3 times in case of transient DB errors so a submission is
     // never lost.
     let emailStatus: Awaited<ReturnType<typeof sendNotificationEmails>> & { error?: string } = {
-      provider: "lovable-email", internal_ok: false, confirm_ok: false,
-      internal_error: undefined, confirm_error: undefined,
+      provider: "lovable-email",
+      internal_ok: false,
+      confirm_ok: false,
+      internal_error: undefined,
+      confirm_error: undefined,
     };
     let attempt = 0;
     const maxAttempts = 3;
@@ -152,7 +163,9 @@ export const submitLead = createServerFn({ method: "POST" })
           } as never,
         })
         .eq("id", inserted.id);
-    } catch { /* metadata write failure must not break flow */ }
+    } catch {
+      /* metadata write failure must not break flow */
+    }
 
     if (!emailStatus.internal_ok || !emailStatus.confirm_ok) {
       console.error("[leads] Email enqueue partial/failed", { requestId, ...emailStatus });

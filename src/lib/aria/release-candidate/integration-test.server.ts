@@ -4,13 +4,9 @@
 import type { TestCase, TestOutcome, TestReport } from "./types";
 import { buildTestPlan } from "./test-plan.server";
 
-export function summarizeIntegration(
-  outcomes: ReadonlyArray<TestOutcome>,
-): TestReport {
+export function summarizeIntegration(outcomes: ReadonlyArray<TestOutcome>): TestReport {
   const plan = buildTestPlan();
-  const cases: ReadonlyArray<TestCase> = plan.cases.filter(
-    (c) => c.kind === "integration",
-  );
+  const cases: ReadonlyArray<TestCase> = plan.cases.filter((c) => c.kind === "integration");
   const map = new Map<string, TestOutcome>();
   for (const o of outcomes) map.set(o.case_id, o);
   const merged: TestOutcome[] = cases.map(

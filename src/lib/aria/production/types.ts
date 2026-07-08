@@ -76,13 +76,7 @@ export interface StructuredLogEntry extends TraceIds {
 
 export interface AuditEntry {
   ts: string;
-  category:
-    | "user_action"
-    | "aria_decision"
-    | "mission"
-    | "task"
-    | "security"
-    | "approval";
+  category: "user_action" | "aria_decision" | "mission" | "task" | "security" | "approval";
   actor?: string | null;
   org_id?: string | null;
   action: string;

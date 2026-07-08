@@ -5,10 +5,18 @@ import * as React from "react";
 import { usePresentationDirector } from "@/lib/demo/presentation-director";
 import { useDemoMode } from "@/lib/demo/demo-controller";
 
-const ExecutiveTopHUD       = React.lazy(() => import("./ExecutiveTopHUD").then(m => ({ default: m.ExecutiveTopHUD })));
-const ExecutiveStoryOverlay = React.lazy(() => import("./ExecutiveStoryOverlay").then(m => ({ default: m.ExecutiveStoryOverlay })));
-const ExecutiveAlertOverlay = React.lazy(() => import("./ExecutiveAlertOverlay").then(m => ({ default: m.ExecutiveAlertOverlay })));
-const ExecutiveDecisionCard = React.lazy(() => import("./ExecutiveDecisionCard").then(m => ({ default: m.ExecutiveDecisionCard })));
+const ExecutiveTopHUD = React.lazy(() =>
+  import("./ExecutiveTopHUD").then((m) => ({ default: m.ExecutiveTopHUD })),
+);
+const ExecutiveStoryOverlay = React.lazy(() =>
+  import("./ExecutiveStoryOverlay").then((m) => ({ default: m.ExecutiveStoryOverlay })),
+);
+const ExecutiveAlertOverlay = React.lazy(() =>
+  import("./ExecutiveAlertOverlay").then((m) => ({ default: m.ExecutiveAlertOverlay })),
+);
+const ExecutiveDecisionCard = React.lazy(() =>
+  import("./ExecutiveDecisionCard").then((m) => ({ default: m.ExecutiveDecisionCard })),
+);
 
 export function PresentationLayer() {
   const demo = useDemoMode();

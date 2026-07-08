@@ -29,10 +29,17 @@ import { autoSeedAriaCorpusForOrg } from "@/lib/aria/seed-corpus.server";
 // for multi-tool deep reasoning. Killing them at 5min produced fake "timeout"
 // failures while the work would have succeeded. Raised to 90min after profiling
 // real successful runs (max observed: 4599s ≈ 77min).
-const AGENT_RUN_TIMEOUT_MS = 90 * 60_000;  // 90 min — covers deepest reasoning loop
-const TOOL_RUN_TIMEOUT_MS = 5 * 60_000;    // 5 min — single tool call ceiling
+const AGENT_RUN_TIMEOUT_MS = 90 * 60_000; // 90 min — covers deepest reasoning loop
+const TOOL_RUN_TIMEOUT_MS = 5 * 60_000; // 5 min — single tool call ceiling
 const WORKFLOW_STEP_TIMEOUT_MS = 30 * 60_000; // 30 min — per-step ceiling
-const STEP_FLOW = ["planning", "investigation", "approval", "execution", "verification", "completion"] as const;
+const STEP_FLOW = [
+  "planning",
+  "investigation",
+  "approval",
+  "execution",
+  "verification",
+  "completion",
+] as const;
 
 export const runtimePulse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -49,7 +56,14 @@ export const runtimePulse = createServerFn({ method: "POST" })
       .maybeSingle();
     const orgId: string | null = member?.org_id ?? null;
     if (!orgId) {
-      return { agents_timed_out: 0, tools_timed_out: 0, workflows_advanced: 0, events: 0, workflows_started: 0, at: new Date().toISOString() };
+      return {
+        agents_timed_out: 0,
+        tools_timed_out: 0,
+        workflows_advanced: 0,
+        events: 0,
+        workflows_started: 0,
+        at: new Date().toISOString(),
+      };
     }
 
     let agentsTimedOut = 0;
@@ -149,7 +163,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
       .lt("started_at", wfCutoff)
       .limit(20);
     for (const wf of activeWf ?? []) {
-      const idx = STEP_FLOW.indexOf((wf.current_step as typeof STEP_FLOW[number]) ?? "planning");
+      const idx = STEP_FLOW.indexOf((wf.current_step as (typeof STEP_FLOW)[number]) ?? "planning");
       const next = idx >= 0 && idx < STEP_FLOW.length - 1 ? STEP_FLOW[idx + 1]! : "completion";
       const done = next === "completion";
       await supabaseAdmin
@@ -203,7 +217,12 @@ export const runtimePulse = createServerFn({ method: "POST" })
     }
 
     // 5) Emit a single heartbeat ONLY if real work happened.
-    const did = agentsTimedOut + toolsTimedOut + workflowsAdvanced + consumed.workflows_started + corpusInserted;
+    const did =
+      agentsTimedOut +
+      toolsTimedOut +
+      workflowsAdvanced +
+      consumed.workflows_started +
+      corpusInserted;
     if (did > 0) {
       await publishEvent(supabase, {
         topic: "runtime.heartbeat",

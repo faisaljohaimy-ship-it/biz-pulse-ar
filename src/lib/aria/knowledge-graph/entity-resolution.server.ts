@@ -23,9 +23,7 @@ export function resolveByName(
 ): EntityRecord | undefined {
   const key = normalizeName(name);
   return listEntities(workspace_id).find(
-    (e) =>
-      e.kind === kind &&
-      (normalizeName(e.canonical_name) === key || e.aliases.includes(key)),
+    (e) => e.kind === kind && (normalizeName(e.canonical_name) === key || e.aliases.includes(key)),
   );
 }
 

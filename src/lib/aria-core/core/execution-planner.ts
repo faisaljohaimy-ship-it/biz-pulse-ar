@@ -137,10 +137,8 @@ export const executionPlanner = {
     const validationCriteria = buildValidationCriteria(actionType);
     const queueState = initialQueueState(permission, approval.required);
 
-    const recommendedAction_ar =
-      input.decision.recommended?.label_ar ?? action.label_ar;
-    const recommendedAction_en =
-      input.decision.recommended?.label_en ?? action.label_en;
+    const recommendedAction_ar = input.decision.recommended?.label_ar ?? action.label_ar;
+    const recommendedAction_en = input.decision.recommended?.label_en ?? action.label_en;
 
     const id = `exec_${input.turnId}`;
     const audit: AuditRecord = {

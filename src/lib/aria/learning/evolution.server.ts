@@ -10,18 +10,16 @@ import type {
 const scores = new Map<string, CapabilityScore>();
 const history = new Map<string, Array<{ at: string; value: number }>>();
 
-function computeScore(experiences: ReadonlyArray<Experience>): Omit<CapabilityScore, "capability" | "updatedAt"> {
+function computeScore(
+  experiences: ReadonlyArray<Experience>,
+): Omit<CapabilityScore, "capability" | "updatedAt"> {
   const samples = experiences.length;
   const successes = experiences.filter((e) => e.success).length;
   const successRate = samples === 0 ? 0 : successes / samples;
   const avgConfidence =
-    samples === 0
-      ? 0
-      : experiences.reduce((s, e) => s + e.confidence, 0) / samples;
+    samples === 0 ? 0 : experiences.reduce((s, e) => s + e.confidence, 0) / samples;
   const avgDurationMs =
-    samples === 0
-      ? 0
-      : experiences.reduce((s, e) => s + e.durationMs, 0) / samples;
+    samples === 0 ? 0 : experiences.reduce((s, e) => s + e.durationMs, 0) / samples;
   const score = clamp01(successRate * 0.6 + avgConfidence * 0.4);
   return { score, samples, avgConfidence, successRate, avgDurationMs };
 }

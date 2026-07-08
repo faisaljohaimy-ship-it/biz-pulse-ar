@@ -14,18 +14,18 @@ interface Payload {
 }
 
 const ICONS: Record<DemoDecisionOption["id"], React.ReactNode> = {
-  approve:     <Check className="h-3.5 w-3.5" />,
-  reject:      <X className="h-3.5 w-3.5" />,
+  approve: <Check className="h-3.5 w-3.5" />,
+  reject: <X className="h-3.5 w-3.5" />,
   investigate: <Search className="h-3.5 w-3.5" />,
-  assign:      <UserPlus className="h-3.5 w-3.5" />,
+  assign: <UserPlus className="h-3.5 w-3.5" />,
   open_report: <FileText className="h-3.5 w-3.5" />,
 };
 
 const TONE: Record<DemoDecisionOption["id"], string> = {
-  approve:     "border-[#7CFFB8]/50 text-[#B8FFDA] hover:bg-[#7CFFB8]/10",
-  reject:      "border-[#FF6A9A]/50 text-[#FFB0C7] hover:bg-[#FF6A9A]/10",
+  approve: "border-[#7CFFB8]/50 text-[#B8FFDA] hover:bg-[#7CFFB8]/10",
+  reject: "border-[#FF6A9A]/50 text-[#FFB0C7] hover:bg-[#FF6A9A]/10",
   investigate: "border-[#F5C86B]/50 text-[#FBE29A] hover:bg-[#F5C86B]/10",
-  assign:      "border-[#3AE8FF]/50 text-[#B8F3FF] hover:bg-[#3AE8FF]/10",
+  assign: "border-[#3AE8FF]/50 text-[#B8F3FF] hover:bg-[#3AE8FF]/10",
   open_report: "border-white/25 text-white hover:bg-white/10",
 };
 
@@ -83,7 +83,9 @@ export function ExecutiveDecisionCard() {
             </button>
           ))}
         </div>
-        <div className="mt-2 text-[10px] text-white/40">{t("عرض توضيحي فقط · لا تأثير على البيانات", "Demo-only · no data mutation")}</div>
+        <div className="mt-2 text-[10px] text-white/40">
+          {t("عرض توضيحي فقط · لا تأثير على البيانات", "Demo-only · no data mutation")}
+        </div>
       </div>
       <style>{`@keyframes nx-dec-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </div>

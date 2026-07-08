@@ -12,7 +12,12 @@ export function nextChannel(current: ReleaseChannel): ReleaseChannel {
 
 export function canPromote(
   current: ReleaseChannel,
-  signals: { probesHealthy: boolean; errorRate: number; minSoakMinutes: number; observedSoakMinutes: number },
+  signals: {
+    probesHealthy: boolean;
+    errorRate: number;
+    minSoakMinutes: number;
+    observedSoakMinutes: number;
+  },
 ): { allowed: boolean; reason: string } {
   if (current === "unknown" || current === "rollback") {
     return { allowed: false, reason: `channel ${current} not promotable` };

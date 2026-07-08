@@ -113,7 +113,6 @@ export function SecCommandLiveCard() {
   return (
     <Link
       to="/sec"
-
       aria-label={title}
       className="group block overflow-hidden rounded-2xl border border-emerald-400/25 bg-[#04111f] shadow-[0_0_40px_rgba(0,212,255,0.15)] backdrop-blur-sm transition duration-300 hover:scale-[1.01] hover:border-[#3AE8FF]/60 hover:shadow-[0_0_60px_rgba(58,232,255,0.35)] animate-pulse-cyan"
     >
@@ -121,7 +120,9 @@ export function SecCommandLiveCard() {
       <div className="flex items-center justify-between gap-3 border-b border-white/5 bg-[#04111f]/80 px-4 py-2.5">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-white">{title}</div>
-          <div className="truncate text-[10px] uppercase tracking-[0.22em] text-white/45">{subtitle}</div>
+          <div className="truncate text-[10px] uppercase tracking-[0.22em] text-white/45">
+            {subtitle}
+          </div>
         </div>
         <span
           key={pulse.dataUpdatedAt}
@@ -157,11 +158,15 @@ export function SecCommandLiveCard() {
             return (
               <div
                 key={c.key}
-                title={c.value == null ? (ar ? "البيانات غير متوفرة" : "Data unavailable") : undefined}
+                title={
+                  c.value == null ? (ar ? "البيانات غير متوفرة" : "Data unavailable") : undefined
+                }
                 className="rounded-lg border border-white/10 bg-[#04111f]/70 px-2 py-1.5 backdrop-blur-md"
               >
                 <div className="flex items-baseline justify-between gap-1">
-                  <span className={`text-base font-semibold leading-none sm:text-lg ${toneClasses[c.tone]}`}>
+                  <span
+                    className={`text-base font-semibold leading-none sm:text-lg ${toneClasses[c.tone]}`}
+                  >
                     {val}
                   </span>
                   {c.trend !== "flat" && c.value != null && (
@@ -179,7 +184,9 @@ export function SecCommandLiveCard() {
 
       {/* Footer */}
       <div className="flex items-center justify-between gap-3 border-t border-white/5 bg-[#04111f]/80 px-4 py-2.5">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">{snapshotLabel}</span>
+        <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+          {snapshotLabel}
+        </span>
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3AE8FF] transition group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[2px]">
           {openLabel}
           <ArrowLeft className={`h-3.5 w-3.5 ${ar ? "" : "rotate-180"}`} />

@@ -28,8 +28,6 @@ export function extract(payload: RawIngestPayload): ExtractedBundle {
     source: payload.source,
     evidence: Object.freeze([...payload.evidence]) as readonly EvidenceRef[],
     entities: Object.freeze([...payload.entities]) as readonly RawEntityAssertion[],
-    relationships: Object.freeze([
-      ...payload.relationships,
-    ]) as readonly RawRelationshipAssertion[],
+    relationships: Object.freeze([...payload.relationships]) as readonly RawRelationshipAssertion[],
   });
 }

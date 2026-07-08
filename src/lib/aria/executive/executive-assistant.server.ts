@@ -7,12 +7,20 @@ import { rankPriorities, type PrioritySource } from "./executive-priorities.serv
 import { composeDailySummary, type DailySummaryInput } from "./executive-daily-summary.server";
 import { selectExecutiveAlerts, type AlertSource } from "./executive-alerts.server";
 import { generateInsights, type InsightSource } from "./executive-insights.server";
-import { composeRecommendations, type RecommendationSource } from "./executive-recommendations.server";
+import {
+  composeRecommendations,
+  type RecommendationSource,
+} from "./executive-recommendations.server";
 import { addFollowUp, pendingFollowUps, type FollowUpInput } from "./executive-followup.server";
 import { rememberAnchor, recallAnchor } from "./executive-memory.server";
 import { logExecutive } from "./audit.server";
 import {
-  noteBriefing, noteRecommendation, noteAlert, noteInsight, noteDialogTurn, noteFollowUp,
+  noteBriefing,
+  noteRecommendation,
+  noteAlert,
+  noteInsight,
+  noteDialogTurn,
+  noteFollowUp,
 } from "./metrics.server";
 
 export interface AssistantInit {
@@ -31,29 +39,47 @@ export function closeAssistant(scope: string): void {
 }
 
 export function assistantSay(
-  scope: string, draft: string, language: ExecutiveLanguage, verbosity: "brief" | "detailed" = "brief",
+  scope: string,
+  draft: string,
+  language: ExecutiveLanguage,
+  verbosity: "brief" | "detailed" = "brief",
 ): { text: string; trimmed: boolean } {
   const shaped = shapeExecutiveReply(draft, verbosity);
   const personality = executivePersonality(language);
-  const text = shaped.text.length > 0 ? shaped.text : (language === "ar" ? "لا تتوفر معلومات كافية للإجابة الآن." : "Not enough information to answer right now.");
+  const text =
+    shaped.text.length > 0
+      ? shaped.text
+      : language === "ar"
+        ? "لا تتوفر معلومات كافية للإجابة الآن."
+        : "Not enough information to answer right now.";
   recordDialog(scope, "aria", text, language, "medium");
   noteDialogTurn();
-  logExecutive(scope, "dialog", { speaker: "aria", trimmed: shaped.trimmed, tone: personality.tone });
+  logExecutive(scope, "dialog", {
+    speaker: "aria",
+    trimmed: shaped.trimmed,
+    tone: personality.tone,
+  });
   return { text, trimmed: shaped.trimmed };
 }
 
-export function assistantHear(
-  scope: string, text: string, language: ExecutiveLanguage,
-): void {
+export function assistantHear(scope: string, text: string, language: ExecutiveLanguage): void {
   recordDialog(scope, "user", text, language);
   noteDialogTurn();
   logExecutive(scope, "dialog", { speaker: "user" });
 }
 
-export function assistantHistory(scope: string, n?: number) { return dialogHistory(scope, n); }
-export function assistantPresence(scope: string) { return getExecutivePresence(scope); }
+export function assistantHistory(scope: string, n?: number) {
+  return dialogHistory(scope, n);
+}
+export function assistantPresence(scope: string) {
+  return getExecutivePresence(scope);
+}
 
-export function assistantBriefing(scope: string, language: ExecutiveLanguage, sources: readonly BriefingSource[]) {
+export function assistantBriefing(
+  scope: string,
+  language: ExecutiveLanguage,
+  sources: readonly BriefingSource[],
+) {
   const b = composeBriefing(language, sources);
   noteBriefing();
   logExecutive(scope, "briefing", { items: b.items.length, confidence: b.confidence });
@@ -100,8 +126,18 @@ export function assistantAddFollowUp(scope: string, input: FollowUpInput) {
   return f;
 }
 
-export function assistantPending(scope: string) { return pendingFollowUps(scope); }
-export function assistantRemember(scope: string, key: string, value_ar?: string, value_en?: string, source: "user" | "aria" = "user") {
+export function assistantPending(scope: string) {
+  return pendingFollowUps(scope);
+}
+export function assistantRemember(
+  scope: string,
+  key: string,
+  value_ar?: string,
+  value_en?: string,
+  source: "user" | "aria" = "user",
+) {
   return rememberAnchor(scope, { key, value_ar, value_en, source });
 }
-export function assistantRecall(scope: string, key: string) { return recallAnchor(scope, key); }
+export function assistantRecall(scope: string, key: string) {
+  return recallAnchor(scope, key);
+}

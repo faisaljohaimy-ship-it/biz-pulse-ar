@@ -25,10 +25,7 @@ export interface VerifiableBundle {
   readonly execution_id: string;
   readonly proposal?: ImprovementProposal;
   readonly recommendation?: ExecutiveRecommendation;
-  readonly reflection?: Pick<
-    ReflectionReport,
-    "id" | "execution_id" | "patterns"
-  >;
+  readonly reflection?: Pick<ReflectionReport, "id" | "execution_id" | "patterns">;
 }
 
 export function verifyBundle(bundle: VerifiableBundle): VerificationReport {
@@ -59,10 +56,7 @@ export function verifyBundle(bundle: VerifiableBundle): VerificationReport {
         detail: `Recommendation ${bundle.recommendation.id} has no evidence.`,
       });
     }
-    if (
-      bundle.proposal &&
-      bundle.recommendation.proposal_id !== bundle.proposal.id
-    ) {
+    if (bundle.proposal && bundle.recommendation.proposal_id !== bundle.proposal.id) {
       issues.push({
         code: "synthetic_improvement",
         detail: "Recommendation references a proposal not in the bundle.",

@@ -5,8 +5,12 @@ import type { AudioState, VoiceLang } from "../live-voice/types";
 const HERO_INSTANCES = new Map<string, HeroState>();
 
 const BUTTON_IDS: readonly HeroButtonId[] = [
-  "talk_to_aria","executive_briefing","start_demo",
-  "show_risks","show_today_summary","generate_report",
+  "talk_to_aria",
+  "executive_briefing",
+  "start_demo",
+  "show_risks",
+  "show_today_summary",
+  "generate_report",
 ];
 
 function uid(): string {
@@ -48,7 +52,11 @@ export function updateHero(id: string, patch: Partial<HeroState>): HeroState | n
   return next;
 }
 
-export function setHeroPresence(id: string, presence: HeroPresence, glow?: HeroGlow): HeroState | null {
+export function setHeroPresence(
+  id: string,
+  presence: HeroPresence,
+  glow?: HeroGlow,
+): HeroState | null {
   return updateHero(id, { presence, ...(glow ? { glow } : {}) });
 }
 

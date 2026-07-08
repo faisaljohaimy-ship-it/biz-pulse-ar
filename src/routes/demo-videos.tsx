@@ -2,13 +2,27 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
-import { ArrowLeft, Play, FileText, Crown, Landmark, Building2, Briefcase, Compass, Calculator } from "lucide-react";
+import {
+  ArrowLeft,
+  Play,
+  FileText,
+  Crown,
+  Landmark,
+  Building2,
+  Briefcase,
+  Compass,
+  Calculator,
+} from "lucide-react";
 
 export const Route = createFileRoute("/demo-videos")({
   head: () => ({
     meta: [
       { title: "Demo Video Hub — NEXUS AI OS" },
-      { name: "description", content: "Executive overview, government, enterprise, investor, product walkthrough, and ROI demonstration videos for NEXUS AI OS." },
+      {
+        name: "description",
+        content:
+          "Executive overview, government, enterprise, investor, product walkthrough, and ROI demonstration videos for NEXUS AI OS.",
+      },
       { property: "og:title", content: "NEXUS AI OS — Demo Video Hub" },
       { property: "og:url", content: `${DOMAIN_URL}/demo-videos` },
     ],
@@ -20,20 +34,77 @@ export const Route = createFileRoute("/demo-videos")({
 type Video = {
   id: string;
   icon: React.ReactNode;
-  titleEn: string; titleAr: string;
-  descEn: string; descAr: string;
+  titleEn: string;
+  titleAr: string;
+  descEn: string;
+  descAr: string;
   duration: string;
   audience: string;
   pdf?: string;
 };
 
 const VIDEOS: Video[] = [
-  { id: "executive",  icon: <Crown className="h-5 w-5" />,      titleEn: "Executive Overview",       titleAr: "النظرة التنفيذية",        descEn: "The 90-second case for the autonomous enterprise.", descAr: "قضية المؤسسة المستقلة في 90 ثانية.", duration: "1:30", audience: "C-Suite" },
-  { id: "government", icon: <Landmark className="h-5 w-5" />,   titleEn: "Government Edition",       titleAr: "النسخة الحكومية",         descEn: "Saudi Vision 2030, NCA ECC, sovereign deployment.", descAr: "رؤية 2030، NCA ECC، النشر السيادي.", duration: "2:10", audience: "Ministers & Public Sector", pdf: "/briefs/nexus-government-brief-ar.pdf" },
-  { id: "enterprise", icon: <Building2 className="h-5 w-5" />,  titleEn: "Enterprise Edition",       titleAr: "النسخة المؤسسية",         descEn: "Digital Twin, ARIA Core, executive cockpit at scale.", descAr: "التوأم الرقمي، نواة ARIA، قمرة القيادة.", duration: "3:00", audience: "Large Enterprise" },
-  { id: "investor",   icon: <Briefcase className="h-5 w-5" />,  titleEn: "Investor Edition",         titleAr: "نسخة المستثمرين",         descEn: "Series A thesis, moat, financial trajectory.", descAr: "أطروحة Series A، الميزة الدفاعية، المسار المالي.", duration: "2:30", audience: "Series A Investors" },
-  { id: "walkthrough",icon: <Compass className="h-5 w-5" />,    titleEn: "Product Walkthrough",      titleAr: "الجولة في المنتج",        descEn: "End-to-end tour: ingest → predict → decide → execute.", descAr: "جولة شاملة: الاستيعاب ← التنبؤ ← القرار ← التنفيذ.", duration: "4:45", audience: "Operators" },
-  { id: "roi",        icon: <Calculator className="h-5 w-5" />, titleEn: "ROI Demonstration",        titleAr: "عرض العائد الاستثماري",   descEn: "Live ROI model from inputs to payback in 60s.", descAr: "نموذج العائد الحي من المدخلات إلى الاسترداد في 60 ثانية.", duration: "1:00", audience: "CFO Office" },
+  {
+    id: "executive",
+    icon: <Crown className="h-5 w-5" />,
+    titleEn: "Executive Overview",
+    titleAr: "النظرة التنفيذية",
+    descEn: "The 90-second case for the autonomous enterprise.",
+    descAr: "قضية المؤسسة المستقلة في 90 ثانية.",
+    duration: "1:30",
+    audience: "C-Suite",
+  },
+  {
+    id: "government",
+    icon: <Landmark className="h-5 w-5" />,
+    titleEn: "Government Edition",
+    titleAr: "النسخة الحكومية",
+    descEn: "Saudi Vision 2030, NCA ECC, sovereign deployment.",
+    descAr: "رؤية 2030، NCA ECC، النشر السيادي.",
+    duration: "2:10",
+    audience: "Ministers & Public Sector",
+    pdf: "/briefs/nexus-government-brief-ar.pdf",
+  },
+  {
+    id: "enterprise",
+    icon: <Building2 className="h-5 w-5" />,
+    titleEn: "Enterprise Edition",
+    titleAr: "النسخة المؤسسية",
+    descEn: "Digital Twin, ARIA Core, executive cockpit at scale.",
+    descAr: "التوأم الرقمي، نواة ARIA، قمرة القيادة.",
+    duration: "3:00",
+    audience: "Large Enterprise",
+  },
+  {
+    id: "investor",
+    icon: <Briefcase className="h-5 w-5" />,
+    titleEn: "Investor Edition",
+    titleAr: "نسخة المستثمرين",
+    descEn: "Series A thesis, moat, financial trajectory.",
+    descAr: "أطروحة Series A، الميزة الدفاعية، المسار المالي.",
+    duration: "2:30",
+    audience: "Series A Investors",
+  },
+  {
+    id: "walkthrough",
+    icon: <Compass className="h-5 w-5" />,
+    titleEn: "Product Walkthrough",
+    titleAr: "الجولة في المنتج",
+    descEn: "End-to-end tour: ingest → predict → decide → execute.",
+    descAr: "جولة شاملة: الاستيعاب ← التنبؤ ← القرار ← التنفيذ.",
+    duration: "4:45",
+    audience: "Operators",
+  },
+  {
+    id: "roi",
+    icon: <Calculator className="h-5 w-5" />,
+    titleEn: "ROI Demonstration",
+    titleAr: "عرض العائد الاستثماري",
+    descEn: "Live ROI model from inputs to payback in 60s.",
+    descAr: "نموذج العائد الحي من المدخلات إلى الاسترداد في 60 ثانية.",
+    duration: "1:00",
+    audience: "CFO Office",
+  },
 ];
 
 function DemoVideosPage() {
@@ -44,14 +115,20 @@ function DemoVideosPage() {
   const current = VIDEOS.find((v) => v.id === active) ?? VIDEOS[0];
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground"
+    >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(214,158,46,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.06),transparent_60%)]" />
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(214,158,46,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(214,158,46,0.05)_1px,transparent_1px)] [background-size:48px_48px] opacity-30" />
       </div>
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
@@ -77,8 +154,14 @@ function DemoVideosPage() {
           <div className="rounded-2xl border border-amber-400/20 bg-black/40 p-3 shadow-[0_30px_120px_-30px_rgba(245,158,11,0.25)]">
             <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/5 bg-gradient-to-br from-[#0a1535] via-[#06070d] to-[#1a0a0a]">
               {/* Cinematic poster */}
-              <div aria-hidden className="absolute inset-0 [background-image:radial-gradient(ellipse_at_center,rgba(245,158,11,0.25),transparent_60%)]" />
-              <div aria-hidden className="absolute inset-0 [background-image:linear-gradient(rgba(245,158,11,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.05)_1px,transparent_1px)] [background-size:48px_48px] opacity-40" />
+              <div
+                aria-hidden
+                className="absolute inset-0 [background-image:radial-gradient(ellipse_at_center,rgba(245,158,11,0.25),transparent_60%)]"
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0 [background-image:linear-gradient(rgba(245,158,11,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.05)_1px,transparent_1px)] [background-size:48px_48px] opacity-40"
+              />
               <div className="relative z-10 flex h-full flex-col items-center justify-center text-center">
                 <button
                   type="button"
@@ -87,22 +170,37 @@ function DemoVideosPage() {
                 >
                   <Play className="h-8 w-8 fill-amber-300 text-amber-300" />
                 </button>
-                <div className="mt-6 text-xs uppercase tracking-[0.32em] text-amber-300/80">{current.audience}</div>
-                <div className="mt-2 text-2xl font-semibold text-foreground">{isAr ? current.titleAr : current.titleEn}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{current.duration} · NEXUS · AI OS</div>
+                <div className="mt-6 text-xs uppercase tracking-[0.32em] text-amber-300/80">
+                  {current.audience}
+                </div>
+                <div className="mt-2 text-2xl font-semibold text-foreground">
+                  {isAr ? current.titleAr : current.titleEn}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {current.duration} · NEXUS · AI OS
+                </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-4">
-              <p className="max-w-2xl text-sm text-muted-foreground">{isAr ? current.descAr : current.descEn}</p>
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                {isAr ? current.descAr : current.descEn}
+              </p>
               <div className="flex gap-2">
                 {current.pdf && (
-                  <a href={current.pdf} download className="inline-flex items-center gap-2 rounded-lg border border-amber-400/30 px-3 py-2 text-xs text-amber-200/90 hover:bg-amber-400/5">
+                  <a
+                    href={current.pdf}
+                    download
+                    className="inline-flex items-center gap-2 rounded-lg border border-amber-400/30 px-3 py-2 text-xs text-amber-200/90 hover:bg-amber-400/5"
+                  >
                     <FileText className="h-3.5 w-3.5" />
                     {isAr ? "تحميل الملف PDF" : "Download PDF"}
                   </a>
                 )}
-                <Link to="/executive-booking" className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 px-3 py-2 text-xs font-medium text-[#0a0a0f] hover:from-amber-300 hover:to-amber-400">
+                <Link
+                  to="/executive-booking"
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 px-3 py-2 text-xs font-medium text-[#0a0a0f] hover:from-amber-300 hover:to-amber-400"
+                >
                   {isAr ? "احجز جلسة تنفيذية" : "Book Executive Session"}
                 </Link>
               </div>
@@ -127,12 +225,18 @@ function DemoVideosPage() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`grid h-9 w-9 place-items-center rounded-lg border ${isActive ? "border-amber-400/40 text-amber-300" : "border-white/10 text-muted-foreground"}`}>
+                    <span
+                      className={`grid h-9 w-9 place-items-center rounded-lg border ${isActive ? "border-amber-400/40 text-amber-300" : "border-white/10 text-muted-foreground"}`}
+                    >
                       {v.icon}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-foreground">{isAr ? v.titleAr : v.titleEn}</div>
-                      <div className="truncate text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{v.audience} · {v.duration}</div>
+                      <div className="truncate text-sm font-medium text-foreground">
+                        {isAr ? v.titleAr : v.titleEn}
+                      </div>
+                      <div className="truncate text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        {v.audience} · {v.duration}
+                      </div>
                     </div>
                   </div>
                 </button>

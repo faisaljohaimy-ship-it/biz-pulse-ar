@@ -35,7 +35,12 @@ export function planGuidedDemo(opts: GuidedDemoOptions = {}): readonly ShowcaseS
     narration_en: "I'm here to answer your questions with evidence.",
     durationMs: 20_000,
   };
-  const steps = [opening, ...buildExecutiveTour(), ...(opts.includeQa === false ? [] : [qa]), closing];
+  const steps = [
+    opening,
+    ...buildExecutiveTour(),
+    ...(opts.includeQa === false ? [] : [qa]),
+    closing,
+  ];
   steps.forEach(assertStep);
   if (steps.length > SHOWCASE_CONTRACTS.MAX_STEPS) throw new Error("guided demo too long");
   return steps;

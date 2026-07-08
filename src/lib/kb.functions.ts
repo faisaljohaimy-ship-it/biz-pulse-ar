@@ -272,7 +272,9 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
       .from("sec_knowledge_categories")
       .select("id, code");
     if (catErr) throw new Error(catErr.message);
-    const byCode = new Map<string, string>(cats?.map((c) => [c.code as string, c.id as string]) ?? []);
+    const byCode = new Map<string, string>(
+      cats?.map((c) => [c.code as string, c.id as string]) ?? [],
+    );
 
     const rows = ARTICLES.map((a) => ({
       doc_code: a.doc_code,
@@ -327,7 +329,9 @@ export const kbEmbedMissing = createServerFn({ method: "POST" })
 
     const { data: pending, error } = await supabaseAdmin
       .from("sec_knowledge_articles")
-      .select("id, doc_code, title_ar, title_en, summary_ar, summary_en, procedure_ar, procedure_en, keywords_ar, keywords_en")
+      .select(
+        "id, doc_code, title_ar, title_en, summary_ar, summary_en, procedure_ar, procedure_en, keywords_ar, keywords_en",
+      )
       .is("embedding", null)
       .eq("status", "published")
       .limit(data.batch);
@@ -339,12 +343,17 @@ export const kbEmbedMissing = createServerFn({ method: "POST" })
     for (const row of pending ?? []) {
       const r = row as any;
       const text = [
-        r.title_ar, r.title_en,
-        r.summary_ar, r.summary_en,
-        r.procedure_ar, r.procedure_en,
+        r.title_ar,
+        r.title_en,
+        r.summary_ar,
+        r.summary_en,
+        r.procedure_ar,
+        r.procedure_en,
         (r.keywords_ar ?? []).join(" "),
         (r.keywords_en ?? []).join(" "),
-      ].filter(Boolean).join("\n\n");
+      ]
+        .filter(Boolean)
+        .join("\n\n");
       try {
         const vec = await embedText(text);
         const { error: upErr } = await supabaseAdmin

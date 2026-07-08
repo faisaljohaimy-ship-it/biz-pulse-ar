@@ -12,9 +12,9 @@
 import { avatarRenderer, type AvatarFrame } from "./avatar-renderer";
 
 export interface PerfSample {
-  fps: number;           // smoothed EMA
-  instantFps: number;    // 1000/dt
-  dt: number;            // ms since previous frame
+  fps: number; // smoothed EMA
+  instantFps: number; // 1000/dt
+  dt: number; // ms since previous frame
   droppedFrames: number; // cumulative frames with dt > 33ms
   totalFrames: number;
   ts: number;
@@ -45,13 +45,22 @@ class AvatarPerformanceEngine {
   stop(): void {
     if (!this.running) return;
     this.running = false;
-    this.rendererUnsub?.(); this.rendererUnsub = null;
+    this.rendererUnsub?.();
+    this.rendererUnsub = null;
     this.listeners.clear();
-    this.lastTs = 0; this.ema = 60; this.dropped = 0; this.total = 0; this.last = null;
+    this.lastTs = 0;
+    this.ema = 60;
+    this.dropped = 0;
+    this.total = 0;
+    this.last = null;
   }
 
-  isRunning(): boolean { return this.running; }
-  snapshot(): PerfSample | null { return this.last; }
+  isRunning(): boolean {
+    return this.running;
+  }
+  snapshot(): PerfSample | null {
+    return this.last;
+  }
 
   subscribe(fn: Listener): () => void {
     this.listeners.add(fn);
@@ -60,7 +69,10 @@ class AvatarPerformanceEngine {
 
   private onFrame(f: AvatarFrame): void {
     const ts = f.ts || (typeof performance !== "undefined" ? performance.now() : Date.now());
-    if (this.lastTs === 0) { this.lastTs = ts; return; }
+    if (this.lastTs === 0) {
+      this.lastTs = ts;
+      return;
+    }
     const dt = Math.max(1, ts - this.lastTs);
     this.lastTs = ts;
     this.total += 1;
@@ -76,7 +88,13 @@ class AvatarPerformanceEngine {
       ts,
     };
     this.last = sample;
-    this.listeners.forEach((l) => { try { l(sample); } catch { /* isolate */ } });
+    this.listeners.forEach((l) => {
+      try {
+        l(sample);
+      } catch {
+        /* isolate */
+      }
+    });
   }
 }
 

@@ -13,7 +13,9 @@ function makeRequest(init: { body?: unknown; auth?: string | null }) {
 
 describe("/api/chat guard", () => {
   it("accepts missing bearer as anonymous (demo mode)", async () => {
-    const req = makeRequest({ body: { messages: [{ role: "user", parts: [{ type: "text", text: "hi" }] }] } });
+    const req = makeRequest({
+      body: { messages: [{ role: "user", parts: [{ type: "text", text: "hi" }] }] },
+    });
     const result = await validateChatRequest(req);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -30,7 +32,6 @@ describe("/api/chat guard", () => {
     if (!result.ok) return;
     expect(result.authHeader).toBeNull();
   });
-
 
   it("rejects invalid JSON body with 400", async () => {
     const req = new Request("https://app.test/api/chat", {

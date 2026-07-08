@@ -31,12 +31,9 @@ export function useAria() {
   );
   const close = useCallback(() => enqueue({ kind: "close" }), [enqueue]);
   const focus = useCallback(() => enqueue({ kind: "focus" }), [enqueue]);
-  const ask = useCallback(
-    (text: string) => {
-      void ariaBrain.submit(text);
-    },
-    [],
-  );
+  const ask = useCallback((text: string) => {
+    void ariaBrain.submit(text);
+  }, []);
 
   return {
     mode,

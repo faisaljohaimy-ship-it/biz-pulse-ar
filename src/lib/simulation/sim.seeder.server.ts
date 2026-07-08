@@ -11,9 +11,20 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { makeRng, type Rng } from "./sim.rng";
 import { SIM_VOLUMES, SIM_SEED_DEFAULT } from "./sim.config";
 import {
-  DEPARTMENTS, FIRST_AR, LAST_AR, FIRST_EN, LAST_EN, ROLES, GRADES,
-  INCIDENT_TYPES, NEAR_MISS_TITLES, INSPECTION_KINDS, RISK_CATEGORIES,
-  MEETING_KINDS, NOTIFICATION_TOPICS, BUS_ROUTES,
+  DEPARTMENTS,
+  FIRST_AR,
+  LAST_AR,
+  FIRST_EN,
+  LAST_EN,
+  ROLES,
+  GRADES,
+  INCIDENT_TYPES,
+  NEAR_MISS_TITLES,
+  INSPECTION_KINDS,
+  RISK_CATEGORIES,
+  MEETING_KINDS,
+  NOTIFICATION_TOPICS,
+  BUS_ROUTES,
 } from "./sim.catalog";
 
 // Any admin client — kept loose so this module stays testable.
@@ -28,10 +39,20 @@ export type SeedResult = {
 };
 
 const SITE_SEED = [
-  { code: "JED-P1", name_ar: "موقع جدة الصناعي", name_en: "Jeddah Industrial Site", city: "Jeddah" },
+  {
+    code: "JED-P1",
+    name_ar: "موقع جدة الصناعي",
+    name_en: "Jeddah Industrial Site",
+    city: "Jeddah",
+  },
   { code: "JED-P2", name_ar: "ميناء جدة الإسلامي", name_en: "Jeddah Islamic Port", city: "Jeddah" },
   { code: "MEC-01", name_ar: "مركز عمليات مكة", name_en: "Makkah Operations Hub", city: "Makkah" },
-  { code: "YNB-P1", name_ar: "مجمع ينبع البتروكيماوي", name_en: "Yanbu Petrochemical Complex", city: "Yanbu" },
+  {
+    code: "YNB-P1",
+    name_ar: "مجمع ينبع البتروكيماوي",
+    name_en: "Yanbu Petrochemical Complex",
+    city: "Yanbu",
+  },
   { code: "YNB-P2", name_ar: "مصفاة ينبع", name_en: "Yanbu Refinery", city: "Yanbu" },
   { code: "RUH-HQ", name_ar: "المقر الرئيسي - الرياض", name_en: "HQ - Riyadh", city: "Riyadh" },
 ];
@@ -44,16 +65,23 @@ const chunkInsert = async (admin: Admin, table: string, rows: unknown[], size = 
   }
 };
 
-async function ensureSites(admin: Admin, orgId: string, seedTag: number): Promise<Array<{ id: string; code: string }>> {
+async function ensureSites(
+  admin: Admin,
+  orgId: string,
+  seedTag: number,
+): Promise<Array<{ id: string; code: string }>> {
   const { data: existing } = await admin.from("sec_sites").select("id, code").eq("org_id", orgId);
   const have = new Map((existing ?? []).map((r: { id: string; code: string }) => [r.code, r.id]));
-  const toInsert = SITE_SEED
-    .filter((s) => !have.has(s.code))
-    .map((s) => ({
-      org_id: orgId, code: s.code, name_ar: s.name_ar, name_en: s.name_en,
-      city: s.city, country: "SA", status: "active",
-      metadata: { sim_seed: seedTag },
-    }));
+  const toInsert = SITE_SEED.filter((s) => !have.has(s.code)).map((s) => ({
+    org_id: orgId,
+    code: s.code,
+    name_ar: s.name_ar,
+    name_en: s.name_en,
+    city: s.city,
+    country: "SA",
+    status: "active",
+    metadata: { sim_seed: seedTag },
+  }));
   if (toInsert.length) {
     const { data, error } = await admin.from("sec_sites").insert(toInsert).select("id, code");
     if (error) throw new Error(`[sec_sites] ${error.message}`);
@@ -64,9 +92,17 @@ async function ensureSites(admin: Admin, orgId: string, seedTag: number): Promis
 
 async function purgePriorSim(admin: Admin, orgId: string) {
   const tables = [
-    "sim_history", "sim_notifications", "sim_daily_ops", "sim_meetings",
-    "sim_corrective_actions", "sim_risks", "sim_near_misses", "sim_inspections",
-    "sim_buses", "sim_employees", "sim_departments",
+    "sim_history",
+    "sim_notifications",
+    "sim_daily_ops",
+    "sim_meetings",
+    "sim_corrective_actions",
+    "sim_risks",
+    "sim_near_misses",
+    "sim_inspections",
+    "sim_buses",
+    "sim_employees",
+    "sim_departments",
   ];
   for (const t of tables) {
     await admin.from(t).delete().eq("org_id", orgId);
@@ -91,15 +127,23 @@ export async function runSimulationSeed(
 
   // 2) departments
   const deptRows = DEPARTMENTS.map((d) => ({
-    org_id, code: d.code, name_ar: d.ar, name_en: d.en,
+    org_id,
+    code: d.code,
+    name_ar: d.ar,
+    name_en: d.en,
     headcount_target: rng.int(8, 60),
     budget: rng.int(500_000, 8_000_000),
     metadata: { sim_seed: seed },
   }));
   await chunkInsert(admin, "sim_departments", deptRows);
-  const { data: depts } = await admin.from("sim_departments").select("id, code").eq("org_id", org_id);
+  const { data: depts } = await admin
+    .from("sim_departments")
+    .select("id, code")
+    .eq("org_id", org_id);
   const deptIds = (depts ?? []).map((d: { id: string }) => d.id);
-  const deptByCode = new Map((depts ?? []).map((d: { id: string; code: string }) => [d.code, d.id]));
+  const deptByCode = new Map(
+    (depts ?? []).map((d: { id: string; code: string }) => [d.code, d.id]),
+  );
 
   // 3) employees
   const empRows: Array<Record<string, unknown>> = [];
@@ -116,15 +160,24 @@ export async function runSimulationSeed(
       role: role.en,
       grade: rng.pick(GRADES),
       site_id: rng.pick(siteIds),
-      hire_date: new Date(2018 + rng.int(0, 7), rng.int(0, 11), rng.int(1, 28)).toISOString().slice(0, 10),
+      hire_date: new Date(2018 + rng.int(0, 7), rng.int(0, 11), rng.int(1, 28))
+        .toISOString()
+        .slice(0, 10),
       status: rng.chance(0.94) ? "active" : "on_leave",
       contact: { email: `emp${10000 + i}@nexios.sa`, phone: `+9665${rng.int(10000000, 99999999)}` },
       metadata: { sim_seed: seed, role_ar: role.ar },
     });
   }
   await chunkInsert(admin, "sim_employees", empRows);
-  const { data: emps } = await admin.from("sim_employees").select("id, dept_id, site_id").eq("org_id", org_id);
-  const empList = (emps ?? []) as Array<{ id: string; dept_id: string | null; site_id: string | null }>;
+  const { data: emps } = await admin
+    .from("sim_employees")
+    .select("id, dept_id, site_id")
+    .eq("org_id", org_id);
+  const empList = (emps ?? []) as Array<{
+    id: string;
+    dept_id: string | null;
+    site_id: string | null;
+  }>;
   const empIds = empList.map((e) => e.id);
   const empBySite = new Map<string, string[]>();
   empList.forEach((e) => {
@@ -136,7 +189,10 @@ export async function runSimulationSeed(
 
   // assign a random head per department
   for (const d of depts ?? []) {
-    await admin.from("sim_departments").update({ head_employee_id: rng.pick(empIds) }).eq("id", d.id);
+    await admin
+      .from("sim_departments")
+      .update({ head_employee_id: rng.pick(empIds) })
+      .eq("id", d.id);
   }
 
   // 4) buses
@@ -144,7 +200,7 @@ export async function runSimulationSeed(
   for (let i = 0; i < SIM_VOLUMES.buses; i++) {
     busRows.push({
       org_id,
-      plate: `${rng.pick(["أ","ب","ج","د","هـ"])}${rng.int(1000, 9999)}`,
+      plate: `${rng.pick(["أ", "ب", "ج", "د", "هـ"])}${rng.int(1000, 9999)}`,
       capacity: rng.pick([28, 32, 40, 45, 50]),
       route_code: rng.pick(BUS_ROUTES),
       driver_employee_id: rng.pick(empIds),
@@ -170,7 +226,7 @@ export async function runSimulationSeed(
       completed_at: completed ? rng.daysAgo(0, 30) : null,
       score: completed ? rng.int(55, 100) : null,
       findings_count: completed ? rng.int(0, 8) : 0,
-      status: completed ? "completed" : (rng.chance(0.5) ? "scheduled" : "in_progress"),
+      status: completed ? "completed" : rng.chance(0.5) ? "scheduled" : "in_progress",
       priority: rng.pick(["low", "medium", "high"]),
       metadata: { sim_seed: seed },
     });
@@ -186,7 +242,7 @@ export async function runSimulationSeed(
     riskRows.push({
       org_id,
       ref: `RSK-${String(1000 + i)}`,
-      title: `Risk in ${cat} — ${rng.pick(["process","access","equipment","procedure"])} exposure`,
+      title: `Risk in ${cat} — ${rng.pick(["process", "access", "equipment", "procedure"])} exposure`,
       category: cat,
       likelihood: rng.int(1, 5),
       impact: rng.int(1, 5),
@@ -242,14 +298,22 @@ export async function runSimulationSeed(
   }
   await chunkInsert(admin, "sec_incidents", incRows);
   const { data: incs } = await admin
-    .from("sec_incidents").select("id")
-    .eq("org_id", org_id).contains("metadata", { sim_seed: seed });
+    .from("sec_incidents")
+    .select("id")
+    .eq("org_id", org_id)
+    .contains("metadata", { sim_seed: seed });
   const incIds = (incs ?? []).map((r: { id: string }) => r.id);
 
   // 9) permits (sec_permits) — mixed statuses
   const permitRows: Array<Record<string, unknown>> = [];
   for (let i = 0; i < SIM_VOLUMES.permits; i++) {
-    const kind = rng.pick(["hot_work", "confined_space", "working_at_height", "electrical", "excavation"]);
+    const kind = rng.pick([
+      "hot_work",
+      "confined_space",
+      "working_at_height",
+      "electrical",
+      "excavation",
+    ]);
     permitRows.push({
       org_id,
       ref: `PTW-${String(3000 + i)}`,
@@ -307,7 +371,11 @@ export async function runSimulationSeed(
   // tasks table has NOT NULL user_id — skip if we don't have a proper user
   // (safer to insert without to avoid FK failures).
   try {
-    await chunkInsert(admin, "tasks", taskRows.map(({ user_id: _u, ...rest }) => rest));
+    await chunkInsert(
+      admin,
+      "tasks",
+      taskRows.map(({ user_id: _u, ...rest }) => rest),
+    );
   } catch {
     // tolerate schema variance
   }
@@ -362,7 +430,10 @@ export async function runSimulationSeed(
       for (const shift of ["day", "night"]) {
         const planned = rng.int(8, 24);
         opsRows.push({
-          org_id, day: dayStr, site_id: site.id, shift,
+          org_id,
+          day: dayStr,
+          site_id: site.id,
+          shift,
           patrols_planned: planned,
           patrols_done: Math.max(0, planned - rng.int(0, 3)),
           incidents_open: rng.int(0, 5),
@@ -387,7 +458,10 @@ export async function runSimulationSeed(
     for (const id of ids.slice(0, Math.min(ids.length, 40))) {
       for (const action of actions) {
         histRows.push({
-          org_id, entity_type: entity, entity_id: id, action,
+          org_id,
+          entity_type: entity,
+          entity_id: id,
+          action,
           actor_employee: rng.pick(empIds),
           changes_json: { by: "simulation" },
           at: rng.daysAgo(0, 45),
@@ -398,7 +472,13 @@ export async function runSimulationSeed(
   };
   pushHist("sim_inspection", inspIds, ["created", "status_changed"]);
   pushHist("sim_risk", riskIds, ["created", "mitigation_updated"]);
-  pushHist("sim_corrective_action", (await admin.from("sim_corrective_actions").select("id").eq("org_id", org_id)).data?.map((r: {id:string}) => r.id) ?? [], ["created"]);
+  pushHist(
+    "sim_corrective_action",
+    (await admin.from("sim_corrective_actions").select("id").eq("org_id", org_id)).data?.map(
+      (r: { id: string }) => r.id,
+    ) ?? [],
+    ["created"],
+  );
   pushHist("sec_incident", incIds, ["created", "status_changed"]);
   await chunkInsert(admin, "sim_history", histRows, 200);
 
@@ -429,16 +509,35 @@ export async function runSimulationSeed(
 export async function validateSimulation(admin: Admin, orgId: string) {
   const checks: Array<{ name: string; ok: boolean; detail?: string }> = [];
   const count = async (t: string) => {
-    const { count: c } = await admin.from(t).select("id", { count: "exact", head: true }).eq("org_id", orgId);
+    const { count: c } = await admin
+      .from(t)
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", orgId);
     return c ?? 0;
   };
-  for (const t of ["sim_departments","sim_employees","sim_buses","sim_inspections","sim_risks","sim_near_misses","sim_corrective_actions","sim_meetings","sim_notifications","sim_daily_ops","sim_history"]) {
+  for (const t of [
+    "sim_departments",
+    "sim_employees",
+    "sim_buses",
+    "sim_inspections",
+    "sim_risks",
+    "sim_near_misses",
+    "sim_corrective_actions",
+    "sim_meetings",
+    "sim_notifications",
+    "sim_daily_ops",
+    "sim_history",
+  ]) {
     const c = await count(t);
     checks.push({ name: `${t}.count>0`, ok: c > 0, detail: `${c}` });
   }
   // orphan checks
   const { data: orphanEmps } = await admin
-    .from("sim_employees").select("id").eq("org_id", orgId).is("dept_id", null).limit(1);
+    .from("sim_employees")
+    .select("id")
+    .eq("org_id", orgId)
+    .is("dept_id", null)
+    .limit(1);
   checks.push({ name: "employees.dept_id not null", ok: (orphanEmps?.length ?? 0) === 0 });
   return { ok: checks.every((c) => c.ok), checks };
 }

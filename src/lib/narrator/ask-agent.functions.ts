@@ -26,13 +26,25 @@ const Input = z.object({
 
 const REPORT_TRIGGERS = [
   // English
-  "executive briefing", "full report", "detailed analysis",
-  "explain everything", "presentation mode", "board meeting",
-  "deep dive", "complete report",
+  "executive briefing",
+  "full report",
+  "detailed analysis",
+  "explain everything",
+  "presentation mode",
+  "board meeting",
+  "deep dive",
+  "complete report",
   // Arabic
-  "إحاطة تنفيذية", "احاطة تنفيذية", "تقرير كامل", "تقرير تفصيلي",
-  "تحليل تفصيلي", "اشرح كل شيء", "اشرح كل شي", "وضع العرض",
-  "اجتماع مجلس", "تقرير شامل",
+  "إحاطة تنفيذية",
+  "احاطة تنفيذية",
+  "تقرير كامل",
+  "تقرير تفصيلي",
+  "تحليل تفصيلي",
+  "اشرح كل شيء",
+  "اشرح كل شي",
+  "وضع العرض",
+  "اجتماع مجلس",
+  "تقرير شامل",
 ];
 
 function detectReportMode(q: string): boolean {
@@ -103,12 +115,16 @@ Answer in BOTH Arabic and English. Return ONLY strict JSON: {"text_ar":"...","te
     const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const raw = j.choices?.[0]?.message?.content ?? "{}";
     let parsed: { text_ar?: string; text_en?: string } = {};
-    try { parsed = JSON.parse(raw); } catch { parsed = { [data.lang === "ar" ? "text_ar" : "text_en"]: raw }; }
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { [data.lang === "ar" ? "text_ar" : "text_en"]: raw };
+    }
     const ar = (parsed.text_ar ?? "").trim();
     const en = (parsed.text_en ?? "").trim();
     return {
       text_ar: ar || en,
       text_en: en || ar,
-      mode: reportMode ? "report" as const : "concise" as const,
+      mode: reportMode ? ("report" as const) : ("concise" as const),
     };
   });

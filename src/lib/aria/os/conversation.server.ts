@@ -25,9 +25,7 @@ function uid(): string {
   return `cnv_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function openConversation(
-  session_id: ExecutiveSessionId,
-): ExecutiveConversation {
+export function openConversation(session_id: ExecutiveSessionId): ExecutiveConversation {
   const existing = BY_SESSION.get(session_id);
   if (existing) {
     const cur = CONVERSATIONS.get(existing);
@@ -72,9 +70,7 @@ export function appendTurn(
   return next;
 }
 
-export function getConversation(
-  session_id: ExecutiveSessionId,
-): ExecutiveConversation | null {
+export function getConversation(session_id: ExecutiveSessionId): ExecutiveConversation | null {
   const id = BY_SESSION.get(session_id);
   return id ? (CONVERSATIONS.get(id) ?? null) : null;
 }
@@ -84,10 +80,7 @@ export function getConversation(
  * without duplicating memory (the Brain still loads its own Executive
  * Memory under `sessionId`).
  */
-export function stitchHistory(
-  session_id: ExecutiveSessionId,
-  limit = 8,
-): BrainTurn[] {
+export function stitchHistory(session_id: ExecutiveSessionId, limit = 8): BrainTurn[] {
   const cnv = getConversation(session_id);
   if (!cnv) return [];
   return cnv.turns.slice(-limit).map((t) => ({

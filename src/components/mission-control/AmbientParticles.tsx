@@ -31,15 +31,13 @@ export function AmbientParticles({
         const opacity = (0.18 + r3 * 0.55).toFixed(2);
         return { i, size, left, top, delay, duration, opacity };
       }),
-    [count]
+    [count],
   );
 
   return (
     <div
       aria-hidden
-      className={
-        "pointer-events-none absolute inset-0 overflow-hidden " + (className ?? "")
-      }
+      className={"pointer-events-none absolute inset-0 overflow-hidden " + (className ?? "")}
     >
       {/* Vignette + ambient glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,212,255,0.10),transparent_55%)]" />

@@ -41,11 +41,7 @@ export function cacheSet(
   return entry;
 }
 
-export function cacheGet(
-  store: CacheStore,
-  key: string,
-  now: string,
-): CacheEntry | null {
+export function cacheGet(store: CacheStore, key: string, now: string): CacheEntry | null {
   const entry = store.get(key);
   if (!entry) return null;
   if (Date.parse(entry.expiresAt) <= Date.parse(now)) {

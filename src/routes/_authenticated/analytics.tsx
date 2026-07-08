@@ -45,8 +45,19 @@ function Analytics() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend}>
                 <CartesianGrid stroke="oklch(0.28 0.05 278 / 30%)" vertical={false} />
-                <XAxis dataKey="d" stroke="oklch(0.68 0.04 268)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="oklch(0.68 0.04 268)" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis
+                  dataKey="d"
+                  stroke="oklch(0.68 0.04 268)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="oklch(0.68 0.04 268)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
                 <Tooltip
                   contentStyle={{
                     background: "oklch(0.17 0.05 278)",
@@ -55,8 +66,20 @@ function Analytics() {
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="a" stroke="oklch(0.62 0.22 275)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="b" stroke="oklch(0.78 0.17 80)" strokeWidth={2} dot={false} />
+                <Line
+                  type="monotone"
+                  dataKey="a"
+                  stroke="oklch(0.62 0.22 275)"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="b"
+                  stroke="oklch(0.78 0.17 80)"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -66,7 +89,13 @@ function Analytics() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={segments} dataKey="value" innerRadius={55} outerRadius={90} paddingAngle={4}>
+                <Pie
+                  data={segments}
+                  dataKey="value"
+                  innerRadius={55}
+                  outerRadius={90}
+                  paddingAngle={4}
+                >
                   {segments.map((s) => (
                     <Cell key={s.name} fill={s.c} stroke="transparent" />
                   ))}

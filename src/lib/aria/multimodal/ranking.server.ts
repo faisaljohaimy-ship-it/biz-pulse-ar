@@ -26,10 +26,7 @@ export function scoreFinding(
   const ageH = Number.isFinite(created) ? Math.max(0, (now - created) / 3_600_000) : 24;
   const recency = 1 / (1 + ageH / 24);
   const evidence = Math.min(1, f.evidence.length / 3);
-  const linked = Math.min(
-    1,
-    (f.linked_memory_ids.length + f.linked_graph_entities.length) / 4,
-  );
+  const linked = Math.min(1, (f.linked_memory_ids.length + f.linked_graph_entities.length) / 4);
   return Number(
     (
       weights.confidence * f.confidence +

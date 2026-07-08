@@ -42,7 +42,14 @@ const EMPTY_STATUSES: Record<ExecutionStatus, number> = {
 export function summarizeMetrics(toolId?: string): MetricSummary {
   const src = listMetrics(toolId);
   if (src.length === 0) {
-    return { count: 0, avg_ms: 0, p95_ms: 0, failures: 0, by_status: { ...EMPTY_STATUSES }, by_adapter: {} };
+    return {
+      count: 0,
+      avg_ms: 0,
+      p95_ms: 0,
+      failures: 0,
+      by_status: { ...EMPTY_STATUSES },
+      by_adapter: {},
+    };
   }
   const durations = src.map((s) => s.duration_ms).sort((a, b) => a - b);
   const avg = durations.reduce((a, b) => a + b, 0) / durations.length;

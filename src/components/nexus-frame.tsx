@@ -51,14 +51,7 @@ function Starfield() {
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full">
       {stars.map((s, i) => (
-        <circle
-          key={i}
-          cx={`${s.x}%`}
-          cy={`${s.y}%`}
-          r={s.r}
-          fill="white"
-          opacity={s.o}
-        />
+        <circle key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r} fill="white" opacity={s.o} />
       ))}
     </svg>
   );
@@ -106,8 +99,7 @@ export function NexusPage({
             backgroundImage:
               "linear-gradient(rgba(34,211,238,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.4) 1px, transparent 1px)",
             backgroundSize: "44px 44px",
-            maskImage:
-              "radial-gradient(ellipse at center, black 30%, transparent 80%)",
+            maskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
           }}
         />
         <Starfield />
@@ -134,9 +126,7 @@ export function NexusPage({
             <h1 className="mt-1 bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl">
               {title}
             </h1>
-            {subtitle && (
-              <p className="mt-1 max-w-3xl text-sm text-slate-400">{subtitle}</p>
-            )}
+            {subtitle && <p className="mt-1 max-w-3xl text-sm text-slate-400">{subtitle}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">{actions}</div>
         </header>
@@ -173,8 +163,7 @@ export function ExecutiveStatusBar({
 }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const tone =
-    status === "critical" ? "rose" : status === "warning" ? "amber" : "emerald";
+  const tone = status === "critical" ? "rose" : status === "warning" ? "amber" : "emerald";
   const label =
     status === "critical"
       ? ar
@@ -292,9 +281,7 @@ export function NexusCard({
       )}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
-      <div
-        className="pointer-events-none absolute -inset-x-12 -top-12 h-32 -rotate-12 bg-gradient-to-r from-transparent via-cyan-300/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-      />
+      <div className="pointer-events-none absolute -inset-x-12 -top-12 h-32 -rotate-12 bg-gradient-to-r from-transparent via-cyan-300/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div className="relative">{children}</div>
     </div>
   );

@@ -15,12 +15,7 @@ export {
 } from "./cluster.server";
 export { createPeer, observePeer } from "./peer.server";
 export { runDiscovery } from "./discovery.server";
-export {
-  createRegistry,
-  register,
-  deregister,
-  findByCapability,
-} from "./registry.server";
+export { createRegistry, register, deregister, findByCapability } from "./registry.server";
 export { selectRoute, type RouterState } from "./routing.server";
 export { routeByCapability } from "./capability-routing.server";
 export { scheduleBatch } from "./scheduler.server";
@@ -31,16 +26,8 @@ export { observePresence } from "./presence.server";
 export { electLeader } from "./leader-election.server";
 export { evaluateQuorum } from "./quorum.server";
 export { tallyConsensus } from "./consensus.server";
-export {
-  acquireLock,
-  releaseLock,
-  createMemoryLockStore,
-} from "./distributed-lock.server";
-export {
-  cacheGet,
-  cacheSet,
-  createMemoryCacheStore,
-} from "./distributed-cache.server";
+export { acquireLock, releaseLock, createMemoryLockStore } from "./distributed-lock.server";
+export { cacheGet, cacheSet, createMemoryCacheStore } from "./distributed-cache.server";
 export { admitMessage } from "./message-bus.server";
 export { planBroadcast } from "./broadcast.server";
 export { planReplication, replicationLagMs } from "./replication.server";

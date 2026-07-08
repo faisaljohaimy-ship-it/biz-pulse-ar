@@ -29,11 +29,7 @@ export const GateIdSchema = z.enum([
 
 export const SeveritySchema = z.enum(["critical", "high", "medium", "low"]);
 export const StatusSchema = z.enum(["pass", "fail", "warn", "unknown"]);
-export const DecisionSchema = z.enum([
-  "GO",
-  "NO-GO",
-  "GO_WITH_KNOWN_LIMITATIONS",
-]);
+export const DecisionSchema = z.enum(["GO", "NO-GO", "GO_WITH_KNOWN_LIMITATIONS"]);
 
 export const EvidenceRefSchema = z.object({
   kind: z.enum([
@@ -98,13 +94,7 @@ export const ReviewFindingSchema = z.object({
 });
 
 export const ReviewReportSchema = z.object({
-  domain: z.enum([
-    "security",
-    "performance",
-    "accessibility",
-    "observability",
-    "dependency",
-  ]),
+  domain: z.enum(["security", "performance", "accessibility", "observability", "dependency"]),
   status: StatusSchema,
   findings: z.array(ReviewFindingSchema).readonly(),
   evidence: z.array(EvidenceRefSchema).readonly(),

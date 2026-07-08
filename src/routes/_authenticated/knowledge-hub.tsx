@@ -4,21 +4,47 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Search, BookOpen, FileText, Wrench, AlertTriangle, FileStack, Upload, Loader2, ArrowRight,
+  Search,
+  BookOpen,
+  FileText,
+  Wrench,
+  AlertTriangle,
+  FileStack,
+  Upload,
+  Loader2,
+  ArrowRight,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { enterpriseSearch, getKnowledgeStats, type SearchSource, type SearchHit } from "@/lib/enterprise-search.functions";
+import {
+  enterpriseSearch,
+  getKnowledgeStats,
+  type SearchSource,
+  type SearchHit,
+} from "@/lib/enterprise-search.functions";
 
 export const Route = createFileRoute("/_authenticated/knowledge-hub")({
   component: KnowledgeHubPage,
 });
 
-const SOURCE_META: Record<SearchSource, { icon: typeof BookOpen; label_en: string; label_ar: string; tone: "cyan" | "emerald" | "amber" | "rose" | "slate" }> = {
+const SOURCE_META: Record<
+  SearchSource,
+  {
+    icon: typeof BookOpen;
+    label_en: string;
+    label_ar: string;
+    tone: "cyan" | "emerald" | "amber" | "rose" | "slate";
+  }
+> = {
   incident: { icon: AlertTriangle, label_en: "Incident", label_ar: "حادثة", tone: "rose" },
   work_order: { icon: Wrench, label_en: "Work Order", label_ar: "أمر عمل", tone: "amber" },
   kb_article: { icon: BookOpen, label_en: "KB Article", label_ar: "مقالة معرفة", tone: "cyan" },
-  aria_document: { icon: FileStack, label_en: "ARIA Document", label_ar: "وثيقة ARIA", tone: "emerald" },
+  aria_document: {
+    icon: FileStack,
+    label_en: "ARIA Document",
+    label_ar: "وثيقة ARIA",
+    tone: "emerald",
+  },
   knowledge_doc: { icon: FileText, label_en: "Note", label_ar: "ملاحظة", tone: "slate" },
 };
 
@@ -46,7 +72,8 @@ function KnowledgeHubPage() {
   });
 
   const search = useMutation({
-    mutationFn: (query: string) => runSearch({ data: { q: query, sources: Array.from(activeSources), limit: 30 } }),
+    mutationFn: (query: string) =>
+      runSearch({ data: { q: query, sources: Array.from(activeSources), limit: 30 } }),
   });
 
   useEffect(() => {
@@ -57,7 +84,8 @@ function KnowledgeHubPage() {
   const toggleSource = (s: SearchSource) => {
     setActiveSources((prev) => {
       const next = new Set(prev);
-      if (next.has(s)) next.delete(s); else next.add(s);
+      if (next.has(s)) next.delete(s);
+      else next.add(s);
       if (next.size === 0) next.add(s);
       return next;
     });
@@ -69,9 +97,11 @@ function KnowledgeHubPage() {
     <NexusPage
       eyebrow="KNOWLEDGE CENTER"
       title={ar ? "مركز المعرفة المؤسسي" : "Enterprise Knowledge Center"}
-      subtitle={ar
-        ? "بحث موحد عبر الحوادث، أوامر العمل، قاعدة المعرفة، ومستندات ARIA."
-        : "Unified search across incidents, work orders, KB, and ARIA documents."}
+      subtitle={
+        ar
+          ? "بحث موحد عبر الحوادث، أوامر العمل، قاعدة المعرفة، ومستندات ARIA."
+          : "Unified search across incidents, work orders, KB, and ARIA documents."
+      }
       actions={
         <Link
           to="/knowledge-upload"
@@ -83,11 +113,31 @@ function KnowledgeHubPage() {
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <NexusStat label={ar ? "حوادث" : "Incidents"} value={String(stats.data?.incidents ?? "—")} tone="rose" />
-        <NexusStat label={ar ? "أوامر عمل" : "Work orders"} value={String(stats.data?.work_orders ?? "—")} tone="amber" />
-        <NexusStat label={ar ? "مقالات KB" : "KB articles"} value={String(stats.data?.kb_articles ?? "—")} tone="cyan" />
-        <NexusStat label={ar ? "مستندات ARIA" : "ARIA docs"} value={String(stats.data?.aria_documents ?? "—")} tone="emerald" />
-        <NexusStat label={ar ? "ملاحظات" : "Notes"} value={String(stats.data?.knowledge_docs ?? "—")} tone="cyan" />
+        <NexusStat
+          label={ar ? "حوادث" : "Incidents"}
+          value={String(stats.data?.incidents ?? "—")}
+          tone="rose"
+        />
+        <NexusStat
+          label={ar ? "أوامر عمل" : "Work orders"}
+          value={String(stats.data?.work_orders ?? "—")}
+          tone="amber"
+        />
+        <NexusStat
+          label={ar ? "مقالات KB" : "KB articles"}
+          value={String(stats.data?.kb_articles ?? "—")}
+          tone="cyan"
+        />
+        <NexusStat
+          label={ar ? "مستندات ARIA" : "ARIA docs"}
+          value={String(stats.data?.aria_documents ?? "—")}
+          tone="emerald"
+        />
+        <NexusStat
+          label={ar ? "ملاحظات" : "Notes"}
+          value={String(stats.data?.knowledge_docs ?? "—")}
+          tone="cyan"
+        />
       </div>
 
       <NexusCard>
@@ -103,7 +153,9 @@ function KnowledgeHubPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={ar ? "اكتب للبحث في كل نظام NEXIOS…" : "Type to search across all of NEXIOS…"}
+            placeholder={
+              ar ? "اكتب للبحث في كل نظام NEXIOS…" : "Type to search across all of NEXIOS…"
+            }
             autoFocus
             className="w-full rounded-lg border border-white/10 bg-white/[0.02] px-10 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-400/60 focus:outline-none"
           />
@@ -129,7 +181,9 @@ function KnowledgeHubPage() {
               >
                 <meta.icon className="h-3 w-3" />
                 {ar ? meta.label_ar : meta.label_en}
-                {count > 0 && <span className="rounded-full bg-white/10 px-1.5 text-[10px]">{count}</span>}
+                {count > 0 && (
+                  <span className="rounded-full bg-white/10 px-1.5 text-[10px]">{count}</span>
+                )}
               </button>
             );
           })}
@@ -137,7 +191,9 @@ function KnowledgeHubPage() {
 
         {debouncedQ.length < 2 ? (
           <div className="mt-8 py-10 text-center text-sm text-slate-500">
-            {ar ? "ابدأ بكتابة بحثك للاستعلام عن كامل النظام" : "Start typing to query the entire platform"}
+            {ar
+              ? "ابدأ بكتابة بحثك للاستعلام عن كامل النظام"
+              : "Start typing to query the entire platform"}
           </div>
         ) : search.isError ? (
           <div className="mt-6 rounded-md border border-rose-500/40 bg-rose-500/5 p-3 text-sm text-rose-200">
@@ -184,7 +240,11 @@ function SearchHitRow({ hit, ar }: { hit: SearchHit; ar: boolean }) {
             {hit.ref && <span className="text-[10px] font-mono text-slate-500">{hit.ref}</span>}
             {hit.meta && <span className="text-[10px] text-slate-500">{hit.meta}</span>}
             <span className="ms-auto text-[10px] text-slate-500">
-              {new Date(hit.at).toLocaleDateString(ar ? "ar" : "en", { year: "numeric", month: "short", day: "numeric" })}
+              {new Date(hit.at).toLocaleDateString(ar ? "ar" : "en", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
             </span>
           </div>
           <div className="mt-1 truncate text-sm font-semibold text-white">{hit.title}</div>

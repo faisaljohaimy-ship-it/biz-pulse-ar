@@ -11,20 +11,20 @@
  */
 
 export type SignalKind =
-  | "kpi"          // numeric metric snapshot (e.g. revenue, margin)
-  | "incident"     // operational disruption
-  | "task"         // unit of execution
-  | "communication"// message / meeting / email
-  | "decision"     // recorded executive decision
-  | "forecast";    // predicted future value
+  | "kpi" // numeric metric snapshot (e.g. revenue, margin)
+  | "incident" // operational disruption
+  | "task" // unit of execution
+  | "communication" // message / meeting / email
+  | "decision" // recorded executive decision
+  | "forecast"; // predicted future value
 
 export type Signal = {
-  source: string;            // 'supabase' | 'powerbi' | 'sap' | ...
+  source: string; // 'supabase' | 'powerbi' | 'sap' | ...
   kind: SignalKind;
-  key: string;               // stable identifier within the source
-  value: number;             // normalized 0-100 or absolute
+  key: string; // stable identifier within the source
+  value: number; // normalized 0-100 or absolute
   label: string;
-  occurredAt: string;        // ISO
+  occurredAt: string; // ISO
   metadata?: Record<string, unknown>;
 };
 
@@ -46,9 +46,9 @@ export class PowerBISource implements IntelligenceSource {
   async isAvailable() {
     return Boolean(
       process.env.POWERBI_TENANT_ID &&
-        process.env.POWERBI_CLIENT_ID &&
-        process.env.POWERBI_CLIENT_SECRET &&
-        process.env.POWERBI_WORKSPACE_ID,
+      process.env.POWERBI_CLIENT_ID &&
+      process.env.POWERBI_CLIENT_SECRET &&
+      process.env.POWERBI_WORKSPACE_ID,
     );
   }
   async fetchSignals() {

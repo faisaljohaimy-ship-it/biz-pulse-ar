@@ -66,7 +66,9 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
     if (data.runId) {
       const { data: run } = await sb
         .from("workflow_runs")
-        .select("id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by, context_json")
+        .select(
+          "id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by, context_json",
+        )
         .eq("id", data.runId)
         .maybeSingle();
       if (run) {
@@ -75,7 +77,12 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
           : null;
         entries.push({
           id: `wf-${run.id}`,
-          phase: run.status === "succeeded" || run.status === "completed" ? "completed" : run.status === "failed" ? "failed" : "workflow",
+          phase:
+            run.status === "succeeded" || run.status === "completed"
+              ? "completed"
+              : run.status === "failed"
+                ? "failed"
+                : "workflow",
           source: "workflow_engine",
           title: `Workflow run ${run.workflow_id?.slice?.(0, 8) ?? ""}`,
           status: run.status,
@@ -89,7 +96,9 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
         });
         const { data: steps } = await sb
           .from("workflow_step_runs")
-          .select("id, step_id, kind, status, started_at, finished_at, error, output_json, tool_execution_id")
+          .select(
+            "id, step_id, kind, status, started_at, finished_at, error, output_json, tool_execution_id",
+          )
           .eq("run_id", run.id)
           .order("started_at", { ascending: true });
         for (const s of (steps ?? []) as Array<Record<string, unknown>>) {
@@ -97,7 +106,12 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
           const end = s.finished_at as string | null;
           entries.push({
             id: `step-${s.id}`,
-            phase: s.status === "failed" ? "failed" : s.status === "succeeded" ? "completed" : (s.kind as TimelinePhase) ?? "running",
+            phase:
+              s.status === "failed"
+                ? "failed"
+                : s.status === "succeeded"
+                  ? "completed"
+                  : ((s.kind as TimelinePhase) ?? "running"),
             source: `step.${s.kind ?? "step"}`,
             title: `Step: ${String(s.step_id ?? "")}`,
             status: String(s.status ?? ""),
@@ -117,13 +131,20 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
     if (data.executionId) {
       const { data: ex } = await sb
         .from("tool_executions")
-        .select("id, tool_id, status, input_json, output_json, started_at, finished_at, duration_ms, error, correlation_id")
+        .select(
+          "id, tool_id, status, input_json, output_json, started_at, finished_at, duration_ms, error, correlation_id",
+        )
         .eq("id", data.executionId)
         .maybeSingle();
       if (ex) {
         entries.push({
           id: `tool-${ex.id}`,
-          phase: ex.status === "succeeded" || ex.status === "completed" ? "completed" : ex.status === "failed" ? "failed" : "tool",
+          phase:
+            ex.status === "succeeded" || ex.status === "completed"
+              ? "completed"
+              : ex.status === "failed"
+                ? "failed"
+                : "tool",
           source: "tool_runtime",
           title: `Tool: ${ex.tool_id}`,
           status: ex.status,
@@ -145,7 +166,9 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
     if (traceId) {
       const { data: audits } = await sb
         .from("audit_logs")
-        .select("id, action, resource_type, resource_id, source, status, duration_ms, occurred_at, changes, correlation_id, event_id")
+        .select(
+          "id, action, resource_type, resource_id, source, status, duration_ms, occurred_at, changes, correlation_id, event_id",
+        )
         .or(`correlation_id.eq.${traceId},event_id.eq.${traceId},resource_id.eq.${traceId}`)
         .order("occurred_at", { ascending: true })
         .limit(50);
@@ -168,7 +191,9 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
 
       const { data: evs } = await sb
         .from("enterprise_events")
-        .select("id, topic, source, severity, status, occurred_at, payload_json, inputs_json, outputs_json, correlation_id, duration_ms")
+        .select(
+          "id, topic, source, severity, status, occurred_at, payload_json, inputs_json, outputs_json, correlation_id, duration_ms",
+        )
         .or(`correlation_id.eq.${traceId},subject_id.eq.${traceId}`)
         .order("occurred_at", { ascending: true })
         .limit(50);
@@ -211,5 +236,8 @@ export const getExecutionTimeline = createServerFn({ method: "POST" })
         ? new Date(entries[entries.length - 1]!.at).getTime() - new Date(entries[0]!.at).getTime()
         : null;
 
-    return { entries, summary: { total: entries.length, failed, completed, duration_ms: duration } };
+    return {
+      entries,
+      summary: { total: entries.length, failed, completed, duration_ms: duration },
+    };
   });

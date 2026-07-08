@@ -23,8 +23,7 @@ export function analyzeToolSignals(): ImprovementProposal | undefined {
   return proposeImprovement({
     target: "tool",
     summary: "Repeated tool-level failures observed.",
-    rationale:
-      "Multiple experiences reference tool failures; advisory review recommended.",
+    rationale: "Multiple experiences reference tool failures; advisory review recommended.",
     expected_gain: 0.12,
     expected_risk: "warn",
     evidence,

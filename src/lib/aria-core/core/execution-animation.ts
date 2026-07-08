@@ -24,7 +24,10 @@ class ExecutionAnimation {
   }
 
   stop(): void {
-    if (this.unsub) { this.unsub(); this.unsub = null; }
+    if (this.unsub) {
+      this.unsub();
+      this.unsub = null;
+    }
     this.lastKey = null;
   }
 
@@ -40,12 +43,7 @@ class ExecutionAnimation {
     }
     if (env.approval.required || env.risk.level === "high") {
       // Nudge emotion to "concerned" without changing state.
-      avatarStateManager.transition(
-        avatarStateManager.getState(),
-        "concerned",
-        "system",
-        "medium",
-      );
+      avatarStateManager.transition(avatarStateManager.getState(), "concerned", "system", "medium");
     }
   }
 }

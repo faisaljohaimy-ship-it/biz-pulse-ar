@@ -40,11 +40,22 @@ function Circles() {
               </div>
             </div>
             <div className="mt-3 space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">المدير</span><span className="font-medium">{c.manager}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">الموظفون</span><span className="font-semibold">{c.staff_count}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">المواقع</span><span className="font-semibold">{c.sites_count}</span></div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">المدير</span>
+                <span className="font-medium">{c.manager}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">الموظفون</span>
+                <span className="font-semibold">{c.staff_count}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">المواقع</span>
+                <span className="font-semibold">{c.sites_count}</span>
+              </div>
               {c.lat && c.lng && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" /> {c.lat.toFixed(3)}, {c.lng.toFixed(3)}</div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3" /> {c.lat.toFixed(3)}, {c.lng.toFixed(3)}
+                </div>
               )}
             </div>
           </div>

@@ -31,10 +31,7 @@ export function escalate(input: {
   return e;
 }
 
-export function acknowledgeEscalation(
-  id: string,
-  operator_id: string,
-): EscalationEntry | null {
+export function acknowledgeEscalation(id: string, operator_id: string): EscalationEntry | null {
   const cur = store.get(id);
   if (!cur || cur.acknowledged_at) return cur ?? null;
   const updated: EscalationEntry = {

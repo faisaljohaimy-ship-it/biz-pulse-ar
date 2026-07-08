@@ -24,8 +24,6 @@ export function clampChannelDelta(
   if (!rules) return next;
   const maxStep = rules.max_delta_per_frame;
   const delta = next - prev;
-  const clamped =
-    delta > maxStep ? prev + maxStep :
-    delta < -maxStep ? prev - maxStep : next;
+  const clamped = delta > maxStep ? prev + maxStep : delta < -maxStep ? prev - maxStep : next;
   return Math.min(rules.max, Math.max(rules.min, clamped));
 }

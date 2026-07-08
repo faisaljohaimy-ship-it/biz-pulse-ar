@@ -17,8 +17,10 @@ export function composeWelcome(profile: ExecutiveProfile): VoiceCue {
     text = `${salutation}${orgPart}. I'm ARIA, your executive assistant on NEXIOS.`;
   }
   const cue: VoiceCue = {
-    text, language: profile.language,
-    pace: "normal", emphasis: "warm",
+    text,
+    language: profile.language,
+    pace: "normal",
+    emphasis: "warm",
   };
   assertVoiceCue(cue);
   return cue;

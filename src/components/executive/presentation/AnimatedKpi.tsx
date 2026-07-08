@@ -13,12 +13,19 @@ export interface AnimatedKpiProps {
 }
 
 const STATUS_TONE: Record<NonNullable<AnimatedKpiProps["status"]>, string> = {
-  ok:       "border-[#3AE8FF]/40 text-white",
-  warn:     "border-[#F5C86B]/50 text-[#FBE29A]",
+  ok: "border-[#3AE8FF]/40 text-white",
+  warn: "border-[#F5C86B]/50 text-[#FBE29A]",
   critical: "border-[#FF6A9A]/60 text-[#FFB0C7]",
 };
 
-export function AnimatedKpi({ label, value, unit, status = "ok", widgetId, precision = 0 }: AnimatedKpiProps) {
+export function AnimatedKpi({
+  label,
+  value,
+  unit,
+  status = "ok",
+  widgetId,
+  precision = 0,
+}: AnimatedKpiProps) {
   const v = useAnimatedNumber(value);
   const display = precision > 0 ? v.toFixed(precision) : Math.round(v).toLocaleString();
   return (
@@ -28,7 +35,9 @@ export function AnimatedKpi({ label, value, unit, status = "ok", widgetId, preci
     >
       <div className="text-[10px] uppercase tracking-[0.28em] text-white/50">{label}</div>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-3xl font-semibold tabular-nums" style={{ willChange: "contents" }}>{display}</span>
+        <span className="text-3xl font-semibold tabular-nums" style={{ willChange: "contents" }}>
+          {display}
+        </span>
         {unit ? <span className="text-xs text-white/50">{unit}</span> : null}
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-[#3AE8FF]/0 to-[#3AE8FF]/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />

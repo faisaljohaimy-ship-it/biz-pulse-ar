@@ -49,32 +49,50 @@ interface Props {
 type Palette = { core: string; glow: string; ring: string };
 
 const PALETTES: Record<string, Palette> = {
-  idle:      { core: "#00D4FF", glow: "rgba(0,212,255,0.55)",  ring: "rgba(58,232,255,0.35)" },
-  listening: { core: "#3AE8FF", glow: "rgba(58,232,255,0.7)",  ring: "rgba(58,232,255,0.55)" },
-  thinking:  { core: "#7C5CFF", glow: "rgba(124,92,255,0.7)",  ring: "rgba(124,92,255,0.5)"  },
-  speaking:  { core: "#00E5FF", glow: "rgba(0,229,255,0.85)",  ring: "rgba(0,229,255,0.6)"   },
-  warning:   { core: "#F5A524", glow: "rgba(245,165,36,0.75)", ring: "rgba(245,165,36,0.55)" },
-  critical:  { core: "#FF4D6D", glow: "rgba(255,77,109,0.8)",  ring: "rgba(255,77,109,0.6)"  },
-  success:   { core: "#10E0A0", glow: "rgba(16,224,160,0.75)", ring: "rgba(16,224,160,0.55)" },
+  idle: { core: "#00D4FF", glow: "rgba(0,212,255,0.55)", ring: "rgba(58,232,255,0.35)" },
+  listening: { core: "#3AE8FF", glow: "rgba(58,232,255,0.7)", ring: "rgba(58,232,255,0.55)" },
+  thinking: { core: "#7C5CFF", glow: "rgba(124,92,255,0.7)", ring: "rgba(124,92,255,0.5)" },
+  speaking: { core: "#00E5FF", glow: "rgba(0,229,255,0.85)", ring: "rgba(0,229,255,0.6)" },
+  warning: { core: "#F5A524", glow: "rgba(245,165,36,0.75)", ring: "rgba(245,165,36,0.55)" },
+  critical: { core: "#FF4D6D", glow: "rgba(255,77,109,0.8)", ring: "rgba(255,77,109,0.6)" },
+  success: { core: "#10E0A0", glow: "rgba(16,224,160,0.75)", ring: "rgba(16,224,160,0.55)" },
 };
 
 function paletteFor(state: DigitalHumanState): Palette {
   switch (state) {
-    case "listening": return PALETTES.listening;
+    case "listening":
+      return PALETTES.listening;
     case "thinking":
     case "analyzing":
     case "searching":
-    case "reading":   return PALETTES.thinking;
-    case "speaking":  return PALETTES.speaking;
-    case "completed": return PALETTES.success;
-    case "error":     return PALETTES.critical;
-    default:          return PALETTES.idle;
+    case "reading":
+      return PALETTES.thinking;
+    case "speaking":
+      return PALETTES.speaking;
+    case "completed":
+      return PALETTES.success;
+    case "error":
+      return PALETTES.critical;
+    default:
+      return PALETTES.idle;
   }
 }
 
-export function HologramFace({ state, amp = 0, size = 72, className, ar, text, emotion, attentionSide = null, greeting, anomaly }: Props) {
+export function HologramFace({
+  state,
+  amp = 0,
+  size = 72,
+  className,
+  ar,
+  text,
+  emotion,
+  attentionSide = null,
+  greeting,
+  anomaly,
+}: Props) {
   const speaking = state === "speaking";
-  const thinking = state === "thinking" || state === "analyzing" || state === "searching" || state === "reading";
+  const thinking =
+    state === "thinking" || state === "analyzing" || state === "searching" || state === "reading";
   const listening = state === "listening";
   const intensity = Math.min(1, Math.max(0, amp));
   const pal = paletteFor(state);
@@ -86,25 +104,34 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
   const [activeGesture, setActiveGesture] = useState<AriaHeadGesture>("none");
   const [gestureP, setGestureP] = useState(0);
   useEffect(() => {
-    if (emotion) { setActiveEmotion(emotion); return; }
+    if (emotion) {
+      setActiveEmotion(emotion);
+      return;
+    }
     if (speaking && text) {
       const sentences = splitSentences(text);
       const last = sentences[sentences.length - 1] ?? text;
       setActiveEmotion(anomaly ? "concern" : emotionForSentence(last));
       setActiveGesture(gestureForSentence(last));
     } else {
-      setActiveEmotion(emotionForState(
-        speaking ? "speaking" : listening ? "listening" : thinking ? "thinking" : "idle",
-        { greeting, anomaly },
-      ));
+      setActiveEmotion(
+        emotionForState(
+          speaking ? "speaking" : listening ? "listening" : thinking ? "thinking" : "idle",
+          { greeting, anomaly },
+        ),
+      );
       setActiveGesture("none");
     }
   }, [text, emotion, speaking, listening, thinking, greeting, anomaly]);
 
   // Drive gesture progress 0→1 over 350ms then reset
   useEffect(() => {
-    if (activeGesture === "none") { setGestureP(0); return; }
-    const duration = activeGesture === "question-tilt" ? 900 : activeGesture === "double-nod" ? 620 : 350;
+    if (activeGesture === "none") {
+      setGestureP(0);
+      return;
+    }
+    const duration =
+      activeGesture === "question-tilt" ? 900 : activeGesture === "double-nod" ? 620 : 350;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -131,7 +158,10 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
       setSway({ yaw, roll });
       raf = requestAnimationFrame(tick);
     };
-    if (typeof window !== "undefined" && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      typeof window !== "undefined" &&
+      !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
       raf = requestAnimationFrame(tick);
     }
     return () => cancelAnimationFrame(raf);
@@ -142,15 +172,16 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
   const roll = sway.roll;
   const gestureTx = gestureTransform(activeGesture, gestureP);
 
-
   // Eye tracking — track pointer within hosting hero area
   const rootRef = useRef<HTMLDivElement>(null);
   const [look, setLook] = useState({ x: 0, y: 0 });
   useEffect(() => {
     let raf = 0;
-    let tx = 0, ty = 0;
+    let tx = 0,
+      ty = 0;
     const onMove = (e: PointerEvent) => {
-      const el = rootRef.current; if (!el) return;
+      const el = rootRef.current;
+      if (!el) return;
       const r = el.getBoundingClientRect();
       const cx = r.left + r.width / 2;
       const cy = r.top + r.height / 2;
@@ -165,22 +196,32 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
       setLook((p) => ({ x: p.x + (tx - p.x) * 0.18, y: p.y + (ty - p.y) * 0.18 }));
     };
     window.addEventListener("pointermove", onMove, { passive: true });
-    return () => { window.removeEventListener("pointermove", onMove); if (raf) cancelAnimationFrame(raf); };
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   // Blink — procedural, every 3.5-6s, ~140ms close
   const [blink, setBlink] = useState(false);
   useEffect(() => {
-    let t1: ReturnType<typeof setTimeout>; let t2: ReturnType<typeof setTimeout>;
+    let t1: ReturnType<typeof setTimeout>;
+    let t2: ReturnType<typeof setTimeout>;
     const schedule = () => {
       const wait = 3500 + Math.random() * 2500;
       t1 = setTimeout(() => {
         setBlink(true);
-        t2 = setTimeout(() => { setBlink(false); schedule(); }, 140);
+        t2 = setTimeout(() => {
+          setBlink(false);
+          schedule();
+        }, 140);
       }, wait);
     };
     schedule();
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   const baseGlow = listening ? 22 : speaking ? 24 + intensity * 32 : thinking ? 20 : 14;
@@ -193,12 +234,14 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
     <div
       ref={rootRef}
       className={cn("relative shrink-0", className)}
-      style={{
-        width: size,
-        height: size,
-        // breathing float — GPU-only transform via CSS var animation
-        animation: "aria-breathe 5.5s ease-in-out infinite",
-      } as React.CSSProperties}
+      style={
+        {
+          width: size,
+          height: size,
+          // breathing float — GPU-only transform via CSS var animation
+          animation: "aria-breathe 5.5s ease-in-out infinite",
+        } as React.CSSProperties
+      }
       aria-label={ar ? "آريا — مساعدة تنفيذية" : "ARIA — Executive AI"}
       role="img"
     >
@@ -215,7 +258,11 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
       />
 
       {/* particle halo — 12 motes, free-floating around the portrait */}
-      <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ animation: "aria-spin 18s linear infinite" }}>
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ animation: "aria-spin 18s linear infinite" }}
+      >
         {Array.from({ length: 12 }).map((_, i) => {
           const a = (i / 12) * Math.PI * 2;
           const r = size * (0.58 + (i % 3) * 0.04);
@@ -261,9 +308,11 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
           className="absolute inset-0 h-full w-full object-contain object-top"
           style={{
             filter: [
-              thinking ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"
-                : speaking ? `brightness(${1 + intensity * 0.18}) saturate(${1.1 + intensity * 0.25})`
-                : "brightness(0.97)",
+              thinking
+                ? "brightness(0.98) saturate(1.05) hue-rotate(-6deg)"
+                : speaking
+                  ? `brightness(${1 + intensity * 0.18}) saturate(${1.1 + intensity * 0.25})`
+                  : "brightness(0.97)",
               overlay.filter,
             ].join(" "),
             transition: "filter 260ms ease-out",
@@ -277,7 +326,8 @@ export function HologramFace({ state, amp = 0, size = 72, className, ar, text, e
           style={{
             top: `${size * 0.36}px`,
             height: blink ? `${size * 0.08}px` : 0,
-            background: "linear-gradient(180deg, rgba(6,26,46,0) 0%, rgba(6,26,46,0.95) 50%, rgba(6,26,46,0) 100%)",
+            background:
+              "linear-gradient(180deg, rgba(6,26,46,0) 0%, rgba(6,26,46,0.95) 50%, rgba(6,26,46,0) 100%)",
             transition: "height 90ms ease-out",
           }}
         />

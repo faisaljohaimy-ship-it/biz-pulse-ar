@@ -2,17 +2,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { generateText, tool, stepCountIs, type ToolSet } from "ai";
 import { z } from "zod";
-import {
-  createLovableAiGatewayProvider,
-  DEFAULT_LOVABLE_MODEL,
-} from "@/lib/ai-gateway.server";
+import { createLovableAiGatewayProvider, DEFAULT_LOVABLE_MODEL } from "@/lib/ai-gateway.server";
 import { getExecutor, listExecutorIds } from "./tool-registry.server";
 import { executeTool } from "./tool-orchestrator.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
 
 const RunAgentParamsSchema = z.object({
-  agentId: z.string().trim().min(1).max(80).regex(/^[A-Za-z0-9_-]+$/),
+  agentId: z
+    .string()
+    .trim()
+    .min(1)
+    .max(80)
+    .regex(/^[A-Za-z0-9_-]+$/),
   actorId: z.string().uuid(),
   goalOverride: z.string().trim().max(4000).optional().nullable(),
   context: z.record(z.string(), z.unknown()).optional().nullable(),
@@ -57,8 +59,7 @@ export async function runAgent(
   supabase: SupabaseClient<Database>,
   params: RunAgentParams,
 ): Promise<RunAgentResult> {
-  const { agentId, actorId, goalOverride, context: ctxData } =
-    RunAgentParamsSchema.parse(params);
+  const { agentId, actorId, goalOverride, context: ctxData } = RunAgentParamsSchema.parse(params);
 
   // ALL orchestration writes go through the service-role admin client so RLS
   // RESTRICTIVE policies on workflows/workflow_runs/workflow_step_runs cannot
@@ -71,9 +72,7 @@ export async function runAgent(
   // 1) Load agent definition (admin — wrapper runs as system).
   const { data: def, error: defErr } = await admin
     .from("agent_definitions")
-    .select(
-      "id, name, goal, system_prompt, permissions, tool_allowlist, model, enabled",
-    )
+    .select("id, name, goal, system_prompt, permissions, tool_allowlist, model, enabled")
     .eq("id", agentId)
     .maybeSingle();
   if (defErr || !def) throw new Error(`Agent not found: ${agentId}`);
@@ -90,14 +89,13 @@ export async function runAgent(
     .eq("user_id", actorId)
     .limit(1)
     .maybeSingle();
-  const orgId: string =
-    (memb?.org_id as string | undefined) ?? "";
+  const orgId: string = (memb?.org_id as string | undefined) ?? "";
   if (!orgId) throw new Error("Actor is not assigned to an organization");
 
   // Find or create the system "Agent Execution" workflow per org so every
   // Run Agent press produces a real workflow_runs / workflow_step_runs trail.
   const WF_NAME = "__agent.run__";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let { data: wfRow } = await admin
     .from("workflows")
     .select("id")
@@ -106,7 +104,6 @@ export async function runAgent(
     .limit(1)
     .maybeSingle();
   if (!wfRow) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: created } = await admin
       .from("workflows")
       .insert({
@@ -126,7 +123,7 @@ export async function runAgent(
 
   // 2) Create agent_runs row (running).
   const startedAt = new Date().toISOString();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: runRow, error: runErr } = await admin
     .from("agent_runs")
     .insert({
@@ -148,7 +145,6 @@ export async function runAgent(
   // 2b) Wrap the agent execution in a workflow_run for full lifecycle evidence.
   let workflowRunId: string | null = null;
   if (workflowId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: wfRunRow } = await admin
       .from("workflow_runs")
       .insert({
@@ -226,7 +222,6 @@ export async function runAgent(
             // workflow_step_runs (running)
             let stepRowId: string | null = null;
             if (workflowRunId) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const { data: stepRow } = await admin
                 .from("workflow_step_runs")
                 .insert({
@@ -272,7 +267,6 @@ export async function runAgent(
                     ? "waiting"
                     : "failed";
               if (stepRowId) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await admin
                   .from("workflow_step_runs")
                   .update({
@@ -281,8 +275,7 @@ export async function runAgent(
                       res.status === "succeeded"
                         ? ({ output: res.output } as Record<string, unknown>)
                         : null,
-                    error:
-                      res.status === "succeeded" ? null : (res.error ?? res.status),
+                    error: res.status === "succeeded" ? null : (res.error ?? res.status),
                     tool_execution_id: res.executionId ?? null,
                     finished_at: new Date().toISOString(),
                   })
@@ -295,7 +288,12 @@ export async function runAgent(
                     : res.status === "pending_approval"
                       ? "workflow.step.waiting"
                       : "workflow.step.failed",
-                payload: { workflowRunId, toolId, executionId: res.executionId, status: res.status },
+                payload: {
+                  workflowRunId,
+                  toolId,
+                  executionId: res.executionId,
+                  status: res.status,
+                },
                 source: "agent.runtime",
                 severity: res.status === "succeeded" ? "info" : "warn",
                 actor_id: actorId,
@@ -325,7 +323,6 @@ export async function runAgent(
               const msg = err instanceof Error ? err.message : String(err);
               callRecord.error = msg;
               if (stepRowId) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await admin
                   .from("workflow_step_runs")
                   .update({
@@ -391,9 +388,7 @@ export async function runAgent(
     const result = await generateText({
       model: gateway(modelId),
       system: systemPrompt,
-      prompt: ctxData
-        ? `${goal}\n\nContext:\n${JSON.stringify(ctxData, null, 2)}`
-        : goal,
+      prompt: ctxData ? `${goal}\n\nContext:\n${JSON.stringify(ctxData, null, 2)}` : goal,
       tools,
       toolChoice: "auto",
       stopWhen: stepCountIs(50),
@@ -413,7 +408,7 @@ export async function runAgent(
 
     const finishedAt = new Date().toISOString();
     const summary = result.text?.trim() || "(no summary produced)";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     await admin
       .from("agent_runs")
       .update({
@@ -448,7 +443,6 @@ export async function runAgent(
     });
 
     if (workflowRunId) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await admin
         .from("workflow_runs")
         .update({
@@ -483,7 +477,7 @@ export async function runAgent(
         `## Goal`,
         goal,
       ].join("\n");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       await admin.from("aria_reports").insert({
         user_id: actorId,
         org_id: orgId,
@@ -497,11 +491,13 @@ export async function runAgent(
           agentRunId: runId,
           workflowRunId,
           steps: stepRecords.length,
-          tool_calls: stepRecords.flatMap((s) => s.toolCalls.map((c) => ({
-            tool: c.name,
-            ok: !c.error,
-            executionId: c.executionId ?? null,
-          }))),
+          tool_calls: stepRecords.flatMap((s) =>
+            s.toolCalls.map((c) => ({
+              tool: c.name,
+              ok: !c.error,
+              executionId: c.executionId ?? null,
+            })),
+          ),
           summary_en: summary,
           summary_ar: summary,
           correlationId,
@@ -532,7 +528,6 @@ export async function runAgent(
       subject_id: runId,
     });
     if (workflowRunId) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await admin
         .from("workflow_runs")
         .update({

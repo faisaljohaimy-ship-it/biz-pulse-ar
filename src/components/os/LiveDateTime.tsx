@@ -10,18 +10,32 @@ import { Clock } from "lucide-react";
 const TZ = "Asia/Riyadh";
 
 const arTime = new Intl.DateTimeFormat("ar-SA", {
-  hour: "2-digit", minute: "2-digit", second: "2-digit",
-  hour12: true, timeZone: TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: true,
+  timeZone: TZ,
 });
 const enTime = new Intl.DateTimeFormat("en-GB", {
-  hour: "2-digit", minute: "2-digit", second: "2-digit",
-  hour12: false, timeZone: TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+  timeZone: TZ,
 });
 const hijriDate = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
-  weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: TZ,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: TZ,
 });
 const gregDate = new Intl.DateTimeFormat("en-GB", {
-  weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: TZ,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: TZ,
 });
 
 export function LiveDateTime({ ar }: { readonly ar: boolean }) {
@@ -65,7 +79,9 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
         >
           {timeAr}
         </span>
-        <span aria-hidden className="text-white/25">·</span>
+        <span aria-hidden className="text-white/25">
+          ·
+        </span>
         <span dir="ltr" lang="en" className="text-white/80">
           {timeEn}
         </span>
@@ -80,7 +96,9 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
         >
           {dHijri} هـ
         </span>
-        <span aria-hidden className="text-white/25">·</span>
+        <span aria-hidden className="text-white/25">
+          ·
+        </span>
         <span dir="ltr" lang="en" className="whitespace-nowrap">
           {dGreg}
         </span>

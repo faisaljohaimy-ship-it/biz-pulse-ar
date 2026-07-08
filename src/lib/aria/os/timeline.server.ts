@@ -81,9 +81,7 @@ export function recordConversationTurn(
   });
 }
 
-export function getTimeline(
-  session_id: ExecutiveSessionId,
-): ExecutiveTimeline {
+export function getTimeline(session_id: ExecutiveSessionId): ExecutiveTimeline {
   const events = TIMELINES.get(session_id) ?? [];
   return { session_id, events };
 }
@@ -93,7 +91,5 @@ export function replayTimeline(
   fromSeq?: number,
 ): ReadonlyArray<ExecutiveTimelineEvent> {
   const events = TIMELINES.get(session_id) ?? [];
-  return fromSeq === undefined
-    ? events
-    : events.filter((e) => e.seq > fromSeq);
+  return fromSeq === undefined ? events : events.filter((e) => e.seq > fromSeq);
 }

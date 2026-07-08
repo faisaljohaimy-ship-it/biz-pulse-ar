@@ -42,15 +42,11 @@ export const Route = createFileRoute("/api/tts")({
         const { text, preserveDiacritics = true } = parsed.data;
         const voiceId = process.env.ELEVENLABS_VOICE_ID || ARIA_VOICE_ID;
 
-
-
         // CRITICAL: We must NOT normalize/strip Arabic diacritics (tashkeel) when the user wants
         // فصيح pronunciation. The harakat are in the Unicode range U+064B..U+0652 plus U+0670 and
         // U+0671 (and shadda U+0651). Passing them through verbatim lets eleven_multilingual_v2
         // disambiguate words like دخَلَ vs دخُلَ.
-        const preTts = preserveDiacritics
-          ? text
-          : text.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
+        const preTts = preserveDiacritics ? text : text.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
         // Auto-diacritize unvocalized Arabic so ElevenLabs pronounces correctly.
         // Only affects the TTS payload — the on-screen bubble uses `text` unchanged.
         const cleanText = await diacritizeForTts(preTts);
@@ -72,7 +68,6 @@ export const Route = createFileRoute("/api/tts")({
             retries: 1,
           });
 
-
           if (!r.ok) {
             const err = await r.text().catch(() => "");
             console.error("[api/tts] provider", r.status, err.slice(0, 400));
@@ -85,13 +80,18 @@ export const Route = createFileRoute("/api/tts")({
               const j = JSON.parse(err) as { detail?: { status?: string; message?: string } };
               providerStatus = j.detail?.status;
               providerReason = j.detail?.message;
-            } catch { /* non-JSON */ }
-            return Response.json({
-              error: "tts_failed",
-              status: r.status,
-              providerStatus,
-              providerReason: providerReason ?? err.slice(0, 200),
-            }, { status: r.status });
+            } catch {
+              /* non-JSON */
+            }
+            return Response.json(
+              {
+                error: "tts_failed",
+                status: r.status,
+                providerStatus,
+                providerReason: providerReason ?? err.slice(0, 200),
+              },
+              { status: r.status },
+            );
           }
 
           const audio = await r.arrayBuffer();
@@ -106,7 +106,10 @@ export const Route = createFileRoute("/api/tts")({
         } catch (err) {
           const shape = isApiError(err) ? err.toJSON() : toApiErrorShape(err);
           console.error("[api/tts]", shape.code, shape.message);
-          return Response.json({ error: shape.message, code: shape.code }, { status: shape.status });
+          return Response.json(
+            { error: shape.message, code: shape.code },
+            { status: shape.status },
+          );
         }
       },
     },

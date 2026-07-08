@@ -11,7 +11,10 @@ export const SHOWCASE_CONTRACTS = {
 
 export function assertStep(s: ShowcaseStep): void {
   if (!s.id || !s.title_ar || !s.title_en) throw new Error("step missing identity");
-  if (s.durationMs < SHOWCASE_CONTRACTS.STEP_MIN_MS || s.durationMs > SHOWCASE_CONTRACTS.STEP_MAX_MS) {
+  if (
+    s.durationMs < SHOWCASE_CONTRACTS.STEP_MIN_MS ||
+    s.durationMs > SHOWCASE_CONTRACTS.STEP_MAX_MS
+  ) {
     throw new Error(`step duration out of range: ${s.id}`);
   }
 }
@@ -31,5 +34,6 @@ export function assertVoiceCue(c: VoiceCue): void {
 
 export function assertHighlight(h: HighlightDirective): void {
   if (!h.selector) throw new Error("highlight missing selector");
-  if (h.durationMs < 400 || h.durationMs > 8_000) throw new Error("highlight duration out of range");
+  if (h.durationMs < 400 || h.durationMs > 8_000)
+    throw new Error("highlight duration out of range");
 }

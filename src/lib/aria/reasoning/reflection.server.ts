@@ -3,12 +3,7 @@
  * critical-thinking pass, the uncertainty catalogue, and evidence
  * quality into a pass/fail reflection report.
  */
-import type {
-  Evidence,
-  Hypothesis,
-  ReflectionReport,
-  Uncertainty,
-} from "./types";
+import type { Evidence, Hypothesis, ReflectionReport, Uncertainty } from "./types";
 import type { CriticalReport } from "./critical-thinking.server";
 
 export function reflect(

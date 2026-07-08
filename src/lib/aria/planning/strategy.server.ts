@@ -24,18 +24,13 @@ export function chooseStrategy(
   );
   if (requiresApproval) return "approval_based";
 
-  const budgetHard = constraints.some(
-    (c) => c.kind === "budget" && c.hard,
-  );
+  const budgetHard = constraints.some((c) => c.kind === "budget" && c.hard);
   const deadlineHard = constraints.some(
     (c) => (c.kind === "deadline" || c.kind === "time") && c.hard,
   );
 
   const hasEdges = graph.edges.length > 0;
-  const widestLayer = graph.layers.reduce(
-    (m, l) => Math.max(m, l.length),
-    0,
-  );
+  const widestLayer = graph.layers.reduce((m, l) => Math.max(m, l.length), 0);
 
   if (!hasEdges && widestLayer > 1) return "parallel";
   if (hasEdges && widestLayer <= 1) return "sequential";
@@ -45,10 +40,7 @@ export function chooseStrategy(
   return "hybrid";
 }
 
-export function planStages(
-  graph: ExecutionGraph,
-  strategy: MissionStrategy,
-): MissionStage[] {
+export function planStages(graph: ExecutionGraph, strategy: MissionStrategy): MissionStage[] {
   return graph.layers.map((layer, i) => ({
     id: uid("stage"),
     order: i,

@@ -1,6 +1,15 @@
 export type ExecutiveAuditKind =
-  | "presence" | "dialog" | "briefing" | "priorities" | "daily_summary"
-  | "alerts" | "insights" | "recommendations" | "followup" | "memory" | "workflow";
+  | "presence"
+  | "dialog"
+  | "briefing"
+  | "priorities"
+  | "daily_summary"
+  | "alerts"
+  | "insights"
+  | "recommendations"
+  | "followup"
+  | "memory"
+  | "workflow";
 
 export interface ExecutiveAuditEntry {
   readonly at: number;
@@ -12,7 +21,11 @@ export interface ExecutiveAuditEntry {
 const LOG: ExecutiveAuditEntry[] = [];
 const MAX = 500;
 
-export function logExecutive(scope: string, kind: ExecutiveAuditKind, meta?: Record<string, unknown>): void {
+export function logExecutive(
+  scope: string,
+  kind: ExecutiveAuditKind,
+  meta?: Record<string, unknown>,
+): void {
   LOG.push({ at: Date.now(), kind, scope, meta });
   if (LOG.length > MAX) LOG.splice(0, LOG.length - MAX);
 }

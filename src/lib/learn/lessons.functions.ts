@@ -30,7 +30,9 @@ async function loadProgress(
   if (lessonIds.length === 0) return {};
   const { data, error } = await supabase
     .from("learn_lesson_progress")
-    .select("lesson_id,status,video_watched_seconds,simulation_completed,quiz_best_score,quiz_passed,completed_at")
+    .select(
+      "lesson_id,status,video_watched_seconds,simulation_completed,quiz_best_score,quiz_passed,completed_at",
+    )
     .eq("user_id", userId)
     .in("lesson_id", lessonIds);
   if (error) throw new Error(error.message);
@@ -56,11 +58,17 @@ export const listLessons = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("learn_lessons")
-      .select("id,slug,order_index,category,title_ar,title_en,subtitle_ar,subtitle_en,summary_ar,summary_en,cover_url,video_duration_seconds,published,simulation_kind,quiz_pass_score")
+      .select(
+        "id,slug,order_index,category,title_ar,title_en,subtitle_ar,subtitle_en,summary_ar,summary_en,cover_url,video_duration_seconds,published,simulation_kind,quiz_pass_score",
+      )
       .order("order_index", { ascending: true });
     if (error) throw new Error(error.message);
     const rows = (data ?? []) as unknown as Array<Omit<LessonListItem, "progress">>;
-    const progress = await loadProgress(supabase, userId, rows.map((r) => r.id));
+    const progress = await loadProgress(
+      supabase,
+      userId,
+      rows.map((r) => r.id),
+    );
     return rows.map((r) => ({ ...r, progress: progress[r.id] ?? null }));
   });
 
@@ -91,7 +99,8 @@ export const getLesson = createServerFn({ method: "GET" })
     const prev_slug = idx > 0 ? published[idx - 1].slug : null;
     const next_slug = idx >= 0 && idx < published.length - 1 ? published[idx + 1].slug : null;
 
-    const progress = (await loadProgress(supabase, userId, [row.id as string]))[row.id as string] ?? null;
+    const progress =
+      (await loadProgress(supabase, userId, [row.id as string]))[row.id as string] ?? null;
 
     const r = row as Record<string, unknown>;
     return {
@@ -113,7 +122,9 @@ export const getLesson = createServerFn({ method: "GET" })
       video_url: (r.video_url as string | null) ?? null,
       video_duration_seconds: (r.video_duration_seconds as number) ?? 0,
       simulation_kind: (r.simulation_kind as SimulationKind | null) ?? null,
-      aria_suggested_prompts: Array.isArray(r.aria_suggested_prompts) ? (r.aria_suggested_prompts as Bilingual[]) : [],
+      aria_suggested_prompts: Array.isArray(r.aria_suggested_prompts)
+        ? (r.aria_suggested_prompts as Bilingual[])
+        : [],
       quiz_pass_score: (r.quiz_pass_score as number) ?? 60,
       published: !!r.published,
       prev_slug,
@@ -160,7 +171,9 @@ export const getQuiz = createServerFn({ method: "GET" })
 
 const SubmitInput = z.object({
   slug: z.string().min(1).max(120),
-  answers: z.array(z.object({ id: z.string().uuid(), choice: z.number().int().min(0).max(9) })).max(50),
+  answers: z
+    .array(z.object({ id: z.string().uuid(), choice: z.number().int().min(0).max(9) }))
+    .max(50),
 });
 
 export const submitQuiz = createServerFn({ method: "POST" })
@@ -183,10 +196,16 @@ export const submitQuiz = createServerFn({ method: "POST" })
       .eq("lesson_id", lesson.id);
     if (error) throw new Error(error.message);
 
-    const correctById = new Map((qs ?? []).map((q) => [
-      q.id as string,
-      { correct_index: q.correct_index as number, ar: q.explanation_ar as string, en: q.explanation_en as string },
-    ]));
+    const correctById = new Map(
+      (qs ?? []).map((q) => [
+        q.id as string,
+        {
+          correct_index: q.correct_index as number,
+          ar: q.explanation_ar as string,
+          en: q.explanation_en as string,
+        },
+      ]),
+    );
     const total = correctById.size || 1;
 
     let correctCount = 0;
@@ -196,7 +215,13 @@ export const submitQuiz = createServerFn({ method: "POST" })
       if (!key) continue;
       const ok = a.choice === key.correct_index;
       if (ok) correctCount += 1;
-      per_question.push({ id: a.id, correct: ok, correct_index: key.correct_index, explanation_ar: key.ar, explanation_en: key.en });
+      per_question.push({
+        id: a.id,
+        correct: ok,
+        correct_index: key.correct_index,
+        explanation_ar: key.ar,
+        explanation_en: key.en,
+      });
     }
     const score = Math.round((correctCount / total) * 100);
     const passed = score >= (lesson.quiz_pass_score ?? 60);
@@ -214,24 +239,29 @@ export const submitQuiz = createServerFn({ method: "POST" })
     const { data: existing } = await supabase
       .from("learn_lesson_progress")
       .select("quiz_best_score,quiz_passed,simulation_completed,video_watched_seconds")
-      .eq("user_id", userId).eq("lesson_id", lesson.id).maybeSingle();
+      .eq("user_id", userId)
+      .eq("lesson_id", lesson.id)
+      .maybeSingle();
 
     const newBest = Math.max(existing?.quiz_best_score ?? 0, score);
     const newPassed = passed || !!existing?.quiz_passed;
     const nowIso = new Date().toISOString();
     const completed = newPassed;
 
-    await supabase.from("learn_lesson_progress").upsert({
-      user_id: userId,
-      lesson_id: lesson.id,
-      status: completed ? "completed" : "in_progress",
-      video_watched_seconds: existing?.video_watched_seconds ?? 0,
-      simulation_completed: !!existing?.simulation_completed,
-      quiz_best_score: newBest,
-      quiz_passed: newPassed,
-      last_seen_at: nowIso,
-      completed_at: completed ? nowIso : null,
-    }, { onConflict: "user_id,lesson_id" });
+    await supabase.from("learn_lesson_progress").upsert(
+      {
+        user_id: userId,
+        lesson_id: lesson.id,
+        status: completed ? "completed" : "in_progress",
+        video_watched_seconds: existing?.video_watched_seconds ?? 0,
+        simulation_completed: !!existing?.simulation_completed,
+        quiz_best_score: newBest,
+        quiz_passed: newPassed,
+        last_seen_at: nowIso,
+        completed_at: completed ? nowIso : null,
+      },
+      { onConflict: "user_id,lesson_id" },
+    );
 
     return { score, passed, pass_score: lesson.quiz_pass_score ?? 60, per_question };
   });
@@ -240,7 +270,12 @@ export const submitQuiz = createServerFn({ method: "POST" })
 
 const UpdateProgressInput = z.object({
   slug: z.string().min(1).max(120),
-  video_watched_seconds: z.number().int().min(0).max(60 * 60 * 6).optional(),
+  video_watched_seconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(60 * 60 * 6)
+    .optional(),
   simulation_completed: z.boolean().optional(),
 });
 
@@ -259,32 +294,45 @@ export const updateProgress = createServerFn({ method: "POST" })
 
     const { data: existing } = await supabase
       .from("learn_lesson_progress")
-      .select("status,video_watched_seconds,simulation_completed,quiz_best_score,quiz_passed,completed_at")
-      .eq("user_id", userId).eq("lesson_id", lesson.id).maybeSingle();
+      .select(
+        "status,video_watched_seconds,simulation_completed,quiz_best_score,quiz_passed,completed_at",
+      )
+      .eq("user_id", userId)
+      .eq("lesson_id", lesson.id)
+      .maybeSingle();
 
-    const nextVideo = data.video_watched_seconds !== undefined
-      ? Math.max(existing?.video_watched_seconds ?? 0, data.video_watched_seconds)
-      : (existing?.video_watched_seconds ?? 0);
-    const nextSim = data.simulation_completed !== undefined
-      ? (data.simulation_completed || !!existing?.simulation_completed)
-      : !!existing?.simulation_completed;
+    const nextVideo =
+      data.video_watched_seconds !== undefined
+        ? Math.max(existing?.video_watched_seconds ?? 0, data.video_watched_seconds)
+        : (existing?.video_watched_seconds ?? 0);
+    const nextSim =
+      data.simulation_completed !== undefined
+        ? data.simulation_completed || !!existing?.simulation_completed
+        : !!existing?.simulation_completed;
 
     const passed = !!existing?.quiz_passed;
-    const status: LessonProgress["status"] = passed ? "completed" : (nextVideo > 0 || nextSim) ? "in_progress" : "not_started";
+    const status: LessonProgress["status"] = passed
+      ? "completed"
+      : nextVideo > 0 || nextSim
+        ? "in_progress"
+        : "not_started";
     const nowIso = new Date().toISOString();
     const completed_at = passed ? (existing?.completed_at ?? nowIso) : null;
 
-    await supabase.from("learn_lesson_progress").upsert({
-      user_id: userId,
-      lesson_id: lesson.id,
-      status,
-      video_watched_seconds: nextVideo,
-      simulation_completed: nextSim,
-      quiz_best_score: existing?.quiz_best_score ?? 0,
-      quiz_passed: passed,
-      last_seen_at: nowIso,
-      completed_at,
-    }, { onConflict: "user_id,lesson_id" });
+    await supabase.from("learn_lesson_progress").upsert(
+      {
+        user_id: userId,
+        lesson_id: lesson.id,
+        status,
+        video_watched_seconds: nextVideo,
+        simulation_completed: nextSim,
+        quiz_best_score: existing?.quiz_best_score ?? 0,
+        quiz_passed: passed,
+        last_seen_at: nowIso,
+        completed_at,
+      },
+      { onConflict: "user_id,lesson_id" },
+    );
 
     return {
       status,

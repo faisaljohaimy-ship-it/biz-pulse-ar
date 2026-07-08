@@ -10,13 +10,7 @@ export type PresenceMode =
   | "speaking"
   | "paused";
 
-export type Emotion =
-  | "neutral"
-  | "attentive"
-  | "warm"
-  | "focused"
-  | "concerned"
-  | "confident";
+export type Emotion = "neutral" | "attentive" | "warm" | "focused" | "concerned" | "confident";
 
 export type ExpressionIntensity = "subtle" | "gentle" | "assertive";
 

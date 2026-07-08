@@ -22,9 +22,10 @@ export function generateCounterArguments(
     const negated = negate(h.statement);
     const { supporting, weight } = scoreEvidenceAgainstClaim(evidence, negated);
     const strength = strengthFor(weight);
-    const rebuttal = supporting.length === 0
-      ? "No evidence supports the counterposition; original hypothesis stands."
-      : "Counterposition draws support from evidence; original hypothesis must be re-weighted.";
+    const rebuttal =
+      supporting.length === 0
+        ? "No evidence supports the counterposition; original hypothesis stands."
+        : "Counterposition draws support from evidence; original hypothesis must be re-weighted.";
     const rebuttalHolds = supporting.length === 0 || h.confidence.value > 0.5 + weight;
     out.push({
       id: shortId("ca"),

@@ -9,15 +9,22 @@ import { Sparkles, ArrowLeft, Send, CheckCircle2, Copy } from "lucide-react";
 
 export const Route = createFileRoute("/request-demo")({
   validateSearch: (search: Record<string, unknown>): { mode?: "investor" | "enterprise" } => {
-    const mode = search.mode === "investor" || search.mode === "enterprise" ? search.mode : undefined;
+    const mode =
+      search.mode === "investor" || search.mode === "enterprise" ? search.mode : undefined;
     return mode ? { mode } : {};
   },
   head: () => ({
     meta: [
       { title: "Request a Demo — Nexus AI OS" },
-      { name: "description", content: "Request a personalized walkthrough of Nexus AI OS for your executive team." },
+      {
+        name: "description",
+        content: "Request a personalized walkthrough of Nexus AI OS for your executive team.",
+      },
       { property: "og:title", content: "Request a Demo — Nexus AI OS" },
-      { property: "og:description", content: "Personalized executive walkthrough tailored to your enterprise." },
+      {
+        property: "og:description",
+        content: "Personalized executive walkthrough tailored to your enterprise.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/request-demo` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/request-demo` }],
@@ -33,16 +40,35 @@ function RequestDemoPage() {
       kind="demo"
       isAr={isAr}
       eyebrow={isAr ? "اطلب عرضاً شخصياً" : "Request a Demo"}
-      title={isAr ? "أرنا مؤسستك. سنُريك Nexus." : "Tell us about your enterprise. We'll show you Nexus."}
-      subtitle={isAr ? "عرض ٣٠ دقيقة مخصص لقطاعك وأولوياتك." : "30-minute walkthrough tailored to your sector and priorities."}
-      successMsg={isAr ? "تم استلام طلبك بنجاح. سيتواصل معك فريق المؤسسات خلال ٢٤ ساعة." : "Your request has been received successfully. Our Enterprise Team will contact you within 24 hours."}
+      title={
+        isAr ? "أرنا مؤسستك. سنُريك Nexus." : "Tell us about your enterprise. We'll show you Nexus."
+      }
+      subtitle={
+        isAr
+          ? "عرض ٣٠ دقيقة مخصص لقطاعك وأولوياتك."
+          : "30-minute walkthrough tailored to your sector and priorities."
+      }
+      successMsg={
+        isAr
+          ? "تم استلام طلبك بنجاح. سيتواصل معك فريق المؤسسات خلال ٢٤ ساعة."
+          : "Your request has been received successfully. Our Enterprise Team will contact you within 24 hours."
+      }
       fields={[
         { name: "name", label: isAr ? "الاسم الكامل" : "Full name", required: true },
-        { name: "email", label: isAr ? "البريد الإلكتروني للعمل" : "Work email", type: "email", required: true },
+        {
+          name: "email",
+          label: isAr ? "البريد الإلكتروني للعمل" : "Work email",
+          type: "email",
+          required: true,
+        },
         { name: "company", label: isAr ? "اسم الشركة" : "Company", required: true },
         { name: "role", label: isAr ? "المنصب" : "Role" },
         { name: "team_size", label: isAr ? "حجم الفريق" : "Team size" },
-        { name: "notes", label: isAr ? "ماذا تريد أن ترى؟" : "What would you like to see?", textarea: true },
+        {
+          name: "notes",
+          label: isAr ? "ماذا تريد أن ترى؟" : "What would you like to see?",
+          textarea: true,
+        },
       ]}
       submitLabel={isAr ? "اطلب العرض" : "Request demo"}
     />
@@ -70,7 +96,14 @@ function detectDevice(ua: string): string {
 }
 
 export function FormShell({
-  kind, isAr, eyebrow, title, subtitle, fields, successMsg, submitLabel,
+  kind,
+  isAr,
+  eyebrow,
+  title,
+  subtitle,
+  fields,
+  successMsg,
+  submitLabel,
 }: {
   kind: "contact" | "demo" | "book";
   isAr: boolean;
@@ -101,8 +134,9 @@ export function FormShell({
         if (typeof v === "string" && !known.has(k) && v.trim()) metadata[k] = v.trim();
       }
       const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-      const language = typeof navigator !== "undefined" ? (navigator.language || null) : null;
-      const timezone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : null;
+      const language = typeof navigator !== "undefined" ? navigator.language || null : null;
+      const timezone =
+        typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : null;
 
       const res = await submit({
         data: {
@@ -124,7 +158,7 @@ export function FormShell({
       form.reset();
       setSuccess({ request_id: res.request_id, email_delivered: res.email_delivered });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : (isAr ? "تعذر الإرسال" : "Submission failed"));
+      toast.error(err instanceof Error ? err.message : isAr ? "تعذر الإرسال" : "Submission failed");
     } finally {
       setSubmitting(false);
     }
@@ -140,7 +174,10 @@ export function FormShell({
           </div>
           <span className="text-sm font-bold tracking-wide">NEXUS</span>
         </Link>
-        <Link to="/demo" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/demo"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-3 w-3" />
           {isAr ? "مركز العرض" : "Demo Center"}
         </Link>
@@ -161,20 +198,34 @@ export function FormShell({
               <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl md:p-6">
+            <form
+              onSubmit={handleSubmit}
+              className="mt-8 space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl md:p-6"
+            >
               {fields.map((f) => (
                 <div key={f.name}>
-                  <label htmlFor={f.name} className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {f.label}{f.required && <span className="text-primary"> *</span>}
+                  <label
+                    htmlFor={f.name}
+                    className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+                  >
+                    {f.label}
+                    {f.required && <span className="text-primary"> *</span>}
                   </label>
                   {f.textarea ? (
                     <textarea
-                      id={f.name} name={f.name} required={f.required} rows={4} maxLength={4000}
+                      id={f.name}
+                      name={f.name}
+                      required={f.required}
+                      rows={4}
+                      maxLength={4000}
                       className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
                     />
                   ) : (
                     <input
-                      id={f.name} name={f.name} type={f.type ?? "text"} required={f.required}
+                      id={f.name}
+                      name={f.name}
+                      type={f.type ?? "text"}
+                      required={f.required}
                       maxLength={f.type === "email" ? 255 : 200}
                       className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
                     />
@@ -186,7 +237,13 @@ export function FormShell({
                 disabled={submitting}
                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.01] disabled:opacity-60"
               >
-                {submitting ? (isAr ? "جارٍ الإرسال..." : "Sending...") : (
+                {submitting ? (
+                  isAr ? (
+                    "جارٍ الإرسال..."
+                  ) : (
+                    "Sending..."
+                  )
+                ) : (
                   <>
                     <Send className="h-4 w-4" />
                     {submitLabel}
@@ -201,7 +258,15 @@ export function FormShell({
   );
 }
 
-function SuccessCard({ isAr, successMsg, state }: { isAr: boolean; successMsg: string; state: SuccessState }) {
+function SuccessCard({
+  isAr,
+  successMsg,
+  state,
+}: {
+  isAr: boolean;
+  successMsg: string;
+  state: SuccessState;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="relative mx-auto mt-6 max-w-xl overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-8 text-center backdrop-blur-xl md:p-10 animate-in fade-in zoom-in-95 duration-500">
@@ -215,9 +280,7 @@ function SuccessCard({ isAr, successMsg, state }: { isAr: boolean; successMsg: s
           </div>
         </div>
         <h2 className="mt-6 text-2xl font-bold tracking-tight md:text-3xl">
-          <span className="text-gradient">
-            {isAr ? "تم استلام طلبك" : "Request received"}
-          </span>
+          <span className="text-gradient">{isAr ? "تم استلام طلبك" : "Request received"}</span>
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
           {successMsg}
@@ -256,10 +319,16 @@ function SuccessCard({ isAr, successMsg, state }: { isAr: boolean; successMsg: s
         )}
 
         <div className="mt-7 flex flex-col items-center justify-center gap-2 sm:flex-row">
-          <Link to="/" className="rounded-xl border border-white/10 px-4 py-2 text-xs text-muted-foreground transition hover:bg-white/5 hover:text-foreground">
+          <Link
+            to="/"
+            className="rounded-xl border border-white/10 px-4 py-2 text-xs text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+          >
             {isAr ? "العودة للرئيسية" : "Back to home"}
           </Link>
-          <Link to="/demo" className="rounded-xl bg-gradient-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-glow">
+          <Link
+            to="/demo"
+            className="rounded-xl bg-gradient-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-glow"
+          >
             {isAr ? "استكشف مركز العرض" : "Explore Demo Center"}
           </Link>
         </div>

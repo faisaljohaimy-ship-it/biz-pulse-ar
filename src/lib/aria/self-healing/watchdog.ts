@@ -75,9 +75,7 @@ function report(kind: Kind, detail: string): void {
     url: typeof location !== "undefined" ? location.pathname : undefined,
     device_class: classifyDevice(),
     viewport:
-      typeof window !== "undefined"
-        ? { w: window.innerWidth, h: window.innerHeight }
-        : undefined,
+      typeof window !== "undefined" ? { w: window.innerWidth, h: window.innerHeight } : undefined,
     ts: Date.now(),
   };
   try {
@@ -88,7 +86,9 @@ function report(kind: Kind, detail: string): void {
       body: JSON.stringify(incident),
       headers: { "content-type": "application/json" },
       keepalive: true,
-    }).catch(() => { /* silent — watchdog must never itself fail loud */ });
+    }).catch(() => {
+      /* silent — watchdog must never itself fail loud */
+    });
   } catch {
     /* silent */
   }
@@ -123,7 +123,10 @@ export function installAriaWatchdog(): (() => void) | undefined {
     const tag = t.tagName?.toLowerCase();
     if (tag !== "video" && tag !== "audio") return;
     const code = t.error?.code ?? 0;
-    report(tag === "video" ? "video_error" : "audio_error", `code=${code} src=${t.currentSrc?.slice(-60) ?? ""}`);
+    report(
+      tag === "video" ? "video_error" : "audio_error",
+      `code=${code} src=${t.currentSrc?.slice(-60) ?? ""}`,
+    );
   };
 
   window.addEventListener("error", onError);

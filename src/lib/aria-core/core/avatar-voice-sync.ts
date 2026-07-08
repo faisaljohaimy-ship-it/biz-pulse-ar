@@ -28,7 +28,9 @@ class AvatarVoiceSync {
     voiceBrain.attachStream(stream);
   }
 
-  detachStream(): void { voiceBrain.detachStream(); }
+  detachStream(): void {
+    voiceBrain.detachStream();
+  }
 
   startSynthetic(turnId: string): void {
     this.stopSynthetic();
@@ -36,7 +38,10 @@ class AvatarVoiceSync {
     lipSyncEngine.begin(turnId);
     let t0 = 0;
     this.synthDispose = avatarScheduler.subscribe((now) => {
-      if (avatarStateManager.getState() !== "speaking") { this.stopSynthetic(); return; }
+      if (avatarStateManager.getState() !== "speaking") {
+        this.stopSynthetic();
+        return;
+      }
       if (t0 === 0) t0 = now;
       const dt = (now - t0) / 1000;
       // Layered envelope: syllable-rate carrier + slower amplitude drift.
@@ -47,12 +52,20 @@ class AvatarVoiceSync {
   }
 
   stopSynthetic(): void {
-    if (this.synthDispose) { this.synthDispose(); this.synthDispose = null; }
-    if (this.currentTurn) { lipSyncEngine.end(this.currentTurn); this.currentTurn = null; }
-    else lipSyncEngine.end();
+    if (this.synthDispose) {
+      this.synthDispose();
+      this.synthDispose = null;
+    }
+    if (this.currentTurn) {
+      lipSyncEngine.end(this.currentTurn);
+      this.currentTurn = null;
+    } else lipSyncEngine.end();
   }
 
-  stop(): void { this.stopSynthetic(); this.detachStream(); }
+  stop(): void {
+    this.stopSynthetic();
+    this.detachStream();
+  }
 }
 
 export const avatarVoiceSync = new AvatarVoiceSync();

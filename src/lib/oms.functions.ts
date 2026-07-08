@@ -32,7 +32,11 @@ function genRef(prefix: string) {
 function scoreRisk(severity: string, priority: string, category: string): number {
   const sevMap: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
   const prioMap: Record<string, number> = { low: 0, medium: 5, high: 10, critical: 15 };
-  const catBoost = ["intrusion", "fire", "explosion", "weapon"].some((k) => category.toLowerCase().includes(k)) ? 10 : 0;
+  const catBoost = ["intrusion", "fire", "explosion", "weapon"].some((k) =>
+    category.toLowerCase().includes(k),
+  )
+    ? 10
+    : 0;
   return Math.min(100, (sevMap[severity] ?? 40) + (prioMap[priority] ?? 5) + catBoost);
 }
 
@@ -59,7 +63,8 @@ export const createIncident = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const ref = genRef("INC");
     const ai_risk_score = scoreRisk(data.severity, data.priority, data.category);
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
 
     const { data: row, error } = await supabase
       .from("sec_incidents")
@@ -89,7 +94,12 @@ export const createIncident = createServerFn({ method: "POST" })
       event: "registered",
       actor_id: userId,
       actor_name: actorName,
-      payload: { severity: data.severity, priority: data.priority, ai_risk_score, notes: data.notes ?? null },
+      payload: {
+        severity: data.severity,
+        priority: data.priority,
+        ai_risk_score,
+        notes: data.notes ?? null,
+      },
     });
 
     try {
@@ -97,14 +107,17 @@ export const createIncident = createServerFn({ method: "POST" })
       await publishEvent(supabase, {
         topic: "incident.created",
         source: "oms",
-        severity: data.severity === "critical" ? "critical" : data.severity === "high" ? "warn" : "info",
+        severity:
+          data.severity === "critical" ? "critical" : data.severity === "high" ? "warn" : "info",
         actor_id: userId,
         subject_type: "incident",
         subject_id: row.id,
         payload: { ref, category: data.category, priority: data.priority },
         metrics: { ai_risk_score },
       });
-    } catch (err) { console.error("[createIncident] event publish", err); }
+    } catch (err) {
+      console.error("[createIncident] event publish", err);
+    }
 
     // ── Auto ARIA analysis (gpt-5 with timeout + heuristic fallback) ──
     try {
@@ -143,7 +156,12 @@ export const createIncident = createServerFn({ method: "POST" })
           summary_en: analysis.summary_en,
         },
       });
-      return { ...row, ai_summary: analysis.summary_ar, ai_risk_score: analysis.risk_score, aria_auto_analyzed: analysis.source === "gpt-5" };
+      return {
+        ...row,
+        ai_summary: analysis.summary_ar,
+        ai_risk_score: analysis.risk_score,
+        aria_auto_analyzed: analysis.source === "gpt-5",
+      };
     } catch (err) {
       console.error("[createIncident] auto-aria failed", err);
       return row;
@@ -164,7 +182,8 @@ export const updateIncident = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => updateIncidentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { id, ...patch } = data;
     const { data: row, error } = await supabase
       .from("sec_incidents")
@@ -188,23 +207,28 @@ export const updateIncident = createServerFn({ method: "POST" })
 export const addCorrectiveAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      incident_id: z.string().uuid(),
-      action: z.string().min(3).max(500),
-      owner: z.string().max(120).optional(),
-      due_at: z.string().optional(),
-    }).parse(d),
+    z
+      .object({
+        incident_id: z.string().uuid(),
+        action: z.string().min(3).max(500),
+        owner: z.string().max(120).optional(),
+        due_at: z.string().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: cur, error: e1 } = await supabase
       .from("sec_incidents")
       .select("ref, corrective_actions")
       .eq("id", data.incident_id)
       .single();
     if (e1) throw new Error(e1.message);
-    const prev = Array.isArray(cur.corrective_actions) ? (cur.corrective_actions as JsonValue[]) : [];
+    const prev = Array.isArray(cur.corrective_actions)
+      ? (cur.corrective_actions as JsonValue[])
+      : [];
     const next: JsonValue[] = [
       ...prev,
       {
@@ -241,7 +265,8 @@ export const escalateIncident = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: row, error } = await supabase
       .from("sec_incidents")
       .update({ escalated: true, priority: "critical" })
@@ -264,15 +289,18 @@ export const escalateIncident = createServerFn({ method: "POST" })
 export const closeIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      incident_id: z.string().uuid(),
-      root_cause: z.string().min(3).max(2000),
-      executive_review: z.string().max(2000).optional(),
-    }).parse(d),
+    z
+      .object({
+        incident_id: z.string().uuid(),
+        root_cause: z.string().min(3).max(2000),
+        executive_review: z.string().max(2000).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const now = new Date();
     const { data: cur, error: e1 } = await supabase
       .from("sec_incidents")
@@ -335,7 +363,8 @@ export const createWorkOrder = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => createWorkOrderSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const ref = genRef("WO");
     const { data: row, error } = await supabase
       .from("sec_work_orders")
@@ -368,7 +397,11 @@ export const createWorkOrder = createServerFn({ method: "POST" })
       event: "created",
       actor_id: userId,
       actor_name: actorName,
-      payload: { kind: data.kind, priority: data.priority, source_incident_id: data.source_incident_id ?? null },
+      payload: {
+        kind: data.kind,
+        priority: data.priority,
+        source_incident_id: data.source_incident_id ?? null,
+      },
     });
     return row;
   });
@@ -380,7 +413,8 @@ export const approveWorkOrder = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: row, error } = await supabase
       .from("sec_work_orders")
       .update({
@@ -407,14 +441,17 @@ export const approveWorkOrder = createServerFn({ method: "POST" })
 export const completeWorkOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      work_order_id: z.string().uuid(),
-      completion_notes: z.string().min(3).max(2000),
-    }).parse(d),
+    z
+      .object({
+        work_order_id: z.string().uuid(),
+        completion_notes: z.string().min(3).max(2000),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const now = new Date().toISOString();
     const { data: row, error } = await supabase
       .from("sec_work_orders")
@@ -434,7 +471,10 @@ export const completeWorkOrder = createServerFn({ method: "POST" })
     });
     // If sourced from an incident, mark it contained
     if (row.source_incident_id) {
-      await supabase.from("sec_incidents").update({ status: "contained" }).eq("id", row.source_incident_id);
+      await supabase
+        .from("sec_incidents")
+        .update({ status: "contained" })
+        .eq("id", row.source_incident_id);
       await supabase.from("sec_activity_events").insert({
         entity_type: "incident",
         entity_id: row.source_incident_id,
@@ -467,7 +507,8 @@ export const createPermit = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => createPermitSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const ref = genRef("PTW");
     const { data: row, error } = await supabase
       .from("sec_permits")
@@ -505,7 +546,8 @@ export const approvePermit = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: row, error } = await supabase
       .from("sec_permits")
       .update({
@@ -537,10 +579,16 @@ export const denyPermit = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: row, error } = await supabase
       .from("sec_permits")
-      .update({ status: "revoked", approver: actorName, approved_by: userId, approved_at: new Date().toISOString() })
+      .update({
+        status: "revoked",
+        approver: actorName,
+        approved_by: userId,
+        approved_at: new Date().toISOString(),
+      })
       .eq("id", data.permit_id)
       .select("ref")
       .single();
@@ -599,28 +647,52 @@ export const getOmsKpis = createServerFn({ method: "GET" })
     const { supabase } = context;
     const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const [inc, wo, perm, acts] = await Promise.all([
-      supabase.from("sec_incidents").select("id, status, severity, response_minutes, reported_at, ai_risk_score"),
+      supabase
+        .from("sec_incidents")
+        .select("id, status, severity, response_minutes, reported_at, ai_risk_score"),
       supabase.from("sec_work_orders").select("id, status, kind, due_at"),
       supabase.from("sec_permits").select("id, status, ends_at"),
-      supabase.from("sec_activity_events").select("id, event, occurred_at").gte("occurred_at", since24h),
+      supabase
+        .from("sec_activity_events")
+        .select("id, event, occurred_at")
+        .gte("occurred_at", since24h),
     ]);
-    const incidents = (inc.data ?? []) as Array<{ status: string; severity: string; response_minutes: number | null; reported_at: string; ai_risk_score: number | null }>;
-    const workOrders = (wo.data ?? []) as Array<{ status: string; kind: string; due_at: string | null }>;
+    const incidents = (inc.data ?? []) as Array<{
+      status: string;
+      severity: string;
+      response_minutes: number | null;
+      reported_at: string;
+      ai_risk_score: number | null;
+    }>;
+    const workOrders = (wo.data ?? []) as Array<{
+      status: string;
+      kind: string;
+      due_at: string | null;
+    }>;
     const permits = (perm.data ?? []) as Array<{ status: string; ends_at: string }>;
     const now = Date.now();
     const open = incidents.filter((i) => i.status !== "closed" && i.status !== "resolved");
     const critical = incidents.filter((i) => i.severity === "critical");
     const closed = incidents.filter((i) => i.response_minutes != null);
-    const avgResp = closed.length ? Math.round(closed.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / closed.length) : 0;
+    const avgResp = closed.length
+      ? Math.round(closed.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / closed.length)
+      : 0;
     const woOpen = workOrders.filter((w) => w.status !== "closed" && w.status !== "cancelled");
     const woOverdue = woOpen.filter((w) => w.due_at && new Date(w.due_at).getTime() < now);
-    const completionPct = workOrders.length ? Math.round(((workOrders.length - woOpen.length) / workOrders.length) * 100) : 100;
-    const permOpen = permits.filter((p) => p.status === "approved" && new Date(p.ends_at).getTime() > now);
+    const completionPct = workOrders.length
+      ? Math.round(((workOrders.length - woOpen.length) / workOrders.length) * 100)
+      : 100;
+    const permOpen = permits.filter(
+      (p) => p.status === "approved" && new Date(p.ends_at).getTime() > now,
+    );
     const permPending = permits.filter((p) => p.status === "pending");
     const avgRisk = incidents.length
       ? Math.round(incidents.reduce((s, i) => s + (i.ai_risk_score ?? 40), 0) / incidents.length)
       : 0;
-    const readiness = Math.max(0, Math.min(100, 100 - (critical.length * 8) - (woOverdue.length * 3) - Math.max(0, avgRisk - 50)));
+    const readiness = Math.max(
+      0,
+      Math.min(100, 100 - critical.length * 8 - woOverdue.length * 3 - Math.max(0, avgRisk - 50)),
+    );
     return {
       incidents: {
         total: incidents.length,
@@ -708,14 +780,19 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
 export const setExecutiveReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      incident_id: z.string().uuid(),
-      review: z.string().min(5).max(4000),
-    }).parse(d),
+    z
+      .object({
+        incident_id: z.string().uuid(),
+        review: z.string().min(5).max(4000),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مراجع تنفيذي";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ??
+      claims?.email ??
+      "مراجع تنفيذي";
     const { data: row, error } = await supabase
       .from("sec_incidents")
       .update({
@@ -753,7 +830,8 @@ export const addIncidentAttachment = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => attachmentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: cur, error: e1 } = await supabase
       .from("sec_incidents")
       .select("ref, attachments")
@@ -798,18 +876,25 @@ export const removeIncidentAttachment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const { data: cur, error: e1 } = await supabase
       .from("sec_incidents")
       .select("ref, attachments")
       .eq("id", data.incident_id)
       .single();
     if (e1) throw new Error(e1.message);
-    const prev = Array.isArray(cur.attachments) ? (cur.attachments as Array<{ id: string; storage_path: string }>) : [];
+    const prev = Array.isArray(cur.attachments)
+      ? (cur.attachments as Array<{ id: string; storage_path: string }>)
+      : [];
     const target = prev.find((a) => a.id === data.attachment_id);
     const next = prev.filter((a) => a.id !== data.attachment_id);
     if (target?.storage_path) {
-      try { await supabase.storage.from("uploads").remove([target.storage_path]); } catch (e) { console.warn("[attachment remove] storage", e); }
+      try {
+        await supabase.storage.from("uploads").remove([target.storage_path]);
+      } catch (e) {
+        console.warn("[attachment remove] storage", e);
+      }
     }
     const { error: e2 } = await supabase
       .from("sec_incidents")
@@ -832,8 +917,9 @@ export const getIncidentAttachmentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ storage_path: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: signed, error } = await context.supabase
-      .storage.from("uploads").createSignedUrl(data.storage_path, 600);
+    const { data: signed, error } = await context.supabase.storage
+      .from("uploads")
+      .createSignedUrl(data.storage_path, 600);
     if (error) throw new Error(error.message);
     return { url: signed.signedUrl };
   });

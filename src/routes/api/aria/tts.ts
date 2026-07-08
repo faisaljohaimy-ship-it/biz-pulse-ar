@@ -47,7 +47,6 @@ export const Route = createFileRoute("/api/aria/tts")({
         if (unavailable) return rateLimitUnavailableResponse();
         if (!allowed) return rateLimitResponse();
 
-
         let body: { text?: unknown };
         try {
           body = (await request.json()) as { text?: unknown };
@@ -83,7 +82,6 @@ export const Route = createFileRoute("/api/aria/tts")({
                 use_speaker_boost: true,
                 speed: 1.0,
               },
-
             }),
           },
         );

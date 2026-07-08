@@ -3,12 +3,7 @@
  * Constraints are additive to marketplace permissions and policy rules;
  * this file only checks feasibility, never mutates the plan.
  */
-import type {
-  CapabilityBinding,
-  Estimation,
-  MissionConstraint,
-  VerificationIssue,
-} from "./types";
+import type { CapabilityBinding, Estimation, MissionConstraint, VerificationIssue } from "./types";
 
 export function validateConstraints(
   constraints: MissionConstraint[],

@@ -19,7 +19,12 @@ import { ARIA, type DigitalHumanSpec } from "./registry";
 const isArabic = (s: string) => /[\u0600-\u06FF]/.test(s);
 
 type WindowAria = {
-  speak?: (t: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => void;
+  speak?: (t: {
+    id?: string;
+    text_ar: string;
+    text_en: string;
+    speaker?: DigitalHumanSpec;
+  }) => void;
   stop?: () => void;
 };
 
@@ -39,7 +44,11 @@ function pickMimeType(): string | undefined {
     "audio/ogg;codecs=opus",
   ];
   for (const m of candidates) {
-    try { if (MediaRecorder.isTypeSupported(m)) return m; } catch { /* ignore */ }
+    try {
+      if (MediaRecorder.isTypeSupported(m)) return m;
+    } catch {
+      /* ignore */
+    }
   }
   return undefined;
 }
@@ -62,12 +71,24 @@ export function useGatewayListener() {
   const teardown = useCallback(() => {
     stopFlagRef.current = true;
     cancelAnimationFrame(rafRef.current);
-    try { recorderRef.current?.state !== "inactive" && recorderRef.current?.stop(); } catch { /* noop */ }
+    try {
+      recorderRef.current?.state !== "inactive" && recorderRef.current?.stop();
+    } catch {
+      /* noop */
+    }
     recorderRef.current = null;
     chunksRef.current = [];
-    try { streamRef.current?.getTracks().forEach((t) => t.stop()); } catch { /* noop */ }
+    try {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    } catch {
+      /* noop */
+    }
     streamRef.current = null;
-    try { void ctxRef.current?.close(); } catch { /* noop */ }
+    try {
+      void ctxRef.current?.close();
+    } catch {
+      /* noop */
+    }
     ctxRef.current = null;
     analyserRef.current = null;
     setListening(false);
@@ -110,8 +131,10 @@ export function useGatewayListener() {
         speaker: sp,
       });
     } catch (e) {
-      const arMsg = "سمعت سؤالك، لكن تعذّر توليد الرد الآن. أعد المحاولة أو اكتب السؤال في الخانة النصية.";
-      const enMsg = "I heard your question, but the answer engine did not complete. Please retry or type the question.";
+      const arMsg =
+        "سمعت سؤالك، لكن تعذّر توليد الرد الآن. أعد المحاولة أو اكتب السؤال في الخانة النصية.";
+      const enMsg =
+        "I heard your question, but the answer engine did not complete. Please retry or type the question.";
       setError(isArabic(q) ? arMsg : enMsg);
       const w = window as unknown as { aria?: WindowAria };
       w.aria?.speak?.({
@@ -142,7 +165,9 @@ export function useGatewayListener() {
     }
     recorderRef.current = rec;
     chunksRef.current = [];
-    rec.ondataavailable = (ev) => { if (ev.data && ev.data.size) chunksRef.current.push(ev.data); };
+    rec.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size) chunksRef.current.push(ev.data);
+    };
     rec.onstop = async () => {
       const blob = new Blob(chunksRef.current, { type: mime });
       chunksRef.current = [];
@@ -194,7 +219,11 @@ export function useGatewayListener() {
       }
       const silent = t - lastVoiceAt;
       if ((voicedMs >= MIN_VOICED_MS && silent >= SILENCE_HANG_MS) || elapsed >= MAX_SEGMENT_MS) {
-        try { recorderRef.current?.stop(); } catch { /* noop */ }
+        try {
+          recorderRef.current?.stop();
+        } catch {
+          /* noop */
+        }
         setPartial("");
         return;
       }
@@ -203,76 +232,109 @@ export function useGatewayListener() {
     rafRef.current = requestAnimationFrame(tick);
   }, [handleTranscript, teardown]);
 
-  const start = useCallback(async (speaker?: DigitalHumanSpec) => {
-    if (listening) return;
-    setError(null);
-    speakerRef.current = speaker ?? ARIA;
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setError("الميكروفون غير مدعوم في هذه البيئة · Microphone unavailable here");
-      return;
-    }
-    // Detect iframes that do NOT carry an `allow="microphone"` permission.
-    // getUserMedia silently rejects with NotAllowedError in that case; we
-    // surface a useful message instead of the raw browser string.
-    let iframeBlocked = false;
-    try {
-      if (typeof window !== "undefined" && window.self !== window.top) {
-        const fp = (document as unknown as { featurePolicy?: { allowsFeature: (f: string) => boolean } }).featurePolicy;
-        if (fp && typeof fp.allowsFeature === "function" && !fp.allowsFeature("microphone")) {
-          iframeBlocked = true;
+  const start = useCallback(
+    async (speaker?: DigitalHumanSpec) => {
+      if (listening) return;
+      setError(null);
+      speakerRef.current = speaker ?? ARIA;
+      if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+        setError("الميكروفون غير مدعوم في هذه البيئة · Microphone unavailable here");
+        return;
+      }
+      // Detect iframes that do NOT carry an `allow="microphone"` permission.
+      // getUserMedia silently rejects with NotAllowedError in that case; we
+      // surface a useful message instead of the raw browser string.
+      let iframeBlocked = false;
+      try {
+        if (typeof window !== "undefined" && window.self !== window.top) {
+          const fp = (
+            document as unknown as { featurePolicy?: { allowsFeature: (f: string) => boolean } }
+          ).featurePolicy;
+          if (fp && typeof fp.allowsFeature === "function" && !fp.allowsFeature("microphone")) {
+            iframeBlocked = true;
+          }
         }
+      } catch {
+        /* cross-origin — assume allowed and let getUserMedia decide */
       }
-    } catch { /* cross-origin — assume allowed and let getUserMedia decide */ }
-    if (iframeBlocked) {
-      setError("الميكروفون معطّل داخل هذا الإطار — افتح الموقع في نافذة مستقلة · Mic is blocked in this embedded frame — open the site in its own tab.");
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
-      streamRef.current = stream;
-      const Ctor: typeof AudioContext = (window as unknown as {
-        AudioContext?: typeof AudioContext;
-        webkitAudioContext?: typeof AudioContext;
-      }).AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new Ctor();
-      ctxRef.current = ctx;
-      const src = ctx.createMediaStreamSource(stream);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 1024;
-      analyser.smoothingTimeConstant = 0.7;
-      src.connect(analyser);
-      analyserRef.current = analyser;
-      stopFlagRef.current = false;
-      // Silence any in-flight narration so the user is heard.
-      (window as unknown as { aria?: WindowAria }).aria?.stop?.();
-      setListening(true);
-      startSegment();
-    } catch (e) {
-      const name = (e as { name?: string })?.name ?? "";
-      let msg: string;
-      if (name === "NotAllowedError" || name === "SecurityError") {
-        msg = "صلاحية الميكروفون مرفوضة — فعّلها من إعدادات المتصفح · Microphone permission denied — enable it in browser settings.";
-      } else if (name === "NotFoundError" || name === "OverconstrainedError") {
-        msg = "لم يتم العثور على ميكروفون متصل · No microphone detected on this device.";
-      } else if (name === "NotReadableError") {
-        msg = "الميكروفون مشغول بتطبيق آخر · Microphone is in use by another app.";
-      } else {
-        msg = e instanceof Error && e.message ? e.message : "mic_unavailable";
+      if (iframeBlocked) {
+        setError(
+          "الميكروفون معطّل داخل هذا الإطار — افتح الموقع في نافذة مستقلة · Mic is blocked in this embedded frame — open the site in its own tab.",
+        );
+        return;
       }
-      setError(msg);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        });
+        streamRef.current = stream;
+        const Ctor: typeof AudioContext =
+          (
+            window as unknown as {
+              AudioContext?: typeof AudioContext;
+              webkitAudioContext?: typeof AudioContext;
+            }
+          ).AudioContext ??
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const ctx = new Ctor();
+        ctxRef.current = ctx;
+        const src = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = 0.7;
+        src.connect(analyser);
+        analyserRef.current = analyser;
+        stopFlagRef.current = false;
+        // Silence any in-flight narration so the user is heard.
+        (window as unknown as { aria?: WindowAria }).aria?.stop?.();
+        setListening(true);
+        startSegment();
+      } catch (e) {
+        const name = (e as { name?: string })?.name ?? "";
+        let msg: string;
+        if (name === "NotAllowedError" || name === "SecurityError") {
+          msg =
+            "صلاحية الميكروفون مرفوضة — فعّلها من إعدادات المتصفح · Microphone permission denied — enable it in browser settings.";
+        } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+          msg = "لم يتم العثور على ميكروفون متصل · No microphone detected on this device.";
+        } else if (name === "NotReadableError") {
+          msg = "الميكروفون مشغول بتطبيق آخر · Microphone is in use by another app.";
+        } else {
+          msg = e instanceof Error && e.message ? e.message : "mic_unavailable";
+        }
+        setError(msg);
+        teardown();
+      }
+    },
+    [listening, startSegment, teardown],
+  );
+
+  const stop = useCallback(() => {
+    teardown();
+  }, [teardown]);
+  const toggle = useCallback(
+    (speaker?: DigitalHumanSpec) => {
+      if (listening) stop();
+      else void start(speaker);
+    },
+    [listening, start, stop],
+  );
+
+  useEffect(
+    () => () => {
       teardown();
-    }
-  }, [listening, startSegment, teardown]);
+    },
+    [teardown],
+  );
 
-
-  const stop = useCallback(() => { teardown(); }, [teardown]);
-  const toggle = useCallback((speaker?: DigitalHumanSpec) => {
-    if (listening) stop(); else void start(speaker);
-  }, [listening, start, stop]);
-
-  useEffect(() => () => { teardown(); }, [teardown]);
-
-  return { listening, partial, thinking, error, start, stop, toggle, activeSpeaker: speakerRef.current };
+  return {
+    listening,
+    partial,
+    thinking,
+    error,
+    start,
+    stop,
+    toggle,
+    activeSpeaker: speakerRef.current,
+  };
 }

@@ -56,9 +56,15 @@ class AvatarStateManager {
   private listeners = new Set<Listener>();
   private counter = 0;
 
-  getState(): AvatarState { return this.state; }
-  getEmotion(): Emotion { return this.emotion; }
-  getLastEvent(): AvatarEvent | null { return this.lastEvent; }
+  getState(): AvatarState {
+    return this.state;
+  }
+  getEmotion(): Emotion {
+    return this.emotion;
+  }
+  getLastEvent(): AvatarEvent | null {
+    return this.lastEvent;
+  }
 
   canTransition(to: AvatarState): boolean {
     return ALLOWED[this.state].includes(to);
@@ -83,7 +89,13 @@ class AvatarStateManager {
       timestamp: Date.now(),
     };
     this.lastEvent = ev;
-    this.listeners.forEach((l) => { try { l(ev); } catch { /* isolate */ } });
+    this.listeners.forEach((l) => {
+      try {
+        l(ev);
+      } catch {
+        /* isolate */
+      }
+    });
     return ev;
   }
 

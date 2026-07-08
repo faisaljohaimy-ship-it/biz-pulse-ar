@@ -104,7 +104,12 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
         <HologramShell color={spec.palette.accent} intensity={0.6 + preset.ringIntensity * 0.8} />
 
         {/* GPU neural particles — soft blue motes orbiting the bust */}
-        <NeuralParticles color={spec.palette.accent} count={200} radius={1.0} speed={0.6 + preset.ringIntensity} />
+        <NeuralParticles
+          color={spec.palette.accent}
+          count={200}
+          radius={1.0}
+          speed={0.6 + preset.ringIntensity}
+        />
 
         {/* Pulsing scan ring around the head — louder when listening / speaking */}
         <ScanRing color={spec.palette.accent} intensity={preset.ringIntensity} />
@@ -122,14 +127,14 @@ export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
 
         {/* Post-processing: bloom + film tone mapping + soft vignette */}
         <EffectComposer multisampling={0} enableNormalPass={false}>
-          <Bloom
-            intensity={0.85}
-            luminanceThreshold={0.18}
-            luminanceSmoothing={0.6}
-            mipmapBlur
-          />
+          <Bloom intensity={0.85} luminanceThreshold={0.18} luminanceSmoothing={0.6} mipmapBlur />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-          <Vignette eskil={false} offset={0.25} darkness={0.7} blendFunction={BlendFunction.NORMAL} />
+          <Vignette
+            eskil={false}
+            offset={0.25}
+            darkness={0.7}
+            blendFunction={BlendFunction.NORMAL}
+          />
         </EffectComposer>
       </Canvas>
     </div>

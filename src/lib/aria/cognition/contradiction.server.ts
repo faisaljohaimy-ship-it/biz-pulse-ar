@@ -76,7 +76,9 @@ export function detectContradictions(input: {
     if (!statements || statements.length === 0) return;
     for (const stmt of statements) {
       const k = claimKey(stmt);
-      const conflict = input.evidence.find((e) => claimKey(e.claim) === k && isNegated(e.claim) !== isNegated(stmt));
+      const conflict = input.evidence.find(
+        (e) => claimKey(e.claim) === k && isNegated(e.claim) !== isNegated(stmt),
+      );
       if (conflict) {
         contradictions.push({
           id: nextId(),

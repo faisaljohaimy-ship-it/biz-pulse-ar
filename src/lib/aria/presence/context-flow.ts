@@ -30,7 +30,11 @@ export function frameSignature(f: ContextFrame): string {
     e: f.employeeId ?? "",
     i: f.incidentId ?? "",
     m: f.meetingId ?? "",
-    f: f.filters ? Object.keys(f.filters).sort().map((k) => [k, f.filters?.[k]]) : [],
+    f: f.filters
+      ? Object.keys(f.filters)
+          .sort()
+          .map((k) => [k, f.filters?.[k]])
+      : [],
     w: [...(f.widgetIds ?? [])].sort(),
     k: [...(f.kpiSelections ?? [])].sort(),
   });

@@ -167,7 +167,12 @@ export const getIntegrationsOverview = createServerFn({ method: "GET" })
     // Build Microsoft providers
     for (const meta of MS_PROVIDERS) {
       const configured = Boolean(process.env[meta.env]);
-      const kindKey = meta.id === "microsoft_outlook" ? "outlook" : meta.id === "microsoft_sharepoint" ? "sharepoint" : null;
+      const kindKey =
+        meta.id === "microsoft_outlook"
+          ? "outlook"
+          : meta.id === "microsoft_sharepoint"
+            ? "sharepoint"
+            : null;
       const counts = kindKey ? msCounts[kindKey] : undefined;
       const events24h = counts?.events ?? 0;
       const errors24h = counts?.errors ?? 0;
@@ -279,7 +284,9 @@ export const listRecentIntegrationEvents = createServerFn({ method: "GET" })
         provider: `Microsoft ${row.kind}`,
         kind: row.kind ?? "sync",
         status: row.status === "ok" ? "ok" : row.status === "error" ? "error" : "skipped",
-        message: row.error ?? (typeof row.details === "string" ? row.details : `${row.items_count ?? 0} items`),
+        message:
+          row.error ??
+          (typeof row.details === "string" ? row.details : `${row.items_count ?? 0} items`),
         at: row.started_at,
         duration_ms: row.duration_ms,
         items_count: row.items_count,
@@ -293,7 +300,9 @@ export const listRecentIntegrationEvents = createServerFn({ method: "GET" })
         provider: "SAP",
         kind: row.entity,
         status: isError ? "error" : "ok",
-        message: row.error ?? `${row.method} ${row.path ?? ""} → ${row.status ?? "?"}${row.items_count ? ` (${row.items_count})` : ""}`,
+        message:
+          row.error ??
+          `${row.method} ${row.path ?? ""} → ${row.status ?? "?"}${row.items_count ? ` (${row.items_count})` : ""}`,
         at: row.created_at,
         duration_ms: row.duration_ms,
         items_count: row.items_count,
@@ -304,9 +313,16 @@ export const listRecentIntegrationEvents = createServerFn({ method: "GET" })
     return events.slice(0, 30);
   });
 
-const testSchema = z.object({ provider: z.enum([
-  "microsoft_outlook", "microsoft_onedrive", "microsoft_sharepoint", "microsoft_teams", "sap", "power_bi",
-]) });
+const testSchema = z.object({
+  provider: z.enum([
+    "microsoft_outlook",
+    "microsoft_onedrive",
+    "microsoft_sharepoint",
+    "microsoft_teams",
+    "sap",
+    "power_bi",
+  ]),
+});
 
 export type ProviderTestResult = { ok: boolean; status: number; message: string };
 
@@ -331,9 +347,10 @@ export const testProvider = createServerFn({ method: "POST" })
     if (ms) {
       const key = process.env[ms.env];
       if (!key) return { ok: false, status: 0, message: `${provider} connector not linked` };
-      const base = provider === "microsoft_outlook"
-        ? "https://connector-gateway.lovable.dev/microsoft_outlook"
-        : `https://connector-gateway.lovable.dev/${provider.replace("microsoft_", "microsoft_")}`;
+      const base =
+        provider === "microsoft_outlook"
+          ? "https://connector-gateway.lovable.dev/microsoft_outlook"
+          : `https://connector-gateway.lovable.dev/${provider.replace("microsoft_", "microsoft_")}`;
       try {
         const r = await httpFetch(`${base}${ms.path}`, {
           headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": key },
@@ -365,19 +382,29 @@ export const testProvider = createServerFn({ method: "POST" })
         });
         const status = r.status;
         const ok = status < 500;
-        await context.supabase.from("sap_connections").update({
-          last_test_at: new Date().toISOString(),
-          last_test_status: ok ? "ok" : "error",
-          last_test_error: ok ? null : `HTTP ${status}`,
-        }).eq("id", conn.id);
-        return { ok, status, message: ok ? `SAP endpoint reachable (${status})` : `SAP HTTP ${status}` };
+        await context.supabase
+          .from("sap_connections")
+          .update({
+            last_test_at: new Date().toISOString(),
+            last_test_status: ok ? "ok" : "error",
+            last_test_error: ok ? null : `HTTP ${status}`,
+          })
+          .eq("id", conn.id);
+        return {
+          ok,
+          status,
+          message: ok ? `SAP endpoint reachable (${status})` : `SAP HTTP ${status}`,
+        };
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        await context.supabase.from("sap_connections").update({
-          last_test_at: new Date().toISOString(),
-          last_test_status: "error",
-          last_test_error: msg.slice(0, 500),
-        }).eq("id", conn.id);
+        await context.supabase
+          .from("sap_connections")
+          .update({
+            last_test_at: new Date().toISOString(),
+            last_test_status: "error",
+            last_test_error: msg.slice(0, 500),
+          })
+          .eq("id", conn.id);
         return { ok: false, status: 0, message: msg };
       }
     }

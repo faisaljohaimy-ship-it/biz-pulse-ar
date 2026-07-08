@@ -58,12 +58,7 @@ export async function runThinkingLoop(
     Promise.resolve(buildPlan(brief.intent)),
   ]);
 
-  const system = [
-    brief.system,
-    plan.block,
-    insightBundle.block,
-    JSON_CONTRACT,
-  ]
+  const system = [brief.system, plan.block, insightBundle.block, JSON_CONTRACT]
     .filter(Boolean)
     .join("\n\n");
 

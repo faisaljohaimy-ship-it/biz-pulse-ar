@@ -11,7 +11,10 @@ const R = new Map<string, Row>();
 const IDLE_MS = 45_000;
 const DISENGAGED_MS = 120_000;
 
-export function noteEngagement(id: string, kind: "user_input" | "user_voice" | "tick" | "ariaSpoke"): EngagementLevel {
+export function noteEngagement(
+  id: string,
+  kind: "user_input" | "user_voice" | "tick" | "ariaSpoke",
+): EngagementLevel {
   const now = Date.now();
   const cur = R.get(id) ?? { level: "dormant" as EngagementLevel, lastActivity: now, turns: 0 };
   if (kind === "tick") {
@@ -33,7 +36,9 @@ export function getEngagement(id: string): EngagementLevel {
   return R.get(id)?.level ?? "dormant";
 }
 
-export function resetEngagement(id: string): void { R.delete(id); }
+export function resetEngagement(id: string): void {
+  R.delete(id);
+}
 
 function upgrade(l: EngagementLevel, turns: number): EngagementLevel {
   if (turns >= 4) return "committed";
@@ -43,10 +48,15 @@ function upgrade(l: EngagementLevel, turns: number): EngagementLevel {
 
 function downgrade(l: EngagementLevel): EngagementLevel {
   switch (l) {
-    case "committed": return "active";
-    case "active": return "attentive";
-    case "attentive": return "dormant";
-    case "disengaged": return "disengaged";
-    case "dormant": return "dormant";
+    case "committed":
+      return "active";
+    case "active":
+      return "attentive";
+    case "attentive":
+      return "dormant";
+    case "disengaged":
+      return "disengaged";
+    case "dormant":
+      return "dormant";
   }
 }

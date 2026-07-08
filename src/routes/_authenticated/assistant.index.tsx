@@ -17,7 +17,11 @@ function AssistantIndex() {
       try {
         const threads = await list();
         if (threads.length > 0) {
-          navigate({ to: "/assistant/$threadId", params: { threadId: threads[0].id }, replace: true });
+          navigate({
+            to: "/assistant/$threadId",
+            params: { threadId: threads[0].id },
+            replace: true,
+          });
         } else {
           const t = await create({ data: {} });
           navigate({ to: "/assistant/$threadId", params: { threadId: t.id }, replace: true });
@@ -29,6 +33,8 @@ function AssistantIndex() {
   }, [list, create, navigate]);
 
   return (
-    <div className="flex h-full items-center justify-center p-10 text-sm text-muted-foreground">...</div>
+    <div className="flex h-full items-center justify-center p-10 text-sm text-muted-foreground">
+      ...
+    </div>
   );
 }

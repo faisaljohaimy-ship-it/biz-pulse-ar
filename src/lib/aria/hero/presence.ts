@@ -17,7 +17,9 @@ export class PresenceEngine {
     private readonly audit: HeroAudit,
   ) {}
 
-  current(): PresenceMode { return this.mode; }
+  current(): PresenceMode {
+    return this.mode;
+  }
 
   request(next: PresenceMode, now: number, detail?: string): boolean {
     if (next === this.mode) return false;

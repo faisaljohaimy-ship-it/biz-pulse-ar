@@ -1,7 +1,11 @@
 // Phase 11.8 — Hero UI invariants.
 import type {
-  HeroPresenceDirective, HeroEntranceDirective, HeroCaptionDirective,
-  HeroCameraDirective, HeroParticleDirective, HeroPerformanceBudget,
+  HeroPresenceDirective,
+  HeroEntranceDirective,
+  HeroCaptionDirective,
+  HeroCameraDirective,
+  HeroParticleDirective,
+  HeroPerformanceBudget,
 } from "./types";
 
 export const HERO_CONTRACTS = {
@@ -15,14 +19,18 @@ export const HERO_CONTRACTS = {
 } as const;
 
 export function assertPresence(p: HeroPresenceDirective): void {
-  if (p.presenceOpacity < 0 || p.presenceOpacity > 1) throw new Error("presenceOpacity out of range");
+  if (p.presenceOpacity < 0 || p.presenceOpacity > 1)
+    throw new Error("presenceOpacity out of range");
 }
 export function assertEntrance(e: HeroEntranceDirective): void {
   if (e.progress < 0 || e.progress > 1) throw new Error("entrance progress out of range");
   if (e.durationMs > HERO_CONTRACTS.ENTRANCE_MAX_MS) throw new Error("entrance too long");
 }
 export function assertCaption(c: HeroCaptionDirective): void {
-  if (c.fadeMs < HERO_CONTRACTS.CAPTION_MIN_FADE_MS || c.fadeMs > HERO_CONTRACTS.CAPTION_MAX_FADE_MS) {
+  if (
+    c.fadeMs < HERO_CONTRACTS.CAPTION_MIN_FADE_MS ||
+    c.fadeMs > HERO_CONTRACTS.CAPTION_MAX_FADE_MS
+  ) {
     throw new Error("caption fade out of range");
   }
   if (c.language === "ar" && c.dir !== "rtl") throw new Error("Arabic must be RTL");

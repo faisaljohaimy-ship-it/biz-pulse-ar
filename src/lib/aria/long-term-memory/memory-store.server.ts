@@ -19,9 +19,7 @@ function freezeRecord(r: MemoryRecord): MemoryRecord {
     compressed_from: r.compressed_from
       ? (Object.freeze([...r.compressed_from]) as readonly string[])
       : undefined,
-    conflict_partner_ids: Object.freeze([
-      ...r.conflict_partner_ids,
-    ]) as readonly string[],
+    conflict_partner_ids: Object.freeze([...r.conflict_partner_ids]) as readonly string[],
   });
 }
 

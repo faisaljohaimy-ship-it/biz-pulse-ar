@@ -8,9 +8,16 @@ export const Route = createFileRoute("/roi")({
   head: () => ({
     meta: [
       { title: "ROI Calculator — Nexus AI OS" },
-      { name: "description", content: "Quantify NEXUS AI OS business impact in under 30 seconds. Annual savings, cost reduction, revenue growth, productivity gain, risk reduction, and payback period." },
+      {
+        name: "description",
+        content:
+          "Quantify NEXUS AI OS business impact in under 30 seconds. Annual savings, cost reduction, revenue growth, productivity gain, risk reduction, and payback period.",
+      },
       { property: "og:title", content: "ROI Calculator — Nexus AI OS" },
-      { property: "og:description", content: "Executive-grade ROI model for the autonomous enterprise." },
+      {
+        property: "og:description",
+        content: "Executive-grade ROI model for the autonomous enterprise.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/roi` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -69,10 +76,10 @@ const fmtMonths = (n: number, locale: "ar" | "en") =>
 
 type Inputs = {
   employees: number;
-  revenue: number;     // SAR / year
+  revenue: number; // SAR / year
   departments: number;
   projects: number;
-  opCosts: number;     // SAR / year
+  opCosts: number; // SAR / year
 };
 
 const DEFAULTS: Inputs = {
@@ -111,8 +118,7 @@ function ROIPage() {
     const annualSavings = costSavings + revenueUplift + productivityValue + riskValue;
 
     // NEXUS investment (3 tiers, by employees)
-    const investment =
-      employees < 500 ? 1_800_000 : employees < 5000 ? 6_400_000 : 14_800_000;
+    const investment = employees < 500 ? 1_800_000 : employees < 5000 ? 6_400_000 : 14_800_000;
 
     const paybackMonths = Math.max(0.5, (investment / annualSavings) * 12);
     const threeYearROI = ((annualSavings * 3 - investment) / investment) * 100;
@@ -134,7 +140,10 @@ function ROIPage() {
   }, [inp]);
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground"
+    >
       {/* Ambient cinematic backdrop */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(214,158,46,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.06),transparent_60%)]" />
@@ -142,7 +151,10 @@ function ROIPage() {
       </div>
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
@@ -174,35 +186,45 @@ function ROIPage() {
               <SliderField
                 label={isAr ? "عدد الموظفين" : "Employees"}
                 value={inp.employees}
-                min={50} max={20000} step={50}
+                min={50}
+                max={20000}
+                step={50}
                 onChange={(v) => setInp((s) => ({ ...s, employees: v }))}
                 format={(v) => v.toLocaleString(isAr ? "ar-SA" : "en-US")}
               />
               <SliderField
                 label={isAr ? "الإيرادات السنوية" : "Annual Revenue"}
                 value={inp.revenue}
-                min={10_000_000} max={5_000_000_000} step={10_000_000}
+                min={10_000_000}
+                max={5_000_000_000}
+                step={10_000_000}
                 onChange={(v) => setInp((s) => ({ ...s, revenue: v }))}
                 format={(v) => fmtCurrency(v, locale)}
               />
               <SliderField
                 label={isAr ? "عدد الإدارات" : "Departments"}
                 value={inp.departments}
-                min={1} max={40} step={1}
+                min={1}
+                max={40}
+                step={1}
                 onChange={(v) => setInp((s) => ({ ...s, departments: v }))}
                 format={(v) => v.toString()}
               />
               <SliderField
                 label={isAr ? "عدد المشاريع النشطة" : "Active Projects"}
                 value={inp.projects}
-                min={1} max={500} step={1}
+                min={1}
+                max={500}
+                step={1}
                 onChange={(v) => setInp((s) => ({ ...s, projects: v }))}
                 format={(v) => v.toString()}
               />
               <SliderField
                 label={isAr ? "التكاليف التشغيلية السنوية" : "Annual Operating Costs"}
                 value={inp.opCosts}
-                min={5_000_000} max={2_000_000_000} step={5_000_000}
+                min={5_000_000}
+                max={2_000_000_000}
+                step={5_000_000}
                 onChange={(v) => setInp((s) => ({ ...s, opCosts: v }))}
                 format={(v) => fmtCurrency(v, locale)}
               />
@@ -273,7 +295,11 @@ function ROIPage() {
                 label={isAr ? "فترة الاسترداد" : "Payback Period"}
                 value={model.paybackMonths}
                 format={(v) => fmtMonths(v, locale)}
-                sub={isAr ? `استثمار ${fmtCurrency(model.investment, locale)}` : `Investment ${fmtCurrency(model.investment, locale)}`}
+                sub={
+                  isAr
+                    ? `استثمار ${fmtCurrency(model.investment, locale)}`
+                    : `Investment ${fmtCurrency(model.investment, locale)}`
+                }
                 accent="cyan"
               />
             </div>
@@ -282,10 +308,26 @@ function ROIPage() {
             <ValueStack
               isAr={isAr}
               segments={[
-                { label: isAr ? "خفض التكاليف" : "Cost Reduction", value: model.costSavings, color: "rgb(56,189,248)" },
-                { label: isAr ? "نمو الإيرادات" : "Revenue Growth", value: model.revenueUplift, color: "rgb(52,211,153)" },
-                { label: isAr ? "الإنتاجية" : "Productivity", value: model.productivityValue, color: "rgb(251,191,36)" },
-                { label: isAr ? "تقليل المخاطر" : "Risk Reduction", value: model.riskValue, color: "rgb(244,114,182)" },
+                {
+                  label: isAr ? "خفض التكاليف" : "Cost Reduction",
+                  value: model.costSavings,
+                  color: "rgb(56,189,248)",
+                },
+                {
+                  label: isAr ? "نمو الإيرادات" : "Revenue Growth",
+                  value: model.revenueUplift,
+                  color: "rgb(52,211,153)",
+                },
+                {
+                  label: isAr ? "الإنتاجية" : "Productivity",
+                  value: model.productivityValue,
+                  color: "rgb(251,191,36)",
+                },
+                {
+                  label: isAr ? "تقليل المخاطر" : "Risk Reduction",
+                  value: model.riskValue,
+                  color: "rgb(244,114,182)",
+                },
               ]}
               total={model.annualSavings}
               locale={locale}
@@ -348,11 +390,19 @@ function ROIPage() {
 /* ------------------------------- Subviews -------------------------------- */
 
 function SliderField({
-  label, value, min, max, step, onChange, format,
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  format,
 }: {
   label: string;
   value: number;
-  min: number; max: number; step: number;
+  min: number;
+  max: number;
+  step: number;
   onChange: (v: number) => void;
   format: (v: number) => string;
 }) {
@@ -365,7 +415,9 @@ function SliderField({
       <input
         type="range"
         className="roi-range w-full"
-        min={min} max={max} step={step}
+        min={min}
+        max={max}
+        step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />
@@ -374,7 +426,11 @@ function SliderField({
 }
 
 function HeadlineCard({
-  isAr, annualSavings, paybackMonths, threeYearROI, locale,
+  isAr,
+  annualSavings,
+  paybackMonths,
+  threeYearROI,
+  locale,
 }: {
   isAr: boolean;
   annualSavings: number;
@@ -395,19 +451,25 @@ function HeadlineCard({
       </div>
       <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div>
-          <div className="text-xs text-muted-foreground">{isAr ? "الوفر السنوي" : "Annual Savings"}</div>
+          <div className="text-xs text-muted-foreground">
+            {isAr ? "الوفر السنوي" : "Annual Savings"}
+          </div>
           <div className="mt-1 bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text font-mono text-3xl font-semibold text-transparent sm:text-4xl">
             {fmtCurrency(animSavings, locale)}
           </div>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">{isAr ? "فترة الاسترداد" : "Payback Period"}</div>
+          <div className="text-xs text-muted-foreground">
+            {isAr ? "فترة الاسترداد" : "Payback Period"}
+          </div>
           <div className="mt-1 font-mono text-3xl font-semibold text-foreground sm:text-4xl">
             {fmtMonths(animPayback, locale)}
           </div>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">{isAr ? "العائد خلال 3 سنوات" : "3-Year ROI"}</div>
+          <div className="text-xs text-muted-foreground">
+            {isAr ? "العائد خلال 3 سنوات" : "3-Year ROI"}
+          </div>
           <div className="mt-1 font-mono text-3xl font-semibold text-emerald-300 sm:text-4xl">
             {animROI.toFixed(0)}%
           </div>
@@ -418,7 +480,12 @@ function HeadlineCard({
 }
 
 function MetricCard({
-  icon, label, value, format, sub, accent,
+  icon,
+  label,
+  value,
+  format,
+  sub,
+  accent,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -436,7 +503,9 @@ function MetricCard({
   }[accent];
 
   return (
-    <div className={`group relative overflow-hidden rounded-xl border ${ring} bg-white/[0.02] p-5 transition hover:bg-white/[0.04]`}>
+    <div
+      className={`group relative overflow-hidden rounded-xl border ${ring} bg-white/[0.02] p-5 transition hover:bg-white/[0.04]`}
+    >
       <div className="flex items-center justify-between">
         <span className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{label}</span>
         <span className="opacity-70">{icon}</span>
@@ -448,7 +517,10 @@ function MetricCard({
 }
 
 function ValueStack({
-  isAr, segments, total, locale,
+  isAr,
+  segments,
+  total,
+  locale,
 }: {
   isAr: boolean;
   segments: { label: string; value: number; color: string }[];
@@ -480,7 +552,9 @@ function ValueStack({
             <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
             <div className="min-w-0">
               <div className="truncate text-xs text-muted-foreground">{s.label}</div>
-              <div className="font-mono text-xs text-foreground">{fmtCurrency(s.value, locale)}</div>
+              <div className="font-mono text-xs text-foreground">
+                {fmtCurrency(s.value, locale)}
+              </div>
             </div>
           </div>
         ))}

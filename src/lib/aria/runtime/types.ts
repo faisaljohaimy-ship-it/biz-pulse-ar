@@ -233,7 +233,17 @@ export interface RuntimeAuditEntry {
   ts: string;
   actor: string;
   action: string;
-  subject_type: "agent" | "message" | "checkpoint" | "snapshot" | "rollback" | "consensus" | "election" | "negotiation" | "policy" | "runtime";
+  subject_type:
+    | "agent"
+    | "message"
+    | "checkpoint"
+    | "snapshot"
+    | "rollback"
+    | "consensus"
+    | "election"
+    | "negotiation"
+    | "policy"
+    | "runtime";
   subject_id: string;
   metadata: Readonly<Record<string, unknown>>;
 }

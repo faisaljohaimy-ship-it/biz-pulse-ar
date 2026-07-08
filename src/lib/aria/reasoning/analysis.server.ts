@@ -41,7 +41,8 @@ export function analyzeProblem(context: ReasoningContext): AnalysisReport {
     id: shortId("rn"),
     kind: "analysis",
     summary: "Problem analysis",
-    detail: `Question: ${question}. Goals=${clarifiedGoals.length}, ` +
+    detail:
+      `Question: ${question}. Goals=${clarifiedGoals.length}, ` +
       `explicit_constraints=${explicit.length}, implicit=${implicit.length}, ` +
       `hidden_dependencies=${hidden.length}.`,
     parents: [],
@@ -103,9 +104,7 @@ export function analyzeProblem(context: ReasoningContext): AnalysisReport {
 }
 
 function clarify(question: string, goals: string[]): string[] {
-  const cleaned = goals
-    .map((g) => g.trim())
-    .filter((g) => g.length > 0);
+  const cleaned = goals.map((g) => g.trim()).filter((g) => g.length > 0);
   if (cleaned.length) return dedupe(cleaned);
   return [inferGoalFromQuestion(question)];
 }

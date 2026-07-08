@@ -28,6 +28,10 @@ export class ConversationAudit {
     return e;
   }
 
-  recent(n = 100): readonly ConversationAuditEntry[] { return this.entries.slice(-n); }
-  clear(): void { this.entries = []; }
+  recent(n = 100): readonly ConversationAuditEntry[] {
+    return this.entries.slice(-n);
+  }
+  clear(): void {
+    this.entries = [];
+  }
 }

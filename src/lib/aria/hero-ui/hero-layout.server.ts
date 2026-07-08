@@ -15,8 +15,9 @@ export function computeHeroLayout(env: HeroEnvironment): HeroLayoutDirective {
     panelSpacingPx: spacing,
     safeAreaTopPx: safeTop,
     safeAreaBottomPx: safeBot,
-    stackOrder: env.orientation === "landscape" && !isMobile
-      ? ["avatar", "panels", "caption", "waveform", "overlay"]
-      : ["avatar", "caption", "waveform", "panels", "overlay"],
+    stackOrder:
+      env.orientation === "landscape" && !isMobile
+        ? ["avatar", "panels", "caption", "waveform", "overlay"]
+        : ["avatar", "caption", "waveform", "panels", "overlay"],
   };
 }

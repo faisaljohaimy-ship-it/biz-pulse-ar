@@ -19,7 +19,15 @@ function CityGrid() {
         const district = i > 0 ? (j > 0 ? 0 : 1) : j > 0 ? 2 : 3;
         const central = distance < 8;
         const h = 0.4 + Math.pow(Math.random(), 2.2) * (central ? 6.5 : 3.4);
-        const hue = central ? 0.13 : district === 0 ? 0.58 : district === 1 ? 0.5 : district === 2 ? 0.62 : 0.55;
+        const hue = central
+          ? 0.13
+          : district === 0
+            ? 0.58
+            : district === 1
+              ? 0.5
+              : district === 2
+                ? 0.62
+                : 0.55;
         arr.push({ x: i * 0.9, z: j * 0.9, h, hue, district });
       }
     }
@@ -224,16 +232,11 @@ function DataBeams({
       (m.material as THREE.MeshBasicMaterial).opacity = 0.35 + pulse * 0.5;
     });
   });
-  const colorFor = (k: string) =>
-    k === "risk" ? "#ff4d57" : k === "opp" ? "#f5b454" : "#5cbdff";
+  const colorFor = (k: string) => (k === "risk" ? "#ff4d57" : k === "opp" ? "#f5b454" : "#5cbdff");
   return (
     <>
       {beacons.map((b, i) => (
-        <mesh
-          key={i}
-          ref={(el) => (refs.current[i] = el)}
-          position={[b.x, b.h + 3, b.z]}
-        >
+        <mesh key={i} ref={(el) => (refs.current[i] = el)} position={[b.x, b.h + 3, b.z]}>
           <cylinderGeometry args={[0.05, 0.05, 1, 8, 1, true]} />
           <meshBasicMaterial
             color={colorFor(b.kind)}
@@ -364,10 +367,7 @@ function Libraries({ items }: { items: { x: number; z: number; h: number }[] }) 
     <>
       {items.map((l, i) => (
         <group key={i} position={[l.x, 0, l.z]}>
-          <mesh
-            ref={(el) => (refs.current[i] = el)}
-            position={[0, l.h / 2, 0]}
-          >
+          <mesh ref={(el) => (refs.current[i] = el)} position={[0, l.h / 2, 0]}>
             <boxGeometry args={[1.4, l.h, 1.4]} />
             <meshStandardMaterial
               color="#7a5cff"

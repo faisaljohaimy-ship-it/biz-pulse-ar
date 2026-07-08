@@ -10,11 +10,7 @@
  * The planner never executes agents, never touches memory, never
  * dispatches tasks. It produces an ExecutionPlan for the Orchestrator.
  */
-import type {
-  ExecutionPlan,
-  PlanningDecision,
-  SuccessCriterion,
-} from "./types";
+import type { ExecutionPlan, PlanningDecision, SuccessCriterion } from "./types";
 import { PlanMissionInputSchema, type PlanMissionInput } from "./contracts";
 import { parseGoal, deriveObjectives } from "./goal.server";
 import { buildMissionTree } from "./decomposition.server";
@@ -30,12 +26,7 @@ import { verifyPlan } from "./verification.server";
 import { resolveApprovals } from "./approval.server";
 import { evaluatePolicies } from "./policy.server";
 import { emitPlanning } from "./events";
-import {
-  PLANNER_VERSION,
-  noteActive,
-  notePlanFailure,
-  notePlanSuccess,
-} from "./metrics.server";
+import { PLANNER_VERSION, noteActive, notePlanFailure, notePlanSuccess } from "./metrics.server";
 import { bootMarketplace } from "../marketplace";
 
 function uid(prefix: string): string {
@@ -60,9 +51,7 @@ function decision(
   };
 }
 
-export async function planMission(
-  input: PlanMissionInput,
-): Promise<ExecutionPlan> {
+export async function planMission(input: PlanMissionInput): Promise<ExecutionPlan> {
   bootMarketplace();
   const validated = PlanMissionInputSchema.parse(input);
   const constraints = validated.constraints.map((c) => ({ ...c, id: uid("con") }));
@@ -114,12 +103,8 @@ export async function planMission(
         "routing",
         `Resolved ${rawBindings.filter((b) => b.resolved_agent).length}/${rawBindings.length} bindings`,
         "Marketplace capability index queried per atomic node; unresolved nodes deferred to recovery.",
-        rawBindings.map(
-          (b) => `${b.node_id}=${b.capability}:${b.match_kind}`,
-        ),
-        rawBindings.length
-          ? rawBindings.reduce((s, b) => s + b.score, 0) / rawBindings.length
-          : 0,
+        rawBindings.map((b) => `${b.node_id}=${b.capability}:${b.match_kind}`),
+        rawBindings.length ? rawBindings.reduce((s, b) => s + b.score, 0) / rawBindings.length : 0,
       ),
     );
 
@@ -138,10 +123,7 @@ export async function planMission(
         "optimization",
         `Parallelism ${opt.parallelism_before} → ${opt.parallelism_after} (gain=${opt.gain.toFixed(2)})`,
         opt.reasoning,
-        [
-          `removed_edges=${opt.removed_edges}`,
-          `merged_nodes=${opt.merged_nodes}`,
-        ],
+        [`removed_edges=${opt.removed_edges}`, `merged_nodes=${opt.merged_nodes}`],
         0.9,
       ),
     );
@@ -180,11 +162,7 @@ export async function planMission(
     );
 
     // 8. Constraint feasibility
-    const constraintIssues = validateConstraints(
-      constraints,
-      estimation,
-      bindings,
-    );
+    const constraintIssues = validateConstraints(constraints, estimation, bindings);
 
     // 9. Risks
     const risks = analyzeRisks(graph, bindings, estimation, constraints);
@@ -218,8 +196,7 @@ export async function planMission(
 
     // 11. Approvals
     const approvals = resolveApprovals(tree, bindings, constraints);
-    if (approvals.some((a) => a.mode === "required"))
-      emitPlanning("ApprovalRequired", missionId);
+    if (approvals.some((a) => a.mode === "required")) emitPlanning("ApprovalRequired", missionId);
 
     // 12. Policy evaluation
     const policyIssues = evaluatePolicies(goal, bindings, constraints);
@@ -237,8 +214,7 @@ export async function planMission(
         verification.ok ? 1 : 0.4,
       ),
     );
-    if (verification.ok)
-      emitPlanning("VerificationPassed", missionId);
+    if (verification.ok) emitPlanning("VerificationPassed", missionId);
 
     if (!verification.ok) {
       const reason = verification.issues

@@ -5,7 +5,8 @@
 import type { RiskLevel, RiskSignal } from "../types/executive";
 import type { AriaContextSnapshot } from "../types/aria";
 
-const CRITICAL = /(breach|attack|fire|explosion|casualt|fatal|outage|down|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
+const CRITICAL =
+  /(breach|attack|fire|explosion|casualt|fatal|outage|down|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
 const HIGH = /(incident|failure|violation|leak|urgent|critical|حادث|عطل|مخالفة|تسريب|عاجل|حرج)/i;
 const MEDIUM = /(delay|risk|issue|warning|degrad|تأخير|مخاطر|مشكلة|تحذير|تدهور)/i;
 const LOW = /(monitor|watch|review|observe|مراقبة|متابعة|مراجعة|رصد)/i;
@@ -29,7 +30,10 @@ export const riskEngine = {
     const confidence = Math.max(0.2, Math.min(0.9, 0.35 + facts * 0.08));
 
     const titles: Record<RiskLevel, { ar: string; en: string }> = {
-      critical: { ar: "خطر حرج يستدعي تدخلاً فورياً", en: "Critical risk — immediate action required" },
+      critical: {
+        ar: "خطر حرج يستدعي تدخلاً فورياً",
+        en: "Critical risk — immediate action required",
+      },
       high: { ar: "مستوى مخاطر مرتفع", en: "High risk exposure" },
       medium: { ar: "مخاطر متوسطة تحت المراقبة", en: "Medium risk — monitor closely" },
       low: { ar: "مخاطر منخفضة", en: "Low risk" },

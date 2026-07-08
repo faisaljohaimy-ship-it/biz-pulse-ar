@@ -1,74 +1,74 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
-export const Route = createFileRoute('/unsubscribe')({
+export const Route = createFileRoute("/unsubscribe")({
   component: UnsubscribePage,
   validateSearch: (search: Record<string, unknown>) => ({
-    token: typeof search.token === 'string' ? search.token : '',
+    token: typeof search.token === "string" ? search.token : "",
   }),
-})
+});
 
 type State =
-  | { kind: 'loading' }
-  | { kind: 'ready' }
-  | { kind: 'already' }
-  | { kind: 'invalid' }
-  | { kind: 'success' }
-  | { kind: 'error'; message: string }
+  | { kind: "loading" }
+  | { kind: "ready" }
+  | { kind: "already" }
+  | { kind: "invalid" }
+  | { kind: "success" }
+  | { kind: "error"; message: string };
 
 function UnsubscribePage() {
-  const { token } = Route.useSearch()
-  const [state, setState] = useState<State>({ kind: 'loading' })
-  const [submitting, setSubmitting] = useState(false)
+  const { token } = Route.useSearch();
+  const [state, setState] = useState<State>({ kind: "loading" });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!token) {
-      setState({ kind: 'invalid' })
-      return
+      setState({ kind: "invalid" });
+      return;
     }
-    ;(async () => {
+    (async () => {
       try {
-        const res = await fetch(`/email/unsubscribe?token=${encodeURIComponent(token)}`)
-        const data = await res.json()
+        const res = await fetch(`/email/unsubscribe?token=${encodeURIComponent(token)}`);
+        const data = await res.json();
         if (!res.ok) {
-          setState({ kind: 'invalid' })
-          return
+          setState({ kind: "invalid" });
+          return;
         }
-        if (data.valid === false && data.reason === 'already_unsubscribed') {
-          setState({ kind: 'already' })
-          return
+        if (data.valid === false && data.reason === "already_unsubscribed") {
+          setState({ kind: "already" });
+          return;
         }
         if (data.valid === true) {
-          setState({ kind: 'ready' })
-          return
+          setState({ kind: "ready" });
+          return;
         }
-        setState({ kind: 'invalid' })
+        setState({ kind: "invalid" });
       } catch (e) {
-        setState({ kind: 'error', message: 'Network error' })
+        setState({ kind: "error", message: "Network error" });
       }
-    })()
-  }, [token])
+    })();
+  }, [token]);
 
   async function confirm() {
-    setSubmitting(true)
+    setSubmitting(true);
     try {
-      const res = await fetch('/email/unsubscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/email/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (data.success) {
-        setState({ kind: 'success' })
-      } else if (data.reason === 'already_unsubscribed') {
-        setState({ kind: 'already' })
+        setState({ kind: "success" });
+      } else if (data.reason === "already_unsubscribed") {
+        setState({ kind: "already" });
       } else {
-        setState({ kind: 'error', message: data.error || 'Failed to unsubscribe' })
+        setState({ kind: "error", message: data.error || "Failed to unsubscribe" });
       }
     } catch {
-      setState({ kind: 'error', message: 'Network error' })
+      setState({ kind: "error", message: "Network error" });
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
@@ -80,47 +80,44 @@ function UnsubscribePage() {
         </div>
         <h1 className="mt-4 text-2xl font-bold text-foreground">Email preferences</h1>
 
-        {state.kind === 'loading' && (
+        {state.kind === "loading" && (
           <p className="mt-4 text-sm text-muted-foreground">Validating your link…</p>
         )}
 
-        {state.kind === 'ready' && (
+        {state.kind === "ready" && (
           <>
             <p className="mt-4 text-sm text-muted-foreground">
-              Click below to unsubscribe from NEXUS AI OS emails. You can re-subscribe anytime by contacting us.
+              Click below to unsubscribe from NEXUS AI OS emails. You can re-subscribe anytime by
+              contacting us.
             </p>
             <button
               onClick={confirm}
               disabled={submitting}
               className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
             >
-              {submitting ? 'Processing…' : 'Confirm unsubscribe'}
+              {submitting ? "Processing…" : "Confirm unsubscribe"}
             </button>
           </>
         )}
 
-        {state.kind === 'already' && (
+        {state.kind === "already" && (
           <p className="mt-4 text-sm text-muted-foreground">
             You're already unsubscribed. No further emails will be sent to this address.
           </p>
         )}
 
-        {state.kind === 'success' && (
-          <p className="mt-4 text-sm text-foreground">
-            ✅ You've been unsubscribed successfully.
-          </p>
+        {state.kind === "success" && (
+          <p className="mt-4 text-sm text-foreground">✅ You've been unsubscribed successfully.</p>
         )}
 
-        {state.kind === 'invalid' && (
+        {state.kind === "invalid" && (
           <p className="mt-4 text-sm text-muted-foreground">
             This unsubscribe link is invalid or has expired.
           </p>
         )}
 
-        {state.kind === 'error' && (
-          <p className="mt-4 text-sm text-destructive">{state.message}</p>
-        )}
+        {state.kind === "error" && <p className="mt-4 text-sm text-destructive">{state.message}</p>}
       </div>
     </div>
-  )
+  );
 }

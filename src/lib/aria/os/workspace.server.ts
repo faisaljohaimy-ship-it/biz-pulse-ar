@@ -54,9 +54,7 @@ export function loadWorkspace(input: LoadWorkspaceInput): ExecutiveWorkspace {
   return workspace;
 }
 
-export function getWorkspace(
-  id: ExecutiveWorkspaceId,
-): ExecutiveWorkspace | null {
+export function getWorkspace(id: ExecutiveWorkspaceId): ExecutiveWorkspace | null {
   return WORKSPACES.get(id) ?? null;
 }
 

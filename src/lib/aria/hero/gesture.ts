@@ -25,7 +25,9 @@ export class GestureEngine {
 
   constructor(private readonly sync: HeroStateSynchronizer) {}
 
-  setReducedMotion(r: boolean): void { this.reduced = r; }
+  setReducedMotion(r: boolean): void {
+    this.reduced = r;
+  }
 
   trigger(cue: GestureCue, now: number): void {
     if (this.reduced) return;
@@ -33,7 +35,9 @@ export class GestureEngine {
     this.active = { startAt: now, peak: p.peak, durationMs: p.durationMs };
   }
 
-  cancel(): void { this.active = null; }
+  cancel(): void {
+    this.active = null;
+  }
 
   tick(tick: HeroTick): void {
     if (!this.active) return;

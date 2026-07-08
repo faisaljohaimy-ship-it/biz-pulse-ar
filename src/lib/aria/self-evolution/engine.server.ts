@@ -90,7 +90,6 @@ export function proposalRespectsIntroConstitution(p: {
   return citesConstitution && promisesInvariant;
 }
 
-
 export interface RunSelfEvolutionInput {
   /**
    * Optional self-improvement pipeline input. When omitted the engine runs in
@@ -128,7 +127,10 @@ function decisionFrom(
   if (readiness.decision === "NO-GO" || improvement?.decision === "NO_GO") {
     return { decision: "NO_GO", reasons };
   }
-  if (readiness.decision === "CONDITIONAL" || improvement?.decision === "GO_WITH_KNOWN_LIMITATIONS") {
+  if (
+    readiness.decision === "CONDITIONAL" ||
+    improvement?.decision === "GO_WITH_KNOWN_LIMITATIONS"
+  ) {
     reasons.push("conditional_release_or_pending_approvals");
     return { decision: "GO_WITH_KNOWN_LIMITATIONS", reasons };
   }
@@ -169,7 +171,8 @@ function issuesFrom(
       issues.push({
         id: `regression-${r.id}`,
         area: "performance",
-        severity: r.severity === "critical" ? "critical" : r.severity === "high" ? "high" : "medium",
+        severity:
+          r.severity === "critical" ? "critical" : r.severity === "high" ? "high" : "medium",
         summary: `regression on ${r.subject}:${r.metric}`,
         evidenceRefs: r.evidence.map((e) => `${e.source}:${e.ref}`),
       });
@@ -178,7 +181,8 @@ function issuesFrom(
       issues.push({
         id: `gap-${g.id}`,
         area: g.kind === "performance" ? "performance" : "code_quality",
-        severity: g.severity === "critical" ? "critical" : g.severity === "high" ? "high" : "medium",
+        severity:
+          g.severity === "critical" ? "critical" : g.severity === "high" ? "high" : "medium",
         summary: g.detail,
         evidenceRefs: g.evidence.map((e) => `${e.source}:${e.ref}`),
       });
@@ -202,9 +206,7 @@ export async function runSelfEvolution(
     readiness = await evaluateRelease();
     stages.push(stage("analyze", "pass", `release=${readiness.decision}`, t));
   } catch (err) {
-    stages.push(
-      stage("analyze", "fail", `readiness_failed:${(err as Error).message}`, t),
-    );
+    stages.push(stage("analyze", "fail", `readiness_failed:${(err as Error).message}`, t));
     // Rollback: refuse to proceed without readiness signal.
     return {
       startedAt,
@@ -272,9 +274,7 @@ export async function runSelfEvolution(
         ),
       );
     } catch (err) {
-      stages.push(
-        stage("plan", "fail", `improvement_failed:${(err as Error).message}`, t),
-      );
+      stages.push(stage("plan", "fail", `improvement_failed:${(err as Error).message}`, t));
     }
   } else {
     stages.push(stage("plan", "unknown", "analyze_only_mode", t));
@@ -296,8 +296,7 @@ export async function runSelfEvolution(
   t = new Date().toISOString();
   const readinessScore = readiness.overall_score;
   const validatePassed =
-    readiness.decision !== "NO-GO" &&
-    (!improvement || improvement.decision !== "NO_GO");
+    readiness.decision !== "NO-GO" && (!improvement || improvement.decision !== "NO_GO");
   stages.push(
     stage(
       "validate",
@@ -311,12 +310,7 @@ export async function runSelfEvolution(
   t = new Date().toISOString();
   const benchmarkCount = improvement?.comparisons.length ?? 0;
   stages.push(
-    stage(
-      "benchmark",
-      benchmarkCount > 0 ? "pass" : "unknown",
-      `comparisons=${benchmarkCount}`,
-      t,
-    ),
+    stage("benchmark", benchmarkCount > 0 ? "pass" : "unknown", `comparisons=${benchmarkCount}`, t),
   );
 
   // ---------------- report ----------------

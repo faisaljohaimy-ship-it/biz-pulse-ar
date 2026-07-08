@@ -69,13 +69,7 @@ export const CapabilityBindingSchema = z
     capability: z.string(),
     resolved_agent: z.string().nullable(),
     score: z.number().min(0).max(1),
-    match_kind: z.enum([
-      "exact",
-      "synonym",
-      "tag",
-      "semantic",
-      "unresolved",
-    ]),
+    match_kind: z.enum(["exact", "synonym", "tag", "semantic", "unresolved"]),
     reasoning: z.string().min(1),
   })
   .strict();

@@ -77,7 +77,10 @@ export async function recallMemory(
   supabase: SupabaseClient,
   userId: string,
   message: string,
-): Promise<{ memories: { key: string; content: string; similarity: number }[]; embedding: number[] | null }> {
+): Promise<{
+  memories: { key: string; content: string; similarity: number }[];
+  embedding: number[] | null;
+}> {
   const embedding = await embedText(message);
   if (!embedding) return { memories: [], embedding: null };
   const { data, error } = await supabase.rpc("aria_match_memory", {
@@ -136,7 +139,10 @@ export async function storeMemory(
 export async function retrieveKnowledge(
   supabase: SupabaseClient,
   embedding: number[] | null,
-): Promise<{ chunks: { title: string; source: string; content: string; similarity: number; id: string }[]; citations: Citation[] }> {
+): Promise<{
+  chunks: { title: string; source: string; content: string; similarity: number; id: string }[];
+  citations: Citation[];
+}> {
   if (!embedding) return { chunks: [], citations: [] };
   const { data, error } = await supabase.rpc("aria_match_knowledge", {
     _query: toPgVector(embedding),
@@ -147,11 +153,22 @@ export async function retrieveKnowledge(
     console.warn("[aria/rag] rpc error", error.message);
     return { chunks: [], citations: [] };
   }
-  const rows = (data ?? []) as { id: string; title: string; source: string; content: string; similarity: number }[];
+  const rows = (data ?? []) as {
+    id: string;
+    title: string;
+    source: string;
+    content: string;
+    similarity: number;
+  }[];
   const chunks = rows.filter((r) => r.similarity > 0.4);
   return {
     chunks,
-    citations: chunks.map((c) => ({ id: c.id, source: c.source, title: c.title, similarity: c.similarity })),
+    citations: chunks.map((c) => ({
+      id: c.id,
+      source: c.source,
+      title: c.title,
+      similarity: c.similarity,
+    })),
   };
 }
 
@@ -166,17 +183,66 @@ export async function runKpiEngine(supabase: SupabaseClient): Promise<{
   breaches: { metric: string; value: number; threshold: number; severity: "warn" | "alert" }[];
 }> {
   const sources = await fetchExecKpiSources(
-    supabase as unknown as { from: (t: string) => { select: (c: string) => Promise<{ data: unknown }> } },
+    supabase as unknown as {
+      from: (t: string) => { select: (c: string) => Promise<{ data: unknown }> };
+    },
   );
   const kpis = computeExecKpis(sources);
-  const breaches: { metric: string; value: number; threshold: number; severity: "warn" | "alert" }[] = [];
-  if (kpis.incidents_critical > 0) breaches.push({ metric: "incidents_critical", value: kpis.incidents_critical, threshold: 0, severity: "alert" });
-  if (kpis.cctv_health < 80) breaches.push({ metric: "cctv_health", value: kpis.cctv_health, threshold: 80, severity: kpis.cctv_health < 60 ? "alert" : "warn" });
-  if (kpis.access_health < 80) breaches.push({ metric: "access_health", value: kpis.access_health, threshold: 80, severity: kpis.access_health < 60 ? "alert" : "warn" });
-  if (kpis.patrol_completion < 90) breaches.push({ metric: "patrol_completion", value: kpis.patrol_completion, threshold: 90, severity: "warn" });
-  if (kpis.contractors_compliance < 90) breaches.push({ metric: "contractors_compliance", value: kpis.contractors_compliance, threshold: 90, severity: "warn" });
-  if (kpis.risk_index > 60) breaches.push({ metric: "risk_index", value: kpis.risk_index, threshold: 60, severity: kpis.risk_index > 80 ? "alert" : "warn" });
-  if (kpis.executive_readiness < 70) breaches.push({ metric: "executive_readiness", value: kpis.executive_readiness, threshold: 70, severity: kpis.executive_readiness < 50 ? "alert" : "warn" });
+  const breaches: {
+    metric: string;
+    value: number;
+    threshold: number;
+    severity: "warn" | "alert";
+  }[] = [];
+  if (kpis.incidents_critical > 0)
+    breaches.push({
+      metric: "incidents_critical",
+      value: kpis.incidents_critical,
+      threshold: 0,
+      severity: "alert",
+    });
+  if (kpis.cctv_health < 80)
+    breaches.push({
+      metric: "cctv_health",
+      value: kpis.cctv_health,
+      threshold: 80,
+      severity: kpis.cctv_health < 60 ? "alert" : "warn",
+    });
+  if (kpis.access_health < 80)
+    breaches.push({
+      metric: "access_health",
+      value: kpis.access_health,
+      threshold: 80,
+      severity: kpis.access_health < 60 ? "alert" : "warn",
+    });
+  if (kpis.patrol_completion < 90)
+    breaches.push({
+      metric: "patrol_completion",
+      value: kpis.patrol_completion,
+      threshold: 90,
+      severity: "warn",
+    });
+  if (kpis.contractors_compliance < 90)
+    breaches.push({
+      metric: "contractors_compliance",
+      value: kpis.contractors_compliance,
+      threshold: 90,
+      severity: "warn",
+    });
+  if (kpis.risk_index > 60)
+    breaches.push({
+      metric: "risk_index",
+      value: kpis.risk_index,
+      threshold: 60,
+      severity: kpis.risk_index > 80 ? "alert" : "warn",
+    });
+  if (kpis.executive_readiness < 70)
+    breaches.push({
+      metric: "executive_readiness",
+      value: kpis.executive_readiness,
+      threshold: 70,
+      severity: kpis.executive_readiness < 50 ? "alert" : "warn",
+    });
   return { kpis, breaches };
 }
 
@@ -185,15 +251,35 @@ const SEV_WEIGHT: Record<string, number> = { low: 20, medium: 45, high: 70, crit
 
 export async function runRiskEngine(supabase: SupabaseClient, kpis: ExecKpis): Promise<RiskItem[]> {
   const [incidentsQ, permitsQ, assetsQ, cctvQ] = await Promise.all([
-    supabase.from("sec_incidents").select("id,ref,title_ar,severity,status,reported_at").neq("status", "closed").neq("status", "resolved").order("reported_at", { ascending: false }).limit(50),
-    supabase.from("sec_permits").select("id,ref,work_type,risk_level,status,ends_at").in("status", ["active", "approved"]).limit(50),
+    supabase
+      .from("sec_incidents")
+      .select("id,ref,title_ar,severity,status,reported_at")
+      .neq("status", "closed")
+      .neq("status", "resolved")
+      .order("reported_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("sec_permits")
+      .select("id,ref,work_type,risk_level,status,ends_at")
+      .in("status", ["active", "approved"])
+      .limit(50),
     supabase.from("sec_assets").select("id,code,name_ar,health,status").lt("health", 60).limit(50),
-    supabase.from("sec_cctv_alerts").select("id,ref,alert_type,camera_code,confidence,status").eq("status", "new").limit(50),
+    supabase
+      .from("sec_cctv_alerts")
+      .select("id,ref,alert_type,camera_code,confidence,status")
+      .eq("status", "new")
+      .limit(50),
   ]);
   const now = Date.now();
   const items: RiskItem[] = [];
 
-  for (const inc of (incidentsQ.data ?? []) as { id: string; ref: string; title_ar: string; severity: string; reported_at: string }[]) {
+  for (const inc of (incidentsQ.data ?? []) as {
+    id: string;
+    ref: string;
+    title_ar: string;
+    severity: string;
+    reported_at: string;
+  }[]) {
     const ageH = Math.max(0, (now - new Date(inc.reported_at).getTime()) / 36e5);
     const ageScore = Math.min(20, ageH * 0.5);
     const score = Math.min(100, (SEV_WEIGHT[inc.severity] ?? 40) + ageScore);
@@ -207,15 +293,43 @@ export async function runRiskEngine(supabase: SupabaseClient, kpis: ExecKpis): P
       ref: inc.ref,
     });
   }
-  for (const p of (permitsQ.data ?? []) as { id: string; ref: string; work_type: string; risk_level: string; ends_at: string }[]) {
+  for (const p of (permitsQ.data ?? []) as {
+    id: string;
+    ref: string;
+    work_type: string;
+    risk_level: string;
+    ends_at: string;
+  }[]) {
     const endsInH = (new Date(p.ends_at).getTime() - now) / 36e5;
     if (endsInH < 0) {
-      items.push({ id: p.id, kind: "permit", title: `تصريح منتهي: ${p.work_type}`, score: 75, severity: "high", rationale: `انتهى منذ ${Math.round(-endsInH)}h`, ref: p.ref });
+      items.push({
+        id: p.id,
+        kind: "permit",
+        title: `تصريح منتهي: ${p.work_type}`,
+        score: 75,
+        severity: "high",
+        rationale: `انتهى منذ ${Math.round(-endsInH)}h`,
+        ref: p.ref,
+      });
     } else if (endsInH < 24) {
-      items.push({ id: p.id, kind: "permit", title: `تصريح ينتهي خلال 24h: ${p.work_type}`, score: 50, severity: "medium", rationale: `ينتهي خلال ${Math.round(endsInH)}h`, ref: p.ref });
+      items.push({
+        id: p.id,
+        kind: "permit",
+        title: `تصريح ينتهي خلال 24h: ${p.work_type}`,
+        score: 50,
+        severity: "medium",
+        rationale: `ينتهي خلال ${Math.round(endsInH)}h`,
+        ref: p.ref,
+      });
     }
   }
-  for (const a of (assetsQ.data ?? []) as { id: string; code: string; name_ar: string; health: number; status: string }[]) {
+  for (const a of (assetsQ.data ?? []) as {
+    id: string;
+    code: string;
+    name_ar: string;
+    health: number;
+    status: string;
+  }[]) {
     items.push({
       id: a.id,
       kind: "asset",
@@ -226,7 +340,13 @@ export async function runRiskEngine(supabase: SupabaseClient, kpis: ExecKpis): P
       ref: a.code,
     });
   }
-  for (const c of (cctvQ.data ?? []) as { id: string; ref: string; alert_type: string; camera_code: string; confidence: number }[]) {
+  for (const c of (cctvQ.data ?? []) as {
+    id: string;
+    ref: string;
+    alert_type: string;
+    camera_code: string;
+    confidence: number;
+  }[]) {
     items.push({
       id: c.id,
       kind: "cctv",
@@ -282,7 +402,11 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       rationale: `cctv_health < 80%؛ ${kpis.cameras_total - kpis.cameras_online} كاميرا غير متصلة`,
       confidence: 0.8,
       suggested_tool: "sec_create_work_order",
-      tool_payload_json: JSON.stringify({ kind: "preventive", asset_kind: "cctv", priority: "high" }),
+      tool_payload_json: JSON.stringify({
+        kind: "preventive",
+        asset_kind: "cctv",
+        priority: "high",
+      }),
       alternatives: ["إعادة فحص الشبكة قبل فتح أمر صيانة"],
     });
   }
@@ -317,10 +441,16 @@ export async function runReasoner(args: {
     `# LIVE KPIs\n${JSON.stringify(args.kpis, null, 2)}`,
     `# RANKED RISKS\n${args.risks.map((r) => `- [${r.severity} · ${r.score}] ${r.title} — ${r.rationale}${r.ref ? ` (${r.ref})` : ""}`).join("\n") || "—"}`,
     `# DECISION RECOMMENDATIONS\n${args.decisions.map((d) => `- (conf ${Math.round(d.confidence * 100)}%) ${d.recommendation} — ${d.rationale}`).join("\n") || "—"}`,
-    args.memories.length ? `# RECALLED MEMORY\n${args.memories.map((m) => `- ${m.key}: ${m.content}`).join("\n")}` : "",
-    args.knowledge.length ? `# RELEVANT KNOWLEDGE\n${args.knowledge.map((k) => `- ${k.title} (${k.source}): ${k.content.slice(0, 240)}`).join("\n")}` : "",
+    args.memories.length
+      ? `# RECALLED MEMORY\n${args.memories.map((m) => `- ${m.key}: ${m.content}`).join("\n")}`
+      : "",
+    args.knowledge.length
+      ? `# RELEVANT KNOWLEDGE\n${args.knowledge.map((k) => `- ${k.title} (${k.source}): ${k.content.slice(0, 240)}`).join("\n")}`
+      : "",
     `# ENTERPRISE CONTEXT\n${args.enterpriseContext}`,
-  ].filter(Boolean).join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   const { text, usage } = await generateText({
     model: p(REASONING_MODEL),
@@ -358,25 +488,68 @@ export async function runPipeline(args: {
 
   const intentR = await timed("intent", () => detectIntent(args.message));
   const intent = intentR.value;
-  trace.push({ stage: "intent", status: "ok", duration_ms: intentR.ms, summary: `${intent.intent} (${Math.round(intent.confidence * 100)}%)`, data_json: JSON.stringify(intent) });
+  trace.push({
+    stage: "intent",
+    status: "ok",
+    duration_ms: intentR.ms,
+    summary: `${intent.intent} (${Math.round(intent.confidence * 100)}%)`,
+    data_json: JSON.stringify(intent),
+  });
 
   const memR = await timed("memory", () => recallMemory(args.supabase, args.userId, args.message));
-  trace.push({ stage: "memory", status: "ok", duration_ms: memR.ms, summary: `${memR.value.memories.length} memories`, data_json: JSON.stringify(memR.value.memories) });
+  trace.push({
+    stage: "memory",
+    status: "ok",
+    duration_ms: memR.ms,
+    summary: `${memR.value.memories.length} memories`,
+    data_json: JSON.stringify(memR.value.memories),
+  });
 
-  const ragR = await timed("knowledge", () => retrieveKnowledge(args.supabase, memR.value.embedding));
-  trace.push({ stage: "knowledge", status: "ok", duration_ms: ragR.ms, summary: `${ragR.value.chunks.length} chunks`, data_json: JSON.stringify(ragR.value.citations) });
+  const ragR = await timed("knowledge", () =>
+    retrieveKnowledge(args.supabase, memR.value.embedding),
+  );
+  trace.push({
+    stage: "knowledge",
+    status: "ok",
+    duration_ms: ragR.ms,
+    summary: `${ragR.value.chunks.length} chunks`,
+    data_json: JSON.stringify(ragR.value.citations),
+  });
 
   const ctxR = await timed("context", () => loadEnterpriseContext(args.supabase));
-  trace.push({ stage: "context", status: ctxR.value.startsWith("NO_") || ctxR.value.startsWith("INDUSTRIAL_") ? "skipped" : "ok", duration_ms: ctxR.ms, summary: `${ctxR.value.length} chars` });
+  trace.push({
+    stage: "context",
+    status: ctxR.value.startsWith("NO_") || ctxR.value.startsWith("INDUSTRIAL_") ? "skipped" : "ok",
+    duration_ms: ctxR.ms,
+    summary: `${ctxR.value.length} chars`,
+  });
 
   const kpiR = await timed("kpi", () => runKpiEngine(args.supabase));
-  trace.push({ stage: "kpi", status: "ok", duration_ms: kpiR.ms, summary: `readiness ${kpiR.value.kpis.executive_readiness} · breaches ${kpiR.value.breaches.length}`, data_json: JSON.stringify(kpiR.value.breaches) });
+  trace.push({
+    stage: "kpi",
+    status: "ok",
+    duration_ms: kpiR.ms,
+    summary: `readiness ${kpiR.value.kpis.executive_readiness} · breaches ${kpiR.value.breaches.length}`,
+    data_json: JSON.stringify(kpiR.value.breaches),
+  });
 
   const riskR = await timed("risk", () => runRiskEngine(args.supabase, kpiR.value.kpis));
-  trace.push({ stage: "risk", status: "ok", duration_ms: riskR.ms, summary: `${riskR.value.length} ranked risks`, data_json: JSON.stringify(riskR.value.slice(0, 3)) });
+  trace.push({
+    stage: "risk",
+    status: "ok",
+    duration_ms: riskR.ms,
+    summary: `${riskR.value.length} ranked risks`,
+    data_json: JSON.stringify(riskR.value.slice(0, 3)),
+  });
 
   const decR = await timed("decision", async () => runDecisionEngine(riskR.value, kpiR.value.kpis));
-  trace.push({ stage: "decision", status: "ok", duration_ms: decR.ms, summary: `${decR.value.length} decisions`, data_json: JSON.stringify(decR.value) });
+  trace.push({
+    stage: "decision",
+    status: "ok",
+    duration_ms: decR.ms,
+    summary: `${decR.value.length} decisions`,
+    data_json: JSON.stringify(decR.value),
+  });
 
   // Persist decisions (best-effort)
   if (decR.value.length) {
@@ -406,14 +579,24 @@ export async function runPipeline(args: {
       knowledge: ragR.value.chunks,
     }),
   );
-  trace.push({ stage: "reasoning", status: "ok", duration_ms: reasonR.ms, summary: `${reasonR.value.text.length} chars`, data_json: JSON.stringify({ tokens: reasonR.value.tokens }) });
+  trace.push({
+    stage: "reasoning",
+    status: "ok",
+    duration_ms: reasonR.ms,
+    summary: `${reasonR.value.text.length} chars`,
+    data_json: JSON.stringify({ tokens: reasonR.value.tokens }),
+  });
 
   // Tools stage — agentic tools live in /api/chat; here we surface what would be called.
   trace.push({
     stage: "tools",
     status: decR.value.some((d) => d.suggested_tool) ? "ok" : "skipped",
     duration_ms: 0,
-    summary: decR.value.filter((d) => d.suggested_tool).map((d) => d.suggested_tool!).join(", ") || "no tool calls",
+    summary:
+      decR.value
+        .filter((d) => d.suggested_tool)
+        .map((d) => d.suggested_tool!)
+        .join(", ") || "no tool calls",
   });
 
   // Report generation if requested
@@ -432,7 +615,13 @@ export async function runPipeline(args: {
         language: intent.language,
       });
     });
-    trace.push({ stage: "report", status: "ok", duration_ms: reportR.ms, summary: `${reportR.value.kind} report saved`, data_json: JSON.stringify({ id: reportR.value.id }) });
+    trace.push({
+      stage: "report",
+      status: "ok",
+      duration_ms: reportR.ms,
+      summary: `${reportR.value.kind} report saved`,
+      data_json: JSON.stringify({ id: reportR.value.id }),
+    });
     report = reportR.value;
   } else {
     trace.push({ stage: "report", status: "skipped", duration_ms: 0, summary: "not requested" });
@@ -450,7 +639,9 @@ export async function runPipeline(args: {
 
   const confidence = Math.min(
     1,
-    (intent.confidence + (decR.value.reduce((s, d) => s + d.confidence, 0) / Math.max(1, decR.value.length))) / 2,
+    (intent.confidence +
+      decR.value.reduce((s, d) => s + d.confidence, 0) / Math.max(1, decR.value.length)) /
+      2,
   );
 
   return {

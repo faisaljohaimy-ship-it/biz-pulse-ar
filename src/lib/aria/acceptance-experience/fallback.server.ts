@@ -23,7 +23,9 @@ export interface AcceptanceFallbackDecision {
   readonly reason?: string;
 }
 
-export function decideAcceptanceFallback(input: AcceptanceFallbackInput = {}): AcceptanceFallbackDecision {
+export function decideAcceptanceFallback(
+  input: AcceptanceFallbackInput = {},
+): AcceptanceFallbackDecision {
   const caps = detectVoiceProvider();
   if (!caps.stt || !caps.tts) {
     return {

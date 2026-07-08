@@ -32,8 +32,12 @@ function rollup(pick: (f: PolicyFlags) => boolean | undefined): GateStatus {
   let all = true;
   for (const f of REGISTRATIONS.values()) {
     const v = pick(f);
-    if (v === undefined) { all = false; continue; }
-    if (v) any = true; else all = false;
+    if (v === undefined) {
+      all = false;
+      continue;
+    }
+    if (v) any = true;
+    else all = false;
   }
   if (all) return "pass";
   if (any) return "warn";

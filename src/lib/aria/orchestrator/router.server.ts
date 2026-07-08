@@ -32,7 +32,7 @@ function toLayers(nodes: MissionPlanNode[]): AgentId[][] {
     indeg.set(n.agent_id, filtered.length);
   }
   const layers: AgentId[][] = [];
-  let remaining = new Set(nodes.map((n) => n.agent_id));
+  const remaining = new Set(nodes.map((n) => n.agent_id));
   while (remaining.size) {
     const layer: AgentId[] = [];
     for (const id of remaining) {
@@ -56,11 +56,7 @@ function toLayers(nodes: MissionPlanNode[]): AgentId[][] {
   return layers;
 }
 
-export function planMission(
-  missionId: string,
-  question: string,
-  forced?: AgentId[],
-): MissionPlan {
+export function planMission(missionId: string, question: string, forced?: AgentId[]): MissionPlan {
   const intent = classifyIntent(question);
   const selected = selectAgents(intent, forced);
   const nodes: MissionPlanNode[] = selected.map((id) => {

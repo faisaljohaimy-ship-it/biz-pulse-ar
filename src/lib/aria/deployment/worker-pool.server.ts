@@ -2,11 +2,7 @@
 import type { WorkerPool, WorkerSlot } from "./types";
 import { WorkerPoolInputZ } from "./contracts";
 
-export function createWorkerPool(input: {
-  nodeId: string;
-  size: number;
-  now: string;
-}): WorkerPool {
+export function createWorkerPool(input: { nodeId: string; size: number; now: string }): WorkerPool {
   const parsed = WorkerPoolInputZ.parse(input);
   const slots: WorkerSlot[] = Array.from({ length: parsed.size }).map((_, i) => ({
     id: `${parsed.nodeId}:w${i + 1}`,

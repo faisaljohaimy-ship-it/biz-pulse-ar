@@ -4,7 +4,8 @@ import { z } from "zod";
 export default defineTool({
   name: "ping",
   title: "Ping NEXUS",
-  description: "Health check that returns the current server time and app name. Use to verify connectivity.",
+  description:
+    "Health check that returns the current server time and app name. Use to verify connectivity.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: () => ({

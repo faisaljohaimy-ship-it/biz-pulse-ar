@@ -23,6 +23,10 @@ export class IdentityAudit {
     return e;
   }
 
-  recent(n = 100): readonly IdentityAuditEntry[] { return this.entries.slice(-n); }
-  clear(): void { this.entries = []; }
+  recent(n = 100): readonly IdentityAuditEntry[] {
+    return this.entries.slice(-n);
+  }
+  clear(): void {
+    this.entries = [];
+  }
 }

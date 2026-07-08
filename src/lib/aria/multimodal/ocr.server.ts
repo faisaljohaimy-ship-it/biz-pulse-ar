@@ -15,10 +15,7 @@ export interface OcrOptions {
   readonly min_char_confidence?: number;
 }
 
-export function extractOcr(
-  input: MultimodalInput,
-  opts: OcrOptions = {},
-): readonly Signal[] {
+export function extractOcr(input: MultimodalInput, opts: OcrOptions = {}): readonly Signal[] {
   const hint = (input.text_hint ?? "").trim();
   if (!hint) {
     return [

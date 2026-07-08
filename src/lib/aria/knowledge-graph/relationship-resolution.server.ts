@@ -6,11 +6,7 @@
  * inserts. Never fabricates a relationship.
  */
 
-import {
-  listRelationships,
-  putRelationship,
-  replaceRelationship,
-} from "./graph-store.server";
+import { listRelationships, putRelationship, replaceRelationship } from "./graph-store.server";
 import type { EvidenceRef, RelationshipRecord } from "./types";
 
 export interface ResolveRelationshipResult {
@@ -23,15 +19,11 @@ export function findExistingRelationship(
 ): RelationshipRecord | undefined {
   return listRelationships(candidate.workspace_id).find(
     (r) =>
-      r.kind === candidate.kind &&
-      r.from_id === candidate.from_id &&
-      r.to_id === candidate.to_id,
+      r.kind === candidate.kind && r.from_id === candidate.from_id && r.to_id === candidate.to_id,
   );
 }
 
-export function resolveRelationship(
-  candidate: RelationshipRecord,
-): ResolveRelationshipResult {
+export function resolveRelationship(candidate: RelationshipRecord): ResolveRelationshipResult {
   const existing = findExistingRelationship(candidate);
   if (!existing) {
     putRelationship(candidate);

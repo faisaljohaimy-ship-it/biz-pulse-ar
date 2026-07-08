@@ -34,15 +34,19 @@ function primeIOSAudio(): void {
   try {
     AriaAudioBus.unlock();
     const AC: typeof AudioContext | undefined =
-      (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
-        .AudioContext ??
+      (
+        window as unknown as {
+          AudioContext?: typeof AudioContext;
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).AudioContext ??
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AC) {
       const g = window as unknown as { __ariaUnlockCtx?: AudioContext };
       if (!g.__ariaUnlockCtx) g.__ariaUnlockCtx = new AC();
       if (g.__ariaUnlockCtx.state === "suspended") void g.__ariaUnlockCtx.resume();
     }
-    // eslint-disable-next-line no-console
+
     console.log("[aria-voice] unlock done");
   } catch {
     /* ignore */
@@ -58,7 +62,10 @@ const ttsGate = (() => {
   const waiters: Array<() => void> = [];
   return {
     async acquire(signal?: AbortSignal): Promise<void> {
-      if (active < MAX) { active++; return; }
+      if (active < MAX) {
+        active++;
+        return;
+      }
       await new Promise<void>((resolve, reject) => {
         const onAbort = () => {
           const i = waiters.indexOf(run);
@@ -70,7 +77,10 @@ const ttsGate = (() => {
           active++;
           resolve();
         };
-        if (signal?.aborted) { onAbort(); return; }
+        if (signal?.aborted) {
+          onAbort();
+          return;
+        }
         signal?.addEventListener("abort", onAbort, { once: true });
         waiters.push(run);
       });
@@ -87,7 +97,14 @@ type SR = {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
-  onresult: ((e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string; isFinal?: boolean }> & { isFinal?: boolean }> }) => void) | null;
+  onresult:
+    | ((e: {
+        resultIndex: number;
+        results: ArrayLike<
+          ArrayLike<{ transcript: string; isFinal?: boolean }> & { isFinal?: boolean }
+        >;
+      }) => void)
+    | null;
   onerror: (() => void) | null;
   onend: (() => void) | null;
   start: () => void;
@@ -97,13 +114,15 @@ type SR = {
 
 function getSpeechRecognitionCtor(): (new () => SR) | null {
   if (typeof window === "undefined") return null;
-  const w = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SR;
+    webkitSpeechRecognition?: new () => SR;
+  };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
-const ERROR_MASK_AR =
-  "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
+const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
@@ -115,7 +134,6 @@ const STILL_SRC = "/aria-backdrop.webp";
 const SPOKEN_REPLY_IDS: Set<string> = new Set();
 function markSpokenOrDrop(replyId: string): boolean {
   if (SPOKEN_REPLY_IDS.has(replyId)) {
-    // eslint-disable-next-line no-console
     console.warn(`[aria] DUP blocked replyId=${replyId}`);
     return false;
   }
@@ -126,10 +144,13 @@ function markSpokenOrDrop(replyId: string): boolean {
 function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
-  t = t.replace(/```json[\s\S]*?```/gi, "").replace(/```[\s\S]*?```/g, (m) =>
-    /error|stack|trace|traceback/i.test(m) ? "" : m,
+  t = t
+    .replace(/```json[\s\S]*?```/gi, "")
+    .replace(/```[\s\S]*?```/g, (m) => (/error|stack|trace|traceback/i.test(m) ? "" : m));
+  t = t.replace(
+    /\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi,
+    "",
   );
-  t = t.replace(/\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi, "");
   t = t.replace(/\bat\s+[\w$.<>]+\s*\([^)]*:\d+:\d+\)/g, "");
   t = t.replace(/\berror:\s*[^\n]{0,200}/gi, ERROR_MASK_AR);
   return t.trim();
@@ -153,7 +174,8 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
         <div
           className="absolute left-1/2 top-[30%] h-[60%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(16,185,129,0.22) 0%, rgba(16,185,129,0.08) 40%, transparent 70%)",
+            background:
+              "radial-gradient(ellipse at center, rgba(16,185,129,0.22) 0%, rgba(16,185,129,0.08) 40%, transparent 70%)",
             filter: "blur(24px)",
           }}
         />
@@ -164,8 +186,10 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
             className={cn(
               "rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-md ring-1",
               state === "listening" && "bg-emerald-500/20 text-emerald-200 ring-emerald-400/40",
-              state === "thinking" && "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 motion-safe:animate-pulse",
-              state === "speaking" && "bg-primary/25 text-primary-foreground ring-primary/50 motion-safe:animate-pulse",
+              state === "thinking" &&
+                "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 motion-safe:animate-pulse",
+              state === "speaking" &&
+                "bg-primary/25 text-primary-foreground ring-primary/50 motion-safe:animate-pulse",
               state === "idle" && "bg-white/10 text-white/80 ring-white/20",
             )}
           >
@@ -176,8 +200,6 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
     </div>
   );
 }
-
-
 
 /** Unified ARIA top-circle avatar — identical on mobile and desktop.
  *  A 96px circular figure pinned to the top-center of the chat panel.
@@ -205,11 +227,6 @@ function AriaTopAvatar() {
     </div>
   );
 }
-
-
-
-
-
 
 export function AriaCopilot() {
   const { chat, composerRef } = useAriaChat();
@@ -242,12 +259,23 @@ export function AriaCopilot() {
   // Drive ARIA presence state from chat lifecycle.
   // thinking > listening > idle (speaking is driven by audio events below).
   useEffect(() => {
-    if (isBusy) { ariaState.set("thinking"); return; }
-    if (draft.trim().length > 0) { ariaState.set("listening"); return; }
+    if (isBusy) {
+      ariaState.set("thinking");
+      return;
+    }
+    if (draft.trim().length > 0) {
+      ariaState.set("listening");
+      return;
+    }
     if (ariaState.get() !== "speaking") ariaState.set("idle");
   }, [isBusy, draft]);
   // On unmount / panel close, drop to idle.
-  useEffect(() => () => { ariaState.set("idle"); }, []);
+  useEffect(
+    () => () => {
+      ariaState.set("idle");
+    },
+    [],
+  );
 
   // Health probe + TLS preconnect + iOS audio unlock + composer focus on open.
   // INVARIANT-9 (speed): unlock everything BEFORE the user's first keystroke
@@ -255,10 +283,16 @@ export function AriaCopilot() {
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
-    pingChat().then((r) => { if (!cancelled) setHealth(r.ok ? "ok" : "down"); });
+    pingChat().then((r) => {
+      if (!cancelled) setHealth(r.ok ? "ok" : "down");
+    });
     // iOS Safari: prime AudioContext on the same task as the open gesture
     // so the FIRST TTS clip plays with no autoplay block.
-    try { primeIOSAudio(); } catch { /* noop */ }
+    try {
+      primeIOSAudio();
+    } catch {
+      /* noop */
+    }
     // Autofocus composer so the user starts typing immediately.
     requestAnimationFrame(() => {
       composerRef.current?.focus({ preventScroll: true });
@@ -267,15 +301,21 @@ export function AriaCopilot() {
       const heads: HTMLLinkElement[] = [];
       for (const href of [window.location.origin, "https://api.elevenlabs.io"]) {
         const l = document.createElement("link");
-        l.rel = "preconnect"; l.href = href; l.crossOrigin = "";
+        l.rel = "preconnect";
+        l.href = href;
+        l.crossOrigin = "";
         document.head.appendChild(l);
         heads.push(l);
       }
-      return () => { cancelled = true; heads.forEach((h) => h.remove()); };
+      return () => {
+        cancelled = true;
+        heads.forEach((h) => h.remove());
+      };
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, composerRef]);
-
 
   // Conversation Mode state
   const [convMode, setConvMode] = useState(false);
@@ -283,13 +323,19 @@ export function AriaCopilot() {
   const [convNotice, setConvNotice] = useState<string | null>(null);
   const [firstConvOpen, setFirstConvOpen] = useState(() => {
     if (typeof window === "undefined") return true;
-    try { return localStorage.getItem("aria-conv-seen") !== "1"; } catch { return true; }
+    try {
+      return localStorage.getItem("aria-conv-seen") !== "1";
+    } catch {
+      return true;
+    }
   });
   const convModeRef = useRef(false);
   const pendingSilentRef = useRef(false);
   const relistenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startListeningRef = useRef<(() => void) | null>(null);
-  useEffect(() => { convModeRef.current = convMode; }, [convMode]);
+  useEffect(() => {
+    convModeRef.current = convMode;
+  }, [convMode]);
 
   const state = useAriaPresenceState();
   const convCaption = useMemo(() => {
@@ -346,57 +392,90 @@ export function AriaCopilot() {
       else merged.push(s);
     }
     return { complete: merged, tail };
-
   }, []);
 
-  const fetchTTS = useCallback(async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
-    // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
-    // at 5. Serialize to max 3 in-flight so long replies with many sentences
-    // never trigger `concurrent_limit_exceeded` (429).
-    await ttsGate.acquire(ctrl.signal);
-    const reqT = performance.now();
-    VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/tts`, { idx, chars: text.length });
-    try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      const r = await fetch("/api/tts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ text: text.slice(0, 4000) }),
-        signal: ctrl.signal,
-      });
-      VoiceTimeline.push("TTS_RES", `[${idx}] ${r.status} in ${Math.round(performance.now() - reqT)}ms`, {
-        idx, status: r.status, ok: r.ok,
-      });
-      if (!r.ok) {
-        let reason = "";
+  const fetchTTS = useCallback(
+    async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
+      // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
+      // at 5. Serialize to max 3 in-flight so long replies with many sentences
+      // never trigger `concurrent_limit_exceeded` (429).
+      await ttsGate.acquire(ctrl.signal);
+      const reqT = performance.now();
+      VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/tts`, { idx, chars: text.length });
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const r = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ text: text.slice(0, 4000) }),
+          signal: ctrl.signal,
+        });
+        VoiceTimeline.push(
+          "TTS_RES",
+          `[${idx}] ${r.status} in ${Math.round(performance.now() - reqT)}ms`,
+          {
+            idx,
+            status: r.status,
+            ok: r.ok,
+          },
+        );
+        if (!r.ok) {
+          let reason = "";
+          try {
+            const j = (await r.clone().json()) as {
+              providerStatus?: string;
+              providerReason?: string;
+              error?: string;
+            };
+            reason = j.providerStatus
+              ? `${j.providerStatus}:${j.providerReason ?? ""}`
+              : (j.providerReason ?? j.error ?? "");
+          } catch {
+            /* non-JSON */
+          }
+          AriaVoiceDebug.emit({
+            source: "browser",
+            reason: `tts_http_${r.status}_seg_${idx}:${reason}`,
+            status: r.status,
+            failed: true,
+          });
+          return null;
+        }
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.preload = "auto";
         try {
-          const j = await r.clone().json() as { providerStatus?: string; providerReason?: string; error?: string };
-          reason = j.providerStatus ? `${j.providerStatus}:${j.providerReason ?? ""}` : (j.providerReason ?? j.error ?? "");
-        } catch { /* non-JSON */ }
-        AriaVoiceDebug.emit({ source: "browser", reason: `tts_http_${r.status}_seg_${idx}:${reason}`, status: r.status, failed: true });
+          audio.load();
+        } catch {
+          /* noop */
+        }
+        if (idx === 0) {
+          AriaVoiceDebug.emit({
+            source: "elevenlabs",
+            reason: token ? "authenticated" : "anonymous",
+            voiceId: "gVzwmdZzRgBrNjXaTmi5",
+          });
+        }
+        return audio;
+      } catch (err) {
+        if ((err as { name?: string }).name === "AbortError") return null;
+        AriaVoiceDebug.emit({
+          source: "browser",
+          reason: `network_seg_${idx}:${(err as Error).message ?? "unknown"}`,
+          failed: true,
+        });
         return null;
+      } finally {
+        ttsGate.release();
       }
-      const blob = await r.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.preload = "auto";
-      try { audio.load(); } catch { /* noop */ }
-      if (idx === 0) {
-        AriaVoiceDebug.emit({ source: "elevenlabs", reason: token ? "authenticated" : "anonymous", voiceId: "gVzwmdZzRgBrNjXaTmi5" });
-      }
-      return audio;
-    } catch (err) {
-      if ((err as { name?: string }).name === "AbortError") return null;
-      AriaVoiceDebug.emit({ source: "browser", reason: `network_seg_${idx}:${(err as Error).message ?? "unknown"}`, failed: true });
-      return null;
-    } finally {
-      ttsGate.release();
-    }
-  }, []);
+    },
+    [],
+  );
 
   const pumpPlayback = useCallback(async (messageId: string) => {
     const s = streamStateRef.current.get(messageId);
@@ -406,25 +485,40 @@ export function AriaCopilot() {
       while (s.playingIdx < s.audios.length) {
         const idx = s.playingIdx;
         const audio = await s.audios[idx];
-        if (!audio) { s.playingIdx++; continue; }
+        if (!audio) {
+          s.playingIdx++;
+          continue;
+        }
         audioRef.current = audio;
         await new Promise<void>((resolve) => {
           let started = false;
           const kick = () => {
-            if (started) return; started = true;
+            if (started) return;
+            started = true;
             const t0 = performance.now();
             if (idx === 0 && !s.latencyLogged) {
               s.firstAudioAt = t0;
               s.latencyLogged = true;
               const total = s.sendAt ? Math.round(t0 - s.sendAt) : -1;
-              const firstTok = s.sendAt && s.firstTokenAt ? Math.round(s.firstTokenAt - s.sendAt) : -1;
-              const sent1 = s.firstTokenAt && s.firstSentenceAt ? Math.round(s.firstSentenceAt - s.firstTokenAt) : -1;
+              const firstTok =
+                s.sendAt && s.firstTokenAt ? Math.round(s.firstTokenAt - s.sendAt) : -1;
+              const sent1 =
+                s.firstTokenAt && s.firstSentenceAt
+                  ? Math.round(s.firstSentenceAt - s.firstTokenAt)
+                  : -1;
               const tts = s.firstSentenceAt ? Math.round(t0 - s.firstSentenceAt) : -1;
-              // eslint-disable-next-line no-console
+
               console.log(`[aria-latency] send→first-audio ${total}ms`);
-              // eslint-disable-next-line no-console
-              console.log(`[aria-latency] send→first-token ${firstTok}ms | first-token→sentence1 ${sent1}ms | tts ${tts}ms | TOTAL ${total}ms`);
-              VoiceTimeline.push("AUDIO_PLAY", `[0] instant-start total=${total}ms`, { total, firstTok, sent1, tts });
+
+              console.log(
+                `[aria-latency] send→first-token ${firstTok}ms | first-token→sentence1 ${sent1}ms | tts ${tts}ms | TOTAL ${total}ms`,
+              );
+              VoiceTimeline.push("AUDIO_PLAY", `[0] instant-start total=${total}ms`, {
+                total,
+                firstTok,
+                sent1,
+                tts,
+              });
               setPendingRevealId((cur) => (cur === messageId ? null : cur));
             }
             // Frame-perfect sync: motion is driven by the audio element's
@@ -444,8 +538,22 @@ export function AriaCopilot() {
           audio.addEventListener("canplay", kick, { once: true });
           audio.addEventListener("loadeddata", kick, { once: true });
           setTimeout(kick, 400);
-          audio.onended = () => { try { URL.revokeObjectURL(audio.src); } catch { /* noop */ } resolve(); };
-          audio.onerror = () => { try { URL.revokeObjectURL(audio.src); } catch { /* noop */ } resolve(); };
+          audio.onended = () => {
+            try {
+              URL.revokeObjectURL(audio.src);
+            } catch {
+              /* noop */
+            }
+            resolve();
+          };
+          audio.onerror = () => {
+            try {
+              URL.revokeObjectURL(audio.src);
+            } catch {
+              /* noop */
+            }
+            resolve();
+          };
         });
         s.playingIdx++;
       }
@@ -461,15 +569,20 @@ export function AriaCopilot() {
       streamStateRef.current.delete(messageId);
       if (convModeRef.current) {
         if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
-        relistenTimerRef.current = setTimeout(() => { startListeningRef.current?.(); }, 300);
+        relistenTimerRef.current = setTimeout(() => {
+          startListeningRef.current?.();
+        }, 300);
       }
     }
   }, []);
 
   useEffect(() => {
     const voiceOn = (() => {
-      try { return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled; }
-      catch { return voiceEnabled; }
+      try {
+        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
+      } catch {
+        return voiceEnabled;
+      }
     })();
     if (!voiceOn) return;
     const last = chat.messages[chat.messages.length - 1];
@@ -481,7 +594,11 @@ export function AriaCopilot() {
     if (!fullText || fullText.length < 2) return;
 
     // Silent-in-conv-mode short-circuit: consume the flag once when message first appears.
-    if (pendingSilentRef.current && !streamStateRef.current.has(last.id) && !spokenIdsRef.current.has(last.id)) {
+    if (
+      pendingSilentRef.current &&
+      !streamStateRef.current.has(last.id) &&
+      !spokenIdsRef.current.has(last.id)
+    ) {
       pendingSilentRef.current = false;
       spokenIdsRef.current.add(last.id);
       return;
@@ -523,7 +640,11 @@ export function AriaCopilot() {
     if (complete.length > s.dispatched) {
       toDispatch.push(...complete.slice(s.dispatched));
     }
-    if (!streaming && tail.length >= 2 && complete.length + (tail ? 1 : 0) > s.dispatched + toDispatch.length) {
+    if (
+      !streaming &&
+      tail.length >= 2 &&
+      complete.length + (tail ? 1 : 0) > s.dispatched + toDispatch.length
+    ) {
       toDispatch.push(tail);
     }
 
@@ -531,9 +652,22 @@ export function AriaCopilot() {
       const ok = AriaAudioBus.acquire("chat-tts", () => {
         const cur = streamStateRef.current.get(last.id);
         if (!cur) return;
-        for (const c of cur.aborts) { try { c.abort(); } catch { /* noop */ } }
+        for (const c of cur.aborts) {
+          try {
+            c.abort();
+          } catch {
+            /* noop */
+          }
+        }
         const a = audioRef.current;
-        if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+        if (a) {
+          try {
+            a.pause();
+            a.currentTime = 0;
+          } catch {
+            /* noop */
+          }
+        }
         cur.finalized = true;
         streamStateRef.current.delete(last.id);
       });
@@ -557,16 +691,18 @@ export function AriaCopilot() {
     if (s.audios.length > 0) void pumpPlayback(last.id);
   }, [chat.messages, isBusy, voiceEnabled, splitCompleteSentences, fetchTTS, pumpPlayback]);
 
-
-
-
-
-
   // Stop TTS when panel closes — barge-in / silence guarantee.
   useEffect(() => {
     if (isOpen) return;
     const a = audioRef.current;
-    if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+    if (a) {
+      try {
+        a.pause();
+        a.currentTime = 0;
+      } catch {
+        /* noop */
+      }
+    }
     ariaState.set("idle");
   }, [isOpen]);
 
@@ -578,25 +714,27 @@ export function AriaCopilot() {
     });
   }, [chat.messages, isOpen, isBusy, hasError]);
 
-  const submit = useCallback((textOverride?: string, opts?: { fromVoice?: boolean }) => {
-    const text = (textOverride ?? draft).trim();
-    if (!text || isBusy) return;
-    primeIOSAudio();
-    // Conversation Mode + typed (not from voice) → silent reply.
-    if (convModeRef.current && !opts?.fromVoice) {
-      pendingSilentRef.current = true;
-    }
-    setDraft("");
-    setLastUserText(text);
-    pendingSendAtRef.current = performance.now();
-    void chat.sendMessage({ text });
-    // Keep composer focused across turns (chat-agent-ui-contract requirement).
-    // rAF avoids fighting React's re-render focus loss.
-    requestAnimationFrame(() => {
-      composerRef.current?.focus({ preventScroll: true });
-    });
-  }, [draft, isBusy, chat, composerRef]);
-
+  const submit = useCallback(
+    (textOverride?: string, opts?: { fromVoice?: boolean }) => {
+      const text = (textOverride ?? draft).trim();
+      if (!text || isBusy) return;
+      primeIOSAudio();
+      // Conversation Mode + typed (not from voice) → silent reply.
+      if (convModeRef.current && !opts?.fromVoice) {
+        pendingSilentRef.current = true;
+      }
+      setDraft("");
+      setLastUserText(text);
+      pendingSendAtRef.current = performance.now();
+      void chat.sendMessage({ text });
+      // Keep composer focused across turns (chat-agent-ui-contract requirement).
+      // rAF avoids fighting React's re-render focus loss.
+      requestAnimationFrame(() => {
+        composerRef.current?.focus({ preventScroll: true });
+      });
+    },
+    [draft, isBusy, chat, composerRef],
+  );
 
   const retry = () => {
     if (lastUserText) submit(lastUserText);
@@ -604,8 +742,17 @@ export function AriaCopilot() {
 
   const stopListening = useCallback(() => {
     const r = recRef.current;
-    if (r) { try { r.stop(); } catch { /* ignore */ } }
-    if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+    if (r) {
+      try {
+        r.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
     setListening(false);
   }, []);
 
@@ -616,8 +763,17 @@ export function AriaCopilot() {
     // Barge-in: silence any ARIA speech instantly.
     AriaAudioBus.stopAll();
     const prev = audioRef.current;
-    if (prev) { try { prev.pause(); } catch { /* noop */ } }
-    if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+    if (prev) {
+      try {
+        prev.pause();
+      } catch {
+        /* noop */
+      }
+    }
+    if (relistenTimerRef.current) {
+      clearTimeout(relistenTimerRef.current);
+      relistenTimerRef.current = null;
+    }
     setConvPaused(false);
     ariaState.set("listening");
     try {
@@ -629,7 +785,13 @@ export function AriaCopilot() {
       const silenceMs = convModeRef.current ? 6000 : 2500;
       const armSilence = () => {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(() => { try { r.stop(); } catch { /* ignore */ } }, silenceMs);
+        silenceTimerRef.current = setTimeout(() => {
+          try {
+            r.stop();
+          } catch {
+            /* ignore */
+          }
+        }, silenceMs);
       };
       r.onresult = (e) => {
         let interim = "";
@@ -642,9 +804,14 @@ export function AriaCopilot() {
         setDraft((finalTranscriptRef.current + " " + interim).trim());
         armSilence();
       };
-      r.onerror = () => { stopListening(); };
+      r.onerror = () => {
+        stopListening();
+      };
       r.onend = () => {
-        if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
         setListening(false);
         recRef.current = null;
         const finalText = finalTranscriptRef.current.trim();
@@ -664,18 +831,30 @@ export function AriaCopilot() {
     }
   }, [submit, stopListening]);
 
-  useEffect(() => { startListeningRef.current = startListening; }, [startListening]);
+  useEffect(() => {
+    startListeningRef.current = startListening;
+  }, [startListening]);
 
   const toggleConversationMode = useCallback(() => {
     if (convMode) {
       setConvMode(false);
       setConvPaused(false);
       setConvNotice(null);
-      if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+      if (relistenTimerRef.current) {
+        clearTimeout(relistenTimerRef.current);
+        relistenTimerRef.current = null;
+      }
       stopListening();
       AriaAudioBus.stopAll();
       const a = audioRef.current;
-      if (a) { try { a.pause(); a.currentTime = 0; } catch { /* noop */ } }
+      if (a) {
+        try {
+          a.pause();
+          a.currentTime = 0;
+        } catch {
+          /* noop */
+        }
+      }
       ariaState.set("idle");
       return;
     }
@@ -683,7 +862,11 @@ export function AriaCopilot() {
     if (!sttSupported) {
       setConvMode(true);
       setConvNotice("المتصفح لا يدعم الإدخال الصوتي — استخدم لوحة المفاتيح.");
-      try { composerRef.current?.focus(); } catch { /* noop */ }
+      try {
+        composerRef.current?.focus();
+      } catch {
+        /* noop */
+      }
       return;
     }
     if (!voiceEnabled) {
@@ -693,7 +876,11 @@ export function AriaCopilot() {
     }
     setConvMode(true);
     setConvNotice(null);
-    try { localStorage.setItem("aria-conv-seen", "1"); } catch { /* noop */ }
+    try {
+      localStorage.setItem("aria-conv-seen", "1");
+    } catch {
+      /* noop */
+    }
     setFirstConvOpen(false);
     AriaAudioBus.stopAll();
     startListening();
@@ -719,11 +906,19 @@ export function AriaCopilot() {
     if (convModeRef.current) {
       setConvMode(false);
       setConvPaused(false);
-      if (relistenTimerRef.current) { clearTimeout(relistenTimerRef.current); relistenTimerRef.current = null; }
+      if (relistenTimerRef.current) {
+        clearTimeout(relistenTimerRef.current);
+        relistenTimerRef.current = null;
+      }
     }
   }, [isOpen]);
 
-  useEffect(() => () => { stopListening(); }, [stopListening]);
+  useEffect(
+    () => () => {
+      stopListening();
+    },
+    [stopListening],
+  );
 
   const statusLabel = useMemo(() => {
     if (listening) return "Listening…";
@@ -767,7 +962,6 @@ export function AriaCopilot() {
 
       {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (
-
         <aside
           role="complementary"
           aria-label="ARIA executive copilot"
@@ -832,7 +1026,9 @@ export function AriaCopilot() {
                 ARIA
                 <span
                   title={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "…"}
-                  aria-label={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "checking"}
+                  aria-label={
+                    health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "checking"
+                  }
                   className={cn(
                     "inline-block h-1.5 w-1.5 rounded-full",
                     health === "ok" && "bg-emerald-400",
@@ -854,7 +1050,13 @@ export function AriaCopilot() {
               }}
               disabled={!sttSupported}
               aria-pressed={listening}
-              aria-label={sttSupported ? (listening ? "إيقاف الإنصات" : "ابدأ الإنصات") : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
+              aria-label={
+                sttSupported
+                  ? listening
+                    ? "إيقاف الإنصات"
+                    : "ابدأ الإنصات"
+                  : "الإدخال الصوتي غير مدعوم في هذا المتصفح"
+              }
               title={sttSupported ? undefined : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
               className={cn(
                 "grid h-8 w-8 place-items-center rounded-md transition",
@@ -872,13 +1074,21 @@ export function AriaCopilot() {
               onClick={() => {
                 const next = !voiceEnabled;
                 setVoiceEnabled(next);
-                try { localStorage.setItem("aria-voice-on", next ? "1" : "0"); } catch { /* noop */ }
+                try {
+                  localStorage.setItem("aria-voice-on", next ? "1" : "0");
+                } catch {
+                  /* noop */
+                }
               }}
               aria-pressed={voiceEnabled}
               aria-label={voiceEnabled ? "كتم الصوت" : "تفعيل الصوت"}
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
             >
-              {voiceEnabled ? <Volume2 className="h-4 w-4" aria-hidden /> : <VolumeX className="h-4 w-4" aria-hidden />}
+              {voiceEnabled ? (
+                <Volume2 className="h-4 w-4" aria-hidden />
+              ) : (
+                <VolumeX className="h-4 w-4" aria-hidden />
+              )}
             </button>
             <button
               type="button"
@@ -926,9 +1136,7 @@ export function AriaCopilot() {
           >
             <ul className="space-y-3">
               {chat.messages.map((m) => {
-                const raw = m.parts
-                  .map((p) => (p.type === "text" ? p.text : ""))
-                  .join("");
+                const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
                 if (!text) return null;
@@ -978,10 +1186,15 @@ export function AriaCopilot() {
                           try {
                             const parsed = JSON.parse(raw) as { error?: string };
                             if (parsed?.error) return parsed.error;
-                          } catch { /* not JSON — fall through */ }
+                          } catch {
+                            /* not JSON — fall through */
+                          }
                           // Scrub any accidental provider/model names before showing
                           const safe = raw
-                            .replace(/\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi, "")
+                            .replace(
+                              /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
+                              "",
+                            )
                             .trim();
                           return safe || CONNECTION_ERROR_AR;
                         })()}

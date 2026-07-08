@@ -12,26 +12,40 @@
  */
 import { useMemo } from "react";
 import {
-  Eye, ShieldQuestion, FileSearch, AlertTriangle, BookOpenCheck,
-  Sparkles, CheckCheck, PlayCircle, Flag,
+  Eye,
+  ShieldQuestion,
+  FileSearch,
+  AlertTriangle,
+  BookOpenCheck,
+  Sparkles,
+  CheckCheck,
+  PlayCircle,
+  Flag,
 } from "lucide-react";
 import type { NarratorLine } from "@/lib/narrator/event-narrator";
 import { cn } from "@/lib/utils";
 
 type StageKey =
-  | "detection" | "verification" | "evidence" | "risk" | "compliance"
-  | "recommendation" | "approval" | "execution" | "closure";
+  | "detection"
+  | "verification"
+  | "evidence"
+  | "risk"
+  | "compliance"
+  | "recommendation"
+  | "approval"
+  | "execution"
+  | "closure";
 
 const STAGES: { key: StageKey; ar: string; en: string; icon: typeof Eye }[] = [
-  { key: "detection",      ar: "الاكتشاف",        en: "Detection",      icon: Eye },
-  { key: "verification",   ar: "التحقق",          en: "Verification",   icon: ShieldQuestion },
-  { key: "evidence",       ar: "الأدلة",          en: "Evidence",       icon: FileSearch },
-  { key: "risk",           ar: "تقييم المخاطر",   en: "Risk",           icon: AlertTriangle },
-  { key: "compliance",     ar: "الامتثال",        en: "Compliance",     icon: BookOpenCheck },
-  { key: "recommendation", ar: "التوصية",         en: "Recommendation", icon: Sparkles },
-  { key: "approval",       ar: "الاعتماد",        en: "Approval",       icon: CheckCheck },
-  { key: "execution",      ar: "التنفيذ",         en: "Execution",      icon: PlayCircle },
-  { key: "closure",        ar: "الإغلاق",         en: "Closure",        icon: Flag },
+  { key: "detection", ar: "الاكتشاف", en: "Detection", icon: Eye },
+  { key: "verification", ar: "التحقق", en: "Verification", icon: ShieldQuestion },
+  { key: "evidence", ar: "الأدلة", en: "Evidence", icon: FileSearch },
+  { key: "risk", ar: "تقييم المخاطر", en: "Risk", icon: AlertTriangle },
+  { key: "compliance", ar: "الامتثال", en: "Compliance", icon: BookOpenCheck },
+  { key: "recommendation", ar: "التوصية", en: "Recommendation", icon: Sparkles },
+  { key: "approval", ar: "الاعتماد", en: "Approval", icon: CheckCheck },
+  { key: "execution", ar: "التنفيذ", en: "Execution", icon: PlayCircle },
+  { key: "closure", ar: "الإغلاق", en: "Closure", icon: Flag },
 ];
 
 /**
@@ -44,17 +58,21 @@ function classify(line: NarratorLine): StageKey | null {
   const s = (line.status ?? "").toLowerCase();
 
   if (s === "closed" || s === "resolved") return "closure";
-  if (s === "completed" || s === "executed" || t.includes("work_order.completed")) return "execution";
-  if (s === "approved" || t.includes("approval") || t.includes("permit.approved")) return "approval";
+  if (s === "completed" || s === "executed" || t.includes("work_order.completed"))
+    return "execution";
+  if (s === "approved" || t.includes("approval") || t.includes("permit.approved"))
+    return "approval";
 
   if (t.includes("compliance") || t.includes("policy")) return "compliance";
   if (t.includes("risk") || t.includes("forecast")) return "risk";
   if (t.includes("evidence") || t.includes("cctv") || t.includes("sensor")) return "evidence";
 
   if (t.includes("recommendation") || t.includes("briefing")) return "recommendation";
-  if (t.includes("verify") || t.includes("verification") || s === "investigating") return "verification";
+  if (t.includes("verify") || t.includes("verification") || s === "investigating")
+    return "verification";
 
-  if (t.includes("incident") || t.includes("alert") || s === "new" || s === "open") return "detection";
+  if (t.includes("incident") || t.includes("alert") || s === "new" || s === "open")
+    return "detection";
   if (t.includes("agent.run") && s === "running") return "verification";
   if (t.includes("agent.run") && s === "completed") return "recommendation";
   return null;
@@ -69,9 +87,7 @@ interface Props {
 
 export function Storyboard({ lines, ar, correlationId }: Props) {
   const { reached, latest } = useMemo(() => {
-    const scoped = correlationId
-      ? lines.filter((l) => l.correlation_id === correlationId)
-      : lines;
+    const scoped = correlationId ? lines.filter((l) => l.correlation_id === correlationId) : lines;
     const reached = new Set<StageKey>();
     let latest: StageKey | null = null;
     let latestTs = 0;
@@ -79,7 +95,10 @@ export function Storyboard({ lines, ar, correlationId }: Props) {
       const k = classify(l);
       if (!k) continue;
       reached.add(k);
-      if (l.ts > latestTs) { latestTs = l.ts; latest = k; }
+      if (l.ts > latestTs) {
+        latestTs = l.ts;
+        latest = k;
+      }
     }
     return { reached, latest };
   }, [lines, correlationId]);
@@ -109,9 +128,7 @@ export function Storyboard({ lines, ar, correlationId }: Props) {
               key={stage.key}
               className={cn(
                 "relative flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition",
-                done
-                  ? "border-cyan-400/40 bg-cyan-400/[0.06]"
-                  : "border-white/8 bg-white/[0.015]",
+                done ? "border-cyan-400/40 bg-cyan-400/[0.06]" : "border-white/8 bg-white/[0.015]",
                 active && "ring-1 ring-cyan-300/70 shadow-[0_0_20px_rgba(0,212,255,0.25)]",
               )}
             >
@@ -126,7 +143,12 @@ export function Storyboard({ lines, ar, correlationId }: Props) {
               >
                 <Icon className="h-4 w-4" />
               </div>
-              <div className={cn("text-[10px] uppercase tracking-wider", done ? "text-cyan-100/90" : "text-white/45")}>
+              <div
+                className={cn(
+                  "text-[10px] uppercase tracking-wider",
+                  done ? "text-cyan-100/90" : "text-white/45",
+                )}
+              >
                 {ar ? stage.ar : stage.en}
               </div>
               <div className="text-[9px] text-white/35">{i + 1}</div>

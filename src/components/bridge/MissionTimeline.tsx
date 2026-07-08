@@ -11,16 +11,16 @@ import type { MissionTimelineEntry } from "@/lib/exec/bridge.functions";
 type Severity = "all" | "info" | "warn" | "critical";
 
 const TONE_DOT: Record<MissionTimelineEntry["tone"], string> = {
-  info:     "bg-cyan-300",
-  success:  "bg-emerald-300",
-  warn:     "bg-amber-300",
+  info: "bg-cyan-300",
+  success: "bg-emerald-300",
+  warn: "bg-amber-300",
   critical: "bg-rose-400",
 };
 
 const TONE_RING: Record<MissionTimelineEntry["tone"], string> = {
-  info:     "ring-cyan-400/30 bg-cyan-400/5",
-  success:  "ring-emerald-400/30 bg-emerald-400/5",
-  warn:     "ring-amber-400/30 bg-amber-400/5",
+  info: "ring-cyan-400/30 bg-cyan-400/5",
+  success: "ring-emerald-400/30 bg-emerald-400/5",
+  warn: "ring-amber-400/30 bg-amber-400/5",
   critical: "ring-rose-400/40 bg-rose-400/5",
 };
 
@@ -64,12 +64,12 @@ export function MissionTimeline({ entries, ar, loading, onRefresh, paused, onTog
                 onClick={() => setSeverity(s)}
                 className={cn(
                   "rounded-full px-2.5 py-0.5 uppercase tracking-wider transition-colors",
-                  severity === s ? "bg-cyan-400/20 text-cyan-100" : "text-white/50 hover:text-white",
+                  severity === s
+                    ? "bg-cyan-400/20 text-cyan-100"
+                    : "text-white/50 hover:text-white",
                 )}
               >
-                {ar
-                  ? { all: "الكل", info: "معلوماتي", warn: "تحذير", critical: "حرج" }[s]
-                  : s}
+                {ar ? { all: "الكل", info: "معلوماتي", warn: "تحذير", critical: "حرج" }[s] : s}
               </button>
             ))}
           </div>
@@ -78,7 +78,7 @@ export function MissionTimeline({ entries, ar, loading, onRefresh, paused, onTog
             onClick={onTogglePause}
             className="rounded-full border border-white/10 bg-white/[0.03] p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
             aria-label="pause/resume"
-            title={paused ? (ar ? "استئناف" : "Resume") : (ar ? "إيقاف مؤقت" : "Pause")}
+            title={paused ? (ar ? "استئناف" : "Resume") : ar ? "إيقاف مؤقت" : "Pause"}
           >
             {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
           </button>
@@ -128,11 +128,18 @@ export function MissionTimeline({ entries, ar, loading, onRefresh, paused, onTog
                   {new Date(e.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
-              <div className={cn("mt-1 text-[13px] leading-snug text-white/85", ar && "text-right")}>
+              <div
+                className={cn("mt-1 text-[13px] leading-snug text-white/85", ar && "text-right")}
+              >
                 {ar ? e.text_ar : e.text_en}
               </div>
               {(ar ? e.result_ar : e.result_en) && (
-                <div className={cn("mt-0.5 text-[12px] leading-snug text-white/55", ar && "text-right")}>
+                <div
+                  className={cn(
+                    "mt-0.5 text-[12px] leading-snug text-white/55",
+                    ar && "text-right",
+                  )}
+                >
                   {ar ? e.result_ar : e.result_en}
                 </div>
               )}

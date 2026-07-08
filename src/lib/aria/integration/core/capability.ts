@@ -17,7 +17,10 @@ export function findConnectorsForCapability(capabilityId: string): ConnectorDesc
   return listConnectors().filter((c) => c.capabilities.some((cap) => cap.id === capabilityId));
 }
 
-export function resolveScopes(connectorId: string, capabilityId: string): PermissionMapEntry | null {
+export function resolveScopes(
+  connectorId: string,
+  capabilityId: string,
+): PermissionMapEntry | null {
   const desc = getConnector(connectorId);
   if (!desc) return null;
   return desc.permissions.find((p) => p.capability === capabilityId) ?? null;

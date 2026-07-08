@@ -36,8 +36,7 @@ export interface AriaCinematicIntroProps {
 }
 
 const REDUCED =
-  typeof window !== "undefined" &&
-  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 export function AriaCinematicIntro({
   onEnter,
@@ -164,7 +163,11 @@ export function AriaCinematicIntro({
       ambientRef.current.volume = next;
       if (next > 0) window.setTimeout(fade, 50);
       else {
-        try { ambientRef.current.pause(); } catch { /* noop */ }
+        try {
+          ambientRef.current.pause();
+        } catch {
+          /* noop */
+        }
         setAmbientOn(false);
       }
     };
@@ -195,7 +198,11 @@ export function AriaCinematicIntro({
     return () => {
       const el = ambientRef.current;
       if (el) {
-        try { el.pause(); } catch { /* noop */ }
+        try {
+          el.pause();
+        } catch {
+          /* noop */
+        }
       }
     };
   }, []);

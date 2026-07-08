@@ -6,13 +6,7 @@
 
 import { z } from "zod";
 
-export const SeveritySchema = z.enum([
-  "info",
-  "notice",
-  "warn",
-  "error",
-  "critical",
-]);
+export const SeveritySchema = z.enum(["info", "notice", "warn", "error", "critical"]);
 
 export const TraceIdsSchema = z.object({
   trace_id: z.string().min(1),
@@ -35,14 +29,7 @@ export type LogEntryInput = z.infer<typeof LogEntrySchema>;
 
 export const AuditEntrySchema = z.object({
   ts: z.string(),
-  category: z.enum([
-    "user_action",
-    "aria_decision",
-    "mission",
-    "task",
-    "security",
-    "approval",
-  ]),
+  category: z.enum(["user_action", "aria_decision", "mission", "task", "security", "approval"]),
   actor: z.string().nullish(),
   org_id: z.string().nullish(),
   action: z.string().min(1),

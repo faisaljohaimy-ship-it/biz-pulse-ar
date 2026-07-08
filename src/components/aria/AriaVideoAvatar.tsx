@@ -19,8 +19,11 @@ const FADE_MS = 220;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
-  try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
-  catch { return false; }
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
 }
 
 export interface AriaVideoAvatarProps {
@@ -40,7 +43,6 @@ export function AriaVideoAvatar({
   mediaClassName,
   active = true,
 }: AriaVideoAvatarProps) {
-
   const [reduced] = useState(prefersReducedMotion);
   const [visible, setVisible] = useState<boolean>(() => {
     if (typeof document === "undefined") return true;
@@ -67,26 +69,38 @@ export function AriaVideoAvatar({
     v.loop = true;
     v.playsInline = true;
     // Kick off decode by playing one frame silently, then hard-reset.
-    v.play().then(() => {
-      try { v.pause(); v.currentTime = 0; } catch { /* noop */ }
-      setVideoOpacity(0);
-      // If a speech 'playing' event arrived while we were priming, honor it now.
-      if (pendingStartAtRef.current !== null) {
-        const t = pendingStartAtRef.current;
-        pendingStartAtRef.current = null;
-        startMotionAt(t, audioElRef.current);
-      }
-    }).catch(() => {
-      // Autoplay policy still blocks — will retry on next gesture.
-      primedRef.current = false;
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    v.play()
+      .then(() => {
+        try {
+          v.pause();
+          v.currentTime = 0;
+        } catch {
+          /* noop */
+        }
+        setVideoOpacity(0);
+        // If a speech 'playing' event arrived while we were priming, honor it now.
+        if (pendingStartAtRef.current !== null) {
+          const t = pendingStartAtRef.current;
+          pendingStartAtRef.current = null;
+          startMotionAt(t, audioElRef.current);
+        }
+      })
+      .catch(() => {
+        // Autoplay policy still blocks — will retry on next gesture.
+        primedRef.current = false;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const freezeMotion = useCallback(() => {
     const v = videoRef.current;
     if (v) {
-      try { v.pause(); v.currentTime = 0; } catch { /* noop */ }
+      try {
+        v.pause();
+        v.currentTime = 0;
+      } catch {
+        /* noop */
+      }
     }
     setVideoOpacity(0);
     if (driftTimerRef.current !== null) {
@@ -102,7 +116,11 @@ export function AriaVideoAvatar({
     if (!v) return;
     audioElRef.current = audioEl;
     // Frame-lock: same tick reset + play + opacity flip in a single rAF.
-    try { v.currentTime = 0; } catch { /* noop */ }
+    try {
+      v.currentTime = 0;
+    } catch {
+      /* noop */
+    }
     v.muted = true;
     v.loop = true;
     v.playsInline = true;
@@ -133,7 +151,11 @@ export function AriaVideoAvatar({
       const expected = audioT % vidDur;
       const offsetMs = Math.abs(vv.currentTime - expected) * 1000;
       if (offsetMs > 80) {
-        try { vv.currentTime = expected; } catch { /* noop */ }
+        try {
+          vv.currentTime = expected;
+        } catch {
+          /* noop */
+        }
       }
     }, 500);
   }, []);
@@ -158,7 +180,10 @@ export function AriaVideoAvatar({
         freezeMotion();
       }
     });
-    return () => { unsub(); freezeMotion(); };
+    return () => {
+      unsub();
+      freezeMotion();
+    };
   }, [reduced, freezeMotion, startMotionAt, primeDecoder]);
 
   // ── First-gesture decoder prime. Also unlocks on AriaAudioBus.unlock().
@@ -193,7 +218,11 @@ export function AriaVideoAvatar({
     const v = videoRef.current;
     if (!v) return;
     if (!visible) {
-      try { v.pause(); } catch { /* noop */ }
+      try {
+        v.pause();
+      } catch {
+        /* noop */
+      }
       setVideoOpacity(0);
     }
   }, [visible]);
@@ -216,7 +245,9 @@ export function AriaVideoAvatar({
         loading="eager"
         className={mediaCls}
         style={combinedMediaStyle}
-        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
       />
       {shouldMountVideo && (
         <video
@@ -240,6 +271,5 @@ export function AriaVideoAvatar({
     </div>
   );
 }
-
 
 export default AriaVideoAvatar;

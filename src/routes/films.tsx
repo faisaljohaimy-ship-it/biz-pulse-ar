@@ -20,7 +20,11 @@ export const Route = createFileRoute("/films")({
   head: () => ({
     meta: [
       { title: "Film Center — NEXIOS AI OS" },
-      { name: "description", content: "Eight cinematic films showcasing NEXIOS AI OS: investor story, full walkthrough, ARIA intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English." },
+      {
+        name: "description",
+        content:
+          "Eight cinematic films showcasing NEXIOS AI OS: investor story, full walkthrough, ARIA intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English.",
+      },
       { property: "og:title", content: "Film Center — NEXIOS AI OS" },
       { property: "og:url", content: `${DOMAIN_URL}/films` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
@@ -231,9 +235,7 @@ function FilmsPage() {
                 <h2 className="text-lg font-semibold leading-snug">
                   {isAr ? f.titleAr : f.titleEn}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {isAr ? f.descAr : f.descEn}
-                </p>
+                <p className="mt-2 text-sm text-muted-foreground">{isAr ? f.descAr : f.descEn}</p>
                 <div className="mt-4 flex items-center justify-between text-xs">
                   <button
                     type="button"
@@ -243,7 +245,9 @@ function FilmsPage() {
                     <Play className="h-3 w-3 fill-current" />
                     {isAr ? "تشغيل" : "Play"}
                   </button>
-                  <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">HD · 4K</span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+                    HD · 4K
+                  </span>
                 </div>
               </div>
             </article>
@@ -340,7 +344,9 @@ function PlayerModal({ film, isAr, onClose }: { film: Film; isAr: boolean; onClo
             <div className="aspect-video w-full bg-black" />
           )}
           <div className="px-4 py-3 text-center text-xs text-white/60">
-            {isAr ? "تشغيل الفيديو معطّل — استخدم أريا للشرح المباشر" : "Video playback disabled — ask ARIA for a live walkthrough"}
+            {isAr
+              ? "تشغيل الفيديو معطّل — استخدم أريا للشرح المباشر"
+              : "Video playback disabled — ask ARIA for a live walkthrough"}
           </div>
         </div>
       </div>

@@ -23,7 +23,9 @@ export const Route = createFileRoute("/_authenticated/boardroom")({
   ),
   component: BoardroomPage,
   errorComponent: ({ error }) => (
-    <div className="p-8 text-rose-300" role="alert">Boardroom error: {error.message}</div>
+    <div className="p-8 text-rose-300" role="alert">
+      Boardroom error: {error.message}
+    </div>
   ),
 });
 
@@ -65,7 +67,11 @@ function BoardroomPage() {
         { l: lbl(health), v: `${health.value}`, d: ar ? "صحة" : "health" },
         { l: lbl(strat), v: `${strat.value}%`, d: ar ? "تقدم" : "progress" },
         { l: lbl(velocity), v: `${velocity.value}%`, d: ar ? "سرعة" : "velocity" },
-        { l: ar ? "تنبيهات مفتوحة" : "Open alerts", v: `${data.counts.openAlerts}`, d: `${critical} crit / ${high} high` },
+        {
+          l: ar ? "تنبيهات مفتوحة" : "Open alerts",
+          v: `${data.counts.openAlerts}`,
+          d: `${critical} crit / ${high} high`,
+        },
       ],
       body: why(health),
     },
@@ -75,8 +81,16 @@ function BoardroomPage() {
       kpis: [
         { l: lbl(strat), v: `${strat.value}%`, d: ar ? "مرجَّح بالأثر" : "impact-weighted" },
         { l: lbl(latency), v: `${latency.value}`, d: ar ? "أقل = أبطأ" : "lower = slower" },
-        { l: ar ? "أحداث متتبعة" : "Tracked events", v: `${data.counts.events}`, d: ar ? "إجمالي" : "total" },
-        { l: ar ? "منسية" : "Forgotten", v: `${data.counts.forgotten}`, d: ar ? "تحتاج متابعة" : "need follow-up" },
+        {
+          l: ar ? "أحداث متتبعة" : "Tracked events",
+          v: `${data.counts.events}`,
+          d: ar ? "إجمالي" : "total",
+        },
+        {
+          l: ar ? "منسية" : "Forgotten",
+          v: `${data.counts.forgotten}`,
+          d: ar ? "تحتاج متابعة" : "need follow-up",
+        },
       ],
       body: `${why(strat)} ${why(latency)}`,
     },
@@ -96,8 +110,16 @@ function BoardroomPage() {
       title: ar ? "فرص جاهزة للقرار" : "Opportunities Ready for Decision",
       kpis: [
         { l: lbl(opp), v: `${opp.value}`, d: ar ? "مؤشر فرص" : "opportunity index" },
-        { l: ar ? "تنبيهات أعلى" : "Top alerts", v: `${data.topAlerts.length}`, d: ar ? "مرتبة" : "ranked" },
-        { l: ar ? "مصادر مفعّلة" : "Live sources", v: `${data.sources.filter((s) => s.available).length}/${data.sources.length}`, d: ar ? "متصلة" : "connected" },
+        {
+          l: ar ? "تنبيهات أعلى" : "Top alerts",
+          v: `${data.topAlerts.length}`,
+          d: ar ? "مرتبة" : "ranked",
+        },
+        {
+          l: ar ? "مصادر مفعّلة" : "Live sources",
+          v: `${data.sources.filter((s) => s.available).length}/${data.sources.length}`,
+          d: ar ? "متصلة" : "connected",
+        },
         { l: ar ? "صحة" : "Health", v: `${health.value}`, d: health.tone },
       ],
       body: why(opp),
@@ -110,10 +132,16 @@ function BoardroomPage() {
     <NexusPage
       eyebrow="BOARDROOM · LIVE"
       title={ar ? "وضع قاعة الاجتماع التنفيذية" : "Executive Boardroom Mode"}
-      subtitle={ar ? "عرض تنفيذي مدفوع ببيانات النسيج الذكي مباشرة." : "Cinematic executive view powered by live Intelligence Fabric data."}
+      subtitle={
+        ar
+          ? "عرض تنفيذي مدفوع ببيانات النسيج الذكي مباشرة."
+          : "Cinematic executive view powered by live Intelligence Fabric data."
+      }
       actions={
         <>
-          <NexusPill tone="violet"><Presentation className="h-3 w-3" /> LIVE</NexusPill>
+          <NexusPill tone="violet">
+            <Presentation className="h-3 w-3" /> LIVE
+          </NexusPill>
           <button
             onClick={() => setFs((v) => !v)}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300 hover:bg-cyan-400/20"
@@ -124,16 +152,28 @@ function BoardroomPage() {
         </>
       }
     >
-      <NexusCard glow className={fs ? "fixed inset-4 z-50 flex flex-col" : "min-h-[520px] flex flex-col"}>
+      <NexusCard
+        glow
+        className={fs ? "fixed inset-4 z-50 flex flex-col" : "min-h-[520px] flex flex-col"}
+      >
         <div className="flex-1">
-          <div className="text-[10px] font-bold tracking-[0.35em] text-cyan-300/80">{s.eyebrow}</div>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-5xl">{s.title}</h2>
+          <div className="text-[10px] font-bold tracking-[0.35em] text-cyan-300/80">
+            {s.eyebrow}
+          </div>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-5xl">
+            {s.title}
+          </h2>
           <p className="mt-4 max-w-3xl text-base text-slate-300">{s.body}</p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {s.kpis.map((k) => (
-              <div key={k.l} className="rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.04] p-5">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{k.l}</div>
+              <div
+                key={k.l}
+                className="rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.04] p-5"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  {k.l}
+                </div>
                 <div className="mt-2 text-3xl font-bold text-cyan-300">{k.v}</div>
                 <div className="mt-1 text-xs text-emerald-300">{k.d}</div>
               </div>
@@ -181,14 +221,23 @@ function BoardroomPage() {
           </div>
           <div className="mt-3 grid gap-2">
             {data.topAlerts.slice(0, 5).map((a) => (
-              <div key={a.id} className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3">
+              <div
+                key={a.id}
+                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3"
+              >
                 <div className="flex items-center gap-3">
-                  <NexusPill tone={a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan"}>
+                  <NexusPill
+                    tone={
+                      a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan"
+                    }
+                  >
                     {a.severity.toUpperCase()}
                   </NexusPill>
                   <div className="text-sm text-white">{ar ? a.title : (a.title_en ?? a.title)}</div>
                 </div>
-                <div className="font-mono text-xs text-slate-400">impact {a.business_impact_score}</div>
+                <div className="font-mono text-xs text-slate-400">
+                  impact {a.business_impact_score}
+                </div>
               </div>
             ))}
           </div>

@@ -12,13 +12,24 @@ export interface SpeakingSnapshot {
 
 export class SpeakingStateStore {
   private snap: SpeakingSnapshot = {
-    active: false, turnId: null, playedSeq: -1, totalChunks: 0,
-    interrupted: false, resumeFromSeq: null,
+    active: false,
+    turnId: null,
+    playedSeq: -1,
+    totalChunks: 0,
+    interrupted: false,
+    resumeFromSeq: null,
   };
   private listeners = new Set<(s: SpeakingSnapshot) => void>();
 
   start(turnId: string): void {
-    this.snap = { active: true, turnId, playedSeq: -1, totalChunks: 0, interrupted: false, resumeFromSeq: null };
+    this.snap = {
+      active: true,
+      turnId,
+      playedSeq: -1,
+      totalChunks: 0,
+      interrupted: false,
+      resumeFromSeq: null,
+    };
     this.publish();
   }
 
@@ -36,7 +47,9 @@ export class SpeakingStateStore {
   interrupt(): void {
     if (!this.snap.active) return;
     this.snap = {
-      ...this.snap, active: false, interrupted: true,
+      ...this.snap,
+      active: false,
+      interrupted: true,
       resumeFromSeq: this.snap.playedSeq + 1,
     };
     this.publish();
@@ -51,17 +64,35 @@ export class SpeakingStateStore {
   }
 
   stop(): void {
-    this.snap = { active: false, turnId: null, playedSeq: -1, totalChunks: 0, interrupted: false, resumeFromSeq: null };
+    this.snap = {
+      active: false,
+      turnId: null,
+      playedSeq: -1,
+      totalChunks: 0,
+      interrupted: false,
+      resumeFromSeq: null,
+    };
     this.publish();
   }
 
-  get(): SpeakingSnapshot { return this.snap; }
+  get(): SpeakingSnapshot {
+    return this.snap;
+  }
 
   subscribe(l: (s: SpeakingSnapshot) => void): () => void {
-    this.listeners.add(l); return () => { this.listeners.delete(l); };
+    this.listeners.add(l);
+    return () => {
+      this.listeners.delete(l);
+    };
   }
 
   private publish(): void {
-    for (const l of this.listeners) { try { l(this.snap); } catch { /* isolated */ } }
+    for (const l of this.listeners) {
+      try {
+        l(this.snap);
+      } catch {
+        /* isolated */
+      }
+    }
   }
 }

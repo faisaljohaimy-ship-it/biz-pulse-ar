@@ -16,10 +16,7 @@
  * Executive Brain, or Memory. All interactions go through the public
  * surfaces those modules already expose.
  */
-import type {
-  ExecutionResult,
-  ExecutionSession,
-} from "./types";
+import type { ExecutionResult, ExecutionSession } from "./types";
 import type { MissionRequest } from "../orchestrator/types";
 import { runAgentMission } from "../orchestrator";
 import {
@@ -102,9 +99,14 @@ export async function executeMission(
     setOutcome(session.session_id, outcome);
     session.intent = outcome.plan.intent;
 
-    createCheckpoint(session.session_id, "orchestrator_returned", "orchestrator completed dispatch", {
-      completedAgentIds: outcome.results.filter((r) => r.ok).map((r) => String(r.agent_id)),
-    });
+    createCheckpoint(
+      session.session_id,
+      "orchestrator_returned",
+      "orchestrator completed dispatch",
+      {
+        completedAgentIds: outcome.results.filter((r) => r.ok).map((r) => String(r.agent_id)),
+      },
+    );
 
     computeProgress(session.session_id, missionId);
 
@@ -132,7 +134,11 @@ export async function executeMission(
     if (outcome.cancelled) {
       setState(session.session_id, "cancelled", "mission cancelled by controller");
       emitExecutionEvent("ExecutionCancelled", session.session_id, missionId);
-    } else if (failures.length && session.progress.failed >= session.progress.total && session.progress.total > 0) {
+    } else if (
+      failures.length &&
+      session.progress.failed >= session.progress.total &&
+      session.progress.total > 0
+    ) {
       setState(session.session_id, "failed", "all tasks failed");
       emitExecutionEvent("MissionFailed", session.session_id, missionId, {
         failures: failures.length,

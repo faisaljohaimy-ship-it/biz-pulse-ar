@@ -53,7 +53,9 @@ export function EvidenceBadge({
         className,
       ].join(" ")}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${fresh ? "animate-pulse bg-current" : "bg-current"}`} />
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${fresh ? "animate-pulse bg-current" : "bg-current"}`}
+      />
       {label}
       {!fresh ? <span className="ms-1 text-[9px] opacity-70">(stale)</span> : null}
     </span>

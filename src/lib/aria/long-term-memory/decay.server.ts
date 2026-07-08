@@ -33,14 +33,26 @@ export function runDecay(now: Date = new Date()): DecayReport {
     evaluated += 1;
     const fresh = freshnessOf(record.kind, record.updated_at, now);
     if (fresh < 0 || fresh >= 0.2) continue;
-    const next: MemoryRecord = { ...record, status: fresh < 0.05 ? "decayed" : "compressed", updated_at: created_at };
+    const next: MemoryRecord = {
+      ...record,
+      status: fresh < 0.05 ? "decayed" : "compressed",
+      updated_at: created_at,
+    };
     replaceRecord(next);
     if (next.status === "decayed") decayed.push(next.id);
     else compressed.push(next.id);
-    audit(`decay.${next.status}`, next.id, next.evidence.map((e) => e.id));
+    audit(
+      `decay.${next.status}`,
+      next.id,
+      next.evidence.map((e) => e.id),
+    );
   }
 
-  emitTelemetry("decay.run", "info", `evaluated=${evaluated} decayed=${decayed.length} compressed=${compressed.length}`);
+  emitTelemetry(
+    "decay.run",
+    "info",
+    `evaluated=${evaluated} decayed=${decayed.length} compressed=${compressed.length}`,
+  );
   return Object.freeze({
     id: reportId(created_at),
     created_at,

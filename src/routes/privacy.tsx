@@ -7,7 +7,10 @@ export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
       { title: "Privacy Policy — Nexus AI OS" },
-      { name: "description", content: "How Nexus AI OS collects, processes, and protects enterprise data." },
+      {
+        name: "description",
+        content: "How Nexus AI OS collects, processes, and protects enterprise data.",
+      },
       { property: "og:title", content: "Privacy Policy — Nexus AI OS" },
       { property: "og:url", content: `${DOMAIN_URL}/privacy` },
     ],
@@ -23,7 +26,10 @@ function PrivacyPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <article className="mx-auto max-w-3xl px-5 py-16 sm:py-24">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" />
           {isAr ? "العودة للرئيسية" : "Back to home"}
         </Link>
@@ -38,17 +44,33 @@ function PrivacyPage() {
           <p>
             {isAr
               ? "تصف هذه السياسة كيف يقوم Nexus AI OS («نحن»، «الخدمة») بجمع ومعالجة وحماية البيانات التي تشاركها مؤسستك معنا."
-              : "This page describes how Nexus AI OS (\"we\", \"the Service\") collects, processes, and safeguards the data your organization shares with us. It is maintained by the Nexus AI OS team to answer common privacy questions."}
+              : 'This page describes how Nexus AI OS ("we", "the Service") collects, processes, and safeguards the data your organization shares with us. It is maintained by the Nexus AI OS team to answer common privacy questions.'}
           </p>
 
-          <h2 className="text-xl font-semibold">{isAr ? "١. البيانات التي نجمعها" : "1. Data we collect"}</h2>
+          <h2 className="text-xl font-semibold">
+            {isAr ? "١. البيانات التي نجمعها" : "1. Data we collect"}
+          </h2>
           <ul className="ml-5 list-disc space-y-1">
-            <li>{isAr ? "بيانات الحساب: الاسم، البريد الإلكتروني، الدور." : "Account data: name, email, role."}</li>
-            <li>{isAr ? "بيانات المؤسسة التي تختار رفعها: مؤشرات، تنبيهات، وثائق، محادثات ARIA." : "Enterprise data you choose to upload: KPIs, alerts, documents, ARIA conversations."}</li>
-            <li>{isAr ? "بيانات الاستخدام التشغيلية لتحسين الموثوقية." : "Operational usage data to improve reliability."}</li>
+            <li>
+              {isAr
+                ? "بيانات الحساب: الاسم، البريد الإلكتروني، الدور."
+                : "Account data: name, email, role."}
+            </li>
+            <li>
+              {isAr
+                ? "بيانات المؤسسة التي تختار رفعها: مؤشرات، تنبيهات، وثائق، محادثات ARIA."
+                : "Enterprise data you choose to upload: KPIs, alerts, documents, ARIA conversations."}
+            </li>
+            <li>
+              {isAr
+                ? "بيانات الاستخدام التشغيلية لتحسين الموثوقية."
+                : "Operational usage data to improve reliability."}
+            </li>
           </ul>
 
-          <h2 className="text-xl font-semibold">{isAr ? "٢. كيف نستخدم البيانات" : "2. How we use data"}</h2>
+          <h2 className="text-xl font-semibold">
+            {isAr ? "٢. كيف نستخدم البيانات" : "2. How we use data"}
+          </h2>
           <p>
             {isAr
               ? "تُستخدم البيانات فقط لتشغيل الخدمة لمؤسستك. لا نبيع البيانات. لا نستخدم بيانات عملائنا لتدريب نماذج لغوية عامة."
@@ -62,7 +84,9 @@ function PrivacyPage() {
               : "Encryption in transit (TLS) and at rest. Row-level security on every customer table. Audit logs on administrative access."}
           </p>
 
-          <h2 className="text-xl font-semibold">{isAr ? "٤. الاحتفاظ والحذف" : "4. Retention & deletion"}</h2>
+          <h2 className="text-xl font-semibold">
+            {isAr ? "٤. الاحتفاظ والحذف" : "4. Retention & deletion"}
+          </h2>
           <p>
             {isAr
               ? "تحتفظ بيانات الحساب طوال مدة الاشتراك. عند الإنهاء، تُحذف خلال ٣٠ يوماً ما لم يطلب القانون خلاف ذلك."
@@ -76,7 +100,8 @@ function PrivacyPage() {
               : "You may request access, correction, deletion, or portability of your data at any time via "}
             <Link to="/contact" className="text-primary underline-offset-4 hover:underline">
               {isAr ? "صفحة التواصل" : "our contact page"}
-            </Link>.
+            </Link>
+            .
           </p>
 
           <h2 className="text-xl font-semibold">{isAr ? "٦. التواصل" : "6. Contact"}</h2>

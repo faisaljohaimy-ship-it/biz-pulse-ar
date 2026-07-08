@@ -46,7 +46,9 @@ function AriaConsole() {
   const { prompt: prefill } = Route.useSearch();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState(prefill ?? "");
-  useEffect(() => { if (prefill) setDraft(prefill); }, [prefill]);
+  useEffect(() => {
+    if (prefill) setDraft(prefill);
+  }, [prefill]);
   const qc = useQueryClient();
   const runFn = useServerFn(runAriaPipeline);
   const generateFn = useServerFn(generateAriaReport);
@@ -70,7 +72,9 @@ function AriaConsole() {
     },
     onError: (e, message) => {
       const msg = e instanceof Error ? e.message : String(e);
-      setTurns((prev) => prev.map((t) => (t.question === message && !t.result ? { ...t, error: msg } : t)));
+      setTurns((prev) =>
+        prev.map((t) => (t.question === message && !t.result ? { ...t, error: msg } : t)),
+      );
     },
   });
 
@@ -88,14 +92,20 @@ function AriaConsole() {
   };
 
   return (
-    <div className="grid h-[calc(100vh-3.5rem)] grid-cols-1 lg:grid-cols-12 gap-4 p-4 bg-background" dir="rtl">
+    <div
+      className="grid h-[calc(100vh-3.5rem)] grid-cols-1 lg:grid-cols-12 gap-4 p-4 bg-background"
+      dir="rtl"
+    >
       {/* LEFT — Memory + Reports */}
       <aside className="lg:col-span-3 flex flex-col gap-4 min-h-0">
         <Panel title="ذاكرة ARIA" icon={<Brain className="h-4 w-4" />}>
           <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
             {memoryQ.data?.length ? (
               memoryQ.data.map((m) => (
-                <div key={m.id} className="group flex items-start gap-2 rounded-md border border-border/50 bg-card/40 p-2 text-xs">
+                <div
+                  key={m.id}
+                  className="group flex items-start gap-2 rounded-md border border-border/50 bg-card/40 p-2 text-xs"
+                >
                   <Pin className="h-3 w-3 mt-0.5 text-primary shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold truncate">{m.key}</div>
@@ -114,29 +124,62 @@ function AriaConsole() {
                 </div>
               ))
             ) : (
-              <div className="text-xs text-muted-foreground">لا توجد ذاكرة بعد. سيتم بناؤها مع المحادثة.</div>
+              <div className="text-xs text-muted-foreground">
+                لا توجد ذاكرة بعد. سيتم بناؤها مع المحادثة.
+              </div>
             )}
           </div>
-          <PinForm onPin={async (key, content) => {
-            await pinFn({ data: { key, content, scope: "pinned", importance: 0.95 } });
-            qc.invalidateQueries({ queryKey: ["aria-memory"] });
-          }} />
+          <PinForm
+            onPin={async (key, content) => {
+              await pinFn({ data: { key, content, scope: "pinned", importance: 0.95 } });
+              qc.invalidateQueries({ queryKey: ["aria-memory"] });
+            }}
+          />
         </Panel>
 
         <Panel title="التقارير التنفيذية" icon={<FileText className="h-4 w-4" />}>
           <div className="flex flex-wrap gap-1 mb-2">
-            {(["executive", "daily", "weekly", "monthly", "risk", "operations", "board"] as ReportKind[]).map((k) => (
-              <Button key={k} size="sm" variant="outline" className="h-6 text-[10px] px-2"
+            {(
+              [
+                "executive",
+                "daily",
+                "weekly",
+                "monthly",
+                "risk",
+                "operations",
+                "board",
+              ] as ReportKind[]
+            ).map((k) => (
+              <Button
+                key={k}
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] px-2"
                 onClick={() => generateMut.mutate(k)}
-                disabled={generateMut.isPending}>
-                {generateMut.isPending && generateMut.variables === k ? <Loader2 className="h-3 w-3 animate-spin" /> : k}
+                disabled={generateMut.isPending}
+              >
+                {generateMut.isPending && generateMut.variables === k ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  k
+                )}
               </Button>
             ))}
           </div>
           <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
-            {reportsQ.data?.length ? reportsQ.data.map((r) => (
-              <ReportRow key={r.id} id={r.id} title={r.title} kind={r.kind} createdAt={r.created_at} />
-            )) : <div className="text-xs text-muted-foreground">لا توجد تقارير بعد.</div>}
+            {reportsQ.data?.length ? (
+              reportsQ.data.map((r) => (
+                <ReportRow
+                  key={r.id}
+                  id={r.id}
+                  title={r.title}
+                  kind={r.kind}
+                  createdAt={r.created_at}
+                />
+              ))
+            ) : (
+              <div className="text-xs text-muted-foreground">لا توجد تقارير بعد.</div>
+            )}
           </div>
         </Panel>
       </aside>
@@ -149,14 +192,14 @@ function AriaConsole() {
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-bold">ARIA — مركز الذكاء التنفيذي</h1>
-            <p className="text-[11px] text-muted-foreground font-mono">Intent → Memory → RAG → Context → KPI → Risk → Decision → Reason → Tools → Report</p>
+            <p className="text-[11px] text-muted-foreground font-mono">
+              Intent → Memory → RAG → Context → KPI → Risk → Decision → Reason → Tools → Report
+            </p>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-          {turns.length === 0 && (
-            <EmptyState />
-          )}
+          {turns.length === 0 && <EmptyState />}
           {turns.map((t) => (
             <TurnView key={t.id} turn={t} />
           ))}
@@ -172,7 +215,10 @@ function AriaConsole() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
             }}
             placeholder="اسأل ARIA: ما حالة العمليات الآن؟ ما أبرز المخاطر؟ أنشئ تقريراً تنفيذياً…"
             rows={2}
@@ -180,7 +226,11 @@ function AriaConsole() {
             disabled={runMut.isPending}
           />
           <Button onClick={send} disabled={!draft.trim() || runMut.isPending} className="self-end">
-            {runMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {runMut.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </main>
@@ -190,58 +240,108 @@ function AriaConsole() {
         <Panel title="مؤشرات حية" icon={<Activity className="h-4 w-4" />}>
           {turns.at(-1)?.result?.kpis ? (
             <KpiMini kpis={turns.at(-1)!.result!.kpis} />
-          ) : <div className="text-xs text-muted-foreground">ستظهر بعد أول سؤال.</div>}
+          ) : (
+            <div className="text-xs text-muted-foreground">ستظهر بعد أول سؤال.</div>
+          )}
         </Panel>
         <Panel title="أبرز المخاطر" icon={<ShieldAlert className="h-4 w-4" />}>
           {turns.at(-1)?.result?.risks?.length ? (
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-              {turns.at(-1)!.result!.risks.slice(0, 6).map((r) => (
-                <div key={r.id} className="flex items-start gap-2 text-xs">
-                  <span className={cn("mt-1 h-1.5 w-1.5 rounded-full shrink-0",
-                    r.severity === "critical" ? "bg-destructive" :
-                    r.severity === "high" ? "bg-orange-500" :
-                    r.severity === "medium" ? "bg-amber-400" : "bg-muted-foreground")} />
-                  <div className="min-w-0">
-                    <div className="font-medium truncate">{r.title}</div>
-                    <div className="text-[10px] text-muted-foreground">{r.rationale} · score {r.score}</div>
+              {turns
+                .at(-1)!
+                .result!.risks.slice(0, 6)
+                .map((r) => (
+                  <div key={r.id} className="flex items-start gap-2 text-xs">
+                    <span
+                      className={cn(
+                        "mt-1 h-1.5 w-1.5 rounded-full shrink-0",
+                        r.severity === "critical"
+                          ? "bg-destructive"
+                          : r.severity === "high"
+                            ? "bg-orange-500"
+                            : r.severity === "medium"
+                              ? "bg-amber-400"
+                              : "bg-muted-foreground",
+                      )}
+                    />
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{r.title}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {r.rationale} · score {r.score}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
-          ) : <div className="text-xs text-muted-foreground">—</div>}
+          ) : (
+            <div className="text-xs text-muted-foreground">—</div>
+          )}
         </Panel>
         <Panel title="قرارات معلقة" icon={<CheckCircle2 className="h-4 w-4" />}>
           {decisionsQ.data?.length ? (
             <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-              {decisionsQ.data.filter((d) => d.status === "pending").slice(0, 6).map((d) => (
-                <div key={d.id} className="rounded-md border border-border/50 bg-card/40 p-2 text-xs">
-                  <div className="font-semibold">{d.recommendation}</div>
-                  <div className="text-[10px] text-muted-foreground line-clamp-2">{d.rationale}</div>
-                  <div className="flex gap-1 mt-1.5">
-                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2"
-                      onClick={async () => { await updateDecisionFn({ data: { id: d.id, status: "approved" } }); qc.invalidateQueries({ queryKey: ["aria-decisions"] }); }}>
-                      موافقة
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2"
-                      onClick={async () => { await updateDecisionFn({ data: { id: d.id, status: "dismissed" } }); qc.invalidateQueries({ queryKey: ["aria-decisions"] }); }}>
-                      تجاهل
-                    </Button>
+              {decisionsQ.data
+                .filter((d) => d.status === "pending")
+                .slice(0, 6)
+                .map((d) => (
+                  <div
+                    key={d.id}
+                    className="rounded-md border border-border/50 bg-card/40 p-2 text-xs"
+                  >
+                    <div className="font-semibold">{d.recommendation}</div>
+                    <div className="text-[10px] text-muted-foreground line-clamp-2">
+                      {d.rationale}
+                    </div>
+                    <div className="flex gap-1 mt-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-[10px] px-2"
+                        onClick={async () => {
+                          await updateDecisionFn({ data: { id: d.id, status: "approved" } });
+                          qc.invalidateQueries({ queryKey: ["aria-decisions"] });
+                        }}
+                      >
+                        موافقة
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-[10px] px-2"
+                        onClick={async () => {
+                          await updateDecisionFn({ data: { id: d.id, status: "dismissed" } });
+                          qc.invalidateQueries({ queryKey: ["aria-decisions"] });
+                        }}
+                      >
+                        تجاهل
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
-          ) : <div className="text-xs text-muted-foreground">لا توجد قرارات معلقة.</div>}
+          ) : (
+            <div className="text-xs text-muted-foreground">لا توجد قرارات معلقة.</div>
+          )}
         </Panel>
       </aside>
     </div>
   );
 }
 
-function Panel({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Panel({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-lg border border-border bg-card/60 backdrop-blur p-3 shadow-sm">
       <header className="flex items-center gap-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        {icon}<span>{title}</span>
+        {icon}
+        <span>{title}</span>
       </header>
       {children}
     </section>
@@ -254,7 +354,8 @@ function EmptyState() {
       <Sparkles className="h-8 w-8 mx-auto text-primary/60 mb-3" />
       <h2 className="text-sm font-semibold mb-1">مركز الذكاء التنفيذي جاهز</h2>
       <p className="text-xs text-muted-foreground max-w-md mx-auto">
-        كل سؤال يمر عبر 10 مراحل: استيعاب القصد → الذاكرة → المعرفة → سياق المؤسسة → KPIs → المخاطر → القرارات → التفكير → الأدوات → التقارير.
+        كل سؤال يمر عبر 10 مراحل: استيعاب القصد → الذاكرة → المعرفة → سياق المؤسسة → KPIs → المخاطر
+        → القرارات → التفكير → الأدوات → التقارير.
       </p>
     </div>
   );
@@ -264,7 +365,9 @@ function TurnView({ turn }: { turn: Turn }) {
   return (
     <div className="space-y-2">
       <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
-        <div className="text-[10px] uppercase tracking-wider text-primary/70 font-mono mb-1">السؤال</div>
+        <div className="text-[10px] uppercase tracking-wider text-primary/70 font-mono mb-1">
+          السؤال
+        </div>
         <div className="text-sm">{turn.question}</div>
       </div>
       {turn.error && (
@@ -278,12 +381,22 @@ function TurnView({ turn }: { turn: Turn }) {
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono mb-2 flex items-center justify-between">
               <span>إجابة ARIA</span>
-              <span>ثقة {Math.round(turn.result.confidence * 100)}% · {turn.result.total_ms}ms{turn.result.tokens ? ` · ${turn.result.tokens} tok` : ""}</span>
+              <span>
+                ثقة {Math.round(turn.result.confidence * 100)}% · {turn.result.total_ms}ms
+                {turn.result.tokens ? ` · ${turn.result.tokens} tok` : ""}
+              </span>
             </div>
-            <div className="prose prose-sm prose-invert max-w-none whitespace-pre-wrap text-sm">{turn.result.answer}</div>
+            <div className="prose prose-sm prose-invert max-w-none whitespace-pre-wrap text-sm">
+              {turn.result.answer}
+            </div>
             {turn.result.report && (
               <div className="mt-3 pt-3 border-t border-border">
-                <ReportRow id={turn.result.report.id} title={turn.result.report.title} kind={turn.result.report.kind} createdAt={new Date().toISOString()} />
+                <ReportRow
+                  id={turn.result.report.id}
+                  title={turn.result.report.title}
+                  kind={turn.result.report.kind}
+                  createdAt={new Date().toISOString()}
+                />
               </div>
             )}
           </div>
@@ -308,42 +421,78 @@ function StageTimeline({ result }: { result: PipelineResult }) {
               onClick={() => setOpen(open === s ? null : s)}
               className={cn(
                 "flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border transition-colors",
-                status === "ok" ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20" :
-                status === "skipped" ? "border-border/40 text-muted-foreground/60" :
-                "border-destructive/40 bg-destructive/10 text-destructive",
+                status === "ok"
+                  ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+                  : status === "skipped"
+                    ? "border-border/40 text-muted-foreground/60"
+                    : "border-destructive/40 bg-destructive/10 text-destructive",
                 open === s && "ring-1 ring-primary",
               )}
             >
-              {status === "ok" ? <CheckCircle2 className="h-2.5 w-2.5" /> : <Circle className="h-2.5 w-2.5" />}
-              {s}{t ? ` ${t.duration_ms}ms` : ""}
+              {status === "ok" ? (
+                <CheckCircle2 className="h-2.5 w-2.5" />
+              ) : (
+                <Circle className="h-2.5 w-2.5" />
+              )}
+              {s}
+              {t ? ` ${t.duration_ms}ms` : ""}
             </button>
           );
         })}
       </div>
-      {open && (() => {
-        const t = byStage.get(open as (typeof PIPELINE_STAGES)[number]);
-        if (!t) return null;
-        return (
-          <div className="mt-2 rounded border border-border/50 bg-background/60 p-2 text-[11px]">
-            <div className="font-semibold mb-1">{open} — {t.summary}</div>
-            {t.data_json && (
-              <pre className="overflow-x-auto text-[10px] text-muted-foreground whitespace-pre-wrap break-all">{t.data_json}</pre>
-            )}
-          </div>
-        );
-      })()}
+      {open &&
+        (() => {
+          const t = byStage.get(open as (typeof PIPELINE_STAGES)[number]);
+          if (!t) return null;
+          return (
+            <div className="mt-2 rounded border border-border/50 bg-background/60 p-2 text-[11px]">
+              <div className="font-semibold mb-1">
+                {open} — {t.summary}
+              </div>
+              {t.data_json && (
+                <pre className="overflow-x-auto text-[10px] text-muted-foreground whitespace-pre-wrap break-all">
+                  {t.data_json}
+                </pre>
+              )}
+            </div>
+          );
+        })()}
     </div>
   );
 }
 
 function KpiMini({ kpis }: { kpis: PipelineResult["kpis"] }) {
   const items = [
-    { l: "بلاغات مفتوحة", v: kpis.incidents_open, c: kpis.incidents_open === 0 ? "text-emerald-500" : "text-amber-500" },
-    { l: "حرجة", v: kpis.incidents_critical, c: kpis.incidents_critical === 0 ? "text-emerald-500" : "text-destructive" },
-    { l: "صحة CCTV", v: `${kpis.cctv_health}%`, c: kpis.cctv_health >= 80 ? "text-emerald-500" : "text-amber-500" },
-    { l: "إنجاز الدوريات", v: `${kpis.patrol_completion}%`, c: kpis.patrol_completion >= 95 ? "text-emerald-500" : "text-amber-500" },
-    { l: "مؤشر المخاطر", v: kpis.risk_index, c: kpis.risk_index <= 60 ? "text-emerald-500" : "text-destructive" },
-    { l: "الجاهزية", v: `${kpis.executive_readiness}%`, c: kpis.executive_readiness >= 70 ? "text-emerald-500" : "text-amber-500" },
+    {
+      l: "بلاغات مفتوحة",
+      v: kpis.incidents_open,
+      c: kpis.incidents_open === 0 ? "text-emerald-500" : "text-amber-500",
+    },
+    {
+      l: "حرجة",
+      v: kpis.incidents_critical,
+      c: kpis.incidents_critical === 0 ? "text-emerald-500" : "text-destructive",
+    },
+    {
+      l: "صحة CCTV",
+      v: `${kpis.cctv_health}%`,
+      c: kpis.cctv_health >= 80 ? "text-emerald-500" : "text-amber-500",
+    },
+    {
+      l: "إنجاز الدوريات",
+      v: `${kpis.patrol_completion}%`,
+      c: kpis.patrol_completion >= 95 ? "text-emerald-500" : "text-amber-500",
+    },
+    {
+      l: "مؤشر المخاطر",
+      v: kpis.risk_index,
+      c: kpis.risk_index <= 60 ? "text-emerald-500" : "text-destructive",
+    },
+    {
+      l: "الجاهزية",
+      v: `${kpis.executive_readiness}%`,
+      c: kpis.executive_readiness >= 70 ? "text-emerald-500" : "text-amber-500",
+    },
   ];
   return (
     <div className="grid grid-cols-2 gap-1.5">
@@ -369,19 +518,47 @@ function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<v
         if (!k.trim() || !c.trim()) return;
         setBusy(true);
         await onPin(k.trim(), c.trim());
-        setK(""); setC(""); setBusy(false);
+        setK("");
+        setC("");
+        setBusy(false);
       }}
     >
-      <input value={k} onChange={(e) => setK(e.target.value)} placeholder="مفتاح (مثل: تفضيلات_التقارير)" className="w-full rounded border border-input bg-background px-2 py-1 text-xs" />
-      <input value={c} onChange={(e) => setC(e.target.value)} placeholder="محتوى الذاكرة" className="w-full rounded border border-input bg-background px-2 py-1 text-xs" />
-      <Button type="submit" size="sm" variant="outline" className="h-6 text-[10px] px-2 w-full" disabled={busy || !k.trim() || !c.trim()}>
+      <input
+        value={k}
+        onChange={(e) => setK(e.target.value)}
+        placeholder="مفتاح (مثل: تفضيلات_التقارير)"
+        className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+      />
+      <input
+        value={c}
+        onChange={(e) => setC(e.target.value)}
+        placeholder="محتوى الذاكرة"
+        className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+      />
+      <Button
+        type="submit"
+        size="sm"
+        variant="outline"
+        className="h-6 text-[10px] px-2 w-full"
+        disabled={busy || !k.trim() || !c.trim()}
+      >
         {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : "حفظ كذاكرة دائمة"}
       </Button>
     </form>
   );
 }
 
-function ReportRow({ id, title, kind, createdAt }: { id: string; title: string; kind: string; createdAt: string }) {
+function ReportRow({
+  id,
+  title,
+  kind,
+  createdAt,
+}: {
+  id: string;
+  title: string;
+  kind: string;
+  createdAt: string;
+}) {
   const [loading, setLoading] = useState(false);
   const fetchFn = useServerFn(getAriaReport);
   const download = async () => {
@@ -391,18 +568,29 @@ function ReportRow({ id, title, kind, createdAt }: { id: string; title: string; 
       const blob = new Blob([r.markdown], { type: "text/markdown;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = `${r.title}.md`; a.click();
+      a.href = url;
+      a.download = `${r.title}.md`;
+      a.click();
       URL.revokeObjectURL(url);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="flex items-center gap-2 rounded border border-border/40 bg-background/40 p-1.5 text-xs">
       <FileText className="h-3 w-3 text-primary shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="font-medium truncate">{title}</div>
-        <div className="text-[9px] text-muted-foreground font-mono uppercase">{kind} · {new Date(createdAt).toLocaleString("ar-SA")}</div>
+        <div className="text-[9px] text-muted-foreground font-mono uppercase">
+          {kind} · {new Date(createdAt).toLocaleString("ar-SA")}
+        </div>
       </div>
-      <button onClick={download} disabled={loading} className="text-muted-foreground hover:text-primary" aria-label="تنزيل">
+      <button
+        onClick={download}
+        disabled={loading}
+        className="text-muted-foreground hover:text-primary"
+        aria-label="تنزيل"
+      >
         {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
       </button>
     </div>

@@ -15,13 +15,28 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ShieldCheck, Activity, AlertTriangle, Loader2, PlayCircle, TrendingUp,
-  Users, FileCheck2, Wrench, Brain, GaugeCircle, Radio, Sparkles,
+  ShieldCheck,
+  Activity,
+  AlertTriangle,
+  Loader2,
+  PlayCircle,
+  TrendingUp,
+  Users,
+  FileCheck2,
+  Wrench,
+  Brain,
+  GaugeCircle,
+  Radio,
+  Sparkles,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getBridgeState, getMissionTimeline } from "@/lib/exec/bridge.functions";
-import { generateExecutiveBriefing, type BriefingSegment, type ExecutiveBriefing } from "@/lib/exec/briefing.functions";
+import {
+  generateExecutiveBriefing,
+  type BriefingSegment,
+  type ExecutiveBriefing,
+} from "@/lib/exec/briefing.functions";
 import { getPredictedRisks } from "@/lib/exec/predictive.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { speakAgent } from "@/lib/digital-humans/speak-agent";
@@ -35,7 +50,11 @@ export const Route = createFileRoute("/_authenticated/bridge")({
   head: () => ({
     meta: [
       { title: "Executive War Room — NEXUS" },
-      { name: "description", content: "Live executive war room with ARIA, specialist AI agents, predictive risks, and 60-second executive briefings." },
+      {
+        name: "description",
+        content:
+          "Live executive war room with ARIA, specialist AI agents, predictive risks, and 60-second executive briefings.",
+      },
     ],
   }),
   component: WarRoomPage,
@@ -48,7 +67,9 @@ export const Route = createFileRoute("/_authenticated/bridge")({
         <button
           onClick={reset}
           className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
-        >Retry</button>
+        >
+          Retry
+        </button>
       </div>
     </div>
   ),
@@ -101,9 +122,11 @@ function WarRoomPage() {
   const spotlightAgentId = useMemo(() => {
     if (!spotlightSegment) return null;
     if (spotlightSegment.speaker_id === "aria") return null;
-    return agents.find(
-      (a) => a.id === spotlightSegment.speaker_id || a.name === spotlightSegment.speaker_name,
-    )?.id ?? null;
+    return (
+      agents.find(
+        (a) => a.id === spotlightSegment.speaker_id || a.name === spotlightSegment.speaker_name,
+      )?.id ?? null
+    );
   }, [spotlightSegment, agents]);
 
   return (
@@ -138,7 +161,6 @@ function WarRoomPage() {
           >
             <CenterStage ar={ar} speaking={spotlightSegment?.speaker_id === "aria"} aria={aria} />
           </AgentRing>
-
 
           <button
             onClick={() => startBriefing.mutate(undefined)}
@@ -205,22 +227,36 @@ function WarRoomPage() {
 // TOP — Mission Status
 // ----------------------------------------------------------------------
 
-type Health = NonNullable<ReturnType<typeof getBridgeState> extends Promise<infer T> ? T : never>["health"];
+type Health = NonNullable<
+  ReturnType<typeof getBridgeState> extends Promise<infer T> ? T : never
+>["health"];
 
 function MissionStatusStrip({
-  ar, health, loading,
-}: { ar: boolean; health?: Health; loading: boolean }) {
+  ar,
+  health,
+  loading,
+}: {
+  ar: boolean;
+  health?: Health;
+  loading: boolean;
+}) {
   const score = health?.score ?? 0;
   const statusLabel =
-    score >= 90 ? { ar: "تشغيل آمن", en: "Secure Operations" } :
-    score >= 70 ? { ar: "تشغيل عادي", en: "Normal Operations" } :
-    score >= 50 ? { ar: "ضغط مرتفع", en: "Elevated Pressure" } :
-                  { ar: "حالة حرجة", en: "Critical Condition" };
+    score >= 90
+      ? { ar: "تشغيل آمن", en: "Secure Operations" }
+      : score >= 70
+        ? { ar: "تشغيل عادي", en: "Normal Operations" }
+        : score >= 50
+          ? { ar: "ضغط مرتفع", en: "Elevated Pressure" }
+          : { ar: "حالة حرجة", en: "Critical Condition" };
   const statusTone =
-    score >= 90 ? "bg-emerald-400/15 text-emerald-200 ring-emerald-400/30" :
-    score >= 70 ? "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30" :
-    score >= 50 ? "bg-amber-400/15 text-amber-200 ring-amber-400/30" :
-                  "bg-rose-400/15 text-rose-200 ring-rose-400/30";
+    score >= 90
+      ? "bg-emerald-400/15 text-emerald-200 ring-emerald-400/30"
+      : score >= 70
+        ? "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30"
+        : score >= 50
+          ? "bg-amber-400/15 text-amber-200 ring-amber-400/30"
+          : "bg-rose-400/15 text-rose-200 ring-rose-400/30";
 
   return (
     <header className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-6 pt-6 pb-4">
@@ -230,7 +266,8 @@ function MissionStatusStrip({
         </div>
         <div className="min-w-0">
           <div className="truncate text-xs uppercase tracking-[0.22em] text-cyan-300/80">
-            NEXUS · {ar ? "إدارة الأمن الصناعي · المنطقة الغربية" : "Industrial Security · Western Region"}
+            NEXUS ·{" "}
+            {ar ? "إدارة الأمن الصناعي · المنطقة الغربية" : "Industrial Security · Western Region"}
           </div>
           <div className="truncate text-2xl font-light text-white sm:text-3xl">
             {ar ? "غرفة العمليات التنفيذية" : "Executive War Room"}
@@ -239,12 +276,17 @@ function MissionStatusStrip({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className={cn("inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] ring-1", statusTone)}>
+        <div
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] ring-1",
+            statusTone,
+          )}
+        >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-50" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
           </span>
-          {loading ? "—" : (ar ? statusLabel.ar : statusLabel.en)}
+          {loading ? "—" : ar ? statusLabel.ar : statusLabel.en}
         </div>
         <LiveClock ar={ar} />
       </div>
@@ -260,7 +302,9 @@ function LiveClock({ ar }: { ar: boolean }) {
   }, []);
   return (
     <div className="rounded-2xl border border-cyan-400/15 bg-white/[0.02] px-4 py-2 backdrop-blur">
-      <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">{ar ? "البث المباشر" : "Live"}</div>
+      <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+        {ar ? "البث المباشر" : "Live"}
+      </div>
       <div className="text-2xl font-light tabular-nums text-white">
         {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
       </div>
@@ -273,10 +317,23 @@ function LiveClock({ ar }: { ar: boolean }) {
 // ----------------------------------------------------------------------
 
 function OperationalHealthColumn({
-  ar, health, loading,
-}: { ar: boolean; health?: Health; loading: boolean }) {
+  ar,
+  health,
+  loading,
+}: {
+  ar: boolean;
+  health?: Health;
+  loading: boolean;
+}) {
   const score = health?.score ?? 0;
-  const tone = score >= 90 ? "text-emerald-300" : score >= 70 ? "text-cyan-300" : score >= 50 ? "text-amber-300" : "text-rose-300";
+  const tone =
+    score >= 90
+      ? "text-emerald-300"
+      : score >= 70
+        ? "text-cyan-300"
+        : score >= 50
+          ? "text-amber-300"
+          : "text-rose-300";
 
   return (
     <aside className="flex flex-col gap-3 rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-4 backdrop-blur-xl">
@@ -291,46 +348,112 @@ function OperationalHealthColumn({
           {ar ? "المؤشر العام" : "Composite Score"}
         </div>
         <div className={cn("mt-1 text-5xl font-light tabular-nums", tone)}>
-          {loading ? "—" : Math.round(score)}<span className="text-2xl text-white/30">/100</span>
+          {loading ? "—" : Math.round(score)}
+          <span className="text-2xl text-white/30">/100</span>
         </div>
       </div>
 
-      <HealthRow ar={ar} loading={loading} Icon={AlertTriangle} tone="text-amber-200"
-        label_ar="بلاغات مفتوحة" label_en="Open Incidents"
-        value={health?.open_incidents ?? 0} />
-      <HealthRow ar={ar} loading={loading} Icon={AlertTriangle} tone="text-rose-300"
-        label_ar="حرجة" label_en="Critical Alerts"
-        value={health?.critical_incidents ?? 0} />
-      <HealthRow ar={ar} loading={loading} Icon={ShieldCheck} tone="text-cyan-200"
-        label_ar="دوريات نشطة" label_en="Active Patrols"
-        value={health?.active_patrols ?? 0} />
-      <HealthRow ar={ar} loading={loading} Icon={Users} tone="text-cyan-200"
-        label_ar="زوار داخل الموقع" label_en="Visitors Onsite"
-        value={health?.visitors_onsite ?? 0} />
-      <HealthRow ar={ar} loading={loading} Icon={FileCheck2} tone="text-emerald-200"
-        label_ar="تصاريح فعّالة" label_en="Active Permits"
-        value={health?.active_permits ?? 0} />
-      <HealthRow ar={ar} loading={loading} Icon={Wrench} tone="text-cyan-200"
-        label_ar="أوامر عمل مفتوحة" label_en="Open Work Orders"
-        value={health?.open_work_orders ?? 0} />
-      <HealthRow ar={ar} loading={loading} Icon={GaugeCircle} tone="text-emerald-200"
-        label_ar="مؤشر الامتثال" label_en="Compliance Score"
-        value={`${health?.compliance_score ?? 0}%`} />
-      <HealthRow ar={ar} loading={loading} Icon={Brain} tone="text-cyan-200"
-        label_ar="ثقة الذكاء الاصطناعي" label_en="AI Confidence"
-        value={`${health?.ai_confidence ?? 0}%`} />
-      <HealthRow ar={ar} loading={loading} Icon={Sparkles} tone="text-emerald-200"
-        label_ar="وكلاء نشطون" label_en="Agents Online"
-        value={`${health?.agents_online ?? 0}/${health?.agents_total ?? 0}`} />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={AlertTriangle}
+        tone="text-amber-200"
+        label_ar="بلاغات مفتوحة"
+        label_en="Open Incidents"
+        value={health?.open_incidents ?? 0}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={AlertTriangle}
+        tone="text-rose-300"
+        label_ar="حرجة"
+        label_en="Critical Alerts"
+        value={health?.critical_incidents ?? 0}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={ShieldCheck}
+        tone="text-cyan-200"
+        label_ar="دوريات نشطة"
+        label_en="Active Patrols"
+        value={health?.active_patrols ?? 0}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={Users}
+        tone="text-cyan-200"
+        label_ar="زوار داخل الموقع"
+        label_en="Visitors Onsite"
+        value={health?.visitors_onsite ?? 0}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={FileCheck2}
+        tone="text-emerald-200"
+        label_ar="تصاريح فعّالة"
+        label_en="Active Permits"
+        value={health?.active_permits ?? 0}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={Wrench}
+        tone="text-cyan-200"
+        label_ar="أوامر عمل مفتوحة"
+        label_en="Open Work Orders"
+        value={health?.open_work_orders ?? 0}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={GaugeCircle}
+        tone="text-emerald-200"
+        label_ar="مؤشر الامتثال"
+        label_en="Compliance Score"
+        value={`${health?.compliance_score ?? 0}%`}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={Brain}
+        tone="text-cyan-200"
+        label_ar="ثقة الذكاء الاصطناعي"
+        label_en="AI Confidence"
+        value={`${health?.ai_confidence ?? 0}%`}
+      />
+      <HealthRow
+        ar={ar}
+        loading={loading}
+        Icon={Sparkles}
+        tone="text-emerald-200"
+        label_ar="وكلاء نشطون"
+        label_en="Agents Online"
+        value={`${health?.agents_online ?? 0}/${health?.agents_total ?? 0}`}
+      />
     </aside>
   );
 }
 
 function HealthRow({
-  ar, label_ar, label_en, value, Icon, tone, loading,
+  ar,
+  label_ar,
+  label_en,
+  value,
+  Icon,
+  tone,
+  loading,
 }: {
-  ar: boolean; label_ar: string; label_en: string;
-  value: number | string; Icon: typeof Activity; tone: string; loading: boolean;
+  ar: boolean;
+  label_ar: string;
+  label_en: string;
+  value: number | string;
+  Icon: typeof Activity;
+  tone: string;
+  loading: boolean;
 }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.015] px-3 py-2">
@@ -338,9 +461,7 @@ function HealthRow({
         <Icon className={cn("h-3.5 w-3.5", tone)} />
         <span>{ar ? label_ar : label_en}</span>
       </div>
-      <div className={cn("text-sm font-semibold tabular-nums", tone)}>
-        {loading ? "—" : value}
-      </div>
+      <div className={cn("text-sm font-semibold tabular-nums", tone)}>{loading ? "—" : value}</div>
     </div>
   );
 }
@@ -349,7 +470,15 @@ function HealthRow({
 // CENTER — ARIA
 // ----------------------------------------------------------------------
 
-function CenterStage({ ar, speaking, aria }: { ar: boolean; speaking: boolean; aria: ReturnType<typeof findHuman> }) {
+function CenterStage({
+  ar,
+  speaking,
+  aria,
+}: {
+  ar: boolean;
+  speaking: boolean;
+  aria: ReturnType<typeof findHuman>;
+}) {
   return (
     <div className="relative grid h-full w-full place-items-center">
       <div
@@ -359,12 +488,7 @@ function CenterStage({ ar, speaking, aria }: { ar: boolean; speaking: boolean; a
           speaking ? "opacity-100" : "opacity-60",
         )}
       />
-      <DigitalHumanAvatar
-        spec={aria!}
-        state={speaking ? "speaking" : "idle"}
-        size={220}
-        ambient
-      />
+      <DigitalHumanAvatar spec={aria!} state={speaking ? "speaking" : "idle"} size={220} ambient />
       <div className="absolute -bottom-4 text-center">
         <div className="text-xs uppercase tracking-[0.22em] text-cyan-200/90">
           {ar ? "آريا · ذكاء تنفيذي" : "ARIA · Executive AI"}
@@ -379,8 +503,14 @@ function CenterStage({ ar, speaking, aria }: { ar: boolean; speaking: boolean; a
 // ----------------------------------------------------------------------
 
 function PredictedRiskRail({
-  ar, risks, loading,
-}: { ar: boolean; risks: Awaited<ReturnType<typeof getPredictedRisks>>; loading: boolean }) {
+  ar,
+  risks,
+  loading,
+}: {
+  ar: boolean;
+  risks: Awaited<ReturnType<typeof getPredictedRisks>>;
+  loading: boolean;
+}) {
   return (
     <div className="rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-4 backdrop-blur-xl">
       <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
@@ -388,35 +518,49 @@ function PredictedRiskRail({
         {ar ? "مخاطر متوقعة" : "Predicted Risks"}
         {!loading && <span className="ml-auto text-white/40">{risks.length}</span>}
       </div>
-      {loading && <div className="text-sm text-white/40">{ar ? "جاري التحليل…" : "Analyzing…"}</div>}
+      {loading && (
+        <div className="text-sm text-white/40">{ar ? "جاري التحليل…" : "Analyzing…"}</div>
+      )}
       {!loading && risks.length === 0 && (
         <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-sm text-emerald-200">
-          {ar ? "لا تنبيهات متوقعة. الوضع ضمن المعدّل التشغيلي." : "No predicted anomalies. Operations are within baseline."}
+          {ar
+            ? "لا تنبيهات متوقعة. الوضع ضمن المعدّل التشغيلي."
+            : "No predicted anomalies. Operations are within baseline."}
         </div>
       )}
       <div className="space-y-3">
         {risks.slice(0, 4).map((r) => {
           const tone =
-            r.severity === "high" ? "border-rose-400/40 bg-rose-400/5" :
-            r.severity === "medium" ? "border-amber-400/40 bg-amber-400/5" :
-            "border-cyan-400/30 bg-cyan-400/5";
+            r.severity === "high"
+              ? "border-rose-400/40 bg-rose-400/5"
+              : r.severity === "medium"
+                ? "border-amber-400/40 bg-amber-400/5"
+                : "border-cyan-400/30 bg-cyan-400/5";
           const dot =
-            r.severity === "high" ? "bg-rose-400" :
-            r.severity === "medium" ? "bg-amber-400" :
-            "bg-cyan-300";
+            r.severity === "high"
+              ? "bg-rose-400"
+              : r.severity === "medium"
+                ? "bg-amber-400"
+                : "bg-cyan-300";
           return (
             <div key={r.id} className={cn("rounded-2xl border p-3", tone)}>
               <div className="flex items-start gap-2">
                 <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", dot)} />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-white">{ar ? r.title_ar : r.title_en}</div>
-                  <div className="mt-1 text-[12px] leading-relaxed text-white/70">{ar ? r.why_ar : r.why_en}</div>
+                  <div className="truncate text-sm font-semibold text-white">
+                    {ar ? r.title_ar : r.title_en}
+                  </div>
+                  <div className="mt-1 text-[12px] leading-relaxed text-white/70">
+                    {ar ? r.why_ar : r.why_en}
+                  </div>
                   <div className="mt-2 flex items-center gap-3 text-[11px] text-white/50">
                     <span className="tabular-nums">
-                      {ar ? "ثقة" : "Confidence"}: <span className="text-white/80">{Math.round(r.confidence * 100)}%</span>
+                      {ar ? "ثقة" : "Confidence"}:{" "}
+                      <span className="text-white/80">{Math.round(r.confidence * 100)}%</span>
                     </span>
                     <span className="tabular-nums">
-                      {ar ? "أفق" : "Horizon"}: <span className="text-white/80">{r.horizon_hours}h</span>
+                      {ar ? "أفق" : "Horizon"}:{" "}
+                      <span className="text-white/80">{r.horizon_hours}h</span>
                     </span>
                   </div>
                 </div>
@@ -430,7 +574,9 @@ function PredictedRiskRail({
 }
 
 function ExecutiveRecommendation({
-  ar, risks, health,
+  ar,
+  risks,
+  health,
 }: {
   ar: boolean;
   risks: Awaited<ReturnType<typeof getPredictedRisks>>;
@@ -439,10 +585,22 @@ function ExecutiveRecommendation({
   const top3 = risks.slice(0, 3);
   const score = health?.score ?? 0;
   const status =
-    score >= 90 ? { ar: "العمليات ضمن المعدّل الآمن.", en: "Operations are within the safe baseline." } :
-    score >= 70 ? { ar: "ضغط تشغيلي معتدل، يستوجب متابعة قريبة.", en: "Moderate operational pressure — close monitoring." } :
-    score >= 50 ? { ar: "ضغط مرتفع، يلزم تخصيص موارد إضافية.", en: "Elevated pressure — reallocate response resources." } :
-                  { ar: "حالة حرجة، يتطلب تدخّل قيادي فوري.", en: "Critical condition — immediate leadership intervention." };
+    score >= 90
+      ? { ar: "العمليات ضمن المعدّل الآمن.", en: "Operations are within the safe baseline." }
+      : score >= 70
+        ? {
+            ar: "ضغط تشغيلي معتدل، يستوجب متابعة قريبة.",
+            en: "Moderate operational pressure — close monitoring.",
+          }
+        : score >= 50
+          ? {
+              ar: "ضغط مرتفع، يلزم تخصيص موارد إضافية.",
+              en: "Elevated pressure — reallocate response resources.",
+            }
+          : {
+              ar: "حالة حرجة، يتطلب تدخّل قيادي فوري.",
+              en: "Critical condition — immediate leadership intervention.",
+            };
 
   return (
     <div className="rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-emerald-400/[0.04] to-cyan-400/[0.04] p-4 backdrop-blur-xl">
@@ -461,7 +619,9 @@ function ExecutiveRecommendation({
           <ol className={cn("mt-1 space-y-1 text-[13px] text-white/80", ar && "text-right")}>
             {top3.map((r, i) => (
               <li key={r.id} className="flex items-start gap-2">
-                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-400/15 text-[10px] text-cyan-200 tabular-nums">{i + 1}</span>
+                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-400/15 text-[10px] text-cyan-200 tabular-nums">
+                  {i + 1}
+                </span>
                 <span className="truncate">{ar ? r.title_ar : r.title_en}</span>
               </li>
             ))}
@@ -470,12 +630,20 @@ function ExecutiveRecommendation({
       )}
       <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-2 text-center">
-          <div className="uppercase tracking-wider text-white/50">{ar ? "ثقة الذكاء" : "AI Confidence"}</div>
-          <div className="text-lg font-semibold tabular-nums text-cyan-200">{health?.ai_confidence ?? 0}%</div>
+          <div className="uppercase tracking-wider text-white/50">
+            {ar ? "ثقة الذكاء" : "AI Confidence"}
+          </div>
+          <div className="text-lg font-semibold tabular-nums text-cyan-200">
+            {health?.ai_confidence ?? 0}%
+          </div>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-2 text-center">
-          <div className="uppercase tracking-wider text-white/50">{ar ? "الامتثال" : "Compliance"}</div>
-          <div className="text-lg font-semibold tabular-nums text-emerald-200">{health?.compliance_score ?? 0}%</div>
+          <div className="uppercase tracking-wider text-white/50">
+            {ar ? "الامتثال" : "Compliance"}
+          </div>
+          <div className="text-lg font-semibold tabular-nums text-emerald-200">
+            {health?.compliance_score ?? 0}%
+          </div>
         </div>
       </div>
     </div>

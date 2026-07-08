@@ -31,8 +31,6 @@ const PRIORITY: Record<Source, number> = {
 // user gesture (via AriaAudioBus.unlock()).
 const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
 
-
-
 type StopFn = () => void;
 type BusEvent =
   | { kind: "start" | "end"; source: Source }
@@ -46,7 +44,13 @@ let unlocked = false;
 const listeners = new Set<Listener>();
 
 function emit(e: BusEvent) {
-  for (const l of listeners) { try { l(e); } catch { /* ignore */ } }
+  for (const l of listeners) {
+    try {
+      l(e);
+    } catch {
+      /* ignore */
+    }
+  }
 }
 
 // Double-voice watchdog — while chat-tts owns the channel, forcibly cancel
@@ -60,17 +64,22 @@ function startWatchdog() {
     if (!current || current.source !== "chat-tts") return;
     const s = window.speechSynthesis;
     if (s && (s.speaking || s.pending)) {
-      try { s.cancel(); } catch { /* ignore */ }
-      // eslint-disable-next-line no-console
+      try {
+        s.cancel();
+      } catch {
+        /* ignore */
+      }
+
       console.warn("[aria] OVERLAP killed (rogue speechSynthesis while chat-tts owns bus)");
     }
   }, 250);
 }
 function stopWatchdog() {
-  if (watchdogTimer != null) { clearInterval(watchdogTimer); watchdogTimer = null; }
+  if (watchdogTimer != null) {
+    clearInterval(watchdogTimer);
+    watchdogTimer = null;
+  }
 }
-
-
 
 // Module-scope singleton — survives React remounts, StrictMode double-invoke,
 // and any component re-registration. The ONLY way to reset is a full reload.
@@ -85,7 +94,11 @@ if (typeof window !== "undefined" && window.speechSynthesis) {
     const owner = current?.source ?? null;
     const stack = new Error().stack?.split("\n").slice(2, 6).join(" | ");
     VoiceTimeline.push("SPEECH_SYNTH", "speak() BLOCKED (browser TTS banned)", {
-      owner, lang: u.lang, voice: u.voice?.name, text: u.text?.slice(0, 60), stack,
+      owner,
+      lang: u.lang,
+      voice: u.voice?.name,
+      text: u.text?.slice(0, 60),
+      stack,
     });
     console.warn("[aria-voice] browser SpeechSynthesis blocked — no robotic voice", { owner });
     // swallow silently: do NOT call nativeSpeak, do NOT throw.
@@ -96,7 +109,6 @@ if (typeof window !== "undefined" && window.speechSynthesis) {
     return nativeCancel();
   };
 }
-
 
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
@@ -122,7 +134,6 @@ export const AriaAudioBus = {
     greetingPlayedThisSession = true;
   },
 
-
   /**
    * Request the voice channel. Returns true if granted.
    * Granting ALWAYS hard-stops whatever is playing first.
@@ -137,32 +148,51 @@ export const AriaAudioBus = {
     // pass { bypassGesture: true }. No ARIA / tour source is ever exempt.
     const bypass = opts?.bypassGesture === true && BYPASS_ALLOWED.has(source);
     if (!unlocked && !bypass) {
-      // eslint-disable-next-line no-console
       console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", { source, stack });
       VoiceTimeline.push("OWNER", "acquire REFUSED (no gesture)", { source, stack });
       return false;
     }
     if (current && PRIORITY[source] < PRIORITY[current.source]) {
-      VoiceTimeline.push("OWNER", "acquire DENIED (lower priority)", { requested: source, owner: current.source, stack });
+      VoiceTimeline.push("OWNER", "acquire DENIED (lower priority)", {
+        requested: source,
+        owner: current.source,
+        stack,
+      });
       return false;
     }
     if (current) {
       const prev = current.source;
       VoiceTimeline.push("PREEMPT", "owner preempted", { prev, next: source, stack });
-      try { current.stop(); } catch { /* ignore */ }
-      if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
+      try {
+        current.stop();
+      } catch {
+        /* ignore */
+      }
+      if (currentAudioEl) {
+        emit({ kind: "stopped", source: prev });
+        currentAudioEl = null;
+      }
       emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        /* ignore */
+      }
     }
     current = { source, stop };
-    VoiceTimeline.push("OWNER", "ACQUIRED", { owner: source, provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting", stack, bypass });
-    if (source === "chat-tts") startWatchdog(); else stopWatchdog();
+    VoiceTimeline.push("OWNER", "ACQUIRED", {
+      owner: source,
+      provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting",
+      stack,
+      bypass,
+    });
+    if (source === "chat-tts") startWatchdog();
+    else stopWatchdog();
     emit({ kind: "start", source });
     return true;
   },
-
 
   /**
    * Signal that real audio playback has begun (audio element 'playing' event
@@ -187,7 +217,10 @@ export const AriaAudioBus = {
   release(source: Source) {
     if (current?.source === source) {
       VoiceTimeline.push("RELEASE", "released", { owner: source });
-      if (currentAudioEl) { emit({ kind: "stopped", source }); currentAudioEl = null; }
+      if (currentAudioEl) {
+        emit({ kind: "stopped", source });
+        currentAudioEl = null;
+      }
       current = null;
       stopWatchdog();
       emit({ kind: "end", source });
@@ -197,23 +230,34 @@ export const AriaAudioBus = {
   stopAll() {
     if (current) {
       const prev = current.source;
-      try { current.stop(); } catch { /* ignore */ }
-      if (currentAudioEl) { emit({ kind: "stopped", source: prev }); currentAudioEl = null; }
+      try {
+        current.stop();
+      } catch {
+        /* ignore */
+      }
+      if (currentAudioEl) {
+        emit({ kind: "stopped", source: prev });
+        currentAudioEl = null;
+      }
       current = null;
       stopWatchdog();
       emit({ kind: "end", source: prev });
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        /* ignore */
+      }
     }
-
   },
-
 
   /** Subscribe to start/end events. Returns unsubscribe fn. */
   subscribe(l: Listener): () => void {
     listeners.add(l);
-    return () => { listeners.delete(l); };
+    return () => {
+      listeners.delete(l);
+    };
   },
 
   /** Current owner source, or null if idle. */

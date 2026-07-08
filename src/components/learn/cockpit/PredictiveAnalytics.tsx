@@ -34,9 +34,7 @@ export function PredictiveAnalytics({ title, unit, series, insight, lang }: Prop
   const y = (v: number) => P.t + innerH - (v / maxY) * innerH;
 
   // Actuals path (only points that have `actual`)
-  const actualIdx = series
-    .map((p, i) => ({ p, i }))
-    .filter((n) => typeof n.p.actual === "number");
+  const actualIdx = series.map((p, i) => ({ p, i })).filter((n) => typeof n.p.actual === "number");
   const actualsPath = actualIdx
     .map((n, k) => `${k === 0 ? "M" : "L"} ${x(n.i)} ${y(n.p.actual as number)}`)
     .join(" ");

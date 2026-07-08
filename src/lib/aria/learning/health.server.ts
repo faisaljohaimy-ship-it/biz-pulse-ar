@@ -14,10 +14,7 @@ export function evaluateLearningHealth(): LearningHealth {
     signals.push("high_verification_rejection");
     status = "noisy";
   }
-  if (
-    metrics.patternsDetected > 0 &&
-    metrics.lessonsCreated === 0
-  ) {
+  if (metrics.patternsDetected > 0 && metrics.lessonsCreated === 0) {
     signals.push("patterns_without_lessons");
     if (status === "healthy") status = "degraded";
   }

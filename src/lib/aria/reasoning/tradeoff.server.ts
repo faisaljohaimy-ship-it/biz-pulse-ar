@@ -23,7 +23,10 @@ export interface TradeoffReport {
 
 export function compareTradeoffs(options: DecisionOption[]): TradeoffReport {
   if (options.length < 2) {
-    return { tradeoffs: [], reasoning: "At least two options required for pairwise trade-off analysis." };
+    return {
+      tradeoffs: [],
+      reasoning: "At least two options required for pairwise trade-off analysis.",
+    };
   }
   const tradeoffs: Tradeoff[] = [];
   for (const axis of AXES) {

@@ -4,9 +4,15 @@
 
 const ALIGN = new Set([
   "none",
-  "xMinYMin", "xMidYMin", "xMaxYMin",
-  "xMinYMid", "xMidYMid", "xMaxYMid",
-  "xMinYMax", "xMidYMax", "xMaxYMax",
+  "xMinYMin",
+  "xMidYMin",
+  "xMaxYMin",
+  "xMinYMid",
+  "xMidYMid",
+  "xMaxYMid",
+  "xMinYMax",
+  "xMidYMax",
+  "xMaxYMax",
 ]);
 const MEET_OR_SLICE = new Set(["meet", "slice"]);
 

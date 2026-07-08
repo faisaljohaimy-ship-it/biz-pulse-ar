@@ -28,10 +28,7 @@ export class CrashRecovery {
       .filter((r) => r.status === "running")
       .map((r) => ({ ...r, status: "queued" as const })); // requeue in-flight
     const history = restoredJobs.filter(
-      (r) =>
-        r.status === "succeeded" ||
-        r.status === "failed" ||
-        r.status === "cancelled",
+      (r) => r.status === "succeeded" || r.status === "failed" || r.status === "cancelled",
     );
     this.state.restore({
       runtime_id: latest.runtime_id,

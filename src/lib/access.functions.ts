@@ -29,16 +29,50 @@ export const getAccessOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
-    const [visitorsRes, contractorsRes, vehiclesRes, gatesRes, deniedRes, sitesRes] = await Promise.all([
-      supabase.from("sec_visitors").select("id,ref,full_name,organization,host,purpose,badge_no,status,vehicle_plate,expected_at,check_in_at,check_out_at,phone,site_id,gate_id").order("check_in_at", { ascending: false }).limit(200),
-      supabase.from("sec_contractors").select("id,ref,name,contract_no,workers_count,compliance_score,status,expires_at,phone,email,permit_types,insurance_expiry").order("updated_at", { ascending: false }).limit(200),
-      supabase.from("sec_vehicles").select("id,ref,plate,vehicle_type,company,driver_name,driver_phone,status,site_id,gate_id,permit_no,permit_expires_at,check_in_at,check_out_at,contractor_id").order("updated_at", { ascending: false }).limit(200),
-      supabase.from("sec_gates").select("id,code,kind,status,health,events_today,last_event_at,site_id,building_id").order("code"),
-      supabase.from("sec_activity_events").select("id,event,payload,occurred_at,entity_type,entity_ref,actor_name").eq("event", "access_denied").order("occurred_at", { ascending: false }).limit(20),
-      supabase.from("sec_sites").select("id,code,name_ar,name_en"),
-    ]);
+    const [visitorsRes, contractorsRes, vehiclesRes, gatesRes, deniedRes, sitesRes] =
+      await Promise.all([
+        supabase
+          .from("sec_visitors")
+          .select(
+            "id,ref,full_name,organization,host,purpose,badge_no,status,vehicle_plate,expected_at,check_in_at,check_out_at,phone,site_id,gate_id",
+          )
+          .order("check_in_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("sec_contractors")
+          .select(
+            "id,ref,name,contract_no,workers_count,compliance_score,status,expires_at,phone,email,permit_types,insurance_expiry",
+          )
+          .order("updated_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("sec_vehicles")
+          .select(
+            "id,ref,plate,vehicle_type,company,driver_name,driver_phone,status,site_id,gate_id,permit_no,permit_expires_at,check_in_at,check_out_at,contractor_id",
+          )
+          .order("updated_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("sec_gates")
+          .select("id,code,kind,status,health,events_today,last_event_at,site_id,building_id")
+          .order("code"),
+        supabase
+          .from("sec_activity_events")
+          .select("id,event,payload,occurred_at,entity_type,entity_ref,actor_name")
+          .eq("event", "access_denied")
+          .order("occurred_at", { ascending: false })
+          .limit(20),
+        supabase.from("sec_sites").select("id,code,name_ar,name_en"),
+      ]);
 
-    const errs = [visitorsRes.error, contractorsRes.error, vehiclesRes.error, gatesRes.error, deniedRes.error, sitesRes.error].filter(Boolean);
+    const errs = [
+      visitorsRes.error,
+      contractorsRes.error,
+      vehiclesRes.error,
+      gatesRes.error,
+      deniedRes.error,
+      sitesRes.error,
+    ].filter(Boolean);
     if (errs.length) throw new Error(errs.map((e) => e!.message).join("; "));
 
     const visitors = visitorsRes.data ?? [];
@@ -48,8 +82,14 @@ export const getAccessOverview = createServerFn({ method: "GET" })
     const denied = deniedRes.data ?? [];
 
     const now = Date.now();
-    const expiringContractors = contractors.filter((c) => c.expires_at && new Date(c.expires_at).getTime() - now < 1000 * 60 * 60 * 24 * 30);
-    const expiringInsurance = contractors.filter((c) => c.insurance_expiry && new Date(c.insurance_expiry).getTime() - now < 1000 * 60 * 60 * 24 * 30);
+    const expiringContractors = contractors.filter(
+      (c) => c.expires_at && new Date(c.expires_at).getTime() - now < 1000 * 60 * 60 * 24 * 30,
+    );
+    const expiringInsurance = contractors.filter(
+      (c) =>
+        c.insurance_expiry &&
+        new Date(c.insurance_expiry).getTime() - now < 1000 * 60 * 60 * 24 * 30,
+    );
 
     return {
       visitors,
@@ -61,13 +101,17 @@ export const getAccessOverview = createServerFn({ method: "GET" })
       kpis: {
         visitors_inside: visitors.filter((v) => v.status === "inside").length,
         visitors_expected: visitors.filter((v) => v.status === "expected").length,
-        visitors_today: visitors.filter((v) => v.check_in_at && new Date(v.check_in_at).toDateString() === new Date().toDateString()).length,
+        visitors_today: visitors.filter(
+          (v) =>
+            v.check_in_at && new Date(v.check_in_at).toDateString() === new Date().toDateString(),
+        ).length,
         contractors_active: contractors.filter((c) => c.status === "active").length,
         contractors_expiring_30d: expiringContractors.length,
         insurance_expiring_30d: expiringInsurance.length,
         vehicles_inside: vehicles.filter((v) => v.status === "inside").length,
         vehicles_expected: vehicles.filter((v) => v.status === "expected").length,
-        vehicles_denied: vehicles.filter((v) => v.status === "denied" || v.status === "blacklisted").length,
+        vehicles_denied: vehicles.filter((v) => v.status === "denied" || v.status === "blacklisted")
+          .length,
         gates_online: gates.filter((g) => g.status === "online").length,
         gates_degraded: gates.filter((g) => g.status === "degraded").length,
         gates_offline: gates.filter((g) => g.status === "offline").length,
@@ -120,7 +164,10 @@ export const createVisitor = createServerFn({ method: "POST" })
         expected_at: data.expected_at ?? null,
         status: data.status,
         qr_token,
-        check_in_at: data.status === "inside" ? new Date().toISOString() : (data.expected_at ?? new Date().toISOString()),
+        check_in_at:
+          data.status === "inside"
+            ? new Date().toISOString()
+            : (data.expected_at ?? new Date().toISOString()),
         created_by: userId,
       })
       .select()
@@ -134,7 +181,11 @@ export const createVisitor = createServerFn({ method: "POST" })
       event: data.status === "inside" ? "visitor_checked_in" : "visitor_pre_registered",
       actor_id: userId,
       actor_name: actor,
-      payload: { host: data.host, organization: data.organization ?? null, vehicle_plate: data.vehicle_plate ?? null } as JsonValue,
+      payload: {
+        host: data.host,
+        organization: data.organization ?? null,
+        vehicle_plate: data.vehicle_plate ?? null,
+      } as JsonValue,
     });
     return row;
   });
@@ -169,7 +220,9 @@ export const checkOutVisitor = createServerFn({ method: "POST" })
 
 export const checkInExpectedVisitor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ visitor_id: z.string().uuid(), badge_no: z.string().max(60).optional() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ visitor_id: z.string().uuid(), badge_no: z.string().max(60).optional() }).parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
@@ -248,7 +301,11 @@ export const createContractor = createServerFn({ method: "POST" })
       event: "contractor_registered",
       actor_id: userId,
       actor_name: actor,
-      payload: { name: data.name, contract_no: data.contract_no, workers: data.workers_count } as JsonValue,
+      payload: {
+        name: data.name,
+        contract_no: data.contract_no,
+        workers: data.workers_count,
+      } as JsonValue,
     });
     return row;
   });
@@ -256,11 +313,13 @@ export const createContractor = createServerFn({ method: "POST" })
 export const updateContractorStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      contractor_id: z.string().uuid(),
-      status: z.enum(["active", "suspended", "blacklisted", "expired"]),
-      reason: z.string().max(500).optional(),
-    }).parse(d),
+    z
+      .object({
+        contractor_id: z.string().uuid(),
+        status: z.enum(["active", "suspended", "blacklisted", "expired"]),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
@@ -290,7 +349,9 @@ export const updateContractorStatus = createServerFn({ method: "POST" })
 
 const createVehicleSchema = z.object({
   plate: z.string().min(2).max(40),
-  vehicle_type: z.enum(["car", "truck", "tanker", "service", "emergency", "bus", "other"]).default("car"),
+  vehicle_type: z
+    .enum(["car", "truck", "tanker", "service", "emergency", "bus", "other"])
+    .default("car"),
   company: z.string().max(160).optional(),
   driver_name: z.string().min(2).max(160),
   driver_phone: z.string().max(40).optional(),
@@ -341,7 +402,11 @@ export const createVehicle = createServerFn({ method: "POST" })
       event: data.status === "inside" ? "vehicle_checked_in" : "vehicle_pre_registered",
       actor_id: userId,
       actor_name: actor,
-      payload: { plate: data.plate, driver: data.driver_name, type: data.vehicle_type } as JsonValue,
+      payload: {
+        plate: data.plate,
+        driver: data.driver_name,
+        type: data.vehicle_type,
+      } as JsonValue,
     });
     return row;
   });
@@ -374,11 +439,13 @@ export const vehicleCheckOut = createServerFn({ method: "POST" })
 export const denyVehicleAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      plate: z.string().min(2).max(40),
-      gate_id: z.string().uuid().nullable().optional(),
-      reason: z.string().min(2).max(500),
-    }).parse(d),
+    z
+      .object({
+        plate: z.string().min(2).max(40),
+        gate_id: z.string().uuid().nullable().optional(),
+        reason: z.string().min(2).max(500),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
@@ -390,7 +457,12 @@ export const denyVehicleAccess = createServerFn({ method: "POST" })
       event: "access_denied",
       actor_id: userId,
       actor_name: actor,
-      payload: { plate: data.plate, gate_id: data.gate_id ?? null, reason: data.reason, target: "vehicle" } as JsonValue,
+      payload: {
+        plate: data.plate,
+        gate_id: data.gate_id ?? null,
+        reason: data.reason,
+        target: "vehicle",
+      } as JsonValue,
     });
     return { ok: true };
   });
@@ -402,12 +474,14 @@ export const denyVehicleAccess = createServerFn({ method: "POST" })
 export const setGateStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      gate_id: z.string().uuid(),
-      status: z.enum(["online", "degraded", "offline", "maintenance"]),
-      health: z.number().int().min(0).max(100).optional(),
-      reason: z.string().max(500).optional(),
-    }).parse(d),
+    z
+      .object({
+        gate_id: z.string().uuid(),
+        status: z.enum(["online", "degraded", "offline", "maintenance"]),
+        health: z.number().int().min(0).max(100).optional(),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
@@ -430,7 +504,11 @@ export const setGateStatus = createServerFn({ method: "POST" })
       event: "gate_status_changed",
       actor_id: userId,
       actor_name: actor,
-      payload: { status: data.status, health: data.health ?? null, reason: data.reason ?? null } as JsonValue,
+      payload: {
+        status: data.status,
+        health: data.health ?? null,
+        reason: data.reason ?? null,
+      } as JsonValue,
     });
     return { ok: true };
   });

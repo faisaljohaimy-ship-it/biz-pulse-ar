@@ -21,18 +21,12 @@ const MODE_LENS: Record<string, string[]> = {
     "Metric decomposition isolates the primary driver",
     "The observed variance is explained by a leading indicator",
   ],
-  critical: [
-    "The stated assumption does not survive challenge",
-    "The framing itself is biased",
-  ],
+  critical: ["The stated assumption does not survive challenge", "The framing itself is biased"],
   creative: [
     "A reframing unlocks a lower-cost path",
     "Combining existing capabilities produces a novel option",
   ],
-  systems: [
-    "A feedback loop dominates the outcome",
-    "A hidden coupling explains the failure mode",
-  ],
+  systems: ["A feedback loop dominates the outcome", "A hidden coupling explains the failure mode"],
   root_cause: [
     "The immediate symptom is downstream of a policy gap",
     "A single upstream failure cascades through the chain",
@@ -45,10 +39,7 @@ const MODE_LENS: Record<string, string[]> = {
     "Base case remains the most probable outcome",
     "The downside scenario is materially likely and under-planned",
   ],
-  risk: [
-    "The top risk is concentration exposure",
-    "The most damaging risk is regulatory drift",
-  ],
+  risk: ["The top risk is concentration exposure", "The most damaging risk is regulatory drift"],
   opportunity: [
     "An under-exploited capability offers asymmetric upside",
     "Adjacency expansion is achievable with existing assets",
@@ -76,7 +67,11 @@ export function generateHypotheses(
       rationale: rationaleFor(statement, context),
       supporting_evidence_ids: supporting.map((e) => e.id),
       opposing_evidence_ids: opposing.map((e) => e.id),
-      confidence: confidence(value, `weight from evidence overlap = ${weight.toFixed(2)}`, supporting.map((e) => e.id)),
+      confidence: confidence(
+        value,
+        `weight from evidence overlap = ${weight.toFixed(2)}`,
+        supporting.map((e) => e.id),
+      ),
       status: "candidate",
       rejection_reason: null,
     };
@@ -98,7 +93,8 @@ export function generateHypotheses(
   return {
     hypotheses: supported,
     rejected,
-    reasoning: `Generated ${scored.length} hypotheses via mode=${context.mode}; ` +
+    reasoning:
+      `Generated ${scored.length} hypotheses via mode=${context.mode}; ` +
       `retained ${supported.length}, rejected ${rejected.length}.`,
   };
 }
@@ -115,6 +111,8 @@ function deriveContextHypotheses(ctx: ReasoningContext): string[] {
 }
 
 function rationaleFor(statement: string, ctx: ReasoningContext): string {
-  return `Derived under mode=${ctx.mode} for domain=${ctx.domain}. ` +
-    `Statement is evaluated against seeded evidence and constraints, not asserted a priori.`;
+  return (
+    `Derived under mode=${ctx.mode} for domain=${ctx.domain}. ` +
+    `Statement is evaluated against seeded evidence and constraints, not asserted a priori.`
+  );
 }

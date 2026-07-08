@@ -28,7 +28,10 @@ export const Route = createFileRoute("/_authenticated/voice-setup")({
   component: VoiceSetupPage,
 });
 
-const STATUS_META: Record<Check["status"], { color: string; Icon: typeof CheckCircle2; label: string }> = {
+const STATUS_META: Record<
+  Check["status"],
+  { color: string; Icon: typeof CheckCircle2; label: string }
+> = {
   ok: { color: "text-emerald-400", Icon: CheckCircle2, label: "OK" },
   failed: { color: "text-red-400", Icon: XCircle, label: "Failed" },
   missing: { color: "text-amber-400", Icon: AlertCircle, label: "Missing" },
@@ -36,9 +39,21 @@ const STATUS_META: Record<Check["status"], { color: string; Icon: typeof CheckCi
 };
 
 const MODE_LABEL: Record<Diagnostics["mode"], { ar: string; en: string; tone: string }> = {
-  conversation: { ar: "محادثة كاملة (ثنائية الاتجاه)", en: "Full conversation (two-way)", tone: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
-  scribe: { ar: "استماع فقط (تحويل صوت إلى نص)", en: "Listen-only (speech-to-text)", tone: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30" },
-  unavailable: { ar: "غير متاح", en: "Unavailable", tone: "bg-red-500/15 text-red-300 border-red-500/30" },
+  conversation: {
+    ar: "محادثة كاملة (ثنائية الاتجاه)",
+    en: "Full conversation (two-way)",
+    tone: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  },
+  scribe: {
+    ar: "استماع فقط (تحويل صوت إلى نص)",
+    en: "Listen-only (speech-to-text)",
+    tone: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
+  },
+  unavailable: {
+    ar: "غير متاح",
+    en: "Unavailable",
+    tone: "bg-red-500/15 text-red-300 border-red-500/30",
+  },
 };
 
 function VoiceSetupPage() {
@@ -57,7 +72,8 @@ function VoiceSetupPage() {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold text-cyan-100">Voice Setup · إعداد الصوت</h1>
         <p className="text-sm text-slate-400">
-          Live diagnostics for the ARIA voice stack. Every layer is probed end-to-end; no silent failures.
+          Live diagnostics for the ARIA voice stack. Every layer is probed end-to-end; no silent
+          failures.
         </p>
       </header>
 
@@ -83,7 +99,9 @@ function VoiceSetupPage() {
               <Badge variant="outline" className={MODE_LABEL[q.data.mode].tone}>
                 {MODE_LABEL[q.data.mode].en} · {MODE_LABEL[q.data.mode].ar}
               </Badge>
-              <p className="text-xs text-slate-500">Last checked: {new Date(q.data.generated_at).toLocaleTimeString()}</p>
+              <p className="text-xs text-slate-500">
+                Last checked: {new Date(q.data.generated_at).toLocaleTimeString()}
+              </p>
             </div>
           )}
         </CardContent>
@@ -120,10 +138,19 @@ function VoiceSetupPage() {
           <CardTitle className="text-sm text-slate-300">How to enable full two-way voice</CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-slate-400 space-y-2">
-          <p>1. Visit <span className="text-cyan-300">elevenlabs.io/app/conversational-ai</span> and create an agent (set the system prompt, voice, language).</p>
+          <p>
+            1. Visit <span className="text-cyan-300">elevenlabs.io/app/conversational-ai</span> and
+            create an agent (set the system prompt, voice, language).
+          </p>
           <p>2. Copy the agent ID.</p>
-          <p>3. Save it as the secret <code className="text-cyan-300">ELEVENLABS_AGENT_ID</code> in your Lovable project settings.</p>
-          <p>4. Return here and click <em>Re-run</em>. Mode should switch to <em>Full conversation</em>.</p>
+          <p>
+            3. Save it as the secret <code className="text-cyan-300">ELEVENLABS_AGENT_ID</code> in
+            your Lovable project settings.
+          </p>
+          <p>
+            4. Return here and click <em>Re-run</em>. Mode should switch to{" "}
+            <em>Full conversation</em>.
+          </p>
         </CardContent>
       </Card>
     </div>

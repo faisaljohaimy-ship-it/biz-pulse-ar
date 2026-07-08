@@ -51,5 +51,4 @@ export function WelcomeThenGenesis() {
   return <AriaWelcomeVideo onDone={completeWelcome} />;
 }
 
-
 export default WelcomeThenGenesis;

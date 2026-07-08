@@ -8,10 +8,12 @@ import { resolvePersona } from "@/lib/aria/personas";
 import { useI18n } from "@/lib/i18n";
 
 function departmentFor(pathname: string, ar: boolean): string {
-  if (/incidents|operations|risks|patrol/.test(pathname)) return ar ? "العمليات والسلامة" : "Operations & Safety";
-  if (/executive-reports|reports/.test(pathname))          return ar ? "التقارير التنفيذية" : "Executive Reports";
-  if (/employees|hr|workforce/.test(pathname))             return ar ? "الموارد البشرية" : "Workforce";
-  if (/hajj/.test(pathname))                               return ar ? "منظومة الحج" : "Hajj Command";
+  if (/incidents|operations|risks|patrol/.test(pathname))
+    return ar ? "العمليات والسلامة" : "Operations & Safety";
+  if (/executive-reports|reports/.test(pathname))
+    return ar ? "التقارير التنفيذية" : "Executive Reports";
+  if (/employees|hr|workforce/.test(pathname)) return ar ? "الموارد البشرية" : "Workforce";
+  if (/hajj/.test(pathname)) return ar ? "منظومة الحج" : "Hajj Command";
   return ar ? "المنظومة التنفيذية" : "Executive OS";
 }
 
@@ -52,7 +54,11 @@ export function ExecutiveTopHUD() {
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-          <Cell label={ar ? "الثقة" : "Confidence"} value={`${confidencePct}%`} tone={confidencePct >= 90 ? "ok" : confidencePct >= 75 ? "warn" : "crit"} />
+          <Cell
+            label={ar ? "الثقة" : "Confidence"}
+            value={`${confidencePct}%`}
+            tone={confidencePct >= 90 ? "ok" : confidencePct >= 75 ? "warn" : "crit"}
+          />
           <Cell label={ar ? "الشخصية" : "Persona"} value={personaLabel} />
           <Cell label={ar ? "الإدارة" : "Department"} value={dept} />
         </div>
@@ -66,7 +72,15 @@ export function ExecutiveTopHUD() {
   );
 }
 
-function Cell({ label, value, tone = "ok" }: { label: string; value: string; tone?: "ok" | "warn" | "crit" }) {
+function Cell({
+  label,
+  value,
+  tone = "ok",
+}: {
+  label: string;
+  value: string;
+  tone?: "ok" | "warn" | "crit";
+}) {
   const toneCls =
     tone === "crit" ? "text-[#FFB0C7]" : tone === "warn" ? "text-[#FBE29A]" : "text-white";
   return (

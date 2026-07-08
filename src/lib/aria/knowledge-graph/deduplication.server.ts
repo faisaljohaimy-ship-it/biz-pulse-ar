@@ -40,7 +40,11 @@ export function findDuplicateEntity(candidate: EntityRecord): EntityRecord | und
 
 export function mergeEntities(keep: EntityRecord, merged: EntityRecord): DuplicatePair {
   const now = new Date().toISOString();
-  const aliasSet = new Set<string>([...keep.aliases, ...merged.aliases, normalizeName(merged.canonical_name)]);
+  const aliasSet = new Set<string>([
+    ...keep.aliases,
+    ...merged.aliases,
+    normalizeName(merged.canonical_name),
+  ]);
   aliasSet.delete(normalizeName(keep.canonical_name));
 
   const evidenceMap = new Map<string, EvidenceRef>();

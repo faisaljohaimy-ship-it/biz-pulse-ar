@@ -5,8 +5,18 @@ import { useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
 import {
-  ChevronRight, Network, Building, Building2, Boxes, Camera, KeyRound,
-  Activity, Crown, ShieldCheck, Users, Radar,
+  ChevronRight,
+  Network,
+  Building,
+  Building2,
+  Boxes,
+  Camera,
+  KeyRound,
+  Activity,
+  Crown,
+  ShieldCheck,
+  Users,
+  Radar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,12 +24,25 @@ export const Route = createFileRoute("/_authenticated/sec/twin")({
   component: TwinPage,
 });
 
-type SelectedKind = "region" | "circle" | "site" | "building" | "camera" | "gate" | "sensor" | "control_room" | "patrol_team";
+type SelectedKind =
+  | "region"
+  | "circle"
+  | "site"
+  | "building"
+  | "camera"
+  | "gate"
+  | "sensor"
+  | "control_room"
+  | "patrol_team";
 type Selected = { kind: SelectedKind; id: string } | null;
 
 function TwinPage() {
   const fetchTree = useServerFn(getTwinTree);
-  const { data, isLoading } = useQuery({ queryKey: ["sec-twin"], queryFn: () => fetchTree(), refetchInterval: 60_000 });
+  const { data, isLoading } = useQuery({
+    queryKey: ["sec-twin"],
+    queryFn: () => fetchTree(),
+    refetchInterval: 60_000,
+  });
   const [selected, setSelected] = useState<Selected>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["region"]));
 
@@ -41,7 +64,11 @@ function TwinPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
         <div className="rounded-xl border border-border bg-card p-3 max-h-[78vh] overflow-y-auto">
           {isLoading || !data ? (
-            <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-8 animate-pulse rounded bg-muted/40" />)}</div>
+            <div className="space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-8 animate-pulse rounded bg-muted/40" />
+              ))}
+            </div>
           ) : (
             <TreeNode
               icon={Crown}
@@ -78,7 +105,13 @@ function TwinPage() {
                           label={s.name_ar}
                           count={s.buildings.length}
                           countLabel="مباني"
-                          tone={s.status === "operational" ? "ok" : s.status === "degraded" ? "warn" : "danger"}
+                          tone={
+                            s.status === "operational"
+                              ? "ok"
+                              : s.status === "degraded"
+                                ? "warn"
+                                : "danger"
+                          }
                           isExpanded={expanded.has(sKey)}
                           isSelected={selected?.kind === "site" && selected.id === s.id}
                           onToggle={() => toggle(sKey)}
@@ -110,8 +143,16 @@ function TwinPage() {
                                         icon={Camera}
                                         label={`${cam.code} · ${cam.kind}`}
                                         meta={`${cam.health}%`}
-                                        tone={cam.status === "online" ? "ok" : cam.status === "degraded" ? "warn" : "danger"}
-                                        isSelected={selected?.kind === "camera" && selected.id === cam.id}
+                                        tone={
+                                          cam.status === "online"
+                                            ? "ok"
+                                            : cam.status === "degraded"
+                                              ? "warn"
+                                              : "danger"
+                                        }
+                                        isSelected={
+                                          selected?.kind === "camera" && selected.id === cam.id
+                                        }
                                         onSelect={() => setSelected({ kind: "camera", id: cam.id })}
                                         depth={5}
                                       />
@@ -127,7 +168,9 @@ function TwinPage() {
                                         label={`${g.code} · ${g.kind}`}
                                         meta={`${g.events_today}/يوم`}
                                         tone={g.status === "online" ? "ok" : "warn"}
-                                        isSelected={selected?.kind === "gate" && selected.id === g.id}
+                                        isSelected={
+                                          selected?.kind === "gate" && selected.id === g.id
+                                        }
                                         onSelect={() => setSelected({ kind: "gate", id: g.id })}
                                         depth={5}
                                       />
@@ -141,9 +184,19 @@ function TwinPage() {
                                         key={sn.id}
                                         icon={Activity}
                                         label={`${sn.code} · ${sn.sensor_type}`}
-                                        meta={sn.reading != null ? `${sn.reading}${sn.unit ?? ""}` : "—"}
-                                        tone={sn.status === "online" ? "ok" : sn.status === "alarm" ? "danger" : "warn"}
-                                        isSelected={selected?.kind === "sensor" && selected.id === sn.id}
+                                        meta={
+                                          sn.reading != null ? `${sn.reading}${sn.unit ?? ""}` : "—"
+                                        }
+                                        tone={
+                                          sn.status === "online"
+                                            ? "ok"
+                                            : sn.status === "alarm"
+                                              ? "danger"
+                                              : "warn"
+                                        }
+                                        isSelected={
+                                          selected?.kind === "sensor" && selected.id === sn.id
+                                        }
                                         onSelect={() => setSelected({ kind: "sensor", id: sn.id })}
                                         depth={5}
                                       />
@@ -180,7 +233,13 @@ function TwinPage() {
                             icon={Radar}
                             label={pt.name_ar}
                             meta={`${pt.members_count} عضو`}
-                            tone={pt.status === "available" ? "ok" : pt.status === "on-route" ? "warn" : "muted"}
+                            tone={
+                              pt.status === "available"
+                                ? "ok"
+                                : pt.status === "on-route"
+                                  ? "warn"
+                                  : "muted"
+                            }
                             isSelected={selected?.kind === "patrol_team" && selected.id === pt.id}
                             onSelect={() => setSelected({ kind: "patrol_team", id: pt.id })}
                             depth={3}
@@ -211,32 +270,52 @@ const toneDot: Record<Tone, string> = {
 };
 
 function TreeNode({
-  icon: Icon, label, count, countLabel, isExpanded, isSelected, onToggle, onSelect, depth, tone, children,
+  icon: Icon,
+  label,
+  count,
+  countLabel,
+  isExpanded,
+  isSelected,
+  onToggle,
+  onSelect,
+  depth,
+  tone,
+  children,
 }: {
   icon: React.ComponentType<{ className?: string }>;
-  label: string; count?: number; countLabel?: string;
-  isExpanded: boolean; isSelected: boolean;
-  onToggle: () => void; onSelect: () => void;
-  depth: number; tone?: Tone; children?: React.ReactNode;
+  label: string;
+  count?: number;
+  countLabel?: string;
+  isExpanded: boolean;
+  isSelected: boolean;
+  onToggle: () => void;
+  onSelect: () => void;
+  depth: number;
+  tone?: Tone;
+  children?: React.ReactNode;
 }) {
   return (
     <div>
       <div
         className={cn(
           "flex items-center gap-1 rounded-md text-sm cursor-pointer transition-colors",
-          isSelected ? "bg-primary/15 text-foreground" : "hover:bg-muted/50 text-foreground"
+          isSelected ? "bg-primary/15 text-foreground" : "hover:bg-muted/50 text-foreground",
         )}
         style={{ paddingInlineStart: `${depth * 12 + 4}px` }}
       >
         <button onClick={onToggle} className="p-1 hover:bg-muted rounded" aria-label="toggle">
-          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />
+          <ChevronRight
+            className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")}
+          />
         </button>
         <button onClick={onSelect} className="flex flex-1 items-center gap-2 py-1.5 text-start">
           <Icon className="h-4 w-4 text-primary shrink-0" />
           {tone && <span className={cn("h-1.5 w-1.5 rounded-full", toneDot[tone])} />}
           <span className="truncate flex-1">{label}</span>
           {count != null && (
-            <span className="text-[10px] text-muted-foreground shrink-0">{count} {countLabel}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">
+              {count} {countLabel}
+            </span>
           )}
         </button>
       </div>
@@ -244,27 +323,50 @@ function TreeNode({
     </div>
   );
 }
-function GroupNode({ label, depth, children }: { label: string; depth: number; children: React.ReactNode }) {
+function GroupNode({
+  label,
+  depth,
+  children,
+}: {
+  label: string;
+  depth: number;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mt-1">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground py-1" style={{ paddingInlineStart: `${depth * 12 + 16}px` }}>{label}</div>
+      <div
+        className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground py-1"
+        style={{ paddingInlineStart: `${depth * 12 + 16}px` }}
+      >
+        {label}
+      </div>
       {children}
     </div>
   );
 }
 function LeafNode({
-  icon: Icon, label, meta, tone, isSelected, onSelect, depth,
+  icon: Icon,
+  label,
+  meta,
+  tone,
+  isSelected,
+  onSelect,
+  depth,
 }: {
   icon: React.ComponentType<{ className?: string }>;
-  label: string; meta?: string; tone?: Tone;
-  isSelected: boolean; onSelect: () => void; depth: number;
+  label: string;
+  meta?: string;
+  tone?: Tone;
+  isSelected: boolean;
+  onSelect: () => void;
+  depth: number;
 }) {
   return (
     <button
       onClick={onSelect}
       className={cn(
         "flex w-full items-center gap-2 rounded-md py-1 text-xs transition-colors",
-        isSelected ? "bg-primary/15 text-foreground" : "hover:bg-muted/40 text-muted-foreground"
+        isSelected ? "bg-primary/15 text-foreground" : "hover:bg-muted/40 text-muted-foreground",
       )}
       style={{ paddingInlineStart: `${depth * 12 + 16}px` }}
     >
@@ -282,14 +384,27 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
       <div className="flex h-full flex-col items-center justify-center text-center">
         <Network className="h-12 w-12 text-muted-foreground/40" />
         <p className="mt-3 text-sm text-muted-foreground">اختر أي عنصر من الشجرة لعرض تفاصيله</p>
-        <p className="mt-1 text-[11px] text-muted-foreground">المنطقة ← الدائرة ← الموقع ← المبنى ← الأصل</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          المنطقة ← الدائرة ← الموقع ← المبنى ← الأصل
+        </p>
       </div>
     );
   }
   if (selected.kind === "region") {
     const totalSites = tree.circles.reduce((s, c) => s + c.sites.length, 0);
-    const totalBuildings = tree.circles.reduce((s, c) => s + c.sites.reduce((ss, st) => ss + st.buildings.length, 0), 0);
-    const totalCameras = tree.circles.reduce((s, c) => s + c.sites.reduce((ss, st) => ss + st.buildings.reduce((sb, b) => sb + b.cameras.length, 0), 0), 0);
+    const totalBuildings = tree.circles.reduce(
+      (s, c) => s + c.sites.reduce((ss, st) => ss + st.buildings.length, 0),
+      0,
+    );
+    const totalCameras = tree.circles.reduce(
+      (s, c) =>
+        s +
+        c.sites.reduce(
+          (ss, st) => ss + st.buildings.reduce((sb, b) => sb + b.cameras.length, 0),
+          0,
+        ),
+      0,
+    );
     return (
       <DetailFrame title={tree.region.name_ar} subtitle={tree.region.name_en} icon={Crown}>
         <Grid>
@@ -301,10 +416,12 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
         </Grid>
         <h3 className="mt-4 text-sm font-semibold">الأقسام</h3>
         <ul className="mt-2 divide-y divide-border">
-          {tree.sections.map(s => (
+          {tree.sections.map((s) => (
             <li key={s.id} className="flex justify-between py-2 text-sm">
               <span>{s.name_ar}</span>
-              <span className="text-muted-foreground">{s.head} · {s.staff_count} موظف</span>
+              <span className="text-muted-foreground">
+                {s.head} · {s.staff_count} موظف
+              </span>
             </li>
           ))}
         </ul>
@@ -312,7 +429,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
     );
   }
   if (selected.kind === "circle") {
-    const c = tree.circles.find(x => x.id === selected.id);
+    const c = tree.circles.find((x) => x.id === selected.id);
     if (!c) return <Empty />;
     return (
       <DetailFrame title={c.name_ar} subtitle={`${c.name_en} · ${c.manager ?? ""}`} icon={Building}>
@@ -327,31 +444,50 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
           actions={[
             `مراجعة تغطية CCTV في ${c.sites.length} موقعاً`,
             "تأكيد جاهزية فرق الدوريات للوردية القادمة",
-            c.sites.length < 2 ? "اقتراح موقع إضافي لتعزيز التغطية" : "متابعة الخطة الأسبوعية المعتادة",
+            c.sites.length < 2
+              ? "اقتراح موقع إضافي لتعزيز التغطية"
+              : "متابعة الخطة الأسبوعية المعتادة",
           ]}
         />
       </DetailFrame>
     );
   }
   if (selected.kind === "site") {
-    const site = tree.circles.flatMap(c => c.sites.map(s => ({ ...s, _circle: c.name_ar }))).find(s => s.id === selected.id);
+    const site = tree.circles
+      .flatMap((c) => c.sites.map((s) => ({ ...s, _circle: c.name_ar })))
+      .find((s) => s.id === selected.id);
     if (!site) return <Empty />;
     return (
-      <DetailFrame title={site.name_ar} subtitle={`${site._circle} · ${site.code}`} icon={Building2}>
+      <DetailFrame
+        title={site.name_ar}
+        subtitle={`${site._circle} · ${site.code}`}
+        icon={Building2}
+      >
         <div className="flex flex-wrap gap-2">
-          <span className={`rounded-full border px-2 py-0.5 text-xs ${statusClass(site.status)}`}>{site.status}</span>
-          <span className={`rounded-full border px-2 py-0.5 text-xs ${severityClass(site.sensitivity)}`}>حساسية {site.sensitivity}</span>
+          <span className={`rounded-full border px-2 py-0.5 text-xs ${statusClass(site.status)}`}>
+            {site.status}
+          </span>
+          <span
+            className={`rounded-full border px-2 py-0.5 text-xs ${severityClass(site.sensitivity)}`}
+          >
+            حساسية {site.sensitivity}
+          </span>
         </div>
         <Grid>
           <Cell label="حرّاس" value={site.guards_count} />
           <Cell label="المباني" value={site.buildings.length} />
-          <Cell label="الكاميرات" value={site.buildings.reduce((s, b) => s + b.cameras.length, 0)} />
+          <Cell
+            label="الكاميرات"
+            value={site.buildings.reduce((s, b) => s + b.cameras.length, 0)}
+          />
           <Cell label="الحساسات" value={site.buildings.reduce((s, b) => s + b.sensors.length, 0)} />
         </Grid>
         <ARIASection
           analysis={`موقع ${site.name_ar} (${site.sensitivity}) حالياً ${site.status}. عدد الأصول المرتبطة كافٍ للتشغيل العادي.`}
           actions={[
-            site.status !== "operational" ? "فتح أمر عمل عاجل لإعادة الموقع للحالة التشغيلية" : "فحص دوري للأنظمة الأمنية",
+            site.status !== "operational"
+              ? "فتح أمر عمل عاجل لإعادة الموقع للحالة التشغيلية"
+              : "فحص دوري للأنظمة الأمنية",
             "مراجعة عدد الحرّاس مقابل الحساسية",
             "تأكيد جاهزية بوابات الدخول",
           ]}
@@ -360,32 +496,54 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
     );
   }
   if (selected.kind === "building") {
-    const b = tree.circles.flatMap(c => c.sites.flatMap(s => s.buildings.map(bd => ({ ...bd, _site: s.name_ar, _circle: c.name_ar })))).find(x => x.id === selected.id);
+    const b = tree.circles
+      .flatMap((c) =>
+        c.sites.flatMap((s) =>
+          s.buildings.map((bd) => ({ ...bd, _site: s.name_ar, _circle: c.name_ar })),
+        ),
+      )
+      .find((x) => x.id === selected.id);
     if (!b) return <Empty />;
     return (
-      <DetailFrame title={b.name_ar} subtitle={`${b._circle} · ${b._site} · ${b.code}`} icon={Boxes}>
+      <DetailFrame
+        title={b.name_ar}
+        subtitle={`${b._circle} · ${b._site} · ${b.code}`}
+        icon={Boxes}
+      >
         <Grid>
           <Cell label="الطوابق" value={b.floors} />
           <Cell label="الكاميرات" value={b.cameras.length} />
           <Cell label="البوابات" value={b.gates.length} />
           <Cell label="الحساسات" value={b.sensors.length} />
         </Grid>
-        <span className={`mt-2 inline-block rounded-full border px-2 py-0.5 text-xs ${statusClass(b.status)}`}>{b.status}</span>
+        <span
+          className={`mt-2 inline-block rounded-full border px-2 py-0.5 text-xs ${statusClass(b.status)}`}
+        >
+          {b.status}
+        </span>
         <ARIASection
           analysis={`المبنى ${b.name_ar} يحتوي ${b.cameras.length + b.gates.length + b.sensors.length} أصل أمني. الصحة العامة ${b.status}.`}
           actions={[
             "فحص بصري شامل خلال 48 ساعة",
-            b.cameras.filter(c => c.status !== "online").length > 0 ? `إصلاح ${b.cameras.filter(c => c.status !== "online").length} كاميرا غير متصلة` : "متابعة الصيانة الوقائية",
+            b.cameras.filter((c) => c.status !== "online").length > 0
+              ? `إصلاح ${b.cameras.filter((c) => c.status !== "online").length} كاميرا غير متصلة`
+              : "متابعة الصيانة الوقائية",
           ]}
         />
       </DetailFrame>
     );
   }
   if (selected.kind === "camera") {
-    const cam = tree.circles.flatMap(c => c.sites.flatMap(s => s.buildings.flatMap(b => b.cameras))).find(x => x.id === selected.id);
+    const cam = tree.circles
+      .flatMap((c) => c.sites.flatMap((s) => s.buildings.flatMap((b) => b.cameras)))
+      .find((x) => x.id === selected.id);
     if (!cam) return <Empty />;
     return (
-      <DetailFrame title={cam.code} subtitle={`كاميرا ${cam.kind} · ${cam.resolution ?? "—"}`} icon={Camera}>
+      <DetailFrame
+        title={cam.code}
+        subtitle={`كاميرا ${cam.kind} · ${cam.resolution ?? "—"}`}
+        icon={Camera}
+      >
         <Grid>
           <Cell label="الحالة" value={cam.status} />
           <Cell label="الصحة" value={`${cam.health}%`} />
@@ -394,13 +552,19 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
         </Grid>
         <ARIASection
           analysis={`الكاميرا ${cam.code} حالياً ${cam.status}. الصحة ${cam.health}%.`}
-          actions={cam.status !== "online" ? ["فتح أمر صيانة تصحيحية", "إخطار غرفة التحكم بالعجز المؤقت"] : ["فحص دوري في الموعد المجدول"]}
+          actions={
+            cam.status !== "online"
+              ? ["فتح أمر صيانة تصحيحية", "إخطار غرفة التحكم بالعجز المؤقت"]
+              : ["فحص دوري في الموعد المجدول"]
+          }
         />
       </DetailFrame>
     );
   }
   if (selected.kind === "gate") {
-    const g = tree.circles.flatMap(c => c.sites.flatMap(s => s.buildings.flatMap(b => b.gates))).find(x => x.id === selected.id);
+    const g = tree.circles
+      .flatMap((c) => c.sites.flatMap((s) => s.buildings.flatMap((b) => b.gates)))
+      .find((x) => x.id === selected.id);
     if (!g) return <Empty />;
     return (
       <DetailFrame title={g.code} subtitle={`بوابة ${g.kind}`} icon={KeyRound}>
@@ -414,7 +578,9 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
     );
   }
   if (selected.kind === "sensor") {
-    const s = tree.circles.flatMap(c => c.sites.flatMap(st => st.buildings.flatMap(b => b.sensors))).find(x => x.id === selected.id);
+    const s = tree.circles
+      .flatMap((c) => c.sites.flatMap((st) => st.buildings.flatMap((b) => b.sensors)))
+      .find((x) => x.id === selected.id);
     if (!s) return <Empty />;
     return (
       <DetailFrame title={s.code} subtitle={`حساس ${s.sensor_type}`} icon={Activity}>
@@ -428,7 +594,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
     );
   }
   if (selected.kind === "control_room") {
-    const cr = tree.circles.flatMap(c => c.control_rooms).find(x => x.id === selected.id);
+    const cr = tree.circles.flatMap((c) => c.control_rooms).find((x) => x.id === selected.id);
     if (!cr) return <Empty />;
     return (
       <DetailFrame title={cr.name_ar} subtitle={cr.code} icon={ShieldCheck}>
@@ -442,7 +608,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
     );
   }
   if (selected.kind === "patrol_team") {
-    const pt = tree.circles.flatMap(c => c.patrol_teams).find(x => x.id === selected.id);
+    const pt = tree.circles.flatMap((c) => c.patrol_teams).find((x) => x.id === selected.id);
     if (!pt) return <Empty />;
     return (
       <DetailFrame title={pt.name_ar} subtitle={pt.code} icon={Users}>
@@ -458,7 +624,17 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
   return <Empty />;
 }
 
-function DetailFrame({ title, subtitle, icon: Icon, children }: { title: string; subtitle?: string; icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
+function DetailFrame({
+  title,
+  subtitle,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <div className="flex items-center gap-3 border-b border-border pb-3">
@@ -492,7 +668,9 @@ function ARIASection({ analysis, actions }: { analysis: string; actions: string[
       <p className="mt-1 text-xs text-foreground">{analysis}</p>
       <div className="mt-2 text-xs font-semibold text-primary">إجراءات مقترحة</div>
       <ul className="mt-1 list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-        {actions.map((a, i) => <li key={i}>{a}</li>)}
+        {actions.map((a, i) => (
+          <li key={i}>{a}</li>
+        ))}
       </ul>
     </div>
   );

@@ -8,10 +8,12 @@ function nextId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function recordExperience(input: Omit<Experience, "id" | "capturedAt"> & {
-  id?: string;
-  capturedAt?: string;
-}): Experience {
+export function recordExperience(
+  input: Omit<Experience, "id" | "capturedAt"> & {
+    id?: string;
+    capturedAt?: string;
+  },
+): Experience {
   const experience: Experience = ExperienceSchema.parse({
     id: input.id ?? nextId("exp"),
     capturedAt: input.capturedAt ?? new Date().toISOString(),

@@ -49,7 +49,11 @@ export function verifyGraph(): VerificationReport {
 
   for (const r of relationships) {
     if (seenRelationshipIds.has(r.id)) {
-      issues.push({ code: "duplicate_id", detail: `duplicate relationship ${r.id}`, subject_id: r.id });
+      issues.push({
+        code: "duplicate_id",
+        detail: `duplicate relationship ${r.id}`,
+        subject_id: r.id,
+      });
     }
     seenRelationshipIds.add(r.id);
 

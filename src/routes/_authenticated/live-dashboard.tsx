@@ -40,7 +40,6 @@ import { LivePipelinesPanel } from "@/components/executive/LivePipelinesPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-
 export const Route = createFileRoute("/_authenticated/live-dashboard")({
   head: () => ({
     meta: [
@@ -101,7 +100,9 @@ function KpiCard({
         </span>
         <Icon className="w-4 h-4 opacity-70" />
       </div>
-      <div className={`mt-2 text-2xl md:text-3xl font-bold tabular-nums ${toneMap[tone].split(" ")[0]}`}>
+      <div
+        className={`mt-2 text-2xl md:text-3xl font-bold tabular-nums ${toneMap[tone].split(" ")[0]}`}
+      >
         {value}
       </div>
       {sub && <div className="text-[11px] text-foreground/50 mt-1 font-mono">{sub}</div>}
@@ -166,7 +167,6 @@ function LiveExecutiveDashboard() {
   const k = kpisQ.data;
   const ts = tsQ.data;
 
-
   const filteredPoints = useMemo(() => {
     if (!ts) return [];
     if (!search.trim()) return ts.points;
@@ -207,11 +207,7 @@ function LiveExecutiveDashboard() {
     doc.setFontSize(16);
     doc.text("NEXIOS AI OS — Executive Dashboard", 14, 16);
     doc.setFontSize(10);
-    doc.text(
-      `Range: last ${range} days   Generated: ${new Date().toISOString()}`,
-      14,
-      23,
-    );
+    doc.text(`Range: last ${range} days   Generated: ${new Date().toISOString()}`, 14, 23);
     if (k) {
       doc.text(
         `Open Incidents: ${k.incidents_open}   Critical: ${k.incidents_critical}   ` +
@@ -283,7 +279,9 @@ function LiveExecutiveDashboard() {
                 key={r}
                 onClick={() => setRange(r)}
                 className={`px-3 py-1.5 text-xs font-mono ${
-                  range === r ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-white/5"
+                  range === r
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/70 hover:bg-white/5"
                 }`}
               >
                 {RANGE_LABEL[r].ar}
@@ -334,10 +332,8 @@ function LiveExecutiveDashboard() {
         <LivePipelinesPanel />
       </div>
 
-
       {/* KPI strip */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-
         <KpiCard
           label="Open Incidents"
           value={String(k?.incidents_open ?? "—")}
@@ -368,7 +364,9 @@ function LiveExecutiveDashboard() {
         />
         <KpiCard
           label="Avg Response"
-          value={ts?.totals.avg_response_minutes != null ? `${ts.totals.avg_response_minutes}m` : "—"}
+          value={
+            ts?.totals.avg_response_minutes != null ? `${ts.totals.avg_response_minutes}m` : "—"
+          }
           sub="critical + high"
           tone="primary"
           icon={Gauge}
@@ -385,7 +383,10 @@ function LiveExecutiveDashboard() {
       {/* Charts + activity */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 space-y-4">
-          <ChartCard title="اتجاه البلاغات حسب الخطورة" hint={`Incidents by severity · last ${range} days`}>
+          <ChartCard
+            title="اتجاه البلاغات حسب الخطورة"
+            hint={`Incidents by severity · last ${range} days`}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={filteredPoints}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -504,7 +505,9 @@ function LiveExecutiveDashboard() {
               <dt className="text-foreground/50">Resolved</dt>
               <dd className="text-emerald-400 text-end">{ts?.totals.incidents_resolved ?? "—"}</dd>
               <dt className="text-foreground/50">Resolution</dt>
-              <dd className="text-emerald-400 text-end">{ts ? `${ts.totals.resolution_rate}%` : "—"}</dd>
+              <dd className="text-emerald-400 text-end">
+                {ts ? `${ts.totals.resolution_rate}%` : "—"}
+              </dd>
               <dt className="text-foreground/50">WO opened</dt>
               <dd className="text-amber-400 text-end">{ts?.totals.work_orders_opened ?? "—"}</dd>
               <dt className="text-foreground/50">WO closed</dt>
@@ -513,7 +516,9 @@ function LiveExecutiveDashboard() {
               <dd className="text-secondary text-end">{ts?.totals.patrols_completed ?? "—"}</dd>
               <dt className="text-foreground/50">Avg response</dt>
               <dd className="text-primary text-end">
-                {ts?.totals.avg_response_minutes != null ? `${ts.totals.avg_response_minutes}m` : "—"}
+                {ts?.totals.avg_response_minutes != null
+                  ? `${ts.totals.avg_response_minutes}m`
+                  : "—"}
               </dd>
             </dl>
           </div>
@@ -527,7 +532,6 @@ function LiveExecutiveDashboard() {
         <DecisionCenter />
         <ExecutiveTimeline />
       </div>
-
 
       {tsQ.isError && (
         <div className="mt-4 text-xs text-rose-400 font-mono">

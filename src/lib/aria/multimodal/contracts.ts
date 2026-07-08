@@ -6,15 +6,7 @@ import { z } from "zod";
 
 export const EvidenceRefSchema = z.object({
   source_id: z.string().min(1),
-  kind: z.enum([
-    "image",
-    "screenshot",
-    "pdf",
-    "video",
-    "audio",
-    "transcript",
-    "artifact",
-  ]),
+  kind: z.enum(["image", "screenshot", "pdf", "video", "audio", "transcript", "artifact"]),
   locator: z.string().min(1),
   hash: z.string().optional(),
   captured_at: z.string().min(1),
@@ -57,12 +49,7 @@ export const SignalKindSchema = z.enum([
   "unknown_region",
 ]);
 
-export const ConfidenceBucketSchema = z.enum([
-  "high",
-  "medium",
-  "low",
-  "unknown",
-]);
+export const ConfidenceBucketSchema = z.enum(["high", "medium", "low", "unknown"]);
 
 export const SignalSchema = z.object({
   id: z.string().min(1),
@@ -107,8 +94,6 @@ export const MultimodalFindingSchema = z.object({
 export const PipelineOutcomeSchema = z.object({
   ok: z.boolean(),
   findings: z.array(MultimodalFindingSchema).readonly(),
-  rejected: z
-    .array(z.object({ reason: z.string(), input_id: z.string() }))
-    .readonly(),
+  rejected: z.array(z.object({ reason: z.string(), input_id: z.string() })).readonly(),
   telemetry_id: z.string(),
 });

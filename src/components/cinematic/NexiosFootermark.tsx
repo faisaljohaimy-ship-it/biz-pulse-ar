@@ -34,9 +34,7 @@ export function NexiosFootermark({ caption = "Enterprise AI Operating System", c
         NEXIOS
       </div>
       <div className="mx-auto mt-4 h-px w-40 bg-gradient-to-r from-transparent via-[#3AE8FF]/60 to-transparent" />
-      <div className="mt-3 text-[10px] uppercase tracking-[0.42em] text-white/45">
-        {caption}
-      </div>
+      <div className="mt-3 text-[10px] uppercase tracking-[0.42em] text-white/45">{caption}</div>
     </div>
   );
 }

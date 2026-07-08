@@ -17,10 +17,7 @@ export {
 } from "./reasoner.server";
 
 export { subscribeReasoning } from "./events";
-export {
-  reasoningMetrics,
-  REASONER_VERSION,
-} from "./metrics.server";
+export { reasoningMetrics, REASONER_VERSION } from "./metrics.server";
 export { reasoningHealth } from "./health.server";
 
 export {

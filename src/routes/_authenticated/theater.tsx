@@ -16,8 +16,19 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useMemo, useState } from "react";
 import {
-  PlayCircle, Loader2, Volume2, VolumeX, StopCircle, Sparkles, ShieldCheck,
-  AlertTriangle, Activity, Users, FileCheck2, Brain, Radio,
+  PlayCircle,
+  Loader2,
+  Volume2,
+  VolumeX,
+  StopCircle,
+  Sparkles,
+  ShieldCheck,
+  AlertTriangle,
+  Activity,
+  Users,
+  FileCheck2,
+  Brain,
+  Radio,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -28,7 +39,7 @@ import { speakAgent } from "@/lib/digital-humans/speak-agent";
 
 // Lazy: react-three-fiber + three.js (~870KB) only loads when Theater renders
 const AriaScene = lazy(() =>
-  import("@/components/digital-humans/r3f/AriaScene").then((m) => ({ default: m.AriaScene }))
+  import("@/components/digital-humans/r3f/AriaScene").then((m) => ({ default: m.AriaScene })),
 );
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";
@@ -41,7 +52,11 @@ export const Route = createFileRoute("/_authenticated/theater")({
   head: () => ({
     meta: [
       { title: "Executive Theater — NEXUS AI OS" },
-      { name: "description", content: "Living executive command theater with ARIA Digital Human, specialist AI agent orchestra and one-click 60-second briefings — powered exclusively by real runtime data." },
+      {
+        name: "description",
+        content:
+          "Living executive command theater with ARIA Digital Human, specialist AI agent orchestra and one-click 60-second briefings — powered exclusively by real runtime data.",
+      },
     ],
   }),
   component: TheaterPage,
@@ -49,13 +64,28 @@ export const Route = createFileRoute("/_authenticated/theater")({
     <div className="grid min-h-[60vh] place-items-center p-8 text-center">
       <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-rose-400" />
       <div className="text-lg font-semibold text-white">{error.message}</div>
-      <button onClick={reset} className="mt-4 rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10">Retry</button>
+      <button
+        onClick={reset}
+        className="mt-4 rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
+      >
+        Retry
+      </button>
     </div>
   ),
   notFoundComponent: () => <div className="p-8">Not found</div>,
 });
 
-function HealthChip({ icon: Icon, label, value, tone = "cyan" }: { icon: typeof Activity; label: string; value: string | number; tone?: "cyan" | "amber" | "rose" | "emerald" }) {
+function HealthChip({
+  icon: Icon,
+  label,
+  value,
+  tone = "cyan",
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: string | number;
+  tone?: "cyan" | "amber" | "rose" | "emerald";
+}) {
   const tones: Record<string, string> = {
     cyan: "border-cyan-400/30 text-cyan-100",
     amber: "border-amber-400/40 text-amber-100",
@@ -63,7 +93,12 @@ function HealthChip({ icon: Icon, label, value, tone = "cyan" }: { icon: typeof 
     emerald: "border-emerald-400/40 text-emerald-100",
   };
   return (
-    <div className={cn("flex items-center gap-2 rounded-xl border bg-white/[0.03] px-3 py-2 backdrop-blur", tones[tone])}>
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-xl border bg-white/[0.03] px-3 py-2 backdrop-blur",
+        tones[tone],
+      )}
+    >
       <Icon className="h-4 w-4 opacity-80" />
       <div className="leading-tight">
         <div className="text-[10px] uppercase tracking-wider opacity-70">{label}</div>
@@ -98,11 +133,18 @@ function TheaterPage() {
   const agents = bridgeQuery.data?.agents ?? [];
 
   const healthScore = health?.score ?? 0;
-  const tone = healthScore >= 85 ? "emerald" : healthScore >= 70 ? "cyan" : healthScore >= 50 ? "amber" : "rose";
+  const tone =
+    healthScore >= 85
+      ? "emerald"
+      : healthScore >= 70
+        ? "cyan"
+        : healthScore >= 50
+          ? "amber"
+          : "rose";
 
   const aliveState = useMemo(() => {
     if (conductor.presenting) return "speaking" as const;
-    return conductor.state === "speaking" ? "speaking" as const : "idle" as const;
+    return conductor.state === "speaking" ? ("speaking" as const) : ("idle" as const);
   }, [conductor.state, conductor.presenting]);
 
   const recentLines = conductor.feed.slice(0, 8);
@@ -140,7 +182,10 @@ function TheaterPage() {
   return (
     <div dir={ar ? "rtl" : "ltr"} className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
       {/* Ambient executive backdrop — tints subtly with mission tone */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 transition-colors duration-[1500ms]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 transition-colors duration-[1500ms]"
+      >
         <div
           className="absolute inset-0 transition-[background] duration-[1500ms]"
           style={{
@@ -148,10 +193,10 @@ function TheaterPage() {
               tone === "rose"
                 ? "radial-gradient(ellipse at top, #2a0a18 0%, #08101e 55%, #020812 100%)"
                 : tone === "amber"
-                ? "radial-gradient(ellipse at top, #2a1a08 0%, #08101e 55%, #020812 100%)"
-                : tone === "emerald"
-                ? "radial-gradient(ellipse at top, #062a20 0%, #04101e 55%, #020812 100%)"
-                : "radial-gradient(ellipse at top, #0b2540 0%, #04101e 55%, #020812 100%)",
+                  ? "radial-gradient(ellipse at top, #2a1a08 0%, #08101e 55%, #020812 100%)"
+                  : tone === "emerald"
+                    ? "radial-gradient(ellipse at top, #062a20 0%, #04101e 55%, #020812 100%)"
+                    : "radial-gradient(ellipse at top, #0b2540 0%, #04101e 55%, #020812 100%)",
           }}
         />
         <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(rgba(0,212,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.4)_1px,transparent_1px)] bg-[size:60px_60px]" />
@@ -159,10 +204,13 @@ function TheaterPage() {
           className="absolute -top-32 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full blur-[120px] transition-colors duration-[1500ms]"
           style={{
             background:
-              tone === "rose" ? "rgba(244,63,94,0.10)"
-              : tone === "amber" ? "rgba(245,158,11,0.10)"
-              : tone === "emerald" ? "rgba(16,185,129,0.10)"
-              : "rgba(0,212,255,0.10)",
+              tone === "rose"
+                ? "rgba(244,63,94,0.10)"
+                : tone === "amber"
+                  ? "rgba(245,158,11,0.10)"
+                  : tone === "emerald"
+                    ? "rgba(16,185,129,0.10)"
+                    : "rgba(0,212,255,0.10)",
           }}
         />
       </div>
@@ -175,7 +223,9 @@ function TheaterPage() {
               {ar ? "مسرح القيادة التنفيذية" : "Executive Theater"}
             </div>
             <h1 className="mt-2 text-2xl md:text-3xl font-light text-white tracking-tight">
-              {ar ? "نيكزس AI · إدارة الأمن الصناعي — المنطقة الغربية" : "NEXUS AI · Industrial Security — Western Region"}
+              {ar
+                ? "نيكزس AI · إدارة الأمن الصناعي — المنطقة الغربية"
+                : "NEXUS AI · Industrial Security — Western Region"}
             </h1>
             <p className="mt-1 text-sm text-white/55 max-w-2xl">
               {ar
@@ -197,7 +247,13 @@ function TheaterPage() {
               aria-pressed={voiceEnabled}
             >
               {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              {ar ? (voiceEnabled ? "الصوت مفعّل" : "الصوت معطّل") : (voiceEnabled ? "Voice On" : "Voice Off")}
+              {ar
+                ? voiceEnabled
+                  ? "الصوت مفعّل"
+                  : "الصوت معطّل"
+                : voiceEnabled
+                  ? "Voice On"
+                  : "Voice Off"}
             </button>
 
             {(conductor.presenting || conductor.pending > 0) && (
@@ -222,7 +278,11 @@ function TheaterPage() {
                 "disabled:opacity-60 disabled:cursor-not-allowed",
               )}
             >
-              {briefingMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+              {briefingMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <PlayCircle className="h-4 w-4" />
+              )}
               {ar ? "بدء الموجز التنفيذي" : "Begin Executive Briefing"}
             </button>
           </div>
@@ -230,13 +290,44 @@ function TheaterPage() {
 
         {/* Health strip */}
         <section className="mt-6 grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7">
-          <HealthChip icon={ShieldCheck} label={ar ? "الصحة التشغيلية" : "Mission Health"} value={`${Math.round(healthScore)}`} tone={tone} />
-          <HealthChip icon={AlertTriangle} label={ar ? "بلاغات حرجة" : "Critical"} value={health?.critical_incidents ?? "—"} tone={(health?.critical_incidents ?? 0) > 0 ? "rose" : "emerald"} />
-          <HealthChip icon={Activity} label={ar ? "بلاغات مفتوحة" : "Open Incidents"} value={health?.open_incidents ?? "—"} />
-          <HealthChip icon={Radio} label={ar ? "دوريات نشطة" : "Active Patrols"} value={health?.active_patrols ?? "—"} />
-          <HealthChip icon={Users} label={ar ? "زوار حاليون" : "Visitors Onsite"} value={health?.visitors_onsite ?? "—"} />
-          <HealthChip icon={FileCheck2} label={ar ? "تصاريح فعّالة" : "Active Permits"} value={health?.active_permits ?? "—"} />
-          <HealthChip icon={Brain} label={ar ? "ثقة الذكاء" : "AI Confidence"} value={`${Math.round((health?.ai_confidence ?? 0) * 100)}%`} tone={(health?.ai_confidence ?? 0) > 0.75 ? "emerald" : "cyan"} />
+          <HealthChip
+            icon={ShieldCheck}
+            label={ar ? "الصحة التشغيلية" : "Mission Health"}
+            value={`${Math.round(healthScore)}`}
+            tone={tone}
+          />
+          <HealthChip
+            icon={AlertTriangle}
+            label={ar ? "بلاغات حرجة" : "Critical"}
+            value={health?.critical_incidents ?? "—"}
+            tone={(health?.critical_incidents ?? 0) > 0 ? "rose" : "emerald"}
+          />
+          <HealthChip
+            icon={Activity}
+            label={ar ? "بلاغات مفتوحة" : "Open Incidents"}
+            value={health?.open_incidents ?? "—"}
+          />
+          <HealthChip
+            icon={Radio}
+            label={ar ? "دوريات نشطة" : "Active Patrols"}
+            value={health?.active_patrols ?? "—"}
+          />
+          <HealthChip
+            icon={Users}
+            label={ar ? "زوار حاليون" : "Visitors Onsite"}
+            value={health?.visitors_onsite ?? "—"}
+          />
+          <HealthChip
+            icon={FileCheck2}
+            label={ar ? "تصاريح فعّالة" : "Active Permits"}
+            value={health?.active_permits ?? "—"}
+          />
+          <HealthChip
+            icon={Brain}
+            label={ar ? "ثقة الذكاء" : "AI Confidence"}
+            value={`${Math.round((health?.ai_confidence ?? 0) * 100)}%`}
+            tone={(health?.ai_confidence ?? 0) > 0.75 ? "emerald" : "cyan"}
+          />
         </section>
 
         {/* Executive Storyboard — 9-stage lifecycle of the latest event */}
@@ -252,7 +343,9 @@ function TheaterPage() {
               <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 max-w-[92%] rounded-full border border-cyan-300/40 bg-[#04111f]/85 px-3 py-1.5 sm:px-4 sm:py-2 backdrop-blur shadow-[0_0_30px_rgba(0,212,255,0.25)]">
                 <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wider text-cyan-200/85">
                   <Sparkles className="h-3.5 w-3.5" />
-                  <span className="truncate">{ar ? conductor.currentSpeaker.name_ar : conductor.currentSpeaker.name_en}</span>
+                  <span className="truncate">
+                    {ar ? conductor.currentSpeaker.name_ar : conductor.currentSpeaker.name_en}
+                  </span>
                 </div>
                 <div className="text-xs sm:text-sm text-white/90 leading-snug mt-0.5 line-clamp-2">
                   {ar ? conductor.currentLine.text_ar : conductor.currentLine.text_en}
@@ -262,12 +355,7 @@ function TheaterPage() {
 
             {/* Animated collaboration beams — each agent → ARIA (ring mode only) */}
             <div className="hidden sm:block">
-              <ConnectionLines
-                agents={agents}
-                radius={240}
-                speakerId={speakerAgentId}
-                size={640}
-              />
+              <ConnectionLines agents={agents} radius={240} speakerId={speakerAgentId} size={640} />
             </div>
 
             <AgentRing
@@ -278,8 +366,14 @@ function TheaterPage() {
               spotlightId={speakerAgentId}
               onAgentClick={(a) => speakAgent(a, ar)}
             >
-
-              <Suspense fallback={<div className="h-[300px] w-[300px] rounded-full bg-gradient-to-b from-cyan-500/10 to-transparent" aria-hidden />}>
+              <Suspense
+                fallback={
+                  <div
+                    className="h-[300px] w-[300px] rounded-full bg-gradient-to-b from-cyan-500/10 to-transparent"
+                    aria-hidden
+                  />
+                }
+              >
                 <AriaScene
                   spec={conductor.currentSpeaker}
                   state={aliveState}
@@ -294,13 +388,21 @@ function TheaterPage() {
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px] text-white/55">
               <span>
                 {ar
-                  ? conductor.presenting ? "وضع العرض التنفيذي" : conductor.state === "speaking" ? "جارٍ التحدث" : "وضع المراقبة"
-                  : conductor.presenting ? "Executive briefing in progress" : conductor.state === "speaking" ? "Speaking" : "Standby — monitoring live events"}
+                  ? conductor.presenting
+                    ? "وضع العرض التنفيذي"
+                    : conductor.state === "speaking"
+                      ? "جارٍ التحدث"
+                      : "وضع المراقبة"
+                  : conductor.presenting
+                    ? "Executive briefing in progress"
+                    : conductor.state === "speaking"
+                      ? "Speaking"
+                      : "Standby — monitoring live events"}
               </span>
               <span>
                 {ar
-                  ? `${agents.filter(a => a.enabled).length} وكيلًا نشطًا · ${conductor.pending} في الانتظار`
-                  : `${agents.filter(a => a.enabled).length} agents online · ${conductor.pending} queued`}
+                  ? `${agents.filter((a) => a.enabled).length} وكيلًا نشطًا · ${conductor.pending} في الانتظار`
+                  : `${agents.filter((a) => a.enabled).length} agents online · ${conductor.pending} queued`}
               </span>
             </div>
           </div>
@@ -317,7 +419,7 @@ function TheaterPage() {
                   : "No recent operational events. ARIA is monitoring in standby."}
               </div>
             )}
-            {recentLines.map((line) => (
+            {recentLines.map((line) =>
               line.narrator ? (
                 <StoryCard
                   key={line.id}
@@ -326,8 +428,8 @@ function TheaterPage() {
                   active={conductor.currentLine?.id === line.id}
                   onClick={() => setExplainLine(line.narrator!)}
                 />
-              ) : null
-            ))}
+              ) : null,
+            )}
           </aside>
         </section>
       </div>
@@ -342,6 +444,5 @@ function TheaterPage() {
         onClose={() => setExplainLine(null)}
       />
     </div>
-
   );
 }

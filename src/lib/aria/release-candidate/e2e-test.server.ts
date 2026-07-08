@@ -4,13 +4,9 @@
 import type { TestCase, TestOutcome, TestReport } from "./types";
 import { buildTestPlan } from "./test-plan.server";
 
-export function summarizeE2E(
-  outcomes: ReadonlyArray<TestOutcome>,
-): TestReport {
+export function summarizeE2E(outcomes: ReadonlyArray<TestOutcome>): TestReport {
   const plan = buildTestPlan();
-  const cases: ReadonlyArray<TestCase> = plan.cases.filter(
-    (c) => c.kind === "e2e",
-  );
+  const cases: ReadonlyArray<TestCase> = plan.cases.filter((c) => c.kind === "e2e");
   const map = new Map<string, TestOutcome>();
   for (const o of outcomes) map.set(o.case_id, o);
   const merged: TestOutcome[] = cases.map(

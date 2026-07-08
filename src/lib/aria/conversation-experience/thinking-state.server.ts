@@ -1,10 +1,5 @@
 // Thinking state — deterministic stage tracking during reasoning.
-export type ThinkingStage =
-  | "planning"
-  | "retrieving"
-  | "reasoning"
-  | "verifying"
-  | "composing";
+export type ThinkingStage = "planning" | "retrieving" | "reasoning" | "verifying" | "composing";
 
 export interface ThinkingSnapshot {
   readonly active: boolean;
@@ -15,11 +10,11 @@ export interface ThinkingSnapshot {
 }
 
 const CAPTIONS: Record<ThinkingStage, { ar: string; en: string }> = {
-  planning:   { ar: "أخطط للإجابة…", en: "Planning the answer…" },
+  planning: { ar: "أخطط للإجابة…", en: "Planning the answer…" },
   retrieving: { ar: "أراجع البيانات…", en: "Retrieving data…" },
-  reasoning:  { ar: "أفكر…", en: "Reasoning…" },
-  verifying:  { ar: "أتحقق من الأدلة…", en: "Verifying evidence…" },
-  composing:  { ar: "أصيغ الرد…", en: "Composing response…" },
+  reasoning: { ar: "أفكر…", en: "Reasoning…" },
+  verifying: { ar: "أتحقق من الأدلة…", en: "Verifying evidence…" },
+  composing: { ar: "أصيغ الرد…", en: "Composing response…" },
 };
 
 export class ThinkingStateStore {
@@ -44,13 +39,24 @@ export class ThinkingStateStore {
     this.publish();
   }
 
-  get(): ThinkingSnapshot { return this.snap; }
+  get(): ThinkingSnapshot {
+    return this.snap;
+  }
 
   subscribe(l: (s: ThinkingSnapshot) => void): () => void {
-    this.listeners.add(l); return () => { this.listeners.delete(l); };
+    this.listeners.add(l);
+    return () => {
+      this.listeners.delete(l);
+    };
   }
 
   private publish(): void {
-    for (const l of this.listeners) { try { l(this.snap); } catch { /* isolated */ } }
+    for (const l of this.listeners) {
+      try {
+        l(this.snap);
+      } catch {
+        /* isolated */
+      }
+    }
   }
 }

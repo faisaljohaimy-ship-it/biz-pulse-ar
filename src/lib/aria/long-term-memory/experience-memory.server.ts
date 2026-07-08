@@ -11,9 +11,7 @@ import { captureRecord } from "./capture.server";
 import { listRecords } from "./memory-store.server";
 import type { MemoryRecord } from "./types";
 
-export function captureExperience(
-  input: Omit<CaptureInput, "kind">,
-): MemoryRecord {
+export function captureExperience(input: Omit<CaptureInput, "kind">): MemoryRecord {
   return captureRecord("experience", input);
 }
 

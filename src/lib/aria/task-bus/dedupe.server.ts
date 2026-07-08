@@ -26,7 +26,9 @@ function hash(input: string): string {
   return (h >>> 0).toString(36);
 }
 
-export function taskSignature(task: Pick<Task, "missionId" | "agentId" | "contextSignature" | "payload">): string {
+export function taskSignature(
+  task: Pick<Task, "missionId" | "agentId" | "contextSignature" | "payload">,
+): string {
   return `${task.missionId}::${task.agentId}::${task.contextSignature ?? ""}::${hash(stableStringify(task.payload ?? {}))}`;
 }
 

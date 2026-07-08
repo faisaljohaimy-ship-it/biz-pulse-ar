@@ -19,12 +19,7 @@ export type ExecuteToolParams = {
 
 export type ExecuteToolResult = {
   executionId: string;
-  status:
-    | "succeeded"
-    | "failed"
-    | "pending_approval"
-    | "rejected"
-    | "rolled_back";
+  status: "succeeded" | "failed" | "pending_approval" | "rejected" | "rolled_back";
   output?: unknown;
   error?: string;
   attempts?: number;
@@ -33,11 +28,7 @@ export type ExecuteToolResult = {
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_RETRY = { max: 2, baseMs: 750 };
 
-async function withTimeout<T>(
-  p: Promise<T>,
-  ms: number,
-  label: string,
-): Promise<T> {
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   return await Promise.race([
     p,
     new Promise<T>((_, reject) =>
@@ -350,8 +341,8 @@ export async function rollbackExecution(
     throw new Error(`Tool ${row.tool_id} does not support rollback`);
   }
   const payload =
-    (row.output_json as { rollbackPayload?: Record<string, unknown> } | null)
-      ?.rollbackPayload ?? null;
+    (row.output_json as { rollbackPayload?: Record<string, unknown> } | null)?.rollbackPayload ??
+    null;
 
   try {
     await exec.rollback(payload, {
@@ -406,7 +397,7 @@ export async function reapStaleExecutions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = supabaseAdmin as any;
   const cutoff = new Date(Date.now() - maxAgeMs).toISOString();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: stale } = await admin
     .from("tool_executions")
     .select("id")
@@ -414,7 +405,7 @@ export async function reapStaleExecutions(
     .lt("started_at", cutoff);
   const ids = (stale ?? []).map((r: { id: string }) => r.id);
   if (!ids.length) return { reaped: 0 };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   await admin
     .from("tool_executions")
     .update({

@@ -11,23 +11,43 @@ import { useServerFn } from "@tanstack/react-start";
 import { getAgentConversation } from "@/lib/exec/conversation.functions";
 import { cn } from "@/lib/utils";
 import {
-  Brain, ShieldAlert, AlertOctagon, CheckCircle2, AlertTriangle, Mic, Loader2, RefreshCcw, Sparkles,
+  Brain,
+  ShieldAlert,
+  AlertOctagon,
+  CheckCircle2,
+  AlertTriangle,
+  Mic,
+  Loader2,
+  RefreshCcw,
+  Sparkles,
 } from "lucide-react";
 
 const STATE_TONE: Record<string, { ring: string; chip: string; Icon: typeof Brain }> = {
-  speaking:  { ring: "ring-emerald-400/50", chip: "bg-emerald-400/15 text-emerald-200", Icon: Mic },
-  completed: { ring: "ring-cyan-400/40",    chip: "bg-cyan-400/10 text-cyan-200",       Icon: CheckCircle2 },
-  thinking:  { ring: "ring-cyan-300/40 animate-pulse", chip: "bg-cyan-400/10 text-cyan-200", Icon: Brain },
-  escalated: { ring: "ring-rose-400/60 animate-pulse",  chip: "bg-rose-400/15 text-rose-200",  Icon: ShieldAlert },
-  warning:   { ring: "ring-amber-400/50",  chip: "bg-amber-400/15 text-amber-200",   Icon: AlertOctagon },
-  error:     { ring: "ring-rose-400/60",   chip: "bg-rose-400/15 text-rose-200",     Icon: AlertTriangle },
+  speaking: { ring: "ring-emerald-400/50", chip: "bg-emerald-400/15 text-emerald-200", Icon: Mic },
+  completed: { ring: "ring-cyan-400/40", chip: "bg-cyan-400/10 text-cyan-200", Icon: CheckCircle2 },
+  thinking: {
+    ring: "ring-cyan-300/40 animate-pulse",
+    chip: "bg-cyan-400/10 text-cyan-200",
+    Icon: Brain,
+  },
+  escalated: {
+    ring: "ring-rose-400/60 animate-pulse",
+    chip: "bg-rose-400/15 text-rose-200",
+    Icon: ShieldAlert,
+  },
+  warning: {
+    ring: "ring-amber-400/50",
+    chip: "bg-amber-400/15 text-amber-200",
+    Icon: AlertOctagon,
+  },
+  error: { ring: "ring-rose-400/60", chip: "bg-rose-400/15 text-rose-200", Icon: AlertTriangle },
 };
 
 const PRIORITY_TONE: Record<string, string> = {
   critical: "bg-rose-400/15 text-rose-200 ring-rose-400/30",
-  high:     "bg-amber-400/15 text-amber-200 ring-amber-400/30",
-  medium:   "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30",
-  low:      "bg-emerald-400/15 text-emerald-200 ring-emerald-400/30",
+  high: "bg-amber-400/15 text-amber-200 ring-amber-400/30",
+  medium: "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30",
+  low: "bg-emerald-400/15 text-emerald-200 ring-emerald-400/30",
 };
 
 export function AgentConversation({ ar }: { ar: boolean }) {
@@ -60,7 +80,11 @@ export function AgentConversation({ ar }: { ar: boolean }) {
           disabled={q.isFetching}
           className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-white/[0.03] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-400/10 disabled:opacity-50"
         >
-          {q.isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCcw className="h-3.5 w-3.5" />}
+          {q.isFetching ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCcw className="h-3.5 w-3.5" />
+          )}
           {ar ? "تحديث" : "Refresh"}
         </button>
       </header>
@@ -91,7 +115,12 @@ export function AgentConversation({ ar }: { ar: boolean }) {
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full", tone.chip)}>
+                    <span
+                      className={cn(
+                        "grid h-7 w-7 shrink-0 place-items-center rounded-full",
+                        tone.chip,
+                      )}
+                    >
                       <Icon className="h-3.5 w-3.5" />
                     </span>
                     <div className="min-w-0">
@@ -104,14 +133,19 @@ export function AgentConversation({ ar }: { ar: boolean }) {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-white/40">
-                    <span>{ar ? "ثقة" : "Conf."} {Math.round(t.confidence * 100)}%</span>
+                    <span>
+                      {ar ? "ثقة" : "Conf."} {Math.round(t.confidence * 100)}%
+                    </span>
                     <time dateTime={t.occurred_at}>
-                      {new Date(t.occurred_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(t.occurred_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </time>
                   </div>
                 </div>
                 <p className="mt-2 text-[13.5px] leading-relaxed text-white/85">
-                  {ar ? (t.statement_ar || t.statement_en) : (t.statement_en || t.statement_ar)}
+                  {ar ? t.statement_ar || t.statement_en : t.statement_en || t.statement_ar}
                 </p>
               </li>
             );
@@ -126,17 +160,31 @@ export function AgentConversation({ ar }: { ar: boolean }) {
               <Sparkles className="h-3.5 w-3.5" />
               {ar ? "خلاصة أريا التنفيذية" : "ARIA Executive Synthesis"}
             </div>
-            <span className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ring-1",
-              PRIORITY_TONE[synth.priority] ?? PRIORITY_TONE.medium,
-            )}>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ring-1",
+                PRIORITY_TONE[synth.priority] ?? PRIORITY_TONE.medium,
+              )}
+            >
               {ar ? "الأولوية:" : "Priority:"} {synth.priority}
             </span>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <Block label_ar="الوضع" label_en="Situation" ar={ar} text_ar={synth.situation_ar} text_en={synth.situation_en} />
-            <Block label_ar="الأثر" label_en="Impact"    ar={ar} text_ar={synth.impact_ar}    text_en={synth.impact_en} />
+            <Block
+              label_ar="الوضع"
+              label_en="Situation"
+              ar={ar}
+              text_ar={synth.situation_ar}
+              text_en={synth.situation_en}
+            />
+            <Block
+              label_ar="الأثر"
+              label_en="Impact"
+              ar={ar}
+              text_ar={synth.impact_ar}
+              text_en={synth.impact_en}
+            />
           </div>
 
           <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.02] p-3">
@@ -171,7 +219,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
               {ar ? "ثقة الخلاصة" : "Synthesis confidence"}: {Math.round(synth.confidence * 100)}%
             </span>
             <span>
-              {synth.source === "gpt-5" ? "ARIA" : (ar ? "وضع احتياطي" : "Fallback")}
+              {synth.source === "gpt-5" ? "ARIA" : ar ? "وضع احتياطي" : "Fallback"}
               {data?.cached ? ` · ${ar ? "ذاكرة" : "memory"}` : ""}
             </span>
           </div>
@@ -182,16 +230,24 @@ export function AgentConversation({ ar }: { ar: boolean }) {
 }
 
 function Block({
-  ar, label_ar, label_en, text_ar, text_en,
-}: { ar: boolean; label_ar: string; label_en: string; text_ar: string; text_en: string }) {
+  ar,
+  label_ar,
+  label_en,
+  text_ar,
+  text_en,
+}: {
+  ar: boolean;
+  label_ar: string;
+  label_en: string;
+  text_ar: string;
+  text_en: string;
+}) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
       <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
         {ar ? label_ar : label_en}
       </div>
-      <p className="mt-1 text-[13px] leading-relaxed text-white/85">
-        {ar ? text_ar : text_en}
-      </p>
+      <p className="mt-1 text-[13px] leading-relaxed text-white/85">{ar ? text_ar : text_en}</p>
     </div>
   );
 }

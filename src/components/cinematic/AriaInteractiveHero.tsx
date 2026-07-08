@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
-  ArrowUp, Sparkles, ShieldAlert, Activity, Radio, BarChart3,
-  Brain, Workflow, Loader2, Check,
+  ArrowUp,
+  Sparkles,
+  ShieldAlert,
+  Activity,
+  Radio,
+  BarChart3,
+  Brain,
+  Workflow,
+  Loader2,
+  Check,
 } from "lucide-react";
 
 type Demo = {
@@ -88,18 +96,28 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
     const d = DEMOS[idx];
     timersRef.current.push(window.setTimeout(() => setPhase("tools"), 700));
     d.tools.forEach((_, i) => {
-      timersRef.current.push(window.setTimeout(() => {
-        setToolDone((p) => [...p, i]);
-      }, 1100 + i * 550));
+      timersRef.current.push(
+        window.setTimeout(
+          () => {
+            setToolDone((p) => [...p, i]);
+          },
+          1100 + i * 550,
+        ),
+      );
     });
     const streamStart = 1100 + d.tools.length * 550 + 200;
     timersRef.current.push(window.setTimeout(() => setPhase("streaming"), streamStart));
     const text = isAr ? d.aAr : d.a;
     for (let i = 1; i <= text.length; i++) {
-      timersRef.current.push(window.setTimeout(() => {
-        setStreamed(text.slice(0, i));
-        if (i === text.length) setPhase("done");
-      }, streamStart + i * 14));
+      timersRef.current.push(
+        window.setTimeout(
+          () => {
+            setStreamed(text.slice(0, i));
+            if (i === text.length) setPhase("done");
+          },
+          streamStart + i * 14,
+        ),
+      );
     }
   }
 
@@ -127,11 +145,7 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
   }
 
   return (
-    <div
-      className="relative z-10 mx-auto w-full max-w-3xl px-4"
-      dir={isAr ? "rtl" : "ltr"}
-    >
-
+    <div className="relative z-10 mx-auto w-full max-w-3xl px-4" dir={isAr ? "rtl" : "ltr"}>
       {/* Headline */}
       <h1 className="mt-6 text-center text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
         <span
@@ -174,19 +188,25 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit();
+              }
             }}
             rows={1}
-            placeholder={isAr
-              ? "اسأل ARIA… (مثال: اعرض الحوادث الحرجة في جدة)"
-              : "Ask ARIA… (e.g. List critical incidents in Jeddah)"}
+            placeholder={
+              isAr
+                ? "اسأل ARIA… (مثال: اعرض الحوادث الحرجة في جدة)"
+                : "Ask ARIA… (e.g. List critical incidents in Jeddah)"
+            }
             className="flex-1 resize-none bg-transparent px-1 py-2 text-[15px] text-white outline-none placeholder:text-white/35"
           />
           <button
             type="submit"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#04121f] transition hover:scale-105"
             style={{
-              backgroundImage: "linear-gradient(135deg,var(--aria-aqua),var(--aria-cyan-bright),var(--aria-cyan))",
+              backgroundImage:
+                "linear-gradient(135deg,var(--aria-aqua),var(--aria-cyan-bright),var(--aria-cyan))",
               boxShadow: "0 8px 30px -8px rgba(58,232,255,0.7)",
             }}
             aria-label={isAr ? "إرسال" : "Send"}
@@ -242,7 +262,9 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
           <div className="flex items-start gap-2">
             <div
               className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg"
-              style={{ backgroundImage: "linear-gradient(135deg,var(--aria-aqua),var(--aria-cyan))" }}
+              style={{
+                backgroundImage: "linear-gradient(135deg,var(--aria-aqua),var(--aria-cyan))",
+              }}
             >
               <Sparkles className="h-3 w-3 text-[#04121f]" />
             </div>
@@ -270,7 +292,11 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
                             : "border-white/10 bg-white/5 text-white/50"
                         }`}
                       >
-                        {done ? <Check className="h-3 w-3" /> : <Loader2 className="h-3 w-3 animate-spin" />}
+                        {done ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        )}
                         <Icon className="h-3 w-3" />
                         <span className="font-mono">{isAr ? t.nameAr : t.name}</span>
                       </span>
@@ -290,7 +316,9 @@ export function AriaInteractiveHero({ isAr }: { isAr: boolean }) {
                     <div className="mt-2 flex items-center gap-1 text-[10px] text-[var(--aria-aqua)]/80">
                       <Check className="h-3 w-3" />
                       {isAr ? "اكتمل · مُسجّل في سجل النشاط" : "Completed · audit-logged"}
-                      <span className="ms-auto text-white/30">{streamed.length} {isAr ? "حرف" : "chars"}</span>
+                      <span className="ms-auto text-white/30">
+                        {streamed.length} {isAr ? "حرف" : "chars"}
+                      </span>
                     </div>
                   )}
                 </div>

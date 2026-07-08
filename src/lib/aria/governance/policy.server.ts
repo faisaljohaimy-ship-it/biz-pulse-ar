@@ -69,8 +69,7 @@ registerPolicy({
   id: "POL-AGENT-CANNOT-POLICY-CHANGE",
   description: "Agents cannot request policy changes.",
   check: (action) =>
-    action.kind === "policy_change" &&
-    (action.requested_authority ?? "agent") === "agent"
+    action.kind === "policy_change" && (action.requested_authority ?? "agent") === "agent"
       ? { ok: false, reason: "agent authority insufficient for policy change" }
       : { ok: true, reason: "authority level acceptable" },
 });

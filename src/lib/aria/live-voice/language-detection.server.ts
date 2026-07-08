@@ -6,7 +6,8 @@ const LATIN_RE = /[A-Za-z]/;
 
 export function detectLanguage(text: string): VoiceLang {
   if (!text) return "unknown";
-  let ar = 0, en = 0;
+  let ar = 0,
+    en = 0;
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     if (ARABIC_RE.test(ch)) ar++;

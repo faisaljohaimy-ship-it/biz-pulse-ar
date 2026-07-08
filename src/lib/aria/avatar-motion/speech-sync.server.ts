@@ -41,5 +41,7 @@ export class SpeechSyncCoordinator {
     this.nextAvailableAt = nowMs + next.durationMs;
   }
 
-  get isSpeaking(): boolean { return this.queue.length > 0 || this.nextAvailableAt > Date.now(); }
+  get isSpeaking(): boolean {
+    return this.queue.length > 0 || this.nextAvailableAt > Date.now();
+  }
 }

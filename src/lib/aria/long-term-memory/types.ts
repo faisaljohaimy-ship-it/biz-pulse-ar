@@ -9,23 +9,13 @@
  * MUST carry at least one EvidenceRef. Unknown remains UNKNOWN.
  */
 
-export type MemoryKind =
-  | "episodic"
-  | "semantic"
-  | "procedural"
-  | "decision"
-  | "experience";
+export type MemoryKind = "episodic" | "semantic" | "procedural" | "decision" | "experience";
 
 export type Confidence = "low" | "medium" | "high" | "unknown";
 export type Sensitivity = "public" | "internal" | "restricted" | "secret";
 export type Severity = "info" | "notice" | "warn" | "error" | "critical";
 export type ConflictStatus = "none" | "flagged" | "reconciled" | "unresolved";
-export type MemoryStatus =
-  | "active"
-  | "compressed"
-  | "decayed"
-  | "forgotten"
-  | "conflict";
+export type MemoryStatus = "active" | "compressed" | "decayed" | "forgotten" | "conflict";
 
 export interface EvidenceRef {
   readonly id: string;
@@ -103,7 +93,10 @@ export interface ConsolidationReport {
   readonly id: string;
   readonly created_at: string;
   readonly merged: readonly { readonly kept_id: string; readonly merged_ids: readonly string[] }[];
-  readonly compressed: readonly { readonly new_id: string; readonly source_ids: readonly string[] }[];
+  readonly compressed: readonly {
+    readonly new_id: string;
+    readonly source_ids: readonly string[];
+  }[];
   readonly conflicts: readonly ConflictReport[];
 }
 

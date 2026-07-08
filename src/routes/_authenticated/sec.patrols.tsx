@@ -17,19 +17,30 @@ function Patrols() {
       <SecPageHeader title="الدوريات الأمنية" subtitle={`${rows.length} دورية مسجّلة`} />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {rows.map((p) => {
-          const pct = p.checkpoints_total > 0 ? Math.round((p.checkpoints_done / p.checkpoints_total) * 100) : 0;
+          const pct =
+            p.checkpoints_total > 0
+              ? Math.round((p.checkpoints_done / p.checkpoints_total) * 100)
+              : 0;
           return (
             <div key={p.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-semibold text-foreground">{p.team}</div>
-                <span className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}>{p.status}</span>
+                <span
+                  className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}
+                >
+                  {p.status}
+                </span>
               </div>
-              <div className="mt-1 text-xs text-muted-foreground">{p.route} · {p.ref}</div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {p.route} · {p.ref}
+              </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
                 <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
               </div>
               <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
-                <span>{p.checkpoints_done}/{p.checkpoints_total} نقاط</span>
+                <span>
+                  {p.checkpoints_done}/{p.checkpoints_total} نقاط
+                </span>
                 <span>{pct}%</span>
               </div>
             </div>

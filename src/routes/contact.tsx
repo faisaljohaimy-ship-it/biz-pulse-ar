@@ -8,9 +8,15 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact Sales — Nexus AI OS" },
-      { name: "description", content: "Talk to Nexus AI OS enterprise sales about pricing, deployment, and security." },
+      {
+        name: "description",
+        content: "Talk to Nexus AI OS enterprise sales about pricing, deployment, and security.",
+      },
       { property: "og:title", content: "Contact Sales — Nexus AI OS" },
-      { property: "og:description", content: "Enterprise pricing, deployment, and security conversations." },
+      {
+        property: "og:description",
+        content: "Enterprise pricing, deployment, and security conversations.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/contact` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/contact` }],
@@ -27,8 +33,16 @@ function ContactPage() {
       isAr={isAr}
       eyebrow={isAr ? "تواصل مع المبيعات" : "Contact Sales"}
       title={isAr ? "حلول مؤسسية. أسعار مخصصة." : "Enterprise solutions. Custom pricing."}
-      subtitle={isAr ? "أخبرنا عن احتياجك وسنرد خلال يوم عمل." : "Tell us what you need and we'll respond within one business day."}
-      successMsg={isAr ? "وصلتنا رسالتك. سيتواصل فريق المبيعات قريباً." : "Message received. Sales will reach out shortly."}
+      subtitle={
+        isAr
+          ? "أخبرنا عن احتياجك وسنرد خلال يوم عمل."
+          : "Tell us what you need and we'll respond within one business day."
+      }
+      successMsg={
+        isAr
+          ? "وصلتنا رسالتك. سيتواصل فريق المبيعات قريباً."
+          : "Message received. Sales will reach out shortly."
+      }
       fields={[
         { name: "name", label: isAr ? "الاسم" : "Name", required: true },
         { name: "email", label: isAr ? "بريد العمل" : "Work email", type: "email", required: true },

@@ -56,10 +56,7 @@ export function getActive(id: AgentId): AgentPackage | null {
 }
 
 /** Newest-installed version compatible with the given majorRange (e.g. "1"). */
-export function pickNewestCompatible(
-  id: AgentId,
-  majorRange?: string,
-): AgentPackage | null {
+export function pickNewestCompatible(id: AgentId, majorRange?: string): AgentPackage | null {
   const list = versions.get(id) ?? [];
   for (const entry of list) {
     if (!majorRange) return entry.pkg;

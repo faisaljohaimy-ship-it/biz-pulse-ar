@@ -32,7 +32,9 @@ class LipSyncEngine {
     return this.active ? this.amplitude : 0;
   }
 
-  isActive(): boolean { return this.active; }
+  isActive(): boolean {
+    return this.active;
+  }
 }
 
 export const lipSyncEngine = new LipSyncEngine();

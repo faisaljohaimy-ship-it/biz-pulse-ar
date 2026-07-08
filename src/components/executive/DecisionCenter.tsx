@@ -14,11 +14,15 @@ function ConfidencePill({ c }: { c: number | null }) {
   if (c == null) return <span className="text-[10px] font-mono text-foreground/40">—</span>;
   const pct = Math.round(c * 100);
   const tone =
-    pct >= 85 ? "text-emerald-300 border-emerald-400/40 bg-emerald-500/10" :
-    pct >= 60 ? "text-amber-300 border-amber-400/40 bg-amber-500/10" :
-    "text-rose-300 border-rose-400/40 bg-rose-500/10";
+    pct >= 85
+      ? "text-emerald-300 border-emerald-400/40 bg-emerald-500/10"
+      : pct >= 60
+        ? "text-amber-300 border-amber-400/40 bg-amber-500/10"
+        : "text-rose-300 border-rose-400/40 bg-rose-500/10";
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono ${tone}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono ${tone}`}
+    >
       <ShieldCheck className="w-3 h-3" /> {pct}%
     </span>
   );
@@ -40,7 +44,9 @@ function StatusPill({ s }: { s: ExecutiveDecision["status"] }) {
     dismissed: "مرفوض",
   };
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono ${map[s]}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono ${map[s]}`}
+    >
       {label[s]}
     </span>
   );
@@ -91,8 +97,12 @@ export function DecisionCenter() {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">Decision Center · مركز القرار</div>
-          <div className="text-sm text-foreground/60 mt-0.5">توصيات ARIA بانتظار اعتماد الإدارة</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+            Decision Center · مركز القرار
+          </div>
+          <div className="text-sm text-foreground/60 mt-0.5">
+            توصيات ARIA بانتظار اعتماد الإدارة
+          </div>
         </div>
         <span className="text-xs font-mono text-foreground/50">{items.length} pending</span>
       </div>
@@ -105,7 +115,11 @@ export function DecisionCenter() {
               : "bg-rose-500/10 text-rose-300 border-rose-400/40"
           }`}
         >
-          {flash.tone === "ok" ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+          {flash.tone === "ok" ? (
+            <Check className="w-3.5 h-3.5" />
+          ) : (
+            <AlertCircle className="w-3.5 h-3.5" />
+          )}
           {flash.msg}
           <button className="ms-auto opacity-60 hover:opacity-100" onClick={() => setFlash(null)}>
             <X className="w-3 h-3" />
@@ -137,24 +151,38 @@ export function DecisionCenter() {
                       </span>
                     )}
                     {d.executed_tool && (
-                      <span className="text-[10px] font-mono text-foreground/50">→ {d.executed_tool}</span>
+                      <span className="text-[10px] font-mono text-foreground/50">
+                        → {d.executed_tool}
+                      </span>
                     )}
                   </div>
-                  <div className="text-sm font-semibold text-foreground truncate">{d.recommendation}</div>
+                  <div className="text-sm font-semibold text-foreground truncate">
+                    {d.recommendation}
+                  </div>
                   {d.recommended_action && (
                     <div className="mt-1.5 rounded-md border border-primary/30 bg-primary/5 px-2 py-1">
-                      <div className="text-[9px] font-mono uppercase tracking-widest text-primary/80">Recommended Action · الإجراء الموصى به</div>
-                      <div className="text-xs text-foreground mt-0.5 line-clamp-2">{d.recommended_action}</div>
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-primary/80">
+                        Recommended Action · الإجراء الموصى به
+                      </div>
+                      <div className="text-xs text-foreground mt-0.5 line-clamp-2">
+                        {d.recommended_action}
+                      </div>
                     </div>
                   )}
                   {d.next_step && (
                     <div className="mt-1 rounded-md border border-secondary/30 bg-secondary/5 px-2 py-1">
-                      <div className="text-[9px] font-mono uppercase tracking-widest text-secondary/80">Next Step · الخطوة التالية</div>
-                      <div className="text-xs text-foreground mt-0.5 line-clamp-2">{d.next_step}</div>
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-secondary/80">
+                        Next Step · الخطوة التالية
+                      </div>
+                      <div className="text-xs text-foreground mt-0.5 line-clamp-2">
+                        {d.next_step}
+                      </div>
                     </div>
                   )}
                   {d.rationale && (
-                    <div className="text-xs text-foreground/60 mt-1 line-clamp-2">{d.rationale}</div>
+                    <div className="text-xs text-foreground/60 mt-1 line-clamp-2">
+                      {d.rationale}
+                    </div>
                   )}
                 </div>
                 <div className="shrink-0 flex flex-col gap-1">

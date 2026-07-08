@@ -13,7 +13,10 @@ export const Route = createFileRoute("/hajj-prime")({
   head: () => ({
     meta: [
       { title: "منصة نُسك الحج · Hajj Command — Neexios" },
-      { name: "description", content: "منصة نُسك الحج داخل Neexios · مركز قيادة عمليات الحج مشاعر 1447." },
+      {
+        name: "description",
+        content: "منصة نُسك الحج داخل Neexios · مركز قيادة عمليات الحج مشاعر 1447.",
+      },
       { name: "color-scheme", content: "dark" },
       { name: "theme-color", content: "#061A2E" },
       { property: "og:title", content: "منصة نُسك الحج · Hajj Command" },

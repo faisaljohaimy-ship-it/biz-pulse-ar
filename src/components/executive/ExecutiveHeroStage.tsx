@@ -28,8 +28,8 @@ export interface ExecutiveHeroStageProps {
 // is consistent across reloads. Generated with a fixed seed (Math impl below).
 const round = (n: number, d = 3) => Math.round(n * 10 ** d) / 10 ** d;
 const MOTES = Array.from({ length: 24 }, (_, i) => {
-  const a = (i * 137.508) * (Math.PI / 180); // golden-angle scatter
-  const r = 12 + ((i * 53) % 38);             // radius %
+  const a = i * 137.508 * (Math.PI / 180); // golden-angle scatter
+  const r = 12 + ((i * 53) % 38); // radius %
   return {
     cx: round(50 + r * Math.cos(a)),
     cy: round(50 + r * Math.sin(a) * 0.62),
@@ -45,12 +45,19 @@ export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
     let alive = true;
     supabase.auth.getSession().then(({ data }) => alive && setHasSession(!!data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setHasSession(!!s));
-    return () => { alive = false; sub.subscription.unsubscribe(); };
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
   const q = useQuery({
     queryKey: ["exec-kpis", "hero"],
     queryFn: async () => {
-      try { return await fetchKpis(); } catch { return null; }
+      try {
+        return await fetchKpis();
+      } catch {
+        return null;
+      }
     },
     refetchInterval: 15_000,
     retry: false,
@@ -61,49 +68,52 @@ export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
   const k = q.data;
   const loading = q.isLoading || q.isError || !k;
 
-  const left = useMemo(() => [
-    {
-      labelAr: "حوادث حرجة 24س",
-      labelEn: "Critical (24h)",
-      value: loading ? "—" : k!.incidents_critical,
-      tone: ((k?.incidents_critical ?? 0) > 0 ? "rose" : "emerald") as KpiTone,
-      hint: loading ? undefined : `إجمالي ${k!.incidents_total}`,
-    },
-    {
-      labelAr: "MTTR (دقائق)",
-      labelEn: "Mean Response",
-      value: loading ? "—" : `${k!.mttr_minutes}m`,
-      tone: ((k?.mttr_minutes ?? 0) > 15 ? "amber" : "cyan") as KpiTone,
-    },
-  ], [k, loading]);
+  const left = useMemo(
+    () => [
+      {
+        labelAr: "حوادث حرجة 24س",
+        labelEn: "Critical (24h)",
+        value: loading ? "—" : k!.incidents_critical,
+        tone: ((k?.incidents_critical ?? 0) > 0 ? "rose" : "emerald") as KpiTone,
+        hint: loading ? undefined : `إجمالي ${k!.incidents_total}`,
+      },
+      {
+        labelAr: "MTTR (دقائق)",
+        labelEn: "Mean Response",
+        value: loading ? "—" : `${k!.mttr_minutes}m`,
+        tone: ((k?.mttr_minutes ?? 0) > 15 ? "amber" : "cyan") as KpiTone,
+      },
+    ],
+    [k, loading],
+  );
 
-  const right = useMemo(() => [
-    {
-      labelAr: "نسبة الإغلاق",
-      labelEn: "Resolution Rate",
-      value: loading ? "—" : `${k!.incidents_resolution_rate}%`,
-      tone: ((k?.incidents_resolution_rate ?? 0) >= 90 ? "emerald"
-            : (k?.incidents_resolution_rate ?? 0) >= 70 ? "amber" : "rose") as KpiTone,
-    },
-    {
-      labelAr: "أوامر عمل مفتوحة",
-      labelEn: "Open Work Orders",
-      value: loading ? "—" : k!.wo_open,
-      tone: "cyan" as KpiTone,
-      hint: loading ? undefined : `مغلق ${k!.wo_closed}`,
-    },
-  ], [k, loading]);
+  const right = useMemo(
+    () => [
+      {
+        labelAr: "نسبة الإغلاق",
+        labelEn: "Resolution Rate",
+        value: loading ? "—" : `${k!.incidents_resolution_rate}%`,
+        tone: ((k?.incidents_resolution_rate ?? 0) >= 90
+          ? "emerald"
+          : (k?.incidents_resolution_rate ?? 0) >= 70
+            ? "amber"
+            : "rose") as KpiTone,
+      },
+      {
+        labelAr: "أوامر عمل مفتوحة",
+        labelEn: "Open Work Orders",
+        value: loading ? "—" : k!.wo_open,
+        tone: "cyan" as KpiTone,
+        hint: loading ? undefined : `مغلق ${k!.wo_closed}`,
+      },
+    ],
+    [k, loading],
+  );
 
   return (
-    <section
-      aria-label="ARIA executive stage"
-      className="relative isolate"
-    >
+    <section aria-label="ARIA executive stage" className="relative isolate">
       {/* Ambient mesh gradient + volumetric fog (decorative). */}
-      <div
-        aria-hidden
-        className="executive-fog pointer-events-none absolute inset-0 -z-0"
-      />
+      <div aria-hidden className="executive-fog pointer-events-none absolute inset-0 -z-0" />
 
       {/* Particle aura — 24 motes, paused under prefers-reduced-motion. */}
       <svg
@@ -139,12 +149,18 @@ export function ExecutiveHeroStage({ onEnterOps }: ExecutiveHeroStageProps) {
       {/* Floating glass KPI rails — hidden on mobile to keep CTA in focus. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 hidden h-full lg:block">
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
-          <div className="pointer-events-auto flex w-56 flex-col gap-3" aria-label="Hero KPIs left rail">
+          <div
+            className="pointer-events-auto flex w-56 flex-col gap-3"
+            aria-label="Hero KPIs left rail"
+          >
             {left.map((t, i) => (
               <KpiTile key={i} {...t} loading={loading} />
             ))}
           </div>
-          <div className="pointer-events-auto flex w-56 flex-col gap-3" aria-label="Hero KPIs right rail">
+          <div
+            className="pointer-events-auto flex w-56 flex-col gap-3"
+            aria-label="Hero KPIs right rail"
+          >
             {right.map((t, i) => (
               <KpiTile key={i} {...t} loading={loading} />
             ))}

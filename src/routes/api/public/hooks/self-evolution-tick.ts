@@ -13,9 +13,7 @@ export const Route = createFileRoute("/api/public/hooks/self-evolution-tick")({
         if (denied) return denied;
 
         const { runSelfEvolution } = await import("@/lib/aria/self-evolution");
-        const { persistEvolutionCycle } = await import(
-          "@/lib/aria/self-evolution/persist.server"
-        );
+        const { persistEvolutionCycle } = await import("@/lib/aria/self-evolution/persist.server");
 
         try {
           const report = await runSelfEvolution({ enableApply: false });
@@ -34,10 +32,10 @@ export const Route = createFileRoute("/api/public/hooks/self-evolution-tick")({
           );
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          return new Response(
-            JSON.stringify({ ok: false, error: msg.slice(0, 300) }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, error: msg.slice(0, 300) }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },

@@ -14,7 +14,12 @@ type IntegrationRow = {
   default_site_id: string | null;
 };
 
-async function callGraph(connector: string, path: string, lovableKey: string, connectorKey: string) {
+async function callGraph(
+  connector: string,
+  path: string,
+  lovableKey: string,
+  connectorKey: string,
+) {
   try {
     const r = await httpFetch(`${GATEWAY_URL}/${connector}${path}`, {
       headers: {
@@ -27,7 +32,11 @@ async function callGraph(connector: string, path: string, lovableKey: string, co
     });
     const text = await r.text();
     let body: unknown = null;
-    try { body = JSON.parse(text); } catch { /* non-JSON */ }
+    try {
+      body = JSON.parse(text);
+    } catch {
+      /* non-JSON */
+    }
     return { ok: r.ok, status: r.status, body, text };
   } catch (err) {
     const msg = isApiError(err) ? `${err.code}:${err.message}` : String(err);
@@ -41,9 +50,14 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
       POST: async ({ request }) => {
         const secret = process.env.MICROSOFT_SYNC_HOOK_SECRET;
         const auth = request.headers.get("authorization") ?? "";
-        const provided = auth.startsWith("Bearer ") ? auth.slice(7) : request.headers.get("x-sync-secret") ?? "";
+        const provided = auth.startsWith("Bearer ")
+          ? auth.slice(7)
+          : (request.headers.get("x-sync-secret") ?? "");
         if (!secret || provided !== secret) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ error: "unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         const lovableKey = process.env.LOVABLE_API_KEY;
@@ -58,7 +72,9 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
         // Pick orgs eligible for a run (interval elapsed and at least one sync enabled)
         const { data: rows, error } = await supabaseAdmin
           .from("integration_microsoft")
-          .select("id, org_id, sync_outlook_enabled, sync_sharepoint_enabled, sync_interval_minutes, last_sync_at, default_site_id")
+          .select(
+            "id, org_id, sync_outlook_enabled, sync_sharepoint_enabled, sync_interval_minutes, last_sync_at, default_site_id",
+          )
           .or("sync_outlook_enabled.eq.true,sync_sharepoint_enabled.eq.true");
         if (error) {
           return new Response(JSON.stringify({ error: error.message }), { status: 500 });
@@ -74,7 +90,9 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
         const results: Array<{ org_id: string; outlook?: unknown; sharepoint?: unknown }> = [];
 
         for (const row of eligible as IntegrationRow[]) {
-          const orgResult: { org_id: string; outlook?: unknown; sharepoint?: unknown } = { org_id: row.org_id };
+          const orgResult: { org_id: string; outlook?: unknown; sharepoint?: unknown } = {
+            org_id: row.org_id,
+          };
           let aggregateOk = true;
           let aggregateError: string | null = null;
 
@@ -97,7 +115,10 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
               details: { http_status: r.status },
             });
             orgResult.outlook = { ok: r.ok, count };
-            if (!r.ok) { aggregateOk = false; aggregateError = `outlook:${r.status}`; }
+            if (!r.ok) {
+              aggregateOk = false;
+              aggregateError = `outlook:${r.status}`;
+            }
           }
 
           if (row.sync_sharepoint_enabled && sharepointKey) {
@@ -114,10 +135,17 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
               items_count: count,
               duration_ms: Date.now() - t0,
               error: r.ok ? null : r.text.slice(0, 500),
-              details: { http_status: r.status, scope: row.default_site_id ? "site_children" : "root_drives" },
+              details: {
+                http_status: r.status,
+                scope: row.default_site_id ? "site_children" : "root_drives",
+              },
             });
             orgResult.sharepoint = { ok: r.ok, count };
-            if (!r.ok) { aggregateOk = false; aggregateError = (aggregateError ? aggregateError + "; " : "") + `sharepoint:${r.status}`; }
+            if (!r.ok) {
+              aggregateOk = false;
+              aggregateError =
+                (aggregateError ? aggregateError + "; " : "") + `sharepoint:${r.status}`;
+            }
           }
 
           await supabaseAdmin

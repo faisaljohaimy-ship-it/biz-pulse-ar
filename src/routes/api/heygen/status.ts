@@ -16,7 +16,6 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 
-
 type Probe = { configured: boolean; reason?: string; ts: number };
 let cached: Probe | null = null;
 const TTL_MS = 5 * 60_000;
@@ -63,4 +62,3 @@ export const Route = createFileRoute("/api/heygen/status")({
     },
   },
 });
-

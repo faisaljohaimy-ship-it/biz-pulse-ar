@@ -3,12 +3,7 @@
  * agents, and execution modes. Policies are additive to marketplace
  * permissions — a plan violating any active policy is rejected.
  */
-import type {
-  CapabilityBinding,
-  MissionConstraint,
-  MissionGoal,
-  VerificationIssue,
-} from "./types";
+import type { CapabilityBinding, MissionConstraint, MissionGoal, VerificationIssue } from "./types";
 import type { AgentId } from "../orchestrator/types";
 import type { CapabilityKey } from "../marketplace/types";
 
@@ -68,10 +63,7 @@ export function evaluatePolicies(
           fatal: true,
         });
       }
-      if (
-        b.resolved_agent &&
-        p.restricted_agents?.includes(b.resolved_agent)
-      ) {
+      if (b.resolved_agent && p.restricted_agents?.includes(b.resolved_agent)) {
         issues.push({
           code: "POLICY_RESTRICTED_AGENT",
           message: `${p.id}: agent "${b.resolved_agent}" restricted`,

@@ -2,11 +2,7 @@
  * Manifest helpers — pure, isomorphic. Every agent package exports a
  * manifest of this exact shape. No runtime dependencies.
  */
-import type {
-  AgentManifest,
-  AgentPermission,
-  CapabilityDefinition,
-} from "./types";
+import type { AgentManifest, AgentPermission, CapabilityDefinition } from "./types";
 
 export const CURRENT_MANIFEST_SCHEMA = "1.0.0";
 
@@ -54,9 +50,7 @@ export function isValidPermission(p: string): p is AgentPermission {
   return (PERMISSIONS as readonly string[]).includes(p);
 }
 
-export function normalizeCapability(
-  c: CapabilityDefinition,
-): CapabilityDefinition {
+export function normalizeCapability(c: CapabilityDefinition): CapabilityDefinition {
   return {
     ...c,
     key: c.key.trim().toLowerCase(),

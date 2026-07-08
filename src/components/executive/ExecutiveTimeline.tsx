@@ -38,7 +38,9 @@ export function ExecutiveTimeline() {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">Timeline · الخط الزمني التنفيذي</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+            Timeline · الخط الزمني التنفيذي
+          </div>
           <div className="text-sm text-foreground/60 mt-0.5">أحدث الأحداث والقرارات والتشغيلات</div>
         </div>
       </div>
@@ -50,7 +52,9 @@ export function ExecutiveTimeline() {
             const Icon = KIND_ICON[t.kind];
             return (
               <li key={t.id} className="ms-4">
-                <span className={`absolute -start-1.5 mt-1.5 w-3 h-3 rounded-full border-2 bg-background ${SEV[t.severity]}`} />
+                <span
+                  className={`absolute -start-1.5 mt-1.5 w-3 h-3 rounded-full border-2 bg-background ${SEV[t.severity]}`}
+                />
                 <div className="flex items-center gap-2 text-[10px] font-mono text-foreground/50">
                   <Icon className="w-3 h-3" />
                   <span className="uppercase tracking-widest">{t.kind}</span>
@@ -58,7 +62,9 @@ export function ExecutiveTimeline() {
                   <span>{timeAgo(t.when)}</span>
                 </div>
                 <div className="text-sm font-medium text-foreground truncate mt-0.5">{t.title}</div>
-                {t.subtitle && <div className="text-xs text-foreground/50 truncate">{t.subtitle}</div>}
+                {t.subtitle && (
+                  <div className="text-xs text-foreground/50 truncate">{t.subtitle}</div>
+                )}
               </li>
             );
           })}

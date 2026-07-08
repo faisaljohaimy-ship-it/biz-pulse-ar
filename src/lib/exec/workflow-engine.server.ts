@@ -77,24 +77,19 @@ export type TriggerWorkflowParams = {
 
 export type WorkflowRunResult = {
   runId: string;
-  status:
-    | "succeeded"
-    | "failed"
-    | "waiting_approval"
-    | "cancelled"
-    | "running";
+  status: "succeeded" | "failed" | "waiting_approval" | "cancelled" | "running";
   context: Record<string, unknown>;
   error?: string;
 };
 
 function readPath(obj: Record<string, unknown>, path: string): unknown {
-  return path.split(".").reduce<unknown>(
-    (acc, k) =>
-      acc != null && typeof acc === "object"
-        ? (acc as Record<string, unknown>)[k]
-        : undefined,
-    obj,
-  );
+  return path
+    .split(".")
+    .reduce<unknown>(
+      (acc, k) =>
+        acc != null && typeof acc === "object" ? (acc as Record<string, unknown>)[k] : undefined,
+      obj,
+    );
 }
 
 function interpolate(
@@ -169,20 +164,14 @@ async function execToolStep(
     if (res.status === "succeeded") {
       if (stepRunId) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from("workflow_step_runs")
-          .update({ attempt })
-          .eq("id", stepRunId);
+        await (supabase as any).from("workflow_step_runs").update({ attempt }).eq("id", stepRunId);
       }
       return { kind: "ok", output: res.output, executionId: res.executionId };
     }
     // failed or rejected → maybe retry
     lastErr = res.error ?? `tool ${res.status}`;
     if (attempt > policy.max) break;
-    const backoff = Math.min(
-      policy.backoffMs * Math.pow(policy.factor, attempt - 1),
-      60_000,
-    );
+    const backoff = Math.min(policy.backoffMs * Math.pow(policy.factor, attempt - 1), 60_000);
     await audit(supabase, {
       actor_id: state.triggeredBy,
       action: "workflow.step.retry",
@@ -304,8 +293,7 @@ async function runEngine(
         }
         case "condition": {
           const val = readPath(state.context, step.when.path);
-          const truthy =
-            step.when.equals !== undefined ? val === step.when.equals : Boolean(val);
+          const truthy = step.when.equals !== undefined ? val === step.when.equals : Boolean(val);
           await finishStep("succeeded", { evaluated: truthy });
           cursor = truthy ? step.ifTrue : step.ifFalse;
           break;
@@ -319,9 +307,7 @@ async function runEngine(
             }
             const r = await execToolStep(supabase, state, sub, undefined);
             if (r.kind !== "ok") {
-              throw new Error(
-                r.kind === "error" ? r.error : "branch requires approval",
-              );
+              throw new Error(r.kind === "error" ? r.error : "branch requires approval");
             }
             return { id: branchId, output: r.output };
           });
@@ -540,11 +526,7 @@ export async function resumeWorkflowRun(
 
   // After approval, advance past the approval/tool step to next
   const next =
-    current.kind === "approval"
-      ? current.next
-      : current.kind === "tool"
-        ? current.next
-        : undefined;
+    current.kind === "approval" ? current.next : current.kind === "tool" ? current.next : undefined;
   if (!next) {
     // No next → mark succeeded
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -45,10 +45,7 @@ export function simulateOption(
   const riskWeight =
     risks.length === 0
       ? 0.2
-      : Math.min(
-          1,
-          risks.reduce((s, r) => s + r.likelihood * r.impact, 0) / risks.length,
-        );
+      : Math.min(1, risks.reduce((s, r) => s + r.likelihood * r.impact, 0) / risks.length);
   const bestProb = clamp01(0.4 + tradeoff.accuracy * 0.4 - riskWeight * 0.2);
   const worstProb = clamp01(0.15 + riskWeight * 0.35);
   const expectedProb = clamp01(1 - bestProb - worstProb);

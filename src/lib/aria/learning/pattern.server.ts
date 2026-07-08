@@ -1,10 +1,5 @@
 import { emitLearningEvent } from "./events";
-import type {
-  Experience,
-  FailurePattern,
-  Pattern,
-  SuccessPattern,
-} from "./types";
+import type { Experience, FailurePattern, Pattern, SuccessPattern } from "./types";
 
 const MIN_OCCURRENCES = 3;
 
@@ -62,9 +57,7 @@ function summarize(bucket: Bucket): Omit<Pattern, "id" | "kind"> {
   };
 }
 
-export function detectPatterns(
-  experiences: ReadonlyArray<Experience>,
-): ReadonlyArray<Pattern> {
+export function detectPatterns(experiences: ReadonlyArray<Experience>): ReadonlyArray<Pattern> {
   const buckets = bucketize(experiences);
   const patterns: Pattern[] = [];
   for (const bucket of buckets.values()) {
@@ -74,12 +67,9 @@ export function detectPatterns(
     const isSuccess = bucket.experiences.every((e) => e.success);
     let pattern: Pattern;
     if (isFailure) {
-      const failureClass =
-        bucket.experiences[0].failureClass ?? "unknown_failure";
+      const failureClass = bucket.experiences[0].failureClass ?? "unknown_failure";
       const retryEffective =
-        bucket.experiences.some((e) => e.retries > 0 && e.success) === false
-          ? false
-          : true;
+        bucket.experiences.some((e) => e.retries > 0 && e.success) === false ? false : true;
       const failurePattern: FailurePattern = {
         ...base,
         id: nextId("pat"),

@@ -27,7 +27,9 @@ export const ariaState = {
   },
   subscribe(fn: (s: AriaPresenceState) => void): () => void {
     listeners.add(fn);
-    return () => { listeners.delete(fn); };
+    return () => {
+      listeners.delete(fn);
+    };
   },
 };
 

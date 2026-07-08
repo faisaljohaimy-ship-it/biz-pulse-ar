@@ -12,7 +12,9 @@ export interface SchedulerOptions {
   readonly reducedMotion?: boolean;
 }
 
-const isBrowser = typeof globalThis !== "undefined" && typeof (globalThis as { requestAnimationFrame?: unknown }).requestAnimationFrame === "function";
+const isBrowser =
+  typeof globalThis !== "undefined" &&
+  typeof (globalThis as { requestAnimationFrame?: unknown }).requestAnimationFrame === "function";
 
 interface SchedulerHost {
   requestAnimationFrame?: (cb: (t: number) => void) => number;
@@ -134,7 +136,11 @@ export class AnimationScheduler {
     }
     const tick: HeroTick = { t, dt, frame: this.frame };
     for (const h of this.handlers) {
-      try { h(tick); } catch { /* isolated handler failure */ }
+      try {
+        h(tick);
+      } catch {
+        /* isolated handler failure */
+      }
     }
     if (isBrowser) this.schedule();
   }

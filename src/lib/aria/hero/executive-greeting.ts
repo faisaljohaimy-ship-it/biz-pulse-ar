@@ -28,9 +28,16 @@ export class ExecutiveGreetingEngine {
 
   clear(now: number): void {
     if (!this.slot) return;
-    this.audit.append({ at: now, kind: "greeting", from: this.slot.fulfilled ? "fulfilled" : "requested", to: "cleared" });
+    this.audit.append({
+      at: now,
+      kind: "greeting",
+      from: this.slot.fulfilled ? "fulfilled" : "requested",
+      to: "cleared",
+    });
     this.slot = null;
   }
 
-  current(): ExecutiveGreetingSlot | null { return this.slot; }
+  current(): ExecutiveGreetingSlot | null {
+    return this.slot;
+  }
 }

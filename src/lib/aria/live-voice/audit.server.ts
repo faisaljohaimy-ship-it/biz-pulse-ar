@@ -27,6 +27,10 @@ export class LiveVoiceAudit {
     if (this.entries.length > MAX) this.entries.shift();
     return e;
   }
-  recent(n = 100): readonly LiveVoiceAuditEntry[] { return this.entries.slice(-n); }
-  clear(): void { this.entries = []; }
+  recent(n = 100): readonly LiveVoiceAuditEntry[] {
+    return this.entries.slice(-n);
+  }
+  clear(): void {
+    this.entries = [];
+  }
 }

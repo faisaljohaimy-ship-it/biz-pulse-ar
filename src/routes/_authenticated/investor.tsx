@@ -15,8 +15,20 @@ import { EventTimeline } from "@/components/events/EventTimeline";
 import { useRuntime } from "@/lib/runtime/RuntimeContext";
 import { getExecKpis } from "@/lib/sec.functions";
 import {
-  Activity, Bot, Workflow, ShieldAlert, Network, Plug, Users, Gauge,
-  CalendarClock, Layers, Database, Brain, Bell, MapPin,
+  Activity,
+  Bot,
+  Workflow,
+  ShieldAlert,
+  Network,
+  Plug,
+  Users,
+  Gauge,
+  CalendarClock,
+  Layers,
+  Database,
+  Brain,
+  Bell,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +70,11 @@ type TableName =
   | "sec_incidents"
   | "enterprise_events";
 
-function useLiveRows<T>(table: TableName, build: (q: ReturnType<typeof supabase.from>) => unknown, deps: unknown[] = []) {
+function useLiveRows<T>(
+  table: TableName,
+  build: (q: ReturnType<typeof supabase.from>) => unknown,
+  deps: unknown[] = [],
+) {
   const [rows, setRows] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -154,12 +170,15 @@ function Header({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape }) {
     <Card className="bg-gradient-to-br from-primary/10 via-card to-card border-primary/30 p-5">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-primary">Investor Command Center</div>
+          <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-primary">
+            Investor Command Center
+          </div>
           <h1 className="mt-1 text-2xl md:text-3xl font-bold text-foreground">
             {runtime.org?.name ?? "Enterprise Runtime"}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Live, end-to-end view of the operating system — agents, workflows, events, integrations and KPIs.
+            Live, end-to-end view of the operating system — agents, workflows, events, integrations
+            and KPIs.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -179,26 +198,55 @@ function Header({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape }) {
 /* ─────────── metrics strip ─────────── */
 
 function MetricsStrip({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape }) {
-  const { rows: liveAgents } = useLiveRows<{ id: string }>(
-    "agent_runs",
-    (q) => q.select("id").eq("status", "running"),
+  const { rows: liveAgents } = useLiveRows<{ id: string }>("agent_runs", (q) =>
+    q.select("id").eq("status", "running"),
   );
-  const { rows: liveWf } = useLiveRows<{ id: string }>(
-    "workflow_runs",
-    (q) => q.select("id").eq("status", "running"),
+  const { rows: liveWf } = useLiveRows<{ id: string }>("workflow_runs", (q) =>
+    q.select("id").eq("status", "running"),
   );
   const { rows: recentEvents } = useLiveRows<{ id: string; occurred_at: string }>(
     "enterprise_events",
-    (q) => q.select("id, occurred_at").gte("occurred_at", new Date(Date.now() - 60_000).toISOString()),
+    (q) =>
+      q.select("id, occurred_at").gte("occurred_at", new Date(Date.now() - 60_000).toISOString()),
   );
 
-  const items: Array<{ label: string; value: string | number; hint?: string; icon: typeof Activity }> = [
-    { label: "Agents Enabled", value: runtime.counts.agents_enabled, hint: `${liveAgents.length} running`, icon: Bot },
-    { label: "Workflows Enabled", value: runtime.counts.workflows_enabled, hint: `${liveWf.length} active`, icon: Workflow },
+  const items: Array<{
+    label: string;
+    value: string | number;
+    hint?: string;
+    icon: typeof Activity;
+  }> = [
+    {
+      label: "Agents Enabled",
+      value: runtime.counts.agents_enabled,
+      hint: `${liveAgents.length} running`,
+      icon: Bot,
+    },
+    {
+      label: "Workflows Enabled",
+      value: runtime.counts.workflows_enabled,
+      hint: `${liveWf.length} active`,
+      icon: Workflow,
+    },
     { label: "Events / min", value: recentEvents.length, hint: "last 60s", icon: Activity },
-    { label: "Incidents Open", value: runtime.counts.incidents_open, hint: `${runtime.counts.incidents_critical} critical`, icon: ShieldAlert },
-    { label: "MTTR", value: kpis ? `${kpis.mttr_minutes}m` : "—", hint: "target ≤ 15m", icon: Gauge },
-    { label: "Sites", value: runtime.counts.sites, hint: `${kpis?.sites_operational ?? "—"} operational`, icon: MapPin },
+    {
+      label: "Incidents Open",
+      value: runtime.counts.incidents_open,
+      hint: `${runtime.counts.incidents_critical} critical`,
+      icon: ShieldAlert,
+    },
+    {
+      label: "MTTR",
+      value: kpis ? `${kpis.mttr_minutes}m` : "—",
+      hint: "target ≤ 15m",
+      icon: Gauge,
+    },
+    {
+      label: "Sites",
+      value: runtime.counts.sites,
+      hint: `${kpis?.sites_operational ?? "—"} operational`,
+      icon: MapPin,
+    },
     { label: "CCTV New", value: runtime.counts.cctv_new, hint: "alerts", icon: Bell },
     { label: "Visitors Inside", value: runtime.counts.visitors_inside, icon: Users },
   ];
@@ -208,7 +256,9 @@ function MetricsStrip({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape
       {items.map((m) => (
         <Card key={m.label} className="bg-card/60 border-border/60 p-3 backdrop-blur">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{m.label}</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              {m.label}
+            </div>
             <m.icon className="size-3.5 text-primary" />
           </div>
           <div className="mt-1 text-2xl font-bold text-foreground tabular-nums">{m.value}</div>
@@ -233,13 +283,11 @@ type AgentRun = {
 };
 
 function AgentRuntimePanel() {
-  const { rows, loading } = useLiveRows<AgentRun>(
-    "agent_runs",
-    (q) =>
-      q
-        .select("id, agent_id, status, started_at, finished_at, steps, summary, triggered_by")
-        .order("started_at", { ascending: false })
-        .limit(20),
+  const { rows, loading } = useLiveRows<AgentRun>("agent_runs", (q) =>
+    q
+      .select("id, agent_id, status, started_at, finished_at, steps, summary, triggered_by")
+      .order("started_at", { ascending: false })
+      .limit(20),
   );
 
   const running = rows.filter((r) => r.status === "running");
@@ -283,7 +331,9 @@ function AgentRunRow({ run }: { run: AgentRun }) {
         <div className="font-mono text-xs text-foreground truncate">{run.agent_id}</div>
         <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", tone)}>
           {run.status}
-          {isRunning && <span className="ml-1 inline-block size-1.5 rounded-full bg-current animate-pulse" />}
+          {isRunning && (
+            <span className="ml-1 inline-block size-1.5 rounded-full bg-current animate-pulse" />
+          )}
         </Badge>
       </div>
       {run.summary ? (
@@ -311,16 +361,21 @@ type WorkflowRun = {
   finished_at: string | null;
 };
 
-const WF_STEPS = ["planning", "investigation", "approval", "execution", "verification", "completion"];
+const WF_STEPS = [
+  "planning",
+  "investigation",
+  "approval",
+  "execution",
+  "verification",
+  "completion",
+];
 
 function WorkflowMonitorPanel() {
-  const { rows, loading } = useLiveRows<WorkflowRun>(
-    "workflow_runs",
-    (q) =>
-      q
-        .select("id, workflow_id, status, current_step, started_at, finished_at")
-        .order("started_at", { ascending: false })
-        .limit(12),
+  const { rows, loading } = useLiveRows<WorkflowRun>("workflow_runs", (q) =>
+    q
+      .select("id, workflow_id, status, current_step, started_at, finished_at")
+      .order("started_at", { ascending: false })
+      .limit(12),
   );
   const active = rows.filter((r) => r.status === "running");
 
@@ -343,7 +398,9 @@ function WorkflowMonitorPanel() {
             <div key={wf.id} className="rounded-md border border-border/40 bg-background/40 p-2.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono text-foreground truncate">{wf.id.slice(0, 8)}</span>
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{wf.status}</Badge>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  {wf.status}
+                </Badge>
               </div>
               <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
                 <span className="uppercase tracking-wider">{wf.current_step ?? "planning"}</span>
@@ -411,13 +468,11 @@ type AuditRow = {
 };
 
 function AuditTimelinePanel() {
-  const { rows, loading } = useLiveRows<AuditRow>(
-    "audit_logs",
-    (q) =>
-      q
-        .select("id, action, resource_type, resource_id, status, source, occurred_at, created_at")
-        .order("created_at", { ascending: false })
-        .limit(40),
+  const { rows, loading } = useLiveRows<AuditRow>("audit_logs", (q) =>
+    q
+      .select("id, action, resource_type, resource_id, status, source, occurred_at, created_at")
+      .order("created_at", { ascending: false })
+      .limit(40),
   );
 
   return (
@@ -433,7 +488,10 @@ function AuditTimelinePanel() {
       <ScrollArea className="h-[240px] pr-2">
         <div className="space-y-1.5">
           {rows.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-2 rounded border border-border/30 bg-background/30 px-2 py-1.5">
+            <div
+              key={r.id}
+              className="flex items-center justify-between gap-2 rounded border border-border/30 bg-background/30 px-2 py-1.5"
+            >
               <div className="min-w-0 flex-1">
                 <div className="font-mono text-[11px] text-foreground truncate">{r.action}</div>
                 <div className="text-[10px] text-muted-foreground truncate">
@@ -462,10 +520,11 @@ type DecisionRow = {
 };
 
 function DecisionFeedPanel() {
-  const { rows, loading } = useLiveRows<DecisionRow>(
-    "aria_decisions",
-    (q) =>
-      q.select("id, recommendation, confidence, status, created_at").order("created_at", { ascending: false }).limit(8),
+  const { rows, loading } = useLiveRows<DecisionRow>("aria_decisions", (q) =>
+    q
+      .select("id, recommendation, confidence, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(8),
   );
   return (
     <PanelCard
@@ -481,7 +540,9 @@ function DecisionFeedPanel() {
         {rows.map((d) => (
           <div key={d.id} className="rounded-md border border-border/40 bg-background/40 p-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] text-foreground truncate">{d.recommendation ?? "—"}</span>
+              <span className="text-[11px] text-foreground truncate">
+                {d.recommendation ?? "—"}
+              </span>
               {d.confidence != null ? (
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                   {Math.round(Number(d.confidence) * 100)}%
@@ -518,7 +579,11 @@ function HealthRow({ label, state }: { label: string; state: "ready" | "degraded
   return (
     <div className="flex items-center justify-between rounded border border-border/40 bg-background/40 px-2 py-1.5">
       <span className="text-xs text-foreground">{label}</span>
-      <LiveStatus size="sm" variant={ok ? "live" : "processing"} label={ok ? "Healthy" : "Degraded"} />
+      <LiveStatus
+        size="sm"
+        variant={ok ? "live" : "processing"}
+        label={ok ? "Healthy" : "Degraded"}
+      />
     </div>
   );
 }
@@ -539,14 +604,22 @@ function IntegrationStatusPanel({ runtime }: { runtime: RuntimeShape }) {
   );
 }
 
-function IntegrationRow({ label, connected, fallback }: { label: string; connected: boolean; fallback?: string }) {
+function IntegrationRow({
+  label,
+  connected,
+  fallback,
+}: {
+  label: string;
+  connected: boolean;
+  fallback?: string;
+}) {
   return (
     <div className="flex items-center justify-between rounded border border-border/40 bg-background/40 px-2 py-1.5">
       <span className="text-xs text-foreground">{label}</span>
       <LiveStatus
         size="sm"
         variant={connected ? "live" : "monitoring"}
-        label={connected ? "Connected" : fallback ?? "Standby"}
+        label={connected ? "Connected" : (fallback ?? "Standby")}
       />
     </div>
   );
@@ -555,15 +628,18 @@ function IntegrationRow({ label, connected, fallback }: { label: string; connect
 /* ─────────── risk center ─────────── */
 
 function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
-  const { rows } = useLiveRows<{ id: string; title_ar: string | null; severity: string; created_at: string }>(
-    "sec_incidents",
-    (q) =>
-      q
-        .select("id, title_ar, severity, created_at")
-        .in("severity", ["high", "critical"])
-        .neq("status", "closed")
-        .order("created_at", { ascending: false })
-        .limit(5),
+  const { rows } = useLiveRows<{
+    id: string;
+    title_ar: string | null;
+    severity: string;
+    created_at: string;
+  }>("sec_incidents", (q) =>
+    q
+      .select("id, title_ar, severity, created_at")
+      .in("severity", ["high", "critical"])
+      .neq("status", "closed")
+      .order("created_at", { ascending: false })
+      .limit(5),
   );
   return (
     <PanelCard
@@ -576,12 +652,18 @@ function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
     >
       <div className="space-y-1.5">
         {rows.map((r) => (
-          <div key={r.id} className="flex items-start justify-between gap-2 rounded border border-rose-500/20 bg-rose-500/5 px-2 py-1.5">
+          <div
+            key={r.id}
+            className="flex items-start justify-between gap-2 rounded border border-rose-500/20 bg-rose-500/5 px-2 py-1.5"
+          >
             <div className="min-w-0">
               <div className="text-xs text-foreground truncate">{r.title_ar ?? "حادثة"}</div>
               <div className="text-[10px] text-muted-foreground">{relTime(r.created_at)} ago</div>
             </div>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-rose-400 border-rose-500/40">
+            <Badge
+              variant="outline"
+              className="text-[10px] px-1.5 py-0 text-rose-400 border-rose-500/40"
+            >
               {r.severity}
             </Badge>
           </div>
@@ -618,13 +700,17 @@ function DigitalTwinPanel({ kpis }: { kpis: KpiShape }) {
 /* ─────────── notifications ─────────── */
 
 function NotificationCenterPanel() {
-  const { rows } = useLiveRows<{ id: string; alert_type: string; camera_code: string; status: string | null; created_at: string }>(
-    "sec_cctv_alerts",
-    (q) =>
-      q
-        .select("id, alert_type, camera_code, status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5),
+  const { rows } = useLiveRows<{
+    id: string;
+    alert_type: string;
+    camera_code: string;
+    status: string | null;
+    created_at: string;
+  }>("sec_cctv_alerts", (q) =>
+    q
+      .select("id, alert_type, camera_code, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5),
   );
   return (
     <PanelCard
@@ -638,7 +724,9 @@ function NotificationCenterPanel() {
       <div className="space-y-1.5">
         {rows.map((n) => (
           <div key={n.id} className="rounded border border-border/40 bg-background/40 px-2 py-1.5">
-            <div className="text-[11px] text-foreground truncate">{n.alert_type} · {n.camera_code}</div>
+            <div className="text-[11px] text-foreground truncate">
+              {n.alert_type} · {n.camera_code}
+            </div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
               <span>{n.status ?? "new"}</span>
               <span>{relTime(n.created_at)} ago</span>
@@ -653,13 +741,11 @@ function NotificationCenterPanel() {
 /* ─────────── queue monitor ─────────── */
 
 function QueueMonitorPanel() {
-  const { rows: queuedAgents } = useLiveRows<{ id: string }>(
-    "agent_runs",
-    (q) => q.select("id").eq("status", "queued"),
+  const { rows: queuedAgents } = useLiveRows<{ id: string }>("agent_runs", (q) =>
+    q.select("id").eq("status", "queued"),
   );
-  const { rows: queuedWf } = useLiveRows<{ id: string }>(
-    "workflow_runs",
-    (q) => q.select("id").in("status", ["queued", "pending"]),
+  const { rows: queuedWf } = useLiveRows<{ id: string }>("workflow_runs", (q) =>
+    q.select("id").in("status", ["queued", "pending"]),
   );
   const total = queuedAgents.length + queuedWf.length;
   return (
@@ -683,15 +769,51 @@ function QueueMonitorPanel() {
 function KpiWall({ kpis }: { kpis: KpiShape }) {
   const items: Array<{ label: string; value: string; tone?: "success" | "warn" | "danger" }> = kpis
     ? [
-        { label: "Readiness", value: `${kpis.executive_readiness}%`, tone: kpis.executive_readiness >= 80 ? "success" : "warn" },
-        { label: "Safety", value: `${kpis.safety_index}%`, tone: kpis.safety_index >= 80 ? "success" : "warn" },
-        { label: "Risk", value: `${kpis.risk_index}%`, tone: kpis.risk_index > 30 ? "warn" : "success" },
-        { label: "MTTR", value: `${kpis.mttr_minutes}m`, tone: kpis.mttr_minutes <= 15 ? "success" : "warn" },
-        { label: "Resolution", value: `${kpis.incidents_resolution_rate}%`, tone: kpis.incidents_resolution_rate >= 80 ? "success" : "warn" },
-        { label: "CCTV", value: `${kpis.cctv_health}%`, tone: kpis.cctv_health >= 90 ? "success" : "warn" },
-        { label: "Access", value: `${kpis.access_health}%`, tone: kpis.access_health >= 90 ? "success" : "warn" },
-        { label: "Patrols", value: `${kpis.patrol_completion}%`, tone: kpis.patrol_completion >= 90 ? "success" : "warn" },
-        { label: "Compliance", value: `${kpis.contractors_compliance}%`, tone: kpis.contractors_compliance >= 90 ? "success" : "warn" },
+        {
+          label: "Readiness",
+          value: `${kpis.executive_readiness}%`,
+          tone: kpis.executive_readiness >= 80 ? "success" : "warn",
+        },
+        {
+          label: "Safety",
+          value: `${kpis.safety_index}%`,
+          tone: kpis.safety_index >= 80 ? "success" : "warn",
+        },
+        {
+          label: "Risk",
+          value: `${kpis.risk_index}%`,
+          tone: kpis.risk_index > 30 ? "warn" : "success",
+        },
+        {
+          label: "MTTR",
+          value: `${kpis.mttr_minutes}m`,
+          tone: kpis.mttr_minutes <= 15 ? "success" : "warn",
+        },
+        {
+          label: "Resolution",
+          value: `${kpis.incidents_resolution_rate}%`,
+          tone: kpis.incidents_resolution_rate >= 80 ? "success" : "warn",
+        },
+        {
+          label: "CCTV",
+          value: `${kpis.cctv_health}%`,
+          tone: kpis.cctv_health >= 90 ? "success" : "warn",
+        },
+        {
+          label: "Access",
+          value: `${kpis.access_health}%`,
+          tone: kpis.access_health >= 90 ? "success" : "warn",
+        },
+        {
+          label: "Patrols",
+          value: `${kpis.patrol_completion}%`,
+          tone: kpis.patrol_completion >= 90 ? "success" : "warn",
+        },
+        {
+          label: "Compliance",
+          value: `${kpis.contractors_compliance}%`,
+          tone: kpis.contractors_compliance >= 90 ? "success" : "warn",
+        },
         { label: "WO Open", value: `${kpis.wo_open}` },
         { label: "Projects", value: `${kpis.projects_in_progress}` },
         { label: "Visitors", value: `${kpis.visitors_inside}` },
@@ -707,7 +829,10 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
         <LiveStatus size="sm" variant={kpis ? "live" : "initializing"} />
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
-        {(kpis ? items : Array.from({ length: 12 }).map((_, i) => ({ label: `KPI ${i + 1}`, value: "—" }))).map((m) => (
+        {(kpis
+          ? items
+          : Array.from({ length: 12 }).map((_, i) => ({ label: `KPI ${i + 1}`, value: "—" }))
+        ).map((m) => (
           <div
             key={m.label}
             className={cn(
@@ -718,7 +843,9 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
               !("tone" in m) && "border-border/40",
             )}
           >
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground truncate">{m.label}</div>
+            <div className="text-[9px] uppercase tracking-wider text-muted-foreground truncate">
+              {m.label}
+            </div>
             <div className="text-lg font-bold text-foreground tabular-nums">{m.value}</div>
           </div>
         ))}
@@ -755,7 +882,11 @@ function PanelCard({
           <Icon className="size-4 text-primary" />
           <h3 className="text-sm font-semibold tracking-wide">{title}</h3>
         </div>
-        {badge ? <Badge variant="outline" className="text-[10px]">{badge}</Badge> : null}
+        {badge ? (
+          <Badge variant="outline" className="text-[10px]">
+            {badge}
+          </Badge>
+        ) : null}
       </div>
       {loading && empty ? (
         <LiveStatus variant="initializing" label="Initializing" />
@@ -768,7 +899,15 @@ function PanelCard({
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string | number; tone?: "success" | "warn" }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  tone?: "success" | "warn";
+}) {
   return (
     <div
       className={cn(

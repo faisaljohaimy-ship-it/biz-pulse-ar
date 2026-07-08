@@ -48,7 +48,10 @@ function containsArabic(text: string): boolean {
 }
 
 function reorderArabicFirst(text: string): string {
-  const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean);
   if (paragraphs.length < 2) return text;
   const ar: string[] = [];
   const other: string[] = [];
@@ -103,7 +106,10 @@ export const responseValidator = {
     const tableHits = (out.match(SINGLE_ROW_TABLE) ?? []).length;
     out = stripEmptyTables(out);
 
-    out = out.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+    out = out
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
     let reordered = false;
     if (locale === "ar" && containsArabic(out)) {

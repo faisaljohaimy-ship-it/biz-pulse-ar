@@ -13,13 +13,10 @@
 import { Mail, Database, Monitor, ShieldCheck, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-
-
-
 const INTEGRATIONS = [
-  { icon: Mail,     label_ar: "Outlook",      label_en: "Microsoft Outlook", hue: "#22c1ff" },
-  { icon: Database, label_ar: "SAP",          label_en: "SAP S/4HANA",       hue: "#3AE8FF" },
-  { icon: Monitor,  label_ar: "Windows 365",  label_en: "Windows 365",       hue: "#7dd3fc" },
+  { icon: Mail, label_ar: "Outlook", label_en: "Microsoft Outlook", hue: "#22c1ff" },
+  { icon: Database, label_ar: "SAP", label_en: "SAP S/4HANA", hue: "#3AE8FF" },
+  { icon: Monitor, label_ar: "Windows 365", label_en: "Windows 365", hue: "#7dd3fc" },
 ] as const;
 
 export function HajjExecutiveStage() {
@@ -50,13 +47,21 @@ export function HajjExecutiveStage() {
           Executive Delivery Platform · Vision 2030
         </div>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{heading}</h2>
-        <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">{sub}</p>
+        <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">
+          {sub}
+        </p>
       </header>
 
       <div className="mb-6 flex justify-center sm:mb-8">
         <button
           type="button"
-          onClick={() => { try { window.dispatchEvent(new CustomEvent("aria:open")); } catch { /* noop */ } }}
+          onClick={() => {
+            try {
+              window.dispatchEvent(new CustomEvent("aria:open"));
+            } catch {
+              /* noop */
+            }
+          }}
           aria-label={ar ? "تواصل معنا عبر آريا" : "Contact us via ARIA"}
           className="group inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/45 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_-6px_rgba(58,232,255,0.5)] transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/20"
         >
@@ -64,8 +69,6 @@ export function HajjExecutiveStage() {
           <span>{ar ? "تواصل معنا · تحدّث مع آريا" : "Contact us · Talk to ARIA"}</span>
         </button>
       </div>
-
-
 
       <div className="hes-anim grid grid-cols-1 gap-5">
         {/* Digital integration constellation */}
@@ -84,7 +87,12 @@ export function HajjExecutiveStage() {
           />
 
           {/* Energy flow network */}
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden className="absolute inset-0 h-full w-full">
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden
+            className="absolute inset-0 h-full w-full"
+          >
             <defs>
               <radialGradient id="hes-hub" cx="50%" cy="55%" r="35%">
                 <stop offset="0%" stopColor="rgba(58,232,255,0.5)" />
@@ -138,7 +146,6 @@ export function HajjExecutiveStage() {
                 <span className="rounded-full border border-white/10 bg-black/50 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/85 sm:text-[10px]">
                   {ar ? it.label_ar : it.label_en}
                 </span>
-
               </div>
             );
           })}
@@ -146,11 +153,15 @@ export function HajjExecutiveStage() {
           {/* Central executive hub */}
           <div
             className="absolute left-1/2 top-[55%] flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/40 via-[#0a2a44] to-[#061A2E] sm:h-24 sm:w-24"
-            style={{ boxShadow: "0 0 50px rgba(58,232,255,0.55), inset 0 0 25px rgba(0,212,255,0.35)" }}
+            style={{
+              boxShadow: "0 0 50px rgba(58,232,255,0.55), inset 0 0 25px rgba(0,212,255,0.35)",
+            }}
           >
             <div className="text-center">
               <Sparkles className="mx-auto h-5 w-5 text-[#3AE8FF] drop-shadow-[0_0_8px_rgba(58,232,255,0.9)]" />
-              <div className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.3em] text-white/90">Nexus</div>
+              <div className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.3em] text-white/90">
+                Nexus
+              </div>
             </div>
           </div>
 
@@ -158,7 +169,11 @@ export function HajjExecutiveStage() {
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-[#02101e] via-[#02101e]/80 to-transparent p-4">
             <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-white/65">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-              <span>{ar ? "متوافق مع نظام حماية البيانات الشخصية (PDPL)" : "PDPL-aligned data protection"}</span>
+              <span>
+                {ar
+                  ? "متوافق مع نظام حماية البيانات الشخصية (PDPL)"
+                  : "PDPL-aligned data protection"}
+              </span>
             </div>
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/80">
               Digital Integration
@@ -178,24 +193,27 @@ export function HajjExecutiveStage() {
           </span>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        {INTEGRATIONS.map((it) => {
-          const Icon = it.icon;
-          return (
-            <div key={it.label_en} className="flex min-w-0 items-center gap-2 sm:gap-3">
-              <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#02101e]"
-                style={{ boxShadow: `0 0 18px ${it.hue}33` }}
-              >
-                <Icon className="h-4 w-4" style={{ color: it.hue }} />
-              </span>
-              <div className="min-w-0">
-                <div className="truncate text-xs font-semibold text-white sm:text-sm">{ar ? it.label_ar : it.label_en}</div>
-                <div className="truncate text-[10px] uppercase tracking-[0.18em] text-white/45">{ar ? it.label_en : it.label_ar}</div>
+          {INTEGRATIONS.map((it) => {
+            const Icon = it.icon;
+            return (
+              <div key={it.label_en} className="flex min-w-0 items-center gap-2 sm:gap-3">
+                <span
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#02101e]"
+                  style={{ boxShadow: `0 0 18px ${it.hue}33` }}
+                >
+                  <Icon className="h-4 w-4" style={{ color: it.hue }} />
+                </span>
+                <div className="min-w-0">
+                  <div className="truncate text-xs font-semibold text-white sm:text-sm">
+                    {ar ? it.label_ar : it.label_en}
+                  </div>
+                  <div className="truncate text-[10px] uppercase tracking-[0.18em] text-white/45">
+                    {ar ? it.label_en : it.label_ar}
+                  </div>
+                </div>
               </div>
-
-            </div>
-          );
-        })}
+            );
+          })}
         </div>
       </div>
     </section>

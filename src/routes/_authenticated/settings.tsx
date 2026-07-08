@@ -11,7 +11,18 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, LogOut, Save, KeyRound, User, Palette, Bell, Shield, Plug, Database } from "lucide-react";
+import {
+  Loader2,
+  LogOut,
+  Save,
+  KeyRound,
+  User,
+  Palette,
+  Bell,
+  Shield,
+  Plug,
+  Database,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { seedAriaCorpus } from "@/lib/aria/seed-corpus.functions";
@@ -152,24 +163,49 @@ function SettingsPage() {
         className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 hover:bg-muted/40 transition"
       >
         <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-border/60 bg-background p-2"><Plug className="h-4 w-4" /></div>
+          <div className="rounded-lg border border-border/60 bg-background p-2">
+            <Plug className="h-4 w-4" />
+          </div>
           <div>
-            <div className="text-sm font-medium">{locale === "ar" ? "تكامل Microsoft Identity" : "Microsoft Identity Integration"}</div>
-            <div className="text-xs text-muted-foreground">{locale === "ar" ? "Tenant، Client ID، عناوين إعادة التوجيه، واختبار Microsoft Graph" : "Tenant, client ID, redirect URIs, and Microsoft Graph test"}</div>
+            <div className="text-sm font-medium">
+              {locale === "ar" ? "تكامل Microsoft Identity" : "Microsoft Identity Integration"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {locale === "ar"
+                ? "Tenant، Client ID، عناوين إعادة التوجيه، واختبار Microsoft Graph"
+                : "Tenant, client ID, redirect URIs, and Microsoft Graph test"}
+            </div>
           </div>
         </div>
-        <span className="text-xs text-muted-foreground">{locale === "ar" ? "للمسؤولين" : "Admin"}</span>
+        <span className="text-xs text-muted-foreground">
+          {locale === "ar" ? "للمسؤولين" : "Admin"}
+        </span>
       </Link>
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="profile" className="gap-2"><User className="h-4 w-4" />{locale === "ar" ? "الملف" : "Profile"}</TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2"><Palette className="h-4 w-4" />{locale === "ar" ? "المظهر" : "Appearance"}</TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2"><Bell className="h-4 w-4" />{locale === "ar" ? "الإشعارات" : "Notifications"}</TabsTrigger>
-          <TabsTrigger value="security" className="gap-2"><Shield className="h-4 w-4" />{locale === "ar" ? "الأمان" : "Security"}</TabsTrigger>
+          <TabsTrigger value="profile" className="gap-2">
+            <User className="h-4 w-4" />
+            {locale === "ar" ? "الملف" : "Profile"}
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="gap-2">
+            <Palette className="h-4 w-4" />
+            {locale === "ar" ? "المظهر" : "Appearance"}
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-4 w-4" />
+            {locale === "ar" ? "الإشعارات" : "Notifications"}
+          </TabsTrigger>
+          <TabsTrigger value="security" className="gap-2">
+            <Shield className="h-4 w-4" />
+            {locale === "ar" ? "الأمان" : "Security"}
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-5">
+        <TabsContent
+          value="profile"
+          className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-5"
+        >
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={avatarUrl || undefined} alt={displayName} />
@@ -182,59 +218,146 @@ function SettingsPage() {
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="display_name">{locale === "ar" ? "الاسم الظاهر" : "Display name"}</Label>
-              <Input id="display_name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={loadingProfile} />
+              <Label htmlFor="display_name">
+                {locale === "ar" ? "الاسم الظاهر" : "Display name"}
+              </Label>
+              <Input
+                id="display_name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                disabled={loadingProfile}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="avatar_url">{locale === "ar" ? "رابط الصورة" : "Avatar URL"}</Label>
-              <Input id="avatar_url" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} disabled={loadingProfile} placeholder="https://..." />
+              <Input
+                id="avatar_url"
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                disabled={loadingProfile}
+                placeholder="https://..."
+              />
             </div>
           </div>
           <Button onClick={saveProfile} disabled={savingProfile} className="gap-2">
-            {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {savingProfile ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             {locale === "ar" ? "حفظ" : "Save profile"}
           </Button>
         </TabsContent>
 
-        <TabsContent value="appearance" className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5">
+        <TabsContent
+          value="appearance"
+          className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5"
+        >
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("lang.label") ?? "Language"}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              {t("lang.label") ?? "Language"}
+            </Label>
             <div className="mt-2 flex gap-2">
-              <Button size="sm" variant={locale === "ar" ? "default" : "outline"} onClick={() => setLocale("ar")}>العربية</Button>
-              <Button size="sm" variant={locale === "en" ? "default" : "outline"} onClick={() => setLocale("en")}>English</Button>
+              <Button
+                size="sm"
+                variant={locale === "ar" ? "default" : "outline"}
+                onClick={() => setLocale("ar")}
+              >
+                العربية
+              </Button>
+              <Button
+                size="sm"
+                variant={locale === "en" ? "default" : "outline"}
+                onClick={() => setLocale("en")}
+              >
+                English
+              </Button>
             </div>
           </div>
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{locale === "ar" ? "السمة" : "Theme"}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              {locale === "ar" ? "السمة" : "Theme"}
+            </Label>
             <div className="mt-2 flex gap-2">
-              <Button size="sm" variant={theme === "dark" ? "default" : "outline"} onClick={() => setTheme("dark")}>{locale === "ar" ? "داكن" : "Dark"}</Button>
-              <Button size="sm" variant={theme === "light" ? "default" : "outline"} onClick={() => setTheme("light")}>{locale === "ar" ? "فاتح" : "Light"}</Button>
+              <Button
+                size="sm"
+                variant={theme === "dark" ? "default" : "outline"}
+                onClick={() => setTheme("dark")}
+              >
+                {locale === "ar" ? "داكن" : "Dark"}
+              </Button>
+              <Button
+                size="sm"
+                variant={theme === "light" ? "default" : "outline"}
+                onClick={() => setTheme("light")}
+              >
+                {locale === "ar" ? "فاتح" : "Light"}
+              </Button>
             </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="notifications" className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-5">
-          <Row label={locale === "ar" ? "تنبيهات البريد" : "Email alerts"} checked={emailAlerts} onChange={setEmailAlerts} />
-          <Row label={locale === "ar" ? "إشعارات الدفع" : "Push notifications"} checked={pushAlerts} onChange={setPushAlerts} />
-          <Row label={locale === "ar" ? "الحرجة فقط" : "Critical only"} checked={criticalOnly} onChange={setCriticalOnly} />
-          <Button onClick={saveNotifications} className="gap-2"><Save className="h-4 w-4" />{locale === "ar" ? "حفظ التفضيلات" : "Save preferences"}</Button>
+        <TabsContent
+          value="notifications"
+          className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-5"
+        >
+          <Row
+            label={locale === "ar" ? "تنبيهات البريد" : "Email alerts"}
+            checked={emailAlerts}
+            onChange={setEmailAlerts}
+          />
+          <Row
+            label={locale === "ar" ? "إشعارات الدفع" : "Push notifications"}
+            checked={pushAlerts}
+            onChange={setPushAlerts}
+          />
+          <Row
+            label={locale === "ar" ? "الحرجة فقط" : "Critical only"}
+            checked={criticalOnly}
+            onChange={setCriticalOnly}
+          />
+          <Button onClick={saveNotifications} className="gap-2">
+            <Save className="h-4 w-4" />
+            {locale === "ar" ? "حفظ التفضيلات" : "Save preferences"}
+          </Button>
         </TabsContent>
 
-        <TabsContent value="security" className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5">
+        <TabsContent
+          value="security"
+          className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-5"
+        >
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold">{locale === "ar" ? "تغيير كلمة المرور" : "Change password"}</h3>
+            <h3 className="text-sm font-semibold">
+              {locale === "ar" ? "تغيير كلمة المرور" : "Change password"}
+            </h3>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="new_password">{locale === "ar" ? "كلمة مرور جديدة" : "New password"}</Label>
-                <Input id="new_password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                <Label htmlFor="new_password">
+                  {locale === "ar" ? "كلمة مرور جديدة" : "New password"}
+                </Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="confirm_password">{locale === "ar" ? "تأكيد" : "Confirm"}</Label>
-                <Input id="confirm_password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
               </div>
             </div>
             <Button onClick={changePassword} disabled={updatingPassword} className="gap-2">
-              {updatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+              {updatingPassword ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <KeyRound className="h-4 w-4" />
+              )}
               {locale === "ar" ? "تحديث" : "Update password"}
             </Button>
           </div>
@@ -248,14 +371,24 @@ function SettingsPage() {
                 ? "يرفع 30 وثيقة مرجعية مؤسسية (سياسات، إجراءات SOP، KPIs، مسارات العمل) ويفهرسها للذاكرة الدلالية لـ ARIA. يتطلب صلاحية مسؤول."
                 : "Seed 30 enterprise reference entries (policies, SOPs, KPIs, workflows) and index them for ARIA's semantic memory. Admin only."}
             </p>
-            <Button onClick={handleSeedCorpus} disabled={seedingCorpus} variant="outline" className="gap-2">
-              {seedingCorpus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+            <Button
+              onClick={handleSeedCorpus}
+              disabled={seedingCorpus}
+              variant="outline"
+              className="gap-2"
+            >
+              {seedingCorpus ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Database className="h-4 w-4" />
+              )}
               {locale === "ar" ? "بدء الفهرسة" : "Seed corpus"}
             </Button>
           </div>
           <div className="border-t border-border pt-4">
             <Button variant="destructive" onClick={() => signOut()} className="gap-2">
-              <LogOut className="h-4 w-4" />{t("auth.signout") ?? "Sign out"}
+              <LogOut className="h-4 w-4" />
+              {t("auth.signout") ?? "Sign out"}
             </Button>
           </div>
         </TabsContent>
@@ -264,7 +397,15 @@ function SettingsPage() {
   );
 }
 
-function Row({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Row({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background/40 px-4 py-3">
       <span className="text-sm">{label}</span>

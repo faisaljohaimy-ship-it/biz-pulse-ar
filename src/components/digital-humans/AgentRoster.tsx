@@ -12,11 +12,19 @@ import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
 import { cn } from "@/lib/utils";
 
 export type RosterSignal = {
-  id: string;             // digital human id
-  state: "analyzing" | "speaking" | "completed" | "waiting" | "idle" | "searching" | "reading" | "thinking";
+  id: string; // digital human id
+  state:
+    | "analyzing"
+    | "speaking"
+    | "completed"
+    | "waiting"
+    | "idle"
+    | "searching"
+    | "reading"
+    | "thinking";
   text_ar?: string;
   text_en?: string;
-  confidence?: number;    // 0-1
+  confidence?: number; // 0-1
 };
 
 interface Props {
@@ -24,7 +32,15 @@ interface Props {
   signals: RosterSignal[];
 }
 
-function AgentCard({ spec, signal, ar }: { spec: DigitalHumanSpec; signal?: RosterSignal; ar: boolean }) {
+function AgentCard({
+  spec,
+  signal,
+  ar,
+}: {
+  spec: DigitalHumanSpec;
+  signal?: RosterSignal;
+  ar: boolean;
+}) {
   const dh = useDigitalHuman(spec);
 
   useEffect(() => {
@@ -58,7 +74,9 @@ function AgentCard({ spec, signal, ar }: { spec: DigitalHumanSpec; signal?: Rost
         <DigitalHumanAvatar spec={spec} state={dh.state} size={64} ar={ar} />
         <div className="min-w-0 flex-1">
           <div className="text-sm text-white truncate">{ar ? spec.name_ar : spec.name_en}</div>
-          <div className="text-[11px] text-white/55 truncate">{ar ? spec.title_ar : spec.title_en}</div>
+          <div className="text-[11px] text-white/55 truncate">
+            {ar ? spec.title_ar : spec.title_en}
+          </div>
           <div className="mt-1 flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-[0.18em] text-white/45">
               {ar ? "ثقة" : "Confidence"}
@@ -66,10 +84,15 @@ function AgentCard({ spec, signal, ar }: { spec: DigitalHumanSpec; signal?: Rost
             <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
               <div
                 className="h-full transition-all duration-700"
-                style={{ width: `${Math.round(dh.confidence * 100)}%`, background: spec.palette.accent }}
+                style={{
+                  width: `${Math.round(dh.confidence * 100)}%`,
+                  background: spec.palette.accent,
+                }}
               />
             </div>
-            <span className="text-[10px] tabular-nums text-white/70">{Math.round(dh.confidence * 100)}%</span>
+            <span className="text-[10px] tabular-nums text-white/70">
+              {Math.round(dh.confidence * 100)}%
+            </span>
           </div>
         </div>
       </div>
@@ -85,7 +108,7 @@ function AgentCard({ spec, signal, ar }: { spec: DigitalHumanSpec; signal?: Rost
 export function AgentRoster({ ar, signals }: Props) {
   const map = useMemo(() => {
     const m = new Map<string, RosterSignal>();
-    signals.forEach(s => m.set(s.id, s));
+    signals.forEach((s) => m.set(s.id, s));
     return m;
   }, [signals]);
 
@@ -93,9 +116,13 @@ export function AgentRoster({ ar, signals }: Props) {
     <div className="rounded-2xl border border-cyan-400/15 bg-white/[0.02] backdrop-blur-xl p-5 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-sm text-white font-medium">{ar ? "كادر الذكاء التنفيذي" : "Executive AI Roster"}</div>
+          <div className="text-sm text-white font-medium">
+            {ar ? "كادر الذكاء التنفيذي" : "Executive AI Roster"}
+          </div>
           <div className="text-[11px] text-cyan-200/70">
-            {ar ? `${SPECIALISTS.length} وكيل ذكاء صناعي متخصص — حالة حية` : `${SPECIALISTS.length} specialist digital humans — live state`}
+            {ar
+              ? `${SPECIALISTS.length} وكيل ذكاء صناعي متخصص — حالة حية`
+              : `${SPECIALISTS.length} specialist digital humans — live state`}
           </div>
         </div>
         <span className="hidden sm:inline-flex items-center gap-2 text-[11px] text-white/50">
@@ -104,7 +131,7 @@ export function AgentRoster({ ar, signals }: Props) {
         </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-        {SPECIALISTS.map(spec => (
+        {SPECIALISTS.map((spec) => (
           <AgentCard key={spec.id} spec={spec} signal={map.get(spec.id)} ar={ar} />
         ))}
       </div>

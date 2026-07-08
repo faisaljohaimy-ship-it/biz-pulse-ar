@@ -41,10 +41,17 @@ export const Route = createFileRoute("/api/public/aria-explain")({
         if (!rate.allowed) return rateLimitResponse();
 
         let body: unknown;
-        try { body = await request.json(); } catch { return Response.json({ error: "invalid_json" }, { status: 400 }); }
+        try {
+          body = await request.json();
+        } catch {
+          return Response.json({ error: "invalid_json" }, { status: 400 });
+        }
         const parsed = ExplanationRequestSchema.safeParse(body);
         if (!parsed.success) {
-          return Response.json({ error: "invalid_input", detail: parsed.error.flatten() }, { status: 400 });
+          return Response.json(
+            { error: "invalid_input", detail: parsed.error.flatten() },
+            { status: 400 },
+          );
         }
 
         try {

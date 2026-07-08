@@ -57,14 +57,7 @@ export const RegressionInputZ = z.object({
 
 export const GapInputZ = z.object({
   id: z.string().min(1),
-  kind: z.enum([
-    "knowledge",
-    "capability",
-    "performance",
-    "quality",
-    "reliability",
-    "unknown",
-  ]),
+  kind: z.enum(["knowledge", "capability", "performance", "quality", "reliability", "unknown"]),
   subject: z.string().min(1),
   detail: z.string().min(1),
   severity: z.enum(["low", "medium", "high", "critical", "unknown"]),

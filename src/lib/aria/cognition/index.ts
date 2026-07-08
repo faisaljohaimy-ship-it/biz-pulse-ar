@@ -80,9 +80,4 @@ export function reasoningHealth(): CognitiveHealth {
 export { onCognitiveEvent } from "./events";
 export { runReasoning };
 export { generateRecommendation };
-export type {
-  CognitiveHealth,
-  CognitiveMetrics,
-  CognitiveSession,
-  ReasoningInput,
-};
+export type { CognitiveHealth, CognitiveMetrics, CognitiveSession, ReasoningInput };

@@ -15,7 +15,7 @@ import { DIGITAL_HUMANS } from "./registry";
 
 export type HeygenPersonaMap = Record<string, { avatarId: string; voiceId?: string }>;
 
-export const HEYGEN_PERSONA_IDS: readonly string[] = DIGITAL_HUMANS.map(h => h.id);
+export const HEYGEN_PERSONA_IDS: readonly string[] = DIGITAL_HUMANS.map((h) => h.id);
 
 /**
  * HeyGen public Interactive Avatar default — Anna_public_3_20240108, a

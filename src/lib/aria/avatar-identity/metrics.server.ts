@@ -26,8 +26,12 @@ export class IdentityMetrics {
   }
 
   snapshot(): IdentityMetricsSnapshot {
-    const avg = this.scoreSamples.length === 0 ? null :
-      Math.round((this.scoreSamples.reduce((a, b) => a + b, 0) / this.scoreSamples.length) * 100) / 100;
+    const avg =
+      this.scoreSamples.length === 0
+        ? null
+        : Math.round(
+            (this.scoreSamples.reduce((a, b) => a + b, 0) / this.scoreSamples.length) * 100,
+          ) / 100;
     return {
       checks: this.checks,
       violations: this.violations,

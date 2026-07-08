@@ -20,8 +20,8 @@ export type ExecutiveMetric = {
     | "opportunityIndex";
   label_ar: string;
   label_en: string;
-  value: number;              // 0-100
-  delta: number;              // pp vs prior window
+  value: number; // 0-100
+  delta: number; // pp vs prior window
   tone: "emerald" | "cyan" | "amber" | "rose" | "violet";
   why_ar: string;
   why_en: string;
@@ -50,18 +50,16 @@ export function computeExecutiveMetrics(input: MetricsInput): ExecutiveMetric[] 
   const day = 86_400_000;
 
   // Strategic progress — weighted average of in_progress / open initiatives + decisions
-  const strategic = events.filter((e) =>
-    ["decision", "initiative", "board_action"].includes(e.kind) && e.status !== "done",
+  const strategic = events.filter(
+    (e) => ["decision", "initiative", "board_action"].includes(e.kind) && e.status !== "done",
   );
   const stratWeight = strategic.reduce((s, e) => s + (IMPACT_WEIGHT[e.impact] ?? 1), 0);
   const stratProgress =
     stratWeight === 0
       ? 100
       : Math.round(
-          strategic.reduce(
-            (s, e) => s + e.progress * (IMPACT_WEIGHT[e.impact] ?? 1),
-            0,
-          ) / stratWeight,
+          strategic.reduce((s, e) => s + e.progress * (IMPACT_WEIGHT[e.impact] ?? 1), 0) /
+            stratWeight,
         );
 
   // Execution velocity — completed / created in last 14d (capped at 100)
@@ -71,7 +69,11 @@ export function computeExecutiveMetrics(input: MetricsInput): ExecutiveMetric[] 
     (t) => t.status === "done" && new Date(t.updated_at).getTime() >= cutoff,
   ).length;
   const velocity =
-    created14 === 0 ? (done14 > 0 ? 100 : 70) : Math.min(100, Math.round((done14 / created14) * 100));
+    created14 === 0
+      ? done14 > 0
+        ? 100
+        : 70
+      : Math.min(100, Math.round((done14 / created14) * 100));
 
   // Decision latency — inverse of avg days open for "decision" kind still open/in_progress
   const openDecisions = events.filter(
@@ -80,17 +82,13 @@ export function computeExecutiveMetrics(input: MetricsInput): ExecutiveMetric[] 
   const avgDaysOpen =
     openDecisions.length === 0
       ? 0
-      : openDecisions.reduce(
-          (s, e) => s + (now - new Date(e.created_at).getTime()) / day,
-          0,
-        ) / openDecisions.length;
+      : openDecisions.reduce((s, e) => s + (now - new Date(e.created_at).getTime()) / day, 0) /
+        openDecisions.length;
   // < 3 days = 100, > 21 days = 20
   const latency = Math.max(20, Math.min(100, Math.round(100 - (avgDaysOpen - 3) * 4.5)));
 
   // Risk exposure — weighted open risks + critical/high alerts (lower score = more exposure)
-  const openRisks = events.filter(
-    (e) => e.kind === "risk" && e.status !== "done",
-  );
+  const openRisks = events.filter((e) => e.kind === "risk" && e.status !== "done");
   const riskWeight = openRisks.reduce((s, e) => s + (IMPACT_WEIGHT[e.impact] ?? 1), 0);
   const alertWeight = alerts
     .filter((a) => !a.resolved_at)
@@ -106,11 +104,7 @@ export function computeExecutiveMetrics(input: MetricsInput): ExecutiveMetric[] 
 
   // Enterprise health = weighted blend
   const health = Math.round(
-    stratProgress * 0.25 +
-      velocity * 0.2 +
-      latency * 0.15 +
-      riskScore * 0.25 +
-      opportunity * 0.15,
+    stratProgress * 0.25 + velocity * 0.2 + latency * 0.15 + riskScore * 0.25 + opportunity * 0.15,
   );
 
   return [

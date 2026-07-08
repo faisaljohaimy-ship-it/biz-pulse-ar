@@ -47,9 +47,15 @@ export function useCameraDirector() {
     if (typeof window !== "undefined") {
       const primaryModule = step.affectedModules[0];
       if (primaryModule) {
-        window.dispatchEvent(new CustomEvent("nexios:demo-highlight", {
-          detail: { module: primaryModule, stepId: step.id, cameraTarget: step.cameraTarget ?? null },
-        }));
+        window.dispatchEvent(
+          new CustomEvent("nexios:demo-highlight", {
+            detail: {
+              module: primaryModule,
+              stepId: step.id,
+              cameraTarget: step.cameraTarget ?? null,
+            },
+          }),
+        );
       }
     }
 
@@ -61,7 +67,11 @@ export function useCameraDirector() {
       if (target !== pathname) {
         // Defer to let overlay finish its fade + guard against duplicate nav.
         window.setTimeout(() => {
-          try { navigate({ to: target as never }); } catch { /* route may be gated */ }
+          try {
+            navigate({ to: target as never });
+          } catch {
+            /* route may be gated */
+          }
         }, 250);
       }
     } else if (action.kind === "highlight") {
@@ -72,7 +82,11 @@ export function useCameraDirector() {
           : route;
         if (target !== pathname) {
           window.setTimeout(() => {
-            try { navigate({ to: target as never }); } catch { /* ignore */ }
+            try {
+              navigate({ to: target as never });
+            } catch {
+              /* ignore */
+            }
           }, 250);
         }
       }

@@ -1,9 +1,33 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
-  Activity, AlertTriangle, ShieldAlert, Radar, KeyRound, UserCheck, HardHat,
-  Car, FileBadge, Siren, Camera, Eye, ListChecks, BarChart3, FileText,
-  Clock, Boxes, Building2, Brain, ShieldCheck, Plug, Network, Wrench, Rocket, Crown, Building, BookOpen,
+  Activity,
+  AlertTriangle,
+  ShieldAlert,
+  Radar,
+  KeyRound,
+  UserCheck,
+  HardHat,
+  Car,
+  FileBadge,
+  Siren,
+  Camera,
+  Eye,
+  ListChecks,
+  BarChart3,
+  FileText,
+  Clock,
+  Boxes,
+  Building2,
+  Brain,
+  ShieldCheck,
+  Plug,
+  Network,
+  Wrench,
+  Rocket,
+  Crown,
+  Building,
+  BookOpen,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -68,8 +92,16 @@ export function SecSubNav() {
 }
 
 export function SecPageHeader({
-  title, subtitle, badge, children,
-}: { title: string; subtitle?: string; badge?: string; children?: React.ReactNode }) {
+  title,
+  subtitle,
+  badge,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -89,8 +121,18 @@ export function SecPageHeader({
 }
 
 export function StatCard({
-  label, value, hint, tone = "default", sim = false,
-}: { label: string; value: string | number; hint?: string; tone?: "default" | "danger" | "warning" | "success"; sim?: boolean }) {
+  label,
+  value,
+  hint,
+  tone = "default",
+  sim = false,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+  tone?: "default" | "danger" | "warning" | "success";
+  sim?: boolean;
+}) {
   const toneCls = {
     default: "border-border",
     danger: "border-red-500/40 bg-red-500/5",
@@ -100,7 +142,9 @@ export function StatCard({
   return (
     <div className={cn("relative rounded-xl border bg-card p-4 shadow-sm", toneCls)}>
       <div className="flex items-start justify-between gap-2">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </div>
         {sim && <SimTag />}
       </div>
       <div className="mt-1 text-2xl font-bold text-foreground">{value}</div>
@@ -128,20 +172,28 @@ export function SampleBadge() {
   );
 }
 
-
 export function severityClass(sev: string) {
   switch (sev) {
-    case "critical": return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30";
-    case "high": return "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30";
-    case "medium": return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30";
-    case "low": return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
-    default: return "bg-muted text-muted-foreground border-border";
+    case "critical":
+      return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30";
+    case "high":
+      return "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30";
+    case "medium":
+      return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30";
+    case "low":
+      return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
+    default:
+      return "bg-muted text-muted-foreground border-border";
   }
 }
 export function statusClass(s: string) {
-  if (["open", "active", "new", "inside", "approved"].includes(s)) return "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30";
-  if (["investigating", "pending", "scheduled", "expected"].includes(s)) return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30";
-  if (["contained", "completed", "left", "resolved"].includes(s)) return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
-  if (["closed", "expired", "offline", "missed", "revoked", "overdue"].includes(s)) return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30";
+  if (["open", "active", "new", "inside", "approved"].includes(s))
+    return "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30";
+  if (["investigating", "pending", "scheduled", "expected"].includes(s))
+    return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30";
+  if (["contained", "completed", "left", "resolved"].includes(s))
+    return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
+  if (["closed", "expired", "offline", "missed", "revoked", "overdue"].includes(s))
+    return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30";
   return "bg-muted text-muted-foreground border-border";
 }

@@ -16,11 +16,22 @@ export class LiveVoiceMetrics {
   private sttSamples: number[] = [];
   private firstAudioSamples: number[] = [];
 
-  recordStt(ms: number): void { this.stt++; this.push(this.sttSamples, ms); }
-  recordTts(): void { this.tts++; }
-  recordFirstAudio(ms: number): void { this.push(this.firstAudioSamples, ms); }
-  recordInterruption(): void { this.interruptions++; }
-  recordError(): void { this.errors++; }
+  recordStt(ms: number): void {
+    this.stt++;
+    this.push(this.sttSamples, ms);
+  }
+  recordTts(): void {
+    this.tts++;
+  }
+  recordFirstAudio(ms: number): void {
+    this.push(this.firstAudioSamples, ms);
+  }
+  recordInterruption(): void {
+    this.interruptions++;
+  }
+  recordError(): void {
+    this.errors++;
+  }
 
   snapshot(): LiveVoiceMetricsSnapshot {
     return {

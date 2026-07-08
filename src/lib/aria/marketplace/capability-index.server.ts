@@ -4,11 +4,7 @@
  * No LLM calls. No hardcoded routing.
  */
 import type { AgentId } from "../orchestrator/types";
-import type {
-  CapabilityDefinition,
-  CapabilityKey,
-  CapabilityMatch,
-} from "./types";
+import type { CapabilityDefinition, CapabilityKey, CapabilityMatch } from "./types";
 
 interface Entry {
   cap: CapabilityDefinition;
@@ -18,10 +14,7 @@ interface Entry {
 const byKey = new Map<CapabilityKey, Entry>();
 const byAgent = new Map<AgentId, Set<CapabilityKey>>();
 
-export function registerCapability(
-  agentId: AgentId,
-  cap: CapabilityDefinition,
-): boolean {
+export function registerCapability(agentId: AgentId, cap: CapabilityDefinition): boolean {
   if (byKey.has(cap.key)) return false;
   byKey.set(cap.key, { cap, agentId });
   const set = byAgent.get(agentId) ?? new Set<CapabilityKey>();
@@ -74,9 +67,7 @@ export function findMatches(query: string, limit = 5): CapabilityMatch[] {
       results.push({ capability: cap, agentId, score: 1, matchKind: "exact" });
       continue;
     }
-    const synScore = cap.synonyms?.some((s) => tokenize(s).some((t) => q.includes(t)))
-      ? 0.85
-      : 0;
+    const synScore = cap.synonyms?.some((s) => tokenize(s).some((t) => q.includes(t))) ? 0.85 : 0;
     const tagScore = cap.tags?.some((t) => q.includes(t.toLowerCase())) ? 0.7 : 0;
     const semantic = jaccard(q, tokenize(`${cap.key} ${cap.description}`));
     const score = Math.max(synScore, tagScore, semantic);
@@ -94,9 +85,7 @@ export function findMatches(query: string, limit = 5): CapabilityMatch[] {
   return results.slice(0, limit);
 }
 
-export function bestForCapability(
-  query: string,
-): CapabilityMatch | null {
+export function bestForCapability(query: string): CapabilityMatch | null {
   return findExact(query) ?? findMatches(query, 1)[0] ?? null;
 }
 

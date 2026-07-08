@@ -28,14 +28,20 @@ function LeadsAdmin() {
 
   async function load() {
     setLoading(true);
-    const q = supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(200);
+    const q = supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
     const { data, error } = await q;
     if (error) toast.error(error.message);
     setRows((data ?? []) as Lead[]);
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+  }, []);
 
   async function setStatus(id: string, status: string) {
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
@@ -59,7 +65,9 @@ function LeadsAdmin() {
               {k}
             </button>
           ))}
-          <button onClick={load} className="rounded-full border border-white/10 px-3 py-1 text-xs">Refresh</button>
+          <button onClick={load} className="rounded-full border border-white/10 px-3 py-1 text-xs">
+            Refresh
+          </button>
         </div>
       </div>
 
@@ -86,12 +94,27 @@ function LeadsAdmin() {
             <tbody>
               {filtered.map((r) => (
                 <tr key={r.id} className="border-t border-white/5">
-                  <td className="p-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
-                  <td className="p-3"><span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{r.kind}</span></td>
+                  <td className="p-3 text-xs text-muted-foreground">
+                    {new Date(r.created_at).toLocaleString()}
+                  </td>
+                  <td className="p-3">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                      {r.kind}
+                    </span>
+                  </td>
                   <td className="p-3 font-medium">{r.name}</td>
-                  <td className="p-3"><a href={`mailto:${r.email}`} className="text-primary hover:underline">{r.email}</a></td>
+                  <td className="p-3">
+                    <a href={`mailto:${r.email}`} className="text-primary hover:underline">
+                      {r.email}
+                    </a>
+                  </td>
                   <td className="p-3">{r.company ?? "-"}</td>
-                  <td className="p-3 max-w-xs truncate text-xs text-muted-foreground" title={r.notes ?? ""}>{r.notes ?? "-"}</td>
+                  <td
+                    className="p-3 max-w-xs truncate text-xs text-muted-foreground"
+                    title={r.notes ?? ""}
+                  >
+                    {r.notes ?? "-"}
+                  </td>
                   <td className="p-3">
                     <select
                       value={r.status}

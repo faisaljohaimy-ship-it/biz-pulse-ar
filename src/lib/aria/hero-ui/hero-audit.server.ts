@@ -1,6 +1,12 @@
 export type HeroAuditKind =
-  | "entrance" | "state_change" | "transition" | "caption" | "overlay"
-  | "budget_downgrade" | "performance_warning" | "reset";
+  | "entrance"
+  | "state_change"
+  | "transition"
+  | "caption"
+  | "overlay"
+  | "budget_downgrade"
+  | "performance_warning"
+  | "reset";
 
 export interface HeroAuditEntry {
   readonly at: number;
@@ -12,7 +18,11 @@ export interface HeroAuditEntry {
 const LOG: HeroAuditEntry[] = [];
 const MAX = 500;
 
-export function logHero(instanceId: string, kind: HeroAuditKind, meta?: Record<string, unknown>): void {
+export function logHero(
+  instanceId: string,
+  kind: HeroAuditKind,
+  meta?: Record<string, unknown>,
+): void {
   LOG.push({ at: Date.now(), kind, instanceId, meta });
   if (LOG.length > MAX) LOG.splice(0, LOG.length - MAX);
 }

@@ -3,7 +3,15 @@
  * Industrial Security region. Every screen reads the same context so
  * one system serves all four administrations (no forked routes).
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { DEFAULT_REGION_ID, REGIONS, getRegion, type Region, type RegionId } from "./regions";
 
 interface RegionContextValue {

@@ -72,7 +72,7 @@ export const Route = createFileRoute("/api/heygen/token")({
         const personaId =
           body.personaId && HEYGEN_PERSONA_IDS.includes(body.personaId)
             ? body.personaId
-            : HEYGEN_PERSONA_IDS[0] ?? "aria";
+            : (HEYGEN_PERSONA_IDS[0] ?? "aria");
         const language: "ar" | "en" = body.language === "ar" ? "ar" : "en";
         const { avatarId, voiceId } = resolvePersona(personaId);
 

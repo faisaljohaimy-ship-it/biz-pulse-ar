@@ -25,9 +25,7 @@ export class Dispatcher {
   ) {}
 
   pickWorker(kind: string): WorkerDescriptor | undefined {
-    const eligible = this.store
-      .listWorkers()
-      .filter((w) => w.kind === kind);
+    const eligible = this.store.listWorkers().filter((w) => w.kind === kind);
     if (eligible.length === 0) return undefined;
     const w = eligible[this.cursor % eligible.length];
     this.cursor += 1;
@@ -41,54 +39,26 @@ export class Dispatcher {
   ): Promise<JobRecord | undefined> {
     const worker = this.pickWorker(record.job.kind);
     if (!worker) {
-      this.telemetry.emit(
-        "queue",
-        "no_worker",
-        `No worker available for kind=${record.job.kind}`,
-      );
+      this.telemetry.emit("queue", "no_worker", `No worker available for kind=${record.job.kind}`);
       return undefined;
     }
     const running = this.store.markRunning(record, worker.id);
-    this.telemetry.emit(
-      "queue",
-      "dispatched",
-      `Job ${record.job.id} -> worker ${worker.id}`,
-    );
+    this.telemetry.emit("queue", "dispatched", `Job ${record.job.id} -> worker ${worker.id}`);
 
     try {
-      const outcome = await withTimeout(
-        executor(running, worker),
-        timeoutMs,
-        record.job.id,
-      );
+      const outcome = await withTimeout(executor(running, worker), timeoutMs, record.job.id);
       return (
-        this.store.finish(
-          record.job.id,
-          outcome.status,
-          outcome.result,
-          outcome.error,
-        ) ?? running
+        this.store.finish(record.job.id, outcome.status, outcome.result, outcome.error) ?? running
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.telemetry.emit(
-        "queue",
-        "job_error",
-        `Job ${record.job.id} failed: ${message}`,
-      );
-      return (
-        this.store.finish(record.job.id, "failed", undefined, message) ??
-        running
-      );
+      this.telemetry.emit("queue", "job_error", `Job ${record.job.id} failed: ${message}`);
+      return this.store.finish(record.job.id, "failed", undefined, message) ?? running;
     }
   }
 }
 
-async function withTimeout<T>(
-  p: Promise<T>,
-  ms: number,
-  jobId: string,
-): Promise<T> {
+async function withTimeout<T>(p: Promise<T>, ms: number, jobId: string): Promise<T> {
   return await new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(new Error(`Job ${jobId} timed out after ${ms}ms`));

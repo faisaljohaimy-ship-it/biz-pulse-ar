@@ -48,7 +48,11 @@ function baseContract(
   };
 }
 
-function done(agentId: AgentId, contribution: AgentResult["contribution"], startedMs: number): AgentResult {
+function done(
+  agentId: AgentId,
+  contribution: AgentResult["contribution"],
+  startedMs: number,
+): AgentResult {
   const finished_at = new Date().toISOString();
   return {
     agent_id: agentId,
@@ -146,7 +150,9 @@ function passiveAgent(
   name_en: string,
   name_ar: string,
   intents: AriaIntent[],
-  extract: (answer: import("../executive-brain/types").ExecutiveBrainAnswer) => AgentResult["contribution"],
+  extract: (
+    answer: import("../executive-brain/types").ExecutiveBrainAnswer,
+  ) => AgentResult["contribution"],
   overrides: Partial<AgentContract> = {},
 ): ExecutiveAgent {
   return {
@@ -181,10 +187,16 @@ function passiveAgent(
 registerAgent(executiveBrainAgent);
 
 registerAgent(
-  passiveAgent("planning", "Planning", "التخطيط", ["command", "decision_support", "recommendation"], (a) => ({
-    evidence: a.plan.map((s) => `plan: ${s.goal_en || s.goal_ar || s.tool}`),
-    sources: ["planning-engine"],
-  })),
+  passiveAgent(
+    "planning",
+    "Planning",
+    "التخطيط",
+    ["command", "decision_support", "recommendation"],
+    (a) => ({
+      evidence: a.plan.map((s) => `plan: ${s.goal_en || s.goal_ar || s.tool}`),
+      sources: ["planning-engine"],
+    }),
+  ),
 );
 
 registerAgent(
@@ -205,9 +217,15 @@ registerAgent(
 );
 
 registerAgent(
-  passiveAgent("inspection", "Inspection", "التفتيش", ["operational_status", "investigation"], (a) => ({
-    sources: a.sources.filter((s) => /inspection|permit|work_orders/.test(s)),
-  })),
+  passiveAgent(
+    "inspection",
+    "Inspection",
+    "التفتيش",
+    ["operational_status", "investigation"],
+    (a) => ({
+      sources: a.sources.filter((s) => /inspection|permit|work_orders/.test(s)),
+    }),
+  ),
 );
 
 registerAgent(
@@ -261,7 +279,10 @@ registerAgent(
     "الإحاطات",
     ["executive_summary", "meeting_brief", "operational_status"],
     (a) => ({
-      evidence: a.insights.slice(0, 4).map((i) => `briefing: ${i.title_en ?? i.title_ar ?? ""}`).filter(Boolean),
+      evidence: a.insights
+        .slice(0, 4)
+        .map((i) => `briefing: ${i.title_en ?? i.title_ar ?? ""}`)
+        .filter(Boolean),
       sources: ["briefing"],
     }),
   ),
@@ -287,7 +308,13 @@ registerAgent(
 );
 
 registerAgent(
-  passiveAgent("simulation", "Simulation", "المحاكاة", ["prediction", "analysis", "trend_analysis"], (a) => ({
-    sources: a.sources.filter((s) => /sim_/.test(s)),
-  })),
+  passiveAgent(
+    "simulation",
+    "Simulation",
+    "المحاكاة",
+    ["prediction", "analysis", "trend_analysis"],
+    (a) => ({
+      sources: a.sources.filter((s) => /sim_/.test(s)),
+    }),
+  ),
 );

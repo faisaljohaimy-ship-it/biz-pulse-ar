@@ -14,11 +14,21 @@ export class MotionMetrics {
   private chunks = 0;
   private interruptions = 0;
 
-  recordTick(): void { this.ticks++; }
-  recordTransition(): void { this.transitions++; }
-  recordGesture(): void { this.gestures++; }
-  recordChunk(): void { this.chunks++; }
-  recordInterruption(): void { this.interruptions++; }
+  recordTick(): void {
+    this.ticks++;
+  }
+  recordTransition(): void {
+    this.transitions++;
+  }
+  recordGesture(): void {
+    this.gestures++;
+  }
+  recordChunk(): void {
+    this.chunks++;
+  }
+  recordInterruption(): void {
+    this.interruptions++;
+  }
 
   snapshot(): MotionMetricsSnapshot {
     return {

@@ -43,7 +43,6 @@ export const Route = createFileRoute("/_authenticated/command-center")({
   ),
 });
 
-
 /* ═══════════════════════ Types ═══════════════════════ */
 
 interface Agent {
@@ -87,23 +86,10 @@ type LiveState = "loading" | "live" | "empty" | "error";
 
 /* ═══════════════════════ Utilities ═══════════════════════ */
 
-const PROPOSED_STATUSES = new Set([
-  "proposed",
-  "pending",
-  "مقترح",
-  "بانتظار",
-  "بانتظار الاعتماد",
-]);
+const PROPOSED_STATUSES = new Set(["proposed", "pending", "مقترح", "بانتظار", "بانتظار الاعتماد"]);
 const APPROVED_STATUSES = new Set(["approved", "accepted", "معتمد", "مقبول"]);
 const REJECTED_STATUSES = new Set(["rejected", "declined", "مرفوض"]);
-const APPLIED_STATUSES = new Set([
-  "applied",
-  "deployed",
-  "completed",
-  "مطبق",
-  "مطبَّق",
-  "منفَّذ",
-]);
+const APPLIED_STATUSES = new Set(["applied", "deployed", "completed", "مطبق", "مطبَّق", "منفَّذ"]);
 
 function bucketOf(status: string): "proposed" | "approved" | "rejected" | "applied" | "other" {
   const s = (status ?? "").toLowerCase();
@@ -114,7 +100,11 @@ function bucketOf(status: string): "proposed" | "approved" | "rejected" | "appli
   return "other";
 }
 
-function slaChip(due_at: string | null): { text: string; tone: "red" | "amber" | "emerald" | "gray"; pulse: boolean } {
+function slaChip(due_at: string | null): {
+  text: string;
+  tone: "red" | "amber" | "emerald" | "gray";
+  pulse: boolean;
+} {
   if (!due_at) return { text: "بدون موعد", tone: "gray", pulse: false };
   const ms = new Date(due_at).getTime() - Date.now();
   const absH = Math.floor(Math.abs(ms) / 3_600_000);
@@ -128,10 +118,18 @@ function slaChip(due_at: string | null): { text: string; tone: "red" | "amber" |
 
 function hijriGregorian(): string {
   const now = new Date();
-  const g = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(now);
+  const g = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(now);
   let h = "";
   try {
-    h = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", { day: "numeric", month: "long", year: "numeric" }).format(now);
+    h = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(now);
   } catch {
     /* noop */
   }
@@ -141,9 +139,17 @@ function hijriGregorian(): string {
 /* ═══════════════════════ Page ═══════════════════════ */
 
 function CommandCenterPage() {
-  const [counters, setCounters] = useState<Counters>({ agents: null, proposals: null, urgent: null, support: null });
+  const [counters, setCounters] = useState<Counters>({
+    agents: null,
+    proposals: null,
+    urgent: null,
+    support: null,
+  });
   const [liveState, setLiveState] = useState<Record<keyof Counters, LiveState>>({
-    agents: "loading", proposals: "loading", urgent: "loading", support: "loading",
+    agents: "loading",
+    proposals: "loading",
+    urgent: "loading",
+    support: "loading",
   });
 
   const [agents, setAgents] = useState<Agent[] | null>(null);
@@ -164,11 +170,26 @@ function CommandCenterPage() {
   /* ───────── Counters + Realtime ───────── */
   const refreshCounters = useCallback(async () => {
     const runs = await Promise.allSettled([
-      supabase.from("intelligence_agents").select("*", { count: "exact", head: true }).eq("status", "active"),
-      supabase.from("evolution_proposals").select("*", { count: "exact", head: true }).in("status", ["proposed", "pending", "مقترح"]),
-      supabase.from("aria_improvement_proposals").select("*", { count: "exact", head: true }).in("status", ["proposed", "pending", "مقترح"]),
-      supabase.from("urgent_tasks").select("*", { count: "exact", head: true }).neq("status", "مغلق"),
-      supabase.from("support_requests").select("*", { count: "exact", head: true }).neq("status", "مغلق"),
+      supabase
+        .from("intelligence_agents")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active"),
+      supabase
+        .from("evolution_proposals")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["proposed", "pending", "مقترح"]),
+      supabase
+        .from("aria_improvement_proposals")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["proposed", "pending", "مقترح"]),
+      supabase
+        .from("urgent_tasks")
+        .select("*", { count: "exact", head: true })
+        .neq("status", "مغلق"),
+      supabase
+        .from("support_requests")
+        .select("*", { count: "exact", head: true })
+        .neq("status", "مغلق"),
     ]);
     const [aRes, eRes, aiRes, uRes, sRes] = runs;
     const readCount = (r: PromiseSettledResult<unknown>): number | null => {
@@ -185,7 +206,8 @@ function CommandCenterPage() {
 
     setCounters({
       agents: agentCount,
-      proposals: eRes.status === "fulfilled" || aiRes.status === "fulfilled" ? eCount + aiCount : null,
+      proposals:
+        eRes.status === "fulfilled" || aiRes.status === "fulfilled" ? eCount + aiCount : null,
       urgent: urgentCount,
       support: supportCount,
     });
@@ -201,13 +223,35 @@ function CommandCenterPage() {
     void refreshCounters();
     const ch = supabase
       .channel("cmd-center-pulse")
-      .on("postgres_changes", { event: "*", schema: "public", table: "intelligence_agents" }, () => void refreshCounters())
-      .on("postgres_changes", { event: "*", schema: "public", table: "evolution_proposals" }, () => void refreshCounters())
-      .on("postgres_changes", { event: "*", schema: "public", table: "aria_improvement_proposals" }, () => void refreshCounters())
-      .on("postgres_changes", { event: "*", schema: "public", table: "urgent_tasks" }, () => void refreshCounters())
-      .on("postgres_changes", { event: "*", schema: "public", table: "support_requests" }, () => void refreshCounters())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "intelligence_agents" },
+        () => void refreshCounters(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "evolution_proposals" },
+        () => void refreshCounters(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "aria_improvement_proposals" },
+        () => void refreshCounters(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "urgent_tasks" },
+        () => void refreshCounters(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "support_requests" },
+        () => void refreshCounters(),
+      )
       .subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    return () => {
+      void supabase.removeChannel(ch);
+    };
   }, [refreshCounters]);
 
   /* ───────── Zone 2 — agents ───────── */
@@ -217,7 +261,11 @@ function CommandCenterPage() {
       .select("id, name_ar, focus_area, role, status")
       .order("name_ar", { ascending: true })
       .limit(24);
-    if (error) { setAgentsErr(error.message); setAgents([]); return; }
+    if (error) {
+      setAgentsErr(error.message);
+      setAgents([]);
+      return;
+    }
     setAgentsErr(null);
     setAgents((data ?? []) as Agent[]);
   }, []);
@@ -225,9 +273,15 @@ function CommandCenterPage() {
     void loadAgents();
     const ch = supabase
       .channel("cmd-center-agents")
-      .on("postgres_changes", { event: "*", schema: "public", table: "intelligence_agents" }, () => void loadAgents())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "intelligence_agents" },
+        () => void loadAgents(),
+      )
       .subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    return () => {
+      void supabase.removeChannel(ch);
+    };
   }, [loadAgents]);
 
   /* ───────── Zone 3 — unified proposals ───────── */
@@ -286,10 +340,20 @@ function CommandCenterPage() {
     void loadProposals();
     const ch = supabase
       .channel("cmd-center-proposals")
-      .on("postgres_changes", { event: "*", schema: "public", table: "evolution_proposals" }, () => void loadProposals())
-      .on("postgres_changes", { event: "*", schema: "public", table: "aria_improvement_proposals" }, () => void loadProposals())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "evolution_proposals" },
+        () => void loadProposals(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "aria_improvement_proposals" },
+        () => void loadProposals(),
+      )
       .subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    return () => {
+      void supabase.removeChannel(ch);
+    };
   }, [loadProposals]);
 
   /* ───────── Zone 4 — urgent tasks ───────── */
@@ -300,7 +364,11 @@ function CommandCenterPage() {
       .neq("status", "مغلق")
       .order("due_at", { ascending: true, nullsFirst: false })
       .limit(6);
-    if (error) { setUrgentErr(error.message); setUrgent([]); return; }
+    if (error) {
+      setUrgentErr(error.message);
+      setUrgent([]);
+      return;
+    }
     setUrgentErr(null);
     setUrgent((data ?? []) as UrgentTask[]);
   }, []);
@@ -308,32 +376,46 @@ function CommandCenterPage() {
     void loadUrgent();
     const ch = supabase
       .channel("cmd-center-urgent")
-      .on("postgres_changes", { event: "*", schema: "public", table: "urgent_tasks" }, () => void loadUrgent())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "urgent_tasks" },
+        () => void loadUrgent(),
+      )
       .subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    return () => {
+      void supabase.removeChannel(ch);
+    };
   }, [loadUrgent]);
 
   /* ───────── Decisions (human approve / reject) ───────── */
-  const decide = useCallback(async (p: Proposal, decision: "approved" | "rejected") => {
-    const table = p.origin === "evolution" ? "evolution_proposals" : "aria_improvement_proposals";
-    const now = new Date().toISOString();
-    const { data: session } = await supabase.auth.getSession();
-    const userId = session.session?.user?.id ?? null;
-    const patch: Record<string, unknown> = {
-      status: decision,
-      decided_at: now,
-    };
-    if (userId) patch.decided_by = p.origin === "evolution" ? userId : (session.session?.user?.email ?? userId);
-    // Runtime union across two tables — cast is narrow and local.
-    const { error } = await supabase.from(table).update(patch as never).eq("id", p.id);
-    if (error) {
-      toast.error("تعذّر حفظ القرار", { description: error.message });
-      return;
-    }
-    toast.success(decision === "approved" ? "تم الاعتماد" : "تم الرفض");
-    void loadProposals();
-    void refreshCounters();
-  }, [loadProposals, refreshCounters]);
+  const decide = useCallback(
+    async (p: Proposal, decision: "approved" | "rejected") => {
+      const table = p.origin === "evolution" ? "evolution_proposals" : "aria_improvement_proposals";
+      const now = new Date().toISOString();
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session.session?.user?.id ?? null;
+      const patch: Record<string, unknown> = {
+        status: decision,
+        decided_at: now,
+      };
+      if (userId)
+        patch.decided_by =
+          p.origin === "evolution" ? userId : (session.session?.user?.email ?? userId);
+      // Runtime union across two tables — cast is narrow and local.
+      const { error } = await supabase
+        .from(table)
+        .update(patch as never)
+        .eq("id", p.id);
+      if (error) {
+        toast.error("تعذّر حفظ القرار", { description: error.message });
+        return;
+      }
+      toast.success(decision === "approved" ? "تم الاعتماد" : "تم الرفض");
+      void loadProposals();
+      void refreshCounters();
+    },
+    [loadProposals, refreshCounters],
+  );
 
   /* ───────── ARIA summary ───────── */
   const speakSummary = useCallback(async () => {
@@ -341,18 +423,25 @@ function CommandCenterPage() {
     try {
       const res = await authenticatedFetch("/api/urgent-summary", { method: "GET" });
       if (!res.ok) throw new Error(`http_${res.status}`);
-      const j = await res.json() as {
+      const j = (await res.json()) as {
         tasks: { total: number; open: number; overdue: number; breaching_soon: number };
         support_requests: { open: number };
         proposals: { pending: number };
       };
-      const display = [
-        `لديك ${j.tasks.open} مهمة عاجلة مفتوحة`,
-        j.tasks.overdue > 0 ? `منها ${j.tasks.overdue} متجاوزة الموعد` : null,
-        j.tasks.breaching_soon > 0 ? `و${j.tasks.breaching_soon} تقترب من خرق مؤشر الخدمة` : null,
-        j.support_requests.open > 0 ? `و${j.support_requests.open} طلب مساندة قيد المعالجة` : null,
-        j.proposals.pending > 0 ? `و${j.proposals.pending} مقترح بانتظار اعتمادك` : "ولا مقترحات معلّقة",
-      ].filter(Boolean).join("، ") + ".";
+      const display =
+        [
+          `لديك ${j.tasks.open} مهمة عاجلة مفتوحة`,
+          j.tasks.overdue > 0 ? `منها ${j.tasks.overdue} متجاوزة الموعد` : null,
+          j.tasks.breaching_soon > 0 ? `و${j.tasks.breaching_soon} تقترب من خرق مؤشر الخدمة` : null,
+          j.support_requests.open > 0
+            ? `و${j.support_requests.open} طلب مساندة قيد المعالجة`
+            : null,
+          j.proposals.pending > 0
+            ? `و${j.proposals.pending} مقترح بانتظار اعتمادك`
+            : "ولا مقترحات معلّقة",
+        ]
+          .filter(Boolean)
+          .join("، ") + ".";
       // tts = diacritized approximation; ElevenLabs multilingual handles the rest.
       const tts = display.replace(/([اأإآ])/g, "$1").normalize("NFC");
       await speak(tts, "chat-tts");
@@ -371,7 +460,12 @@ function CommandCenterPage() {
   }, [proposals, selectedAgent]);
 
   const pipeline = useMemo(() => {
-    const buckets = { proposed: [] as Proposal[], approved: [] as Proposal[], rejected: [] as Proposal[], applied: [] as Proposal[] };
+    const buckets = {
+      proposed: [] as Proposal[],
+      approved: [] as Proposal[],
+      rejected: [] as Proposal[],
+      applied: [] as Proposal[],
+    };
     for (const p of filteredProposals ?? []) {
       const b = bucketOf(p.status);
       if (b !== "other") buckets[b].push(p);
@@ -383,7 +477,11 @@ function CommandCenterPage() {
 
   /* ═══════════════════════ Render ═══════════════════════ */
   return (
-    <div dir="rtl" className="min-h-screen bg-[#04101E] text-white" style={{ fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif" }}>
+    <div
+      dir="rtl"
+      className="min-h-screen bg-[#04101E] text-white"
+      style={{ fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif" }}
+    >
       {/* Header */}
       <header className="border-b border-emerald-400/15 bg-[#061A2E]/80 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -397,7 +495,11 @@ function CommandCenterPage() {
             disabled={summarizing}
             className="inline-flex items-center gap-2 rounded-full border border-emerald-400/50 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/20 disabled:opacity-60"
           >
-            {summarizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {summarizing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
             <span>ملخص آريا</span>
           </button>
         </div>
@@ -407,10 +509,26 @@ function CommandCenterPage() {
         {/* ═══ Zone 1 — Pulse counters ═══ */}
         <section className="lg:col-span-12">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <PulseCounter label="الوكلاء النشطون" value={counters.agents} state={liveState.agents} />
-            <PulseCounter label="مقترحات بانتظار الاعتماد" value={counters.proposals} state={liveState.proposals} />
-            <PulseCounter label="الأعمال العاجلة المفتوحة" value={counters.urgent} state={liveState.urgent} />
-            <PulseCounter label="طلبات مساندة قيد المعالجة" value={counters.support} state={liveState.support} />
+            <PulseCounter
+              label="الوكلاء النشطون"
+              value={counters.agents}
+              state={liveState.agents}
+            />
+            <PulseCounter
+              label="مقترحات بانتظار الاعتماد"
+              value={counters.proposals}
+              state={liveState.proposals}
+            />
+            <PulseCounter
+              label="الأعمال العاجلة المفتوحة"
+              value={counters.urgent}
+              state={liveState.urgent}
+            />
+            <PulseCounter
+              label="طلبات مساندة قيد المعالجة"
+              value={counters.support}
+              state={liveState.support}
+            />
           </div>
         </section>
 
@@ -420,7 +538,9 @@ function CommandCenterPage() {
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-bold sm:text-lg">خط الاعتماد</h2>
-                <p className="mt-1 text-[11px] text-emerald-300/80">الوكلاء يقترحون ويجهّزون — الاعتماد النهائي بشري</p>
+                <p className="mt-1 text-[11px] text-emerald-300/80">
+                  الوكلاء يقترحون ويجهّزون — الاعتماد النهائي بشري
+                </p>
               </div>
               {selectedAgent && (
                 <button
@@ -442,7 +562,13 @@ function CommandCenterPage() {
               <EmptyState />
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <PipelineColumn title="مقترح" tone="cyan" items={pipeline.proposed} onDecide={decide} decisions />
+                <PipelineColumn
+                  title="مقترح"
+                  tone="cyan"
+                  items={pipeline.proposed}
+                  onDecide={decide}
+                  decisions
+                />
                 <PipelineColumn title="معتمد" tone="emerald" items={pipeline.approved} />
                 <PipelineColumn title="مرفوض" tone="rose" items={pipeline.rejected} />
                 <PipelineColumn title="مطبَّق" tone="violet" items={pipeline.applied} />
@@ -468,7 +594,12 @@ function CommandCenterPage() {
               <ul className="space-y-1.5">
                 {agents.map((a) => {
                   const active = selectedAgent === a.id;
-                  const dot = a.status === "active" ? "bg-emerald-400" : a.status === "training" ? "bg-amber-400" : "bg-white/25";
+                  const dot =
+                    a.status === "active"
+                      ? "bg-emerald-400"
+                      : a.status === "training"
+                        ? "bg-amber-400"
+                        : "bg-white/25";
                   return (
                     <li key={a.id}>
                       <button
@@ -481,10 +612,17 @@ function CommandCenterPage() {
                         }`}
                       >
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-white">{a.name_ar}</div>
-                          <div className="mt-0.5 truncate text-[11px] text-white/50">{a.focus_area ?? a.role ?? "—"}</div>
+                          <div className="truncate text-sm font-semibold text-white">
+                            {a.name_ar}
+                          </div>
+                          <div className="mt-0.5 truncate text-[11px] text-white/50">
+                            {a.focus_area ?? a.role ?? "—"}
+                          </div>
                         </div>
-                        <span className={`h-2 w-2 shrink-0 rounded-full ${dot} ${a.status === "active" ? "animate-pulse" : ""}`} aria-hidden />
+                        <span
+                          className={`h-2 w-2 shrink-0 rounded-full ${dot} ${a.status === "active" ? "animate-pulse" : ""}`}
+                          aria-hidden
+                        />
                       </button>
                     </li>
                   );
@@ -516,15 +654,26 @@ function CommandCenterPage() {
               <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {urgent.map((t) => {
                   const chip = slaChip(t.due_at);
-                  const toneClass = chip.tone === "red" ? "border-rose-400/50 bg-rose-500/15 text-rose-200"
-                    : chip.tone === "amber" ? "border-amber-400/50 bg-amber-500/15 text-amber-100"
-                    : chip.tone === "emerald" ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-100"
-                    : "border-white/15 bg-white/5 text-white/60";
+                  const toneClass =
+                    chip.tone === "red"
+                      ? "border-rose-400/50 bg-rose-500/15 text-rose-200"
+                      : chip.tone === "amber"
+                        ? "border-amber-400/50 bg-amber-500/15 text-amber-100"
+                        : chip.tone === "emerald"
+                          ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-100"
+                          : "border-white/15 bg-white/5 text-white/60";
                   return (
-                    <article key={t.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <article
+                      key={t.id}
+                      className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+                    >
                       <div className="mb-2 flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-semibold leading-snug text-white">{t.title_ar}</h3>
-                        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${toneClass} ${chip.pulse ? "animate-pulse" : ""}`}>
+                        <h3 className="text-sm font-semibold leading-snug text-white">
+                          {t.title_ar}
+                        </h3>
+                        <span
+                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${toneClass} ${chip.pulse ? "animate-pulse" : ""}`}
+                        >
                           {chip.text}
                         </span>
                       </div>
@@ -549,27 +698,56 @@ function CommandCenterPage() {
 
 /* ═══════════════════════ Components ═══════════════════════ */
 
-function PulseCounter({ label, value, state }: { label: string; value: number | null; state: LiveState }) {
+function PulseCounter({
+  label,
+  value,
+  state,
+}: {
+  label: string;
+  value: number | null;
+  state: LiveState;
+}) {
   const live = state === "live";
-  const dot = state === "live" ? "bg-emerald-400 animate-pulse" : state === "loading" ? "bg-white/30" : "bg-rose-400";
+  const dot =
+    state === "live"
+      ? "bg-emerald-400 animate-pulse"
+      : state === "loading"
+        ? "bg-white/30"
+        : "bg-rose-400";
   return (
     <div className="rounded-2xl border border-white/10 bg-[#061A2E]/70 p-4">
       <div className="mb-1 flex items-center justify-between">
         <div className="text-[11px] text-white/60">{label}</div>
         <span className="flex items-center gap-1 text-[10px] text-white/40">
           <span className={`h-1.5 w-1.5 rounded-full ${dot}`} aria-hidden />
-          {live ? <Radio className="h-3 w-3" /> : state === "loading" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Activity className="h-3 w-3" />}
+          {live ? (
+            <Radio className="h-3 w-3" />
+          ) : state === "loading" ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Activity className="h-3 w-3" />
+          )}
         </span>
       </div>
       <div className="mt-1 font-mono text-3xl tabular-nums text-white sm:text-4xl">
-        {state === "loading" ? "…" : value === null ? <span className="text-base text-white/40">لا بيانات بعد</span> : value.toLocaleString("ar-EG")}
+        {state === "loading" ? (
+          "…"
+        ) : value === null ? (
+          <span className="text-base text-white/40">لا بيانات بعد</span>
+        ) : (
+          value.toLocaleString("ar-EG")
+        )}
       </div>
     </div>
   );
 }
 
 function PipelineColumn({
-  title, tone, items, onDecide, decisions,
+  title,
+  tone,
+  items,
+  onDecide,
+  decisions,
 }: {
   title: string;
   tone: "cyan" | "emerald" | "rose" | "violet";
@@ -585,7 +763,9 @@ function PipelineColumn({
   }[tone];
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <div className={`mb-2 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] font-semibold ${headTone}`}>
+      <div
+        className={`mb-2 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] font-semibold ${headTone}`}
+      >
         <span>{title}</span>
         <span className="tabular-nums">{items.length}</span>
       </div>
@@ -594,11 +774,18 @@ function PipelineColumn({
       ) : (
         <ul className="space-y-2">
           {items.slice(0, 8).map((p) => (
-            <li key={`${p.origin}-${p.id}`} className="rounded-lg border border-white/10 bg-white/[0.03] p-2">
+            <li
+              key={`${p.origin}-${p.id}`}
+              className="rounded-lg border border-white/10 bg-white/[0.03] p-2"
+            >
               <div className="text-[12px] font-semibold leading-snug text-white">{p.title}</div>
-              {p.detail && <p className="mt-1 line-clamp-2 text-[11px] text-white/55">{p.detail}</p>}
+              {p.detail && (
+                <p className="mt-1 line-clamp-2 text-[11px] text-white/55">{p.detail}</p>
+              )}
               <div className="mt-1 flex items-center gap-2 text-[10px] text-white/40">
-                <span className="rounded bg-white/5 px-1.5 py-0.5 uppercase tracking-wider">{p.origin === "evolution" ? "تطوير" : "آريا"}</span>
+                <span className="rounded bg-white/5 px-1.5 py-0.5 uppercase tracking-wider">
+                  {p.origin === "evolution" ? "تطوير" : "آريا"}
+                </span>
                 {p.priority && <span>{p.priority}</span>}
               </div>
               {decisions && onDecide && (

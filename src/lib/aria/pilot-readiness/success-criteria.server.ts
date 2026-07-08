@@ -1,9 +1,5 @@
 // Success criteria + deterministic measurement against observed values.
-import type {
-  SuccessCriterion,
-  SuccessMeasurement,
-  TriState,
-} from "./types";
+import type { SuccessCriterion, SuccessMeasurement, TriState } from "./types";
 import { SuccessCriterionZ } from "./contracts";
 
 export function validateCriterion(c: SuccessCriterion): SuccessCriterion {

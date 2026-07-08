@@ -28,9 +28,18 @@ export async function* decodeSseAudio(
         const data = line.slice(5).trim();
         if (!data) continue;
         let payload: { type?: string; audio?: string };
-        try { payload = JSON.parse(data); } catch { continue; }
+        try {
+          payload = JSON.parse(data);
+        } catch {
+          continue;
+        }
         if (payload.type === "speech.audio.delta" && typeof payload.audio === "string") {
-          const chunk = TtsChunkSchema.parse({ seq: seq++, base64: payload.audio, mime, final: false });
+          const chunk = TtsChunkSchema.parse({
+            seq: seq++,
+            base64: payload.audio,
+            mime,
+            final: false,
+          });
           yield chunk;
         } else if (payload.type === "speech.audio.done") {
           const chunk = TtsChunkSchema.parse({ seq: seq++, base64: "", mime, final: true });
@@ -40,6 +49,10 @@ export async function* decodeSseAudio(
       }
     }
   } finally {
-    try { reader.releaseLock(); } catch { /* isolated */ }
+    try {
+      reader.releaseLock();
+    } catch {
+      /* isolated */
+    }
   }
 }

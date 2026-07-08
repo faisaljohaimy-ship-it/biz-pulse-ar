@@ -52,12 +52,10 @@ export function resolveApproval(
   approval.granted = granted;
   approval.resolver = resolver;
   approval.resolved_at = new Date().toISOString();
-  emitExecutionEvent(
-    granted ? "ApprovalGranted" : "ApprovalRejected",
-    sessionId,
-    s.mission_id,
-    { approval_id: approvalId, resolver },
-  );
+  emitExecutionEvent(granted ? "ApprovalGranted" : "ApprovalRejected", sessionId, s.mission_id, {
+    approval_id: approvalId,
+    resolver,
+  });
   return approval;
 }
 

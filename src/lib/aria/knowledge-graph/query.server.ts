@@ -83,7 +83,11 @@ export function query(raw: GraphQueryInput): QueryReport {
     .slice(0, q.limit ?? 50);
 
   const uncertainty = bucketUncertainty(entities);
-  audit("query", `q:${q.workspace_id}`, entities.map((e) => e.record.id));
+  audit(
+    "query",
+    `q:${q.workspace_id}`,
+    entities.map((e) => e.record.id),
+  );
   emitTelemetry(
     "query.ok",
     "info",

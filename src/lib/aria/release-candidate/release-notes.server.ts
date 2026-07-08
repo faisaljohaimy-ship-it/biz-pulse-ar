@@ -1,11 +1,7 @@
 /**
  * Phase 10.0 — Release notes draft generator.
  */
-import type {
-  Decision,
-  GateResult,
-  ReleaseNotesDraft,
-} from "./types";
+import type { Decision, GateResult, ReleaseNotesDraft } from "./types";
 
 export function buildReleaseNotes(
   version: string,
@@ -21,15 +17,11 @@ export function buildReleaseNotes(
   const known_limitations: string[] = [];
   for (const g of gates) {
     if (g.status === "unknown") {
-      known_limitations.push(
-        `Gate ${g.gate}: evidence not supplied at RC1 cut.`,
-      );
+      known_limitations.push(`Gate ${g.gate}: evidence not supplied at RC1 cut.`);
     } else if (g.status === "warn") {
       known_limitations.push(`Gate ${g.gate}: warnings acknowledged.`);
     } else if (g.status === "fail" && g.severity !== "critical") {
-      known_limitations.push(
-        `Gate ${g.gate}: non-critical failure documented.`,
-      );
+      known_limitations.push(`Gate ${g.gate}: non-critical failure documented.`);
     }
   }
 

@@ -15,7 +15,9 @@ export function isVoiceCompliant(input: {
   const issues: string[] = [];
   if (typeof input.pitch_hz === "number") {
     if (input.pitch_hz < v.pitch_hz_range.low || input.pitch_hz > v.pitch_hz_range.high) {
-      issues.push(`pitch ${input.pitch_hz}Hz outside ${v.pitch_hz_range.low}-${v.pitch_hz_range.high}`);
+      issues.push(
+        `pitch ${input.pitch_hz}Hz outside ${v.pitch_hz_range.low}-${v.pitch_hz_range.high}`,
+      );
     }
   }
   if (typeof input.rate_wpm === "number" && input.lang) {

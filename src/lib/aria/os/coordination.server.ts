@@ -68,7 +68,10 @@ export async function coordinateMission(
   const started_at = nowIso();
   const artifacts: ExecutiveArtifact[] = [];
 
-  const baseMission = (state: ExecutiveMissionState, extra: Partial<ExecutiveMission> = {}): ExecutiveMission => ({
+  const baseMission = (
+    state: ExecutiveMissionState,
+    extra: Partial<ExecutiveMission> = {},
+  ): ExecutiveMission => ({
     id: mission_id,
     session_id: args.session_id,
     workspace_id: args.workspace_id,

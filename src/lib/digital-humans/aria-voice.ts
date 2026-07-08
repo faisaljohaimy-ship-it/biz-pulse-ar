@@ -49,8 +49,12 @@ function getAudioContext(): AudioContext {
     sharedCtx = null;
   }
   const Ctor: typeof AudioContext =
-    (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
-      .AudioContext ??
+    (
+      window as unknown as {
+        AudioContext?: typeof AudioContext;
+        webkitAudioContext?: typeof AudioContext;
+      }
+    ).AudioContext ??
     (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   sharedCtx = new Ctor();
   return sharedCtx;
@@ -70,7 +74,11 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   const stop = () => {
     stopped = true;
-    try { source?.stop(); } catch { /* already stopped */ }
+    try {
+      source?.stop();
+    } catch {
+      /* already stopped */
+    }
     cancelAnimationFrame(raf);
     opts.onAmplitude?.(0);
   };
@@ -142,7 +150,10 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       opts.onAmplitude?.(0);
       // Browser SpeechSynthesis fallback REMOVED — outside Greeting Mode the
       // policy is silence over a robotic voice. Segment is skipped.
-      console.warn("[aria-voice] speakAria TTS failed — segment skipped (no browser fallback)", err);
+      console.warn(
+        "[aria-voice] speakAria TTS failed — segment skipped (no browser fallback)",
+        err,
+      );
       if (!stopped) throw err;
     }
   })();

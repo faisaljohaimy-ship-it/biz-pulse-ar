@@ -18,18 +18,26 @@ export { computeListening } from "./hero-listening.server";
 export { computeSpeaking } from "./hero-speaking.server";
 export { computeTransition } from "./hero-transitions.server";
 export { tickAnimation, resetAnimation } from "./hero-animation.server";
+export { computePerformanceBudget, noteFrame, averageFps } from "./hero-performance.server";
+export { logHero, heroAudit, type HeroAuditKind, type HeroAuditEntry } from "./hero-audit.server";
 export {
-  computePerformanceBudget, noteFrame, averageFps,
-} from "./hero-performance.server";
-export {
-  logHero, heroAudit, type HeroAuditKind, type HeroAuditEntry,
-} from "./hero-audit.server";
-export {
-  noteRender, noteStateChange, noteCaption, noteTransitionCancel,
-  notePerfDowngrade, noteFpsSample, heroMetrics, type HeroMetricsSnapshot,
+  noteRender,
+  noteStateChange,
+  noteCaption,
+  noteTransitionCancel,
+  notePerfDowngrade,
+  noteFpsSample,
+  heroMetrics,
+  type HeroMetricsSnapshot,
 } from "./hero-metrics.server";
 export {
-  initHeroRuntime, updateHero, renderHeroFrame, disposeHero,
-  currentHeroState, type HeroRuntimeInput, type HeroUpdate, type HeroFrame,
+  initHeroRuntime,
+  updateHero,
+  renderHeroFrame,
+  disposeHero,
+  currentHeroState,
+  type HeroRuntimeInput,
+  type HeroUpdate,
+  type HeroFrame,
 } from "./hero-runtime.server";
 export { verifyHeroFrame, type HeroVerification } from "./verification.server";

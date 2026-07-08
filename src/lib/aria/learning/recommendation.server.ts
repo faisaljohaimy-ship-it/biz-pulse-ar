@@ -11,10 +11,7 @@ function priorityFor(confidence: number): Improvement["priority"] {
   return "low";
 }
 
-export function recommendFromLesson(
-  lesson: Lesson,
-  pattern: Pattern,
-): ReadonlyArray<Improvement> {
+export function recommendFromLesson(lesson: Lesson, pattern: Pattern): ReadonlyArray<Improvement> {
   const improvements: Improvement[] = [];
   const priority = priorityFor(lesson.confidence);
   const cap = pattern.capability ?? "generic";

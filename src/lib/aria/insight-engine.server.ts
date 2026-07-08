@@ -42,7 +42,10 @@ export interface InsightBundle {
 }
 
 /** Aggregate helpers */
-function bucketBy<T, K extends string>(rows: T[], key: (r: T) => K | null | undefined): Map<K, T[]> {
+function bucketBy<T, K extends string>(
+  rows: T[],
+  key: (r: T) => K | null | undefined,
+): Map<K, T[]> {
   const m = new Map<K, T[]>();
   for (const r of rows) {
     const k = key(r);
@@ -59,7 +62,9 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
   const sources: string[] = [];
   const insights: Insight[] = [];
 
-  let admin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"] | null = null;
+  let admin:
+    | Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"]
+    | null = null;
   try {
     ({ supabaseAdmin: admin } = await import("@/integrations/supabase/client.server"));
   } catch {
@@ -84,7 +89,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sec_incidents")
       .select("id,site_id,severity,status,title_en,title_ar,reported_at")
       .gte("reported_at", iso7d)
-      .eq("org_id", orgId!).limit(200);
+      .eq("org_id", orgId!)
+      .limit(200);
     if (inc?.length) {
       sources.push("sec_incidents");
       const bySite = bucketBy(inc, (r) => (r.site_id as string) ?? null);
@@ -102,7 +108,11 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
           });
         }
       }
-      const critical = inc.filter((r) => String(r.severity ?? "").toLowerCase().match(/crit|high|عالي|حرج/));
+      const critical = inc.filter((r) =>
+        String(r.severity ?? "")
+          .toLowerCase()
+          .match(/crit|high|عالي|حرج/),
+      );
       if (critical.length >= 3) {
         insights.push({
           kind: "severity_cluster",
@@ -116,7 +126,9 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 2. KPI drops
   try {
@@ -124,7 +136,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("pulse_kpis")
       .select("key,label,label_en,value,delta,trend,tone,updated_at")
       .order("updated_at", { ascending: false })
-      .eq("org_id", orgId!).limit(30);
+      .eq("org_id", orgId!)
+      .limit(30);
     if (kpis?.length) {
       sources.push("pulse_kpis");
       for (const k of kpis) {
@@ -145,7 +158,9 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
         }
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 3. Overdue work orders
   try {
@@ -154,7 +169,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .select("id,title_en,title_ar,priority,status,due_at")
       .lt("due_at", new Date().toISOString())
       .not("status", "in", "(closed,completed,cancelled)")
-      .eq("org_id", orgId!).limit(50);
+      .eq("org_id", orgId!)
+      .limit(50);
     if (wo?.length) {
       sources.push("sec_work_orders");
       if (wo.length >= 5) {
@@ -170,7 +186,9 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 4. Risk hotspots
   try {
@@ -178,7 +196,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_risks")
       .select("title,category,likelihood,impact,status")
       .order("impact", { ascending: false })
-      .eq("org_id", orgId!).limit(20);
+      .eq("org_id", orgId!)
+      .limit(20);
     if (risks?.length) {
       sources.push("sim_risks");
       const hot = risks.filter((r) => Number(r.impact ?? 0) >= 4 && Number(r.likelihood ?? 0) >= 3);
@@ -188,14 +207,19 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
           severity: hot.length >= 3 ? "critical" : "elevated",
           title_en: `${hot.length} high-likelihood, high-impact risks active`,
           title_ar: `${hot.length} من المخاطر عالية الاحتمال وعالية الأثر نشطة`,
-          evidence: `sim_risks: ${hot.map((r) => r.title).slice(0, 3).join("; ")}`,
+          evidence: `sim_risks: ${hot
+            .map((r) => r.title)
+            .slice(0, 3)
+            .join("; ")}`,
           recommendation_en: "Assign risk owners and enforce weekly mitigation checkpoints.",
           recommendation_ar: "تعيين مالكي المخاطر وفرض نقاط مراجعة أسبوعية للتخفيف.",
           confidence: 0.8,
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 5. Alert surge
   try {
@@ -203,7 +227,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_notifications")
       .select("id,severity,created_at")
       .gte("created_at", iso24h)
-      .eq("org_id", orgId!).limit(500);
+      .eq("org_id", orgId!)
+      .limit(500);
     if (alerts && alerts.length >= 30) {
       sources.push("sim_notifications");
       insights.push({
@@ -212,12 +237,15 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
         title_en: `Alert surge: ${alerts.length} notifications in 24h`,
         title_ar: `ارتفاع التنبيهات: ${alerts.length} إشعار خلال ٢٤ ساعة`,
         evidence: `sim_notifications: ${alerts.length} rows in last 24h`,
-        recommendation_en: "Triage alert taxonomy and mute duplicates to preserve operator attention.",
+        recommendation_en:
+          "Triage alert taxonomy and mute duplicates to preserve operator attention.",
         recommendation_ar: "مراجعة تصنيف التنبيهات وإسكات المكررة للحفاظ على تركيز المشغّلين.",
         confidence: 0.7,
       });
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 6. Patrol shortfall + workload pressure (sim_daily_ops)
   try {
@@ -226,7 +254,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_daily_ops")
       .select("day,site_id,patrols_planned,patrols_done,incidents_open,headcount")
       .gte("day", new Date(now - 3 * 86400_000).toISOString().slice(0, 10))
-      .eq("org_id", orgId!).limit(200);
+      .eq("org_id", orgId!)
+      .limit(200);
     if (ops?.length) {
       sources.push("sim_daily_ops");
       const todayRows = ops.filter((r) => r.day === today);
@@ -256,13 +285,16 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
           title_en: `High workload at ${pressured.length} site(s): open incidents outpace headcount`,
           title_ar: `ضغط تشغيلي في ${pressured.length} موقع: الحوادث المفتوحة تفوق عدد الأفراد`,
           evidence: `sim_daily_ops: pressured sites=${pressured.length}`,
-          recommendation_en: "Surge additional operators to the pressured sites for the next shift.",
+          recommendation_en:
+            "Surge additional operators to the pressured sites for the next shift.",
           recommendation_ar: "دعم المواقع المضغوطة بمشغّلين إضافيين خلال الوردية القادمة.",
           confidence: 0.72,
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 7. Missing reports (no reports in last 24h)
   try {
@@ -270,7 +302,8 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sec_reports")
       .select("kind,created_at")
       .gte("created_at", iso24h)
-      .eq("org_id", orgId!).limit(50);
+      .eq("org_id", orgId!)
+      .limit(50);
     sources.push("sec_reports");
     if (!rpt || rpt.length === 0) {
       insights.push({
@@ -284,7 +317,9 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
         confidence: 0.8,
       });
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 8. Inactive departments (no meetings scheduled in 14d)
   try {
@@ -292,14 +327,16 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sim_departments")
       .select("id,name_en,status")
       .eq("status", "active")
-      .eq("org_id", orgId!).limit(50);
+      .eq("org_id", orgId!)
+      .limit(50);
     if (depts?.length) {
       const iso14d = new Date(now - 14 * 86400_000).toISOString();
       const { data: mts } = await admin
         .from("sim_meetings")
         .select("dept_id,scheduled_at")
         .gte("scheduled_at", iso14d)
-        .eq("org_id", orgId!).limit(500);
+        .eq("org_id", orgId!)
+        .limit(500);
       const active = new Set((mts ?? []).map((m) => m.dept_id).filter(Boolean));
       const inactive = depts.filter((d) => !active.has(d.id));
       if (inactive.length >= 2) {
@@ -309,14 +346,19 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
           severity: inactive.length >= 5 ? "elevated" : "watch",
           title_en: `${inactive.length} departments held no meetings in 14 days`,
           title_ar: `${inactive.length} إدارة لم تعقد أي اجتماعات خلال ١٤ يوماً`,
-          evidence: `sim_departments: ${inactive.slice(0, 3).map((d) => d.name_en).join(", ")}${inactive.length > 3 ? "…" : ""}`,
+          evidence: `sim_departments: ${inactive
+            .slice(0, 3)
+            .map((d) => d.name_en)
+            .join(", ")}${inactive.length > 3 ? "…" : ""}`,
           recommendation_en: "Ask department heads to schedule a governance review this week.",
           recommendation_ar: "الطلب من رؤساء الإدارات جدولة مراجعة حوكمية هذا الأسبوع.",
           confidence: 0.7,
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 9. Trend prediction + site correlation (7d vs prior 7d)
   try {
@@ -325,13 +367,16 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
       .from("sec_incidents")
       .select("reported_at,severity,site_id")
       .gte("reported_at", iso14d)
-      .eq("org_id", orgId!).limit(1000);
+      .eq("org_id", orgId!)
+      .limit(1000);
     if (inc2?.length) {
       const cutoff = new Date(now - 7 * 86400_000).getTime();
       const recent = inc2.filter((r) => new Date(String(r.reported_at)).getTime() >= cutoff);
       const prior = inc2.filter((r) => new Date(String(r.reported_at)).getTime() < cutoff);
       if (prior.length >= 3 && recent.length >= prior.length * 1.3) {
-        const growth = Math.round(((recent.length - prior.length) / Math.max(1, prior.length)) * 100);
+        const growth = Math.round(
+          ((recent.length - prior.length) / Math.max(1, prior.length)) * 100,
+        );
         insights.push({
           kind: "trend_prediction",
           severity: growth >= 60 ? "critical" : "elevated",
@@ -358,7 +403,9 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // Rank & cap
   const order: Record<InsightSeverity, number> = { critical: 0, elevated: 1, watch: 2, info: 3 };

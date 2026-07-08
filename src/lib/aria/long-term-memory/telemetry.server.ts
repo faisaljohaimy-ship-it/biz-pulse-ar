@@ -15,11 +15,7 @@ function telId(kind: string, ts: string, seq: number): string {
   return `ltm_tel_${(h >>> 0).toString(16)}`;
 }
 
-export function emitTelemetry(
-  kind: string,
-  severity: Severity,
-  detail: string,
-): TelemetryEvent {
+export function emitTelemetry(kind: string, severity: Severity, detail: string): TelemetryEvent {
   const ts = new Date().toISOString();
   const event: TelemetryEvent = Object.freeze({
     id: telId(kind, ts, EVENTS.length),

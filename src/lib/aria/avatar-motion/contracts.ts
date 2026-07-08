@@ -2,11 +2,19 @@
 import { z } from "zod";
 
 export const MotionStateSchema = z.enum([
-  "idle","listening","thinking","speaking","interrupted",
-  "greeting","explaining","warning","success","error",
+  "idle",
+  "listening",
+  "thinking",
+  "speaking",
+  "interrupted",
+  "greeting",
+  "explaining",
+  "warning",
+  "success",
+  "error",
 ]);
 
-export const MotionEmotionSchema = z.enum(["confident","warm","focused","alert"]);
+export const MotionEmotionSchema = z.enum(["confident", "warm", "focused", "alert"]);
 
 export const MotionSampleSchema = z.object({
   state: MotionStateSchema,

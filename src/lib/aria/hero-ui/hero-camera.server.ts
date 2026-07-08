@@ -17,7 +17,10 @@ export function computeCamera(input: CameraInput): HeroCameraDirective {
   const focus: HeroCameraDirective["focusPoint"] =
     state === "explaining" ? "panel" : state === "speaking" ? "caption" : "avatar";
   const c: HeroCameraDirective = {
-    parallaxX: px, parallaxY: py, zoom, focusPoint: focus,
+    parallaxX: px,
+    parallaxY: py,
+    zoom,
+    focusPoint: focus,
     easingMs: reduced ? 0 : 420,
   };
   assertCamera(c);

@@ -1,6 +1,17 @@
 export type ShowcaseAuditKind =
-  | "start" | "intro" | "welcome" | "step" | "highlight" | "kpi"
-  | "qa" | "pause" | "resume" | "interrupt" | "recover" | "mode_change" | "end";
+  | "start"
+  | "intro"
+  | "welcome"
+  | "step"
+  | "highlight"
+  | "kpi"
+  | "qa"
+  | "pause"
+  | "resume"
+  | "interrupt"
+  | "recover"
+  | "mode_change"
+  | "end";
 
 export interface ShowcaseAuditEntry {
   readonly at: number;
@@ -12,7 +23,11 @@ export interface ShowcaseAuditEntry {
 const LOG: ShowcaseAuditEntry[] = [];
 const MAX = 500;
 
-export function logShowcase(instanceId: string, kind: ShowcaseAuditKind, meta?: Record<string, unknown>): void {
+export function logShowcase(
+  instanceId: string,
+  kind: ShowcaseAuditKind,
+  meta?: Record<string, unknown>,
+): void {
   LOG.push({ at: Date.now(), kind, instanceId, meta });
   if (LOG.length > MAX) LOG.splice(0, LOG.length - MAX);
 }

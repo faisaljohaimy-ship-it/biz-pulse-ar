@@ -30,7 +30,11 @@ export function acquireLock(
   const parsed = AcquireLockInputZ.parse(input);
   const existing = store.get(parsed.key);
   const nowMs = Date.parse(parsed.now);
-  if (existing && Date.parse(existing.expiresAt) > nowMs && existing.holderNodeId !== parsed.nodeId) {
+  if (
+    existing &&
+    Date.parse(existing.expiresAt) > nowMs &&
+    existing.holderNodeId !== parsed.nodeId
+  ) {
     return { acquired: false, lock: existing, reason: "held_by_other" };
   }
   fencingCounter += 1;
@@ -52,7 +56,8 @@ export function releaseLock(
   const existing = store.get(input.key);
   if (!existing) return { released: false, reason: "not_held" };
   if (existing.holderNodeId !== input.nodeId) return { released: false, reason: "not_holder" };
-  if (existing.fencingToken !== input.fencingToken) return { released: false, reason: "stale_token" };
+  if (existing.fencingToken !== input.fencingToken)
+    return { released: false, reason: "stale_token" };
   store.del(input.key);
   return { released: true, reason: "released" };
 }

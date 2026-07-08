@@ -1,10 +1,5 @@
 // Telemetry emitter for agent mesh.
-import type {
-  MeshHealthReport,
-  MeshMetrics,
-  MeshTelemetry,
-  PartitionReport,
-} from "./types";
+import type { MeshHealthReport, MeshMetrics, MeshTelemetry, PartitionReport } from "./types";
 
 export function emitTelemetry(input: {
   metrics: MeshMetrics;

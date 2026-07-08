@@ -1,5 +1,9 @@
 import type {
-  BriefingItem, RecommendationItem, InsightItem, PriorityItem, DailySummary,
+  BriefingItem,
+  RecommendationItem,
+  InsightItem,
+  PriorityItem,
+  DailySummary,
 } from "./types";
 
 export const EXECUTIVE_CONTRACTS = {

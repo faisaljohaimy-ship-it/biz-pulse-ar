@@ -24,11 +24,7 @@ export { createCheckpoint, findCheckpoint, latestCheckpoint } from "./checkpoint
 export { assessHealth } from "./health.server";
 export { refreshMetrics, aggregateMetrics } from "./metrics.server";
 export type { AggregateExecutionMetrics } from "./metrics.server";
-export {
-  requestApproval,
-  resolveApproval,
-  pendingApprovals,
-} from "./approval.server";
+export { requestApproval, resolveApproval, pendingApprovals } from "./approval.server";
 export {
   registerPolicy,
   listPolicies,

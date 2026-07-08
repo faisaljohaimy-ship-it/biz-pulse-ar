@@ -25,8 +25,7 @@ describe("authz.server — short-circuit invariants", () => {
     });
 
     it("returns false when all requested roles are invalid (unknown enum values)", async () => {
-      await expect(hasAnyPlatformRole("user-x", ["super-root", "god"]))
-        .resolves.toBe(false);
+      await expect(hasAnyPlatformRole("user-x", ["super-root", "god"])).resolves.toBe(false);
     });
   });
 });

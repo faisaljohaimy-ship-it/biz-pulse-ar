@@ -57,8 +57,7 @@ export function rankEntity(
   const composite =
     components.length === 0
       ? -1
-      : components.reduce((a, c) => a + c.v * c.w, 0) /
-        components.reduce((a, c) => a + c.w, 0);
+      : components.reduce((a, c) => a + c.v * c.w, 0) / components.reduce((a, c) => a + c.w, 0);
 
   return Object.freeze({
     record,

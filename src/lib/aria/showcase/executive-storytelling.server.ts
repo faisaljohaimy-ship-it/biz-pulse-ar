@@ -14,7 +14,8 @@ export function composeStory(input: StoryInput = {}): readonly StoryBeat[] {
   const oi = fmt(input.openIncidents);
   beats.push({
     id: "story-situation",
-    headline_ar: "الموقف الراهن", headline_en: "Current Situation",
+    headline_ar: "الموقف الراهن",
+    headline_en: "Current Situation",
     body_ar: `الحوادث المفتوحة: ${oi.ar}. تقدم أريا صورة موحّدة للحالة.`,
     body_en: `Open incidents: ${oi.en}. ARIA maintains a single operational picture.`,
     evidenceRefs: refs,
@@ -22,7 +23,8 @@ export function composeStory(input: StoryInput = {}): readonly StoryBeat[] {
   const hr = fmt(input.highRisks);
   beats.push({
     id: "story-risks",
-    headline_ar: "المخاطر ذات الأولوية", headline_en: "Priority Risks",
+    headline_ar: "المخاطر ذات الأولوية",
+    headline_en: "Priority Risks",
     body_ar: `المخاطر العالية: ${hr.ar}. يتم إبرازها مع خطط تخفيف.`,
     body_en: `High risks: ${hr.en}. Each is surfaced with mitigation plans.`,
     evidenceRefs: refs,
@@ -30,7 +32,8 @@ export function composeStory(input: StoryInput = {}): readonly StoryBeat[] {
   const cp = fmt(input.completedPatrols);
   beats.push({
     id: "story-execution",
-    headline_ar: "التنفيذ", headline_en: "Execution",
+    headline_ar: "التنفيذ",
+    headline_en: "Execution",
     body_ar: `الدوريات المكتملة اليوم: ${cp.ar}.`,
     body_en: `Patrols completed today: ${cp.en}.`,
     evidenceRefs: refs,

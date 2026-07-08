@@ -4,12 +4,7 @@
  * marketplace telemetry when available; falls back to conservative
  * defaults declared in agent manifests.
  */
-import type {
-  CapabilityBinding,
-  Estimation,
-  ExecutionGraph,
-  MissionConstraint,
-} from "./types";
+import type { CapabilityBinding, Estimation, ExecutionGraph, MissionConstraint } from "./types";
 import { healthOf } from "../marketplace/health.server";
 import { getActive } from "../marketplace/version.server";
 import { listAgents } from "../orchestrator/registry";
@@ -64,18 +59,11 @@ export function estimatePlan(
     (sum, id) => sum + (latencyByNode.get(id) ?? DEFAULT_LATENCY_MS),
     0,
   );
-  const failure_probability = considered
-    ? Math.min(0.99, failureAcc / considered)
-    : 0;
+  const failure_probability = considered ? Math.min(0.99, failureAcc / considered) : 0;
 
   const unresolved = bindings.filter((b) => b.match_kind === "unresolved").length;
-  const bindingConfidence = considered
-    ? Math.max(0, 1 - unresolved / considered)
-    : 1;
-  const confidence = Math.max(
-    0.05,
-    Math.min(1, (1 - failure_probability) * bindingConfidence),
-  );
+  const bindingConfidence = considered ? Math.max(0, 1 - unresolved / considered) : 1;
+  const confidence = Math.max(0.05, Math.min(1, (1 - failure_probability) * bindingConfidence));
 
   return {
     duration_ms: Math.max(wall, DEFAULT_LATENCY_MS),

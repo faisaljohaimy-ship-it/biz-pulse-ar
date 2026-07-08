@@ -39,11 +39,15 @@ export type ConversationTurn = {
 };
 
 export type ConversationSynthesis = {
-  situation_ar: string; situation_en: string;
-  impact_ar: string;    impact_en: string;
+  situation_ar: string;
+  situation_en: string;
+  impact_ar: string;
+  impact_en: string;
   priority: "low" | "medium" | "high" | "critical";
-  recommendation_ar: string; recommendation_en: string;
-  next_actions_ar: string[]; next_actions_en: string[];
+  recommendation_ar: string;
+  recommendation_en: string;
+  next_actions_ar: string[];
+  next_actions_en: string[];
   confidence: number;
   /** Optional rendered note when synthesis fell back to deterministic. */
   source: "gpt-5" | "deterministic";
@@ -93,26 +97,23 @@ function firstLine(s: string, max = 240): string {
 }
 
 const ROLES: Record<string, { ar: string; en: string }> = {
-  incident_commander:  { ar: "قائد الحوادث",        en: "Incident Commander" },
-  risk_intelligence:   { ar: "استخبارات المخاطر",   en: "Risk Intelligence" },
-  compliance_auditor:  { ar: "مدقق الامتثال",       en: "Compliance Auditor" },
-  patrol_intelligence: { ar: "استخبارات الدوريات",  en: "Patrol Intelligence" },
-  visitor_intelligence:{ ar: "استخبارات الزوار",    en: "Visitor Intelligence" },
-  permit_intelligence: { ar: "استخبارات التصاريح",  en: "Permit Intelligence" },
-  asset_intelligence:  { ar: "استخبارات الأصول",    en: "Asset Intelligence" },
-  cctv_intelligence:   { ar: "استخبارات المراقبة",  en: "CCTV Intelligence" },
-  emergency_commander: { ar: "قائد الطوارئ",        en: "Emergency Commander" },
-  knowledge_agent:     { ar: "استخبارات المعرفة",   en: "Knowledge Intelligence" },
-  executive_briefer:   { ar: "المراسل التنفيذي",    en: "Executive Reporter" },
-  digital_twin:        { ar: "التوأم الرقمي",       en: "Digital Twin" },
-  operations_coordinator: { ar: "منسّق العمليات",   en: "Operations Coordinator" },
+  incident_commander: { ar: "قائد الحوادث", en: "Incident Commander" },
+  risk_intelligence: { ar: "استخبارات المخاطر", en: "Risk Intelligence" },
+  compliance_auditor: { ar: "مدقق الامتثال", en: "Compliance Auditor" },
+  patrol_intelligence: { ar: "استخبارات الدوريات", en: "Patrol Intelligence" },
+  visitor_intelligence: { ar: "استخبارات الزوار", en: "Visitor Intelligence" },
+  permit_intelligence: { ar: "استخبارات التصاريح", en: "Permit Intelligence" },
+  asset_intelligence: { ar: "استخبارات الأصول", en: "Asset Intelligence" },
+  cctv_intelligence: { ar: "استخبارات المراقبة", en: "CCTV Intelligence" },
+  emergency_commander: { ar: "قائد الطوارئ", en: "Emergency Commander" },
+  knowledge_agent: { ar: "استخبارات المعرفة", en: "Knowledge Intelligence" },
+  executive_briefer: { ar: "المراسل التنفيذي", en: "Executive Reporter" },
+  digital_twin: { ar: "التوأم الرقمي", en: "Digital Twin" },
+  operations_coordinator: { ar: "منسّق العمليات", en: "Operations Coordinator" },
 };
 
 function lookupRole(agentId: string, fallbackName: string): { ar: string; en: string } {
-  return (
-    ROLES[agentId] ??
-    { ar: fallbackName, en: fallbackName }
-  );
+  return ROLES[agentId] ?? { ar: fallbackName, en: fallbackName };
 }
 
 function classifyState(summary: string): ConversationTurn["state"] {
@@ -151,9 +152,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
       .order("started_at", { ascending: false })
       .limit(60);
 
-    const { data: defRows } = await sb
-      .from("agent_definitions")
-      .select("id, name, enabled");
+    const { data: defRows } = await sb.from("agent_definitions").select("id, name, enabled");
 
     const defs = new Map<string, { name: string; enabled: boolean }>();
     for (const d of (defRows ?? []) as Array<{ id: string; name: string; enabled: boolean }>) {
@@ -163,8 +162,12 @@ export const getAgentConversation = createServerFn({ method: "GET" })
     const seen = new Set<string>();
     const turns: ConversationTurn[] = [];
     for (const r of (runRows ?? []) as Array<{
-      id: string; agent_id: string; status: string;
-      summary: string | null; started_at: string; finished_at: string | null;
+      id: string;
+      agent_id: string;
+      status: string;
+      summary: string | null;
+      started_at: string;
+      finished_at: string | null;
     }>) {
       if (seen.has(r.agent_id)) continue;
       seen.add(r.agent_id);
@@ -174,9 +177,11 @@ export const getAgentConversation = createServerFn({ method: "GET" })
       if (!cleaned && r.status !== "running") continue;
 
       const state: ConversationTurn["state"] =
-        r.status === "failed" ? "error"
-        : r.status === "running" ? "thinking"
-        : classifyState(cleaned);
+        r.status === "failed"
+          ? "error"
+          : r.status === "running"
+            ? "thinking"
+            : classifyState(cleaned);
 
       turns.push({
         run_id: r.id,
@@ -187,7 +192,12 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         state,
         statement_ar: cleaned || (state === "thinking" ? "يعمل على المهمة الحالية…" : ""),
         statement_en: cleaned || (state === "thinking" ? "Working on the current task…" : ""),
-        confidence: r.status === "succeeded" || r.status === "completed" ? 0.9 : r.status === "failed" ? 0.4 : 0.7,
+        confidence:
+          r.status === "succeeded" || r.status === "completed"
+            ? 0.9
+            : r.status === "failed"
+              ? 0.4
+              : 0.7,
         occurred_at: r.finished_at ?? r.started_at,
       });
 
@@ -198,10 +208,11 @@ export const getAgentConversation = createServerFn({ method: "GET" })
       return { generated_at, turns, synthesis: null, cached: false };
     }
 
-    const anchor = turns
-      .map((t) => t.occurred_at)
-      .sort()
-      .slice(-1)[0] ?? generated_at;
+    const anchor =
+      turns
+        .map((t) => t.occurred_at)
+        .sort()
+        .slice(-1)[0] ?? generated_at;
 
     // Try cache first — `aria_reports.kind = 'conversation'`, title carries the anchor.
     const cacheKey = cacheTitle(anchor);
@@ -243,7 +254,10 @@ export const getAgentConversation = createServerFn({ method: "GET" })
       if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
       const findings = turns
-        .map((t) => `${t.role_en} (${t.speaker_name}, state=${t.state}, conf=${t.confidence.toFixed(2)}): ${t.statement_en || t.statement_ar}`)
+        .map(
+          (t) =>
+            `${t.role_en} (${t.speaker_name}, state=${t.state}, conf=${t.confidence.toFixed(2)}): ${t.statement_en || t.statement_ar}`,
+        )
         .join("\n");
 
       const prompt =
@@ -289,9 +303,11 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         recommendation_ar: String(parsed.recommendation_ar ?? ""),
         recommendation_en: String(parsed.recommendation_en ?? ""),
         next_actions_ar: Array.isArray(parsed.next_actions_ar)
-          ? parsed.next_actions_ar.slice(0, 4).map((s: unknown) => String(s)) : [],
+          ? parsed.next_actions_ar.slice(0, 4).map((s: unknown) => String(s))
+          : [],
         next_actions_en: Array.isArray(parsed.next_actions_en)
-          ? parsed.next_actions_en.slice(0, 4).map((s: unknown) => String(s)) : [],
+          ? parsed.next_actions_en.slice(0, 4).map((s: unknown) => String(s))
+          : [],
         confidence: Math.max(0, Math.min(1, Number(parsed.confidence ?? 0.82))),
         source: "gpt-5",
       };
@@ -299,7 +315,11 @@ export const getAgentConversation = createServerFn({ method: "GET" })
       // Persist as ARIA's short-term executive memory.
       try {
         const { data: orgRow } = await sb
-          .from("org_members").select("org_id").eq("user_id", context.userId).limit(1).maybeSingle();
+          .from("org_members")
+          .select("org_id")
+          .eq("user_id", context.userId)
+          .limit(1)
+          .maybeSingle();
         const org_id = orgRow?.org_id ?? null;
         if (org_id) {
           await sb.from("aria_reports").insert({
@@ -321,12 +341,24 @@ export const getAgentConversation = createServerFn({ method: "GET" })
       console.warn("[conversation] gpt-5 unavailable, using deterministic synthesis:", err);
       const escalated = turns.some((t) => t.state === "escalated");
       const warning = turns.some((t) => t.state === "warning");
-      const priority: ConversationSynthesis["priority"] = escalated ? "critical" : warning ? "high" : "medium";
+      const priority: ConversationSynthesis["priority"] = escalated
+        ? "critical"
+        : warning
+          ? "high"
+          : "medium";
       synthesis = {
         situation_ar: `سجّل الفريق التنفيذي ${turns.length} تحديثًا تشغيليًا حديثًا.`,
         situation_en: `Executive team logged ${turns.length} recent operational updates.`,
-        impact_ar: escalated ? "هناك بنود تتطلب تصعيدًا فوريًا." : warning ? "هناك بنود تتطلب مراجعة." : "الوضع التشغيلي مستقر.",
-        impact_en: escalated ? "Items require immediate escalation." : warning ? "Items require review." : "Operational posture remains stable.",
+        impact_ar: escalated
+          ? "هناك بنود تتطلب تصعيدًا فوريًا."
+          : warning
+            ? "هناك بنود تتطلب مراجعة."
+            : "الوضع التشغيلي مستقر.",
+        impact_en: escalated
+          ? "Items require immediate escalation."
+          : warning
+            ? "Items require review."
+            : "Operational posture remains stable.",
         priority,
         recommendation_ar: escalated
           ? "تنسيق فوري بين قيادة الحوادث وقيادة الطوارئ خلال الـ60 دقيقة القادمة."

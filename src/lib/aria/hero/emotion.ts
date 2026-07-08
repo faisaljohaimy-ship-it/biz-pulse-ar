@@ -24,11 +24,12 @@ export class EmotionEngine {
     this.recompute(now, `presence:${mode}`);
   }
 
-  current(): Emotion { return this.emotion; }
+  current(): Emotion {
+    return this.emotion;
+  }
 
   private recompute(now: number, detail: string): void {
-    const derived: Emotion = this.hint
-      ?? this.derive(this.sync.get().presence);
+    const derived: Emotion = this.hint ?? this.derive(this.sync.get().presence);
     if (derived === this.emotion) return;
     const prev = this.emotion;
     this.emotion = derived;
@@ -38,12 +39,18 @@ export class EmotionEngine {
 
   private derive(mode: PresenceMode): Emotion {
     switch (mode) {
-      case "listening": return "attentive";
-      case "thinking": return "focused";
-      case "speaking": return "confident";
-      case "welcome": return "warm";
-      case "paused": return "neutral";
-      default: return "neutral";
+      case "listening":
+        return "attentive";
+      case "thinking":
+        return "focused";
+      case "speaking":
+        return "confident";
+      case "welcome":
+        return "warm";
+      case "paused":
+        return "neutral";
+      default:
+        return "neutral";
     }
   }
 }

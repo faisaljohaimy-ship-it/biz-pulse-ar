@@ -34,7 +34,10 @@ export function createCheckpoint(
   return cp;
 }
 
-export function findCheckpoint(sessionId: string, checkpointId: string): ExecutionCheckpoint | null {
+export function findCheckpoint(
+  sessionId: string,
+  checkpointId: string,
+): ExecutionCheckpoint | null {
   const s = getSession(sessionId);
   if (!s) return null;
   return s.checkpoints.find((c) => c.id === checkpointId) ?? null;

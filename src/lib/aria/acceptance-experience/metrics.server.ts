@@ -19,16 +19,26 @@ const M = {
   qualitySamples: [] as number[],
 };
 
-export function recordGreeting(): void { M.greetings++; }
-export function recordStepCompleted(): void { M.stepsCompleted++; }
+export function recordGreeting(): void {
+  M.greetings++;
+}
+export function recordStepCompleted(): void {
+  M.stepsCompleted++;
+}
 export function recordQuality(score: number, ok: boolean): void {
   M.qualitySamples.push(score);
   if (M.qualitySamples.length > 200) M.qualitySamples.shift();
   if (!ok) M.qualityFailures++;
 }
-export function recordDisciplineTrim(): void { M.disciplineTrims++; }
-export function recordHandoff(): void { M.handoffs++; }
-export function recordDelight(): void { M.delights++; }
+export function recordDisciplineTrim(): void {
+  M.disciplineTrims++;
+}
+export function recordHandoff(): void {
+  M.handoffs++;
+}
+export function recordDelight(): void {
+  M.delights++;
+}
 
 export function acceptanceMetrics(): AcceptanceMetricsSnapshot {
   const avg = M.qualitySamples.length

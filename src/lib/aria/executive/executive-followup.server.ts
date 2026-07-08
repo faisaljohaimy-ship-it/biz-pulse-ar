@@ -25,11 +25,18 @@ export function addFollowUp(scope: string, input: FollowUpInput): FollowUpItem {
   return item;
 }
 
-export function updateFollowUpStatus(scope: string, id: string, status: FollowUpItem["status"]): void {
+export function updateFollowUpStatus(
+  scope: string,
+  id: string,
+  status: FollowUpItem["status"],
+): void {
   const arr = F.get(scope);
   if (!arr) return;
   const i = arr.findIndex((x) => x.id === id);
-  if (i >= 0) { arr[i] = { ...arr[i], status }; F.set(scope, arr); }
+  if (i >= 0) {
+    arr[i] = { ...arr[i], status };
+    F.set(scope, arr);
+  }
 }
 
 export function listFollowUps(scope: string): readonly FollowUpItem[] {

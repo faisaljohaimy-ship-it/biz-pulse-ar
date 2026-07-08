@@ -3,7 +3,10 @@
  */
 
 export class RuntimeTimeoutError extends Error {
-  constructor(public readonly ms: number, public readonly label: string) {
+  constructor(
+    public readonly ms: number,
+    public readonly label: string,
+  ) {
     super(`runtime: timeout after ${ms}ms (${label})`);
     this.name = "RuntimeTimeoutError";
   }

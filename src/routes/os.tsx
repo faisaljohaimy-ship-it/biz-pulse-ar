@@ -56,15 +56,52 @@ type Stage = {
 // tashkeel (diacritics) so ARIA/TTS pronounces them in formal Modern
 // Standard Arabic.
 const STAGES: readonly Stage[] = [
-  { key: "twin",     ar: "التَّوْأَمُ الرَّقْمِيّ",       en: "Digital Twin",   icon: Radar,       to: "/operations" },
-  { key: "org",      ar: "بَيَانَاتُ المُؤَسَّسَة",       en: "Organization",   icon: Building2,   to: "/command-center" },
-  { key: "auth",     ar: "المُصَادَقَة",                    en: "Authentication", icon: ShieldCheck, to: "/command-center" },
-  { key: "kpi",      ar: "مُؤَشِّرَاتُ الأَدَاءِ التَّنْفِيذِيَّة", en: "Executive KPIs", icon: BarChart3, to: "/executive-reports" },
-  { key: "hajj",     ar: "مَنْظُومَةُ الحَجِّ ١٤٤٧",       en: "Hajj 1447",      icon: Moon,        to: "/hajj", featured: true },
-  { key: "ops",      ar: "العَمَلِيَّات",                    en: "Operations",     icon: Activity,    to: "/operations" },
-  { key: "aria",     ar: "آرِيَا — المُحَرِّكُ التَّنْفِيذِيّ", en: "ARIA Runtime", icon: Sparkles, to: "/command-center" },
-  { key: "realtime", ar: "البَثُّ اللَّحْظِيّ",             en: "Realtime",       icon: Radio,       to: "/operations" },
-  { key: "agents",   ar: "الوُكَلَاءُ الأَذْكِيَاء",         en: "AI Agents",       icon: Bot,         to: "/exec" },
+  {
+    key: "twin",
+    ar: "التَّوْأَمُ الرَّقْمِيّ",
+    en: "Digital Twin",
+    icon: Radar,
+    to: "/operations",
+  },
+  {
+    key: "org",
+    ar: "بَيَانَاتُ المُؤَسَّسَة",
+    en: "Organization",
+    icon: Building2,
+    to: "/command-center",
+  },
+  {
+    key: "auth",
+    ar: "المُصَادَقَة",
+    en: "Authentication",
+    icon: ShieldCheck,
+    to: "/command-center",
+  },
+  {
+    key: "kpi",
+    ar: "مُؤَشِّرَاتُ الأَدَاءِ التَّنْفِيذِيَّة",
+    en: "Executive KPIs",
+    icon: BarChart3,
+    to: "/executive-reports",
+  },
+  {
+    key: "hajj",
+    ar: "مَنْظُومَةُ الحَجِّ ١٤٤٧",
+    en: "Hajj 1447",
+    icon: Moon,
+    to: "/hajj",
+    featured: true,
+  },
+  { key: "ops", ar: "العَمَلِيَّات", en: "Operations", icon: Activity, to: "/operations" },
+  {
+    key: "aria",
+    ar: "آرِيَا — المُحَرِّكُ التَّنْفِيذِيّ",
+    en: "ARIA Runtime",
+    icon: Sparkles,
+    to: "/command-center",
+  },
+  { key: "realtime", ar: "البَثُّ اللَّحْظِيّ", en: "Realtime", icon: Radio, to: "/operations" },
+  { key: "agents", ar: "الوُكَلَاءُ الأَذْكِيَاء", en: "AI Agents", icon: Bot, to: "/exec" },
 ] as const;
 
 function OsHub() {
@@ -104,7 +141,10 @@ function OsHub() {
       dir={ar ? "rtl" : "ltr"}
       data-surface="os"
       className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-[#0a0e1a] text-white"
-      style={{ background: "radial-gradient(1200px 600px at 50% -10%, rgba(0,212,255,0.10), transparent 60%), linear-gradient(180deg, #0a0e1a 0%, #0f1729 100%)" }}
+      style={{
+        background:
+          "radial-gradient(1200px 600px at 50% -10%, rgba(0,212,255,0.10), transparent 60%), linear-gradient(180deg, #0a0e1a 0%, #0f1729 100%)",
+      }}
     >
       <AriaCinematicIntro surface="os" />
       {/* Dot-grid ambient overlay */}
@@ -112,13 +152,18 @@ function OsHub() {
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.18]"
         style={{
-          backgroundImage:
-            "radial-gradient(rgba(0,212,255,0.35) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(rgba(0,212,255,0.35) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }}
       />
-      <div aria-hidden className="pointer-events-none absolute -top-40 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#00D4FF]/10 blur-[120px] motion-safe:animate-pulse" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-40 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#3AE8FF]/10 blur-[120px] motion-safe:animate-pulse" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#00D4FF]/10 blur-[120px] motion-safe:animate-pulse"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-40 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#3AE8FF]/10 blur-[120px] motion-safe:animate-pulse"
+      />
 
       {/* Sticky top strip */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-3 sm:px-6">

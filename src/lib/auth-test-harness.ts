@@ -183,7 +183,7 @@ export function installAuthTestHarness() {
 
   if (flagged) {
     harness.enable();
-    // eslint-disable-next-line no-console
+
     console.info(
       "[nx-auth-test] enabled. Try window.__nxAuthTest.runIosScenario() — also: goOffline, goOnline, hide, show, bfcacheRestore, simulateStuckSession(ms).",
     );

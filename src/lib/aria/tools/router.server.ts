@@ -11,11 +11,7 @@
  */
 
 import { ToolExecutionRequestSchema } from "./contracts";
-import type {
-  ExecutionStatus,
-  ToolExecutionRequest,
-  ToolExecutionResult,
-} from "./types";
+import type { ExecutionStatus, ToolExecutionRequest, ToolExecutionResult } from "./types";
 import { requireTool } from "./registry.server";
 import { authorize } from "./authorization.server";
 import { resolveCredentials } from "./credentials.server";
@@ -83,7 +79,17 @@ export async function execute(rawRequest: ToolExecutionRequest): Promise<ToolExe
     stageMsg: string,
   ): ToolExecutionResult => {
     const bytesOut = measureBytes(output);
-    const result = makeResult(request, tool.adapter, status, output, error, startedAt, attempts, bytesIn, bytesOut);
+    const result = makeResult(
+      request,
+      tool.adapter,
+      status,
+      output,
+      error,
+      startedAt,
+      attempts,
+      bytesIn,
+      bytesOut,
+    );
     emitTelemetry(ctx.execution_id, tool.tool_id, "telemetry", stageMsg, { status });
     recordMetric({
       tool_id: tool.tool_id,
@@ -112,18 +118,34 @@ export async function execute(rawRequest: ToolExecutionRequest): Promise<ToolExe
 
   // 2. Permissions
   const authz = authorize(ctx.agent_id, tool);
-  emitTelemetry(ctx.execution_id, tool.tool_id, "permissions", authz.reason, { allowed: authz.allowed });
+  emitTelemetry(ctx.execution_id, tool.tool_id, "permissions", authz.reason, {
+    allowed: authz.allowed,
+  });
   checkpoint(ctx.execution_id, "permissions");
   if (!authz.allowed) {
-    return finalize("unauthorized", null, { message: authz.reason, code: "unauthorized" }, 0, authz.reason);
+    return finalize(
+      "unauthorized",
+      null,
+      { message: authz.reason, code: "unauthorized" },
+      0,
+      authz.reason,
+    );
   }
 
   // 3. Credentials
   const creds = await resolveCredentials(tool.credentials_ref);
-  emitTelemetry(ctx.execution_id, tool.tool_id, "credentials", creds.reason, { found: creds.found });
+  emitTelemetry(ctx.execution_id, tool.tool_id, "credentials", creds.reason, {
+    found: creds.found,
+  });
   checkpoint(ctx.execution_id, "credentials");
   if (!creds.found) {
-    return finalize("unconfigured", null, { message: creds.reason, code: "no_credentials" }, 0, creds.reason);
+    return finalize(
+      "unconfigured",
+      null,
+      { message: creds.reason, code: "no_credentials" },
+      0,
+      creds.reason,
+    );
   }
 
   // 4. Policy
@@ -132,9 +154,17 @@ export async function execute(rawRequest: ToolExecutionRequest): Promise<ToolExe
     side_effect: tool.side_effect,
     org_id: ctx.org_id,
   });
-  emitTelemetry(ctx.execution_id, tool.tool_id, "permissions", policy.reason, { allow: policy.allow });
+  emitTelemetry(ctx.execution_id, tool.tool_id, "permissions", policy.reason, {
+    allow: policy.allow,
+  });
   if (!policy.allow) {
-    return finalize("denied", null, { message: policy.reason, code: "policy_denied" }, 0, policy.reason);
+    return finalize(
+      "denied",
+      null,
+      { message: policy.reason, code: "policy_denied" },
+      0,
+      policy.reason,
+    );
   }
 
   // 5. Budget
@@ -144,11 +174,23 @@ export async function execute(rawRequest: ToolExecutionRequest): Promise<ToolExe
   });
   checkpoint(ctx.execution_id, "budget");
   if (!budget.ok) {
-    return finalize("budget_exceeded", null, { message: budget.reason, code: "budget" }, 0, budget.reason);
+    return finalize(
+      "budget_exceeded",
+      null,
+      { message: budget.reason, code: "budget" },
+      0,
+      budget.reason,
+    );
   }
   const bytesCheck = enforceBytes(request.budget, bytesIn, 0);
   if (!bytesCheck.ok) {
-    return finalize("budget_exceeded", null, { message: bytesCheck.reason, code: "budget_bytes" }, 0, bytesCheck.reason);
+    return finalize(
+      "budget_exceeded",
+      null,
+      { message: bytesCheck.reason, code: "budget_bytes" },
+      0,
+      bytesCheck.reason,
+    );
   }
 
   // 6. Sandbox

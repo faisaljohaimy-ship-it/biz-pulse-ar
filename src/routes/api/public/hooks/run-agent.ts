@@ -41,9 +41,7 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
         }
         const agentId = body.agentId ?? "executive_briefer";
 
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { runAgent } = await import("@/lib/exec/agent-runtime.server");
 
         let actorId = authenticatedActorId;
@@ -57,10 +55,10 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
           actorId = member?.user_id ?? null;
         }
         if (!actorId) {
-          return new Response(
-            JSON.stringify({ error: "no_admin_org_member" }),
-            { status: 412, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ error: "no_admin_org_member" }), {
+            status: 412,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         try {

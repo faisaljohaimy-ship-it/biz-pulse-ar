@@ -39,9 +39,13 @@ export const listMyOrgs = createServerFn({ method: "GET" })
 
     return (data ?? [])
       .map((row) => {
-        const orgRaw = row.org as
-          | { id: string; name: string; slug: string; plan: string; status: string }
-          | null;
+        const orgRaw = row.org as {
+          id: string;
+          name: string;
+          slug: string;
+          plan: string;
+          status: string;
+        } | null;
         if (!orgRaw) return null;
         return {
           id: orgRaw.id,
@@ -81,8 +85,7 @@ export const switchOrg = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: userRow, error: getErr } = await supabaseAdmin.auth.admin.getUserById(userId);
     if (getErr) throw getErr;
-    const existing =
-      (userRow.user?.app_metadata as Record<string, unknown> | undefined) ?? {};
+    const existing = (userRow.user?.app_metadata as Record<string, unknown> | undefined) ?? {};
     const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
       app_metadata: { ...existing, current_org: data.org_id },
     });
@@ -114,9 +117,13 @@ export const getCurrentOrg = createServerFn({ method: "GET" })
 
     const preferred = claimed ? data.find((r) => r.org_id === claimed) : null;
     const chosen = preferred ?? data[0];
-    const orgRaw = chosen.org as
-      | { id: string; name: string; slug: string; plan: string; status: string }
-      | null;
+    const orgRaw = chosen.org as {
+      id: string;
+      name: string;
+      slug: string;
+      plan: string;
+      status: string;
+    } | null;
     if (!orgRaw) throw new Error("Organization not found");
 
     return {

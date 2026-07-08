@@ -5,11 +5,7 @@
 
 export type LessonCategory = "core" | "operations" | "intelligence";
 export type LessonStatus = "not_started" | "in_progress" | "completed";
-export type SimulationKind =
-  | "meet_aria"
-  | "decision_scenario"
-  | "digital_twin"
-  | "knowledge_graph";
+export type SimulationKind = "meet_aria" | "decision_scenario" | "digital_twin" | "knowledge_graph";
 
 export interface Bilingual {
   ar: string;
@@ -65,7 +61,7 @@ export interface QuizQuestionPublic {
 }
 
 export interface QuizSubmissionResult {
-  score: number;               // 0..100
+  score: number; // 0..100
   passed: boolean;
   pass_score: number;
   per_question: Array<{

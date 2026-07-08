@@ -37,7 +37,11 @@ export function forget(
       updated_at: now,
     });
     forgotten.push(id);
-    audit(`forget.${reason}`, id, record.evidence.map((e) => e.id));
+    audit(
+      `forget.${reason}`,
+      id,
+      record.evidence.map((e) => e.id),
+    );
   }
   emitTelemetry("forget.run", "notice", `reason=${reason} count=${forgotten.length}`);
   return Object.freeze({

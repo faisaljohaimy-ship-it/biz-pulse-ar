@@ -1,11 +1,5 @@
 // Safe mission routing — refuses on partition / no quorum / no binding.
-import type {
-  AgentDescriptor,
-  CapabilityMap,
-  MeshNode,
-  Mission,
-  RouteDecision,
-} from "./types";
+import type { AgentDescriptor, CapabilityMap, MeshNode, Mission, RouteDecision } from "./types";
 import { bindingsFor } from "./capability-map.server";
 import { RouteMissionInputZ } from "./contracts";
 
@@ -76,9 +70,7 @@ export function routeMission(input: {
     };
   }
 
-  const activeNodeIds = new Set(
-    input.nodes.filter((n) => n.status === "active").map((n) => n.id),
-  );
+  const activeNodeIds = new Set(input.nodes.filter((n) => n.status === "active").map((n) => n.id));
   const agentStatus = new Map(input.agents.map((a) => [a.agentId, a.status] as const));
 
   const eligible = bindings.filter(

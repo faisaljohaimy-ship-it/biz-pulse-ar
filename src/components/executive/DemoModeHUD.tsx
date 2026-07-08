@@ -6,15 +6,7 @@
 // existing HUD palette (cyan #00D4FF / #3AE8FF, dark bg) and semantic tokens.
 
 import * as React from "react";
-import {
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  RotateCcw,
-  X,
-  Radio,
-} from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, RotateCcw, X, Radio } from "lucide-react";
 import { useDemoMode } from "@/lib/demo/demo-controller";
 import { useI18n } from "@/lib/i18n";
 
@@ -30,36 +22,36 @@ export function DemoModeHUD() {
   const message = step ? (ar ? step.executiveMessage_ar : step.executiveMessage_en) : "";
   const narration = step ? (ar ? step.ariaNarration_ar : step.ariaNarration_en) : "";
 
-  const progressPct = demo.totalSteps > 0
-    ? Math.round(((demo.stepIndex + 1) / demo.totalSteps) * 100)
-    : 0;
+  const progressPct =
+    demo.totalSteps > 0 ? Math.round(((demo.stepIndex + 1) / demo.totalSteps) * 100) : 0;
 
   const t = {
-    demo:      ar ? "الوضع التنفيذي" : "Executive Demo",
-    step:      ar ? "الخطوة" : "Step",
-    of:        ar ? "من" : "of",
-    play:      ar ? "تشغيل" : "Play",
-    pause:     ar ? "إيقاف مؤقت" : "Pause",
-    resume:    ar ? "استئناف" : "Resume",
-    prev:      ar ? "السابقة" : "Previous",
-    next:      ar ? "التالية" : "Next",
-    replay:    ar ? "إعادة" : "Replay",
-    exit:      ar ? "خروج" : "Exit",
-    live:      ar ? "بث تنفيذي حي" : "Live executive broadcast",
-    aria:      ar ? "سرد أريا" : "ARIA narration",
-    ended:     ar ? "انتهى العرض" : "Demo ended",
-    speed:     ar ? "السرعة" : "Speed",
+    demo: ar ? "الوضع التنفيذي" : "Executive Demo",
+    step: ar ? "الخطوة" : "Step",
+    of: ar ? "من" : "of",
+    play: ar ? "تشغيل" : "Play",
+    pause: ar ? "إيقاف مؤقت" : "Pause",
+    resume: ar ? "استئناف" : "Resume",
+    prev: ar ? "السابقة" : "Previous",
+    next: ar ? "التالية" : "Next",
+    replay: ar ? "إعادة" : "Replay",
+    exit: ar ? "خروج" : "Exit",
+    live: ar ? "بث تنفيذي حي" : "Live executive broadcast",
+    aria: ar ? "سرد أريا" : "ARIA narration",
+    ended: ar ? "انتهى العرض" : "Demo ended",
+    speed: ar ? "السرعة" : "Speed",
   };
 
   const speedOptions: Array<{ label: string; ms: number }> = [
     { label: "0.75×", ms: 8500 },
-    { label: "1×",    ms: 6500 },
-    { label: "1.5×",  ms: 4300 },
-    { label: "2×",    ms: 3200 },
+    { label: "1×", ms: 6500 },
+    { label: "1.5×", ms: 4300 },
+    { label: "2×", ms: 3200 },
   ];
-  const currentSpeed = speedOptions.reduce((best, o) =>
-    Math.abs(o.ms - demo.stepDurationMs) < Math.abs(best.ms - demo.stepDurationMs) ? o : best,
-    speedOptions[0]!
+  const currentSpeed = speedOptions.reduce(
+    (best, o) =>
+      Math.abs(o.ms - demo.stepDurationMs) < Math.abs(best.ms - demo.stepDurationMs) ? o : best,
+    speedOptions[0]!,
   );
 
   return (

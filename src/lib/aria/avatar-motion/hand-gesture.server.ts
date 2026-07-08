@@ -38,11 +38,18 @@ export class HandGestureEngine {
       // ease-out
       const eased = 1 - Math.pow(1 - t, 3);
       this.amplitude = this.target * eased * scale;
-      if (t >= 1) { this.phase = "release"; this.elapsed = 0; }
+      if (t >= 1) {
+        this.phase = "release";
+        this.elapsed = 0;
+      }
     } else {
       const t = Math.min(1, this.elapsed / Math.max(1, this.releaseMs));
       this.amplitude = this.target * (1 - t) * scale;
-      if (t >= 1) { this.phase = "idle"; this.id = null; this.amplitude = 0; }
+      if (t >= 1) {
+        this.phase = "idle";
+        this.id = null;
+        this.amplitude = 0;
+      }
     }
     return { amplitude: this.amplitude, id: this.id };
   }

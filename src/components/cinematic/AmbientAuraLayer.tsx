@@ -32,15 +32,16 @@ export function AmbientAuraLayer({ density = 42, intensity = 1, className }: Pro
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const reduced =
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
     const dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    let w = 0, h = 0;
+    let w = 0,
+      h = 0;
 
     const resize = () => {
       const r = canvas.getBoundingClientRect();
-      w = r.width; h = r.height;
+      w = r.width;
+      h = r.height;
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -50,7 +51,7 @@ export function AmbientAuraLayer({ density = 42, intensity = 1, className }: Pro
     ro.observe(canvas);
 
     const mobile = window.innerWidth < 640;
-    const count = Math.max(8, Math.round((mobile ? density * 0.5 : density)));
+    const count = Math.max(8, Math.round(mobile ? density * 0.5 : density));
 
     type Mote = { x: number; y: number; vy: number; r: number; a: number; phase: number };
     const motes: Mote[] = Array.from({ length: count }, () => ({
@@ -74,8 +75,12 @@ export function AmbientAuraLayer({ density = 42, intensity = 1, className }: Pro
     document.addEventListener("visibilitychange", onVis);
 
     const loop = (t: number) => {
-      if (paused) { rafRef.current = null; return; }
-      const dt = Math.min(48, t - last); last = t;
+      if (paused) {
+        rafRef.current = null;
+        return;
+      }
+      const dt = Math.min(48, t - last);
+      last = t;
       ctx.clearRect(0, 0, w, h);
 
       // vertical light shaft, very subtle
@@ -114,10 +119,7 @@ export function AmbientAuraLayer({ density = 42, intensity = 1, className }: Pro
     <canvas
       ref={ref}
       aria-hidden
-      className={[
-        "pointer-events-none absolute inset-0 h-full w-full",
-        className ?? "",
-      ].join(" ")}
+      className={["pointer-events-none absolute inset-0 h-full w-full", className ?? ""].join(" ")}
     />
   );
 }

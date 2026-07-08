@@ -74,14 +74,12 @@ function scoreOption(
   evidence: Evidence[],
   ctx: ReasoningContext,
 ): Record<string, number> {
-  const supportRatio = evidence.length
-    ? h.supporting_evidence_ids.length / evidence.length
-    : 0;
+  const supportRatio = evidence.length ? h.supporting_evidence_ids.length / evidence.length : 0;
   const base = clamp01(0.4 + 0.6 * h.confidence.value);
   const scores: Record<string, number> = {
     value: clamp01(base + 0.1 * supportRatio),
     risk: clamp01(0.5 + 0.5 * (h.confidence.value - 0.5)),
-    cost: clamp01(0.5 - 0.1 * (h.opposing_evidence_ids.length)),
+    cost: clamp01(0.5 - 0.1 * h.opposing_evidence_ids.length),
     time: clamp01(0.5 + 0.2 * (ctx.mode === "opportunity" ? 1 : 0)),
   };
   for (const axis of TRADEOFF_AXES) {
@@ -91,10 +89,7 @@ function scoreOption(
   return scores;
 }
 
-function weightedScore(
-  scores: Record<string, number>,
-  criteria: DecisionCriterion[],
-): number {
+function weightedScore(scores: Record<string, number>, criteria: DecisionCriterion[]): number {
   const total = criteria.reduce((s, c) => s + c.weight, 0) || 1;
   const sum = criteria.reduce((s, c) => s + c.weight * (scores[c.key] ?? 0.5), 0);
   return clamp01(sum / total);

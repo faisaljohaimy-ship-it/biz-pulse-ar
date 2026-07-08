@@ -29,9 +29,7 @@ export function computeMetrics(input: {
   const rejections = input.approvals.filter((a) => a.decision === "reject").length;
   const confidences = input.proposals.map((p) => CONF[p.score.confidence] ?? 0);
   const avg =
-    confidences.length > 0
-      ? confidences.reduce((a, b) => a + b, 0) / confidences.length
-      : 0;
+    confidences.length > 0 ? confidences.reduce((a, b) => a + b, 0) / confidences.length : 0;
   return {
     evidenceCount: input.evidence.length,
     evaluations: input.evaluations.length,

@@ -8,18 +8,11 @@
 import type { ImprovementProposal } from "./types";
 
 export interface CritiqueObservation {
-  readonly code:
-    | "low_confidence"
-    | "narrow_evidence"
-    | "high_risk"
-    | "negative_gain"
-    | "ok";
+  readonly code: "low_confidence" | "narrow_evidence" | "high_risk" | "negative_gain" | "ok";
   readonly detail: string;
 }
 
-export function critiqueProposal(
-  proposal: ImprovementProposal,
-): readonly CritiqueObservation[] {
+export function critiqueProposal(proposal: ImprovementProposal): readonly CritiqueObservation[] {
   const out: CritiqueObservation[] = [];
   if (proposal.confidence === "low" || proposal.confidence === "unknown") {
     out.push({

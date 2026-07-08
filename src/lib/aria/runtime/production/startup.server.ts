@@ -44,10 +44,7 @@ export class RuntimeStartup {
     for (const w of input.workers) {
       registered.push(this.registry.register(w));
     }
-    this.audit.record(
-      "workers",
-      `Registered ${registered.length} worker(s).`,
-    );
+    this.audit.record("workers", `Registered ${registered.length} worker(s).`);
 
     this.state.setPhase("starting_scheduler");
     this.audit.record("scheduler", "Scheduler ready.");

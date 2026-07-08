@@ -24,7 +24,10 @@ class LiveEmotion {
   }
 
   stop(): void {
-    if (this.unsub) { this.unsub(); this.unsub = null; }
+    if (this.unsub) {
+      this.unsub();
+      this.unsub = null;
+    }
     this.lastEnvelopeId = null;
   }
 
@@ -40,12 +43,7 @@ class LiveEmotion {
     });
     // Re-emit current state with the fresh emotion; the state machine
     // no-ops if emotion + state are unchanged.
-    avatarStateManager.transition(
-      avatarStateManager.getState(),
-      emotion,
-      "conversation",
-      "medium",
-    );
+    avatarStateManager.transition(avatarStateManager.getState(), emotion, "conversation", "medium");
   }
 }
 

@@ -26,7 +26,10 @@ export function createPool<T>(opts: PoolOptions<T>): Pool<T> {
 
   async function acquire(): Promise<T> {
     const cached = free.pop();
-    if (cached) { busy.add(cached); return cached; }
+    if (cached) {
+      busy.add(cached);
+      return cached;
+    }
     if (busy.size < opts.max) {
       const c = await opts.factory();
       busy.add(c);
@@ -38,7 +41,11 @@ export function createPool<T>(opts: PoolOptions<T>): Pool<T> {
   function release(c: T): void {
     busy.delete(c);
     const w = waiters.shift();
-    if (w) { busy.add(c); w(c); return; }
+    if (w) {
+      busy.add(c);
+      w(c);
+      return;
+    }
     free.push(c);
   }
 

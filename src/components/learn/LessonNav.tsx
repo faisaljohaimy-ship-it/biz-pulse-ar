@@ -26,7 +26,9 @@ export function LessonNav({ lang, prev_slug, next_slug }: Props) {
           <PrevIcon className="h-4 w-4" />
           {ar ? "الحصة السابقة" : "Previous lesson"}
         </Link>
-      ) : <span />}
+      ) : (
+        <span />
+      )}
       {next_slug ? (
         <Link
           to="/learn/$slug"

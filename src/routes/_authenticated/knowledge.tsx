@@ -28,7 +28,10 @@ function KnowledgePage() {
   const { data: docs = [] } = useQuery({
     queryKey: ["kb", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("knowledge_docs").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("knowledge_docs")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Doc[];
     },
@@ -45,7 +48,9 @@ function KnowledgePage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      setTitle(""); setContent(""); setOpen(false);
+      setTitle("");
+      setContent("");
+      setOpen(false);
       qc.invalidateQueries({ queryKey: ["kb"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -64,7 +69,11 @@ function KnowledgePage() {
       <PageHeader
         icon={BookOpen}
         title={t("nav.knowledge")}
-        subtitle={locale === "ar" ? "مستودع المعرفة الذي يغذي وكلائك الذكيين." : "The knowledge corpus that powers your agents."}
+        subtitle={
+          locale === "ar"
+            ? "مستودع المعرفة الذي يغذي وكلائك الذكيين."
+            : "The knowledge corpus that powers your agents."
+        }
         actions={
           <Button onClick={() => setOpen((v) => !v)}>
             <Plus className="h-4 w-4" />
@@ -75,13 +84,27 @@ function KnowledgePage() {
 
       {open && (
         <div className="space-y-3 rounded-2xl border border-border bg-card/60 p-4">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={locale === "ar" ? "العنوان" : "Title"} />
-          <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={locale === "ar" ? "المحتوى..." : "Content..."} rows={6} />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={locale === "ar" ? "العنوان" : "Title"}
+          />
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={locale === "ar" ? "المحتوى..." : "Content..."}
+            rows={6}
+          />
           <div className="flex gap-2">
-            <Button onClick={() => create.mutate()} disabled={!title.trim() || !content.trim() || create.isPending}>
+            <Button
+              onClick={() => create.mutate()}
+              disabled={!title.trim() || !content.trim() || create.isPending}
+            >
               {t("common.save")}
             </Button>
-            <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              {t("common.cancel")}
+            </Button>
           </div>
         </div>
       )}
@@ -91,7 +114,10 @@ function KnowledgePage() {
           <div key={d.id} className="rounded-2xl border border-border bg-card/60 p-4">
             <div className="flex items-start justify-between gap-2">
               <h3 className="text-sm font-semibold">{d.title}</h3>
-              <button onClick={() => del.mutate(d.id)} className="text-muted-foreground hover:text-destructive">
+              <button
+                onClick={() => del.mutate(d.id)}
+                className="text-muted-foreground hover:text-destructive"
+              >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>

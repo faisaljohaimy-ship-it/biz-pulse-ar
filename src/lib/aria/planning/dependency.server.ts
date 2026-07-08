@@ -9,11 +9,7 @@
  * we honor that by adding an edge from every atomic under subtask N
  * to every atomic under subtask N+1 in the same task.
  */
-import type {
-  ExecutionEdge,
-  ExecutionGraph,
-  MissionTree,
-} from "./types";
+import type { ExecutionEdge, ExecutionGraph, MissionTree } from "./types";
 
 function nodesByParent(tree: MissionTree, parentId: string): string[] {
   return tree.nodes[parentId]?.children_ids ?? [];
@@ -44,8 +40,7 @@ export function buildDependencyGraph(tree: MissionTree): ExecutionGraph {
           edges.push({
             from: a,
             to: b,
-            reason:
-              "Subtask sequencing (explicit then/ثم/and connector).",
+            reason: "Subtask sequencing (explicit then/ثم/and connector).",
           });
         }
       }

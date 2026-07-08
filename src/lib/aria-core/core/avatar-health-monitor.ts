@@ -47,10 +47,18 @@ class AvatarHealthMonitor {
   stop(): void {
     if (!this.started) return;
     this.started = false;
-    this.disposers.splice(0).forEach((d) => { try { d(); } catch { /* isolate */ } });
+    this.disposers.splice(0).forEach((d) => {
+      try {
+        d();
+      } catch {
+        /* isolate */
+      }
+    });
   }
 
-  isRunning(): boolean { return this.started; }
+  isRunning(): boolean {
+    return this.started;
+  }
 
   snapshot(): HealthSnapshot {
     const perf = avatarPerformanceEngine.snapshot();

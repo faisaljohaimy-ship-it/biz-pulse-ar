@@ -12,10 +12,7 @@
  */
 
 import { emitLearningEvent } from "./events";
-import {
-  buildLearningCase,
-  listExperiences,
-} from "./experience.server";
+import { buildLearningCase, listExperiences } from "./experience.server";
 import { updateCapabilityScores } from "./evolution.server";
 import { publishLesson, queryKnowledge } from "./knowledge.server";
 import { createLesson, listLessons } from "./lesson.server";
@@ -99,10 +96,7 @@ export function learn(options: LearnOptions = {}): LearnResult {
     options.title ?? `Learning cycle @ ${new Date().toISOString()}`,
   );
 
-  const patterns = [
-    ...detectPatterns(experiences),
-    ...detectBottlenecks(experiences),
-  ];
+  const patterns = [...detectPatterns(experiences), ...detectBottlenecks(experiences)];
   bumpPatterns(patterns.length);
 
   const lessons: Lesson[] = [];
@@ -154,9 +148,7 @@ export function extractLessons(options: LearnOptions = {}): ReadonlyArray<Lesson
   return learn(options).lessons;
 }
 
-export function recommendImprovements(
-  options: LearnOptions = {},
-): ReadonlyArray<Improvement> {
+export function recommendImprovements(options: LearnOptions = {}): ReadonlyArray<Improvement> {
   return learn(options).improvements;
 }
 
@@ -171,11 +163,7 @@ export {
   ingestPlannerEstimate,
   ingestReasoningSignal,
 } from "./feedback.server";
-export {
-  getCapabilityScore,
-  getConfidenceHistory,
-  listCapabilityScores,
-} from "./evolution.server";
+export { getCapabilityScore, getConfidenceHistory, listCapabilityScores } from "./evolution.server";
 export { onLearningEvent } from "./events";
 export type {
   Experience,

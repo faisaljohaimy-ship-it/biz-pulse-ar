@@ -61,7 +61,15 @@ export async function runConnectorCall<T>(
   assertConfigured(desc);
 
   if (!allowRequest(desc.id, desc.circuit_breaker)) {
-    auditConnector({ connector_id: desc.id, action: opts.operation, outcome: "denied", detail: "circuit_open", actor: opts.actor, org_id: opts.org_id, trace_id: opts.trace_id });
+    auditConnector({
+      connector_id: desc.id,
+      action: opts.operation,
+      outcome: "denied",
+      detail: "circuit_open",
+      actor: opts.actor,
+      org_id: opts.org_id,
+      trace_id: opts.trace_id,
+    });
     throw new CircuitOpen(desc.id);
   }
   await acquireRateSlot(desc.id, desc.rate_limit);
@@ -77,14 +85,30 @@ export async function runConnectorCall<T>(
     const latency = Date.now() - started;
     recordCall(desc.id, latency, true);
     recordSuccess(desc.id);
-    auditConnector({ connector_id: desc.id, action: opts.operation, outcome: "ok", actor: opts.actor, org_id: opts.org_id, trace_id: opts.trace_id, detail: `${latency}ms` });
+    auditConnector({
+      connector_id: desc.id,
+      action: opts.operation,
+      outcome: "ok",
+      actor: opts.actor,
+      org_id: opts.org_id,
+      trace_id: opts.trace_id,
+      detail: `${latency}ms`,
+    });
     return out;
   } catch (err) {
     const latency = Date.now() - started;
     const cls = classifyIntegrationError(err);
     recordCall(desc.id, latency, false, cls);
     recordFailure(desc.id, desc.circuit_breaker);
-    auditConnector({ connector_id: desc.id, action: opts.operation, outcome: "error", actor: opts.actor, org_id: opts.org_id, trace_id: opts.trace_id, detail: cls });
+    auditConnector({
+      connector_id: desc.id,
+      action: opts.operation,
+      outcome: "error",
+      actor: opts.actor,
+      org_id: opts.org_id,
+      trace_id: opts.trace_id,
+      detail: cls,
+    });
     throw err;
   }
 }

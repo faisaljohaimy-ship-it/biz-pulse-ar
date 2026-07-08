@@ -31,12 +31,18 @@ export function useAriaSpeech() {
   const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mutedRef = useRef(muted);
-  useEffect(() => { mutedRef.current = muted; }, [muted]);
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
 
   const setMuted = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
     setMutedState((prev) => {
       const next = typeof v === "function" ? (v as (p: boolean) => boolean)(prev) : v;
-      try { window.localStorage.setItem(MUTE_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+      try {
+        window.localStorage.setItem(MUTE_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
       return next;
     });
   }, []);
@@ -44,16 +50,32 @@ export function useAriaSpeech() {
   const hardStop = useCallback((source: Source) => {
     const a = audioRef.current;
     if (a) {
-      try { a.pause(); } catch { /* ignore */ }
+      try {
+        a.pause();
+      } catch {
+        /* ignore */
+      }
       const src = a.src;
-      try { a.src = ""; } catch { /* ignore */ }
+      try {
+        a.src = "";
+      } catch {
+        /* ignore */
+      }
       if (src && src.startsWith("blob:")) {
-        try { URL.revokeObjectURL(src); } catch { /* ignore */ }
+        try {
+          URL.revokeObjectURL(src);
+        } catch {
+          /* ignore */
+        }
       }
       audioRef.current = null;
     }
     if (typeof window !== "undefined" && window.speechSynthesis) {
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        /* ignore */
+      }
     }
     AriaAudioBus.release(source);
     setSpeaking(false);
@@ -64,7 +86,9 @@ export function useAriaSpeech() {
     hardStop("panel-greeting");
   }, [hardStop]);
 
-  useEffect(() => { if (muted) stop(); }, [muted, stop]);
+  useEffect(() => {
+    if (muted) stop();
+  }, [muted, stop]);
 
   // Browser SpeechSynthesis is ONLY permitted for Greeting Mode.
   // Browser speechSynthesis fallback is PERMANENTLY DISABLED (robotic voice).
@@ -82,14 +106,23 @@ export function useAriaSpeech() {
     audioRef.current = audio;
     const finish = () => {
       if (audioRef.current === audio) audioRef.current = null;
-      try { URL.revokeObjectURL(url); } catch { /* ignore */ }
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        /* ignore */
+      }
       AriaAudioBus.notifyStopped(source);
       AriaAudioBus.release(source);
       setSpeaking(false);
     };
     audio.onended = finish;
-    audio.onpause = () => { AriaAudioBus.notifyStopped(source); };
-    audio.onerror = () => { console.warn("[aria-voice] audio playback error"); finish(); };
+    audio.onpause = () => {
+      AriaAudioBus.notifyStopped(source);
+    };
+    audio.onerror = () => {
+      console.warn("[aria-voice] audio playback error");
+      finish();
+    };
     audio.onplaying = () => {
       console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`);
       AriaAudioBus.notifyPlaying(source, audio);
@@ -102,14 +135,19 @@ export function useAriaSpeech() {
     async (text: string, source: Source = "chat-tts") => {
       const clean = (text ?? "").toString().trim();
       VoiceTimeline.push("VOICE", `useAriaSpeech.speak(${source})`, {
-        source, chars: clean.length, muted: mutedRef.current,
+        source,
+        chars: clean.length,
+        muted: mutedRef.current,
         stack: new Error().stack?.split("\n").slice(2, 5).join(" | "),
       });
       if (!clean || mutedRef.current) return;
       AriaAudioBus.unlock();
 
       const granted = AriaAudioBus.acquire(source, () => hardStop(source));
-      if (!granted) { VoiceTimeline.push("VOICE", "acquire not granted", { source }); return; }
+      if (!granted) {
+        VoiceTimeline.push("VOICE", "acquire not granted", { source });
+        return;
+      }
 
       setSpeaking(true);
       const t0 = performance.now();
@@ -120,7 +158,11 @@ export function useAriaSpeech() {
           const head = await fetch("/aria-greeting-voice.mp3", { method: "HEAD" });
           VoiceTimeline.push("FETCH", `greeting HEAD ${head.status}`, { ok: head.ok });
           if (!head.ok) throw new Error("no_static_greeting");
-          if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
+          if (mutedRef.current) {
+            AriaAudioBus.release(source);
+            setSpeaking(false);
+            return;
+          }
           const audio = new Audio("/aria-greeting-voice.mp3");
           audioRef.current = audio;
           const finish = () => {
@@ -129,18 +171,38 @@ export function useAriaSpeech() {
             AriaAudioBus.release(source);
             setSpeaking(false);
           };
-          audio.onended = () => { VoiceTimeline.push("AUDIO_END", "greeting ended"); finish(); };
-          audio.onpause = () => { VoiceTimeline.push("HTMLAUDIO", "greeting onpause", { t: audio.currentTime, d: audio.duration }); AriaAudioBus.notifyStopped(source); };
-          audio.onerror = () => { VoiceTimeline.push("AUDIO_ERROR", "greeting element error"); finish(); };
+          audio.onended = () => {
+            VoiceTimeline.push("AUDIO_END", "greeting ended");
+            finish();
+          };
+          audio.onpause = () => {
+            VoiceTimeline.push("HTMLAUDIO", "greeting onpause", {
+              t: audio.currentTime,
+              d: audio.duration,
+            });
+            AriaAudioBus.notifyStopped(source);
+          };
+          audio.onerror = () => {
+            VoiceTimeline.push("AUDIO_ERROR", "greeting element error");
+            finish();
+          };
           audio.onplaying = () => {
-            VoiceTimeline.push("AUDIO_PLAY", `greeting playing +${Math.round(performance.now() - t0)}ms`);
+            VoiceTimeline.push(
+              "AUDIO_PLAY",
+              `greeting playing +${Math.round(performance.now() - t0)}ms`,
+            );
             AriaAudioBus.notifyPlaying(source, audio);
           };
           await audio.play();
         } catch (err) {
           // NO browser speechSynthesis fallback — greeting is silent if MP3 unavailable.
-          VoiceTimeline.push("FALLBACK", "greeting mp3 unavailable — silent (no browser TTS)", { err: (err as Error).message });
-          console.warn("[aria-voice] greeting mp3 unavailable — staying silent:", (err as Error).message);
+          VoiceTimeline.push("FALLBACK", "greeting mp3 unavailable — silent (no browser TTS)", {
+            err: (err as Error).message,
+          });
+          console.warn(
+            "[aria-voice] greeting mp3 unavailable — staying silent:",
+            (err as Error).message,
+          );
           AriaAudioBus.notifyStopped(source);
           AriaAudioBus.release(source);
           setSpeaking(false);
@@ -156,17 +218,29 @@ export function useAriaSpeech() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text: clean }),
         });
-        VoiceTimeline.push("TTS_RES", `useAriaSpeech ${res.status}`, { status: res.status, ct: res.headers.get("content-type") });
+        VoiceTimeline.push("TTS_RES", `useAriaSpeech ${res.status}`, {
+          status: res.status,
+          ct: res.headers.get("content-type"),
+        });
         if (!res.ok) throw new Error(`tts_status_${res.status}`);
         const ct = res.headers.get("content-type") || "";
         if (!ct.includes("audio/")) throw new Error("tts_not_audio");
         const blob = await res.blob();
-        if (mutedRef.current) { AriaAudioBus.release(source); setSpeaking(false); return; }
+        if (mutedRef.current) {
+          AriaAudioBus.release(source);
+          setSpeaking(false);
+          return;
+        }
         await playBlob(blob, source, t0);
       } catch (err) {
         // NO browser fallback for chat replies — silence beats a robotic voice.
-        VoiceTimeline.push("FALLBACK", "chat-tts silent (no elevenlabs)", { err: (err as Error).message });
-        console.warn("[aria-voice] elevenlabs unavailable — reply stays silent:", (err as Error).message);
+        VoiceTimeline.push("FALLBACK", "chat-tts silent (no elevenlabs)", {
+          err: (err as Error).message,
+        });
+        console.warn(
+          "[aria-voice] elevenlabs unavailable — reply stays silent:",
+          (err as Error).message,
+        );
         AriaAudioBus.release(source);
         setSpeaking(false);
       }
@@ -177,9 +251,19 @@ export function useAriaSpeech() {
   useEffect(() => {
     return () => {
       const a = audioRef.current;
-      if (a) { try { a.pause(); } catch { /* ignore */ } }
+      if (a) {
+        try {
+          a.pause();
+        } catch {
+          /* ignore */
+        }
+      }
       if (typeof window !== "undefined" && window.speechSynthesis) {
-        try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+        try {
+          window.speechSynthesis.cancel();
+        } catch {
+          /* ignore */
+        }
       }
       AriaAudioBus.release("chat-tts");
       AriaAudioBus.release("panel-greeting");

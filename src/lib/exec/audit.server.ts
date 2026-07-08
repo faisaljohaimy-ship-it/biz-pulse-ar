@@ -22,10 +22,7 @@ export type AuditEntry = {
  * bus also mirrors events into this table via trigger; direct calls are for
  * actions that don't publish an event (e.g. fine-grained sub-steps).
  */
-export async function audit(
-  supabase: SupabaseClient<Database>,
-  entry: AuditEntry,
-): Promise<void> {
+export async function audit(supabase: SupabaseClient<Database>, entry: AuditEntry): Promise<void> {
   try {
     const row: Record<string, unknown> = {
       actor_id: entry.actor_id ?? null,

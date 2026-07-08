@@ -2,13 +2,7 @@
  * Phase 8.6 — Uncertainty catalogue. Surfaces unknowns, information
  * gaps, and confidence intervals derived from the reasoning artifacts.
  */
-import type {
-  Assumption,
-  DecisionOption,
-  Evidence,
-  Hypothesis,
-  Uncertainty,
-} from "./types";
+import type { Assumption, DecisionOption, Evidence, Hypothesis, Uncertainty } from "./types";
 import { shortId } from "./util";
 
 export interface UncertaintyReport {

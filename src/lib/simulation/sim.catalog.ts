@@ -15,22 +15,112 @@ export const DEPARTMENTS = [
 ] as const;
 
 export const FIRST_AR = [
-  "محمد","أحمد","عبدالله","خالد","سلطان","فيصل","بندر","سعود","ياسر","ماجد",
-  "نواف","تركي","عمر","علي","حسن","إبراهيم","يوسف","زياد","ريان","سامي",
-  "نورة","سارة","هند","لمى","دانة","منيرة","ريم","شهد","لطيفة","أروى",
+  "محمد",
+  "أحمد",
+  "عبدالله",
+  "خالد",
+  "سلطان",
+  "فيصل",
+  "بندر",
+  "سعود",
+  "ياسر",
+  "ماجد",
+  "نواف",
+  "تركي",
+  "عمر",
+  "علي",
+  "حسن",
+  "إبراهيم",
+  "يوسف",
+  "زياد",
+  "ريان",
+  "سامي",
+  "نورة",
+  "سارة",
+  "هند",
+  "لمى",
+  "دانة",
+  "منيرة",
+  "ريم",
+  "شهد",
+  "لطيفة",
+  "أروى",
 ];
 export const LAST_AR = [
-  "القحطاني","الشمري","العتيبي","الحربي","المطيري","الدوسري","الغامدي","العنزي","الزهراني","السبيعي",
-  "الشهري","الرشيدي","المالكي","العمري","الجهني","السلمي","الحازمي","النفيعي","الفهد","السليمان",
+  "القحطاني",
+  "الشمري",
+  "العتيبي",
+  "الحربي",
+  "المطيري",
+  "الدوسري",
+  "الغامدي",
+  "العنزي",
+  "الزهراني",
+  "السبيعي",
+  "الشهري",
+  "الرشيدي",
+  "المالكي",
+  "العمري",
+  "الجهني",
+  "السلمي",
+  "الحازمي",
+  "النفيعي",
+  "الفهد",
+  "السليمان",
 ];
 export const FIRST_EN = [
-  "Mohammed","Ahmed","Abdullah","Khalid","Sultan","Faisal","Bandar","Saud","Yasser","Majed",
-  "Nawaf","Turki","Omar","Ali","Hassan","Ibrahim","Yousef","Ziyad","Rayan","Sami",
-  "Noura","Sarah","Hind","Lama","Dana","Munira","Reem","Shahad","Latifah","Arwa",
+  "Mohammed",
+  "Ahmed",
+  "Abdullah",
+  "Khalid",
+  "Sultan",
+  "Faisal",
+  "Bandar",
+  "Saud",
+  "Yasser",
+  "Majed",
+  "Nawaf",
+  "Turki",
+  "Omar",
+  "Ali",
+  "Hassan",
+  "Ibrahim",
+  "Yousef",
+  "Ziyad",
+  "Rayan",
+  "Sami",
+  "Noura",
+  "Sarah",
+  "Hind",
+  "Lama",
+  "Dana",
+  "Munira",
+  "Reem",
+  "Shahad",
+  "Latifah",
+  "Arwa",
 ];
 export const LAST_EN = [
-  "Al-Qahtani","Al-Shammari","Al-Otaibi","Al-Harbi","Al-Mutairi","Al-Dossari","Al-Ghamdi","Al-Anzi","Al-Zahrani","Al-Subai'i",
-  "Al-Shehri","Al-Rashidi","Al-Maliki","Al-Amri","Al-Juhani","Al-Sulami","Al-Hazmi","Al-Nufa'i","Al-Fahd","Al-Sulaiman",
+  "Al-Qahtani",
+  "Al-Shammari",
+  "Al-Otaibi",
+  "Al-Harbi",
+  "Al-Mutairi",
+  "Al-Dossari",
+  "Al-Ghamdi",
+  "Al-Anzi",
+  "Al-Zahrani",
+  "Al-Subai'i",
+  "Al-Shehri",
+  "Al-Rashidi",
+  "Al-Maliki",
+  "Al-Amri",
+  "Al-Juhani",
+  "Al-Sulami",
+  "Al-Hazmi",
+  "Al-Nufa'i",
+  "Al-Fahd",
+  "Al-Sulaiman",
 ];
 
 export const ROLES = [
@@ -65,12 +155,46 @@ export const NEAR_MISS_TITLES = [
   { ar: "استخدام أدوات بدون تصريح", en: "Tools used without permit" },
 ] as const;
 
-export const INSPECTION_KINDS = ["fire_safety", "electrical", "ppe", "housekeeping", "access_control", "environmental"] as const;
+export const INSPECTION_KINDS = [
+  "fire_safety",
+  "electrical",
+  "ppe",
+  "housekeeping",
+  "access_control",
+  "environmental",
+] as const;
 
-export const RISK_CATEGORIES = ["operational", "safety", "security", "environmental", "compliance", "reputational"] as const;
+export const RISK_CATEGORIES = [
+  "operational",
+  "safety",
+  "security",
+  "environmental",
+  "compliance",
+  "reputational",
+] as const;
 
-export const MEETING_KINDS = ["operational", "safety_stand_down", "management_review", "training", "incident_review"] as const;
+export const MEETING_KINDS = [
+  "operational",
+  "safety_stand_down",
+  "management_review",
+  "training",
+  "incident_review",
+] as const;
 
-export const NOTIFICATION_TOPICS = ["incident.new", "permit.expiring", "inspection.due", "risk.escalated", "meeting.reminder", "task.assigned"] as const;
+export const NOTIFICATION_TOPICS = [
+  "incident.new",
+  "permit.expiring",
+  "inspection.due",
+  "risk.escalated",
+  "meeting.reminder",
+  "task.assigned",
+] as const;
 
-export const BUS_ROUTES = ["R-JED-01", "R-JED-02", "R-MEC-01", "R-MEC-02", "R-YNB-01", "R-YNB-02"] as const;
+export const BUS_ROUTES = [
+  "R-JED-01",
+  "R-JED-02",
+  "R-MEC-01",
+  "R-MEC-02",
+  "R-YNB-01",
+  "R-YNB-02",
+] as const;

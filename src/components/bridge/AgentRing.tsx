@@ -58,7 +58,11 @@ export function AgentRing({
       return { radius: preferredRadius, centerSize: preferredCenter, mode: "ring" as const };
     }
     if (containerW < CAROUSEL_BREAKPOINT) {
-      return { radius: 0, centerSize: Math.min(preferredCenter, containerW - 32), mode: "carousel" as const };
+      return {
+        radius: 0,
+        centerSize: Math.min(preferredCenter, containerW - 32),
+        mode: "carousel" as const,
+      };
     }
     // Ring needs: container width >= 2*radius + NODE_WIDTH + padding(40)
     const fitted = Math.floor((containerW - NODE_WIDTH - 40) / 2);
@@ -71,10 +75,7 @@ export function AgentRing({
   if (mode === "carousel") {
     return (
       <div ref={wrapRef} className="relative mx-auto w-full">
-        <div
-          className="mx-auto"
-          style={{ width: centerSize, height: centerSize }}
-        >
+        <div className="mx-auto" style={{ width: centerSize, height: centerSize }}>
           {children}
         </div>
         <CarouselRail

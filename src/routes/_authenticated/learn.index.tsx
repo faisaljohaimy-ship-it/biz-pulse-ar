@@ -15,7 +15,11 @@ export const Route = createFileRoute("/_authenticated/learn/")({
   head: () => ({
     meta: [
       { title: "Executive Knowledge Bridge — NEXIOS AI OS" },
-      { name: "description", content: "The executive learning surface of NEXIOS. Cinematic lessons, live simulations, ARIA as your instructor." },
+      {
+        name: "description",
+        content:
+          "The executive learning surface of NEXIOS. Cinematic lessons, live simulations, ARIA as your instructor.",
+      },
     ],
   }),
   component: CatalogPage,
@@ -23,9 +27,16 @@ export const Route = createFileRoute("/_authenticated/learn/")({
     <div className="grid min-h-[60vh] place-items-center p-8 text-center">
       <div className="space-y-3">
         <AlertTriangle className="mx-auto h-8 w-8 text-rose-400" />
-        <div className="text-lg font-semibold text-white">Executive Knowledge Bridge unavailable</div>
+        <div className="text-lg font-semibold text-white">
+          Executive Knowledge Bridge unavailable
+        </div>
         <div className="max-w-md text-sm text-white/60">{error.message}</div>
-        <button onClick={reset} className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10">Retry</button>
+        <button
+          onClick={reset}
+          className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
+        >
+          Retry
+        </button>
       </div>
     </div>
   ),
@@ -77,9 +88,14 @@ function CatalogPage() {
           </div>
           <div className="mt-0.5 flex items-center gap-3">
             <div className="h-1.5 w-32 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full bg-cyan-300 transition-[width] duration-500" style={{ width: `${pct}%` }} />
+              <div
+                className="h-full bg-cyan-300 transition-[width] duration-500"
+                style={{ width: `${pct}%` }}
+              />
             </div>
-            <span className="text-sm font-semibold tabular-nums text-white">{done}/{total}</span>
+            <span className="text-sm font-semibold tabular-nums text-white">
+              {done}/{total}
+            </span>
           </div>
         </div>
       </header>
@@ -96,9 +112,13 @@ function CatalogPage() {
       <section className="relative grid grid-cols-1 gap-5 px-6 pb-10 md:grid-cols-2 xl:grid-cols-3">
         {q.isLoading &&
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[240px] animate-pulse rounded-3xl border border-white/5 bg-white/[0.02]" />
+            <div
+              key={i}
+              className="h-[240px] animate-pulse rounded-3xl border border-white/5 bg-white/[0.02]"
+            />
           ))}
-        {!q.isLoading && lessons.map((l) => <LessonCard key={l.id} lesson={l} lang={ar ? "ar" : "en"} />)}
+        {!q.isLoading &&
+          lessons.map((l) => <LessonCard key={l.id} lesson={l} lang={ar ? "ar" : "en"} />)}
       </section>
     </div>
   );

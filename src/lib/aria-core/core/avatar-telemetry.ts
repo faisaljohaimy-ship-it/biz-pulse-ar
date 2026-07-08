@@ -40,8 +40,10 @@ class AvatarTelemetry {
   stop(): void {
     if (!this.running) return;
     this.running = false;
-    this.unsubState?.(); this.unsubState = null;
-    this.unsubPresence?.(); this.unsubPresence = null;
+    this.unsubState?.();
+    this.unsubState = null;
+    this.unsubPresence?.();
+    this.unsubPresence = null;
     this.events = [];
     this.samples = [];
     this.lastPresence = null;

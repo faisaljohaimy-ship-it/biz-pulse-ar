@@ -90,8 +90,11 @@ export const Route = createFileRoute("/api/public/aria-tts")({
         }
 
         let body: unknown;
-        try { body = await request.json(); }
-        catch { return Response.json({ error: "invalid_json" }, { status: 400 }); }
+        try {
+          body = await request.json();
+        } catch {
+          return Response.json({ error: "invalid_json" }, { status: 400 });
+        }
         const parsed = Input.safeParse(body);
         if (!parsed.success) {
           return Response.json({ error: "invalid_input" }, { status: 400 });

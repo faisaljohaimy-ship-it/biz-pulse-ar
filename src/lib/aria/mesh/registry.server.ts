@@ -16,9 +16,10 @@ export function register(
 ): CapabilityRegistry {
   const parsed = CapabilityDescriptorZ.parse(descriptor);
   const idx = registry.entries.findIndex((e) => key(e) === key(parsed));
-  const entries = idx >= 0
-    ? registry.entries.map((e, i) => (i === idx ? parsed : e))
-    : [...registry.entries, parsed];
+  const entries =
+    idx >= 0
+      ? registry.entries.map((e, i) => (i === idx ? parsed : e))
+      : [...registry.entries, parsed];
   return { entries };
 }
 

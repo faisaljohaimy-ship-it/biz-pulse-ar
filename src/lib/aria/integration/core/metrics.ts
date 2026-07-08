@@ -20,7 +20,9 @@ export function snapshotIntegrationMetrics(): IntegrationMetrics {
   const errs = items.reduce((a, i) => a + i.errors_total, 0);
   const retries = items.reduce((a, i) => a + i.retries_total, 0);
   const latencies = items.map((i) => i.avg_latency_ms).filter((n) => n > 0);
-  const avg = latencies.length ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0;
+  const avg = latencies.length
+    ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
+    : 0;
   const known = items.filter((i) => i.success_rate >= 0);
   const overall = known.length ? known.reduce((a, b) => a + b.success_rate, 0) / known.length : -1;
   return {

@@ -20,11 +20,7 @@ import { capabilityOwner } from "./capability-index.server";
 import { emitMarketplaceEvent } from "./events";
 import { noteInstall } from "./telemetry.server";
 import { hasAgent } from "../orchestrator/registry";
-import {
-  buildGraph,
-  findCycle,
-  topologicalOrder,
-} from "./dependency.server";
+import { buildGraph, findCycle, topologicalOrder } from "./dependency.server";
 
 // ---------------------------------------------------------------------------
 // Programmatic install path (single source of truth for validation + record)
@@ -87,10 +83,9 @@ type PackageModule = {
   agentPackage?: AgentPackage;
 };
 
-const modules = import.meta.glob<PackageModule>(
-  "/src/lib/aria/agent-packages/*/index.ts",
-  { eager: true },
-);
+const modules = import.meta.glob<PackageModule>("/src/lib/aria/agent-packages/*/index.ts", {
+  eager: true,
+});
 
 function extractPackage(mod: PackageModule): AgentPackage | null {
   const pkg = mod.default ?? mod.agentPackage ?? null;

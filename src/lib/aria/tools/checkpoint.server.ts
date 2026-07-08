@@ -10,7 +10,10 @@ function newId(): string {
   return `ck_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function checkpoint(executionId: string, stage: ToolTelemetryEvent["stage"]): ExecutionCheckpoint {
+export function checkpoint(
+  executionId: string,
+  stage: ToolTelemetryEvent["stage"],
+): ExecutionCheckpoint {
   const cp: ExecutionCheckpoint = {
     id: newId(),
     execution_id: executionId,

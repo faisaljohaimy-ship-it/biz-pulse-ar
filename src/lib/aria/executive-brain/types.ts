@@ -38,12 +38,7 @@ export type DecisionMode =
   | "close"
   | "reopen";
 
-export type RiskFacet =
-  | "operational"
-  | "safety"
-  | "business"
-  | "financial"
-  | "compliance";
+export type RiskFacet = "operational" | "safety" | "business" | "financial" | "compliance";
 
 export type Priority = "critical" | "high" | "medium" | "low";
 
@@ -90,8 +85,8 @@ export interface BrainRequest {
 export interface RiskSignal {
   facet: RiskFacet;
   probability: number; // 0..1
-  severity: number;    // 0..1
-  score: number;       // probability * severity
+  severity: number; // 0..1
+  score: number; // probability * severity
   title_en: string;
   title_ar: string;
   mitigation_en: string;

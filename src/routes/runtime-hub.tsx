@@ -1,14 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ShieldCheck, Building2, Radar, Activity, BarChart3, Bot, Radio,
-  Sparkles, Moon,
+  ShieldCheck,
+  Building2,
+  Radar,
+  Activity,
+  BarChart3,
+  Bot,
+  Radio,
+  Sparkles,
+  Moon,
 } from "lucide-react";
 
 export const Route = createFileRoute("/runtime-hub")({
   head: () => ({
     meta: [
       { title: "Runtime Hub — NEXUS AI OS" },
-      { name: "description", content: "Enterprise runtime stages and live modules of NEXUS AI OS." },
+      {
+        name: "description",
+        content: "Enterprise runtime stages and live modules of NEXUS AI OS.",
+      },
     ],
   }),
   component: RuntimeHub,
@@ -16,15 +26,58 @@ export const Route = createFileRoute("/runtime-hub")({
 
 // 9-cell grid; Hajj sits in the middle (index 4) — horizontally centered, not stacked above.
 const STAGES = [
-  { key: "auth",     label_ar: "المصادقة",        label_en: "Authentication", icon: ShieldCheck, to: "/command-center" },
-  { key: "org",      label_ar: "بيانات المؤسسة", label_en: "Organization",   icon: Building2,   to: "/command-center" },
-  { key: "twin",     label_ar: "التوأم الرقمي",  label_en: "Digital Twin",   icon: Radar,       to: "/operations" },
-  { key: "ops",      label_ar: "العمليات",        label_en: "Operations",     icon: Activity,    to: "/operations" },
-  { key: "hajj",     label_ar: "نظام الحج",       label_en: "Hajj 1447",      icon: Moon,        to: "/hajj", featured: true },
-  { key: "kpi",      label_ar: "مؤشرات الأداء",  label_en: "Executive KPIs", icon: BarChart3,   to: "/executive-reports" },
-  { key: "agents",   label_ar: "الوكلاء",         label_en: "Agents",         icon: Bot,         to: "/exec" },
-  { key: "realtime", label_ar: "البث اللحظي",    label_en: "Realtime",       icon: Radio,       to: "/operations" },
-  { key: "aria",     label_ar: "ARIA",             label_en: "ARIA Runtime",   icon: Sparkles,    to: "/command-center" },
+  {
+    key: "auth",
+    label_ar: "المصادقة",
+    label_en: "Authentication",
+    icon: ShieldCheck,
+    to: "/command-center",
+  },
+  {
+    key: "org",
+    label_ar: "بيانات المؤسسة",
+    label_en: "Organization",
+    icon: Building2,
+    to: "/command-center",
+  },
+  {
+    key: "twin",
+    label_ar: "التوأم الرقمي",
+    label_en: "Digital Twin",
+    icon: Radar,
+    to: "/operations",
+  },
+  { key: "ops", label_ar: "العمليات", label_en: "Operations", icon: Activity, to: "/operations" },
+  {
+    key: "hajj",
+    label_ar: "نظام الحج",
+    label_en: "Hajj 1447",
+    icon: Moon,
+    to: "/hajj",
+    featured: true,
+  },
+  {
+    key: "kpi",
+    label_ar: "مؤشرات الأداء",
+    label_en: "Executive KPIs",
+    icon: BarChart3,
+    to: "/executive-reports",
+  },
+  { key: "agents", label_ar: "الوكلاء", label_en: "Agents", icon: Bot, to: "/exec" },
+  {
+    key: "realtime",
+    label_ar: "البث اللحظي",
+    label_en: "Realtime",
+    icon: Radio,
+    to: "/operations",
+  },
+  {
+    key: "aria",
+    label_ar: "ARIA",
+    label_en: "ARIA Runtime",
+    icon: Sparkles,
+    to: "/command-center",
+  },
 ] as const;
 
 function RuntimeHub() {
@@ -43,9 +96,7 @@ function RuntimeHub() {
           <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#00D4FF]/40 bg-[#00D4FF]/10 shadow-[0_0_40px_rgba(0,212,255,0.45)] animate-pulse">
             <Sparkles className="h-7 w-7 text-[#3AE8FF]" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            نظام التشغيل المؤسسي
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">نظام التشغيل المؤسسي</h1>
           <p className="mt-1 text-sm text-white/60">
             NEXUS AI OS — Industrial Security, Western Region
           </p>
@@ -75,7 +126,9 @@ function RuntimeHub() {
                       </span>
                       <div className="relative">
                         <div className="text-sm font-semibold">{stage.label_ar}</div>
-                        <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/80">{stage.label_en}</div>
+                        <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/80">
+                          {stage.label_en}
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -89,7 +142,9 @@ function RuntimeHub() {
                         </span>
                         <div className="text-right">
                           <div className="text-sm font-medium">{stage.label_ar}</div>
-                          <div className="text-[11px] uppercase tracking-wider text-white/40">{stage.label_en}</div>
+                          <div className="text-[11px] uppercase tracking-wider text-white/40">
+                            {stage.label_en}
+                          </div>
                         </div>
                       </div>
                       <span className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-[#3AE8FF]">

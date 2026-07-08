@@ -20,10 +20,7 @@ export interface ChartInputs {
   readonly series?: readonly ChartSeries[];
 }
 
-export function analyzeChart(
-  input: MultimodalInput,
-  chart: ChartInputs,
-): MultimodalFinding {
+export function analyzeChart(input: MultimodalInput, chart: ChartInputs): MultimodalFinding {
   const signals: Signal[] = [];
   (chart.axes ?? []).forEach((a, i) => {
     const c = clamp01(a.confidence ?? 0.6);

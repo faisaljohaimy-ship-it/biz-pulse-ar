@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type Locale = "ar" | "en";
 
@@ -72,12 +66,21 @@ const dict: Dict = {
     ar: "اسأل المساعد عن أي شيء — تقرير، تحليل، توقع...",
     en: "Ask the assistant anything — report, analysis, forecast...",
   },
-  "dashboard.suggestion_1": { ar: "لخّص أداء الربع الحالي", en: "Summarize this quarter's performance" },
-  "dashboard.suggestion_2": { ar: "ما أكبر فرص النمو؟", en: "What are the biggest growth opportunities?" },
+  "dashboard.suggestion_1": {
+    ar: "لخّص أداء الربع الحالي",
+    en: "Summarize this quarter's performance",
+  },
+  "dashboard.suggestion_2": {
+    ar: "ما أكبر فرص النمو؟",
+    en: "What are the biggest growth opportunities?",
+  },
   "dashboard.suggestion_3": { ar: "حلّل سلوك المستخدمين", en: "Analyze user behavior trends" },
   "dashboard.open_assistant": { ar: "افتح المساعد", en: "Open Assistant" },
   "dashboard.insights": { ar: "أهم الإشارات الذكية", en: "Top AI signals" },
-  "dashboard.insight_1_t": { ar: "نمو غير مسبوق في القطاع الرقمي", en: "Record growth in the digital segment" },
+  "dashboard.insight_1_t": {
+    ar: "نمو غير مسبوق في القطاع الرقمي",
+    en: "Record growth in the digital segment",
+  },
   "dashboard.insight_1_d": {
     ar: "ارتفع تبني الذكاء الاصطناعي بنسبة 24٪ هذا الشهر.",
     en: "AI adoption is up 24% this month.",
@@ -112,9 +115,18 @@ const dict: Dict = {
   "assistant.delete": { ar: "حذف", en: "Delete" },
   "assistant.model": { ar: "النموذج", en: "Model" },
   "assistant.sugg_1": { ar: "لخّص آخر تقرير ربعي", en: "Summarize the latest quarterly report" },
-  "assistant.sugg_2": { ar: "اقترح 3 مبادرات لزيادة الإيرادات", en: "Suggest 3 initiatives to grow revenue" },
-  "assistant.sugg_3": { ar: "حلّل أداء الفرق هذا الشهر", en: "Analyze team performance this month" },
-  "assistant.sugg_4": { ar: "اكتب رسالة تنفيذية للمساهمين", en: "Draft an executive note to shareholders" },
+  "assistant.sugg_2": {
+    ar: "اقترح 3 مبادرات لزيادة الإيرادات",
+    en: "Suggest 3 initiatives to grow revenue",
+  },
+  "assistant.sugg_3": {
+    ar: "حلّل أداء الفرق هذا الشهر",
+    en: "Analyze team performance this month",
+  },
+  "assistant.sugg_4": {
+    ar: "اكتب رسالة تنفيذية للمساهمين",
+    en: "Draft an executive note to shareholders",
+  },
   "common.loading": { ar: "جارٍ التحميل...", en: "Loading..." },
   "common.search": { ar: "بحث", en: "Search" },
   "common.error": { ar: "حدث خطأ", en: "Something went wrong" },
@@ -129,10 +141,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("ar");
 
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem("locale")) as Locale | null;
+    const stored = (typeof window !== "undefined" &&
+      localStorage.getItem("locale")) as Locale | null;
     if (stored === "ar" || stored === "en") setLocaleState(stored);
   }, []);
-
 
   useEffect(() => {
     if (typeof document === "undefined") return;

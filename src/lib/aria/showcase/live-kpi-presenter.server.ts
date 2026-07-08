@@ -37,8 +37,6 @@ export function formatKpiCaption(kpi: ShowcaseKpi, lang: "ar" | "en"): string {
     return lang === "ar" ? `${label}: غير متاح` : `${label}: unavailable`;
   }
   const unit = kpi.unit ? ` ${kpi.unit}` : "";
-  const sourceTag = kpi.source === "sample"
-    ? (lang === "ar" ? " [عيّنة]" : " [SAMPLE]")
-    : "";
+  const sourceTag = kpi.source === "sample" ? (lang === "ar" ? " [عيّنة]" : " [SAMPLE]") : "";
   return `${label}: ${kpi.value}${unit}${sourceTag}`;
 }

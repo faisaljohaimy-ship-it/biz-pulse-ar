@@ -49,11 +49,7 @@ interface LiveClockProps {
   readonly className?: string;
 }
 
-export function LiveClock({
-  variant = "chip",
-  showArabic = true,
-  className = "",
-}: LiveClockProps) {
+export function LiveClock({ variant = "chip", showArabic = true, className = "" }: LiveClockProps) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -88,7 +84,9 @@ export function LiveClock({
         aria-label="Live Gregorian date and time (Asia/Riyadh)"
       >
         <span className="whitespace-nowrap">{dEn}</span>
-        <span aria-hidden className="text-white/30">·</span>
+        <span aria-hidden className="text-white/30">
+          ·
+        </span>
         <span className="whitespace-nowrap text-white/90">{t}</span>
       </span>
     );
@@ -102,10 +100,7 @@ export function LiveClock({
       className={`inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/30 bg-black/50 px-3 py-1 text-[11px] font-medium tabular-nums text-white/85 shadow-[0_0_20px_rgba(0,212,255,0.18)] backdrop-blur-md ${className}`}
     >
       <span className="inline-flex items-center gap-1.5">
-        <span
-          aria-hidden
-          className="relative inline-flex h-2 w-2"
-        >
+        <span aria-hidden className="relative inline-flex h-2 w-2">
           <span className="absolute inset-0 animate-ping rounded-full bg-[#3AE8FF]/60" />
           <span className="relative inline-block h-2 w-2 rounded-full bg-[#3AE8FF] shadow-[0_0_10px_#3AE8FF]" />
         </span>
@@ -113,13 +108,19 @@ export function LiveClock({
           Live
         </span>
       </span>
-      <span aria-hidden className="text-white/20">·</span>
+      <span aria-hidden className="text-white/20">
+        ·
+      </span>
       <span className="whitespace-nowrap text-white">{t}</span>
-      <span aria-hidden className="text-white/20">·</span>
+      <span aria-hidden className="text-white/20">
+        ·
+      </span>
       <span className="whitespace-nowrap text-white/80">{dEn}</span>
       {showArabic && dAr && (
         <>
-          <span aria-hidden className="hidden text-white/20 sm:inline">·</span>
+          <span aria-hidden className="hidden text-white/20 sm:inline">
+            ·
+          </span>
           <span
             dir="rtl"
             lang="ar"

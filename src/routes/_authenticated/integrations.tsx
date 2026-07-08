@@ -5,8 +5,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  Plug, Activity, RefreshCw, PlayCircle, ExternalLink, CheckCircle2, XCircle,
-  AlertTriangle, Circle, Mail, HardDrive, FileText, Users, Database, BarChart3, Loader2,
+  Plug,
+  Activity,
+  RefreshCw,
+  PlayCircle,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Circle,
+  Mail,
+  HardDrive,
+  FileText,
+  Users,
+  Database,
+  BarChart3,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
@@ -33,11 +47,16 @@ const PROVIDER_ICON: Record<ProviderId, typeof Mail> = {
 
 function healthPill(h: ProviderStatus["health"], ar: boolean) {
   switch (h) {
-    case "healthy": return { tone: "emerald" as const, label: ar ? "صحي" : "Healthy", icon: CheckCircle2 };
-    case "degraded": return { tone: "amber" as const, label: ar ? "متدهور" : "Degraded", icon: AlertTriangle };
-    case "error": return { tone: "rose" as const, label: ar ? "خطأ" : "Error", icon: XCircle };
-    case "not_configured": return { tone: "slate" as const, label: ar ? "غير مُهيأ" : "Not configured", icon: Circle };
-    default: return { tone: "cyan" as const, label: ar ? "غير معروف" : "Unknown", icon: Circle };
+    case "healthy":
+      return { tone: "emerald" as const, label: ar ? "صحي" : "Healthy", icon: CheckCircle2 };
+    case "degraded":
+      return { tone: "amber" as const, label: ar ? "متدهور" : "Degraded", icon: AlertTriangle };
+    case "error":
+      return { tone: "rose" as const, label: ar ? "خطأ" : "Error", icon: XCircle };
+    case "not_configured":
+      return { tone: "slate" as const, label: ar ? "غير مُهيأ" : "Not configured", icon: Circle };
+    default:
+      return { tone: "cyan" as const, label: ar ? "غير معروف" : "Unknown", icon: Circle };
   }
 }
 
@@ -79,7 +98,8 @@ function IntegrationsHubPage() {
     onMutate: (p) => setTesting(p),
     onSettled: () => setTesting(null),
     onSuccess: (result) => {
-      if (result.ok) toast.success(ar ? "الاتصال ناجح" : "Connection OK", { description: result.message });
+      if (result.ok)
+        toast.success(ar ? "الاتصال ناجح" : "Connection OK", { description: result.message });
       else toast.error(ar ? "فشل الاتصال" : "Connection failed", { description: result.message });
       void qc.invalidateQueries({ queryKey: ["integrations-overview"] });
       void qc.invalidateQueries({ queryKey: ["integrations-events"] });
@@ -96,12 +116,17 @@ function IntegrationsHubPage() {
     <NexusPage
       eyebrow="INTEGRATION CONTROL"
       title={ar ? "مركز التكاملات الموحد" : "Unified Integration Center"}
-      subtitle={ar
-        ? "حالة حية لكل موصلات NEXIOS المؤسسية مع اختبار اتصال حقيقي."
-        : "Live status of every NEXIOS enterprise connector with real connection testing."}
+      subtitle={
+        ar
+          ? "حالة حية لكل موصلات NEXIOS المؤسسية مع اختبار اتصال حقيقي."
+          : "Live status of every NEXIOS enterprise connector with real connection testing."
+      }
       actions={
         <button
-          onClick={() => { void overview.refetch(); void events.refetch(); }}
+          onClick={() => {
+            void overview.refetch();
+            void events.refetch();
+          }}
           className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${overview.isFetching ? "animate-spin" : ""}`} />
@@ -110,10 +135,26 @@ function IntegrationsHubPage() {
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "إجمالي التكاملات" : "Total integrations"} value={String(totals?.total ?? "—")} tone="cyan" />
-        <NexusStat label={ar ? "متصلة" : "Connected"} value={String(totals?.connected ?? "—")} tone="emerald" />
-        <NexusStat label={ar ? "أحداث 24س" : "Events 24h"} value={String(totals?.events_24h ?? 0)} tone="cyan" />
-        <NexusStat label={ar ? "أخطاء 24س" : "Errors 24h"} value={String(totals?.errors_24h ?? 0)} tone={totals && totals.errors_24h > 0 ? "amber" : "emerald"} />
+        <NexusStat
+          label={ar ? "إجمالي التكاملات" : "Total integrations"}
+          value={String(totals?.total ?? "—")}
+          tone="cyan"
+        />
+        <NexusStat
+          label={ar ? "متصلة" : "Connected"}
+          value={String(totals?.connected ?? "—")}
+          tone="emerald"
+        />
+        <NexusStat
+          label={ar ? "أحداث 24س" : "Events 24h"}
+          value={String(totals?.events_24h ?? 0)}
+          tone="cyan"
+        />
+        <NexusStat
+          label={ar ? "أخطاء 24س" : "Errors 24h"}
+          value={String(totals?.errors_24h ?? 0)}
+          tone={totals && totals.errors_24h > 0 ? "amber" : "emerald"}
+        />
       </div>
 
       <NexusCard>
@@ -147,7 +188,9 @@ function IntegrationsHubPage() {
                         <div className="truncate text-sm font-semibold text-white">
                           {ar ? p.name_ar : p.name}
                         </div>
-                        <div className="text-[10px] uppercase tracking-widest text-slate-500">{p.category}</div>
+                        <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                          {p.category}
+                        </div>
                       </div>
                     </div>
                     <NexusPill tone={pill.tone as "emerald"}>
@@ -161,13 +204,17 @@ function IntegrationsHubPage() {
                       <div className="text-[10px] uppercase tracking-widest text-slate-500">
                         {ar ? "آخر اختبار" : "Last test"}
                       </div>
-                      <div className="font-semibold text-slate-200">{fmtRel(p.last_test_at, ar)}</div>
+                      <div className="font-semibold text-slate-200">
+                        {fmtRel(p.last_test_at, ar)}
+                      </div>
                     </div>
                     <div className="rounded-md bg-white/[0.03] p-2">
                       <div className="text-[10px] uppercase tracking-widest text-slate-500">
                         {ar ? "آخر مزامنة" : "Last sync"}
                       </div>
-                      <div className="font-semibold text-slate-200">{fmtRel(p.last_sync_at, ar)}</div>
+                      <div className="font-semibold text-slate-200">
+                        {fmtRel(p.last_sync_at, ar)}
+                      </div>
                     </div>
                     <div className="rounded-md bg-white/[0.03] p-2">
                       <div className="text-[10px] uppercase tracking-widest text-slate-500">
@@ -179,7 +226,9 @@ function IntegrationsHubPage() {
                       <div className="text-[10px] uppercase tracking-widest text-slate-500">
                         {ar ? "أخطاء 24س" : "Errors 24h"}
                       </div>
-                      <div className={`font-semibold ${p.errors_24h > 0 ? "text-rose-300" : "text-emerald-300"}`}>
+                      <div
+                        className={`font-semibold ${p.errors_24h > 0 ? "text-rose-300" : "text-emerald-300"}`}
+                      >
                         {p.errors_24h}
                       </div>
                     </div>
@@ -203,7 +252,11 @@ function IntegrationsHubPage() {
                       disabled={isTesting || !p.configured}
                       className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 transition hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      {isTesting ? <Loader2 className="h-3 w-3 animate-spin" /> : <PlayCircle className="h-3 w-3" />}
+                      {isTesting ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <PlayCircle className="h-3 w-3" />
+                      )}
                       {ar ? "اختبار الاتصال" : "Test connection"}
                     </button>
                     {p.id === "sap" ? (
@@ -246,14 +299,21 @@ function IntegrationsHubPage() {
         ) : (
           <ul className="mt-3 divide-y divide-white/5 font-mono text-[11px]">
             {eventsList.map((ev) => {
-              const tone = ev.status === "ok" ? "emerald" : ev.status === "error" ? "rose" : "amber";
+              const tone =
+                ev.status === "ok" ? "emerald" : ev.status === "error" ? "rose" : "amber";
               return (
                 <li key={ev.id} className="flex items-center gap-3 py-2 text-slate-300">
                   <span className="w-16 shrink-0 text-slate-500">
-                    {new Date(ev.at).toLocaleTimeString(ar ? "ar" : "en", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    {new Date(ev.at).toLocaleTimeString(ar ? "ar" : "en", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                   </span>
                   <NexusPill tone={tone as "emerald"}>{ev.provider}</NexusPill>
-                  <span className="min-w-0 flex-1 truncate text-slate-200" title={ev.message}>{ev.message}</span>
+                  <span className="min-w-0 flex-1 truncate text-slate-200" title={ev.message}>
+                    {ev.message}
+                  </span>
                   {ev.duration_ms != null && (
                     <span className="shrink-0 text-slate-500">{ev.duration_ms}ms</span>
                   )}

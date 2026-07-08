@@ -65,10 +65,7 @@ export async function publishEvent(
 }
 
 /** Fire-and-forget variant — never awaits, never throws. */
-export function publishEventAsync(
-  supabase: SupabaseClient<Database>,
-  ev: EnterpriseEvent,
-): void {
+export function publishEventAsync(supabase: SupabaseClient<Database>, ev: EnterpriseEvent): void {
   void publishEvent(supabase, ev).catch(() => undefined);
 }
 

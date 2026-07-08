@@ -29,15 +29,26 @@ function timeBand(d: Date): "morning" | "afternoon" | "evening" | "night" {
   return "night";
 }
 
-function salutation(band: PresenceGreeting["timeBand"], returning: boolean): { en: string; ar: string } {
+function salutation(
+  band: PresenceGreeting["timeBand"],
+  returning: boolean,
+): { en: string; ar: string } {
   const en =
-    band === "morning" ? "Good morning" :
-    band === "afternoon" ? "Good afternoon" :
-    band === "evening" ? "Good evening" : "Welcome back";
+    band === "morning"
+      ? "Good morning"
+      : band === "afternoon"
+        ? "Good afternoon"
+        : band === "evening"
+          ? "Good evening"
+          : "Welcome back";
   const ar =
-    band === "morning" ? "صباح الخير" :
-    band === "afternoon" ? "طاب مساؤك" :
-    band === "evening" ? "مساء الخير" : "مرحباً بعودتك";
+    band === "morning"
+      ? "صباح الخير"
+      : band === "afternoon"
+        ? "طاب مساؤك"
+        : band === "evening"
+          ? "مساء الخير"
+          : "مرحباً بعودتك";
   if (returning && (band === "morning" || band === "afternoon" || band === "evening")) {
     return { en: `${en}, welcome back`, ar: `${ar}، أهلاً بعودتك` };
   }
@@ -58,29 +69,19 @@ export async function composePresenceGreeting(
   const deltaEn = delta.lines_en.length
     ? `Since your last visit: ${delta.lines_en.join(", ")}.`
     : "";
-  const deltaAr = delta.lines_ar.length
-    ? `منذ آخر زيارة: ${delta.lines_ar.join("، ")}.`
-    : "";
+  const deltaAr = delta.lines_ar.length ? `منذ آخر زيارة: ${delta.lines_ar.join("، ")}.` : "";
 
   const top = briefing.priorities[0];
   const priority_en = top ? ` Top priority now: ${top.title_en}.` : "";
   const priority_ar = top ? ` أولوية اللحظة: ${top.title_ar}.` : "";
 
   const en = sanitizeVoice(
-    [
-      `${hi_en}.`,
-      deltaEn,
-      `I have prepared today's executive briefing.${priority_en}`,
-    ]
+    [`${hi_en}.`, deltaEn, `I have prepared today's executive briefing.${priority_en}`]
       .filter(Boolean)
       .join(" "),
   );
   const ar = sanitizeVoice(
-    [
-      `${hi_ar}.`,
-      deltaAr,
-      `جهّزتُ الإيجاز التنفيذي لليوم.${priority_ar}`,
-    ]
+    [`${hi_ar}.`, deltaAr, `جهّزتُ الإيجاز التنفيذي لليوم.${priority_ar}`]
       .filter(Boolean)
       .join(" "),
   );

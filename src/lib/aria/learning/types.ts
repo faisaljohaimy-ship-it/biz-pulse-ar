@@ -3,11 +3,7 @@
  * Strictly additive. Consumes execution/reasoning outputs; never mutates them.
  */
 
-export type LearningMode =
-  | "post_mission"
-  | "post_reasoning"
-  | "periodic"
-  | "on_feedback";
+export type LearningMode = "post_mission" | "post_reasoning" | "periodic" | "on_feedback";
 
 export type EvidenceStrength = "weak" | "moderate" | "strong" | "conclusive";
 
@@ -146,12 +142,7 @@ export interface LearningMetrics {
   readonly lastRunAt: string | null;
 }
 
-export type LearningHealthStatus =
-  | "healthy"
-  | "degraded"
-  | "starved"
-  | "noisy"
-  | "critical";
+export type LearningHealthStatus = "healthy" | "degraded" | "starved" | "noisy" | "critical";
 
 export interface LearningHealth {
   readonly status: LearningHealthStatus;

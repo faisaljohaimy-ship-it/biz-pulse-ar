@@ -18,17 +18,24 @@ export class EyeContactEngine {
     this.target = { x: clamp(t.x, -1, 1), y: clamp(t.y, -1, 1) };
   }
 
-  setReducedMotion(r: boolean): void { this.reduced = r; }
+  setReducedMotion(r: boolean): void {
+    this.reduced = r;
+  }
 
   tick(tick: HeroTick): void {
     const attentive = this.sync.get().presence === "listening";
     // Trigger a natural glance-away roughly every 4.5–7 seconds while idle.
-    if (!attentive && !this.reduced && tick.t - this.lastGlanceAt > 4800 && tick.t > this.glanceUntil) {
+    if (
+      !attentive &&
+      !this.reduced &&
+      tick.t - this.lastGlanceAt > 4800 &&
+      tick.t > this.glanceUntil
+    ) {
       this.lastGlanceAt = tick.t;
       this.glanceUntil = tick.t + 520;
       this.glanceOffset = {
         x: (pseudo(tick.frame * 7) - 0.5) * 0.35,
-        y: (pseudo(tick.frame * 11) - 0.5) * 0.20,
+        y: (pseudo(tick.frame * 11) - 0.5) * 0.2,
       };
     }
     const glancing = tick.t < this.glanceUntil && !this.reduced;

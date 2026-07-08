@@ -18,7 +18,10 @@ class IdleEngine {
     };
   }
 
-  reset(): void { this.phase = 0; this.lastTs = 0; }
+  reset(): void {
+    this.phase = 0;
+    this.lastTs = 0;
+  }
 }
 
 export const idleEngine = new IdleEngine();

@@ -6,9 +6,7 @@ function meanStd(values: ReadonlyArray<number>): { mean: number | null; stddev: 
   if (values.length === 0) return { mean: null, stddev: null };
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const variance =
-    values.length > 1
-      ? values.reduce((s, v) => s + (v - mean) ** 2, 0) / (values.length - 1)
-      : 0;
+    values.length > 1 ? values.reduce((s, v) => s + (v - mean) ** 2, 0) / (values.length - 1) : 0;
   return { mean, stddev: Math.sqrt(variance) };
 }
 

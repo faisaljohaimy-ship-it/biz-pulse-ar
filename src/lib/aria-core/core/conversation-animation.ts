@@ -30,7 +30,10 @@ class ConversationAnimation {
   }
 
   stop(): void {
-    if (this.unsub) { this.unsub(); this.unsub = null; }
+    if (this.unsub) {
+      this.unsub();
+      this.unsub = null;
+    }
     this.lastMode = null;
     this.lastTurnStatus = null;
   }

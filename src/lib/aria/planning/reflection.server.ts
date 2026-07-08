@@ -21,9 +21,7 @@ export function reflect(
 
   // Missing objectives.
   const objectiveTitles = new Set(objectives.map((o) => o.title));
-  const objectiveNodes = Object.values(tree.nodes).filter(
-    (n) => n.kind === "objective",
-  );
+  const objectiveNodes = Object.values(tree.nodes).filter((n) => n.kind === "objective");
   for (const o of objectives) {
     if (!objectiveNodes.some((n) => n.title === o.title)) {
       issues.push({

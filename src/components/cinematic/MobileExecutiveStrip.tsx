@@ -1,11 +1,4 @@
-import {
-  TrendingUp,
-  ShieldAlert,
-  Cog,
-  Bot,
-  Briefcase,
-  Activity,
-} from "lucide-react";
+import { TrendingUp, ShieldAlert, Cog, Bot, Briefcase, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /**
@@ -23,12 +16,48 @@ export function MobileExecutiveStrip({ isAr }: { isAr: boolean }) {
     (b + Math.sin(t * 0.9) * a + Math.cos(t * 0.3) * a * 0.4).toFixed(1);
 
   const items = [
-    { icon: TrendingUp, label: isAr ? "الإيرادات" : "Revenue",       value: `$${drift(184.2, 1.2)}M`, delta: "+62%",  tone: "text-emerald-300" },
-    { icon: ShieldAlert, label: isAr ? "المخاطر" : "Risk Index",      value: drift(2.4, 0.2),          delta: "↓ low", tone: "text-cyan-300" },
-    { icon: Cog,         label: isAr ? "الأتمتة" : "Automation",      value: `${drift(94.6, 0.6)}%`,   delta: "live",  tone: "text-amber-300" },
-    { icon: Bot,         label: isAr ? "الوكلاء" : "AI Agents",       value: "6 / 6",                  delta: isAr ? "نشطون" : "active", tone: "text-fuchsia-300" },
-    { icon: Briefcase,   label: isAr ? "المشاريع" : "Projects",       value: `${1284 + (t % 11)}`,     delta: "+18",   tone: "text-white" },
-    { icon: Activity,    label: isAr ? "صحة المؤسسة" : "Enterprise Health", value: `${drift(98.4, 0.4)}%`, delta: "A+",    tone: "text-emerald-300" },
+    {
+      icon: TrendingUp,
+      label: isAr ? "الإيرادات" : "Revenue",
+      value: `$${drift(184.2, 1.2)}M`,
+      delta: "+62%",
+      tone: "text-emerald-300",
+    },
+    {
+      icon: ShieldAlert,
+      label: isAr ? "المخاطر" : "Risk Index",
+      value: drift(2.4, 0.2),
+      delta: "↓ low",
+      tone: "text-cyan-300",
+    },
+    {
+      icon: Cog,
+      label: isAr ? "الأتمتة" : "Automation",
+      value: `${drift(94.6, 0.6)}%`,
+      delta: "live",
+      tone: "text-amber-300",
+    },
+    {
+      icon: Bot,
+      label: isAr ? "الوكلاء" : "AI Agents",
+      value: "6 / 6",
+      delta: isAr ? "نشطون" : "active",
+      tone: "text-fuchsia-300",
+    },
+    {
+      icon: Briefcase,
+      label: isAr ? "المشاريع" : "Projects",
+      value: `${1284 + (t % 11)}`,
+      delta: "+18",
+      tone: "text-white",
+    },
+    {
+      icon: Activity,
+      label: isAr ? "صحة المؤسسة" : "Enterprise Health",
+      value: `${drift(98.4, 0.4)}%`,
+      delta: "A+",
+      tone: "text-emerald-300",
+    },
   ];
 
   // duplicate for seamless loop
@@ -62,7 +91,9 @@ export function MobileExecutiveStrip({ isAr }: { isAr: boolean }) {
                 <Icon className="h-3.5 w-3.5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[8.5px] uppercase tracking-[0.22em] text-white/45">{k.label}</div>
+                <div className="text-[8.5px] uppercase tracking-[0.22em] text-white/45">
+                  {k.label}
+                </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className={`text-sm font-bold tabular-nums ${k.tone}`}>{k.value}</span>
                   <span className="text-[9px] text-white/45">{k.delta}</span>

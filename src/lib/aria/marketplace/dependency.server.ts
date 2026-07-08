@@ -58,8 +58,7 @@ export function findCycle(graph: DependencyGraph): AgentId[] | null {
 export function topologicalOrder(graph: DependencyGraph): AgentId[] {
   const indeg = new Map<AgentId, number>();
   for (const n of graph.nodes) indeg.set(n, 0);
-  for (const [, deps] of graph.edges)
-    for (const d of deps) indeg.set(d, (indeg.get(d) ?? 0) + 1);
+  for (const [, deps] of graph.edges) for (const d of deps) indeg.set(d, (indeg.get(d) ?? 0) + 1);
   const queue: AgentId[] = [];
   for (const [n, d] of indeg) if (d === 0) queue.push(n);
   const order: AgentId[] = [];

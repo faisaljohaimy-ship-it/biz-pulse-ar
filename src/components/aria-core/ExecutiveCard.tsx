@@ -74,9 +74,7 @@ export function ExecutiveCard() {
             <ShieldAlert className="h-3 w-3" aria-hidden />
             الأولوية
           </dt>
-          <dd className="font-medium text-foreground">
-            {PRIORITY_AR[env.priority.level]}
-          </dd>
+          <dd className="font-medium text-foreground">{PRIORITY_AR[env.priority.level]}</dd>
         </div>
         <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1.5">
           <dt className="mb-0.5 flex items-center gap-1 text-muted-foreground">

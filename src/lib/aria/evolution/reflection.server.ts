@@ -11,10 +11,7 @@
  * by real evidence. Missing evidence means the stage is skipped.
  */
 
-import {
-  ExecutionEvidenceSchema,
-  type ExecutionEvidenceInput,
-} from "./contracts";
+import { ExecutionEvidenceSchema, type ExecutionEvidenceInput } from "./contracts";
 import { analyzeFailure } from "./failure-analysis.server";
 import { rootCause } from "./root-cause.server";
 import { detectPatterns } from "./pattern.server";
@@ -80,29 +77,33 @@ export function reflect(raw: ExecutionEvidenceInput): ReflectionReport {
         rca.cause_category === "planning_defect"
           ? "planner"
           : rca.cause_category === "prompt_defect"
-          ? "prompt"
-          : rca.cause_category === "policy_violation"
-          ? "policy"
-          : rca.cause_category === "capability_gap"
-          ? "tool"
-          : "runtime",
+            ? "prompt"
+            : rca.cause_category === "policy_violation"
+              ? "policy"
+              : rca.cause_category === "capability_gap"
+                ? "tool"
+                : "runtime",
       summary: rca.hypothesis,
       rationale: `Failure classified as ${rca.cause_category} from execution ${evidence.execution_id}.`,
       expected_gain: 0.1,
       expected_risk: failure.severity,
-      evidence: [executionRef, {
-        id: rca.id,
-        kind: "reflection",
-        source: "evolution.root-cause",
-        taken_at: rca.created_at,
-      }],
+      evidence: [
+        executionRef,
+        {
+          id: rca.id,
+          kind: "reflection",
+          source: "evolution.root-cause",
+          taken_at: rca.created_at,
+        },
+      ],
     });
   }
 
   const confidence = deriveConfidence({
     subject_id: `reflection:${evidence.execution_id}`,
     evidence_quality: 0.6,
-    execution_success_rate: evidence.outcome === "success" ? 1 : evidence.outcome === "failure" ? 0 : 0.5,
+    execution_success_rate:
+      evidence.outcome === "success" ? 1 : evidence.outcome === "failure" ? 0 : 0.5,
     historical_alignment: -1,
     benchmark_alignment: -1,
     pattern_consistency: patterns.length > 0 ? 0.6 : -1,

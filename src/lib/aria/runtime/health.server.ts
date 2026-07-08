@@ -14,8 +14,8 @@ export function heartbeat(agentId: string, patch: Partial<AgentHealth> = {}): Ag
     level: patch.level ?? rec.health.level,
     confidence: patch.confidence ?? rec.health.confidence,
     last_heartbeat_at: new Date().toISOString(),
-    failures: (patch.failures ?? rec.health.failures),
-    timeouts: (patch.timeouts ?? rec.health.timeouts),
+    failures: patch.failures ?? rec.health.failures,
+    timeouts: patch.timeouts ?? rec.health.timeouts,
     notes: patch.notes ?? rec.health.notes,
   };
   updateAgent(agentId, { health: next });

@@ -8,9 +8,16 @@ export const Route = createFileRoute("/subprocessors")({
   head: () => ({
     meta: [
       { title: "Subprocessors — Nexus AI OS" },
-      { name: "description", content: "Current list of Nexus AI OS subprocessors, the services they support, and the regions where they process customer data." },
+      {
+        name: "description",
+        content:
+          "Current list of Nexus AI OS subprocessors, the services they support, and the regions where they process customer data.",
+      },
       { property: "og:title", content: "Subprocessors — Nexus AI OS" },
-      { property: "og:description", content: "Authorized subprocessors, processing purpose, and data location." },
+      {
+        property: "og:description",
+        content: "Authorized subprocessors, processing purpose, and data location.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/subprocessors` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -21,9 +28,12 @@ export const Route = createFileRoute("/subprocessors")({
 
 type Sub = {
   name: string;
-  purposeEn: string; purposeAr: string;
-  locationEn: string; locationAr: string;
-  dataEn: string; dataAr: string;
+  purposeEn: string;
+  purposeAr: string;
+  locationEn: string;
+  locationAr: string;
+  dataEn: string;
+  dataAr: string;
 };
 
 const CORE: Sub[] = [
@@ -122,9 +132,18 @@ function Table({ rows, isAr }: { rows: Sub[]; isAr: boolean }) {
           <Card key={r.name}>
             <div className="text-sm font-medium text-foreground">{r.name}</div>
             <dl className="mt-3 space-y-2 text-xs text-muted-foreground">
-              <div><dt className="text-amber-300/80">{isAr ? "الغرض" : "Purpose"}</dt><dd className="mt-0.5">{isAr ? r.purposeAr : r.purposeEn}</dd></div>
-              <div><dt className="text-amber-300/80">{isAr ? "الموقع" : "Location"}</dt><dd className="mt-0.5">{isAr ? r.locationAr : r.locationEn}</dd></div>
-              <div><dt className="text-amber-300/80">{isAr ? "البيانات" : "Data"}</dt><dd className="mt-0.5">{isAr ? r.dataAr : r.dataEn}</dd></div>
+              <div>
+                <dt className="text-amber-300/80">{isAr ? "الغرض" : "Purpose"}</dt>
+                <dd className="mt-0.5">{isAr ? r.purposeAr : r.purposeEn}</dd>
+              </div>
+              <div>
+                <dt className="text-amber-300/80">{isAr ? "الموقع" : "Location"}</dt>
+                <dd className="mt-0.5">{isAr ? r.locationAr : r.locationEn}</dd>
+              </div>
+              <div>
+                <dt className="text-amber-300/80">{isAr ? "البيانات" : "Data"}</dt>
+                <dd className="mt-0.5">{isAr ? r.dataAr : r.dataEn}</dd>
+              </div>
             </dl>
           </Card>
         ))}
@@ -135,10 +154,14 @@ function Table({ rows, isAr }: { rows: Sub[]; isAr: boolean }) {
         <table className="w-full table-fixed text-sm">
           <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.18em] text-amber-300/80">
             <tr>
-              <th className="w-[28%] px-4 py-3 text-start">{isAr ? "المورّد / الخدمة" : "Subprocessor / Service"}</th>
+              <th className="w-[28%] px-4 py-3 text-start">
+                {isAr ? "المورّد / الخدمة" : "Subprocessor / Service"}
+              </th>
               <th className="w-[32%] px-4 py-3 text-start">{isAr ? "الغرض" : "Purpose"}</th>
               <th className="w-[20%] px-4 py-3 text-start">{isAr ? "الموقع" : "Location"}</th>
-              <th className="w-[20%] px-4 py-3 text-start">{isAr ? "البيانات" : "Data Processed"}</th>
+              <th className="w-[20%] px-4 py-3 text-start">
+                {isAr ? "البيانات" : "Data Processed"}
+              </th>
             </tr>
           </thead>
           <tbody className="text-muted-foreground">
@@ -165,8 +188,10 @@ function SubprocessorsPage() {
     <TrustShell
       isAr={isAr}
       active="/subprocessors"
-      eyebrow="Transparency" eyebrowAr="الشفافية"
-      title="Subprocessors" titleAr="المورّدون الفرعيون"
+      eyebrow="Transparency"
+      eyebrowAr="الشفافية"
+      title="Subprocessors"
+      titleAr="المورّدون الفرعيون"
       subtitle="Authorized subprocessors NEXUS engages to deliver the platform — what they do, where they process data, and what categories they touch."
       subtitleAr="قائمة المورّدين الفرعيين الذين يستعين بهم NEXUS لتقديم المنصة — مهامهم ومواقع معالجة البيانات وفئاتها."
       qualifier="Categories shown reflect the general architecture. The vendor list specific to a customer's region and plan is provided under NDA on request."
@@ -174,24 +199,42 @@ function SubprocessorsPage() {
     >
       <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="flex items-start gap-3">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200"><Globe2 className="h-4 w-4" /></span>
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+            <Globe2 className="h-4 w-4" />
+          </span>
           <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.18em] text-foreground/90">{isAr ? "موقع البيانات" : "Data Residency"}</div>
-            <p className="mt-1 text-sm text-muted-foreground">{isAr ? "KSA, EU، US حسب باقة العميل" : "KSA, EU, US per customer plan"}</p>
+            <div className="text-xs uppercase tracking-[0.18em] text-foreground/90">
+              {isAr ? "موقع البيانات" : "Data Residency"}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {isAr ? "KSA, EU، US حسب باقة العميل" : "KSA, EU, US per customer plan"}
+            </p>
           </div>
         </Card>
         <Card className="flex items-start gap-3">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200"><Bell className="h-4 w-4" /></span>
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+            <Bell className="h-4 w-4" />
+          </span>
           <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.18em] text-foreground/90">{isAr ? "إشعارات التغيير" : "Change Notice"}</div>
-            <p className="mt-1 text-sm text-muted-foreground">{isAr ? "إخطار مسبق قبل أي إضافة جديدة" : "Prior notice before any new addition"}</p>
+            <div className="text-xs uppercase tracking-[0.18em] text-foreground/90">
+              {isAr ? "إشعارات التغيير" : "Change Notice"}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {isAr ? "إخطار مسبق قبل أي إضافة جديدة" : "Prior notice before any new addition"}
+            </p>
           </div>
         </Card>
         <Card className="flex items-start gap-3">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200"><Building2 className="h-4 w-4" /></span>
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+            <Building2 className="h-4 w-4" />
+          </span>
           <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.18em] text-foreground/90">{isAr ? "العقود" : "Contracts"}</div>
-            <p className="mt-1 text-sm text-muted-foreground">{isAr ? "DPA + SCCs مع كل مورّد" : "DPA + SCCs with each vendor"}</p>
+            <div className="text-xs uppercase tracking-[0.18em] text-foreground/90">
+              {isAr ? "العقود" : "Contracts"}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {isAr ? "DPA + SCCs مع كل مورّد" : "DPA + SCCs with each vendor"}
+            </p>
           </div>
         </Card>
       </section>
@@ -210,7 +253,10 @@ function SubprocessorsPage() {
         {isAr
           ? "للاشتراك في إشعارات تغيير المورّدين الفرعيين أو طلب القائمة التفصيلية الخاصة بعقدك، راسل "
           : "To subscribe to subprocessor-change notifications, or request the detailed list specific to your contract, contact "}
-        <a className="text-amber-200 hover:underline" href="mailto:privacy@nexus-ai-os.com">privacy@nexus-ai-os.com</a>.
+        <a className="text-amber-200 hover:underline" href="mailto:privacy@nexus-ai-os.com">
+          privacy@nexus-ai-os.com
+        </a>
+        .
       </section>
     </TrustShell>
   );

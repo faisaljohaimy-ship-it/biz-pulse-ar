@@ -20,13 +20,23 @@ function Facilities() {
           <div key={s.id} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-foreground">{s.name_ar}</div>
-              <span className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(s.status)}`}>{s.status}</span>
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(s.status)}`}
+              >
+                {s.status}
+              </span>
             </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">{s.code} · {s.name_en}</div>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              {s.code} · {s.name_en}
+            </div>
             <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
               <div>
                 <div className="text-muted-foreground">الحساسية</div>
-                <span className={`mt-0.5 inline-block rounded-full border px-2 py-0.5 text-[10px] ${severityClass(s.sensitivity)}`}>{s.sensitivity}</span>
+                <span
+                  className={`mt-0.5 inline-block rounded-full border px-2 py-0.5 text-[10px] ${severityClass(s.sensitivity)}`}
+                >
+                  {s.sensitivity}
+                </span>
               </div>
               <div>
                 <div className="text-muted-foreground">عدد الحرّاس</div>

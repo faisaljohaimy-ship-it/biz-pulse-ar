@@ -8,9 +8,7 @@
 import { listExperiences } from "./experience-store.server";
 import type { EvolutionOutcome, ExperienceRecord } from "./types";
 
-export function indexByOutcome(): Readonly<
-  Record<EvolutionOutcome, readonly ExperienceRecord[]>
-> {
+export function indexByOutcome(): Readonly<Record<EvolutionOutcome, readonly ExperienceRecord[]>> {
   const out: Record<EvolutionOutcome, ExperienceRecord[]> = {
     success: [],
     partial: [],

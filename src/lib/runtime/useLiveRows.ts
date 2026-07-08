@@ -16,14 +16,12 @@ export function useLiveRows<T>(
     setLoading(true);
     const refetch = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (build(supabase.from(table as any)) as any).then(
-        ({ data }: { data: T[] | null }) => {
-          if (alive) {
-            setRows(data ?? []);
-            setLoading(false);
-          }
-        },
-      );
+      (build(supabase.from(table as any)) as any).then(({ data }: { data: T[] | null }) => {
+        if (alive) {
+          setRows(data ?? []);
+          setLoading(false);
+        }
+      });
     };
     refetch();
     const channel = supabase

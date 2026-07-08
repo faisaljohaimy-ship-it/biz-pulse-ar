@@ -38,12 +38,19 @@ export const Route = createFileRoute("/api/voice-token")({
           if (agentId) {
             const r = await httpFetch(
               `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${agentId}`,
-              { headers: { "xi-api-key": apiKey }, label: "elevenlabs/convai-token", timeoutMs: 10_000 },
+              {
+                headers: { "xi-api-key": apiKey },
+                label: "elevenlabs/convai-token",
+                timeoutMs: 10_000,
+              },
             );
             if (!r.ok) {
               const text = await r.text().catch(() => "");
               console.error("[api/voice-token] conversation token", r.status, text.slice(0, 240));
-              return Response.json({ error: "voice_token_failed", status: r.status }, { status: r.status });
+              return Response.json(
+                { error: "voice_token_failed", status: r.status },
+                { status: r.status },
+              );
             }
             const data = (await r.json()) as { token: string };
             return Response.json({ kind: "conversation", token: data.token, agentId });
@@ -51,19 +58,30 @@ export const Route = createFileRoute("/api/voice-token")({
 
           const r = await httpFetch(
             "https://api.elevenlabs.io/v1/single-use-token/realtime_scribe",
-            { method: "POST", headers: { "xi-api-key": apiKey }, label: "elevenlabs/scribe-token", timeoutMs: 10_000 },
+            {
+              method: "POST",
+              headers: { "xi-api-key": apiKey },
+              label: "elevenlabs/scribe-token",
+              timeoutMs: 10_000,
+            },
           );
           if (!r.ok) {
             const text = await r.text().catch(() => "");
             console.error("[api/voice-token] scribe token", r.status, text.slice(0, 240));
-            return Response.json({ error: "voice_token_failed", status: r.status }, { status: r.status });
+            return Response.json(
+              { error: "voice_token_failed", status: r.status },
+              { status: r.status },
+            );
           }
           const data = (await r.json()) as { token: string };
           return Response.json({ kind: "scribe", token: data.token });
         } catch (err) {
           const shape = isApiError(err) ? err.toJSON() : toApiErrorShape(err);
           console.error("[api/voice-token]", shape.code, shape.message);
-          return Response.json({ error: shape.message, code: shape.code }, { status: shape.status });
+          return Response.json(
+            { error: shape.message, code: shape.code },
+            { status: shape.status },
+          );
         }
       },
     },

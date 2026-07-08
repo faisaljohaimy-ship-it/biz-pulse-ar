@@ -7,12 +7,7 @@
  * Brain is the sole adopter.
  */
 
-import type {
-  EvidenceRef,
-  Severity,
-  StrategyComparison,
-  StrategyDescriptor,
-} from "./types";
+import type { EvidenceRef, Severity, StrategyComparison, StrategyDescriptor } from "./types";
 import { deriveConfidence } from "./confidence.server";
 
 function id(prev: string, cur: string, ts: string): string {
@@ -38,9 +33,7 @@ function riskOfGain(gain: number): Severity {
   return "info";
 }
 
-export function compareStrategies(
-  input: StrategyCompareInput,
-): StrategyComparison {
+export function compareStrategies(input: StrategyCompareInput): StrategyComparison {
   const created_at = new Date().toISOString();
   const gain =
     input.previous_success_rate < 0 || input.current_success_rate < 0
@@ -62,9 +55,7 @@ export function compareStrategies(
     created_at,
     previous: input.previous,
     current: input.current,
-    alternatives: Object.freeze([
-      ...input.alternatives,
-    ]) as readonly StrategyDescriptor[],
+    alternatives: Object.freeze([...input.alternatives]) as readonly StrategyDescriptor[],
     expected_gain: gain,
     expected_risk: riskOfGain(gain),
     confidence: conf.confidence,

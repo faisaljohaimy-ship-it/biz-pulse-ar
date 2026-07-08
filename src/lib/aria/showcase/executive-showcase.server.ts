@@ -1,6 +1,10 @@
 // Executive Showcase orchestrator — one-click premium demonstration flow.
 import type {
-  ExecutiveProfile, ShowcaseKpi, ShowcaseMode, ShowcasePhase, ShowcaseStep,
+  ExecutiveProfile,
+  ShowcaseKpi,
+  ShowcaseMode,
+  ShowcasePhase,
+  ShowcaseStep,
 } from "./types";
 import { buildCinematicIntro, type CinematicBeat } from "./cinematic-intro.server";
 import { composeWelcome } from "./executive-welcome.server";
@@ -10,14 +14,27 @@ import { composeStory, type StoryInput } from "./executive-storytelling.server";
 import { computeFocus } from "./dynamic-focus.server";
 import { directVoice } from "./voice-director.server";
 import {
-  initController, controllerSnapshot, advanceStep, pause, resume,
-  interrupt, recover, setMode, disposeController, currentStep,
+  initController,
+  controllerSnapshot,
+  advanceStep,
+  pause,
+  resume,
+  interrupt,
+  recover,
+  setMode,
+  disposeController,
+  currentStep,
   type ControllerSnapshot,
 } from "./presentation-controller.server";
 import { computeConfidence, type ConfidenceInput } from "./confidence-display.server";
 import { logShowcase } from "./audit.server";
 import {
-  noteStart, noteCompletion, noteInterruption, noteRecovery, noteQa, noteStepDuration,
+  noteStart,
+  noteCompletion,
+  noteInterruption,
+  noteRecovery,
+  noteQa,
+  noteStepDuration,
 } from "./metrics.server";
 import { recordQuestion, markAnswered, qaHistory } from "./executive-qa.server";
 
@@ -73,7 +90,8 @@ export interface ShowcaseFrame {
 }
 
 export function currentShowcaseFrame(
-  instanceId: string, language: "ar" | "en",
+  instanceId: string,
+  language: "ar" | "en",
 ): ShowcaseFrame | null {
   const snap = controllerSnapshot(instanceId);
   if (!snap) return null;
@@ -107,21 +125,37 @@ export function nextShowcaseStep(instanceId: string): ShowcaseStep | null {
   return next;
 }
 
-export function pauseShowcase(id: string): void { pause(id); logShowcase(id, "pause"); }
-export function resumeShowcase(id: string): void { resume(id); logShowcase(id, "resume"); }
+export function pauseShowcase(id: string): void {
+  pause(id);
+  logShowcase(id, "pause");
+}
+export function resumeShowcase(id: string): void {
+  resume(id);
+  logShowcase(id, "resume");
+}
 export function interruptShowcase(id: string): void {
-  interrupt(id); noteInterruption(); logShowcase(id, "interrupt");
+  interrupt(id);
+  noteInterruption();
+  logShowcase(id, "interrupt");
 }
 export function recoverShowcase(id: string): ShowcasePhase | null {
   const p = recover(id);
-  if (p) { noteRecovery(); logShowcase(id, "recover", { phase: p }); }
+  if (p) {
+    noteRecovery();
+    logShowcase(id, "recover", { phase: p });
+  }
   return p;
 }
 export function switchShowcaseMode(id: string, mode: ShowcaseMode): void {
-  setMode(id, mode); logShowcase(id, "mode_change", { mode });
+  setMode(id, mode);
+  logShowcase(id, "mode_change", { mode });
 }
 
-export function askExecutiveQuestion(id: string, question: string, language: "ar" | "en"): { turnId: string } {
+export function askExecutiveQuestion(
+  id: string,
+  question: string,
+  language: "ar" | "en",
+): { turnId: string } {
   const turn = recordQuestion(id, question, language);
   noteQa();
   logShowcase(id, "qa", { turnId: turn.id, language });
@@ -132,7 +166,9 @@ export function acknowledgeQaAnswer(id: string, turnId: string): void {
   markAnswered(id, turnId);
 }
 
-export function showcaseQaHistory(id: string, n?: number) { return qaHistory(id, n); }
+export function showcaseQaHistory(id: string, n?: number) {
+  return qaHistory(id, n);
+}
 
 export function endExecutiveShowcase(instanceId: string): void {
   logShowcase(instanceId, "end");

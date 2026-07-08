@@ -56,13 +56,16 @@ export function IncidentReplay({ title, frames, lang }: Props) {
               setPlaying((p) => !p);
             }}
             className="grid h-7 w-7 place-items-center rounded-full border border-cyan-400/40 bg-cyan-400/10 text-cyan-200 transition hover:bg-cyan-400/20"
-            aria-label={playing ? (ar ? "إيقاف" : "Pause") : (ar ? "تشغيل" : "Play")}
+            aria-label={playing ? (ar ? "إيقاف" : "Pause") : ar ? "تشغيل" : "Play"}
           >
             {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
           </button>
           <button
             type="button"
-            onClick={() => { setIdx(0); setPlaying(false); }}
+            onClick={() => {
+              setIdx(0);
+              setPlaying(false);
+            }}
             className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-white/[0.04] text-white/70 transition hover:bg-white/10"
             aria-label={ar ? "إعادة" : "Restart"}
           >
@@ -82,7 +85,10 @@ export function IncidentReplay({ title, frames, lang }: Props) {
             <button
               key={i}
               type="button"
-              onClick={() => { setIdx(i); setPlaying(false); }}
+              onClick={() => {
+                setIdx(i);
+                setPlaying(false);
+              }}
               className={cn(
                 "h-3 w-3 rounded-full border transition",
                 i <= idx
@@ -97,10 +103,7 @@ export function IncidentReplay({ title, frames, lang }: Props) {
 
       {/* Current frame */}
       <div
-        className={cn(
-          "rounded-xl border p-3 text-sm transition-colors",
-          STATUS[current.status],
-        )}
+        className={cn("rounded-xl border p-3 text-sm transition-colors", STATUS[current.status])}
       >
         <div className="flex items-baseline gap-3">
           <span className="font-mono text-xs tabular-nums opacity-80">
@@ -110,9 +113,7 @@ export function IncidentReplay({ title, frames, lang }: Props) {
             {ar ? "الحالة" : "State"}
           </span>
         </div>
-        <div className="mt-1 leading-relaxed">
-          {ar ? current.detail_ar : current.detail_en}
-        </div>
+        <div className="mt-1 leading-relaxed">{ar ? current.detail_ar : current.detail_en}</div>
       </div>
     </div>
   );

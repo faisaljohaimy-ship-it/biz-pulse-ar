@@ -52,13 +52,41 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     const now = new Date().toISOString();
 
     const [aiUsage, tools, agents, runs, incidents, audits, memory] = await Promise.all([
-      supabase.from("ai_usage").select("latency_ms,total_tokens,created_at").gte("created_at", sinceDay).limit(5000),
-      supabase.from("tool_executions").select("status,duration_ms,created_at").gte("created_at", sinceHour).limit(5000),
-      supabase.from("agent_runs").select("status,started_at").gte("started_at", sinceDay).limit(2000),
-      supabase.from("workflow_runs").select("status,started_at").gte("started_at", sinceDay).limit(2000),
-      supabase.from("sec_incidents").select("severity,status").in("status", ["open", "in_progress", "escalated"]).limit(2000),
-      supabase.from("audit_logs").select("status,occurred_at").gte("occurred_at", sinceDay).limit(2000),
-      supabase.from("aria_memory").select("id,importance,updated_at").gte("updated_at", sinceDay).limit(2000),
+      supabase
+        .from("ai_usage")
+        .select("latency_ms,total_tokens,created_at")
+        .gte("created_at", sinceDay)
+        .limit(5000),
+      supabase
+        .from("tool_executions")
+        .select("status,duration_ms,created_at")
+        .gte("created_at", sinceHour)
+        .limit(5000),
+      supabase
+        .from("agent_runs")
+        .select("status,started_at")
+        .gte("started_at", sinceDay)
+        .limit(2000),
+      supabase
+        .from("workflow_runs")
+        .select("status,started_at")
+        .gte("started_at", sinceDay)
+        .limit(2000),
+      supabase
+        .from("sec_incidents")
+        .select("severity,status")
+        .in("status", ["open", "in_progress", "escalated"])
+        .limit(2000),
+      supabase
+        .from("audit_logs")
+        .select("status,occurred_at")
+        .gte("occurred_at", sinceDay)
+        .limit(2000),
+      supabase
+        .from("aria_memory")
+        .select("id,importance,updated_at")
+        .gte("updated_at", sinceDay)
+        .limit(2000),
     ]);
 
     const aiRows = (aiUsage.data ?? []) as { latency_ms: number | null; total_tokens: number }[];
@@ -78,7 +106,9 @@ export const getSystemPulse = createServerFn({ method: "GET" })
       : 0;
 
     const agentRows = (agents.data ?? []) as { status: string }[];
-    const agentActive = agentRows.filter((r) => r.status === "running" || r.status === "queued").length;
+    const agentActive = agentRows.filter(
+      (r) => r.status === "running" || r.status === "queued",
+    ).length;
     const agentFail = agentRows.filter((r) => r.status === "failed").length;
     const agentTotal = agentRows.length || 1;
     const agentFailPct = (agentFail * 100) / agentTotal;
@@ -100,7 +130,6 @@ export const getSystemPulse = createServerFn({ method: "GET" })
 
     const memRows = memory.data ?? [];
     const memActive = memRows.length;
-
 
     // Voice / Avatar readiness: verify configured secrets exist server-side.
     const voiceReady = Boolean(process.env.ELEVENLABS_API_KEY);
@@ -243,7 +272,8 @@ const PIPELINE_BUCKET_MIN = 5;
 function emptyBuckets(now: Date): LivePipelineBucket[] {
   const buckets: LivePipelineBucket[] = [];
   const n = Math.floor(PIPELINE_WINDOW_MIN / PIPELINE_BUCKET_MIN);
-  const base = Math.floor(now.getTime() / (PIPELINE_BUCKET_MIN * 60_000)) * (PIPELINE_BUCKET_MIN * 60_000);
+  const base =
+    Math.floor(now.getTime() / (PIPELINE_BUCKET_MIN * 60_000)) * (PIPELINE_BUCKET_MIN * 60_000);
   for (let i = n - 1; i >= 0; i--) {
     const t = new Date(base - i * PIPELINE_BUCKET_MIN * 60_000);
     const hh = String(t.getUTCHours()).padStart(2, "0");
@@ -270,7 +300,10 @@ function fillBuckets(
 }
 
 function summarize(buckets: LivePipelineBucket[]): {
-  totalRuns: number; totalErrors: number; errorRate: number; avgPerMin: number;
+  totalRuns: number;
+  totalErrors: number;
+  errorRate: number;
+  avgPerMin: number;
 } {
   const totalRuns = buckets.reduce((s, b) => s + b.runs, 0);
   const totalErrors = buckets.reduce((s, b) => s + b.errors, 0);
@@ -325,7 +358,13 @@ export const getLivePipelines = createServerFn({ method: "GET" })
     const voiceBuckets = emptyBuckets(now);
     fillBuckets(
       voiceBuckets,
-      ((voiceEvents.data ?? []) as { status: string | null; severity: string | null; occurred_at: string | null }[]).map((r) => ({
+      (
+        (voiceEvents.data ?? []) as {
+          status: string | null;
+          severity: string | null;
+          occurred_at: string | null;
+        }[]
+      ).map((r) => ({
         at: r.occurred_at,
         failed: r.status === "failed" || r.severity === "critical" || r.severity === "warn",
       })),
@@ -334,7 +373,13 @@ export const getLivePipelines = createServerFn({ method: "GET" })
     const avatarBuckets = emptyBuckets(now);
     fillBuckets(
       avatarBuckets,
-      ((avatarEvents.data ?? []) as { status: string | null; severity: string | null; occurred_at: string | null }[]).map((r) => ({
+      (
+        (avatarEvents.data ?? []) as {
+          status: string | null;
+          severity: string | null;
+          occurred_at: string | null;
+        }[]
+      ).map((r) => ({
         at: r.occurred_at,
         failed: r.status === "failed" || r.severity === "critical" || r.severity === "warn",
       })),
@@ -416,10 +461,22 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
 
     const [outcomes, incidents, patrols, runs, tools, agents] = await Promise.all([
       supabase.from("business_outcomes").select("id,category,label,label_en,value,delta").limit(20),
-      supabase.from("sec_incidents").select("status,severity,response_minutes,created_at").gte("created_at", sinceWeek).limit(5000),
+      supabase
+        .from("sec_incidents")
+        .select("status,severity,response_minutes,created_at")
+        .gte("created_at", sinceWeek)
+        .limit(5000),
       supabase.from("sec_patrols").select("status,checkpoints_done,checkpoints_total").limit(2000),
-      supabase.from("workflow_runs").select("status,started_at").gte("started_at", sinceDay).limit(2000),
-      supabase.from("tool_executions").select("status,created_at").gte("created_at", sinceDay).limit(5000),
+      supabase
+        .from("workflow_runs")
+        .select("status,started_at")
+        .gte("started_at", sinceDay)
+        .limit(2000),
+      supabase
+        .from("tool_executions")
+        .select("status,created_at")
+        .gte("created_at", sinceDay)
+        .limit(5000),
       supabase.from("agent_runs").select("status").gte("created_at", sinceWeek).limit(2000),
     ]);
 
@@ -434,14 +491,19 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
     const patRows = patrols.data ?? [];
     const patrolCompletion = patRows.length
       ? Math.round(
-          (patRows.reduce((s, p) => s + (p.checkpoints_total ? p.checkpoints_done / p.checkpoints_total : 0), 0) /
+          (patRows.reduce(
+            (s, p) => s + (p.checkpoints_total ? p.checkpoints_done / p.checkpoints_total : 0),
+            0,
+          ) /
             patRows.length) *
             100,
         )
       : 0;
 
     const runRows = runs.data ?? [];
-    const runOk = runRows.filter((r) => r.status === "succeeded" || r.status === "completed").length;
+    const runOk = runRows.filter(
+      (r) => r.status === "succeeded" || r.status === "completed",
+    ).length;
     const automation = runRows.length ? Math.round((runOk * 100) / runRows.length) : 0;
 
     const toolRows = tools.data ?? [];
@@ -451,18 +513,55 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
     const agentRows = agents.data ?? [];
     const decisionAcc = agentRows.length
       ? Math.round(
-          (agentRows.filter((r) => r.status === "succeeded" || r.status === "completed").length * 100) /
+          (agentRows.filter((r) => r.status === "succeeded" || r.status === "completed").length *
+            100) /
             agentRows.length,
         )
       : 0;
 
     const kpis: BusinessKpi[] = [
-      { key: "availability", label_ar: "الجاهزية", label_en: "Availability", value: `${availability}%`, tone: "emerald" },
-      { key: "resolution", label_ar: "معدل الحل", label_en: "Resolution", value: `${resolutionRate}%`, tone: "primary" },
-      { key: "response", label_ar: "زمن الاستجابة", label_en: "Response", value: `${avgResponse}m`, tone: "amber" },
-      { key: "automation", label_ar: "الأتمتة", label_en: "Automation", value: `${automation}%`, tone: "secondary" },
-      { key: "adoption", label_ar: "التبنّي", label_en: "Adoption", value: `${patrolCompletion}%`, tone: "primary" },
-      { key: "decision", label_ar: "دقة القرار", label_en: "Decision Accuracy", value: `${decisionAcc}%`, tone: "emerald" },
+      {
+        key: "availability",
+        label_ar: "الجاهزية",
+        label_en: "Availability",
+        value: `${availability}%`,
+        tone: "emerald",
+      },
+      {
+        key: "resolution",
+        label_ar: "معدل الحل",
+        label_en: "Resolution",
+        value: `${resolutionRate}%`,
+        tone: "primary",
+      },
+      {
+        key: "response",
+        label_ar: "زمن الاستجابة",
+        label_en: "Response",
+        value: `${avgResponse}m`,
+        tone: "amber",
+      },
+      {
+        key: "automation",
+        label_ar: "الأتمتة",
+        label_en: "Automation",
+        value: `${automation}%`,
+        tone: "secondary",
+      },
+      {
+        key: "adoption",
+        label_ar: "التبنّي",
+        label_en: "Adoption",
+        value: `${patrolCompletion}%`,
+        tone: "primary",
+      },
+      {
+        key: "decision",
+        label_ar: "دقة القرار",
+        label_en: "Decision Accuracy",
+        value: `${decisionAcc}%`,
+        tone: "emerald",
+      },
     ];
 
     return {
@@ -492,7 +591,9 @@ export const listPendingDecisions = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<ExecutiveDecision[]> => {
     const { data, error } = await context.supabase
       .from("aria_decisions")
-      .select("id,recommendation,rationale,recommended_action,next_step,confidence,status,executed_tool,tool_payload,created_at")
+      .select(
+        "id,recommendation,rationale,recommended_action,next_step,confidence,status,executed_tool,tool_payload,created_at",
+      )
       .in("status", ["pending", "approved"])
       .order("created_at", { ascending: false })
       .limit(20);
@@ -508,12 +609,13 @@ export const listPendingDecisions = createServerFn({ method: "GET" })
         confidence: d.confidence == null ? null : Number(d.confidence),
         status: d.status as ExecutiveDecision["status"],
         executed_tool: d.executed_tool,
-        has_workflow: Boolean(p && typeof (p as { workflow_id?: unknown }).workflow_id === "string"),
+        has_workflow: Boolean(
+          p && typeof (p as { workflow_id?: unknown }).workflow_id === "string",
+        ),
         created_at: d.created_at,
       };
     });
   });
-
 
 const DecisionActionSchema = z.object({ id: z.string().uuid() });
 
@@ -562,7 +664,10 @@ export const approveDecision = createServerFn({ method: "POST" })
         runStatus = run.status;
         await supabase
           .from("aria_decisions")
-          .update({ status: run.status === "failed" ? "failed" : "executed", updated_at: new Date().toISOString() })
+          .update({
+            status: run.status === "failed" ? "failed" : "executed",
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", data.id);
       } catch (err) {
         await supabase
@@ -582,7 +687,13 @@ export const approveDecision = createServerFn({ method: "POST" })
         org_id: decision.org_id,
         subject_type: "aria_decision",
         subject_id: decision.id,
-        payload_json: JSON.parse(JSON.stringify({ decision_id: decision.id, executed_tool: decision.executed_tool, payload })),
+        payload_json: JSON.parse(
+          JSON.stringify({
+            decision_id: decision.id,
+            executed_tool: decision.executed_tool,
+            payload,
+          }),
+        ),
       });
     }
 
@@ -639,7 +750,11 @@ export const getExecutiveTimeline = createServerFn({ method: "GET" })
       when: e.occurred_at as string,
       kind: "event",
       severity:
-        e.severity === "critical" ? "critical" : e.severity === "warn" || e.severity === "warning" ? "warn" : "info",
+        e.severity === "critical"
+          ? "critical"
+          : e.severity === "warn" || e.severity === "warning"
+            ? "warn"
+            : "info",
       title: e.topic,
       subtitle: e.subject_type ?? null,
     }));

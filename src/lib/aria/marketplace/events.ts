@@ -1,11 +1,7 @@
 /**
  * Marketplace lifecycle events — in-process, best-effort.
  */
-import type {
-  MarketplaceEvent,
-  MarketplaceEventName,
-  CapabilityKey,
-} from "./types";
+import type { MarketplaceEvent, MarketplaceEventName, CapabilityKey } from "./types";
 import type { AgentId } from "../orchestrator/types";
 
 type Listener = (evt: MarketplaceEvent) => void;

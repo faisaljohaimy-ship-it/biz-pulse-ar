@@ -9,16 +9,34 @@
  *   __ariaTimeline                → raw array
  */
 export type VoiceTag =
-  | "CHAT" | "STREAM" | "SENTENCE"
-  | "TTS_REQ" | "TTS_RES"
-  | "AUDIO_CREATED" | "AUDIO_PLAY" | "AUDIO_END" | "AUDIO_ERROR"
-  | "QUEUE" | "OWNER" | "BUS" | "VOICE" | "FALLBACK"
-  | "SPEECH_SYNTH" | "INTERRUPT" | "CANCEL" | "PREEMPT" | "RELEASE"
-  | "HTMLAUDIO" | "AUDIOCTX" | "FETCH" | "ASSERTION" | "NOTE";
+  | "CHAT"
+  | "STREAM"
+  | "SENTENCE"
+  | "TTS_REQ"
+  | "TTS_RES"
+  | "AUDIO_CREATED"
+  | "AUDIO_PLAY"
+  | "AUDIO_END"
+  | "AUDIO_ERROR"
+  | "QUEUE"
+  | "OWNER"
+  | "BUS"
+  | "VOICE"
+  | "FALLBACK"
+  | "SPEECH_SYNTH"
+  | "INTERRUPT"
+  | "CANCEL"
+  | "PREEMPT"
+  | "RELEASE"
+  | "HTMLAUDIO"
+  | "AUDIOCTX"
+  | "FETCH"
+  | "ASSERTION"
+  | "NOTE";
 
 interface VoiceEvent {
-  t: number;      // ms since page load
-  dt: number;     // ms since previous event
+  t: number; // ms since page load
+  dt: number; // ms since previous event
   tag: VoiceTag;
   msg: string;
   data?: Record<string, unknown>;
@@ -42,15 +60,24 @@ export const VoiceTimeline = {
     last = t;
     const evt: VoiceEvent = { t, dt, tag, msg, data };
     if (opts?.stack) {
-      try { evt.stack = new Error().stack?.split("\n").slice(2, 6).join("\n"); } catch { /* ignore */ }
+      try {
+        evt.stack = new Error().stack?.split("\n").slice(2, 6).join("\n");
+      } catch {
+        /* ignore */
+      }
     }
     buf.push(evt);
     if (buf.length > MAX) buf.shift();
-    // eslint-disable-next-line no-console
+
     console.log(`[${tag}] +${dt}ms ${msg}`, data ?? "");
   },
-  dump(): VoiceEvent[] { return buf.slice(); },
-  clear() { buf.length = 0; last = 0; },
+  dump(): VoiceEvent[] {
+    return buf.slice();
+  },
+  clear() {
+    buf.length = 0;
+    last = 0;
+  },
 };
 
 if (typeof window !== "undefined") {
@@ -61,7 +88,6 @@ if (typeof window !== "undefined") {
   };
   w.__ariaTimeline = buf;
   w.__dumpAriaTimeline = () => {
-    // eslint-disable-next-line no-console
     console.table(buf.map((e) => ({ t: e.t, dt: e.dt, tag: e.tag, msg: e.msg })));
     const json = JSON.stringify(buf, null, 2);
     try {
@@ -69,7 +95,12 @@ if (typeof window !== "undefined") {
         () => console.log(`[timeline] ${buf.length} events copied to clipboard`),
         () => console.log(json),
       );
-    } catch { console.log(json); }
+    } catch {
+      console.log(json);
+    }
   };
-  w.__clearAriaTimeline = () => { VoiceTimeline.clear(); console.log("[timeline] cleared"); };
+  w.__clearAriaTimeline = () => {
+    VoiceTimeline.clear();
+    console.log("[timeline] cleared");
+  };
 }

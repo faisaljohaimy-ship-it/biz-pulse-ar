@@ -9,12 +9,7 @@
 // ─── UI mode / voice state ──────────────────────────────────────────────
 export type AriaMode = "collapsed" | "docked" | "fullscreen";
 
-export type AriaVoiceState =
-  | "idle"
-  | "listening"
-  | "processing"
-  | "speaking"
-  | "unavailable";
+export type AriaVoiceState = "idle" | "listening" | "processing" | "speaking" | "unavailable";
 
 // ─── Page context (executive context surface) ───────────────────────────
 export interface AriaPageContext {
@@ -70,13 +65,7 @@ export interface AriaRouteHint {
 }
 
 // ─── Conversation lifecycle ─────────────────────────────────────────────
-export type AriaTurnStatus =
-  | "idle"
-  | "queued"
-  | "streaming"
-  | "completed"
-  | "cancelled"
-  | "failed";
+export type AriaTurnStatus = "idle" | "queued" | "streaming" | "completed" | "cancelled" | "failed";
 
 export interface AriaTurn {
   id: string;

@@ -10,15 +10,11 @@ export function createAgentRegistry(): AgentRegistry {
   return { agents: [] };
 }
 
-export function registerAgent(
-  reg: AgentRegistry,
-  descriptor: AgentDescriptor,
-): AgentRegistry {
+export function registerAgent(reg: AgentRegistry, descriptor: AgentDescriptor): AgentRegistry {
   const parsed = AgentDescriptorInputZ.parse(descriptor);
   const idx = reg.agents.findIndex((a) => a.agentId === parsed.agentId);
-  const agents = idx >= 0
-    ? reg.agents.map((a, i) => (i === idx ? parsed : a))
-    : [...reg.agents, parsed];
+  const agents =
+    idx >= 0 ? reg.agents.map((a, i) => (i === idx ? parsed : a)) : [...reg.agents, parsed];
   return { agents };
 }
 
@@ -36,10 +32,7 @@ export function setAgentStatus(
   };
 }
 
-export function agentsForNode(
-  reg: AgentRegistry,
-  nodeId: string,
-): ReadonlyArray<AgentDescriptor> {
+export function agentsForNode(reg: AgentRegistry, nodeId: string): ReadonlyArray<AgentDescriptor> {
   return reg.agents.filter((a) => a.nodeId === nodeId);
 }
 

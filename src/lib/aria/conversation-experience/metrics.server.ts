@@ -14,9 +14,15 @@ export class ConversationMetrics {
   private firstTokenSamples: number[] = [];
   private speakStartSamples: number[] = [];
 
-  recordTurn(): void { this.turns++; }
-  recordInterruption(): void { this.interruptions++; }
-  recordError(): void { this.errors++; }
+  recordTurn(): void {
+    this.turns++;
+  }
+  recordInterruption(): void {
+    this.interruptions++;
+  }
+  recordError(): void {
+    this.errors++;
+  }
 
   recordFirstToken(ms: number): void {
     if (ms >= 0 && Number.isFinite(ms)) {

@@ -14,9 +14,7 @@ export class WorkerRegistry {
   register(input: unknown): WorkerDescriptor {
     const worker = validateWorker(input);
     if (this.store.listWorkers().length >= this.maxWorkers) {
-      throw new Error(
-        `Worker cap reached (${this.maxWorkers}); cannot register ${worker.id}`,
-      );
+      throw new Error(`Worker cap reached (${this.maxWorkers}); cannot register ${worker.id}`);
     }
     this.store.registerWorker(worker);
     return worker;

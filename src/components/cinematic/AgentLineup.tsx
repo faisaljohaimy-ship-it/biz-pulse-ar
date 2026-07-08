@@ -76,8 +76,18 @@ export function AgentLineup({ isAr }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span className={cn("absolute inline-flex h-full w-full rounded-full opacity-60", running ? "animate-ping bg-cyan-300" : "bg-white/40")} />
-            <span className={cn("relative inline-flex h-2.5 w-2.5 rounded-full", running ? "bg-cyan-300" : "bg-white/60")} />
+            <span
+              className={cn(
+                "absolute inline-flex h-full w-full rounded-full opacity-60",
+                running ? "animate-ping bg-cyan-300" : "bg-white/40",
+              )}
+            />
+            <span
+              className={cn(
+                "relative inline-flex h-2.5 w-2.5 rounded-full",
+                running ? "bg-cyan-300" : "bg-white/60",
+              )}
+            />
           </span>
           <div className="min-w-0">
             <div className="text-[10px] uppercase tracking-[0.35em] text-cyan-200/85">
@@ -99,7 +109,9 @@ export function AgentLineup({ isAr }: Props) {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-[10px] tabular-nums text-white/60 w-8 text-right">{progress}%</span>
+            <span className="text-[10px] tabular-nums text-white/60 w-8 text-right">
+              {progress}%
+            </span>
           </div>
 
           {!running ? (

@@ -11,7 +11,8 @@ export function planBroadcast(input: {
     .filter((n) => n.status === "active" && n.id !== input.fromNodeId)
     .map((n) => n.id)
     .sort();
-  const fanout = input.fanout && input.fanout > 0 ? Math.min(input.fanout, active.length) : active.length;
+  const fanout =
+    input.fanout && input.fanout > 0 ? Math.min(input.fanout, active.length) : active.length;
   const targets = active.slice(0, fanout);
   return {
     messageId: input.messageId,

@@ -73,7 +73,13 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
       };
     });
 
-    const by_role: Record<OrgRole, number> = { owner: 0, admin: 0, manager: 0, operator: 0, viewer: 0 };
+    const by_role: Record<OrgRole, number> = {
+      owner: 0,
+      admin: 0,
+      manager: 0,
+      operator: 0,
+      viewer: 0,
+    };
     for (const r of rows) by_role[r.role] += 1;
 
     const { count: audit24 } = await supabase
@@ -113,7 +119,9 @@ export const listAuditLogs = createServerFn({ method: "GET" })
       .limit(100);
 
     const rows = data ?? [];
-    const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter((x): x is string => Boolean(x))));
+    const actorIds = Array.from(
+      new Set(rows.map((r) => r.actor_id).filter((x): x is string => Boolean(x))),
+    );
     const { data: profs } = actorIds.length
       ? await supabase.from("profiles").select("user_id,display_name").in("user_id", actorIds)
       : { data: [] as Array<{ user_id: string; display_name: string | null }> };
@@ -127,7 +135,7 @@ export const listAuditLogs = createServerFn({ method: "GET" })
       status: r.status,
       source: r.source,
       actor_id: r.actor_id,
-      actor_email: r.actor_id ? nameMap.get(r.actor_id) ?? null : null,
+      actor_email: r.actor_id ? (nameMap.get(r.actor_id) ?? null) : null,
       occurred_at: r.occurred_at,
       route: r.route,
       duration_ms: r.duration_ms,

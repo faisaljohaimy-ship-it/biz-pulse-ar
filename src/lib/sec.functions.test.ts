@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { computeExecKpis, fetchExecKpiSources, ExecKpisSchema, type ExecKpiSources } from "./sec.functions";
-
+import {
+  computeExecKpis,
+  fetchExecKpiSources,
+  ExecKpisSchema,
+  type ExecKpiSources,
+} from "./sec.functions";
 
 const empty: ExecKpiSources = {
   incidents: [],
@@ -28,26 +32,14 @@ const sample: ExecKpiSources = {
     { status: "active", checkpoints_done: 10, checkpoints_total: 10 },
     { status: "completed", checkpoints_done: 0, checkpoints_total: 0 },
   ],
-  visitors: [
-    { status: "inside" },
-    { status: "overdue" },
-    { status: "checked_out" },
-  ],
-  permits: [
-    { status: "active" },
-    { status: "approved" },
-    { status: "expired" },
-  ],
+  visitors: [{ status: "inside" }, { status: "overdue" }, { status: "checked_out" }],
+  permits: [{ status: "active" }, { status: "approved" }, { status: "expired" }],
   contractors: [
     { status: "active", compliance_score: 80 },
     { status: "active", compliance_score: 90 },
     { status: "suspended", compliance_score: 40 },
   ],
-  sites: [
-    { status: "operational" },
-    { status: "operational" },
-    { status: "maintenance" },
-  ],
+  sites: [{ status: "operational" }, { status: "operational" }, { status: "maintenance" }],
   cameras: [
     { status: "online", health: 90 },
     { status: "online", health: 70 },
@@ -57,11 +49,7 @@ const sample: ExecKpiSources = {
     { status: "online", health: 100 },
     { status: "online", health: 80 },
   ],
-  sensors: [
-    { status: "ok" },
-    { status: "alarm" },
-    { status: "offline" },
-  ],
+  sensors: [{ status: "ok" }, { status: "alarm" }, { status: "offline" }],
   workOrders: [
     { kind: "preventive", status: "open" },
     { kind: "preventive", status: "closed" },
@@ -69,8 +57,20 @@ const sample: ExecKpiSources = {
     { kind: "corrective", status: "cancelled" },
   ],
   projects: [
-    { status: "in-progress", progress: 50, budget_sar: 1_000_000, spent_sar: 400_000, health: "green" },
-    { status: "completed", progress: 100, budget_sar: 500_000, spent_sar: 480_000, health: "green" },
+    {
+      status: "in-progress",
+      progress: 50,
+      budget_sar: 1_000_000,
+      spent_sar: 400_000,
+      health: "green",
+    },
+    {
+      status: "completed",
+      progress: 100,
+      budget_sar: 500_000,
+      spent_sar: 480_000,
+      health: "green",
+    },
   ],
 };
 
@@ -124,7 +124,6 @@ describe("computeExecKpis", () => {
       risk_index: 49, // round(min(100, 1*15 + 2*5 + (100-53)/2)) = round(48.5)
       safety_index: 52, // round(100 - 48.5)
       executive_readiness: 63, // round((53+90+70+50+51.5)/5)
-
     });
   });
 
@@ -160,12 +159,27 @@ describe("computeExecKpis", () => {
     expect(k.risk_index + k.safety_index).toBeLessThanOrEqual(101);
     // Counts must be non-negative integers
     const counts = [
-      k.incidents_total, k.incidents_open, k.incidents_critical,
-      k.preventive_wo, k.corrective_wo, k.wo_open, k.wo_closed,
-      k.projects_in_progress, k.projects_completed,
-      k.cameras_total, k.cameras_online, k.gates_total, k.gates_online,
-      k.sensors_total, k.sensors_alarming, k.sites_total, k.sites_operational,
-      k.patrols_active, k.visitors_inside, k.permits_active, k.contractors_active,
+      k.incidents_total,
+      k.incidents_open,
+      k.incidents_critical,
+      k.preventive_wo,
+      k.corrective_wo,
+      k.wo_open,
+      k.wo_closed,
+      k.projects_in_progress,
+      k.projects_completed,
+      k.cameras_total,
+      k.cameras_online,
+      k.gates_total,
+      k.gates_online,
+      k.sensors_total,
+      k.sensors_alarming,
+      k.sites_total,
+      k.sites_operational,
+      k.patrols_active,
+      k.visitors_inside,
+      k.permits_active,
+      k.contractors_active,
       k.mttr_minutes,
     ];
     for (const c of counts) {
@@ -175,25 +189,33 @@ describe("computeExecKpis", () => {
   }
 
   it("clamps risk_index at 100 under extreme critical/sensor load", () => {
-    const k = computeExecKpis(makeSources({
-      incidents: Array.from({ length: 50 }, () => ({ severity: "critical", status: "open", response_minutes: 5 })),
-      sensors: Array.from({ length: 30 }, () => ({ status: "alarm" })),
-      cameras: [{ status: "offline", health: 0 }],
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        incidents: Array.from({ length: 50 }, () => ({
+          severity: "critical",
+          status: "open",
+          response_minutes: 5,
+        })),
+        sensors: Array.from({ length: 30 }, () => ({ status: "alarm" })),
+        cameras: [{ status: "offline", health: 0 }],
+      }),
+    );
     expect(k.risk_index).toBe(100);
     expect(k.safety_index).toBe(0);
     assertInvariants(k);
   });
 
   it("returns max readiness (~100) when all subsystems are perfect", () => {
-    const k = computeExecKpis(makeSources({
-      incidents: [],
-      sensors: Array.from({ length: 10 }, () => ({ status: "ok" })),
-      cameras: Array.from({ length: 5 }, () => ({ status: "online", health: 100 })),
-      gates: Array.from({ length: 3 }, () => ({ status: "online", health: 100 })),
-      patrols: [{ status: "active", checkpoints_done: 10, checkpoints_total: 10 }],
-      contractors: [{ status: "active", compliance_score: 100 }],
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        incidents: [],
+        sensors: Array.from({ length: 10 }, () => ({ status: "ok" })),
+        cameras: Array.from({ length: 5 }, () => ({ status: "online", health: 100 })),
+        gates: Array.from({ length: 3 }, () => ({ status: "online", health: 100 })),
+        patrols: [{ status: "active", checkpoints_done: 10, checkpoints_total: 10 }],
+        contractors: [{ status: "active", compliance_score: 100 }],
+      }),
+    );
     expect(k.cctv_health).toBe(100);
     expect(k.access_health).toBe(100);
     expect(k.patrol_completion).toBe(100);
@@ -205,36 +227,45 @@ describe("computeExecKpis", () => {
   });
 
   it("tolerates missing/null response_minutes without NaN in mttr", () => {
-    const k = computeExecKpis(makeSources({
-      incidents: [
-        { severity: "low", status: "open", response_minutes: null },
-        { severity: "low", status: "open", response_minutes: null },
-      ],
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        incidents: [
+          { severity: "low", status: "open", response_minutes: null },
+          { severity: "low", status: "open", response_minutes: null },
+        ],
+      }),
+    );
     expect(k.mttr_minutes).toBe(0);
     expect(Number.isFinite(k.mttr_minutes)).toBe(true);
     assertInvariants(k);
   });
 
   it("ignores zero checkpoints_total without producing NaN in patrol_completion", () => {
-    const k = computeExecKpis(makeSources({
-      patrols: [
-        { status: "active", checkpoints_done: 0, checkpoints_total: 0 },
-        { status: "active", checkpoints_done: 0, checkpoints_total: 0 },
-      ],
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        patrols: [
+          { status: "active", checkpoints_done: 0, checkpoints_total: 0 },
+          { status: "active", checkpoints_done: 0, checkpoints_total: 0 },
+        ],
+      }),
+    );
     expect(k.patrol_completion).toBe(0);
     assertInvariants(k);
   });
 
   it("does not crash on negative / out-of-domain values (defensive)", () => {
-    const k = computeExecKpis(makeSources({
-      incidents: [{ severity: "critical", status: "open", response_minutes: -5 }],
-      cameras: [{ status: "online", health: -10 }, { status: "online", health: 150 }],
-      gates: [{ status: "online", health: -50 }],
-      contractors: [{ status: "active", compliance_score: -20 }],
-      patrols: [{ status: "active", checkpoints_done: 20, checkpoints_total: 10 }], // >100%
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        incidents: [{ severity: "critical", status: "open", response_minutes: -5 }],
+        cameras: [
+          { status: "online", health: -10 },
+          { status: "online", health: 150 },
+        ],
+        gates: [{ status: "online", health: -50 }],
+        contractors: [{ status: "active", compliance_score: -20 }],
+        patrols: [{ status: "active", checkpoints_done: 20, checkpoints_total: 10 }], // >100%
+      }),
+    );
     // values may go out-of-spec but must not be NaN/Infinity; risk/safety/readiness clamped
     expect(Number.isFinite(k.cctv_health)).toBe(true);
     expect(Number.isFinite(k.access_health)).toBe(true);
@@ -247,12 +278,20 @@ describe("computeExecKpis", () => {
 
   it("handles very large project budgets without precision loss up to Number.MAX_SAFE_INTEGER bounds", () => {
     const big = 1e12;
-    const k = computeExecKpis(makeSources({
-      projects: [
-        { status: "in-progress", progress: 10, budget_sar: big, spent_sar: big / 2, health: "green" },
-        { status: "completed", progress: 100, budget_sar: big, spent_sar: big, health: "green" },
-      ],
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        projects: [
+          {
+            status: "in-progress",
+            progress: 10,
+            budget_sar: big,
+            spent_sar: big / 2,
+            health: "green",
+          },
+          { status: "completed", progress: 100, budget_sar: big, spent_sar: big, health: "green" },
+        ],
+      }),
+    );
     expect(k.projects_budget_total).toBe(2 * big);
     expect(k.projects_spent_total).toBe(1.5 * big);
     expect(Number.isSafeInteger(k.projects_budget_total)).toBe(true);
@@ -260,12 +299,24 @@ describe("computeExecKpis", () => {
   });
 
   it("weights different incident severities consistently (only critical drives risk)", () => {
-    const lowOnly = computeExecKpis(makeSources({
-      incidents: Array.from({ length: 20 }, () => ({ severity: "low", status: "open", response_minutes: 1 })),
-    }));
-    const critOnly = computeExecKpis(makeSources({
-      incidents: Array.from({ length: 2 }, () => ({ severity: "critical", status: "open", response_minutes: 1 })),
-    }));
+    const lowOnly = computeExecKpis(
+      makeSources({
+        incidents: Array.from({ length: 20 }, () => ({
+          severity: "low",
+          status: "open",
+          response_minutes: 1,
+        })),
+      }),
+    );
+    const critOnly = computeExecKpis(
+      makeSources({
+        incidents: Array.from({ length: 2 }, () => ({
+          severity: "critical",
+          status: "open",
+          response_minutes: 1,
+        })),
+      }),
+    );
     // 20 low-severity open incidents must NOT raise risk above 2 critical ones
     expect(critOnly.risk_index).toBeGreaterThan(lowOnly.risk_index);
     assertInvariants(lowOnly);
@@ -273,20 +324,20 @@ describe("computeExecKpis", () => {
   });
 
   it("counts cancelled work orders as neither open nor closed", () => {
-    const k = computeExecKpis(makeSources({
-      workOrders: [
-        { kind: "preventive", status: "cancelled" },
-        { kind: "corrective", status: "closed" },
-        { kind: "corrective", status: "open" },
-      ],
-    }));
+    const k = computeExecKpis(
+      makeSources({
+        workOrders: [
+          { kind: "preventive", status: "cancelled" },
+          { kind: "corrective", status: "closed" },
+          { kind: "corrective", status: "open" },
+        ],
+      }),
+    );
     expect(k.wo_open).toBe(1);
     expect(k.wo_closed).toBe(1);
     assertInvariants(k);
   });
 });
-
-
 
 describe("fetchExecKpiSources", () => {
   it("queries the 11 sec_* tables with the documented column projections (RLS-safe)", async () => {
@@ -339,7 +390,11 @@ describe("fetchExecKpiSources", () => {
   it("treats RLS-filtered (empty) results as zero rows without throwing", async () => {
     const supabase = {
       from() {
-        return { async select() { return { data: null }; } };
+        return {
+          async select() {
+            return { data: null };
+          },
+        };
       },
     };
     const sources = await fetchExecKpiSources(supabase);
@@ -361,7 +416,11 @@ describe("ExecKpisSchema (API contract)", () => {
     },
     maxLoad: {
       ...empty,
-      incidents: Array.from({ length: 50 }, () => ({ severity: "critical", status: "open", response_minutes: 5 })),
+      incidents: Array.from({ length: 50 }, () => ({
+        severity: "critical",
+        status: "open",
+        response_minutes: 5,
+      })),
       sensors: Array.from({ length: 30 }, () => ({ status: "alarm" })),
       cameras: [{ status: "offline", health: 0 }],
     },
@@ -409,7 +468,9 @@ describe("ExecKpisSchema (API contract)", () => {
 
   it("rejects unsafe-integer money totals", () => {
     const k = computeExecKpis(sample);
-    expect(() => ExecKpisSchema.parse({ ...k, projects_budget_total: Number.MAX_SAFE_INTEGER + 2 })).toThrow();
+    expect(() =>
+      ExecKpisSchema.parse({ ...k, projects_budget_total: Number.MAX_SAFE_INTEGER + 2 }),
+    ).toThrow();
   });
 
   it("schema-validated output matches the same keys as compute output", () => {

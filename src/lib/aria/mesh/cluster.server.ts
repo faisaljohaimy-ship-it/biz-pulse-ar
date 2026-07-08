@@ -46,7 +46,11 @@ export function activeNodes(cluster: MeshCluster): MeshNode[] {
   return cluster.nodes.filter((n) => n.status === "active");
 }
 
-export function setLeader(cluster: MeshCluster, leaderId: string | null, term: number): MeshCluster {
+export function setLeader(
+  cluster: MeshCluster,
+  leaderId: string | null,
+  term: number,
+): MeshCluster {
   if (leaderId && !cluster.nodes.some((n) => n.id === leaderId)) {
     throw new Error("leader must be a registered node");
   }
