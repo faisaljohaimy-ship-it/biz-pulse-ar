@@ -2,20 +2,20 @@
  * Nightly ARIA pattern miner cron target.
  * Article IV §2 of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
  *
- * Called by pg_cron once per day. Authenticates via Supabase apikey header
- * (standard cron auth pattern — see schedule-jobs-options knowledge).
+ * Called by pg_cron once per day. Authenticated via CRON_HOOK_SECRET
+ * (timing-safe) — the legacy SUPABASE_PUBLISHABLE_KEY guard was removed
+ * because that key ships to browsers and would let anyone trigger
+ * service-role writes across all users' data.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyCronHookSecret } from "@/lib/hook-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/aria-pattern-miner")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
-        if (!apikey || !expected || apikey !== expected) {
-          return new Response("unauthorized", { status: 401 });
-        }
+        const denied = verifyCronHookSecret(request);
+        if (denied) return denied;
         try {
           const { runPatternMiner } = await import("@/lib/aria/learning/pattern-miner.server");
           const result = await runPatternMiner(24);
