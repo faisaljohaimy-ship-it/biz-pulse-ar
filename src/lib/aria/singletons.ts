@@ -78,7 +78,36 @@ export function releaseOne(key: AriaSingletonKey, owner: string): void {
   }
 }
 
+/**
+ * Track a live React mount (e.g. AriaProvider). Increments an active
+ * mount counter; warns once when count exceeds 1 (true duplication —
+ * distinct from StrictMode double-invoke which is same-instance).
+ * Returns an unmount fn that decrements the counter.
+ */
+export function trackMount(key: AriaSingletonKey, owner: string): () => void {
+  if (typeof window === "undefined") return () => {};
+  const reg = registry();
+  const next = (reg.mounts[key] ?? 0) + 1;
+  reg.mounts[key] = next;
+  if (next > 1 && !reg.warned[key]) {
+    reg.warned[key] = true;
+    const msg = `[aria-singleton] duplicate ${key} MOUNTED: owner="${owner}" (active=${next}). Ensure it is rendered once in __root.tsx only.`;
+    if (isDev()) console.error(msg);
+    else console.warn(msg);
+  }
+  return () => {
+    const cur = registry();
+    cur.mounts[key] = Math.max(0, (cur.mounts[key] ?? 1) - 1);
+    if ((cur.mounts[key] ?? 0) <= 1) cur.warned[key] = false;
+  };
+}
+
 /** Introspect current owners (for /aria/directive audit + tests). */
 export function currentSingletons(): Readonly<Partial<Record<AriaSingletonKey, string>>> {
   return { ...registry().owners };
+}
+
+/** Introspect current mount counts. */
+export function currentMounts(): Readonly<Partial<Record<AriaSingletonKey, number>>> {
+  return { ...registry().mounts };
 }
