@@ -521,6 +521,9 @@ export function AriaCopilot() {
                   : -1;
               const tts = s.firstSentenceAt ? Math.round(t0 - s.firstSentenceAt) : -1;
 
+              // Article 24 (b): first-token → sentence1 hard ceiling 250ms.
+              if (sent1 > 250) reportVoiceLatencyRegression(sent1, `send_total=${total}ms`);
+
               console.log(`[aria-latency] send→first-audio ${total}ms`);
 
               console.log(
