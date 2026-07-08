@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, severityClass } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { AlertTriangle, Radar, UserCheck, Camera, FileBadge } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sec/timeline")({
@@ -19,8 +20,12 @@ type Ev = {
 
 function Timeline() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const { data, dataUpdatedAt, isFetching } = useQuery({
+    queryKey: ["sec-overview"],
+    queryFn: () => fetchOverview(),
+  });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
+
 
   const events: Ev[] = [
     ...data.incidents.map((i) => ({
@@ -66,7 +71,9 @@ function Timeline() {
       <SecPageHeader
         title="الخط الزمني للعمليات"
         subtitle={`${events.length} حدث — مرتّبة من الأحدث`}
-      />
+      >
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
+      </SecPageHeader>
       <div className="rounded-xl border border-border bg-card p-4">
         <ol className="relative space-y-3 ps-6">
           <span className="absolute inset-y-0 start-2 w-px bg-border" aria-hidden />

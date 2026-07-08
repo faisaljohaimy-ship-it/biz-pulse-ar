@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/patrols")({
   component: Patrols,
@@ -10,11 +11,16 @@ export const Route = createFileRoute("/_authenticated/sec/patrols")({
 
 function Patrols() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const { data, dataUpdatedAt, isFetching } = useQuery({
+    queryKey: ["sec-overview"],
+    queryFn: () => fetchOverview(),
+  });
   const rows = data?.patrols ?? [];
   return (
     <div className="space-y-4">
-      <SecPageHeader title="الدوريات الأمنية" subtitle={`${rows.length} دورية مسجّلة`} />
+      <SecPageHeader title="الدوريات الأمنية" subtitle={`${rows.length} دورية مسجّلة`}>
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_patrols" />
+      </SecPageHeader>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {rows.map((p) => {
           const pct =

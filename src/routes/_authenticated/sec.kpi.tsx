@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/kpi")({
   component: KPI,
@@ -10,7 +11,10 @@ export const Route = createFileRoute("/_authenticated/sec/kpi")({
 
 function KPI() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const { data, dataUpdatedAt, isFetching } = useQuery({
+    queryKey: ["sec-overview"],
+    queryFn: () => fetchOverview(),
+  });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 
   const total = data.incidents.length || 1;
@@ -90,7 +94,9 @@ function KPI() {
 
   return (
     <div className="space-y-4">
-      <SecPageHeader title="محرك مؤشرات الأداء" subtitle="KPIs محسوبة فورياً من بيانات العمليات" />
+      <SecPageHeader title="محرك مؤشرات الأداء" subtitle="KPIs محسوبة فورياً من بيانات العمليات">
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_kpis" />
+      </SecPageHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {kpis.map((k, i) => (
           <StatCard
