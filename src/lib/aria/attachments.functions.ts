@@ -13,6 +13,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { logAriaAction } from "./audit-log.server";
+import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 
 const ALLOWED_MIME = new Set([
   "image/png", "image/jpeg", "image/webp", "image/gif",
@@ -46,6 +47,20 @@ export const uploadAriaAttachment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const startedAt = Date.now();
     const { userId } = context;
+
+    // Article 24 §2 — rate-limit uploads per user.
+    const rate = await enforceRateLimit(`aria-upload:${userId}`, 30, 60);
+    if (!rate.allowed && !rate.unavailable) {
+      await logAriaAction({
+        action: "aria.attachment.upload.rate_limited",
+        userId,
+        surface: "AriaCopilot",
+        articleRefs: ["Article 24"],
+        status: "denied",
+      });
+      throw new Error("Upload rate limit exceeded — try again shortly.");
+    }
+
 
     if (!ALLOWED_MIME.has(data.mime_type)) {
       await logAriaAction({
