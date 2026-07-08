@@ -16,9 +16,7 @@ test.describe("ARIA voice tour — open/close", () => {
     await openBtn.click();
 
     // Panel presence: look for a dialog/aria-modal or a close (✕) control.
-    const closeBtn = page
-      .getByRole("button", { name: /إغلاق|Close|✕|×/i })
-      .first();
+    const closeBtn = page.getByRole("button", { name: /إغلاق|Close|✕|×/i }).first();
     await expect(closeBtn).toBeVisible({ timeout: 5_000 });
 
     await closeBtn.click();

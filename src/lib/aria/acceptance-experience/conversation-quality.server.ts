@@ -28,7 +28,7 @@ export function assessQuality(input: QualityInput): QualityAssessment {
     score -= 10;
   }
 
-  if (input.containsJson || /^\s*[\[{]/.test(input.text)) {
+  if (input.containsJson || /^\s*[[{]/.test(input.text)) {
     violations.push("raw_json_present");
     score -= 25;
   }

@@ -7,20 +7,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(__dirname, "../public/tour");
 fs.mkdirSync(OUT, { recursive: true });
 
-const BASE = process.env.TOUR_BASE || "https://id-preview--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app";
+const BASE =
+  process.env.TOUR_BASE || "https://id-preview--6f092c67-70c5-400b-9a7e-8c068475864f.lovable.app";
 
 const ROUTES = [
-  { name: "01-login",       path: "/login" },
-  { name: "02-cockpit",     path: "/cockpit?demo=1" },
-  { name: "03-intelligence",path: "/intelligence?demo=1" },
-  { name: "04-decisions",   path: "/decisions?demo=1" },
-  { name: "05-risk",        path: "/risk?demo=1" },
-  { name: "06-integrations",path: "/integrations?demo=1" },
-  { name: "07-agents",      path: "/agents?demo=1" },
-  { name: "08-boardroom",   path: "/boardroom?demo=1" },
-  { name: "09-governance",  path: "/governance?demo=1" },
-  { name: "10-analytics",   path: "/analytics?demo=1" },
-  { name: "11-briefing",    path: "/briefing?demo=1" },
+  { name: "01-login", path: "/login" },
+  { name: "02-cockpit", path: "/cockpit?demo=1" },
+  { name: "03-intelligence", path: "/intelligence?demo=1" },
+  { name: "04-decisions", path: "/decisions?demo=1" },
+  { name: "05-risk", path: "/risk?demo=1" },
+  { name: "06-integrations", path: "/integrations?demo=1" },
+  { name: "07-agents", path: "/agents?demo=1" },
+  { name: "08-boardroom", path: "/boardroom?demo=1" },
+  { name: "09-governance", path: "/governance?demo=1" },
+  { name: "10-analytics", path: "/analytics?demo=1" },
+  { name: "11-briefing", path: "/briefing?demo=1" },
 ];
 
 const browser = await puppeteer.launch({
@@ -33,7 +34,9 @@ const page = await browser.newPage();
 await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
 // Seed demo flag before any navigation
 await page.evaluateOnNewDocument(() => {
-  try { window.localStorage.setItem("nx_demo", "1"); } catch {}
+  try {
+    window.localStorage.setItem("nx_demo", "1");
+  } catch {}
 });
 
 for (const r of ROUTES) {

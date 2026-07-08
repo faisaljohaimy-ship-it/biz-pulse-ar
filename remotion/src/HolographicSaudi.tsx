@@ -13,10 +13,7 @@ import {
   Audio,
   staticFile,
 } from "remotion";
-import {
-  TransitionSeries,
-  springTiming,
-} from "@remotion/transitions";
+import { TransitionSeries, springTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { loadFont as loadCairo } from "@remotion/google-fonts/Cairo";
 import { loadFont as loadTajawal } from "@remotion/google-fonts/Tajawal";
@@ -44,8 +41,7 @@ const GOLD = "#f5b041";
 const Vignette: React.FC = () => (
   <AbsoluteFill
     style={{
-      background:
-        "radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%)",
+      background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%)",
       pointerEvents: "none",
     }}
   />
@@ -81,18 +77,14 @@ const GridFloor: React.FC = () => {
             linear-gradient(rgba(34,211,238,0.35) 1px, transparent 1px),
             linear-gradient(90deg, rgba(34,211,238,0.35) 1px, transparent 1px)`,
           backgroundSize: "80px 80px",
-          maskImage:
-            "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0) 80%)",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0) 80%)",
         }}
       />
     </AbsoluteFill>
   );
 };
 
-const ParticleField: React.FC<{ count?: number; seed?: number }> = ({
-  count = 60,
-  seed = 1,
-}) => {
+const ParticleField: React.FC<{ count?: number; seed?: number }> = ({ count = 60, seed = 1 }) => {
   const frame = useCurrentFrame();
   const parts = React.useMemo(() => {
     const arr = [];
@@ -187,8 +179,8 @@ const CornerChip: React.FC<{ text: string; position?: "tl" | "tr" | "br" }> = ({
     position === "tr"
       ? { top: 40, right: 40 }
       : position === "tl"
-      ? { top: 40, left: 40 }
-      : { bottom: 40, right: 40 };
+        ? { top: 40, left: 40 }
+        : { bottom: 40, right: 40 };
   return (
     <div
       style={{
@@ -247,14 +239,7 @@ const KingdomTower: React.FC<BuildingProps> = ({ width, height, label }) => (
       />
     ))}
     {label && (
-      <text
-        x="100"
-        y="395"
-        textAnchor="middle"
-        fill={CYAN}
-        fontSize="14"
-        fontFamily={CAIRO}
-      >
+      <text x="100" y="395" textAnchor="middle" fill={CYAN} fontSize="14" fontFamily={CAIRO}>
         {label}
       </text>
     )}
@@ -269,21 +254,9 @@ const FaisaliahTower: React.FC<BuildingProps> = ({ width, height, label }) => (
     style={{ filter: `drop-shadow(0 0 24px ${CYAN})`, overflow: "visible" }}
   >
     {/* pyramidal body */}
-    <polygon
-      points="100,20 130,380 70,380"
-      fill="none"
-      stroke={CYAN}
-      strokeWidth="1.5"
-    />
+    <polygon points="100,20 130,380 70,380" fill="none" stroke={CYAN} strokeWidth="1.5" />
     {/* orb */}
-    <circle
-      cx="100"
-      cy="105"
-      r="20"
-      fill="none"
-      stroke={GLOW}
-      strokeWidth="1.3"
-    />
+    <circle cx="100" cy="105" r="20" fill="none" stroke={GLOW} strokeWidth="1.3" />
     <circle cx="100" cy="105" r="8" fill={CYAN} opacity="0.4" />
     {/* horizontal lines */}
     {Array.from({ length: 15 }).map((_, i) => {
@@ -304,14 +277,7 @@ const FaisaliahTower: React.FC<BuildingProps> = ({ width, height, label }) => (
     })}
     <line x1="100" y1="20" x2="100" y2="85" stroke={CYAN} strokeWidth="1" />
     {label && (
-      <text
-        x="100"
-        y="395"
-        textAnchor="middle"
-        fill={CYAN}
-        fontSize="14"
-        fontFamily={CAIRO}
-      >
+      <text x="100" y="395" textAnchor="middle" fill={CYAN} fontSize="14" fontFamily={CAIRO}>
         {label}
       </text>
     )}
@@ -358,14 +324,7 @@ const KafdCluster: React.FC<BuildingProps> = ({ width, height, label }) => (
       </g>
     ))}
     {label && (
-      <text
-        x="150"
-        y="395"
-        textAnchor="middle"
-        fill={CYAN}
-        fontSize="14"
-        fontFamily={CAIRO}
-      >
+      <text x="150" y="395" textAnchor="middle" fill={CYAN} fontSize="14" fontFamily={CAIRO}>
         {label}
       </text>
     )}
@@ -380,34 +339,10 @@ const AramcoCampus: React.FC<BuildingProps> = ({ width, height, label }) => (
     style={{ filter: `drop-shadow(0 0 20px ${CYAN})`, overflow: "visible" }}
   >
     {/* central tower */}
-    <rect
-      x="130"
-      y="60"
-      width="40"
-      height="200"
-      fill="none"
-      stroke={CYAN}
-      strokeWidth="1.5"
-    />
+    <rect x="130" y="60" width="40" height="200" fill="none" stroke={CYAN} strokeWidth="1.5" />
     {/* wings */}
-    <rect
-      x="60"
-      y="140"
-      width="70"
-      height="120"
-      fill="none"
-      stroke={CYAN}
-      strokeWidth="1.3"
-    />
-    <rect
-      x="170"
-      y="140"
-      width="70"
-      height="120"
-      fill="none"
-      stroke={CYAN}
-      strokeWidth="1.3"
-    />
+    <rect x="60" y="140" width="70" height="120" fill="none" stroke={CYAN} strokeWidth="1.3" />
+    <rect x="170" y="140" width="70" height="120" fill="none" stroke={CYAN} strokeWidth="1.3" />
     {/* horizontal lines */}
     {Array.from({ length: 10 }).map((_, i) => (
       <line
@@ -422,14 +357,7 @@ const AramcoCampus: React.FC<BuildingProps> = ({ width, height, label }) => (
       />
     ))}
     {label && (
-      <text
-        x="150"
-        y="290"
-        textAnchor="middle"
-        fill={CYAN}
-        fontSize="14"
-        fontFamily={CAIRO}
-      >
+      <text x="150" y="290" textAnchor="middle" fill={CYAN} fontSize="14" fontFamily={CAIRO}>
         {label}
       </text>
     )}
@@ -471,14 +399,7 @@ const SabicTower: React.FC<BuildingProps> = ({ width, height, label }) => (
       />
     ))}
     {label && (
-      <text
-        x="110"
-        y="395"
-        textAnchor="middle"
-        fill={CYAN}
-        fontSize="14"
-        fontFamily={CAIRO}
-      >
+      <text x="110" y="395" textAnchor="middle" fill={CYAN} fontSize="14" fontFamily={CAIRO}>
         {label}
       </text>
     )}
@@ -512,14 +433,7 @@ const SecTower: React.FC<BuildingProps> = ({ width, height, label }) => (
     ))}
     <line x1="100" y1="50" x2="100" y2="400" stroke={GLOW} strokeWidth="0.6" opacity="0.6" />
     {label && (
-      <text
-        x="100"
-        y="395"
-        textAnchor="middle"
-        fill={CYAN}
-        fontSize="14"
-        fontFamily={CAIRO}
-      >
+      <text x="100" y="395" textAnchor="middle" fill={CYAN} fontSize="14" fontFamily={CAIRO}>
         {label}
       </text>
     )}
@@ -589,22 +503,20 @@ const HoloPanel: React.FC<{
 const ErpPanel = () => (
   <HoloPanel title="نظام الموارد">
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-      {["الموارد البشرية", "المشتريات", "المالية", "الأصول", "المخزون", "التخطيط"].map(
-        (m) => (
-          <div
-            key={m}
-            style={{
-              padding: 8,
-              border: `1px solid ${CYAN}44`,
-              background: "rgba(34,211,238,0.06)",
-              fontSize: 12,
-              textAlign: "center",
-            }}
-          >
-            {m}
-          </div>
-        )
-      )}
+      {["الموارد البشرية", "المشتريات", "المالية", "الأصول", "المخزون", "التخطيط"].map((m) => (
+        <div
+          key={m}
+          style={{
+            padding: 8,
+            border: `1px solid ${CYAN}44`,
+            background: "rgba(34,211,238,0.06)",
+            fontSize: 12,
+            textAlign: "center",
+          }}
+        >
+          {m}
+        </div>
+      ))}
     </div>
     <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between" }}>
       <span>مؤشرات لحظية</span>
@@ -627,7 +539,9 @@ const InboxPanel = () => (
         }}
       >
         <span>{s}</span>
-        <span style={{ opacity: 0.6 }}>0{i + 8}:0{i * 2 + 3}</span>
+        <span style={{ opacity: 0.6 }}>
+          0{i + 8}:0{i * 2 + 3}
+        </span>
       </div>
     ))}
   </HoloPanel>
@@ -733,14 +647,7 @@ const AriaAvatar: React.FC<{ height?: number }> = ({ height = 720 }) => {
         style={{ overflow: "visible", filter: `drop-shadow(0 0 40px ${CYAN})` }}
       >
         {/* Aura */}
-        <ellipse
-          cx="150"
-          cy="360"
-          rx="140"
-          ry="340"
-          fill="url(#aura)"
-          opacity={pulse * 0.4}
-        />
+        <ellipse cx="150" cy="360" rx="140" ry="340" fill="url(#aura)" opacity={pulse * 0.4} />
         <defs>
           <radialGradient id="aura">
             <stop offset="0%" stopColor={CYAN} stopOpacity="0.5" />
@@ -806,13 +713,7 @@ const AriaAvatar: React.FC<{ height?: number }> = ({ height = 720 }) => {
           stroke={CYAN}
           strokeWidth="1.5"
         />
-        <path
-          d="M100 720 L200 720"
-          fill="none"
-          stroke={CYAN}
-          strokeWidth="1"
-          opacity="0.4"
-        />
+        <path d="M100 720 L200 720" fill="none" stroke={CYAN} strokeWidth="1" opacity="0.4" />
         {/* torso lines */}
         {Array.from({ length: 22 }).map((_, i) => (
           <line
@@ -879,9 +780,7 @@ const Scene1Title: React.FC = () => {
                 key={i}
                 style={{
                   opacity: s,
-                  transform: `translateY(${(1 - s) * 40}px) scale(${
-                    0.7 + s * 0.3
-                  })`,
+                  transform: `translateY(${(1 - s) * 40}px) scale(${0.7 + s * 0.3})`,
                   display: "inline-block",
                 }}
               >
@@ -994,9 +893,7 @@ const Scene2Riyadh: React.FC = () => {
 const Scene3Triptych: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const springs = [0, 6, 12].map((d) =>
-    spring({ frame: frame - d, fps, config: { damping: 15 } })
-  );
+  const springs = [0, 6, 12].map((d) => spring({ frame: frame - d, fps, config: { damping: 15 } }));
   const items = [
     { C: SecTower, label: "الكهرباء", badge: "الكهرباء" },
     { C: SabicTower, label: "سابك", badge: "الصناعة" },
@@ -1178,9 +1075,7 @@ const Scene5Unify: React.FC = () => {
         {headline}
       </div>
       {/* Center orb */}
-      <AbsoluteFill
-        style={{ justifyContent: "center", alignItems: "center" }}
-      >
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
         <div
           style={{
             width: 240 * orbPulse * collapse,
@@ -1209,15 +1104,7 @@ const Scene5Unify: React.FC = () => {
             });
             return (
               <g key={i} opacity={s}>
-                <line
-                  x1={cx}
-                  y1={cy}
-                  x2={x}
-                  y2={y}
-                  stroke={CYAN}
-                  strokeWidth="1"
-                  opacity="0.6"
-                />
+                <line x1={cx} y1={cy} x2={x} y2={y} stroke={CYAN} strokeWidth="1" opacity="0.6" />
                 <circle
                   cx={x}
                   cy={y}
@@ -1226,13 +1113,7 @@ const Scene5Unify: React.FC = () => {
                   stroke={CYAN}
                   strokeWidth="1.5"
                 />
-                <text
-                  x={x}
-                  y={y + 6}
-                  textAnchor="middle"
-                  fill={GLOW}
-                  fontSize="20"
-                >
+                <text x={x} y={y + 6} textAnchor="middle" fill={GLOW} fontSize="20">
                   {l.icon}
                 </text>
                 <text
@@ -1261,7 +1142,7 @@ const Scene6Aria: React.FC = () => {
   const { fps } = useVideoConfig();
   const aria = spring({ frame, fps, config: { damping: 18 } });
   const dashSprings = [15, 30, 45].map((d) =>
-    spring({ frame: frame - d, fps, config: { damping: 18 } })
+    spring({ frame: frame - d, fps, config: { damping: 18 } }),
   );
   const kpis = [
     { title: "المؤشرات", value: "94.2", suffix: "٪" },
@@ -1332,9 +1213,7 @@ const Scene6Aria: React.FC = () => {
               }}
             >
               {k.value}
-              <span style={{ fontSize: 32, color: CYAN, marginRight: 6 }}>
-                {k.suffix}
-              </span>
+              <span style={{ fontSize: 32, color: CYAN, marginRight: 6 }}>{k.suffix}</span>
             </div>
           </div>
         ))}
@@ -1374,9 +1253,7 @@ const Scene7Vision: React.FC = () => {
       </div>
       {/* Gold rain */}
       <ParticleField count={40} seed={53} />
-      <AbsoluteFill
-        style={{ justifyContent: "center", alignItems: "center" }}
-      >
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
         <div
           style={{
             fontFamily: CAIRO,
@@ -1415,7 +1292,8 @@ const Scene8Closing: React.FC = () => {
   const { fps } = useVideoConfig();
   const orb = spring({ frame, fps, config: { damping: 15 } });
   const word = spring({ frame: frame - 30, fps, config: { damping: 18 } });
-  const orbSize = interpolate(orb, [0, 1], [40, 300]) * (1 - Math.min(1, Math.max(0, (frame - 40) / 30)) * 0.4);
+  const orbSize =
+    interpolate(orb, [0, 1], [40, 300]) * (1 - Math.min(1, Math.max(0, (frame - 40) / 30)) * 0.4);
   return (
     <AbsoluteFill style={{ background: "#000" }} dir="rtl">
       <AbsoluteFill
@@ -1576,8 +1454,11 @@ export const NexiosFilmF5: React.FC = () => {
         for (let i = 0; i < scenes.length; i++) {
           els.push(
             <Sequence key={`a${i}`} from={t} layout="none">
-              <Audio src={staticFile(`audio/f5/n${String(i + 1).padStart(2, "0")}.mp3`)} volume={0.95} />
-            </Sequence>
+              <Audio
+                src={staticFile(`audio/f5/n${String(i + 1).padStart(2, "0")}.mp3`)}
+                volume={0.95}
+              />
+            </Sequence>,
           );
           t += sceneDurations[i] - (i < scenes.length - 1 ? fadeF : 0);
         }
@@ -1586,15 +1467,10 @@ export const NexiosFilmF5: React.FC = () => {
       {/* Caption overlay */}
       {captionWindows.map((c, i) =>
         frame >= c.start && frame <= c.end ? (
-          <Sequence
-            key={i}
-            from={c.start}
-            durationInFrames={c.end - c.start}
-            layout="none"
-          >
+          <Sequence key={i} from={c.start} durationInFrames={c.end - c.start} layout="none">
             <HoloCaption text={c.text} />
           </Sequence>
-        ) : null
+        ) : null,
       )}
     </AbsoluteFill>
   );

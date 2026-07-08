@@ -27,6 +27,7 @@ function sanitize(s: string | null | undefined, max = 200): string {
   // unicode for xlsx. PDFs render Arabic as glyphs missing in base fonts, so
   // we transliterate Arabic to a labelled English-friendly reference and keep
   // the Arabic text inside the xlsx + activity log.
+  // eslint-disable-next-line no-control-regex
   return s.replace(/[\u0000-\u001F\u007F]/g, "").slice(0, max);
 }
 

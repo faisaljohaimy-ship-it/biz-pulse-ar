@@ -20,7 +20,10 @@ export default defineConfig({
     locale: "ar-SA",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
-    { name: "mobile",  use: { ...devices["iPhone 13"] } },
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    { name: "mobile", use: { ...devices["iPhone 13"] } },
   ],
 });

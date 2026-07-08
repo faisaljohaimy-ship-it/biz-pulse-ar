@@ -36,8 +36,11 @@ async function tts(text, i, prev, next) {
         previous_text: prev ?? "",
         next_text: next ?? "",
         voice_settings: {
-          stability: 0.62, similarity_boost: 0.85, style: 0.32,
-          use_speaker_boost: true, speed: 0.97,
+          stability: 0.62,
+          similarity_boost: 0.85,
+          style: 0.32,
+          use_speaker_boost: true,
+          speed: 0.97,
         },
       }),
     },

@@ -21,10 +21,13 @@ const browser = await openBrowser("chrome", {
 const composition = await selectComposition({ serveUrl: bundled, id, puppeteerInstance: browser });
 
 await renderMedia({
-  composition, serveUrl: bundled,
-  codec: "h264", outputLocation: out,
+  composition,
+  serveUrl: bundled,
+  codec: "h264",
+  outputLocation: out,
   puppeteerInstance: browser,
-  muted: false, enforceAudioTrack: true,
+  muted: false,
+  enforceAudioTrack: true,
   concurrency: 2,
 });
 

@@ -309,7 +309,9 @@ export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
         const j = raw ? JSON.parse(raw) : null;
         code = j?.error?.code ?? "";
         providerMsg = j?.error?.message ?? "";
-      } catch {}
+      } catch {
+        /* ignore */
+      }
       fail({
         stage: "teams_post" as PublishStage, // reuse stage taxonomy; UI maps it as "delivery"
         status: mr.status,

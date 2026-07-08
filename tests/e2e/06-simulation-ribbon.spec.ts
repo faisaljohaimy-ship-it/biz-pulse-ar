@@ -22,9 +22,18 @@ test.describe("Simulation ribbon — coverage", () => {
     if (!email || !password) test.skip(true, "E2E_TEST_EMAIL / E2E_TEST_PASSWORD not set");
 
     await page.goto("/auth");
-    await page.getByLabel(/بريد|Email/i).first().fill(email!);
-    await page.getByLabel(/كلمة|Password/i).first().fill(password!);
-    await page.getByRole("button", { name: /دخول|تسجيل|Sign in|Log in/i }).first().click();
+    await page
+      .getByLabel(/بريد|Email/i)
+      .first()
+      .fill(email!);
+    await page
+      .getByLabel(/كلمة|Password/i)
+      .first()
+      .fill(password!);
+    await page
+      .getByRole("button", { name: /دخول|تسجيل|Sign in|Log in/i })
+      .first()
+      .click();
     await page.waitForURL((u) => !/\/auth/.test(u.pathname), { timeout: 15_000 });
   });
 

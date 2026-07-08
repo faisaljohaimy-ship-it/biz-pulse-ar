@@ -11,9 +11,7 @@ test.describe("Hajj Prime — full-viewport takeover", () => {
     await page.evaluate(() => window.scrollTo(0, 900));
     const startY = await page.evaluate(() => window.scrollY);
 
-    const openLink = page
-      .getByRole("link", { name: /منصة نُسك الحج|Hajj Nexus Prime/i })
-      .first();
+    const openLink = page.getByRole("link", { name: /منصة نُسك الحج|Hajj Nexus Prime/i }).first();
     if (!(await openLink.isVisible({ timeout: 5_000 }).catch(() => false))) {
       test.skip(true, "Hajj Prime entry not visible on this viewport");
       return;
