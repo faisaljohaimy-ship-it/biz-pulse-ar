@@ -24,12 +24,37 @@ A duplicate registration logs a loud `[aria-singleton] duplicate …` error in
 dev and warns in prod. Never bypass this registry when adding a new ARIA
 subsystem — extend `AriaSingletonKey` and register the owner instead.
 
-**INVARIANT-14 — Single Request Entrypoint.** Every page, hook, and
-component that talks to ARIA MUST route through `ariaBrain.submit(...)`
-(via `useAria().ask(...)`). No component may call OpenAI, Claude,
-OpenRouter, `/api/chat`, `useChat`, or any provider SDK directly. The ONE
-`useChat` transport lives inside `<AriaProvider>` and is bound into the
-Brain via `ariaBrain.bindSender(...)`.
+**INVARIANT-14 — Single Request Entrypoint (General ARIA).** Every
+general ARIA reply (executive Q&A, dock/copilot, page narration, cross-
+route assistant) MUST route through `ariaBrain.submit(...)` (via
+`useAria().ask(...)`). The ONE `useChat` transport for the singleton
+lives inside `<AriaProvider>` (chat id `"aria-singleton"`) and is bound
+into the Brain via `ariaBrain.bindSender(...)`. No component may call
+OpenAI/Claude/OpenRouter SDKs or `fetch("/api/chat")` directly for
+general ARIA.
+
+**INVARIANT-14b — Purpose-Scoped Chat Surfaces (Documented Exceptions).**
+Feature-specific chat surfaces are allowed ONLY when ALL apply:
+1. Distinct `useChat` id (never `"aria-singleton"`).
+2. Purpose-scoped server endpoint (NOT `/api/chat`) — e.g. lesson
+   teaching, threaded assistant persistence, digital-twin scenario.
+3. Do NOT acquire `AriaAudioBus` `"chat-tts"` (no chat TTS collision).
+4. Do NOT mutate `useAriaStore` `activeTurn` / `activeExecution`.
+5. Registered here as an approved exception.
+
+Approved exceptions (as of this turn):
+- `src/components/learn/simulations/MeetAriaSimulation.tsx` — lesson
+  teach flow, id `sim-meet-aria-${slug}`, endpoint `/api/learn/aria-teach`.
+- `src/components/learn/LessonARIAChat.tsx` — lesson chat surface.
+- `src/routes/_authenticated/digital-twin.tsx` — twin scenario,
+  id `aria-digital-twin`.
+- `src/routes/_authenticated/assistant.$threadId.tsx` — threaded
+  assistant with per-thread persistence.
+
+Any new purpose-scoped surface MUST be added to this list in the same
+PR that introduces it, or it counts as an INVARIANT-14 violation.
+
+
 
 **INVARIANT-15 — Executive Envelope Live.** `ExecutiveCard` is mounted
 inside `AriaCopilot` and MUST render from `useAriaStore().activeExecution`
