@@ -70,6 +70,7 @@ function sanitize(s: string): string {
   // pdf-lib WinAnsi cannot encode arbitrary Unicode (Arabic, emoji). Replace
   // unsupported codepoints with '?' to avoid hard crashes; the XLSX preserves
   // full Unicode for downstream review.
+  // eslint-disable-next-line no-control-regex
   return s.replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]/g, "?");
 }
 
