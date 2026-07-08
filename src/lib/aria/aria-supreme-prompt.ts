@@ -220,7 +220,7 @@ export const ARIA_SUPREME_LAW: string = [
   "",
   "---",
   "",
-  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..25)",
+  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..27)",
   ARIA_MASTER_CONSTITUTION,
   "",
   "---",
@@ -238,6 +238,14 @@ export const ARIA_SUPREME_LAW: string = [
   "---",
   "",
   ARTICLE_25_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
+  ARTICLE_26_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
+  ARTICLE_27_OPERATIONAL_DIRECTIVE,
   "",
   "---",
   "",
@@ -267,7 +275,7 @@ export function verifyAriaSupremeLawIntegrity(): {
   missing_articles: number[];
   length_chars: number;
 } {
-  const required = Array.from({ length: 25 }, (_, i) => i + 1);
+  const required = Array.from({ length: 27 }, (_, i) => i + 1);
   const missing = required.filter(
     (n) => !new RegExp(`(^|\\D)${n}\\.`, "m").test(ARIA_MASTER_CONSTITUTION),
   );
