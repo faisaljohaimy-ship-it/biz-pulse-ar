@@ -106,6 +106,13 @@ System Prompt → History → Memory → Distillation → Recall → Tool Select
   - Beacons وحوادث العميل المجهولة تُكتب في جدول service-role فقط (`aria_public_incidents`)، لا في جداول المستخدمين.
 - أي جدول جديد في `public` يشحن مع GRANTs + RLS + policies في نفس الـ migration؛ إسقاط أيٍّ من الثلاثة خرق دستوري.
 - بعد كل جلسة إصلاح: آريا تُنهي بتقرير قصير — عدد النتائج قبل/بعد، وما تم إغلاقه، وما جرى تجاهله ولماذا.
+- **تتبع مستمر باختبار حيّ**: كل بند من قواعد المادة 19 مربوط باختبار E2E في `tests/e2e/11-security-gap-closure.spec.ts`. الاختبارات تُشغَّل بعد كل migration وقبل كل نشر:
+  - `POST /api/public/hooks/aria-incident` → 202 لبيانات صحيحة، 400 لنوع مجهول أو JSON فاسد، 413 لحمولة > 4096 بايت.
+  - Anonymous Data API لا يستطيع قراءة `aria_incidents` أو `aria_public_incidents` أو `user_roles` (فحص عبر publishable key).
+  - Anonymous INSERT في `aria_incidents` يُرفَض ≥ 400.
+- أي فشل في هذا الاختبار = ثغرة مفتوحة، لا اختبار متذبذب. آريا تفتح جلسة إصلاح فوراً، تُنشئ migration، تُعيد تشغيل `security--run_security_scan` + الاختبار، ثم تُقفل الحلقة.
+- كل جدول جديد يُضاف إلى `public` يستوجب تمديد الاختبار بحالة قراءة/كتابة anon مقابلة قبل أن يُعتبر البند مكتملاً.
+
 
 ## 20. قانون ربط شارات لوحات SEC بالدليل الحيّ
 - كل لوحة تحت `/sec/*` يجب أن تعرض حالة LIVE/SYNC عبر `<SecLiveBadge>` (`src/components/sec/SecLiveBadge.tsx`) مربوطاً بـ `dataUpdatedAt` و `isFetching` من استعلام `useQuery(["sec-overview"], …)` أو أي `sec_*` مكافئ. ممنوع نص ثابت `"LIVE"`, `"SYNC"`, `"بث مباشر"` داخل JSX لهذه الطبقة.
