@@ -371,11 +371,14 @@ export type Database = {
           created_at: string
           error: string | null
           id: string
+          is_official: boolean
           mime_type: string | null
           org_id: string
           page_count: number | null
+          revision_hash: string | null
           size_bytes: number | null
           source: string
+          source_kind: string
           status: string
           storage_path: string | null
           summary: string | null
@@ -389,11 +392,14 @@ export type Database = {
           created_at?: string
           error?: string | null
           id?: string
+          is_official?: boolean
           mime_type?: string | null
           org_id?: string
           page_count?: number | null
+          revision_hash?: string | null
           size_bytes?: number | null
           source?: string
+          source_kind?: string
           status?: string
           storage_path?: string | null
           summary?: string | null
@@ -407,11 +413,14 @@ export type Database = {
           created_at?: string
           error?: string | null
           id?: string
+          is_official?: boolean
           mime_type?: string | null
           org_id?: string
           page_count?: number | null
+          revision_hash?: string | null
           size_bytes?: number | null
           source?: string
+          source_kind?: string
           status?: string
           storage_path?: string | null
           summary?: string | null
@@ -6668,6 +6677,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aria_actions_log_retention: { Args: never; Returns: undefined }
       aria_match_documents: {
         Args: { _limit?: number; _query: string; _user_id: string }
         Returns: {
@@ -6705,6 +6715,7 @@ export type Database = {
           similarity: number
         }[]
       }
+      aria_scan_corpus_stale: { Args: never; Returns: undefined }
       check_rate_limit: {
         Args: {
           _bucket_key: string
