@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
+import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { AlertTriangle, Radar, UserCheck, Camera } from "lucide-react";
@@ -19,12 +20,14 @@ export const Route = createFileRoute("/_authenticated/sec/")({
 
 function OpsRoom() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { region, regionId } = useRegion();
   const sim = regionSim(regionId).counts;
   const fetchOverview = useServerFn(getSecOverview);
   const { data, isLoading, dataUpdatedAt, isFetching } = useQuery({
-    queryKey: ["sec-overview"],
+    queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
+    enabled: !!user && !authLoading,
     refetchInterval: 30_000,
   });
 
