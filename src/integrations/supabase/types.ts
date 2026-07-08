@@ -4099,6 +4099,7 @@ export type Database = {
           building_id: string | null
           code: string
           created_at: string
+          created_by: string | null
           events_today: number
           health: number
           id: string
@@ -4113,6 +4114,7 @@ export type Database = {
           building_id?: string | null
           code: string
           created_at?: string
+          created_by?: string | null
           events_today?: number
           health?: number
           id?: string
@@ -4127,6 +4129,7 @@ export type Database = {
           building_id?: string | null
           code?: string
           created_at?: string
+          created_by?: string | null
           events_today?: number
           health?: number
           id?: string
