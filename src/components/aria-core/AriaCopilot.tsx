@@ -342,6 +342,7 @@ export function AriaCopilot() {
   const introHandleRef = useRef<SpeakHandle | null>(null);
   const lastIntroKeyRef = useRef<string | null>(null);
   const [panelIntro, setPanelIntro] = useState<ReturnType<typeof pageScriptParts>>(null);
+  const routerPathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
     if (!isOpen) {
       lastIntroKeyRef.current = null;
@@ -351,7 +352,7 @@ export function AriaCopilot() {
       return;
     }
     if (typeof window === "undefined") return;
-    const pathname = window.location.pathname;
+    const pathname = routerPathname || window.location.pathname;
     const locale: "ar" | "en" =
       typeof document !== "undefined" && document.documentElement.lang.startsWith("en")
         ? "en"
@@ -382,7 +383,7 @@ export function AriaCopilot() {
       introHandleRef.current?.stop();
       introHandleRef.current = null;
     };
-  }, [isOpen]);
+  }, [isOpen, routerPathname]);
 
   // Conversation Mode state
   const [convMode, setConvMode] = useState(false);
