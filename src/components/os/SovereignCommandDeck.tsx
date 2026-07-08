@@ -476,8 +476,12 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         </div>
       </div>
 
-      {/* ── KPI Grid: 6 engineered instrument tiles ── */}
-      <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
+      {/* ── KPI Grid: 6 engineered instrument tiles ──
+         Mobile → horizontal snap-scroll rail so all six tiles stay on
+         one axis (matches the executive brief). sm+ → full 6-col grid. */}
+      <div
+        className="relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-6"
+      >
         {kpis.map((k, idx) => {
           const Icon = k.icon;
           const ev = mkEvidence(k.value);
@@ -490,7 +494,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           return (
             <div
               key={k.key}
-              className="group relative overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-4 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70"
+              className="group relative shrink-0 snap-start basis-[78%] overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-4 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 sm:basis-auto"
               style={{
                 animation: `sov-tile-in 700ms cubic-bezier(0.22,1,0.36,1) ${140 + idx * 90}ms both`,
                 boxShadow:
