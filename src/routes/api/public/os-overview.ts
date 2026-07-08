@@ -5,6 +5,8 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 
+type CountResult = { count: number | null; error: unknown };
+
 export const Route = createFileRoute("/api/public/os-overview")({
   server: {
     handlers: {
@@ -12,15 +14,18 @@ export const Route = createFileRoute("/api/public/os-overview")({
         const observedAt = new Date().toISOString();
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const admin = supabaseAdmin as any;
 
           const countOf = async (
             table: string,
-            filter?: (q: ReturnType<typeof supabaseAdmin.from>) => unknown,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            build?: (q: any) => any,
           ): Promise<number> => {
             try {
-              let q = supabaseAdmin.from(table).select("*", { count: "exact", head: true });
-              if (filter) q = filter(q) as typeof q;
-              const { count, error } = (await q) as { count: number | null; error: unknown };
+              let q = admin.from(table).select("*", { count: "exact", head: true });
+              if (build) q = build(q);
+              const { count, error } = (await q) as CountResult;
               if (error) return 0;
               return count ?? 0;
             } catch {
@@ -40,36 +45,16 @@ export const Route = createFileRoute("/api/public/os-overview")({
             contractorsActive,
           ] = await Promise.all([
             countOf("sec_sites"),
+            countOf("sec_incidents", (q) => q.not("status", "in", "(resolved,closed)")),
             countOf("sec_incidents", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>)
-                .not("status", "in", "(resolved,closed)"),
+              q.eq("severity", "critical").not("status", "eq", "closed"),
             ),
-            countOf("sec_incidents", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>)
-                .eq("severity", "critical")
-                .not("status", "eq", "closed"),
-            ),
-            countOf("sec_patrols", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>).eq("status", "active"),
-            ),
-            countOf("sec_visitors", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>)
-                .in("status", ["inside", "overdue"]),
-            ),
-            countOf("sec_permits", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>)
-                .in("status", ["approved", "active"]),
-            ),
-            countOf("sec_cctv_alerts", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>).eq("status", "new"),
-            ),
-            countOf("sec_assets", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>)
-                .in("status", ["offline", "degraded"]),
-            ),
-            countOf("sec_contractors", (q) =>
-              (q as ReturnType<typeof supabaseAdmin.from>).eq("status", "active"),
-            ),
+            countOf("sec_patrols", (q) => q.eq("status", "active")),
+            countOf("sec_visitors", (q) => q.in("status", ["inside", "overdue"])),
+            countOf("sec_permits", (q) => q.in("status", ["approved", "active"])),
+            countOf("sec_cctv_alerts", (q) => q.eq("status", "new")),
+            countOf("sec_assets", (q) => q.in("status", ["offline", "degraded"])),
+            countOf("sec_contractors", (q) => q.eq("status", "active")),
           ]);
 
           return new Response(
