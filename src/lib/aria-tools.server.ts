@@ -842,6 +842,98 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         reason: reason ?? null,
       }),
     }),
+
+    // ─── Article 24 §5 — Generative image tool ───────────────────────────
+    // Calls the Lovable AI Gateway (Gemini image model), stores the result
+    // in the caller's private aria-attachments bucket, and returns a
+    // 1-hour signed URL for inline markdown embedding.
+    generate_image: tool({
+      description:
+        "Generate a new image from a text prompt (Arabic or English). Use when the user asks to draw / render / produce / design an image, diagram, poster, mock-up, or illustration. Returns a signed URL you MUST embed inline as ![alt](url).",
+      inputSchema: z.object({
+        prompt: z.string().min(4).max(1500).describe("Concrete visual prompt."),
+        alt: z.string().max(200).optional().describe("Accessible alt text."),
+        aspect_ratio: z.enum(["1:1", "16:9", "9:16", "4:3", "3:4"]).default("1:1"),
+      }),
+      execute: async ({ prompt, alt, aspect_ratio }) => {
+        const key = process.env.LOVABLE_API_KEY;
+        if (!key) return { ok: false, error: "missing_lovable_api_key" };
+        try {
+          const upstream = await fetch(
+            "https://ai.gateway.lovable.dev/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Lovable-API-Key": key,
+                "X-Lovable-AIG-SDK": "nexios-aria-generate-image",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash-image-preview",
+                modalities: ["image", "text"],
+                messages: [
+                  {
+                    role: "user",
+                    content: `Generate an image (${aspect_ratio}). ${prompt}`,
+                  },
+                ],
+              }),
+              signal: AbortSignal.timeout(60_000),
+            },
+          );
+          if (!upstream.ok) {
+            const detail = (await upstream.text().catch(() => "")).slice(0, 240);
+            return { ok: false, error: `gateway_${upstream.status}`, detail };
+          }
+          const j = (await upstream.json()) as {
+            choices?: Array<{
+              message?: {
+                images?: Array<{ image_url?: { url?: string } }>;
+                content?: string;
+              };
+            }>;
+          };
+          const dataUrl = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+          if (!dataUrl || !dataUrl.startsWith("data:")) {
+            return { ok: false, error: "no_image_in_response" };
+          }
+          const commaIdx = dataUrl.indexOf(",");
+          const meta = dataUrl.slice(5, commaIdx); // e.g. image/png;base64
+          const mime = meta.split(";")[0] || "image/png";
+          const b64 = dataUrl.slice(commaIdx + 1);
+          const bytes = Buffer.from(b64, "base64");
+          const ext = mime === "image/jpeg" ? "jpg" : mime === "image/webp" ? "webp" : "png";
+          const objectPath = `${userId}/generated/${crypto.randomUUID()}.${ext}`;
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { error: upErr } = await supabaseAdmin.storage
+            .from("aria-attachments")
+            .upload(objectPath, bytes, { contentType: mime, upsert: false });
+          if (upErr) return { ok: false, error: `upload_failed:${upErr.message}` };
+          const { data: signed, error: signErr } = await supabaseAdmin.storage
+            .from("aria-attachments")
+            .createSignedUrl(objectPath, 60 * 60);
+          if (signErr || !signed?.signedUrl) {
+            return { ok: false, error: `sign_failed:${signErr?.message ?? "unknown"}` };
+          }
+          return {
+            ok: true,
+            kind: "image",
+            mime,
+            size_bytes: bytes.length,
+            url: signed.signedUrl,
+            path: objectPath,
+            prompt,
+            alt: alt ?? prompt.slice(0, 80),
+            markdown: `![${alt ?? prompt.slice(0, 80)}](${signed.signedUrl})`,
+          };
+        } catch (e) {
+          return {
+            ok: false,
+            error: e instanceof Error ? e.message : "generate_image_failed",
+          };
+        }
+      },
+    }),
   };
 }
 
