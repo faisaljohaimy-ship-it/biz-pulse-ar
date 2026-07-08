@@ -72,7 +72,7 @@ export function useGatewayListener() {
     stopFlagRef.current = true;
     cancelAnimationFrame(rafRef.current);
     try {
-      recorderRef.current?.state !== "inactive" && recorderRef.current?.stop();
+      if (recorderRef.current?.state !== "inactive") recorderRef.current?.stop();
     } catch {
       /* noop */
     }
