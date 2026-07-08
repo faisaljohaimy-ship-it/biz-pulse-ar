@@ -135,6 +135,7 @@ import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
+import { Route as ApiPublicOsOverviewRouteImport } from './routes/api/public/os-overview'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
 import { Route as ApiPublicAriaStreamRouteImport } from './routes/api/public/aria-stream'
@@ -849,6 +850,11 @@ const ApiPublicVersionRoute = ApiPublicVersionRouteImport.update({
   path: '/api/public/version',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOsOverviewRoute = ApiPublicOsOverviewRouteImport.update({
+  id: '/api/public/os-overview',
+  path: '/api/public/os-overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   id: '/api/public/health',
   path: '/api/public/health',
@@ -1338,6 +1344,7 @@ export interface FileRoutesByFullPath {
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -1522,6 +1529,7 @@ export interface FileRoutesByTo {
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
@@ -1710,6 +1718,7 @@ export interface FileRoutesById {
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
@@ -1898,6 +1907,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-stream'
     | '/api/public/aria-tts'
     | '/api/public/health'
+    | '/api/public/os-overview'
     | '/api/public/version'
     | '/lovable/email/suppression'
     | '/assistant/'
@@ -2082,6 +2092,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-stream'
     | '/api/public/aria-tts'
     | '/api/public/health'
+    | '/api/public/os-overview'
     | '/api/public/version'
     | '/lovable/email/suppression'
     | '/assistant'
@@ -2269,6 +2280,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-stream'
     | '/api/public/aria-tts'
     | '/api/public/health'
+    | '/api/public/os-overview'
     | '/api/public/version'
     | '/lovable/email/suppression'
     | '/_authenticated/assistant/'
@@ -2357,6 +2369,7 @@ export interface RootRouteChildren {
   ApiPublicAriaStreamRoute: typeof ApiPublicAriaStreamRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicOsOverviewRoute: typeof ApiPublicOsOverviewRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
@@ -3258,6 +3271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/os-overview': {
+      id: '/api/public/os-overview'
+      path: '/api/public/os-overview'
+      fullPath: '/api/public/os-overview'
+      preLoaderRoute: typeof ApiPublicOsOverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/health': {
       id: '/api/public/health'
       path: '/api/public/health'
@@ -4006,6 +4026,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAriaStreamRoute: ApiPublicAriaStreamRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicOsOverviewRoute: ApiPublicOsOverviewRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
