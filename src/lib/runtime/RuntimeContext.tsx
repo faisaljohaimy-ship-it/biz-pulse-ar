@@ -6,6 +6,7 @@ import { bootstrapEnterprise, type RuntimeBootstrap } from "./bootstrap.function
 import { supabase } from "@/integrations/supabase/client";
 import { InitializingShell } from "./InitializingShell";
 import { useRuntimeScheduler } from "./useRuntimeScheduler";
+import { useAuth } from "@/lib/auth-context";
 
 type RuntimeContextValue = RuntimeBootstrap & {
   refresh: () => Promise<unknown>;
@@ -26,10 +27,12 @@ export function useRuntimeOptional(): RuntimeContextValue | null {
 export function RuntimeProvider({ children }: { children: ReactNode }) {
   const bootstrap = useServerFn(bootstrapEnterprise);
   const qc = useQueryClient();
+  const { user, loading: authLoading } = useAuth();
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["enterprise-runtime"],
+    queryKey: ["enterprise-runtime", user?.id ?? "anon"],
     queryFn: () => bootstrap(),
+    enabled: !!user,
     staleTime: 60_000,
     refetchOnWindowFocus: false,
     retry: 1,
@@ -80,6 +83,28 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
 
   // Autonomous runtime scheduler — enabled once bootstrap data is hydrated.
   useRuntimeScheduler(!!data);
+
+  if (authLoading) {
+    return <InitializingShell error={null} />;
+  }
+
+  // Public-access mode: no session → render children with a stub runtime.
+  if (!user) {
+    const stub: RuntimeBootstrap = {
+      org: null,
+      user: { id: "anon", email: null, display_name: "Guest", avatar_url: null },
+      counts: {
+        sites: 0, assets: 0, incidents_open: 0, incidents_critical: 0,
+        patrols_active: 0, permits_active: 0, visitors_inside: 0, cctv_new: 0,
+        agents_enabled: 0, workflows_enabled: 0,
+      },
+      integrations: { microsoft_connected: false },
+      health: { realtime: "ready", ai_gateway: "ready", scheduler: "ready" },
+      generated_at: new Date().toISOString(),
+    };
+    const value: RuntimeContextValue = { ...stub, refresh: async () => undefined };
+    return <RuntimeCtx.Provider value={value}>{children}</RuntimeCtx.Provider>;
+  }
 
   if (isLoading || !data) {
     return <InitializingShell error={null} />;
