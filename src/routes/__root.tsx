@@ -301,6 +301,7 @@ function RootComponent() {
                     <Outlet />
                   </div>
                   {!introActive && <AriaCopilot />}
+                  {!introActive && <AriaPageNarrator />}
                   {!suppressOverlays && <AriaGreeter />}
                   <WelcomeThenGenesis />
                   <Toaster />
