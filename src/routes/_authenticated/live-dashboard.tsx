@@ -262,11 +262,18 @@ function LiveExecutiveDashboard() {
       <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 pb-4 border-b border-white/5">
         <div>
           <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-primary/80">
-            <span
-              className={`w-1.5 h-1.5 rounded-full bg-primary ${tsQ.isFetching || kpisQ.isFetching ? "animate-pulse" : ""}`}
+            <EvidenceBadge
+              evidence={queryEvidence(
+                "sec_exec_kpis+timeseries",
+                Math.max(kpisQ.dataUpdatedAt, tsQ.dataUpdatedAt),
+                tsQ.isFetching || kpisQ.isFetching ? "SYNCING" : "LIVE",
+              )}
+              label={tsQ.isFetching || kpisQ.isFetching ? "SYNCING" : "LIVE"}
+              tone="cyan"
             />
-            {tsQ.isFetching || kpisQ.isFetching ? "SYNCING" : "LIVE"} · NEXIOS · EXECUTIVE
+            <span>· NEXIOS · EXECUTIVE</span>
           </div>
+
           <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary mt-1">
             لوحة القيادة التنفيذية الحية
           </h1>
