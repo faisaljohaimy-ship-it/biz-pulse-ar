@@ -82,7 +82,7 @@ export function AriaTourWatermark() {
   return (
     <div
       dir="rtl"
-      className="fixed right-4 top-20 z-[55] w-[260px] animate-fade-in overflow-hidden rounded-2xl border border-cyan-400/40 bg-[#061A2E]/85 shadow-[0_0_28px_rgba(0,212,255,0.35)] backdrop-blur-md"
+      className="fixed right-2 top-16 z-[55] w-[170px] animate-fade-in overflow-hidden rounded-2xl border border-cyan-400/40 bg-[#061A2E]/85 shadow-[0_0_28px_rgba(0,212,255,0.35)] backdrop-blur-md sm:right-4 sm:top-20 sm:w-[260px]"
     >
       <Link
         to="/aria/tour"
