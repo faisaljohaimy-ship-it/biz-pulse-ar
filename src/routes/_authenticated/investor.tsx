@@ -15,7 +15,6 @@ import { EventTimeline } from "@/components/events/EventTimeline";
 import { useRuntime } from "@/lib/runtime/RuntimeContext";
 import { getExecKpis } from "@/lib/sec.functions";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   Bot,
   Workflow,
@@ -31,6 +30,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Bell,
   MapPin,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/investor")({

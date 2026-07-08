@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   AlertTriangle,
   TrendingUp,
   ShieldAlert,
@@ -10,6 +9,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   ArrowUpRight,
   FileText,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   executiveBriefings,
   briefingActions,

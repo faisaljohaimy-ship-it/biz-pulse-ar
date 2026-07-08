@@ -17,7 +17,6 @@ import { useRuntime } from "@/lib/runtime/RuntimeContext";
 import { getExecKpis } from "@/lib/sec.functions";
 import { getAgentOpsOverview } from "@/lib/exec.functions";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   Bot,
   Workflow,
@@ -35,6 +34,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Timer,
   Zap,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/operations")({

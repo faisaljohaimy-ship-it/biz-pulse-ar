@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Loader2,
   LogOut,
   Save,
@@ -24,6 +23,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Plug,
   Database,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { seedAriaCorpus } from "@/lib/aria/seed-corpus.functions";

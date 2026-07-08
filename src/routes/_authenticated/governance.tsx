@@ -3,11 +3,11 @@ import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Network, ShieldCheck, FileText, Database } from "lucide-react";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   governanceSystems,
   governancePolicies,
   useEnterpriseFabricAdapter,
 } from "@/lib/enterprise-domains";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
 export const Route = createFileRoute("/_authenticated/governance")({

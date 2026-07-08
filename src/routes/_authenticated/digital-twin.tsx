@@ -10,7 +10,6 @@ import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
 import { useAriaVoice } from "@/lib/aria-voice";
 import { supabase } from "@/integrations/supabase/client";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Boxes,
   Building2,
   Database,
@@ -36,6 +35,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
   errorComponent: RouteError,

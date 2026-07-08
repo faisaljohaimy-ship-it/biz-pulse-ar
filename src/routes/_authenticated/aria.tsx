@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Brain,
   Sparkles,
   Send,
@@ -20,6 +19,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Pin,
   Loader2,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   runAriaPipeline,
   listAriaReports,

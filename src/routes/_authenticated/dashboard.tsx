@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   AlertTriangle,
   ArrowUpRight,
@@ -26,6 +25,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Users,
   Wrench,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { getExecKpis } from "@/lib/sec.functions";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { queryEvidence } from "@/lib/evidence/gate";

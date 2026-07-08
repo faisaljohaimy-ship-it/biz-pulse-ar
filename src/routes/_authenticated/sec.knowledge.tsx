@@ -3,7 +3,6 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   BookOpen,
   Search,
   Sparkles,
@@ -38,6 +37,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Wand2,
   ChevronRight,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { SecPageHeader } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

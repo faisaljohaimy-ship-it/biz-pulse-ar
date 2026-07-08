@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Search,
   BookOpen,
   FileText,
@@ -15,6 +14,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Loader2,
   ArrowRight,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import {

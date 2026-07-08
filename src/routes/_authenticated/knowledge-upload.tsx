@@ -8,7 +8,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   UploadCloud,
   FileText,
   Loader2,
@@ -19,6 +18,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Sparkles,
   Trash2,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   enqueueKnowledgeIngest,
   getKnowledgeChunkStats,

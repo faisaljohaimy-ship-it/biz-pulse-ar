@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Plug,
   Activity,
   RefreshCw,
@@ -23,6 +22,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   BarChart3,
   Loader2,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import {

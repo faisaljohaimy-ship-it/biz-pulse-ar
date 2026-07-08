@@ -5,12 +5,12 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   createThread,
   deleteThread,
   getThreadMessages,
   listThreads,
 } from "@/lib/threads.functions";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import {

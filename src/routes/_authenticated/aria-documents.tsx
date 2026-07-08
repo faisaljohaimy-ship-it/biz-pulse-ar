@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Upload,
   FileText,
   Loader2,
@@ -15,6 +14,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   listAriaDocuments,
   ingestAriaDocument,

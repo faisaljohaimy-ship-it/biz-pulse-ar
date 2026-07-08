@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Store,
   Sparkles,
   Image,
@@ -14,6 +13,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Search,
   Wand2,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section, ModuleCard } from "@/components/page-header";
 import { Button } from "@/components/ui/button";

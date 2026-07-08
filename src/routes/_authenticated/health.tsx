@@ -5,7 +5,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   CheckCircle2,
   AlertTriangle,
@@ -15,6 +14,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   RotateCcw,
   ExternalLink,
 } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
