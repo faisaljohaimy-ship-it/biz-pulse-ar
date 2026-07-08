@@ -3091,6 +3091,7 @@ export type Database = {
           created_at: string
           id: string
           is_shared: boolean
+          org_id: string
           title: string
           updated_at: string
           user_id: string
@@ -3101,6 +3102,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_shared?: boolean
+          org_id?: string
           title: string
           updated_at?: string
           user_id: string
@@ -3111,6 +3113,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_shared?: boolean
+          org_id?: string
           title?: string
           updated_at?: string
           user_id?: string
