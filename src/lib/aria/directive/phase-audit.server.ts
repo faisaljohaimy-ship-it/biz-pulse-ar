@@ -152,15 +152,43 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     { module: "long-term-memory", status: "deferred", issues: [], note: "requires memory-store snapshot" },
   ];
 
+  // ── PHASE 4 · COMMAND CENTER (tool engine health) ────────────────────
+  const p4: PhaseProbe[] = [
+    safeProbe("tool-engine", () => {
+      const v = verifyToolEngine();
+      const critical = v.issues.filter((i) => i.severity === "error" || i.severity === "critical");
+      return {
+        module: "tool-engine",
+        status: v.ok ? "green" : critical.length > 0 ? "red" : "amber",
+        issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
+      };
+    }),
+    { module: "executive", status: "deferred", issues: [], note: "requires live briefing feed" },
+  ];
+
+  // ── PHASE 8 · PERFORMANCE & STABILITY (runtime graph invariants) ─────
+  const p8: PhaseProbe[] = [
+    safeProbe("runtime", () => {
+      const v = verifyRuntime();
+      const critical = v.issues.filter((i) => i.severity === "error" || i.severity === "critical");
+      return {
+        module: "runtime",
+        status: v.ok ? "green" : critical.length > 0 ? "red" : "amber",
+        issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
+      };
+    }),
+    { module: "deployment", status: "deferred", issues: [], note: "requires live deployment snapshot" },
+  ];
+
   const phases: PhaseReport[] = [
     { n: 1, key: "aria-core", title_en: "ARIA Core", title_ar: "نواة أريا", status: rollUp(p1), probes: p1 },
     { n: 2, key: "executive-execution", title_en: "Executive Execution", title_ar: "التنفيذ التنفيذي", status: rollUp(p2), probes: p2 },
     { n: 3, key: "live-demonstration", title_en: "Live Demonstration", title_ar: "العرض الحي", status: rollUp(p3), probes: p3 },
-    scaffold(4, "command-center", "Command Center", "مركز القيادة", ["operations-center", "executive"]),
+    { n: 4, key: "command-center", title_en: "Command Center", title_ar: "مركز القيادة", status: rollUp(p4), probes: p4 },
     { n: 5, key: "enterprise-memory", title_en: "Enterprise Memory", title_ar: "الذاكرة المؤسسية", status: rollUp(p5), probes: p5 },
     scaffold(6, "multi-agent", "Multi-Agent", "الوكلاء المتعددون", ["agent-mesh", "mesh", "orchestrator"]),
     scaffold(7, "digital-twin", "Digital Twin", "التوأم الرقمي", ["operations-center", "integration"]),
-    scaffold(8, "performance-stability", "Performance & Stability", "الأداء والاستقرار", ["production", "deployment"]),
+    { n: 8, key: "performance-stability", title_en: "Performance & Stability", title_ar: "الأداء والاستقرار", status: rollUp(p8), probes: p8 },
     scaffold(9, "executive-experience", "Executive Experience", "التجربة التنفيذية", ["conversation-experience", "acceptance-experience", "hero-ui"]),
   ];
 
