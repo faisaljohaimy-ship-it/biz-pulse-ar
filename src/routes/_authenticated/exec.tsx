@@ -152,30 +152,40 @@ function ExecConsole() {
   const execs = useQuery({
     queryKey: ["exec", "execs"],
     queryFn: () => listToolExecutions(),
-    refetchInterval: 5000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
+    staleTime: 15_000,
   });
   const wfs = useQuery({
     queryKey: ["exec", "workflows"],
     queryFn: () => listWorkflows(),
+    staleTime: 60_000,
   });
   const runs = useQuery({
     queryKey: ["exec", "runs"],
     queryFn: () => listWorkflowRuns(),
-    refetchInterval: 5000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
+    staleTime: 15_000,
   });
   const events = useQuery({
     queryKey: ["exec", "events"],
     queryFn: () => listRecentEvents(),
-    refetchInterval: 5000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
+    staleTime: 15_000,
   });
   const agents = useQuery({
     queryKey: ["exec", "agents"],
     queryFn: () => listAgents(),
+    staleTime: 60_000,
   });
   const agentRuns = useQuery({
     queryKey: ["exec", "agentRuns"],
     queryFn: () => listAgentRuns(),
-    refetchInterval: 5000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
+    staleTime: 15_000,
   });
 
   const approveFn = useServerFn(approveToolExecution);
