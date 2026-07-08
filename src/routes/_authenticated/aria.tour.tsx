@@ -55,6 +55,7 @@ export const Route = createFileRoute("/_authenticated/aria/tour")({
 function AriaTourPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const prefetchRef = useRef<HTMLIFrameElement | null>(null);
   const navigate = useNavigate();
 
   const [current, setCurrent] = useState<TourCue>(TOUR_CUES[0]);
@@ -62,15 +63,48 @@ function AriaTourPage() {
   const [muted, setMuted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [now, setNow] = useState(0);
+  // Window-opening moment: when a new cue fires, the ARIA video pops
+  // to the foreground for `REVEAL_MS`, then quietly settles back to
+  // its ambient corner state — mirroring "the window opens, ARIA
+  // speaks over it, then steps aside."
+  const [revealUntil, setRevealUntil] = useState<number>(() => Date.now() + 6000);
+  const REVEAL_MS = 5200;
+
+  // Silence any autoplaying audio/video/TTS inside the embedded route so
+  // the ARIA narration is the ONLY voice the user hears.
+  const silenceIframe = useCallback(() => {
+    const win = iframeRef.current?.contentWindow;
+    const doc = iframeRef.current?.contentDocument;
+    if (!win || !doc) return;
+    try {
+      doc.querySelectorAll("audio,video").forEach((el) => {
+        const m = el as HTMLMediaElement;
+        m.muted = true;
+        m.pause?.();
+      });
+      win.speechSynthesis?.cancel?.();
+    } catch {
+      /* cross-origin or detached — safe to ignore */
+    }
+  }, []);
 
   // === Sync engine ============================================
-  const applyCue = useCallback((cue: TourCue) => {
-    setCurrent((prev) => {
-      if (prev.route === cue.route) return prev;
-      if (iframeRef.current) iframeRef.current.src = cue.route;
-      return cue;
-    });
-  }, []);
+  const applyCue = useCallback(
+    (cue: TourCue) => {
+      setCurrent((prev) => {
+        if (prev.route === cue.route) return prev;
+        if (iframeRef.current) iframeRef.current.src = cue.route;
+        setRevealUntil(Date.now() + REVEAL_MS);
+        // Pre-warm the following window so it paints instantly.
+        const upcoming = nextCue(cue.tSec);
+        if (upcoming && prefetchRef.current) {
+          prefetchRef.current.src = upcoming.route;
+        }
+        return cue;
+      });
+    },
+    [],
+  );
 
   const onTimeUpdate = useCallback(() => {
     const v = videoRef.current;
@@ -78,6 +112,15 @@ function AriaTourPage() {
     setNow(v.currentTime);
     applyCue(activeCue(v.currentTime));
   }, [applyCue]);
+
+  // Keep a live "is the reveal window still open?" tick so the video
+  // fades on schedule without needing a re-render loop.
+  const [, force] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => force((n) => n + 1), 500);
+    return () => window.clearInterval(id);
+  }, []);
+  const revealed = Date.now() < revealUntil;
 
   // === Keyboard controls ======================================
   useEffect(() => {
@@ -95,7 +138,6 @@ function AriaTourPage() {
         const p = prevCue(v.currentTime);
         if (p) v.currentTime = p.tSec + 0.05;
       } else if (e.key.toLowerCase() === "m") {
-        // Calibration: log copy-paste-ready line
         console.info(
           `[TOUR CUE] { tSec: ${v.currentTime.toFixed(1)}, route: "${current.route}", titleAr: "${current.titleAr}", titleEn: "${current.titleEn}" },`,
         );
@@ -111,6 +153,7 @@ function AriaTourPage() {
     if (!v) return;
     v.play().catch(() => setPlaying(false));
   }, []);
+
 
   const seekTo = (cue: TourCue) => {
     const v = videoRef.current;
@@ -182,11 +225,29 @@ function AriaTourPage() {
           src={current.route}
           title="NEXIOS tour viewport"
           className="h-full w-full border-0 bg-[#061a2e]"
+          onLoad={silenceIframe}
+        />
+        {/* invisible pre-warm iframe: loads the NEXT cue's route so the
+            following window paints instantly when ARIA reaches it. */}
+        <iframe
+          ref={prefetchRef}
+          aria-hidden
+          tabIndex={-1}
+          title="prefetch"
+          className="pointer-events-none absolute h-1 w-1 opacity-0"
         />
 
-        {/* Floating ARIA video (draggable-feeling anchor, bottom-left) */}
+        {/* Floating ARIA video — links appearance to window opening:
+            expands when a new cue fires, then quietly shrinks to a pill
+            while the operator reads the freshly-opened surface. */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="pointer-events-auto absolute bottom-6 left-6 w-[220px] overflow-hidden rounded-2xl border border-cyan-400/40 bg-black/60 shadow-[0_10px_40px_rgba(0,212,255,0.35)] backdrop-blur-xl">
+          <div
+            className={cn(
+              "pointer-events-auto absolute bottom-6 left-6 overflow-hidden rounded-2xl border border-cyan-400/40 bg-black/60 shadow-[0_10px_40px_rgba(0,212,255,0.35)] backdrop-blur-xl transition-all duration-700 ease-out",
+              revealed ? "w-[260px] opacity-100 scale-100" : "w-[140px] opacity-70 scale-95",
+            )}
+          >
+
             <video
               ref={videoRef}
               src={ariaTour.url}
