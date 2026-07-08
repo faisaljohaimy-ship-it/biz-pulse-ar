@@ -23,6 +23,8 @@ export interface BrainEvent {
   type: "submitted" | "duplicate" | "cancelled" | "failed" | "completed";
   turnId?: string;
   reason?: string;
+  /** Client-observed latency from submit → completion (ms). */
+  latencyMs?: number;
 }
 
 export const ariaBrain = {
@@ -57,6 +59,7 @@ export const ariaBrain = {
       ariaBrain.emit({ type: "duplicate" });
       return;
     }
+    submitStamps.set(submission.turn.id, performance.now());
     ariaBrain.emit({ type: "submitted", turnId: submission.turn.id });
     try {
       await boundSender(submission.text);
@@ -67,20 +70,32 @@ export const ariaBrain = {
         err,
         submission.turn.intent === "unknown" ? "en" : "en",
       );
-      ariaBrain.emit({ type: "failed", turnId: submission.turn.id, reason: message });
+      const latencyMs = takeLatency(submission.turn.id);
+      ariaBrain.emit({ type: "failed", turnId: submission.turn.id, reason: message, latencyMs });
       throw err;
     }
   },
   /** Provider notifies the brain that the current stream finished. */
   reportCompletion(turnId: string, finalText: string) {
     const scrubbed = executiveAiOrchestrator.completeTurn(turnId, finalText);
-    ariaBrain.emit({ type: "completed", turnId });
+    const latencyMs = takeLatency(turnId);
+    ariaBrain.emit({ type: "completed", turnId, latencyMs });
     return scrubbed;
   },
   /** Provider notifies the brain that a stream failed. */
   reportFailure(turnId: string, err: unknown, locale: "ar" | "en") {
     const message = executiveAiOrchestrator.failTurn(turnId, err, locale);
-    ariaBrain.emit({ type: "failed", turnId, reason: message });
+    const latencyMs = takeLatency(turnId);
+    ariaBrain.emit({ type: "failed", turnId, reason: message, latencyMs });
     return message;
   },
 };
+
+// Client-observed latency: submit → completion (ms). SSR-safe (Map on module).
+const submitStamps = new Map<string, number>();
+function takeLatency(turnId: string): number | undefined {
+  const t = submitStamps.get(turnId);
+  if (t === undefined) return undefined;
+  submitStamps.delete(turnId);
+  return Math.round(performance.now() - t);
+}
