@@ -483,3 +483,61 @@ Any bug report of "voice doesn't work on mobile" is treated as an
 FR-20 violation and takes priority over feature work until the Readiness
 Loop closes it.
 
+## FR-21 — Synchronous Gesture Chain & Mobile WebAudio Routing (permanent)
+
+The gesture-to-audio chain from FR-20 must remain **synchronous end-to-end**,
+and the mobile audio path must never route through a fresh, suspended
+`AudioContext`. Two failure modes are hereby forbidden:
+
+### §1 — No `await` / dynamic `import()` between the gesture and the audio call
+
+Once a `pointerdown` / `click` / `touchstart` handler fires, iOS Safari and
+Chrome Android grant a **user activation** window that lasts only for the
+current synchronous tick. Any of the following breaks the chain and the
+next `Audio.play()` / `AudioContext.resume()` is silently refused:
+
+- `await import("./aria/audio-bus")` before calling `AriaAudioBus.unlock()`
+- `await fetch(...)` before creating `SpeechSynthesisUtterance` or `Audio`
+- `Promise.resolve().then(() => ctx.resume())` instead of `ctx.resume()` inline
+
+Rule: `installInteractionTracker`, `unmute`, and every ARIA voice acquire
+path MUST use **static top-level imports** and call the audio APIs
+synchronously in the same tick as the gesture. If a module cycle appears,
+break the cycle in a different file — never with dynamic import in the
+audio path.
+
+### §2 — Never create a new `AudioContext` on touch devices for playback routing
+
+On iOS / Android, calling `ctx.createMediaElementSource(video)` on a freshly
+constructed `AudioContext` re-routes the element's audio through WebAudio.
+The new context starts in the `suspended` state, and `ctx.resume()` outside
+the original gesture is refused — the element keeps "playing" but no sound
+reaches the speaker. Symptom: video advances, TTS "completes", user hears
+silence.
+
+Mandatory pattern on touch devices:
+- Detect touch: `("ontouchstart" in window) || navigator.maxTouchPoints > 0`
+- **Do not** call `createMediaElementSource` or construct a new
+  `AudioContext` for the sole purpose of driving a visualiser
+- Reuse `getPrimedAudioContext()` from `src/lib/user-interaction.ts` when a
+  visualiser is truly needed on desktop; otherwise fall back to a
+  time-based animation
+- Never `ctx.close()` the shared primed context — other components rely on it
+
+### Definition of done
+- Mobile Safari (iOS 17+) plays the ARIA welcome video with **sound** on
+  the first tap and the greeting plays to completion (`onEnded` fires
+  naturally, `finish()` is not triggered by `MAX_MS` cap).
+- Chrome Android plays the ARIA welcome video with sound on the first tap.
+- Desktop retains the WebAudio analyser bars (real frequency data), and
+  the mobile path shows the time-based fallback bars.
+- `VoiceTimeline` never shows `acquire REFUSED — no user gesture yet` after
+  any tap.
+- No async `import("@/lib/aria/audio-bus")` exists in any audio-critical
+  code path — `rg "import\(.*audio-bus" src` returns zero matches in
+  handlers.
+
+Any bug report of "voice doesn't work after tapping on mobile" or "the
+greeting doesn't finish on mobile" is treated as an FR-21 violation and
+takes priority over feature work until the Readiness Loop closes it.
+
