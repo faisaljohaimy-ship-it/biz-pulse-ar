@@ -14,9 +14,21 @@
  */
 import { useState } from "react";
 import {
-  Check, X, Search, UserPlus, CalendarClock, AlertTriangle,
-  FileText, ChevronDown, ChevronRight, Sparkles, Target, Gauge,
-  BookOpen, Building2, ShieldAlert,
+  Check,
+  X,
+  Search,
+  UserPlus,
+  CalendarClock,
+  AlertTriangle,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
+  Target,
+  Gauge,
+  BookOpen,
+  Building2,
+  ShieldAlert,
 } from "lucide-react";
 
 export interface ExecutivePayload {
@@ -40,8 +52,13 @@ export interface ExecutivePayload {
 }
 
 export type ExecutiveDecision =
-  | "approve" | "reject" | "investigate" | "assign"
-  | "schedule" | "escalate" | "report";
+  | "approve"
+  | "reject"
+  | "investigate"
+  | "assign"
+  | "schedule"
+  | "escalate"
+  | "report";
 
 const DECISIONS: Array<{
   key: ExecutiveDecision;
@@ -52,27 +69,71 @@ const DECISIONS: Array<{
   prompt_en: string;
   prompt_ar: string;
 }> = [
-  { key: "approve", label_en: "Approve", label_ar: "اعتماد", Icon: Check, tone: "primary",
+  {
+    key: "approve",
+    label_en: "Approve",
+    label_ar: "اعتماد",
+    Icon: Check,
+    tone: "primary",
     prompt_en: "I approve the recommendation. Confirm what happens next and who is notified.",
-    prompt_ar: "اعتمدت التوصية. وضّح الخطوات التالية والجهات التي سيتم إخطارها." },
-  { key: "reject", label_en: "Reject", label_ar: "رفض", Icon: X, tone: "danger",
+    prompt_ar: "اعتمدت التوصية. وضّح الخطوات التالية والجهات التي سيتم إخطارها.",
+  },
+  {
+    key: "reject",
+    label_en: "Reject",
+    label_ar: "رفض",
+    Icon: X,
+    tone: "danger",
     prompt_en: "I reject the recommendation. Suggest a safer alternative with justification.",
-    prompt_ar: "أرفض التوصية. اقترح بديلاً أكثر أماناً مع تبرير واضح." },
-  { key: "investigate", label_en: "Investigate", label_ar: "تحقيق", Icon: Search, tone: "neutral",
+    prompt_ar: "أرفض التوصية. اقترح بديلاً أكثر أماناً مع تبرير واضح.",
+  },
+  {
+    key: "investigate",
+    label_en: "Investigate",
+    label_ar: "تحقيق",
+    Icon: Search,
+    tone: "neutral",
     prompt_en: "Open a deeper investigation — surface root cause, related incidents and owner.",
-    prompt_ar: "افتحي تحقيقاً أعمق: السبب الجذري، البلاغات المرتبطة، والجهة المسؤولة." },
-  { key: "assign", label_en: "Assign", label_ar: "إسناد", Icon: UserPlus, tone: "neutral",
+    prompt_ar: "افتحي تحقيقاً أعمق: السبب الجذري، البلاغات المرتبطة، والجهة المسؤولة.",
+  },
+  {
+    key: "assign",
+    label_en: "Assign",
+    label_ar: "إسناد",
+    Icon: UserPlus,
+    tone: "neutral",
     prompt_en: "Assign the corrective action to the most suitable owner and justify the choice.",
-    prompt_ar: "أسندي الإجراء التصحيحي إلى المسؤول الأنسب مع تبرير الاختيار." },
-  { key: "schedule", label_en: "Schedule", label_ar: "جدولة", Icon: CalendarClock, tone: "neutral",
-    prompt_en: "Schedule the next executive review for this item — propose date, attendees and agenda.",
-    prompt_ar: "جدولي المراجعة التنفيذية التالية لهذا البند: التاريخ، الحضور، وجدول الأعمال." },
-  { key: "escalate", label_en: "Escalate", label_ar: "تصعيد", Icon: AlertTriangle, tone: "danger",
+    prompt_ar: "أسندي الإجراء التصحيحي إلى المسؤول الأنسب مع تبرير الاختيار.",
+  },
+  {
+    key: "schedule",
+    label_en: "Schedule",
+    label_ar: "جدولة",
+    Icon: CalendarClock,
+    tone: "neutral",
+    prompt_en:
+      "Schedule the next executive review for this item — propose date, attendees and agenda.",
+    prompt_ar: "جدولي المراجعة التنفيذية التالية لهذا البند: التاريخ، الحضور، وجدول الأعمال.",
+  },
+  {
+    key: "escalate",
+    label_en: "Escalate",
+    label_ar: "تصعيد",
+    Icon: AlertTriangle,
+    tone: "danger",
     prompt_en: "Escalate to executive leadership — draft the escalation note and impact statement.",
-    prompt_ar: "صعّدي الأمر للقيادة التنفيذية: اكتبي مذكرة التصعيد وبيان الأثر." },
-  { key: "report", label_en: "Generate Report", label_ar: "تقرير", Icon: FileText, tone: "neutral",
-    prompt_en: "Generate a one-page executive report for this item with evidence, risk and recommendation.",
-    prompt_ar: "أنشئي تقريراً تنفيذياً من صفحة واحدة يتضمن الأدلة والمخاطر والتوصية." },
+    prompt_ar: "صعّدي الأمر للقيادة التنفيذية: اكتبي مذكرة التصعيد وبيان الأثر.",
+  },
+  {
+    key: "report",
+    label_en: "Generate Report",
+    label_ar: "تقرير",
+    Icon: FileText,
+    tone: "neutral",
+    prompt_en:
+      "Generate a one-page executive report for this item with evidence, risk and recommendation.",
+    prompt_ar: "أنشئي تقريراً تنفيذياً من صفحة واحدة يتضمن الأدلة والمخاطر والتوصية.",
+  },
 ];
 
 function severityTone(s?: string): string {
@@ -83,16 +144,42 @@ function severityTone(s?: string): string {
   return "border-white/15 bg-white/5 text-white/70";
 }
 
-function priorityFromInsights(insights?: ExecutivePayload["insights"]): { label_en: string; label_ar: string; tone: string } {
+function priorityFromInsights(insights?: ExecutivePayload["insights"]): {
+  label_en: string;
+  label_ar: string;
+  tone: string;
+} {
   const sev = (insights ?? []).map((i) => (i.severity ?? "").toLowerCase());
-  if (sev.includes("critical")) return { label_en: "P1 · Critical", label_ar: "أولوية ١ · حرج", tone: "text-rose-200 border-rose-400/60 bg-rose-400/10" };
-  if (sev.includes("high")) return { label_en: "P2 · High", label_ar: "أولوية ٢ · عالية", tone: "text-amber-200 border-amber-400/60 bg-amber-400/10" };
-  if (sev.includes("medium")) return { label_en: "P3 · Medium", label_ar: "أولوية ٣ · متوسطة", tone: "text-cyan-100 border-cyan-400/50 bg-cyan-400/10" };
-  return { label_en: "P4 · Informational", label_ar: "أولوية ٤ · للعلم", tone: "text-white/70 border-white/15 bg-white/5" };
+  if (sev.includes("critical"))
+    return {
+      label_en: "P1 · Critical",
+      label_ar: "أولوية ١ · حرج",
+      tone: "text-rose-200 border-rose-400/60 bg-rose-400/10",
+    };
+  if (sev.includes("high"))
+    return {
+      label_en: "P2 · High",
+      label_ar: "أولوية ٢ · عالية",
+      tone: "text-amber-200 border-amber-400/60 bg-amber-400/10",
+    };
+  if (sev.includes("medium"))
+    return {
+      label_en: "P3 · Medium",
+      label_ar: "أولوية ٣ · متوسطة",
+      tone: "text-cyan-100 border-cyan-400/50 bg-cyan-400/10",
+    };
+  return {
+    label_en: "P4 · Informational",
+    label_ar: "أولوية ٤ · للعلم",
+    tone: "text-white/70 border-white/15 bg-white/5",
+  };
 }
 
 export function ExecutiveEvidencePanel({
-  payload, ar, onDecision, affectedDepartments,
+  payload,
+  ar,
+  onDecision,
+  affectedDepartments,
 }: {
   payload: ExecutivePayload;
   ar: boolean;
@@ -115,8 +202,10 @@ export function ExecutiveEvidencePanel({
   const priority = priorityFromInsights(payload.insights);
   const hasAnything =
     (payload.evidence && payload.evidence.length) ||
-    payload.reasoning || payload.recommendation ||
-    nextAction || (payload.insights && payload.insights.length) ||
+    payload.reasoning ||
+    payload.recommendation ||
+    nextAction ||
+    (payload.insights && payload.insights.length) ||
     (payload.plan && payload.plan.length);
   if (!hasAnything && conf === null) return null;
 
@@ -128,7 +217,11 @@ export function ExecutiveEvidencePanel({
         className="flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] uppercase tracking-[0.2em] text-[#3AE8FF]/85 transition hover:bg-[#3AE8FF]/[0.06]"
         aria-expanded={open}
       >
-        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3 rtl:rotate-180" />}
+        {open ? (
+          <ChevronDown className="h-3 w-3" />
+        ) : (
+          <ChevronRight className="h-3 w-3 rtl:rotate-180" />
+        )}
         <Sparkles className="h-3 w-3" />
         <span className="flex-1">{ar ? "لوحة الأدلة التنفيذية" : "Executive Evidence"}</span>
         {conf !== null && (
@@ -136,7 +229,9 @@ export function ExecutiveEvidencePanel({
             <Gauge className="h-3 w-3" /> {ar ? `الثقة ${conf}٪` : `${conf}% conf.`}
           </span>
         )}
-        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[10px] normal-case tracking-normal ${priority.tone}`}>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[10px] normal-case tracking-normal ${priority.tone}`}
+        >
           <ShieldAlert className="h-3 w-3" /> {ar ? priority.label_ar : priority.label_en}
         </span>
       </button>
@@ -148,7 +243,9 @@ export function ExecutiveEvidencePanel({
               <div className="mb-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-white/50">
                 <BookOpen className="h-3 w-3" /> {ar ? "الملخص" : "Summary"}
               </div>
-              <p dir="auto" className="whitespace-pre-wrap">{payload.summary}</p>
+              <p dir="auto" className="whitespace-pre-wrap">
+                {payload.summary}
+              </p>
             </div>
           )}
 
@@ -160,7 +257,10 @@ export function ExecutiveEvidencePanel({
               <ul className="space-y-1">
                 {payload.evidence.map((e, i) => (
                   <li key={i} className="flex gap-2">
-                    <span aria-hidden className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-[#3AE8FF]" />
+                    <span
+                      aria-hidden
+                      className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-[#3AE8FF]"
+                    />
                     <span dir="auto">{e}</span>
                   </li>
                 ))}
@@ -173,7 +273,9 @@ export function ExecutiveEvidencePanel({
               <div className="mb-0.5 text-[10px] uppercase tracking-[0.2em] text-white/50">
                 {ar ? "التحليل" : "Reasoning"}
               </div>
-              <p dir="auto" className="whitespace-pre-wrap">{payload.reasoning}</p>
+              <p dir="auto" className="whitespace-pre-wrap">
+                {payload.reasoning}
+              </p>
             </div>
           )}
 
@@ -191,7 +293,7 @@ export function ExecutiveEvidencePanel({
                   >
                     <span className="uppercase tracking-wider">{i.severity ?? "info"}</span>
                     <span className="text-white/90">·</span>
-                    <span>{ar ? (i.title_ar || i.title_en) : (i.title_en || i.title_ar)}</span>
+                    <span>{ar ? i.title_ar || i.title_en : i.title_en || i.title_ar}</span>
                   </span>
                 ))}
               </div>
@@ -205,7 +307,10 @@ export function ExecutiveEvidencePanel({
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {affectedDepartments.slice(0, 5).map((d) => (
-                  <span key={d} className="rounded-full border border-white/15 bg-white/5 px-2 py-[3px] text-[10.5px] text-white/80">
+                  <span
+                    key={d}
+                    className="rounded-full border border-white/15 bg-white/5 px-2 py-[3px] text-[10.5px] text-white/80"
+                  >
                     {d}
                   </span>
                 ))}
@@ -218,7 +323,9 @@ export function ExecutiveEvidencePanel({
               <div className="mb-0.5 text-[10px] uppercase tracking-[0.2em] text-[#3AE8FF]">
                 {ar ? "التوصية التنفيذية" : "Executive Recommendation"}
               </div>
-              <p dir="auto" className="whitespace-pre-wrap text-white/95">{payload.recommendation}</p>
+              <p dir="auto" className="whitespace-pre-wrap text-white/95">
+                {payload.recommendation}
+              </p>
             </div>
           )}
 
@@ -227,10 +334,22 @@ export function ExecutiveEvidencePanel({
               <div className="mb-0.5 text-[10px] uppercase tracking-[0.2em] text-white/50">
                 {ar ? "الإجراء التالي" : "Next Action"}
               </div>
-              <div dir="auto" className="text-white/90">{nextAction.title || (ar ? "إجراء موصى به" : "Recommended action")}</div>
+              <div dir="auto" className="text-white/90">
+                {nextAction.title || (ar ? "إجراء موصى به" : "Recommended action")}
+              </div>
               <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-white/60">
-                {nextAction.owner && <span>{ar ? "المسؤول:" : "Owner:"} <span className="text-white/85">{nextAction.owner}</span></span>}
-                {nextAction.due && <span>{ar ? "الاستحقاق:" : "Due:"} <span className="text-white/85">{nextAction.due}</span></span>}
+                {nextAction.owner && (
+                  <span>
+                    {ar ? "المسؤول:" : "Owner:"}{" "}
+                    <span className="text-white/85">{nextAction.owner}</span>
+                  </span>
+                )}
+                {nextAction.due && (
+                  <span>
+                    {ar ? "الاستحقاق:" : "Due:"}{" "}
+                    <span className="text-white/85">{nextAction.due}</span>
+                  </span>
+                )}
               </div>
             </div>
           )}

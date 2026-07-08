@@ -8,7 +8,9 @@ export class ListeningAnimationEngine {
   private reduced = false;
   constructor(private readonly sync: HeroStateSynchronizer) {}
 
-  setReducedMotion(r: boolean): void { this.reduced = r; }
+  setReducedMotion(r: boolean): void {
+    this.reduced = r;
+  }
 
   tick(tick: HeroTick): void {
     const s = this.sync.get();

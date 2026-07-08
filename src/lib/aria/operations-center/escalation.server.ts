@@ -1,19 +1,7 @@
 // Escalation ladder. Deterministic role progression by severity.
-import type {
-  Alert,
-  EscalationHop,
-  EscalationRecord,
-  OperatorRole,
-  Severity,
-} from "./types";
+import type { Alert, EscalationHop, EscalationRecord, OperatorRole, Severity } from "./types";
 
-const LADDER: OperatorRole[] = [
-  "operator",
-  "supervisor",
-  "director",
-  "executive",
-  "board",
-];
+const LADDER: OperatorRole[] = ["operator", "supervisor", "director", "executive", "board"];
 
 const START_INDEX: Record<Severity, number> = {
   info: 0,
@@ -30,9 +18,7 @@ export function buildEscalation(alert: Alert, at: string): EscalationRecord {
   seq += 1;
   const startIdx = START_INDEX[alert.severity] ?? 0;
   const start = LADDER[startIdx];
-  const hops: EscalationHop[] = [
-    { toRole: start, at, reason: `initial:${alert.severity}` },
-  ];
+  const hops: EscalationHop[] = [{ toRole: start, at, reason: `initial:${alert.severity}` }];
   return {
     id: `esc_${seq}_${alert.id}`,
     alertId: alert.id,

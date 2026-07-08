@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       releaseLoading("watchdog");
     }, 2500);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       authLog("auth:event", {
         event,
         hasSession: !!session,
@@ -51,7 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       releaseLoading(`event:${event}`);
     });
     authLog("getSession:start");
-    supabase.auth.getSession()
+    supabase.auth
+      .getSession()
       .then(({ data, error }) => {
         if (!active) return;
         authLog("getSession:done", {

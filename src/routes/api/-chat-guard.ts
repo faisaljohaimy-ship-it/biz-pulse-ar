@@ -13,7 +13,8 @@ const BodySchema = z
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ARIA-Request-ID, X-ARIA-Intent, X-ARIA-Locale, X-ARIA-Long-Context, Accept",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-ARIA-Request-ID, X-ARIA-Intent, X-ARIA-Locale, X-ARIA-Long-Context, Accept",
   "Access-Control-Max-Age": "86400",
 } as const;
 
@@ -60,8 +61,7 @@ export async function validateChatRequest(request: Request): Promise<ChatGuardRe
     return { ok: false, response: chatJsonError("Invalid chat request payload.", 400, requestId) };
   }
 
-  const authHeader =
-    request.headers.get("authorization") ?? request.headers.get("Authorization");
+  const authHeader = request.headers.get("authorization") ?? request.headers.get("Authorization");
   const bearer = authHeader?.startsWith("Bearer ") ? authHeader : null;
 
   return { ok: true, data: parsed.data, authHeader: bearer, requestId };

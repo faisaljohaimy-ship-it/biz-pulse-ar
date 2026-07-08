@@ -14,8 +14,7 @@ export function computeMembership(input: {
     .filter((n) => n.status === "active" || n.status === "joining")
     .map((n) => n.id)
     .sort();
-  const leaderId =
-    input.leaderId && members.includes(input.leaderId) ? input.leaderId : null;
+  const leaderId = input.leaderId && members.includes(input.leaderId) ? input.leaderId : null;
   return MembershipInputZ.parse({
     clusterId: input.clusterId,
     members,

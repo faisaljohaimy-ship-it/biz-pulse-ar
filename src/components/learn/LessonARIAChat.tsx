@@ -75,9 +75,7 @@ export function LessonARIAChat({ slug, lang, suggested }: Props) {
         )}
         <ul className="space-y-4">
           {messages.map((m: UIMessage) => {
-            const text = (m.parts ?? [])
-              .map((p) => (p.type === "text" ? p.text : ""))
-              .join("");
+            const text = (m.parts ?? []).map((p) => (p.type === "text" ? p.text : "")).join("");
             const isAria = m.role === "assistant";
             return (
               <li key={m.id} className={cn("flex gap-3", isAria ? "" : "flex-row-reverse")}>
@@ -128,7 +126,10 @@ export function LessonARIAChat({ slug, lang, suggested }: Props) {
       )}
 
       <form
-        onSubmit={(e) => { e.preventDefault(); send(input); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          send(input);
+        }}
         className="flex gap-2"
       >
         <input

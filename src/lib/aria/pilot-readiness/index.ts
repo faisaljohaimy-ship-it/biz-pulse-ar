@@ -5,10 +5,7 @@ export * from "./types";
 export * as PilotContracts from "./contracts";
 
 export { definePilotScope } from "./pilot-scope.server";
-export {
-  validateStakeholder,
-  summarizeStakeholders,
-} from "./stakeholder-map.server";
+export { validateStakeholder, summarizeStakeholders } from "./stakeholder-map.server";
 export {
   validateCriterion,
   measureCriterion,
@@ -23,11 +20,7 @@ export {
 export { captureFeedback, summarizeFeedback } from "./feedback.server";
 export { buildTrainingPlan } from "./training-plan.server";
 export { buildSupportPlan } from "./support-plan.server";
-export {
-  deriveSeverity,
-  registerRisk,
-  summarizeRisks,
-} from "./risk-register.server";
+export { deriveSeverity, registerRisk, summarizeRisks } from "./risk-register.server";
 export { buildGovernancePlan } from "./governance-plan.server";
 export { buildRolloutPlan } from "./rollout-plan.server";
 export { buildValueCase } from "./value-case.server";

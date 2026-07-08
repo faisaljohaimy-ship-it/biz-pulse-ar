@@ -17,7 +17,8 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { buildExecutiveSnapshot } = await import("@/lib/reports/snapshot.server");
-        const { buildExecPdf, buildExecXlsx, htmlSummaryFromSnapshot } = await import("@/lib/reports/builder.server");
+        const { buildExecPdf, buildExecXlsx, htmlSummaryFromSnapshot } =
+          await import("@/lib/reports/builder.server");
 
         const nowIso = new Date().toISOString();
         const { data: due, error } = await supabaseAdmin
@@ -36,15 +37,21 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
         const sp = process.env.MICROSOFT_SHAREPOINT_API_KEY;
         const out = process.env.MICROSOFT_OUTLOOK_API_KEY;
 
-        const results: Array<{ id: string; status: "ok" | "skipped" | "failed"; detail?: string }> = [];
+        const results: Array<{ id: string; status: "ok" | "skipped" | "failed"; detail?: string }> =
+          [];
 
         for (const s of due ?? []) {
           if (!lov || !sp || !out) {
             results.push({ id: s.id, status: "skipped", detail: "connector_not_configured" });
-            await supabaseAdmin.from("report_schedules").update({
-              last_run_at: nowIso, last_status: "skipped", last_error: "connector_not_configured",
-              next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
-            }).eq("id", s.id);
+            await supabaseAdmin
+              .from("report_schedules")
+              .update({
+                last_run_at: nowIso,
+                last_status: "skipped",
+                last_error: "connector_not_configured",
+                next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
+              })
+              .eq("id", s.id);
             continue;
           }
           try {
@@ -64,25 +71,65 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
             const pdfBytes = await buildExecPdf(snap, { title });
             const xlsxBytes = buildExecXlsx(snap, { title });
 
-            const pdfItem = await spUpload(SP_GW, lov, sp, s.site_id, folder, pdfName, pdfBytes, "application/pdf");
-            const xlsxItem = await spUpload(SP_GW, lov, sp, s.site_id, folder, xlsxName, xlsxBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            const pdfShare = await createLink(SP_GW, lov, sp, s.site_id, pdfItem.id).catch(() => null);
-            const xlsxShare = await createLink(SP_GW, lov, sp, s.site_id, xlsxItem.id).catch(() => null);
+            const pdfItem = await spUpload(
+              SP_GW,
+              lov,
+              sp,
+              s.site_id,
+              folder,
+              pdfName,
+              pdfBytes,
+              "application/pdf",
+            );
+            const xlsxItem = await spUpload(
+              SP_GW,
+              lov,
+              sp,
+              s.site_id,
+              folder,
+              xlsxName,
+              xlsxBytes,
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            );
+            const pdfShare = await createLink(SP_GW, lov, sp, s.site_id, pdfItem.id).catch(
+              () => null,
+            );
+            const xlsxShare = await createLink(SP_GW, lov, sp, s.site_id, xlsxItem.id).catch(
+              () => null,
+            );
 
-            const html = htmlSummaryFromSnapshot(snap, { title })
-              + `<p style="font:12px/1.6 system-ui;color:#334155;text-align:center"><a href="${pdfShare ?? pdfItem.webUrl}">Open PDF</a> · <a href="${xlsxShare ?? xlsxItem.webUrl}">Open Excel</a></p>`;
+            const html =
+              htmlSummaryFromSnapshot(snap, { title }) +
+              `<p style="font:12px/1.6 system-ui;color:#334155;text-align:center"><a href="${pdfShare ?? pdfItem.webUrl}">Open PDF</a> · <a href="${xlsxShare ?? xlsxItem.webUrl}">Open Excel</a></p>`;
 
             const mailRes = await httpFetch(`${OUT_GW}/me/sendMail`, {
               method: "POST",
-              headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": out, "Content-Type": "application/json" },
+              headers: {
+                Authorization: `Bearer ${lov}`,
+                "X-Connection-Api-Key": out,
+                "Content-Type": "application/json",
+              },
               body: JSON.stringify({
                 message: {
                   subject: title,
                   body: { contentType: "HTML", content: html },
-                  toRecipients: (s.recipients as string[]).map(address => ({ emailAddress: { address } })),
+                  toRecipients: (s.recipients as string[]).map((address) => ({
+                    emailAddress: { address },
+                  })),
                   attachments: [
-                    { "@odata.type": "#microsoft.graph.fileAttachment", name: pdfName, contentType: "application/pdf", contentBytes: b64(pdfBytes) },
-                    { "@odata.type": "#microsoft.graph.fileAttachment", name: xlsxName, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", contentBytes: b64(xlsxBytes) },
+                    {
+                      "@odata.type": "#microsoft.graph.fileAttachment",
+                      name: pdfName,
+                      contentType: "application/pdf",
+                      contentBytes: b64(pdfBytes),
+                    },
+                    {
+                      "@odata.type": "#microsoft.graph.fileAttachment",
+                      name: xlsxName,
+                      contentType:
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      contentBytes: b64(xlsxBytes),
+                    },
                   ],
                 },
                 saveToSentItems: true,
@@ -91,13 +138,19 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
               timeoutMs: 30_000,
               retries: 1,
             });
-            if (!mailRes.ok) throw new Error(`outlook_${mailRes.status}: ${(await mailRes.text()).slice(0, 200)}`);
+            if (!mailRes.ok)
+              throw new Error(`outlook_${mailRes.status}: ${(await mailRes.text()).slice(0, 200)}`);
 
-            await supabaseAdmin.from("report_schedules").update({
-              last_run_at: nowIso, last_status: "ok", last_error: null,
-              last_share_url: pdfShare ?? pdfItem.webUrl,
-              next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
-            }).eq("id", s.id);
+            await supabaseAdmin
+              .from("report_schedules")
+              .update({
+                last_run_at: nowIso,
+                last_status: "ok",
+                last_error: null,
+                last_share_url: pdfShare ?? pdfItem.webUrl,
+                next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
+              })
+              .eq("id", s.id);
 
             await supabaseAdmin.from("audit_logs").insert({
               user_id: s.created_by,
@@ -105,22 +158,33 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
               entity: "report_schedule",
               entity_id: s.id,
               route: "/api/public/hooks/executive-reports-run",
-              metadata: { title, recipients: s.recipients, pdf: pdfShare ?? pdfItem.webUrl, xlsx: xlsxShare ?? xlsxItem.webUrl },
+              metadata: {
+                title,
+                recipients: s.recipients,
+                pdf: pdfShare ?? pdfItem.webUrl,
+                xlsx: xlsxShare ?? xlsxItem.webUrl,
+              },
             });
 
             results.push({ id: s.id, status: "ok" });
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            await supabaseAdmin.from("report_schedules").update({
-              last_run_at: nowIso, last_status: "failed", last_error: msg.slice(0, 500),
-              next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
-            }).eq("id", s.id);
+            await supabaseAdmin
+              .from("report_schedules")
+              .update({
+                last_run_at: nowIso,
+                last_status: "failed",
+                last_error: msg.slice(0, 500),
+                next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
+              })
+              .eq("id", s.id);
             results.push({ id: s.id, status: "failed", detail: msg.slice(0, 200) });
           }
         }
 
         return new Response(JSON.stringify({ processed: results.length, results }), {
-          status: 200, headers: { "Content-Type": "application/json" },
+          status: 200,
+          headers: { "Content-Type": "application/json" },
         });
       },
     },
@@ -140,24 +204,42 @@ function advance(frequency: string, hour: number, weekday: number | null): strin
   const next = new Date();
   next.setUTCHours(hour, 0, 0, 0);
   if (frequency === "weekly" && weekday != null) {
-    do { next.setUTCDate(next.getUTCDate() + 1); } while (next.getUTCDay() !== weekday);
+    do {
+      next.setUTCDate(next.getUTCDate() + 1);
+    } while (next.getUTCDay() !== weekday);
   } else {
     next.setUTCDate(next.getUTCDate() + 1);
   }
   return next.toISOString();
 }
 
-async function spUpload(GW: string, lov: string, sp: string, siteId: string, folder: string, filename: string, body: Uint8Array, contentType: string) {
+async function spUpload(
+  GW: string,
+  lov: string,
+  sp: string,
+  siteId: string,
+  folder: string,
+  filename: string,
+  body: Uint8Array,
+  contentType: string,
+) {
   let r: Response;
   try {
-    r = await httpFetch(`${GW}/sites/${encodeURIComponent(siteId)}/drive/root:/${encodeURI(folder)}/${encodeURIComponent(filename)}:/content`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": sp, "Content-Type": contentType },
-      body: body as unknown as BodyInit,
-      label: "cron/sharepoint-upload",
-      timeoutMs: 60_000,
-      retries: 1,
-    });
+    r = await httpFetch(
+      `${GW}/sites/${encodeURIComponent(siteId)}/drive/root:/${encodeURI(folder)}/${encodeURIComponent(filename)}:/content`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${lov}`,
+          "X-Connection-Api-Key": sp,
+          "Content-Type": contentType,
+        },
+        body: body as unknown as BodyInit,
+        label: "cron/sharepoint-upload",
+        timeoutMs: 60_000,
+        retries: 1,
+      },
+    );
   } catch (e) {
     const msg = isApiError(e) ? `${e.code}:${e.message}` : String(e);
     throw new Error(`sharepoint_network: ${msg}`);
@@ -166,17 +248,30 @@ async function spUpload(GW: string, lov: string, sp: string, siteId: string, fol
   return (await r.json()) as { id: string; name: string; webUrl: string; size: number };
 }
 
-async function createLink(GW: string, lov: string, sp: string, siteId: string, itemId: string): Promise<string | null> {
+async function createLink(
+  GW: string,
+  lov: string,
+  sp: string,
+  siteId: string,
+  itemId: string,
+): Promise<string | null> {
   let r: Response;
   try {
-    r = await httpFetch(`${GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": sp, "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "view", scope: "organization" }),
-      label: "cron/sharepoint-link",
-      timeoutMs: 15_000,
-      retries: 1,
-    });
+    r = await httpFetch(
+      `${GW}/sites/${encodeURIComponent(siteId)}/drive/items/${itemId}/createLink`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lov}`,
+          "X-Connection-Api-Key": sp,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ type: "view", scope: "organization" }),
+        label: "cron/sharepoint-link",
+        timeoutMs: 15_000,
+        retries: 1,
+      },
+    );
   } catch {
     return null;
   }

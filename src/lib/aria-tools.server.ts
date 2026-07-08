@@ -26,7 +26,11 @@ function genRef(prefix: string) {
 function scoreRisk(severity: string, priority: string, category: string): number {
   const sevMap: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
   const prioMap: Record<string, number> = { low: 0, medium: 5, high: 10, critical: 15 };
-  const catBoost = ["intrusion", "fire", "explosion", "weapon"].some((k) => category.toLowerCase().includes(k)) ? 10 : 0;
+  const catBoost = ["intrusion", "fire", "explosion", "weapon"].some((k) =>
+    category.toLowerCase().includes(k),
+  )
+    ? 10
+    : 0;
   return Math.min(100, (sevMap[severity] ?? 40) + (prioMap[priority] ?? 5) + catBoost);
 }
 
@@ -53,8 +57,14 @@ async function logEvent(
   if (!org_id) return;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin.from("sec_activity_events").insert({
-    org_id, entity_type, entity_id, entity_ref, event,
-    actor_id: userId, actor_name: "ARIA", payload: payload as Json,
+    org_id,
+    entity_type,
+    entity_id,
+    entity_ref,
+    event,
+    actor_id: userId,
+    actor_name: "ARIA",
+    payload: payload as Json,
   });
 }
 
@@ -124,14 +134,15 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       execute: async (args) => {
         const { data, error } = await supabase
           .from("pulse_crises")
-          .select("id,title,title_en,risk_score,probability,owner,impact,impact_en,action,action_en,category")
+          .select(
+            "id,title,title_en,risk_score,probability,owner,impact,impact_en,action,action_en,category",
+          )
           .order("risk_score", { ascending: false })
           .limit(args.limit);
         if (error) return { ok: false, error: error.message };
         return { ok: true, crises: data ?? [] };
       },
     }),
-
 
     send_executive_email: tool({
       description:
@@ -165,7 +176,9 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           if (rateOk === false) {
             return { ok: false, error: "Rate limit exceeded for ARIA email sends." };
           }
-        } catch { /* rate limit best-effort */ }
+        } catch {
+          /* rate limit best-effort */
+        }
 
         const headers = connectorHeaders("MICROSOFT_OUTLOOK_API_KEY");
         if (!headers) return { ok: false, error: "Outlook connector not configured" };
@@ -327,7 +340,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       description:
         "Create a new security incident (بلاغ/حادثة). Use ALWAYS when user reports an incident, intrusion, fire, leak, breach, تسرّب, اختراق, حريق, بلاغ, حادث.",
       inputSchema: z.object({
-        category: z.string().min(2).max(80).describe("intrusion|fire|leak|access|theft|safety|other"),
+        category: z
+          .string()
+          .min(2)
+          .max(80)
+          .describe("intrusion|fire|leak|access|theft|safety|other"),
         title_ar: z.string().min(3).max(200),
         title_en: z.string().max(200).optional(),
         severity: z.enum(["low", "medium", "high", "critical"]),
@@ -341,23 +358,39 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("INC");
         const ai_risk_score = scoreRisk(args.severity, args.priority, args.category);
-        const { data, error } = await supabase.from("sec_incidents").insert({
-          ref, org_id, category: args.category,
-          title_ar: args.title_ar,
-          title_en: args.title_en || args.title_ar,
-          severity: args.severity, priority: args.priority, status: "open",
-          owner: args.owner ?? null, assigned_to: args.assigned_to ?? null,
-          reported_at: new Date().toISOString(), ai_risk_score, created_by: userId,
-        }).select("id,ref,title_ar,severity,priority,ai_risk_score,status").single();
+        const { data, error } = await supabase
+          .from("sec_incidents")
+          .insert({
+            ref,
+            org_id,
+            category: args.category,
+            title_ar: args.title_ar,
+            title_en: args.title_en || args.title_ar,
+            severity: args.severity,
+            priority: args.priority,
+            status: "open",
+            owner: args.owner ?? null,
+            assigned_to: args.assigned_to ?? null,
+            reported_at: new Date().toISOString(),
+            ai_risk_score,
+            created_by: userId,
+          })
+          .select("id,ref,title_ar,severity,priority,ai_risk_score,status")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "incident", data.id, data.ref, "registered",
-          { severity: args.severity, priority: args.priority, ai_risk_score, notes: args.notes ?? null });
+        await logEvent(supabase, userId, "incident", data.id, data.ref, "registered", {
+          severity: args.severity,
+          priority: args.priority,
+          ai_risk_score,
+          notes: args.notes ?? null,
+        });
         return { ok: true, incident: data };
       },
     }),
 
     sec_update_incident: tool({
-      description: "Update incident status/priority/assignee/root cause. Status: open|investigating|contained|resolved|closed.",
+      description:
+        "Update incident status/priority/assignee/root cause. Status: open|investigating|contained|resolved|closed.",
       inputSchema: z.object({
         id: z.string().uuid(),
         status: z.enum(["open", "investigating", "contained", "resolved", "closed"]).optional(),
@@ -366,8 +399,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         root_cause: z.string().max(2000).optional(),
       }),
       execute: async ({ id, ...patch }) => {
-        const { data, error } = await supabase.from("sec_incidents").update(patch).eq("id", id)
-          .select("id,ref,status,priority").single();
+        const { data, error } = await supabase
+          .from("sec_incidents")
+          .update(patch)
+          .eq("id", id)
+          .select("id,ref,status,priority")
+          .single();
         if (error) return { ok: false, error: error.message };
         await logEvent(supabase, userId, "incident", id, data.ref, "updated", patch);
         return { ok: true, incident: data };
@@ -382,9 +419,13 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         limit: z.number().int().min(1).max(50).default(15),
       }),
       execute: async (args) => {
-        let q = supabase.from("sec_incidents")
-          .select("id,ref,title_ar,category,severity,priority,status,ai_risk_score,reported_at,assigned_to")
-          .order("reported_at", { ascending: false }).limit(args.limit);
+        let q = supabase
+          .from("sec_incidents")
+          .select(
+            "id,ref,title_ar,category,severity,priority,status,ai_risk_score,reported_at,assigned_to",
+          )
+          .order("reported_at", { ascending: false })
+          .limit(args.limit);
         if (args.status) q = q.eq("status", args.status);
         if (args.severity) q = q.eq("severity", args.severity);
         const { data, error } = await q;
@@ -394,13 +435,18 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     }),
 
     sec_create_work_order: tool({
-      description: "Create a maintenance work order (أمر عمل). preventive or corrective. Optionally link to a source incident.",
+      description:
+        "Create a maintenance work order (أمر عمل). preventive or corrective. Optionally link to a source incident.",
       inputSchema: z.object({
         title_ar: z.string().min(3).max(200),
         title_en: z.string().max(200).optional(),
         kind: z.enum(["preventive", "corrective"]),
         priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
-        asset_kind: z.string().min(2).max(80).describe("camera|gate|sensor|access|fence|fire-system|other"),
+        asset_kind: z
+          .string()
+          .min(2)
+          .max(80)
+          .describe("camera|gate|sensor|access|fence|fire-system|other"),
         asset_code: z.string().max(80).optional(),
         assigned_to: z.string().max(120).optional(),
         contractor: z.string().max(120).optional(),
@@ -411,36 +457,74 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         const org_id = await getActorOrgId(supabase, userId);
         if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("WO");
-        const { data, error } = await supabase.from("sec_work_orders").insert({
-          ref, org_id, title_ar: args.title_ar, title_en: args.title_en || args.title_ar,
-          kind: args.kind, priority: args.priority, status: "open",
-          asset_kind: args.asset_kind, asset_code: args.asset_code ?? null,
-          assigned_to: args.assigned_to ?? null, contractor: args.contractor ?? null,
-          due_at: args.due_at ?? null, opened_at: new Date().toISOString(),
-          source_incident_id: args.source_incident_id ?? null, created_by: userId,
-        }).select("id,ref,title_ar,kind,priority,status,due_at").single();
+        const { data, error } = await supabase
+          .from("sec_work_orders")
+          .insert({
+            ref,
+            org_id,
+            title_ar: args.title_ar,
+            title_en: args.title_en || args.title_ar,
+            kind: args.kind,
+            priority: args.priority,
+            status: "open",
+            asset_kind: args.asset_kind,
+            asset_code: args.asset_code ?? null,
+            assigned_to: args.assigned_to ?? null,
+            contractor: args.contractor ?? null,
+            due_at: args.due_at ?? null,
+            opened_at: new Date().toISOString(),
+            source_incident_id: args.source_incident_id ?? null,
+            created_by: userId,
+          })
+          .select("id,ref,title_ar,kind,priority,status,due_at")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "work_order", data.id, data.ref, "created",
-          { kind: args.kind, priority: args.priority, source_incident_id: args.source_incident_id ?? null });
+        await logEvent(supabase, userId, "work_order", data.id, data.ref, "created", {
+          kind: args.kind,
+          priority: args.priority,
+          source_incident_id: args.source_incident_id ?? null,
+        });
         return { ok: true, work_order: data };
       },
     }),
 
     sec_close_work_order: tool({
-      description: "Close/complete a work order with completion notes. Auto-contains the source incident if linked.",
+      description:
+        "Close/complete a work order with completion notes. Auto-contains the source incident if linked.",
       inputSchema: z.object({
         id: z.string().uuid(),
         completion_notes: z.string().min(3).max(2000),
       }),
       execute: async ({ id, completion_notes }) => {
-        const { data, error } = await supabase.from("sec_work_orders")
-          .update({ status: "closed", closed_at: new Date().toISOString(), completion_notes, notes: completion_notes })
-          .eq("id", id).select("ref,source_incident_id").single();
+        const { data, error } = await supabase
+          .from("sec_work_orders")
+          .update({
+            status: "closed",
+            closed_at: new Date().toISOString(),
+            completion_notes,
+            notes: completion_notes,
+          })
+          .eq("id", id)
+          .select("ref,source_incident_id")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "work_order", id, data.ref, "completed", { completion_notes });
+        await logEvent(supabase, userId, "work_order", id, data.ref, "completed", {
+          completion_notes,
+        });
         if (data.source_incident_id) {
-          await supabase.from("sec_incidents").update({ status: "contained" }).eq("id", data.source_incident_id);
-          await logEvent(supabase, userId, "incident", data.source_incident_id, null, "auto_contained_by_work_order", { work_order_ref: data.ref });
+          await supabase
+            .from("sec_incidents")
+            .update({ status: "contained" })
+            .eq("id", data.source_incident_id);
+          await logEvent(
+            supabase,
+            userId,
+            "incident",
+            data.source_incident_id,
+            null,
+            "auto_contained_by_work_order",
+            { work_order_ref: data.ref },
+          );
         }
         return { ok: true, ref: data.ref };
       },
@@ -449,15 +533,19 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     sec_list_work_orders: tool({
       description: "List work orders. Filter by status/kind/priority.",
       inputSchema: z.object({
-        status: z.enum(["open", "assigned", "in-progress", "on-hold", "closed", "cancelled"]).optional(),
+        status: z
+          .enum(["open", "assigned", "in-progress", "on-hold", "closed", "cancelled"])
+          .optional(),
         kind: z.enum(["preventive", "corrective"]).optional(),
         priority: z.enum(["low", "medium", "high", "critical"]).optional(),
         limit: z.number().int().min(1).max(50).default(15),
       }),
       execute: async (args) => {
-        let q = supabase.from("sec_work_orders")
+        let q = supabase
+          .from("sec_work_orders")
           .select("id,ref,title_ar,kind,priority,status,asset_kind,assigned_to,due_at,opened_at")
-          .order("opened_at", { ascending: false }).limit(args.limit);
+          .order("opened_at", { ascending: false })
+          .limit(args.limit);
         if (args.status) q = q.eq("status", args.status);
         if (args.kind) q = q.eq("kind", args.kind);
         if (args.priority) q = q.eq("priority", args.priority);
@@ -470,7 +558,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     sec_create_permit: tool({
       description: "Create a Permit-To-Work (تصريح عمل) for a contractor.",
       inputSchema: z.object({
-        work_type: z.string().min(2).max(80).describe("hot-work|confined-space|electrical|height|excavation|general"),
+        work_type: z
+          .string()
+          .min(2)
+          .max(80)
+          .describe("hot-work|confined-space|electrical|height|excavation|general"),
         contractor: z.string().min(2).max(160),
         risk_level: z.enum(["low", "medium", "high", "critical"]),
         starts_at: z.string(),
@@ -481,14 +573,26 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         const org_id = await getActorOrgId(supabase, userId);
         if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("PTW");
-        const { data, error } = await supabase.from("sec_permits").insert({
-          ref, org_id, created_by: userId, work_type: args.work_type, contractor: args.contractor,
-          risk_level: args.risk_level, status: "pending",
-          starts_at: args.starts_at, ends_at: args.ends_at,
-          notes: args.notes ?? null,
-        }).select("id,ref,work_type,contractor,risk_level,status,starts_at,ends_at").single();
+        const { data, error } = await supabase
+          .from("sec_permits")
+          .insert({
+            ref,
+            org_id,
+            created_by: userId,
+            work_type: args.work_type,
+            contractor: args.contractor,
+            risk_level: args.risk_level,
+            status: "pending",
+            starts_at: args.starts_at,
+            ends_at: args.ends_at,
+            notes: args.notes ?? null,
+          })
+          .select("id,ref,work_type,contractor,risk_level,status,starts_at,ends_at")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "permit", data.id, data.ref, "created", { risk_level: args.risk_level });
+        await logEvent(supabase, userId, "permit", data.id, data.ref, "created", {
+          risk_level: args.risk_level,
+        });
         return { ok: true, permit: data };
       },
     }),
@@ -501,8 +605,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         note: z.string().max(500).optional(),
       }),
       execute: async ({ id, decision, note }) => {
-        const { data, error } = await supabase.from("sec_permits")
-          .update({ status: decision }).eq("id", id).select("ref").single();
+        const { data, error } = await supabase
+          .from("sec_permits")
+          .update({ status: decision })
+          .eq("id", id)
+          .select("ref")
+          .single();
         if (error) return { ok: false, error: error.message };
         await logEvent(supabase, userId, "permit", id, data.ref, decision, { note: note ?? null });
         return { ok: true, ref: data.ref, decision };
@@ -512,13 +620,17 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     sec_list_permits: tool({
       description: "List permits-to-work. Filter by status.",
       inputSchema: z.object({
-        status: z.enum(["pending", "approved", "rejected", "active", "expired", "closed"]).optional(),
+        status: z
+          .enum(["pending", "approved", "rejected", "active", "expired", "closed"])
+          .optional(),
         limit: z.number().int().min(1).max(50).default(15),
       }),
       execute: async (args) => {
-        let q = supabase.from("sec_permits")
+        let q = supabase
+          .from("sec_permits")
           .select("id,ref,work_type,contractor,risk_level,status,starts_at,ends_at")
-          .order("starts_at", { ascending: false }).limit(args.limit);
+          .order("starts_at", { ascending: false })
+          .limit(args.limit);
         if (args.status) q = q.eq("status", args.status);
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
@@ -527,7 +639,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     }),
 
     sec_schedule_patrol: tool({
-      description: "Schedule a security patrol round (دورية). Provide team, route, and number of checkpoints.",
+      description:
+        "Schedule a security patrol round (دورية). Provide team, route, and number of checkpoints.",
       inputSchema: z.object({
         team: z.string().min(2).max(120),
         route: z.string().min(2).max(200),
@@ -537,13 +650,24 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         const org_id = await getActorOrgId(supabase, userId);
         if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("PT");
-        const { data, error } = await supabase.from("sec_patrols").insert({
-          ref, org_id, team: args.team, route: args.route,
-          checkpoints_total: args.checkpoints_total, checkpoints_done: 0,
-          status: "scheduled",
-        }).select("id,ref,team,route,status,checkpoints_total").single();
+        const { data, error } = await supabase
+          .from("sec_patrols")
+          .insert({
+            ref,
+            org_id,
+            team: args.team,
+            route: args.route,
+            checkpoints_total: args.checkpoints_total,
+            checkpoints_done: 0,
+            status: "scheduled",
+          })
+          .select("id,ref,team,route,status,checkpoints_total")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "patrol", data.id, data.ref, "scheduled", { team: args.team, route: args.route });
+        await logEvent(supabase, userId, "patrol", data.id, data.ref, "scheduled", {
+          team: args.team,
+          route: args.route,
+        });
         return { ok: true, patrol: data };
       },
     }),
@@ -555,9 +679,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         limit: z.number().int().min(1).max(50).default(15),
       }),
       execute: async (args) => {
-        let q = supabase.from("sec_patrols")
+        let q = supabase
+          .from("sec_patrols")
           .select("id,ref,team,route,status,checkpoints_total,checkpoints_done,started_at,ended_at")
-          .order("created_at", { ascending: false }).limit(args.limit);
+          .order("created_at", { ascending: false })
+          .limit(args.limit);
         if (args.status) q = q.eq("status", args.status);
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
@@ -578,14 +704,26 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         const org_id = await getActorOrgId(supabase, userId);
         if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
         const ref = genRef("V");
-        const { data, error } = await supabase.from("sec_visitors").insert({
-          ref, org_id, created_by: userId, full_name: args.full_name, host: args.host,
-          organization: args.organization ?? null, purpose: args.purpose ?? null,
-          badge_no: args.badge_no ?? ref, status: "inside",
-          check_in_at: new Date().toISOString(),
-        }).select("id,ref,full_name,host,badge_no,status").single();
+        const { data, error } = await supabase
+          .from("sec_visitors")
+          .insert({
+            ref,
+            org_id,
+            created_by: userId,
+            full_name: args.full_name,
+            host: args.host,
+            organization: args.organization ?? null,
+            purpose: args.purpose ?? null,
+            badge_no: args.badge_no ?? ref,
+            status: "inside",
+            check_in_at: new Date().toISOString(),
+          })
+          .select("id,ref,full_name,host,badge_no,status")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "visitor", data.id, data.ref, "checked_in", { host: args.host });
+        await logEvent(supabase, userId, "visitor", data.id, data.ref, "checked_in", {
+          host: args.host,
+        });
         return { ok: true, visitor: data };
       },
     }),
@@ -594,9 +732,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       description: "Check out a visitor by id. Marks status=left and sets check_out_at.",
       inputSchema: z.object({ id: z.string().uuid() }),
       execute: async ({ id }) => {
-        const { data, error } = await supabase.from("sec_visitors")
+        const { data, error } = await supabase
+          .from("sec_visitors")
           .update({ status: "left", check_out_at: new Date().toISOString() })
-          .eq("id", id).select("ref,full_name").single();
+          .eq("id", id)
+          .select("ref,full_name")
+          .single();
         if (error) return { ok: false, error: error.message };
         await logEvent(supabase, userId, "visitor", id, data.ref, "checked_out", {});
         return { ok: true, ref: data.ref };
@@ -610,9 +751,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         limit: z.number().int().min(1).max(50).default(20),
       }),
       execute: async (args) => {
-        let q = supabase.from("sec_visitors")
+        let q = supabase
+          .from("sec_visitors")
           .select("id,ref,full_name,organization,host,status,check_in_at,check_out_at")
-          .order("check_in_at", { ascending: false }).limit(args.limit);
+          .order("check_in_at", { ascending: false })
+          .limit(args.limit);
         if (args.status) q = q.eq("status", args.status);
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
@@ -627,9 +770,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         limit: z.number().int().min(1).max(50).default(20),
       }),
       execute: async (args) => {
-        let q = supabase.from("sec_cctv_alerts")
+        let q = supabase
+          .from("sec_cctv_alerts")
           .select("id,ref,camera_code,alert_type,confidence,status,detected_at,notes")
-          .order("detected_at", { ascending: false }).limit(args.limit);
+          .order("detected_at", { ascending: false })
+          .limit(args.limit);
         if (args.status) q = q.eq("status", args.status);
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
@@ -638,7 +783,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     }),
 
     sec_triage_cctv_alert: tool({
-      description: "Triage a CCTV alert: set status to triaged/dispatched/resolved/false_positive with notes.",
+      description:
+        "Triage a CCTV alert: set status to triaged/dispatched/resolved/false_positive with notes.",
       inputSchema: z.object({
         id: z.string().uuid(),
         status: z.enum(["triaged", "dispatched", "resolved", "false_positive"]),
@@ -646,11 +792,16 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         acknowledged_by: z.string().max(160).optional(),
       }),
       execute: async ({ id, status, notes, acknowledged_by }) => {
-        const { data, error } = await supabase.from("sec_cctv_alerts")
+        const { data, error } = await supabase
+          .from("sec_cctv_alerts")
           .update({ status, notes: notes ?? null, acknowledged_by: acknowledged_by ?? "ARIA" })
-          .eq("id", id).select("ref,camera_code").single();
+          .eq("id", id)
+          .select("ref,camera_code")
+          .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "cctv_alert", id, data.ref, status, { notes: notes ?? null });
+        await logEvent(supabase, userId, "cctv_alert", id, data.ref, status, {
+          notes: notes ?? null,
+        });
         return { ok: true, ref: data.ref };
       },
     }),
@@ -660,15 +811,36 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         "Navigate the user to a specific page in NEXUS. Use when user says 'open X', 'go to', 'افتح', 'انتقل'. Returns a target route the UI will navigate to.",
       inputSchema: z.object({
         target: z.enum([
-          "/dashboard", "/sec", "/sec/exec", "/sec/twin", "/sec/incidents",
-          "/sec/maintenance", "/sec/permits", "/sec/patrols", "/sec/visitors",
-          "/sec/cctv", "/sec/kpi", "/sec/ai", "/sec/projects", "/sec/risks",
-          "/sec/circles", "/sec/sections", "/tasks", "/intelligence",
-          "/executive", "/executive-reports", "/briefing", "/integrations",
+          "/dashboard",
+          "/sec",
+          "/sec/exec",
+          "/sec/twin",
+          "/sec/incidents",
+          "/sec/maintenance",
+          "/sec/permits",
+          "/sec/patrols",
+          "/sec/visitors",
+          "/sec/cctv",
+          "/sec/kpi",
+          "/sec/ai",
+          "/sec/projects",
+          "/sec/risks",
+          "/sec/circles",
+          "/sec/sections",
+          "/tasks",
+          "/intelligence",
+          "/executive",
+          "/executive-reports",
+          "/briefing",
+          "/integrations",
         ]),
         reason: z.string().max(200).optional(),
       }),
-      execute: async ({ target, reason }) => ({ ok: true, navigate_to: target, reason: reason ?? null }),
+      execute: async ({ target, reason }) => ({
+        ok: true,
+        navigate_to: target,
+        reason: reason ?? null,
+      }),
     }),
   };
 }

@@ -39,11 +39,7 @@ export type ApprovalStatus =
   | "escalated"
   | "overridden";
 
-export type ComplianceStatus =
-  | "compliant"
-  | "non_compliant"
-  | "requires_review"
-  | "unknown";
+export type ComplianceStatus = "compliant" | "non_compliant" | "requires_review" | "unknown";
 
 export interface EvidenceRef {
   readonly source_id: string;

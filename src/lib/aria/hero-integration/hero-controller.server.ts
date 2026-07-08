@@ -16,11 +16,7 @@ import { avatarDirectiveFor } from "./hero-avatar-bridge.server";
 import { recordHeroMetric } from "./hero-metrics.server";
 import { logHeroAudit } from "./hero-audit.server";
 import { HeroClickButtonInputSchema } from "./contracts";
-import type {
-  HeroActionOutcome,
-  HeroButtonId,
-  HeroState,
-} from "./types";
+import type { HeroActionOutcome, HeroButtonId, HeroState } from "./types";
 
 export function bootHero(lang: "ar" | "en" | "unknown" = "ar"): HeroState {
   const s = openHero(lang);
@@ -66,8 +62,10 @@ export function heroClickButton(rawInput: unknown): HeroActionOutcome {
   const parsed = HeroClickButtonInputSchema.safeParse(rawInput);
   if (!parsed.success) {
     return {
-      ok: false, buttonId: "talk_to_aria",
-      message_ar: "طلب غير صالح.", message_en: "Invalid request.",
+      ok: false,
+      buttonId: "talk_to_aria",
+      message_ar: "طلب غير صالح.",
+      message_en: "Invalid request.",
       reason: parsed.error.message,
     };
   }
@@ -75,8 +73,10 @@ export function heroClickButton(rawInput: unknown): HeroActionOutcome {
   const state = getHero(instanceId);
   if (!state) {
     return {
-      ok: false, buttonId,
-      message_ar: "الجلسة غير موجودة.", message_en: "Session not found.",
+      ok: false,
+      buttonId,
+      message_ar: "الجلسة غير موجودة.",
+      message_en: "Session not found.",
       reason: "hero missing",
     };
   }
@@ -88,28 +88,34 @@ export function heroClickButton(rawInput: unknown): HeroActionOutcome {
     const ready = heroBeginListening(instanceId);
     if (!ready.ok) {
       setHeroButton(instanceId, buttonId, {
-        status: "error", completedAt: Date.now(),
+        status: "error",
+        completedAt: Date.now(),
         message_ar: "الصوت غير متاح، يمكنك المتابعة كتابياً.",
         message_en: "Voice unavailable, continue by text.",
       });
       recordHeroMetric("button_error", buttonId);
       logHeroAudit(instanceId, "voice_result", { ok: false, reason: ready.reason });
       return {
-        ok: false, buttonId,
+        ok: false,
+        buttonId,
         message_ar: "الصوت غير متاح، يمكنك المتابعة كتابياً.",
         message_en: "Voice unavailable, continue by text.",
         reason: ready.reason,
       };
     }
     setHeroButton(instanceId, buttonId, {
-      status: "success", completedAt: Date.now(),
-      message_ar: "أستمع إليك.", message_en: "I'm listening.",
+      status: "success",
+      completedAt: Date.now(),
+      message_ar: "أستمع إليك.",
+      message_en: "I'm listening.",
     });
     recordHeroMetric("button_ok", buttonId);
     logHeroAudit(instanceId, "voice_result", { ok: true, stage: "listening" });
     return {
-      ok: true, buttonId,
-      message_ar: "أستمع إليك.", message_en: "I'm listening.",
+      ok: true,
+      buttonId,
+      message_ar: "أستمع إليك.",
+      message_en: "I'm listening.",
     };
   }
 
@@ -122,26 +128,35 @@ export function heroClickButton(rawInput: unknown): HeroActionOutcome {
   });
   if (!turn.ok || !turn.turnId) {
     setHeroButton(instanceId, buttonId, {
-      status: "error", completedAt: Date.now(),
-      message_ar: "تعذّر بدء المهمة.", message_en: "Could not start the task.",
+      status: "error",
+      completedAt: Date.now(),
+      message_ar: "تعذّر بدء المهمة.",
+      message_en: "Could not start the task.",
     });
     recordHeroMetric("button_error", buttonId);
     logHeroAudit(instanceId, "error", { buttonId, reason: turn.reason });
     return {
-      ok: false, buttonId,
-      message_ar: "تعذّر بدء المهمة.", message_en: "Could not start the task.",
+      ok: false,
+      buttonId,
+      message_ar: "تعذّر بدء المهمة.",
+      message_en: "Could not start the task.",
       reason: turn.reason,
     };
   }
   setHeroButton(instanceId, buttonId, {
-    status: "success", completedAt: Date.now(),
-    message_ar: labelSuccessAr(buttonId), message_en: labelSuccessEn(buttonId),
+    status: "success",
+    completedAt: Date.now(),
+    message_ar: labelSuccessAr(buttonId),
+    message_en: labelSuccessEn(buttonId),
   });
   recordHeroMetric("button_ok", buttonId);
   logHeroAudit(instanceId, "click_button", { buttonId, turnId: turn.turnId });
   return {
-    ok: true, buttonId, turnId: turn.turnId,
-    message_ar: labelSuccessAr(buttonId), message_en: labelSuccessEn(buttonId),
+    ok: true,
+    buttonId,
+    turnId: turn.turnId,
+    message_ar: labelSuccessAr(buttonId),
+    message_en: labelSuccessEn(buttonId),
   };
 }
 
@@ -155,21 +170,33 @@ export function heroCompleteTurn(instanceId: string, turnId: string, ok: boolean
 
 function labelSuccessAr(id: HeroButtonId): string {
   switch (id) {
-    case "executive_briefing": return "جاري تجهيز الإحاطة التنفيذية.";
-    case "start_demo": return "بدأ العرض التنفيذي.";
-    case "show_risks": return "أعرض أعلى المخاطر.";
-    case "show_today_summary": return "ملخّص اليوم قيد التجهيز.";
-    case "generate_report": return "جاري إنشاء التقرير التنفيذي.";
-    case "talk_to_aria": return "أستمع إليك.";
+    case "executive_briefing":
+      return "جاري تجهيز الإحاطة التنفيذية.";
+    case "start_demo":
+      return "بدأ العرض التنفيذي.";
+    case "show_risks":
+      return "أعرض أعلى المخاطر.";
+    case "show_today_summary":
+      return "ملخّص اليوم قيد التجهيز.";
+    case "generate_report":
+      return "جاري إنشاء التقرير التنفيذي.";
+    case "talk_to_aria":
+      return "أستمع إليك.";
   }
 }
 function labelSuccessEn(id: HeroButtonId): string {
   switch (id) {
-    case "executive_briefing": return "Preparing executive briefing.";
-    case "start_demo": return "Executive demo started.";
-    case "show_risks": return "Surfacing top risks.";
-    case "show_today_summary": return "Preparing today's summary.";
-    case "generate_report": return "Generating executive report.";
-    case "talk_to_aria": return "I'm listening.";
+    case "executive_briefing":
+      return "Preparing executive briefing.";
+    case "start_demo":
+      return "Executive demo started.";
+    case "show_risks":
+      return "Surfacing top risks.";
+    case "show_today_summary":
+      return "Preparing today's summary.";
+    case "generate_report":
+      return "Generating executive report.";
+    case "talk_to_aria":
+      return "I'm listening.";
   }
 }

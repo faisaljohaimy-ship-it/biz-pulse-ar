@@ -28,11 +28,7 @@ export type ConsensusOutcome = "committed" | "rejected" | "pending" | "unknown";
 
 export type PartitionState = "healthy" | "at_risk" | "partitioned" | "unknown";
 
-export type MeshDecision =
-  | "GO"
-  | "NO_GO"
-  | "GO_WITH_KNOWN_LIMITATIONS"
-  | "UNKNOWN";
+export type MeshDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 
 export interface EvidenceRef {
   readonly source: string;

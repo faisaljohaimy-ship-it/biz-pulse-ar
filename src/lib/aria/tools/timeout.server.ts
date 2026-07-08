@@ -3,7 +3,10 @@
  */
 
 export class ToolTimeoutError extends Error {
-  constructor(public readonly ms: number, public readonly toolId: string) {
+  constructor(
+    public readonly ms: number,
+    public readonly toolId: string,
+  ) {
     super(`tools: timeout after ${ms}ms (${toolId})`);
     this.name = "ToolTimeoutError";
   }

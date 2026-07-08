@@ -46,9 +46,7 @@ export function noteMissionFailed(): void {
   COUNTERS.missions_failed += 1;
 }
 
-export function snapshotMetrics(
-  workspace_id?: ExecutiveWorkspaceId,
-): ExecutiveMetrics {
+export function snapshotMetrics(workspace_id?: ExecutiveWorkspaceId): ExecutiveMetrics {
   return {
     sessions_started: COUNTERS.sessions_started,
     sessions_active: COUNTERS.sessions_active,

@@ -53,7 +53,11 @@ export function captureRecord(kind: MemoryKind, raw: Omit<CaptureInput, "kind">)
   };
 
   const stored = putRecord(record);
-  audit(`capture.${kind}`, stored.id, stored.evidence.map((e) => e.id));
+  audit(
+    `capture.${kind}`,
+    stored.id,
+    stored.evidence.map((e) => e.id),
+  );
   emitTelemetry("capture.ok", "info", `${kind}:${stored.id}`);
   return stored;
 }

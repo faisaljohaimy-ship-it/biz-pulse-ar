@@ -16,10 +16,10 @@
  */
 
 export type EvidenceKind =
-  | "db.query"     // Data from a Supabase `sec_*` / product table
+  | "db.query" // Data from a Supabase `sec_*` / product table
   | "runtime.probe" // Live runtime health probe result
-  | "cert.public"   // Public certificate / registry (link required)
-  | "audit.log"     // Immutable audit log entry
+  | "cert.public" // Public certificate / registry (link required)
+  | "audit.log" // Immutable audit log entry
   | "external.api"; // Verified third-party API response
 
 export interface Evidence {

@@ -19,8 +19,15 @@ export function ChaosCanvas({ className = "" }: { className?: string }) {
     let cx = 0;
     let cy = 0;
     type P = {
-      x: number; y: number; vx: number; vy: number;
-      r: number; a: number; c: string; px: number; py: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      a: number;
+      c: string;
+      px: number;
+      py: number;
       drawn: boolean;
     };
     let parts: P[] = [];
@@ -47,7 +54,10 @@ export function ChaosCanvas({ className = "" }: { className?: string }) {
       const x = cx + Math.cos(angle) * radius;
       const y = cy + Math.sin(angle) * radius;
       return {
-        x, y, px: x, py: y,
+        x,
+        y,
+        px: x,
+        py: y,
         vx: (Math.random() - 0.5) * 0.6,
         vy: (Math.random() - 0.5) * 0.6,
         r: 0.6 + Math.random() * 1.4,

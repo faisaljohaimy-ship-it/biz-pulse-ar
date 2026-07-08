@@ -20,9 +20,12 @@ const Input = z.object({
 /** Heuristic task detection from prompt content (bilingual AR/EN). */
 function detectTask(prompt: string): "code" | "reason" | "exec" | "general" {
   const p = prompt.toLowerCase();
-  const codeHints = /\b(code|function|typescript|javascript|python|sql|bug|refactor|api|regex|stack trace|compile|build error|كود|برمج|دالة|خطأ برمج)\b|```/;
-  const reasonHints = /\b(why|explain|analyze|compare|derive|prove|architecture|design pattern|trade[- ]?off|حلل|قارن|اشرح|استنتج|لماذا)\b/;
-  const execHints = /\b(kpi|revenue|report|forecast|risk|incident|briefing|executive|strategy|decision|تنفيذي|تقرير|قرار|مخاطر|استراتيج)\b/;
+  const codeHints =
+    /\b(code|function|typescript|javascript|python|sql|bug|refactor|api|regex|stack trace|compile|build error|كود|برمج|دالة|خطأ برمج)\b|```/;
+  const reasonHints =
+    /\b(why|explain|analyze|compare|derive|prove|architecture|design pattern|trade[- ]?off|حلل|قارن|اشرح|استنتج|لماذا)\b/;
+  const execHints =
+    /\b(kpi|revenue|report|forecast|risk|incident|briefing|executive|strategy|decision|تنفيذي|تقرير|قرار|مخاطر|استراتيج)\b/;
   if (codeHints.test(p)) return "code";
   if (reasonHints.test(p)) return "reason";
   if (execHints.test(p)) return "exec";
@@ -47,7 +50,11 @@ async function callGpt(system: string | undefined, prompt: string, maxTokens: nu
   });
   if (!r.ok) throw new Error(`GPT ${r.status}: ${await r.text()}`);
   const j = await r.json();
-  return { brain: "gpt" as const, model: "openai/gpt-5", text: j.choices?.[0]?.message?.content ?? "" };
+  return {
+    brain: "gpt" as const,
+    model: "openai/gpt-5",
+    text: j.choices?.[0]?.message?.content ?? "",
+  };
 }
 
 async function callClaude(system: string | undefined, prompt: string, maxTokens: number) {
@@ -70,12 +77,17 @@ async function callClaude(system: string | undefined, prompt: string, maxTokens:
   if (!r.ok) throw new Error(`Claude ${r.status}: ${await r.text()}`);
   const j = await r.json();
   const text = Array.isArray(j.content)
-    ? j.content.map((p: { type: string; text?: string }) => (p.type === "text" ? p.text ?? "" : "")).join("")
+    ? j.content
+        .map((p: { type: string; text?: string }) => (p.type === "text" ? (p.text ?? "") : ""))
+        .join("")
     : "";
   return { brain: "claude" as const, model: "claude-sonnet-4-5", text };
 }
 
-function resolveBrain(brain: "gpt" | "claude" | "auto", task: "code" | "reason" | "exec" | "general") {
+function resolveBrain(
+  brain: "gpt" | "claude" | "auto",
+  task: "code" | "reason" | "exec" | "general",
+) {
   if (brain !== "auto") return brain;
   return task === "code" || task === "reason" ? "claude" : "gpt";
 }

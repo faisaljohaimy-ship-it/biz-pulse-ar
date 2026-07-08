@@ -6,12 +6,7 @@
  * branch stops when a node describes a single capability invocation
  * (atomic) or when no further split rules apply.
  */
-import type {
-  GoalNode,
-  MissionObjective,
-  MissionTree,
-  MissionGoal,
-} from "./types";
+import type { GoalNode, MissionObjective, MissionTree, MissionGoal } from "./types";
 
 const TASK_SPLIT_RE = /(?:\+|,|، )+/;
 const MIN_ATOMIC_LEN = 4;
@@ -125,8 +120,7 @@ export function buildMissionTree(
             children_ids: [],
             depth: 3,
             capability: null,
-            reasoning:
-              "Subtask node from sequential connector split (then/and/ثم/و).",
+            reasoning: "Subtask node from sequential connector split (then/and/ثم/و).",
           };
           nodes[taskId].children_ids.push(stId);
           parentForAtomic = stId;

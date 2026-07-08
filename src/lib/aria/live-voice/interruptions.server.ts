@@ -14,16 +14,28 @@ export class VoiceInterruptionController {
   register(turnId: string, ctrl: AbortController): void {
     this.aborters.set(turnId, ctrl);
   }
-  release(turnId: string): void { this.aborters.delete(turnId); }
+  release(turnId: string): void {
+    this.aborters.delete(turnId);
+  }
 
-  interrupt(state: AudioStateStore, turnId: string | null, reason: VoiceInterruption["reason"]): boolean {
+  interrupt(
+    state: AudioStateStore,
+    turnId: string | null,
+    reason: VoiceInterruption["reason"],
+  ): boolean {
     const cur = state.get();
     if (cur !== "speaking" && cur !== "thinking" && cur !== "transcribing" && cur !== "capturing") {
       return false;
     }
     if (turnId) {
       const a = this.aborters.get(turnId);
-      if (a && !a.signal.aborted) { try { a.abort(); } catch { /* isolated */ } }
+      if (a && !a.signal.aborted) {
+        try {
+          a.abort();
+        } catch {
+          /* isolated */
+        }
+      }
       this.aborters.delete(turnId);
     }
     state.set("interrupted");
@@ -33,5 +45,7 @@ export class VoiceInterruptionController {
     return true;
   }
 
-  recent(n = 20): readonly VoiceInterruption[] { return this.history.slice(-n); }
+  recent(n = 20): readonly VoiceInterruption[] {
+    return this.history.slice(-n);
+  }
 }

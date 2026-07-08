@@ -1,9 +1,7 @@
 // Capability map — computed from agent registry. Deterministic.
 import type { AgentDescriptor, CapabilityBinding, CapabilityMap } from "./types";
 
-export function buildCapabilityMap(
-  agents: ReadonlyArray<AgentDescriptor>,
-): CapabilityMap {
+export function buildCapabilityMap(agents: ReadonlyArray<AgentDescriptor>): CapabilityMap {
   const entries: CapabilityBinding[] = [];
   for (const a of agents) {
     for (const cap of a.capabilities) {

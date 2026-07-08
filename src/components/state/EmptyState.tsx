@@ -6,7 +6,13 @@ import type { ReactNode } from "react";
 import { Inbox, Filter, Clock, ShieldOff, Building2, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-export type EmptyReason = "no-rows" | "filtered" | "waiting" | "permission" | "org-missing" | "error";
+export type EmptyReason =
+  | "no-rows"
+  | "filtered"
+  | "waiting"
+  | "permission"
+  | "org-missing"
+  | "error";
 
 const META: Record<EmptyReason, { icon: typeof Inbox; tone: string }> = {
   "no-rows": { icon: Inbox, tone: "text-muted-foreground" },
@@ -32,10 +38,14 @@ export function EmptyState({
 }) {
   const { icon: Icon, tone } = META[reason];
   return (
-    <Card className={`glass-card flex flex-col items-center justify-center text-center ${compact ? "p-4" : "p-8"}`}>
+    <Card
+      className={`glass-card flex flex-col items-center justify-center text-center ${compact ? "p-4" : "p-8"}`}
+    >
       <Icon className={`${compact ? "h-6 w-6" : "h-10 w-10"} ${tone} mb-2`} />
       <div className={`${compact ? "text-sm" : "text-base"} font-semibold`}>{title}</div>
-      <div className={`${compact ? "text-[11px]" : "text-xs"} text-muted-foreground mt-1 max-w-md`}>{description}</div>
+      <div className={`${compact ? "text-[11px]" : "text-xs"} text-muted-foreground mt-1 max-w-md`}>
+        {description}
+      </div>
       {action && <div className="mt-3">{action}</div>}
     </Card>
   );

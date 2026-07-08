@@ -22,7 +22,9 @@ export class WelcomeAnimationEngine {
     private readonly audit: HeroAudit,
   ) {}
 
-  setReducedMotion(r: boolean): void { this.reduced = r; }
+  setReducedMotion(r: boolean): void {
+    this.reduced = r;
+  }
 
   fire(now: number): void {
     if (this.active) return;
@@ -30,7 +32,9 @@ export class WelcomeAnimationEngine {
     this.audit.append({ at: now, kind: "welcome", from: "idle", to: "playing" });
   }
 
-  isPlaying(): boolean { return this.active !== null; }
+  isPlaying(): boolean {
+    return this.active !== null;
+  }
 
   tick(tick: HeroTick): void {
     if (!this.active) return;

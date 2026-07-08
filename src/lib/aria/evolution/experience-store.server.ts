@@ -18,9 +18,7 @@ export function appendExperience(record: ExperienceRecord): ExperienceRecord {
     failures: Object.freeze([...record.failures]) as readonly string[],
     successes: Object.freeze([...record.successes]) as readonly string[],
     lessons: Object.freeze([...record.lessons]) as readonly string[],
-    recommendations: Object.freeze([
-      ...record.recommendations,
-    ]) as readonly string[],
+    recommendations: Object.freeze([...record.recommendations]) as readonly string[],
     metrics: Object.freeze({ ...record.metrics }),
   });
   RECORDS.push(frozen);

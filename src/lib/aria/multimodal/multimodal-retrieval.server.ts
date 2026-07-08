@@ -14,10 +14,7 @@ export interface RetrievalQuery {
 
 function matchesText(f: MultimodalFinding, terms: readonly string[]): boolean {
   if (terms.length === 0) return true;
-  const hay = [
-    f.summary,
-    ...f.signals.map((s) => `${s.text ?? ""} ${s.notes ?? ""}`),
-  ]
+  const hay = [f.summary, ...f.signals.map((s) => `${s.text ?? ""} ${s.notes ?? ""}`)]
     .join(" ")
     .toLowerCase();
   return terms.every((t) => hay.includes(t));

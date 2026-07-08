@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_authenticated/urgent-ops")({
   ),
 });
 
-
 type Priority = "عاجل جدًا" | "عاجل" | "متابعة";
 type TaskStatus = "جديد" | "قيد المعالجة" | "بانتظار اعتماد" | "مغلق";
 
@@ -95,7 +94,10 @@ function UrgentOpsPage() {
     const [t, r, p] = await Promise.all([
       supabase.from("urgent_tasks").select("*").order("due_at", { ascending: true }),
       supabase.from("support_requests").select("*").order("created_at", { ascending: false }),
-      supabase.from("aria_improvement_proposals").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("aria_improvement_proposals")
+        .select("*")
+        .order("created_at", { ascending: false }),
     ]);
     if (t.data) setTasks(t.data as UrgentTask[]);
     if (r.data) setRequests(r.data as SupportRequest[]);
@@ -106,9 +108,21 @@ function UrgentOpsPage() {
     void loadAll();
     const ch = supabase
       .channel("urgent-ops-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "urgent_tasks" }, () => void loadAll())
-      .on("postgres_changes", { event: "*", schema: "public", table: "support_requests" }, () => void loadAll())
-      .on("postgres_changes", { event: "*", schema: "public", table: "aria_improvement_proposals" }, () => void loadAll())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "urgent_tasks" },
+        () => void loadAll(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "support_requests" },
+        () => void loadAll(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "aria_improvement_proposals" },
+        () => void loadAll(),
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(ch);
@@ -119,7 +133,9 @@ function UrgentOpsPage() {
   useEffect(() => {
     if (tasks.length === 0) return;
     const now = Date.now();
-    const overdue = tasks.filter((t) => t.status !== "مغلق" && t.due_at && new Date(t.due_at).getTime() < now);
+    const overdue = tasks.filter(
+      (t) => t.status !== "مغلق" && t.due_at && new Date(t.due_at).getTime() < now,
+    );
     const unassigned = requests.filter((r) => !r.assigned_to || r.assigned_to.trim() === "");
     const breach = tasks.filter((t) => {
       if (t.status === "مغلق" || !t.due_at) return false;
@@ -169,7 +185,10 @@ function UrgentOpsPage() {
 
   const grouped = useMemo(() => {
     const map: Record<TaskStatus, UrgentTask[]> = {
-      "جديد": [], "قيد المعالجة": [], "بانتظار اعتماد": [], "مغلق": [],
+      جديد: [],
+      "قيد المعالجة": [],
+      "بانتظار اعتماد": [],
+      مغلق: [],
     };
     for (const t of tasks) map[t.status].push(t);
     return map;
@@ -184,7 +203,10 @@ function UrgentOpsPage() {
   };
 
   const decide = async (id: string, status: "معتمد" | "مرفوض") => {
-    await supabase.from("aria_improvement_proposals").update({ status, decided_by: "المسؤول التنفيذي" }).eq("id", id);
+    await supabase
+      .from("aria_improvement_proposals")
+      .update({ status, decided_by: "المسؤول التنفيذي" })
+      .eq("id", id);
   };
 
   return (
@@ -195,12 +217,16 @@ function UrgentOpsPage() {
         className="rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-amber-100 text-sm flex items-center gap-2"
       >
         <AlertTriangle className="h-4 w-4 shrink-0" />
-        <span className="font-semibold">بيئة محاكاة تجريبية — البيانات افتراضية لأغراض العرض · Simulation environment — demo data</span>
+        <span className="font-semibold">
+          بيئة محاكاة تجريبية — البيانات افتراضية لأغراض العرض · Simulation environment — demo data
+        </span>
       </div>
 
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-cyan-100">المساندة ومتابعة الأعمال العاجلة</h1>
-        <p className="text-sm text-cyan-200/70">Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك آريا للتحسين المستمر.</p>
+        <p className="text-sm text-cyan-200/70">
+          Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك آريا للتحسين المستمر.
+        </p>
       </header>
 
       {/* Panel 1 — Kanban */}
@@ -221,7 +247,9 @@ function UrgentOpsPage() {
             >
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-semibold text-cyan-100">{status}</span>
-                <Badge variant="outline" className="border-cyan-500/40 text-cyan-200">{grouped[status].length}</Badge>
+                <Badge variant="outline" className="border-cyan-500/40 text-cyan-200">
+                  {grouped[status].length}
+                </Badge>
               </div>
               <div className="space-y-2">
                 {grouped[status].map((t) => {
@@ -237,8 +265,22 @@ function UrgentOpsPage() {
                       )}
                     >
                       <div className="mb-1 flex items-start justify-between gap-2">
-                        <span className={cn("rounded border px-1.5 py-0.5 text-[10px]", PRIORITY_COLOR[t.priority])}>{t.priority}</span>
-                        <span className={cn("text-[11px]", cd.critical ? "text-red-300 font-bold" : "text-cyan-200/70")}>{cd.text}</span>
+                        <span
+                          className={cn(
+                            "rounded border px-1.5 py-0.5 text-[10px]",
+                            PRIORITY_COLOR[t.priority],
+                          )}
+                        >
+                          {t.priority}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[11px]",
+                            cd.critical ? "text-red-300 font-bold" : "text-cyan-200/70",
+                          )}
+                        >
+                          {cd.text}
+                        </span>
                       </div>
                       <p className="font-medium text-cyan-50 leading-snug">{t.title_ar}</p>
                       <div className="mt-2 flex items-center justify-between text-[11px] text-cyan-200/60">
@@ -273,15 +315,27 @@ function UrgentOpsPage() {
                     <p className="text-sm font-medium text-cyan-50">{r.topic_ar}</p>
                     <p className="text-[11px] text-cyan-200/60 mt-1">من: {r.requester}</p>
                   </div>
-                  <span className={cn("shrink-0 rounded border px-1.5 py-0.5 text-[10px]", CHANNEL_COLOR[r.channel])}>{r.channel}</span>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded border px-1.5 py-0.5 text-[10px]",
+                      CHANNEL_COLOR[r.channel],
+                    )}
+                  >
+                    {r.channel}
+                  </span>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <Select value={r.assigned_to ?? ""} onValueChange={(v) => void assignRequest(r.id, v)}>
+                  <Select
+                    value={r.assigned_to ?? ""}
+                    onValueChange={(v) => void assignRequest(r.id, v)}
+                  >
                     <SelectTrigger className="h-8 text-xs bg-[#061A2E]/60 border-cyan-500/30">
                       <SelectValue placeholder="إسناد المسؤولية" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="مركز خدمة تقنية المعلومات">مركز خدمة تقنية المعلومات</SelectItem>
+                      <SelectItem value="مركز خدمة تقنية المعلومات">
+                        مركز خدمة تقنية المعلومات
+                      </SelectItem>
                       <SelectItem value="وحدة الاتصالات">وحدة الاتصالات</SelectItem>
                       <SelectItem value="أمن المعلومات">أمن المعلومات</SelectItem>
                       <SelectItem value="المستودعات المركزية">المستودعات المركزية</SelectItem>
@@ -289,11 +343,15 @@ function UrgentOpsPage() {
                       <SelectItem value="د. ريم القحطاني">د. ريم القحطاني</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-200 text-[10px]">{r.status}</Badge>
+                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-200 text-[10px]">
+                    {r.status}
+                  </Badge>
                 </div>
               </div>
             ))}
-            {requests.length === 0 && <p className="text-xs text-cyan-200/50 text-center py-4">لا توجد طلبات مساندة.</p>}
+            {requests.length === 0 && (
+              <p className="text-xs text-cyan-200/50 text-center py-4">لا توجد طلبات مساندة.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -313,13 +371,20 @@ function UrgentOpsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="border-cyan-500/40 text-cyan-200 text-[10px]">{p.area}</Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-cyan-500/40 text-cyan-200 text-[10px]"
+                      >
+                        {p.area}
+                      </Badge>
                       <Badge
                         className={cn(
                           "text-[10px] border",
-                          p.impact === "حرج" ? "bg-red-600/20 text-red-200 border-red-500/40" :
-                          p.impact === "عالٍ" ? "bg-amber-500/20 text-amber-200 border-amber-500/40" :
-                          "bg-cyan-500/15 text-cyan-200 border-cyan-500/30",
+                          p.impact === "حرج"
+                            ? "bg-red-600/20 text-red-200 border-red-500/40"
+                            : p.impact === "عالٍ"
+                              ? "bg-amber-500/20 text-amber-200 border-amber-500/40"
+                              : "bg-cyan-500/15 text-cyan-200 border-cyan-500/30",
                         )}
                       >
                         {p.impact}
@@ -335,12 +400,20 @@ function UrgentOpsPage() {
                   </span>
                   {p.status === "مقترح" ? (
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="h-7 border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/10"
-                        onClick={() => void decide(p.id, "معتمد")}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/10"
+                        onClick={() => void decide(p.id, "معتمد")}
+                      >
                         <CheckCircle2 className="ml-1 h-3 w-3" /> اعتماد
                       </Button>
-                      <Button size="sm" variant="outline" className="h-7 border-red-500/40 text-red-200 hover:bg-red-500/10"
-                        onClick={() => void decide(p.id, "مرفوض")}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 border-red-500/40 text-red-200 hover:bg-red-500/10"
+                        onClick={() => void decide(p.id, "مرفوض")}
+                      >
                         <XCircle className="ml-1 h-3 w-3" /> رفض
                       </Button>
                     </div>
@@ -350,7 +423,8 @@ function UrgentOpsPage() {
             ))}
             {proposals.length === 0 && (
               <p className="text-xs text-cyan-200/50 text-center py-4">
-                لا توجد مقترحات حالياً. سيقوم محرك آريا بتحليل المؤشرات واقتراح تحسينات عند رصد إشارات تشغيلية.
+                لا توجد مقترحات حالياً. سيقوم محرك آريا بتحليل المؤشرات واقتراح تحسينات عند رصد
+                إشارات تشغيلية.
               </p>
             )}
           </CardContent>

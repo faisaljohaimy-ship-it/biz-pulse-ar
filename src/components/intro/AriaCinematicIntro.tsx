@@ -6,7 +6,6 @@ import { installInteractionTracker, markInteracted } from "@/lib/user-interactio
 
 const STORAGE_KEY = "aria_intro_seen_v1";
 
-
 type Props = {
   /** Optional identifier to scope replay state per surface. */
   surface?: string;
@@ -30,7 +29,6 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
   // FR-1/FR-2: choose object-fit per device class. Portrait mobile → cover
   // (fills, face in upper third). Everything else → contain (no cropping).
   const [fitMode, setFitMode] = useState<"cover" | "contain">("contain");
-
 
   // Decide on mount whether to show.
   useEffect(() => {
@@ -68,8 +66,6 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
       window.removeEventListener("resize", apply);
     };
   }, []);
-
-
 
   const finish = () => {
     if (fading) return;
@@ -155,7 +151,9 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
           // First, guarantee playback (muted always works on mobile).
-          v.play().catch(() => { /* noop */ });
+          v.play().catch(() => {
+            /* noop */
+          });
           // Then attempt to unmute. If the browser blocks it (iOS), stay
           // muted and surface the "Tap for sound" chip.
           try {
@@ -163,11 +161,16 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
             v.volume = 1;
             const p = v.play();
             if (p && typeof p.then === "function") {
-              p.then(() => { setMuted(false); setShowSoundChip(false); }).catch(() => {
+              p.then(() => {
+                setMuted(false);
+                setShowSoundChip(false);
+              }).catch(() => {
                 v.muted = true;
                 setMuted(true);
                 setShowSoundChip(true);
-                v.play().catch(() => { /* noop */ });
+                v.play().catch(() => {
+                  /* noop */
+                });
               });
             }
           } catch {
@@ -178,7 +181,6 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         }}
         onEnded={finish}
         onError={() => {
-          // eslint-disable-next-line no-console
           console.warn("[AriaCinematicIntro] video failed to load");
           finish();
         }}
@@ -204,8 +206,6 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         }}
       />
 
-
-
       <div
         className="absolute end-4 z-30 flex items-center gap-2"
         style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
@@ -223,25 +223,36 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
             setMuted(next);
             if (!next) {
               setShowSoundChip(false);
-              v.play().catch(() => { /* noop */ });
+              v.play().catch(() => {
+                /* noop */
+              });
             }
           }}
-          aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+          aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : ar ? "كتم الصوت" : "Mute"}
           aria-pressed={!muted}
           className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
           <span>
             {showSoundChip
-              ? (ar ? "اضغط لتفعيل الصوت" : "Tap for sound")
+              ? ar
+                ? "اضغط لتفعيل الصوت"
+                : "Tap for sound"
               : muted
-                ? (ar ? "تشغيل الصوت" : "Sound on")
-                : (ar ? "كتم" : "Mute")}
+                ? ar
+                  ? "تشغيل الصوت"
+                  : "Sound on"
+                : ar
+                  ? "كتم"
+                  : "Mute"}
           </span>
         </button>
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); finish(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            finish();
+          }}
           aria-label={ar ? "تخطّي المقدّمة · Skip intro" : "Skip intro · تخطّي المقدّمة"}
           className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
@@ -251,7 +262,6 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           </span>
         </button>
       </div>
-
     </div>
   );
 }
@@ -267,8 +277,7 @@ export function AriaIntroReplayButton() {
     <button
       type="button"
       onClick={() => {
-        const fn = (window as unknown as { __ariaReplayIntro?: () => void })
-          .__ariaReplayIntro;
+        const fn = (window as unknown as { __ariaReplayIntro?: () => void }).__ariaReplayIntro;
         if (fn) fn();
       }}
       className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground hover:text-primary"

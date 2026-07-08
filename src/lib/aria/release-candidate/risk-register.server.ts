@@ -60,9 +60,7 @@ export function buildRiskRegister(
   return risks;
 }
 
-function reviewGate(
-  domain: ReviewReport["domain"],
-): RiskEntry["gate"] {
+function reviewGate(domain: ReviewReport["domain"]): RiskEntry["gate"] {
   switch (domain) {
     case "security":
       return "security";

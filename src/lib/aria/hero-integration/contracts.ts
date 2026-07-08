@@ -1,19 +1,35 @@
 import { z } from "zod";
 
 export const HeroPresenceSchema = z.enum([
-  "boot","idle","greeting","listening","thinking","speaking","interrupted","error",
+  "boot",
+  "idle",
+  "greeting",
+  "listening",
+  "thinking",
+  "speaking",
+  "interrupted",
+  "error",
 ]);
 
 export const HeroGlowSchema = z.enum([
-  "dim","ambient","attentive","focused","radiant","alert",
+  "dim",
+  "ambient",
+  "attentive",
+  "focused",
+  "radiant",
+  "alert",
 ]);
 
 export const HeroButtonIdSchema = z.enum([
-  "talk_to_aria","executive_briefing","start_demo",
-  "show_risks","show_today_summary","generate_report",
+  "talk_to_aria",
+  "executive_briefing",
+  "start_demo",
+  "show_risks",
+  "show_today_summary",
+  "generate_report",
 ]);
 
-export const HeroButtonStatusSchema = z.enum(["idle","loading","success","error"]);
+export const HeroButtonStatusSchema = z.enum(["idle", "loading", "success", "error"]);
 
 export const HeroButtonStateSchema = z.object({
   id: HeroButtonIdSchema,
@@ -27,7 +43,7 @@ export const HeroButtonStateSchema = z.object({
 export const HeroClickButtonInputSchema = z.object({
   instanceId: z.string().min(1),
   buttonId: HeroButtonIdSchema,
-  lang: z.enum(["ar","en","unknown"]).optional(),
+  lang: z.enum(["ar", "en", "unknown"]).optional(),
 });
 
 export type HeroClickButtonInput = z.infer<typeof HeroClickButtonInputSchema>;

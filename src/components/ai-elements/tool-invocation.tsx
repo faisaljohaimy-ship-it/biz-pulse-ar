@@ -9,11 +9,7 @@ import { cn } from "@/lib/utils";
 
 type ToolPart = {
   type: string;
-  state?:
-    | "input-streaming"
-    | "input-available"
-    | "output-available"
-    | "output-error";
+  state?: "input-streaming" | "input-available" | "output-available" | "output-error";
   input?: unknown;
   output?: unknown;
   errorText?: string;
@@ -78,8 +74,7 @@ function summarizeOutput(toolName: string, output: unknown): string | null {
 
 export function ToolInvocation({ part }: { part: ToolPart }) {
   const toolName =
-    part.toolName ??
-    (part.type.startsWith("tool-") ? part.type.slice(5) : part.type);
+    part.toolName ?? (part.type.startsWith("tool-") ? part.type.slice(5) : part.type);
   const label = TOOL_LABELS[toolName] ?? { ar: toolName, en: toolName, icon: "🛠" };
   const state = part.state ?? "input-available";
   const isRunning = state === "input-streaming" || state === "input-available";

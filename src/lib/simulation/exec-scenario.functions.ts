@@ -7,10 +7,15 @@ import { requirePlatformAdmin, getCurrentOrgIdForUser } from "@/lib/authz.server
 export const runExecutiveScenarioFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { day?: string; orgId?: string }) =>
-    z.object({
-      day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-      orgId: z.string().uuid().optional(),
-    }).parse(d ?? {}),
+    z
+      .object({
+        day: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+        orgId: z.string().uuid().optional(),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await requirePlatformAdmin(context.userId);
@@ -19,6 +24,8 @@ export const runExecutiveScenarioFn = createServerFn({ method: "POST" })
     const orgId = data.orgId ?? (await getCurrentOrgIdForUser(context.userId));
     if (!orgId) throw new Error("No org for current user");
     return await runExecutiveScenario(supabaseAdmin, {
-      orgId, userId: context.userId, day: data.day,
+      orgId,
+      userId: context.userId,
+      day: data.day,
     });
   });

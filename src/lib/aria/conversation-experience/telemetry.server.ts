@@ -15,18 +15,28 @@ export class ConversationTelemetry {
 
   register(sink: TelemetrySink): () => void {
     this.sinks.add(sink);
-    return () => { this.sinks.delete(sink); };
+    return () => {
+      this.sinks.delete(sink);
+    };
   }
 
   async emitAudit(entry: ConversationAuditEntry): Promise<void> {
     for (const s of this.sinks) {
-      try { await s({ kind: "audit", entry }); } catch { /* isolated */ }
+      try {
+        await s({ kind: "audit", entry });
+      } catch {
+        /* isolated */
+      }
     }
   }
 
   async emitMetrics(metrics: ConversationMetricsSnapshot): Promise<void> {
     for (const s of this.sinks) {
-      try { await s({ kind: "metrics", metrics }); } catch { /* isolated */ }
+      try {
+        await s({ kind: "metrics", metrics });
+      } catch {
+        /* isolated */
+      }
     }
   }
 }

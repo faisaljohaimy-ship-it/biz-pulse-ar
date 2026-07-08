@@ -35,11 +35,7 @@ export function runRc1Pipeline(input: unknown, version: string = RC1_VERSION): R
 
   const risks = buildRiskRegister(gates, reviews);
   const blockers = computeBlockers(gates);
-  audit.record(
-    "risk",
-    "info",
-    `Registered ${risks.length} risks and ${blockers.length} blockers.`,
-  );
+  audit.record("risk", "info", `Registered ${risks.length} risks and ${blockers.length} blockers.`);
 
   const outcome = decide(gates, blockers);
   audit.record("decision", "info", `${outcome.decision}: ${outcome.reason}`);

@@ -64,9 +64,7 @@ export function analyzeRisks(
         kind: "single_point_failure",
         severity: "high",
         node_id: b.node_id,
-        evidence: [
-          `critical_path_reuses_agent=${b.resolved_agent}`,
-        ],
+        evidence: [`critical_path_reuses_agent=${b.resolved_agent}`],
         reasoning:
           "Same agent handles multiple critical-path nodes; a single fault stalls the mission.",
       });
@@ -90,8 +88,7 @@ export function analyzeRisks(
           `success_rate=${h.success_rate.toFixed(2)}`,
           `executions=${h.executions}`,
         ],
-        reasoning:
-          "Recent marketplace telemetry shows degraded reliability for this agent.",
+        reasoning: "Recent marketplace telemetry shows degraded reliability for this agent.",
       });
     }
     if (h.timeouts > 0 && h.executions > 0 && h.timeouts / h.executions > 0.1) {
@@ -139,12 +136,8 @@ export function analyzeRisks(
         id: uid("risk"),
         kind: "budget_risk",
         severity: estimation.cost_units > cap ? "high" : "medium",
-        evidence: [
-          `estimated=${estimation.cost_units}`,
-          `cap=${cap}`,
-        ],
-        reasoning:
-          "Estimated cost within 10% of budget cap; likely to exceed under retries.",
+        evidence: [`estimated=${estimation.cost_units}`, `cap=${cap}`],
+        reasoning: "Estimated cost within 10% of budget cap; likely to exceed under retries.",
       });
     }
   }

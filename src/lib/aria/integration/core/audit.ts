@@ -8,7 +8,9 @@ import type { ConnectorAuditEntry } from "./types";
 const BUFFER_MAX = 4000;
 const BUFFER: ConnectorAuditEntry[] = [];
 
-export function auditConnector(entry: Omit<ConnectorAuditEntry, "ts"> & { ts?: string }): ConnectorAuditEntry {
+export function auditConnector(
+  entry: Omit<ConnectorAuditEntry, "ts"> & { ts?: string },
+): ConnectorAuditEntry {
   const rec: ConnectorAuditEntry = {
     ts: entry.ts ?? new Date().toISOString(),
     connector_id: entry.connector_id,

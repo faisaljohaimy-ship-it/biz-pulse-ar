@@ -1,12 +1,7 @@
 /**
  * Phase 10.0 — Performance review summarizer.
  */
-import type {
-  EvidenceRef,
-  GateStatus,
-  ReviewFinding,
-  ReviewReport,
-} from "./types";
+import type { EvidenceRef, GateStatus, ReviewFinding, ReviewReport } from "./types";
 
 export interface PerformanceInput {
   readonly p95_ms?: number;

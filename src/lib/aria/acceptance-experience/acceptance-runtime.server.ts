@@ -25,10 +25,7 @@ import { assessDemoReadiness } from "./demo-readiness.server";
 import { decideAcceptanceFallback } from "./fallback.server";
 import { discipline } from "./response-discipline.server";
 import { scoreInteraction } from "./interaction-quality.server";
-import {
-  recordAcceptanceSignal,
-  acceptanceScore,
-} from "./acceptance-signals.server";
+import { recordAcceptanceSignal, acceptanceScore } from "./acceptance-signals.server";
 import {
   recordGreeting,
   recordStepCompleted,
@@ -53,8 +50,12 @@ export function startAcceptanceRuntime(instanceId: string, lang: "ar" | "en"): R
   const cur = RUNTIME.get(instanceId);
   if (cur) return cur;
   const row: RuntimeRow = {
-    instanceId, startedAt: Date.now(), lang,
-    step: "welcome", completed: [], greeted: false,
+    instanceId,
+    startedAt: Date.now(),
+    lang,
+    step: "welcome",
+    completed: [],
+    greeted: false,
   };
   RUNTIME.set(instanceId, row);
   beginFirstImpression(instanceId);
@@ -84,7 +85,10 @@ export function deliverExecutiveGreeting(
   return { text: greeting.text, delivered: true };
 }
 
-export function advanceAcceptanceStep(instanceId: string, next: AcceptanceStep): AcceptanceStep | null {
+export function advanceAcceptanceStep(
+  instanceId: string,
+  next: AcceptanceStep,
+): AcceptanceStep | null {
   const row = RUNTIME.get(instanceId);
   if (!row) return null;
   if (!row.completed.includes(row.step)) row.completed.push(row.step);
@@ -132,8 +136,14 @@ export function recordUserTurn(instanceId: string, kind: "text" | "voice"): void
   recordAcceptanceSignal(instanceId, "user_response", { kind });
 }
 
-export function disciplineResponse(instanceId: string, draft: string, mode: "brief" | "detailed"): {
-  text: string; trimmed: boolean; quality: ReturnType<typeof scoreInteraction>;
+export function disciplineResponse(
+  instanceId: string,
+  draft: string,
+  mode: "brief" | "detailed",
+): {
+  text: string;
+  trimmed: boolean;
+  quality: ReturnType<typeof scoreInteraction>;
 } {
   const row = RUNTIME.get(instanceId);
   const lang = row?.lang ?? "ar";
@@ -142,13 +152,11 @@ export function disciplineResponse(instanceId: string, draft: string, mode: "bri
   logAcceptance(instanceId, "discipline", { trimmed: d.trimmed, notes: d.notes });
   const quality = scoreInteraction({ text: d.text, mode, lang });
   recordQuality(quality.language, quality.acceptable);
-  logAcceptance(instanceId, "quality", { score: quality.composite, violations: quality.violations });
+  logAcceptance(instanceId, "quality", {
+    score: quality.composite,
+    violations: quality.violations,
+  });
   return { text: d.text, trimmed: d.trimmed, quality };
 }
 
-export {
-  buildTrustChips,
-  setPresentationMode,
-  type PresentationMode,
-  closeEngagement,
-};
+export { buildTrustChips, setPresentationMode, type PresentationMode, closeEngagement };

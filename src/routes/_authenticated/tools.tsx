@@ -3,7 +3,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Wrench, Play, Loader2, ShieldCheck, Activity, CheckCircle2, AlertTriangle, Eye, Search } from "lucide-react";
+import {
+  Wrench,
+  Play,
+  Loader2,
+  ShieldCheck,
+  Activity,
+  CheckCircle2,
+  AlertTriangle,
+  Eye,
+  Search,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
@@ -11,7 +21,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
 import { listToolRegistry } from "@/lib/exec.functions";
@@ -22,8 +38,26 @@ export const Route = createFileRoute("/_authenticated/tools")({
   component: ToolsRuntime,
 });
 
-type Tool = { id: string; category: string; name: string; description: string | null; permissions: string[] | null; requires_approval: boolean; enabled: boolean; schema_json: unknown };
-type ToolExec = { id: string; tool_id: string; status: string; started_at: string | null; finished_at: string | null; duration_ms: number | null; error: string | null; created_at: string };
+type Tool = {
+  id: string;
+  category: string;
+  name: string;
+  description: string | null;
+  permissions: string[] | null;
+  requires_approval: boolean;
+  enabled: boolean;
+  schema_json: unknown;
+};
+type ToolExec = {
+  id: string;
+  tool_id: string;
+  status: string;
+  started_at: string | null;
+  finished_at: string | null;
+  duration_ms: number | null;
+  error: string | null;
+  created_at: string;
+};
 
 function ToolsRuntime() {
   const { locale } = useI18n();
@@ -36,9 +70,11 @@ function ToolsRuntime() {
     refetchInterval: 30_000,
   });
 
-  const { rows: execs } = useLiveRows<ToolExec>(
-    "tool_executions",
-    (q) => q.select("id,tool_id,status,started_at,finished_at,duration_ms,error,created_at").order("created_at", { ascending: false }).limit(120),
+  const { rows: execs } = useLiveRows<ToolExec>("tool_executions", (q) =>
+    q
+      .select("id,tool_id,status,started_at,finished_at,duration_ms,error,created_at")
+      .order("created_at", { ascending: false })
+      .limit(120),
   );
 
   const byTool = useMemo(() => {
@@ -57,7 +93,8 @@ function ToolsRuntime() {
     const q = query.trim().toLowerCase();
     for (const t of (tools as Tool[] | undefined) ?? []) {
       if (q) {
-        const hay = `${t.name} ${t.id} ${t.category} ${t.description ?? ""} ${(t.permissions ?? []).join(" ")}`.toLowerCase();
+        const hay =
+          `${t.name} ${t.id} ${t.category} ${t.description ?? ""} ${(t.permissions ?? []).join(" ")}`.toLowerCase();
         if (!hay.includes(q)) continue;
       }
       const arr = m.get(t.category) ?? [];
@@ -67,14 +104,15 @@ function ToolsRuntime() {
     return Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [tools, query]);
 
-
   const totals = useMemo(() => {
     const all = (tools as Tool[] | undefined) ?? [];
     return {
       total: all.length,
       enabled: all.filter((t) => t.enabled).length,
       running: execs.filter((e) => e.status === "running" || e.status === "pending").length,
-      failed24h: execs.filter((e) => e.status === "failed" && Date.now() - new Date(e.created_at).getTime() < 86_400_000).length,
+      failed24h: execs.filter(
+        (e) => e.status === "failed" && Date.now() - new Date(e.created_at).getTime() < 86_400_000,
+      ).length,
     };
   }, [tools, execs]);
 
@@ -83,15 +121,39 @@ function ToolsRuntime() {
       <PageHeader
         icon={Wrench}
         title={ar ? "سجل الأدوات التشغيلية" : "Operational Tool Registry"}
-        subtitle={ar ? "كل أداة قابلة للتنفيذ مع صحة وحالة طابور حية." : "Every tool executable with live health and queue status."}
+        subtitle={
+          ar
+            ? "كل أداة قابلة للتنفيذ مع صحة وحالة طابور حية."
+            : "Every tool executable with live health and queue status."
+        }
         badge={ar ? "حي" : "Live"}
       />
 
       <div className="grid gap-2 sm:grid-cols-4">
-        <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "إجمالي" : "Total"}</div><div className="text-2xl font-bold">{totals.total}</div></Card>
-        <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "مفعّل" : "Enabled"}</div><div className="text-2xl font-bold text-emerald-300">{totals.enabled}</div></Card>
-        <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "نشِط الآن" : "Running"}</div><div className="text-2xl font-bold text-cyan-300">{totals.running}</div></Card>
-        <Card className="p-3 glass-card"><div className="text-[10px] uppercase text-muted-foreground">{ar ? "فشل (24س)" : "Failed (24h)"}</div><div className="text-2xl font-bold text-rose-300">{totals.failed24h}</div></Card>
+        <Card className="p-3 glass-card">
+          <div className="text-[10px] uppercase text-muted-foreground">
+            {ar ? "إجمالي" : "Total"}
+          </div>
+          <div className="text-2xl font-bold">{totals.total}</div>
+        </Card>
+        <Card className="p-3 glass-card">
+          <div className="text-[10px] uppercase text-muted-foreground">
+            {ar ? "مفعّل" : "Enabled"}
+          </div>
+          <div className="text-2xl font-bold text-emerald-300">{totals.enabled}</div>
+        </Card>
+        <Card className="p-3 glass-card">
+          <div className="text-[10px] uppercase text-muted-foreground">
+            {ar ? "نشِط الآن" : "Running"}
+          </div>
+          <div className="text-2xl font-bold text-cyan-300">{totals.running}</div>
+        </Card>
+        <Card className="p-3 glass-card">
+          <div className="text-[10px] uppercase text-muted-foreground">
+            {ar ? "فشل (24س)" : "Failed (24h)"}
+          </div>
+          <div className="text-2xl font-bold text-rose-300">{totals.failed24h}</div>
+        </Card>
       </div>
 
       <div className="relative">
@@ -99,16 +161,30 @@ function ToolsRuntime() {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={ar ? "بحث: الاسم، الوصف، الفئة، الصلاحية…" : "Search by name, description, category, capability…"}
+          placeholder={
+            ar
+              ? "بحث: الاسم، الوصف، الفئة، الصلاحية…"
+              : "Search by name, description, category, capability…"
+          }
           className="h-9 ps-9 text-xs"
           aria-label={ar ? "بحث الأدوات" : "Search tools"}
         />
       </div>
 
       {isLoading ? (
-        <Card className="p-6 glass-card"><LiveStatus variant="initializing" label={ar ? "تحميل السجل..." : "Loading registry..."} /></Card>
+        <Card className="p-6 glass-card">
+          <LiveStatus
+            variant="initializing"
+            label={ar ? "تحميل السجل..." : "Loading registry..."}
+          />
+        </Card>
       ) : grouped.length === 0 ? (
-        <Card className="p-6 glass-card"><LiveStatus variant="monitoring" label={ar ? "بانتظار تسجيل الأدوات..." : "Awaiting tool registration..."} /></Card>
+        <Card className="p-6 glass-card">
+          <LiveStatus
+            variant="monitoring"
+            label={ar ? "بانتظار تسجيل الأدوات..." : "Awaiting tool registration..."}
+          />
+        </Card>
       ) : (
         <div className="space-y-4">
           {grouped.map(([category, items]) => (
@@ -135,31 +211,73 @@ function ToolCard({ tool, history, ar }: { tool: Tool; history: ToolExec[]; ar: 
   const last = history[0];
   const running = history.filter((h) => h.status === "running" || h.status === "pending").length;
   const last24 = history.filter((h) => Date.now() - new Date(h.created_at).getTime() < 86_400_000);
-  const successRate = last24.length ? Math.round((last24.filter((h) => h.status === "succeeded" || h.status === "completed").length / last24.length) * 100) : null;
+  const successRate = last24.length
+    ? Math.round(
+        (last24.filter((h) => h.status === "succeeded" || h.status === "completed").length /
+          last24.length) *
+          100,
+      )
+    : null;
 
-  const healthIcon = !last ? Activity : (last.status === "succeeded" || last.status === "completed") ? CheckCircle2 : last.status === "failed" ? AlertTriangle : Loader2;
+  const healthIcon = !last
+    ? Activity
+    : last.status === "succeeded" || last.status === "completed"
+      ? CheckCircle2
+      : last.status === "failed"
+        ? AlertTriangle
+        : Loader2;
   const HC = healthIcon;
-  const healthClass = !last ? "text-muted-foreground" : (last.status === "succeeded" || last.status === "completed") ? "text-emerald-400" : last.status === "failed" ? "text-rose-400" : "text-cyan-400";
+  const healthClass = !last
+    ? "text-muted-foreground"
+    : last.status === "succeeded" || last.status === "completed"
+      ? "text-emerald-400"
+      : last.status === "failed"
+        ? "text-rose-400"
+        : "text-cyan-400";
 
   return (
     <div className="rounded-lg border border-border/40 bg-background/40 p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <HC className={`h-4 w-4 ${healthClass} ${last?.status === "running" ? "animate-spin" : ""}`} />
+            <HC
+              className={`h-4 w-4 ${healthClass} ${last?.status === "running" ? "animate-spin" : ""}`}
+            />
             <div className="truncate text-sm font-semibold">{tool.name}</div>
           </div>
-          {tool.description && <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{tool.description}</div>}
+          {tool.description && (
+            <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+              {tool.description}
+            </div>
+          )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <Badge variant={tool.enabled ? "default" : "secondary"} className="text-[10px]">{tool.enabled ? (ar ? "مفعّل" : "On") : (ar ? "متوقف" : "Off")}</Badge>
-          {tool.requires_approval && <Badge variant="outline" className="text-[10px]"><ShieldCheck className="h-3 w-3 me-1" />{ar ? "اعتماد" : "Approval"}</Badge>}
+          <Badge variant={tool.enabled ? "default" : "secondary"} className="text-[10px]">
+            {tool.enabled ? (ar ? "مفعّل" : "On") : ar ? "متوقف" : "Off"}
+          </Badge>
+          {tool.requires_approval && (
+            <Badge variant="outline" className="text-[10px]">
+              <ShieldCheck className="h-3 w-3 me-1" />
+              {ar ? "اعتماد" : "Approval"}
+            </Badge>
+          )}
         </div>
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2 text-[10px] text-muted-foreground">
-        <div><span className="block uppercase">{ar ? "الطابور" : "Queue"}</span><span className="text-foreground text-xs">{running}</span></div>
-        <div><span className="block uppercase">{ar ? "آخر تشغيل" : "Last run"}</span><span className="text-foreground text-xs">{last ? fmtRel(last.created_at) : "—"}</span></div>
-        <div><span className="block uppercase">{ar ? "النجاح" : "Success"}</span><span className="text-foreground text-xs">{successRate != null ? `${successRate}%` : "—"}</span></div>
+        <div>
+          <span className="block uppercase">{ar ? "الطابور" : "Queue"}</span>
+          <span className="text-foreground text-xs">{running}</span>
+        </div>
+        <div>
+          <span className="block uppercase">{ar ? "آخر تشغيل" : "Last run"}</span>
+          <span className="text-foreground text-xs">{last ? fmtRel(last.created_at) : "—"}</span>
+        </div>
+        <div>
+          <span className="block uppercase">{ar ? "النجاح" : "Success"}</span>
+          <span className="text-foreground text-xs">
+            {successRate != null ? `${successRate}%` : "—"}
+          </span>
+        </div>
       </div>
       <div className="mt-3 flex items-center justify-between gap-2">
         <ScrollArea className="max-w-full">

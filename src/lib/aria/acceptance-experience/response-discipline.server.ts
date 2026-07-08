@@ -20,20 +20,24 @@ export function discipline(rawInput: unknown): DisciplinedResponse {
 
   // Strip raw JSON blocks.
   if (/^```json/i.test(text) || /^\s*[\[{][\s\S]*[\]}]\s*$/.test(text)) {
-    text = input.lang === "ar"
-      ? "البيانات جاهزة في اللوحة."
-      : "The data is ready on the dashboard.";
+    text =
+      input.lang === "ar" ? "البيانات جاهزة في اللوحة." : "The data is ready on the dashboard.";
     notes.push("stripped_raw_json");
   }
 
   // Remove internal reasoning leaks.
-  text = text.replace(/^(?:as an ai|let me think|thinking:|internal reasoning:)[^.]*\.\s*/i, "").trim();
+  text = text
+    .replace(/^(?:as an ai|let me think|thinking:|internal reasoning:)[^.]*\.\s*/i, "")
+    .trim();
 
   // Enforce sentence budget.
   const sentences = text.split(/(?<=[.؟!?])\s+/).filter(Boolean);
-  const cap = input.mode === "brief"
-    ? (input.lang === "ar" ? BRIEF_MAX_SENTENCES_AR : BRIEF_MAX_SENTENCES_EN)
-    : DETAILED_MAX_SENTENCES;
+  const cap =
+    input.mode === "brief"
+      ? input.lang === "ar"
+        ? BRIEF_MAX_SENTENCES_AR
+        : BRIEF_MAX_SENTENCES_EN
+      : DETAILED_MAX_SENTENCES;
   let trimmed = false;
   if (sentences.length > cap) {
     text = sentences.slice(0, cap).join(" ");

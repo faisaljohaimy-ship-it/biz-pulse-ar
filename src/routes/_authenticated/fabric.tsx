@@ -17,8 +17,21 @@ import { PredictionsPanel } from "@/components/predictions-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   getFabricSnapshot,
@@ -43,7 +56,9 @@ export const Route = createFileRoute("/_authenticated/fabric")({
   ),
   component: FabricPage,
   errorComponent: ({ error }) => (
-    <div className="p-8 text-rose-300" role="alert">Fabric error: {error.message}</div>
+    <div className="p-8 text-rose-300" role="alert">
+      Fabric error: {error.message}
+    </div>
   ),
 });
 
@@ -146,12 +161,18 @@ function FabricPage() {
                   <NexusPill tone={severityTone(a.severity)}>{a.severity}</NexusPill>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm text-slate-200">
-                      {ar ? a.title : a.title_en ?? a.title}
+                      {ar ? a.title : (a.title_en ?? a.title)}
                     </div>
                     <div className="mt-0.5 flex flex-wrap gap-2 text-[10px] text-slate-500">
-                      {a.owner && <span>{ar ? "المسؤول:" : "Owner:"} {a.owner}</span>}
+                      {a.owner && (
+                        <span>
+                          {ar ? "المسؤول:" : "Owner:"} {a.owner}
+                        </span>
+                      )}
                       {a.source && <span>· {a.source}</span>}
-                      <span>· {ar ? "أثر:" : "impact:"} {a.business_impact_score}</span>
+                      <span>
+                        · {ar ? "أثر:" : "impact:"} {a.business_impact_score}
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -199,7 +220,7 @@ function FabricPage() {
                   <span className="text-sm text-slate-200">{s.label}</span>
                 </div>
                 <NexusPill tone={s.available ? "emerald" : "slate"}>
-                  {s.available ? (ar ? "متصل" : "Live") : (ar ? "قريباً" : "Standby")}
+                  {s.available ? (ar ? "متصل" : "Live") : ar ? "قريباً" : "Standby"}
                 </NexusPill>
               </li>
             ))}
@@ -240,7 +261,7 @@ function FabricPage() {
                 <NexusPill tone="rose">{f.kind}</NexusPill>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm text-slate-200">
-                    {ar ? f.title : f.title_en ?? f.title}
+                    {ar ? f.title : (f.title_en ?? f.title)}
                   </div>
                   <div className="mt-0.5 flex flex-wrap gap-2 text-[10px] text-slate-500">
                     {f.owner && <span>{f.owner}</span>}
@@ -265,22 +286,26 @@ function FabricPage() {
 }
 
 function toneClass(t: string) {
-  return {
-    emerald: "text-emerald-300",
-    cyan: "text-cyan-300",
-    amber: "text-amber-300",
-    rose: "text-rose-300",
-    violet: "text-violet-300",
-  }[t] ?? "text-cyan-300";
+  return (
+    {
+      emerald: "text-emerald-300",
+      cyan: "text-cyan-300",
+      amber: "text-amber-300",
+      rose: "text-rose-300",
+      violet: "text-violet-300",
+    }[t] ?? "text-cyan-300"
+  );
 }
 function toneBg(t: string) {
-  return {
-    emerald: "bg-emerald-400",
-    cyan: "bg-cyan-400",
-    amber: "bg-amber-400",
-    rose: "bg-rose-400",
-    violet: "bg-violet-400",
-  }[t] ?? "bg-cyan-400";
+  return (
+    {
+      emerald: "bg-emerald-400",
+      cyan: "bg-cyan-400",
+      amber: "bg-amber-400",
+      rose: "bg-rose-400",
+      violet: "bg-violet-400",
+    }[t] ?? "bg-cyan-400"
+  );
 }
 function severityTone(s: string): "rose" | "amber" | "cyan" | "slate" {
   if (s === "critical") return "rose";
@@ -317,7 +342,9 @@ function NewEventDialog({ ar }: { ar: boolean }) {
     onSuccess: () => {
       toast.success(ar ? "تم تسجيل البند" : "Event logged");
       setOpen(false);
-      setTitle(""); setOwner(""); setDepartment("");
+      setTitle("");
+      setOwner("");
+      setDepartment("");
       queryClient.invalidateQueries({ queryKey: ["fabric-snapshot"] });
     },
     onError: (e) => toast.error(String(e)),
@@ -337,20 +364,52 @@ function NewEventDialog({ ar }: { ar: boolean }) {
         </DialogHeader>
         <div className="space-y-3">
           <Select value={kind} onValueChange={setKind}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {["decision","initiative","commitment","risk","recommendation","meeting","dependency","escalation","board_action"].map(k=>(
-                <SelectItem key={k} value={k}>{k}</SelectItem>
+              {[
+                "decision",
+                "initiative",
+                "commitment",
+                "risk",
+                "recommendation",
+                "meeting",
+                "dependency",
+                "escalation",
+                "board_action",
+              ].map((k) => (
+                <SelectItem key={k} value={k}>
+                  {k}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Input placeholder={ar ? "العنوان" : "Title"} value={title} onChange={(e)=>setTitle(e.target.value)} />
-          <Input placeholder={ar ? "المسؤول" : "Owner"} value={owner} onChange={(e)=>setOwner(e.target.value)} />
-          <Input placeholder={ar ? "الإدارة" : "Department"} value={department} onChange={(e)=>setDepartment(e.target.value)} />
+          <Input
+            placeholder={ar ? "العنوان" : "Title"}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Input
+            placeholder={ar ? "المسؤول" : "Owner"}
+            value={owner}
+            onChange={(e) => setOwner(e.target.value)}
+          />
+          <Input
+            placeholder={ar ? "الإدارة" : "Department"}
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+          />
           <Select value={impact} onValueChange={setImpact}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {["low","medium","high","critical"].map(i=>(<SelectItem key={i} value={i}>{i}</SelectItem>))}
+              {["low", "medium", "high", "critical"].map((i) => (
+                <SelectItem key={i} value={i}>
+                  {i}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -387,7 +446,8 @@ function NewAlertDialog({ ar }: { ar: boolean }) {
     onSuccess: () => {
       toast.success(ar ? "تم إنشاء التنبيه" : "Alert created");
       setOpen(false);
-      setTitle(""); setDetail("");
+      setTitle("");
+      setDetail("");
       queryClient.invalidateQueries({ queryKey: ["fabric-snapshot"] });
     },
     onError: (e) => toast.error(String(e)),
@@ -407,16 +467,39 @@ function NewAlertDialog({ ar }: { ar: boolean }) {
         </DialogHeader>
         <div className="space-y-3">
           <Select value={severity} onValueChange={setSeverity}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {["low","medium","high","critical"].map(s=>(<SelectItem key={s} value={s}>{s}</SelectItem>))}
+              {["low", "medium", "high", "critical"].map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Input placeholder={ar ? "العنوان" : "Title"} value={title} onChange={(e)=>setTitle(e.target.value)} />
-          <Textarea placeholder={ar ? "التفاصيل" : "Detail"} value={detail} onChange={(e)=>setDetail(e.target.value)} />
+          <Input
+            placeholder={ar ? "العنوان" : "Title"}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Textarea
+            placeholder={ar ? "التفاصيل" : "Detail"}
+            value={detail}
+            onChange={(e) => setDetail(e.target.value)}
+          />
           <div>
-            <label className="text-xs text-slate-400">{ar ? `الأثر التجاري: ${impact}` : `Business impact: ${impact}`}</label>
-            <input type="range" min={0} max={100} value={impact} onChange={(e)=>setImpact(Number(e.target.value))} className="w-full" />
+            <label className="text-xs text-slate-400">
+              {ar ? `الأثر التجاري: ${impact}` : `Business impact: ${impact}`}
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={impact}
+              onChange={(e) => setImpact(Number(e.target.value))}
+              className="w-full"
+            />
           </div>
         </div>
         <DialogFooter>

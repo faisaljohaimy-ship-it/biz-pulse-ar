@@ -37,7 +37,11 @@ export async function transcribeAudio(input: SttInput): Promise<SttResponse> {
     });
   } catch (err) {
     if (input.signal?.aborted) return { ok: false, result: null, reason: "aborted" };
-    return { ok: false, result: null, reason: err instanceof Error ? err.message : "network error" };
+    return {
+      ok: false,
+      result: null,
+      reason: err instanceof Error ? err.message : "network error",
+    };
   }
 
   if (!res.ok) {
@@ -46,7 +50,11 @@ export async function transcribeAudio(input: SttInput): Promise<SttResponse> {
   }
 
   let payload: unknown;
-  try { payload = await res.json(); } catch { return { ok: false, result: null, reason: "invalid stt response" }; }
+  try {
+    payload = await res.json();
+  } catch {
+    return { ok: false, result: null, reason: "invalid stt response" };
+  }
   const text = extractText(payload);
   if (!text) return { ok: false, result: null, reason: "empty transcript" };
 

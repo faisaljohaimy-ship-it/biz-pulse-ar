@@ -13,9 +13,7 @@ export interface SelfReviewObservation {
   readonly detail: string;
 }
 
-export function reviewProposal(
-  proposal: ImprovementProposal,
-): readonly SelfReviewObservation[] {
+export function reviewProposal(proposal: ImprovementProposal): readonly SelfReviewObservation[] {
   const out: SelfReviewObservation[] = [];
   if (proposal.evidence.length === 0) {
     out.push({ code: "missing_evidence", detail: "Proposal has no evidence." });

@@ -79,7 +79,12 @@ export function DigitalTwinHero({ title, subtitle, lang }: Props) {
       >
         <defs>
           <pattern id="dt-grid" width="4" height="4" patternUnits="userSpaceOnUse">
-            <path d="M4 0 L0 0 0 4" fill="none" stroke="rgb(56 232 255 / 0.10)" strokeWidth="0.15" />
+            <path
+              d="M4 0 L0 0 0 4"
+              fill="none"
+              stroke="rgb(56 232 255 / 0.10)"
+              strokeWidth="0.15"
+            />
           </pattern>
           <radialGradient id="dt-glow" cx="50%" cy="35%" r="70%">
             <stop offset="0%" stopColor="rgb(0 212 255 / 0.20)" />
@@ -161,7 +166,10 @@ export function DigitalTwinHero({ title, subtitle, lang }: Props) {
       <div className="absolute inset-0 flex flex-col justify-between p-6 sm:p-8">
         <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-cyan-200/80">
           <div className="inline-flex items-center gap-2">
-            <Radar className="h-3.5 w-3.5" style={{ animation: "aria-spin-slow 8s linear infinite" }} />
+            <Radar
+              className="h-3.5 w-3.5"
+              style={{ animation: "aria-spin-slow 8s linear infinite" }}
+            />
             {ar ? "توأم رقمي مباشر" : "Live digital twin"}
           </div>
           <div className="inline-flex items-center gap-2">
@@ -175,21 +183,18 @@ export function DigitalTwinHero({ title, subtitle, lang }: Props) {
 
         <div className="max-w-3xl">
           <div className="text-[10px] uppercase tracking-[0.28em] text-cyan-300/70">
-            {ar ? "الحصّة السادسة · جسر المعرفة التنفيذي" : "Lesson 06 · Executive Knowledge Bridge"}
+            {ar
+              ? "الحصّة السادسة · جسر المعرفة التنفيذي"
+              : "Lesson 06 · Executive Knowledge Bridge"}
           </div>
-          <h2 className="mt-2 text-3xl font-light leading-tight text-white sm:text-5xl">
-            {title}
-          </h2>
+          <h2 className="mt-2 text-3xl font-light leading-tight text-white sm:text-5xl">{title}</h2>
           <div className="mt-2 max-w-xl text-sm text-cyan-100/80 sm:text-base">{subtitle}</div>
         </div>
 
         <div className="flex items-center gap-3 text-xs text-cyan-100/80">
           <Waves className="h-4 w-4 text-cyan-300" aria-hidden />
           <span className="inline-flex min-h-[1.25rem] items-center overflow-hidden font-mono">
-            <span
-              key={tickIdx}
-              className="inline-block animate-fade-in"
-            >
+            <span key={tickIdx} className="inline-block animate-fade-in">
               {tickers[tickIdx]}
             </span>
           </span>

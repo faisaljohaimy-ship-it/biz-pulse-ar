@@ -41,10 +41,11 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
   }, [paused, briefing.total_seconds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Determine active segment.
-  const activeIndex = briefing.segments
-    .map((s, i) => ({ s, i }))
-    .filter(({ s }) => elapsed >= s.at)
-    .at(-1)?.i ?? 0;
+  const activeIndex =
+    briefing.segments
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => elapsed >= s.at)
+      .at(-1)?.i ?? 0;
   const active = briefing.segments[activeIndex];
 
   useEffect(() => {
@@ -133,8 +134,12 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
                     key={b.label}
                     className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 px-5 py-3 backdrop-blur"
                   >
-                    <div className="text-[10px] uppercase tracking-wider text-cyan-200/70">{b.label}</div>
-                    <div className="mt-1 text-2xl font-semibold tabular-nums text-white">{b.value}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-cyan-200/70">
+                      {b.label}
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold tabular-nums text-white">
+                      {b.value}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -149,7 +154,10 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
               {ar ? "التوصية التنفيذية" : "Executive Recommendation"}
             </div>
             <h2
-              className={cn("mt-3 text-3xl font-light text-white sm:text-4xl", ar && "font-arabic text-right")}
+              className={cn(
+                "mt-3 text-3xl font-light text-white sm:text-4xl",
+                ar && "font-arabic text-right",
+              )}
               dir={ar ? "rtl" : "ltr"}
             >
               {ar ? briefing.recommendation.title_ar : briefing.recommendation.title_en}
@@ -198,7 +206,11 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
               key={i}
               className={cn(
                 "h-1.5 w-12 rounded-full transition-colors",
-                i < activeIndex ? "bg-cyan-300/70" : i === activeIndex ? "bg-cyan-300 animate-pulse" : "bg-white/10",
+                i < activeIndex
+                  ? "bg-cyan-300/70"
+                  : i === activeIndex
+                    ? "bg-cyan-300 animate-pulse"
+                    : "bg-white/10",
               )}
               title={`${s.speaker_name} · ${s.at}s`}
             />

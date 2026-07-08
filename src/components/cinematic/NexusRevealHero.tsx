@@ -25,11 +25,7 @@ import { useI18n } from "@/lib/i18n";
  *   - All decorative layers `aria-hidden`; single accessible content stack.
  *   - Full reduced-motion kill-switch on the scene root.
  */
-export function NexusRevealHero({
-  onEnterOps,
-}: {
-  onEnterOps?: () => void;
-}) {
+export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const [launching, setLaunching] = useState(false);
@@ -97,7 +93,9 @@ export function NexusRevealHero({
       mouse.y = e.clientY - rect.top;
       mouse.active = true;
     };
-    const onLeave = () => { mouse.active = false; };
+    const onLeave = () => {
+      mouse.active = false;
+    };
 
     const tick = () => {
       if (!running) return;
@@ -165,7 +163,7 @@ export function NexusRevealHero({
           window.cancelAnimationFrame(raf);
         }
       },
-      { threshold: 0.05 }
+      { threshold: 0.05 },
     );
     io.observe(stage);
 
@@ -259,7 +257,10 @@ export function NexusRevealHero({
       target.x = ((e.clientX - r.left) / r.width) * 2 - 1;
       target.y = ((e.clientY - r.top) / r.height) * 2 - 1;
     };
-    const onLeave = () => { target.x = 0; target.y = 0; };
+    const onLeave = () => {
+      target.x = 0;
+      target.y = 0;
+    };
 
     stage.addEventListener("pointermove", onMove, { passive: true });
     stage.addEventListener("pointerleave", onLeave, { passive: true });
@@ -274,8 +275,14 @@ export function NexusRevealHero({
   const handleLaunch = () => {
     if (launching) return;
     setLaunching(true);
-    try { sessionStorage.setItem("nexus.audio-gesture", "1"); } catch { /* noop */ }
-    window.setTimeout(() => { onEnterOps?.(); }, 700);
+    try {
+      sessionStorage.setItem("nexus.audio-gesture", "1");
+    } catch {
+      /* noop */
+    }
+    window.setTimeout(() => {
+      onEnterOps?.();
+    }, 700);
   };
 
   const scrollToAria = () => {
@@ -289,20 +296,20 @@ export function NexusRevealHero({
   const t = {
     line1: ar ? "الذكاء يقود." : "Intelligence, in command.",
     line2: ar ? "نكسيوس ينفّذ." : "NEXIOS executes.",
-    lede:  ar
+    lede: ar
       ? "منظومة تشغيل ذكية للمؤسسات · ARIA في القلب · إدارة الأمن الصناعي · المنطقة الغربية."
       : "Enterprise AI operating system · ARIA at the core · Industrial Security · Western Region.",
-    ctaPrimary:   ar ? "ابدأ التشغيل" : "Start Operation",
+    ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
-    ctaAria:      ar ? "اسأل ARIA" : "Ask ARIA",
-    boot:         ar ? "تهيئة بيئة التشغيل…" : "Booting operating environment…",
-    booting:      ar ? "جارٍ تشغيل النظام…" : "Launching platform…",
+    ctaAria: ar ? "اسأل ARIA" : "Ask ARIA",
+    boot: ar ? "تهيئة بيئة التشغيل…" : "Booting operating environment…",
+    booting: ar ? "جارٍ تشغيل النظام…" : "Launching platform…",
     trust: ar
       ? ["المؤسسات", "الحكومات", "الأمن الصناعي", "Fortune 500"]
       : ["Enterprises", "Governments", "Industrial Security", "Fortune 500"],
     ariaName: ar ? "آريا" : "ARIA",
     ariaRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
-    scroll:   ar ? "اسحب للأسفل" : "Scroll to explore",
+    scroll: ar ? "اسحب للأسفل" : "Scroll to explore",
   };
 
   return (
@@ -368,7 +375,13 @@ export function NexusRevealHero({
             <stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <g style={{ filter: "blur(28px)", transformOrigin: "600px 0px", animation: "nxh-rays 22s ease-in-out infinite" }}>
+        <g
+          style={{
+            filter: "blur(28px)",
+            transformOrigin: "600px 0px",
+            animation: "nxh-rays 22s ease-in-out infinite",
+          }}
+        >
           <polygon points="560,-40 640,-40 900,900 300,900" fill="url(#nxh-ray)" opacity="0.7" />
           <polygon points="450,-40 500,-40 680,900 240,900" fill="url(#nxh-ray)" opacity="0.4" />
           <polygon points="720,-40 780,-40 980,900 620,900" fill="url(#nxh-ray)" opacity="0.35" />
@@ -394,13 +407,15 @@ export function NexusRevealHero({
       />
 
       {/* Final atmospheric vignette (over particles) */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_50%,rgba(0,0,0,0.72)_100%)]"
+      />
 
       {/* ============================================================
           FOREGROUND — cinematic content stack
       ============================================================ */}
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-5 py-16 text-center sm:py-20">
-
         {/* ============================================================
             ARIA ENERGY CORE — no boxes, no cards, no generic circles
             Pure layered light: SVG conic rings + waveform ribbon + wordmark
@@ -442,36 +457,120 @@ export function NexusRevealHero({
                 </radialGradient>
                 <filter id="nxh-glow" x="-50%" y="-50%" width="200%" height="200%">
                   <feGaussianBlur stdDeviation="4" result="b" />
-                  <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  <feMerge>
+                    <feMergeNode in="b" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
                 </filter>
               </defs>
 
               {/* Outer orbit — rotating gradient arc */}
-              <g style={{ transformOrigin: "200px 200px", animation: "nxh-orbit 32s linear infinite" }} className="motion-reduce:[animation:none]">
-                <circle cx="200" cy="200" r="188" fill="none" stroke="url(#nxh-arcA)" strokeWidth="1" />
-                <circle cx="200" cy="200" r="188" fill="none" stroke="#3AE8FF" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="2 220" strokeLinecap="round" filter="url(#nxh-glow)" />
+              <g
+                style={{
+                  transformOrigin: "200px 200px",
+                  animation: "nxh-orbit 32s linear infinite",
+                }}
+                className="motion-reduce:[animation:none]"
+              >
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="188"
+                  fill="none"
+                  stroke="url(#nxh-arcA)"
+                  strokeWidth="1"
+                />
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="188"
+                  fill="none"
+                  stroke="#3AE8FF"
+                  strokeOpacity="0.35"
+                  strokeWidth="1"
+                  strokeDasharray="2 220"
+                  strokeLinecap="round"
+                  filter="url(#nxh-glow)"
+                />
               </g>
 
               {/* Mid orbit — counter-rotating dashed */}
-              <g style={{ transformOrigin: "200px 200px", animation: "nxh-orbit-rev 48s linear infinite" }} className="motion-reduce:[animation:none]">
-                <circle cx="200" cy="200" r="158" fill="none" stroke="rgba(58,232,255,0.35)" strokeWidth="0.6" strokeDasharray="1 5" />
-                <circle cx="200" cy="200" r="158" fill="none" stroke="url(#nxh-arcB)" strokeWidth="1" strokeDasharray="4 320" strokeLinecap="round" filter="url(#nxh-glow)" />
+              <g
+                style={{
+                  transformOrigin: "200px 200px",
+                  animation: "nxh-orbit-rev 48s linear infinite",
+                }}
+                className="motion-reduce:[animation:none]"
+              >
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="158"
+                  fill="none"
+                  stroke="rgba(58,232,255,0.35)"
+                  strokeWidth="0.6"
+                  strokeDasharray="1 5"
+                />
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="158"
+                  fill="none"
+                  stroke="url(#nxh-arcB)"
+                  strokeWidth="1"
+                  strokeDasharray="4 320"
+                  strokeLinecap="round"
+                  filter="url(#nxh-glow)"
+                />
               </g>
 
               {/* Inner ring — slow */}
-              <g style={{ transformOrigin: "200px 200px", animation: "nxh-orbit 68s linear infinite" }} className="motion-reduce:[animation:none]">
-                <circle cx="200" cy="200" r="128" fill="none" stroke="rgba(0,212,255,0.22)" strokeWidth="0.5" strokeDasharray="1 3" />
+              <g
+                style={{
+                  transformOrigin: "200px 200px",
+                  animation: "nxh-orbit 68s linear infinite",
+                }}
+                className="motion-reduce:[animation:none]"
+              >
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="128"
+                  fill="none"
+                  stroke="rgba(0,212,255,0.22)"
+                  strokeWidth="0.5"
+                  strokeDasharray="1 3"
+                />
               </g>
 
               {/* Radial energy spokes — breathing */}
-              <g style={{ transformOrigin: "200px 200px", animation: "nxh-breath 6s ease-in-out infinite" }} opacity="0.55" className="motion-reduce:[animation:none]">
+              <g
+                style={{
+                  transformOrigin: "200px 200px",
+                  animation: "nxh-breath 6s ease-in-out infinite",
+                }}
+                opacity="0.55"
+                className="motion-reduce:[animation:none]"
+              >
                 {Array.from({ length: 24 }, (_, i) => {
                   const angle = (i / 24) * Math.PI * 2;
                   const x1 = 200 + Math.cos(angle) * 100;
                   const y1 = 200 + Math.sin(angle) * 100;
                   const x2 = 200 + Math.cos(angle) * 118;
                   const y2 = 200 + Math.sin(angle) * 118;
-                  return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#3AE8FF" strokeOpacity="0.4" strokeWidth="0.8" strokeLinecap="round" />;
+                  return (
+                    <line
+                      key={i}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke="#3AE8FF"
+                      strokeOpacity="0.4"
+                      strokeWidth="0.8"
+                      strokeLinecap="round"
+                    />
+                  );
                 })}
               </g>
 
@@ -482,8 +581,19 @@ export function NexusRevealHero({
               <circle cx="182" cy="178" r="14" fill="#ffffff" opacity="0.15" />
 
               {/* Scan line sweeping across nucleus */}
-              <g style={{ transformOrigin: "200px 200px", animation: "nxh-scan 5s linear infinite" }} className="motion-reduce:hidden">
-                <line x1="120" y1="200" x2="280" y2="200" stroke="#DFF6FF" strokeOpacity="0.55" strokeWidth="0.6" />
+              <g
+                style={{ transformOrigin: "200px 200px", animation: "nxh-scan 5s linear infinite" }}
+                className="motion-reduce:hidden"
+              >
+                <line
+                  x1="120"
+                  y1="200"
+                  x2="280"
+                  y2="200"
+                  stroke="#DFF6FF"
+                  strokeOpacity="0.55"
+                  strokeWidth="0.6"
+                />
               </g>
             </svg>
 
@@ -496,7 +606,7 @@ export function NexusRevealHero({
             >
               <defs>
                 <linearGradient id="nxh-pulse" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%"  stopColor="#3AE8FF" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#3AE8FF" stopOpacity="0" />
                   <stop offset="20%" stopColor="#3AE8FF" stopOpacity="1" />
                   <stop offset="80%" stopColor="#DFF6FF" stopOpacity="1" />
                   <stop offset="100%" stopColor="#3AE8FF" stopOpacity="0" />
@@ -603,7 +713,11 @@ export function NexusRevealHero({
           {t.trust.map((label, i, arr) => (
             <span key={label} className="inline-flex items-center gap-3">
               <span>{label}</span>
-              {i < arr.length - 1 ? <span aria-hidden className="text-[#3AE8FF]/40">·</span> : null}
+              {i < arr.length - 1 ? (
+                <span aria-hidden className="text-[#3AE8FF]/40">
+                  ·
+                </span>
+              ) : null}
             </span>
           ))}
         </div>
@@ -646,14 +760,22 @@ export function NexusRevealHero({
         <div className="absolute inset-0 backdrop-blur-md" />
         <div className="relative flex flex-col items-center gap-4">
           <div className="relative h-20 w-20">
-            <div className="absolute inset-0 rounded-full border border-[#3AE8FF]/40" style={{ animation: "nxh-launch-ring 1.2s ease-out infinite" }} />
-            <div className="absolute inset-2 rounded-full border border-[#3AE8FF]/30" style={{ animation: "nxh-launch-ring 1.2s ease-out 0.25s infinite" }} />
+            <div
+              className="absolute inset-0 rounded-full border border-[#3AE8FF]/40"
+              style={{ animation: "nxh-launch-ring 1.2s ease-out infinite" }}
+            />
+            <div
+              className="absolute inset-2 rounded-full border border-[#3AE8FF]/30"
+              style={{ animation: "nxh-launch-ring 1.2s ease-out 0.25s infinite" }}
+            />
             <div className="absolute inset-0 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-[#3AE8FF]" />
             </div>
           </div>
           <div className="text-center">
-            <div className="text-sm font-semibold tracking-[0.4em] text-[#DFF6FF]">NEXIOS · BOOT</div>
+            <div className="text-sm font-semibold tracking-[0.4em] text-[#DFF6FF]">
+              NEXIOS · BOOT
+            </div>
             <div className="mt-1 text-xs text-white/70">{t.boot}</div>
           </div>
         </div>

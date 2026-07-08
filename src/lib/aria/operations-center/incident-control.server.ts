@@ -11,10 +11,7 @@ export function incidentPriority(i: IncidentRecord): Priority {
   return classifyPriority(i.severity);
 }
 
-export function shouldEscalateIncident(
-  i: IncidentRecord,
-  minSeverity: Severity = "high",
-): boolean {
+export function shouldEscalateIncident(i: IncidentRecord, minSeverity: Severity = "high"): boolean {
   const order: Severity[] = ["info", "low", "medium", "high", "critical"];
   const iRank = order.indexOf(i.severity);
   const minRank = order.indexOf(minSeverity);

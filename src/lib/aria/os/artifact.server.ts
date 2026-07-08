@@ -80,9 +80,7 @@ export function updateArtifact(
   return next;
 }
 
-export function getArtifact(
-  id: ExecutiveArtifactId,
-): ExecutiveArtifact | null {
+export function getArtifact(id: ExecutiveArtifactId): ExecutiveArtifact | null {
   return ARTIFACTS.get(id) ?? null;
 }
 

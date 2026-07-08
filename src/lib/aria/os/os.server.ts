@@ -18,11 +18,7 @@ import {
   type StartSessionInput,
 } from "./contracts";
 import { loadWorkspace, getWorkspace } from "./workspace.server";
-import {
-  appendTurn,
-  composeBrainRequest,
-  openConversation,
-} from "./conversation.server";
+import { appendTurn, composeBrainRequest, openConversation } from "./conversation.server";
 import { coordinateMission } from "./coordination.server";
 import { emitOSEvent } from "./events";
 import { evaluateOSHealth } from "./health.server";
@@ -58,10 +54,7 @@ function replaceSession(next: ExecutiveSession): ExecutiveSession {
   return next;
 }
 
-function withState(
-  session: ExecutiveSession,
-  state: ExecutiveState,
-): ExecutiveSession {
+function withState(session: ExecutiveSession, state: ExecutiveState): ExecutiveSession {
   return replaceSession({
     ...session,
     state,
@@ -69,10 +62,7 @@ function withState(
   });
 }
 
-function pushSignal(
-  session: ExecutiveSession,
-  signal: ExecutiveSignal,
-): ExecutiveSession {
+function pushSignal(session: ExecutiveSession, signal: ExecutiveSignal): ExecutiveSession {
   const signals = [...session.recent_signals, signal].slice(-MAX_SIGNALS);
   return replaceSession({ ...session, recent_signals: signals });
 }
@@ -124,9 +114,7 @@ export function startSession(input: StartSessionInput): ExecutiveSession {
   return session;
 }
 
-export async function continueSession(
-  input: ContinueSessionInput,
-): Promise<{
+export async function continueSession(input: ContinueSessionInput): Promise<{
   session: ExecutiveSession;
   result: ExecutiveMissionResult;
 }> {
@@ -250,9 +238,7 @@ export function restoreSession(input: RestoreSessionInput): ExecutiveSession | n
 // Read-only helpers
 // ---------------------------------------------------------------------------
 
-export function getSession(
-  session_id: ExecutiveSessionId,
-): ExecutiveSession | null {
+export function getSession(session_id: ExecutiveSessionId): ExecutiveSession | null {
   return SESSIONS.get(session_id) ?? null;
 }
 
@@ -261,9 +247,7 @@ export function listSessions(owner?: string): ReadonlyArray<ExecutiveSession> {
   return owner ? all.filter((s) => s.owner === owner) : all;
 }
 
-export function snapshotSession(
-  session_id: ExecutiveSessionId,
-): ExecutiveSnapshot | null {
+export function snapshotSession(session_id: ExecutiveSessionId): ExecutiveSnapshot | null {
   const s = SESSIONS.get(session_id);
   if (!s) return null;
   return {
@@ -273,9 +257,7 @@ export function snapshotSession(
     health: evaluateOSHealth(),
     metrics: snapshotMetrics(s.workspace_id),
     open_missions: s.open_missions,
-    recent_artifacts: listArtifacts({ session_id: s.id, limit: 10 }).map(
-      (a) => a.id,
-    ),
+    recent_artifacts: listArtifacts({ session_id: s.id, limit: 10 }).map((a) => a.id),
     recent_signals: s.recent_signals,
     taken_at: nowIso(),
   };

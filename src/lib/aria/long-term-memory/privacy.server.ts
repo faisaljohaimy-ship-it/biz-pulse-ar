@@ -26,15 +26,12 @@ const SECRET_PATTERNS: readonly RegExp[] = [
 ];
 
 function allowSecret(): boolean {
-  const flag = (globalThis as { process?: { env?: Record<string, string | undefined> } })
-    .process?.env?.PRIVACY_ALLOW_SECRET;
+  const flag = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+    ?.env?.PRIVACY_ALLOW_SECRET;
   return flag === "true" || flag === "1";
 }
 
-export function evaluatePrivacy(
-  sensitivity: Sensitivity,
-  body: string,
-): PrivacyDecision {
+export function evaluatePrivacy(sensitivity: Sensitivity, body: string): PrivacyDecision {
   if (sensitivity === "secret" && !allowSecret()) {
     return Object.freeze({
       allowed: false,
@@ -61,9 +58,6 @@ export function evaluatePrivacy(
   });
 }
 
-export function ceilingAllows(
-  candidate: Sensitivity,
-  ceiling: Sensitivity,
-): boolean {
+export function ceilingAllows(candidate: Sensitivity, ceiling: Sensitivity): boolean {
   return SENSITIVITY_ORDER[candidate] <= SENSITIVITY_ORDER[ceiling];
 }

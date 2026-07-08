@@ -7,7 +7,12 @@
  * Contradictions are FLAGGED — never silently reconciled.
  */
 
-import { listEntities, listRelationships, replaceEntity, replaceRelationship } from "./graph-store.server";
+import {
+  listEntities,
+  listRelationships,
+  replaceEntity,
+  replaceRelationship,
+} from "./graph-store.server";
 import { audit } from "./audit.server";
 import { emitTelemetry } from "./telemetry.server";
 import type { ContradictionReport, EntityRecord, RelationshipRecord } from "./types";
@@ -41,7 +46,9 @@ export function detectContradictions(workspace_id: string): readonly Contradicti
   }
   for (const list of entityGroups.values()) {
     if (list.length < 2) continue;
-    const contradictory = list.filter((a) => list.some((b) => a.id !== b.id && attributesDiverge(a, b)));
+    const contradictory = list.filter((a) =>
+      list.some((b) => a.id !== b.id && attributesDiverge(a, b)),
+    );
     if (contradictory.length < 2) continue;
     const ids = contradictory.map((e) => e.id);
     for (const e of contradictory) {

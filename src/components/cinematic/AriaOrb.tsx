@@ -13,20 +13,32 @@ type Props = {
  */
 export function AriaOrb({ size = 48, state = "idle", className }: Props) {
   const speed =
-    state === "speaking" ? "1.2s" :
-    state === "listening" ? "1.8s" :
-    state === "thinking" ? "2.4s" : "3.2s";
+    state === "speaking"
+      ? "1.2s"
+      : state === "listening"
+        ? "1.8s"
+        : state === "thinking"
+          ? "2.4s"
+          : "3.2s";
 
   const haloColor =
-    state === "speaking" ? "rgba(245,180,84,0.55)" :
-    state === "listening" ? "rgba(52,211,153,0.55)" :
-    state === "thinking" ? "rgba(167,139,250,0.55)" :
-    "rgba(56,189,248,0.45)";
+    state === "speaking"
+      ? "rgba(245,180,84,0.55)"
+      : state === "listening"
+        ? "rgba(52,211,153,0.55)"
+        : state === "thinking"
+          ? "rgba(167,139,250,0.55)"
+          : "rgba(56,189,248,0.45)";
 
   return (
     <div
       className={cn("relative inline-block", className)}
-      style={{ width: size, height: size, ['--aria-speed' as any]: speed, ['--aria-halo' as any]: haloColor }}
+      style={{
+        width: size,
+        height: size,
+        ["--aria-speed" as any]: speed,
+        ["--aria-halo" as any]: haloColor,
+      }}
       aria-hidden
     >
       {/* outer breathing halo */}
@@ -57,15 +69,42 @@ export function AriaOrb({ size = 48, state = "idle", className }: Props) {
 
         {/* equatorial scan ring */}
         <g className="aria-orb-scan" style={{ transformOrigin: "50px 50px" }}>
-          <ellipse cx="50" cy="50" rx="30" ry="8" fill="none" stroke="url(#ariaRing)" strokeWidth="0.8" opacity="0.85" />
+          <ellipse
+            cx="50"
+            cy="50"
+            rx="30"
+            ry="8"
+            fill="none"
+            stroke="url(#ariaRing)"
+            strokeWidth="0.8"
+            opacity="0.85"
+          />
         </g>
 
         {/* rotating outer ring */}
         <g className="aria-orb-ring-a" style={{ transformOrigin: "50px 50px" }}>
-          <circle cx="50" cy="50" r="34" fill="none" stroke="url(#ariaRing)" strokeWidth="0.6" strokeDasharray="2 4" opacity="0.7" />
+          <circle
+            cx="50"
+            cy="50"
+            r="34"
+            fill="none"
+            stroke="url(#ariaRing)"
+            strokeWidth="0.6"
+            strokeDasharray="2 4"
+            opacity="0.7"
+          />
         </g>
         <g className="aria-orb-ring-b" style={{ transformOrigin: "50px 50px" }}>
-          <circle cx="50" cy="50" r="40" fill="none" stroke="#a78bfa" strokeWidth="0.4" strokeDasharray="1 6" opacity="0.5" />
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            stroke="#a78bfa"
+            strokeWidth="0.4"
+            strokeDasharray="1 6"
+            opacity="0.5"
+          />
         </g>
 
         {/* tick marks */}
@@ -75,7 +114,18 @@ export function AriaOrb({ size = 48, state = "idle", className }: Props) {
           const y1 = 50 + Math.sin(a) * 44;
           const x2 = 50 + Math.cos(a) * 47;
           const y2 = 50 + Math.sin(a) * 47;
-          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#67e8f9" strokeWidth="0.6" opacity="0.55" />;
+          return (
+            <line
+              key={i}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="#67e8f9"
+              strokeWidth="0.6"
+              opacity="0.55"
+            />
+          );
         })}
 
         {/* specular highlight */}

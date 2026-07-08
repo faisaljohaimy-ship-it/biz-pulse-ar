@@ -8,36 +8,46 @@
  * and CSS transforms applied by the consumer.
  */
 
-export type AriaEmotion =
-  | "warm"
-  | "joy"
-  | "attentive"
-  | "thoughtful"
-  | "concern";
+export type AriaEmotion = "warm" | "joy" | "attentive" | "thoughtful" | "concern";
 
 export type AriaHeadGesture =
   | "none"
-  | "nod-start"      // sentence start subtle 1.5° down-up (350ms)
-  | "nod-emphasis"  // 1° quick nod on numbers/exclamations
-  | "double-nod"    // affirmations (نعم، بالتأكيد، تم)
-  | "shake"         // negations (لا، لم، ليس)
-  | "question-tilt";// 3° tilt for the whole question sentence
+  | "nod-start" // sentence start subtle 1.5° down-up (350ms)
+  | "nod-emphasis" // 1° quick nod on numbers/exclamations
+  | "double-nod" // affirmations (نعم، بالتأكيد، تم)
+  | "shake" // negations (لا، لم، ليس)
+  | "question-tilt"; // 3° tilt for the whole question sentence
 
-export type AriaConversationalState =
-  | "idle"
-  | "listening"
-  | "thinking"
-  | "speaking";
+export type AriaConversationalState = "idle" | "listening" | "thinking" | "speaking";
 
 // ---- Lexicons (Arabic + English) --------------------------------------------
 
 const POSITIVE = [
-  "نجاح", "ممتاز", "أعلى من الحد", "جاهزة", "جاهز", "تم بنجاح", "مطمئن",
-  "success", "excellent", "ready", "great",
+  "نجاح",
+  "ممتاز",
+  "أعلى من الحد",
+  "جاهزة",
+  "جاهز",
+  "تم بنجاح",
+  "مطمئن",
+  "success",
+  "excellent",
+  "ready",
+  "great",
 ];
 const RISK = [
-  "تجاوز", "ارتفاع", "حرج", "خطر", "خرق", "انتهاك", "تأخر",
-  "risk", "critical", "breach", "anomaly", "violation",
+  "تجاوز",
+  "ارتفاع",
+  "حرج",
+  "خطر",
+  "خرق",
+  "انتهاك",
+  "تأخر",
+  "risk",
+  "critical",
+  "breach",
+  "anomaly",
+  "violation",
 ];
 const AFFIRMATIONS = ["نعم", "بالتأكيد", "تم", "أكيد", "yes", "confirmed"];
 const NEGATIONS = ["لا ", "لم ", "ليس", " لن ", "no ", "not "];
@@ -81,10 +91,14 @@ export function emotionForState(
 ): AriaEmotion {
   if (opts?.anomaly) return "concern";
   switch (state) {
-    case "listening":  return "attentive";
-    case "thinking":   return "thoughtful";
-    case "speaking":   return opts?.greeting ? "joy" : "warm";
-    default:           return "warm";
+    case "listening":
+      return "attentive";
+    case "thinking":
+      return "thoughtful";
+    case "speaking":
+      return opts?.greeting ? "joy" : "warm";
+    default:
+      return "warm";
   }
 }
 
@@ -156,21 +170,46 @@ export function gestureTransform(g: AriaHeadGesture, p: number): string {
 export function emotionOverlay(e: AriaEmotion): {
   filter: string;
   glow: string;
-  browLift: number;   // px, applied to brow band
+  browLift: number; // px, applied to brow band
   mouthCurve: number; // 0..1, drives lip-band curvature
 } {
   switch (e) {
     case "joy":
-      return { filter: "brightness(1.06) saturate(1.14)", glow: "rgba(58,232,255,0.55)", browLift: -1, mouthCurve: 1 };
+      return {
+        filter: "brightness(1.06) saturate(1.14)",
+        glow: "rgba(58,232,255,0.55)",
+        browLift: -1,
+        mouthCurve: 1,
+      };
     case "attentive":
-      return { filter: "brightness(1.02) saturate(1.05)", glow: "rgba(0,212,255,0.45)", browLift: -2, mouthCurve: 0.35 };
+      return {
+        filter: "brightness(1.02) saturate(1.05)",
+        glow: "rgba(0,212,255,0.45)",
+        browLift: -2,
+        mouthCurve: 0.35,
+      };
     case "thoughtful":
-      return { filter: "brightness(0.97) saturate(0.95) hue-rotate(-4deg)", glow: "rgba(124,92,255,0.4)", browLift: 0, mouthCurve: 0.2 };
+      return {
+        filter: "brightness(0.97) saturate(0.95) hue-rotate(-4deg)",
+        glow: "rgba(124,92,255,0.4)",
+        browLift: 0,
+        mouthCurve: 0.2,
+      };
     case "concern":
-      return { filter: "brightness(0.94) saturate(1.02) hue-rotate(4deg)", glow: "rgba(245,165,36,0.45)", browLift: 2, mouthCurve: -0.4 };
+      return {
+        filter: "brightness(0.94) saturate(1.02) hue-rotate(4deg)",
+        glow: "rgba(245,165,36,0.45)",
+        browLift: 2,
+        mouthCurve: -0.4,
+      };
     case "warm":
     default:
-      return { filter: "brightness(1.0) saturate(1.0)", glow: "rgba(0,212,255,0.4)", browLift: 0, mouthCurve: 0.6 };
+      return {
+        filter: "brightness(1.0) saturate(1.0)",
+        glow: "rgba(0,212,255,0.4)",
+        browLift: 0,
+        mouthCurve: 0.6,
+      };
   }
 }
 

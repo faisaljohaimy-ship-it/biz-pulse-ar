@@ -47,14 +47,20 @@ export interface DemoScene {
 }
 
 const DEFAULT_DECISIONS: DemoDecisionOption[] = [
-  { id: "approve",     label_en: "Approve",     label_ar: "اعتماد" },
-  { id: "reject",      label_en: "Reject",      label_ar: "رفض" },
+  { id: "approve", label_en: "Approve", label_ar: "اعتماد" },
+  { id: "reject", label_en: "Reject", label_ar: "رفض" },
   { id: "investigate", label_en: "Investigate", label_ar: "تحقيق" },
-  { id: "assign",      label_en: "Assign",      label_ar: "إسناد" },
+  { id: "assign", label_en: "Assign", label_ar: "إسناد" },
   { id: "open_report", label_en: "Open Report", label_ar: "فتح التقرير" },
 ];
 
-const SCENES_BY_ID: Record<string, Omit<DemoScene, "stepId" | "title_en" | "title_ar" | "executiveMessage_en" | "executiveMessage_ar">> = {
+const SCENES_BY_ID: Record<
+  string,
+  Omit<
+    DemoScene,
+    "stepId" | "title_en" | "title_ar" | "executiveMessage_en" | "executiveMessage_ar"
+  >
+> = {
   "step-00-intro": {
     evidence_en: "Roster locked · perimeter clean · KPIs green on baseline (compliance 92%).",
     evidence_ar: "اكتمل الفريق · محيط سليم · المؤشرات خضراء على المستوى المرجعي (الالتزام 92%).",
@@ -97,14 +103,17 @@ const SCENES_BY_ID: Record<string, Omit<DemoScene, "stepId" | "title_en" | "titl
     decisions: DEFAULT_DECISIONS,
   },
   "step-03-inspection": {
-    evidence_en: "Audit INS-01 = 62/100 · 4 findings: missing PTW · no fire watch · expired extinguisher · no gas test.",
-    evidence_ar: "التدقيق INS-01 = 62/100 · أربع ملاحظات: غياب التصريح · لا مراقب حريق · طفاية منتهية · لا اختبار غاز.",
+    evidence_en:
+      "Audit INS-01 = 62/100 · 4 findings: missing PTW · no fire watch · expired extinguisher · no gas test.",
+    evidence_ar:
+      "التدقيق INS-01 = 62/100 · أربع ملاحظات: غياب التصريح · لا مراقب حريق · طفاية منتهية · لا اختبار غاز.",
     reasoning_en: "Four independent gaps trace back to one SOP gap — systemic, not human.",
     reasoning_ar: "أربع فجوات مستقلة ترجع لفجوة واحدة في الإجراء — منظومي وليس بشرياً.",
     decision_en: "Escalate risk profile · draft corrective action.",
     decision_ar: "رفع بروفايل الخطر · صياغة الإجراء التصحيحي.",
     businessImpact_en: "Turns 4 tactical findings into 1 policy fix — cost avoidance ~SAR 480k.",
-    businessImpact_ar: "تحويل أربع ملاحظات تكتيكية إلى تعديل سياسة واحد — تجنّب تكلفة ~480 ألف ريال.",
+    businessImpact_ar:
+      "تحويل أربع ملاحظات تكتيكية إلى تعديل سياسة واحد — تجنّب تكلفة ~480 ألف ريال.",
     nextAction_en: "Elevate risk RSK-01 to critical.",
     nextAction_ar: "رفع الخطر RSK-01 إلى حرج.",
     confidence: 0.9,
@@ -215,8 +224,10 @@ const SCENES_BY_ID: Record<string, Omit<DemoScene, "stepId" | "title_en" | "titl
     decisions: DEFAULT_DECISIONS,
   },
   "step-10-close": {
-    evidence_en: "Compliance 74% · response 6 min · 1 incident contained · 1 policy in flight · confidence 0.92.",
-    evidence_ar: "الالتزام 74% · الاستجابة 6 دقائق · حادث واحد محتوى · سياسة قيد التنفيذ · الثقة 0.92.",
+    evidence_en:
+      "Compliance 74% · response 6 min · 1 incident contained · 1 policy in flight · confidence 0.92.",
+    evidence_ar:
+      "الالتزام 74% · الاستجابة 6 دقائق · حادث واحد محتوى · سياسة قيد التنفيذ · الثقة 0.92.",
     reasoning_en: "Compliance dip is the *evidence of work done*, not a regression.",
     reasoning_ar: "انخفاض الالتزام هو *دليل على العمل المنجز*، وليس تراجعاً.",
     decision_en: "Approve briefing · distribute to executive board.",
@@ -244,9 +255,9 @@ export function sceneForStep(step: DemoStep | null): DemoScene | null {
   };
 }
 
-export const ALL_SCENES: DemoScene[] = EXECUTIVE_DAY_TIMELINE
-  .map((s) => sceneForStep(s))
-  .filter((s): s is DemoScene => !!s);
+export const ALL_SCENES: DemoScene[] = EXECUTIVE_DAY_TIMELINE.map((s) => sceneForStep(s)).filter(
+  (s): s is DemoScene => !!s,
+);
 
 export const SCENARIO_LABEL_EN = "Executive Day · Jeddah Industrial Site (JED-P1)";
 export const SCENARIO_LABEL_AR = "يوم تنفيذي · موقع جدة الصناعي (JED-P1)";

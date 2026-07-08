@@ -20,10 +20,7 @@ import type {
   ReasoningTrace,
 } from "./types";
 import type { MultiPerspectiveInputParsed, ReasonInputParsed } from "./contracts";
-import {
-  MultiPerspectiveInputSchema,
-  ReasonInputSchema,
-} from "./contracts";
+import { MultiPerspectiveInputSchema, ReasonInputSchema } from "./contracts";
 import { confidence, nowIso, shortId } from "./util";
 import { analyzeProblem } from "./analysis.server";
 import { collectEvidence, evidenceConfidence } from "./evidence.server";
@@ -37,16 +34,8 @@ import { catalogueUncertainty } from "./uncertainty.server";
 import { reflect } from "./reflection.server";
 import { composeRecommendation } from "./recommendation.server";
 import { emitReasoningEvent } from "./events";
-import {
-  REASONER_VERSION,
-  recordFailure,
-  recordSuccess,
-} from "./metrics.server";
-import {
-  markActive,
-  markInactive,
-  recordHealthFailure,
-} from "./health.server";
+import { REASONER_VERSION, recordFailure, recordSuccess } from "./metrics.server";
+import { markActive, markInactive, recordHealthFailure } from "./health.server";
 
 function buildContext(input: ReasonInputParsed): ReasoningContext {
   return {
@@ -101,14 +90,20 @@ export async function reason(input: ReasonInputParsed): Promise<ReasoningResult>
   const parsed = ReasonInputSchema.parse(input);
   const context = buildContext(parsed);
   markActive(context.id);
-  emitReasoningEvent("ReasoningStarted", context.id, { mode: context.mode, domain: context.domain });
+  emitReasoningEvent("ReasoningStarted", context.id, {
+    mode: context.mode,
+    domain: context.domain,
+  });
 
   try {
     const analysis = analyzeProblem(context);
     const nodes: ReasoningNode[] = [analysis.root_node, ...analysis.supporting_nodes];
 
     const evidenceReport = collectEvidence(parsed);
-    emitReasoningEvent("EvidenceCollected", context.id, { count: evidenceReport.evidence.length, quality: evidenceReport.quality });
+    emitReasoningEvent("EvidenceCollected", context.id, {
+      count: evidenceReport.evidence.length,
+      quality: evidenceReport.quality,
+    });
     for (const e of evidenceReport.evidence) {
       nodes.push({
         id: shortId("rn"),
@@ -154,7 +149,9 @@ export async function reason(input: ReasonInputParsed): Promise<ReasoningResult>
 
     const counter = generateCounterArguments(hypothesisReport.hypotheses, evidenceReport.evidence);
     for (const c of counter.counterarguments) {
-      emitReasoningEvent("CounterArgumentGenerated", context.id, { target: c.target_hypothesis_id });
+      emitReasoningEvent("CounterArgumentGenerated", context.id, {
+        target: c.target_hypothesis_id,
+      });
       nodes.push({
         id: shortId("rn"),
         kind: "counter_argument",
@@ -181,10 +178,17 @@ export async function reason(input: ReasonInputParsed): Promise<ReasoningResult>
       });
     }
 
-    const decisionReport = buildDecisionMatrix(context, hypothesisReport.hypotheses, evidenceReport.evidence);
+    const decisionReport = buildDecisionMatrix(
+      context,
+      hypothesisReport.hypotheses,
+      evidenceReport.evidence,
+    );
     const optionsWithTradeoffs: DecisionOption[] = attachTradeoffs(decisionReport.options);
     for (const o of optionsWithTradeoffs) {
-      emitReasoningEvent("AlternativeGenerated", context.id, { option: o.id, score: o.weighted_score });
+      emitReasoningEvent("AlternativeGenerated", context.id, {
+        option: o.id,
+        score: o.weighted_score,
+      });
       nodes.push({
         id: shortId("rn"),
         kind: "decision",
@@ -216,7 +220,12 @@ export async function reason(input: ReasonInputParsed): Promise<ReasoningResult>
       assumptions.assumptions,
     );
 
-    const reflection = reflect(critical, uncertainty.uncertainties, hypothesisReport.hypotheses, evidenceReport.evidence);
+    const reflection = reflect(
+      critical,
+      uncertainty.uncertainties,
+      hypothesisReport.hypotheses,
+      evidenceReport.evidence,
+    );
     nodes.push({
       id: shortId("rn"),
       kind: "reflection",
@@ -271,10 +280,7 @@ export async function reason(input: ReasonInputParsed): Promise<ReasoningResult>
       uncertainties: uncertainty.uncertainties,
       reflection,
       recommendation,
-      confidence: confidence(
-        overallConf,
-        "aggregate of recommendation, evidence and reflection",
-      ),
+      confidence: confidence(overallConf, "aggregate of recommendation, evidence and reflection"),
       created_at: nowIso(),
       reasoner_version: REASONER_VERSION,
     };
@@ -344,7 +350,10 @@ function pickConsensus(results: ReasoningResult[]): ReasoningResult | null {
   if (!results.length) return null;
   return results
     .slice()
-    .sort((a, b) => (b.recommendation?.confidence.value ?? 0) - (a.recommendation?.confidence.value ?? 0))[0]!;
+    .sort(
+      (a, b) =>
+        (b.recommendation?.confidence.value ?? 0) - (a.recommendation?.confidence.value ?? 0),
+    )[0]!;
 }
 
 function aggregateConfidence(recConf: number, evConf: number, reflectionOk: boolean): number {

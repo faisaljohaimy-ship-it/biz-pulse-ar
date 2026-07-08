@@ -21,12 +21,8 @@ export function resolveApprovals(
   bindings: CapabilityBinding[],
   constraints: MissionConstraint[],
 ): ApprovalGate[] {
-  const requiresHumanApproval = constraints.some(
-    (c) => c.kind === "human_approval" && c.hard,
-  );
-  const complianceConditional = constraints.some(
-    (c) => c.kind === "compliance",
-  );
+  const requiresHumanApproval = constraints.some((c) => c.kind === "human_approval" && c.hard);
+  const complianceConditional = constraints.some((c) => c.kind === "compliance");
 
   const gates: ApprovalGate[] = [];
   for (const id of tree.atomic_ids) {
@@ -45,17 +41,14 @@ export function resolveApprovals(
     } else if (manifestSaysHigh) {
       mode = "conditional";
       condition = "cost>medium OR retries>0";
-      reasoning =
-        "Agent declares high cost; require executive approval on retry or overrun.";
+      reasoning = "Agent declares high cost; require executive approval on retry or overrun.";
     } else if (complianceConditional) {
       mode = "conditional";
       condition = "compliance_audit_required";
-      reasoning =
-        "Compliance constraint present; gate becomes required if audit flag is raised.";
+      reasoning = "Compliance constraint present; gate becomes required if audit flag is raised.";
     } else if (b?.match_kind === "unresolved") {
       mode = "required";
-      reasoning =
-        "Unresolved capability requires human confirmation of the recovery path.";
+      reasoning = "Unresolved capability requires human confirmation of the recovery path.";
     }
 
     gates.push({

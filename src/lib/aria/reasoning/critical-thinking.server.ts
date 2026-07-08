@@ -99,8 +99,18 @@ function findUnsupported(list: Hypothesis[], evidence: Evidence[]): string[] {
 }
 
 function similarity(a: string, b: string): number {
-  const ta = new Set(a.toLowerCase().split(/\s+/).filter((w) => w.length > 2));
-  const tb = new Set(b.toLowerCase().split(/\s+/).filter((w) => w.length > 2));
+  const ta = new Set(
+    a
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 2),
+  );
+  const tb = new Set(
+    b
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 2),
+  );
   if (!ta.size || !tb.size) return 0;
   let inter = 0;
   for (const w of ta) if (tb.has(w)) inter += 1;

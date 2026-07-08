@@ -8,16 +8,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 
 // ARIA voice is HARD-LOCKED to Layan (gVzwmdZzRgBrNjXaTmi5) server-side.
 // This dev tool only exposes the canonical voice — the server ignores any
 // `voiceId` in the request body regardless of what is sent from here.
-const VOICES = [
-  { id: "gVzwmdZzRgBrNjXaTmi5", label: "Layan — ARIA canonical (locked)" },
-];
+const VOICES = [{ id: "gVzwmdZzRgBrNjXaTmi5", label: "Layan — ARIA canonical (locked)" }];
 
 const TASHKEEL = "\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652";
 const SAMPLE_AR =
@@ -127,7 +131,11 @@ function TtsPage() {
             </Button>
             <div className="ms-auto flex items-center gap-2">
               <Button onClick={synthesize} disabled={loading || !text.trim()}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
                 {ar ? "تحويل وتشغيل" : "Synthesize"}
               </Button>
               {audioUrl && (
@@ -140,9 +148,7 @@ function TtsPage() {
             </div>
           </div>
 
-          {audioUrl && (
-            <audio ref={audioRef} src={audioUrl} controls className="w-full" />
-          )}
+          {audioUrl && <audio ref={audioRef} src={audioUrl} controls className="w-full" />}
         </div>
 
         <div className="space-y-5 rounded-2xl border border-border bg-card/60 p-5">
@@ -151,10 +157,14 @@ function TtsPage() {
               {ar ? "الصوت" : "Voice"}
             </Label>
             <Select value={voiceId} onValueChange={setVoiceId}>
-              <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {VOICES.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>{v.label}</SelectItem>
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -179,11 +189,7 @@ function TtsPage() {
             value={stability}
             onChange={setStability}
           />
-          <SliderRow
-            label={ar ? "النمط التعبيري" : "Style"}
-            value={style}
-            onChange={setStyle}
-          />
+          <SliderRow label={ar ? "النمط التعبيري" : "Style"} value={style} onChange={setStyle} />
           <SliderRow
             label={ar ? "السرعة" : "Speed"}
             value={speed}
@@ -199,12 +205,19 @@ function TtsPage() {
 }
 
 function SliderRow({
-  label, value, onChange, min = 0, max = 1, step = 0.05,
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 1,
+  step = 0.05,
 }: {
   label: string;
   value: number;
   onChange: (v: number) => void;
-  min?: number; max?: number; step?: number;
+  min?: number;
+  max?: number;
+  step?: number;
 }) {
   return (
     <div>

@@ -41,8 +41,8 @@ export function RouteErrorBoundary({ error, reset, routeLabel }: Props) {
           حدث خطأ — جارٍ الاستعادة
         </h1>
         <p className="text-sm text-white/70 leading-relaxed">
-          تعذّر تحميل هذا القسم مؤقتاً. تم تسجيل الحادثة وسيبقى بقية النظام
-          يعمل. يمكنك إعادة المحاولة الآن.
+          تعذّر تحميل هذا القسم مؤقتاً. تم تسجيل الحادثة وسيبقى بقية النظام يعمل. يمكنك إعادة
+          المحاولة الآن.
         </p>
         {error?.message ? (
           <pre className="text-xs text-rose-200/80 bg-black/30 rounded-lg p-3 text-left overflow-auto max-h-32 font-mono">

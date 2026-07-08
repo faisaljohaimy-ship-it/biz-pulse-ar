@@ -12,7 +12,12 @@ function defaultPayloadForTopic(topic: string | null | undefined): Record<string
   switch (topic) {
     case "sec.incident.created":
     case "sec.incident.p1":
-      return { ...base, severity: topic === "sec.incident.p1" ? "P1" : "P3", category: "security", site: "jeddah-hq" };
+      return {
+        ...base,
+        severity: topic === "sec.incident.p1" ? "P1" : "P3",
+        category: "security",
+        site: "jeddah-hq",
+      };
     case "sec.contractor.created":
       return { ...base, contractor: { name: "Bootstrap", company: "N/A" } };
     case "sec.permit.created":
@@ -55,7 +60,8 @@ export const Route = createFileRoute("/api/public/hooks/runtime-bootstrap")({
         const triggeredBy = member?.user_id;
         if (!triggeredBy) {
           return new Response(JSON.stringify({ error: "no_org_member_user" }), {
-            status: 412, headers: { "Content-Type": "application/json" },
+            status: 412,
+            headers: { "Content-Type": "application/json" },
           });
         }
 
@@ -67,7 +73,13 @@ export const Route = createFileRoute("/api/public/hooks/runtime-bootstrap")({
           return new Response(JSON.stringify({ error: wErr.message }), { status: 500 });
         }
 
-        const results: Array<{ workflowId: string; name: string; status: string; runId?: string; error?: string }> = [];
+        const results: Array<{
+          workflowId: string;
+          name: string;
+          status: string;
+          runId?: string;
+          error?: string;
+        }> = [];
         for (const w of wfs ?? []) {
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,7 +90,12 @@ export const Route = createFileRoute("/api/public/hooks/runtime-bootstrap")({
               payload: defaultPayloadForTopic(w.trigger_topic as string | null),
               idempotencyKey: `bootstrap-${w.id}-${Date.now()}`,
             });
-            results.push({ workflowId: w.id as string, name: w.name as string, status: res.status, runId: res.runId });
+            results.push({
+              workflowId: w.id as string,
+              name: w.name as string,
+              status: res.status,
+              runId: res.runId,
+            });
           } catch (e) {
             results.push({
               workflowId: w.id as string,
@@ -99,7 +116,8 @@ export const Route = createFileRoute("/api/public/hooks/runtime-bootstrap")({
         };
 
         return new Response(JSON.stringify({ summary, results }, null, 2), {
-          status: 200, headers: { "Content-Type": "application/json" },
+          status: 200,
+          headers: { "Content-Type": "application/json" },
         });
       },
     },

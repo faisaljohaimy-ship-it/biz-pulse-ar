@@ -18,7 +18,9 @@ function nextActionsFor(blockers: string[], warnings: string[], unknowns: string
     actions.push("Resolve all blockers listed below before requesting release re-evaluation.");
   }
   if (unknowns.length > 0) {
-    actions.push("Gather evidence for UNKNOWN gates (CI status, DB-side readiness, route review sign-off).");
+    actions.push(
+      "Gather evidence for UNKNOWN gates (CI status, DB-side readiness, route review sign-off).",
+    );
   }
   if (warnings.length > 0) {
     actions.push("Triage warnings: either mitigate or explicitly accept with owner + expiry.");

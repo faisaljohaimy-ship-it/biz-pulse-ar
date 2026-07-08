@@ -5,11 +5,7 @@
  * declares certainty when the signals are ambiguous.
  */
 
-import type {
-  EvidenceRef,
-  FailureAnalysis,
-  RootCauseReport,
-} from "./types";
+import type { EvidenceRef, FailureAnalysis, RootCauseReport } from "./types";
 import { deriveConfidence } from "./confidence.server";
 
 function rcaId(failure_id: string, ts: string): string {
@@ -25,15 +21,24 @@ function categorise(signals: readonly string[]): {
 } {
   const text = signals.join(" ").toLowerCase();
   if (text.includes("budget") || text.includes("token"))
-    return { category: "budget_exhaustion", hypothesis: "Budget exhausted before task completion." };
+    return {
+      category: "budget_exhaustion",
+      hypothesis: "Budget exhausted before task completion.",
+    };
   if (text.includes("permission") || text.includes("policy"))
     return { category: "policy_violation", hypothesis: "Policy denied a required action." };
   if (text.includes("unavailable") || text.includes("timeout") || text.includes("network"))
     return { category: "external_error", hypothesis: "External dependency failed or timed out." };
   if (text.includes("plan") || text.includes("dag"))
-    return { category: "planning_defect", hypothesis: "Plan omitted or mis-ordered a required step." };
+    return {
+      category: "planning_defect",
+      hypothesis: "Plan omitted or mis-ordered a required step.",
+    };
   if (text.includes("prompt") || text.includes("format"))
-    return { category: "prompt_defect", hypothesis: "Prompt failed to elicit the required structure." };
+    return {
+      category: "prompt_defect",
+      hypothesis: "Prompt failed to elicit the required structure.",
+    };
   if (text.includes("capability") || text.includes("missing tool"))
     return { category: "capability_gap", hypothesis: "Required capability was not registered." };
   return { category: "unknown", hypothesis: "Cause unresolved from available evidence." };

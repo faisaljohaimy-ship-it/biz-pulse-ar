@@ -28,12 +28,7 @@ export type ConductorSpeaker = {
   agentKey: string;
 };
 
-export type ConductorState =
-  | "idle"
-  | "listening"
-  | "thinking"
-  | "speaking"
-  | "presenting";
+export type ConductorState = "idle" | "listening" | "thinking" | "speaking" | "presenting";
 
 export type ConductorLine = {
   id: string;
@@ -204,23 +199,27 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
       setPresenting(true);
 
       const turns: ConductorLine[] = briefing.segments.map((seg, i) => {
-        const agentKey = seg.speaker_id === "aria" ? "aria" : seg.speaker_name.toLowerCase().includes("incident")
-          ? "incident_commander"
-          : seg.speaker_name.toLowerCase().includes("risk")
-            ? "risk_analyst"
-            : seg.speaker_name.toLowerCase().includes("compliance")
-              ? "compliance_auditor"
-              : seg.speaker_name.toLowerCase().includes("patrol")
-                ? "patrol_intelligence"
-                : seg.speaker_name.toLowerCase().includes("visitor")
-                  ? "visitor_intelligence"
-                  : seg.speaker_name.toLowerCase().includes("permit")
-                    ? "permit_authority"
-                    : seg.speaker_name.toLowerCase().includes("emerg")
-                      ? "emergency_coordinator"
-                      : seg.speaker_name.toLowerCase().includes("report") || seg.speaker_name.toLowerCase().includes("brief")
-                        ? "executive_reporter"
-                        : "knowledge_ai";
+        const agentKey =
+          seg.speaker_id === "aria"
+            ? "aria"
+            : seg.speaker_name.toLowerCase().includes("incident")
+              ? "incident_commander"
+              : seg.speaker_name.toLowerCase().includes("risk")
+                ? "risk_analyst"
+                : seg.speaker_name.toLowerCase().includes("compliance")
+                  ? "compliance_auditor"
+                  : seg.speaker_name.toLowerCase().includes("patrol")
+                    ? "patrol_intelligence"
+                    : seg.speaker_name.toLowerCase().includes("visitor")
+                      ? "visitor_intelligence"
+                      : seg.speaker_name.toLowerCase().includes("permit")
+                        ? "permit_authority"
+                        : seg.speaker_name.toLowerCase().includes("emerg")
+                          ? "emergency_coordinator"
+                          : seg.speaker_name.toLowerCase().includes("report") ||
+                              seg.speaker_name.toLowerCase().includes("brief")
+                            ? "executive_reporter"
+                            : "knowledge_ai";
         return {
           id: `brief-${briefing.generated_at}-${i}`,
           agentKey,
@@ -278,10 +277,13 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
   }, [ar, voiceEnabled]);
 
   // Cleanup on unmount.
-  useEffect(() => () => {
-    handleRef.current?.stop();
-    handleRef.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      handleRef.current?.stop();
+      handleRef.current = null;
+    },
+    [],
+  );
 
   return useMemo<ConductorRuntime>(
     () => ({
@@ -295,6 +297,16 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
       beginBriefing,
       interrupt,
     }),
-    [state, currentSpeaker, currentLine, mouthAmplitude, feed, presenting, pending, beginBriefing, interrupt],
+    [
+      state,
+      currentSpeaker,
+      currentLine,
+      mouthAmplitude,
+      feed,
+      presenting,
+      pending,
+      beginBriefing,
+      interrupt,
+    ],
   );
 }

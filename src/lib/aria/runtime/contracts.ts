@@ -115,7 +115,14 @@ export const ConsensusVoteSchema = z.object({
 export const PolicyRuleSchema = z.object({
   id: z.string().min(1),
   description: z.string().min(1),
-  applies_to: z.enum(["lifecycle", "scheduling", "capability", "permission", "budget", "collaboration"]),
+  applies_to: z.enum([
+    "lifecycle",
+    "scheduling",
+    "capability",
+    "permission",
+    "budget",
+    "collaboration",
+  ]),
   effect: z.enum(["allow", "deny", "require_approval"]),
   matcher: z.record(z.string(), z.unknown()),
 });

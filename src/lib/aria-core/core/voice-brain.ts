@@ -32,7 +32,10 @@ class VoiceBrain {
   }
 
   stop(): void {
-    if (this.unsub) { this.unsub(); this.unsub = null; }
+    if (this.unsub) {
+      this.unsub();
+      this.unsub = null;
+    }
     this.detachStream();
   }
 
@@ -46,15 +49,21 @@ class VoiceBrain {
     // no-op — nothing to detach.
   }
 
-
   private handleVoiceChange(next: AriaVoiceState): void {
     if (next === this.lastVoice) return;
     this.lastVoice = next;
     switch (next) {
-      case "listening":  avatarBrain.onListeningStart(); break;
-      case "processing": avatarBrain.onThinking(useAriaStore.getState().activeEnvelope); break;
-      case "speaking":   /* handled by orchestrator.markStreaming */ break;
-      case "unavailable": avatarBrain.onError(); break;
+      case "listening":
+        avatarBrain.onListeningStart();
+        break;
+      case "processing":
+        avatarBrain.onThinking(useAriaStore.getState().activeEnvelope);
+        break;
+      case "speaking":
+        /* handled by orchestrator.markStreaming */ break;
+      case "unavailable":
+        avatarBrain.onError();
+        break;
       case "idle":
       default:
         lipSyncEngine.end();

@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  WorkflowDefinitionSchema,
-  type WorkflowDefinition,
-} from "./exec/workflow-engine.server";
+import { WorkflowDefinitionSchema, type WorkflowDefinition } from "./exec/workflow-engine.server";
 
 describe("WorkflowDefinitionSchema", () => {
   it("accepts a minimal tool-only workflow", () => {
@@ -59,8 +56,6 @@ describe("WorkflowDefinitionSchema", () => {
   });
 
   it("rejects a workflow with no steps", () => {
-    expect(() =>
-      WorkflowDefinitionSchema.parse({ start: "s1", steps: [] }),
-    ).toThrow();
+    expect(() => WorkflowDefinitionSchema.parse({ start: "s1", steps: [] })).toThrow();
   });
 });

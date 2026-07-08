@@ -5,13 +5,25 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
 import { submitLead } from "@/lib/leads.functions";
-import { ArrowLeft, Calendar, Crown, Landmark, Briefcase, Users2, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Crown,
+  Landmark,
+  Briefcase,
+  Users2,
+  CheckCircle2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/executive-booking")({
   head: () => ({
     meta: [
       { title: "Executive Booking Center — NEXUS AI OS" },
-      { name: "description", content: "Book a confidential executive briefing, investor meeting, government brief, or enterprise discovery session with the NEXUS team." },
+      {
+        name: "description",
+        content:
+          "Book a confidential executive briefing, investor meeting, government brief, or enterprise discovery session with the NEXUS team.",
+      },
       { property: "og:title", content: "Executive Booking Center — NEXUS AI OS" },
       { property: "og:url", content: `${DOMAIN_URL}/executive-booking` },
     ],
@@ -32,10 +44,34 @@ function ExecutiveBookingPage() {
   const [done, setDone] = useState(false);
 
   const tracks: { id: Track; icon: React.ReactNode; title: string; sub: string; sla: string }[] = [
-    { id: "executive",  icon: <Crown className="h-5 w-5" />,     title: isAr ? "عرض تنفيذي خاص" : "Executive Briefing",     sub: isAr ? "جلسة 45 دقيقة على مستوى C-Suite" : "45-minute private session for C-suite", sla: isAr ? "خلال 48 ساعة" : "Within 48 hours" },
-    { id: "investor",   icon: <Briefcase className="h-5 w-5" />, title: isAr ? "اجتماع مستثمر" : "Investor Meeting",         sub: isAr ? "Series A · مستثمرون مؤسسيون" : "Series A · institutional investors", sla: isAr ? "خلال 72 ساعة" : "Within 72 hours" },
-    { id: "government", icon: <Landmark className="h-5 w-5" />,  title: isAr ? "إحاطة حكومية" : "Government Brief",          sub: isAr ? "على مستوى الوزراء والقيادات" : "Minister-level briefing", sla: isAr ? "خلال 5 أيام عمل" : "Within 5 business days" },
-    { id: "enterprise", icon: <Users2 className="h-5 w-5" />,    title: isAr ? "اكتشاف مؤسسي" : "Enterprise Discovery",      sub: isAr ? "للمؤسسات الكبرى والقطاعات الحساسة" : "Large enterprise & regulated sectors", sla: isAr ? "خلال 3 أيام عمل" : "Within 3 business days" },
+    {
+      id: "executive",
+      icon: <Crown className="h-5 w-5" />,
+      title: isAr ? "عرض تنفيذي خاص" : "Executive Briefing",
+      sub: isAr ? "جلسة 45 دقيقة على مستوى C-Suite" : "45-minute private session for C-suite",
+      sla: isAr ? "خلال 48 ساعة" : "Within 48 hours",
+    },
+    {
+      id: "investor",
+      icon: <Briefcase className="h-5 w-5" />,
+      title: isAr ? "اجتماع مستثمر" : "Investor Meeting",
+      sub: isAr ? "Series A · مستثمرون مؤسسيون" : "Series A · institutional investors",
+      sla: isAr ? "خلال 72 ساعة" : "Within 72 hours",
+    },
+    {
+      id: "government",
+      icon: <Landmark className="h-5 w-5" />,
+      title: isAr ? "إحاطة حكومية" : "Government Brief",
+      sub: isAr ? "على مستوى الوزراء والقيادات" : "Minister-level briefing",
+      sla: isAr ? "خلال 5 أيام عمل" : "Within 5 business days",
+    },
+    {
+      id: "enterprise",
+      icon: <Users2 className="h-5 w-5" />,
+      title: isAr ? "اكتشاف مؤسسي" : "Enterprise Discovery",
+      sub: isAr ? "للمؤسسات الكبرى والقطاعات الحساسة" : "Large enterprise & regulated sectors",
+      sla: isAr ? "خلال 3 أيام عمل" : "Within 3 business days",
+    },
   ];
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -56,7 +92,8 @@ function ExecutiveBookingPage() {
       await submit({
         data: {
           kind: track === "executive" ? "book" : track === "investor" ? "contact" : "demo",
-          name, email,
+          name,
+          email,
           company: company || null,
           role: role || null,
           notes: notes || null,
@@ -65,7 +102,11 @@ function ExecutiveBookingPage() {
         },
       });
       setDone(true);
-      toast.success(isAr ? "تم استلام طلبك. سيتواصل معك فريقنا التنفيذي." : "Request received. Our executive team will reach out.");
+      toast.success(
+        isAr
+          ? "تم استلام طلبك. سيتواصل معك فريقنا التنفيذي."
+          : "Request received. Our executive team will reach out.",
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Submission failed";
       toast.error(msg);
@@ -75,14 +116,20 @@ function ExecutiveBookingPage() {
   }
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground"
+    >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(214,158,46,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.06),transparent_60%)]" />
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(214,158,46,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(214,158,46,0.05)_1px,transparent_1px)] [background-size:48px_48px] opacity-30" />
       </div>
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
@@ -120,7 +167,9 @@ function ExecutiveBookingPage() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`grid h-9 w-9 place-items-center rounded-lg border ${active ? "border-amber-400/40 text-amber-300" : "border-white/10 text-muted-foreground"}`}>
+                    <span
+                      className={`grid h-9 w-9 place-items-center rounded-lg border ${active ? "border-amber-400/40 text-amber-300" : "border-white/10 text-muted-foreground"}`}
+                    >
                       {t.icon}
                     </span>
                     <div className="min-w-0">
@@ -128,7 +177,9 @@ function ExecutiveBookingPage() {
                       <div className="text-xs text-muted-foreground">{t.sub}</div>
                     </div>
                   </div>
-                  <div className={`mt-3 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] ${active ? "text-amber-300" : "text-muted-foreground"}`}>
+                  <div
+                    className={`mt-3 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] ${active ? "text-amber-300" : "text-muted-foreground"}`}
+                  >
                     <Calendar className="h-3 w-3" /> {t.sla}
                   </div>
                 </button>
@@ -150,10 +201,16 @@ function ExecutiveBookingPage() {
                     : "An executive account director will reach out shortly to confirm a time on your calendar."}
                 </p>
                 <div className="mt-6 flex gap-3">
-                  <Link to="/data-room" className="rounded-lg border border-amber-400/30 px-4 py-2 text-sm text-amber-200/90 hover:bg-amber-400/5">
+                  <Link
+                    to="/data-room"
+                    className="rounded-lg border border-amber-400/30 px-4 py-2 text-sm text-amber-200/90 hover:bg-amber-400/5"
+                  >
                     {isAr ? "غرفة البيانات التنفيذية" : "Open Data Room"}
                   </Link>
-                  <Link to="/demo-videos" className="rounded-lg border border-white/10 px-4 py-2 text-sm text-foreground hover:bg-white/5">
+                  <Link
+                    to="/demo-videos"
+                    className="rounded-lg border border-white/10 px-4 py-2 text-sm text-foreground hover:bg-white/5"
+                  >
                     {isAr ? "مشاهدة العروض" : "Watch Demos"}
                   </Link>
                 </div>
@@ -165,10 +222,19 @@ function ExecutiveBookingPage() {
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field name="name" label={isAr ? "الاسم الكامل" : "Full name"} required />
-                  <Field name="email" type="email" label={isAr ? "البريد التنفيذي" : "Executive email"} required />
+                  <Field
+                    name="email"
+                    type="email"
+                    label={isAr ? "البريد التنفيذي" : "Executive email"}
+                    required
+                  />
                   <Field name="company" label={isAr ? "الجهة / الشركة" : "Organization"} />
                   <Field name="role" label={isAr ? "المنصب" : "Title / Role"} />
-                  <Field name="when" label={isAr ? "الوقت المفضّل" : "Preferred time"} placeholder={isAr ? "مثال: الثلاثاء ١٠ صباحاً" : "e.g. Tue 10am KSA"} />
+                  <Field
+                    name="when"
+                    label={isAr ? "الوقت المفضّل" : "Preferred time"}
+                    placeholder={isAr ? "مثال: الثلاثاء ١٠ صباحاً" : "e.g. Tue 10am KSA"}
+                  />
                   <Field name="phone" label={isAr ? "هاتف (اختياري)" : "Phone (optional)"} />
                 </div>
                 <div>
@@ -179,7 +245,11 @@ function ExecutiveBookingPage() {
                     name="notes"
                     rows={4}
                     className="w-full rounded-lg border border-white/10 bg-black/30 p-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-amber-400/40 focus:outline-none"
-                    placeholder={isAr ? "السياق، الأولويات، الحاضرون، أي قيود تفضّلها." : "Context, priorities, attendees, constraints."}
+                    placeholder={
+                      isAr
+                        ? "السياق، الأولويات، الحاضرون، أي قيود تفضّلها."
+                        : "Context, priorities, attendees, constraints."
+                    }
                   />
                 </div>
                 <button
@@ -188,8 +258,12 @@ function ExecutiveBookingPage() {
                   className="w-full rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 px-6 py-3 text-sm font-medium text-[#0a0a0f] transition hover:from-amber-300 hover:to-amber-400 disabled:opacity-60"
                 >
                   {busy
-                    ? (isAr ? "جاري الإرسال…" : "Submitting…")
-                    : (isAr ? "تأكيد الحجز التنفيذي" : "Confirm Executive Booking")}
+                    ? isAr
+                      ? "جاري الإرسال…"
+                      : "Submitting…"
+                    : isAr
+                      ? "تأكيد الحجز التنفيذي"
+                      : "Confirm Executive Booking"}
                 </button>
                 <p className="text-xs text-muted-foreground/70">
                   {isAr
@@ -205,10 +279,25 @@ function ExecutiveBookingPage() {
   );
 }
 
-function Field({ name, label, type = "text", required, placeholder }: { name: string; label: string; type?: string; required?: boolean; placeholder?: string }) {
+function Field({
+  name,
+  label,
+  type = "text",
+  required,
+  placeholder,
+}: {
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  placeholder?: string;
+}) {
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}{required && <span className="text-amber-300"> *</span>}</label>
+      <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+        {required && <span className="text-amber-300"> *</span>}
+      </label>
       <input
         name={name}
         type={type}

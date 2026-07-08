@@ -49,8 +49,6 @@ export const Route = createFileRoute("/api/public/aria-presence")({
         const auth = await requireBearerUser(request);
         if ("response" in auth) return auth.response;
 
-
-
         const url = new URL(request.url);
         const sid = (url.searchParams.get("sid") ?? "").trim();
         if (!sid || sid.length < 4) {
@@ -86,7 +84,11 @@ export const Route = createFileRoute("/api/public/aria-presence")({
         const auth = await requireBearerUser(request);
         if ("response" in auth) return auth.response;
         let body: unknown;
-        try { body = await request.json(); } catch { return Response.json({ error: "invalid_json" }, { status: 400 }); }
+        try {
+          body = await request.json();
+        } catch {
+          return Response.json({ error: "invalid_json" }, { status: 400 });
+        }
         const parsed = HeartbeatSchema.safeParse(body);
         if (!parsed.success) return Response.json({ error: "invalid_input" }, { status: 400 });
         const nowISO = new Date().toISOString();

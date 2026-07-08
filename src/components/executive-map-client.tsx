@@ -41,10 +41,7 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
   useEffect(() => {
     let alive = true;
     (async () => {
-      const [rl, L] = await Promise.all([
-        import("react-leaflet"),
-        import("leaflet"),
-      ]);
+      const [rl, L] = await Promise.all([import("react-leaflet"), import("leaflet")]);
       await import("leaflet/dist/leaflet.css");
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -123,7 +120,16 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
               <div className="text-xs opacity-70 capitalize">{s.type}</div>
               {s.metric && <div className="text-xs">{s.metric}</div>}
               {s.detail && <div className="text-xs opacity-80">{s.detail}</div>}
-              <Badge variant={s.status === "critical" ? "destructive" : s.status === "warn" ? "secondary" : "outline"} className="text-[10px]">
+              <Badge
+                variant={
+                  s.status === "critical"
+                    ? "destructive"
+                    : s.status === "warn"
+                      ? "secondary"
+                      : "outline"
+                }
+                className="text-[10px]"
+              >
                 {s.status.toUpperCase()}
               </Badge>
             </div>

@@ -9,7 +9,10 @@ export const Route = createFileRoute("/promo/impact")({
   head: () => ({
     meta: [
       { title: "نيكسوس — من الفوضى إلى الذكاء" },
-      { name: "description", content: "فيلم تنفيذي 60 ثانية: كيف يوحّد نيكسوس أنظمتك ويسرّع قراراتك." },
+      {
+        name: "description",
+        content: "فيلم تنفيذي 60 ثانية: كيف يوحّد نيكسوس أنظمتك ويسرّع قراراتك.",
+      },
       { property: "og:title", content: "نيكسوس — من الفوضى إلى الذكاء" },
       { property: "og:description", content: "فيلم تنفيذي 60 ثانية." },
     ],
@@ -21,8 +24,7 @@ const DURATION = 60;
 
 // Arabic-Indic numerals
 const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"] as const;
-const toArDigits = (n: number | string) =>
-  String(n).replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)]);
+const toArDigits = (n: number | string) => String(n).replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)]);
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -53,7 +55,17 @@ function FadeRise({
   );
 }
 
-function Counter({ target, progress, suffix = "٪", prefix = "" }: { target: number; progress: number; suffix?: string; prefix?: string }) {
+function Counter({
+  target,
+  progress,
+  suffix = "٪",
+  prefix = "",
+}: {
+  target: number;
+  progress: number;
+  suffix?: string;
+  prefix?: string;
+}) {
   const eased = easeOutCubic(Math.min(1, Math.max(0, progress)));
   const value = Math.round(target * eased);
   return (
@@ -79,22 +91,29 @@ function Scene1(p: number) {
     <>
       <KenBurnsImage src={KSA_IMAGES.kingdomTower} progress={p} opacity={0.25} />
       <Particles color="#10B981" />
-      {(flashA || flashB) && (
-        <div className="absolute inset-0 bg-red-600/25 mix-blend-screen" />
-      )}
+      {(flashA || flashB) && <div className="absolute inset-0 bg-red-600/25 mix-blend-screen" />}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 px-6 text-center">
         <FadeRise show={show1}>
-          <p className="font-bold leading-tight text-white" style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}>
+          <p
+            className="font-bold leading-tight text-white"
+            style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}
+          >
             «أنظمتك كثيرة… وإنجازك قليل.»
           </p>
         </FadeRise>
         <FadeRise show={show2}>
-          <p className="font-bold leading-tight text-white/95" style={{ fontSize: "clamp(1.75rem, 5vw, 4.5rem)" }}>
+          <p
+            className="font-bold leading-tight text-white/95"
+            style={{ fontSize: "clamp(1.75rem, 5vw, 4.5rem)" }}
+          >
             «قراراتك تنتظر… ومنافسوك لا ينتظرون.»
           </p>
         </FadeRise>
         <FadeRise show={show3}>
-          <p className="font-bold leading-tight text-red-300" style={{ fontSize: "clamp(1.75rem, 5vw, 4.5rem)" }}>
+          <p
+            className="font-bold leading-tight text-red-300"
+            style={{ fontSize: "clamp(1.75rem, 5vw, 4.5rem)" }}
+          >
             «هذه ليست صدفة — هذه فوضى تشغيلية.»
           </p>
         </FadeRise>
@@ -136,7 +155,10 @@ function Scene2(p: number) {
           </p>
         </FadeRise>
         <FadeRise show={p > 0.4}>
-          <p className="font-bold text-emerald-300" style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}>
+          <p
+            className="font-bold text-emerald-300"
+            style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}
+          >
             «نيكسوس يوحّدها في مكانٍ واحد.»
           </p>
         </FadeRise>
@@ -181,7 +203,10 @@ function Scene3(p: number) {
           </p>
         </FadeRise>
         <FadeRise show={p > 0.35}>
-          <p className="font-bold text-emerald-300" style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}>
+          <p
+            className="font-bold text-emerald-300"
+            style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}
+          >
             «الأتمتة الذكية تتولاها عنك.»
           </p>
         </FadeRise>
@@ -236,12 +261,18 @@ function Scene4(p: number) {
           </p>
         </FadeRise>
         <FadeRise show={p > 0.4}>
-          <p className="font-bold text-emerald-300" style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}>
+          <p
+            className="font-bold text-emerald-300"
+            style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}
+          >
             «لوحات القيادة اللحظية تجيبك الآن.»
           </p>
         </FadeRise>
         <FadeRise show={p > 0.65}>
-          <p className="font-black text-white" style={{ fontSize: "clamp(1.75rem, 5.5vw, 4.5rem)" }}>
+          <p
+            className="font-black text-white"
+            style={{ fontSize: "clamp(1.75rem, 5.5vw, 4.5rem)" }}
+          >
             سرعة القرار ×<Counter target={3} progress={(p - 0.5) / 0.5} suffix="" />
           </p>
         </FadeRise>
@@ -282,7 +313,10 @@ function Scene5(p: number) {
           </p>
         </FadeRise>
         <FadeRise show={p > 0.4}>
-          <p className="font-bold text-emerald-300" style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}>
+          <p
+            className="font-bold text-emerald-300"
+            style={{ fontSize: "clamp(1.5rem, 4.5vw, 3.5rem)" }}
+          >
             «الذكاء التنبؤي يكشفها قبل وقوعها.»
           </p>
         </FadeRise>
@@ -313,8 +347,17 @@ function Scene6(p: number) {
         }
         if (opacity <= 0) return null;
         return (
-          <div key={i} className="absolute inset-0" style={{ opacity, transition: "opacity 500ms linear" }}>
-            <KenBurnsImage src={src} progress={local} direction={i % 2 === 0 ? 1 : -1} opacity={0.85} />
+          <div
+            key={i}
+            className="absolute inset-0"
+            style={{ opacity, transition: "opacity 500ms linear" }}
+          >
+            <KenBurnsImage
+              src={src}
+              progress={local}
+              direction={i % 2 === 0 ? 1 : -1}
+              opacity={0.85}
+            />
           </div>
         );
       })}
@@ -349,7 +392,12 @@ function Scene7(p: number) {
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/60" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 px-6 text-center">
         <FadeRise show={p > 0.1}>
-          <svg width="80" height="90" viewBox="0 0 80 90" className="drop-shadow-[0_0_20px_rgba(200,164,92,0.6)]">
+          <svg
+            width="80"
+            height="90"
+            viewBox="0 0 80 90"
+            className="drop-shadow-[0_0_20px_rgba(200,164,92,0.6)]"
+          >
             <polygon
               points="40,4 74,22 74,68 40,86 6,68 6,22"
               fill="none"
@@ -449,7 +497,12 @@ function PromoImpact() {
           <li>القرار اللحظي — سرعة القرار ×٣</li>
           <li>التنبؤ — الأخطاء تنخفض. −٥٠٪</li>
           <li>عصر الذكاء — نيكسوس يجعلك في المقدمة.</li>
-          <li>رؤية ٢٠٣٠ — <Link to="/" className="text-emerald-300 underline">ابدأ اليوم</Link></li>
+          <li>
+            رؤية ٢٠٣٠ —{" "}
+            <Link to="/" className="text-emerald-300 underline">
+              ابدأ اليوم
+            </Link>
+          </li>
         </ol>
         <p className="mt-6 text-sm text-white/50">النسب مستهدفات قطاعية استرشادية</p>
       </div>

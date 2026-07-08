@@ -15,7 +15,12 @@
 import { attentionEngine } from "./attention-engine";
 import { avatarAnimationQueue } from "./avatar-animation-queue";
 import { avatarRenderer } from "./avatar-renderer";
-import { avatarStateManager, type AvatarEvent, type AvatarState, type Emotion } from "./avatar-state-manager";
+import {
+  avatarStateManager,
+  type AvatarEvent,
+  type AvatarState,
+  type Emotion,
+} from "./avatar-state-manager";
 import { emotionEngine } from "./emotion-engine";
 import { lipSyncEngine } from "./lip-sync-engine";
 import type { AriaIntent } from "../types/aria";
@@ -70,25 +75,39 @@ class AvatarBrain {
     lipSyncEngine.end();
   }
 
-  onListeningStart(): void { this.dispatch("listening", "focused", "voice", "medium"); }
-  onListeningEnd(): void { this.dispatch("idle", emotionEngine.forIdle(), "voice", "low"); }
+  onListeningStart(): void {
+    this.dispatch("listening", "focused", "voice", "medium");
+  }
+  onListeningEnd(): void {
+    this.dispatch("idle", emotionEngine.forIdle(), "voice", "low");
+  }
 
   onThinking(envelope?: ExecutiveEnvelope | null): void {
     const emotion = envelope
-      ? emotionEngine.fromSignals({ risk: envelope.risk.level, priority: envelope.priority.level, intent: envelope.intent })
+      ? emotionEngine.fromSignals({
+          risk: envelope.risk.level,
+          priority: envelope.priority.level,
+          intent: envelope.intent,
+        })
       : "focused";
     this.dispatch("thinking", emotion, "conversation", "medium");
   }
 
   onSpeakingStart(turnId: string, envelope?: ExecutiveEnvelope | null): void {
     const emotion = envelope
-      ? emotionEngine.fromSignals({ risk: envelope.risk.level, priority: envelope.priority.level, intent: envelope.intent })
+      ? emotionEngine.fromSignals({
+          risk: envelope.risk.level,
+          priority: envelope.priority.level,
+          intent: envelope.intent,
+        })
       : "executive";
     lipSyncEngine.begin(turnId);
     this.dispatch("speaking", emotion, "conversation", "high");
   }
 
-  pushLipAmplitude(amp: number): void { lipSyncEngine.push(amp); }
+  pushLipAmplitude(amp: number): void {
+    lipSyncEngine.push(amp);
+  }
 
   onSpeakingEnd(turnId: string): void {
     lipSyncEngine.end(turnId);
@@ -100,7 +119,9 @@ class AvatarBrain {
     this.dispatch("explaining", "executive", "navigation", "high");
   }
 
-  onReturnCamera(): void { attentionEngine.focusCamera(); }
+  onReturnCamera(): void {
+    attentionEngine.focusCamera();
+  }
 
   onWarning(intent?: AriaIntent): void {
     const emotion = emotionEngine.fromSignals({ risk: "high", intent });
@@ -116,11 +137,22 @@ class AvatarBrain {
   }
 
   // ── Read-only accessors for React / tests ────────────────────────────
-  getState(): AvatarState { return avatarStateManager.getState(); }
-  getEmotion(): Emotion { return avatarStateManager.getEmotion(); }
-  subscribe(fn: (ev: AvatarEvent) => void): () => void { return avatarStateManager.subscribe(fn); }
+  getState(): AvatarState {
+    return avatarStateManager.getState();
+  }
+  getEmotion(): Emotion {
+    return avatarStateManager.getEmotion();
+  }
+  subscribe(fn: (ev: AvatarEvent) => void): () => void {
+    return avatarStateManager.subscribe(fn);
+  }
 
-  private dispatch(state: AvatarState, emotion: Emotion, source: Source, priority?: Priority): void {
+  private dispatch(
+    state: AvatarState,
+    emotion: Emotion,
+    source: Source,
+    priority?: Priority,
+  ): void {
     const pri = priority ?? STATE_PRIORITY[state] ?? "medium";
     const ev = avatarStateManager.transition(state, emotion, source, pri);
     if (ev) avatarAnimationQueue.enqueue(ev);

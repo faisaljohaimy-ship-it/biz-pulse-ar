@@ -28,10 +28,10 @@ export function generateExperience(raw: ExperienceInput): ExperienceRecord {
     input.outcome === "success"
       ? 1
       : input.outcome === "partial"
-      ? 0.5
-      : input.outcome === "failure"
-      ? 0
-      : -1;
+        ? 0.5
+        : input.outcome === "failure"
+          ? 0
+          : -1;
 
   const confidence = deriveConfidence({
     subject_id: "experience",

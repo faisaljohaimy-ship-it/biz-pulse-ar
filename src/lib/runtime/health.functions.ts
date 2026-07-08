@@ -6,12 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type HealthStatus =
-  | "healthy"
-  | "warning"
-  | "offline"
-  | "blocked"
-  | "unknown";
+export type HealthStatus = "healthy" | "warning" | "offline" | "blocked" | "unknown";
 
 export type SubsystemHealth = {
   id: string;
@@ -38,9 +33,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<RuntimeHealthReport> => {
     const { supabase, userId } = context;
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: member } = await supabase
       .from("org_members")
@@ -114,12 +107,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     subs.push({
       id: "agent_runtime",
       label: "Agent Runtime",
-      status:
-        lastAgentMin == null
-          ? "unknown"
-          : lastAgentMin < STALE_MIN
-            ? "healthy"
-            : "warning",
+      status: lastAgentMin == null ? "unknown" : lastAgentMin < STALE_MIN ? "healthy" : "warning",
       evidence: {
         last_run_minutes_ago: lastAgentMin,
         last_run_status: lastAgent?.status ?? null,
@@ -138,12 +126,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     subs.push({
       id: "tool_runtime",
       label: "Tool Runtime",
-      status:
-        lastToolMin == null
-          ? "unknown"
-          : lastToolMin < STALE_MIN
-            ? "healthy"
-            : "warning",
+      status: lastToolMin == null ? "unknown" : lastToolMin < STALE_MIN ? "healthy" : "warning",
       evidence: {
         last_execution_minutes_ago: lastToolMin,
         last_status: lastTool?.status ?? null,
@@ -188,12 +171,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     subs.push({
       id: "event_consumer",
       label: "Event Consumer",
-      status:
-        (pendingEv ?? 0) > 100
-          ? "warning"
-          : (pendingEv ?? 0) >= 0
-            ? "healthy"
-            : "unknown",
+      status: (pendingEv ?? 0) > 100 ? "warning" : (pendingEv ?? 0) >= 0 ? "healthy" : "unknown",
       evidence: { pending_backlog: pendingEv ?? 0 },
     });
 
@@ -234,16 +212,15 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       label: "ARIA Knowledge / RAG",
       status: (kCount ?? 0) > 0 ? "healthy" : "warning",
       evidence: { documents: kCount ?? 0 },
-      reason:
-        (kCount ?? 0) === 0
-          ? "No indexed enterprise knowledge."
-          : undefined,
+      reason: (kCount ?? 0) === 0 ? "No indexed enterprise knowledge." : undefined,
     });
 
     // Microsoft Integration — uses last_sync_status / last_test_status.
     const { data: ms } = await supabaseAdmin
       .from("integration_microsoft")
-      .select("tenant_id, client_id, last_sync_at, last_sync_status, last_sync_error, last_test_status")
+      .select(
+        "tenant_id, client_id, last_sync_at, last_sync_status, last_sync_error, last_test_status",
+      )
       .eq("org_id", orgId)
       .limit(1)
       .maybeSingle();
@@ -298,17 +275,9 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       subs.push({
         id: tid,
         label,
-        status: !enabled
-          ? "offline"
-          : hasCreds
-            ? "healthy"
-            : "blocked",
+        status: !enabled ? "offline" : hasCreds ? "healthy" : "blocked",
         evidence: { enabled, has_config: hasCreds },
-        reason: !enabled
-          ? "Adapter disabled"
-          : hasCreds
-            ? undefined
-            : "Waiting for credentials",
+        reason: !enabled ? "Adapter disabled" : hasCreds ? undefined : "Waiting for credentials",
       });
     }
 

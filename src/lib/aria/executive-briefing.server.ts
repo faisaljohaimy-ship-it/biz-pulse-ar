@@ -58,21 +58,45 @@ export interface ExecutiveBriefing {
 function impactFor(i: Insight): { en: string; ar: string } {
   switch (i.kind) {
     case "kpi_drop":
-      return { en: "Restoring the KPI reverses executive-dashboard degradation.", ar: "استعادة المؤشر توقف تراجع لوحة المتابعة التنفيذية." };
+      return {
+        en: "Restoring the KPI reverses executive-dashboard degradation.",
+        ar: "استعادة المؤشر توقف تراجع لوحة المتابعة التنفيذية.",
+      };
     case "overdue_work":
-      return { en: "Clearing the backlog reduces asset downtime risk.", ar: "تصفية المتراكم يقلل مخاطر توقف الأصول." };
+      return {
+        en: "Clearing the backlog reduces asset downtime risk.",
+        ar: "تصفية المتراكم يقلل مخاطر توقف الأصول.",
+      };
     case "risk_hotspot":
-      return { en: "Mitigating these risks prevents high-impact escalations.", ar: "معالجة هذه المخاطر تمنع تصعيدات عالية الأثر." };
+      return {
+        en: "Mitigating these risks prevents high-impact escalations.",
+        ar: "معالجة هذه المخاطر تمنع تصعيدات عالية الأثر.",
+      };
     case "alert_surge":
-      return { en: "Reduces operator alarm fatigue and mean-time-to-respond.", ar: "يقلل إجهاد الإنذارات ويحسّن زمن الاستجابة." };
+      return {
+        en: "Reduces operator alarm fatigue and mean-time-to-respond.",
+        ar: "يقلل إجهاد الإنذارات ويحسّن زمن الاستجابة.",
+      };
     case "patrol_shortfall":
-      return { en: "Closes coverage gaps and prevents incident propagation.", ar: "يسدّ فجوات التغطية ويمنع انتشار الحوادث." };
+      return {
+        en: "Closes coverage gaps and prevents incident propagation.",
+        ar: "يسدّ فجوات التغطية ويمنع انتشار الحوادث.",
+      };
     case "workload_pressure":
-      return { en: "Prevents staff burnout and missed critical events.", ar: "يمنع إجهاد الفرق وضياع الأحداث الحرجة." };
+      return {
+        en: "Prevents staff burnout and missed critical events.",
+        ar: "يمنع إجهاد الفرق وضياع الأحداث الحرجة.",
+      };
     case "trend_prediction":
-      return { en: "Early containment avoids next-week volume spike.", ar: "الاحتواء المبكر يتجنب قفزة الأسبوع القادم." };
+      return {
+        en: "Early containment avoids next-week volume spike.",
+        ar: "الاحتواء المبكر يتجنب قفزة الأسبوع القادم.",
+      };
     case "correlation":
-      return { en: "Focused intervention on the driver site yields compound gains.", ar: "التدخل المركّز على الموقع المسبب يحقق مكاسب مركّبة." };
+      return {
+        en: "Focused intervention on the driver site yields compound gains.",
+        ar: "التدخل المركّز على الموقع المسبب يحقق مكاسب مركّبة.",
+      };
     default:
       return { en: "Improves overall operational posture.", ar: "يحسّن الوضع التشغيلي العام." };
   }
@@ -82,7 +106,10 @@ function priorityFor(sev: Insight["severity"]): 1 | 2 | 3 {
   return sev === "critical" ? 1 : sev === "elevated" ? 2 : 3;
 }
 
-async function loadHealth(admin: NonNullable<Awaited<ReturnType<typeof importAdmin>>>, orgId: string): Promise<{
+async function loadHealth(
+  admin: NonNullable<Awaited<ReturnType<typeof importAdmin>>>,
+  orgId: string,
+): Promise<{
   health: BriefingHealth;
   approvals: BriefingApproval[];
 }> {

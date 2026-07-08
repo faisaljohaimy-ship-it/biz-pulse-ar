@@ -9,11 +9,7 @@
  * Server-side only. Worker compatible. Evidence-linked only.
  */
 import { MultimodalInputSchema } from "./contracts";
-import type {
-  MultimodalInput,
-  MultimodalFinding,
-  PipelineOutcome,
-} from "./types";
+import type { MultimodalInput, MultimodalFinding, PipelineOutcome } from "./types";
 import { analyzeVision, type VisionExtras } from "./vision.server";
 import { linkAll, type LinkCandidates } from "./evidence-linking.server";
 import { rank } from "./ranking.server";
@@ -71,7 +67,12 @@ export function runMultimodalPipeline(
     });
     if (!parsed.success) {
       rejected.push({ reason: "invalid_input", input_id: String(raw.source_id ?? "?") });
-      audit({ stage: "validate", source_id: String(raw.source_id ?? "?"), ok: false, detail: parsed.error.message });
+      audit({
+        stage: "validate",
+        source_id: String(raw.source_id ?? "?"),
+        ok: false,
+        detail: parsed.error.message,
+      });
       incr("mm.rejected");
       continue;
     }

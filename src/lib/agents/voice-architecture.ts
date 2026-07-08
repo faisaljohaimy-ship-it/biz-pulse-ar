@@ -62,27 +62,87 @@ export interface AgentRuntimeProfile {
  */
 export const DEFAULT_VOICE_PROFILES: Record<string, { ar: VoiceProfile; en: VoiceProfile }> = {
   aria: {
-    ar: { voiceId: "aria-ar-executive", displayName: "آريا التنفيذية", rate: 1.0, pitch: 0, language: "ar" },
-    en: { voiceId: "aria-en-executive", displayName: "ARIA Executive", rate: 1.0, pitch: 0, language: "en" },
+    ar: {
+      voiceId: "aria-ar-executive",
+      displayName: "آريا التنفيذية",
+      rate: 1.0,
+      pitch: 0,
+      language: "ar",
+    },
+    en: {
+      voiceId: "aria-en-executive",
+      displayName: "ARIA Executive",
+      rate: 1.0,
+      pitch: 0,
+      language: "en",
+    },
   },
   security: {
-    ar: { voiceId: "ops-ar-vigilant", displayName: "وكيل الأمن", rate: 1.0, pitch: -1, language: "ar" },
-    en: { voiceId: "ops-en-vigilant", displayName: "Security Agent", rate: 1.0, pitch: -1, language: "en" },
+    ar: {
+      voiceId: "ops-ar-vigilant",
+      displayName: "وكيل الأمن",
+      rate: 1.0,
+      pitch: -1,
+      language: "ar",
+    },
+    en: {
+      voiceId: "ops-en-vigilant",
+      displayName: "Security Agent",
+      rate: 1.0,
+      pitch: -1,
+      language: "en",
+    },
   },
   patrol: {
     ar: { voiceId: "field-ar", displayName: "وكيل الدوريات", rate: 1.05, pitch: 0, language: "ar" },
     en: { voiceId: "field-en", displayName: "Patrol Agent", rate: 1.05, pitch: 0, language: "en" },
   },
   risk: {
-    ar: { voiceId: "risk-ar-analytical", displayName: "وكيل المخاطر", rate: 0.95, pitch: -2, language: "ar" },
-    en: { voiceId: "risk-en-analytical", displayName: "Risk Agent", rate: 0.95, pitch: -2, language: "en" },
+    ar: {
+      voiceId: "risk-ar-analytical",
+      displayName: "وكيل المخاطر",
+      rate: 0.95,
+      pitch: -2,
+      language: "ar",
+    },
+    en: {
+      voiceId: "risk-en-analytical",
+      displayName: "Risk Agent",
+      rate: 0.95,
+      pitch: -2,
+      language: "en",
+    },
   },
   compliance: {
-    ar: { voiceId: "comp-ar-advisory", displayName: "وكيل الامتثال", rate: 0.95, pitch: 0, language: "ar" },
-    en: { voiceId: "comp-en-advisory", displayName: "Compliance Agent", rate: 0.95, pitch: 0, language: "en" },
+    ar: {
+      voiceId: "comp-ar-advisory",
+      displayName: "وكيل الامتثال",
+      rate: 0.95,
+      pitch: 0,
+      language: "ar",
+    },
+    en: {
+      voiceId: "comp-en-advisory",
+      displayName: "Compliance Agent",
+      rate: 0.95,
+      pitch: 0,
+      language: "en",
+    },
   },
   reporting: {
-    ar: { voiceId: "report-ar-narrative", displayName: "وكيل التقارير", rate: 1.0, pitch: 0, language: "ar" },
-    en: { voiceId: "report-en-narrative", displayName: "Reporting Agent", rate: 1.0, pitch: 0, language: "en" },
+    ar: {
+      voiceId: "report-ar-narrative",
+      displayName: "وكيل التقارير",
+      rate: 1.0,
+      pitch: 0,
+      language: "ar",
+    },
+    en: {
+      voiceId: "report-en-narrative",
+      displayName: "Reporting Agent",
+      rate: 1.0,
+      pitch: 0,
+      language: "en",
+    },
   },
 };

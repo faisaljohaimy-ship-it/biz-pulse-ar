@@ -21,13 +21,22 @@ class RealtimeAnimation {
       const now = frame.ts || (typeof performance !== "undefined" ? performance.now() : Date.now());
       if (now - this.lastEmit < this.intervalMs) return;
       this.lastEmit = now;
-      this.listeners.forEach((fn) => { try { fn(frame); } catch { /* isolate */ } });
+      this.listeners.forEach((fn) => {
+        try {
+          fn(frame);
+        } catch {
+          /* isolate */
+        }
+      });
     });
     return () => this.stop();
   }
 
   stop(): void {
-    if (this.rendererUnsub) { this.rendererUnsub(); this.rendererUnsub = null; }
+    if (this.rendererUnsub) {
+      this.rendererUnsub();
+      this.rendererUnsub = null;
+    }
     this.listeners.clear();
     this.lastEmit = 0;
   }

@@ -17,11 +17,20 @@ export class DynamicCameraController {
   tick(tick: HeroTick): void {
     const s = this.sync.get();
     switch (s.presence) {
-      case "listening": this.target = 0.14; break;
-      case "thinking": this.target = -0.05; break;
-      case "speaking": this.target = 0.08; break;
-      case "welcome": this.target = 0.20; break;
-      default: this.target = 0;
+      case "listening":
+        this.target = 0.14;
+        break;
+      case "thinking":
+        this.target = -0.05;
+        break;
+      case "speaking":
+        this.target = 0.08;
+        break;
+      case "welcome":
+        this.target = 0.2;
+        break;
+      default:
+        this.target = 0;
     }
     this.current = this.current + (this.target - this.current) * 0.06;
     this.sync.patch({ cameraDolly: this.current });

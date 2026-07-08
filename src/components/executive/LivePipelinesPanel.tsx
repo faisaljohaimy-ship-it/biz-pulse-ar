@@ -2,7 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Activity, Mic, User2, AlertTriangle, CheckCircle2, MinusCircle } from "lucide-react";
-import { getLivePipelines, type LivePipelineSeries, type PulseTone } from "@/lib/executive-presentation.functions";
+import {
+  getLivePipelines,
+  type LivePipelineSeries,
+  type PulseTone,
+} from "@/lib/executive-presentation.functions";
 
 const ICON = { runtime: Activity, voice: Mic, avatar: User2 } as const;
 
@@ -35,12 +39,16 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
   const LabelIcon = label.icon;
 
   return (
-    <div className={`rounded-xl border bg-background/40 backdrop-blur-xl p-4 transition-all ${TONE_RING[s.status]}`}>
+    <div
+      className={`rounded-xl border bg-background/40 backdrop-blur-xl p-4 transition-all ${TONE_RING[s.status]}`}
+    >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
           <Icon className="w-4 h-4 text-primary shrink-0" />
           <div className="min-w-0">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80 truncate">{s.label_en}</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80 truncate">
+              {s.label_en}
+            </div>
             <div className="text-sm font-semibold text-foreground truncate">{s.label_ar}</div>
           </div>
         </div>
@@ -52,8 +60,16 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
 
       <div className="grid grid-cols-3 gap-2 mb-2">
         <Metric label="Events/60m" value={s.totalRuns.toLocaleString()} />
-        <Metric label="Errors" value={s.totalErrors.toLocaleString()} tone={s.totalErrors ? "rose" : "muted"} />
-        <Metric label="Err %" value={`${s.errorRate.toFixed(1)}%`} tone={s.errorRate >= 15 ? "rose" : s.errorRate >= 5 ? "amber" : "muted"} />
+        <Metric
+          label="Errors"
+          value={s.totalErrors.toLocaleString()}
+          tone={s.totalErrors ? "rose" : "muted"}
+        />
+        <Metric
+          label="Err %"
+          value={`${s.errorRate.toFixed(1)}%`}
+          tone={s.errorRate >= 15 ? "rose" : s.errorRate >= 5 ? "amber" : "muted"}
+        />
       </div>
 
       <div className="h-24">
@@ -65,8 +81,20 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
                 <stop offset="100%" stopColor={stroke} stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="label" tick={{ fill: "hsl(215 20% 55%)", fontSize: 9 }} axisLine={false} tickLine={false} interval={2} />
-            <YAxis tick={{ fill: "hsl(215 20% 55%)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} width={28} />
+            <XAxis
+              dataKey="label"
+              tick={{ fill: "hsl(215 20% 55%)", fontSize: 9 }}
+              axisLine={false}
+              tickLine={false}
+              interval={2}
+            />
+            <YAxis
+              tick={{ fill: "hsl(215 20% 55%)", fontSize: 9 }}
+              axisLine={false}
+              tickLine={false}
+              allowDecimals={false}
+              width={28}
+            />
             <Tooltip
               cursor={{ stroke: stroke, strokeOpacity: 0.3 }}
               contentStyle={{
@@ -79,8 +107,22 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
               labelStyle={{ color: "hsl(215 20% 75%)" }}
               formatter={(v: number, k: string) => [v, k === "runs" ? "events" : "errors"]}
             />
-            <Area type="monotone" dataKey="runs" stroke={stroke} strokeWidth={1.8} fill={`url(#${gradId})`} isAnimationActive={false} />
-            <Area type="monotone" dataKey="errors" stroke="hsl(349 89% 63%)" strokeWidth={1.2} fill="hsl(349 89% 63% / 0.15)" isAnimationActive={false} />
+            <Area
+              type="monotone"
+              dataKey="runs"
+              stroke={stroke}
+              strokeWidth={1.8}
+              fill={`url(#${gradId})`}
+              isAnimationActive={false}
+            />
+            <Area
+              type="monotone"
+              dataKey="errors"
+              stroke="hsl(349 89% 63%)"
+              strokeWidth={1.2}
+              fill="hsl(349 89% 63% / 0.15)"
+              isAnimationActive={false}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -93,15 +135,28 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
   );
 }
 
-function Metric({ label, value, tone = "primary" }: { label: string; value: string; tone?: "primary" | "rose" | "amber" | "muted" }) {
+function Metric({
+  label,
+  value,
+  tone = "primary",
+}: {
+  label: string;
+  value: string;
+  tone?: "primary" | "rose" | "amber" | "muted";
+}) {
   const cls =
-    tone === "rose" ? "text-rose-300" :
-    tone === "amber" ? "text-amber-300" :
-    tone === "muted" ? "text-foreground/70" :
-    "text-primary";
+    tone === "rose"
+      ? "text-rose-300"
+      : tone === "amber"
+        ? "text-amber-300"
+        : tone === "muted"
+          ? "text-foreground/70"
+          : "text-primary";
   return (
     <div className="rounded-md border border-white/5 bg-background/40 px-2 py-1">
-      <div className="text-[9px] font-mono uppercase tracking-widest text-foreground/50">{label}</div>
+      <div className="text-[9px] font-mono uppercase tracking-widest text-foreground/50">
+        {label}
+      </div>
       <div className={`text-sm font-bold tabular-nums ${cls}`}>{value}</div>
     </div>
   );
@@ -120,8 +175,12 @@ export function LivePipelinesPanel() {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">Live Pipelines · مخططات حياة الخدمات</div>
-          <div className="text-sm text-foreground/60 mt-0.5">Runtime · Voice · Avatar — آخر 60 دقيقة · فترات 5 دقائق</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+            Live Pipelines · مخططات حياة الخدمات
+          </div>
+          <div className="text-sm text-foreground/60 mt-0.5">
+            Runtime · Voice · Avatar — آخر 60 دقيقة · فترات 5 دقائق
+          </div>
         </div>
         {q.data && (
           <div className="text-[10px] font-mono text-foreground/40">
@@ -133,7 +192,10 @@ export function LivePipelinesPanel() {
       {q.isLoading && !q.data ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-56 rounded-xl border border-white/5 bg-background/30 animate-pulse" />
+            <div
+              key={i}
+              className="h-56 rounded-xl border border-white/5 bg-background/30 animate-pulse"
+            />
           ))}
         </div>
       ) : q.error ? (

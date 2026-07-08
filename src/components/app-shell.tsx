@@ -40,11 +40,8 @@ import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
 
-
-
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
-
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
@@ -81,7 +78,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
-              <img src="/nexus-icon.png" alt="Nexus AI OS Logo" className="h-full w-full object-cover" />
+              <img
+                src="/nexus-icon.png"
+                alt="Nexus AI OS Logo"
+                className="h-full w-full object-cover"
+              />
               <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
             <span className="text-sm font-bold tracking-tight">Nexus</span>
@@ -99,7 +100,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       {/* Legacy ExecutiveOverlay removed — ARIA singleton lives at root. */}
     </div>
-
   );
 }
 
@@ -109,54 +109,51 @@ function useNavGroups(): NavGroup[] {
   return [
     {
       label: ar("الرئيسية", "Home"),
-      items: [
-        { to: "/", icon: Home, label: ar("الرئيسية", "Home") },
-      ],
+      items: [{ to: "/", icon: Home, label: ar("الرئيسية", "Home") }],
     },
     {
       label: ar("العمليات", "Operations"),
       items: [
-        { to: "/sec",             icon: Activity,    label: ar("غرفة العمليات", "Ops Room") },
-        { to: "/sec/exec",        icon: Crown,       label: ar("اللوحة التنفيذية", "Exec Dashboard") },
-        { to: "/sec/circles",     icon: Building2,   label: ar("الدوائر", "Circles") },
-        { to: "/sec/sections",    icon: Grid3x3,     label: ar("الأقسام", "Sections") },
-        { to: "/sec/projects",    icon: Rocket,      label: ar("المشاريع", "Projects") },
-        { to: "/sec/maintenance", icon: Wrench,      label: ar("أوامر العمل", "Work Orders") },
-        { to: "/sec/incidents",   icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
-        { to: "/sec/patrols",     icon: Radar,       label: ar("الدوريات", "Patrols") },
-        { to: "/sec/cctv",        icon: Camera,      label: ar("CCTV", "CCTV") },
-        { to: "/sec/kpi",         icon: BarChart3,   label: ar("مؤشرات الأداء", "KPIs") },
-        { to: "/sec/twin",        icon: Network,     label: ar("التوأم الرقمي", "Digital Twin") },
-        { to: "/hajj",            icon: MapPin,      label: ar("عمليات الحج", "Hajj Ops") },
+        { to: "/sec", icon: Activity, label: ar("غرفة العمليات", "Ops Room") },
+        { to: "/sec/exec", icon: Crown, label: ar("اللوحة التنفيذية", "Exec Dashboard") },
+        { to: "/sec/circles", icon: Building2, label: ar("الدوائر", "Circles") },
+        { to: "/sec/sections", icon: Grid3x3, label: ar("الأقسام", "Sections") },
+        { to: "/sec/projects", icon: Rocket, label: ar("المشاريع", "Projects") },
+        { to: "/sec/maintenance", icon: Wrench, label: ar("أوامر العمل", "Work Orders") },
+        { to: "/sec/incidents", icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
+        { to: "/sec/patrols", icon: Radar, label: ar("الدوريات", "Patrols") },
+        { to: "/sec/cctv", icon: Camera, label: ar("CCTV", "CCTV") },
+        { to: "/sec/kpi", icon: BarChart3, label: ar("مؤشرات الأداء", "KPIs") },
+        { to: "/sec/twin", icon: Network, label: ar("التوأم الرقمي", "Digital Twin") },
+        { to: "/hajj", icon: MapPin, label: ar("عمليات الحج", "Hajj Ops") },
       ],
     },
     {
       label: ar("الذكاء", "Intelligence"),
       items: [
-        { to: "/aria",    icon: Sparkles, label: ar("ARIA", "ARIA") },
-        { to: "/voice",   icon: Mic,      label: ar("المساعد الصوتي", "Voice Assistant") },
-        { to: "/agents",  icon: Bot,      label: ar("الوكلاء", "Agents") },
-        { to: "/sec/ai",  icon: Brain,    label: ar("توصيات ARIA", "ARIA Recos") },
+        { to: "/aria", icon: Sparkles, label: ar("ARIA", "ARIA") },
+        { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
+        { to: "/agents", icon: Bot, label: ar("الوكلاء", "Agents") },
+        { to: "/sec/ai", icon: Brain, label: ar("توصيات ARIA", "ARIA Recos") },
       ],
     },
     {
       label: ar("المعرفة", "Knowledge"),
       items: [
-        { to: "/executive-reports", icon: FileText,    label: ar("التقارير", "Reports") },
-        { to: "/integrations",      icon: Plug,        label: ar("التكاملات", "Integrations") },
-        { to: "/files",             icon: FolderOpen,  label: ar("الملفات", "Files") },
+        { to: "/executive-reports", icon: FileText, label: ar("التقارير", "Reports") },
+        { to: "/integrations", icon: Plug, label: ar("التكاملات", "Integrations") },
+        { to: "/files", icon: FolderOpen, label: ar("الملفات", "Files") },
       ],
     },
     {
       label: ar("الإدارة", "Administration"),
       items: [
-        { to: "/admin",    icon: Shield,   label: ar("لوحة الإدارة", "Admin Panel") },
+        { to: "/admin", icon: Shield, label: ar("لوحة الإدارة", "Admin Panel") },
         { to: "/settings", icon: Settings, label: ar("الإعدادات", "Settings") },
       ],
     },
   ];
 }
-
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n();
@@ -317,15 +314,18 @@ function UserChip() {
   const { user } = useAuth();
   const { locale } = useI18n();
   const { region } = useRegion();
-  const displayName = locale === "ar"
-    ? `إدارة ${region.labelAr.replace(/^الأمن الصناعي — /, "الأمن الصناعي بالمنطقة ").replace("المنطقة المنطقة", "المنطقة")}`
-    : region.labelEn;
+  const displayName =
+    locale === "ar"
+      ? `إدارة ${region.labelAr.replace(/^الأمن الصناعي — /, "الأمن الصناعي بالمنطقة ").replace("المنطقة المنطقة", "المنطقة")}`
+      : region.labelEn;
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2" title={user?.email ?? undefined}>
       <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">
         أ
       </div>
-      <div className="min-w-0 flex-1 truncate text-xs text-muted-foreground" dir="rtl">{displayName}</div>
+      <div className="min-w-0 flex-1 truncate text-xs text-muted-foreground" dir="rtl">
+        {displayName}
+      </div>
     </div>
   );
 }

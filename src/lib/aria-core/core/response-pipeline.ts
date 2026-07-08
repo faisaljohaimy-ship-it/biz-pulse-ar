@@ -24,7 +24,10 @@ function stripProviderNoise(text: string): string {
 }
 
 function normalizeWhitespace(text: string): string {
-  return text.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return text
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export const responsePipeline = {

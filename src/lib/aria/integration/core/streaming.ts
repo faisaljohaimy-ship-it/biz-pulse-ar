@@ -27,7 +27,9 @@ export function createStream<T>(factory: StreamFactory<T>): StreamHandle<T> {
     iterator(): AsyncIterableIterator<T> {
       const inner = factory.produce();
       const wrapper: AsyncIterableIterator<T> = {
-        [Symbol.asyncIterator]() { return wrapper; },
+        [Symbol.asyncIterator]() {
+          return wrapper;
+        },
         async next(): Promise<IteratorResult<T>> {
           if (closed) return { value: undefined as unknown as T, done: true };
           return inner.next();

@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { AlertTriangle, TrendingUp, ShieldAlert, Sparkles, ArrowUpRight, FileText } from "lucide-react";
+import {
+  AlertTriangle,
+  TrendingUp,
+  ShieldAlert,
+  Sparkles,
+  ArrowUpRight,
+  FileText,
+} from "lucide-react";
 import {
   executiveBriefings,
   briefingActions,
@@ -35,14 +42,22 @@ function BriefingPage() {
 
   const briefings = briefingsQ.data ?? [];
   const latest = briefings[0];
-  const actions = (actionsQ.data ?? []).filter((a) => !latest || a.briefing_id === latest.id || a.briefing_id === null);
-  const risks = (risksQ.data ?? []).filter((r) => !latest || r.briefing_id === latest.id || r.briefing_id === null);
-  const opps = (oppsQ.data ?? []).filter((o) => !latest || o.briefing_id === latest.id || o.briefing_id === null);
+  const actions = (actionsQ.data ?? []).filter(
+    (a) => !latest || a.briefing_id === latest.id || a.briefing_id === null,
+  );
+  const risks = (risksQ.data ?? []).filter(
+    (r) => !latest || r.briefing_id === latest.id || r.briefing_id === null,
+  );
+  const opps = (oppsQ.data ?? []).filter(
+    (o) => !latest || o.briefing_id === latest.id || o.briefing_id === null,
+  );
 
   const health = fabric.metrics.find((m) => m.id === "enterpriseHealth")?.value ?? 0;
 
   const summary = latest
-    ? (ar ? latest.summary || latest.title : (latest.summary_en || latest.title_en || latest.title))
+    ? ar
+      ? latest.summary || latest.title
+      : latest.summary_en || latest.title_en || latest.title
     : ar
       ? `صحة المؤسسة ${health}. ${fabric.counts.openAlerts} تنبيهات مفتوحة، ${fabric.counts.overdue} متأخرة، ${fabric.counts.forgotten} منسية. أنشئ موجزاً تنفيذياً لتلخيص الإجراءات.`
       : `Enterprise health ${health}. ${fabric.counts.openAlerts} open alerts, ${fabric.counts.overdue} overdue, ${fabric.counts.forgotten} forgotten items. Create a briefing to capture executive actions.`;
@@ -51,7 +66,11 @@ function BriefingPage() {
     <NexusPage
       eyebrow="EXECUTIVE BRIEFING · LIVE"
       title={ar ? "موجز التنفيذيين اليومي" : "Daily Executive Briefing"}
-      subtitle={ar ? "موجز ذكي مدفوع بالنسيج الذكي + قاعدة بياناتك." : "Executive intelligence powered by your Fabric and database."}
+      subtitle={
+        ar
+          ? "موجز ذكي مدفوع بالنسيج الذكي + قاعدة بياناتك."
+          : "Executive intelligence powered by your Fabric and database."
+      }
       actions={
         <NexusPill tone={health >= 80 ? "emerald" : health >= 60 ? "amber" : "rose"}>
           ● LIVE · {ar ? "صحة" : "Health"} {health}
@@ -99,26 +118,56 @@ function BriefingPage() {
       </NexusCard>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise Health"} value={`${health}`} tone="emerald" />
-        <NexusStat label={ar ? "تنبيهات نشطة" : "Active Alerts"} value={String(fabric.counts.openAlerts)} tone="amber" />
-        <NexusStat label={ar ? "متأخرة" : "Overdue"} value={String(fabric.counts.overdue)} tone="rose" />
-        <NexusStat label={ar ? "موجزات محفوظة" : "Briefings"} value={String(briefings.length)} tone="cyan" />
+        <NexusStat
+          label={ar ? "صحة المؤسسة" : "Enterprise Health"}
+          value={`${health}`}
+          tone="emerald"
+        />
+        <NexusStat
+          label={ar ? "تنبيهات نشطة" : "Active Alerts"}
+          value={String(fabric.counts.openAlerts)}
+          tone="amber"
+        />
+        <NexusStat
+          label={ar ? "متأخرة" : "Overdue"}
+          value={String(fabric.counts.overdue)}
+          tone="rose"
+        />
+        <NexusStat
+          label={ar ? "موجزات محفوظة" : "Briefings"}
+          value={String(briefings.length)}
+          tone="cyan"
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Live alerts from Fabric */}
         <NexusCard>
-          <SectionTitle icon={AlertTriangle} title={ar ? "تنبيهات تنفيذية · مباشر" : "Live Executive Alerts"} />
+          <SectionTitle
+            icon={AlertTriangle}
+            title={ar ? "تنبيهات تنفيذية · مباشر" : "Live Executive Alerts"}
+          />
           {fabric.topAlerts.length === 0 ? (
-            <div className="mt-3 text-sm text-slate-400">{ar ? "لا تنبيهات نشطة." : "No active alerts."}</div>
+            <div className="mt-3 text-sm text-slate-400">
+              {ar ? "لا تنبيهات نشطة." : "No active alerts."}
+            </div>
           ) : (
             <ul className="mt-3 space-y-2">
               {fabric.topAlerts.slice(0, 5).map((a) => (
-                <li key={a.id} className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3">
-                  <NexusPill tone={a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan"}>
+                <li
+                  key={a.id}
+                  className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-3"
+                >
+                  <NexusPill
+                    tone={
+                      a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan"
+                    }
+                  >
                     {a.severity}
                   </NexusPill>
-                  <span className="text-sm text-slate-200">{ar ? a.title : (a.title_en ?? a.title)}</span>
+                  <span className="text-sm text-slate-200">
+                    {ar ? a.title : (a.title_en ?? a.title)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -135,8 +184,19 @@ function BriefingPage() {
               fields={[
                 { key: "title", label: ar ? "العنوان" : "Title", required: true },
                 { key: "title_en", label: ar ? "EN" : "EN" },
-                { key: "level", label: ar ? "المستوى" : "Level", type: "select", options: ["low", "medium", "high", "critical"], defaultValue: "medium" },
-                { key: "probability", label: ar ? "الاحتمال %" : "Probability %", type: "number", defaultValue: 50 },
+                {
+                  key: "level",
+                  label: ar ? "المستوى" : "Level",
+                  type: "select",
+                  options: ["low", "medium", "high", "critical"],
+                  defaultValue: "medium",
+                },
+                {
+                  key: "probability",
+                  label: ar ? "الاحتمال %" : "Probability %",
+                  type: "number",
+                  defaultValue: 50,
+                },
               ]}
               onSubmit={(v) =>
                 risksCreate.mutate({
@@ -158,14 +218,25 @@ function BriefingPage() {
               {risks.map((r) => (
                 <li key={r.id}>
                   <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-slate-200">{ar ? r.title : (r.title_en || r.title)}</span>
+                    <span className="text-slate-200">{ar ? r.title : r.title_en || r.title}</span>
                     <div className="flex items-center gap-2">
-                      <NexusPill tone={r.probability > 70 ? "rose" : r.probability > 50 ? "amber" : "slate"}>{r.level}</NexusPill>
-                      <DeleteButton ar={ar} isPending={risksDelete.isPending} onDelete={() => risksDelete.mutate(r.id)} />
+                      <NexusPill
+                        tone={r.probability > 70 ? "rose" : r.probability > 50 ? "amber" : "slate"}
+                      >
+                        {r.level}
+                      </NexusPill>
+                      <DeleteButton
+                        ar={ar}
+                        isPending={risksDelete.isPending}
+                        onDelete={() => risksDelete.mutate(r.id)}
+                      />
                     </div>
                   </div>
                   <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-                    <div className="h-full rounded-full bg-gradient-to-r from-rose-500/70 to-amber-400/70" style={{ width: `${r.probability}%` }} />
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-rose-500/70 to-amber-400/70"
+                      style={{ width: `${r.probability}%` }}
+                    />
                   </div>
                 </li>
               ))}
@@ -183,7 +254,12 @@ function BriefingPage() {
               fields={[
                 { key: "title", label: ar ? "العنوان" : "Title", required: true },
                 { key: "title_en", label: ar ? "EN" : "EN" },
-                { key: "potential", label: ar ? "الإمكانات %" : "Potential %", type: "number", defaultValue: 70 },
+                {
+                  key: "potential",
+                  label: ar ? "الإمكانات %" : "Potential %",
+                  type: "number",
+                  defaultValue: 70,
+                },
               ]}
               onSubmit={(v) =>
                 oppsCreate.mutate({
@@ -204,14 +280,21 @@ function BriefingPage() {
               {opps.map((o) => (
                 <li key={o.id}>
                   <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-slate-200">{ar ? o.title : (o.title_en || o.title)}</span>
+                    <span className="text-slate-200">{ar ? o.title : o.title_en || o.title}</span>
                     <div className="flex items-center gap-2">
                       <NexusPill tone="emerald">{o.potential}%</NexusPill>
-                      <DeleteButton ar={ar} isPending={oppsDelete.isPending} onDelete={() => oppsDelete.mutate(o.id)} />
+                      <DeleteButton
+                        ar={ar}
+                        isPending={oppsDelete.isPending}
+                        onDelete={() => oppsDelete.mutate(o.id)}
+                      />
                     </div>
                   </div>
                   <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-500/80 to-cyan-400/80" style={{ width: `${o.potential}%` }} />
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500/80 to-cyan-400/80"
+                      style={{ width: `${o.potential}%` }}
+                    />
                   </div>
                 </li>
               ))}
@@ -222,14 +305,22 @@ function BriefingPage() {
         {/* Actions (DB) */}
         <NexusCard>
           <div className="flex items-center justify-between gap-2">
-            <SectionTitle icon={ArrowUpRight} title={ar ? "إجراءات موصى بها" : "Recommended Actions"} />
+            <SectionTitle
+              icon={ArrowUpRight}
+              title={ar ? "إجراءات موصى بها" : "Recommended Actions"}
+            />
             <InlineAddForm
               ar={ar}
               isPending={actionsCreate.isPending}
               fields={[
                 { key: "title", label: ar ? "العنوان" : "Title", required: true },
                 { key: "title_en", label: ar ? "EN" : "EN" },
-                { key: "priority", label: ar ? "الأولوية" : "Priority", type: "number", defaultValue: 70 },
+                {
+                  key: "priority",
+                  label: ar ? "الأولوية" : "Priority",
+                  type: "number",
+                  defaultValue: 70,
+                },
               ]}
               onSubmit={(v) =>
                 actionsCreate.mutate({
@@ -248,14 +339,21 @@ function BriefingPage() {
           ) : (
             <ul className="mt-3 space-y-2">
               {actions.map((a, i) => (
-                <li key={a.id} className="flex items-start justify-between gap-3 rounded-lg border border-cyan-400/15 bg-cyan-400/[0.04] p-3 text-sm text-slate-200">
+                <li
+                  key={a.id}
+                  className="flex items-start justify-between gap-3 rounded-lg border border-cyan-400/15 bg-cyan-400/[0.04] p-3 text-sm text-slate-200"
+                >
                   <div className="flex items-start gap-3 min-w-0">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan-400/40 text-[10px] font-bold text-cyan-300">
                       {i + 1}
                     </span>
-                    <span className="min-w-0">{ar ? a.title : (a.title_en || a.title)}</span>
+                    <span className="min-w-0">{ar ? a.title : a.title_en || a.title}</span>
                   </div>
-                  <DeleteButton ar={ar} isPending={actionsDelete.isPending} onDelete={() => actionsDelete.mutate(a.id)} />
+                  <DeleteButton
+                    ar={ar}
+                    isPending={actionsDelete.isPending}
+                    onDelete={() => actionsDelete.mutate(a.id)}
+                  />
                 </li>
               ))}
             </ul>
@@ -271,10 +369,18 @@ function BriefingPage() {
             {briefings.map((b) => (
               <div key={b.id} className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="text-[10px] font-bold tracking-widest text-cyan-300/80">BRIEFING</div>
-                  <DeleteButton ar={ar} isPending={briefingsDelete.isPending} onDelete={() => briefingsDelete.mutate(b.id)} />
+                  <div className="text-[10px] font-bold tracking-widest text-cyan-300/80">
+                    BRIEFING
+                  </div>
+                  <DeleteButton
+                    ar={ar}
+                    isPending={briefingsDelete.isPending}
+                    onDelete={() => briefingsDelete.mutate(b.id)}
+                  />
                 </div>
-                <div className="mt-1.5 text-sm font-semibold text-white">{ar ? b.title : (b.title_en || b.title)}</div>
+                <div className="mt-1.5 text-sm font-semibold text-white">
+                  {ar ? b.title : b.title_en || b.title}
+                </div>
                 <div className="mt-1 text-[11px] text-slate-500">
                   {new Date(b.generated_at).toLocaleString()}
                 </div>
@@ -287,7 +393,13 @@ function BriefingPage() {
   );
 }
 
-function SectionTitle({ icon: Icon, title }: { icon: React.ComponentType<{ className?: string }>; title: string }) {
+function SectionTitle({
+  icon: Icon,
+  title,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+}) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300">

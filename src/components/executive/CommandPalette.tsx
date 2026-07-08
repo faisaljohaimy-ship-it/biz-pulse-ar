@@ -3,7 +3,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { Search, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-
 type Cmd = {
   id: string;
   title_ar: string;
@@ -22,7 +21,6 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,32 +43,121 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
     }
   }, [open]);
 
-  const commands: Cmd[] = useMemo(() => [
-    { id: "home",       title_ar: "الرئيسية",            title_en: "Home",                 to: "/",                 group: "Navigate" },
-    { id: "hub",        title_ar: "Runtime Hub",         title_en: "Runtime Hub",          to: "/runtime-hub",      group: "Navigate" },
-    { id: "command",    title_ar: "مركز القيادة",        title_en: "Command Center",       to: "/command-center",   group: "Navigate" },
-    { id: "operations", title_ar: "العمليات",             title_en: "Operations",           to: "/operations",       group: "Navigate" },
-    { id: "twin",       title_ar: "التوأم الرقمي",       title_en: "Digital Twin",         to: "/digital-twin",     group: "Navigate" },
-    { id: "hajj",       title_ar: "نظام الحج",            title_en: "Hajj Operations",      to: "/hajj",             group: "Navigate" },
-    { id: "bridge",     title_ar: "جسر تنفيذي",          title_en: "Executive Bridge",     to: "/bridge",           group: "Navigate" },
-    { id: "theater",    title_ar: "المسرح التنفيذي",      title_en: "Executive Theater",    to: "/theater",          group: "Navigate" },
-    { id: "agents",     title_ar: "الوكلاء",             title_en: "Agents",               to: "/agents",           group: "Agents" },
-    { id: "agent-run",  title_ar: "تشغيل وكيل",          title_en: "Run Agent",            to: "/exec",             group: "Agents" },
-    { id: "reports",    title_ar: "التقارير التنفيذية",  title_en: "Executive Reports",    to: "/executive-reports", group: "Reports" },
-    { id: "briefing",   title_ar: "إحاطة الصباح",        title_en: "Morning Briefing",     to: "/briefing",         group: "Reports" },
-    { id: "decisions",  title_ar: "ذكاء القرار",         title_en: "Decision Intelligence", to: "/decisions",        group: "Reports" },
-    { id: "health",     title_ar: "صحة النظام",          title_en: "System Health",        to: "/health",           group: "System" },
-    { id: "diag",       title_ar: "تشخيص",                title_en: "Diagnostics",          to: "/diagnostics",      group: "System" },
-    { id: "cinema",     title_ar: "التجربة التنفيذية",   title_en: "Executive Experience", action: onOpenCinema,    group: "System", hint: "Cinema" },
-  ], [onOpenCinema]);
+  const commands: Cmd[] = useMemo(
+    () => [
+      { id: "home", title_ar: "الرئيسية", title_en: "Home", to: "/", group: "Navigate" },
+      {
+        id: "hub",
+        title_ar: "Runtime Hub",
+        title_en: "Runtime Hub",
+        to: "/runtime-hub",
+        group: "Navigate",
+      },
+      {
+        id: "command",
+        title_ar: "مركز القيادة",
+        title_en: "Command Center",
+        to: "/command-center",
+        group: "Navigate",
+      },
+      {
+        id: "operations",
+        title_ar: "العمليات",
+        title_en: "Operations",
+        to: "/operations",
+        group: "Navigate",
+      },
+      {
+        id: "twin",
+        title_ar: "التوأم الرقمي",
+        title_en: "Digital Twin",
+        to: "/digital-twin",
+        group: "Navigate",
+      },
+      {
+        id: "hajj",
+        title_ar: "نظام الحج",
+        title_en: "Hajj Operations",
+        to: "/hajj",
+        group: "Navigate",
+      },
+      {
+        id: "bridge",
+        title_ar: "جسر تنفيذي",
+        title_en: "Executive Bridge",
+        to: "/bridge",
+        group: "Navigate",
+      },
+      {
+        id: "theater",
+        title_ar: "المسرح التنفيذي",
+        title_en: "Executive Theater",
+        to: "/theater",
+        group: "Navigate",
+      },
+      { id: "agents", title_ar: "الوكلاء", title_en: "Agents", to: "/agents", group: "Agents" },
+      {
+        id: "agent-run",
+        title_ar: "تشغيل وكيل",
+        title_en: "Run Agent",
+        to: "/exec",
+        group: "Agents",
+      },
+      {
+        id: "reports",
+        title_ar: "التقارير التنفيذية",
+        title_en: "Executive Reports",
+        to: "/executive-reports",
+        group: "Reports",
+      },
+      {
+        id: "briefing",
+        title_ar: "إحاطة الصباح",
+        title_en: "Morning Briefing",
+        to: "/briefing",
+        group: "Reports",
+      },
+      {
+        id: "decisions",
+        title_ar: "ذكاء القرار",
+        title_en: "Decision Intelligence",
+        to: "/decisions",
+        group: "Reports",
+      },
+      {
+        id: "health",
+        title_ar: "صحة النظام",
+        title_en: "System Health",
+        to: "/health",
+        group: "System",
+      },
+      {
+        id: "diag",
+        title_ar: "تشخيص",
+        title_en: "Diagnostics",
+        to: "/diagnostics",
+        group: "System",
+      },
+      {
+        id: "cinema",
+        title_ar: "التجربة التنفيذية",
+        title_en: "Executive Experience",
+        action: onOpenCinema,
+        group: "System",
+        hint: "Cinema",
+      },
+    ],
+    [onOpenCinema],
+  );
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return commands;
-    return commands.filter((c) =>
-      c.title_ar.toLowerCase().includes(term) ||
-      c.title_en.toLowerCase().includes(term) ||
-      c.group.toLowerCase().includes(term),
+    return commands.filter(
+      (c) =>
+        c.title_ar.toLowerCase().includes(term) ||
+        c.title_en.toLowerCase().includes(term) ||
+        c.group.toLowerCase().includes(term),
     );
   }, [commands, q]);
 
@@ -113,13 +200,17 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
               if (e.key === "Enter" && filtered[0]) run(filtered[0]);
             }}
           />
-          <kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/60">ESC</kbd>
+          <kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/60">
+            ESC
+          </kbd>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {Object.entries(grouped).map(([group, items]) => (
             <div key={group} className="mb-2">
-              <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/40">{group}</div>
+              <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/40">
+                {group}
+              </div>
               <ul>
                 {items.map((c) => (
                   <li key={c.id}>
@@ -129,8 +220,13 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
                       className={`group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 ${ar ? "text-right" : "text-left"} transition hover:bg-[#3AE8FF]/10 focus:bg-[#3AE8FF]/10 focus:outline-none`}
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-sm text-white">{ar ? c.title_ar : c.title_en}</div>
-                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">{ar ? c.title_en : c.title_ar}{c.hint ? ` · ${c.hint}` : ""}</div>
+                        <div className="truncate text-sm text-white">
+                          {ar ? c.title_ar : c.title_en}
+                        </div>
+                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">
+                          {ar ? c.title_en : c.title_ar}
+                          {c.hint ? ` · ${c.hint}` : ""}
+                        </div>
                       </div>
                       <Arrow className="h-4 w-4 text-white/30 transition group-hover:text-[#3AE8FF]" />
                     </button>
@@ -154,4 +250,3 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
     </div>
   );
 }
-

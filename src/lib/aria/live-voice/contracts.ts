@@ -2,8 +2,14 @@ import { z } from "zod";
 
 export const VoiceLangSchema = z.enum(["ar", "en", "unknown"]);
 export const AudioStateSchema = z.enum([
-  "idle","listening","capturing","transcribing","thinking",
-  "speaking","interrupted","error",
+  "idle",
+  "listening",
+  "capturing",
+  "transcribing",
+  "thinking",
+  "speaking",
+  "interrupted",
+  "error",
 ]);
 
 export const SttResultSchema = z.object({

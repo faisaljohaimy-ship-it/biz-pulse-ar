@@ -3,11 +3,7 @@
 
 export * from "./types";
 export * as OpsContracts from "./contracts";
-export {
-  createControlPlane,
-  classifyPriority,
-  type ControlPlane,
-} from "./control-plane.server";
+export { createControlPlane, classifyPriority, type ControlPlane } from "./control-plane.server";
 export { validateMission, summarizeMissions } from "./mission-control.server";
 export {
   validateIncident,
@@ -21,11 +17,7 @@ export { validateMesh, summarizeMesh } from "./mesh-control.server";
 export { validateTool, summarizeTools } from "./tool-control.server";
 export { validateReadiness, summarizeReadiness } from "./readiness-control.server";
 export { shouldAlert, buildAlert, buildAlerts } from "./alerting.server";
-export {
-  buildEscalation,
-  escalate,
-  resolveEscalation,
-} from "./escalation.server";
+export { buildEscalation, escalate, resolveEscalation } from "./escalation.server";
 export { buildStatusBoard } from "./status-board.server";
 export { buildTimeline } from "./timeline.server";
 export { routeCommand, markExecuted } from "./command-router.server";

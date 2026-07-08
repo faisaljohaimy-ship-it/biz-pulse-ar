@@ -37,7 +37,9 @@ function triggerDownload(file_name: string, mime_type: string, base64: string) {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   const url = URL.createObjectURL(new Blob([bytes], { type: mime_type }));
   const a = document.createElement("a");
-  a.href = url; a.download = file_name; a.click();
+  a.href = url;
+  a.download = file_name;
+  a.click();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
@@ -47,7 +49,11 @@ function Reports() {
   const [day, setDay] = useState(today);
 
   const fetchList = useServerFn(listReports);
-  const { data: reports, isFetching, refetch } = useQuery({
+  const {
+    data: reports,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ["oms-reports"],
     queryFn: () => fetchList(),
     refetchInterval: 60_000,
@@ -70,30 +76,49 @@ function Reports() {
       const r = await getUrl({ data: { report_id } });
       if (r.url) window.open(r.url, "_blank", "noopener");
       else toast.error("الملف غير متاح في التخزين");
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   const list = (reports ?? []) as ReportRow[];
 
   return (
     <div className="space-y-4">
-      <SecPageHeader title="محرك التقارير" subtitle="تقارير حقيقية مولَّدة من بيانات العمليات (PDF · Excel)" />
+      <SecPageHeader
+        title="محرك التقارير"
+        subtitle="تقارير حقيقية مولَّدة من بيانات العمليات (PDF · Excel)"
+      />
 
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-3 text-sm font-medium text-foreground">توليد تقرير عمليات يومي</div>
         <div className="flex flex-wrap items-end gap-2">
           <div className="grid gap-1">
             <label className="text-[10px] text-muted-foreground">التاريخ</label>
-            <Input type="date" value={day} onChange={(e) => setDay(e.target.value)} className="w-44" />
+            <Input
+              type="date"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              className="w-44"
+            />
           </div>
           <Button onClick={() => mDaily.mutate()} disabled={mDaily.isPending} className="gap-1.5">
-            <FileSpreadsheet className="h-4 w-4" /> {mDaily.isPending ? "جارٍ التوليد…" : "توليد Excel"}
+            <FileSpreadsheet className="h-4 w-4" />{" "}
+            {mDaily.isPending ? "جارٍ التوليد…" : "توليد Excel"}
           </Button>
-          <Button variant="outline" onClick={() => refetch()} disabled={isFetching} className="gap-1.5">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="gap-1.5"
+          >
             <RefreshCw className="h-4 w-4" /> تحديث القائمة
           </Button>
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">يجمع البلاغات + أوامر العمل + التصاريح + الأحداث خلال 24 ساعة من التاريخ المحدد ويُحفظ في سجل التقارير.</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          يجمع البلاغات + أوامر العمل + التصاريح + الأحداث خلال 24 ساعة من التاريخ المحدد ويُحفظ في
+          سجل التقارير.
+        </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card">
@@ -105,19 +130,35 @@ function Reports() {
             <li key={r.id} className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 font-medium text-foreground">
-                  {r.format === "pdf" ? <FileText className="h-4 w-4 text-rose-500" /> : <FileSpreadsheet className="h-4 w-4 text-emerald-500" />}
+                  {r.format === "pdf" ? (
+                    <FileText className="h-4 w-4 text-rose-500" />
+                  ) : (
+                    <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                  )}
                   <span className="truncate">{r.title}</span>
                 </div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">
                   <span className="uppercase">{r.kind}</span> · {r.format.toUpperCase()}
-                  {r.related_entity_ref && <> · <span className="font-mono">{r.related_entity_ref}</span></>}
-                  {r.size_bytes != null && <> · {Math.max(1, Math.round(r.size_bytes / 1024))} KB</>}
+                  {r.related_entity_ref && (
+                    <>
+                      {" "}
+                      · <span className="font-mono">{r.related_entity_ref}</span>
+                    </>
+                  )}
+                  {r.size_bytes != null && (
+                    <> · {Math.max(1, Math.round(r.size_bytes / 1024))} KB</>
+                  )}
                   {r.generated_by_name && <> · {r.generated_by_name}</>}
                   <> · {new Date(r.created_at).toLocaleString("ar-SA")}</>
                 </div>
               </div>
               {r.storage_path ? (
-                <Button size="sm" variant="outline" onClick={() => openReport(r.id)} className="gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openReport(r.id)}
+                  className="gap-1.5"
+                >
                   <Download className="h-3.5 w-3.5" /> تنزيل
                 </Button>
               ) : (
@@ -125,7 +166,11 @@ function Reports() {
               )}
             </li>
           ))}
-          {list.length === 0 && <li className="py-10 text-center text-sm text-muted-foreground">لم تُولَّد أي تقارير بعد.</li>}
+          {list.length === 0 && (
+            <li className="py-10 text-center text-sm text-muted-foreground">
+              لم تُولَّد أي تقارير بعد.
+            </li>
+          )}
         </ul>
       </div>
     </div>

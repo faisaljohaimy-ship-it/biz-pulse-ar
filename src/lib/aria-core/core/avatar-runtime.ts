@@ -43,13 +43,21 @@ class AvatarRuntime {
 
   stop(): void {
     if (!this.started) return;
-    this.disposers.splice(0).forEach((d) => { try { d(); } catch { /* isolate */ } });
+    this.disposers.splice(0).forEach((d) => {
+      try {
+        d();
+      } catch {
+        /* isolate */
+      }
+    });
     voiceBrain.stop();
     avatarBrain.shutdown();
     this.started = false;
   }
 
-  isRunning(): boolean { return this.started; }
+  isRunning(): boolean {
+    return this.started;
+  }
 }
 
 export const avatarRuntime = new AvatarRuntime();

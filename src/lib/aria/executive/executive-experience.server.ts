@@ -1,6 +1,15 @@
 // Executive experience coordinator — one-call composition of the daily surface.
 import type { ExecutiveLanguage } from "./types";
-import { assistantBriefing, assistantPriorities, assistantDailySummary, assistantAlerts, assistantInsights, assistantRecommendations, assistantPresence, openAssistant } from "./executive-assistant.server";
+import {
+  assistantBriefing,
+  assistantPriorities,
+  assistantDailySummary,
+  assistantAlerts,
+  assistantInsights,
+  assistantRecommendations,
+  assistantPresence,
+  openAssistant,
+} from "./executive-assistant.server";
 import type { BriefingSource } from "./executive-briefing.server";
 import type { PrioritySource } from "./executive-priorities.server";
 import type { DailySummaryInput } from "./executive-daily-summary.server";
@@ -25,9 +34,7 @@ export function composeExecutiveExperience(input: ExecutiveExperienceInput) {
     presence: assistantPresence(input.scope),
     briefing: assistantBriefing(input.scope, input.language, input.briefing ?? []),
     priorities: assistantPriorities(input.scope, input.priorities ?? []),
-    dailySummary: input.daily
-      ? assistantDailySummary(input.scope, input.daily)
-      : null,
+    dailySummary: input.daily ? assistantDailySummary(input.scope, input.daily) : null,
     alerts: assistantAlerts(input.scope, input.alerts ?? []),
     insights: assistantInsights(input.scope, input.insights ?? []),
     recommendations: assistantRecommendations(input.scope, input.recommendations ?? []),

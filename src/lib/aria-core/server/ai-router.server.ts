@@ -50,10 +50,7 @@ export interface AvailableProviders {
   openrouter: boolean;
 }
 
-export function resolveModel(
-  _intent: AriaIntent,
-  providers: AvailableProviders,
-): ResolvedModel {
+export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
   if (providers.lovable) {
     return {
       vendor: "lovable",

@@ -37,14 +37,7 @@ export type ConfidenceBucket = "high" | "medium" | "low" | "unknown";
 
 export interface EvidenceRef {
   readonly source_id: string;
-  readonly kind:
-    | "image"
-    | "screenshot"
-    | "pdf"
-    | "video"
-    | "audio"
-    | "transcript"
-    | "artifact";
+  readonly kind: "image" | "screenshot" | "pdf" | "video" | "audio" | "transcript" | "artifact";
   readonly locator: string; // page:N / frame:N / region:x,y,w,h / t:start-end
   readonly hash?: string;
   readonly captured_at: string; // ISO

@@ -7,7 +7,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { createLovableAiGatewayProvider, DEFAULT_LOVABLE_MODEL } from "@/lib/ai-gateway.server";
-import { enforceRateLimit, rateLimitResponse, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 
 export const Route = createFileRoute("/api/learn/aria-teach")({
   server: {
@@ -23,7 +27,10 @@ export const Route = createFileRoute("/api/learn/aria-teach")({
         const supabase = createClient(
           process.env.SUPABASE_URL!,
           process.env.SUPABASE_PUBLISHABLE_KEY!,
-          { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false, autoRefreshToken: false } },
+          {
+            global: { headers: { Authorization: authHeader } },
+            auth: { persistSession: false, autoRefreshToken: false },
+          },
         );
         const { data: userData, error: userErr } = await supabase.auth.getUser();
         if (userErr || !userData.user) return new Response("Unauthorized", { status: 401 });
@@ -33,15 +40,19 @@ export const Route = createFileRoute("/api/learn/aria-teach")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
 
-        const body = (await request.json().catch(() => null)) as
-          | { messages?: UIMessage[]; slug?: string; lang?: "ar" | "en" }
-          | null;
+        const body = (await request.json().catch(() => null)) as {
+          messages?: UIMessage[];
+          slug?: string;
+          lang?: "ar" | "en";
+        } | null;
         if (!body?.messages || !body.slug) return new Response("Bad request", { status: 400 });
         const lang: "ar" | "en" = body.lang === "en" ? "en" : "ar";
 
         const { data: lesson, error: lErr } = await supabase
           .from("learn_lessons")
-          .select("aria_system_prompt_ar,aria_system_prompt_en,title_ar,title_en,summary_ar,summary_en,published")
+          .select(
+            "aria_system_prompt_ar,aria_system_prompt_en,title_ar,title_en,summary_ar,summary_en,published",
+          )
           .eq("slug", body.slug)
           .maybeSingle();
         if (lErr || !lesson || !lesson.published) {

@@ -12,11 +12,9 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 function serverClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export interface RecentInteractionRow {
@@ -32,7 +30,10 @@ export interface RecentInteractionRow {
 }
 
 /** Fetch interactions from the last N hours (default 24). Server-only. */
-export async function fetchRecentInteractions(hours = 24, limit = 1000): Promise<RecentInteractionRow[]> {
+export async function fetchRecentInteractions(
+  hours = 24,
+  limit = 1000,
+): Promise<RecentInteractionRow[]> {
   const supabase = serverClient();
   const sinceIso = new Date(Date.now() - hours * 3_600_000).toISOString();
   const { data, error } = await supabase

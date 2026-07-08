@@ -14,11 +14,21 @@ interface ControllerRow {
 
 const R = new Map<string, ControllerRow>();
 
-export function initController(instanceId: string, steps: readonly ShowcaseStep[], mode: ShowcaseMode = "presenter"): ControllerRow {
+export function initController(
+  instanceId: string,
+  steps: readonly ShowcaseStep[],
+  mode: ShowcaseMode = "presenter",
+): ControllerRow {
   const row: ControllerRow = {
-    instanceId, mode, phase: steps[0]?.phase ?? "idle",
-    stepIndex: 0, paused: false, interrupted: false,
-    steps, startedAt: Date.now(), updatedAt: Date.now(),
+    instanceId,
+    mode,
+    phase: steps[0]?.phase ?? "idle",
+    stepIndex: 0,
+    paused: false,
+    interrupted: false,
+    steps,
+    startedAt: Date.now(),
+    updatedAt: Date.now(),
   };
   R.set(instanceId, row);
   return row;
@@ -44,19 +54,27 @@ export function advanceStep(instanceId: string): ShowcaseStep | null {
 export function pause(instanceId: string): void {
   const row = R.get(instanceId);
   if (!row) return;
-  row.paused = true; row.updatedAt = Date.now(); R.set(instanceId, row);
+  row.paused = true;
+  row.updatedAt = Date.now();
+  R.set(instanceId, row);
 }
 
 export function resume(instanceId: string): void {
   const row = R.get(instanceId);
   if (!row) return;
-  row.paused = false; row.interrupted = false; row.updatedAt = Date.now(); R.set(instanceId, row);
+  row.paused = false;
+  row.interrupted = false;
+  row.updatedAt = Date.now();
+  R.set(instanceId, row);
 }
 
 export function interrupt(instanceId: string): void {
   const row = R.get(instanceId);
   if (!row) return;
-  row.interrupted = true; row.phase = "qa"; row.updatedAt = Date.now(); R.set(instanceId, row);
+  row.interrupted = true;
+  row.phase = "qa";
+  row.updatedAt = Date.now();
+  R.set(instanceId, row);
 }
 
 export function recover(instanceId: string): ShowcasePhase | null {
@@ -72,7 +90,9 @@ export function recover(instanceId: string): ShowcasePhase | null {
 export function setMode(instanceId: string, mode: ShowcaseMode): void {
   const row = R.get(instanceId);
   if (!row) return;
-  row.mode = mode; row.updatedAt = Date.now(); R.set(instanceId, row);
+  row.mode = mode;
+  row.updatedAt = Date.now();
+  R.set(instanceId, row);
 }
 
 export interface ControllerSnapshot {
@@ -103,4 +123,6 @@ export function controllerSnapshot(instanceId: string): ControllerSnapshot | nul
   };
 }
 
-export function disposeController(instanceId: string): void { R.delete(instanceId); }
+export function disposeController(instanceId: string): void {
+  R.delete(instanceId);
+}

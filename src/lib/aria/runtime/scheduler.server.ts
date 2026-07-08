@@ -85,7 +85,10 @@ export function schedule(req: SchedulingRequest): SchedulingDecision {
       reason = "dependencies satisfied";
       break;
     case "recursive":
-      selected = pool.filter((r) => depsSatisfied(r, byId)).sort(byPriority).slice(0, req.limit);
+      selected = pool
+        .filter((r) => depsSatisfied(r, byId))
+        .sort(byPriority)
+        .slice(0, req.limit);
       reason = "recursive expansion (dep+priority)";
       break;
     case "round_robin": {

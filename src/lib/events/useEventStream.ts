@@ -124,7 +124,11 @@ export function useEventStream(filter: EventFilter = {}) {
     return () => {
       alive = false;
       if (channel) {
-        try { void supabase.removeChannel(channel); } catch { /* noop */ }
+        try {
+          void supabase.removeChannel(channel);
+        } catch {
+          /* noop */
+        }
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

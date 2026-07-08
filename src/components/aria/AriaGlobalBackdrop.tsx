@@ -19,8 +19,7 @@ export function AriaGlobalBackdrop() {
   // scene and her opacity stays near-solid so she reads as a real presence,
   // not a faded backdrop. Mobile keeps softer values so foreground text
   // remains legible on narrow viewports.
-  const mediaOpacity =
-    state === "speaking" ? 0.95 : state === "listening" ? 0.88 : 0.75;
+  const mediaOpacity = state === "speaking" ? 0.95 : state === "listening" ? 0.88 : 0.75;
 
   return (
     <div
@@ -31,7 +30,6 @@ export function AriaGlobalBackdrop() {
       style={{ background: "transparent" }}
       suppressHydrationWarning
     >
-
       {/* Soft radial cyan glow behind her */}
       <div
         className="absolute left-1/2 top-[38%] h-[75vh] w-[95vw] max-w-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -74,10 +72,8 @@ export function AriaGlobalBackdrop() {
             "linear-gradient(180deg, transparent 0%, rgba(4,7,15,0.4) 55%, rgba(4,7,15,0.85) 100%)",
         }}
       />
-
     </div>
   );
 }
-
 
 export default AriaGlobalBackdrop;

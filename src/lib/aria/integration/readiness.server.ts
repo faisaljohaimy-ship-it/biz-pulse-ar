@@ -17,18 +17,17 @@ export function evaluateIntegrationReadiness(): IntegrationReadinessReport {
   for (const desc of listConnectors()) {
     const auth = evaluateAuth(desc.id);
     const health = probeCredentialHealth(desc);
-    const status: IntegrationReadinessGate["status"] =
-      !auth
-        ? "fail"
-        : !auth.ready
-          ? "unknown"
-          : health.status === "healthy"
-            ? "pass"
-            : health.status === "unhealthy"
-              ? "fail"
-              : health.status === "degraded"
-                ? "warn"
-                : "unknown";
+    const status: IntegrationReadinessGate["status"] = !auth
+      ? "fail"
+      : !auth.ready
+        ? "unknown"
+        : health.status === "healthy"
+          ? "pass"
+          : health.status === "unhealthy"
+            ? "fail"
+            : health.status === "degraded"
+              ? "warn"
+              : "unknown";
     gates.push({
       connector_id: desc.id,
       status,

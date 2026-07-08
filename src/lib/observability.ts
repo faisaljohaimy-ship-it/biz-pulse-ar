@@ -6,14 +6,26 @@ import { supabase } from "@/integrations/supabase/client";
  */
 
 export type AuditAction =
-  | "view" | "create" | "update" | "delete"
-  | "ai.chat" | "ai.tts" | "ai.stt"
-  | "auth.signin" | "auth.signout"
-  | "export" | "publish";
+  | "view"
+  | "create"
+  | "update"
+  | "delete"
+  | "ai.chat"
+  | "ai.tts"
+  | "ai.stt"
+  | "auth.signin"
+  | "auth.signout"
+  | "export"
+  | "publish";
 
 export async function logAudit(
   action: AuditAction | string,
-  opts: { entity?: string; entityId?: string; route?: string; metadata?: Record<string, unknown> } = {},
+  opts: {
+    entity?: string;
+    entityId?: string;
+    route?: string;
+    metadata?: Record<string, unknown>;
+  } = {},
 ) {
   try {
     const { data } = await supabase.auth.getUser();
@@ -53,7 +65,7 @@ export async function logAiUsage(u: AiUsage) {
       feature: u.feature ?? null,
       prompt_tokens: u.promptTokens ?? 0,
       completion_tokens: u.completionTokens ?? 0,
-      total_tokens: u.totalTokens ?? ((u.promptTokens ?? 0) + (u.completionTokens ?? 0)),
+      total_tokens: u.totalTokens ?? (u.promptTokens ?? 0) + (u.completionTokens ?? 0),
       cost_usd: u.costUsd ?? 0,
       latency_ms: u.latencyMs ?? null,
     });
@@ -74,7 +86,10 @@ export async function bench<T>(label: string, fn: () => Promise<T>, slowMs = 200
     return out;
   } catch (err) {
     const dur = Math.round(performance.now() - t0);
-    void logAudit("perf.error", { entity: label, metadata: { duration_ms: dur, error: String(err) } });
+    void logAudit("perf.error", {
+      entity: label,
+      metadata: { duration_ms: dur, error: String(err) },
+    });
     throw err;
   }
 }

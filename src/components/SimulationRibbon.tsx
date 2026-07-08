@@ -14,7 +14,9 @@ export function SimulationRibbon() {
       <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
       <span>
         بيئة محاكاة مرجعية · البيانات المعروضة موسومة{" "}
-        <code className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-50 font-mono">is_simulation = true</code>{" "}
+        <code className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-50 font-mono">
+          is_simulation = true
+        </code>{" "}
         ولا تمثّل عميلاً حقيقياً
       </span>
     </div>

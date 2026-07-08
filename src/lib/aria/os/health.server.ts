@@ -10,16 +10,11 @@ import { emitOSEvent } from "./events";
 import { planningHealth } from "../planning";
 import { assessHealth as executionAssessHealth } from "../execution";
 import { reasoningHealth as cognitionHealth } from "../cognition";
-import type {
-  ExecutiveHealth,
-  ExecutiveHealthLevel,
-} from "./types";
+import type { ExecutiveHealth, ExecutiveHealthLevel } from "./types";
 
 let LAST_LEVEL: ExecutiveHealthLevel | null = null;
 
-function pickWorst(
-  ...levels: ReadonlyArray<ExecutiveHealthLevel>
-): ExecutiveHealthLevel {
+function pickWorst(...levels: ReadonlyArray<ExecutiveHealthLevel>): ExecutiveHealthLevel {
   if (levels.includes("unhealthy")) return "unhealthy";
   if (levels.includes("degraded")) return "degraded";
   return "healthy";

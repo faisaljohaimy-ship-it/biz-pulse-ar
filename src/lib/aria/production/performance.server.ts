@@ -46,8 +46,9 @@ function percentile(values: number[], p: number): number {
 function readMemory(): { rss_mb: number | null; heap_mb: number | null } {
   try {
     // process.memoryUsage may be unavailable in Worker runtime — degrade to null.
-    const mu = (globalThis as unknown as { process?: { memoryUsage?: () => NodeJS.MemoryUsage } })
-      .process?.memoryUsage?.();
+    const mu = (
+      globalThis as unknown as { process?: { memoryUsage?: () => NodeJS.MemoryUsage } }
+    ).process?.memoryUsage?.();
     if (!mu) return { rss_mb: null, heap_mb: null };
     return {
       rss_mb: Math.round(mu.rss / 1024 / 1024),

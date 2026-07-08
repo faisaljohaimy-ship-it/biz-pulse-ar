@@ -29,11 +29,11 @@ export function learnFromSamples(input: {
   }
   const first = relevant[0];
   const last = relevant[relevant.length - 1];
-  const dt =
-    (Date.parse(last.capturedAt) - Date.parse(first.capturedAt)) || 1;
+  const dt = Date.parse(last.capturedAt) - Date.parse(first.capturedAt) || 1;
   const slope = (last.value - first.value) / dt;
   let trend: LearningSignal["trend"] = "flat";
-  if (slope > 0) trend = "regressing"; // convention: higher = worse for latency/error metrics
+  if (slope > 0)
+    trend = "regressing"; // convention: higher = worse for latency/error metrics
   else if (slope < 0) trend = "improving";
   return {
     subject: input.subject,

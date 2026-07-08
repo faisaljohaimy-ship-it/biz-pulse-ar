@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { getFabricSnapshot, getPredictions, type FabricSnapshot, type PredictionsPayload } from "@/lib/intelligence.functions";
+import {
+  getFabricSnapshot,
+  getPredictions,
+  type FabricSnapshot,
+  type PredictionsPayload,
+} from "@/lib/intelligence.functions";
 
 const EMPTY: FabricSnapshot = {
   metrics: [],

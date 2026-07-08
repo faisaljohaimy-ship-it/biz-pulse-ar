@@ -9,7 +9,13 @@ export const Route = createFileRoute("/_authenticated/sec/timeline")({
   component: Timeline,
 });
 
-type Ev = { t: string; icon: React.ComponentType<{ className?: string }>; title: string; sub: string; sev?: string };
+type Ev = {
+  t: string;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  sub: string;
+  sev?: string;
+};
 
 function Timeline() {
   const fetchOverview = useServerFn(getSecOverview);
@@ -17,16 +23,50 @@ function Timeline() {
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 
   const events: Ev[] = [
-    ...data.incidents.map((i) => ({ t: i.reported_at, icon: AlertTriangle, title: `بلاغ: ${i.title_ar}`, sub: `${i.ref} · ${i.category}`, sev: i.severity })),
-    ...data.patrols.filter(p => p.started_at).map((p) => ({ t: p.started_at!, icon: Radar, title: `دورية ${p.team}`, sub: `${p.route} · ${p.status}` })),
-    ...data.visitors.map((v) => ({ t: v.check_in_at, icon: UserCheck, title: `دخول زائر: ${v.full_name}`, sub: `مضيف: ${v.host}` })),
-    ...data.cctv.map((c) => ({ t: c.detected_at, icon: Camera, title: `CCTV: ${c.alert_type}`, sub: `${c.camera_code} · ثقة ${Math.round(c.confidence*100)}%` })),
-    ...data.permits.map((p) => ({ t: p.starts_at, icon: FileBadge, title: `تصريح: ${p.work_type}`, sub: `${p.contractor} · ${p.status}`, sev: p.risk_level })),
-  ].sort((a, b) => new Date(b.t).getTime() - new Date(a.t).getTime()).slice(0, 80);
+    ...data.incidents.map((i) => ({
+      t: i.reported_at,
+      icon: AlertTriangle,
+      title: `بلاغ: ${i.title_ar}`,
+      sub: `${i.ref} · ${i.category}`,
+      sev: i.severity,
+    })),
+    ...data.patrols
+      .filter((p) => p.started_at)
+      .map((p) => ({
+        t: p.started_at!,
+        icon: Radar,
+        title: `دورية ${p.team}`,
+        sub: `${p.route} · ${p.status}`,
+      })),
+    ...data.visitors.map((v) => ({
+      t: v.check_in_at,
+      icon: UserCheck,
+      title: `دخول زائر: ${v.full_name}`,
+      sub: `مضيف: ${v.host}`,
+    })),
+    ...data.cctv.map((c) => ({
+      t: c.detected_at,
+      icon: Camera,
+      title: `CCTV: ${c.alert_type}`,
+      sub: `${c.camera_code} · ثقة ${Math.round(c.confidence * 100)}%`,
+    })),
+    ...data.permits.map((p) => ({
+      t: p.starts_at,
+      icon: FileBadge,
+      title: `تصريح: ${p.work_type}`,
+      sub: `${p.contractor} · ${p.status}`,
+      sev: p.risk_level,
+    })),
+  ]
+    .sort((a, b) => new Date(b.t).getTime() - new Date(a.t).getTime())
+    .slice(0, 80);
 
   return (
     <div className="space-y-4">
-      <SecPageHeader title="الخط الزمني للعمليات" subtitle={`${events.length} حدث — مرتّبة من الأحدث`} />
+      <SecPageHeader
+        title="الخط الزمني للعمليات"
+        subtitle={`${events.length} حدث — مرتّبة من الأحدث`}
+      />
       <div className="rounded-xl border border-border bg-card p-4">
         <ol className="relative space-y-3 ps-6">
           <span className="absolute inset-y-0 start-2 w-px bg-border" aria-hidden />
@@ -38,9 +78,17 @@ function Timeline() {
               <div className="flex items-start justify-between gap-3 text-sm">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-foreground">{e.title}</div>
-                  <div className="text-[11px] text-muted-foreground">{e.sub} · {new Date(e.t).toLocaleString("ar-SA")}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {e.sub} · {new Date(e.t).toLocaleString("ar-SA")}
+                  </div>
                 </div>
-                {e.sev && <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] ${severityClass(e.sev)}`}>{e.sev}</span>}
+                {e.sev && (
+                  <span
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] ${severityClass(e.sev)}`}
+                  >
+                    {e.sev}
+                  </span>
+                )}
               </div>
             </li>
           ))}

@@ -22,9 +22,11 @@ export interface CredentialVault {
 
 function envValue(name: string): string | null {
   try {
-    const env = (globalThis as unknown as {
-      process?: { env?: Record<string, string | undefined> };
-    }).process?.env;
+    const env = (
+      globalThis as unknown as {
+        process?: { env?: Record<string, string | undefined> };
+      }
+    ).process?.env;
     const v = env?.[name];
     return typeof v === "string" && v.length > 0 ? v : null;
   } catch {
@@ -44,7 +46,7 @@ class EnvVault implements CredentialVault {
     return {
       name,
       present,
-      use: async <T,>(fn: (value: string) => Promise<T> | T): Promise<T | null> => {
+      use: async <T>(fn: (value: string) => Promise<T> | T): Promise<T | null> => {
         const v = envValue(name);
         if (v === null) return null;
         try {

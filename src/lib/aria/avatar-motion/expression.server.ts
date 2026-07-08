@@ -11,7 +11,12 @@ export interface ExpressionSample {
 
 export class ExpressionEngine {
   private current: MotionEmotion = "confident";
-  private sample: ExpressionSample = { browLift: 0.05, mouthCurve: 0.35, eyeOpenness: 0.85, headTiltDeg: 0 };
+  private sample: ExpressionSample = {
+    browLift: 0.05,
+    mouthCurve: 0.35,
+    eyeOpenness: 0.85,
+    headTiltDeg: 0,
+  };
 
   set(emotion: MotionEmotion): void {
     if (this.current === emotion) return;
@@ -25,6 +30,10 @@ export class ExpressionEngine {
     };
   }
 
-  get emotion(): MotionEmotion { return this.current; }
-  get(): ExpressionSample { return this.sample; }
+  get emotion(): MotionEmotion {
+    return this.current;
+  }
+  get(): ExpressionSample {
+    return this.sample;
+  }
 }

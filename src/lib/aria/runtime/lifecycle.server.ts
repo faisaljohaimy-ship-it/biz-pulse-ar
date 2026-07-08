@@ -59,7 +59,14 @@ export function transition(
     patch.finished_at = now;
   }
   updateAgent(agentId, patch);
-  const evt: LifecycleTransition = { agent_id: agentId, from: rec.state, to, reason, at: now, actor };
+  const evt: LifecycleTransition = {
+    agent_id: agentId,
+    from: rec.state,
+    to,
+    reason,
+    at: now,
+    actor,
+  };
   transitions.push(evt);
   if (transitions.length > 5000) transitions.splice(0, transitions.length - 5000);
   return evt;

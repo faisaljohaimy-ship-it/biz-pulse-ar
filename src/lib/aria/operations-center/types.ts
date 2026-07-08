@@ -19,11 +19,7 @@ export type CommandStatus =
   | "executed"
   | "blocked"
   | "unknown";
-export type EngineDecision =
-  | "GO"
-  | "NO_GO"
-  | "GO_WITH_KNOWN_LIMITATIONS"
-  | "UNKNOWN";
+export type EngineDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 
 export interface EvidenceRef {
   readonly source: string;

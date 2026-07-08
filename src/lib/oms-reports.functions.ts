@@ -40,15 +40,30 @@ function arabicToAscii(s: string): string {
 // ───────────────────────────────────────────────────────────────────────────
 // Incident PDF
 // ───────────────────────────────────────────────────────────────────────────
-async function buildIncidentPdf(inc: {
-  ref: string; title_ar: string; title_en: string | null; category: string;
-  severity: string; priority: string | null; status: string;
-  ai_risk_score: number | null; ai_summary: string | null;
-  reported_at: string; resolved_at: string | null; response_minutes: number | null;
-  owner: string | null; assigned_to: string | null;
-  root_cause: string | null; executive_review: string | null;
-  corrective_actions: unknown; attachments: unknown; escalated: boolean;
-}, timeline: Array<{ event: string; actor_name: string | null; occurred_at: string }>): Promise<Uint8Array> {
+async function buildIncidentPdf(
+  inc: {
+    ref: string;
+    title_ar: string;
+    title_en: string | null;
+    category: string;
+    severity: string;
+    priority: string | null;
+    status: string;
+    ai_risk_score: number | null;
+    ai_summary: string | null;
+    reported_at: string;
+    resolved_at: string | null;
+    response_minutes: number | null;
+    owner: string | null;
+    assigned_to: string | null;
+    root_cause: string | null;
+    executive_review: string | null;
+    corrective_actions: unknown;
+    attachments: unknown;
+    escalated: boolean;
+  },
+  timeline: Array<{ event: string; actor_name: string | null; occurred_at: string }>,
+): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -62,11 +77,23 @@ async function buildIncidentPdf(inc: {
   const accent = rgb(0, 0.55, 0.85);
   const muted = rgb(0.4, 0.45, 0.55);
 
-  const drawText = (text: string, opts: { x?: number; size?: number; bold?: boolean; color?: ReturnType<typeof rgb> } = {}) => {
+  const drawText = (
+    text: string,
+    opts: { x?: number; size?: number; bold?: boolean; color?: ReturnType<typeof rgb> } = {},
+  ) => {
     const x = opts.x ?? 40;
     const size = opts.size ?? 10;
-    if (y < 50) { page = pdf.addPage([595.28, 841.89]); y = height - 50; }
-    page.drawText(sanitize(arabicToAscii(text), 400), { x, y, size, font: opts.bold ? bold : font, color: opts.color ?? ink });
+    if (y < 50) {
+      page = pdf.addPage([595.28, 841.89]);
+      y = height - 50;
+    }
+    page.drawText(sanitize(arabicToAscii(text), 400), {
+      x,
+      y,
+      size,
+      font: opts.bold ? bold : font,
+      color: opts.color ?? ink,
+    });
     y -= size + 6;
   };
 
@@ -77,8 +104,20 @@ async function buildIncidentPdf(inc: {
 
   // Header
   page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(0.02, 0.1, 0.18) });
-  page.drawText("NEXUS AI OS — Incident Report", { x: 40, y: height - 40, size: 16, font: bold, color: rgb(1, 1, 1) });
-  page.drawText(`Industrial Security · Western Region · ${new Date().toISOString().slice(0, 10)}`, { x: 40, y: height - 60, size: 9, font, color: rgb(0.7, 0.85, 1) });
+  page.drawText("NEXUS AI OS — Incident Report", {
+    x: 40,
+    y: height - 40,
+    size: 16,
+    font: bold,
+    color: rgb(1, 1, 1),
+  });
+  page.drawText(`Industrial Security · Western Region · ${new Date().toISOString().slice(0, 10)}`, {
+    x: 40,
+    y: height - 60,
+    size: 9,
+    font,
+    color: rgb(0.7, 0.85, 1),
+  });
   y = height - 110;
 
   drawText(`Incident Ref: ${inc.ref}`, { bold: true, size: 13, color: accent });
@@ -87,14 +126,21 @@ async function buildIncidentPdf(inc: {
   hr();
 
   drawText("Classification", { bold: true, size: 11, color: accent });
-  drawText(`Category: ${inc.category}    Severity: ${inc.severity.toUpperCase()}    Priority: ${(inc.priority ?? "—").toUpperCase()}    Status: ${inc.status.toUpperCase()}`);
-  drawText(`Risk Score: ${inc.ai_risk_score ?? "—"}/100${inc.escalated ? "    *** ESCALATED ***" : ""}`);
+  drawText(
+    `Category: ${inc.category}    Severity: ${inc.severity.toUpperCase()}    Priority: ${(inc.priority ?? "—").toUpperCase()}    Status: ${inc.status.toUpperCase()}`,
+  );
+  drawText(
+    `Risk Score: ${inc.ai_risk_score ?? "—"}/100${inc.escalated ? "    *** ESCALATED ***" : ""}`,
+  );
   hr();
 
   drawText("Ownership", { bold: true, size: 11, color: accent });
   drawText(`Owner: ${inc.owner ?? "—"}    Assigned to: ${inc.assigned_to ?? "—"}`);
   drawText(`Reported: ${new Date(inc.reported_at).toISOString().replace("T", " ").slice(0, 19)}`);
-  if (inc.resolved_at) drawText(`Resolved: ${new Date(inc.resolved_at).toISOString().replace("T", " ").slice(0, 19)}   (response ${inc.response_minutes ?? "—"} min)`);
+  if (inc.resolved_at)
+    drawText(
+      `Resolved: ${new Date(inc.resolved_at).toISOString().replace("T", " ").slice(0, 19)}   (response ${inc.response_minutes ?? "—"} min)`,
+    );
   hr();
 
   if (inc.ai_summary) {
@@ -115,32 +161,63 @@ async function buildIncidentPdf(inc: {
     hr();
   }
 
-  const acts = Array.isArray(inc.corrective_actions) ? inc.corrective_actions as Array<{ action: string; owner?: string; added_at?: string; done?: boolean }> : [];
+  const acts = Array.isArray(inc.corrective_actions)
+    ? (inc.corrective_actions as Array<{
+        action: string;
+        owner?: string;
+        added_at?: string;
+        done?: boolean;
+      }>)
+    : [];
   if (acts.length) {
     drawText(`Corrective Actions (${acts.length})`, { bold: true, size: 11, color: accent });
-    acts.forEach((a, i) => drawText(`${i + 1}. [${a.done ? "DONE" : "OPEN"}] ${a.action}   — ${a.owner ?? "—"}`));
+    acts.forEach((a, i) =>
+      drawText(`${i + 1}. [${a.done ? "DONE" : "OPEN"}] ${a.action}   — ${a.owner ?? "—"}`),
+    );
     hr();
   }
 
-  const atts = Array.isArray(inc.attachments) ? inc.attachments as Array<{ file_name: string; uploaded_at?: string; uploaded_by?: string }> : [];
+  const atts = Array.isArray(inc.attachments)
+    ? (inc.attachments as Array<{ file_name: string; uploaded_at?: string; uploaded_by?: string }>)
+    : [];
   if (atts.length) {
     drawText(`Attachments (${atts.length})`, { bold: true, size: 11, color: accent });
-    atts.forEach((a, i) => drawText(`${i + 1}. ${a.file_name}   — ${a.uploaded_by ?? "—"}   ${a.uploaded_at?.slice(0, 19) ?? ""}`));
+    atts.forEach((a, i) =>
+      drawText(
+        `${i + 1}. ${a.file_name}   — ${a.uploaded_by ?? "—"}   ${a.uploaded_at?.slice(0, 19) ?? ""}`,
+      ),
+    );
     hr();
   }
 
   if (timeline.length) {
-    drawText(`Activity Timeline (${timeline.length} events)`, { bold: true, size: 11, color: accent });
-    timeline.slice(0, 25).forEach((e) =>
-      drawText(`• ${e.occurred_at.slice(0, 19).replace("T", " ")}   ${e.event}   — ${e.actor_name ?? "—"}`, { size: 9, color: muted }),
-    );
-    if (timeline.length > 25) drawText(`… and ${timeline.length - 25} more events`, { size: 9, color: muted });
+    drawText(`Activity Timeline (${timeline.length} events)`, {
+      bold: true,
+      size: 11,
+      color: accent,
+    });
+    timeline
+      .slice(0, 25)
+      .forEach((e) =>
+        drawText(
+          `• ${e.occurred_at.slice(0, 19).replace("T", " ")}   ${e.event}   — ${e.actor_name ?? "—"}`,
+          { size: 9, color: muted },
+        ),
+      );
+    if (timeline.length > 25)
+      drawText(`… and ${timeline.length - 25} more events`, { size: 9, color: muted });
   }
 
   // Footer
   const totalPages = pdf.getPageCount();
   pdf.getPages().forEach((p, i) => {
-    p.drawText(`Generated by NEXUS AI OS — Page ${i + 1} / ${totalPages}`, { x: 40, y: 25, size: 8, font, color: muted });
+    p.drawText(`Generated by NEXUS AI OS — Page ${i + 1} / ${totalPages}`, {
+      x: 40,
+      y: 25,
+      size: 8,
+      font,
+      color: muted,
+    });
     p.drawText(`Ref: ${inc.ref}`, { x: width - 120, y: 25, size: 8, font, color: muted });
   });
 
@@ -150,14 +227,17 @@ async function buildIncidentPdf(inc: {
 export const generateIncidentReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      incident_id: z.string().uuid(),
-      format: z.enum(["pdf", "xlsx"]).default("pdf"),
-    }).parse(d),
+    z
+      .object({
+        incident_id: z.string().uuid(),
+        format: z.enum(["pdf", "xlsx"]).default("pdf"),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
 
     const { data: inc, error } = await supabase
       .from("sec_incidents")
@@ -172,7 +252,12 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
       .eq("entity_type", "incident")
       .eq("entity_id", data.incident_id)
       .order("occurred_at", { ascending: true });
-    const timeline = (events ?? []) as Array<{ event: string; actor_name: string | null; occurred_at: string; payload: unknown }>;
+    const timeline = (events ?? []) as Array<{
+      event: string;
+      actor_name: string | null;
+      occurred_at: string;
+      payload: unknown;
+    }>;
 
     let bytes: Uint8Array;
     let mime: string;
@@ -207,16 +292,34 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
       ]);
       XLSX.utils.book_append_sheet(wb, summary, "Incident");
 
-      const acts = Array.isArray(inc.corrective_actions) ? inc.corrective_actions as Array<{ action: string; owner?: string; added_at?: string; done?: boolean }> : [];
+      const acts = Array.isArray(inc.corrective_actions)
+        ? (inc.corrective_actions as Array<{
+            action: string;
+            owner?: string;
+            added_at?: string;
+            done?: boolean;
+          }>)
+        : [];
       const actsSheet = XLSX.utils.aoa_to_sheet([
         ["#", "Action", "Owner", "Added", "Done"],
-        ...acts.map((a, i) => [i + 1, a.action, a.owner ?? "", a.added_at ?? "", a.done ? "YES" : "NO"]),
+        ...acts.map((a, i) => [
+          i + 1,
+          a.action,
+          a.owner ?? "",
+          a.added_at ?? "",
+          a.done ? "YES" : "NO",
+        ]),
       ]);
       XLSX.utils.book_append_sheet(wb, actsSheet, "Corrective Actions");
 
       const tlSheet = XLSX.utils.aoa_to_sheet([
         ["Timestamp", "Event", "Actor", "Payload"],
-        ...timeline.map((e) => [e.occurred_at, e.event, e.actor_name ?? "", JSON.stringify(e.payload ?? {})]),
+        ...timeline.map((e) => [
+          e.occurred_at,
+          e.event,
+          e.actor_name ?? "",
+          JSON.stringify(e.payload ?? {}),
+        ]),
       ]);
       XLSX.utils.book_append_sheet(wb, tlSheet, "Timeline");
 
@@ -227,10 +330,12 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
 
     // Upload to storage + log in sec_reports
     const storage_path = `incident-reports/${inc.ref}-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from(REPORT_BUCKET).upload(storage_path, bytes, {
-      contentType: mime,
-      upsert: false,
-    });
+    const { error: upErr } = await supabase.storage
+      .from(REPORT_BUCKET)
+      .upload(storage_path, bytes, {
+        contentType: mime,
+        upsert: false,
+      });
     if (upErr) console.warn("[report upload]", upErr.message);
 
     const { data: reportRow } = await supabase
@@ -276,22 +381,52 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
 export const generateDailyOperationsReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    }).parse(d),
+    z
+      .object({
+        date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const actorName = (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    const actorName =
+      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
     const day = data.date ?? new Date().toISOString().slice(0, 10);
     const from = new Date(`${day}T00:00:00.000Z`).toISOString();
     const to = new Date(new Date(from).getTime() + 24 * 3600 * 1000).toISOString();
 
     const [inc, wo, perm, acts] = await Promise.all([
-      supabase.from("sec_incidents").select("ref,title_ar,category,severity,status,priority,ai_risk_score,owner,assigned_to,reported_at,resolved_at,response_minutes,escalated").gte("reported_at", from).lt("reported_at", to).order("reported_at"),
-      supabase.from("sec_work_orders").select("ref,title_ar,kind,status,priority,assigned_to,contractor,opened_at,due_at,closed_at").gte("opened_at", from).lt("opened_at", to).order("opened_at"),
-      supabase.from("sec_permits").select("ref,work_type,contractor,risk_level,status,starts_at,ends_at").gte("starts_at", from).lt("starts_at", to).order("starts_at"),
-      supabase.from("sec_activity_events").select("entity_type,entity_ref,event,actor_name,occurred_at").gte("occurred_at", from).lt("occurred_at", to).order("occurred_at"),
+      supabase
+        .from("sec_incidents")
+        .select(
+          "ref,title_ar,category,severity,status,priority,ai_risk_score,owner,assigned_to,reported_at,resolved_at,response_minutes,escalated",
+        )
+        .gte("reported_at", from)
+        .lt("reported_at", to)
+        .order("reported_at"),
+      supabase
+        .from("sec_work_orders")
+        .select(
+          "ref,title_ar,kind,status,priority,assigned_to,contractor,opened_at,due_at,closed_at",
+        )
+        .gte("opened_at", from)
+        .lt("opened_at", to)
+        .order("opened_at"),
+      supabase
+        .from("sec_permits")
+        .select("ref,work_type,contractor,risk_level,status,starts_at,ends_at")
+        .gte("starts_at", from)
+        .lt("starts_at", to)
+        .order("starts_at"),
+      supabase
+        .from("sec_activity_events")
+        .select("entity_type,entity_ref,event,actor_name,occurred_at")
+        .gte("occurred_at", from)
+        .lt("occurred_at", to)
+        .order("occurred_at"),
     ]);
 
     const XLSX = await import("xlsx");
@@ -313,33 +448,21 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
     ]);
     XLSX.utils.book_append_sheet(wb, overview, "Overview");
 
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet(inc.data ?? []),
-      "Incidents",
-    );
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet(wo.data ?? []),
-      "Work Orders",
-    );
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet(perm.data ?? []),
-      "Permits",
-    );
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet(acts.data ?? []),
-      "Activity",
-    );
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inc.data ?? []), "Incidents");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(wo.data ?? []), "Work Orders");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perm.data ?? []), "Permits");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(acts.data ?? []), "Activity");
 
-    const bytes = new Uint8Array(XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer);
+    const bytes = new Uint8Array(
+      XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer,
+    );
     const storage_path = `daily-reports/${day}-${Date.now()}.xlsx`;
-    const { error: upErr } = await supabase.storage.from(REPORT_BUCKET).upload(storage_path, bytes, {
-      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      upsert: false,
-    });
+    const { error: upErr } = await supabase.storage
+      .from(REPORT_BUCKET)
+      .upload(storage_path, bytes, {
+        contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        upsert: false,
+      });
     if (upErr) console.warn("[daily report upload]", upErr.message);
 
     const { data: reportRow } = await supabase
@@ -395,8 +518,9 @@ export const getReportDownloadUrl = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     if (!row?.storage_path) return { url: null };
-    const { data: signed, error: e2 } = await context.supabase
-      .storage.from(REPORT_BUCKET).createSignedUrl(row.storage_path, 600);
+    const { data: signed, error: e2 } = await context.supabase.storage
+      .from(REPORT_BUCKET)
+      .createSignedUrl(row.storage_path, 600);
     if (e2) throw new Error(e2.message);
     return { url: signed.signedUrl };
   });

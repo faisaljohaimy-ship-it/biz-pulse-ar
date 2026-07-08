@@ -46,19 +46,34 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let channel: any = null;
     try {
-      const invalidate = () =>
-        qc.invalidateQueries({ queryKey: ["enterprise-runtime"] });
+      const invalidate = () => qc.invalidateQueries({ queryKey: ["enterprise-runtime"] });
       channel = supabase.channel(topic);
-      channel.on("postgres_changes", { event: "*", schema: "public", table: "sec_incidents" }, invalidate);
-      channel.on("postgres_changes", { event: "*", schema: "public", table: "sec_cctv_alerts" }, invalidate);
-      channel.on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, invalidate);
+      channel.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "sec_incidents" },
+        invalidate,
+      );
+      channel.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "sec_cctv_alerts" },
+        invalidate,
+      );
+      channel.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "agent_runs" },
+        invalidate,
+      );
       channel.subscribe();
     } catch (err) {
       console.warn("[runtime] realtime unavailable", err);
     }
     return () => {
       if (channel) {
-        try { void supabase.removeChannel(channel); } catch { /* noop */ }
+        try {
+          void supabase.removeChannel(channel);
+        } catch {
+          /* noop */
+        }
       }
     };
   }, [hasData, qc]);
@@ -70,7 +85,12 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
     return <InitializingShell error={null} />;
   }
   if (isError) {
-    return <InitializingShell error={error instanceof Error ? error.message : "Bootstrap failed"} onRetry={() => refetch()} />;
+    return (
+      <InitializingShell
+        error={error instanceof Error ? error.message : "Bootstrap failed"}
+        onRetry={() => refetch()}
+      />
+    );
   }
 
   const value: RuntimeContextValue = { ...data, refresh: refetch };

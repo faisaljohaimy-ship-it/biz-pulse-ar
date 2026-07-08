@@ -30,14 +30,8 @@ export const Route = createFileRoute("/api/urgent-summary")({
             .select("id, title_ar, department, priority, status, due_at, sla_hours")
             .order("due_at", { ascending: true })
             .limit(200),
-          supabase
-            .from("support_requests")
-            .select("id, status, channel")
-            .limit(200),
-          supabase
-            .from("aria_improvement_proposals")
-            .select("id, status")
-            .limit(200),
+          supabase.from("support_requests").select("id, status, channel").limit(200),
+          supabase.from("aria_improvement_proposals").select("id, status").limit(200),
         ]);
 
         const now = Date.now();

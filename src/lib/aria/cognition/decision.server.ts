@@ -79,7 +79,11 @@ export function scoreOptions(
   tradeoffs: ReadonlyArray<Tradeoff>,
   hypotheses: ReadonlyArray<Hypothesis>,
   options: ReadonlyArray<DecisionOption>,
-): { scores: ReadonlyArray<DecisionScore>; winner: DecisionOption | null; alternatives: ReadonlyArray<Alternative> } {
+): {
+  scores: ReadonlyArray<DecisionScore>;
+  winner: DecisionOption | null;
+  alternatives: ReadonlyArray<Alternative>;
+} {
   const hypById = new Map(hypotheses.map((h) => [h.id, h] as const));
   const optById = new Map(options.map((o) => [o.id, o] as const));
   const scores: DecisionScore[] = [];
@@ -91,7 +95,7 @@ export function scoreOptions(
     scores.push(scoreOne(t, hyp));
   }
   scores.sort((a, b) => b.score - a.score);
-  const winner = scores.length > 0 ? optById.get(scores[0].optionId) ?? null : null;
+  const winner = scores.length > 0 ? (optById.get(scores[0].optionId) ?? null) : null;
   const alternatives: Alternative[] = scores.slice(1).map((s) => ({
     optionId: s.optionId,
     reasonNotSelected: `Lower composite score (${s.score.toFixed(2)}) vs winner.`,

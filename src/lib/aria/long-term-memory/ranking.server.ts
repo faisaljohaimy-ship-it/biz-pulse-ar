@@ -48,7 +48,11 @@ export function recurrenceScore(record: MemoryRecord): number {
   return Math.min(1, Math.log10(record.recurrence));
 }
 
-export function rankRecord(record: MemoryRecord, query: string, now: Date = new Date()): RankedMemory {
+export function rankRecord(
+  record: MemoryRecord,
+  query: string,
+  now: Date = new Date(),
+): RankedMemory {
   const relevance = relevanceOf(record, query);
   const freshness = freshnessOf(record.kind, record.updated_at, now);
   const confidence_score = CONFIDENCE_SCORE[record.confidence];
@@ -68,8 +72,7 @@ export function rankRecord(record: MemoryRecord, query: string, now: Date = new 
   const composite =
     components.length === 0
       ? -1
-      : components.reduce((a, c) => a + c.v * c.w, 0) /
-        components.reduce((a, c) => a + c.w, 0);
+      : components.reduce((a, c) => a + c.v * c.w, 0) / components.reduce((a, c) => a + c.w, 0);
 
   return Object.freeze({
     record,

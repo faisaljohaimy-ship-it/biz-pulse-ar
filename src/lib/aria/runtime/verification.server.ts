@@ -16,7 +16,9 @@ function detectCycles(): VerificationIssue[] {
   const agents = listAgents();
   const graph = new Map<string, readonly string[]>();
   for (const a of agents) graph.set(a.spec.identity.agent_id, a.spec.depends_on);
-  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const WHITE = 0,
+    GRAY = 1,
+    BLACK = 2;
   const color = new Map<string, number>();
   for (const id of graph.keys()) color.set(id, WHITE);
   const issues: VerificationIssue[] = [];

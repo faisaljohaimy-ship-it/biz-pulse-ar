@@ -1,8 +1,15 @@
-import type { HeroEnvironment, HeroParticleDirective, HeroPerformanceBudget, HeroState } from "./types";
+import type {
+  HeroEnvironment,
+  HeroParticleDirective,
+  HeroPerformanceBudget,
+  HeroState,
+} from "./types";
 import { assertParticles } from "./contracts";
 
 export function computeParticles(
-  env: HeroEnvironment, state: HeroState, budget: HeroPerformanceBudget,
+  env: HeroEnvironment,
+  state: HeroState,
+  budget: HeroPerformanceBudget,
 ): HeroParticleDirective {
   if (!budget.allowParticles || env.motion === "reduced") {
     return { enabled: false, count: 0, speed: 0, size: 0, opacity: 0 };

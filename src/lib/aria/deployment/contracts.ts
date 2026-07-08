@@ -37,13 +37,7 @@ export const JobZ = z.object({
   submittedAt: z.string().min(1),
 });
 
-export const LoadStrategyZ = z.enum([
-  "round_robin",
-  "least_loaded",
-  "hash",
-  "sticky",
-  "unknown",
-]);
+export const LoadStrategyZ = z.enum(["round_robin", "least_loaded", "hash", "sticky", "unknown"]);
 
 export const LeaderElectionInputZ = z.object({
   clusterId: z.string().min(1),

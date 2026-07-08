@@ -61,7 +61,12 @@ export function AriaStage({ ar, line_ar, line_en, size = 120, className, framed 
 
   if (!framed) return <div className={className}>{body}</div>;
   return (
-    <div className={cn("rounded-2xl border border-cyan-400/20 bg-white/[0.03] backdrop-blur-xl p-5 md:p-6", className)}>
+    <div
+      className={cn(
+        "rounded-2xl border border-cyan-400/20 bg-white/[0.03] backdrop-blur-xl p-5 md:p-6",
+        className,
+      )}
+    >
       {body}
     </div>
   );

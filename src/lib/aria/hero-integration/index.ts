@@ -11,11 +11,7 @@ export {
   reconcileSingleHero,
   closeHero,
 } from "./hero-state.server";
-export {
-  emitHeroEvent,
-  heroEvents,
-  clearHeroEvents,
-} from "./hero-events.server";
+export { emitHeroEvent, heroEvents, clearHeroEvents } from "./hero-events.server";
 export { derivePresence } from "./hero-presence.server";
 export {
   openHeroTurn,
@@ -34,11 +30,7 @@ export {
   type AvatarChannel,
   type AvatarDirective,
 } from "./hero-avatar-bridge.server";
-export {
-  HERO_ACTIONS,
-  heroActionsList,
-  type HeroActionSpec,
-} from "./hero-actions.server";
+export { HERO_ACTIONS, heroActionsList, type HeroActionSpec } from "./hero-actions.server";
 export {
   bootHero,
   greetHeroOnce,
@@ -51,9 +43,5 @@ export {
   heroMetricsSnapshot,
   type HeroMetricsSnapshot,
 } from "./hero-metrics.server";
-export {
-  logHeroAudit,
-  heroAudit,
-  type HeroAuditEntry,
-} from "./hero-audit.server";
+export { logHeroAudit, heroAudit, type HeroAuditEntry } from "./hero-audit.server";
 export { verifyHero, type HeroVerification } from "./verification.server";

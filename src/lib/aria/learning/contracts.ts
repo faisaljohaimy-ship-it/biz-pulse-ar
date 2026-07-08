@@ -59,14 +59,7 @@ export const LessonSchema = z.object({
 export const ImprovementSchema = z.object({
   id: z.string().min(1),
   lessonId: z.string().min(1),
-  target: z.enum([
-    "planner",
-    "reasoning",
-    "orchestrator",
-    "marketplace",
-    "execution",
-    "recovery",
-  ]),
+  target: z.enum(["planner", "reasoning", "orchestrator", "marketplace", "execution", "recovery"]),
   action: z.string().min(4),
   expectedImpact: z.string().min(4),
   priority: z.enum(["low", "medium", "high", "critical"]),

@@ -7,11 +7,12 @@
  * Importing this module has the side effect of registering the provider.
  */
 import { lazy, Suspense } from "react";
-import { registerAvatarProvider, type AvatarRenderProps } from "@/lib/digital-humans/avatar-provider";
+import {
+  registerAvatarProvider,
+  type AvatarRenderProps,
+} from "@/lib/digital-humans/avatar-provider";
 
-const AriaScene = lazy(() =>
-  import("./AriaScene").then((m) => ({ default: m.AriaScene })),
-);
+const AriaScene = lazy(() => import("./AriaScene").then((m) => ({ default: m.AriaScene })));
 
 function R3FRender(props: AvatarRenderProps) {
   const size = props.size ?? 96;

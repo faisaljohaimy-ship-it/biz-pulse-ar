@@ -17,7 +17,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
-import { getAvatarProvider, type AvatarProvider, type AvatarSpeakTurn } from "@/lib/digital-humans/avatar-provider";
+import {
+  getAvatarProvider,
+  type AvatarProvider,
+  type AvatarSpeakTurn,
+} from "@/lib/digital-humans/avatar-provider";
 // Side-effect imports — register SSR-safe providers eagerly.
 // The HeyGen provider is loaded lazily on the client only (see useEffect below)
 // because its SDK touches WebRTC / mediaDevices and must never run during SSR
@@ -30,7 +34,24 @@ import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria
 import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Volume2, VolumeX, Sparkles, X, Pause, Play, RotateCcw, SkipForward, Square, Mic, MicOff, Loader2, Megaphone, ArrowUp } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Volume2,
+  VolumeX,
+  Sparkles,
+  X,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipForward,
+  Square,
+  Mic,
+  MicOff,
+  Loader2,
+  Megaphone,
+  ArrowUp,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGatewayListener as useAgentListener } from "@/lib/digital-humans/gateway-listener";
 import { HologramFace } from "@/components/digital-humans/HologramFace";
@@ -41,24 +62,23 @@ import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 /** Strip markdown / emoji so TTS reads clean prose. */
 function stripForSpeech(input: string): string {
-  return input
-    // fenced + inline code
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    // images and links → keep label
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    // emphasis, headings, blockquotes, list bullets
-    .replace(/[*_~#>]+/g, " ")
-    .replace(/^\s*[-•·]\s+/gm, "")
-    // emoji + pictographic symbols
-    .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}]/gu, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    input
+      // fenced + inline code
+      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/`([^`]+)`/g, "$1")
+      // images and links → keep label
+      .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+      // emphasis, headings, blockquotes, list bullets
+      .replace(/[*_~#>]+/g, " ")
+      .replace(/^\s*[-•·]\s+/gm, "")
+      // emoji + pictographic symbols
+      .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}]/gu, "")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
-
-
-
 
 interface QueuedLine {
   id: string;
@@ -106,7 +126,9 @@ export function AriaDock() {
     if (typeof window === "undefined") return;
     const w = window as unknown as { __aria_dock?: boolean };
     w.__aria_dock = true;
-    return () => { w.__aria_dock = false; };
+    return () => {
+      w.__aria_dock = false;
+    };
   }, []);
 
   // Lazy-register the HeyGen provider only on the client and only when
@@ -124,11 +146,13 @@ export function AriaDock() {
         await import("@/components/digital-humans/heygen/HeygenAvatarProvider");
       } catch (err) {
         if (cancelled) return;
-        // eslint-disable-next-line no-console
+
         console.warn("[AriaDock] HeyGen provider unavailable", err);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Stability-first voice mode: ARIA must always answer through the proven
@@ -151,14 +175,19 @@ export function AriaDock() {
     try {
       const c = document.createElement("canvas");
       webgl = !!(c.getContext("webgl2") || c.getContext("webgl"));
-    } catch { webgl = false; }
+    } catch {
+      webgl = false;
+    }
     return reduced || !webgl ? getAvatarProvider("svg") : getAvatarProvider("readyplayerme");
   }, [voiceOn, heygenAvailable]);
   const usingHeygen = provider.id === "heygen";
   const { events } = useEventStream({ limit: 25 });
 
   const playNext = useCallback(() => {
-    if (paused) { playingRef.current = false; return; }
+    if (paused) {
+      playingRef.current = false;
+      return;
+    }
     const next = queueRef.current.shift();
     setQueueDepth(queueRef.current.length);
     if (!next) {
@@ -192,7 +221,10 @@ export function AriaDock() {
       raf = requestAnimationFrame(tick);
       handleRef.current = {
         promise: Promise.resolve(),
-        stop: () => { cancelAnimationFrame(raf); setAmp(0); },
+        stop: () => {
+          cancelAnimationFrame(raf);
+          setAmp(0);
+        },
       };
       return;
     }
@@ -218,25 +250,38 @@ export function AriaDock() {
     });
     handleRef.current = handle;
     handle.promise
-      .catch(() => { /* swallow — fall through to next */ })
-      .finally(() => { playNext(); });
+      .catch(() => {
+        /* swallow — fall through to next */
+      })
+      .finally(() => {
+        playNext();
+      });
   }, [ar, voiceOn, paused, usingHeygen]);
 
   // HeyGen drain — when the streaming-video provider finishes a turn, advance.
-  const handleHeygenEnd = useCallback((id: string) => {
-    setSpeakTurn((cur) => (cur?.id === id ? null : cur));
-    playNext();
-  }, [playNext]);
-  const handleHeygenErr = useCallback((id: string, _msg: string) => {
-    setSpeakTurn((cur) => (cur?.id === id ? null : cur));
-    playNext();
-  }, [playNext]);
+  const handleHeygenEnd = useCallback(
+    (id: string) => {
+      setSpeakTurn((cur) => (cur?.id === id ? null : cur));
+      playNext();
+    },
+    [playNext],
+  );
+  const handleHeygenErr = useCallback(
+    (id: string, _msg: string) => {
+      setSpeakTurn((cur) => (cur?.id === id ? null : cur));
+      playNext();
+    },
+    [playNext],
+  );
 
-  const enqueue = useCallback((line: QueuedLine) => {
-    queueRef.current.push(line);
-    setQueueDepth(queueRef.current.length);
-    if (!playingRef.current && !paused) playNext();
-  }, [playNext, paused]);
+  const enqueue = useCallback(
+    (line: QueuedLine) => {
+      queueRef.current.push(line);
+      setQueueDepth(queueRef.current.length);
+      if (!playingRef.current && !paused) playNext();
+    },
+    [playNext, paused],
+  );
 
   // SILENCE BY DEFAULT: agents never speak unprompted. They speak ONLY
   // when the executive taps an agent avatar, presses the Briefing button,
@@ -253,10 +298,10 @@ export function AriaDock() {
     for (const row of [...events].reverse()) {
       if (seenRef.current.has(row.id)) continue;
       seenRef.current.add(row.id);
-      if (row.topic.startsWith("system.heartbeat") || row.topic.startsWith("runtime.tick")) continue;
+      if (row.topic.startsWith("system.heartbeat") || row.topic.startsWith("runtime.tick"))
+        continue;
       const line = narrateEvent(row);
       if (line.tone !== "critical") continue; // only critical incidents speak unprompted
-
 
       const compose = (lang: "ar" | "en") => {
         const action = lang === "ar" ? line.action_ar : line.action_en;
@@ -279,7 +324,12 @@ export function AriaDock() {
   // agent selection, mic answer, presentation mode). No auto-greeting.
   useEffect(() => {
     const api = {
-      speak: (turn: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => {
+      speak: (turn: {
+        id?: string;
+        text_ar: string;
+        text_en: string;
+        speaker?: DigitalHumanSpec;
+      }) => {
         enqueue({
           id: turn.id ?? `manual-${Date.now()}`,
           text_ar: turn.text_ar,
@@ -339,7 +389,11 @@ export function AriaDock() {
     window.addEventListener("touchstart", unlock, true);
 
     // Auto-greet on mount: try immediately; if blocked, first gesture retries.
-    try { sessionStorage.removeItem("nexus.audio-gesture"); } catch { /* noop */ }
+    try {
+      sessionStorage.removeItem("nexus.audio-gesture");
+    } catch {
+      /* noop */
+    }
     const autoTimer: number | undefined = window.setTimeout(() => unlock(), 250);
 
     return () => {
@@ -352,19 +406,30 @@ export function AriaDock() {
   }, [enqueue, listener]);
 
   const toggleVoice = () => {
-    setVoiceOn(v => {
+    setVoiceOn((v) => {
       const nv = !v;
       if (!nv) {
         handleRef.current?.stop();
         handleRef.current = null;
       }
-      setAriaLiveText(nv ? (ar ? "الصوت مفعل" : "Voice on") : (ar ? "الصوت مكتوم" : "Voice muted"));
+      setAriaLiveText(nv ? (ar ? "الصوت مفعل" : "Voice on") : ar ? "الصوت مكتوم" : "Voice muted");
       return nv;
     });
   };
 
   const playWelcome = useCallback(() => {
-    const api = (window as unknown as { aria?: { speak: (t: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => void } }).aria;
+    const api = (
+      window as unknown as {
+        aria?: {
+          speak: (t: {
+            id?: string;
+            text_ar: string;
+            text_en: string;
+            speaker?: DigitalHumanSpec;
+          }) => void;
+        };
+      }
+    ).aria;
     if (!api) return;
     // Stop any current line so the welcome plays cleanly.
     handleRef.current?.stop();
@@ -388,7 +453,7 @@ export function AriaDock() {
   };
 
   const togglePause = () => {
-    setPaused(p => {
+    setPaused((p) => {
       const np = !p;
       if (np) {
         // pause: stop current playback but keep queue + current line
@@ -446,12 +511,28 @@ export function AriaDock() {
       const w = window as unknown as {
         __aria_context?: {
           get: () => {
-            page: { path: string; title?: string; section?: string; filters?: Record<string, unknown>; selected?: Record<string, unknown> | null };
+            page: {
+              path: string;
+              title?: string;
+              section?: string;
+              filters?: Record<string, unknown>;
+              selected?: Record<string, unknown> | null;
+            };
             widgets: { id: string; kind: string; label: string; value?: unknown; hint?: string }[];
-            history: { role: "user" | "assistant"; text: string; ts: string; anchors?: { kind: string; id: string; label?: string }[] }[];
+            history: {
+              role: "user" | "assistant";
+              text: string;
+              ts: string;
+              anchors?: { kind: string; id: string; label?: string }[];
+            }[];
             locale: "ar" | "en" | "mixed";
           };
-          pushTurn: (t: { role: "user" | "assistant"; text: string; page?: string; anchors?: { kind: string; id: string; label?: string }[] }) => void;
+          pushTurn: (t: {
+            role: "user" | "assistant";
+            text: string;
+            page?: string;
+            anchors?: { kind: string; id: string; label?: string }[];
+          }) => void;
         };
       };
       const snap = w.__aria_context?.get?.();
@@ -465,7 +546,8 @@ export function AriaDock() {
         : undefined;
       const history = snap?.history?.slice(-8);
       w.__aria_context?.pushTurn({ role: "user", text: q, page: snap?.page?.path });
-      void context; void history; // (stream endpoint uses question + lang only; context handled by future authenticated route)
+      void context;
+      void history; // (stream endpoint uses question + lang only; context handled by future authenticated route)
 
       const streamOnce = async (): Promise<Response> => {
         return fetch("/api/public/aria-stream", {
@@ -577,15 +659,20 @@ export function AriaDock() {
           const payloadRaw = line.slice(5).trim();
           if (!payloadRaw) continue;
           let payload: { delta?: string; error?: string; done?: boolean };
-          try { payload = JSON.parse(payloadRaw); } catch { continue; }
-          if (payload.error) { streamErr = payload.error; continue; }
+          try {
+            payload = JSON.parse(payloadRaw);
+          } catch {
+            continue;
+          }
+          if (payload.error) {
+            streamErr = payload.error;
+            continue;
+          }
           if (payload.done) continue;
           if (typeof payload.delta === "string" && payload.delta.length > 0) {
             full += payload.delta;
             setCurrent((prev) =>
-              prev && prev.id === streamId
-                ? { ...prev, text_ar: full, text_en: full }
-                : prev,
+              prev && prev.id === streamId ? { ...prev, text_ar: full, text_en: full } : prev,
             );
             flushSentences(false);
           }
@@ -607,14 +694,25 @@ export function AriaDock() {
     } catch (error) {
       setState("idle");
       setCurrent(null);
-      setTypedError(error instanceof Error && error.message ? error.message : ar ? "تعذّر اتصال آريا الآن — أعد المحاولة." : "ARIA could not connect — please retry.");
+      setTypedError(
+        error instanceof Error && error.message
+          ? error.message
+          : ar
+            ? "تعذّر اتصال آريا الآن — أعد المحاولة."
+            : "ARIA could not connect — please retry.",
+      );
     } finally {
       setTypedLoading(false);
     }
   };
 
-  useEffect(() => () => { handleRef.current?.stop(); ariaSpeech.stop(); }, [ariaSpeech]);
-
+  useEffect(
+    () => () => {
+      handleRef.current?.stop();
+      ariaSpeech.stop();
+    },
+    [ariaSpeech],
+  );
 
   // Reveal the dock UI once the opening welcome line has finished playing.
   // Until then ARIA's voice is heard but no avatar / transcript is shown,
@@ -638,17 +736,25 @@ export function AriaDock() {
   }
 
   if (hidden) {
-  return (
-    <button
+    return (
+      <button
         type="button"
-        onClick={() => { AriaAudioBus.unlock(); setHidden(false); }}
+        onClick={() => {
+          AriaAudioBus.unlock();
+          setHidden(false);
+        }}
         className="fixed bottom-4 right-4 z-[60] h-14 w-14 rounded-full border border-cyan-400/40 bg-[#061A2E]/95 backdrop-blur-xl shadow-[0_0_24px_rgba(0,212,255,0.45)] overflow-hidden hover:scale-105 transition-transform"
         aria-label={ar ? "إظهار آريا" : "Show ARIA"}
       >
-        <img src={ariaHologram.url} alt="ARIA" className="absolute inset-0 h-full w-full object-cover object-top" draggable={false} />
+        <img
+          src={ariaHologram.url}
+          alt="ARIA"
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          draggable={false}
+        />
       </button>
-  );
-}
+    );
+  }
 
   const Render = provider.Render;
   const displayLine = current ?? lastLineRef.current;
@@ -704,10 +810,14 @@ export function AriaDock() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300/80 truncate">
-                  {ar ? (displayLine?.speaker.title_ar ?? ARIA.title_ar) : (displayLine?.speaker.title_en ?? ARIA.title_en)}
+                  {ar
+                    ? (displayLine?.speaker.title_ar ?? ARIA.title_ar)
+                    : (displayLine?.speaker.title_en ?? ARIA.title_en)}
                 </div>
                 <div className="text-sm text-white font-medium leading-tight truncate">
-                  {ar ? (displayLine?.speaker.name_ar ?? ARIA.name_ar) : (displayLine?.speaker.name_en ?? ARIA.name_en)}
+                  {ar
+                    ? (displayLine?.speaker.name_ar ?? ARIA.name_ar)
+                    : (displayLine?.speaker.name_en ?? ARIA.name_en)}
                 </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -716,20 +826,40 @@ export function AriaDock() {
                   variant="ghost"
                   className={cn(
                     "h-7 w-7 hover:bg-white/10",
-                    listener.listening ? "text-rose-300 hover:text-rose-200" : "text-cyan-200 hover:text-white",
+                    listener.listening
+                      ? "text-rose-300 hover:text-rose-200"
+                      : "text-cyan-200 hover:text-white",
                   )}
                   onClick={() => {
                     if (!listener.listening) setVoiceOn(true);
                     listener.toggle(displayLine?.speaker ?? ARIA);
                   }}
-                  aria-label={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل الوكيل" : "Ask agent")}
-                  title={listener.listening ? (ar ? "إيقاف الاستماع" : "Stop listening") : (ar ? "اسأل" : "Ask")}
+                  aria-label={
+                    listener.listening
+                      ? ar
+                        ? "إيقاف الاستماع"
+                        : "Stop listening"
+                      : ar
+                        ? "اسأل الوكيل"
+                        : "Ask agent"
+                  }
+                  title={
+                    listener.listening
+                      ? ar
+                        ? "إيقاف الاستماع"
+                        : "Stop listening"
+                      : ar
+                        ? "اسأل"
+                        : "Ask"
+                  }
                 >
-                  {listener.thinking
-                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    : listener.listening
-                      ? <MicOff className="h-3.5 w-3.5" />
-                      : <Mic className="h-3.5 w-3.5" />}
+                  {listener.thinking ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : listener.listening ? (
+                    <MicOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Mic className="h-3.5 w-3.5" />
+                  )}
                 </Button>
                 <Button
                   size="icon"
@@ -742,38 +872,62 @@ export function AriaDock() {
                     ariaSpeech.setMuted((m) => {
                       const next = !m;
                       if (next) ariaSpeech.stop();
-                      setAriaLiveText(next ? (ar ? "صوت آريا مكتوم" : "ARIA voice muted") : (ar ? "صوت آريا مفعّل" : "ARIA voice on"));
+                      setAriaLiveText(
+                        next
+                          ? ar
+                            ? "صوت آريا مكتوم"
+                            : "ARIA voice muted"
+                          : ar
+                            ? "صوت آريا مفعّل"
+                            : "ARIA voice on",
+                      );
                       return next;
                     });
                   }}
                   aria-label={ar ? "تشغيل/كتم صوت آريا" : "Toggle ARIA voice"}
-                  title={ariaSpeech.muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+                  title={
+                    ariaSpeech.muted ? (ar ? "تشغيل الصوت" : "Unmute") : ar ? "كتم الصوت" : "Mute"
+                  }
                   aria-pressed={!ariaSpeech.muted}
                 >
-                  {ariaSpeech.muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                  {ariaSpeech.muted ? (
+                    <VolumeX className="h-3.5 w-3.5" />
+                  ) : (
+                    <Volume2 className="h-3.5 w-3.5" />
+                  )}
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10"
-                  onClick={() => { AriaAudioBus.stopAll(); ariaSpeech.stop(); setMinimized(true); }}
+                  onClick={() => {
+                    AriaAudioBus.stopAll();
+                    ariaSpeech.stop();
+                    setMinimized(true);
+                  }}
                   aria-label={ar ? "تصغير" : "Minimize"}
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
                 <button
                   type="button"
-                  onClick={() => { AriaAudioBus.stopAll(); ariaSpeech.stop(); setHidden(true); }}
+                  onClick={() => {
+                    AriaAudioBus.stopAll();
+                    ariaSpeech.stop();
+                    setHidden(true);
+                  }}
                   aria-label={ar ? "إخفاء آريا" : "Dismiss ARIA"}
                   title={ar ? "إخفاء" : "Dismiss"}
                   className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#3AE8FF]/40 via-[#00D4FF]/25 to-[#061A2E] shadow-[0_0_18px_rgba(58,232,255,0.7),inset_0_0_10px_rgba(58,232,255,0.4)] transition hover:scale-110 hover:shadow-[0_0_28px_rgba(58,232,255,0.95)]"
                 >
-                  <span aria-hidden className="absolute inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.85),rgba(58,232,255,0.05)_60%,transparent_72%)]" />
+                  <span
+                    aria-hidden
+                    className="absolute inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.85),rgba(58,232,255,0.05)_60%,transparent_72%)]"
+                  />
                   <X className="relative h-3.5 w-3.5 text-white drop-shadow-[0_0_4px_rgba(255,255,255,0.9)]" />
                 </button>
               </div>
             </div>
-
 
             <AriaStatusStrip
               className="mt-2"
@@ -785,26 +939,38 @@ export function AriaDock() {
               ar={ar}
             />
 
-
-
             <div className="mt-2 text-[13px] leading-relaxed text-white/85 min-h-[2.6em]">
-              {listener.listening || listener.thinking
-                ? (
-                  <span className="text-cyan-200/90">
-                    {listener.thinking
-                      ? (ar ? "أحلّل سؤالك…" : "Analyzing your question…")
-                      : listener.partial
-                        ? listener.partial
-                        : (ar ? "أستمع إليك…" : "Listening…")}
-                  </span>
+              {listener.listening || listener.thinking ? (
+                <span className="text-cyan-200/90">
+                  {listener.thinking
+                    ? ar
+                      ? "أحلّل سؤالك…"
+                      : "Analyzing your question…"
+                    : listener.partial
+                      ? listener.partial
+                      : ar
+                        ? "أستمع إليك…"
+                        : "Listening…"}
+                </span>
+              ) : current ? (
+                ar ? (
+                  current.text_ar
+                ) : (
+                  current.text_en
                 )
-                : current
-                  ? (ar ? current.text_ar : current.text_en)
-                  : displayLine
-                    ? (ar ? displayLine.text_ar : displayLine.text_en)
-                  : listener.error
-                    ? <span className="text-rose-300/90">{listener.error}</span>
-                    : (ar ? "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب." : "Tap the mic to ask me or any agent. Silent until asked.")}
+              ) : displayLine ? (
+                ar ? (
+                  displayLine.text_ar
+                ) : (
+                  displayLine.text_en
+                )
+              ) : listener.error ? (
+                <span className="text-rose-300/90">{listener.error}</span>
+              ) : ar ? (
+                "اضغط الميكروفون لتسألني أو أي وكيل. أصمت حتى تطلب."
+              ) : (
+                "Tap the mic to ask me or any agent. Silent until asked."
+              )}
             </div>
 
             <form
@@ -838,7 +1004,11 @@ export function AriaDock() {
                 className="h-9 w-9 shrink-0 border border-cyan-300/35 text-cyan-200 hover:bg-cyan-300/10 hover:text-white disabled:opacity-40"
                 aria-label={ar ? "إرسال السؤال" : "Send question"}
               >
-                {typedLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowUp className="h-3.5 w-3.5" />}
+                {typedLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-3.5 w-3.5" />
+                )}
               </Button>
             </form>
 
@@ -871,7 +1041,10 @@ export function AriaDock() {
               size="icon"
               variant="ghost"
               className="h-7 w-7 text-white/70 hover:text-white hover:bg-white/10 self-center"
-              onClick={() => { AriaAudioBus.unlock(); setMinimized(false); }}
+              onClick={() => {
+                AriaAudioBus.unlock();
+                setMinimized(false);
+              }}
               aria-label={ar ? "توسيع" : "Expand"}
             >
               <ChevronUp className="h-3.5 w-3.5" />

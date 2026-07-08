@@ -19,8 +19,10 @@ export class PerformanceGuard {
   }
 
   snapshot(): PerfSnapshot {
-    const avg = this.samples.length === 0 ? null :
-      this.samples.reduce((a, b) => a + b, 0) / this.samples.length;
+    const avg =
+      this.samples.length === 0
+        ? null
+        : this.samples.reduce((a, b) => a + b, 0) / this.samples.length;
     return {
       targetFps: 60,
       avgFrameMs: avg === null ? null : Math.round(avg * 100) / 100,
@@ -29,5 +31,7 @@ export class PerformanceGuard {
     };
   }
 
-  shouldDegrade(): boolean { return this.snapshot().degraded; }
+  shouldDegrade(): boolean {
+    return this.snapshot().degraded;
+  }
 }

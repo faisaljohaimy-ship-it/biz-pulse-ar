@@ -11,12 +11,7 @@
 export * from "./types";
 export * from "./contracts";
 export { classifyImpact } from "./impact-classification.server";
-export {
-  registerPolicy,
-  listPolicies,
-  evaluatePolicies,
-  type PolicyRule,
-} from "./policy.server";
+export { registerPolicy, listPolicies, evaluatePolicies, type PolicyRule } from "./policy.server";
 export { requiredAuthorityFor, checkAuthority, rankOf } from "./authority.server";
 export { evaluateRisk } from "./risk-gate.server";
 export { checkCompliance, type ComplianceRule } from "./compliance.server";

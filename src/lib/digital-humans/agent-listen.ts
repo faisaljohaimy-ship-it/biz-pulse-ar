@@ -17,7 +17,12 @@ import { ARIA, type DigitalHumanSpec } from "./registry";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 
 type WindowAria = {
-  speak?: (t: { id?: string; text_ar: string; text_en: string; speaker?: DigitalHumanSpec }) => void;
+  speak?: (t: {
+    id?: string;
+    text_ar: string;
+    text_en: string;
+    speaker?: DigitalHumanSpec;
+  }) => void;
 };
 
 const isArabic = (s: string) => /[\u0600-\u06FF]/.test(s);
@@ -78,40 +83,59 @@ export function useAgentListener() {
     },
   });
 
-  const start = useCallback(async (speaker?: DigitalHumanSpec) => {
-    if (listening) return;
-    setError(null);
-    speakerRef.current = speaker ?? ARIA;
-    try {
-      const r = await authenticatedFetch("/api/voice-token", { method: "POST" });
-      if (!r.ok) throw new Error(`token ${r.status}`);
-      const j = (await r.json()) as { token?: string; kind?: string; error?: string };
-      if (!j.token) throw new Error(j.error ?? "no token");
-      if (j.kind !== "scribe") throw new Error("scribe voice mode unavailable");
-      // Silence any in-flight narration only after token is confirmed.
-      const w = window as unknown as { aria?: { stop?: () => void } };
-      w.aria?.stop?.();
-      await scribe.connect({
-        token: j.token,
-        microphone: { echoCancellation: true, noiseSuppression: true },
-      } as Parameters<typeof scribe.connect>[0]);
-      setListening(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "mic failed");
-      setListening(false);
-    }
-  }, [listening, scribe]);
+  const start = useCallback(
+    async (speaker?: DigitalHumanSpec) => {
+      if (listening) return;
+      setError(null);
+      speakerRef.current = speaker ?? ARIA;
+      try {
+        const r = await authenticatedFetch("/api/voice-token", { method: "POST" });
+        if (!r.ok) throw new Error(`token ${r.status}`);
+        const j = (await r.json()) as { token?: string; kind?: string; error?: string };
+        if (!j.token) throw new Error(j.error ?? "no token");
+        if (j.kind !== "scribe") throw new Error("scribe voice mode unavailable");
+        // Silence any in-flight narration only after token is confirmed.
+        const w = window as unknown as { aria?: { stop?: () => void } };
+        w.aria?.stop?.();
+        await scribe.connect({
+          token: j.token,
+          microphone: { echoCancellation: true, noiseSuppression: true },
+        } as Parameters<typeof scribe.connect>[0]);
+        setListening(true);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "mic failed");
+        setListening(false);
+      }
+    },
+    [listening, scribe],
+  );
 
   const stop = useCallback(() => {
-    try { scribe.disconnect(); } catch { /* noop */ }
+    try {
+      scribe.disconnect();
+    } catch {
+      /* noop */
+    }
     setListening(false);
     setPartial("");
   }, [scribe]);
 
-  const toggle = useCallback((speaker?: DigitalHumanSpec) => {
-    if (listening) stop();
-    else void start(speaker);
-  }, [listening, start, stop]);
+  const toggle = useCallback(
+    (speaker?: DigitalHumanSpec) => {
+      if (listening) stop();
+      else void start(speaker);
+    },
+    [listening, start, stop],
+  );
 
-  return { listening, partial, thinking, error, start, stop, toggle, activeSpeaker: speakerRef.current };
+  return {
+    listening,
+    partial,
+    thinking,
+    error,
+    start,
+    stop,
+    toggle,
+    activeSpeaker: speakerRef.current,
+  };
 }

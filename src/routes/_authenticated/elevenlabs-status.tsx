@@ -10,7 +10,17 @@ import { authenticatedFetch } from "@/lib/auth-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, AlertCircle, MinusCircle, RefreshCw, Mic, KeyRound, Bot, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  MinusCircle,
+  RefreshCw,
+  Mic,
+  KeyRound,
+  Bot,
+  ShieldCheck,
+} from "lucide-react";
 
 type Check = {
   id: string;
@@ -33,7 +43,10 @@ export const Route = createFileRoute("/_authenticated/elevenlabs-status")({
   component: ElevenLabsStatusPage,
 });
 
-const STATUS_META: Record<Check["status"], { color: string; Icon: typeof CheckCircle2; label: string }> = {
+const STATUS_META: Record<
+  Check["status"],
+  { color: string; Icon: typeof CheckCircle2; label: string }
+> = {
   ok: { color: "text-emerald-400", Icon: CheckCircle2, label: "OK" },
   failed: { color: "text-red-400", Icon: XCircle, label: "Failed" },
   missing: { color: "text-amber-400", Icon: AlertCircle, label: "Missing" },
@@ -90,7 +103,9 @@ function ElevenLabsStatusPage() {
               title="Connector"
               ok={connectorOk}
               primary={connectorOk ? "Linked" : "Not linked"}
-              secondary={d.connector.auth_type === "api_key" ? "API key auth" : d.connector.auth_type}
+              secondary={
+                d.connector.auth_type === "api_key" ? "API key auth" : d.connector.auth_type
+              }
             />
             <StatusTile
               Icon={Bot}
@@ -103,7 +118,9 @@ function ElevenLabsStatusPage() {
               Icon={Mic}
               title="ConvAI token mint"
               ok={convaiCheck?.status === "ok"}
-              primary={convaiCheck?.status === "ok" ? "Mintable" : convaiCheck?.status ?? "skipped"}
+              primary={
+                convaiCheck?.status === "ok" ? "Mintable" : (convaiCheck?.status ?? "skipped")
+              }
               secondary={convaiCheck?.detail?.slice(0, 60) ?? "—"}
             />
           </div>
@@ -119,7 +136,8 @@ function ElevenLabsStatusPage() {
               <p className="text-xs text-slate-500">
                 Required capabilities on the key: <code className="text-cyan-300">user:read</code>,{" "}
                 <code className="text-cyan-300">conversational_ai:create_token</code>,{" "}
-                <code className="text-cyan-300">speech_to_text:realtime</code> (entitlements vary by plan).
+                <code className="text-cyan-300">speech_to_text:realtime</code> (entitlements vary by
+                plan).
               </p>
             </CardContent>
           </Card>
@@ -140,7 +158,9 @@ function ElevenLabsStatusPage() {
                         <span className="text-sm font-medium text-slate-100">{c.label}</span>
                         <span className={`text-xs ${meta.color}`}>{meta.label}</span>
                       </div>
-                      {c.detail && <p className="text-xs text-slate-400 mt-1 break-words">{c.detail}</p>}
+                      {c.detail && (
+                        <p className="text-xs text-slate-400 mt-1 break-words">{c.detail}</p>
+                      )}
                       {c.fix && (c.status === "failed" || c.status === "missing") && (
                         <p className="text-xs text-amber-300/90 mt-1">→ {c.fix}</p>
                       )}
@@ -152,7 +172,9 @@ function ElevenLabsStatusPage() {
           </Card>
 
           {/* Gate */}
-          <Card className={`border ${liveReady ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
+          <Card
+            className={`border ${liveReady ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"}`}
+          >
             <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -167,7 +189,9 @@ function ElevenLabsStatusPage() {
                     {liveReady ? "READY" : "BLOCKED"}
                   </Badge>
                   <span className="text-sm text-slate-200">
-                    {liveReady ? "Live two-way voice can be enabled." : "Live voice gated by failing checks above."}
+                    {liveReady
+                      ? "Live two-way voice can be enabled."
+                      : "Live voice gated by failing checks above."}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
@@ -175,7 +199,12 @@ function ElevenLabsStatusPage() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button asChild variant="outline" size="sm" className="border-cyan-500/30 text-cyan-200">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="border-cyan-500/30 text-cyan-200"
+                >
                   <Link to="/voice-setup">Open wizard</Link>
                 </Button>
                 <Button
@@ -184,13 +213,19 @@ function ElevenLabsStatusPage() {
                   className="bg-cyan-500 hover:bg-cyan-400 text-[#061A2E] disabled:opacity-40"
                   asChild={liveReady}
                 >
-                  {liveReady ? <Link to="/aria">Enable Live Voice</Link> : <span>Enable Live Voice</span>}
+                  {liveReady ? (
+                    <Link to="/aria">Enable Live Voice</Link>
+                  ) : (
+                    <span>Enable Live Voice</span>
+                  )}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <p className="text-xs text-slate-500">Last probed: {new Date(d.generated_at).toLocaleString()}</p>
+          <p className="text-xs text-slate-500">
+            Last probed: {new Date(d.generated_at).toLocaleString()}
+          </p>
         </>
       )}
     </div>

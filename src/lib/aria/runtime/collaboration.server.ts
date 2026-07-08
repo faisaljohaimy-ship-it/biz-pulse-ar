@@ -44,7 +44,12 @@ export function delegate(from: string, to: string, task: string): void {
   if (delegations.length > 2000) delegations.splice(0, delegations.length - 2000);
 }
 
-export function listDelegations(): ReadonlyArray<{ from: string; to: string; task: string; at: string }> {
+export function listDelegations(): ReadonlyArray<{
+  from: string;
+  to: string;
+  task: string;
+  at: string;
+}> {
   return delegations.slice();
 }
 

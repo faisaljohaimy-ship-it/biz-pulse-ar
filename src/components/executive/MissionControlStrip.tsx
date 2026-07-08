@@ -32,8 +32,7 @@ export function MissionControlStrip() {
   // Zero-tolerance policy: the entire section is hidden unless every KPI
   // resolved to a real, finite numeric value from the database. Evaluated
   // below the hooks so React's rules-of-hooks aren't violated.
-  const isFiniteNumber = (v: unknown): v is number =>
-    typeof v === "number" && Number.isFinite(v);
+  const isFiniteNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
   const allReady =
     !!k &&
     isFiniteNumber(k.incidents_total) &&
@@ -76,7 +75,9 @@ export function MissionControlStrip() {
         labelEn: "Open Incidents",
         value: has(k?.incidents_open) ? k!.incidents_open : null,
         hint: has(k?.incidents_critical)
-          ? (ar ? `${k!.incidents_critical} حرج` : `${k!.incidents_critical} critical`)
+          ? ar
+            ? `${k!.incidents_critical} حرج`
+            : `${k!.incidents_critical} critical`
           : undefined,
         tone: (k?.incidents_open ?? 0) > 5 ? ("amber" as KpiTone) : ("cyan" as KpiTone),
       },
@@ -114,14 +115,18 @@ export function MissionControlStrip() {
   const failed = false;
 
   return (
-    <section aria-label="Mission Control live KPIs" className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6">
-
+    <section
+      aria-label="Mission Control live KPIs"
+      className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6"
+    >
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
             Mission Control
           </div>
-          <h2 className="text-base font-semibold text-white">{ar ? "نبض العمليات الحي" : "Live Operations Pulse"}</h2>
+          <h2 className="text-base font-semibold text-white">
+            {ar ? "نبض العمليات الحي" : "Live Operations Pulse"}
+          </h2>
         </div>
         <span
           className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
@@ -131,7 +136,19 @@ export function MissionControlStrip() {
             className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-[color:var(--nx-warning)]" : q.isFetching || loading ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`}
             aria-hidden
           />
-          {failed ? pendingLabel : loading ? (ar ? "تحميل…" : "Loading…") : q.isFetching ? (ar ? "تحديث…" : "Updating…") : (ar ? "حي" : "Live")}
+          {failed
+            ? pendingLabel
+            : loading
+              ? ar
+                ? "تحميل…"
+                : "Loading…"
+              : q.isFetching
+                ? ar
+                  ? "تحديث…"
+                  : "Updating…"
+                : ar
+                  ? "حي"
+                  : "Live"}
         </span>
       </div>
 

@@ -17,7 +17,9 @@ interface Props {
 
 export function LessonSimulation({ slug, lang, kind, suggested, onCompleted }: Props) {
   if (kind === "meet_aria") {
-    return <MeetAriaSimulation slug={slug} lang={lang} suggested={suggested} onCompleted={onCompleted} />;
+    return (
+      <MeetAriaSimulation slug={slug} lang={lang} suggested={suggested} onCompleted={onCompleted} />
+    );
   }
   if (kind === "decision_scenario") {
     return <DecisionScenarioSimulation slug={slug} lang={lang} onCompleted={onCompleted} />;

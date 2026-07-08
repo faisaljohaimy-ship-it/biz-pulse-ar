@@ -3,12 +3,7 @@
  * nodes by (capability + description), recomputes layers to maximize
  * parallelism, and reports the optimization gain vs the input graph.
  */
-import type {
-  CapabilityBinding,
-  ExecutionEdge,
-  ExecutionGraph,
-  MissionTree,
-} from "./types";
+import type { CapabilityBinding, ExecutionEdge, ExecutionGraph, MissionTree } from "./types";
 
 export interface OptimizationOutcome {
   graph: ExecutionGraph;
@@ -41,9 +36,7 @@ function relayer(nodes: string[], edges: ExecutionEdge[]): string[][] {
   const layers: string[][] = [];
   const done = new Set<string>();
   while (done.size < nodes.length) {
-    const layer = nodes.filter(
-      (n) => !done.has(n) && (indeg.get(n) ?? 0) === 0,
-    );
+    const layer = nodes.filter((n) => !done.has(n) && (indeg.get(n) ?? 0) === 0);
     if (!layer.length) {
       layers.push(nodes.filter((n) => !done.has(n)));
       break;
@@ -51,8 +44,7 @@ function relayer(nodes: string[], edges: ExecutionEdge[]): string[][] {
     layers.push(layer);
     for (const n of layer) {
       done.add(n);
-      for (const nxt of outs.get(n) ?? [])
-        indeg.set(nxt, (indeg.get(nxt) ?? 1) - 1);
+      for (const nxt of outs.get(n) ?? []) indeg.set(nxt, (indeg.get(nxt) ?? 1) - 1);
     }
   }
   return layers;
@@ -152,9 +144,7 @@ export function optimize(
 
   const parallelismAfter = widest(nextGraph);
   const gain =
-    parallelismBefore === 0
-      ? 0
-      : (parallelismAfter - parallelismBefore) / parallelismBefore;
+    parallelismBefore === 0 ? 0 : (parallelismAfter - parallelismBefore) / parallelismBefore;
 
   return {
     graph: nextGraph,

@@ -34,10 +34,7 @@ export {
 } from "./heartbeat.server";
 export { computeMembership, membershipQuorumMet } from "./membership.server";
 export { planReplication } from "./replication.server";
-export {
-  detectPartition,
-  partitionSafeForExecution,
-} from "./partition-detection.server";
+export { detectPartition, partitionSafeForExecution } from "./partition-detection.server";
 export { evaluateQuorum } from "./quorum.server";
 export {
   acquireLease,

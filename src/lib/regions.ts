@@ -15,10 +15,34 @@ export interface Region {
 }
 
 export const REGIONS: readonly Region[] = [
-  { id: "central",  labelAr: "الأمن الصناعي — المنطقة الوسطى",  labelEn: "Industrial Security — Central Region",  shortAr: "الوسطى",  shortEn: "Central"  },
-  { id: "western",  labelAr: "الأمن الصناعي — المنطقة الغربية", labelEn: "Industrial Security — Western Region",  shortAr: "الغربية", shortEn: "Western"  },
-  { id: "eastern",  labelAr: "الأمن الصناعي — المنطقة الشرقية", labelEn: "Industrial Security — Eastern Region",  shortAr: "الشرقية", shortEn: "Eastern"  },
-  { id: "southern", labelAr: "الأمن الصناعي — المنطقة الجنوبية", labelEn: "Industrial Security — Southern Region", shortAr: "الجنوبية", shortEn: "Southern" },
+  {
+    id: "central",
+    labelAr: "الأمن الصناعي — المنطقة الوسطى",
+    labelEn: "Industrial Security — Central Region",
+    shortAr: "الوسطى",
+    shortEn: "Central",
+  },
+  {
+    id: "western",
+    labelAr: "الأمن الصناعي — المنطقة الغربية",
+    labelEn: "Industrial Security — Western Region",
+    shortAr: "الغربية",
+    shortEn: "Western",
+  },
+  {
+    id: "eastern",
+    labelAr: "الأمن الصناعي — المنطقة الشرقية",
+    labelEn: "Industrial Security — Eastern Region",
+    shortAr: "الشرقية",
+    shortEn: "Eastern",
+  },
+  {
+    id: "southern",
+    labelAr: "الأمن الصناعي — المنطقة الجنوبية",
+    labelEn: "Industrial Security — Southern Region",
+    shortAr: "الجنوبية",
+    shortEn: "Southern",
+  },
 ] as const;
 
 export const DEFAULT_REGION_ID: RegionId = "western";

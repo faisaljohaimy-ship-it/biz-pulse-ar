@@ -8,12 +8,7 @@
 export * from "./types";
 export * from "./contracts";
 
-export {
-  ONTOLOGY,
-  describeEntity,
-  describeRelationship,
-  allowsEdge,
-} from "./ontology.server";
+export { ONTOLOGY, describeEntity, describeRelationship, allowsEdge } from "./ontology.server";
 export { checkEntityAttributes } from "./schema.server";
 
 export {
@@ -30,27 +25,13 @@ export {
 } from "./graph-store.server";
 
 export { linkEvidence } from "./evidence-linking.server";
-export {
-  normalizeName,
-  normalizeAliases,
-  normalizeAttributes,
-} from "./normalization.server";
-export {
-  findDuplicateEntity,
-  mergeEntities,
-  keyOfEntity,
-} from "./deduplication.server";
+export { normalizeName, normalizeAliases, normalizeAttributes } from "./normalization.server";
+export { findDuplicateEntity, mergeEntities, keyOfEntity } from "./deduplication.server";
 
 export { buildEntity } from "./entity.server";
 export { buildRelationship } from "./relationship.server";
-export {
-  resolveByName,
-  resolveEntity,
-} from "./entity-resolution.server";
-export {
-  findExistingRelationship,
-  resolveRelationship,
-} from "./relationship-resolution.server";
+export { resolveByName, resolveEntity } from "./entity-resolution.server";
+export { findExistingRelationship, resolveRelationship } from "./relationship-resolution.server";
 
 export { extract } from "./extraction.server";
 export { ingest } from "./ingestion.server";
@@ -61,11 +42,7 @@ export { traverse } from "./traversal.server";
 export { reason, markInferred } from "./reasoning.server";
 export { detectContradictions } from "./contradiction.server";
 
-export {
-  entityFreshness,
-  relationshipFreshness,
-  toFreshnessState,
-} from "./freshness.server";
+export { entityFreshness, relationshipFreshness, toFreshnessState } from "./freshness.server";
 export { deriveConfidence, provenanceScore } from "./confidence.server";
 
 export { verifyGraph } from "./verification.server";

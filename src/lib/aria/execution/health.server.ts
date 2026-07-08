@@ -33,7 +33,11 @@ export function assessHealth(sessionId: string): ExecutionHealth {
   const total = s.progress.total || 1;
   const failedRatio = s.progress.failed / total;
   if (failedRatio > 0.25 || s.metrics.retry_count >= 6) {
-    setHealth(sessionId, "degraded", `failed ${s.progress.failed}/${s.progress.total}, retries ${s.metrics.retry_count}`);
+    setHealth(
+      sessionId,
+      "degraded",
+      `failed ${s.progress.failed}/${s.progress.total}, retries ${s.metrics.retry_count}`,
+    );
     return "degraded";
   }
 

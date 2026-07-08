@@ -50,7 +50,11 @@ function ruleBased(text: string): string {
   );
 }
 
-async function viaLovableAI(text: string, key: string, signal?: AbortSignal): Promise<string | null> {
+async function viaLovableAI(
+  text: string,
+  key: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
   try {
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

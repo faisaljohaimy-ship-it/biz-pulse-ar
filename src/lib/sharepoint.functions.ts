@@ -23,7 +23,11 @@ function authHeaders(): Record<string, string> {
 async function spJson<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   return httpJson<T>(`${GATEWAY_URL}${path}`, {
     ...init,
-    headers: { ...authHeaders(), "Content-Type": "application/json", ...(init?.headers as Record<string, string> | undefined) },
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+      ...(init?.headers as Record<string, string> | undefined),
+    },
     label: `sharepoint ${init?.method ?? "GET"} ${path}`,
   });
 }
@@ -42,7 +46,9 @@ export const listSharePointSites = createServerFn({ method: "GET" })
           "/sites?search=*&$select=id,displayName,webUrl&$top=20",
         );
         extra = r.value ?? [];
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       const all = [root, ...extra.filter((s) => s.id !== root.id)];
       return { sites: all, unavailable: false as const, reason: null };
     } catch (err) {
@@ -57,7 +63,6 @@ export const listSharePointSites = createServerFn({ method: "GET" })
       };
     }
   });
-
 
 export const uploadReportToSharePoint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -106,7 +111,9 @@ export const uploadReportToSharePoint = createServerFn({ method: "POST" })
           { method: "POST", body: JSON.stringify({ type: "view", scope: "organization" }) },
         );
         shareUrl = link.link?.webUrl ?? null;
-      } catch { /* keep null */ }
+      } catch {
+        /* keep null */
+      }
     }
 
     return {

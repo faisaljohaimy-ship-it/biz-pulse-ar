@@ -27,12 +27,12 @@ export function summarizeQuality(input: {
     per[s.dimension].push(s.value);
     for (const e of s.evidence) evidence.push(e);
   }
-  const perDimension = (Object.fromEntries(
+  const perDimension = Object.fromEntries(
     (Object.keys(per) as QualitySignal["dimension"][]).map((k) => {
       const arr = per[k];
       return [k, arr.length === 0 ? null : arr.reduce((a, b) => a + b, 0) / arr.length];
     }),
-  ) as unknown) as QualitySummary["perDimension"];
+  ) as unknown as QualitySummary["perDimension"];
 
   const anyMissing = Object.values(perDimension).some((v) => v === null);
   const state: TriState = anyMissing ? "unknown" : "pass";

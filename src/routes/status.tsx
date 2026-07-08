@@ -80,9 +80,7 @@ function StatusPage() {
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00D4FF]" />
           NEXIOS AI OS
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          الحالة التشغيلية · System Status
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">الحالة التشغيلية · System Status</h1>
         <p className="mt-2 text-sm text-white/60">
           حالة المنصّة الحيّة، محدَّثة كل ٣٠ ثانية من نقطة النهاية{" "}
           <code dir="ltr" className="font-mono text-white/80">
@@ -137,13 +135,8 @@ function StatusPage() {
                 className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <span
-                    className={`inline-block h-2.5 w-2.5 rounded-full ${DOT[sub.status]}`}
-                  />
-                  <span
-                    dir="ltr"
-                    className="font-mono text-sm uppercase text-white/80"
-                  >
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${DOT[sub.status]}`} />
+                  <span dir="ltr" className="font-mono text-sm uppercase text-white/80">
                     {name}
                   </span>
                 </div>
@@ -161,8 +154,8 @@ function StatusPage() {
         )}
 
         <p className="mt-10 text-xs leading-relaxed text-white/40">
-          هذه صفحة حالة صادقة — لا نعرض نسبة تشغيل مصنّعة. النسب طويلة الأمد
-          ستضاف عند توفّر بيانات كافية من المُراقِب الخارجي. للحوادث والاتصال:{" "}
+          هذه صفحة حالة صادقة — لا نعرض نسبة تشغيل مصنّعة. النسب طويلة الأمد ستضاف عند توفّر بيانات
+          كافية من المُراقِب الخارجي. للحوادث والاتصال:{" "}
           <a
             href="mailto:ops@neexios.com"
             className="text-[#00D4FF] underline-offset-4 hover:underline"

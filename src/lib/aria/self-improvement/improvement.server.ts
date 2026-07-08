@@ -1,9 +1,5 @@
 // Improvement proposal factory — evidence-linked, score-bound.
-import type {
-  Gap,
-  ImprovementProposal,
-  ImprovementScore,
-} from "./types";
+import type { Gap, ImprovementProposal, ImprovementScore } from "./types";
 import { ProposalInputZ } from "./contracts";
 
 export function buildProposal(input: {

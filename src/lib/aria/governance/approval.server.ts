@@ -2,11 +2,7 @@
  * Approval store — request/approve/reject/expire.
  * In-memory; caller can wire to persistence in later phase.
  */
-import type {
-  ApprovalRequest,
-  ApprovalStatus,
-  AuthorityLevel,
-} from "./types";
+import type { ApprovalRequest, ApprovalStatus, AuthorityLevel } from "./types";
 import { ApprovalRequestSchema } from "./contracts";
 import { record } from "./audit-trail.server";
 import { incr } from "./metrics.server";
@@ -35,9 +31,7 @@ export function requestApproval(input: {
     status,
     requested_at: now.toISOString(),
     resolved_at: input.auto ? now.toISOString() : undefined,
-    expires_at: input.ttl_ms
-      ? new Date(now.getTime() + input.ttl_ms).toISOString()
-      : undefined,
+    expires_at: input.ttl_ms ? new Date(now.getTime() + input.ttl_ms).toISOString() : undefined,
   };
   const stored = put(req);
   record({
@@ -82,11 +76,7 @@ export function decideApproval(
 export function expireStale(now: number = Date.now()): number {
   let n = 0;
   for (const [id, req] of store) {
-    if (
-      req.status === "pending" &&
-      req.expires_at &&
-      Date.parse(req.expires_at) < now
-    ) {
+    if (req.status === "pending" && req.expires_at && Date.parse(req.expires_at) < now) {
       put({ ...req, status: "expired", resolved_at: new Date(now).toISOString() });
       record({
         action_id: req.action_id,

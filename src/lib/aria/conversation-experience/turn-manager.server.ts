@@ -29,7 +29,11 @@ export class TurnManager {
     if (idx >= 0) this.turns[idx] = { ...this.turns[idx], interrupted: true };
   }
 
-  attachEvidence(id: string, evidence: ConversationTurn["evidence"], confidence: ConversationTurn["confidence"]): void {
+  attachEvidence(
+    id: string,
+    evidence: ConversationTurn["evidence"],
+    confidence: ConversationTurn["confidence"],
+  ): void {
     const idx = this.turns.findIndex((t) => t.id === id);
     if (idx >= 0) this.turns[idx] = { ...this.turns[idx], evidence, confidence };
   }
@@ -38,7 +42,11 @@ export class TurnManager {
     return this.turns.slice(-n);
   }
 
-  all(): readonly ConversationTurn[] { return this.turns; }
+  all(): readonly ConversationTurn[] {
+    return this.turns;
+  }
 
-  clear(): void { this.turns = []; }
+  clear(): void {
+    this.turns = [];
+  }
 }

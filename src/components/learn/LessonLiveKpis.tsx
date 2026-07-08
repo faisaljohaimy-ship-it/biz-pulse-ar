@@ -34,13 +34,9 @@ export function LessonLiveKpis({ kpis }: { kpis: LiveKpi[] }) {
             TONE[k.tone ?? "info"],
           )}
         >
-          <div className="text-[10px] uppercase tracking-[0.2em] text-white/60">
-            {k.label}
-          </div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-white/60">{k.label}</div>
           <div className="mt-1 font-mono text-2xl font-light text-white">{k.value}</div>
-          {k.hint ? (
-            <div className="mt-1 text-[11px] text-white/50">{k.hint}</div>
-          ) : null}
+          {k.hint ? <div className="mt-1 text-[11px] text-white/50">{k.hint}</div> : null}
           <span
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-60"

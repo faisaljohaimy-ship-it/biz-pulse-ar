@@ -105,9 +105,21 @@ const RELATIONSHIP_DESCRIPTORS = Object.freeze({
   caused_by: rel("caused_by", ["incident", "risk", "report"], ALL_ENTITY_KINDS),
   related_to: rel("related_to", ALL_ENTITY_KINDS, ALL_ENTITY_KINDS, { symmetric: true }),
   depends_on: rel("depends_on", ALL_ENTITY_KINDS, ALL_ENTITY_KINDS, { transitive: true }),
-  assigned_to: rel("assigned_to", ["task", "incident", "inspection", "project", "objective"], ["person", "department", "agent"]),
-  reported_by: rel("reported_by", ["incident", "report", "inspection"], ["person", "agent", "system"]),
-  approved_by: rel("approved_by", ["decision", "recommendation", "policy", "sop"], ["person", "department"]),
+  assigned_to: rel(
+    "assigned_to",
+    ["task", "incident", "inspection", "project", "objective"],
+    ["person", "department", "agent"],
+  ),
+  reported_by: rel(
+    "reported_by",
+    ["incident", "report", "inspection"],
+    ["person", "agent", "system"],
+  ),
+  approved_by: rel(
+    "approved_by",
+    ["decision", "recommendation", "policy", "sop"],
+    ["person", "department"],
+  ),
   violates: rel("violates", ALL_ENTITY_KINDS, ["policy", "sop"]),
   mitigates: rel("mitigates", ["task", "decision", "recommendation", "sop"], ["risk", "incident"]),
   supports: rel("supports", ALL_ENTITY_KINDS, ["decision", "recommendation", "objective"]),
@@ -130,11 +142,7 @@ export function describeRelationship(kind: RelationshipKind): OntologyRelationsh
   return ONTOLOGY.relationships[kind];
 }
 
-export function allowsEdge(
-  kind: RelationshipKind,
-  from: EntityKind,
-  to: EntityKind,
-): boolean {
+export function allowsEdge(kind: RelationshipKind, from: EntityKind, to: EntityKind): boolean {
   const desc = ONTOLOGY.relationships[kind];
   return desc.allowed_from.includes(from) && desc.allowed_to.includes(to);
 }

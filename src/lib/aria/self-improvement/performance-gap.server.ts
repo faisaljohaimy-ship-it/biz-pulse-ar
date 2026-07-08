@@ -13,8 +13,7 @@ export function detectPerformanceGaps(input: {
     if (ev.overall === "unknown") continue;
     if (ev.score >= input.minScore) continue;
     seq += 1;
-    const severity: Gap["severity"] =
-      ev.score < input.minScore / 2 ? "high" : "medium";
+    const severity: Gap["severity"] = ev.score < input.minScore / 2 ? "high" : "medium";
     gaps.push(
       GapInputZ.parse({
         id: `gap_perf_${seq}`,

@@ -23,33 +23,69 @@ interface VoicePair {
 // Curated to keep each persona acoustically unique. All voices are valid
 // names accepted by openai/gpt-4o-mini-tts.
 const VOICES: Record<string, VoicePair> = {
-  aria:        { ar: "shimmer", en: "nova",
-                 instructions: "Calm, warm, executive female voice. Confident and precise." },
-  incident:    { ar: "onyx",    en: "onyx",
-                 instructions: "Decisive command voice. Clear, calm authority. Slightly clipped." },
-  risk:        { ar: "echo",    en: "echo",
-                 instructions: "Measured analytical male voice. Neutral, precise, slightly deliberate." },
-  compliance:  { ar: "sage",    en: "sage",
-                 instructions: "Advisory, composed, respectful tone with policy gravitas." },
-  cctv:        { ar: "ash",     en: "ash",
-                 instructions: "Vigilant operations voice. Crisp, observational, low pitch." },
-  patrol:      { ar: "fable",   en: "fable",
-                 instructions: "Field commander cadence. Steady, alert, slightly outdoor energy." },
-  emergency:   { ar: "onyx",    en: "onyx",
-                 instructions: "Crisis coordinator. Calm, urgent, no panic. Short clean phrases." },
-  visitor:     { ar: "coral",   en: "coral",
-                 instructions: "Welcoming corporate concierge tone. Polite, clear." },
-  knowledge:   { ar: "echo",    en: "echo",
-                 instructions: "Senior knowledge officer. Even, instructional, slightly thoughtful." },
-  reporting:   { ar: "fable",   en: "fable",
-                 instructions: "Executive briefing narrator. Polished, smooth, news-anchor pacing." },
-  twin:        { ar: "ash",     en: "ash",
-                 instructions: "Technical narrator for simulation results. Neutral, precise." },
+  aria: {
+    ar: "shimmer",
+    en: "nova",
+    instructions: "Calm, warm, executive female voice. Confident and precise.",
+  },
+  incident: {
+    ar: "onyx",
+    en: "onyx",
+    instructions: "Decisive command voice. Clear, calm authority. Slightly clipped.",
+  },
+  risk: {
+    ar: "echo",
+    en: "echo",
+    instructions: "Measured analytical male voice. Neutral, precise, slightly deliberate.",
+  },
+  compliance: {
+    ar: "sage",
+    en: "sage",
+    instructions: "Advisory, composed, respectful tone with policy gravitas.",
+  },
+  cctv: {
+    ar: "ash",
+    en: "ash",
+    instructions: "Vigilant operations voice. Crisp, observational, low pitch.",
+  },
+  patrol: {
+    ar: "fable",
+    en: "fable",
+    instructions: "Field commander cadence. Steady, alert, slightly outdoor energy.",
+  },
+  emergency: {
+    ar: "onyx",
+    en: "onyx",
+    instructions: "Crisis coordinator. Calm, urgent, no panic. Short clean phrases.",
+  },
+  visitor: {
+    ar: "coral",
+    en: "coral",
+    instructions: "Welcoming corporate concierge tone. Polite, clear.",
+  },
+  knowledge: {
+    ar: "echo",
+    en: "echo",
+    instructions: "Senior knowledge officer. Even, instructional, slightly thoughtful.",
+  },
+  reporting: {
+    ar: "fable",
+    en: "fable",
+    instructions: "Executive briefing narrator. Polished, smooth, news-anchor pacing.",
+  },
+  twin: {
+    ar: "ash",
+    en: "ash",
+    instructions: "Technical narrator for simulation results. Neutral, precise.",
+  },
 };
 
 const DEFAULT: VoicePair = VOICES.aria;
 
-export function resolveVoice(profileId: string | undefined, lang: VoiceLang): { voice: string; instructions?: string } {
+export function resolveVoice(
+  profileId: string | undefined,
+  lang: VoiceLang,
+): { voice: string; instructions?: string } {
   const pair = (profileId && VOICES[profileId]) || DEFAULT;
   return { voice: lang === "ar" ? pair.ar : pair.en, instructions: pair.instructions };
 }
@@ -61,12 +97,19 @@ export function resolveVoice(profileId: string | undefined, lang: VoiceLang): { 
  */
 export function narratorAgentToHumanId(agent: string): string {
   switch (agent) {
-    case "risk_analyst":          return "risk_intelligence";
-    case "patrol_intelligence":   return "patrol_commander";
-    case "asset_intelligence":    return "digital_twin";
-    case "permit_authority":      return "compliance_auditor";
-    case "predictive_analytics":  return "risk_intelligence";
-    case "workflow_supervisor":   return "aria";
-    default:                      return agent;
+    case "risk_analyst":
+      return "risk_intelligence";
+    case "patrol_intelligence":
+      return "patrol_commander";
+    case "asset_intelligence":
+      return "digital_twin";
+    case "permit_authority":
+      return "compliance_auditor";
+    case "predictive_analytics":
+      return "risk_intelligence";
+    case "workflow_supervisor":
+      return "aria";
+    default:
+      return agent;
   }
 }

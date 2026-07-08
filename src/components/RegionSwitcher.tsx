@@ -41,7 +41,12 @@ export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
       >
         <MapPin className="h-3.5 w-3.5 shrink-0 text-[#3AE8FF]" />
         <span className="min-w-0 flex-1 truncate">{label}</span>
-        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition", open && "rotate-180")} />
+        <ChevronDown
+          className={cn(
+            "h-3.5 w-3.5 shrink-0 text-muted-foreground transition",
+            open && "rotate-180",
+          )}
+        />
       </button>
 
       {open && (
@@ -70,7 +75,14 @@ export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
                       : "text-sidebar-foreground/80 hover:bg-[#3AE8FF]/10 hover:text-white",
                   )}
                 >
-                  <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", active ? "bg-[#3AE8FF] shadow-[0_0_8px_rgba(58,232,255,0.8)]" : "bg-muted-foreground/40")} />
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 shrink-0 rounded-full",
+                      active
+                        ? "bg-[#3AE8FF] shadow-[0_0_8px_rgba(58,232,255,0.8)]"
+                        : "bg-muted-foreground/40",
+                    )}
+                  />
                   <span className="truncate">{ar ? r.shortAr : r.shortEn}</span>
                   <span className="ms-auto truncate text-[10px] text-muted-foreground">
                     {ar ? "الأمن الصناعي" : "Industrial Security"}

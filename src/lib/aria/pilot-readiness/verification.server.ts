@@ -49,13 +49,7 @@ export function verifyPilotReadiness(input: {
   let decision: PilotDecision;
   if (reasons.length > 0) {
     decision = "NO_GO";
-  } else if (
-    !allRunAccept ||
-    anyUnknownAccept ||
-    anyUnknownMeasure ||
-    unknownRoi ||
-    unknownValue
-  ) {
+  } else if (!allRunAccept || anyUnknownAccept || anyUnknownMeasure || unknownRoi || unknownValue) {
     decision = "GO_WITH_KNOWN_LIMITATIONS";
     if (!allRunAccept) reasons.push("acceptance_incomplete");
     if (anyUnknownAccept) reasons.push("acceptance_unknown");

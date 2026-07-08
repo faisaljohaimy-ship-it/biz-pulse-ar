@@ -19,22 +19,11 @@ export type EvidenceStrength = "weak" | "moderate" | "strong" | "conclusive";
 
 export type SimulationOutcome = "best" | "expected" | "worst";
 
-export type ContradictionKind =
-  | "logical"
-  | "policy"
-  | "memory"
-  | "context"
-  | "evidence";
+export type ContradictionKind = "logical" | "policy" | "memory" | "context" | "evidence";
 
 export interface EvidenceSource {
   readonly id: string;
-  readonly kind:
-    | "memory"
-    | "context"
-    | "execution"
-    | "reasoning"
-    | "learning"
-    | "external";
+  readonly kind: "memory" | "context" | "execution" | "reasoning" | "learning" | "external";
   readonly label: string;
   readonly trust: number;
 }
@@ -230,12 +219,7 @@ export interface CognitiveMetrics {
   readonly lastRunAt: string | null;
 }
 
-export type CognitiveHealthStatus =
-  | "healthy"
-  | "learning"
-  | "uncertain"
-  | "blocked"
-  | "degraded";
+export type CognitiveHealthStatus = "healthy" | "learning" | "uncertain" | "blocked" | "degraded";
 
 export interface CognitiveHealth {
   readonly status: CognitiveHealthStatus;

@@ -38,9 +38,12 @@ export function verifySnapshot(input: unknown): VerificationResult {
   if (snap.turns.length === 0) issues.push("no turns recorded");
   const lastAssistant = [...snap.turns].reverse().find((t) => t.role === "assistant");
   const evidence = lastAssistant?.evidence?.length ?? 0;
-  const confidence: VerificationResult["confidence"] =
-    !lastAssistant ? "unknown" :
-    evidence === 0 ? "low" :
-    evidence < 3 ? "medium" : "high";
+  const confidence: VerificationResult["confidence"] = !lastAssistant
+    ? "unknown"
+    : evidence === 0
+      ? "low"
+      : evidence < 3
+        ? "medium"
+        : "high";
   return { ok: issues.length === 0, issues, confidence };
 }

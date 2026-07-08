@@ -22,7 +22,8 @@ export function offer(input: Omit<NegotiationOffer, "status" | "at">): Negotiati
 function findLatest(from: string, to: string, capability: string): NegotiationOffer | null {
   for (let i = offers.length - 1; i >= 0; i--) {
     const o = offers[i]!;
-    if (o.from_agent_id === from && o.to_agent_id === to && o.capability_id === capability) return o;
+    if (o.from_agent_id === from && o.to_agent_id === to && o.capability_id === capability)
+      return o;
   }
   return null;
 }

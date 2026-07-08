@@ -4,10 +4,25 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { createThread, deleteThread, getThreadMessages, listThreads } from "@/lib/threads.functions";
+import {
+  createThread,
+  deleteThread,
+  getThreadMessages,
+  listThreads,
+} from "@/lib/threads.functions";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, MessageSquare, Sparkles, Send, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  MessageSquare,
+  Sparkles,
+  Send,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useAriaVoice } from "@/lib/aria-voice";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,8 +35,11 @@ import {
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
-import { CitationsPanel, type CitationItem, type CoverageInfo } from "@/components/aria/CitationsPanel";
-
+import {
+  CitationsPanel,
+  type CitationItem,
+  type CoverageInfo,
+} from "@/components/aria/CitationsPanel";
 
 export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
   component: AssistantThread,
@@ -69,7 +87,9 @@ function AssistantThread() {
               key={th.id}
               className={cn(
                 "group flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors",
-                threadId === th.id ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                threadId === th.id
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50",
               )}
             >
               <Link
@@ -100,13 +120,24 @@ function AssistantThread() {
       {/* Chat */}
       <div className="flex min-w-0 flex-1 flex-col">
         {messagesQ.isLoading ? (
-          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">...</div>
+          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+            ...
+          </div>
         ) : messagesQ.error ? (
-          <div className="flex flex-1 items-center justify-center p-6 text-sm text-destructive" role="alert">
-            {messagesQ.error instanceof Error ? messagesQ.error.message : "ARIA messages could not load."}
+          <div
+            className="flex flex-1 items-center justify-center p-6 text-sm text-destructive"
+            role="alert"
+          >
+            {messagesQ.error instanceof Error
+              ? messagesQ.error.message
+              : "ARIA messages could not load."}
           </div>
         ) : (
-          <ChatWindow key={threadId} threadId={threadId} initialMessages={(messagesQ.data ?? []) as unknown as UIMessage[]} />
+          <ChatWindow
+            key={threadId}
+            threadId={threadId}
+            initialMessages={(messagesQ.data ?? []) as unknown as UIMessage[]}
+          />
         )}
       </div>
     </div>
@@ -125,7 +156,13 @@ const makeRequestId = () =>
     ? crypto.randomUUID()
     : `aria-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
-function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMessages: UIMessage[] }) {
+function ChatWindow({
+  threadId,
+  initialMessages,
+}: {
+  threadId: string;
+  initialMessages: UIMessage[];
+}) {
   const { t, locale } = useI18n();
   const qc = useQueryClient();
   const [input, setInput] = useState("");
@@ -154,7 +191,11 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
           headers.set("X-ARIA-Request-ID", requestId);
           if (token) headers.set("Authorization", `Bearer ${token}`);
           const started = performance.now();
-          console.info("[assistant] request:start", { requestId, threadId, model: modelRef.current });
+          console.info("[assistant] request:start", {
+            requestId,
+            threadId,
+            model: modelRef.current,
+          });
           for (let attempt = 1; attempt <= 2; attempt += 1) {
             try {
               const res = await fetch(url, { ...init, headers });
@@ -168,13 +209,16 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
               if (!res.ok) {
                 const cloned = res.clone();
                 try {
-                  const payload = await cloned.json() as { error?: string; requestId?: string };
+                  const payload = (await cloned.json()) as { error?: string; requestId?: string };
                   if (payload.error) {
-                    return new Response(`${payload.error}${payload.requestId ? ` · ${payload.requestId}` : ""}`, {
-                      status: res.status,
-                      statusText: res.statusText,
-                      headers: res.headers,
-                    });
+                    return new Response(
+                      `${payload.error}${payload.requestId ? ` · ${payload.requestId}` : ""}`,
+                      {
+                        status: res.status,
+                        statusText: res.statusText,
+                        headers: res.headers,
+                      },
+                    );
                   }
                 } catch {
                   // Fall back to the original response body below.
@@ -202,7 +246,12 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
       setChatError(err instanceof Error ? err.message : String(err));
     },
     onFinish: ({ message, isError, finishReason }) => {
-      console.info("[assistant] finish", { threadId, isError, finishReason, parts: message.parts.length });
+      console.info("[assistant] finish", {
+        threadId,
+        isError,
+        finishReason,
+        parts: message.parts.length,
+      });
       if (!isError) setChatError(null);
     },
   });
@@ -240,7 +289,10 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
     if (status !== "ready") return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant" || last.id === lastSpokenRef.current) return;
-    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join(" ").trim();
+    const text = last.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join(" ")
+      .trim();
     if (text.length < 4) return;
     lastSpokenRef.current = last.id;
     voice.speak(text);
@@ -285,12 +337,18 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
               if (prev.some((m) => m.id === uiMsg.id)) return prev;
               // Avoid double-render if useChat already appended the assistant
               // response with its own id during streaming.
-              const newText = uiMsg.parts.map((p) => (p.type === "text" ? p.text ?? "" : "")).join("").trim();
+              const newText = uiMsg.parts
+                .map((p) => (p.type === "text" ? (p.text ?? "") : ""))
+                .join("")
+                .trim();
               if (newText) {
                 const dup = prev.some(
                   (m) =>
                     m.role === "assistant" &&
-                    m.parts.map((p) => (p.type === "text" ? p.text ?? "" : "")).join("").trim() === newText,
+                    m.parts
+                      .map((p) => (p.type === "text" ? (p.text ?? "") : ""))
+                      .join("")
+                      .trim() === newText,
                 );
                 if (dup) return prev;
               }
@@ -307,13 +365,16 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
 
     return () => {
       if (channel) {
-        try { channel.unsubscribe(); } catch { /* noop */ }
+        try {
+          channel.unsubscribe();
+        } catch {
+          /* noop */
+        }
         supabase.removeChannel(channel);
       }
       channelRef.current = null;
     };
   }, [threadId, qc, setMessages]);
-
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -368,7 +429,9 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{t("assistant.title")}</div>
-          <div className="text-[11px] text-muted-foreground">{locale.toUpperCase()} · Lovable AI</div>
+          <div className="text-[11px] text-muted-foreground">
+            {locale.toUpperCase()} · Lovable AI
+          </div>
         </div>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="hidden sm:inline">{t("assistant.model")}</span>
@@ -378,7 +441,9 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             className="rounded-md border border-border bg-card px-2 py-1.5 text-xs text-foreground outline-none focus:border-primary"
           >
             {MODELS.map((m) => (
-              <option key={m.id} value={m.id}>{m.label}</option>
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
             ))}
           </select>
         </label>
@@ -408,11 +473,20 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             </div>
           ) : (
             messages.map((m, idx) => {
-              const meta = (m as unknown as { metadata?: { citations?: CitationItem[]; coverage?: CoverageInfo } }).metadata;
+              const meta = (
+                m as unknown as {
+                  metadata?: { citations?: CitationItem[]; coverage?: CoverageInfo };
+                }
+              ).metadata;
               const isLast = idx === messages.length - 1;
               const isStreamingThis = isLast && m.role === "assistant" && status === "streaming";
-              const textLen = m.parts.reduce((n, p) => n + (p.type === "text" ? (p.text?.length ?? 0) : 0), 0);
-              const toolCount = m.parts.filter((p) => p.type.startsWith("tool-") || p.type === "tool-invocation").length;
+              const textLen = m.parts.reduce(
+                (n, p) => n + (p.type === "text" ? (p.text?.length ?? 0) : 0),
+                0,
+              );
+              const toolCount = m.parts.filter(
+                (p) => p.type.startsWith("tool-") || p.type === "tool-invocation",
+              ).length;
               return (
                 <Message from={m.role} key={m.id} className="animate-fade-in">
                   <MessageContent>
@@ -433,7 +507,12 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
                         );
                       }
                       if (p.type.startsWith("tool-") || p.type === "tool-invocation") {
-                        return <ToolInvocation key={i} part={p as Parameters<typeof ToolInvocation>[0]["part"]} />;
+                        return (
+                          <ToolInvocation
+                            key={i}
+                            part={p as Parameters<typeof ToolInvocation>[0]["part"]}
+                          />
+                        );
                       }
                       return null;
                     })}
@@ -444,38 +523,56 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
                         locale={locale as "ar" | "en"}
                       />
                     )}
-                    {m.role === "assistant" && (textLen > 0 || toolCount > 0 || isStreamingThis) && (
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/80">
-                        {isStreamingThis ? (
-                          <span className="inline-flex items-center gap-1 text-primary">
-                            <span className="inline-flex gap-0.5" aria-hidden>
-                              <span className="h-1 w-1 rounded-full bg-current" style={{ animation: "aria-dot 1.2s -0.32s infinite" }} />
-                              <span className="h-1 w-1 rounded-full bg-current" style={{ animation: "aria-dot 1.2s -0.16s infinite" }} />
-                              <span className="h-1 w-1 rounded-full bg-current" style={{ animation: "aria-dot 1.2s infinite" }} />
+                    {m.role === "assistant" &&
+                      (textLen > 0 || toolCount > 0 || isStreamingThis) && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/80">
+                          {isStreamingThis ? (
+                            <span className="inline-flex items-center gap-1 text-primary">
+                              <span className="inline-flex gap-0.5" aria-hidden>
+                                <span
+                                  className="h-1 w-1 rounded-full bg-current"
+                                  style={{ animation: "aria-dot 1.2s -0.32s infinite" }}
+                                />
+                                <span
+                                  className="h-1 w-1 rounded-full bg-current"
+                                  style={{ animation: "aria-dot 1.2s -0.16s infinite" }}
+                                />
+                                <span
+                                  className="h-1 w-1 rounded-full bg-current"
+                                  style={{ animation: "aria-dot 1.2s infinite" }}
+                                />
+                              </span>
+                              {locale === "ar" ? "يبثّ…" : "Streaming…"}
                             </span>
-                            {locale === "ar" ? "يبثّ…" : "Streaming…"}
+                          ) : (
+                            <span
+                              className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"
+                              aria-hidden
+                            />
+                          )}
+                          <span className="rounded bg-muted/60 px-1.5 py-0.5 tabular-nums">
+                            {model.split("/").pop()}
                           </span>
-                        ) : (
-                          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
-                        )}
-                        <span className="rounded bg-muted/60 px-1.5 py-0.5 tabular-nums">{model.split("/").pop()}</span>
-                        {textLen > 0 && (
-                          <span className="tabular-nums" title={locale === "ar" ? "عدد المحارف" : "Characters"}>
-                            {textLen.toLocaleString()} {locale === "ar" ? "حرف" : "chars"}
-                          </span>
-                        )}
-                        {toolCount > 0 && (
-                          <span className="tabular-nums">
-                            {toolCount} {locale === "ar" ? "أداة" : toolCount === 1 ? "tool" : "tools"}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                          {textLen > 0 && (
+                            <span
+                              className="tabular-nums"
+                              title={locale === "ar" ? "عدد المحارف" : "Characters"}
+                            >
+                              {textLen.toLocaleString()} {locale === "ar" ? "حرف" : "chars"}
+                            </span>
+                          )}
+                          {toolCount > 0 && (
+                            <span className="tabular-nums">
+                              {toolCount}{" "}
+                              {locale === "ar" ? "أداة" : toolCount === 1 ? "tool" : "tools"}
+                            </span>
+                          )}
+                        </div>
+                      )}
                   </MessageContent>
                 </Message>
               );
             })
-
           )}
           {status === "submitted" && (
             <Message from="assistant" className="animate-fade-in">
@@ -491,7 +588,6 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
-
 
       <form
         onSubmit={onSubmit}
@@ -511,10 +607,20 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
           <div className="mb-2 flex items-start justify-between gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
             <span className="break-all">⚠ {chatError}</span>
             <div className="flex shrink-0 items-center gap-2">
-              <button type="button" onClick={retryLast} className="font-medium underline-offset-2 hover:underline">
+              <button
+                type="button"
+                onClick={retryLast}
+                className="font-medium underline-offset-2 hover:underline"
+              >
                 {locale === "ar" ? "إعادة المحاولة" : "Retry"}
               </button>
-              <button type="button" onClick={() => setChatError(null)} className="opacity-60 hover:opacity-100">×</button>
+              <button
+                type="button"
+                onClick={() => setChatError(null)}
+                className="opacity-60 hover:opacity-100"
+              >
+                ×
+              </button>
             </div>
           </div>
         )}
@@ -524,8 +630,14 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
             size="icon"
             variant={voice.listening ? "default" : "ghost"}
             onClick={voice.toggleListening}
-            className={cn(voice.listening && "animate-pulse bg-destructive hover:bg-destructive/90")}
-            title={voice.listening ? t("assistant.stop_listening") ?? "Stop" : t("assistant.start_listening") ?? "Speak"}
+            className={cn(
+              voice.listening && "animate-pulse bg-destructive hover:bg-destructive/90",
+            )}
+            title={
+              voice.listening
+                ? (t("assistant.stop_listening") ?? "Stop")
+                : (t("assistant.start_listening") ?? "Speak")
+            }
           >
             {voice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           </Button>

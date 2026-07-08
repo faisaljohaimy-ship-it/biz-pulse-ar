@@ -24,9 +24,8 @@ export class VoicePresenceEngine {
       return;
     }
     const amp = this.source ? this.source() : null;
-    const target = amp !== null && amp !== undefined && Number.isFinite(amp)
-      ? Math.min(1, Math.max(0, amp))
-      : 0;
+    const target =
+      amp !== null && amp !== undefined && Number.isFinite(amp) ? Math.min(1, Math.max(0, amp)) : 0;
     // Slower attack than lip so bars feel like breath, not lips
     this.current = this.current + (target - this.current) * 0.22;
     this.sync.patch({ speakingBars: this.current });

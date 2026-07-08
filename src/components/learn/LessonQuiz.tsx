@@ -43,7 +43,9 @@ export function LessonQuiz({ slug, lang, passScore, onPassed }: Props) {
   });
 
   if (q.isLoading) {
-    return <div className="text-sm text-white/50">{ar ? "جاري تحميل الاختبار…" : "Loading quiz…"}</div>;
+    return (
+      <div className="text-sm text-white/50">{ar ? "جاري تحميل الاختبار…" : "Loading quiz…"}</div>
+    );
   }
   if (q.isError) {
     return <div className="text-sm text-rose-300">{(q.error as Error).message}</div>;
@@ -69,7 +71,9 @@ export function LessonQuiz({ slug, lang, passScore, onPassed }: Props) {
           )}
         >
           <div className="flex items-center gap-3">
-            <Award className={cn("h-6 w-6", result.passed ? "text-emerald-300" : "text-amber-300")} />
+            <Award
+              className={cn("h-6 w-6", result.passed ? "text-emerald-300" : "text-amber-300")}
+            />
             <div>
               <div className="text-lg font-semibold text-white">
                 {ar ? "النتيجة" : "Score"}: {result.score}%
@@ -81,8 +85,12 @@ export function LessonQuiz({ slug, lang, passScore, onPassed }: Props) {
           </div>
           <div className="text-sm text-white/80">
             {result.passed
-              ? (ar ? "✓ اجتزت هذه الحصة" : "✓ You have completed this lesson")
-              : (ar ? "أعد المحاولة لاجتياز الحصة" : "Try again to pass this lesson")}
+              ? ar
+                ? "✓ اجتزت هذه الحصة"
+                : "✓ You have completed this lesson"
+              : ar
+                ? "أعد المحاولة لاجتياز الحصة"
+                : "Try again to pass this lesson"}
           </div>
           <button
             onClick={reset}
@@ -117,10 +125,15 @@ export function LessonQuiz({ slug, lang, passScore, onPassed }: Props) {
                       className={cn(
                         "flex items-start gap-3 rounded-xl border px-3 py-2 text-sm text-white/90 transition-colors",
                         !result && selected && "border-cyan-400/60 bg-cyan-400/10",
-                        !result && !selected && "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]",
+                        !result &&
+                          !selected &&
+                          "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]",
                         result && isCorrect && "border-emerald-400/60 bg-emerald-400/10",
                         result && isWrongPick && "border-rose-400/60 bg-rose-400/10",
-                        result && !isCorrect && !isWrongPick && "border-white/10 bg-white/[0.02] opacity-60",
+                        result &&
+                          !isCorrect &&
+                          !isWrongPick &&
+                          "border-white/10 bg-white/[0.02] opacity-60",
                       )}
                     >
                       {result && isCorrect ? (
@@ -128,10 +141,14 @@ export function LessonQuiz({ slug, lang, passScore, onPassed }: Props) {
                       ) : result && isWrongPick ? (
                         <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
                       ) : (
-                        <span className={cn(
-                          "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[10px]",
-                          selected ? "border-cyan-400 bg-cyan-400/20 text-cyan-100" : "border-white/30 text-white/50",
-                        )}>
+                        <span
+                          className={cn(
+                            "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[10px]",
+                            selected
+                              ? "border-cyan-400 bg-cyan-400/20 text-cyan-100"
+                              : "border-white/30 text-white/50",
+                          )}
+                        >
                           {String.fromCharCode(65 + i)}
                         </span>
                       )}

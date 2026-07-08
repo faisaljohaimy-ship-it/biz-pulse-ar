@@ -5,34 +5,53 @@ import type { ReactNode } from "react";
 type Tab = { to: string; en: string; ar: string };
 
 const TABS: Tab[] = [
-  { to: "/trust",         en: "Trust",         ar: "الثقة" },
-  { to: "/security",      en: "Security",      ar: "الأمن" },
-  { to: "/dpa",           en: "DPA",           ar: "ملحق المعالجة" },
+  { to: "/trust", en: "Trust", ar: "الثقة" },
+  { to: "/security", en: "Security", ar: "الأمن" },
+  { to: "/dpa", en: "DPA", ar: "ملحق المعالجة" },
   { to: "/subprocessors", en: "Subprocessors", ar: "المورّدون الفرعيون" },
-  { to: "/sla",           en: "SLA",           ar: "اتفاقية الخدمة" },
+  { to: "/sla", en: "SLA", ar: "اتفاقية الخدمة" },
 ];
 
 export function TrustShell({
-  isAr, eyebrow, eyebrowAr, title, titleAr, subtitle, subtitleAr, qualifier, qualifierAr,
-  active, children,
+  isAr,
+  eyebrow,
+  eyebrowAr,
+  title,
+  titleAr,
+  subtitle,
+  subtitleAr,
+  qualifier,
+  qualifierAr,
+  active,
+  children,
 }: {
   isAr: boolean;
-  eyebrow: string; eyebrowAr: string;
-  title: string;   titleAr: string;
-  subtitle: string; subtitleAr: string;
-  qualifier?: string; qualifierAr?: string;
+  eyebrow: string;
+  eyebrowAr: string;
+  title: string;
+  titleAr: string;
+  subtitle: string;
+  subtitleAr: string;
+  qualifier?: string;
+  qualifierAr?: string;
   active: string;
   children: ReactNode;
 }) {
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground"
+    >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(214,158,46,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.06),transparent_60%)]" />
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(214,158,46,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(214,158,46,0.05)_1px,transparent_1px)] [background-size:56px_56px] opacity-25" />
       </div>
 
       <header className="relative z-10 mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-5 sm:px-6 sm:py-6">
-        <Link to="/" className="inline-flex min-w-0 items-center gap-2 truncate text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex min-w-0 items-center gap-2 truncate text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className={`h-4 w-4 shrink-0 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
@@ -86,7 +105,17 @@ export function TrustShell({
   );
 }
 
-export function SectionTitle({ isAr, en, ar, icon }: { isAr: boolean; en: string; ar: string; icon?: ReactNode }) {
+export function SectionTitle({
+  isAr,
+  en,
+  ar,
+  icon,
+}: {
+  isAr: boolean;
+  en: string;
+  ar: string;
+  icon?: ReactNode;
+}) {
   return (
     <div className="mb-5 flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-amber-300/80 sm:text-xs sm:tracking-[0.28em]">
       {icon}
@@ -97,7 +126,9 @@ export function SectionTitle({ isAr, en, ar, icon }: { isAr: boolean; en: string
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 ${className}`}>{children}</div>
+    <div className={`rounded-xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 ${className}`}>
+      {children}
+    </div>
   );
 }
 
@@ -105,7 +136,10 @@ export function Bullets({ items, isAr }: { items: { en: string; ar: string }[]; 
   return (
     <ul className="space-y-2.5">
       {items.map((b, i) => (
-        <li key={i} className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground">
+        <li
+          key={i}
+          className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground"
+        >
           <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-amber-300/80" />
           <span>{isAr ? b.ar : b.en}</span>
         </li>

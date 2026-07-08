@@ -57,7 +57,9 @@ export const getMicrosoftIntegration = createServerFn({ method: "GET" })
 const upsertSchema = z.object({
   tenant_id: z.string().trim().max(200).nullable().optional(),
   client_id: z.string().trim().max(200).nullable().optional(),
-  redirect_uris: z.array(z.string().trim().url({ message: "Each redirect URI must be a valid URL" }).max(500)).max(20),
+  redirect_uris: z
+    .array(z.string().trim().url({ message: "Each redirect URI must be a valid URL" }).max(500))
+    .max(20),
   default_site_id: z.string().trim().max(300).nullable().optional(),
   default_team_id: z.string().trim().max(200).nullable().optional(),
   default_channel_id: z.string().trim().max(200).nullable().optional(),
@@ -110,13 +112,20 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
     const lovableKey = process.env.LOVABLE_API_KEY;
     const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
     if (!lovableKey || !outlookKey) {
-      const result: ConnectionTestResult = { ok: false, status: 0, error: "Microsoft Outlook connector not linked" };
-      await context.supabase.from("integration_microsoft").update({
-        last_tested_at: new Date().toISOString(),
-        last_test_status: "missing_connector",
-        last_test_error: result.error,
-        last_test_user: null,
-      }).gte("id", "00000000-0000-0000-0000-000000000000");
+      const result: ConnectionTestResult = {
+        ok: false,
+        status: 0,
+        error: "Microsoft Outlook connector not linked",
+      };
+      await context.supabase
+        .from("integration_microsoft")
+        .update({
+          last_tested_at: new Date().toISOString(),
+          last_test_status: "missing_connector",
+          last_test_error: result.error,
+          last_test_user: null,
+        })
+        .gte("id", "00000000-0000-0000-0000-000000000000");
       return result;
     }
     let result: ConnectionTestResult;
@@ -132,22 +141,42 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
         timeoutMs: 12_000,
       });
       const text = await r.text();
-      let body: { displayName?: string; userPrincipalName?: string; mail?: string; error?: { message?: string } } = {};
-      try { body = JSON.parse(text); } catch { /* non-JSON */ }
+      let body: {
+        displayName?: string;
+        userPrincipalName?: string;
+        mail?: string;
+        error?: { message?: string };
+      } = {};
+      try {
+        body = JSON.parse(text);
+      } catch {
+        /* non-JSON */
+      }
       if (!r.ok) {
         result = { ok: false, status: r.status, error: body?.error?.message ?? text.slice(0, 500) };
       } else {
-        result = { ok: true, status: r.status, user: { displayName: body.displayName, userPrincipalName: body.userPrincipalName, mail: body.mail } };
+        result = {
+          ok: true,
+          status: r.status,
+          user: {
+            displayName: body.displayName,
+            userPrincipalName: body.userPrincipalName,
+            mail: body.mail,
+          },
+        };
       }
     } catch (e) {
       result = { ok: false, status: 0, error: e instanceof Error ? e.message : String(e) };
     }
-    await context.supabase.from("integration_microsoft").update({
-      last_tested_at: new Date().toISOString(),
-      last_test_status: result.ok ? "ok" : "error",
-      last_test_error: result.ok ? null : (result.error ?? null),
-      last_test_user: result.user?.userPrincipalName ?? result.user?.mail ?? null,
-    }).gte("id", "00000000-0000-0000-0000-000000000000");
+    await context.supabase
+      .from("integration_microsoft")
+      .update({
+        last_tested_at: new Date().toISOString(),
+        last_test_status: result.ok ? "ok" : "error",
+        last_test_error: result.ok ? null : (result.error ?? null),
+        last_test_user: result.user?.userPrincipalName ?? result.user?.mail ?? null,
+      })
+      .gte("id", "00000000-0000-0000-0000-000000000000");
     return result;
   });
 
@@ -220,5 +249,3 @@ export const triggerMicrosoftSyncNow = createServerFn({ method: "POST" })
     const body = await r.text();
     return { ok: r.ok, status: r.status, body: body.slice(0, 2000) };
   });
-
-

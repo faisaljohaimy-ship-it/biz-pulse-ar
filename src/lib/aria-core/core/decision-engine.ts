@@ -12,11 +12,7 @@ import type {
   RiskSignal,
 } from "../types/executive";
 
-const APPROVAL_MODES: ReadonlySet<DecisionMode> = new Set([
-  "act_now",
-  "escalate",
-  "delay",
-]);
+const APPROVAL_MODES: ReadonlySet<DecisionMode> = new Set(["act_now", "escalate", "delay"]);
 
 function id(mode: string) {
   return `${mode}_${Math.random().toString(36).slice(2, 8)}`;

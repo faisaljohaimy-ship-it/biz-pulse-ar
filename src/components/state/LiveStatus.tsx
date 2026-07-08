@@ -11,15 +11,66 @@ export type LiveStatusVariant =
   | "live"
   | "idle";
 
-const VARIANTS: Record<LiveStatusVariant, { label: string; icon: typeof Activity; cls: string; dot: string; pulse: boolean }> = {
-  initializing: { label: "Initializing", icon: Loader2, cls: "text-cyan-300 border-cyan-500/30 bg-cyan-500/10", dot: "bg-cyan-400", pulse: true },
-  monitoring:   { label: "Monitoring",   icon: Radio,    cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10", dot: "bg-emerald-400", pulse: true },
-  queued:       { label: "Queued",       icon: Activity, cls: "text-slate-300 border-slate-500/30 bg-slate-500/10", dot: "bg-slate-400", pulse: false },
-  discovering:  { label: "Discovering",  icon: Search,   cls: "text-sky-300 border-sky-500/30 bg-sky-500/10", dot: "bg-sky-400", pulse: true },
-  syncing:      { label: "Syncing",      icon: RefreshCw,cls: "text-indigo-300 border-indigo-500/30 bg-indigo-500/10", dot: "bg-indigo-400", pulse: true },
-  processing:   { label: "Processing",   icon: Cpu,      cls: "text-amber-300 border-amber-500/30 bg-amber-500/10", dot: "bg-amber-400", pulse: true },
-  live:         { label: "Live",         icon: CheckCircle2, cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10", dot: "bg-emerald-400", pulse: true },
-  idle:         { label: "Idle",         icon: Moon,     cls: "text-muted-foreground border-border/40 bg-muted/10", dot: "bg-muted-foreground", pulse: false },
+const VARIANTS: Record<
+  LiveStatusVariant,
+  { label: string; icon: typeof Activity; cls: string; dot: string; pulse: boolean }
+> = {
+  initializing: {
+    label: "Initializing",
+    icon: Loader2,
+    cls: "text-cyan-300 border-cyan-500/30 bg-cyan-500/10",
+    dot: "bg-cyan-400",
+    pulse: true,
+  },
+  monitoring: {
+    label: "Monitoring",
+    icon: Radio,
+    cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10",
+    dot: "bg-emerald-400",
+    pulse: true,
+  },
+  queued: {
+    label: "Queued",
+    icon: Activity,
+    cls: "text-slate-300 border-slate-500/30 bg-slate-500/10",
+    dot: "bg-slate-400",
+    pulse: false,
+  },
+  discovering: {
+    label: "Discovering",
+    icon: Search,
+    cls: "text-sky-300 border-sky-500/30 bg-sky-500/10",
+    dot: "bg-sky-400",
+    pulse: true,
+  },
+  syncing: {
+    label: "Syncing",
+    icon: RefreshCw,
+    cls: "text-indigo-300 border-indigo-500/30 bg-indigo-500/10",
+    dot: "bg-indigo-400",
+    pulse: true,
+  },
+  processing: {
+    label: "Processing",
+    icon: Cpu,
+    cls: "text-amber-300 border-amber-500/30 bg-amber-500/10",
+    dot: "bg-amber-400",
+    pulse: true,
+  },
+  live: {
+    label: "Live",
+    icon: CheckCircle2,
+    cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10",
+    dot: "bg-emerald-400",
+    pulse: true,
+  },
+  idle: {
+    label: "Idle",
+    icon: Moon,
+    cls: "text-muted-foreground border-border/40 bg-muted/10",
+    dot: "bg-muted-foreground",
+    pulse: false,
+  },
 };
 
 export type LiveStatusProps = {
@@ -34,7 +85,13 @@ export type LiveStatusProps = {
  * Token-driven live status indicator. Replaces blank/empty UI states with an
  * operational signal: initializing → monitoring → live, etc.
  */
-export function LiveStatus({ variant = "monitoring", label, hint, className, size = "md" }: LiveStatusProps) {
+export function LiveStatus({
+  variant = "monitoring",
+  label,
+  hint,
+  className,
+  size = "md",
+}: LiveStatusProps) {
   const v = VARIANTS[variant];
   const Icon = v.icon;
   const spin = variant === "initializing" || variant === "syncing";
@@ -49,7 +106,11 @@ export function LiveStatus({ variant = "monitoring", label, hint, className, siz
     >
       <span className="relative inline-flex">
         <span className={cn("size-1.5 rounded-full", v.dot)} />
-        {v.pulse ? <span className={cn("absolute inset-0 size-1.5 rounded-full animate-ping opacity-60", v.dot)} /> : null}
+        {v.pulse ? (
+          <span
+            className={cn("absolute inset-0 size-1.5 rounded-full animate-ping opacity-60", v.dot)}
+          />
+        ) : null}
       </span>
       <Icon className={cn(size === "sm" ? "size-3" : "size-3.5", spin && "animate-spin")} />
       <span className="tracking-wider uppercase">{label ?? v.label}</span>
@@ -73,12 +134,16 @@ export function LiveStatusBlock({
 }) {
   const ts = lastSync ? new Date(lastSync).toLocaleTimeString() : null;
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-3 py-8 text-center", className)}>
+    <div
+      className={cn("flex flex-col items-center justify-center gap-3 py-8 text-center", className)}
+    >
       <LiveStatus variant={variant} />
       <div className="space-y-1">
         <div className="text-sm text-foreground/80">{title}</div>
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
-        {ts ? <div className="text-[10px] text-muted-foreground font-mono">last sync · {ts}</div> : null}
+        {ts ? (
+          <div className="text-[10px] text-muted-foreground font-mono">last sync · {ts}</div>
+        ) : null}
       </div>
     </div>
   );

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { X, TrendingUp, Briefcase, Bot, ShieldAlert, Building2 } from "lucide-react";
 import { SafeSvg } from "@/components/SafeSvg";
 
-
 /**
  * Cinematic Riyadh skyline + executive holograms.
  * - SVG silhouette with iconic landmarks (Kingdom Centre arch, Al Faisaliah pyramid, PIF tower).
@@ -17,7 +16,6 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
     const i = setInterval(() => setT((x) => x + 1), 2200);
     return () => clearInterval(i);
   }, []);
-
 
   // live, gently drifting KPI values
   const drift = (base: number, amp: number) =>
@@ -120,7 +118,12 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
                 opacity={0.3 + ((i * 13) % 7) / 10}
               >
                 {i % 9 === 0 && (
-                  <animate attributeName="opacity" values="0.2;0.9;0.2" dur={`${3 + (i % 5)}s`} repeatCount="indefinite" />
+                  <animate
+                    attributeName="opacity"
+                    values="0.2;0.9;0.2"
+                    dur={`${3 + (i % 5)}s`}
+                    repeatCount="indefinite"
+                  />
                 )}
               </rect>
             ))}
@@ -142,9 +145,21 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
               const blockX = 60 + col * 170;
               const blockY = 230 + row * 18;
               return (
-                <rect key={`mw-${i}`} x={blockX} y={blockY} width="2.5" height="2.5" opacity={0.4 + ((i * 7) % 5) / 10}>
+                <rect
+                  key={`mw-${i}`}
+                  x={blockX}
+                  y={blockY}
+                  width="2.5"
+                  height="2.5"
+                  opacity={0.4 + ((i * 7) % 5) / 10}
+                >
                   {i % 6 === 0 && (
-                    <animate attributeName="opacity" values="0.2;1;0.2" dur={`${2.5 + (i % 4)}s`} repeatCount="indefinite" />
+                    <animate
+                      attributeName="opacity"
+                      values="0.2;1;0.2"
+                      dur={`${2.5 + (i % 4)}s`}
+                      repeatCount="indefinite"
+                    />
                   )}
                 </rect>
               );
@@ -159,12 +174,18 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
           {/* PIF antenna */}
           <line x1="1120" y1="55" x2="1120" y2="30" stroke="rgba(245,180,84,0.7)" strokeWidth="1" />
           <circle cx="1120" cy="30" r="2.5" fill="#f5b454">
-            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.6s" repeatCount="indefinite" />
+            <animate
+              attributeName="opacity"
+              values="0.4;1;0.4"
+              dur="1.6s"
+              repeatCount="indefinite"
+            />
           </circle>
 
           {/* KINGDOM CENTRE — iconic arched opening */}
           <g fill="url(#skyNear)">
-            <path d="M700,420
+            <path
+              d="M700,420
                      L700,150
                      L720,130
                      L760,120
@@ -173,13 +194,11 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
                      L880,130
                      L900,150
                      L900,420
-                     Z" />
+                     Z"
+            />
           </g>
           {/* Kingdom Centre arched opening */}
-          <path
-            d="M745,420 L745,260 Q800,170 855,260 L855,420 Z"
-            fill="#04060d"
-          />
+          <path d="M745,420 L745,260 Q800,170 855,260 L855,420 Z" fill="#04060d" />
           {/* arch glow rim */}
           <path
             d="M745,260 Q800,170 855,260"
@@ -197,7 +216,12 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
           {/* Kingdom Centre crown lights */}
           {[755, 770, 785, 800, 815, 830, 845].map((x, i) => (
             <rect key={`kc-${i}`} x={x} y={148} width="2" height="6" fill="#f5b454" opacity="0.85">
-              <animate attributeName="opacity" values="0.4;1;0.4" dur={`${1.6 + (i % 3) * 0.4}s`} repeatCount="indefinite" />
+              <animate
+                attributeName="opacity"
+                values="0.4;1;0.4"
+                dur={`${1.6 + (i % 3) * 0.4}s`}
+                repeatCount="indefinite"
+              />
             </rect>
           ))}
 
@@ -215,7 +239,14 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
                   height="3"
                   opacity={0.55 + ((i * 11) % 4) / 10}
                 >
-                  {i % 5 === 0 && <animate attributeName="opacity" values="0.3;1;0.3" dur={`${2 + (i % 3)}s`} repeatCount="indefinite" />}
+                  {i % 5 === 0 && (
+                    <animate
+                      attributeName="opacity"
+                      values="0.3;1;0.3"
+                      dur={`${2 + (i % 3)}s`}
+                      repeatCount="indefinite"
+                    />
+                  )}
                 </rect>
               );
             })}
@@ -268,15 +299,8 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
           label={isAr ? "صندوق الاستثمارات" : "PIF Tower"}
         />
 
-        {active && (
-          <LandmarkCard
-            isAr={isAr}
-            landmark={active}
-            onClose={() => setActive(null)}
-          />
-        )}
+        {active && <LandmarkCard isAr={isAr} landmark={active} onClose={() => setActive(null)} />}
       </div>
-
 
       {/* ============ EXECUTIVE HOLOGRAM KPIs ============ */}
       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[6] hidden -translate-y-1/2 px-8 lg:block">
@@ -302,7 +326,8 @@ export function HeroSkyline({ isAr }: { isAr: boolean }) {
       <div
         className="pointer-events-none absolute left-1/2 top-[58%] z-[7] h-[2px] w-[60%] -translate-x-1/2 opacity-50"
         style={{
-          background: "linear-gradient(90deg, transparent, rgba(180,210,255,0.55), rgba(245,180,84,0.65), rgba(180,210,255,0.55), transparent)",
+          background:
+            "linear-gradient(90deg, transparent, rgba(180,210,255,0.55), rgba(245,180,84,0.65), rgba(180,210,255,0.55), transparent)",
           filter: "blur(2px)",
           animation: "hero-flare 9s ease-in-out infinite alternate",
         }}
@@ -352,8 +377,12 @@ function HoloKpi({
         style={{ animation: "hero-scan 4s linear infinite" }}
       />
       {/* corner ticks */}
-      <span className={`absolute top-1 h-2 w-2 border-amber-300/60 ${side === "left" ? "left-1 border-l border-t" : "right-1 border-r border-t"}`} />
-      <span className={`absolute bottom-1 h-2 w-2 border-amber-300/60 ${side === "left" ? "left-1 border-l border-b" : "right-1 border-r border-b"}`} />
+      <span
+        className={`absolute top-1 h-2 w-2 border-amber-300/60 ${side === "left" ? "left-1 border-l border-t" : "right-1 border-r border-t"}`}
+      />
+      <span
+        className={`absolute bottom-1 h-2 w-2 border-amber-300/60 ${side === "left" ? "left-1 border-l border-b" : "right-1 border-r border-b"}`}
+      />
 
       <div className="flex items-center justify-between">
         <span className="text-[9px] uppercase tracking-[0.28em] text-white/55">{k.label}</span>
@@ -447,7 +476,9 @@ function LandmarkHotspot({
         />
         <span
           className={`relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-300 ring-2 ${
-            active ? "ring-amber-200 shadow-[0_0_24px_2px_rgba(245,180,84,0.9)]" : "ring-amber-200/40"
+            active
+              ? "ring-amber-200 shadow-[0_0_24px_2px_rgba(245,180,84,0.9)]"
+              : "ring-amber-200/40"
           }`}
         />
       </span>
@@ -473,10 +504,25 @@ function LandmarkCard({
   const d = LANDMARK_DATA[landmark];
   const text = isAr ? d.ar : d.en;
   const stats = [
-    { icon: TrendingUp, label: isAr ? "الإيرادات" : "Revenue",  value: d.revenue, tone: "text-emerald-300" },
-    { icon: Briefcase,   label: isAr ? "المشاريع" : "Projects", value: d.projects, tone: "text-amber-300" },
-    { icon: Bot,         label: isAr ? "وكلاء الذكاء" : "AI Agents", value: d.agents, tone: "text-fuchsia-300" },
-    { icon: ShieldAlert, label: isAr ? "المخاطر" : "Risk",      value: d.risk,    tone: "text-cyan-300" },
+    {
+      icon: TrendingUp,
+      label: isAr ? "الإيرادات" : "Revenue",
+      value: d.revenue,
+      tone: "text-emerald-300",
+    },
+    {
+      icon: Briefcase,
+      label: isAr ? "المشاريع" : "Projects",
+      value: d.projects,
+      tone: "text-amber-300",
+    },
+    {
+      icon: Bot,
+      label: isAr ? "وكلاء الذكاء" : "AI Agents",
+      value: d.agents,
+      tone: "text-fuchsia-300",
+    },
+    { icon: ShieldAlert, label: isAr ? "المخاطر" : "Risk", value: d.risk, tone: "text-cyan-300" },
   ];
 
   return (
@@ -502,7 +548,9 @@ function LandmarkCard({
 
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${d.tone} text-black shadow-lg`}>
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${d.tone} text-black shadow-lg`}
+          >
             <Building2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
@@ -554,4 +602,3 @@ function LandmarkCard({
 }
 
 export default HeroSkyline;
-

@@ -3,8 +3,8 @@ import { VadFrameSchema } from "./contracts";
 import type { VadDecision, VadFrame } from "./types";
 
 export interface VadOptions {
-  readonly onsetThreshold?: number;   // 0..1
-  readonly offsetThreshold?: number;  // 0..1
+  readonly onsetThreshold?: number; // 0..1
+  readonly offsetThreshold?: number; // 0..1
   readonly onsetHoldMs?: number;
   readonly offsetHoldMs?: number;
 }
@@ -46,5 +46,10 @@ export class VadEngine {
     return { speaking: this.speaking, since: this.since };
   }
 
-  reset(): void { this.speaking = false; this.since = 0; this.aboveSince = 0; this.belowSince = 0; }
+  reset(): void {
+    this.speaking = false;
+    this.since = 0;
+    this.aboveSince = 0;
+    this.belowSince = 0;
+  }
 }

@@ -127,13 +127,23 @@ export async function explainRecommendation(
 
   let r = await call("openai/gpt-5", 1800);
   if (!r.ok) r = await call("openai/gpt-5-mini", 1200);
-  const j = (await r.json().catch(() => ({}))) as { choices?: { message?: { content?: string } }[] };
+  const j = (await r.json().catch(() => ({}))) as {
+    choices?: { message?: { content?: string } }[];
+  };
   const raw = j.choices?.[0]?.message?.content ?? "";
   let parsed: unknown = {};
-  try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = {};
+  }
   const env = ExplanationEnvelope.parse(parsed);
 
-  const cleanArray = (xs: string[]) => xs.map((s) => sanitizeVoice(s)).filter(Boolean).slice(0, 6);
+  const cleanArray = (xs: string[]) =>
+    xs
+      .map((s) => sanitizeVoice(s))
+      .filter(Boolean)
+      .slice(0, 6);
 
   return {
     why_en: sanitizeVoice(env.why_en),

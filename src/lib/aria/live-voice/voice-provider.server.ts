@@ -6,7 +6,8 @@ export function detectVoiceProvider(): VoiceProviderCapabilities {
   const key = typeof process !== "undefined" ? process.env?.LOVABLE_API_KEY : undefined;
   if (!key) {
     return {
-      stt: false, tts: false,
+      stt: false,
+      tts: false,
       reason: "LOVABLE_API_KEY not configured; voice features disabled",
     };
   }

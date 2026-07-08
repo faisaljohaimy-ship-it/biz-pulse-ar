@@ -23,8 +23,7 @@ export function analyzePolicySignals(): ImprovementProposal | undefined {
   return proposeImprovement({
     target: "policy",
     summary: "Policy denials repeated across recent executions.",
-    rationale:
-      "Multiple experiences reference policy denials; advisory review recommended.",
+    rationale: "Multiple experiences reference policy denials; advisory review recommended.",
     expected_gain: 0.05,
     expected_risk: "error",
     evidence,

@@ -4,8 +4,11 @@ import { EXECUTIVE_CONTRACTS } from "./contracts";
 const TURNS = new Map<string, DialogTurn[]>();
 
 export function recordDialog(
-  id: string, speaker: DialogTurn["speaker"], text: string,
-  language: ExecutiveLanguage, confidence: Confidence = "unknown",
+  id: string,
+  speaker: DialogTurn["speaker"],
+  text: string,
+  language: ExecutiveLanguage,
+  confidence: Confidence = "unknown",
 ): DialogTurn {
   const arr = TURNS.get(id) ?? [];
   const turn: DialogTurn = {
@@ -27,11 +30,14 @@ export function dialogHistory(id: string, n = 20): readonly DialogTurn[] {
   return arr.slice(-n);
 }
 
-export function clearDialog(id: string): void { TURNS.delete(id); }
+export function clearDialog(id: string): void {
+  TURNS.delete(id);
+}
 
 // Enforce executive discipline: no raw JSON, no reasoning leaks, sentence caps.
 export function shapeExecutiveReply(
-  draft: string, verbosity: "brief" | "detailed",
+  draft: string,
+  verbosity: "brief" | "detailed",
 ): { text: string; trimmed: boolean } {
   let text = (draft ?? "").trim();
   const before = text;
@@ -41,9 +47,10 @@ export function shapeExecutiveReply(
   // Strip common reasoning leaks.
   text = text.replace(/^(thought|reasoning|internal|chain[-\s]?of[-\s]?thought):.*$/gim, "").trim();
   // Sentence cap.
-  const cap = verbosity === "brief"
-    ? EXECUTIVE_CONTRACTS.BRIEF_MAX_SENTENCES
-    : EXECUTIVE_CONTRACTS.DETAILED_MAX_SENTENCES;
+  const cap =
+    verbosity === "brief"
+      ? EXECUTIVE_CONTRACTS.BRIEF_MAX_SENTENCES
+      : EXECUTIVE_CONTRACTS.DETAILED_MAX_SENTENCES;
   const sentences = text.split(/(?<=[.!؟?])\s+/).filter(Boolean);
   if (sentences.length > cap) text = sentences.slice(0, cap).join(" ");
   return { text, trimmed: text !== before };

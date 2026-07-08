@@ -48,24 +48,40 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
     const j = raw ? JSON.parse(raw) : null;
     code = j?.error?.code ?? j?.code ?? "";
     providerMsg = j?.error?.message ?? j?.message ?? "";
-  } catch { /* keep raw as text */ }
+  } catch {
+    /* keep raw as text */
+  }
 
   if (status === 401 || code === "unauthorized" || code === "lovable_api_key_not_registered") {
     fail({
-      stage, status, code: code || "unauthorized",
+      stage,
+      status,
+      code: code || "unauthorized",
       message_en: "Microsoft 365 connection rejected the request (401).",
       message_ar: "رفض اتصال Microsoft 365 الطلب (401).",
-      hint_en: "Reconnect the Microsoft connector (SharePoint/Teams) from Project → Connectors and try again.",
+      hint_en:
+        "Reconnect the Microsoft connector (SharePoint/Teams) from Project → Connectors and try again.",
       hint_ar: "أعد توصيل موصّل Microsoft (SharePoint/Teams) من إعدادات المشروع ثم أعد المحاولة.",
       raw: raw.slice(0, 400),
     });
   }
-  if (status === 403 || code === "accessDenied" || code === "Forbidden" || code === "authorizationRequestDenied") {
+  if (
+    status === 403 ||
+    code === "accessDenied" ||
+    code === "Forbidden" ||
+    code === "authorizationRequestDenied"
+  ) {
     const isUpload = stage === "sharepoint_upload" || stage === "sharepoint_createLink";
     fail({
-      stage, status, code: code || "accessDenied",
-      message_en: isUpload ? "Permission denied on this SharePoint site." : "Permission denied posting to this Teams channel.",
-      message_ar: isUpload ? "صلاحية غير كافية على موقع SharePoint هذا." : "صلاحية غير كافية للنشر في قناة Teams هذه.",
+      stage,
+      status,
+      code: code || "accessDenied",
+      message_en: isUpload
+        ? "Permission denied on this SharePoint site."
+        : "Permission denied posting to this Teams channel.",
+      message_ar: isUpload
+        ? "صلاحية غير كافية على موقع SharePoint هذا."
+        : "صلاحية غير كافية للنشر في قناة Teams هذه.",
       hint_en: isUpload
         ? "The connected Microsoft account needs Edit/Contribute permission on the chosen site (Sites.ReadWrite.All scope)."
         : "The connected Microsoft account must be a member of this team with ChannelMessage.Send permission.",
@@ -77,9 +93,17 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
   }
   if (status === 404 || code === "itemNotFound" || code === "ResourceNotFound") {
     fail({
-      stage, status, code: code || "itemNotFound",
-      message_en: stage === "teams_post" ? "Team or channel not found." : "SharePoint site or folder not found.",
-      message_ar: stage === "teams_post" ? "لم يتم العثور على الفريق أو القناة." : "لم يتم العثور على موقع SharePoint أو المجلد.",
+      stage,
+      status,
+      code: code || "itemNotFound",
+      message_en:
+        stage === "teams_post"
+          ? "Team or channel not found."
+          : "SharePoint site or folder not found.",
+      message_ar:
+        stage === "teams_post"
+          ? "لم يتم العثور على الفريق أو القناة."
+          : "لم يتم العثور على موقع SharePoint أو المجلد.",
       hint_en: "Refresh the list and pick a destination the connected account still has access to.",
       hint_ar: "حدّث القائمة واختر وجهة لا يزال الحساب الموصّل يملك صلاحية الوصول إليها.",
       raw: raw.slice(0, 400),
@@ -87,7 +111,9 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
   }
   if (status === 413 || code === "maxRequestLengthExceeded" || code === "EntityTooLarge") {
     fail({
-      stage, status, code: code || "maxRequestLengthExceeded",
+      stage,
+      status,
+      code: code || "maxRequestLengthExceeded",
       message_en: "Report is too large to upload in a single request.",
       message_ar: "حجم التقرير كبير جداً للرفع في طلب واحد.",
       hint_en: "Trim the summary/sections to under ~4 MB or split it into multiple reports.",
@@ -97,17 +123,22 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
   }
   if (status === 429 || code === "TooManyRequests" || code === "activityLimitReached") {
     fail({
-      stage, status, code: code || "TooManyRequests",
+      stage,
+      status,
+      code: code || "TooManyRequests",
       message_en: "Microsoft Graph rate limit reached.",
       message_ar: "تم بلوغ حد الطلبات في Microsoft Graph.",
-      hint_en: "Wait a minute and retry — repeated bursts trigger throttling per Microsoft 365 tenant.",
+      hint_en:
+        "Wait a minute and retry — repeated bursts trigger throttling per Microsoft 365 tenant.",
       hint_ar: "انتظر دقيقة ثم أعد المحاولة — تكرار الطلبات السريع يسبب الحد من قبل Microsoft 365.",
       raw: raw.slice(0, 400),
     });
   }
   if (status === 507 || code === "quotaLimitReached" || code === "insufficientStorage") {
     fail({
-      stage, status, code: code || "quotaLimitReached",
+      stage,
+      status,
+      code: code || "quotaLimitReached",
       message_en: "SharePoint storage quota exceeded.",
       message_ar: "تم تجاوز حصة التخزين في SharePoint.",
       hint_en: "Free up space on the destination site or pick another site.",
@@ -117,17 +148,22 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
   }
   if (status >= 500) {
     fail({
-      stage, status, code: code || "serverError",
+      stage,
+      status,
+      code: code || "serverError",
       message_en: "Microsoft Graph is temporarily unavailable.",
       message_ar: "خدمة Microsoft Graph غير متاحة مؤقتاً.",
-      hint_en: "Retry in a few seconds. If it persists, check the Microsoft 365 service health dashboard.",
+      hint_en:
+        "Retry in a few seconds. If it persists, check the Microsoft 365 service health dashboard.",
       hint_ar: "أعد المحاولة بعد ثوانٍ. إذا استمر، راجع لوحة حالة خدمة Microsoft 365.",
       raw: raw.slice(0, 400),
     });
   }
 
   fail({
-    stage, status, code: code || `http_${status}`,
+    stage,
+    status,
+    code: code || `http_${status}`,
     message_en: providerMsg || `Microsoft Graph request failed (${status}).`,
     message_ar: providerMsg || `فشل طلب Microsoft Graph (${status}).`,
     raw: raw.slice(0, 400),
@@ -163,7 +199,11 @@ function teamsHeaders() {
   return { Authorization: `Bearer ${k}`, "X-Connection-Api-Key": t };
 }
 
-async function spJson(stage: PublishStage, path: string, init?: { method?: string; body?: BodyInit; headers?: Record<string, string> }) {
+async function spJson(
+  stage: PublishStage,
+  path: string,
+  init?: { method?: string; body?: BodyInit; headers?: Record<string, string> },
+) {
   let r: Response;
   try {
     r = await httpFetch(`${SP_GW}${path}`, {
@@ -176,9 +216,12 @@ async function spJson(stage: PublishStage, path: string, init?: { method?: strin
     });
   } catch (e) {
     const msg = isApiError(e) ? e.message : String(e);
-    fail({ stage, code: isApiError(e) ? e.code : "upstream_failed",
+    fail({
+      stage,
+      code: isApiError(e) ? e.code : "upstream_failed",
       message_en: `SharePoint network failure: ${msg}`,
-      message_ar: `فشل اتصال SharePoint: ${msg}` });
+      message_ar: `فشل اتصال SharePoint: ${msg}`,
+    });
   }
   if (!r.ok) await failFromResponse(stage, r);
   return r.json();
@@ -231,7 +274,10 @@ function buildReportHtml(input: {
 }
 
 function escapeHtml(s: string) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
 }
 
 function safeFileName(s: string) {
@@ -262,11 +308,36 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       filename?: string;
       briefingId?: string;
     }) => {
-      if (!d?.siteId) fail({ stage: "validation", message_en: "Missing SharePoint site.", message_ar: "موقع SharePoint مفقود." });
-      if (!d?.teamId || !d?.channelId) fail({ stage: "validation", message_en: "Missing Teams channel.", message_ar: "قناة Teams مفقودة." });
-      if (!d?.title || d.title.length > 240) fail({ stage: "validation", message_en: "Invalid title.", message_ar: "العنوان غير صالح." });
-      if (d.summary && d.summary.length > 20000) fail({ stage: "validation", message_en: "Summary too long (max 20k chars).", message_ar: "الملخص طويل جداً (الحد 20 ألف حرف)." });
-      if (d.sections && d.sections.length > 30) fail({ stage: "validation", message_en: "Too many sections (max 30).", message_ar: "عدد الأقسام كبير جداً (الحد 30)." });
+      if (!d?.siteId)
+        fail({
+          stage: "validation",
+          message_en: "Missing SharePoint site.",
+          message_ar: "موقع SharePoint مفقود.",
+        });
+      if (!d?.teamId || !d?.channelId)
+        fail({
+          stage: "validation",
+          message_en: "Missing Teams channel.",
+          message_ar: "قناة Teams مفقودة.",
+        });
+      if (!d?.title || d.title.length > 240)
+        fail({
+          stage: "validation",
+          message_en: "Invalid title.",
+          message_ar: "العنوان غير صالح.",
+        });
+      if (d.summary && d.summary.length > 20000)
+        fail({
+          stage: "validation",
+          message_en: "Summary too long (max 20k chars).",
+          message_ar: "الملخص طويل جداً (الحد 20 ألف حرف).",
+        });
+      if (d.sections && d.sections.length > 30)
+        fail({
+          stage: "validation",
+          message_en: "Too many sections (max 30).",
+          message_ar: "عدد الأقسام كبير جداً (الحد 30).",
+        });
       return d;
     },
   )
@@ -316,9 +387,12 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
       });
     } catch (e) {
       const msg = isApiError(e) ? e.message : String(e);
-      fail({ stage: "sharepoint_upload", code: isApiError(e) ? e.code : "upstream_failed",
+      fail({
+        stage: "sharepoint_upload",
+        code: isApiError(e) ? e.code : "upstream_failed",
         message_en: `SharePoint upload network failure: ${msg}`,
-        message_ar: `فشل اتصال SharePoint أثناء الرفع: ${msg}` });
+        message_ar: `فشل اتصال SharePoint أثناء الرفع: ${msg}`,
+      });
     }
     if (!up.ok) await failFromResponse("sharepoint_upload", up);
     const item = (await up.json()) as { id: string; name: string; webUrl: string; size: number };
@@ -382,7 +456,9 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
         const j = raw ? JSON.parse(raw) : null;
         code = j?.error?.code ?? "";
         providerMsg = j?.error?.message ?? "";
-      } catch { /* keep raw */ }
+      } catch {
+        /* keep raw */
+      }
       fail({
         stage: "teams_post",
         status: teamsRes.status,
@@ -428,7 +504,13 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     return {
       ok: true,
       generatedAt,
-      sharepoint: { itemId: item.id, name: item.name, webUrl: item.webUrl, size: item.size, shareUrl: finalUrl },
+      sharepoint: {
+        itemId: item.id,
+        name: item.name,
+        webUrl: item.webUrl,
+        size: item.size,
+        shareUrl: finalUrl,
+      },
       teams: { messageId: teamsMsg.id ?? null, messageUrl: teamsMsg.webUrl ?? null },
     };
   });

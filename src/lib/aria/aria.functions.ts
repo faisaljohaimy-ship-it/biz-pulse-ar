@@ -8,7 +8,9 @@ import { ReportKindSchema } from "./types";
 export const runAriaPipeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z.object({ message: z.string().min(1).max(4000), threadId: z.string().uuid().optional() }).parse(data),
+    z
+      .object({ message: z.string().min(1).max(4000), threadId: z.string().uuid().optional() })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const { runPipeline } = await import("./pipeline.server");
@@ -59,9 +61,10 @@ export const generateAriaReport = createServerFn({ method: "POST" })
     const risks = await runRiskEngine(context.supabase, kpiR.kpis);
     const decisions = runDecisionEngine(risks, kpiR.kpis);
     const ctx = await loadEnterpriseContext(context.supabase);
-    const message = data.language === "ar"
-      ? `أنشئ ${data.kind === "executive" ? "تقريراً تنفيذياً شاملاً" : data.kind} للوضع الحالي.`
-      : `Produce a ${data.kind} report for the current operational state.`;
+    const message =
+      data.language === "ar"
+        ? `أنشئ ${data.kind === "executive" ? "تقريراً تنفيذياً شاملاً" : data.kind} للوضع الحالي.`
+        : `Produce a ${data.kind} report for the current operational state.`;
     const reasoned = await runReasoner({
       message,
       language: data.language,
@@ -99,16 +102,25 @@ export const listAriaMemory = createServerFn({ method: "GET" })
 export const pinAriaMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z.object({
-      scope: z.string().min(1).max(40).default("pinned"),
-      key: z.string().min(1).max(120),
-      content: z.string().min(1).max(4000),
-      importance: z.number().min(0).max(1).default(0.9),
-    }).parse(data),
+    z
+      .object({
+        scope: z.string().min(1).max(40).default("pinned"),
+        key: z.string().min(1).max(120),
+        content: z.string().min(1).max(4000),
+        importance: z.number().min(0).max(1).default(0.9),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const { storeMemory } = await import("./pipeline.server");
-    await storeMemory(context.supabase, context.userId, data.scope, data.key, data.content, data.importance);
+    await storeMemory(
+      context.supabase,
+      context.userId,
+      data.scope,
+      data.key,
+      data.content,
+      data.importance,
+    );
     return { ok: true };
   });
 
@@ -136,10 +148,12 @@ export const listAriaDecisions = createServerFn({ method: "GET" })
 export const updateAriaDecision = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z.object({
-      id: z.string().uuid(),
-      status: z.enum(["pending", "approved", "executed", "dismissed", "failed"]),
-    }).parse(data),
+    z
+      .object({
+        id: z.string().uuid(),
+        status: z.enum(["pending", "approved", "executed", "dismissed", "failed"]),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase

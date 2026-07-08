@@ -50,13 +50,7 @@ export interface FailureAnalysis {
   readonly execution_id: string;
   readonly created_at: string;
   readonly failure_signals: readonly string[];
-  readonly stage:
-    | "planning"
-    | "runtime"
-    | "tool"
-    | "integration"
-    | "cognition"
-    | "unknown";
+  readonly stage: "planning" | "runtime" | "tool" | "integration" | "cognition" | "unknown";
   readonly severity: Severity;
   readonly evidence: readonly EvidenceRef[];
 }
@@ -139,14 +133,7 @@ export interface StrategyComparison {
 export interface ImprovementProposal {
   readonly id: string;
   readonly created_at: string;
-  readonly target:
-    | "prompt"
-    | "policy"
-    | "workflow"
-    | "planner"
-    | "runtime"
-    | "tool"
-    | "memory";
+  readonly target: "prompt" | "policy" | "workflow" | "planner" | "runtime" | "tool" | "memory";
   readonly summary: string;
   readonly rationale: string;
   readonly expected_gain: number;

@@ -44,7 +44,11 @@ export function acquireLease(
   });
   const existing = store.get(parsed.missionId);
   const nowMs = Date.parse(parsed.now);
-  if (existing && Date.parse(existing.expiresAt) > nowMs && existing.holderNodeId !== parsed.holderNodeId) {
+  if (
+    existing &&
+    Date.parse(existing.expiresAt) > nowMs &&
+    existing.holderNodeId !== parsed.holderNodeId
+  ) {
     return { acquired: false, lease: existing, reason: "held_by_other" };
   }
   counter += 1;
@@ -66,8 +70,10 @@ export function releaseLease(
 ): { released: boolean; reason: string } {
   const existing = store.get(input.missionId);
   if (!existing) return { released: false, reason: "not_held" };
-  if (existing.holderNodeId !== input.holderNodeId) return { released: false, reason: "not_holder" };
-  if (existing.fencingToken !== input.fencingToken) return { released: false, reason: "stale_token" };
+  if (existing.holderNodeId !== input.holderNodeId)
+    return { released: false, reason: "not_holder" };
+  if (existing.fencingToken !== input.fencingToken)
+    return { released: false, reason: "stale_token" };
   store.del(input.missionId);
   return { released: true, reason: "released" };
 }

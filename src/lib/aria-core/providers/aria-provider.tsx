@@ -11,13 +11,7 @@
  */
 import { useChat } from "@ai-sdk/react";
 import { type UIMessage } from "ai";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useAriaStore } from "../state/aria-store";
 import { createAriaTransport } from "../services/aria-service";
@@ -25,7 +19,6 @@ import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
-
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
@@ -40,8 +33,7 @@ const WELCOME_AR: UIMessage = {
   parts: [
     {
       type: "text",
-      text:
-        "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.",
+      text: "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.",
     },
   ],
 };
@@ -53,7 +45,6 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const drainCommands = useAriaStore((s) => s.drainCommands);
   const pendingCommands = useAriaStore((s) => s.pendingCommands);
-
 
   const transport = useMemo(() => createAriaTransport(), []);
 
@@ -85,9 +76,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
     const locale =
-      (typeof document !== "undefined" &&
-        (document.documentElement.lang as "ar" | "en")) ||
-      "en";
+      (typeof document !== "undefined" && (document.documentElement.lang as "ar" | "en")) || "en";
     setPageContext({
       pathname,
       label: labelForPath(pathname),
@@ -136,14 +125,11 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (chat.status !== "ready") return;
     const active = useAriaStore.getState().activeTurn;
-    if (!active || active.status === "completed" || active.status === "failed")
-      return;
+    if (!active || active.status === "completed" || active.status === "failed") return;
     if (reportedRef.current.has(active.id)) return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
-    const text = last.parts
-      .map((p) => (p.type === "text" ? p.text : ""))
-      .join("");
+    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
     reportedRef.current.add(active.id);
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);
@@ -155,7 +141,6 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   // ── stomped each other, and the loser dropped into browser
   // ── SpeechSynthesis fallback mid-reply. Do NOT re-add speak here.
   void voiceEnabled;
-
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;

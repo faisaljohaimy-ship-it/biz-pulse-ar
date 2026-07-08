@@ -39,7 +39,14 @@ export type RagContext = {
 export function evaluateRagCoverage(answer: string, citations: RagCitation[]): RagCoverage {
   const available = citations.filter((c) => c.kind !== "memory").length;
   if (!available) {
-    return { available: 0, cited: 0, citedTags: [], uncitedTags: [], coverageRatio: 0, status: "no-sources" };
+    return {
+      available: 0,
+      cited: 0,
+      citedTags: [],
+      uncitedTags: [],
+      coverageRatio: 0,
+      status: "no-sources",
+    };
   }
   const text = (answer || "").toLowerCase();
   const citedTags: string[] = [];
@@ -58,7 +65,6 @@ export function evaluateRagCoverage(answer: string, citations: RagCitation[]): R
     cited === 0 ? "uncited" : coverageRatio < 0.5 ? "partial" : "grounded";
   return { available, cited, citedTags, uncitedTags, coverageRatio, status };
 }
-
 
 const MIN_SIM_MEMORY = 0.45;
 const MIN_SIM_KNOWLEDGE = 0.4;
@@ -92,13 +98,31 @@ export async function gatherRagContext(
   if (knowR.error) console.warn("[aria/rag] knowledge rpc", knowR.error.message);
   if (docR.error) console.warn("[aria/rag] documents rpc", docR.error.message);
 
-  const memories = ((memR.data ?? []) as { id: string; key: string; content: string; similarity: number }[])
+  const memories = (
+    (memR.data ?? []) as { id: string; key: string; content: string; similarity: number }[]
+  )
     .filter((r) => Number(r.similarity) >= MIN_SIM_MEMORY)
     .slice(0, 6);
-  const knowledge = ((knowR.data ?? []) as { id: string; title: string; source: string; content: string; similarity: number }[])
+  const knowledge = (
+    (knowR.data ?? []) as {
+      id: string;
+      title: string;
+      source: string;
+      content: string;
+      similarity: number;
+    }[]
+  )
     .filter((r) => Number(r.similarity) >= MIN_SIM_KNOWLEDGE)
     .slice(0, 5);
-  const documents = ((docR.data ?? []) as { chunk_id: string; document_id: string; title: string; content: string; similarity: number }[])
+  const documents = (
+    (docR.data ?? []) as {
+      chunk_id: string;
+      document_id: string;
+      title: string;
+      content: string;
+      similarity: number;
+    }[]
+  )
     .filter((r) => Number(r.similarity) >= MIN_SIM_DOCUMENT)
     .slice(0, 5);
 
@@ -108,7 +132,10 @@ export async function gatherRagContext(
       .from("aria_memory")
       .update({ last_used_at: new Date().toISOString() })
       .eq("user_id", userId)
-      .in("id", memories.map((m) => m.id));
+      .in(
+        "id",
+        memories.map((m) => m.id),
+      );
   }
 
   const cleanExcerpt = (s: string, n = 420) => (s || "").replace(/\s+/g, " ").trim().slice(0, n);
@@ -142,18 +169,21 @@ export async function gatherRagContext(
     })),
   ];
 
-
   const lines: string[] = [];
   if (documents.length) {
     lines.push("# RELEVANT DOCUMENTS (cite as [DOC:title])");
     documents.forEach((d) => {
-      lines.push(`- [DOC:${d.title}] (sim ${Math.round(d.similarity * 100)}%)\n  ${d.content.slice(0, 600).replace(/\s+/g, " ")}`);
+      lines.push(
+        `- [DOC:${d.title}] (sim ${Math.round(d.similarity * 100)}%)\n  ${d.content.slice(0, 600).replace(/\s+/g, " ")}`,
+      );
     });
   }
   if (knowledge.length) {
     lines.push("\n# KNOWLEDGE BASE (cite as [KB:title])");
     knowledge.forEach((k) => {
-      lines.push(`- [KB:${k.title}] · ${k.source} (sim ${Math.round(k.similarity * 100)}%)\n  ${k.content.slice(0, 500).replace(/\s+/g, " ")}`);
+      lines.push(
+        `- [KB:${k.title}] · ${k.source} (sim ${Math.round(k.similarity * 100)}%)\n  ${k.content.slice(0, 500).replace(/\s+/g, " ")}`,
+      );
     });
   }
   if (memories.length) {
@@ -179,9 +209,10 @@ export async function rememberConversationTurn(
   assistantText: string,
 ): Promise<void> {
   const content = `User: ${userText.slice(0, 600)}\nARIA: ${assistantText.slice(0, 1400)}`;
-  const suffix = typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const suffix =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const key = `turn:${threadId ?? "ad-hoc"}:${suffix}`;
   const scope = threadId ? `thread:${threadId}` : "conversation";
   const embedding = await embedText(`${userText}\n${assistantText}`);

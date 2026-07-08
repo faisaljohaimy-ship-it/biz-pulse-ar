@@ -51,13 +51,22 @@ export async function evaluateHealth(): Promise<HealthSummary> {
   if (db === "fail") notes.push("database: ping failed");
   if (os !== "pass") notes.push(`os: ${os}`);
 
-  const worst: GateStatus =
-    [os, db, runtime.status].includes("fail") ? "fail"
-      : [os, db, runtime.status].includes("warn") ? "warn"
-        : [os, db, runtime.status].every((s) => s === "pass") ? "pass" : "unknown";
+  const worst: GateStatus = [os, db, runtime.status].includes("fail")
+    ? "fail"
+    : [os, db, runtime.status].includes("warn")
+      ? "warn"
+      : [os, db, runtime.status].every((s) => s === "pass")
+        ? "pass"
+        : "unknown";
 
   const level: HealthSummary["level"] =
-    worst === "pass" ? "healthy" : worst === "warn" ? "degraded" : worst === "fail" ? "unhealthy" : "unknown";
+    worst === "pass"
+      ? "healthy"
+      : worst === "warn"
+        ? "degraded"
+        : worst === "fail"
+          ? "unhealthy"
+          : "unknown";
 
   return {
     taken_at: new Date().toISOString(),

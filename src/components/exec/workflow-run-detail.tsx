@@ -17,15 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Play,
-  Pause,
-  RotateCcw,
-  Ban,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Play, Pause, RotateCcw, Ban } from "lucide-react";
 import { toast } from "sonner";
 
 type StepRow = {
@@ -58,14 +50,10 @@ type RunDetail = {
 };
 
 function statusIcon(status: string) {
-  if (status === "succeeded")
-    return <CheckCircle2 className="size-4 text-emerald-400" />;
-  if (status === "failed")
-    return <XCircle className="size-4 text-red-400" />;
-  if (status === "running")
-    return <Play className="size-4 text-cyan-400 animate-pulse" />;
-  if (status === "cancelled")
-    return <Ban className="size-4 text-zinc-400" />;
+  if (status === "succeeded") return <CheckCircle2 className="size-4 text-emerald-400" />;
+  if (status === "failed") return <XCircle className="size-4 text-red-400" />;
+  if (status === "running") return <Play className="size-4 text-cyan-400 animate-pulse" />;
+  if (status === "cancelled") return <Ban className="size-4 text-zinc-400" />;
   if (status === "paused" || status === "waiting_approval")
     return <Pause className="size-4 text-amber-400" />;
   return <Clock className="size-4 text-slate-400" />;
@@ -82,9 +70,7 @@ function statusBadge(status: string) {
     waiting_approval: "bg-amber-500/20 text-amber-300",
     rolled_back: "bg-orange-500/20 text-orange-300",
   };
-  return (
-    <Badge className={map[status] ?? "bg-slate-500/20"}>{status}</Badge>
-  );
+  return <Badge className={map[status] ?? "bg-slate-500/20"}>{status}</Badge>;
 }
 
 function fmtDuration(start: string | null, end: string | null) {
@@ -144,7 +130,13 @@ export function WorkflowRunDetail({
       console.warn("[workflow-run-detail] realtime unavailable", err);
     }
     return () => {
-      if (channel) { try { void supabase.removeChannel(channel); } catch { /* noop */ } }
+      if (channel) {
+        try {
+          void supabase.removeChannel(channel);
+        } catch {
+          /* noop */
+        }
+      }
     };
   }, [runId, open, qc]);
 
@@ -171,8 +163,7 @@ export function WorkflowRunDetail({
   const run = detail.data?.run;
   const steps = detail.data?.steps ?? [];
   const canCancel = run && ["running", "queued", "paused"].includes(run.status);
-  const canResume =
-    run && ["failed", "paused", "cancelled"].includes(run.status);
+  const canResume = run && ["failed", "paused", "cancelled"].includes(run.status);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -182,15 +173,11 @@ export function WorkflowRunDetail({
             Workflow Run
             {run && statusBadge(run.status)}
           </DialogTitle>
-          <DialogDescription className="font-mono text-xs">
-            {runId}
-          </DialogDescription>
+          <DialogDescription className="font-mono text-xs">{runId}</DialogDescription>
         </DialogHeader>
 
         {detail.isLoading && (
-          <div className="p-6 text-center text-sm text-muted-foreground">
-            Loading run details…
-          </div>
+          <div className="p-6 text-center text-sm text-muted-foreground">Loading run details…</div>
         )}
 
         {detail.error && (
@@ -204,15 +191,11 @@ export function WorkflowRunDetail({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
               <div>
                 <div className="text-muted-foreground">Started</div>
-                <div className="font-mono">
-                  {new Date(run.started_at).toLocaleString()}
-                </div>
+                <div className="font-mono">{new Date(run.started_at).toLocaleString()}</div>
               </div>
               <div>
                 <div className="text-muted-foreground">Duration</div>
-                <div className="font-mono">
-                  {fmtDuration(run.started_at, run.finished_at)}
-                </div>
+                <div className="font-mono">{fmtDuration(run.started_at, run.finished_at)}</div>
               </div>
               <div>
                 <div className="text-muted-foreground">Trigger</div>
@@ -262,9 +245,7 @@ export function WorkflowRunDetail({
             </div>
 
             <div>
-              <h4 className="font-semibold text-sm mb-2">
-                Steps ({steps.length})
-              </h4>
+              <h4 className="font-semibold text-sm mb-2">Steps ({steps.length})</h4>
               <ScrollArea className="h-[40vh]">
                 <ol className="relative border-s border-border ms-3 space-y-3">
                   {steps.map((s) => (
@@ -303,17 +284,16 @@ export function WorkflowRunDetail({
                             {s.error}
                           </div>
                         )}
-                        {s.status === "succeeded" &&
-                          s.output_json != null && (
-                            <details className="mt-1">
-                              <summary className="text-[11px] text-muted-foreground cursor-pointer">
-                                output
-                              </summary>
-                              <pre className="mt-1 text-[10px] bg-muted/30 p-2 rounded overflow-x-auto max-h-40">
-                                {JSON.stringify(s.output_json, null, 2)}
-                              </pre>
-                            </details>
-                          )}
+                        {s.status === "succeeded" && s.output_json != null && (
+                          <details className="mt-1">
+                            <summary className="text-[11px] text-muted-foreground cursor-pointer">
+                              output
+                            </summary>
+                            <pre className="mt-1 text-[10px] bg-muted/30 p-2 rounded overflow-x-auto max-h-40">
+                              {JSON.stringify(s.output_json, null, 2)}
+                            </pre>
+                          </details>
+                        )}
                       </div>
                     </li>
                   ))}

@@ -130,12 +130,24 @@ export function DeleteButton({
       className="rounded-md border border-rose-400/30 bg-rose-400/10 p-1.5 text-rose-300 hover:bg-rose-400/20 disabled:opacity-50"
       aria-label={ar ? "حذف" : "Delete"}
     >
-      {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+      {isPending ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Trash2 className="h-3.5 w-3.5" />
+      )}
     </button>
   );
 }
 
-export function EmptyState({ icon, title, action }: { icon?: ReactNode; title: string; action?: ReactNode }) {
+export function EmptyState({
+  icon,
+  title,
+  action,
+}: {
+  icon?: ReactNode;
+  title: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/10 bg-white/[0.02] py-10 text-center">
       {icon && <div className="text-slate-500">{icon}</div>}

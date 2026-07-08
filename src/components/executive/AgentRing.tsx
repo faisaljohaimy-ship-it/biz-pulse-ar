@@ -121,7 +121,10 @@ export function AgentRing() {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setHasSession(!!s);
     });
-    return () => { alive = false; sub.subscription.unsubscribe(); };
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const agentsQ = useQuery({
@@ -350,7 +353,8 @@ export function AgentRing() {
               background:
                 "conic-gradient(from 0deg, rgba(58,232,255,0) 0deg, rgba(58,232,255,0.55) 40deg, rgba(58,232,255,0) 90deg, rgba(58,232,255,0) 360deg)",
               animation: "aria-orb-spin 6s linear infinite",
-              maskImage: "radial-gradient(circle, transparent 38%, black 42%, black 78%, transparent 82%)",
+              maskImage:
+                "radial-gradient(circle, transparent 38%, black 42%, black 78%, transparent 82%)",
               WebkitMaskImage:
                 "radial-gradient(circle, transparent 38%, black 42%, black 78%, transparent 82%)",
             }}
@@ -534,9 +538,7 @@ function Inspector({ vm }: { vm: AgentVM }) {
 function EmptyState() {
   return (
     <div className="text-center">
-      <p className="text-xs text-white/65">
-        سجلّ تشغيل الوكلاء فارغ حاليًا.
-      </p>
+      <p className="text-xs text-white/65">سجلّ تشغيل الوكلاء فارغ حاليًا.</p>
       <Link
         to="/aria"
         className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"

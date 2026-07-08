@@ -10,11 +10,21 @@ export interface ShowcaseMetricsSnapshot {
 const M = { starts: 0, completions: 0, interruptions: 0, recoveries: 0, qaCount: 0 };
 const STEP_SAMPLES: number[] = [];
 
-export function noteStart(): void { M.starts++; }
-export function noteCompletion(): void { M.completions++; }
-export function noteInterruption(): void { M.interruptions++; }
-export function noteRecovery(): void { M.recoveries++; }
-export function noteQa(): void { M.qaCount++; }
+export function noteStart(): void {
+  M.starts++;
+}
+export function noteCompletion(): void {
+  M.completions++;
+}
+export function noteInterruption(): void {
+  M.interruptions++;
+}
+export function noteRecovery(): void {
+  M.recoveries++;
+}
+export function noteQa(): void {
+  M.qaCount++;
+}
 export function noteStepDuration(ms: number): void {
   if (!Number.isFinite(ms) || ms < 0) return;
   STEP_SAMPLES.push(ms);

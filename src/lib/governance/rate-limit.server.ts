@@ -32,13 +32,10 @@ export function rateLimitUnavailableResponse() {
 }
 
 export function rateLimitResponse() {
-  return new Response(
-    JSON.stringify({ error: "rate_limited", retry_after_seconds: 60 }),
-    {
-      status: 429,
-      headers: { "Content-Type": "application/json", "Retry-After": "60" },
-    },
-  );
+  return new Response(JSON.stringify({ error: "rate_limited", retry_after_seconds: 60 }), {
+    status: 429,
+    headers: { "Content-Type": "application/json", "Retry-After": "60" },
+  });
 }
 
 export function clientBucketKey(request: Request, scope: string): string {

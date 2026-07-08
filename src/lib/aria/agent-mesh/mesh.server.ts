@@ -25,10 +25,7 @@ import {
   applyHeartbeat,
   activeNodes,
 } from "./node-registry.server";
-import {
-  createAgentRegistry,
-  registerAgent,
-} from "./agent-registry.server";
+import { createAgentRegistry, registerAgent } from "./agent-registry.server";
 import { buildCapabilityMap } from "./capability-map.server";
 import { classifyHeartbeat, applyDelta } from "./heartbeat.server";
 import { computeMembership, membershipQuorumMet } from "./membership.server";

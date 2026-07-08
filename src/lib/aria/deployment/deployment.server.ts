@@ -180,7 +180,9 @@ export function runDeploymentPipeline(input: DeploymentPipelineInput): Deploymen
   // 6. probes
   const probes: ProbeResult[] = [];
   for (const spec of input.nodes) {
-    probes.push(healthProbe({ nodeId: spec.id, signals: spec.probeSignals, now: input.now, evidence }));
+    probes.push(
+      healthProbe({ nodeId: spec.id, signals: spec.probeSignals, now: input.now, evidence }),
+    );
     probes.push(
       readinessProbe({
         nodeId: spec.id,

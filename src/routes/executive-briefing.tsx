@@ -5,15 +5,33 @@ import { useServerFn } from "@tanstack/react-start";
 import { useI18n } from "@/lib/i18n";
 import { submitLead } from "@/lib/leads.functions";
 import { DOMAIN_URL } from "@/lib/domain";
-import { ArrowLeft, Briefcase, Building2, Landmark, Calendar, ExternalLink, Check, Shield, Clock, Globe } from "lucide-react";
+import {
+  ArrowLeft,
+  Briefcase,
+  Building2,
+  Landmark,
+  Calendar,
+  ExternalLink,
+  Check,
+  Shield,
+  Clock,
+  Globe,
+} from "lucide-react";
 
 export const Route = createFileRoute("/executive-briefing")({
   head: () => ({
     meta: [
       { title: "Executive Briefing — Nexus AI OS" },
-      { name: "description", content: "Schedule a private executive briefing of Nexus AI OS. For investors, enterprise boards, and government leaders. Calendly, Google Calendar, and Outlook ready." },
+      {
+        name: "description",
+        content:
+          "Schedule a private executive briefing of Nexus AI OS. For investors, enterprise boards, and government leaders. Calendly, Google Calendar, and Outlook ready.",
+      },
       { property: "og:title", content: "Executive Briefing — Nexus AI OS" },
-      { property: "og:description", content: "Private live walkthrough for executives, investors, and government leaders." },
+      {
+        property: "og:description",
+        content: "Private live walkthrough for executives, investors, and government leaders.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/executive-briefing` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -31,7 +49,10 @@ const CALENDLY_URL =
 /* ----------------------------- Calendar helpers ---------------------------- */
 
 function toICSDate(d: Date) {
-  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return d
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 function buildEvent(kind: DemoKind, isAr: boolean) {
   const titles: Record<DemoKind, string> = {
@@ -171,12 +192,16 @@ function ExecutiveBriefingPage() {
         },
       });
       setSubmitted(true);
-      toast.success(isAr ? "تم استلام طلبك التنفيذي." : "Your executive request has been received.");
+      toast.success(
+        isAr ? "تم استلام طلبك التنفيذي." : "Your executive request has been received.",
+      );
     } catch (err) {
       toast.error(
         isAr
           ? "تعذّر الإرسال. حاول مرة أخرى."
-          : err instanceof Error ? err.message : "Submission failed. Please try again.",
+          : err instanceof Error
+            ? err.message
+            : "Submission failed. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -184,7 +209,10 @@ function ExecutiveBriefingPage() {
   };
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground"
+    >
       {/* Cinematic backdrop */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(214,158,46,0.10),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(56,189,248,0.06),transparent_55%)]" />
@@ -192,7 +220,10 @@ function ExecutiveBriefingPage() {
       </div>
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
@@ -213,9 +244,15 @@ function ExecutiveBriefingPage() {
               : "Tailored for boards, investment funds, and government leadership. Live executive intelligence, ROI model, and sovereign-grade readiness."}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-amber-300/80" /> NDA-ready</span>
-            <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-300/80" /> 45–60 min</span>
-            <span className="inline-flex items-center gap-1.5"><Globe className="h-3.5 w-3.5 text-amber-300/80" /> Riyadh · GMT+3</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-amber-300/80" /> NDA-ready
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-amber-300/80" /> 45–60 min
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5 text-amber-300/80" /> Riyadh · GMT+3
+            </span>
           </div>
         </section>
 
@@ -233,16 +270,25 @@ function ExecutiveBriefingPage() {
                     : "border-white/10 bg-white/[0.02] hover:border-amber-400/25 hover:bg-white/[0.04]"
                 }`}
               >
-                {active && <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />}
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/80 to-transparent"
+                  />
+                )}
                 <div className="flex items-center justify-between">
-                  <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${active ? "bg-amber-400/15 text-amber-200" : "bg-white/[0.04] text-muted-foreground"}`}>
+                  <span
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${active ? "bg-amber-400/15 text-amber-200" : "bg-white/[0.04] text-muted-foreground"}`}
+                  >
                     {k.icon}
                   </span>
                   {active && <Check className="h-4 w-4 text-amber-300" />}
                 </div>
                 <h3 className="mt-4 text-base font-medium text-foreground">{k.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{k.desc}</p>
-                <div className="mt-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">{k.duration}</div>
+                <div className="mt-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
+                  {k.duration}
+                </div>
               </button>
             );
           })}
@@ -261,9 +307,26 @@ function ExecutiveBriefingPage() {
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <Field name="name" label={isAr ? "الاسم" : "Full Name"} required isAr={isAr} />
                   <Field name="company" label={isAr ? "الشركة" : "Company"} required isAr={isAr} />
-                  <Field name="role" label={isAr ? "المنصب" : "Position"} placeholder={isAr ? "مثلاً: الرئيس التنفيذي" : "e.g. Chief Executive Officer"} isAr={isAr} />
-                  <Field name="email" type="email" label={isAr ? "البريد الإلكتروني" : "Work Email"} required isAr={isAr} />
-                  <Field name="phone" type="tel" label={isAr ? "الجوال" : "Phone"} placeholder="+966 5X XXX XXXX" isAr={isAr} />
+                  <Field
+                    name="role"
+                    label={isAr ? "المنصب" : "Position"}
+                    placeholder={isAr ? "مثلاً: الرئيس التنفيذي" : "e.g. Chief Executive Officer"}
+                    isAr={isAr}
+                  />
+                  <Field
+                    name="email"
+                    type="email"
+                    label={isAr ? "البريد الإلكتروني" : "Work Email"}
+                    required
+                    isAr={isAr}
+                  />
+                  <Field
+                    name="phone"
+                    type="tel"
+                    label={isAr ? "الجوال" : "Phone"}
+                    placeholder="+966 5X XXX XXXX"
+                    isAr={isAr}
+                  />
                   <SelectField
                     name="team_size"
                     label={isAr ? "عدد الموظفين" : "Employee Count"}
@@ -285,8 +348,12 @@ function ExecutiveBriefingPage() {
                   className="mt-2 w-full rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 px-6 py-3 text-sm font-medium text-[#0a0a0f] transition hover:from-amber-300 hover:to-amber-400 disabled:opacity-60"
                 >
                   {submitting
-                    ? (isAr ? "جارٍ الإرسال…" : "Submitting…")
-                    : (isAr ? "احجز الجلسة التنفيذية" : "Request Executive Briefing")}
+                    ? isAr
+                      ? "جارٍ الإرسال…"
+                      : "Submitting…"
+                    : isAr
+                      ? "احجز الجلسة التنفيذية"
+                      : "Request Executive Briefing"}
                 </button>
                 <p className="text-xs text-muted-foreground/70">
                   {isAr
@@ -353,7 +420,9 @@ function ExecutiveBriefingPage() {
               </div>
               <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
                 {[
-                  isAr ? "عرض حي لـ ARIA Core والتوأم الرقمي" : "Live ARIA Core & Digital Twin demo",
+                  isAr
+                    ? "عرض حي لـ ARIA Core والتوأم الرقمي"
+                    : "Live ARIA Core & Digital Twin demo",
                   isAr ? "نموذج مالي مخصص لمؤسستك" : "Custom financial model for your enterprise",
                   isAr ? "خارطة طريق للتطبيق والامتثال" : "Implementation & compliance roadmap",
                   isAr ? "ملف تنفيذي مغلق NDA" : "NDA-protected executive packet",
@@ -375,14 +444,25 @@ function ExecutiveBriefingPage() {
 /* --------------------------------- Fields --------------------------------- */
 
 function Field({
-  name, label, type = "text", required, placeholder, isAr,
+  name,
+  label,
+  type = "text",
+  required,
+  placeholder,
+  isAr,
 }: {
-  name: string; label: string; type?: string; required?: boolean; placeholder?: string; isAr: boolean;
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  placeholder?: string;
+  isAr: boolean;
 }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
-        {label}{required && <span className="ms-1 text-amber-300">*</span>}
+        {label}
+        {required && <span className="ms-1 text-amber-300">*</span>}
       </span>
       <input
         name={name}
@@ -397,19 +477,33 @@ function Field({
 }
 
 function SelectField({
-  name, label, options, isAr,
-}: { name: string; label: string; options: string[]; isAr: boolean }) {
+  name,
+  label,
+  options,
+  isAr,
+}: {
+  name: string;
+  label: string;
+  options: string[];
+  isAr: boolean;
+}) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </span>
       <select
         name={name}
         defaultValue=""
         className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-foreground outline-none transition focus:border-amber-400/40 focus:bg-white/[0.05] focus:ring-2 focus:ring-amber-400/15"
       >
-        <option value="" disabled>{isAr ? "اختر…" : "Select…"}</option>
+        <option value="" disabled>
+          {isAr ? "اختر…" : "Select…"}
+        </option>
         {options.map((o) => (
-          <option key={o} value={o} className="bg-[#0a0a0f]">{o}</option>
+          <option key={o} value={o} className="bg-[#0a0a0f]">
+            {o}
+          </option>
         ))}
       </select>
     </label>

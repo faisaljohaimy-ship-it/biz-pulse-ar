@@ -9,13 +9,7 @@
 import { z } from "zod";
 
 export const OutcomeSchema = z.enum(["success", "partial", "failure", "unknown"]);
-export const SeveritySchema = z.enum([
-  "info",
-  "notice",
-  "warn",
-  "error",
-  "critical",
-]);
+export const SeveritySchema = z.enum(["info", "notice", "warn", "error", "critical"]);
 export const ConfidenceSchema = z.enum(["low", "medium", "high", "unknown"]);
 
 export const EvidenceRefSchema = z.object({

@@ -59,7 +59,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
-  errorComponent: ({ error, reset }) => {
+  errorComponent: function AgentsErrorComponent({ error, reset }) {
     const router = useRouter();
     return (
       <div className="p-8 text-center space-y-3">
@@ -150,13 +150,7 @@ const STATE_STYLE: Record<
   },
 };
 
-function StateBadge({
-  state,
-  locale,
-}: {
-  state: AgentOpsRecord["state"];
-  locale: string;
-}) {
+function StateBadge({ state, locale }: { state: AgentOpsRecord["state"]; locale: string }) {
   const s = STATE_STYLE[state];
   return (
     <Badge variant="outline" className={`gap-1.5 ${s.cls}`}>
@@ -201,10 +195,7 @@ function RunStatusBadge({ status }: { status: string }) {
   );
 }
 
-function formatDuration(
-  startedAt: string,
-  finishedAt: string | null,
-): string {
+function formatDuration(startedAt: string, finishedAt: string | null): string {
   const start = new Date(startedAt).getTime();
   const end = finishedAt ? new Date(finishedAt).getTime() : Date.now();
   const ms = Math.max(0, end - start);
@@ -250,9 +241,7 @@ function AgentsOps() {
   const [selected, setSelected] = useState<AgentOpsRecord | null>(null);
   const [goalOverride, setGoalOverride] = useState("");
   const [runDetail, setRunDetail] = useState<RunRow | null>(null);
-  const [stateFilter, setStateFilter] = useState<
-    AgentOpsRecord["state"] | "all"
-  >("all");
+  const [stateFilter, setStateFilter] = useState<AgentOpsRecord["state"] | "all">("all");
   const [search, setSearch] = useState("");
 
   // Realtime: refresh on agent_runs changes (best-effort)
@@ -266,14 +255,23 @@ function AgentsOps() {
         void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
         void qc.invalidateQueries({ queryKey: ["agents", "runs"] });
       });
-      ch.on("postgres_changes", { event: "*", schema: "public", table: "agent_definitions" },
-        () => void qc.invalidateQueries({ queryKey: ["agents", "ops"] }));
+      ch.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "agent_definitions" },
+        () => void qc.invalidateQueries({ queryKey: ["agents", "ops"] }),
+      );
       ch.subscribe();
     } catch (err) {
       console.warn("[agents] realtime unavailable", err);
     }
     return () => {
-      if (ch) { try { void supabase.removeChannel(ch); } catch { /* noop */ } }
+      if (ch) {
+        try {
+          void supabase.removeChannel(ch);
+        } catch {
+          /* noop */
+        }
+      }
     };
   }, [qc]);
 
@@ -307,29 +305,23 @@ function AgentsOps() {
         result?: { status: string; error?: string };
         error?: string;
       };
-      if (!resp.ok || json.ok === false)
-        throw new Error(json.error ?? `HTTP ${resp.status}`);
+      if (!resp.ok || json.ok === false) throw new Error(json.error ?? `HTTP ${resp.status}`);
       return json.result ?? { status: "succeeded" };
     },
     onSuccess: (res) => {
       const r = res as { status: string; error?: string };
       if (r.status === "succeeded")
         toast.success(locale === "ar" ? "اكتمل التشغيل" : "Run succeeded");
-      else
-        toast.error(
-          r.error ?? (locale === "ar" ? "فشل التشغيل" : "Run failed"),
-        );
+      else toast.error(r.error ?? (locale === "ar" ? "فشل التشغيل" : "Run failed"));
       setSelected(null);
       setGoalOverride("");
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
   });
 
   const toggleM = useMutation({
-    mutationFn: async (p: { agentId: string; enabled: boolean }) =>
-      callToggle({ data: p }),
+    mutationFn: async (p: { agentId: string; enabled: boolean }) => callToggle({ data: p }),
     onSuccess: (_d, vars) => {
       toast.success(
         vars.enabled
@@ -342,8 +334,7 @@ function AgentsOps() {
       );
       void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
     },
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
   });
 
   const cancelM = useMutation({
@@ -352,8 +343,7 @@ function AgentsOps() {
       toast.success(locale === "ar" ? "تم إلغاء التشغيل" : "Run cancelled");
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
   });
 
   const retryM = useMutation({
@@ -362,18 +352,14 @@ function AgentsOps() {
       toast.success(locale === "ar" ? "إعادة المحاولة بدأت" : "Retry started");
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
   });
 
   const ops = opsQ.data;
   const agents = ops?.agents ?? [];
   const system = ops?.system;
   const runs = runsQ.data ?? [];
-  const agentById = useMemo(
-    () => Object.fromEntries(agents.map((a) => [a.id, a])),
-    [agents],
-  );
+  const agentById = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a])), [agents]);
 
   const filteredAgents = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -391,11 +377,7 @@ function AgentsOps() {
     <Section>
       <PageHeader
         icon={Bot}
-        title={
-          locale === "ar"
-            ? "منصة عمليات الوكلاء"
-            : "Agent Operations Platform"
-        }
+        title={locale === "ar" ? "منصة عمليات الوكلاء" : "Agent Operations Platform"}
         subtitle={
           locale === "ar"
             ? "تشغيل، مراقبة، تدقيق، وتحكم — بيانات حية فقط من قاعدة البيانات."
@@ -404,9 +386,7 @@ function AgentsOps() {
         badge="Runtime"
         actions={
           <Button asChild variant="outline">
-            <Link to="/exec">
-              {locale === "ar" ? "وحدة التنفيذ" : "Execution Console"}
-            </Link>
+            <Link to="/exec">{locale === "ar" ? "وحدة التنفيذ" : "Execution Console"}</Link>
           </Button>
         }
       />
@@ -449,11 +429,7 @@ function AgentsOps() {
         />
         <SysCard
           icon={BarChart3}
-          label={
-            locale === "ar"
-              ? `تشغيلات اليوم`
-              : "Today"
-          }
+          label={locale === "ar" ? `تشغيلات اليوم` : "Today"}
           value={system?.runs_today ?? 0}
         />
         <SysCard
@@ -465,12 +441,8 @@ function AgentsOps() {
 
       <Tabs defaultValue="agents" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="agents">
-            {locale === "ar" ? "الوكلاء" : "Agents"}
-          </TabsTrigger>
-          <TabsTrigger value="runs">
-            {locale === "ar" ? "سجل التشغيل" : "Run history"}
-          </TabsTrigger>
+          <TabsTrigger value="agents">{locale === "ar" ? "الوكلاء" : "Agents"}</TabsTrigger>
+          <TabsTrigger value="runs">{locale === "ar" ? "سجل التشغيل" : "Run history"}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="agents" className="space-y-3">
@@ -481,42 +453,30 @@ function AgentsOps() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={
-                  locale === "ar"
-                    ? "ابحث عن وكيل…"
-                    : "Search agents…"
-                }
+                placeholder={locale === "ar" ? "ابحث عن وكيل…" : "Search agents…"}
                 className="w-64 ps-8"
               />
             </div>
             <div className="flex flex-wrap gap-1">
-              {(
-                [
-                  "all",
-                  "running",
-                  "queued",
-                  "ready",
-                  "idle",
-                  "failed",
-                  "disabled",
-                ] as const
-              ).map((s) => (
-                <Button
-                  key={s}
-                  size="sm"
-                  variant={stateFilter === s ? "default" : "outline"}
-                  className="h-7 text-xs"
-                  onClick={() => setStateFilter(s)}
-                >
-                  {s === "all"
-                    ? locale === "ar"
-                      ? "الكل"
-                      : "All"
-                    : locale === "ar"
-                      ? STATE_STYLE[s].labelAr
-                      : STATE_STYLE[s].label}
-                </Button>
-              ))}
+              {(["all", "running", "queued", "ready", "idle", "failed", "disabled"] as const).map(
+                (s) => (
+                  <Button
+                    key={s}
+                    size="sm"
+                    variant={stateFilter === s ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={() => setStateFilter(s)}
+                  >
+                    {s === "all"
+                      ? locale === "ar"
+                        ? "الكل"
+                        : "All"
+                      : locale === "ar"
+                        ? STATE_STYLE[s].labelAr
+                        : STATE_STYLE[s].label}
+                  </Button>
+                ),
+              )}
             </div>
             <div className="ms-auto text-[11px] text-muted-foreground">
               {locale === "ar"
@@ -533,7 +493,15 @@ function AgentsOps() {
             </div>
           ) : filteredAgents.length === 0 ? (
             <Card className="p-6 flex items-center justify-center">
-              <LiveStatus variant="discovering" hint={locale === "ar" ? "لا توجد مطابقة — وسّع التصفية" : "No matches — broaden the filter"} size="sm" />
+              <LiveStatus
+                variant="discovering"
+                hint={
+                  locale === "ar"
+                    ? "لا توجد مطابقة — وسّع التصفية"
+                    : "No matches — broaden the filter"
+                }
+                size="sm"
+              />
             </Card>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -556,12 +524,9 @@ function AgentsOps() {
                           <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                          <div className="text-sm font-semibold leading-tight">
-                            {a.name}
-                          </div>
+                          <div className="text-sm font-semibold leading-tight">{a.name}</div>
                           <div className="text-[11px] text-muted-foreground">
-                            {meta?.department ?? "—"} · v
-                            {meta?.version ?? "1.0.0"}
+                            {meta?.department ?? "—"} · v{meta?.version ?? "1.0.0"}
                           </div>
                         </div>
                       </div>
@@ -582,9 +547,7 @@ function AgentsOps() {
                         label={locale === "ar" ? "تشغيلات" : "Runs"}
                         value={String(a.total_runs)}
                         hint={
-                          a.running > 0
-                            ? `${a.running} ${locale === "ar" ? "نشط" : "active"}`
-                            : ""
+                          a.running > 0 ? `${a.running} ${locale === "ar" ? "نشط" : "active"}` : ""
                         }
                       />
                       <Stat
@@ -599,9 +562,7 @@ function AgentsOps() {
                         {locale === "ar" ? "آخر تشغيل: " : "Last run: "}
                         {formatRelative(a.last_run_at, locale)}
                       </span>
-                      <code className="rounded bg-muted/50 px-1.5 py-0.5">
-                        {a.model}
-                      </code>
+                      <code className="rounded bg-muted/50 px-1.5 py-0.5">{a.model}</code>
                     </div>
 
                     <div className="mt-auto flex items-center gap-2 pt-2">
@@ -621,9 +582,7 @@ function AgentsOps() {
                         <Switch
                           checked={a.enabled}
                           disabled={toggleM.isPending}
-                          onCheckedChange={(v) =>
-                            toggleM.mutate({ agentId: a.id, enabled: v })
-                          }
+                          onCheckedChange={(v) => toggleM.mutate({ agentId: a.id, enabled: v })}
                         />
                         <span className="text-[10px] text-muted-foreground">
                           {a.enabled
@@ -648,14 +607,10 @@ function AgentsOps() {
             <ScrollArea className="h-[560px]">
               <div className="divide-y divide-border/40">
                 {runsQ.isLoading ? (
-                  <div className="p-6 text-center text-sm text-muted-foreground">
-                    Loading…
-                  </div>
+                  <div className="p-6 text-center text-sm text-muted-foreground">Loading…</div>
                 ) : runs.length === 0 ? (
                   <div className="p-8 text-center text-sm text-muted-foreground">
-                    {locale === "ar"
-                      ? "لا توجد تشغيلات بعد."
-                      : "No agent runs yet."}
+                    {locale === "ar" ? "لا توجد تشغيلات بعد." : "No agent runs yet."}
                   </div>
                 ) : (
                   runs.map((r) => {
@@ -664,8 +619,7 @@ function AgentsOps() {
                       category?: string;
                     };
                     const Icon = iconFor(meta.category);
-                    const isLive =
-                      r.status === "running" || r.status === "queued";
+                    const isLive = r.status === "running" || r.status === "queued";
                     return (
                       <div
                         key={r.id}
@@ -761,9 +715,7 @@ function AgentsOps() {
           <div className="space-y-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground">
-                {locale === "ar"
-                  ? "هدف مخصص (اختياري)"
-                  : "Goal override (optional)"}
+                {locale === "ar" ? "هدف مخصص (اختياري)" : "Goal override (optional)"}
               </label>
               <Textarea
                 value={goalOverride}
@@ -783,10 +735,7 @@ function AgentsOps() {
               </div>
               <div className="flex flex-wrap gap-1">
                 {(selected?.tool_allowlist ?? []).map((tid) => (
-                  <code
-                    key={tid}
-                    className="rounded bg-muted/50 px-1.5 py-0.5"
-                  >
+                  <code key={tid} className="rounded bg-muted/50 px-1.5 py-0.5">
                     {tid}
                   </code>
                 ))}
@@ -826,14 +775,10 @@ function AgentsOps() {
             <DialogTitle className="flex items-center gap-2">
               {runDetail && <RunStatusBadge status={runDetail.status} />}
               <span>
-                {runDetail
-                  ? (agentById[runDetail.agent_id]?.name ?? runDetail.agent_id)
-                  : ""}
+                {runDetail ? (agentById[runDetail.agent_id]?.name ?? runDetail.agent_id) : ""}
               </span>
             </DialogTitle>
-            <DialogDescription className="font-mono text-[10px]">
-              {runDetail?.id}
-            </DialogDescription>
+            <DialogDescription className="font-mono text-[10px]">{runDetail?.id}</DialogDescription>
           </DialogHeader>
           {runDetail && (
             <div className="space-y-3 text-xs">
@@ -845,31 +790,21 @@ function AgentsOps() {
                 <Meta
                   label={locale === "ar" ? "انتهى" : "Finished"}
                   value={
-                    runDetail.finished_at
-                      ? new Date(runDetail.finished_at).toLocaleString()
-                      : "—"
+                    runDetail.finished_at ? new Date(runDetail.finished_at).toLocaleString() : "—"
                   }
                 />
                 <Meta
                   label={locale === "ar" ? "المدة" : "Duration"}
-                  value={formatDuration(
-                    runDetail.started_at,
-                    runDetail.finished_at,
-                  )}
+                  value={formatDuration(runDetail.started_at, runDetail.finished_at)}
                 />
-                <Meta
-                  label={locale === "ar" ? "خطوات" : "Steps"}
-                  value={String(runDetail.steps)}
-                />
+                <Meta label={locale === "ar" ? "خطوات" : "Steps"} value={String(runDetail.steps)} />
               </div>
               {runDetail.goal_override && (
                 <div>
                   <div className="text-[10px] uppercase text-muted-foreground">
                     {locale === "ar" ? "الهدف" : "Goal"}
                   </div>
-                  <div className="rounded bg-muted/40 p-2">
-                    {runDetail.goal_override}
-                  </div>
+                  <div className="rounded bg-muted/40 p-2">{runDetail.goal_override}</div>
                 </div>
               )}
               {runDetail.summary && (
@@ -878,25 +813,18 @@ function AgentsOps() {
                     {locale === "ar" ? "الملخص" : "Summary"}
                   </div>
                   <ScrollArea className="max-h-64 rounded bg-muted/40 p-2">
-                    <pre className="whitespace-pre-wrap text-xs">
-                      {runDetail.summary}
-                    </pre>
+                    <pre className="whitespace-pre-wrap text-xs">{runDetail.summary}</pre>
                   </ScrollArea>
                 </div>
               )}
               {runDetail.error && (
                 <div>
-                  <div className="text-[10px] uppercase text-red-300">
-                    Error
-                  </div>
-                  <div className="rounded bg-red-500/10 p-2 text-red-300">
-                    {runDetail.error}
-                  </div>
+                  <div className="text-[10px] uppercase text-red-300">Error</div>
+                  <div className="rounded bg-red-500/10 p-2 text-red-300">{runDetail.error}</div>
                 </div>
               )}
               <div className="flex justify-end gap-2 pt-2">
-                {(runDetail.status === "running" ||
-                  runDetail.status === "queued") && (
+                {(runDetail.status === "running" || runDetail.status === "queued") && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -950,31 +878,19 @@ function SysCard({
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-[10px] uppercase text-muted-foreground">
-          {label}
-        </div>
+        <div className="truncate text-[10px] uppercase text-muted-foreground">{label}</div>
         <div className="text-lg font-semibold leading-tight">{value}</div>
       </div>
     </Card>
   );
 }
 
-function Stat({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-}) {
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div>
       <div className="text-[9px] uppercase text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold">{value}</div>
-      {hint ? (
-        <div className="text-[9px] text-muted-foreground/70">{hint}</div>
-      ) : null}
+      {hint ? <div className="text-[9px] text-muted-foreground/70">{hint}</div> : null}
     </div>
   );
 }

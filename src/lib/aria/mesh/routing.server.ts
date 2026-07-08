@@ -50,9 +50,7 @@ export function selectRoute(
       break;
     }
     case "least_loaded":
-      picked = [...eligible].sort(
-        (a, b) => a.load - b.load || a.id.localeCompare(b.id),
-      )[0];
+      picked = [...eligible].sort((a, b) => a.load - b.load || a.id.localeCompare(b.id))[0];
       break;
     case "hash": {
       const k = parsedReq.key ?? parsedReq.messageId;
@@ -60,13 +58,9 @@ export function selectRoute(
       break;
     }
     case "capability_affinity": {
-      const affine = eligible.filter((n) =>
-        n.capabilities.includes(parsedReq.capability),
-      );
+      const affine = eligible.filter((n) => n.capabilities.includes(parsedReq.capability));
       const pool = affine.length > 0 ? affine : eligible;
-      picked = [...pool].sort(
-        (a, b) => a.load - b.load || a.id.localeCompare(b.id),
-      )[0];
+      picked = [...pool].sort((a, b) => a.load - b.load || a.id.localeCompare(b.id))[0];
       break;
     }
     case "unknown":

@@ -49,7 +49,11 @@ export function ingest(raw: RawIngestPayloadInput): IngestionReport {
     const resolved = resolveEntity(built.record);
     ingestedEntities.push(resolved.record.id);
     entityByName.set(`${assertion.kind}|${assertion.name.trim().toLowerCase()}`, resolved.record);
-    audit(resolved.reused ? "entity.reuse" : "entity.insert", resolved.record.id, resolved.record.evidence.map((e) => e.id));
+    audit(
+      resolved.reused ? "entity.reuse" : "entity.insert",
+      resolved.record.id,
+      resolved.record.evidence.map((e) => e.id),
+    );
   }
 
   const ingestedRelationships: string[] = [];

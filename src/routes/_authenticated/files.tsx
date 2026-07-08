@@ -64,12 +64,19 @@ function FilesPage() {
       <PageHeader
         icon={FolderUp}
         title={t("nav.files")}
-        subtitle={locale === "ar" ? "ارفع المستندات لتحليلها بالذكاء الاصطناعي." : "Upload documents for AI-powered analysis."}
+        subtitle={
+          locale === "ar"
+            ? "ارفع المستندات لتحليلها بالذكاء الاصطناعي."
+            : "Upload documents for AI-powered analysis."
+        }
       />
 
       <div
         onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => { e.preventDefault(); upload(e.dataTransfer.files); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          upload(e.dataTransfer.files);
+        }}
         className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card/40 p-10 text-center"
       >
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
@@ -81,7 +88,13 @@ function FilesPage() {
         <Button onClick={onPick} disabled={uploading}>
           {uploading ? t("common.loading") : locale === "ar" ? "اختر ملف" : "Choose file"}
         </Button>
-        <input ref={inputRef} type="file" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          className="hidden"
+          onChange={(e) => upload(e.target.files)}
+        />
       </div>
 
       <div className="rounded-2xl border border-border bg-card/60">
@@ -89,7 +102,9 @@ function FilesPage() {
           {locale === "ar" ? "الملفات الأخيرة" : "Recent files"}
         </div>
         <div className="divide-y divide-border">
-          {isLoading && <div className="p-4 text-xs text-muted-foreground">{t("common.loading")}</div>}
+          {isLoading && (
+            <div className="p-4 text-xs text-muted-foreground">{t("common.loading")}</div>
+          )}
           {!isLoading && files.length === 0 && (
             <div className="p-6 text-center text-xs text-muted-foreground">
               {locale === "ar" ? "لا توجد ملفات بعد" : "No files yet"}
@@ -99,7 +114,10 @@ function FilesPage() {
             <div key={f.name} className="flex items-center gap-3 p-3">
               <FileText className="h-4 w-4 text-muted-foreground" />
               <div className="min-w-0 flex-1 truncate text-sm">{f.name}</div>
-              <button onClick={() => remove(f.name)} className="text-muted-foreground hover:text-destructive">
+              <button
+                onClick={() => remove(f.name)}
+                className="text-muted-foreground hover:text-destructive"
+              >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>

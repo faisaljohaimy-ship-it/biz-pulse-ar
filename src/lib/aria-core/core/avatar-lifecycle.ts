@@ -34,8 +34,12 @@ class AvatarLifecycle {
     };
   }
 
-  isRunning(): boolean { return this.refCount > 0 && avatarRuntime.isRunning(); }
-  uptimeMs(): number { return this.startedAt === 0 ? 0 : Date.now() - this.startedAt; }
+  isRunning(): boolean {
+    return this.refCount > 0 && avatarRuntime.isRunning();
+  }
+  uptimeMs(): number {
+    return this.startedAt === 0 ? 0 : Date.now() - this.startedAt;
+  }
 }
 
 export const avatarLifecycle = new AvatarLifecycle();

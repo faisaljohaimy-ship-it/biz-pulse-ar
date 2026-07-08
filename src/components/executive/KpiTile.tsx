@@ -2,23 +2,24 @@ import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 
-
 export type KpiTone = "cyan" | "emerald" | "amber" | "rose" | "violet";
 
 const TONE_RING: Record<KpiTone, string> = {
-  cyan:    "border-[color:var(--nx-cyan)]/35 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-cyan)_55%,transparent)]",
-  emerald: "border-[color:var(--nx-success)]/40 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-success)_55%,transparent)]",
-  amber:   "border-[color:var(--nx-warning)]/45 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-warning)_55%,transparent)]",
-  rose:    "border-[color:var(--nx-critical)]/50 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-critical)_55%,transparent)]",
-  violet:  "border-violet-400/40 shadow-[0_0_24px_-6px_rgba(167,139,250,0.5)]",
+  cyan: "border-[color:var(--nx-cyan)]/35 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-cyan)_55%,transparent)]",
+  emerald:
+    "border-[color:var(--nx-success)]/40 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-success)_55%,transparent)]",
+  amber:
+    "border-[color:var(--nx-warning)]/45 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-warning)_55%,transparent)]",
+  rose: "border-[color:var(--nx-critical)]/50 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--nx-critical)_55%,transparent)]",
+  violet: "border-violet-400/40 shadow-[0_0_24px_-6px_rgba(167,139,250,0.5)]",
 };
 
 const TONE_DOT: Record<KpiTone, string> = {
-  cyan:    "bg-[color:var(--nx-cyan)]",
+  cyan: "bg-[color:var(--nx-cyan)]",
   emerald: "bg-[color:var(--nx-success)]",
-  amber:   "bg-[color:var(--nx-warning)]",
-  rose:    "bg-[color:var(--nx-critical)]",
-  violet:  "bg-violet-400",
+  amber: "bg-[color:var(--nx-warning)]",
+  rose: "bg-[color:var(--nx-critical)]",
+  violet: "bg-violet-400",
 };
 
 export interface KpiTileProps {
@@ -38,7 +39,14 @@ export interface KpiTileProps {
  * Mission Control Strip. Pure presentational — data is owned by the parent.
  */
 export function KpiTile({
-  labelAr, labelEn, value, hint, tone = "cyan", loading, delta, className,
+  labelAr,
+  labelEn,
+  value,
+  hint,
+  tone = "cyan",
+  loading,
+  delta,
+  className,
 }: KpiTileProps) {
   const { locale } = useI18n();
   const displayValue = loading ? "—" : value;
@@ -63,7 +71,14 @@ export function KpiTile({
             {secondary}
           </div>
         </div>
-        <span className={cn("h-2 w-2 shrink-0 rounded-full", TONE_DOT[tone], "motion-safe:animate-pulse")} aria-hidden />
+        <span
+          className={cn(
+            "h-2 w-2 shrink-0 rounded-full",
+            TONE_DOT[tone],
+            "motion-safe:animate-pulse",
+          )}
+          aria-hidden
+        />
       </div>
 
       <div className="mt-2 flex items-end justify-between gap-2">

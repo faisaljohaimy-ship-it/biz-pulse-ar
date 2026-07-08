@@ -24,11 +24,7 @@
 //   window.addEventListener("nexios:demo-status", (e) => e.detail as DemoStatus)
 
 import * as React from "react";
-import {
-  EXECUTIVE_DAY_TIMELINE,
-  EXECUTIVE_DAY_STEP_COUNT,
-  type DemoStep,
-} from "./timeline";
+import { EXECUTIVE_DAY_TIMELINE, EXECUTIVE_DAY_STEP_COUNT, type DemoStep } from "./timeline";
 
 export type DemoStatus = "idle" | "playing" | "paused" | "ended";
 
@@ -137,7 +133,7 @@ export function DemoModeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isActive = status === "playing" || status === "paused";
-  const step = stepIndex >= 0 ? EXECUTIVE_DAY_TIMELINE[stepIndex] ?? null : null;
+  const step = stepIndex >= 0 ? (EXECUTIVE_DAY_TIMELINE[stepIndex] ?? null) : null;
 
   // Broadcast step + status changes.
   React.useEffect(() => {
@@ -202,7 +198,8 @@ export function DemoModeProvider({ children }: { children: React.ReactNode }) {
     clearTimer();
     setStepIndex((i) => {
       const n = Math.min(i + 1, EXECUTIVE_DAY_STEP_COUNT - 1);
-      if (n === EXECUTIVE_DAY_STEP_COUNT - 1) setStatus((s) => (s === "playing" ? "playing" : "paused"));
+      if (n === EXECUTIVE_DAY_STEP_COUNT - 1)
+        setStatus((s) => (s === "playing" ? "playing" : "paused"));
       return n;
     });
   }, [clearTimer]);
@@ -213,11 +210,14 @@ export function DemoModeProvider({ children }: { children: React.ReactNode }) {
     setStatus((s) => (s === "ended" ? "paused" : s));
   }, [clearTimer]);
 
-  const goTo = React.useCallback((index: number) => {
-    clearTimer();
-    if (index < 0 || index >= EXECUTIVE_DAY_STEP_COUNT) return;
-    setStepIndex(index);
-  }, [clearTimer]);
+  const goTo = React.useCallback(
+    (index: number) => {
+      clearTimer();
+      if (index < 0 || index >= EXECUTIVE_DAY_STEP_COUNT) return;
+      setStepIndex(index);
+    },
+    [clearTimer],
+  );
 
   const exit = React.useCallback(() => {
     clearTimer();

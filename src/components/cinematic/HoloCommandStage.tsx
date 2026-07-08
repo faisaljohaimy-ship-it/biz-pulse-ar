@@ -1,6 +1,16 @@
 import {
-  ShieldAlert, Camera, KeyRound, Activity, Wrench, Users, Radio,
-  Gauge, Hexagon, Boxes, SignalHigh, Network,
+  ShieldAlert,
+  Camera,
+  KeyRound,
+  Activity,
+  Wrench,
+  Users,
+  Radio,
+  Gauge,
+  Hexagon,
+  Boxes,
+  SignalHigh,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ExecKpis } from "@/lib/sec.functions";
@@ -27,8 +37,7 @@ export function HoloCommandStage({
 }) {
   const num = (v: number | undefined) =>
     v === undefined ? "—" : v.toLocaleString(isAr ? "ar-SA" : "en-US");
-  const pct = (v: number | undefined) =>
-    v === undefined ? "—" : `${Math.round(v)}%`;
+  const pct = (v: number | undefined) => (v === undefined ? "—" : `${Math.round(v)}%`);
 
   const widgets: Array<{
     icon: typeof ShieldAlert;
@@ -105,22 +114,65 @@ export function HoloCommandStage({
   ];
 
   // Digital Twin status nodes orbiting the core
-  const twin: Array<{ icon: typeof Hexagon; label: string; value: string; deg: number; text: string }> = [
-    { icon: Network, label: isAr ? "مواقع" : "Sites", value: `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`, deg: -90, text: "text-cyan-200" },
+  const twin: Array<{
+    icon: typeof Hexagon;
+    label: string;
+    value: string;
+    deg: number;
+    text: string;
+  }> = [
+    {
+      icon: Network,
+      label: isAr ? "مواقع" : "Sites",
+      value: `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`,
+      deg: -90,
+      text: "text-cyan-200",
+    },
     { icon: Camera, label: "CCTV", value: pct(k?.cctv_health), deg: -30, text: "text-emerald-200" },
-    { icon: KeyRound, label: isAr ? "البوابات" : "Gates", value: `${k?.gates_online ?? 0}/${k?.gates_total ?? 0}`, deg: 30, text: "text-amber-200" },
-    { icon: Boxes, label: isAr ? "الحساسات" : "Sensors", value: `${k?.sensors_total ?? 0}`, deg: 90, text: "text-violet-200" },
-    { icon: Activity, label: isAr ? "السلامة" : "Safety", value: pct(k?.safety_index), deg: 150, text: "text-rose-200" },
-    { icon: SignalHigh, label: isAr ? "الوصول" : "Access", value: pct(k?.access_health), deg: 210, text: "text-sky-200" },
+    {
+      icon: KeyRound,
+      label: isAr ? "البوابات" : "Gates",
+      value: `${k?.gates_online ?? 0}/${k?.gates_total ?? 0}`,
+      deg: 30,
+      text: "text-amber-200",
+    },
+    {
+      icon: Boxes,
+      label: isAr ? "الحساسات" : "Sensors",
+      value: `${k?.sensors_total ?? 0}`,
+      deg: 90,
+      text: "text-violet-200",
+    },
+    {
+      icon: Activity,
+      label: isAr ? "السلامة" : "Safety",
+      value: pct(k?.safety_index),
+      deg: 150,
+      text: "text-rose-200",
+    },
+    {
+      icon: SignalHigh,
+      label: isAr ? "الوصول" : "Access",
+      value: pct(k?.access_health),
+      deg: 210,
+      text: "text-sky-200",
+    },
   ];
 
   const statusTone =
-    status === "OPTIMAL" ? "text-emerald-300"
-    : status === "ELEVATED" ? "text-amber-300"
-    : status === "ALERT" ? "text-rose-300" : "text-cyan-200";
+    status === "OPTIMAL"
+      ? "text-emerald-300"
+      : status === "ELEVATED"
+        ? "text-amber-300"
+        : status === "ALERT"
+          ? "text-rose-300"
+          : "text-cyan-200";
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden" dir={isAr ? "rtl" : "ltr"}>
+    <div
+      className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
+      dir={isAr ? "rtl" : "ltr"}
+    >
       {/* Volumetric backdrop */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,184,217,0.20),transparent_65%)]" />
       <div
@@ -150,9 +202,32 @@ export function HoloCommandStage({
               </radialGradient>
             </defs>
             <circle cx="200" cy="200" r="195" fill="url(#hcs-halo)" />
-            <circle cx="200" cy="200" r="195" fill="none" stroke="rgba(110,231,255,0.5)" strokeWidth="0.4" strokeDasharray="1 6" />
-            <circle cx="200" cy="200" r="160" fill="none" stroke="rgba(110,231,255,0.35)" strokeWidth="0.5" />
-            <circle cx="200" cy="200" r="125" fill="none" stroke="rgba(110,231,255,0.25)" strokeWidth="0.5" strokeDasharray="3 8" />
+            <circle
+              cx="200"
+              cy="200"
+              r="195"
+              fill="none"
+              stroke="rgba(110,231,255,0.5)"
+              strokeWidth="0.4"
+              strokeDasharray="1 6"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="160"
+              fill="none"
+              stroke="rgba(110,231,255,0.35)"
+              strokeWidth="0.5"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="125"
+              fill="none"
+              stroke="rgba(110,231,255,0.25)"
+              strokeWidth="0.5"
+              strokeDasharray="3 8"
+            />
             {Array.from({ length: 32 }).map((_, i) => {
               const a = (i / 32) * Math.PI * 2;
               return (
@@ -172,8 +247,24 @@ export function HoloCommandStage({
             viewBox="0 0 400 400"
             style={{ animation: "aria-spin-slow 60s linear infinite reverse" }}
           >
-            <circle cx="200" cy="200" r="180" fill="none" stroke="rgba(58,232,255,0.55)" strokeWidth="0.6" strokeDasharray="2 18" />
-            <circle cx="200" cy="200" r="145" fill="none" stroke="rgba(58,232,255,0.4)" strokeWidth="0.5" strokeDasharray="6 90" />
+            <circle
+              cx="200"
+              cy="200"
+              r="180"
+              fill="none"
+              stroke="rgba(58,232,255,0.55)"
+              strokeWidth="0.6"
+              strokeDasharray="2 18"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="145"
+              fill="none"
+              stroke="rgba(58,232,255,0.4)"
+              strokeWidth="0.5"
+              strokeDasharray="6 90"
+            />
           </svg>
 
           {/* Inner NEXUS core */}
@@ -188,8 +279,12 @@ export function HoloCommandStage({
               <div className="absolute inset-[60px] rounded-full border border-cyan-100/40 bg-[radial-gradient(circle,rgba(0,212,255,0.35),rgba(4,18,31,0.6)_70%)] shadow-[inset_0_0_40px_rgba(110,231,255,0.4)]" />
               <div className="relative z-10 text-center leading-none">
                 <div className="text-[9px] tracking-[0.4em] text-cyan-200/70 font-mono">NEXUS</div>
-                <div className={cn("mt-1 text-[11px] tracking-[0.3em] font-mono", statusTone)}>{status}</div>
-                <div className="mt-3 text-3xl font-bold tabular-nums text-cyan-100">{pct(k?.executive_readiness)}</div>
+                <div className={cn("mt-1 text-[11px] tracking-[0.3em] font-mono", statusTone)}>
+                  {status}
+                </div>
+                <div className="mt-3 text-3xl font-bold tabular-nums text-cyan-100">
+                  {pct(k?.executive_readiness)}
+                </div>
                 <div className="mt-1 text-[9px] tracking-[0.3em] text-cyan-200/60 font-mono">
                   {isAr ? "الجاهزية" : "READINESS"}
                 </div>
@@ -198,7 +293,8 @@ export function HoloCommandStage({
               <div
                 className="absolute inset-x-0 h-16 mix-blend-screen pointer-events-none rounded-full"
                 style={{
-                  background: "linear-gradient(180deg, transparent, rgba(110,231,255,0.45), transparent)",
+                  background:
+                    "linear-gradient(180deg, transparent, rgba(110,231,255,0.45), transparent)",
                   animation: "aria-holo-scan 6s ease-in-out infinite",
                 }}
               />
@@ -224,8 +320,12 @@ export function HoloCommandStage({
                 <div className="flex items-center gap-2 rounded-lg border border-cyan-300/30 bg-[#04121f]/70 px-2.5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_-5px_rgba(58,232,255,0.5)]">
                   <Icon className={cn("h-3.5 w-3.5", t.text)} />
                   <div className="leading-none">
-                    <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-mono">{t.label}</div>
-                    <div className={cn("text-[11px] font-semibold tabular-nums", t.text)}>{t.value}</div>
+                    <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-mono">
+                      {t.label}
+                    </div>
+                    <div className={cn("text-[11px] font-semibold tabular-nums", t.text)}>
+                      {t.value}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -243,10 +343,12 @@ export function HoloCommandStage({
               key={i}
               className={cn(
                 "absolute flex w-[180px] items-center gap-2.5 rounded-xl border border-cyan-300/25 bg-gradient-to-br px-3 py-2.5 backdrop-blur-xl",
-                w.pos, w.tone,
+                w.pos,
+                w.tone,
               )}
               style={{
-                boxShadow: "0 10px 40px -10px rgba(58,232,255,0.45), inset 0 0 30px rgba(110,231,255,0.08)",
+                boxShadow:
+                  "0 10px 40px -10px rgba(58,232,255,0.45), inset 0 0 30px rgba(110,231,255,0.08)",
                 animation: `aria-holo-float ${6 + (i % 4)}s ease-in-out ${i * 0.4}s infinite`,
               }}
             >
@@ -254,10 +356,17 @@ export function HoloCommandStage({
                 <Icon className={cn("h-4 w-4", w.text)} />
               </div>
               <div className="min-w-0 leading-tight text-start">
-                <div className={cn("truncate text-[9px] text-white/55", isAr ? "font-medium" : "uppercase tracking-[0.22em]")}>
+                <div
+                  className={cn(
+                    "truncate text-[9px] text-white/55",
+                    isAr ? "font-medium" : "uppercase tracking-[0.22em]",
+                  )}
+                >
                   {w.label}
                 </div>
-                <div className={cn("truncate text-[12px] font-semibold tabular-nums", w.text)}>{w.value}</div>
+                <div className={cn("truncate text-[12px] font-semibold tabular-nums", w.text)}>
+                  {w.value}
+                </div>
               </div>
               <span className="absolute -left-[3px] -top-[3px] h-2 w-2 border-l border-t border-cyan-300/70" />
               <span className="absolute -right-[3px] -top-[3px] h-2 w-2 border-r border-t border-cyan-300/70" />

@@ -8,7 +8,15 @@ export type RenderQuality = "reference" | "cinematic" | "runtime_hd" | "runtime_
 export interface ColorSwatch {
   readonly name: string;
   readonly hex: string;
-  readonly role: "primary" | "secondary" | "accent" | "skin" | "hair" | "attire" | "glow" | "background";
+  readonly role:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "skin"
+    | "hair"
+    | "attire"
+    | "glow"
+    | "background";
 }
 
 export interface FaceSignature {

@@ -65,9 +65,7 @@ export interface UpdateObjectiveArgs {
   due_at?: string | null;
 }
 
-export function updateObjective(
-  args: UpdateObjectiveArgs,
-): ExecutiveObjective | null {
+export function updateObjective(args: UpdateObjectiveArgs): ExecutiveObjective | null {
   const cur = OBJECTIVES.get(args.objective_id);
   if (!cur) return null;
   const next: ExecutiveObjective = {
@@ -87,18 +85,14 @@ export function updateObjective(
   return next;
 }
 
-export function getObjective(
-  id: ExecutiveObjectiveId,
-): ExecutiveObjective | null {
+export function getObjective(id: ExecutiveObjectiveId): ExecutiveObjective | null {
   return OBJECTIVES.get(id) ?? null;
 }
 
 export function listObjectives(
   workspace_id: ExecutiveWorkspaceId,
 ): ReadonlyArray<ExecutiveObjective> {
-  return Array.from(OBJECTIVES.values()).filter(
-    (o) => o.workspace_id === workspace_id,
-  );
+  return Array.from(OBJECTIVES.values()).filter((o) => o.workspace_id === workspace_id);
 }
 
 export function countActive(workspace_id?: ExecutiveWorkspaceId): number {

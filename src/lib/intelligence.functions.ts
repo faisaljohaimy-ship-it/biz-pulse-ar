@@ -43,18 +43,19 @@ export const getFabricSnapshot = createServerFn({ method: "GET" })
     const [events, alerts, tasks] = await Promise.all([
       supabase
         .from("intelligence_events")
-        .select("id,kind,status,impact,progress,due_at,last_update,created_at,title,title_en,owner,department,decision_route")
+        .select(
+          "id,kind,status,impact,progress,due_at,last_update,created_at,title,title_en,owner,department,decision_route",
+        )
         .order("last_update", { ascending: false })
         .limit(200),
       supabase
         .from("intelligence_alerts")
-        .select("id,severity,title,title_en,owner,route,source,business_impact_score,resolved_at,created_at")
+        .select(
+          "id,severity,title,title_en,owner,route,source,business_impact_score,resolved_at,created_at",
+        )
         .order("business_impact_score", { ascending: false })
         .limit(200),
-      supabase
-        .from("tasks")
-        .select("status,created_at,updated_at")
-        .limit(200),
+      supabase.from("tasks").select("status,created_at,updated_at").limit(200),
     ]);
 
     const eventRows = events.data ?? [];
@@ -136,9 +137,7 @@ export const getFabricSnapshot = createServerFn({ method: "GET" })
         {
           id: "powerbi",
           label: "Microsoft Power BI",
-          available: Boolean(
-            process.env.POWERBI_TENANT_ID && process.env.POWERBI_CLIENT_ID,
-          ),
+          available: Boolean(process.env.POWERBI_TENANT_ID && process.env.POWERBI_CLIENT_ID),
         },
         { id: "sap", label: "SAP", available: false },
         { id: "ms365", label: "Microsoft 365", available: false },
@@ -165,9 +164,7 @@ const EventInput = z.object({
   owner: z.string().max(120).optional(),
   department: z.string().max(120).optional(),
   source: z.string().max(120).optional(),
-  status: z
-    .enum(["open", "in_progress", "blocked", "done", "forgotten"])
-    .default("open"),
+  status: z.enum(["open", "in_progress", "blocked", "done", "forgotten"]).default("open"),
   impact: z.enum(["low", "medium", "high", "critical"]).default("medium"),
   progress: z.number().int().min(0).max(100).default(0),
   due_at: z.string().datetime().optional(),
@@ -255,14 +252,8 @@ export const getTwinSignals = createServerFn({ method: "GET" })
         .from("intelligence_events")
         .select("kind,status,impact,department,source,created_at,updated_at")
         .limit(2000),
-      supabase
-        .from("intelligence_alerts")
-        .select("severity,resolved_at,source")
-        .limit(1000),
-      supabase
-        .from("tasks")
-        .select("status,assigned_agent,updated_at,created_at")
-        .limit(2000),
+      supabase.from("intelligence_alerts").select("severity,resolved_at,source").limit(1000),
+      supabase.from("tasks").select("status,assigned_agent,updated_at,created_at").limit(2000),
       supabase.from("knowledge_docs").select("id", { count: "exact", head: true }),
     ]);
 
@@ -270,25 +261,16 @@ export const getTwinSignals = createServerFn({ method: "GET" })
     const al = alerts.data ?? [];
     const tk = tasks.data ?? [];
 
-    const departments = new Set(
-      ev.map((e) => e.department).filter((d): d is string => !!d),
-    ).size;
-    const agents = new Set(
-      tk.map((t) => t.assigned_agent).filter((a): a is string => !!a),
-    ).size;
+    const departments = new Set(ev.map((e) => e.department).filter((d): d is string => !!d)).size;
+    const agents = new Set(tk.map((t) => t.assigned_agent).filter((a): a is string => !!a)).size;
     const integrations = new Set(
-      [
-        ...ev.map((e) => e.source),
-        ...al.map((a) => a.source),
-      ].filter((s): s is string => !!s),
+      [...ev.map((e) => e.source), ...al.map((a) => a.source)].filter((s): s is string => !!s),
     ).size;
     const automations = tk.length;
-    const criticalRisks = ev.filter(
-      (e) => e.kind === "risk" && e.impact === "critical" && e.status !== "done",
-    ).length + al.filter((a) => a.severity === "critical" && !a.resolved_at).length;
-    const boardActions = ev.filter(
-      (e) => e.kind === "board_action" && e.status !== "done",
-    ).length;
+    const criticalRisks =
+      ev.filter((e) => e.kind === "risk" && e.impact === "critical" && e.status !== "done").length +
+      al.filter((a) => a.severity === "critical" && !a.resolved_at).length;
+    const boardActions = ev.filter((e) => e.kind === "board_action" && e.status !== "done").length;
     const intelligenceSignals = ev.length + al.filter((a) => !a.resolved_at).length;
 
     const day = 86_400_000;
@@ -298,7 +280,11 @@ export const getTwinSignals = createServerFn({ method: "GET" })
       (t) => t.status === "done" && new Date(t.updated_at).getTime() >= cutoff,
     ).length;
     const executionVelocity =
-      created14 === 0 ? (done14 > 0 ? 100 : 70) : Math.min(100, Math.round((done14 / created14) * 100));
+      created14 === 0
+        ? done14 > 0
+          ? 100
+          : 70
+        : Math.min(100, Math.round((done14 / created14) * 100));
 
     return {
       departments,
@@ -362,7 +348,9 @@ export const getPredictions = createServerFn({ method: "GET" })
     const [events, alerts, tasks] = await Promise.all([
       supabase
         .from("intelligence_events")
-        .select("kind,status,impact,progress,due_at,created_at,last_update,title,title_en,decision_route")
+        .select(
+          "kind,status,impact,progress,due_at,created_at,last_update,title,title_en,decision_route",
+        )
         .gte("created_at", cutoff)
         .limit(2000),
       supabase
@@ -394,9 +382,7 @@ export const getPredictions = createServerFn({ method: "GET" })
 
     const slope = linregSlope(series);
     const avgDone = series.reduce((s, v) => s + v, 0) / days;
-    const stdDone = Math.sqrt(
-      series.reduce((s, v) => s + (v - avgDone) ** 2, 0) / days,
-    );
+    const stdDone = Math.sqrt(series.reduce((s, v) => s + (v - avgDone) ** 2, 0) / days);
     const last = series[days - 1];
     const anomalyZ = stdDone === 0 ? 0 : (last - avgDone) / stdDone;
     const forecast7 = Math.max(0, Math.round((avgDone + slope * 7) * 7));

@@ -90,10 +90,7 @@ export function detectPatterns(): readonly PatternReport[] {
       id: patternId("token_trend", created_at),
       created_at,
       kind: "token_trend",
-      label:
-        tokenDelta > 0
-          ? "Token cost trend increasing."
-          : "Token cost trend decreasing.",
+      label: tokenDelta > 0 ? "Token cost trend increasing." : "Token cost trend decreasing.",
       window_size: all.length,
       observations: tokens.length,
       delta: tokenDelta,

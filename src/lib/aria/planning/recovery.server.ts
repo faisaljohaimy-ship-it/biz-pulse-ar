@@ -55,8 +55,7 @@ export function planRecovery(
         id: uid("rec"),
         target_node_id: r.node_id,
         strategy: "alternative_path",
-        reasoning:
-          "Route the node through an alternative agent binding on next attempt.",
+        reasoning: "Route the node through an alternative agent binding on next attempt.",
       });
     }
     if (r.kind === "dependency_risk" && r.node_id) {
@@ -81,8 +80,7 @@ export function planRecovery(
   const rollback: RollbackStep[] = tree.atomic_ids.map((id) => ({
     node_id: id,
     action: "compensate",
-    reasoning:
-      "Emit a compensating action for this atomic unit if downstream verification fails.",
+    reasoning: "Emit a compensating action for this atomic unit if downstream verification fails.",
   }));
 
   return { options, rollback };

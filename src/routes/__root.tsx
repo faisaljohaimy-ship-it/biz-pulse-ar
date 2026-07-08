@@ -17,7 +17,6 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 
-
 // ── ARIA Singleton ────────────────────────────────────────────────────
 // ONE ARIA. Do not add a second copilot at the root. See
 // `src/lib/aria-core/README.md` for the migration kill-list.
@@ -31,13 +30,8 @@ import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
 
-
-
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
-
-
-
 
 function NotFoundComponent() {
   return (
@@ -73,12 +67,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00D4FF]" />
           NEXIOS AI OS
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          حدث خطأ — جارٍ الاستعادة
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">حدث خطأ — جارٍ الاستعادة</h1>
         <p className="mt-2 text-sm leading-relaxed text-white/60">
-          واجهت المنصة عائقًا مؤقتًا. يمكنك المحاولة مجددًا الآن، ولن تُفقد
-          بياناتك. تم تسجيل الحدث في سجل التدقيق تلقائيًا.
+          واجهت المنصة عائقًا مؤقتًا. يمكنك المحاولة مجددًا الآن، ولن تُفقد بياناتك. تم تسجيل الحدث
+          في سجل التدقيق تلقائيًا.
         </p>
         {error?.message && (
           <p
@@ -110,7 +102,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -120,14 +111,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: SITE_NAME },
       {
         name: "description",
-        content:
-          "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { property: "og:title", content: SITE_NAME },
       {
         property: "og:description",
-        content:
-          "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
@@ -139,15 +128,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "NEXIOS AI OS" },
       {
         name: "twitter:description",
-        content:
-          "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
+      },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/png", href: "/nexus-icon.png" },
       { rel: "apple-touch-icon", href: "/nexus-icon.png" },
@@ -221,7 +212,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   // Article III (self-healing): install the client watchdog once at root.
@@ -238,7 +228,11 @@ function RootComponent() {
     // Fire-and-forget: dynamic import keeps SSR bundle unchanged.
     void import("@/lib/user-interaction").then((m) => {
       if (cancelled) return;
-      try { m.installInteractionTracker(); } catch { /* ignore */ }
+      try {
+        m.installInteractionTracker();
+      } catch {
+        /* ignore */
+      }
     });
     return () => {
       cancelled = true;
@@ -262,19 +256,19 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <RegionProvider>
-              <AriaProvider>
-                {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
-                {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
-                {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
-                {!suppressOverlays && <AriaWatermark />}
-                <div className="relative z-10">
-                  <Outlet />
-                </div>
-                {!introActive && <AriaCopilot />}
-                {!suppressOverlays && <AriaGreeter />}
-                <WelcomeThenGenesis />
-                <Toaster />
-              </AriaProvider>
+                <AriaProvider>
+                  {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
+                  {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
+                  {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
+                  {!suppressOverlays && <AriaWatermark />}
+                  <div className="relative z-10">
+                    <Outlet />
+                  </div>
+                  {!introActive && <AriaCopilot />}
+                  {!suppressOverlays && <AriaGreeter />}
+                  <WelcomeThenGenesis />
+                  <Toaster />
+                </AriaProvider>
               </RegionProvider>
             </DemoModeProvider>
           </I18nProvider>
@@ -283,5 +277,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
-

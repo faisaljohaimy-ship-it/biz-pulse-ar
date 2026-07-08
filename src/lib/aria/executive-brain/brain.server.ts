@@ -37,11 +37,7 @@ import { normalizeDecision } from "./decision.server";
 import { normalizeRisks } from "./risk.server";
 import { normalizeRecommendation } from "./recommendation.server";
 import { ModelEnvelopeSchema, type ModelEnvelope } from "./contracts";
-import type {
-  BrainRequest,
-  ConfidenceBreakdown,
-  ExecutiveBrainAnswer,
-} from "./types";
+import type { BrainRequest, ConfidenceBreakdown, ExecutiveBrainAnswer } from "./types";
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
@@ -122,7 +118,9 @@ function scoreConfidence(env: ModelEnvelope, sources: string[]): ConfidenceBreak
 function extractIncidentIds(evidence: string[]): string[] {
   const ids: string[] = [];
   for (const line of evidence) {
-    const m = line.match(/(inc[_-]?[a-z0-9-]{4,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    const m = line.match(
+      /(inc[_-]?[a-z0-9-]{4,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+    );
     if (m) ids.push(m[1]);
   }
   return Array.from(new Set(ids));
@@ -159,7 +157,11 @@ export async function runExecutiveBrain(
   const risks = normalizeRisks(env.risks);
   const topRiskScore = risks[0]?.score ?? 0;
   const decision = normalizeDecision(env.decision);
-  const recommendation = normalizeRecommendation(env.recommendation, reasoning.intent, topRiskScore);
+  const recommendation = normalizeRecommendation(
+    env.recommendation,
+    reasoning.intent,
+    topRiskScore,
+  );
 
   // 6. Confidence
   const confidence = scoreConfidence(env, reasoning.sources);

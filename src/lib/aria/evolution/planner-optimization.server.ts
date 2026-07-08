@@ -23,8 +23,7 @@ export function analyzePlannerSignals(): ImprovementProposal | undefined {
   return proposeImprovement({
     target: "planner",
     summary: "Planner cost/reliability drift detected across recent runs.",
-    rationale:
-      "Multiple experiences reference plan-related lessons; advisory review recommended.",
+    rationale: "Multiple experiences reference plan-related lessons; advisory review recommended.",
     expected_gain: 0.1,
     expected_risk: "warn",
     evidence,

@@ -16,14 +16,22 @@ export function createEventBus<T>(): EventBus<T> {
   return {
     emit(payload: T): void {
       for (const h of handlers) {
-        try { void h(payload); } catch { /* swallow: bus never breaks producer */ }
+        try {
+          void h(payload);
+        } catch {
+          /* swallow: bus never breaks producer */
+        }
       }
     },
     on(handler: EventHandler<T>): () => void {
       handlers.add(handler);
       return () => handlers.delete(handler);
     },
-    clear(): void { handlers.clear(); },
-    count(): number { return handlers.size; },
+    clear(): void {
+      handlers.clear();
+    },
+    count(): number {
+      return handlers.size;
+    },
   };
 }

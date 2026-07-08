@@ -51,12 +51,14 @@ export interface AuthResult {
 
 export async function verifyAgentToken(token: string): Promise<AuthResult> {
   const parts = token.split(".");
-  if (parts.length !== 4) return { ok: false, agent_id: null, issued_at: null, reason: "malformed" };
+  if (parts.length !== 4)
+    return { ok: false, agent_id: null, issued_at: null, reason: "malformed" };
   const [agentId, issuedAtStr, nonce, sig] = parts as [string, string, string, string];
   const secret = secrets.get(agentId);
   if (!secret) return { ok: false, agent_id: null, issued_at: null, reason: "unknown agent" };
   const expected = await hmac(secret, `${agentId}.${issuedAtStr}.${nonce}`);
-  if (expected !== sig) return { ok: false, agent_id: null, issued_at: null, reason: "bad signature" };
+  if (expected !== sig)
+    return { ok: false, agent_id: null, issued_at: null, reason: "bad signature" };
   return { ok: true, agent_id: agentId, issued_at: Number(issuedAtStr), reason: "ok" };
 }
 

@@ -9,7 +9,17 @@
  * synthetic content — when a lane has no signal it shows
  * "Awaiting evidence" rather than inventing a value.
  */
-import { X, FileText, Activity, ShieldAlert, Building2, Sparkles, GitBranch, BookOpen, Gauge } from "lucide-react";
+import {
+  X,
+  FileText,
+  Activity,
+  ShieldAlert,
+  Building2,
+  Sparkles,
+  GitBranch,
+  BookOpen,
+  Gauge,
+} from "lucide-react";
 import type { NarratorLine } from "@/lib/narrator/event-narrator";
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
 import { cn } from "@/lib/utils";
@@ -22,8 +32,16 @@ interface Props {
 }
 
 function Lane({
-  icon: Icon, label, value, tone = "neutral",
-}: { icon: typeof FileText; label: string; value: string; tone?: "neutral" | "critical" | "good" }) {
+  icon: Icon,
+  label,
+  value,
+  tone = "neutral",
+}: {
+  icon: typeof FileText;
+  label: string;
+  value: string;
+  tone?: "neutral" | "critical" | "good";
+}) {
   const tones: Record<string, string> = {
     neutral: "border-white/10 text-white/85",
     critical: "border-rose-400/40 text-rose-100",
@@ -44,32 +62,60 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
   if (!line) return null;
 
   const what = ar ? line.text_ar : line.text_en;
-  const why = (ar ? line.reason_ar : line.reason_en) ??
-    (ar ? "تم اكتشاف هذا الحدث تلقائيًا من النظام التشغيلي." : "Detected automatically from the live operations stream.");
-  const result = (ar ? line.result_ar : line.result_en);
+  const why =
+    (ar ? line.reason_ar : line.reason_en) ??
+    (ar
+      ? "تم اكتشاف هذا الحدث تلقائيًا من النظام التشغيلي."
+      : "Detected automatically from the live operations stream.");
+  const result = ar ? line.result_ar : line.result_en;
   const awaiting = ar ? "بانتظار الأدلة" : "Awaiting evidence";
-  const confidence = agent ? Math.round((agent.confidence ?? 0) * 100) : Math.round((line.tone === "success" ? 0.9 : line.tone === "critical" ? 0.55 : 0.7) * 100);
-  const businessImpact = line.severity === "critical" || line.tone === "critical"
-    ? (ar ? "تأثير محتمل على استمرارية الأعمال — يتطلب اعتماد تنفيذي." : "Potential continuity impact — executive approval suggested.")
-    : line.tone === "warn"
-      ? (ar ? "تأثير محدود — مراقبة قصيرة الأمد." : "Limited impact — short-term monitoring.")
-      : (ar ? "بدون أثر تشغيلي ملموس." : "No material operational impact.");
-  const opsImpact = line.severity === "critical"
-    ? (ar ? "تنشيط بروتوكول الاستجابة الميدانية." : "Field response protocol activated.")
-    : (ar ? "العمليات تسير ضمن المعدلات الطبيعية." : "Operations remain within nominal range.");
-  const recommendation = line.tone === "critical"
-    ? (ar ? "تصعيد فوري إلى قائد الحوادث + تأكيد الأدلة." : "Escalate immediately to Incident Commander and confirm evidence.")
-    : line.tone === "warn"
-      ? (ar ? "متابعة من وكيل الاختصاص وتحديث المخاطر." : "Have the specialist follow up and refresh risk.")
-      : (ar ? "لا يلزم إجراء — استمرار المراقبة." : "No action required — continue monitoring.");
+  const confidence = agent
+    ? Math.round((agent.confidence ?? 0) * 100)
+    : Math.round((line.tone === "success" ? 0.9 : line.tone === "critical" ? 0.55 : 0.7) * 100);
+  const businessImpact =
+    line.severity === "critical" || line.tone === "critical"
+      ? ar
+        ? "تأثير محتمل على استمرارية الأعمال — يتطلب اعتماد تنفيذي."
+        : "Potential continuity impact — executive approval suggested."
+      : line.tone === "warn"
+        ? ar
+          ? "تأثير محدود — مراقبة قصيرة الأمد."
+          : "Limited impact — short-term monitoring."
+        : ar
+          ? "بدون أثر تشغيلي ملموس."
+          : "No material operational impact.";
+  const opsImpact =
+    line.severity === "critical"
+      ? ar
+        ? "تنشيط بروتوكول الاستجابة الميدانية."
+        : "Field response protocol activated."
+      : ar
+        ? "العمليات تسير ضمن المعدلات الطبيعية."
+        : "Operations remain within nominal range.";
+  const recommendation =
+    line.tone === "critical"
+      ? ar
+        ? "تصعيد فوري إلى قائد الحوادث + تأكيد الأدلة."
+        : "Escalate immediately to Incident Commander and confirm evidence."
+      : line.tone === "warn"
+        ? ar
+          ? "متابعة من وكيل الاختصاص وتحديث المخاطر."
+          : "Have the specialist follow up and refresh risk."
+        : ar
+          ? "لا يلزم إجراء — استمرار المراقبة."
+          : "No action required — continue monitoring.";
   const alternatives = ar
     ? "إخطار الجهات ذات العلاقة / إرسال دورية ميدانية / فتح طلب صيانة."
     : "Notify stakeholders / dispatch patrol / open work order.";
-  const policy = line.topic.includes("permit") ? "IS-006 (Permits)"
-    : line.topic.includes("visitor") ? "IS-005 (Visitor Control)"
-    : line.topic.includes("incident") ? "IS-004 (Incident Response)"
-    : line.topic.includes("patrol") ? "IS-007 (Patrols)"
-    : "IS-001 (General Industrial Security)";
+  const policy = line.topic.includes("permit")
+    ? "IS-006 (Permits)"
+    : line.topic.includes("visitor")
+      ? "IS-005 (Visitor Control)"
+      : line.topic.includes("incident")
+        ? "IS-004 (Incident Response)"
+        : line.topic.includes("patrol")
+          ? "IS-007 (Patrols)"
+          : "IS-001 (General Industrial Security)";
 
   const subject = line.topic.split(".").slice(0, 2).join(" · ");
 
@@ -105,18 +151,46 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
           <Lane icon={FileText} label={ar ? "ماذا حدث؟" : "What happened"} value={what} />
           <Lane icon={Activity} label={ar ? "لماذا؟" : "Why"} value={why} />
           <Lane icon={FileText} label={ar ? "الأدلة" : "Evidence"} value={result ?? awaiting} />
-          <Lane icon={Building2} label={ar ? "الأصول المتأثرة" : "Affected assets"} value={subject || awaiting} />
+          <Lane
+            icon={Building2}
+            label={ar ? "الأصول المتأثرة" : "Affected assets"}
+            value={subject || awaiting}
+          />
           <Lane
             icon={ShieldAlert}
             label={ar ? "الأثر التجاري" : "Business impact"}
             value={businessImpact}
-            tone={line.tone === "critical" ? "critical" : line.tone === "success" ? "good" : "neutral"}
+            tone={
+              line.tone === "critical" ? "critical" : line.tone === "success" ? "good" : "neutral"
+            }
           />
-          <Lane icon={Activity} label={ar ? "الأثر التشغيلي" : "Operational impact"} value={opsImpact} />
-          <Lane icon={Sparkles} label={ar ? "الإجراء الموصى به" : "Recommended action"} value={recommendation} tone={line.tone === "critical" ? "critical" : "neutral"} />
-          <Lane icon={GitBranch} label={ar ? "بدائل" : "Alternative actions"} value={alternatives} />
-          <Lane icon={Gauge} label={ar ? "الثقة" : "Confidence"} value={`${confidence}%`} tone={confidence >= 75 ? "good" : confidence < 55 ? "critical" : "neutral"} />
-          <Lane icon={BookOpen} label={ar ? "السياسة المنطبقة" : "Applicable policy"} value={policy} />
+          <Lane
+            icon={Activity}
+            label={ar ? "الأثر التشغيلي" : "Operational impact"}
+            value={opsImpact}
+          />
+          <Lane
+            icon={Sparkles}
+            label={ar ? "الإجراء الموصى به" : "Recommended action"}
+            value={recommendation}
+            tone={line.tone === "critical" ? "critical" : "neutral"}
+          />
+          <Lane
+            icon={GitBranch}
+            label={ar ? "بدائل" : "Alternative actions"}
+            value={alternatives}
+          />
+          <Lane
+            icon={Gauge}
+            label={ar ? "الثقة" : "Confidence"}
+            value={`${confidence}%`}
+            tone={confidence >= 75 ? "good" : confidence < 55 ? "critical" : "neutral"}
+          />
+          <Lane
+            icon={BookOpen}
+            label={ar ? "السياسة المنطبقة" : "Applicable policy"}
+            value={policy}
+          />
         </div>
 
         <div className="mt-5 rounded-xl border border-cyan-400/15 bg-cyan-400/5 px-4 py-3 text-[12px] text-cyan-100/80">

@@ -16,21 +16,12 @@ import {
 import { runAgent } from "./exec/agent-runtime.server";
 import { getCurrentOrgIdForUser, requirePlatformAdmin } from "@/lib/authz.server";
 
-async function requireAdmin(
-  supabase: unknown,
-  userId: string,
-): Promise<void> {
+async function requireAdmin(supabase: unknown, userId: string): Promise<void> {
   void supabase;
   await requirePlatformAdmin(userId);
 }
 
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
 function toJson<T>(v: T): JsonValue {
   return JSON.parse(JSON.stringify(v)) as JsonValue;
@@ -81,11 +72,7 @@ export const rollbackToolExecution = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RollbackSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const res = await rollbackExecution(
-      context.supabase,
-      data.executionId,
-      context.userId,
-    );
+    const res = await rollbackExecution(context.supabase, data.executionId, context.userId);
     return toJson(res);
   });
 
@@ -173,9 +160,7 @@ export const listWorkflowRuns = createServerFn({ method: "GET" })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (context.supabase as any)
       .from("workflow_runs")
-      .select(
-        "id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by",
-      )
+      .select("id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by")
       .order("started_at", { ascending: false })
       .limit(50);
     if (error) throw new Error(error.message);
@@ -212,7 +197,12 @@ function defaultPayloadForTopic(topic: string | null | undefined): Record<string
   switch (topic) {
     case "sec.incident.created":
     case "sec.incident.p1":
-      return { ...base, severity: topic === "sec.incident.p1" ? "P1" : "P3", category: "security", site: "jeddah-hq" };
+      return {
+        ...base,
+        severity: topic === "sec.incident.p1" ? "P1" : "P3",
+        category: "security",
+        site: "jeddah-hq",
+      };
     case "sec.contractor.created":
       return { ...base, contractor: { name: "Manual Trigger Test", company: "N/A" } };
     case "sec.permit.created":
@@ -248,7 +238,11 @@ export const triggerAllWorkflowsFn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const results: Array<{ workflowId: string; name: string; status: string; error?: string }> = [];
-    for (const w of (rows ?? []) as Array<{ id: string; name: string; trigger_topic: string | null }>) {
+    for (const w of (rows ?? []) as Array<{
+      id: string;
+      name: string;
+      trigger_topic: string | null;
+    }>) {
       try {
         const res = await triggerWorkflow(context.supabase, {
           workflowId: w.id,
@@ -296,11 +290,7 @@ export const resumeWorkflowRunFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
-    const res = await resumeWorkflowRun(
-      context.supabase,
-      data.runId,
-      context.userId,
-    );
+    const res = await resumeWorkflowRun(context.supabase, data.runId, context.userId);
     return toJson(res);
   });
 
@@ -308,11 +298,7 @@ export const cancelWorkflowRunFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const res = await cancelWorkflowRun(
-      context.supabase,
-      data.runId,
-      context.userId,
-    );
+    const res = await cancelWorkflowRun(context.supabase, data.runId, context.userId);
     return toJson(res);
   });
 
@@ -364,9 +350,7 @@ export const listAgents = createServerFn({ method: "GET" })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (context.supabase as any)
       .from("agent_definitions")
-      .select(
-        "id, name, goal, model, tool_allowlist, permissions, enabled, updated_at",
-      )
+      .select("id, name, goal, model, tool_allowlist, permissions, enabled, updated_at")
       .order("name", { ascending: true });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -472,16 +456,12 @@ export const getAgentOpsOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const windowDays = 30;
-    const since = new Date(
-      Date.now() - windowDays * 24 * 60 * 60 * 1000,
-    ).toISOString();
+    const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const defsRes = await (context.supabase as any)
       .from("agent_definitions")
-      .select(
-        "id, name, goal, model, enabled, tool_allowlist, permissions, metadata, updated_at",
-      )
+      .select("id, name, goal, model, enabled, tool_allowlist, permissions, metadata, updated_at")
       .order("name", { ascending: true });
     if (defsRes.error) throw new Error(defsRes.error.message);
     const defs = (defsRes.data ?? []) as AgentDefRow[];
@@ -516,17 +496,11 @@ export const getAgentOpsOverview = createServerFn({ method: "GET" })
       const runningOnly = list.filter((r) => r.status === "running").length;
       const running = queued + runningOnly;
       const finished = succeeded + failed + cancelled;
-      const success_rate = finished
-        ? Math.round((succeeded / finished) * 100)
-        : 0;
+      const success_rate = finished ? Math.round((succeeded / finished) * 100) : 0;
 
       const durations = list
         .filter((r) => r.finished_at)
-        .map(
-          (r) =>
-            new Date(r.finished_at as string).getTime() -
-            new Date(r.started_at).getTime(),
-        )
+        .map((r) => new Date(r.finished_at as string).getTime() - new Date(r.started_at).getTime())
         .filter((ms) => ms >= 0 && ms < 60 * 60 * 1000);
       const avg_duration_ms = durations.length
         ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
@@ -570,11 +544,7 @@ export const getAgentOpsOverview = createServerFn({ method: "GET" })
     const runs_today = runs.filter((r) => r.started_at >= todayIso).length;
     const allDurations = runs
       .filter((r) => r.finished_at)
-      .map(
-        (r) =>
-          new Date(r.finished_at as string).getTime() -
-          new Date(r.started_at).getTime(),
-      )
+      .map((r) => new Date(r.finished_at as string).getTime() - new Date(r.started_at).getTime())
       .filter((ms) => ms >= 0 && ms < 60 * 60 * 1000);
 
     return {
@@ -590,13 +560,9 @@ export const getAgentOpsOverview = createServerFn({ method: "GET" })
         runs_window_total: runs.length,
         runs_today,
         avg_duration_ms: allDurations.length
-          ? Math.round(
-              allDurations.reduce((a, b) => a + b, 0) / allDurations.length,
-            )
+          ? Math.round(allDurations.reduce((a, b) => a + b, 0) / allDurations.length)
           : null,
-        queue_length: runs.filter(
-          (r) => r.status === "running" || r.status === "queued",
-        ).length,
+        queue_length: runs.filter((r) => r.status === "running" || r.status === "queued").length,
         window_days: windowDays,
       },
     };

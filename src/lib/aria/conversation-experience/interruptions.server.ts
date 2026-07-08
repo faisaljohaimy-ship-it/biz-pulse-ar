@@ -17,7 +17,9 @@ export class InterruptionController {
     this.aborters.set(turnId, ctrl);
   }
 
-  unregister(turnId: string): void { this.aborters.delete(turnId); }
+  unregister(turnId: string): void {
+    this.aborters.delete(turnId);
+  }
 
   interrupt(
     fsm: ConversationStateMachine,
@@ -28,14 +30,26 @@ export class InterruptionController {
     if (cur !== "speaking" && cur !== "thinking") return false;
     if (turnId) {
       const a = this.aborters.get(turnId);
-      if (a && !a.signal.aborted) { try { a.abort(); } catch { /* isolated */ } }
+      if (a && !a.signal.aborted) {
+        try {
+          a.abort();
+        } catch {
+          /* isolated */
+        }
+      }
       this.aborters.delete(turnId);
     }
     fsm.transition("interrupted");
     const rec: InterruptionRecord = { turnId, ts: Date.now(), reason, resumed: false };
     this.records.push(rec);
     if (this.records.length > 100) this.records.shift();
-    for (const l of this.listeners) { try { l(rec); } catch { /* isolated */ } }
+    for (const l of this.listeners) {
+      try {
+        l(rec);
+      } catch {
+        /* isolated */
+      }
+    }
     return true;
   }
 
@@ -46,8 +60,12 @@ export class InterruptionController {
 
   subscribe(l: (rec: InterruptionRecord) => void): () => void {
     this.listeners.add(l);
-    return () => { this.listeners.delete(l); };
+    return () => {
+      this.listeners.delete(l);
+    };
   }
 
-  recent(n = 10): readonly InterruptionRecord[] { return this.records.slice(-n); }
+  recent(n = 10): readonly InterruptionRecord[] {
+    return this.records.slice(-n);
+  }
 }

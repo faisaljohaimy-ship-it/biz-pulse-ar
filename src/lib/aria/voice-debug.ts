@@ -23,8 +23,11 @@ function isDebugFlagOn(): boolean {
   try {
     const env = (import.meta as unknown as { env?: Record<string, string> }).env;
     if (env?.VITE_VOICE_DEBUG === "true") return true;
-    if (typeof window !== "undefined" && window.localStorage?.getItem("aria-voice-debug") === "1") return true;
-  } catch { /* ignore */ }
+    if (typeof window !== "undefined" && window.localStorage?.getItem("aria-voice-debug") === "1")
+      return true;
+  } catch {
+    /* ignore */
+  }
   return false;
 }
 
@@ -39,26 +42,46 @@ export const AriaVoiceDebug = {
   emit(e: Omit<VoiceEvent, "at">): void {
     const evt: VoiceEvent = { ...e, at: Date.now() };
     current = evt;
-    // eslint-disable-next-line no-console
+
     console.log(
       `[aria-voice] source=${evt.source} id=${shortVoiceId(evt.voiceId)} reason=${evt.reason}` +
         (typeof evt.status === "number" ? ` status=${evt.status}` : "") +
         (evt.failed ? " FAILED" : ""),
     );
-    for (const l of listeners) { try { l(evt); } catch { /* ignore */ } }
+    for (const l of listeners) {
+      try {
+        l(evt);
+      } catch {
+        /* ignore */
+      }
+    }
   },
 
   clear(): void {
     current = null;
-    for (const l of listeners) { try { l(null); } catch { /* ignore */ } }
+    for (const l of listeners) {
+      try {
+        l(null);
+      } catch {
+        /* ignore */
+      }
+    }
   },
 
-  current(): VoiceEvent | null { return current; },
+  current(): VoiceEvent | null {
+    return current;
+  },
 
   subscribe(l: Listener): () => void {
     listeners.add(l);
-    try { l(current); } catch { /* ignore */ }
-    return () => { listeners.delete(l); };
+    try {
+      l(current);
+    } catch {
+      /* ignore */
+    }
+    return () => {
+      listeners.delete(l);
+    };
   },
 };
 
@@ -66,7 +89,10 @@ export function isGreetingEnabled(): boolean {
   try {
     const env = (import.meta as unknown as { env?: Record<string, string> }).env;
     if (env?.VITE_GREETING_ENABLED === "false") return false;
-    if (typeof window !== "undefined" && window.localStorage?.getItem("aria-greeting-off") === "1") return false;
-  } catch { /* ignore */ }
+    if (typeof window !== "undefined" && window.localStorage?.getItem("aria-greeting-off") === "1")
+      return false;
+  } catch {
+    /* ignore */
+  }
   return true;
 }

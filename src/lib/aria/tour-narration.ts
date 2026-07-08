@@ -62,8 +62,7 @@ const AR: readonly TourStop[] = [
   {
     id: "compliance",
     anchorId: "tour-compliance",
-    display:
-      "مبنية بامتثال كامل لنظام حماية البيانات الشخصية، وتكاملات مؤسسية على خارطة الطريق.",
+    display: "مبنية بامتثال كامل لنظام حماية البيانات الشخصية، وتكاملات مؤسسية على خارطة الطريق.",
     tts: "مَبْنِيَّةٌ بِامْتِثَالٍ كَامِلٍ لِنِظَامِ حِمَايَةِ البَيَانَاتِ الشَّخْصِيَّةِ، وَتَكَامُلَاتٌ مُؤَسَّسِيَّةٌ عَلَى خَارِطَةِ الطَّرِيقِ.",
   },
   {
@@ -105,8 +104,7 @@ const EN: readonly TourStop[] = [
   {
     id: "pillar-twin",
     anchorId: "tour-pillar-twin",
-    display:
-      "Live Digital Twin: real-time pulse of assets and sites across the enterprise.",
+    display: "Live Digital Twin: real-time pulse of assets and sites across the enterprise.",
     tts: "Live Digital Twin. Real-time pulse of assets and sites across the enterprise.",
   },
   {

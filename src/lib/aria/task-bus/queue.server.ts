@@ -154,8 +154,16 @@ export interface QueueDepths {
 }
 
 export function depths(missionId?: string): QueueDepths {
-  let queued = 0, delayed = 0, retry = 0, waiting = 0, running = 0;
-  const iter = missionId ? (missions.has(missionId) ? [missions.get(missionId)!] : []) : Array.from(missions.values());
+  let queued = 0,
+    delayed = 0,
+    retry = 0,
+    waiting = 0,
+    running = 0;
+  const iter = missionId
+    ? missions.has(missionId)
+      ? [missions.get(missionId)!]
+      : []
+    : Array.from(missions.values());
   for (const q of iter) {
     queued += q.main.length;
     delayed += q.delayed.length;
@@ -174,7 +182,9 @@ export function disposeMission(missionId: string): void {
 export function detectCycle(missionId: string): string[] | null {
   const q = missions.get(missionId);
   if (!q) return null;
-  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const WHITE = 0,
+    GRAY = 1,
+    BLACK = 2;
   const color = new Map<string, number>();
   const stack: string[] = [];
   const visit = (id: string): string[] | null => {

@@ -69,7 +69,9 @@ export function RiskHeatmap({ title, cols, rows, cells, lang }: Props) {
               onBlur={() => setHover(null)}
               className="aspect-square rounded-sm ring-1 ring-inset ring-white/5 transition hover:ring-cyan-300/60 focus:outline-none focus:ring-cyan-300"
               style={{ backgroundColor: bg }}
-              aria-label={cell ? `${ar ? cell.label_ar : cell.label_en} · ${Math.round(v * 100)}%` : undefined}
+              aria-label={
+                cell ? `${ar ? cell.label_ar : cell.label_en} · ${Math.round(v * 100)}%` : undefined
+              }
             />
           );
         })}
@@ -78,7 +80,9 @@ export function RiskHeatmap({ title, cols, rows, cells, lang }: Props) {
       <div className="min-h-[38px] rounded-xl border border-white/10 bg-white/[0.02] p-2 text-xs text-white/70">
         {hover ? (
           <div className="flex items-baseline justify-between">
-            <span className="font-medium text-white/85">{ar ? hover.label_ar : hover.label_en}</span>
+            <span className="font-medium text-white/85">
+              {ar ? hover.label_ar : hover.label_en}
+            </span>
             <span className="tabular-nums text-cyan-200">
               {ar ? "درجة المخاطر" : "Risk score"} · {Math.round(hover.value * 100)}%
             </span>

@@ -50,7 +50,10 @@ export function tryConsume(id: string, policy: RateLimitPolicy = DEFAULT_RATE_LI
   return false;
 }
 
-export async function acquire(id: string, policy: RateLimitPolicy = DEFAULT_RATE_LIMIT): Promise<void> {
+export async function acquire(
+  id: string,
+  policy: RateLimitPolicy = DEFAULT_RATE_LIMIT,
+): Promise<void> {
   const b = bucket(id, policy);
   while (true) {
     refill(b);

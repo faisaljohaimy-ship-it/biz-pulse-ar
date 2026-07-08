@@ -18,8 +18,12 @@ export function openEngagement(id: string, lang: "ar" | "en"): EngagementSession
   const cur = S.get(id);
   if (cur) return cur;
   const s: EngagementSession = {
-    id, startedAt: Date.now(), lang, turns: 0,
-    lastActivity: Date.now(), lastLevel: "dormant",
+    id,
+    startedAt: Date.now(),
+    lang,
+    turns: 0,
+    lastActivity: Date.now(),
+    lastLevel: "dormant",
   };
   S.set(id, s);
   return s;
@@ -40,9 +44,17 @@ export function recordUserInteraction(id: string, kind: "text" | "voice"): Engag
 export function tickEngagement(id: string): EngagementLevel {
   const level = noteEngagement(id, "tick");
   const cur = S.get(id);
-  if (cur) { cur.lastLevel = level; S.set(id, cur); }
+  if (cur) {
+    cur.lastLevel = level;
+    S.set(id, cur);
+  }
   return level;
 }
 
-export function engagementLevel(id: string): EngagementLevel { return getEngagement(id); }
-export function closeEngagement(id: string): void { S.delete(id); resetEngagement(id); }
+export function engagementLevel(id: string): EngagementLevel {
+  return getEngagement(id);
+}
+export function closeEngagement(id: string): void {
+  S.delete(id);
+  resetEngagement(id);
+}

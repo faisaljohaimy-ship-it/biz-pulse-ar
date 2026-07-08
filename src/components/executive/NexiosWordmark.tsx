@@ -50,11 +50,7 @@ export function NexiosWordmark({
   );
 
   const shell = href ? (
-    <Link
-      to={href}
-      aria-label={ariaLabel}
-      className="nx-wm-link"
-    >
+    <Link to={href} aria-label={ariaLabel} className="nx-wm-link">
       {inner}
     </Link>
   ) : (
@@ -62,11 +58,7 @@ export function NexiosWordmark({
   );
 
   return (
-    <div
-      className="nx-wm-wrap"
-      role="img"
-      aria-label={ariaLabel}
-    >
+    <div className="nx-wm-wrap" role="img" aria-label={ariaLabel}>
       {shell}
       <style>{`
         .nx-wm-wrap {

@@ -72,7 +72,7 @@ export function useDigitalHuman(
   };
 
   const finishTurn = useCallback(() => {
-    setCurrentTurn(prev => {
+    setCurrentTurn((prev) => {
       if (prev) onTurnEndRef.current?.(prev);
       return null;
     });
@@ -86,43 +86,52 @@ export function useDigitalHuman(
     }, 350);
   }, []);
 
-  const playTurn = useCallback((turn: SpokenTurn) => {
-    clearTimer();
-    const dur = turn.durationMs ?? estimateDurationMs(turn.text_en || turn.text_ar);
-    setCurrentTurn(turn);
-    if (turn.preState) {
-      setStateRaw(turn.preState);
-      timerRef.current = setTimeout(() => {
+  const playTurn = useCallback(
+    (turn: SpokenTurn) => {
+      clearTimer();
+      const dur = turn.durationMs ?? estimateDurationMs(turn.text_en || turn.text_ar);
+      setCurrentTurn(turn);
+      if (turn.preState) {
+        setStateRaw(turn.preState);
+        timerRef.current = setTimeout(() => {
+          setStateRaw("speaking");
+          timerRef.current = setTimeout(() => finishTurn(), dur);
+        }, 600);
+      } else {
         setStateRaw("speaking");
         timerRef.current = setTimeout(() => finishTurn(), dur);
-      }, 600);
-    } else {
-      setStateRaw("speaking");
-      timerRef.current = setTimeout(() => finishTurn(), dur);
-    }
-  }, [finishTurn]);
+      }
+    },
+    [finishTurn],
+  );
 
-  const enqueue = useCallback((turn: SpokenTurn) => {
-    if (!currentTurn && queueRef.current.length === 0) {
-      playTurn(turn);
-    } else {
-      queueRef.current.push(turn);
-      setQueueSize(queueRef.current.length);
-    }
-  }, [currentTurn, playTurn]);
+  const enqueue = useCallback(
+    (turn: SpokenTurn) => {
+      if (!currentTurn && queueRef.current.length === 0) {
+        playTurn(turn);
+      } else {
+        queueRef.current.push(turn);
+        setQueueSize(queueRef.current.length);
+      }
+    },
+    [currentTurn, playTurn],
+  );
 
-  const enqueueAll = useCallback((turns: SpokenTurn[]) => {
-    if (turns.length === 0) return;
-    if (!currentTurn) {
-      const [first, ...rest] = turns;
-      queueRef.current.push(...rest);
-      setQueueSize(queueRef.current.length);
-      playTurn(first);
-    } else {
-      queueRef.current.push(...turns);
-      setQueueSize(queueRef.current.length);
-    }
-  }, [currentTurn, playTurn]);
+  const enqueueAll = useCallback(
+    (turns: SpokenTurn[]) => {
+      if (turns.length === 0) return;
+      if (!currentTurn) {
+        const [first, ...rest] = turns;
+        queueRef.current.push(...rest);
+        setQueueSize(queueRef.current.length);
+        playTurn(first);
+      } else {
+        queueRef.current.push(...turns);
+        setQueueSize(queueRef.current.length);
+      }
+    },
+    [currentTurn, playTurn],
+  );
 
   const interrupt = useCallback(() => {
     clearTimer();
@@ -138,7 +147,7 @@ export function useDigitalHuman(
 
   const pushConfidence = useCallback((c: number) => {
     const clamped = Math.max(0, Math.min(1, c));
-    setConfidence(prev => prev * 0.6 + clamped * 0.4);
+    setConfidence((prev) => prev * 0.6 + clamped * 0.4);
   }, []);
 
   useEffect(() => clearTimer, []);

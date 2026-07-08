@@ -27,7 +27,10 @@ const PERMISSION_MATCHERS = [/permission/i, /unauthori[sz]ed/i, /401/, /403/];
 const CAPABILITY_MATCHERS = [/agent not registered/i, /unavailable/i, /capability/i];
 const DEPENDENCY_MATCHERS = [/dependency/i, /cycle/i, /unresolved/i];
 
-export function classifyError(message: string, status?: AgentResult["status"]): ExecutionFailureKind {
+export function classifyError(
+  message: string,
+  status?: AgentResult["status"],
+): ExecutionFailureKind {
   if (status === "timeout") return "timeout";
   if (CAPABILITY_MATCHERS.some((r) => r.test(message))) return "capability";
   if (PERMISSION_MATCHERS.some((r) => r.test(message))) return "permission";

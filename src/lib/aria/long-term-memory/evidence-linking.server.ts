@@ -27,9 +27,7 @@ export function linkEvidence(refs: readonly EvidenceRef[]): LinkResult {
     }
     seen.set(key, ref);
   }
-  const ordered = [...seen.values()].sort((a, b) =>
-    a.taken_at.localeCompare(b.taken_at),
-  );
+  const ordered = [...seen.values()].sort((a, b) => a.taken_at.localeCompare(b.taken_at));
   return Object.freeze({
     evidence: Object.freeze(ordered) as readonly EvidenceRef[],
     duplicates,

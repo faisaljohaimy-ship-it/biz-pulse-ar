@@ -22,18 +22,10 @@ export type {
   AgentHealth,
 } from "./types";
 
-export {
-  installPackage,
-  discoverInstalledAgents,
-} from "./discovery.server";
+export { installPackage, discoverInstalledAgents } from "./discovery.server";
 export type { InstallResult } from "./discovery.server";
 
-export {
-  ensureLoaded,
-  isLoaded,
-  loadAgent,
-  unloadAgent,
-} from "./loader.server";
+export { ensureLoaded, isLoaded, loadAgent, unloadAgent } from "./loader.server";
 
 export {
   bestForCapability,
@@ -43,12 +35,7 @@ export {
   capabilityOwner,
 } from "./capability-index.server";
 
-export {
-  listVersions,
-  getActive,
-  pickNewestCompatible,
-  setActive,
-} from "./version.server";
+export { listVersions, getActive, pickNewestCompatible, setActive } from "./version.server";
 
 export {
   healthOf,
@@ -60,11 +47,7 @@ export {
 } from "./health.server";
 
 export { subscribeMarketplace } from "./events";
-export {
-  hasPermission,
-  requirePermission,
-  listPermissions,
-} from "./permission.server";
+export { hasPermission, requirePermission, listPermissions } from "./permission.server";
 export { runInSandbox } from "./sandbox.server";
 export type { SandboxLimits, SandboxOutcome } from "./sandbox.server";
 export { CURRENT_MANIFEST_SCHEMA } from "./manifest";

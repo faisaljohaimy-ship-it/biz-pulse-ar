@@ -150,9 +150,7 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     return useQuery<T[]>({
       queryKey: key,
       queryFn: async () => {
-        const { data, error } = await tbl()
-          .select("*")
-          .order(orderCol, { ascending });
+        const { data, error } = await tbl().select("*").order(orderCol, { ascending });
         if (error) throw error;
         return (data ?? []) as T[];
       },
@@ -183,11 +181,7 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     const qc = useQueryClient();
     return useMutation({
       mutationFn: async ({ id, patch }: { id: string; patch: Partial<Insert> }) => {
-        const { data, error } = await tbl()
-          .update(patch)
-          .eq("id", id)
-          .select()
-          .single();
+        const { data, error } = await tbl().update(patch).eq("id", id).select().single();
         if (error) throw error;
         return data as T;
       },
@@ -285,21 +279,15 @@ export function useEnterpriseFabricAdapter() {
   const avgPolicyCoverage =
     policiesList.length === 0
       ? 0
-      : Math.round(
-          policiesList.reduce((s, x) => s + x.coverage, 0) / policiesList.length,
-        );
+      : Math.round(policiesList.reduce((s, x) => s + x.coverage, 0) / policiesList.length);
   const avgProgress =
     programsList.length === 0
       ? 0
-      : Math.round(
-          programsList.reduce((s, x) => s + x.progress, 0) / programsList.length,
-        );
+      : Math.round(programsList.reduce((s, x) => s + x.progress, 0) / programsList.length);
   const avgAdoption =
     programsList.length === 0
       ? 0
-      : Math.round(
-          programsList.reduce((s, x) => s + x.adoption, 0) / programsList.length,
-        );
+      : Math.round(programsList.reduce((s, x) => s + x.adoption, 0) / programsList.length);
 
   return {
     systemsCount: systemsList.length,

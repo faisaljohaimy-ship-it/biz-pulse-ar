@@ -58,12 +58,14 @@ export const listTeamsChannels = createServerFn({ method: "GET" })
         const ch = await gw<{ value?: Array<{ id: string; displayName: string }> }>(
           `/teams/${t.id}/channels?$select=id,displayName`,
         );
-        for (const c of ch.value ?? []) items.push({ id: c.id, displayName: c.displayName, teamId: t.id });
-      } catch { /* skip team */ }
+        for (const c of ch.value ?? [])
+          items.push({ id: c.id, displayName: c.displayName, teamId: t.id });
+      } catch {
+        /* skip team */
+      }
     }
     return { teams, channels: items, unavailable: false as const, reason: null };
   });
-
 
 export const sendTeamsAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

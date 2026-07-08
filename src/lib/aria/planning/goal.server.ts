@@ -5,11 +5,7 @@
  * Pure, deterministic. No LLM calls. Uses heuristic segmentation on the
  * validated input; hints from the caller take precedence when provided.
  */
-import type {
-  MissionGoal,
-  MissionObjective,
-  Priority,
-} from "./types";
+import type { MissionGoal, MissionObjective, Priority } from "./types";
 import type { PlanMissionInput } from "./contracts";
 
 const OBJECTIVE_SPLIT_RE = /(?:\band\b|\bثم\b|;|،|\.|\n)+/i;
@@ -46,10 +42,7 @@ export function parseGoal(input: PlanMissionInput): MissionGoal {
   };
 }
 
-export function deriveObjectives(
-  goal: MissionGoal,
-  input: PlanMissionInput,
-): MissionObjective[] {
+export function deriveObjectives(goal: MissionGoal, input: PlanMissionInput): MissionObjective[] {
   const hinted = input.hints?.objectives?.map(normalize).filter(Boolean) ?? [];
   const source = hinted.length
     ? hinted
@@ -67,17 +60,14 @@ export function deriveObjectives(
     title,
     description: title,
     deliverables:
-      deliverables.length && i === 0
-        ? deliverables
-        : [`Documented outcome for: ${title}`],
+      deliverables.length && i === 0 ? deliverables : [`Documented outcome for: ${title}`],
     acceptance_criteria: [
       `Evidence-backed completion recorded for "${title}"`,
       `Objective produces a verifiable artefact traceable to goal ${goal.id}`,
     ],
     priority: goal.priority,
-    reasoning:
-      hinted.length
-        ? "Objective sourced from caller-provided hint list."
-        : "Objective segmented from utterance using deterministic sentence/conjunction splitter.",
+    reasoning: hinted.length
+      ? "Objective sourced from caller-provided hint list."
+      : "Objective segmented from utterance using deterministic sentence/conjunction splitter.",
   }));
 }

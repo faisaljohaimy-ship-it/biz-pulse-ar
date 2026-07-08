@@ -51,7 +51,10 @@ export interface RuntimeHandle {
   readonly shutdown: RuntimeShutdown;
 
   submit(job: unknown): JobRecord;
-  tick(executor: JobExecutor, maxPerTick?: number): Promise<{
+  tick(
+    executor: JobExecutor,
+    maxPerTick?: number,
+  ): Promise<{
     dispatched: number;
     skipped: number;
     executed_at: string;
@@ -76,12 +79,7 @@ export function createRuntime(rawConfig: unknown): RuntimeHandle {
   const heartbeats = new HeartbeatMonitor(state, config.heartbeat_interval_ms);
   const sessions = new SessionManager(state);
   const resources = new ResourceMonitor(state);
-  const health = new HealthChecker(
-    state,
-    heartbeats,
-    resources,
-    config.max_queue_depth,
-  );
+  const health = new HealthChecker(state, heartbeats, resources, config.max_queue_depth);
   const monitor = new RuntimeMonitor(health, state, telemetry);
   const checkpoints = new CheckpointStore(config, state, resources);
   const recovery = new CrashRecovery(checkpoints, state);
@@ -136,10 +134,7 @@ export function createRuntime(rawConfig: unknown): RuntimeHandle {
   return handle;
 }
 
-export function runStartup(
-  handle: RuntimeHandle,
-  input: StartupInput,
-): StartupOutcome {
+export function runStartup(handle: RuntimeHandle, input: StartupInput): StartupOutcome {
   return handle.startup.run(input);
 }
 

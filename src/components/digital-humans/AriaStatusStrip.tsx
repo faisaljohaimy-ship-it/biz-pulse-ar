@@ -10,7 +10,17 @@
  * self-contained when dropped into any host.
  */
 import { useEffect, useRef, useState } from "react";
-import { Wifi, WifiOff, Mic, Brain, Radio, Volume2, VolumeX, Activity, ListOrdered } from "lucide-react";
+import {
+  Wifi,
+  WifiOff,
+  Mic,
+  Brain,
+  Radio,
+  Volume2,
+  VolumeX,
+  Activity,
+  ListOrdered,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
 
@@ -82,16 +92,36 @@ export function AriaStatusStrip({
     };
     void ping();
     timer = setInterval(ping, 15_000);
-    return () => { if (timer) clearInterval(timer); };
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, [pingEndpoint]);
 
   // Visible state label
   const isSpeaking = state === "speaking";
   const stateLabel = ar
-    ? listening ? "أستمع" : thinking || state === "thinking" ? "أفكّر" : isSpeaking ? "أتحدّث" : "جاهزة"
-    : listening ? "Listening" : thinking || state === "thinking" ? "Thinking" : isSpeaking ? "Speaking" : "Ready";
+    ? listening
+      ? "أستمع"
+      : thinking || state === "thinking"
+        ? "أفكّر"
+        : isSpeaking
+          ? "أتحدّث"
+          : "جاهزة"
+    : listening
+      ? "Listening"
+      : thinking || state === "thinking"
+        ? "Thinking"
+        : isSpeaking
+          ? "Speaking"
+          : "Ready";
 
-  const StateIcon = listening ? Mic : (thinking || state === "thinking") ? Brain : isSpeaking ? Radio : Activity;
+  const StateIcon = listening
+    ? Mic
+    : thinking || state === "thinking"
+      ? Brain
+      : isSpeaking
+        ? Radio
+        : Activity;
   const stateTone = listening
     ? "text-cyan-300"
     : thinking || state === "thinking"
@@ -114,15 +144,30 @@ export function AriaStatusStrip({
       )}
     >
       {/* Connection */}
-      <span className={cn("inline-flex items-center gap-1", conn === "online" ? "text-emerald-300" : "text-rose-300")}>
+      <span
+        className={cn(
+          "inline-flex items-center gap-1",
+          conn === "online" ? "text-emerald-300" : "text-rose-300",
+        )}
+      >
         {conn === "online" ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-        <span className="hidden sm:inline">{conn === "online" ? (ar ? "متصلة" : "Connected") : (ar ? "منقطعة" : "Offline")}</span>
+        <span className="hidden sm:inline">
+          {conn === "online" ? (ar ? "متصلة" : "Connected") : ar ? "منقطعة" : "Offline"}
+        </span>
         <span className="sr-only">
-          {conn === "online" ? (ar ? "الاتصال متاح" : "Connection online") : (ar ? "الاتصال مفقود" : "Connection offline")}
+          {conn === "online"
+            ? ar
+              ? "الاتصال متاح"
+              : "Connection online"
+            : ar
+              ? "الاتصال مفقود"
+              : "Connection offline"}
         </span>
       </span>
 
-      <span aria-hidden className="text-white/15">·</span>
+      <span aria-hidden className="text-white/15">
+        ·
+      </span>
 
       {/* State with subtle pulse when live */}
       <span className={cn("inline-flex items-center gap-1 font-medium", stateTone)}>
@@ -143,7 +188,9 @@ export function AriaStatusStrip({
         {stateLabel}
       </span>
 
-      <span aria-hidden className="text-white/15">·</span>
+      <span aria-hidden className="text-white/15">
+        ·
+      </span>
 
       {/* Queue depth */}
       <span
@@ -154,13 +201,21 @@ export function AriaStatusStrip({
         <span className="tabular-nums">{queueDepth}</span>
       </span>
 
-      <span aria-hidden className="text-white/15">·</span>
+      <span aria-hidden className="text-white/15">
+        ·
+      </span>
 
       {/* Latency */}
       <span
         className={cn(
           "inline-flex items-center gap-1 tabular-nums",
-          latency == null ? "text-white/40" : latency < 400 ? "text-emerald-300/80" : latency < 1200 ? "text-amber-300/80" : "text-rose-300/80",
+          latency == null
+            ? "text-white/40"
+            : latency < 400
+              ? "text-emerald-300/80"
+              : latency < 1200
+                ? "text-amber-300/80"
+                : "text-rose-300/80",
         )}
         aria-label={ar ? `زمن الاستجابة ${fmtMs(latency)}` : `Latency ${fmtMs(latency)}`}
       >
@@ -168,15 +223,24 @@ export function AriaStatusStrip({
         {fmtMs(latency)}
       </span>
 
-      <span aria-hidden className="text-white/15">·</span>
+      <span aria-hidden className="text-white/15">
+        ·
+      </span>
 
       {/* Voice */}
       <span
-        className={cn("inline-flex items-center gap-1", voiceOn ? "text-cyan-200" : "text-white/45")}
-        aria-label={voiceOn ? (ar ? "الصوت مفعّل" : "Voice on") : (ar ? "الصوت مكتوم" : "Voice muted")}
+        className={cn(
+          "inline-flex items-center gap-1",
+          voiceOn ? "text-cyan-200" : "text-white/45",
+        )}
+        aria-label={
+          voiceOn ? (ar ? "الصوت مفعّل" : "Voice on") : ar ? "الصوت مكتوم" : "Voice muted"
+        }
       >
         {voiceOn ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
-        <span className="hidden sm:inline">{voiceOn ? (ar ? "صوت" : "Voice") : (ar ? "كتم" : "Muted")}</span>
+        <span className="hidden sm:inline">
+          {voiceOn ? (ar ? "صوت" : "Voice") : ar ? "كتم" : "Muted"}
+        </span>
       </span>
 
       <style>{`

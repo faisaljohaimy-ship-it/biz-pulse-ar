@@ -5,11 +5,15 @@ export interface LatencySample {
 }
 
 const SAMPLES: Record<LatencySample["stage"], number[]> = {
-  first_token: [], first_audio: [], full_answer: [],
+  first_token: [],
+  first_audio: [],
+  full_answer: [],
 };
 
 const BUDGET_MS: Record<LatencySample["stage"], number> = {
-  first_token: 1500, first_audio: 2500, full_answer: 8000,
+  first_token: 1500,
+  first_audio: 2500,
+  full_answer: 8000,
 };
 
 export function recordLatency(sample: LatencySample): void {
@@ -40,9 +44,13 @@ export function responsivenessSnapshot(): ResponsivenessSnapshot {
     (fa === null || fa <= BUDGET_MS.first_audio) &&
     (full === null || full <= BUDGET_MS.full_answer);
   return {
-    avgFirstTokenMs: ft, avgFirstAudioMs: fa, avgFullAnswerMs: full,
+    avgFirstTokenMs: ft,
+    avgFirstAudioMs: fa,
+    avgFullAnswerMs: full,
     withinBudget: within,
   };
 }
 
-export function latencyBudgets(): Readonly<typeof BUDGET_MS> { return BUDGET_MS; }
+export function latencyBudgets(): Readonly<typeof BUDGET_MS> {
+  return BUDGET_MS;
+}

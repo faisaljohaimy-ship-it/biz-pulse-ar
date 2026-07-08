@@ -10,10 +10,30 @@ import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
 import { useAriaVoice } from "@/lib/aria-voice";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Boxes, Building2, Database, Bot, Plug, Workflow, BookOpen,
-  ShieldAlert, Crown, Sparkles, Activity, Gauge, Brain, Zap,
-  TrendingUp, Mic, MicOff, Send, ArrowRight, X, Maximize2, Minimize2,
-  Volume2, VolumeX,
+  Boxes,
+  Building2,
+  Database,
+  Bot,
+  Plug,
+  Workflow,
+  BookOpen,
+  ShieldAlert,
+  Crown,
+  Sparkles,
+  Activity,
+  Gauge,
+  Brain,
+  Zap,
+  TrendingUp,
+  Mic,
+  MicOff,
+  Send,
+  ArrowRight,
+  X,
+  Maximize2,
+  Minimize2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
@@ -26,10 +46,10 @@ type TwinNode = {
   id: string;
   label_ar: string;
   label_en: string;
-  ring: 0 | 1 | 2;            // 0 = inner, 2 = outer
-  angle: number;              // degrees on its ring
+  ring: 0 | 1 | 2; // 0 = inner, 2 = outer
+  angle: number; // degrees on its ring
   icon: typeof Building2;
-  tone: string;               // hex tint
+  tone: string; // hex tint
   route: string;
   kpi_ar: string;
   kpi_en: string;
@@ -37,26 +57,155 @@ type TwinNode = {
 };
 
 const NODES: TwinNode[] = [
-  { id: "depts",    label_ar: "الإدارات",        label_en: "Departments",  ring: 0, angle:   0, icon: Building2,  tone: "#22d3ee", route: "/departments",  kpi_ar: "إدارة نشطة", kpi_en: "active depts", value: "12" },
-  { id: "data",     label_ar: "بحيرة البيانات",  label_en: "Data Lake",    ring: 0, angle: 120, icon: Database,   tone: "#7dd3fc", route: "/knowledge",    kpi_ar: "تدفق/ثانية",  kpi_en: "events/s",     value: "184k" },
-  { id: "agents",   label_ar: "وكلاء AI",        label_en: "AI Agents",    ring: 0, angle: 240, icon: Bot,        tone: "#a78bfa", route: "/agents",       kpi_ar: "وكيل نشط",   kpi_en: "online",       value: "47" },
+  {
+    id: "depts",
+    label_ar: "الإدارات",
+    label_en: "Departments",
+    ring: 0,
+    angle: 0,
+    icon: Building2,
+    tone: "#22d3ee",
+    route: "/departments",
+    kpi_ar: "إدارة نشطة",
+    kpi_en: "active depts",
+    value: "12",
+  },
+  {
+    id: "data",
+    label_ar: "بحيرة البيانات",
+    label_en: "Data Lake",
+    ring: 0,
+    angle: 120,
+    icon: Database,
+    tone: "#7dd3fc",
+    route: "/knowledge",
+    kpi_ar: "تدفق/ثانية",
+    kpi_en: "events/s",
+    value: "184k",
+  },
+  {
+    id: "agents",
+    label_ar: "وكلاء AI",
+    label_en: "AI Agents",
+    ring: 0,
+    angle: 240,
+    icon: Bot,
+    tone: "#a78bfa",
+    route: "/agents",
+    kpi_ar: "وكيل نشط",
+    kpi_en: "online",
+    value: "47",
+  },
 
-  { id: "integ",    label_ar: "التكاملات",       label_en: "Integrations", ring: 1, angle:  30, icon: Plug,       tone: "#34d399", route: "/integrations", kpi_ar: "نظام مربوط", kpi_en: "systems",      value: "63" },
-  { id: "flows",    label_ar: "الأتمتة",         label_en: "Automations",  ring: 1, angle: 100, icon: Workflow,   tone: "#f59e0b", route: "/orchestration",kpi_ar: "تنفيذ/يوم",  kpi_en: "runs/day",     value: "9.2k" },
-  { id: "know",     label_ar: "مركز المعرفة",   label_en: "Knowledge Hub",ring: 1, angle: 170, icon: BookOpen,   tone: "#67e8f9", route: "/knowledge",    kpi_ar: "وثيقة",       kpi_en: "documents",    value: "21,408" },
-  { id: "risk",     label_ar: "محرك المخاطر",   label_en: "Risk Engine",  ring: 1, angle: 240, icon: ShieldAlert,tone: "#f43f5e", route: "/risk",         kpi_ar: "إشارة حرجة", kpi_en: "critical",     value: "2" },
-  { id: "board",    label_ar: "قاعة الإدارة",   label_en: "Boardroom",    ring: 1, angle: 310, icon: Crown,      tone: "#fbbf24", route: "/boardroom",    kpi_ar: "قرار معلق",  kpi_en: "pending",      value: "5" },
+  {
+    id: "integ",
+    label_ar: "التكاملات",
+    label_en: "Integrations",
+    ring: 1,
+    angle: 30,
+    icon: Plug,
+    tone: "#34d399",
+    route: "/integrations",
+    kpi_ar: "نظام مربوط",
+    kpi_en: "systems",
+    value: "63",
+  },
+  {
+    id: "flows",
+    label_ar: "الأتمتة",
+    label_en: "Automations",
+    ring: 1,
+    angle: 100,
+    icon: Workflow,
+    tone: "#f59e0b",
+    route: "/orchestration",
+    kpi_ar: "تنفيذ/يوم",
+    kpi_en: "runs/day",
+    value: "9.2k",
+  },
+  {
+    id: "know",
+    label_ar: "مركز المعرفة",
+    label_en: "Knowledge Hub",
+    ring: 1,
+    angle: 170,
+    icon: BookOpen,
+    tone: "#67e8f9",
+    route: "/knowledge",
+    kpi_ar: "وثيقة",
+    kpi_en: "documents",
+    value: "21,408",
+  },
+  {
+    id: "risk",
+    label_ar: "محرك المخاطر",
+    label_en: "Risk Engine",
+    ring: 1,
+    angle: 240,
+    icon: ShieldAlert,
+    tone: "#f43f5e",
+    route: "/risk",
+    kpi_ar: "إشارة حرجة",
+    kpi_en: "critical",
+    value: "2",
+  },
+  {
+    id: "board",
+    label_ar: "قاعة الإدارة",
+    label_en: "Boardroom",
+    ring: 1,
+    angle: 310,
+    icon: Crown,
+    tone: "#fbbf24",
+    route: "/boardroom",
+    kpi_ar: "قرار معلق",
+    kpi_en: "pending",
+    value: "5",
+  },
 
-  { id: "intel",    label_ar: "الذكاء التنفيذي",label_en: "Intelligence", ring: 2, angle:  60, icon: Brain,      tone: "#c4b5fd", route: "/intelligence", kpi_ar: "إشارة", kpi_en: "signals",      value: "318" },
-  { id: "exec",     label_ar: "التنفيذ",         label_en: "Execution",    ring: 2, angle: 200, icon: Activity,   tone: "#5eead4", route: "/execution",    kpi_ar: "سرعة",        kpi_en: "velocity",     value: "87%" },
+  {
+    id: "intel",
+    label_ar: "الذكاء التنفيذي",
+    label_en: "Intelligence",
+    ring: 2,
+    angle: 60,
+    icon: Brain,
+    tone: "#c4b5fd",
+    route: "/intelligence",
+    kpi_ar: "إشارة",
+    kpi_en: "signals",
+    value: "318",
+  },
+  {
+    id: "exec",
+    label_ar: "التنفيذ",
+    label_en: "Execution",
+    ring: 2,
+    angle: 200,
+    icon: Activity,
+    tone: "#5eead4",
+    route: "/execution",
+    kpi_ar: "سرعة",
+    kpi_en: "velocity",
+    value: "87%",
+  },
 ];
 
 const EDGES: Array<[string, string]> = [
-  ["depts", "data"], ["depts", "agents"], ["data", "agents"],
-  ["depts", "integ"], ["data", "know"], ["agents", "flows"],
-  ["integ", "flows"], ["flows", "risk"], ["risk", "board"],
-  ["know", "intel"], ["agents", "intel"], ["board", "exec"],
-  ["flows", "exec"], ["risk", "intel"],
+  ["depts", "data"],
+  ["depts", "agents"],
+  ["data", "agents"],
+  ["depts", "integ"],
+  ["data", "know"],
+  ["agents", "flows"],
+  ["integ", "flows"],
+  ["flows", "risk"],
+  ["risk", "board"],
+  ["know", "intel"],
+  ["agents", "intel"],
+  ["board", "exec"],
+  ["flows", "exec"],
+  ["risk", "intel"],
 ];
 
 /* ────────── Page ────────── */
@@ -90,7 +239,7 @@ function DigitalTwinPage() {
     return NODES.map((n) => ({ ...n, value: map[n.id] ?? n.value }));
   }, [signals]);
 
-  const [t, setT] = useState(0);             // animation clock (frames)
+  const [t, setT] = useState(0); // animation clock (frames)
   const [active, setActive] = useState<string | null>("data");
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [ariaOpen, setAriaOpen] = useState(false);
@@ -104,14 +253,20 @@ function DigitalTwinPage() {
     try {
       if (!document.fullscreenElement) {
         await el.requestFullscreen({ navigationUI: "hide" } as FullscreenOptions);
-        if ("orientation" in screen && "lock" in (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })) {
+        if (
+          "orientation" in screen &&
+          "lock" in (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })
+        ) {
           await (screen.orientation as unknown as { lock: (o: string) => Promise<void> })
-            .lock("landscape").catch(() => {});
+            .lock("landscape")
+            .catch(() => {});
         }
       } else {
         await document.exitFullscreen();
       }
-    } catch { /* user-cancelled */ }
+    } catch {
+      /* user-cancelled */
+    }
   };
 
   useEffect(() => {
@@ -125,7 +280,10 @@ function DigitalTwinPage() {
     let raf = 0;
     let last = 0;
     const loop = (now: number) => {
-      if (now - last > 33) { setT((v) => v + 1); last = now; }
+      if (now - last > 33) {
+        setT((v) => v + 1);
+        last = now;
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -145,7 +303,7 @@ function DigitalTwinPage() {
   const positions = useMemo(() => {
     const compact = typeof window !== "undefined" && window.innerWidth < 640;
     const rings = [
-      { rx: compact ? 14 : 18, ry: compact ? 9 : 11, speed: 0.10 },
+      { rx: compact ? 14 : 18, ry: compact ? 9 : 11, speed: 0.1 },
       { rx: compact ? 25 : 32, ry: compact ? 15 : 19, speed: 0.06 },
       { rx: compact ? 34 : 44, ry: compact ? 21 : 26, speed: 0.04 },
     ];
@@ -167,16 +325,54 @@ function DigitalTwinPage() {
 
   const posOf = (id: string) => positions.find((p) => p.id === id)!;
   const activeNode = active ? liveNodes.find((n) => n.id === active) : null;
-  const activeEdges = active ? EDGES.filter(([a, b]) => a === active || b === active).map(([a, b]) => (a === active ? b : a)) : [];
+  const activeEdges = active
+    ? EDGES.filter(([a, b]) => a === active || b === active).map(([a, b]) => (a === active ? b : a))
+    : [];
 
   /* Executive status indicators */
   const statusBar = [
-    { label_ar: "صحة المؤسسة",      label_en: "Enterprise Health",  value: `${pulse.health}%`,   tone: "#22d3ee", icon: Gauge },
-    { label_ar: "المخاطر التشغيلية", label_en: "Operational Risk",   value: pulse.status === "critical" ? "HIGH" : pulse.status === "warning" ? "MED" : "LOW", tone: "#f43f5e", icon: ShieldAlert },
-    { label_ar: "نشاط الذكاء",       label_en: "AI Activity",         value: `${pulse.counts.conversations}`, tone: "#a78bfa", icon: Brain },
-    { label_ar: "إنتاجية الأتمتة",   label_en: "Automation Throughput",value: signals ? `${signals.automations}/wk` : "—", tone: "#f59e0b", icon: Zap },
-    { label_ar: "سرعة التنفيذ",       label_en: "Execution Velocity",  value: signals ? `${signals.executionVelocity}%` : "—",   tone: "#34d399", icon: TrendingUp },
-    { label_ar: "إشارات حية",         label_en: "Live Signals",        value: signals ? String(signals.intelligenceSignals) : "—",    tone: "#67e8f9", icon: Activity },
+    {
+      label_ar: "صحة المؤسسة",
+      label_en: "Enterprise Health",
+      value: `${pulse.health}%`,
+      tone: "#22d3ee",
+      icon: Gauge,
+    },
+    {
+      label_ar: "المخاطر التشغيلية",
+      label_en: "Operational Risk",
+      value: pulse.status === "critical" ? "HIGH" : pulse.status === "warning" ? "MED" : "LOW",
+      tone: "#f43f5e",
+      icon: ShieldAlert,
+    },
+    {
+      label_ar: "نشاط الذكاء",
+      label_en: "AI Activity",
+      value: `${pulse.counts.conversations}`,
+      tone: "#a78bfa",
+      icon: Brain,
+    },
+    {
+      label_ar: "إنتاجية الأتمتة",
+      label_en: "Automation Throughput",
+      value: signals ? `${signals.automations}/wk` : "—",
+      tone: "#f59e0b",
+      icon: Zap,
+    },
+    {
+      label_ar: "سرعة التنفيذ",
+      label_en: "Execution Velocity",
+      value: signals ? `${signals.executionVelocity}%` : "—",
+      tone: "#34d399",
+      icon: TrendingUp,
+    },
+    {
+      label_ar: "إشارات حية",
+      label_en: "Live Signals",
+      value: signals ? String(signals.intelligenceSignals) : "—",
+      tone: "#67e8f9",
+      icon: Activity,
+    },
   ];
 
   return (
@@ -185,8 +381,7 @@ function DigitalTwinPage() {
       onMouseMove={onMouseMove}
       className="relative h-[calc(100dvh-3.5rem)] min-h-[640px] w-full overflow-hidden bg-[#02030a] text-slate-100 md:h-screen"
       style={{
-        background:
-          "radial-gradient(ellipse at 50% 35%, #0b2046 0%, #050816 55%, #02030a 100%)",
+        background: "radial-gradient(ellipse at 50% 35%, #0b2046 0%, #050816 55%, #02030a 100%)",
       }}
     >
       {/* Starfield */}
@@ -194,9 +389,12 @@ function DigitalTwinPage() {
       {/* Grid floor */}
       <GridFloor t={t} />
       {/* Vignette */}
-      <div className="pointer-events-none absolute inset-0" style={{
-        background: "radial-gradient(ellipse at center, transparent 40%, rgba(2,4,10,0.92) 100%)",
-      }} />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse at center, transparent 40%, rgba(2,4,10,0.92) 100%)",
+        }}
+      />
 
       {/* Top executive status bar */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-wrap items-center justify-center gap-2 p-3 sm:gap-3 sm:p-4">
@@ -205,14 +403,17 @@ function DigitalTwinPage() {
             <Boxes className="h-4 w-4" />
           </div>
           <div className="leading-tight">
-            <div className="text-[9px] font-bold tracking-[0.3em] text-cyan-300/80">NEXUS · DIGITAL TWIN</div>
+            <div className="text-[9px] font-bold tracking-[0.3em] text-cyan-300/80">
+              NEXUS · DIGITAL TWIN
+            </div>
             <div className="text-[11px] font-semibold text-white">
               {ar ? "كون المؤسسة المباشر" : "Live Enterprise Universe"}
             </div>
           </div>
         </div>
         {statusBar.map((s) => (
-          <div key={s.label_en}
+          <div
+            key={s.label_en}
             className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl"
             style={{ boxShadow: `0 0 24px -12px ${s.tone}55` }}
           >
@@ -221,7 +422,9 @@ function DigitalTwinPage() {
               <div className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-slate-400">
                 {ar ? s.label_ar : s.label_en}
               </div>
-              <div className="text-[12px] font-bold" style={{ color: s.tone }}>{s.value}</div>
+              <div className="text-[12px] font-bold" style={{ color: s.tone }}>
+                {s.value}
+              </div>
             </div>
           </div>
         ))}
@@ -230,8 +433,14 @@ function DigitalTwinPage() {
           className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-[11px] font-bold text-cyan-200 backdrop-blur-xl hover:bg-cyan-400/20"
           aria-label="fullscreen"
         >
-          {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          <span className="hidden sm:inline">{ar ? (isFullscreen ? "خروج" : "ملء الشاشة") : (isFullscreen ? "Exit" : "Cinema")}</span>
+          {isFullscreen ? (
+            <Minimize2 className="h-3.5 w-3.5" />
+          ) : (
+            <Maximize2 className="h-3.5 w-3.5" />
+          )}
+          <span className="hidden sm:inline">
+            {ar ? (isFullscreen ? "خروج" : "ملء الشاشة") : isFullscreen ? "Exit" : "Cinema"}
+          </span>
         </button>
       </div>
 
@@ -243,7 +452,11 @@ function DigitalTwinPage() {
         }}
       >
         {/* SVG edges + orbits */}
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full"
+        >
           <defs>
             <radialGradient id="coreGlow" cx="50%" cy="50%">
               <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.7" />
@@ -258,10 +471,17 @@ function DigitalTwinPage() {
           </defs>
 
           {/* Orbit ellipses */}
-          {[{ rx: 18, ry: 11 }, { rx: 32, ry: 19 }, { rx: 44, ry: 26 }].map((r, i) => (
+          {[
+            { rx: 18, ry: 11 },
+            { rx: 32, ry: 19 },
+            { rx: 44, ry: 26 },
+          ].map((r, i) => (
             <ellipse
               key={i}
-              cx={50} cy={50} rx={r.rx} ry={r.ry}
+              cx={50}
+              cy={50}
+              rx={r.rx}
+              ry={r.ry}
               fill="none"
               stroke="#22d3ee"
               strokeOpacity={0.18 - i * 0.04}
@@ -275,13 +495,17 @@ function DigitalTwinPage() {
 
           {/* Intelligence streams */}
           {EDGES.map(([a, b], i) => {
-            const pa = posOf(a), pb = posOf(b);
+            const pa = posOf(a),
+              pb = posOf(b);
             const isActive = active === a || active === b;
             const op = isActive ? 0.9 : 0.18;
             return (
               <line
                 key={i}
-                x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                x1={pa.x}
+                y1={pa.y}
+                x2={pb.x}
+                y2={pb.y}
                 stroke={isActive ? "url(#streamGrad)" : "#22d3ee"}
                 strokeOpacity={op}
                 strokeWidth={isActive ? 0.22 : 0.1}
@@ -309,12 +533,15 @@ function DigitalTwinPage() {
           return (
             <button
               key={n.id}
-              onClick={() => { setActive(n.id); }}
+              onClick={() => {
+                setActive(n.id);
+              }}
               onDoubleClick={() => navigate({ to: n.route })}
               onMouseEnter={() => setActive(n.id)}
               className="group absolute -translate-x-1/2 -translate-y-1/2 outline-none"
               style={{
-                left: `${p.x}%`, top: `${p.y}%`,
+                left: `${p.x}%`,
+                top: `${p.y}%`,
                 zIndex: 10 + Math.round(p.depth * 10) + (isActive ? 30 : 0),
                 transform: `translate(-50%, -50%) scale(${scale})`,
                 opacity,
@@ -380,14 +607,25 @@ function DigitalTwinPage() {
                 </div>
               </div>
             </div>
-            <button onClick={() => setActive(null)} className="rounded-md p-1 text-slate-400 hover:bg-white/5 hover:text-white">
+            <button
+              onClick={() => setActive(null)}
+              className="rounded-md p-1 text-slate-400 hover:bg-white/5 hover:text-white"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <Mini label={ar ? "الحالة" : "Status"} value={ar ? "صحي" : "Healthy"} tone="#34d399" />
-            <Mini label={ar ? "الاتصالات" : "Links"} value={String(activeEdges.length)} tone="#22d3ee" />
-            <Mini label={ar ? "القيمة" : "Metric"} value={activeNode.value} tone={activeNode.tone} />
+            <Mini
+              label={ar ? "الاتصالات" : "Links"}
+              value={String(activeEdges.length)}
+              tone="#22d3ee"
+            />
+            <Mini
+              label={ar ? "القيمة" : "Metric"}
+              value={activeNode.value}
+              tone={activeNode.tone}
+            />
           </div>
           <button
             onClick={() => navigate({ to: activeNode.route })}
@@ -415,11 +653,25 @@ function DigitalTwinPage() {
         aria-label="Toggle predictions"
       >
         <Sparkles className="h-3.5 w-3.5" />
-        {ar ? (showPredictions ? "إخفاء التنبؤات" : "التنبؤات") : (showPredictions ? "Hide predictions" : "Predictions")}
+        {ar
+          ? showPredictions
+            ? "إخفاء التنبؤات"
+            : "التنبؤات"
+          : showPredictions
+            ? "Hide predictions"
+            : "Predictions"}
       </button>
 
       {/* ARIA dock */}
-        <AriaDock open={ariaOpen} onToggle={() => setAriaOpen((v) => !v)} ar={ar} signals={signals} pulseHealth={pulse.health} pulseStatus={pulse.status} threadId={signals?.generatedAt ?? "digital-twin"} />
+      <AriaDock
+        open={ariaOpen}
+        onToggle={() => setAriaOpen((v) => !v)}
+        ar={ar}
+        signals={signals}
+        pulseHealth={pulse.health}
+        pulseStatus={pulse.status}
+        threadId={signals?.generatedAt ?? "digital-twin"}
+      />
 
       {/* Keyframes */}
       <style>{`
@@ -452,8 +704,12 @@ function DigitalTwinPage() {
 function Mini({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] px-2 py-2">
-      <div className="text-[8.5px] font-bold uppercase tracking-[0.2em] text-slate-500">{label}</div>
-      <div className="mt-0.5 text-sm font-bold" style={{ color: tone }}>{value}</div>
+      <div className="text-[8.5px] font-bold uppercase tracking-[0.2em] text-slate-500">
+        {label}
+      </div>
+      <div className="mt-0.5 text-sm font-bold" style={{ color: tone }}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -465,7 +721,8 @@ function HolographicCore({ t }: { t: number }) {
       <div
         className="absolute left-1/2 top-1/2 h-full w-full rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(34,211,238,0.35) 0%, rgba(124,58,237,0.18) 35%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(34,211,238,0.35) 0%, rgba(124,58,237,0.18) 35%, transparent 70%)",
           animation: "core-breath 4s ease-in-out infinite",
         }}
       />
@@ -477,7 +734,12 @@ function HolographicCore({ t }: { t: number }) {
           style={{
             width: `${60 + i * 40}%`,
             height: `${60 + i * 40}%`,
-            borderColor: i === 0 ? "rgba(34,211,238,0.6)" : i === 1 ? "rgba(167,139,250,0.45)" : "rgba(125,211,252,0.3)",
+            borderColor:
+              i === 0
+                ? "rgba(34,211,238,0.6)"
+                : i === 1
+                  ? "rgba(167,139,250,0.45)"
+                  : "rgba(125,211,252,0.3)",
             borderStyle: "dashed",
             borderWidth: 1,
             animation: `${i % 2 === 0 ? "core-rotate" : "core-rotate-rev"} ${24 + i * 8}s linear infinite`,
@@ -488,7 +750,8 @@ function HolographicCore({ t }: { t: number }) {
       <div
         className="absolute left-1/2 top-1/2 flex h-[110px] w-[110px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(125,211,252,0.95) 0%, rgba(34,211,238,0.55) 40%, rgba(124,58,237,0.25) 70%, transparent 100%)",
+          background:
+            "radial-gradient(circle, rgba(125,211,252,0.95) 0%, rgba(34,211,238,0.55) 40%, rgba(124,58,237,0.25) 70%, transparent 100%)",
           boxShadow: "0 0 80px rgba(34,211,238,0.8), inset 0 0 40px rgba(255,255,255,0.3)",
           transform: `translate(-50%, -50%) scale(${1 + Math.sin(t / 20) * 0.04})`,
         }}
@@ -516,7 +779,8 @@ function GridFloor({ t }: { t: number }) {
         backgroundPositionY: `0px, 0px, ${offset}px`,
         transform: "perspective(700px) rotateX(62deg) translateY(20%)",
         transformOrigin: "center top",
-        maskImage: "linear-gradient(to bottom, transparent 0%, black 30%, black 80%, transparent 100%)",
+        maskImage:
+          "linear-gradient(to bottom, transparent 0%, black 30%, black 80%, transparent 100%)",
       }}
     />
   );
@@ -524,19 +788,24 @@ function GridFloor({ t }: { t: number }) {
 
 function Starfield() {
   const stars = useMemo(
-    () => Array.from({ length: 80 }).map((_, i) => ({
-      x: Math.abs((Math.sin(i * 92.13) * 43758.5453) % 1) * 100,
-      y: Math.abs((Math.cos(i * 17.7) * 43758.5453) % 1) * 100,
-      r: i % 7 === 0 ? 1.4 : 0.6,
-      d: (i % 7) * 0.6,
-    })),
+    () =>
+      Array.from({ length: 80 }).map((_, i) => ({
+        x: Math.abs((Math.sin(i * 92.13) * 43758.5453) % 1) * 100,
+        y: Math.abs((Math.cos(i * 17.7) * 43758.5453) % 1) * 100,
+        r: i % 7 === 0 ? 1.4 : 0.6,
+        d: (i % 7) * 0.6,
+      })),
     [],
   );
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full">
       {stars.map((s, i) => (
         <circle
-          key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r} fill="white"
+          key={i}
+          cx={`${s.x}%`}
+          cy={`${s.y}%`}
+          r={s.r}
+          fill="white"
           style={{ animation: `star-twinkle ${3 + (i % 5)}s ease-in-out ${s.d}s infinite` }}
         />
       ))}
@@ -575,7 +844,12 @@ function AriaDock({
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: () => ({ threadId: undefined, model: "google/gemini-3-flash-preview", agent: "digital_twin", twinSessionId: threadId }),
+        body: () => ({
+          threadId: undefined,
+          model: "google/gemini-3-flash-preview",
+          agent: "digital_twin",
+          twinSessionId: threadId,
+        }),
         fetch: async (url, init) => {
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
@@ -590,16 +864,66 @@ function AriaDock({
   const isLoading = status === "submitted" || status === "streaming";
 
   // Voice command routing — intercept navigation intents before sending to LLM
-  const VOICE_ROUTES: Array<{ patterns: RegExp[]; to: string; speak_ar: string; speak_en: string }> = [
-    { patterns: [/digital\s*twin|توأم|الكون/i], to: "/digital-twin", speak_ar: "جاري فتح التوأم الرقمي", speak_en: "Opening Digital Twin" },
-    { patterns: [/risk|مخاطر/i], to: "/risk", speak_ar: "أعرض سجل المخاطر", speak_en: "Showing risk register" },
-    { patterns: [/board\s*room|مجلس|قاعة الإدارة|board summary|ملخص.*مجلس/i], to: "/boardroom", speak_ar: "أفتح قاعة الإدارة", speak_en: "Opening boardroom" },
-    { patterns: [/decision|قرار/i], to: "/decisions", speak_ar: "أعرض القرارات", speak_en: "Opening decisions" },
-    { patterns: [/intelligence|ذكاء|signals|إشارات/i], to: "/intelligence", speak_ar: "أعرض الذكاء", speak_en: "Opening intelligence" },
-    { patterns: [/forgotten|منس/i], to: "/forgotten", speak_ar: "البنود المنسية", speak_en: "Opening forgotten items" },
-    { patterns: [/cockpit|قمرة/i], to: "/cockpit", speak_ar: "قمرة القيادة", speak_en: "Opening cockpit" },
-    { patterns: [/fabric|نسيج/i], to: "/fabric", speak_ar: "نسيج الذكاء", speak_en: "Opening intelligence fabric" },
-    { patterns: [/memory|ذاكرة/i], to: "/memory", speak_ar: "ذاكرة المؤسسة", speak_en: "Opening memory" },
+  const VOICE_ROUTES: Array<{
+    patterns: RegExp[];
+    to: string;
+    speak_ar: string;
+    speak_en: string;
+  }> = [
+    {
+      patterns: [/digital\s*twin|توأم|الكون/i],
+      to: "/digital-twin",
+      speak_ar: "جاري فتح التوأم الرقمي",
+      speak_en: "Opening Digital Twin",
+    },
+    {
+      patterns: [/risk|مخاطر/i],
+      to: "/risk",
+      speak_ar: "أعرض سجل المخاطر",
+      speak_en: "Showing risk register",
+    },
+    {
+      patterns: [/board\s*room|مجلس|قاعة الإدارة|board summary|ملخص.*مجلس/i],
+      to: "/boardroom",
+      speak_ar: "أفتح قاعة الإدارة",
+      speak_en: "Opening boardroom",
+    },
+    {
+      patterns: [/decision|قرار/i],
+      to: "/decisions",
+      speak_ar: "أعرض القرارات",
+      speak_en: "Opening decisions",
+    },
+    {
+      patterns: [/intelligence|ذكاء|signals|إشارات/i],
+      to: "/intelligence",
+      speak_ar: "أعرض الذكاء",
+      speak_en: "Opening intelligence",
+    },
+    {
+      patterns: [/forgotten|منس/i],
+      to: "/forgotten",
+      speak_ar: "البنود المنسية",
+      speak_en: "Opening forgotten items",
+    },
+    {
+      patterns: [/cockpit|قمرة/i],
+      to: "/cockpit",
+      speak_ar: "قمرة القيادة",
+      speak_en: "Opening cockpit",
+    },
+    {
+      patterns: [/fabric|نسيج/i],
+      to: "/fabric",
+      speak_ar: "نسيج الذكاء",
+      speak_en: "Opening intelligence fabric",
+    },
+    {
+      patterns: [/memory|ذاكرة/i],
+      to: "/memory",
+      speak_ar: "ذاكرة المؤسسة",
+      speak_en: "Opening memory",
+    },
   ];
 
   const send = (text: string) => {
@@ -647,14 +971,26 @@ function AriaDock({
   }, [messages, isLoading, autoSpeak, voice]);
 
   const suggestions = ar
-    ? ["لخص حالة المؤسسة الآن", "ما أكبر المخاطر الحرجة؟", "افتح التوأم الرقمي", "جهز ملخص قاعة الإدارة"]
-    : ["Summarize enterprise state now", "Top critical risks?", "Open Digital Twin", "Prep board briefing"];
+    ? [
+        "لخص حالة المؤسسة الآن",
+        "ما أكبر المخاطر الحرجة؟",
+        "افتح التوأم الرقمي",
+        "جهز ملخص قاعة الإدارة",
+      ]
+    : [
+        "Summarize enterprise state now",
+        "Top critical risks?",
+        "Open Digital Twin",
+        "Prep board briefing",
+      ];
 
   return (
     <div className="absolute bottom-4 end-4 z-40">
       {open && (
-        <div className="mb-3 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl"
-          style={{ boxShadow: "0 24px 64px -16px rgba(34,211,238,0.4)" }}>
+        <div
+          className="mb-3 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl"
+          style={{ boxShadow: "0 24px 64px -16px rgba(34,211,238,0.4)" }}
+        >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 text-white">
@@ -663,7 +999,17 @@ function AriaDock({
               <div>
                 <div className="text-[10px] font-bold tracking-[0.25em] text-cyan-300">ARIA</div>
                 <div className="text-[10px] text-slate-400">
-                  {voice.listening ? (ar ? "أستمع…" : "Listening…") : voice.speaking ? (ar ? "أتحدث…" : "Speaking…") : (ar ? "كوبايلوت تنفيذي" : "Executive Copilot")}
+                  {voice.listening
+                    ? ar
+                      ? "أستمع…"
+                      : "Listening…"
+                    : voice.speaking
+                      ? ar
+                        ? "أتحدث…"
+                        : "Speaking…"
+                      : ar
+                        ? "كوبايلوت تنفيذي"
+                        : "Executive Copilot"}
                 </div>
               </div>
             </div>
@@ -671,11 +1017,16 @@ function AriaDock({
               <button
                 onClick={() => setAutoSpeak((v) => !v)}
                 className={`rounded p-1 ${autoSpeak ? "text-cyan-300" : "text-slate-500"} hover:bg-white/5`}
-                title={autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : (ar ? "الصوت مغلق" : "Voice off")}
+                title={
+                  autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : ar ? "الصوت مغلق" : "Voice off"
+                }
               >
                 {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </button>
-              <button onClick={onToggle} className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white">
+              <button
+                onClick={onToggle}
+                className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -697,11 +1048,13 @@ function AriaDock({
               const display = isUser ? text.split("\n\n").slice(-1)[0] : text;
               return (
                 <div key={m.id} className={isUser ? "text-end" : ""}>
-                  <div className={`inline-block max-w-[90%] whitespace-pre-wrap rounded-xl px-3 py-2 text-xs leading-relaxed ${
-                    isUser
-                      ? "bg-gradient-to-br from-cyan-500 to-violet-500 text-white"
-                      : "border border-cyan-300/20 bg-cyan-400/5 text-slate-100"
-                  }`}>
+                  <div
+                    className={`inline-block max-w-[90%] whitespace-pre-wrap rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                      isUser
+                        ? "bg-gradient-to-br from-cyan-500 to-violet-500 text-white"
+                        : "border border-cyan-300/20 bg-cyan-400/5 text-slate-100"
+                    }`}
+                  >
                     {display || (isLoading ? "…" : "")}
                   </div>
                 </div>
@@ -715,16 +1068,20 @@ function AriaDock({
               </div>
             )}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <div className="inline-block rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200">…</div>
+              <div className="inline-block rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200">
+                …
+              </div>
             )}
             {error && (
               <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">
-                {ar ? "تعذّر رد ARIA: " : "ARIA error: "}{error.message}
+                {ar ? "تعذّر رد ARIA: " : "ARIA error: "}
+                {error.message}
               </div>
             )}
             {voice.error && (
               <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">
-                {ar ? "خطأ صوتي: " : "Voice error: "}{voice.error}
+                {ar ? "خطأ صوتي: " : "Voice error: "}
+                {voice.error}
               </div>
             )}
           </div>
@@ -740,16 +1097,35 @@ function AriaDock({
               </button>
             ))}
           </div>
-          <form onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="flex items-center gap-2 border-t border-white/10 p-2">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(input);
+            }}
+            className="flex items-center gap-2 border-t border-white/10 p-2"
+          >
             <button
               type="button"
-              onPointerDown={() => { setVoiceMode(true); voice.startListening(); }}
-              onPointerUp={() => { if (voiceMode) { voice.stopListening(); setVoiceMode(false); } }}
-              onClick={() => { if (!voiceMode) voice.toggleListening(); }}
+              onPointerDown={() => {
+                setVoiceMode(true);
+                voice.startListening();
+              }}
+              onPointerUp={() => {
+                if (voiceMode) {
+                  voice.stopListening();
+                  setVoiceMode(false);
+                }
+              }}
+              onClick={() => {
+                if (!voiceMode) voice.toggleListening();
+              }}
               className={`rounded-lg p-2 ${voice.listening ? "bg-rose-500/20 text-rose-300" : "text-slate-400 hover:bg-white/5 hover:text-cyan-300"}`}
               aria-label="mic"
-              title={ar ? "اضغط للتحدث (ضغطة طويلة) أو اضغط لتشغيل/إيقاف" : "Hold to talk, click to toggle"}
+              title={
+                ar
+                  ? "اضغط للتحدث (ضغطة طويلة) أو اضغط لتشغيل/إيقاف"
+                  : "Hold to talk, click to toggle"
+              }
             >
               {voice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
@@ -760,7 +1136,11 @@ function AriaDock({
               className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
               disabled={isLoading}
             />
-            <button type="submit" disabled={isLoading || !input.trim()} className="rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 p-2 text-white disabled:opacity-40">
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 p-2 text-white disabled:opacity-40"
+            >
               <Send className="h-3.5 w-3.5" />
             </button>
           </form>
@@ -772,7 +1152,13 @@ function AriaDock({
         style={{ boxShadow: "0 0 40px rgba(34,211,238,0.5), inset 0 0 20px rgba(255,255,255,0.1)" }}
         aria-label="ARIA"
       >
-        <span className="absolute inset-0 rounded-full" style={{ animation: "twin-pulse 3s ease-in-out infinite", background: "radial-gradient(circle, rgba(34,211,238,0.3) 0%, transparent 70%)" }} />
+        <span
+          className="absolute inset-0 rounded-full"
+          style={{
+            animation: "twin-pulse 3s ease-in-out infinite",
+            background: "radial-gradient(circle, rgba(34,211,238,0.3) 0%, transparent 70%)",
+          }}
+        />
         <Sparkles className="relative h-6 w-6 text-white" />
       </button>
     </div>

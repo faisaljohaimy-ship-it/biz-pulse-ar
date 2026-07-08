@@ -33,89 +33,137 @@ type Agent = {
 const AGENTS: Agent[] = [
   {
     id: "sales",
-    en: "Sales Agent", ar: "وكيل المبيعات",
-    role_en: "Pipeline · Outreach · Closing", role_ar: "خط الأنابيب · التواصل · الإغلاق",
-    icon: TrendingUp, tone: "from-emerald-300 to-emerald-600", ring: "ring-emerald-300/40", glow: "shadow-[0_0_60px_-15px_rgba(52,211,153,0.6)]",
+    en: "Sales Agent",
+    ar: "وكيل المبيعات",
+    role_en: "Pipeline · Outreach · Closing",
+    role_ar: "خط الأنابيب · التواصل · الإغلاق",
+    icon: TrendingUp,
+    tone: "from-emerald-300 to-emerald-600",
+    ring: "ring-emerald-300/40",
+    glow: "shadow-[0_0_60px_-15px_rgba(52,211,153,0.6)]",
     load: 78,
     tasks: [
       { en: "Qualified 142 enterprise leads", ar: "تأهيل ١٤٢ عميلاً مؤسسياً" },
-      { en: "Drafted 38 executive proposals",  ar: "صياغة ٣٨ عرضاً تنفيذياً" },
-      { en: "Closed $4.2M · Riyadh region",    ar: "إغلاق ٤٫٢م · إقليم الرياض" },
+      { en: "Drafted 38 executive proposals", ar: "صياغة ٣٨ عرضاً تنفيذياً" },
+      { en: "Closed $4.2M · Riyadh region", ar: "إغلاق ٤٫٢م · إقليم الرياض" },
     ],
   },
   {
     id: "ops",
-    en: "Operations Agent", ar: "وكيل العمليات",
-    role_en: "Workflows · SLA · Throughput", role_ar: "سير العمل · اتفاقيات الخدمة · الإنتاجية",
-    icon: Cog, tone: "from-cyan-300 to-blue-600", ring: "ring-cyan-300/40", glow: "shadow-[0_0_60px_-15px_rgba(56,189,248,0.6)]",
+    en: "Operations Agent",
+    ar: "وكيل العمليات",
+    role_en: "Workflows · SLA · Throughput",
+    role_ar: "سير العمل · اتفاقيات الخدمة · الإنتاجية",
+    icon: Cog,
+    tone: "from-cyan-300 to-blue-600",
+    ring: "ring-cyan-300/40",
+    glow: "shadow-[0_0_60px_-15px_rgba(56,189,248,0.6)]",
     load: 64,
     tasks: [
       { en: "Optimized 9 supply chain routes", ar: "تحسين ٩ مسارات في سلسلة الإمداد" },
-      { en: "Auto-resolved 612 tickets",       ar: "حل ٦١٢ تذكرة تلقائياً" },
-      { en: "Rebalanced 4 production lines",   ar: "إعادة موازنة ٤ خطوط إنتاج" },
+      { en: "Auto-resolved 612 tickets", ar: "حل ٦١٢ تذكرة تلقائياً" },
+      { en: "Rebalanced 4 production lines", ar: "إعادة موازنة ٤ خطوط إنتاج" },
     ],
   },
   {
     id: "finance",
-    en: "Finance Agent", ar: "وكيل المالية",
-    role_en: "Treasury · Forecast · Spend", role_ar: "الخزينة · التنبؤ · الإنفاق",
-    icon: Wallet, tone: "from-amber-300 to-amber-600", ring: "ring-amber-300/40", glow: "shadow-[0_0_60px_-15px_rgba(245,180,84,0.6)]",
+    en: "Finance Agent",
+    ar: "وكيل المالية",
+    role_en: "Treasury · Forecast · Spend",
+    role_ar: "الخزينة · التنبؤ · الإنفاق",
+    icon: Wallet,
+    tone: "from-amber-300 to-amber-600",
+    ring: "ring-amber-300/40",
+    glow: "shadow-[0_0_60px_-15px_rgba(245,180,84,0.6)]",
     load: 71,
     tasks: [
-      { en: "Reconciled 18,420 transactions",  ar: "تسوية ١٨٬٤٢٠ معاملة" },
-      { en: "FX hedge executed · EUR/USD",      ar: "تنفيذ تحوّط عملة · يورو/دولار" },
-      { en: "Forecast Q4 revenue · $48.2M",     ar: "توقع إيرادات الربع الرابع · ٤٨٫٢م" },
+      { en: "Reconciled 18,420 transactions", ar: "تسوية ١٨٬٤٢٠ معاملة" },
+      { en: "FX hedge executed · EUR/USD", ar: "تنفيذ تحوّط عملة · يورو/دولار" },
+      { en: "Forecast Q4 revenue · $48.2M", ar: "توقع إيرادات الربع الرابع · ٤٨٫٢م" },
     ],
   },
   {
     id: "risk",
-    en: "Risk Agent", ar: "وكيل المخاطر",
-    role_en: "Threats · Exposure · Resilience", role_ar: "التهديدات · التعرّض · المرونة",
-    icon: ShieldAlert, tone: "from-rose-300 to-rose-600", ring: "ring-rose-300/40", glow: "shadow-[0_0_60px_-15px_rgba(251,113,133,0.6)]",
+    en: "Risk Agent",
+    ar: "وكيل المخاطر",
+    role_en: "Threats · Exposure · Resilience",
+    role_ar: "التهديدات · التعرّض · المرونة",
+    icon: ShieldAlert,
+    tone: "from-rose-300 to-rose-600",
+    ring: "ring-rose-300/40",
+    glow: "shadow-[0_0_60px_-15px_rgba(251,113,133,0.6)]",
     load: 52,
     tasks: [
-      { en: "Blocked 3 fraud patterns · live",  ar: "حجب ٣ أنماط احتيال · مباشر" },
-      { en: "Stress-tested 12 scenarios",       ar: "اختبار إجهاد لـ ١٢ سيناريو" },
+      { en: "Blocked 3 fraud patterns · live", ar: "حجب ٣ أنماط احتيال · مباشر" },
+      { en: "Stress-tested 12 scenarios", ar: "اختبار إجهاد لـ ١٢ سيناريو" },
       { en: "Vendor risk re-scored · 84 firms", ar: "إعادة تقييم مخاطر ٨٤ مورّداً" },
     ],
   },
   {
     id: "compliance",
-    en: "Compliance Agent", ar: "وكيل الامتثال",
-    role_en: "Policy · Audit · Regulation", role_ar: "السياسات · التدقيق · التنظيم",
-    icon: ScrollText, tone: "from-violet-300 to-violet-600", ring: "ring-violet-300/40", glow: "shadow-[0_0_60px_-15px_rgba(167,139,250,0.6)]",
+    en: "Compliance Agent",
+    ar: "وكيل الامتثال",
+    role_en: "Policy · Audit · Regulation",
+    role_ar: "السياسات · التدقيق · التنظيم",
+    icon: ScrollText,
+    tone: "from-violet-300 to-violet-600",
+    ring: "ring-violet-300/40",
+    glow: "shadow-[0_0_60px_-15px_rgba(167,139,250,0.6)]",
     load: 46,
     tasks: [
-      { en: "Audited 1,204 access events",      ar: "تدقيق ١٬٢٠٤ أحداث وصول" },
-      { en: "KSA Data Law · 100% conformant",   ar: "نظام البيانات السعودي · ١٠٠٪" },
-      { en: "Generated 7 regulator filings",    ar: "إعداد ٧ إفصاحات تنظيمية" },
+      { en: "Audited 1,204 access events", ar: "تدقيق ١٬٢٠٤ أحداث وصول" },
+      { en: "KSA Data Law · 100% conformant", ar: "نظام البيانات السعودي · ١٠٠٪" },
+      { en: "Generated 7 regulator filings", ar: "إعداد ٧ إفصاحات تنظيمية" },
     ],
   },
   {
     id: "exec",
-    en: "Executive Agent", ar: "الوكيل التنفيذي",
-    role_en: "Orchestrator · Decisions · Strategy", role_ar: "المنسّق · القرارات · الاستراتيجية",
-    icon: Crown, tone: "from-fuchsia-300 to-fuchsia-600", ring: "ring-fuchsia-300/40", glow: "shadow-[0_0_60px_-15px_rgba(232,121,249,0.6)]",
+    en: "Executive Agent",
+    ar: "الوكيل التنفيذي",
+    role_en: "Orchestrator · Decisions · Strategy",
+    role_ar: "المنسّق · القرارات · الاستراتيجية",
+    icon: Crown,
+    tone: "from-fuchsia-300 to-fuchsia-600",
+    ring: "ring-fuchsia-300/40",
+    glow: "shadow-[0_0_60px_-15px_rgba(232,121,249,0.6)]",
     load: 88,
     tasks: [
-      { en: "Approved 14 capital allocations",  ar: "اعتماد ١٤ تخصيصاً رأسمالياً" },
-      { en: "Aligned 6 agents · Q4 goals",      ar: "مواءمة ٦ وكلاء · أهداف الربع ٤" },
-      { en: "Briefed board · 3 scenarios",      ar: "إحاطة المجلس · ٣ سيناريوهات" },
+      { en: "Approved 14 capital allocations", ar: "اعتماد ١٤ تخصيصاً رأسمالياً" },
+      { en: "Aligned 6 agents · Q4 goals", ar: "مواءمة ٦ وكلاء · أهداف الربع ٤" },
+      { en: "Briefed board · 3 scenarios", ar: "إحاطة المجلس · ٣ سيناريوهات" },
     ],
   },
 ];
 
 const WORKFLOWS = [
-  { en: "Lead → Qualify → Proposal → Close",    ar: "عميل ← تأهيل ← عرض ← إغلاق", agents: ["sales", "exec"] },
-  { en: "Invoice → Approve → Pay → Reconcile",  ar: "فاتورة ← اعتماد ← دفع ← تسوية", agents: ["finance", "compliance"] },
-  { en: "Signal → Assess → Mitigate → Report",  ar: "إشارة ← تقييم ← تخفيف ← تقرير", agents: ["risk", "compliance", "exec"] },
-  { en: "Demand → Plan → Produce → Deliver",    ar: "طلب ← تخطيط ← إنتاج ← تسليم", agents: ["ops", "finance"] },
+  {
+    en: "Lead → Qualify → Proposal → Close",
+    ar: "عميل ← تأهيل ← عرض ← إغلاق",
+    agents: ["sales", "exec"],
+  },
+  {
+    en: "Invoice → Approve → Pay → Reconcile",
+    ar: "فاتورة ← اعتماد ← دفع ← تسوية",
+    agents: ["finance", "compliance"],
+  },
+  {
+    en: "Signal → Assess → Mitigate → Report",
+    ar: "إشارة ← تقييم ← تخفيف ← تقرير",
+    agents: ["risk", "compliance", "exec"],
+  },
+  {
+    en: "Demand → Plan → Produce → Deliver",
+    ar: "طلب ← تخطيط ← إنتاج ← تسليم",
+    agents: ["ops", "finance"],
+  },
 ];
 
 export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
   const [active, setActive] = useState<string>("exec");
   const [tick, setTick] = useState(0);
-  const [feed, setFeed] = useState<{ id: number; agent: Agent; task: { en: string; ar: string } }[]>([]);
+  const [feed, setFeed] = useState<
+    { id: number; agent: Agent; task: { en: string; ar: string } }[]
+  >([]);
 
   useEffect(() => {
     const t = setInterval(() => setTick((x) => x + 1), 1800);
@@ -163,9 +211,21 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
             </div>
             <h2 className="mt-4 text-4xl font-bold leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-6xl">
               {isAr ? (
-                <>المؤسسة <span className="bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent">الذاتية</span> التشغيل</>
+                <>
+                  المؤسسة{" "}
+                  <span className="bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent">
+                    الذاتية
+                  </span>{" "}
+                  التشغيل
+                </>
               ) : (
-                <>The <span className="bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent">Self-Driving</span> Enterprise</>
+                <>
+                  The{" "}
+                  <span className="bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent">
+                    Self-Driving
+                  </span>{" "}
+                  Enterprise
+                </>
               )}
             </h2>
             <p className="mt-3 max-w-xl text-sm text-white/60 sm:text-base">
@@ -175,9 +235,14 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
             </p>
           </div>
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-white/55">
-            <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> {isAr ? "٦ وكلاء نشطون" : "6 Agents Active"}</span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />{" "}
+              {isAr ? "٦ وكلاء نشطون" : "6 Agents Active"}
+            </span>
             <span className="hidden md:inline">·</span>
-            <span className="hidden md:inline">{isAr ? "٤٨٬٢١٠ مهمة/يوم" : "48,210 tasks/day"}</span>
+            <span className="hidden md:inline">
+              {isAr ? "٤٨٬٢١٠ مهمة/يوم" : "48,210 tasks/day"}
+            </span>
           </div>
         </div>
 
@@ -200,19 +265,29 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
                     }`}
                   >
                     {/* pulse line */}
-                    <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent transition-opacity ${isActive ? "opacity-100" : "opacity-0"}`}
+                    <div
+                      className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent transition-opacity ${isActive ? "opacity-100" : "opacity-0"}`}
                       style={{ animation: isActive ? "ae-scan 2.2s linear infinite" : undefined }}
                     />
                     <div className="flex items-center gap-2.5">
-                      <div className={`relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${agent.tone} text-black shadow-lg`}>
+                      <div
+                        className={`relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${agent.tone} text-black shadow-lg`}
+                      >
                         <Icon className="h-4 w-4" />
                         {isActive && (
-                          <span className="absolute inset-0 rounded-xl ring-2 ring-white/50" style={{ animation: "ae-ring 1.6s ease-out infinite" }} />
+                          <span
+                            className="absolute inset-0 rounded-xl ring-2 ring-white/50"
+                            style={{ animation: "ae-ring 1.6s ease-out infinite" }}
+                          />
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-[12px] font-semibold text-white">{isAr ? agent.ar : agent.en}</div>
-                        <div className="truncate text-[9px] uppercase tracking-[0.18em] text-white/45">{isAr ? agent.role_ar : agent.role_en}</div>
+                        <div className="truncate text-[12px] font-semibold text-white">
+                          {isAr ? agent.ar : agent.en}
+                        </div>
+                        <div className="truncate text-[9px] uppercase tracking-[0.18em] text-white/45">
+                          {isAr ? agent.role_ar : agent.role_en}
+                        </div>
                       </div>
                     </div>
 
@@ -222,7 +297,10 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
                       <span className="text-white/70">{agent.load}%</span>
                     </div>
                     <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/5">
-                      <div className={`h-full bg-gradient-to-r ${agent.tone}`} style={{ width: `${agent.load}%` }} />
+                      <div
+                        className={`h-full bg-gradient-to-r ${agent.tone}`}
+                        style={{ width: `${agent.load}%` }}
+                      />
                     </div>
 
                     {/* status */}
@@ -239,7 +317,9 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
             <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
               <div className="flex items-center gap-2">
                 <Workflow className="h-4 w-4 text-cyan-300" />
-                <span className="text-[10px] uppercase tracking-[0.3em] text-white/55">{isAr ? "سير الأعمال التلقائي" : "Autonomous Workflows"}</span>
+                <span className="text-[10px] uppercase tracking-[0.3em] text-white/55">
+                  {isAr ? "سير الأعمال التلقائي" : "Autonomous Workflows"}
+                </span>
                 <div className="ms-2 h-px flex-1 bg-gradient-to-r from-white/20 to-transparent" />
               </div>
               <div className="mt-4 space-y-3">
@@ -252,7 +332,10 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
                           const ag = AGENTS.find((a) => a.id === id)!;
                           const Icon = ag.icon;
                           return (
-                            <div key={id} className={`flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br ${ag.tone} ring-2 ring-[#03050c] text-black`}>
+                            <div
+                              key={id}
+                              className={`flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br ${ag.tone} ring-2 ring-[#03050c] text-black`}
+                            >
                               <Icon className="h-2.5 w-2.5" />
                             </div>
                           );
@@ -275,17 +358,30 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
           {/* RIGHT — active agent + live feed */}
           <div className="lg:col-span-5 space-y-5">
             {/* active agent card */}
-            <div className={`relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 backdrop-blur-xl ${activeAgent.glow}`}>
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" style={{ animation: "ae-scan 2.5s linear infinite" }} />
+            <div
+              className={`relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 backdrop-blur-xl ${activeAgent.glow}`}
+            >
+              <div
+                className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                style={{ animation: "ae-scan 2.5s linear infinite" }}
+              />
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${activeAgent.tone} text-black shadow-xl`}>
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${activeAgent.tone} text-black shadow-xl`}
+                  >
                     <activeAgent.icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-[0.28em] text-white/45">{isAr ? "وكيل نشط" : "Active Agent"}</div>
-                    <div className="text-lg font-bold text-white">{isAr ? activeAgent.ar : activeAgent.en}</div>
-                    <div className="text-[11px] text-white/55">{isAr ? activeAgent.role_ar : activeAgent.role_en}</div>
+                    <div className="text-[11px] uppercase tracking-[0.28em] text-white/45">
+                      {isAr ? "وكيل نشط" : "Active Agent"}
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {isAr ? activeAgent.ar : activeAgent.en}
+                    </div>
+                    <div className="text-[11px] text-white/55">
+                      {isAr ? activeAgent.role_ar : activeAgent.role_en}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] text-emerald-300 ring-1 ring-emerald-300/30">
@@ -296,7 +392,10 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
 
               <div className="mt-4 space-y-2">
                 {activeAgent.tasks.map((t, i) => (
-                  <div key={i} className="flex items-start gap-2 rounded-lg bg-white/[0.04] px-3 py-2 text-[12px] text-white/85">
+                  <div
+                    key={i}
+                    className="flex items-start gap-2 rounded-lg bg-white/[0.04] px-3 py-2 text-[12px] text-white/85"
+                  >
                     <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" />
                     <span>{isAr ? t.ar : t.en}</span>
                   </div>
@@ -306,8 +405,8 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 {[
                   { v: `${activeAgent.load}%`, l: isAr ? "الحمل" : "Load" },
-                  { v: "99.98%",                 l: isAr ? "موثوقية" : "Uptime" },
-                  { v: "12ms",                   l: isAr ? "زمن القرار" : "Decide" },
+                  { v: "99.98%", l: isAr ? "موثوقية" : "Uptime" },
+                  { v: "12ms", l: isAr ? "زمن القرار" : "Decide" },
                 ].map((x, i) => (
                   <div key={i} className="rounded-lg bg-white/[0.04] p-2">
                     <div className="text-[13px] font-bold text-white">{x.v}</div>
@@ -321,7 +420,9 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
               <div className="flex items-center gap-2">
                 <Radio className="h-4 w-4 text-emerald-300" />
-                <span className="text-[10px] uppercase tracking-[0.3em] text-white/55">{isAr ? "بثّ المهام المباشر" : "Live Task Stream"}</span>
+                <span className="text-[10px] uppercase tracking-[0.3em] text-white/55">
+                  {isAr ? "بثّ المهام المباشر" : "Live Task Stream"}
+                </span>
                 <div className="ms-2 h-px flex-1 bg-gradient-to-r from-white/20 to-transparent" />
                 <span className="text-[9px] text-white/40">{isAr ? "مباشر" : "LIVE"}</span>
               </div>
@@ -338,14 +439,23 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
                     <div
                       key={f.id}
                       className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2 text-[11px]"
-                      style={{ animation: i === 0 ? "ae-in 0.4s ease-out" : undefined, opacity: 1 - i * 0.08 }}
+                      style={{
+                        animation: i === 0 ? "ae-in 0.4s ease-out" : undefined,
+                        opacity: 1 - i * 0.08,
+                      }}
                     >
-                      <div className={`flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br ${f.agent.tone} text-black`}>
+                      <div
+                        className={`flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br ${f.agent.tone} text-black`}
+                      >
                         <Icon className="h-3 w-3" />
                       </div>
-                      <span className="font-medium text-white/85">{isAr ? f.agent.ar : f.agent.en}</span>
+                      <span className="font-medium text-white/85">
+                        {isAr ? f.agent.ar : f.agent.en}
+                      </span>
                       <span className="text-white/40">·</span>
-                      <span className="flex-1 truncate text-white/65">{isAr ? f.task.ar : f.task.en}</span>
+                      <span className="flex-1 truncate text-white/65">
+                        {isAr ? f.task.ar : f.task.en}
+                      </span>
                       <ArrowRight className={`h-3 w-3 text-white/30 ${isAr ? "rotate-180" : ""}`} />
                     </div>
                   );
@@ -360,9 +470,14 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
                 { v: "100%", l: isAr ? "الامتثال" : "Compliance", c: "text-cyan-300" },
                 { v: "24/7", l: isAr ? "مراقبة المخاطر" : "Risk Watch", c: "text-amber-300" },
               ].map((x, i) => (
-                <div key={i} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center"
+                >
                   <div className={`text-base font-bold ${x.c}`}>{x.v}</div>
-                  <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-white/45">{x.l}</div>
+                  <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-white/45">
+                    {x.l}
+                  </div>
                 </div>
               ))}
             </div>
@@ -373,7 +488,11 @@ export default function AutonomousEnterpriseScene({ isAr }: { isAr: boolean }) {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-5 py-4">
           <div className="flex items-center gap-2 text-[11px] text-white/60">
             <Bot className="h-4 w-4 text-fuchsia-300" />
-            <span>{isAr ? "تعمل المؤسسة الآن دون تدخل بشري" : "Your enterprise is running without human intervention"}</span>
+            <span>
+              {isAr
+                ? "تعمل المؤسسة الآن دون تدخل بشري"
+                : "Your enterprise is running without human intervention"}
+            </span>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.28em] text-emerald-300">
             <Activity className="h-3.5 w-3.5" />

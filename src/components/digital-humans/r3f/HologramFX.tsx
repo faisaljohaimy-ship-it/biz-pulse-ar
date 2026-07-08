@@ -61,7 +61,10 @@ export function HologramShell({ color, intensity = 1 }: { color: string; intensi
     const u = mat.uniforms;
     u.uTime.value += dt;
     (u.uIntensity.value as number) = THREE.MathUtils.damp(
-      u.uIntensity.value as number, intensity, 4, dt,
+      u.uIntensity.value as number,
+      intensity,
+      4,
+      dt,
     );
   });
 
@@ -74,14 +77,23 @@ export function HologramShell({ color, intensity = 1 }: { color: string; intensi
 }
 
 export function NeuralParticles({
-  color, count = 220, radius = 1.1, speed = 0.18,
-}: { color: string; count?: number; radius?: number; speed?: number }) {
+  color,
+  count = 220,
+  radius = 1.1,
+  speed = 0.18,
+}: {
+  color: string;
+  count?: number;
+  radius?: number;
+  speed?: number;
+}) {
   const ref = useRef<THREE.Points>(null);
   const { geom, mat, seeds } = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const seedsArr = new Float32Array(count);
     for (let i = 0; i < count; i++) {
-      const u = Math.random(), v = Math.random();
+      const u = Math.random(),
+        v = Math.random();
       const theta = 2 * Math.PI * u;
       const phi = Math.acos(2 * v - 1);
       const r = radius * (0.55 + Math.random() * 0.55);
@@ -142,8 +154,14 @@ export function NeuralParticles({
 }
 
 export function ScanRing({
-  color, intensity = 0, radius = 0.62,
-}: { color: string; intensity?: number; radius?: number }) {
+  color,
+  intensity = 0,
+  radius = 0.62,
+}: {
+  color: string;
+  intensity?: number;
+  radius?: number;
+}) {
   const ref = useRef<THREE.Mesh>(null);
   useFrame((_, dt) => {
     if (!ref.current) return;
@@ -154,7 +172,12 @@ export function ScanRing({
   return (
     <mesh ref={ref} position={[0, 0.42, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
       <torusGeometry args={[radius, 0.006, 8, 96]} />
-      <meshBasicMaterial color={color} transparent opacity={0.2} blending={THREE.AdditiveBlending} />
+      <meshBasicMaterial
+        color={color}
+        transparent
+        opacity={0.2}
+        blending={THREE.AdditiveBlending}
+      />
     </mesh>
   );
 }

@@ -49,8 +49,8 @@ const FADE_MS = 250;
  * Ordered by time. 81.8s narration.
  */
 const TOUR_MAP: ReadonlyArray<{ readonly t: number; readonly anchorId: string }> = [
-  { t: 0,  anchorId: "tour-hero" },
-  { t: 8,  anchorId: "tour-positioning" },
+  { t: 0, anchorId: "tour-hero" },
+  { t: 8, anchorId: "tour-positioning" },
   { t: 17, anchorId: "tour-pillar-security" },
   { t: 26, anchorId: "tour-pillar-agents" },
   { t: 35, anchorId: "tour-pillar-twin" },
@@ -110,8 +110,17 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
     setSpeaking(false);
     const v = videoRef.current;
     if (v) {
-      try { v.pause(); } catch { /* noop */ }
-      try { v.removeAttribute("src"); v.load(); } catch { /* noop */ }
+      try {
+        v.pause();
+      } catch {
+        /* noop */
+      }
+      try {
+        v.removeAttribute("src");
+        v.load();
+      } catch {
+        /* noop */
+      }
     }
     AriaAudioBus.release("tour-video");
     clearAllRings();
@@ -124,7 +133,10 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
 
   // Route change closes the tour.
   useEffect(() => {
-    if (!open) { initialRouteRef.current = null; return; }
+    if (!open) {
+      initialRouteRef.current = null;
+      return;
+    }
     if (initialRouteRef.current === null) {
       initialRouteRef.current = routePath;
       return;
@@ -157,7 +169,8 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
       userScrollPausedUntilRef.current = Date.now() + USER_SCROLL_RESUME_MS;
     };
     const onKey = (e: KeyboardEvent) => {
-      if (["PageDown","PageUp","ArrowDown","ArrowUp","Home","End"," "].includes(e.key)) bump();
+      if (["PageDown", "PageUp", "ArrowDown", "ArrowUp", "Home", "End", " "].includes(e.key))
+        bump();
     };
     window.addEventListener("wheel", bump, { passive: true });
     window.addEventListener("touchmove", bump, { passive: true });
@@ -177,23 +190,42 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
 
     AriaAudioBus.unlock();
     const granted = AriaAudioBus.acquire("tour-video", () => {
-      try { v.pause(); } catch { /* noop */ }
+      try {
+        v.pause();
+      } catch {
+        /* noop */
+      }
     });
-    if (!granted) { handleClose(); return; }
+    if (!granted) {
+      handleClose();
+      return;
+    }
 
     v.muted = false;
     setMuted(false);
-    try { v.load(); } catch { /* noop */ }
-    try { v.currentTime = 0; } catch { /* noop */ }
-    v.play().then(() => {
-      AriaAudioBus.notifyPlaying("tour-video", v);
-      setSpeaking(true);
-    }).catch(() => {
-      // Autoplay-with-sound blocked — fall back to muted so panel shows life.
-      v.muted = true;
-      setMuted(true);
-      v.play().then(() => setSpeaking(true)).catch(() => handleClose());
-    });
+    try {
+      v.load();
+    } catch {
+      /* noop */
+    }
+    try {
+      v.currentTime = 0;
+    } catch {
+      /* noop */
+    }
+    v.play()
+      .then(() => {
+        AriaAudioBus.notifyPlaying("tour-video", v);
+        setSpeaking(true);
+      })
+      .catch(() => {
+        // Autoplay-with-sound blocked — fall back to muted so panel shows life.
+        v.muted = true;
+        setMuted(true);
+        v.play()
+          .then(() => setSpeaking(true))
+          .catch(() => handleClose());
+      });
 
     const onTime = () => {
       // "Speaking" only when actively playing with sound reaching output.
@@ -213,11 +245,21 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
       if (Date.now() < userScrollPausedUntilRef.current) return;
       programmaticScrollRef.current = true;
       scrollToAnchor(target.anchorId, false);
-      window.setTimeout(() => { programmaticScrollRef.current = false; }, 900);
+      window.setTimeout(() => {
+        programmaticScrollRef.current = false;
+      }, 900);
     };
-    const onEnded = () => { setSpeaking(false); handleClose(); };
-    const onPause = () => { setSpeaking(false); AriaAudioBus.notifyStopped("tour-video"); };
-    const onPlay  = () => { setSpeaking(true); };
+    const onEnded = () => {
+      setSpeaking(false);
+      handleClose();
+    };
+    const onPause = () => {
+      setSpeaking(false);
+      AriaAudioBus.notifyStopped("tour-video");
+    };
+    const onPlay = () => {
+      setSpeaking(true);
+    };
 
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("ended", onEnded);
@@ -227,9 +269,15 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
     // Tab visibility → pause / resume; narration position preserved.
     const onVisibility = () => {
       if (document.hidden) {
-        try { v.pause(); } catch { /* noop */ }
+        try {
+          v.pause();
+        } catch {
+          /* noop */
+        }
       } else {
-        v.play().catch(() => { /* noop */ });
+        v.play().catch(() => {
+          /* noop */
+        });
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -400,7 +448,9 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
         dir={ar ? "rtl" : "ltr"}
         className={`aria-tour-shell ${fading ? "aria-tour-fading" : ""}`}
       >
-        <div style={{ position: "relative", width: "100%", aspectRatio: "9 / 16", background: "#000" }}>
+        <div
+          style={{ position: "relative", width: "100%", aspectRatio: "9 / 16", background: "#000" }}
+        >
           <video
             ref={videoRef}
             src={VIDEO_SRC}
@@ -413,7 +463,7 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
             <button
               type="button"
               onClick={toggleMute}
-              aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : (ar ? "كتم الصوت" : "Mute")}
+              aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : ar ? "كتم الصوت" : "Mute"}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-300/40 bg-black/55 text-white backdrop-blur-md transition hover:bg-black/75"
             >
               {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -433,7 +483,9 @@ export function AriaTourController({ open, lang = "en", onClose }: Props) {
       {/* Equalizer — visible only while she is actively speaking. */}
       {speaking && !muted && (
         <div aria-hidden className="aria-tour-eq" dir={ar ? "rtl" : "ltr"}>
-          <span /><span /><span />
+          <span />
+          <span />
+          <span />
         </div>
       )}
     </>

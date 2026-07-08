@@ -37,8 +37,15 @@ const STATUS_COLOR: Record<BridgeAgentStatus, string> = {
 };
 
 const ACTIVE: BridgeAgentStatus[] = [
-  "thinking", "speaking", "searching", "analyzing",
-  "consulting", "executing", "waiting", "warning", "recovery",
+  "thinking",
+  "speaking",
+  "searching",
+  "analyzing",
+  "consulting",
+  "executing",
+  "waiting",
+  "warning",
+  "recovery",
 ];
 
 export function ConnectionLines({ agents, radius, speakerId, size }: Props) {
@@ -59,7 +66,9 @@ export function ConnectionLines({ agents, radius, speakerId, size }: Props) {
         y1: y,
         x2: cx,
         y2: cy,
-        color: isSpeaker ? "rgba(0,212,255,0.95)" : STATUS_COLOR[a.status] ?? "rgba(255,255,255,0.08)",
+        color: isSpeaker
+          ? "rgba(0,212,255,0.95)"
+          : (STATUS_COLOR[a.status] ?? "rgba(255,255,255,0.08)"),
         active: isActive,
         speaker: isSpeaker,
       };
@@ -96,16 +105,17 @@ export function ConnectionLines({ agents, radius, speakerId, size }: Props) {
             strokeWidth={b.speaker ? 2 : 1}
             strokeDasharray={b.active ? "6 8" : "2 10"}
             opacity={b.active ? 1 : 0.55}
-            style={
-              b.active
-                ? { animation: "theaterDash 1.8s linear infinite" }
-                : undefined
-            }
+            style={b.active ? { animation: "theaterDash 1.8s linear infinite" } : undefined}
           />
           {b.speaker && (
             <circle cx={b.x1} cy={b.y1} r={6} fill="rgba(0,212,255,0.85)">
               <animate attributeName="r" values="4;9;4" dur="1.6s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.6s" repeatCount="indefinite" />
+              <animate
+                attributeName="opacity"
+                values="0.9;0.3;0.9"
+                dur="1.6s"
+                repeatCount="indefinite"
+              />
             </circle>
           )}
         </g>

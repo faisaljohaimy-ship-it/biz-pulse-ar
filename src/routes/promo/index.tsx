@@ -48,9 +48,7 @@ function PromoHub() {
                   Film {String(i + 1).padStart(2, "0")}
                 </div>
                 <h2 className="text-2xl font-black leading-snug md:text-3xl">{f.titleAr}</h2>
-                {f.subtitleAr && (
-                  <p className="mt-3 text-sm text-white/70">{f.subtitleAr}</p>
-                )}
+                {f.subtitleAr && <p className="mt-3 text-sm text-white/70">{f.subtitleAr}</p>}
                 <div className="mt-6 flex items-center gap-3 text-xs text-white/60">
                   <span className="rounded-full border border-white/15 px-3 py-1">
                     ⏱ {Math.round(f.duration)} ثانية

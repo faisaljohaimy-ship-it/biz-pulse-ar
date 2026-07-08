@@ -16,13 +16,7 @@ export type NodeStatus =
 
 export type PeerReachability = "reachable" | "unreachable" | "unknown";
 
-export type MessageKind =
-  | "direct"
-  | "broadcast"
-  | "gossip"
-  | "consensus"
-  | "control"
-  | "unknown";
+export type MessageKind = "direct" | "broadcast" | "gossip" | "consensus" | "control" | "unknown";
 
 export type LoadStrategy =
   | "round_robin"
@@ -33,11 +27,7 @@ export type LoadStrategy =
 
 export type ConsensusOutcome = "committed" | "rejected" | "pending" | "unknown";
 
-export type MeshDecision =
-  | "GO"
-  | "NO_GO"
-  | "GO_WITH_KNOWN_LIMITATIONS"
-  | "UNKNOWN";
+export type MeshDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 
 export interface EvidenceRef {
   readonly source: string;

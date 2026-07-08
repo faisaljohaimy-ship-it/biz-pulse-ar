@@ -32,10 +32,22 @@ function ChiefOfStaffPage() {
   // Live priorities: critical+high alerts, sorted by impact
   const priorities = fabric.topAlerts.slice(0, 4).map((a) => ({
     t: ar ? a.title : (a.title_en ?? a.title),
-    urgency: a.severity === "critical" ? (ar ? "اليوم" : "Today")
-           : a.severity === "high" ? (ar ? "هذا الأسبوع" : "This week")
-           : (ar ? "هذا الشهر" : "This month"),
-    tone: (a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan") as "rose" | "amber" | "cyan",
+    urgency:
+      a.severity === "critical"
+        ? ar
+          ? "اليوم"
+          : "Today"
+        : a.severity === "high"
+          ? ar
+            ? "هذا الأسبوع"
+            : "This week"
+          : ar
+            ? "هذا الشهر"
+            : "This month",
+    tone: (a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan") as
+      | "rose"
+      | "amber"
+      | "cyan",
     route: a.route ?? "/dashboard",
   }));
 
@@ -61,7 +73,7 @@ function ChiefOfStaffPage() {
         {
           role: "ai",
           text: ar
-            ? `بناءً على بيانات النسيج الذكي الحالية، أوصي بمعالجة "${topAlert ? (ar ? topAlert.title : topAlert.title_en ?? topAlert.title) : "أعلى التنبيهات"}" أولاً. مستوى الفرص الحالي ${opp} والمخاطر ${risk}.`
+            ? `بناءً على بيانات النسيج الذكي الحالية، أوصي بمعالجة "${topAlert ? (ar ? topAlert.title : (topAlert.title_en ?? topAlert.title)) : "أعلى التنبيهات"}" أولاً. مستوى الفرص الحالي ${opp} والمخاطر ${risk}.`
             : `Based on live Fabric data, I recommend addressing "${topAlert ? (topAlert.title_en ?? topAlert.title) : "the top alert"}" first. Current opportunity index ${opp}, risk exposure ${risk}.`,
         },
       ]);
@@ -72,15 +84,39 @@ function ChiefOfStaffPage() {
     <NexusPage
       eyebrow="EXECUTIVE AI · LIVE"
       title={ar ? "رئيس المستشارين التنفيذي" : "AI Chief of Staff"}
-      subtitle={ar ? "مستشار استراتيجي مدفوع ببيانات النسيج الذكي مباشرة." : "Strategic advisor powered by live Intelligence Fabric data."}
-      actions={<NexusPill tone="violet"><Crown className="h-3 w-3" /> EXECUTIVE</NexusPill>}
+      subtitle={
+        ar
+          ? "مستشار استراتيجي مدفوع ببيانات النسيج الذكي مباشرة."
+          : "Strategic advisor powered by live Intelligence Fabric data."
+      }
+      actions={
+        <NexusPill tone="violet">
+          <Crown className="h-3 w-3" /> EXECUTIVE
+        </NexusPill>
+      }
     >
       {/* Live KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <NexusStat label={ar ? "صحة المؤسسة" : "Enterprise Health"} value={`${health}`} tone="emerald" />
-        <NexusStat label={ar ? "التقدم الاستراتيجي" : "Strategic Progress"} value={`${strat}%`} tone="cyan" />
-        <NexusStat label={ar ? "تنبيهات مفتوحة" : "Open Alerts"} value={`${fabric.counts.openAlerts}`} tone="amber" />
-        <NexusStat label={ar ? "متأخرة" : "Overdue"} value={`${fabric.counts.overdue}`} tone="rose" />
+        <NexusStat
+          label={ar ? "صحة المؤسسة" : "Enterprise Health"}
+          value={`${health}`}
+          tone="emerald"
+        />
+        <NexusStat
+          label={ar ? "التقدم الاستراتيجي" : "Strategic Progress"}
+          value={`${strat}%`}
+          tone="cyan"
+        />
+        <NexusStat
+          label={ar ? "تنبيهات مفتوحة" : "Open Alerts"}
+          value={`${fabric.counts.openAlerts}`}
+          tone="amber"
+        />
+        <NexusStat
+          label={ar ? "متأخرة" : "Overdue"}
+          value={`${fabric.counts.overdue}`}
+          tone="rose"
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
@@ -96,7 +132,9 @@ function ChiefOfStaffPage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">Nexus Chief</div>
-                <div className="text-[10px] tracking-widest text-violet-300/70">STRATEGIC ADVISOR</div>
+                <div className="text-[10px] tracking-widest text-violet-300/70">
+                  STRATEGIC ADVISOR
+                </div>
               </div>
             </div>
             <NexusPill tone="emerald">● LIVE</NexusPill>
@@ -122,7 +160,11 @@ function ChiefOfStaffPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder={ar ? "اطلب قراراً، توصية، أو تحليلاً تنفيذياً..." : "Request a decision, recommendation, or executive analysis..."}
+              placeholder={
+                ar
+                  ? "اطلب قراراً، توصية، أو تحليلاً تنفيذياً..."
+                  : "Request a decision, recommendation, or executive analysis..."
+              }
               className="flex-1 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-violet-400/40 focus:outline-none"
             />
             <button
@@ -171,25 +213,36 @@ function ChiefOfStaffPage() {
         <div className="flex items-center gap-2">
           <Compass className="h-4 w-4 text-violet-300" />
           <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
-            {ar ? "توصيات تنفيذية · من المحرك التنبؤي" : "EXECUTIVE RECOMMENDATIONS · PREDICTIVE ENGINE"}
+            {ar
+              ? "توصيات تنفيذية · من المحرك التنبؤي"
+              : "EXECUTIVE RECOMMENDATIONS · PREDICTIVE ENGINE"}
           </div>
         </div>
         {recommendations.length === 0 ? (
           <div className="mt-4 rounded-lg border border-white/5 bg-white/[0.02] p-4 text-center text-sm text-slate-400">
-            {ar ? "النظام مستقر — لا توصيات حرجة الآن." : "System stable — no critical recommendations now."}
+            {ar
+              ? "النظام مستقر — لا توصيات حرجة الآن."
+              : "System stable — no critical recommendations now."}
           </div>
         ) : (
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
             {recommendations.map((r, i) => (
-              <div key={r.id} className="rounded-xl border border-violet-400/15 bg-violet-500/[0.04] p-4">
+              <div
+                key={r.id}
+                className="rounded-xl border border-violet-400/15 bg-violet-500/[0.04] p-4"
+              >
                 <div className="flex items-center justify-between">
                   <NexusPill tone="violet">#{i + 1}</NexusPill>
                   <span className="text-[10px] font-bold tracking-widest text-violet-300/80">
                     {r.confidence}% {ar ? "ثقة" : "CONF"}
                   </span>
                 </div>
-                <div className="mt-2 text-sm font-medium text-white line-clamp-3">{ar ? r.title_ar : r.title_en}</div>
-                <div className="mt-1 text-[11px] text-slate-400 line-clamp-2">{ar ? r.detail_ar : r.detail_en}</div>
+                <div className="mt-2 text-sm font-medium text-white line-clamp-3">
+                  {ar ? r.title_ar : r.title_en}
+                </div>
+                <div className="mt-1 text-[11px] text-slate-400 line-clamp-2">
+                  {ar ? r.detail_ar : r.detail_en}
+                </div>
                 <div className="mt-3 flex items-center gap-2 text-[11px] text-emerald-300">
                   <Scale className="h-3 w-3" /> {r.impact} · {r.horizonDays}d
                 </div>

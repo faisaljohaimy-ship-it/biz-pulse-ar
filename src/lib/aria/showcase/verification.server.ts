@@ -12,8 +12,16 @@ export function verifyShowcase(
   kpis: readonly ShowcaseKpi[],
 ): ShowcaseVerification {
   const v: string[] = [];
-  try { steps.forEach(assertStep); } catch (e) { v.push((e as Error).message); }
-  try { kpis.forEach(assertKpi); } catch (e) { v.push((e as Error).message); }
+  try {
+    steps.forEach(assertStep);
+  } catch (e) {
+    v.push((e as Error).message);
+  }
+  try {
+    kpis.forEach(assertKpi);
+  } catch (e) {
+    v.push((e as Error).message);
+  }
   const ids = new Set<string>();
   for (const s of steps) {
     if (ids.has(s.id)) v.push(`duplicate step id: ${s.id}`);

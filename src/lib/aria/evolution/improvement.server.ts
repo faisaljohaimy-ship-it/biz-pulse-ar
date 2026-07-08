@@ -6,11 +6,7 @@
  * the Executive Brain.
  */
 
-import type {
-  EvidenceRef,
-  ImprovementProposal,
-  Severity,
-} from "./types";
+import type { EvidenceRef, ImprovementProposal, Severity } from "./types";
 import { deriveConfidence } from "./confidence.server";
 
 const PROPOSALS: ImprovementProposal[] = [];

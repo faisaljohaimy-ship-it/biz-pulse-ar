@@ -29,8 +29,7 @@ function evaluate(u: BudgetUsage, b: AgentRuntimeBudget): BudgetStatus {
     remaining: {
       tokens: b.max_tokens === null ? null : Math.max(0, b.max_tokens - u.tokens_used),
       ms: b.max_ms === null ? null : Math.max(0, b.max_ms - u.ms_used),
-      memory_mb:
-        b.max_memory_mb === null ? null : Math.max(0, b.max_memory_mb - u.memory_mb_peak),
+      memory_mb: b.max_memory_mb === null ? null : Math.max(0, b.max_memory_mb - u.memory_mb_peak),
       retries: Math.max(0, b.max_retries - u.retries_used),
       children: Math.max(0, b.max_children - u.children_spawned),
     },
@@ -38,10 +37,7 @@ function evaluate(u: BudgetUsage, b: AgentRuntimeBudget): BudgetStatus {
   };
 }
 
-export function chargeBudget(
-  agentId: string,
-  delta: Partial<BudgetUsage>,
-): BudgetStatus {
+export function chargeBudget(agentId: string, delta: Partial<BudgetUsage>): BudgetStatus {
   const rec = requireAgent(agentId);
   const usage: BudgetUsage = {
     tokens_used: rec.usage.tokens_used + (delta.tokens_used ?? 0),

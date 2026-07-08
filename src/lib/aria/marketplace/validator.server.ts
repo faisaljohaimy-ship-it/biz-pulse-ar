@@ -4,12 +4,7 @@
  * dependency cycles, invalid permissions, and schema mismatches.
  */
 import type { AgentPackage, ValidationIssue, ValidationReport } from "./types";
-import {
-  CURRENT_MANIFEST_SCHEMA,
-  isSemver,
-  isValidAgentId,
-  isValidPermission,
-} from "./manifest";
+import { CURRENT_MANIFEST_SCHEMA, isSemver, isValidAgentId, isValidPermission } from "./manifest";
 import type { AgentId } from "../orchestrator/types";
 
 interface RegistryView {
@@ -21,10 +16,7 @@ function issue(code: string, message: string, fatal = true): ValidationIssue {
   return { code, message, fatal };
 }
 
-export function validatePackage(
-  pkg: AgentPackage,
-  view: RegistryView,
-): ValidationReport {
+export function validatePackage(pkg: AgentPackage, view: RegistryView): ValidationReport {
   const issues: ValidationIssue[] = [];
   const { manifest, agent } = pkg;
 
@@ -39,10 +31,7 @@ export function validatePackage(
   if (!isSemver(manifest.version))
     issues.push(issue("VERSION_INVALID", `bad semver: ${manifest.version}`));
 
-  if (
-    manifest.schemaVersion &&
-    manifest.schemaVersion !== CURRENT_MANIFEST_SCHEMA
-  ) {
+  if (manifest.schemaVersion && manifest.schemaVersion !== CURRENT_MANIFEST_SCHEMA) {
     issues.push(
       issue(
         "SCHEMA_INCOMPATIBLE",
@@ -53,10 +42,7 @@ export function validatePackage(
 
   if (agent && agent.contract.id !== manifest.id) {
     issues.push(
-      issue(
-        "ID_MISMATCH",
-        `manifest.id=${manifest.id} contract.id=${agent.contract.id}`,
-      ),
+      issue("ID_MISMATCH", `manifest.id=${manifest.id} contract.id=${agent.contract.id}`),
     );
   }
 
@@ -64,8 +50,7 @@ export function validatePackage(
     issues.push(issue("DUPLICATE_ID", `agent ${manifest.id} already installed`));
 
   for (const p of manifest.permissions) {
-    if (!isValidPermission(p))
-      issues.push(issue("PERMISSION_INVALID", `unknown permission: ${p}`));
+    if (!isValidPermission(p)) issues.push(issue("PERMISSION_INVALID", `unknown permission: ${p}`));
   }
 
   // Dependency validation — every declared dep must resolve at install time.
@@ -73,9 +58,7 @@ export function validatePackage(
     if (d === manifest.id)
       issues.push(issue("SELF_DEPENDENCY", `${manifest.id} depends on itself`));
     if (!view.hasAgent(d))
-      issues.push(
-        issue("DEPENDENCY_MISSING", `dependency not installed: ${d}`, false),
-      );
+      issues.push(issue("DEPENDENCY_MISSING", `dependency not installed: ${d}`, false));
   }
 
   // Capability ownership uniqueness.
@@ -85,17 +68,11 @@ export function validatePackage(
       issues.push(issue("CAPABILITY_KEY_INVALID", `bad capability: ${c.key}`));
       continue;
     }
-    if (seen.has(c.key))
-      issues.push(issue("CAPABILITY_DUP_IN_MANIFEST", c.key));
+    if (seen.has(c.key)) issues.push(issue("CAPABILITY_DUP_IN_MANIFEST", c.key));
     seen.add(c.key);
     const owner = view.capabilityOwner(c.key);
     if (owner && owner !== manifest.id) {
-      issues.push(
-        issue(
-          "CAPABILITY_OWNED_ELSEWHERE",
-          `${c.key} already owned by ${owner}`,
-        ),
-      );
+      issues.push(issue("CAPABILITY_OWNED_ELSEWHERE", `${c.key} already owned by ${owner}`));
     }
   }
 
@@ -106,11 +83,7 @@ export function validatePackage(
   if (typeof manifest.timeout !== "number" || manifest.timeout <= 0)
     issues.push(issue("TIMEOUT_INVALID", "timeout must be > 0"));
 
-  if (
-    typeof manifest.confidence !== "number" ||
-    manifest.confidence < 0 ||
-    manifest.confidence > 1
-  )
+  if (typeof manifest.confidence !== "number" || manifest.confidence < 0 || manifest.confidence > 1)
     issues.push(issue("CONFIDENCE_INVALID", "confidence must be in [0,1]"));
 
   const fatal = issues.some((i) => i.fatal);

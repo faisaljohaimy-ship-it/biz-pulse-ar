@@ -13,7 +13,9 @@ export function BusinessKpiPanel({ data }: { data: BusinessKpiSet }) {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">Business View · العرض التنفيذي</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+            Business View · العرض التنفيذي
+          </div>
           <div className="text-sm text-foreground/60 mt-0.5">مؤشرات الأثر التجاري والتشغيلي</div>
         </div>
       </div>
@@ -21,8 +23,12 @@ export function BusinessKpiPanel({ data }: { data: BusinessKpiSet }) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {data.kpis.map((k) => (
           <div key={k.key} className={`rounded-lg border bg-background/40 p-3 ${TONE[k.tone]}`}>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-foreground/50">{k.label_en}</div>
-            <div className={`mt-1 text-2xl font-bold tabular-nums ${TONE[k.tone].split(" ")[0]}`}>{k.value}</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-foreground/50">
+              {k.label_en}
+            </div>
+            <div className={`mt-1 text-2xl font-bold tabular-nums ${TONE[k.tone].split(" ")[0]}`}>
+              {k.value}
+            </div>
             <div className="text-[11px] font-mono opacity-70 mt-0.5 truncate">{k.label_ar}</div>
           </div>
         ))}
@@ -38,7 +44,9 @@ export function BusinessKpiPanel({ data }: { data: BusinessKpiSet }) {
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-xl font-bold text-primary tabular-nums">{o.value}</span>
                 {o.delta && (
-                  <span className={`text-xs font-mono ${o.delta.startsWith("-") ? "text-rose-400" : "text-emerald-400"}`}>
+                  <span
+                    className={`text-xs font-mono ${o.delta.startsWith("-") ? "text-rose-400" : "text-emerald-400"}`}
+                  >
                     {o.delta}
                   </span>
                 )}

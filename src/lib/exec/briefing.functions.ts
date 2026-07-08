@@ -48,43 +48,57 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     const generated_at = new Date().toISOString();
 
     const [agentsRes, runsRes, incidentsRes, patrolsRes, permitsRes] = await Promise.all([
-      sb.from("agent_definitions")
+      sb
+        .from("agent_definitions")
         .select("id, name, goal, enabled")
         .eq("enabled", true)
         .order("name", { ascending: true })
         .limit(6),
-      sb.from("agent_runs")
+      sb
+        .from("agent_runs")
         .select("agent_id, status, summary, finished_at, started_at")
         .order("started_at", { ascending: false })
         .limit(60),
-      sb.from("sec_incidents")
+      sb
+        .from("sec_incidents")
         .select("id, severity, status, title_ar, title_en, reported_at")
         .order("reported_at", { ascending: false })
         .limit(30),
-      sb.from("sec_patrols")
-        .select("id, status")
-        .limit(50),
-      sb.from("sec_permits")
+      sb.from("sec_patrols").select("id, status").limit(50),
+      sb
+        .from("sec_permits")
         .select("id, status, risk_level, starts_at")
         .order("starts_at", { ascending: false })
         .limit(30),
     ]);
 
-    const agents = (agentsRes.data ?? []) as Array<{ id: string; name: string; goal: string | null }>;
+    const agents = (agentsRes.data ?? []) as Array<{
+      id: string;
+      name: string;
+      goal: string | null;
+    }>;
     const runs = (runsRes.data ?? []) as Array<{
-      agent_id: string; status: string; summary: string | null;
-      finished_at: string | null; started_at: string;
+      agent_id: string;
+      status: string;
+      summary: string | null;
+      finished_at: string | null;
+      started_at: string;
     }>;
     const incidents = (incidentsRes.data ?? []) as Array<{
-      id: string; severity: string; status: string;
-      title_ar: string | null; title_en: string | null;
+      id: string;
+      severity: string;
+      status: string;
+      title_ar: string | null;
+      title_en: string | null;
     }>;
     const patrols = (patrolsRes.data ?? []) as Array<{ status: string }>;
     const permits = (permitsRes.data ?? []) as Array<{ status: string; risk_level: string }>;
 
     const open = incidents.filter((i) => !["resolved", "closed", "cancelled"].includes(i.status));
     const critical = open.filter((i) => i.severity === "critical");
-    const activePatrols = patrols.filter((p) => ["active", "in_progress", "started"].includes(p.status)).length;
+    const activePatrols = patrols.filter((p) =>
+      ["active", "in_progress", "started"].includes(p.status),
+    ).length;
     const openHighRiskPermits = permits.filter(
       (p) => p.risk_level === "high" && ["approved", "active", "in_progress"].includes(p.status),
     ).length;
@@ -97,7 +111,8 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       speaker_id: "aria",
       speaker_name: "ARIA",
       text_ar: "السلام عليكم. هذا الموجز التنفيذي الحي من إدارة الأمن الصناعي بالمنطقة الغربية.",
-      text_en: "Good day. This is the live executive briefing from Industrial Security, Western Region.",
+      text_en:
+        "Good day. This is the live executive briefing from Industrial Security, Western Region.",
     });
 
     // 5–10s: Operational health summary
@@ -137,10 +152,12 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     try {
       const key = process.env.LOVABLE_API_KEY;
       if (!key) throw new Error("Missing LOVABLE_API_KEY");
-      const findings = agentsToSpeak.map((a) => {
-        const latest = runs.find((r) => r.agent_id === a.id);
-        return `${a.name}: ${truncate(latest?.summary ?? a.goal ?? "no data", 280)}`;
-      }).join("\n");
+      const findings = agentsToSpeak
+        .map((a) => {
+          const latest = runs.find((r) => r.agent_id === a.id);
+          return `${a.name}: ${truncate(latest?.summary ?? a.goal ?? "no data", 280)}`;
+        })
+        .join("\n");
 
       const prompt =
         `You are ARIA, executive AI for Industrial Security. Read these agent findings and the operational snapshot. ` +
@@ -175,11 +192,15 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       };
     } catch (err) {
       // Deterministic fallback derived strictly from observed counts.
-      const focus = critical.length > 0
-        ? { ar: "التركيز على البلاغات الحرجة", en: "Focus on critical incidents" }
-        : open.length > 5
-        ? { ar: "تكثيف الاستجابة للبلاغات المفتوحة", en: "Intensify response on open incidents" }
-        : { ar: "الإبقاء على الاستعداد التشغيلي", en: "Maintain operational readiness" };
+      const focus =
+        critical.length > 0
+          ? { ar: "التركيز على البلاغات الحرجة", en: "Focus on critical incidents" }
+          : open.length > 5
+            ? {
+                ar: "تكثيف الاستجابة للبلاغات المفتوحة",
+                en: "Intensify response on open incidents",
+              }
+            : { ar: "الإبقاء على الاستعداد التشغيلي", en: "Maintain operational readiness" };
       recommendation = {
         title_ar: focus.ar,
         title_en: focus.en,
@@ -204,17 +225,25 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     let briefing_id: string | null = null;
     try {
       const { data: orgRow } = await sb
-        .from("org_members").select("org_id").eq("user_id", context.userId).limit(1).maybeSingle();
+        .from("org_members")
+        .select("org_id")
+        .eq("user_id", context.userId)
+        .limit(1)
+        .maybeSingle();
       const org_id = orgRow?.org_id ?? null;
       if (org_id) {
-        const { data: inserted } = await sb.from("executive_briefings").insert({
-          org_id,
-          user_id: context.userId,
-          title: recommendation.title_en,
-          title_en: recommendation.title_en,
-          summary: recommendation.rationale_en,
-          summary_en: recommendation.rationale_en,
-        }).select("id").maybeSingle();
+        const { data: inserted } = await sb
+          .from("executive_briefings")
+          .insert({
+            org_id,
+            user_id: context.userId,
+            title: recommendation.title_en,
+            title_en: recommendation.title_en,
+            summary: recommendation.rationale_en,
+            summary_en: recommendation.rationale_en,
+          })
+          .select("id")
+          .maybeSingle();
         briefing_id = (inserted as { id?: string } | null)?.id ?? null;
       }
     } catch (err) {

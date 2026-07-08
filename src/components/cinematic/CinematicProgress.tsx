@@ -4,20 +4,12 @@ import { useEffect, useState } from "react";
  * Side film-strip progress indicator. Tracks visible scene via IntersectionObserver
  * over sections with data-scene="N". Click jumps to scene.
  */
-export function CinematicProgress({
-  labels,
-  total = 10,
-}: {
-  labels: string[];
-  total?: number;
-}) {
+export function CinematicProgress({ labels, total = 10 }: { labels: string[]; total?: number }) {
   const [active, setActive] = useState(1);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-scene]"),
-    );
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-scene]"));
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {

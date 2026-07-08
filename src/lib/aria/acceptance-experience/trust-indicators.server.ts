@@ -23,10 +23,14 @@ export function assessTrust(input: TrustInput): TrustAssessment {
   if (!input.fabricationSuspected) signals.push("no_fabrication");
   const ok = signals.includes("no_fabrication") && (input.hasEvidence || !input.dataAvailable);
   const label_ar = ok
-    ? (input.dataAvailable ? "مدعوم بالأدلة" : "البيانات غير متاحة حالياً")
+    ? input.dataAvailable
+      ? "مدعوم بالأدلة"
+      : "البيانات غير متاحة حالياً"
     : "يتطلب تحقّقاً إضافياً";
   const label_en = ok
-    ? (input.dataAvailable ? "Evidence-backed" : "Data currently unavailable")
+    ? input.dataAvailable
+      ? "Evidence-backed"
+      : "Data currently unavailable"
     : "Needs additional verification";
   return { signals, label_ar, label_en, ok };
 }

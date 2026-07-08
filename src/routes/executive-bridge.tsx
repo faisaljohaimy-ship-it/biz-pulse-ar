@@ -104,7 +104,8 @@ const SCENES: Scene[] = [
     title_ar: "من العرض إلى الميدان.",
     title_en: "From showcase to the field.",
     body_ar: "بيئة محاكاة مرجعية — مواقع، حوادث، أوامر عمل — بعلامة أصالة واضحة.",
-    body_en: "A reference simulation — sites, incidents, work orders — with an honest simulation tag.",
+    body_en:
+      "A reference simulation — sites, incidents, work orders — with an honest simulation tag.",
     accent: "navy",
     render: () => <ProofPanel />,
     showSimRibbon: true,
@@ -116,7 +117,8 @@ const SCENES: Scene[] = [
     title_ar: "الثقة مبنية بالتصميم.",
     title_en: "Trust, engineered by design.",
     body_ar: "التزام بنظام حماية البيانات الشخصية، عزل مستأجرين كامل، وسجل تدقيق لكل قرار.",
-    body_en: "PDPL alignment, full tenant isolation via RLS, and an audit trail behind every decision.",
+    body_en:
+      "PDPL alignment, full tenant isolation via RLS, and an audit trail behind every decision.",
     accent: "emerald",
     render: () => <TrustBadges />,
   },
@@ -252,7 +254,6 @@ function ExecutiveBridgePage() {
     };
   }, [narrating, idx, primary]);
 
-
   const goTo = React.useCallback((next: number) => {
     setIdx(((next % SCENES.length) + SCENES.length) % SCENES.length);
     setProgress(0);
@@ -261,7 +262,8 @@ function ExecutiveBridgePage() {
   // Keyboard
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") goTo(idx - 1); // RTL: → goes back
+      if (e.key === "ArrowRight")
+        goTo(idx - 1); // RTL: → goes back
       else if (e.key === "ArrowLeft") goTo(idx + 1);
       else if (e.key === " ") {
         e.preventDefault();
@@ -405,7 +407,13 @@ function ExecutiveBridgePage() {
           </div>
         )}
         <div className="flex items-center gap-2 sm:gap-3">
-          <ControlBtn onClick={() => { setCompleted(false); goTo(idx - 1); }} label="السابق | Previous">
+          <ControlBtn
+            onClick={() => {
+              setCompleted(false);
+              goTo(idx - 1);
+            }}
+            label="السابق | Previous"
+          >
             ›
           </ControlBtn>
           <ControlBtn
@@ -415,7 +423,13 @@ function ExecutiveBridgePage() {
             {narrating ? "❚❚" : "▶"}
           </ControlBtn>
 
-          <ControlBtn onClick={() => { setCompleted(false); goTo(idx + 1); }} label="التالي · تخطّي | Next · Skip">
+          <ControlBtn
+            onClick={() => {
+              setCompleted(false);
+              goTo(idx + 1);
+            }}
+            label="التالي · تخطّي | Next · Skip"
+          >
             ‹
           </ControlBtn>
           <ControlBtn
@@ -491,8 +505,7 @@ function SceneLayer({
               lang="ar"
               className="mx-auto max-w-2xl text-[28px] font-black leading-[1.2] tracking-tight text-white sm:text-[46px] sm:leading-[1.12]"
               style={{
-                fontFamily:
-                  "'IBM Plex Sans Arabic','Tajawal',ui-sans-serif,system-ui",
+                fontFamily: "'IBM Plex Sans Arabic','Tajawal',ui-sans-serif,system-ui",
                 textShadow: "0 4px 24px rgba(0,0,0,0.6)",
               }}
             >
@@ -596,9 +609,7 @@ function LanguageToggle({
         onClick={() => onChange("ar")}
         aria-pressed={primary === "ar"}
         className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
-          primary === "ar"
-            ? "bg-[#F5C560] text-[#03111f]"
-            : "text-white/75 hover:text-white"
+          primary === "ar" ? "bg-[#F5C560] text-[#03111f]" : "text-white/75 hover:text-white"
         }`}
       >
         عربي
@@ -608,9 +619,7 @@ function LanguageToggle({
         onClick={() => onChange("en")}
         aria-pressed={primary === "en"}
         className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition ${
-          primary === "en"
-            ? "bg-[#F5C560] text-[#03111f]"
-            : "text-white/75 hover:text-white"
+          primary === "en" ? "bg-[#F5C560] text-[#03111f]" : "text-white/75 hover:text-white"
         }`}
       >
         EN
@@ -684,16 +693,16 @@ function ListenButton({
         ? "جارٍ التحضير…"
         : "Preparing…"
       : state === "playing"
-      ? lang === "ar"
-        ? "إيقاف"
-        : "Stop"
-      : state === "error"
-      ? lang === "ar"
-        ? "تعذّر التشغيل"
-        : "Unavailable"
-      : lang === "ar"
-      ? "استمع بصوت آريا"
-      : "Listen with ARIA";
+        ? lang === "ar"
+          ? "إيقاف"
+          : "Stop"
+        : state === "error"
+          ? lang === "ar"
+            ? "تعذّر التشغيل"
+            : "Unavailable"
+          : lang === "ar"
+            ? "استمع بصوت آريا"
+            : "Listen with ARIA";
 
   return (
     <button
@@ -766,9 +775,7 @@ function ChallengeVisual() {
           {d}
         </span>
       ))}
-      <span className="mt-2 w-full text-[11px] text-white/55">
-        صوامع بيانات · Data silos
-      </span>
+      <span className="mt-2 w-full text-[11px] text-white/55">صوامع بيانات · Data silos</span>
     </div>
   );
 }
@@ -887,10 +894,8 @@ function ClosingCTA() {
 /* ─────────── Background layers (reused from prior implementation) ─────────── */
 
 function SkylineBackground({ reduced, accent }: { reduced: boolean; accent: Accent }) {
-  const skyTop =
-    accent === "gold" ? "#1a1305" : accent === "emerald" ? "#031a17" : "#03111f";
-  const skyMid =
-    accent === "gold" ? "#3a2609" : accent === "emerald" ? "#0a3a2f" : "#0a2648";
+  const skyTop = accent === "gold" ? "#1a1305" : accent === "emerald" ? "#031a17" : "#03111f";
+  const skyMid = accent === "gold" ? "#3a2609" : accent === "emerald" ? "#0a3a2f" : "#0a2648";
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
       <div
@@ -914,8 +919,8 @@ function SkylineBackground({ reduced, accent }: { reduced: boolean; accent: Acce
             accent === "gold"
               ? "radial-gradient(closest-side, rgba(245,197,96,0.55), transparent 70%)"
               : accent === "emerald"
-              ? "radial-gradient(closest-side, rgba(47,191,143,0.45), transparent 70%)"
-              : "radial-gradient(closest-side, rgba(58,232,255,0.4), transparent 70%)",
+                ? "radial-gradient(closest-side, rgba(47,191,143,0.45), transparent 70%)"
+                : "radial-gradient(closest-side, rgba(58,232,255,0.4), transparent 70%)",
           transition: reduced ? "none" : "background 900ms ease",
         }}
       />

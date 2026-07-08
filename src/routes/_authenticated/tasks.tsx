@@ -61,7 +61,10 @@ function TasksPage() {
 
   const updateStatus = useMutation({
     mutationFn: async (vars: { id: string; status: string }) => {
-      const { error } = await supabase.from("tasks").update({ status: vars.status }).eq("id", vars.id);
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: vars.status })
+        .eq("id", vars.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
@@ -80,11 +83,18 @@ function TasksPage() {
       <PageHeader
         icon={ListChecks}
         title={t("nav.tasks")}
-        subtitle={locale === "ar" ? "نظّم مهام فريقك مع تعيين تلقائي للوكلاء." : "Organize team tasks with auto agent assignment."}
+        subtitle={
+          locale === "ar"
+            ? "نظّم مهام فريقك مع تعيين تلقائي للوكلاء."
+            : "Organize team tasks with auto agent assignment."
+        }
       />
 
       <form
-        onSubmit={(e) => { e.preventDefault(); create.mutate(); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          create.mutate();
+        }}
         className="flex flex-col gap-2 rounded-2xl border border-border bg-card/60 p-3 sm:flex-row"
       >
         <Input
@@ -120,30 +130,41 @@ function TasksPage() {
               </span>
             </div>
             <div className="space-y-2">
-              {isLoading && <div className="text-xs text-muted-foreground">{t("common.loading")}</div>}
-              {tasks.filter((t) => t.status === s).map((task) => (
-                <div key={task.id} className="rounded-lg border border-border bg-background/60 p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="text-sm font-medium">{task.title}</div>
-                    <button onClick={() => del.mutate(task.id)} className="text-muted-foreground hover:text-destructive">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <div className="mt-2 flex items-center gap-1">
-                    {STATUSES.filter((x) => x !== s).map((x) => (
+              {isLoading && (
+                <div className="text-xs text-muted-foreground">{t("common.loading")}</div>
+              )}
+              {tasks
+                .filter((t) => t.status === s)
+                .map((task) => (
+                  <div
+                    key={task.id}
+                    className="rounded-lg border border-border bg-background/60 p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-sm font-medium">{task.title}</div>
                       <button
-                        key={x}
-                        onClick={() => updateStatus.mutate({ id: task.id, status: x })}
-                        className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                        onClick={() => del.mutate(task.id)}
+                        className="text-muted-foreground hover:text-destructive"
                       >
-                        → {locale === "ar"
-                          ? { todo: "للتنفيذ", in_progress: "قيد العمل", done: "منجزة" }[x]
-                          : x.replace("_", " ")}
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
-                    ))}
+                    </div>
+                    <div className="mt-2 flex items-center gap-1">
+                      {STATUSES.filter((x) => x !== s).map((x) => (
+                        <button
+                          key={x}
+                          onClick={() => updateStatus.mutate({ id: task.id, status: x })}
+                          className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                        >
+                          →{" "}
+                          {locale === "ar"
+                            ? { todo: "للتنفيذ", in_progress: "قيد العمل", done: "منجزة" }[x]
+                            : x.replace("_", " ")}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         ))}

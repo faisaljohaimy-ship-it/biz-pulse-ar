@@ -43,97 +43,146 @@ function buildScript(ov: PresentationOverview, ar: boolean, displayName: string)
   const greetEn = `${displayName ? `Welcome ${displayName}, ` : ""}starting your executive briefing now.`;
 
   const steps: ScriptStep[] = [
-    { speakerId: "aria", preState: "thinking",
-      text_ar: greetAr, text_en: greetEn },
+    { speakerId: "aria", preState: "thinking", text_ar: greetAr, text_en: greetEn },
 
     // Operational summary
-    { speakerId: "aria", preState: "analyzing",
+    {
+      speakerId: "aria",
+      preState: "analyzing",
       text_ar: `لدينا ${c.sites} موقع صناعي تحت المراقبة، و${c.patrols_active} دورية نشطة، و${c.permits_active} تصريح ساري.`,
-      text_en: `${c.sites} industrial sites under watch, ${c.patrols_active} active patrols and ${c.permits_active} active permits.` },
+      text_en: `${c.sites} industrial sites under watch, ${c.patrols_active} active patrols and ${c.permits_active} active permits.`,
+    },
 
     // Incident demo
-    { speakerId: "incident_commander", preState: "analyzing",
-      text_ar: c.incidents_critical > 0
-        ? `لدي ${c.incidents_critical} حادث حرج${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. أبدأ التحقق.`
-        : `لا توجد حوادث حرجة. ${c.incidents_open} حادث مفتوح قيد المعالجة الطبيعية.`,
-      text_en: c.incidents_critical > 0
-        ? `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""}${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. Validating now.`
-        : `No critical incidents. ${c.incidents_open} open incidents in normal handling.` },
+    {
+      speakerId: "incident_commander",
+      preState: "analyzing",
+      text_ar:
+        c.incidents_critical > 0
+          ? `لدي ${c.incidents_critical} حادث حرج${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. أبدأ التحقق.`
+          : `لا توجد حوادث حرجة. ${c.incidents_open} حادث مفتوح قيد المعالجة الطبيعية.`,
+      text_en:
+        c.incidents_critical > 0
+          ? `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""}${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. Validating now.`
+          : `No critical incidents. ${c.incidents_open} open incidents in normal handling.`,
+    },
 
     // Workflow execution
-    { speakerId: "emergency_coordinator", preState: "searching",
-      text_ar: c.incidents_critical > 0
-        ? "أُطلق سير عمل الاستجابة الموحد وأخطر القيادة الميدانية."
-        : "خطط الاستجابة جاهزة، لا حاجة لتفعيل سير عمل طارئ.",
-      text_en: c.incidents_critical > 0
-        ? "Activating unified response workflow and notifying field command."
-        : "Response plans are armed; no emergency workflow required." },
+    {
+      speakerId: "emergency_coordinator",
+      preState: "searching",
+      text_ar:
+        c.incidents_critical > 0
+          ? "أُطلق سير عمل الاستجابة الموحد وأخطر القيادة الميدانية."
+          : "خطط الاستجابة جاهزة، لا حاجة لتفعيل سير عمل طارئ.",
+      text_en:
+        c.incidents_critical > 0
+          ? "Activating unified response workflow and notifying field command."
+          : "Response plans are armed; no emergency workflow required.",
+    },
 
     // Patrol contribution
-    { speakerId: "patrol_commander", preState: "reading",
+    {
+      speakerId: "patrol_commander",
+      preState: "reading",
       text_ar: `الفرق الميدانية تغطي المواقع بكامل الجاهزية — ${c.patrols_active} دورية الآن.`,
-      text_en: `Field teams covering all sites at full readiness — ${c.patrols_active} patrols underway now.` },
+      text_en: `Field teams covering all sites at full readiness — ${c.patrols_active} patrols underway now.`,
+    },
 
     // CCTV
-    { speakerId: "cctv_intelligence", preState: "analyzing",
-      text_ar: c.cctv_new > 0
-        ? `${c.cctv_new} تنبيه فيديو جديد قيد المراجعة الذكية.`
-        : "لا توجد تنبيهات فيديو جديدة تتطلب اهتماماً.",
-      text_en: c.cctv_new > 0
-        ? `${c.cctv_new} new video alerts under intelligent review.`
-        : "No new video alerts requiring attention." },
+    {
+      speakerId: "cctv_intelligence",
+      preState: "analyzing",
+      text_ar:
+        c.cctv_new > 0
+          ? `${c.cctv_new} تنبيه فيديو جديد قيد المراجعة الذكية.`
+          : "لا توجد تنبيهات فيديو جديدة تتطلب اهتماماً.",
+      text_en:
+        c.cctv_new > 0
+          ? `${c.cctv_new} new video alerts under intelligent review.`
+          : "No new video alerts requiring attention.",
+    },
 
     // Knowledge
-    { speakerId: "knowledge_ai", preState: "searching",
+    {
+      speakerId: "knowledge_ai",
+      preState: "searching",
       text_ar: "وجدتُ ثلاث إجراءات صناعية رسمية مطابقة للوضع الحالي.",
-      text_en: "I found three official industrial procedures matching the current situation." },
+      text_en: "I found three official industrial procedures matching the current situation.",
+    },
 
     // Compliance
-    { speakerId: "compliance_auditor", preState: "reading",
+    {
+      speakerId: "compliance_auditor",
+      preState: "reading",
       text_ar: `${c.permits_active} تصريح ساري — لا انتهاكات للسياسات.`,
-      text_en: `${c.permits_active} active permits — no policy violations detected.` },
+      text_en: `${c.permits_active} active permits — no policy violations detected.`,
+    },
 
     // Visitors
-    { speakerId: "visitor_intelligence", preState: "analyzing",
+    {
+      speakerId: "visitor_intelligence",
+      preState: "analyzing",
       text_ar: `${c.visitors_inside} زائر داخل المواقع حالياً — ضمن الحدود.`,
-      text_en: `${c.visitors_inside} visitors currently on-site — within thresholds.` },
+      text_en: `${c.visitors_inside} visitors currently on-site — within thresholds.`,
+    },
 
     // Risk assessment
-    { speakerId: "risk_intelligence", preState: "analyzing",
-      text_ar: c.assets_offline > 0 || c.cctv_new > 5
-        ? `مؤشر المخاطر مرتفع نسبياً: ${c.assets_offline} أصل خارج الخدمة و${c.cctv_new} تنبيه كاميرا.`
-        : "مؤشر المخاطر منخفض. جميع الأصول قيد التشغيل.",
-      text_en: c.assets_offline > 0 || c.cctv_new > 5
-        ? `Risk index elevated: ${c.assets_offline} asset${c.assets_offline > 1 ? "s" : ""} offline and ${c.cctv_new} CCTV alerts.`
-        : "Risk index low. All assets operational." },
+    {
+      speakerId: "risk_intelligence",
+      preState: "analyzing",
+      text_ar:
+        c.assets_offline > 0 || c.cctv_new > 5
+          ? `مؤشر المخاطر مرتفع نسبياً: ${c.assets_offline} أصل خارج الخدمة و${c.cctv_new} تنبيه كاميرا.`
+          : "مؤشر المخاطر منخفض. جميع الأصول قيد التشغيل.",
+      text_en:
+        c.assets_offline > 0 || c.cctv_new > 5
+          ? `Risk index elevated: ${c.assets_offline} asset${c.assets_offline > 1 ? "s" : ""} offline and ${c.cctv_new} CCTV alerts.`
+          : "Risk index low. All assets operational.",
+    },
 
     // Digital twin
-    { speakerId: "digital_twin", preState: "analyzing",
+    {
+      speakerId: "digital_twin",
+      preState: "analyzing",
       text_ar: "النمذجة الافتراضية تتطابق مع البيانات الميدانية بدقة كاملة.",
-      text_en: "Virtual model matches field telemetry with full alignment." },
+      text_en: "Virtual model matches field telemetry with full alignment.",
+    },
 
     // Reporter
-    { speakerId: "executive_reporter", preState: "reading",
+    {
+      speakerId: "executive_reporter",
+      preState: "reading",
       text_ar: "اكتمل التقرير التنفيذي وهو جاهز للتسليم.",
-      text_en: "Executive report is composed and ready for delivery." },
+      text_en: "Executive report is composed and ready for delivery.",
+    },
 
     // ARIA recommendation
-    { speakerId: "aria", preState: "thinking",
-      text_ar: c.incidents_critical > 0
-        ? "توصيتي: اعتماد التصعيد الفوري للحادث الحرج الآن."
-        : c.assets_offline > 0
-          ? "توصيتي: فتح أوامر عمل عاجلة لإعادة الأصول إلى الخدمة."
-          : "توصيتي: مواصلة الوضع التشغيلي الحالي — لا حاجة لتدخل تنفيذي.",
-      text_en: c.incidents_critical > 0
-        ? "My recommendation: approve immediate escalation of the critical incident."
-        : c.assets_offline > 0
-          ? "My recommendation: open priority work orders to restore offline assets."
-          : "My recommendation: maintain current posture — no executive action required." },
+    {
+      speakerId: "aria",
+      preState: "thinking",
+      text_ar:
+        c.incidents_critical > 0
+          ? "توصيتي: اعتماد التصعيد الفوري للحادث الحرج الآن."
+          : c.assets_offline > 0
+            ? "توصيتي: فتح أوامر عمل عاجلة لإعادة الأصول إلى الخدمة."
+            : "توصيتي: مواصلة الوضع التشغيلي الحالي — لا حاجة لتدخل تنفيذي.",
+      text_en:
+        c.incidents_critical > 0
+          ? "My recommendation: approve immediate escalation of the critical incident."
+          : c.assets_offline > 0
+            ? "My recommendation: open priority work orders to restore offline assets."
+            : "My recommendation: maintain current posture — no executive action required.",
+    },
 
     // Final briefing
-    { speakerId: "aria", preState: "analyzing",
+    {
+      speakerId: "aria",
+      preState: "analyzing",
       text_ar: "انتهت الإحاطة التنفيذية. سأتابع الأحداث الحية وأبلغك فوراً بأي تطور.",
-      text_en: "Executive briefing complete. I will continue watching live and brief you the moment anything changes." },
+      text_en:
+        "Executive briefing complete. I will continue watching live and brief you the moment anything changes.",
+    },
   ];
   return steps;
 }
@@ -154,32 +203,53 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
   const [, forceTick] = useState(0);
 
   // ARIA + the 8 most-used specialists are rendered live on the stage
-  const stageSpecs = useMemo<DigitalHumanSpec[]>(() => [
-    ARIA,
-    ...["incident_commander","risk_intelligence","compliance_auditor","cctv_intelligence","patrol_commander","emergency_coordinator","knowledge_ai","executive_reporter"]
-      .map(id => findHuman(id))
-      .filter((s): s is DigitalHumanSpec => !!s),
-  ], []);
+  const stageSpecs = useMemo<DigitalHumanSpec[]>(
+    () => [
+      ARIA,
+      ...[
+        "incident_commander",
+        "risk_intelligence",
+        "compliance_auditor",
+        "cctv_intelligence",
+        "patrol_commander",
+        "emergency_coordinator",
+        "knowledge_ai",
+        "executive_reporter",
+      ]
+        .map((id) => findHuman(id))
+        .filter((s): s is DigitalHumanSpec => !!s),
+    ],
+    [],
+  );
 
   // Build one engine per stage human
   const aria = useDigitalHuman(stageSpecs[0]);
-  const ic   = useDigitalHuman(stageSpecs[1]);
-  const ri   = useDigitalHuman(stageSpecs[2]);
-  const ca   = useDigitalHuman(stageSpecs[3]);
-  const cv   = useDigitalHuman(stageSpecs[4]);
-  const pt   = useDigitalHuman(stageSpecs[5]);
-  const em   = useDigitalHuman(stageSpecs[6]);
-  const kb   = useDigitalHuman(stageSpecs[7]);
-  const rp   = useDigitalHuman(stageSpecs[8]);
+  const ic = useDigitalHuman(stageSpecs[1]);
+  const ri = useDigitalHuman(stageSpecs[2]);
+  const ca = useDigitalHuman(stageSpecs[3]);
+  const cv = useDigitalHuman(stageSpecs[4]);
+  const pt = useDigitalHuman(stageSpecs[5]);
+  const em = useDigitalHuman(stageSpecs[6]);
+  const kb = useDigitalHuman(stageSpecs[7]);
+  const rp = useDigitalHuman(stageSpecs[8]);
 
-  const runtimes = useMemo(() => ({
-    aria, incident_commander: ic, risk_intelligence: ri, compliance_auditor: ca,
-    cctv_intelligence: cv, patrol_commander: pt, emergency_coordinator: em,
-    knowledge_ai: kb, executive_reporter: rp,
-  }), [aria, ic, ri, ca, cv, pt, em, kb, rp]);
+  const runtimes = useMemo(
+    () => ({
+      aria,
+      incident_commander: ic,
+      risk_intelligence: ri,
+      compliance_auditor: ca,
+      cctv_intelligence: cv,
+      patrol_commander: pt,
+      emergency_coordinator: em,
+      knowledge_ai: kb,
+      executive_reporter: rp,
+    }),
+    [aria, ic, ri, ca, cv, pt, em, kb, rp],
+  );
 
   const script = useMemo(
-    () => overview ? buildScript(overview, ar, displayName) : [],
+    () => (overview ? buildScript(overview, ar, displayName) : []),
     [overview, ar, displayName],
   );
 
@@ -214,26 +284,31 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
         lang: detectLang(text),
         onAmplitude: (a) => {
           ampMapRef.current[speaker.spec.id] = a;
-          forceTick(x => (x + 1) & 0xffff);
+          forceTick((x) => (x + 1) & 0xffff);
         },
       });
       voiceHandleRef.current = handle;
       let cancelled = false;
       handle.promise
-        .catch(() => { /* fall through */ })
+        .catch(() => {
+          /* fall through */
+        })
         .finally(() => {
           if (cancelled) return;
           ampMapRef.current[speaker.spec.id] = 0;
           stepIdxRef.current = stepIdx + 1;
           setStepIdx(stepIdxRef.current);
         });
-      return () => { cancelled = true; handle.stop(); };
+      return () => {
+        cancelled = true;
+        handle.stop();
+      };
     }
 
     // Silent fallback: advance after the estimated speak time + small gap
     const len = text.length;
     const speak = Math.max(1800, Math.min(7500, Math.round((len / 13) * 1000)));
-    const total = 600 /* pre */ + speak + 600 /* gap */;
+    const total = 600 /* pre */ + speak + 600; /* gap */
     const t = setTimeout(() => {
       stepIdxRef.current = stepIdx + 1;
       setStepIdx(stepIdxRef.current);
@@ -244,7 +319,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
 
   const start = useCallback(() => {
     if (!overview) return;
-    Object.values(runtimes).forEach(r => r.interrupt());
+    Object.values(runtimes).forEach((r) => r.interrupt());
     voiceHandleRef.current?.stop();
     ampMapRef.current = {};
     stepIdxRef.current = 0;
@@ -257,14 +332,19 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
     voiceHandleRef.current?.stop();
     voiceHandleRef.current = null;
     ampMapRef.current = {};
-    Object.values(runtimes).forEach(r => r.interrupt());
+    Object.values(runtimes).forEach((r) => r.interrupt());
   }, [runtimes]);
 
-  useEffect(() => () => { voiceHandleRef.current?.stop(); }, []);
+  useEffect(
+    () => () => {
+      voiceHandleRef.current?.stop();
+    },
+    [],
+  );
 
   const currentSpeakerId = running && script[stepIdx] ? script[stepIdx].speakerId : null;
   const currentSpeaker = currentSpeakerId
-    ? (runtimes as Record<string, ReturnType<typeof useDigitalHuman>>)[currentSpeakerId] ?? aria
+    ? ((runtimes as Record<string, ReturnType<typeof useDigitalHuman>>)[currentSpeakerId] ?? aria)
     : null;
 
   return (
@@ -286,17 +366,25 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setVoiceOn(v => !v)}
+            onClick={() => setVoiceOn((v) => !v)}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs transition",
               voiceOn
                 ? "border-cyan-400/50 bg-cyan-400/15 text-cyan-100"
                 : "border-white/15 bg-white/[0.04] text-white/70 hover:text-white",
             )}
-            title={voiceOn ? (ar ? "كتم" : "Mute voices") : (ar ? "تفعيل أصوات الوكلاء" : "Enable agent voices")}
+            title={
+              voiceOn
+                ? ar
+                  ? "كتم"
+                  : "Mute voices"
+                : ar
+                  ? "تفعيل أصوات الوكلاء"
+                  : "Enable agent voices"
+            }
           >
             {voiceOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-            {ar ? (voiceOn ? "صوت مفعل" : "بدون صوت") : (voiceOn ? "Voices On" : "Silent")}
+            {ar ? (voiceOn ? "صوت مفعل" : "بدون صوت") : voiceOn ? "Voices On" : "Silent"}
           </button>
           {!running ? (
             <button
@@ -340,7 +428,14 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
                 isActive ? "bg-cyan-400/10 ring-1 ring-cyan-400/30 scale-105" : "bg-white/[0.02]",
               )}
             >
-              <DigitalHumanAvatar spec={s} state={r.state} size={56} ar={ar} showLabel mouthAmplitude={liveAmp} />
+              <DigitalHumanAvatar
+                spec={s}
+                state={r.state}
+                size={56}
+                ar={ar}
+                showLabel
+                mouthAmplitude={liveAmp}
+              />
             </div>
           );
         })}
@@ -350,14 +445,18 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
       <div
         className={cn(
           "rounded-xl border p-4 transition-all min-h-[88px]",
-          currentSpeaker?.currentTurn ? "border-cyan-400/30 bg-cyan-400/[0.06]" : "border-white/10 bg-white/[0.02]",
+          currentSpeaker?.currentTurn
+            ? "border-cyan-400/30 bg-cyan-400/[0.06]"
+            : "border-white/10 bg-white/[0.02]",
         )}
       >
         {currentSpeaker?.currentTurn ? (
           <>
             <div className="text-[11px] uppercase tracking-[0.2em] text-cyan-300/80">
               {currentSpeakerId
-                ? (ar ? findHuman(currentSpeakerId)?.name_ar : findHuman(currentSpeakerId)?.name_en)
+                ? ar
+                  ? findHuman(currentSpeakerId)?.name_ar
+                  : findHuman(currentSpeakerId)?.name_en
                 : ""}
             </div>
             <div className="mt-1 text-sm text-white/95 leading-relaxed">
@@ -365,12 +464,18 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
             </div>
           </>
         ) : running ? (
-          <div className="text-sm text-white/55">{ar ? "ينتقل العرض إلى المتحدث التالي…" : "Advancing to the next speaker…"}</div>
+          <div className="text-sm text-white/55">
+            {ar ? "ينتقل العرض إلى المتحدث التالي…" : "Advancing to the next speaker…"}
+          </div>
         ) : (
           <div className="text-sm text-white/55">
             {overview
-              ? (ar ? "اضغط ابدأ العرض لتشغيل الإحاطة الكاملة." : "Press Start Presentation to play the full briefing.")
-              : (ar ? "لا توجد بيانات تشغيلية حية للعرض." : "No live operational data available for the presentation.")}
+              ? ar
+                ? "اضغط ابدأ العرض لتشغيل الإحاطة الكاملة."
+                : "Press Start Presentation to play the full briefing."
+              : ar
+                ? "لا توجد بيانات تشغيلية حية للعرض."
+                : "No live operational data available for the presentation."}
           </div>
         )}
       </div>

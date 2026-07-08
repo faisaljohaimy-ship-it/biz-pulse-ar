@@ -9,11 +9,7 @@ import type { RiskLevel, PriorityLevel } from "../types/executive";
 import type { AriaIntent } from "../types/aria";
 
 class EmotionEngine {
-  fromSignals(input: {
-    risk?: RiskLevel;
-    priority?: PriorityLevel;
-    intent?: AriaIntent;
-  }): Emotion {
+  fromSignals(input: { risk?: RiskLevel; priority?: PriorityLevel; intent?: AriaIntent }): Emotion {
     if (input.risk === "critical" || input.priority === "P0") return "critical";
     if (input.risk === "high" || input.priority === "P1") return "concerned";
     if (input.intent === "engineering" || input.intent === "long-context") return "focused";
@@ -23,8 +19,12 @@ class EmotionEngine {
     return "executive";
   }
 
-  forSuccess(): Emotion { return "success"; }
-  forIdle(): Emotion { return "neutral"; }
+  forSuccess(): Emotion {
+    return "success";
+  }
+  forIdle(): Emotion {
+    return "neutral";
+  }
 }
 
 export const emotionEngine = new EmotionEngine();

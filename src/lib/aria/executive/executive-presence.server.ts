@@ -2,9 +2,15 @@ import type { ExecutiveMode, ExecutivePresenceSnapshot } from "./types";
 
 const R = new Map<string, ExecutivePresenceSnapshot>();
 
-export function setExecutivePresence(id: string, mode: ExecutiveMode, visible = true): ExecutivePresenceSnapshot {
+export function setExecutivePresence(
+  id: string,
+  mode: ExecutiveMode,
+  visible = true,
+): ExecutivePresenceSnapshot {
   const snap: ExecutivePresenceSnapshot = {
-    mode, visible, attentive: mode !== "reporting",
+    mode,
+    visible,
+    attentive: mode !== "reporting",
     readyForQuestion: mode === "advisor" || mode === "listening",
     since: Date.now(),
   };
@@ -16,4 +22,6 @@ export function getExecutivePresence(id: string): ExecutivePresenceSnapshot | nu
   return R.get(id) ?? null;
 }
 
-export function clearExecutivePresence(id: string): void { R.delete(id); }
+export function clearExecutivePresence(id: string): void {
+  R.delete(id);
+}

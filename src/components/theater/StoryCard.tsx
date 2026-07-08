@@ -9,11 +9,38 @@ import { Clock, ShieldAlert, ShieldCheck, Activity, ChevronRight, Hash } from "l
 import { cn } from "@/lib/utils";
 import type { NarratorLine } from "@/lib/narrator/event-narrator";
 
-const TONE: Record<NarratorLine["tone"], { ring: string; chip: string; label_ar: string; label_en: string; Icon: typeof Activity }> = {
-  info:     { ring: "ring-cyan-400/30",    chip: "bg-cyan-400/10 text-cyan-200",       label_ar: "متابعة", label_en: "Update",   Icon: Activity },
-  success:  { ring: "ring-emerald-400/30", chip: "bg-emerald-400/10 text-emerald-200", label_ar: "إنجاز",   label_en: "Resolved", Icon: ShieldCheck },
-  warn:     { ring: "ring-amber-400/40",   chip: "bg-amber-400/10 text-amber-200",     label_ar: "تحذير",   label_en: "Warning",  Icon: ShieldAlert },
-  critical: { ring: "ring-rose-400/50",    chip: "bg-rose-400/10 text-rose-200",       label_ar: "حرج",     label_en: "Critical", Icon: ShieldAlert },
+const TONE: Record<
+  NarratorLine["tone"],
+  { ring: string; chip: string; label_ar: string; label_en: string; Icon: typeof Activity }
+> = {
+  info: {
+    ring: "ring-cyan-400/30",
+    chip: "bg-cyan-400/10 text-cyan-200",
+    label_ar: "متابعة",
+    label_en: "Update",
+    Icon: Activity,
+  },
+  success: {
+    ring: "ring-emerald-400/30",
+    chip: "bg-emerald-400/10 text-emerald-200",
+    label_ar: "إنجاز",
+    label_en: "Resolved",
+    Icon: ShieldCheck,
+  },
+  warn: {
+    ring: "ring-amber-400/40",
+    chip: "bg-amber-400/10 text-amber-200",
+    label_ar: "تحذير",
+    label_en: "Warning",
+    Icon: ShieldAlert,
+  },
+  critical: {
+    ring: "ring-rose-400/50",
+    chip: "bg-rose-400/10 text-rose-200",
+    label_ar: "حرج",
+    label_en: "Critical",
+    Icon: ShieldAlert,
+  },
 };
 
 interface Props {
@@ -46,13 +73,19 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
         "p-4 ring-1 transition-all duration-300",
         tone.ring,
         active && "scale-[1.01] shadow-[0_0_40px_rgba(0,212,255,0.18)] border-cyan-300/40",
-        onClick && "cursor-pointer hover:bg-white/[0.06] hover:border-cyan-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-300/60",
+        onClick &&
+          "cursor-pointer hover:bg-white/[0.06] hover:border-cyan-300/30 focus:outline-none focus:ring-2 focus:ring-cyan-300/60",
       )}
       dir={ar ? "rtl" : "ltr"}
     >
       <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] uppercase tracking-wider", tone.chip)}>
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] uppercase tracking-wider",
+              tone.chip,
+            )}
+          >
             <Icon className="h-3.5 w-3.5" />
             {ar ? tone.label_ar : tone.label_en}
           </span>
@@ -81,9 +114,7 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
       )}
 
       {(line.reason_ar || line.reason_en) && (
-        <p className="mt-1 text-[11px] text-white/45">
-          {ar ? line.reason_ar : line.reason_en}
-        </p>
+        <p className="mt-1 text-[11px] text-white/45">{ar ? line.reason_ar : line.reason_en}</p>
       )}
 
       <footer className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-white/55">
@@ -103,8 +134,16 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
           {ar ? "الإجراء التالي" : "Next action"}
           <ChevronRight className="h-3 w-3" />
           {ar
-            ? line.tone === "critical" ? "تصعيد فوري" : line.tone === "warn" ? "مراجعة وقائية" : "متابعة روتينية"
-            : line.tone === "critical" ? "Immediate escalation" : line.tone === "warn" ? "Preventive review" : "Routine follow-up"}
+            ? line.tone === "critical"
+              ? "تصعيد فوري"
+              : line.tone === "warn"
+                ? "مراجعة وقائية"
+                : "متابعة روتينية"
+            : line.tone === "critical"
+              ? "Immediate escalation"
+              : line.tone === "warn"
+                ? "Preventive review"
+                : "Routine follow-up"}
         </span>
       </footer>
     </Tag>

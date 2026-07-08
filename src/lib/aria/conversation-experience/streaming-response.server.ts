@@ -14,9 +14,13 @@ export class StreamingResponseBuilder {
 
   constructor(private readonly turnId: string) {}
 
-  abort(): void { this.aborted = true; }
+  abort(): void {
+    this.aborted = true;
+  }
 
-  isAborted(): boolean { return this.aborted; }
+  isAborted(): boolean {
+    return this.aborted;
+  }
 
   push(delta: string): StreamChunk[] {
     if (this.aborted) return [];
@@ -54,5 +58,7 @@ export class StreamingResponseBuilder {
     return chunk;
   }
 
-  all(): readonly StreamChunk[] { return this.chunks; }
+  all(): readonly StreamChunk[] {
+    return this.chunks;
+  }
 }

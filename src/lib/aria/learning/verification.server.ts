@@ -20,10 +20,7 @@ export function verifyPatternEvidence(
   return { ok: reasons.length === 0, reasons };
 }
 
-export function verifyLesson(
-  lesson: Lesson,
-  pattern: Pattern,
-): VerificationReport {
+export function verifyLesson(lesson: Lesson, pattern: Pattern): VerificationReport {
   const reasons: string[] = [];
   if (lesson.patternId !== pattern.id) reasons.push("pattern_mismatch");
   if (lesson.evidenceIds.length === 0) reasons.push("no_evidence");

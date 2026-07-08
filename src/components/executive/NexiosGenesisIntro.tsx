@@ -57,18 +57,42 @@ export function NexiosGenesisIntro() {
   // Mount once per session
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try { if (window.sessionStorage.getItem(SEEN_KEY)) return; } catch { /* noop */ }
+    try {
+      if (window.sessionStorage.getItem(SEEN_KEY)) return;
+    } catch {
+      /* noop */
+    }
     setMounted(true);
   }, []);
 
   const dismiss = (instant = false) => {
     if (dismissedRef.current) return;
     dismissedRef.current = true;
-    try { window.sessionStorage.setItem(SEEN_KEY, "1"); } catch { /* noop */ }
-    const a = audioRef.current, v = videoRef.current;
+    try {
+      window.sessionStorage.setItem(SEEN_KEY, "1");
+    } catch {
+      /* noop */
+    }
+    const a = audioRef.current,
+      v = videoRef.current;
     if (instant) {
-      if (a) { try { a.pause(); a.src = ""; } catch { /* noop */ } }
-      if (v) { try { v.pause(); v.removeAttribute("src"); v.load(); } catch { /* noop */ } }
+      if (a) {
+        try {
+          a.pause();
+          a.src = "";
+        } catch {
+          /* noop */
+        }
+      }
+      if (v) {
+        try {
+          v.pause();
+          v.removeAttribute("src");
+          v.load();
+        } catch {
+          /* noop */
+        }
+      }
       setFading(true);
       window.setTimeout(() => setGone(true), 60);
       return;
@@ -78,8 +102,19 @@ export function NexiosGenesisIntro() {
       const t0 = performance.now();
       const step = (t: number) => {
         const k = Math.min(1, (t - t0) / T_FADE);
-        try { a.volume = start * (1 - k); } catch { /* noop */ }
-        if (k < 1) requestAnimationFrame(step); else { try { a.pause(); } catch { /* noop */ } }
+        try {
+          a.volume = start * (1 - k);
+        } catch {
+          /* noop */
+        }
+        if (k < 1) requestAnimationFrame(step);
+        else {
+          try {
+            a.pause();
+          } catch {
+            /* noop */
+          }
+        }
       };
       requestAnimationFrame(step);
     }
@@ -87,7 +122,15 @@ export function NexiosGenesisIntro() {
     window.setTimeout(() => {
       setGone(true);
       const v2 = videoRef.current;
-      if (v2) { try { v2.pause(); v2.removeAttribute("src"); v2.load(); } catch { /* noop */ } }
+      if (v2) {
+        try {
+          v2.pause();
+          v2.removeAttribute("src");
+          v2.load();
+        } catch {
+          /* noop */
+        }
+      }
     }, T_FADE);
   };
 
@@ -95,7 +138,13 @@ export function NexiosGenesisIntro() {
   useEffect(() => {
     if (!mounted || reducedMotion) return;
     const v = videoRef.current;
-    if (v) { try { void v.play(); } catch { /* noop */ } }
+    if (v) {
+      try {
+        void v.play();
+      } catch {
+        /* noop */
+      }
+    }
   }, [mounted, reducedMotion]);
 
   // Skip chip after 1.5s
@@ -109,9 +158,18 @@ export function NexiosGenesisIntro() {
   // Unmount cleanup
   useEffect(() => {
     return () => {
-      const a = audioRef.current, v = videoRef.current;
-      try { a?.pause(); } catch { /* noop */ }
-      try { v?.pause(); } catch { /* noop */ }
+      const a = audioRef.current,
+        v = videoRef.current;
+      try {
+        a?.pause();
+      } catch {
+        /* noop */
+      }
+      try {
+        v?.pause();
+      } catch {
+        /* noop */
+      }
       timersRef.current.forEach((t) => window.clearTimeout(t));
     };
   }, []);
@@ -120,12 +178,25 @@ export function NexiosGenesisIntro() {
     if (started || dismissedRef.current) return;
     setStarted(true);
     densityRef.current = "peak";
-    const a = audioRef.current, v = videoRef.current;
-    if (v) { try { v.currentTime = 0; void v.play(); } catch { /* noop */ } }
+    const a = audioRef.current,
+      v = videoRef.current;
+    if (v) {
+      try {
+        v.currentTime = 0;
+        void v.play();
+      } catch {
+        /* noop */
+      }
+    }
     if (a) {
       a.volume = 0.9;
       a.muted = false;
-      try { a.currentTime = 0; void a.play(); } catch { /* noop */ }
+      try {
+        a.currentTime = 0;
+        void a.play();
+      } catch {
+        /* noop */
+      }
       const onEnd = () => dismiss(false);
       a.addEventListener("ended", onEnd, { once: true });
     }
@@ -156,15 +227,25 @@ export function NexiosGenesisIntro() {
     resize();
     window.addEventListener("resize", resize);
 
-    type P = { x: number; y: number; vx: number; vy: number; life: number; max: number; r: number; spark: boolean };
+    type P = {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      r: number;
+      spark: boolean;
+    };
     const maxParticles = isMobile ? 50 : 90;
     const particles: P[] = [];
 
     const spawnOne = () => {
-      const w = window.innerWidth, h = window.innerHeight;
+      const w = window.innerWidth,
+        h = window.innerHeight;
       // elliptical spawn: center, 25–55% viewport height
       const cx = w * 0.5;
-      const cy = h * (0.25 + Math.random() * 0.30);
+      const cy = h * (0.25 + Math.random() * 0.3);
       const ex = (Math.random() * 2 - 1) * w * 0.22;
       const ey = (Math.random() * 2 - 1) * h * 0.06;
       const spark = Math.random() < 0.08;
@@ -181,19 +262,25 @@ export function NexiosGenesisIntro() {
     };
 
     let hidden = false;
-    const onVis = () => { hidden = document.hidden; };
+    const onVis = () => {
+      hidden = document.hidden;
+    };
     document.addEventListener("visibilitychange", onVis);
 
     let raf = 0;
     let last = performance.now();
     const loop = (now: number) => {
-      if (hidden) { last = now; raf = requestAnimationFrame(loop); return; }
+      if (hidden) {
+        last = now;
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
       // Density ramp
       const density = densityRef.current;
-      const target = density === "pre" ? 0.30 : density === "peak" ? 1.0 : 0.5;
+      const target = density === "pre" ? 0.3 : density === "peak" ? 1.0 : 0.5;
       const desired = Math.floor(maxParticles * target);
       const spawnRate = desired * 0.9; // per second
       const toSpawn = Math.min(6, Math.floor(spawnRate * dt + Math.random()));
@@ -208,7 +295,10 @@ export function NexiosGenesisIntro() {
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.life += dt;
-        if (p.life >= p.max) { particles.splice(i, 1); continue; }
+        if (p.life >= p.max) {
+          particles.splice(i, 1);
+          continue;
+        }
         // horizontal sway
         p.vx += Math.sin(now * 0.001 + p.y * 0.01) * 0.02 * dt * 60;
         p.x += p.vx;
@@ -270,7 +360,10 @@ export function NexiosGenesisIntro() {
           preload="auto"
           poster=""
           style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
             objectFit: "cover",
             objectPosition: isMobile ? "center" : "center 30%",
             pointerEvents: "none",
@@ -281,7 +374,11 @@ export function NexiosGenesisIntro() {
       {/* Bottom gradient for wordmark clarity */}
       <div
         style={{
-          position: "absolute", left: 0, right: 0, bottom: 0, height: "35%",
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: "35%",
           background: "linear-gradient(180deg, rgba(5,7,11,0) 0%, rgba(5,7,11,0.85) 100%)",
           pointerEvents: "none",
         }}
@@ -292,8 +389,12 @@ export function NexiosGenesisIntro() {
         <canvas
           ref={canvasRef}
           style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            pointerEvents: "none", mixBlendMode: "screen",
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            mixBlendMode: "screen",
           }}
         />
       )}
@@ -304,7 +405,10 @@ export function NexiosGenesisIntro() {
       {!started && (
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); beginSequence(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            beginSequence();
+          }}
           className="nxg-enter"
           aria-label={ar ? "دخول" : "Enter"}
         >
@@ -341,7 +445,10 @@ export function NexiosGenesisIntro() {
       {showSkip && (
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); dismiss(true); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            dismiss(true);
+          }}
           className="nxg-skip"
         >
           {ar ? "تخطي" : "Skip"}

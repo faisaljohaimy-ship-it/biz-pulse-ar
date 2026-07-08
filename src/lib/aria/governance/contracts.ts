@@ -3,13 +3,7 @@
  */
 import { z } from "zod";
 
-export const ImpactLevelSchema = z.enum([
-  "low",
-  "medium",
-  "high",
-  "critical",
-  "unknown",
-]);
+export const ImpactLevelSchema = z.enum(["low", "medium", "high", "critical", "unknown"]);
 
 export const AuthorityLevelSchema = z.enum([
   "agent",

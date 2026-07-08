@@ -21,7 +21,11 @@ export function verifySample(prev: MotionSample | null, next: unknown): MotionVe
   if (!prev) return { ok: true, issues, clampedDeltas: 0 };
   const s = parsed.data;
   let clamped = 0;
-  const check = (ch: "breath" | "blink" | "gaze" | "head" | "gesture" | "lip", p: number, n: number) => {
+  const check = (
+    ch: "breath" | "blink" | "gaze" | "head" | "gesture" | "lip",
+    p: number,
+    n: number,
+  ) => {
     const c = clampChannelDelta(ch, p, n);
     if (Math.abs(c - n) > 1e-6) clamped++;
   };

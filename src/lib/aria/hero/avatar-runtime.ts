@@ -59,5 +59,7 @@ export class AvatarRuntime {
     this.micro.tick(tick);
   }
 
-  snapshot() { return this.sync.get(); }
+  snapshot() {
+    return this.sync.get();
+  }
 }

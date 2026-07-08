@@ -238,15 +238,10 @@ function PlayGate({
         }}
       />
       <div className="relative z-10 flex flex-col items-center gap-4">
-        <div
-          className="text-xs uppercase tracking-[0.4em]"
-          style={{ color: film.accent }}
-        >
+        <div className="text-xs uppercase tracking-[0.4em]" style={{ color: film.accent }}>
           Nexios · Film {film.slug.toUpperCase()}
         </div>
-        <h1 className="text-3xl font-black leading-tight text-white md:text-5xl">
-          {film.titleAr}
-        </h1>
+        <h1 className="text-3xl font-black leading-tight text-white md:text-5xl">{film.titleAr}</h1>
         {film.subtitleAr && (
           <p className="max-w-xl text-sm text-white/70 md:text-base">{film.subtitleAr}</p>
         )}
@@ -313,12 +308,12 @@ export function TitleCard({
           opacity: o,
         }}
       />
-      <div style={{ opacity: o, transform: `translateY(${(1 - o) * 12}px)` }} className="text-center">
+      <div
+        style={{ opacity: o, transform: `translateY(${(1 - o) * 12}px)` }}
+        className="text-center"
+      >
         {eyebrow && (
-          <div
-            className="mb-4 text-[10px] uppercase tracking-[0.55em]"
-            style={{ color: accent }}
-          >
+          <div className="mb-4 text-[10px] uppercase tracking-[0.55em]" style={{ color: accent }}>
             {eyebrow}
           </div>
         )}
@@ -356,10 +351,7 @@ export function ClosingLockup({
         }}
       />
       <div style={{ opacity: o }} className="text-center">
-        <div
-          className="mb-3 text-[10px] uppercase tracking-[0.5em]"
-          style={{ color: accent }}
-        >
+        <div className="mb-3 text-[10px] uppercase tracking-[0.5em]" style={{ color: accent }}>
           Nexios
         </div>
         <h2 className="text-3xl font-black text-white md:text-5xl">{title}</h2>
@@ -371,9 +363,7 @@ export function ClosingLockup({
             {cta}
           </div>
         )}
-        {smallPrint && (
-          <div className="mt-6 text-[10px] text-white/40">{smallPrint}</div>
-        )}
+        {smallPrint && <div className="mt-6 text-[10px] text-white/40">{smallPrint}</div>}
       </div>
     </div>
   );

@@ -40,8 +40,14 @@ function Sections() {
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div><div className="text-xs text-muted-foreground">رئيس القسم</div><div className="font-semibold text-foreground">{s.head}</div></div>
-                <div><div className="text-xs text-muted-foreground">عدد الموظفين</div><div className="font-semibold text-foreground">{s.staff_count}</div></div>
+                <div>
+                  <div className="text-xs text-muted-foreground">رئيس القسم</div>
+                  <div className="font-semibold text-foreground">{s.head}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">عدد الموظفين</div>
+                  <div className="font-semibold text-foreground">{s.staff_count}</div>
+                </div>
               </div>
             </div>
           );

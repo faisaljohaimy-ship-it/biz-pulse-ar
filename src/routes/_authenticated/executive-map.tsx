@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Activity, AlertTriangle, Building2, MapPin, Radio, Shield } from "lucide-react";
 import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
 
-
 export const Route = createFileRoute("/_authenticated/executive-map")({
   component: ExecutiveMapPage,
   errorComponent: ({ error, reset }) => (
@@ -17,7 +16,9 @@ export const Route = createFileRoute("/_authenticated/executive-map")({
       <Card className="p-6">
         <div className="text-destructive font-semibold">Map error</div>
         <div className="text-sm text-muted-foreground mt-1">{error.message}</div>
-        <Button className="mt-3" onClick={reset}>Retry</Button>
+        <Button className="mt-3" onClick={reset}>
+          Retry
+        </Button>
       </Card>
     </div>
   ),
@@ -26,26 +27,135 @@ export const Route = createFileRoute("/_authenticated/executive-map")({
 
 type Site = MapSite;
 
-
 // Seed of strategic locations in MENA + key global hubs. Augmented at runtime
 // by sec_incidents / pulse_crises so the map reflects real signals.
 const SEED_SITES: Site[] = [
-  { id: "hq-riyadh", name: "HQ Riyadh", name_ar: "المقر الرئيسي - الرياض", type: "hq", lat: 24.7136, lng: 46.6753, status: "ok", metric: "Health 94", detail: "Executive HQ" },
-  { id: "br-jeddah", name: "Jeddah Hub", name_ar: "مركز جدة", type: "branch", lat: 21.4858, lng: 39.1925, status: "ok", metric: "Health 88" },
-  { id: "br-dammam", name: "Dammam Ops", name_ar: "عمليات الدمام", type: "site", lat: 26.4207, lng: 50.0888, status: "warn", metric: "Throughput -7%" },
-  { id: "br-dubai", name: "Dubai", name_ar: "دبي", type: "branch", lat: 25.2048, lng: 55.2708, status: "ok", metric: "Health 91" },
-  { id: "br-abudhabi", name: "Abu Dhabi", name_ar: "أبوظبي", type: "branch", lat: 24.4539, lng: 54.3773, status: "ok", metric: "Health 90" },
-  { id: "br-cairo", name: "Cairo", name_ar: "القاهرة", type: "branch", lat: 30.0444, lng: 31.2357, status: "warn", metric: "FX risk" },
-  { id: "br-doha", name: "Doha", name_ar: "الدوحة", type: "branch", lat: 25.276987, lng: 51.520008, status: "ok" },
-  { id: "br-kuwait", name: "Kuwait City", name_ar: "الكويت", type: "branch", lat: 29.3759, lng: 47.9774, status: "ok" },
-  { id: "br-manama", name: "Manama", name_ar: "المنامة", type: "branch", lat: 26.2285, lng: 50.5860, status: "ok" },
-  { id: "br-muscat", name: "Muscat", name_ar: "مسقط", type: "branch", lat: 23.5880, lng: 58.3829, status: "ok" },
+  {
+    id: "hq-riyadh",
+    name: "HQ Riyadh",
+    name_ar: "المقر الرئيسي - الرياض",
+    type: "hq",
+    lat: 24.7136,
+    lng: 46.6753,
+    status: "ok",
+    metric: "Health 94",
+    detail: "Executive HQ",
+  },
+  {
+    id: "br-jeddah",
+    name: "Jeddah Hub",
+    name_ar: "مركز جدة",
+    type: "branch",
+    lat: 21.4858,
+    lng: 39.1925,
+    status: "ok",
+    metric: "Health 88",
+  },
+  {
+    id: "br-dammam",
+    name: "Dammam Ops",
+    name_ar: "عمليات الدمام",
+    type: "site",
+    lat: 26.4207,
+    lng: 50.0888,
+    status: "warn",
+    metric: "Throughput -7%",
+  },
+  {
+    id: "br-dubai",
+    name: "Dubai",
+    name_ar: "دبي",
+    type: "branch",
+    lat: 25.2048,
+    lng: 55.2708,
+    status: "ok",
+    metric: "Health 91",
+  },
+  {
+    id: "br-abudhabi",
+    name: "Abu Dhabi",
+    name_ar: "أبوظبي",
+    type: "branch",
+    lat: 24.4539,
+    lng: 54.3773,
+    status: "ok",
+    metric: "Health 90",
+  },
+  {
+    id: "br-cairo",
+    name: "Cairo",
+    name_ar: "القاهرة",
+    type: "branch",
+    lat: 30.0444,
+    lng: 31.2357,
+    status: "warn",
+    metric: "FX risk",
+  },
+  {
+    id: "br-doha",
+    name: "Doha",
+    name_ar: "الدوحة",
+    type: "branch",
+    lat: 25.276987,
+    lng: 51.520008,
+    status: "ok",
+  },
+  {
+    id: "br-kuwait",
+    name: "Kuwait City",
+    name_ar: "الكويت",
+    type: "branch",
+    lat: 29.3759,
+    lng: 47.9774,
+    status: "ok",
+  },
+  {
+    id: "br-manama",
+    name: "Manama",
+    name_ar: "المنامة",
+    type: "branch",
+    lat: 26.2285,
+    lng: 50.586,
+    status: "ok",
+  },
+  {
+    id: "br-muscat",
+    name: "Muscat",
+    name_ar: "مسقط",
+    type: "branch",
+    lat: 23.588,
+    lng: 58.3829,
+    status: "ok",
+  },
   { id: "br-london", name: "London", type: "branch", lat: 51.5074, lng: -0.1278, status: "ok" },
-  { id: "br-singapore", name: "Singapore", type: "branch", lat: 1.3521, lng: 103.8198, status: "ok" },
-  { id: "asset-neom", name: "NEOM Site", name_ar: "موقع نيوم", type: "asset", lat: 27.9654, lng: 35.2733, status: "warn", metric: "Permit pending" },
-  { id: "asset-redsea", name: "Red Sea Project", name_ar: "مشروع البحر الأحمر", type: "asset", lat: 25.5, lng: 36.5, status: "ok" },
+  {
+    id: "br-singapore",
+    name: "Singapore",
+    type: "branch",
+    lat: 1.3521,
+    lng: 103.8198,
+    status: "ok",
+  },
+  {
+    id: "asset-neom",
+    name: "NEOM Site",
+    name_ar: "موقع نيوم",
+    type: "asset",
+    lat: 27.9654,
+    lng: 35.2733,
+    status: "warn",
+    metric: "Permit pending",
+  },
+  {
+    id: "asset-redsea",
+    name: "Red Sea Project",
+    name_ar: "مشروع البحر الأحمر",
+    type: "asset",
+    lat: 25.5,
+    lng: 36.5,
+    status: "ok",
+  },
 ];
-
 
 function ExecutiveMapPage() {
   const { locale } = useI18n();
@@ -56,13 +166,15 @@ function ExecutiveMapPage() {
 
   // Leaflet init moved into ExecutiveMapClient (client-only)
 
-
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         const [{ data: incidents }, { data: crises }] = await Promise.all([
-          supabase.from("sec_incidents").select("id,title,severity,location_lat,location_lng,status").limit(50),
+          supabase
+            .from("sec_incidents")
+            .select("id,title,severity,location_lat,location_lng,status")
+            .limit(50),
           supabase.from("pulse_crises").select("id,title,severity,lat,lng,status").limit(50),
         ]);
         if (!alive) return;
@@ -135,10 +247,25 @@ function ExecutiveMapPage() {
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard icon={Building2} label={isAr ? "إجمالي المواقع" : "Total Sites"} value={counts.total} tone="default" />
+        <StatCard
+          icon={Building2}
+          label={isAr ? "إجمالي المواقع" : "Total Sites"}
+          value={counts.total}
+          tone="default"
+        />
         <StatCard icon={Shield} label={isAr ? "سليم" : "Healthy"} value={counts.ok} tone="ok" />
-        <StatCard icon={Activity} label={isAr ? "تحذير" : "Warning"} value={counts.warn} tone="warn" />
-        <StatCard icon={AlertTriangle} label={isAr ? "حرج" : "Critical"} value={counts.critical} tone="critical" />
+        <StatCard
+          icon={Activity}
+          label={isAr ? "تحذير" : "Warning"}
+          value={counts.warn}
+          tone="warn"
+        />
+        <StatCard
+          icon={AlertTriangle}
+          label={isAr ? "حرج" : "Critical"}
+          value={counts.critical}
+          tone="critical"
+        />
       </div>
 
       <Card className="overflow-hidden border-border/60">
@@ -146,7 +273,11 @@ function ExecutiveMapPage() {
           <div className="flex items-center gap-2 text-sm">
             <Radio className="h-4 w-4 text-primary" />
             <span className="font-medium">{isAr ? "البث المباشر" : "Live Feed"}</span>
-            {loading && <Badge variant="outline" className="text-xs">{isAr ? "تحميل..." : "Loading..."}</Badge>}
+            {loading && (
+              <Badge variant="outline" className="text-xs">
+                {isAr ? "تحميل..." : "Loading..."}
+              </Badge>
+            )}
           </div>
           <div className="flex gap-1">
             {(["all", "ok", "warn", "critical"] as const).map((k) => (
@@ -156,7 +287,21 @@ function ExecutiveMapPage() {
                 variant={filter === k ? "default" : "outline"}
                 onClick={() => setFilter(k)}
               >
-                {k === "all" ? (isAr ? "الكل" : "All") : k === "ok" ? (isAr ? "سليم" : "OK") : k === "warn" ? (isAr ? "تحذير" : "Warn") : (isAr ? "حرج" : "Critical")}
+                {k === "all"
+                  ? isAr
+                    ? "الكل"
+                    : "All"
+                  : k === "ok"
+                    ? isAr
+                      ? "سليم"
+                      : "OK"
+                    : k === "warn"
+                      ? isAr
+                        ? "تحذير"
+                        : "Warn"
+                      : isAr
+                        ? "حرج"
+                        : "Critical"}
               </Button>
             ))}
           </div>
@@ -165,7 +310,6 @@ function ExecutiveMapPage() {
         <div className="h-[70vh] w-full">
           <ExecutiveMapClient sites={visible} isAr={isAr} />
         </div>
-
       </Card>
     </div>
   );
@@ -186,10 +330,10 @@ function StatCard({
     tone === "ok"
       ? "text-primary"
       : tone === "warn"
-      ? "text-amber-500"
-      : tone === "critical"
-      ? "text-destructive"
-      : "text-foreground";
+        ? "text-amber-500"
+        : tone === "critical"
+          ? "text-destructive"
+          : "text-foreground";
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between">

@@ -53,7 +53,7 @@ export function createLesson(pattern: Pattern): Lesson | null {
   const strength = strengthFor(pattern);
   const confidence = Math.min(
     0.95,
-    (pattern.avgConfidence * 0.6 + Math.min(pattern.occurrences / 20, 1) * 0.4),
+    pattern.avgConfidence * 0.6 + Math.min(pattern.occurrences / 20, 1) * 0.4,
   );
   const draft: Lesson = {
     id: nextId(),

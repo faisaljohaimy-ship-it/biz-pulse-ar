@@ -30,10 +30,7 @@ function splitCausal(claim: string): { cause: string; effect: string } | null {
   return null;
 }
 
-export function buildCausalGraph(
-  goal: string,
-  evidence: ReadonlyArray<Evidence>,
-): CausalGraph {
+export function buildCausalGraph(goal: string, evidence: ReadonlyArray<Evidence>): CausalGraph {
   const links: CausalLink[] = [];
   const causeCounts = new Map<string, number>();
 

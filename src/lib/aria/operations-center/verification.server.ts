@@ -1,11 +1,5 @@
 // Operations Center verification. Enforces "no command without authorization".
-import type {
-  Alert,
-  ApprovalRecord,
-  CommandRecord,
-  EngineDecision,
-  OperatorAction,
-} from "./types";
+import type { Alert, ApprovalRecord, CommandRecord, EngineDecision, OperatorAction } from "./types";
 
 export interface VerificationOutput {
   readonly decision: EngineDecision;

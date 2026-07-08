@@ -1,18 +1,12 @@
 // Pricing package + quote computation. No hidden discounts; assumptions explicit.
-import type {
-  ConfidenceBucket,
-  PricingPackage,
-  PricingQuote,
-} from "./types";
+import type { ConfidenceBucket, PricingPackage, PricingQuote } from "./types";
 import { PricingPackageZ } from "./contracts";
 
 export function definePricingPackage(p: PricingPackage): PricingPackage {
   const parsed = PricingPackageZ.parse(p);
   for (const c of parsed.components) {
     if (c.currency !== parsed.currency) {
-      throw new Error(
-        `pricing component currency mismatch: ${c.currency} vs ${parsed.currency}`,
-      );
+      throw new Error(`pricing component currency mismatch: ${c.currency} vs ${parsed.currency}`);
     }
     if (c.maxUnits !== null && c.maxUnits < c.minUnits) {
       throw new Error(`pricing component ${c.id}: maxUnits < minUnits`);

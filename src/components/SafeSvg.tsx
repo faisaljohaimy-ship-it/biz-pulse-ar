@@ -6,14 +6,11 @@ import { safePreserveAspectRatio } from "@/lib/svg-safe";
  * An invalid value falls back to "xMidYMid meet" instead of throwing a
  * render error that would unmount the surrounding React tree.
  */
-export const SafeSvg = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
-  function SafeSvg({ preserveAspectRatio, ...rest }, ref) {
-    return (
-      <svg
-        ref={ref}
-        preserveAspectRatio={safePreserveAspectRatio(preserveAspectRatio)}
-        {...rest}
-      />
-    );
-  },
-);
+export const SafeSvg = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(function SafeSvg(
+  { preserveAspectRatio, ...rest },
+  ref,
+) {
+  return (
+    <svg ref={ref} preserveAspectRatio={safePreserveAspectRatio(preserveAspectRatio)} {...rest} />
+  );
+});

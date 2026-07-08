@@ -14,21 +14,14 @@ export { buildBusinessCase } from "./business-case.server";
 export { buildProposal } from "./proposal.server";
 export { buildExecutiveSummary } from "./executive-summary.server";
 export { assessProcurement } from "./procurement-readiness.server";
-export {
-  deriveSeverity,
-  discloseRisk,
-  summarizeRisks,
-} from "./risk-disclosure.server";
+export { deriveSeverity, discloseRisk, summarizeRisks } from "./risk-disclosure.server";
 export { buildPilotToContractPath } from "./pilot-to-contract.server";
 export { buildSupportModel } from "./support-model.server";
 export { buildSlaModel } from "./sla-model.server";
 export { createCommercializationAudit } from "./audit.server";
 export { computeCommercializationMetrics } from "./metrics.server";
 export { emitCommercializationTelemetry } from "./telemetry.server";
-export {
-  verifyCommercialization,
-  type VerificationOutput,
-} from "./verification.server";
+export { verifyCommercialization, type VerificationOutput } from "./verification.server";
 
 import type {
   BusinessCase,
@@ -75,7 +68,12 @@ export function runCommercializationPipeline(
   input: CommercializationPipelineInput,
 ): CommercializationReport {
   const audit = createCommercializationAudit();
-  audit.append({ at: input.now, stage: "positioning", status: "pass", detail: input.positioning.id });
+  audit.append({
+    at: input.now,
+    stage: "positioning",
+    status: "pass",
+    detail: input.positioning.id,
+  });
   audit.append({
     at: input.now,
     stage: "value_proposition",

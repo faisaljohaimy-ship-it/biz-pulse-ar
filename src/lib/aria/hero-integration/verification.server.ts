@@ -30,9 +30,13 @@ export function verifyHero(instanceId?: string): HeroVerification {
   if (!voice.stt || !voice.tts) issues.push("voice degraded");
 
   const confidence: HeroVerification["confidence"] =
-    !voice.stt && !voice.tts ? "unknown" :
-    !voice.stt || !voice.tts ? "low" :
-    instanceActive ? "high" : "medium";
+    !voice.stt && !voice.tts
+      ? "unknown"
+      : !voice.stt || !voice.tts
+        ? "low"
+        : instanceActive
+          ? "high"
+          : "medium";
 
   return {
     ok: buttonsWired === buttonsExpected && (!instanceId || instanceActive),

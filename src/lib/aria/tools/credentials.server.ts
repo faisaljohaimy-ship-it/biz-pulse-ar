@@ -21,7 +21,8 @@ export function unbindCredentialProvider(): void {
 }
 
 export async function resolveCredentials(reference: string | null): Promise<CredentialResolution> {
-  if (reference === null) return { found: true, reference: null, reason: "no credentials required" };
+  if (reference === null)
+    return { found: true, reference: null, reason: "no credentials required" };
   if (!provider) {
     return { found: false, reference: null, reason: "no credential provider bound" };
   }

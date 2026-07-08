@@ -18,7 +18,9 @@ const SCENARIOS: readonly ShowcaseScenario[] = [
   },
 ];
 
-export function listScenarios(): readonly ShowcaseScenario[] { return SCENARIOS; }
+export function listScenarios(): readonly ShowcaseScenario[] {
+  return SCENARIOS;
+}
 export function getScenario(id: string): ShowcaseScenario | null {
   return SCENARIOS.find((s) => s.id === id) ?? null;
 }

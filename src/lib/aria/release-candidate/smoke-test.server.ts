@@ -5,13 +5,9 @@
 import type { TestCase, TestOutcome, TestReport } from "./types";
 import { buildTestPlan } from "./test-plan.server";
 
-export function summarizeSmoke(
-  outcomes: ReadonlyArray<TestOutcome>,
-): TestReport {
+export function summarizeSmoke(outcomes: ReadonlyArray<TestOutcome>): TestReport {
   const plan = buildTestPlan();
-  const smokeCases: ReadonlyArray<TestCase> = plan.cases.filter(
-    (c) => c.kind === "smoke",
-  );
+  const smokeCases: ReadonlyArray<TestCase> = plan.cases.filter((c) => c.kind === "smoke");
   const map = new Map<string, TestOutcome>();
   for (const o of outcomes) map.set(o.case_id, o);
   const merged: TestOutcome[] = smokeCases.map(

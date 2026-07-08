@@ -20,7 +20,10 @@ class ThinkingAnimation {
   }
 
   stop(): void {
-    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
     this.phase = 0;
   }
 

@@ -31,9 +31,7 @@ export const runSelfEvolutionFn = createServerFn({ method: "POST" })
     let persistedId: string | null = null;
     let persistError: string | null = null;
     if (data?.persist !== false) {
-      const { persistEvolutionCycle } = await import(
-        "@/lib/aria/self-evolution/persist.server"
-      );
+      const { persistEvolutionCycle } = await import("@/lib/aria/self-evolution/persist.server");
       const out = await persistEvolutionCycle(report, "manual");
       if ("error" in out) persistError = out.error;
       else persistedId = out.id;
@@ -68,10 +66,4 @@ export const listEvolutionCyclesFn = createServerFn({ method: "GET" })
     return { cycles: rows ?? [] };
   });
 
-type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };

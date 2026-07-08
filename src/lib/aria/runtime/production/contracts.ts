@@ -26,12 +26,7 @@ export const JobStatusSchema = z.enum([
   "unknown",
 ]);
 
-export const HealthSchema = z.enum([
-  "healthy",
-  "degraded",
-  "unhealthy",
-  "unknown",
-]);
+export const HealthSchema = z.enum(["healthy", "degraded", "unhealthy", "unknown"]);
 
 export const EvidenceRefSchema = z.object({
   kind: z.enum([

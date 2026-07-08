@@ -25,12 +25,7 @@ import type {
   RelationshipRecord,
 } from "./types";
 
-function inferenceId(
-  kind: RelationshipKind,
-  from_id: string,
-  to_id: string,
-  ts: string,
-): string {
+function inferenceId(kind: RelationshipKind, from_id: string, to_id: string, ts: string): string {
   let h = 5381;
   const seed = `inf|${kind}|${from_id}|${to_id}|${ts}`;
   for (let i = 0; i < seed.length; i += 1) h = (h * 33) ^ seed.charCodeAt(i);
@@ -91,7 +86,10 @@ export function reason(opts: ReasoningOptions): readonly ReasoningInference[] {
               to_id: b.to_id,
               derived_from: Object.freeze([a.id, b.id]) as readonly string[],
               evidence,
-              confidence: combineConfidence(a.confidence, combineConfidence(b.confidence, confidence)),
+              confidence: combineConfidence(
+                a.confidence,
+                combineConfidence(b.confidence, confidence),
+              ),
               marked_inferred: true,
             }),
           );

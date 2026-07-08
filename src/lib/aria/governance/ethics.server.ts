@@ -4,13 +4,7 @@
  */
 import type { EthicsCheck, ProposedAction } from "./types";
 
-const PRINCIPLES = [
-  "no_harm",
-  "transparency",
-  "accountability",
-  "human_dignity",
-  "no_deception",
-];
+const PRINCIPLES = ["no_harm", "transparency", "accountability", "human_dignity", "no_deception"];
 
 const HARM_KEYWORDS = ["harm", "deceive", "manipulate", "exploit", "punish"];
 

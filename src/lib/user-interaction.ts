@@ -84,7 +84,11 @@ export function installInteractionTracker(): void {
     //   (3) unlock the ARIA audio bus (SYNC static import, no await)
     markInteracted();
     primeAudio();
-    try { AriaAudioBus.unlock(); } catch { /* bus unavailable — audio prime alone still helps */ }
+    try {
+      AriaAudioBus.unlock();
+    } catch {
+      /* bus unavailable — audio prime alone still helps */
+    }
     window.removeEventListener("pointerdown", handler);
     window.removeEventListener("keydown", handler);
     window.removeEventListener("touchstart", handler);
@@ -95,4 +99,3 @@ export function installInteractionTracker(): void {
   window.addEventListener("touchstart", handler, { once: true, passive: true });
   window.addEventListener("click", handler, { once: true });
 }
-

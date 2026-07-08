@@ -1,9 +1,5 @@
 // Human approval gate. Never auto-approves. Never mutates production.
-import type {
-  ApprovalRecord,
-  ImprovementProposal,
-  ImprovementStatus,
-} from "./types";
+import type { ApprovalRecord, ImprovementProposal, ImprovementStatus } from "./types";
 import { ApprovalInputZ } from "./contracts";
 
 export function submitApproval(input: {

@@ -20,15 +20,16 @@ function timingSafeStringEqual(a: string, b: string): boolean {
 export function verifyCronHookSecret(request: Request): Response | null {
   const expected = process.env.CRON_HOOK_SECRET;
   if (!expected || expected.length < 16) {
-    return new Response(
-      JSON.stringify({ error: "cron_hook_secret_not_configured" }),
-      { status: 503, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "cron_hook_secret_not_configured" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
   const supplied =
     request.headers.get("x-cron-secret") ??
     request.headers.get("x-hook-secret") ??
-    (request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "");
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+    "";
   if (!supplied || !timingSafeStringEqual(supplied, expected)) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
@@ -38,9 +39,7 @@ export function verifyCronHookSecret(request: Request): Response | null {
   return null;
 }
 
-export async function verifySupabaseUser(
-  request: Request,
-): Promise<{ userId: string } | Response> {
+export async function verifySupabaseUser(request: Request): Promise<{ userId: string } | Response> {
   const authHeader = request.headers.get("authorization");
   if (!authHeader || !/^Bearer\s+/i.test(authHeader)) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {

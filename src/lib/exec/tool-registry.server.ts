@@ -30,10 +30,7 @@ export type ToolExecutor = {
   /** Optional rich description; surfaced to the LLM via the AI SDK tool. */
   description?: string;
   execute: (input: unknown, ctx: ToolContext) => Promise<ToolResult>;
-  rollback?: (
-    rollbackPayload: Record<string, unknown> | null,
-    ctx: ToolContext,
-  ) => Promise<void>;
+  rollback?: (rollbackPayload: Record<string, unknown> | null, ctx: ToolContext) => Promise<void>;
 };
 
 /* ----------------------------- M365 / Graph ----------------------------- */
@@ -42,9 +39,13 @@ async function lovableConnector(connectorKeyEnv: string, gateway: string) {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const connKey = process.env[connectorKeyEnv];
   if (!lovableKey || !connKey) {
-    throw apiError("forbidden", `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`, {
-      details: { connectorKeyEnv },
-    });
+    throw apiError(
+      "forbidden",
+      `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`,
+      {
+        details: { connectorKeyEnv },
+      },
+    );
   }
   return {
     headers: {
@@ -130,9 +131,7 @@ const sharepointUpload: ToolExecutor = {
       "https://connector-gateway.lovable.dev/microsoft_sharepoint",
     );
     // decode base64
-    const bin = Uint8Array.from(atob(data.contentBase64), (ch) =>
-      ch.charCodeAt(0),
-    );
+    const bin = Uint8Array.from(atob(data.contentBase64), (ch) => ch.charCodeAt(0));
     if (bin.byteLength > 4 * 1024 * 1024) {
       throw apiError("validation_failed", "File exceeds 4MB single-shot upload limit");
     }
@@ -172,10 +171,10 @@ const graphGetUser: ToolExecutor = {
       "MICROSOFT_OUTLOOK_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_outlook",
     );
-    const json = await httpJson(
-      `${c.gateway}/users/${encodeURIComponent(data.userId)}`,
-      { headers: c.headers, label: "tool graph get_user" },
-    );
+    const json = await httpJson(`${c.gateway}/users/${encodeURIComponent(data.userId)}`, {
+      headers: c.headers,
+      label: "tool graph get_user",
+    });
     return { output: json };
   },
 };
@@ -214,9 +213,13 @@ const restHttp: ToolExecutor = {
     const data = input as z.infer<typeof restHttp.input>;
     const url = new URL(data.url);
     if (!ALLOWED_HOSTS.has(url.hostname)) {
-      throw apiError("forbidden", `Host ${url.hostname} not in REST allowlist. Add it in tool-registry ALLOWED_HOSTS.`, {
-        details: { host: url.hostname },
-      });
+      throw apiError(
+        "forbidden",
+        `Host ${url.hostname} not in REST allowlist. Add it in tool-registry ALLOWED_HOSTS.`,
+        {
+          details: { host: url.hostname },
+        },
+      );
     }
     const res = await httpFetch(url, {
       method: data.method,
@@ -262,7 +265,9 @@ const webhookDispatch: ToolExecutor = {
       label: "tool webhook dispatch",
     });
     if (!res.ok) {
-      throw apiError("upstream_failed", `Webhook dispatch failed (${res.status})`, { status: res.status });
+      throw apiError("upstream_failed", `Webhook dispatch failed (${res.status})`, {
+        status: res.status,
+      });
     }
     return { output: { status: res.status } };
   },
@@ -274,36 +279,374 @@ const webhookDispatch: ToolExecutor = {
 // (a) feeds the LLM via the tool description so it stops guessing names, and
 // (b) lets us validate column tokens before talking to PostgREST.
 const TABLE_COLUMNS: Record<string, readonly string[]> = {
-  sec_incidents: ["id","ref","site_id","category","title_ar","title_en","severity","status","owner","reported_at","resolved_at","response_minutes","root_cause","ai_summary","created_at","updated_at","priority","assigned_to","escalated","ai_risk_score","org_id","created_by","attachments_count","aria_auto_analyzed","executive_review"],
-  sec_work_orders: ["id","ref","site_id","building_id","asset_kind","asset_code","kind","title_ar","title_en","priority","status","assigned_to","contractor","opened_at","due_at","closed_at","notes","completion_notes","created_at","updated_at","source_incident_id","org_id","created_by","approved_by","approved_at"],
-  sec_patrols: ["id","ref","site_id","team","route","status","checkpoints_total","checkpoints_done","started_at","ended_at","created_at","updated_at","org_id","created_by"],
-  sec_permits: ["id","ref","site_id","work_type","contractor","risk_level","status","starts_at","ends_at","approver","notes","approved_by","approved_at","created_at","updated_at","org_id","created_by"],
-  sec_visitors: ["id","ref","site_id","full_name","organization","host","purpose","badge_no","check_in_at","check_out_at","status","vehicle_plate","expected_at","gate_id","created_at","org_id","created_by","id_number","phone","qr_token"],
-  sec_vehicles: ["id","ref","plate","vehicle_type","driver_name","driver_phone","driver_id_number","company","contractor_id","site_id","gate_id","status","check_in_at","check_out_at","permit_no","permit_expires_at","notes","created_at","updated_at","org_id","created_by"],
-  sec_assets: ["id","code","name_ar","name_en","kind","site_id","health","status","last_seen_at","created_at","updated_at","org_id"],
-  sec_sites: ["id","code","name_ar","name_en","lat","lng","sensitivity","status","guards_count","notes","circle_id","created_at","updated_at","org_id"],
-  sec_cameras: ["id","building_id","site_id","code","kind","status","health","resolution","last_seen_at","created_at","updated_at","org_id"],
-  sec_gates: ["id","building_id","site_id","code","kind","status","health","last_event_at","events_today","created_at","updated_at","org_id"],
-  sec_sensors: ["id","building_id","site_id","code","sensor_type","status","reading","threshold","unit","last_reading_at","created_at","updated_at","org_id"],
-  sec_activity_events: ["id","entity_type","entity_id","entity_ref","event","actor_id","actor_name","occurred_at","org_id"],
-  sec_buildings: ["id","site_id","code","name_ar","name_en","floors","status","created_at","updated_at","org_id"],
-  sec_circles: ["id","code","name_ar","name_en","manager","lat","lng","staff_count","created_at","updated_at","org_id"],
-  sec_sections: ["id","code","name_ar","name_en","head","staff_count","created_at","updated_at","org_id"],
-  sec_projects: ["id","ref","circle_id","name_ar","name_en","kind","status","progress","budget_sar","spent_sar","starts_at","ends_at","manager","contractor","health","created_at","updated_at","org_id"],
-  sec_cctv_alerts: ["id","ref","site_id","camera_code","alert_type","confidence","status","detected_at","acknowledged_by","notes","created_at","org_id"],
-  sec_patrol_teams: ["id","circle_id","code","name_ar","leader","members_count","vehicle_plate","status","created_at","updated_at","org_id"],
-  sec_contractors: ["id","ref","name","contract_no","workers_count","compliance_score","status","expires_at","permit_types","insurance_expiry","allowed_site_ids","phone","email","created_at","updated_at","org_id","created_by"],
-  sec_control_rooms: ["id","circle_id","code","name_ar","name_en","operators_count","status","shift_lead","screens_count","created_at","updated_at","org_id"],
-  sec_knowledge_articles: ["id","doc_code","category_id","title_ar","title_en","summary_ar","summary_en","body_ar","body_en","procedure_ar","procedure_en","requirements_ar","requirements_en","risk_level","priority","status","version","owner","review_date","created_at","updated_at","created_by","org_id"],
+  sec_incidents: [
+    "id",
+    "ref",
+    "site_id",
+    "category",
+    "title_ar",
+    "title_en",
+    "severity",
+    "status",
+    "owner",
+    "reported_at",
+    "resolved_at",
+    "response_minutes",
+    "root_cause",
+    "ai_summary",
+    "created_at",
+    "updated_at",
+    "priority",
+    "assigned_to",
+    "escalated",
+    "ai_risk_score",
+    "org_id",
+    "created_by",
+    "attachments_count",
+    "aria_auto_analyzed",
+    "executive_review",
+  ],
+  sec_work_orders: [
+    "id",
+    "ref",
+    "site_id",
+    "building_id",
+    "asset_kind",
+    "asset_code",
+    "kind",
+    "title_ar",
+    "title_en",
+    "priority",
+    "status",
+    "assigned_to",
+    "contractor",
+    "opened_at",
+    "due_at",
+    "closed_at",
+    "notes",
+    "completion_notes",
+    "created_at",
+    "updated_at",
+    "source_incident_id",
+    "org_id",
+    "created_by",
+    "approved_by",
+    "approved_at",
+  ],
+  sec_patrols: [
+    "id",
+    "ref",
+    "site_id",
+    "team",
+    "route",
+    "status",
+    "checkpoints_total",
+    "checkpoints_done",
+    "started_at",
+    "ended_at",
+    "created_at",
+    "updated_at",
+    "org_id",
+    "created_by",
+  ],
+  sec_permits: [
+    "id",
+    "ref",
+    "site_id",
+    "work_type",
+    "contractor",
+    "risk_level",
+    "status",
+    "starts_at",
+    "ends_at",
+    "approver",
+    "notes",
+    "approved_by",
+    "approved_at",
+    "created_at",
+    "updated_at",
+    "org_id",
+    "created_by",
+  ],
+  sec_visitors: [
+    "id",
+    "ref",
+    "site_id",
+    "full_name",
+    "organization",
+    "host",
+    "purpose",
+    "badge_no",
+    "check_in_at",
+    "check_out_at",
+    "status",
+    "vehicle_plate",
+    "expected_at",
+    "gate_id",
+    "created_at",
+    "org_id",
+    "created_by",
+    "id_number",
+    "phone",
+    "qr_token",
+  ],
+  sec_vehicles: [
+    "id",
+    "ref",
+    "plate",
+    "vehicle_type",
+    "driver_name",
+    "driver_phone",
+    "driver_id_number",
+    "company",
+    "contractor_id",
+    "site_id",
+    "gate_id",
+    "status",
+    "check_in_at",
+    "check_out_at",
+    "permit_no",
+    "permit_expires_at",
+    "notes",
+    "created_at",
+    "updated_at",
+    "org_id",
+    "created_by",
+  ],
+  sec_assets: [
+    "id",
+    "code",
+    "name_ar",
+    "name_en",
+    "kind",
+    "site_id",
+    "health",
+    "status",
+    "last_seen_at",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_sites: [
+    "id",
+    "code",
+    "name_ar",
+    "name_en",
+    "lat",
+    "lng",
+    "sensitivity",
+    "status",
+    "guards_count",
+    "notes",
+    "circle_id",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_cameras: [
+    "id",
+    "building_id",
+    "site_id",
+    "code",
+    "kind",
+    "status",
+    "health",
+    "resolution",
+    "last_seen_at",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_gates: [
+    "id",
+    "building_id",
+    "site_id",
+    "code",
+    "kind",
+    "status",
+    "health",
+    "last_event_at",
+    "events_today",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_sensors: [
+    "id",
+    "building_id",
+    "site_id",
+    "code",
+    "sensor_type",
+    "status",
+    "reading",
+    "threshold",
+    "unit",
+    "last_reading_at",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_activity_events: [
+    "id",
+    "entity_type",
+    "entity_id",
+    "entity_ref",
+    "event",
+    "actor_id",
+    "actor_name",
+    "occurred_at",
+    "org_id",
+  ],
+  sec_buildings: [
+    "id",
+    "site_id",
+    "code",
+    "name_ar",
+    "name_en",
+    "floors",
+    "status",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_circles: [
+    "id",
+    "code",
+    "name_ar",
+    "name_en",
+    "manager",
+    "lat",
+    "lng",
+    "staff_count",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_sections: [
+    "id",
+    "code",
+    "name_ar",
+    "name_en",
+    "head",
+    "staff_count",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_projects: [
+    "id",
+    "ref",
+    "circle_id",
+    "name_ar",
+    "name_en",
+    "kind",
+    "status",
+    "progress",
+    "budget_sar",
+    "spent_sar",
+    "starts_at",
+    "ends_at",
+    "manager",
+    "contractor",
+    "health",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_cctv_alerts: [
+    "id",
+    "ref",
+    "site_id",
+    "camera_code",
+    "alert_type",
+    "confidence",
+    "status",
+    "detected_at",
+    "acknowledged_by",
+    "notes",
+    "created_at",
+    "org_id",
+  ],
+  sec_patrol_teams: [
+    "id",
+    "circle_id",
+    "code",
+    "name_ar",
+    "leader",
+    "members_count",
+    "vehicle_plate",
+    "status",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_contractors: [
+    "id",
+    "ref",
+    "name",
+    "contract_no",
+    "workers_count",
+    "compliance_score",
+    "status",
+    "expires_at",
+    "permit_types",
+    "insurance_expiry",
+    "allowed_site_ids",
+    "phone",
+    "email",
+    "created_at",
+    "updated_at",
+    "org_id",
+    "created_by",
+  ],
+  sec_control_rooms: [
+    "id",
+    "circle_id",
+    "code",
+    "name_ar",
+    "name_en",
+    "operators_count",
+    "status",
+    "shift_lead",
+    "screens_count",
+    "created_at",
+    "updated_at",
+    "org_id",
+  ],
+  sec_knowledge_articles: [
+    "id",
+    "doc_code",
+    "category_id",
+    "title_ar",
+    "title_en",
+    "summary_ar",
+    "summary_en",
+    "body_ar",
+    "body_en",
+    "procedure_ar",
+    "procedure_en",
+    "requirements_ar",
+    "requirements_en",
+    "risk_level",
+    "priority",
+    "status",
+    "version",
+    "owner",
+    "review_date",
+    "created_at",
+    "updated_at",
+    "created_by",
+    "org_id",
+  ],
 } as const;
 
 const ALLOWED_TABLE_NAMES = Object.keys(TABLE_COLUMNS) as [string, ...string[]];
 
 // Compact schema hint embedded in the tool description so the model has the
 // full column catalog at decode time (kills schema drift on column names).
-const SCHEMA_HINT = ALLOWED_TABLE_NAMES
-  .map((t) => `${t}(${TABLE_COLUMNS[t].join(",")})`)
-  .join(" | ");
+const SCHEMA_HINT = ALLOWED_TABLE_NAMES.map((t) => `${t}(${TABLE_COLUMNS[t].join(",")})`).join(
+  " | ",
+);
 
 const filterValue = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 const filterOp = z.object({
@@ -344,9 +687,7 @@ const sqlRead: ToolExecutor = {
     const selected = data.columns.includes("*") ? ["*"] : data.columns;
     for (const c of selected) {
       if (c !== "*" && !knownCols.has(c)) {
-        throw new Error(
-          `Unknown column "${c}" on ${data.table}. Valid columns: ${cols.join(",")}`,
-        );
+        throw new Error(`Unknown column "${c}" on ${data.table}. Valid columns: ${cols.join(",")}`);
       }
     }
     for (const k of Object.keys(data.filters ?? {})) {
@@ -357,9 +698,7 @@ const sqlRead: ToolExecutor = {
       }
     }
     if (data.order_by && !knownCols.has(data.order_by.column)) {
-      throw new Error(
-        `Unknown order_by column "${data.order_by.column}" on ${data.table}.`,
-      );
+      throw new Error(`Unknown order_by column "${data.order_by.column}" on ${data.table}.`);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -376,16 +715,36 @@ const sqlRead: ToolExecutor = {
       if (raw !== null && typeof raw === "object" && "op" in (raw as object)) {
         const spec = raw as z.infer<typeof filterOp>;
         switch (spec.op) {
-          case "eq":  q = q.eq(k, spec.value); break;
-          case "neq": q = q.neq(k, spec.value); break;
-          case "gt":  q = q.gt(k, spec.value); break;
-          case "gte": q = q.gte(k, spec.value); break;
-          case "lt":  q = q.lt(k, spec.value); break;
-          case "lte": q = q.lte(k, spec.value); break;
-          case "like":  q = q.like(k, String(spec.value)); break;
-          case "ilike": q = q.ilike(k, String(spec.value)); break;
-          case "in":    q = q.in(k, Array.isArray(spec.value) ? spec.value : [spec.value]); break;
-          case "is":    q = q.is(k, spec.value as null | boolean); break;
+          case "eq":
+            q = q.eq(k, spec.value);
+            break;
+          case "neq":
+            q = q.neq(k, spec.value);
+            break;
+          case "gt":
+            q = q.gt(k, spec.value);
+            break;
+          case "gte":
+            q = q.gte(k, spec.value);
+            break;
+          case "lt":
+            q = q.lt(k, spec.value);
+            break;
+          case "lte":
+            q = q.lte(k, spec.value);
+            break;
+          case "like":
+            q = q.like(k, String(spec.value));
+            break;
+          case "ilike":
+            q = q.ilike(k, String(spec.value));
+            break;
+          case "in":
+            q = q.in(k, Array.isArray(spec.value) ? spec.value : [spec.value]);
+            break;
+          case "is":
+            q = q.is(k, spec.value as null | boolean);
+            break;
         }
       } else {
         q = q.eq(k, raw);
@@ -422,16 +781,18 @@ const sqlRead: ToolExecutor = {
 const edgeInvoke: ToolExecutor = {
   id: "supabase.invoke_edge_function",
   input: z.object({
-    name: z.string().min(1).regex(/^[a-z0-9-_]+$/),
+    name: z
+      .string()
+      .min(1)
+      .regex(/^[a-z0-9-_]+$/),
     payload: z.unknown().optional(),
   }),
   async execute(input, ctx) {
     const data = input as z.infer<typeof edgeInvoke.input>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: res, error } = await (ctx.supabase as any).functions.invoke(
-      data.name,
-      { body: data.payload ?? {} },
-    );
+    const { data: res, error } = await (ctx.supabase as any).functions.invoke(data.name, {
+      body: data.payload ?? {},
+    });
     if (error) throw new Error(`Edge invoke failed: ${error.message}`);
     return { output: res };
   },
@@ -467,10 +828,7 @@ const secCreateIncident: ToolExecutor = {
       high: 10,
       critical: 15,
     };
-    const riskScore = Math.min(
-      100,
-      severityScore[data.severity] + priorityBoost[data.priority],
-    );
+    const riskScore = Math.min(100, severityScore[data.severity] + priorityBoost[data.priority]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (ctx.supabase as any)
       .from("sec_incidents")
@@ -518,10 +876,36 @@ const kbSearch: ToolExecutor = {
     query: z.string().min(2).max(500),
     category_code: z
       .enum([
-        "IS-POL","IS-REG","IS-SOP","IS-WI","IS-INC","IS-INV","IS-ERP","IS-RSK","IS-CRS",
-        "IS-VIS","IS-CON","IS-PTW","IS-GAT","IS-ACS","IS-PAT","IS-CCT","IS-AST","IS-CIP",
-        "IS-FLS","IS-HAZ","IS-EXE","IS-EVT","IS-HAJ","IS-BCM","IS-DRP","IS-AUD","IS-KPI",
-        "IS-FRM","IS-TPL","IS-CHK",
+        "IS-POL",
+        "IS-REG",
+        "IS-SOP",
+        "IS-WI",
+        "IS-INC",
+        "IS-INV",
+        "IS-ERP",
+        "IS-RSK",
+        "IS-CRS",
+        "IS-VIS",
+        "IS-CON",
+        "IS-PTW",
+        "IS-GAT",
+        "IS-ACS",
+        "IS-PAT",
+        "IS-CCT",
+        "IS-AST",
+        "IS-CIP",
+        "IS-FLS",
+        "IS-HAZ",
+        "IS-EXE",
+        "IS-EVT",
+        "IS-HAJ",
+        "IS-BCM",
+        "IS-DRP",
+        "IS-AUD",
+        "IS-KPI",
+        "IS-FRM",
+        "IS-TPL",
+        "IS-CHK",
       ])
       .optional(),
     limit: z.number().int().min(1).max(10).default(5),
@@ -530,7 +914,11 @@ const kbSearch: ToolExecutor = {
     const data = input as { query: string; category_code?: string; limit: number };
     const { embedText } = await import("@/lib/kb-embed.server");
     let vec: number[] | null = null;
-    try { vec = await embedText(data.query); } catch { vec = null; }
+    try {
+      vec = await embedText(data.query);
+    } catch {
+      vec = null;
+    }
 
     if (vec) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -552,8 +940,12 @@ const kbSearch: ToolExecutor = {
       .select("doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority")
       .eq("status", "published")
       .or(
-        [`title_ar.ilike.%${kq}%`, `title_en.ilike.%${kq}%`,
-         `summary_ar.ilike.%${kq}%`, `summary_en.ilike.%${kq}%`].join(","),
+        [
+          `title_ar.ilike.%${kq}%`,
+          `title_en.ilike.%${kq}%`,
+          `summary_ar.ilike.%${kq}%`,
+          `summary_en.ilike.%${kq}%`,
+        ].join(","),
       )
       .limit(data.limit);
     const { data: rows, error } = await q;
@@ -601,10 +993,7 @@ const secUpdateWorkOrder: ToolExecutor = {
     } | null;
     if (!p?.id || !p.before) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (ctx.supabase as any)
-      .from("sec_work_orders")
-      .update(p.before)
-      .eq("id", p.id);
+    await (ctx.supabase as any).from("sec_work_orders").update(p.before).eq("id", p.id);
   },
 };
 

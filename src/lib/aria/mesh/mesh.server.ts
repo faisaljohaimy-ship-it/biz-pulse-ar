@@ -26,13 +26,7 @@ import type {
   Snapshot,
 } from "./types";
 import { createNode, applyHeartbeat, markStatus } from "./node.server";
-import {
-  addNode,
-  createCluster,
-  setLeader,
-  updateNode,
-  upsertPeer,
-} from "./cluster.server";
+import { addNode, createCluster, setLeader, updateNode, upsertPeer } from "./cluster.server";
 import { runDiscovery } from "./discovery.server";
 import { createPeer } from "./peer.server";
 import { createRegistry, register } from "./registry.server";
@@ -386,7 +380,11 @@ export function runMeshPipeline(input: MeshPipelineInput): MeshPipelineOutput {
   }
 
   // 12. recovery (only if inflight ids supplied and checkpoint present)
-  if (checkpoint && input.recoveryInFlightMessageIds && input.recoveryInFlightMessageIds.length > 0) {
+  if (
+    checkpoint &&
+    input.recoveryInFlightMessageIds &&
+    input.recoveryInFlightMessageIds.length > 0
+  ) {
     const plan = planRecovery({
       clusterId: cluster.id,
       checkpoint,

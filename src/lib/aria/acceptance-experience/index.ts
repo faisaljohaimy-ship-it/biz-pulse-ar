@@ -9,15 +9,8 @@ export {
   resetFirstImpression,
 } from "./first-impression.server";
 export { composeExecutiveGreeting } from "./executive-greeting.server";
-export {
-  noteEngagement,
-  getEngagement,
-  resetEngagement,
-} from "./engagement-state.server";
-export {
-  assessDemoReadiness,
-  type DemoReadinessInput,
-} from "./demo-readiness.server";
+export { noteEngagement, getEngagement, resetEngagement } from "./engagement-state.server";
+export { assessDemoReadiness, type DemoReadinessInput } from "./demo-readiness.server";
 export {
   recordAcceptanceSignal,
   acceptanceSignals,
@@ -30,25 +23,14 @@ export {
   type DelightRequest,
   type DelightDecision,
 } from "./delight-moments.server";
-export {
-  assessTrust,
-  type TrustInput,
-  type TrustAssessment,
-} from "./trust-indicators.server";
+export { assessTrust, type TrustInput, type TrustAssessment } from "./trust-indicators.server";
 export {
   assessQuality,
   type QualityInput,
   type QualityAssessment,
 } from "./conversation-quality.server";
-export {
-  discipline,
-  type DisciplinedResponse,
-} from "./response-discipline.server";
-export {
-  performHandoff,
-  type HandoffRequest,
-  type HandoffOutcome,
-} from "./handoff.server";
+export { discipline, type DisciplinedResponse } from "./response-discipline.server";
+export { performHandoff, type HandoffRequest, type HandoffOutcome } from "./handoff.server";
 export {
   logAcceptance,
   acceptanceAudit,
@@ -65,10 +47,7 @@ export {
   recordDelight,
   type AcceptanceMetricsSnapshot,
 } from "./metrics.server";
-export {
-  verifyAcceptance,
-  type AcceptanceVerification,
-} from "./verification.server";
+export { verifyAcceptance, type AcceptanceVerification } from "./verification.server";
 
 // Phase 11.7 additions.
 export {
@@ -103,10 +82,7 @@ export {
   type LatencySample,
   type ResponsivenessSnapshot,
 } from "./responsiveness.server";
-export {
-  scoreInteraction,
-  type InteractionQualityScore,
-} from "./interaction-quality.server";
+export { scoreInteraction, type InteractionQualityScore } from "./interaction-quality.server";
 export {
   decideAcceptanceFallback,
   type AcceptanceFallbackKind,

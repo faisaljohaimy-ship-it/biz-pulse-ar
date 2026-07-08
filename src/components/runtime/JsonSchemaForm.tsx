@@ -86,7 +86,9 @@ function validate(schema: JsonSchema, value: unknown, path = "$"): FieldError[] 
   if (isMissing) return errors;
 
   if (schema.type === "array" && Array.isArray(value) && schema.items) {
-    value.forEach((v, i) => errors.push(...validate(schema.items as JsonSchema, v, `${path}[${i}]`)));
+    value.forEach((v, i) =>
+      errors.push(...validate(schema.items as JsonSchema, v, `${path}[${i}]`)),
+    );
     return errors;
   }
 
@@ -159,7 +161,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
             ))}
           </SelectContent>
         </Select>
-        {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+        {schema.description && (
+          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+        )}
         {err && <p className="text-[10px] text-rose-400">{err}</p>}
       </div>
     );
@@ -170,7 +174,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
       <div className="flex items-center justify-between gap-2 rounded-md border border-border/40 p-2.5">
         <div className="min-w-0">
           <Label className="text-xs">{title}</Label>
-          {schema.description && <p className="truncate text-[10px] text-muted-foreground">{schema.description}</p>}
+          {schema.description && (
+            <p className="truncate text-[10px] text-muted-foreground">{schema.description}</p>
+          )}
         </div>
         <Switch checked={Boolean(value)} onCheckedChange={onChange} />
       </div>
@@ -195,7 +201,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
             onChange(v);
           }}
         />
-        {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+        {schema.description && (
+          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+        )}
         {err && <p className="text-[10px] text-rose-400">{err}</p>}
       </div>
     );
@@ -220,7 +228,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
             <Plus className="h-3 w-3" /> <span className="ms-1 text-[10px]">Add</span>
           </Button>
         </div>
-        {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+        {schema.description && (
+          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+        )}
         {arr.length === 0 ? (
           <p className="text-[10px] italic text-muted-foreground">No items. Click Add.</p>
         ) : (
@@ -264,7 +274,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
     return (
       <div className="space-y-2 rounded-md border border-border/40 p-2.5">
         <Label className="text-xs">{title}</Label>
-        {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+        {schema.description && (
+          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+        )}
         <ObjectFields
           schema={schema}
           value={(value as Record<string, unknown>) ?? {}}
@@ -288,12 +300,22 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
         className={isLong ? "min-h-[80px] text-xs" : "h-9 text-xs"}
         value={value === undefined || value === null ? "" : String(value)}
         placeholder={schema.examples?.[0] ? String(schema.examples[0]) : undefined}
-        type={schema.format === "email" ? "email" : schema.format === "uri" ? "url" : schema.format === "date" ? "date" : "text"}
+        type={
+          schema.format === "email"
+            ? "email"
+            : schema.format === "uri"
+              ? "url"
+              : schema.format === "date"
+                ? "date"
+                : "text"
+        }
         onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
           onChange(e.target.value === "" ? undefined : e.target.value)
         }
       />
-      {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+      {schema.description && (
+        <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+      )}
       {err && <p className="text-[10px] text-rose-400">{err}</p>}
     </div>
   );

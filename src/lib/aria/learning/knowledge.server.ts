@@ -12,7 +12,7 @@ function toArtifact(lesson: Lesson): KnowledgeArtifact {
   const now = new Date().toISOString();
   const title = `Lesson: ${lesson.statement}`;
   const priorId = byTitle.get(title);
-  const prior = priorId ? artifacts.get(priorId) ?? null : null;
+  const prior = priorId ? (artifacts.get(priorId) ?? null) : null;
   const version = prior ? prior.version + 1 : 1;
   const body = [
     `# ${title}`,

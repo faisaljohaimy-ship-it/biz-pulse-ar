@@ -35,10 +35,8 @@ export function HologramOverlay() {
             "repeating-linear-gradient(60deg, rgba(56,225,255,0.05) 0 1px, transparent 1px 40px), repeating-linear-gradient(-60deg, rgba(56,225,255,0.05) 0 1px, transparent 1px 40px), repeating-linear-gradient(0deg, rgba(56,225,255,0.05) 0 1px, transparent 1px 40px)",
           animation: "holoGridSpin 80s linear infinite",
           opacity: 0.55,
-          maskImage:
-            "radial-gradient(ellipse at center, black 30%, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse at center, black 30%, transparent 75%)",
+          maskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)",
         }}
       />
 
@@ -80,7 +78,10 @@ export function HologramOverlay() {
       <div className="absolute right-5 top-5 flex items-center gap-2">
         <span
           className="h-2 w-2 rounded-full bg-emerald-400"
-          style={{ animation: "holoPulse 1.4s ease-in-out infinite", boxShadow: "0 0 10px #10B981" }}
+          style={{
+            animation: "holoPulse 1.4s ease-in-out infinite",
+            boxShadow: "0 0 10px #10B981",
+          }}
         />
         <span className="font-mono text-[10px] tracking-widest text-emerald-300/70">LIVE</span>
       </div>
@@ -99,8 +100,7 @@ export function HologramOverlay() {
       <div
         className="absolute inset-0"
         style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 45%, rgba(4,7,15,0.55) 100%)",
+          background: "radial-gradient(ellipse at center, transparent 45%, rgba(4,7,15,0.55) 100%)",
         }}
       />
 

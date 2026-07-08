@@ -15,14 +15,10 @@ import {
   getChatRequestId,
   validateChatRequest,
 } from "./-chat-guard";
-import {
-  enforceRateLimit,
-  rateLimitUnavailableResponse,
-} from "@/lib/governance/rate-limit.server";
+import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
 import { evaluateRagCoverage } from "@/lib/aria/rag.server";
 import { parseIntent, resolveModel } from "@/lib/aria-core/server/ai-router.server";
 import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
-
 
 const CORS_HEADERS_OPTIONS = {
   "Access-Control-Allow-Origin": "*",
@@ -56,9 +52,7 @@ function getMessageText(message?: UIMessage) {
  */
 function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
   const filtered = msgs.filter(
-    (m) =>
-      m.id !== "aria-welcome" &&
-      (m.role === "user" || m.role === "assistant"),
+    (m) => m.id !== "aria-welcome" && (m.role === "user" || m.role === "assistant"),
   );
   const firstUser = filtered.findIndex((m) => m.role === "user");
   const trimmed = firstUser === -1 ? [] : filtered.slice(firstUser);
@@ -77,17 +71,10 @@ function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
 function clientIp(request: Request): string {
   const xff = request.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0]!.trim();
-  return (
-    request.headers.get("cf-connecting-ip") ||
-    request.headers.get("x-real-ip") ||
-    "anon"
-  );
+  return request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") || "anon";
 }
 
 // Agentic mode: tools are ALWAYS enabled for authenticated users.
-
-
-
 
 const SYSTEM_PROMPT = `${ARIA_IDENTITY_PREAMBLE}
 
@@ -173,8 +160,6 @@ Executive tools:
 
 # ARABIC TASHKEEL — MANDATORY
 اكْتُبِي كُلَّ نَصٍّ عَرَبِيٍّ بِالتَّشْكِيلِ الكَامِلِ (فَتْحَة، ضَمَّة، كَسْرَة، سُكُون، شَدَّة) فِي كُلِّ رَدٍّ دُونَ اسْتِثْنَاء، مِنْ أَوَّلِ كَلِمَةٍ إِلَى آخِرِهَا. Applies to every Arabic word in every reply, including headings, table cells, bullet points, greetings, and tool-output narration. Do not skip diacritics for brevity.`;
-
-
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -262,13 +247,17 @@ export const Route = createFileRoute("/api/chat")({
           : await enforceRateLimit(rateKey, 40, 300);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) {
-          return jsonError("ARIA is temporarily rate limited. Please retry shortly.", 429, requestId);
+          return jsonError(
+            "ARIA is temporarily rate limited. Please retry shortly.",
+            429,
+            requestId,
+          );
         }
 
-
-        const provider = vendor === "lovable"
-          ? createLovableAiGatewayProvider(lovableKey!)
-          : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
+        const provider =
+          vendor === "lovable"
+            ? createLovableAiGatewayProvider(lovableKey!)
+            : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
         const model = provider(selectedModelId);
         console.log("[api/chat] provider", {
           requestId,
@@ -278,9 +267,10 @@ export const Route = createFileRoute("/api/chat")({
           anonymous: isAnonymous,
         });
 
-
         const uiMessages = sanitizeHistory(messages as UIMessage[]);
-        const lastUserText = getMessageText([...uiMessages].reverse().find((m) => m.role === "user"));
+        const lastUserText = getMessageText(
+          [...uiMessages].reverse().find((m) => m.role === "user"),
+        );
 
         // Inject live enterprise context + semantic RAG (memory / knowledge / documents) unless explicitly disabled.
         // Anonymous callers skip grounding entirely (no user context / no tools).
@@ -296,7 +286,12 @@ export const Route = createFileRoute("/api/chat")({
             buildAriaContext(supabase),
             lastUserText
               ? gatherRagContext(supabase, userId, lastUserText)
-              : Promise.resolve({ contextBlock: "", citations: [], counts: { memories: 0, knowledge: 0, documents: 0 }, embedding: null }),
+              : Promise.resolve({
+                  contextBlock: "",
+                  citations: [],
+                  counts: { memories: 0, knowledge: 0, documents: 0 },
+                  embedding: null,
+                }),
           ]);
           ragCounts = rag.counts;
           ragCitations = rag.citations;
@@ -312,7 +307,6 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
 - If a needed datum is missing, say "بيانات غير متوفرة" / "Data unavailable" — never fabricate.
 - Cite the source section name (e.g. "Live KPIs", "Open Crises") when referencing enterprise data.`;
         }
-
 
         const tools = userId
           ? (await import("@/lib/aria-tools.server")).buildAriaTools(supabase, userId)
@@ -361,7 +355,10 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
               .limit(5);
             if (patterns && patterns.length > 0) {
               const block = patterns
-                .map((p) => `- (${Number(p.confidence).toFixed(2)}) ${p.pattern_key}: ${p.pattern_value}`)
+                .map(
+                  (p) =>
+                    `- (${Number(p.confidence).toFixed(2)}) ${p.pattern_key}: ${p.pattern_value}`,
+                )
                 .join("\n");
               systemPrompt = `${systemPrompt}\n\n# ARIA LEARNED INSTINCTS (per-user, confidence≥0.7)\n${block}`;
             }
@@ -389,7 +386,9 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           // Priority serving tier (Fast mode) — reaches the gateway as a
           // top-level `service_tier` field. Silently ignored on models that
           // do not support it, but we already gated with PRIORITY_MODELS.
-          ...(usePriority ? { providerOptions: { lovable: { service_tier: "priority" as const } } } : {}),
+          ...(usePriority
+            ? { providerOptions: { lovable: { service_tier: "priority" as const } } }
+            : {}),
 
           onError: ({ error }) => {
             console.error("[api/chat] streamText error", { requestId, error });
@@ -428,7 +427,6 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           },
         });
 
-
         let finalAssistantText = "";
 
         return result.toUIMessageStreamResponse({
@@ -447,7 +445,10 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
               const coverage = evaluateRagCoverage(finalAssistantText, ragCitations);
 
               if (coverage.status === "uncited" && coverage.available > 0) {
-                console.warn("[api/chat] uncited answer", { requestId, available: coverage.available });
+                console.warn("[api/chat] uncited answer", {
+                  requestId,
+                  available: coverage.available,
+                });
               }
               return { coverage };
             }
@@ -457,9 +458,12 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           onError: (error) => {
             console.error("[api/chat] stream response error", { requestId, error });
             const msg = error instanceof Error ? error.message : String(error);
-            if (msg.includes("401") || msg.includes("403")) return "ARIA could not authenticate with the AI gateway. Please contact support.";
-            if (msg.includes("402")) return "AI credits are exhausted on the workspace. Please add credits in Settings → Plans & credits.";
-            if (msg.includes("429")) return "ARIA is temporarily rate limited. Please retry in a moment.";
+            if (msg.includes("401") || msg.includes("403"))
+              return "ARIA could not authenticate with the AI gateway. Please contact support.";
+            if (msg.includes("402"))
+              return "AI credits are exhausted on the workspace. Please add credits in Settings → Plans & credits.";
+            if (msg.includes("429"))
+              return "ARIA is temporarily rate limited. Please retry in a moment.";
             if (msg.includes("AbortError") || msg.toLowerCase().includes("timeout")) {
               return "ARIA took too long to respond. Please retry; the chat will reconnect automatically.";
             }
@@ -475,17 +479,22 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
               const newAssistantForLog = finalMessages[finalMessages.length - 1];
               const q = (lastUserForLog?.parts ?? [])
                 .map((p) => (p.type === "text" ? p.text : ""))
-                .join("").trim();
-              const a = (newAssistantForLog?.role === "assistant"
-                ? (newAssistantForLog.parts ?? [])
-                    .map((p) => (p.type === "text" ? p.text : ""))
-                    .join("")
-                : "").trim();
+                .join("")
+                .trim();
+              const a = (
+                newAssistantForLog?.role === "assistant"
+                  ? (newAssistantForLog.parts ?? [])
+                      .map((p) => (p.type === "text" ? p.text : ""))
+                      .join("")
+                  : ""
+              ).trim();
               if (q && a) {
                 const ua = request.headers.get("user-agent") ?? "";
                 const deviceClass = /Mobi|Android|iPhone/i.test(ua)
                   ? "mobile"
-                  : /iPad|Tablet/i.test(ua) ? "tablet" : "desktop";
+                  : /iPad|Tablet/i.test(ua)
+                    ? "tablet"
+                    : "desktop";
                 void supabase.from("aria_interactions").insert({
                   user_id: userId,
                   thread_id: threadId ?? null,
@@ -537,7 +546,8 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
               const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
               const newAssistant = finalMessages[finalMessages.length - 1];
 
-              const rows: { thread_id: string; user_id: string; role: string; parts: unknown }[] = [];
+              const rows: { thread_id: string; user_id: string; role: string; parts: unknown }[] =
+                [];
               if (lastUser) {
                 rows.push({
                   thread_id: threadId,
@@ -590,7 +600,13 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
                     : "";
                 if (userText && assistantText) {
                   const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
-                  await rememberConversationTurn(supabase, userId, threadId, userText, assistantText);
+                  await rememberConversationTurn(
+                    supabase,
+                    userId,
+                    threadId,
+                    userText,
+                    assistantText,
+                  );
                 }
               } catch (memErr) {
                 console.warn("[api/chat] memory persistence skipped", memErr);

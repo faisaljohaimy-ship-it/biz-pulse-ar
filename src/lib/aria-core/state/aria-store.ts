@@ -48,8 +48,7 @@ export const useAriaStore = create<AriaState>((set, get) => ({
   mode: "collapsed",
   voice: "idle",
   voiceEnabled:
-    typeof window !== "undefined" &&
-    window.localStorage.getItem("aria.voiceEnabled") === "true",
+    typeof window !== "undefined" && window.localStorage.getItem("aria.voiceEnabled") === "true",
   pageContext: null,
   activeTurn: null,
   activeEnvelope: null,

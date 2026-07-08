@@ -62,7 +62,11 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
       workflowsRes,
       msRes,
     ] = await Promise.all([
-      supabase.from("profiles").select("user_id, display_name, avatar_url").eq("user_id", userId).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .eq("user_id", userId)
+        .maybeSingle(),
       supabase
         .from("org_members")
         .select("role, org_id, organizations:org_id(id, name)")
@@ -83,9 +87,11 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
     ]);
 
     const profile = profileRes.data;
-    const orgRow = orgMemberRes.data as
-      | { role: string; org_id: string; organizations: { id: string; name: string } | null }
-      | null;
+    const orgRow = orgMemberRes.data as {
+      role: string;
+      org_id: string;
+      organizations: { id: string; name: string } | null;
+    } | null;
 
     const incidents = incidentsRes.data ?? [];
     const patrols = patrolsRes.data ?? [];
@@ -114,13 +120,16 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
       counts: {
         sites: sitesRes.count ?? 0,
         assets: assetsRes.count ?? assets.length,
-        incidents_open: incidents.filter((i) => i.status !== "resolved" && i.status !== "closed").length,
+        incidents_open: incidents.filter((i) => i.status !== "resolved" && i.status !== "closed")
+          .length,
         incidents_critical: incidents.filter(
           (i) => i.severity === "critical" && i.status !== "closed",
         ).length,
         patrols_active: patrols.filter((p) => p.status === "active").length,
-        permits_active: permits.filter((p) => p.status === "active" || p.status === "approved").length,
-        visitors_inside: visitors.filter((v) => v.status === "inside" || v.status === "overdue").length,
+        permits_active: permits.filter((p) => p.status === "active" || p.status === "approved")
+          .length,
+        visitors_inside: visitors.filter((v) => v.status === "inside" || v.status === "overdue")
+          .length,
         cctv_new: cctv.filter((c) => c.status === "new").length,
         agents_enabled: agents.filter((a) => a.enabled).length,
         workflows_enabled: workflows.filter((w) => w.enabled).length,

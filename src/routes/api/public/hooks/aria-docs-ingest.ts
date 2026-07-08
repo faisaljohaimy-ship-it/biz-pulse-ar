@@ -298,7 +298,10 @@ and HCIS data classification standards. Annual external audit.
 ];
 
 function chunkText(input: string, target = 900, overlap = 120): string[] {
-  const clean = input.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").trim();
+  const clean = input
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
   if (!clean) return [];
   const paragraphs = clean.split(/\n{2,}/);
   const chunks: string[] = [];
@@ -334,7 +337,9 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
             const body = await request.json().catch(() => null);
             if (body && typeof body === "object") singleDoc = body as typeof singleDoc;
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
 
         async function ingestOne(
           doc: { id: string; user_id: string; title: string },
@@ -343,12 +348,20 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
           const chunks = chunkText(text);
           if (chunks.length === 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabaseAdmin as any).from("aria_documents")
+            await (supabaseAdmin as any)
+              .from("aria_documents")
               .update({ status: "failed", error: "no extractable text" })
               .eq("id", doc.id);
             return { title: doc.title, status: "empty" };
           }
-          const rows: Array<{ document_id: string; user_id: string; chunk_index: number; content: string; embedding: string | null; metadata: Record<string, unknown> }> = [];
+          const rows: Array<{
+            document_id: string;
+            user_id: string;
+            chunk_index: number;
+            content: string;
+            embedding: string | null;
+            metadata: Record<string, unknown>;
+          }> = [];
           for (let i = 0; i < chunks.length; i++) {
             const c = chunks[i];
             const vec = await embedText(c);
@@ -356,7 +369,10 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
             const latinChars = (c.match(/[A-Za-z]/g) ?? []).length;
             const lang = arabicChars > latinChars ? "ar" : latinChars > 0 ? "en" : "mixed";
             rows.push({
-              document_id: doc.id, user_id: doc.user_id, chunk_index: i, content: c,
+              document_id: doc.id,
+              user_id: doc.user_id,
+              chunk_index: i,
+              content: c,
               embedding: vec ? toPgVector(vec) : null,
               metadata: { lang, ar_chars: arabicChars, en_chars: latinChars, len: c.length },
             });
@@ -365,17 +381,21 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
           for (let i = 0; i < rows.length; i += 50) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: insErr } = await (supabaseAdmin as any)
-              .from("aria_document_chunks").insert(rows.slice(i, i + 50));
+              .from("aria_document_chunks")
+              .insert(rows.slice(i, i + 50));
             if (insErr) throw new Error(insErr.message);
           }
           const summary = text.slice(0, 500).replace(/\s+/g, " ").trim();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabaseAdmin as any).from("aria_documents").update({
-            chunk_count: rows.length,
-            summary,
-            status: embedded === rows.length ? "ready" : "partial",
-            error: null,
-          }).eq("id", doc.id);
+          await (supabaseAdmin as any)
+            .from("aria_documents")
+            .update({
+              chunk_count: rows.length,
+              summary,
+              status: embedded === rows.length ? "ready" : "partial",
+              error: null,
+            })
+            .eq("id", doc.id);
           return { title: doc.title, status: "ingested", chunks: rows.length, embedded };
         }
 
@@ -389,27 +409,33 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
             .maybeSingle();
           if (error || !doc) {
             return new Response(JSON.stringify({ error: "document_not_found" }), {
-              status: 404, headers: { "Content-Type": "application/json" },
+              status: 404,
+              headers: { "Content-Type": "application/json" },
             });
           }
           try {
             const result = await ingestOne(doc, singleDoc.text);
             return new Response(JSON.stringify({ mode: "single", result }), {
-              status: 200, headers: { "Content-Type": "application/json" },
+              status: 200,
+              headers: { "Content-Type": "application/json" },
             });
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabaseAdmin as any).from("aria_documents")
-              .update({ status: "failed", error: msg }).eq("id", doc.id);
+            await (supabaseAdmin as any)
+              .from("aria_documents")
+              .update({ status: "failed", error: msg })
+              .eq("id", doc.id);
             return new Response(JSON.stringify({ mode: "single", error: msg }), {
-              status: 500, headers: { "Content-Type": "application/json" },
+              status: 500,
+              headers: { "Content-Type": "application/json" },
             });
           }
         }
 
         // ── Seed-corpus mode (legacy / cron) ────────────────────────────────
-        const results: Array<{ title: string; status: string; chunks?: number; error?: string }> = [];
+        const results: Array<{ title: string; status: string; chunks?: number; error?: string }> =
+          [];
         for (const entry of DOC_BODIES) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const { data: doc } = await (supabaseAdmin as any)
@@ -417,9 +443,16 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
             .select("id, user_id, title, chunk_count")
             .eq("title", entry.match)
             .maybeSingle();
-          if (!doc) { results.push({ title: entry.match, status: "not_found" }); continue; }
+          if (!doc) {
+            results.push({ title: entry.match, status: "not_found" });
+            continue;
+          }
           if ((doc.chunk_count ?? 0) > 0) {
-            results.push({ title: entry.match, status: "already_chunked", chunks: doc.chunk_count });
+            results.push({
+              title: entry.match,
+              status: "already_chunked",
+              chunks: doc.chunk_count,
+            });
             continue;
           }
           try {
@@ -438,10 +471,10 @@ export const Route = createFileRoute("/api/public/hooks/aria-docs-ingest")({
           not_found: results.filter((r) => r.status === "not_found").length,
         };
         return new Response(JSON.stringify({ summary, results }, null, 2), {
-          status: 200, headers: { "Content-Type": "application/json" },
+          status: 200,
+          headers: { "Content-Type": "application/json" },
         });
       },
     },
   },
 });
-

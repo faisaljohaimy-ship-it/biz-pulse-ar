@@ -51,7 +51,11 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
 
   const streaming = status === "submitted" || status === "streaming";
   const hasAssistant = useMemo(
-    () => messages.some((m) => m.role === "assistant" && m.parts.some((p) => p.type === "text" && p.text.length > 0)),
+    () =>
+      messages.some(
+        (m) =>
+          m.role === "assistant" && m.parts.some((p) => p.type === "text" && p.text.length > 0),
+      ),
     [messages],
   );
 

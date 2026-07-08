@@ -20,7 +20,7 @@ function VoicePage() {
   const conversation = useConversation({
     onConnect: () => toast.success(locale === "ar" ? "متصل" : "Connected"),
     onDisconnect: () => toast.info(locale === "ar" ? "انتهى الاتصال" : "Disconnected"),
-    onError: (e) => toast.error(typeof e === "string" ? e : (e as Error)?.message ?? "Error"),
+    onError: (e) => toast.error(typeof e === "string" ? e : ((e as Error)?.message ?? "Error")),
     onMessage: (msg: { source?: string; message?: string }) => {
       if (msg?.message) setTranscript((t) => [...t, `${msg.source ?? "?"}: ${msg.message}`]);
     },
@@ -74,13 +74,19 @@ function VoicePage() {
       <PageHeader
         icon={Mic}
         title={t("nav.voice")}
-        subtitle={locale === "ar" ? "تحدث مع المساعد الذكي صوتياً بزمن استجابة فوري." : "Talk to your AI assistant in real time."}
+        subtitle={
+          locale === "ar"
+            ? "تحدث مع المساعد الذكي صوتياً بزمن استجابة فوري."
+            : "Talk to your AI assistant in real time."
+        }
         badge="ElevenLabs"
       />
 
       <div className="flex flex-col items-center justify-center gap-6 rounded-2xl border border-border bg-card/60 p-10">
         <div className="relative">
-          <div className={`flex h-32 w-32 items-center justify-center rounded-full bg-gradient-primary shadow-glow ${isConnected ? "animate-pulse-ring" : ""}`}>
+          <div
+            className={`flex h-32 w-32 items-center justify-center rounded-full bg-gradient-primary shadow-glow ${isConnected ? "animate-pulse-ring" : ""}`}
+          >
             {conversation.isSpeaking ? (
               <Volume2 className="h-12 w-12 text-primary-foreground" />
             ) : isConnected ? (
@@ -95,9 +101,15 @@ function VoicePage() {
           <div className="text-sm font-semibold">
             {isConnected
               ? conversation.isSpeaking
-                ? locale === "ar" ? "المساعد يتحدث..." : "Assistant speaking..."
-                : locale === "ar" ? "أستمع إليك..." : "Listening..."
-              : locale === "ar" ? "جاهز للاتصال" : "Ready to connect"}
+                ? locale === "ar"
+                  ? "المساعد يتحدث..."
+                  : "Assistant speaking..."
+                : locale === "ar"
+                  ? "أستمع إليك..."
+                  : "Listening..."
+              : locale === "ar"
+                ? "جاهز للاتصال"
+                : "Ready to connect"}
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
             {locale === "ar" ? "الحالة" : "Status"}: {conversation.status}
@@ -122,7 +134,9 @@ function VoicePage() {
           </div>
           <div className="space-y-1 text-sm">
             {transcript.map((line, i) => (
-              <div key={i} className="text-muted-foreground">{line}</div>
+              <div key={i} className="text-muted-foreground">
+                {line}
+              </div>
             ))}
           </div>
         </div>

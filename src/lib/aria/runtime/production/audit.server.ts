@@ -6,11 +6,7 @@ import type { AuditEntry, EvidenceRef } from "./types";
 export class RuntimeAuditTrail {
   private readonly entries: AuditEntry[] = [];
 
-  record(
-    stage: string,
-    summary: string,
-    evidence: ReadonlyArray<EvidenceRef> = [],
-  ): AuditEntry {
+  record(stage: string, summary: string, evidence: ReadonlyArray<EvidenceRef> = []): AuditEntry {
     const entry: AuditEntry = {
       id: `AUD-${this.entries.length + 1}`,
       stage,

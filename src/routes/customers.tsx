@@ -2,17 +2,35 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
 import {
-  ArrowLeft, Building2, Landmark, Banknote, TrendingUp, Clock, DollarSign,
-  Activity, ShieldCheck, Quote, ArrowRight, Sparkles,
+  ArrowLeft,
+  Building2,
+  Landmark,
+  Banknote,
+  TrendingUp,
+  Clock,
+  DollarSign,
+  Activity,
+  ShieldCheck,
+  Quote,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/customers")({
   head: () => ({
     meta: [
       { title: "Customers & Case Studies — Nexus AI OS" },
-      { name: "description", content: "Anonymized Fortune-500 grade case studies showing how Nexus AI OS delivers measurable ROI, time savings, and operational impact across enterprise and government." },
+      {
+        name: "description",
+        content:
+          "Anonymized Fortune-500 grade case studies showing how Nexus AI OS delivers measurable ROI, time savings, and operational impact across enterprise and government.",
+      },
       { property: "og:title", content: "Customers & Case Studies — Nexus AI OS" },
-      { property: "og:description", content: "Enterprise success stories: before / after, KPIs, ROI, revenue and operational impact." },
+      {
+        property: "og:description",
+        content:
+          "Enterprise success stories: before / after, KPIs, ROI, revenue and operational impact.",
+      },
       { property: "og:url", content: `${DOMAIN_URL}/customers` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -25,21 +43,31 @@ export const Route = createFileRoute("/customers")({
 
 type Case = {
   id: string;
-  industryEn: string; industryAr: string;
-  regionEn: string;   regionAr: string;
-  sizeEn: string;     sizeAr: string;
+  industryEn: string;
+  industryAr: string;
+  regionEn: string;
+  regionAr: string;
+  sizeEn: string;
+  sizeAr: string;
   icon: React.ReactNode;
   codename: string;
-  titleEn: string;    titleAr: string;
-  summaryEn: string;  summaryAr: string;
-  challengeEn: string[]; challengeAr: string[];
-  solutionEn: string[];  solutionAr: string[];
+  titleEn: string;
+  titleAr: string;
+  summaryEn: string;
+  summaryAr: string;
+  challengeEn: string[];
+  challengeAr: string[];
+  solutionEn: string[];
+  solutionAr: string[];
   before: { labelEn: string; labelAr: string; value: string }[];
-  after:  { labelEn: string; labelAr: string; value: string }[];
-  kpis:   { labelEn: string; labelAr: string; value: string; delta: string; icon: React.ReactNode }[];
-  quoteEn: string; quoteAr: string;
-  attribEn: string; attribAr: string;
-  timelineEn: string; timelineAr: string;
+  after: { labelEn: string; labelAr: string; value: string }[];
+  kpis: { labelEn: string; labelAr: string; value: string; delta: string; icon: React.ReactNode }[];
+  quoteEn: string;
+  quoteAr: string;
+  attribEn: string;
+  attribAr: string;
+  timelineEn: string;
+  timelineAr: string;
 };
 
 const CASES: Case[] = [
@@ -80,27 +108,65 @@ const CASES: Case[] = [
       "تشغيل وكلاء ذاتيين لتجاوز الحدود وفرز غسل الأموال واقتراحات التحوّط.",
     ],
     before: [
-      { labelEn: "Monthly close",    labelAr: "الإقفال الشهري",     value: "9 days" },
-      { labelEn: "Risk reporting",   labelAr: "تقارير المخاطر",     value: "T+5" },
-      { labelEn: "Dashboards",       labelAr: "لوحات التحكم",       value: "14" },
-      { labelEn: "Analyst headcount",labelAr: "عدد المحللين",       value: "62" },
+      { labelEn: "Monthly close", labelAr: "الإقفال الشهري", value: "9 days" },
+      { labelEn: "Risk reporting", labelAr: "تقارير المخاطر", value: "T+5" },
+      { labelEn: "Dashboards", labelAr: "لوحات التحكم", value: "14" },
+      { labelEn: "Analyst headcount", labelAr: "عدد المحللين", value: "62" },
     ],
     after: [
-      { labelEn: "Monthly close",    labelAr: "الإقفال الشهري",     value: "1.5 days" },
-      { labelEn: "Risk reporting",   labelAr: "تقارير المخاطر",     value: "Real-time" },
-      { labelEn: "Dashboards",       labelAr: "لوحات التحكم",       value: "1 (NEXUS)" },
-      { labelEn: "Analyst headcount",labelAr: "عدد المحللين",       value: "62 → higher-value work" },
+      { labelEn: "Monthly close", labelAr: "الإقفال الشهري", value: "1.5 days" },
+      { labelEn: "Risk reporting", labelAr: "تقارير المخاطر", value: "Real-time" },
+      { labelEn: "Dashboards", labelAr: "لوحات التحكم", value: "1 (NEXUS)" },
+      { labelEn: "Analyst headcount", labelAr: "عدد المحللين", value: "62 → higher-value work" },
     ],
     kpis: [
-      { labelEn: "Annual savings",    labelAr: "وفورات سنوية",       value: "$24.6M", delta: "Year 1",       icon: <DollarSign className="h-4 w-4" /> },
-      { labelEn: "ROI",               labelAr: "العائد على الاستثمار", value: "612%",   delta: "18 months",    icon: <TrendingUp className="h-4 w-4" /> },
-      { labelEn: "Time saved",        labelAr: "وقت موفّر",         value: "83%",    delta: "close cycle",   icon: <Clock className="h-4 w-4" /> },
-      { labelEn: "Revenue uplift",    labelAr: "نمو الإيرادات",     value: "+4.1%",  delta: "FX & lending", icon: <Activity className="h-4 w-4" /> },
-      { labelEn: "Risk incidents",    labelAr: "حوادث المخاطر",     value: "−71%",   delta: "limit breaches",icon: <ShieldCheck className="h-4 w-4" /> },
-      { labelEn: "Payback",           labelAr: "فترة الاسترداد",    value: "4.8 mo", delta: "post go-live",  icon: <Clock className="h-4 w-4" /> },
+      {
+        labelEn: "Annual savings",
+        labelAr: "وفورات سنوية",
+        value: "$24.6M",
+        delta: "Year 1",
+        icon: <DollarSign className="h-4 w-4" />,
+      },
+      {
+        labelEn: "ROI",
+        labelAr: "العائد على الاستثمار",
+        value: "612%",
+        delta: "18 months",
+        icon: <TrendingUp className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Time saved",
+        labelAr: "وقت موفّر",
+        value: "83%",
+        delta: "close cycle",
+        icon: <Clock className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Revenue uplift",
+        labelAr: "نمو الإيرادات",
+        value: "+4.1%",
+        delta: "FX & lending",
+        icon: <Activity className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Risk incidents",
+        labelAr: "حوادث المخاطر",
+        value: "−71%",
+        delta: "limit breaches",
+        icon: <ShieldCheck className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Payback",
+        labelAr: "فترة الاسترداد",
+        value: "4.8 mo",
+        delta: "post go-live",
+        icon: <Clock className="h-4 w-4" />,
+      },
     ],
-    quoteEn: "We replaced a wall of dashboards with one screen the board actually trusts. NEXUS gave us back our mornings.",
-    quoteAr: "استبدلنا جداراً من اللوحات بشاشة واحدة يثق بها مجلس الإدارة فعلاً. أعاد لنا NEXUS صباحاتنا.",
+    quoteEn:
+      "We replaced a wall of dashboards with one screen the board actually trusts. NEXUS gave us back our mornings.",
+    quoteAr:
+      "استبدلنا جداراً من اللوحات بشاشة واحدة يثق بها مجلس الإدارة فعلاً. أعاد لنا NEXUS صباحاتنا.",
     attribEn: "Chief Operating Officer · Tier-1 GCC Bank",
     attribAr: "الرئيس التنفيذي للعمليات · بنك خليجي من الفئة الأولى",
     timelineEn: "11 weeks to production · 6 lines of business",
@@ -143,26 +209,63 @@ const CASES: Case[] = [
       "توأم رقمي للبرنامج: الميزانية، المعالم، المقاولون، المخاطر.",
     ],
     before: [
-      { labelEn: "Briefing cycle",    labelAr: "دورة الإفادة",       value: "7 days" },
-      { labelEn: "Entity coverage",   labelAr: "تغطية الجهات",       value: "12 / 38" },
-      { labelEn: "Decision latency",  labelAr: "زمن القرار",         value: "3–4 weeks" },
-      { labelEn: "Arabic-native UX",  labelAr: "تجربة عربية أصلية",  value: "None" },
+      { labelEn: "Briefing cycle", labelAr: "دورة الإفادة", value: "7 days" },
+      { labelEn: "Entity coverage", labelAr: "تغطية الجهات", value: "12 / 38" },
+      { labelEn: "Decision latency", labelAr: "زمن القرار", value: "3–4 weeks" },
+      { labelEn: "Arabic-native UX", labelAr: "تجربة عربية أصلية", value: "None" },
     ],
     after: [
-      { labelEn: "Briefing cycle",    labelAr: "دورة الإفادة",       value: "Daily, on-demand" },
-      { labelEn: "Entity coverage",   labelAr: "تغطية الجهات",       value: "38 / 38" },
-      { labelEn: "Decision latency",  labelAr: "زمن القرار",         value: "< 48 hours" },
-      { labelEn: "Arabic-native UX",  labelAr: "تجربة عربية أصلية",  value: "Full RTL + ARIA voice" },
+      { labelEn: "Briefing cycle", labelAr: "دورة الإفادة", value: "Daily, on-demand" },
+      { labelEn: "Entity coverage", labelAr: "تغطية الجهات", value: "38 / 38" },
+      { labelEn: "Decision latency", labelAr: "زمن القرار", value: "< 48 hours" },
+      { labelEn: "Arabic-native UX", labelAr: "تجربة عربية أصلية", value: "Full RTL + ARIA voice" },
     ],
     kpis: [
-      { labelEn: "Program savings",   labelAr: "وفورات البرنامج",   value: "$118M",  delta: "3-yr re-baseline", icon: <DollarSign className="h-4 w-4" /> },
-      { labelEn: "ROI",               labelAr: "العائد على الاستثمار", value: "934%",   delta: "24 months",       icon: <TrendingUp className="h-4 w-4" /> },
-      { labelEn: "Time saved",        labelAr: "وقت موفّر",         value: "92%",    delta: "exec briefings",  icon: <Clock className="h-4 w-4" /> },
-      { labelEn: "Decision speed",    labelAr: "سرعة القرار",       value: "14× faster", delta: "vs baseline",  icon: <Activity className="h-4 w-4" /> },
-      { labelEn: "Compliance posture",labelAr: "الامتثال",          value: "ECC aligned", delta: "in-Kingdom",  icon: <ShieldCheck className="h-4 w-4" /> },
-      { labelEn: "Payback",           labelAr: "فترة الاسترداد",    value: "3.1 mo", delta: "post go-live",     icon: <Clock className="h-4 w-4" /> },
+      {
+        labelEn: "Program savings",
+        labelAr: "وفورات البرنامج",
+        value: "$118M",
+        delta: "3-yr re-baseline",
+        icon: <DollarSign className="h-4 w-4" />,
+      },
+      {
+        labelEn: "ROI",
+        labelAr: "العائد على الاستثمار",
+        value: "934%",
+        delta: "24 months",
+        icon: <TrendingUp className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Time saved",
+        labelAr: "وقت موفّر",
+        value: "92%",
+        delta: "exec briefings",
+        icon: <Clock className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Decision speed",
+        labelAr: "سرعة القرار",
+        value: "14× faster",
+        delta: "vs baseline",
+        icon: <Activity className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Compliance posture",
+        labelAr: "الامتثال",
+        value: "ECC aligned",
+        delta: "in-Kingdom",
+        icon: <ShieldCheck className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Payback",
+        labelAr: "فترة الاسترداد",
+        value: "3.1 mo",
+        delta: "post go-live",
+        icon: <Clock className="h-4 w-4" />,
+      },
     ],
-    quoteEn: "For the first time, leadership reads the program in Arabic, in real time, without waiting for anyone.",
+    quoteEn:
+      "For the first time, leadership reads the program in Arabic, in real time, without waiting for anyone.",
     quoteAr: "للمرة الأولى، تقرأ القيادة البرنامج بالعربية، في الزمن الفعلي، دون انتظار أحد.",
     attribEn: "Secretary General · National Authority",
     attribAr: "الأمين العام · هيئة وطنية",
@@ -206,24 +309,60 @@ const CASES: Case[] = [
       "إفادة صباحية من ARIA لـ1,400 مدير متجر بلغتهم.",
     ],
     before: [
-      { labelEn: "Stock-out rate",    labelAr: "معدل نفاد المخزون", value: "7.4%" },
-      { labelEn: "Promo ROI loop",    labelAr: "دورة قياس العروض", value: "6 weeks" },
-      { labelEn: "Inventory turns",   labelAr: "دوران المخزون",     value: "5.1×" },
-      { labelEn: "Store visibility",  labelAr: "رؤية المتاجر",      value: "Monthly" },
+      { labelEn: "Stock-out rate", labelAr: "معدل نفاد المخزون", value: "7.4%" },
+      { labelEn: "Promo ROI loop", labelAr: "دورة قياس العروض", value: "6 weeks" },
+      { labelEn: "Inventory turns", labelAr: "دوران المخزون", value: "5.1×" },
+      { labelEn: "Store visibility", labelAr: "رؤية المتاجر", value: "Monthly" },
     ],
     after: [
-      { labelEn: "Stock-out rate",    labelAr: "معدل نفاد المخزون", value: "1.9%" },
-      { labelEn: "Promo ROI loop",    labelAr: "دورة قياس العروض", value: "Same day" },
-      { labelEn: "Inventory turns",   labelAr: "دوران المخزون",     value: "7.8×" },
-      { labelEn: "Store visibility",  labelAr: "رؤية المتاجر",      value: "Live" },
+      { labelEn: "Stock-out rate", labelAr: "معدل نفاد المخزون", value: "1.9%" },
+      { labelEn: "Promo ROI loop", labelAr: "دورة قياس العروض", value: "Same day" },
+      { labelEn: "Inventory turns", labelAr: "دوران المخزون", value: "7.8×" },
+      { labelEn: "Store visibility", labelAr: "رؤية المتاجر", value: "Live" },
     ],
     kpis: [
-      { labelEn: "Annual savings",    labelAr: "وفورات سنوية",       value: "$38.4M", delta: "ops + waste",   icon: <DollarSign className="h-4 w-4" /> },
-      { labelEn: "ROI",               labelAr: "العائد على الاستثمار", value: "742%",   delta: "12 months",    icon: <TrendingUp className="h-4 w-4" /> },
-      { labelEn: "Revenue uplift",    labelAr: "نمو الإيرادات",     value: "+6.8%",  delta: "like-for-like", icon: <Activity className="h-4 w-4" /> },
-      { labelEn: "Time saved",        labelAr: "وقت موفّر",         value: "11h / week", delta: "per GM",     icon: <Clock className="h-4 w-4" /> },
-      { labelEn: "Shrink reduction",  labelAr: "تقليل الفاقد",      value: "−34%",   delta: "high-risk SKUs",icon: <ShieldCheck className="h-4 w-4" /> },
-      { labelEn: "Payback",           labelAr: "فترة الاسترداد",    value: "2.7 mo", delta: "post go-live",  icon: <Clock className="h-4 w-4" /> },
+      {
+        labelEn: "Annual savings",
+        labelAr: "وفورات سنوية",
+        value: "$38.4M",
+        delta: "ops + waste",
+        icon: <DollarSign className="h-4 w-4" />,
+      },
+      {
+        labelEn: "ROI",
+        labelAr: "العائد على الاستثمار",
+        value: "742%",
+        delta: "12 months",
+        icon: <TrendingUp className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Revenue uplift",
+        labelAr: "نمو الإيرادات",
+        value: "+6.8%",
+        delta: "like-for-like",
+        icon: <Activity className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Time saved",
+        labelAr: "وقت موفّر",
+        value: "11h / week",
+        delta: "per GM",
+        icon: <Clock className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Shrink reduction",
+        labelAr: "تقليل الفاقد",
+        value: "−34%",
+        delta: "high-risk SKUs",
+        icon: <ShieldCheck className="h-4 w-4" />,
+      },
+      {
+        labelEn: "Payback",
+        labelAr: "فترة الاسترداد",
+        value: "2.7 mo",
+        delta: "post go-live",
+        icon: <Clock className="h-4 w-4" />,
+      },
     ],
     quoteEn: "ARIA runs the morning meeting now. The team shows up with decisions, not slides.",
     quoteAr: "تدير ARIA الاجتماع الصباحي الآن. يحضر الفريق بقرارات، لا بشرائح.",
@@ -259,7 +398,10 @@ function BeforeAfter({ c, isAr }: { c: Case; isAr: boolean }) {
         <SectionLabel isAr={isAr} en="Before NEXUS" ar="قبل NEXUS" />
         <ul className="space-y-2.5">
           {c.before.map((b, i) => (
-            <li key={i} className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0">
+            <li
+              key={i}
+              className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0"
+            >
               <span className="text-sm text-muted-foreground">{isAr ? b.labelAr : b.labelEn}</span>
               <span className="font-mono text-sm text-foreground/85">{b.value}</span>
             </li>
@@ -270,7 +412,10 @@ function BeforeAfter({ c, isAr }: { c: Case; isAr: boolean }) {
         <SectionLabel isAr={isAr} en="After NEXUS" ar="بعد NEXUS" />
         <ul className="space-y-2.5">
           {c.after.map((a, i) => (
-            <li key={i} className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0">
+            <li
+              key={i}
+              className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0"
+            >
               <span className="text-sm text-muted-foreground">{isAr ? a.labelAr : a.labelEn}</span>
               <span className="font-mono text-sm font-medium text-amber-100">{a.value}</span>
             </li>
@@ -285,10 +430,15 @@ function KpiGrid({ c, isAr }: { c: Case; isAr: boolean }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
       {c.kpis.map((k, i) => (
-        <div key={i} className="rounded-xl border border-white/10 bg-white/[0.02] p-4 transition hover:border-amber-300/30 hover:bg-amber-300/[0.03]">
+        <div
+          key={i}
+          className="rounded-xl border border-white/10 bg-white/[0.02] p-4 transition hover:border-amber-300/30 hover:bg-amber-300/[0.03]"
+        >
           <div className="flex items-center gap-2 text-amber-200/80">
             {k.icon}
-            <span className="text-[10px] uppercase tracking-[0.2em]">{isAr ? k.labelAr : k.labelEn}</span>
+            <span className="text-[10px] uppercase tracking-[0.2em]">
+              {isAr ? k.labelAr : k.labelEn}
+            </span>
           </div>
           <div className="mt-2 font-mono text-2xl font-medium text-foreground">{k.value}</div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">{k.delta}</div>
@@ -300,7 +450,10 @@ function KpiGrid({ c, isAr }: { c: Case; isAr: boolean }) {
 
 function CaseCard({ c, idx, isAr }: { c: Case; idx: number; isAr: boolean }) {
   return (
-    <article id={c.id} className="relative scroll-mt-24 rounded-3xl border border-white/10 bg-white/[0.015] p-6 md:p-10">
+    <article
+      id={c.id}
+      className="relative scroll-mt-24 rounded-3xl border border-white/10 bg-white/[0.015] p-6 md:p-10"
+    >
       <div className="absolute -top-px left-10 right-10 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" />
 
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
@@ -322,9 +475,18 @@ function CaseCard({ c, idx, isAr }: { c: Case; idx: number; isAr: boolean }) {
       </header>
 
       <div className="mb-8 grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 text-xs text-muted-foreground sm:grid-cols-3">
-        <div><span className="text-amber-200/70">{isAr ? "المنطقة" : "Region"}: </span>{isAr ? c.regionAr : c.regionEn}</div>
-        <div><span className="text-amber-200/70">{isAr ? "الحجم" : "Size"}: </span>{isAr ? c.sizeAr : c.sizeEn}</div>
-        <div><span className="text-amber-200/70">{isAr ? "الجدول الزمني" : "Timeline"}: </span>{isAr ? c.timelineAr : c.timelineEn}</div>
+        <div>
+          <span className="text-amber-200/70">{isAr ? "المنطقة" : "Region"}: </span>
+          {isAr ? c.regionAr : c.regionEn}
+        </div>
+        <div>
+          <span className="text-amber-200/70">{isAr ? "الحجم" : "Size"}: </span>
+          {isAr ? c.sizeAr : c.sizeEn}
+        </div>
+        <div>
+          <span className="text-amber-200/70">{isAr ? "الجدول الزمني" : "Timeline"}: </span>
+          {isAr ? c.timelineAr : c.timelineEn}
+        </div>
       </div>
 
       <div className="mb-8 grid gap-6 md:grid-cols-2">
@@ -332,7 +494,10 @@ function CaseCard({ c, idx, isAr }: { c: Case; idx: number; isAr: boolean }) {
           <SectionLabel isAr={isAr} en="The Challenge" ar="التحدي" />
           <ul className="space-y-2 text-sm text-muted-foreground">
             {(isAr ? c.challengeAr : c.challengeEn).map((t, i) => (
-              <li key={i} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-300/70" />{t}</li>
+              <li key={i} className="flex gap-2">
+                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-300/70" />
+                {t}
+              </li>
             ))}
           </ul>
         </div>
@@ -340,7 +505,10 @@ function CaseCard({ c, idx, isAr }: { c: Case; idx: number; isAr: boolean }) {
           <SectionLabel isAr={isAr} en="The NEXUS Solution" ar="حل NEXUS" />
           <ul className="space-y-2 text-sm text-muted-foreground">
             {(isAr ? c.solutionAr : c.solutionEn).map((t, i) => (
-              <li key={i} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-300/70" />{t}</li>
+              <li key={i} className="flex gap-2">
+                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber-300/70" />
+                {t}
+              </li>
             ))}
           </ul>
         </div>
@@ -383,12 +551,18 @@ function CustomersPage() {
   };
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground"
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.08),transparent_60%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] opacity-40" />
 
       <div className="relative mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-14">
-        <Link to="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground transition hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground transition hover:text-foreground"
+        >
           <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
@@ -398,11 +572,16 @@ function CustomersPage() {
 
         {/* Hero */}
         <header className="mt-10 max-w-3xl">
-          <Pill><Sparkles className="me-1 h-3 w-3" />{isAr ? "نتائج موثّقة من عملاء مؤسسيين" : "Verified enterprise outcomes"}</Pill>
+          <Pill>
+            <Sparkles className="me-1 h-3 w-3" />
+            {isAr ? "نتائج موثّقة من عملاء مؤسسيين" : "Verified enterprise outcomes"}
+          </Pill>
           <h1 className="mt-4 text-4xl font-light leading-tight tracking-tight md:text-5xl">
             {isAr ? "ثلاث مؤسسات. ثلاث تحولات." : "Three institutions. Three transformations."}
             <span className="block text-amber-200/90">
-              {isAr ? "نتائج قابلة للقياس على مستوى مجلس الإدارة." : "Board-grade, measurable outcomes."}
+              {isAr
+                ? "نتائج قابلة للقياس على مستوى مجلس الإدارة."
+                : "Board-grade, measurable outcomes."}
             </span>
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
@@ -416,12 +595,14 @@ function CustomersPage() {
         <section className="mt-10 grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-5 md:grid-cols-4">
           {[
             { en: "Aggregate annual savings", ar: "إجمالي الوفورات السنوية", v: totals.savings },
-            { en: "Average 18-mo ROI",        ar: "متوسط العائد 18 شهر",   v: totals.roiAvg },
-            { en: "Average payback",          ar: "متوسط فترة الاسترداد",   v: totals.paybackAvg },
-            { en: "Production deployments",   ar: "عمليات التشغيل الفعلية", v: totals.deployments },
+            { en: "Average 18-mo ROI", ar: "متوسط العائد 18 شهر", v: totals.roiAvg },
+            { en: "Average payback", ar: "متوسط فترة الاسترداد", v: totals.paybackAvg },
+            { en: "Production deployments", ar: "عمليات التشغيل الفعلية", v: totals.deployments },
           ].map((s, i) => (
             <div key={i}>
-              <div className="text-[10px] uppercase tracking-[0.22em] text-amber-200/70">{isAr ? s.ar : s.en}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-amber-200/70">
+                {isAr ? s.ar : s.en}
+              </div>
               <div className="mt-1 font-mono text-xl text-foreground md:text-2xl">{s.v}</div>
             </div>
           ))}
@@ -454,7 +635,9 @@ function CustomersPage() {
             <div className="max-w-xl">
               <Pill>{isAr ? "الخطوة التالية" : "Next step"}</Pill>
               <h2 className="mt-3 text-2xl font-light md:text-3xl">
-                {isAr ? "احجز إفادة تنفيذية وشاهد دراسة الحالة الخاصة بمؤسستك." : "Book an executive briefing and see your own case study modeled live."}
+                {isAr
+                  ? "احجز إفادة تنفيذية وشاهد دراسة الحالة الخاصة بمؤسستك."
+                  : "Book an executive briefing and see your own case study modeled live."}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 {isAr

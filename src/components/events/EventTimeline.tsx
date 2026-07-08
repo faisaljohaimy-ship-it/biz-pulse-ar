@@ -1,4 +1,8 @@
-import { useEventStream, type EventFilter, type EnterpriseEventRow } from "@/lib/events/useEventStream";
+import {
+  useEventStream,
+  type EventFilter,
+  type EnterpriseEventRow,
+} from "@/lib/events/useEventStream";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -78,7 +82,9 @@ function EventRow({ event, compact }: { event: EnterpriseEventRow; compact: bool
   const Icon = event.status === "processed" ? CheckCircle2 : sev.icon;
   return (
     <div className="flex items-start gap-3 p-2 rounded-md border border-border/40 bg-background/40 hover:bg-background/60 transition-colors">
-      <Icon className={`size-4 mt-0.5 ${sev.cls.split(" ").find((c) => c.startsWith("text-")) ?? ""}`} />
+      <Icon
+        className={`size-4 mt-0.5 ${sev.cls.split(" ").find((c) => c.startsWith("text-")) ?? ""}`}
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-mono text-xs text-foreground truncate">{event.topic}</span>

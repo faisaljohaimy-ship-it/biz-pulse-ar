@@ -76,9 +76,7 @@ describe("AriaDock — a11y", () => {
     expect(buttons.length).toBeGreaterThan(0);
     for (const btn of buttons) {
       const name =
-        btn.getAttribute("aria-label") ||
-        btn.getAttribute("title") ||
-        btn.textContent?.trim();
+        btn.getAttribute("aria-label") || btn.getAttribute("title") || btn.textContent?.trim();
       expect(name, `button missing accessible name: ${btn.outerHTML.slice(0, 80)}`).toBeTruthy();
     }
   });

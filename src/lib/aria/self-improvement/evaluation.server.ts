@@ -70,11 +70,7 @@ export function evaluateSubject(input: {
     if (o.state === "fail") anyFail = true;
   }
   const score = weightSum > 0 && !anyUnknown ? weightedPass / weightSum : 0;
-  const overall: TriState = anyFail
-    ? "fail"
-    : anyUnknown
-      ? "unknown"
-      : "pass";
+  const overall: TriState = anyFail ? "fail" : anyUnknown ? "unknown" : "pass";
 
   const evidence = outcomes.flatMap((o) => o.evidence);
   return {

@@ -23,9 +23,13 @@ export function verifyLiveVoice(sessionId?: string): LiveVoiceVerification {
     if (!sessionActive) issues.push("session not active");
   }
   const confidence: LiveVoiceVerification["confidence"] =
-    !caps.stt && !caps.tts ? "unknown" :
-    !caps.stt || !caps.tts ? "low" :
-    sessionActive ? "high" : "medium";
+    !caps.stt && !caps.tts
+      ? "unknown"
+      : !caps.stt || !caps.tts
+        ? "low"
+        : sessionActive
+          ? "high"
+          : "medium";
   return {
     ok: caps.stt && caps.tts && (!sessionId || sessionActive),
     stt: caps.stt,

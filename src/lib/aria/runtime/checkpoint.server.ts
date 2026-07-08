@@ -12,7 +12,11 @@ function newId(): string {
   return `cp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function saveCheckpoint(agentId: string, label: string, payloadRef: string | null = null): Checkpoint {
+export function saveCheckpoint(
+  agentId: string,
+  label: string,
+  payloadRef: string | null = null,
+): Checkpoint {
   const rec = requireAgent(agentId);
   const cp: Checkpoint = {
     id: newId(),

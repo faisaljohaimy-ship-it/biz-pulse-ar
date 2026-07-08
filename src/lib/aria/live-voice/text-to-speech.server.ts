@@ -1,7 +1,12 @@
 // Text-to-speech — forwards to Lovable AI Gateway SSE endpoint.
 // Returns UNKNOWN when the provider is unavailable; never fabricates audio.
 import { TtsRequestSchema } from "./contracts";
-import { detectVoiceProvider, VOICE_ENDPOINT, VOICE_MODELS, DEFAULT_VOICES } from "./voice-provider.server";
+import {
+  detectVoiceProvider,
+  VOICE_ENDPOINT,
+  VOICE_MODELS,
+  DEFAULT_VOICES,
+} from "./voice-provider.server";
 import type { TtsRequest } from "./types";
 
 export interface TtsResponse {
@@ -43,7 +48,11 @@ export async function synthesizeSpeech(
     });
   } catch (err) {
     if (opts.signal?.aborted) return { ok: false, stream: null, reason: "aborted" };
-    return { ok: false, stream: null, reason: err instanceof Error ? err.message : "network error" };
+    return {
+      ok: false,
+      stream: null,
+      reason: err instanceof Error ? err.message : "network error",
+    };
   }
 
   if (!res.ok || !res.body) {

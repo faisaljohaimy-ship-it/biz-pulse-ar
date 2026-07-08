@@ -6,8 +6,6 @@ import saudiEmblem from "@/assets/saudi-emblem.png";
 import { setIntroActive } from "@/lib/intro-store";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
-
-
 /**
  * HeroZeroIntro — cinematic "assembly" hero that plays once per session
  * before the executive landing hero. Video + parallel audio track, with the
@@ -51,7 +49,6 @@ export function HeroZeroIntro() {
   const rafRef = useRef<number | null>(null);
   const hardCapRef = useRef<number | null>(null);
   const reducedMotion = useRef(false);
-
 
   // Client-only mount decision (avoids SSR flash).
   useEffect(() => {
@@ -111,7 +108,10 @@ export function HeroZeroIntro() {
 
     const waitReady = (el: HTMLMediaElement) =>
       new Promise<void>((resolve) => {
-        if (el.readyState >= 2) { resolve(); return; }
+        if (el.readyState >= 2) {
+          resolve();
+          return;
+        }
         const onReady = () => {
           el.removeEventListener("canplay", onReady);
           el.removeEventListener("loadeddata", onReady);
@@ -119,7 +119,11 @@ export function HeroZeroIntro() {
         };
         el.addEventListener("canplay", onReady, { once: true });
         el.addEventListener("loadeddata", onReady, { once: true });
-        try { el.load(); } catch { /* noop */ }
+        try {
+          el.load();
+        } catch {
+          /* noop */
+        }
       });
 
     // ── THREE-TIER AUDIO IGNITION ────────────────────────────────────────
@@ -148,18 +152,37 @@ export function HeroZeroIntro() {
       if (!soundOnRef.current) return;
       AriaAudioBus.unlock(); // real user gesture — safe to unlock the bus
       const granted = AriaAudioBus.acquire("hero-soundtrack", () => {
-        try { audio.pause(); } catch { /* noop */ }
+        try {
+          audio.pause();
+        } catch {
+          /* noop */
+        }
       });
       if (!granted) return;
       try {
         await waitReady(audio);
         if (resnap) {
-          try { video.currentTime = 0; audio.currentTime = 0; } catch { /* noop */ }
+          try {
+            video.currentTime = 0;
+            audio.currentTime = 0;
+          } catch {
+            /* noop */
+          }
         } else {
-          try { audio.currentTime = video.currentTime; } catch { /* noop */ }
+          try {
+            audio.currentTime = video.currentTime;
+          } catch {
+            /* noop */
+          }
         }
         await audio.play();
-        if (resnap) { try { await video.play(); } catch { /* noop */ } }
+        if (resnap) {
+          try {
+            await video.play();
+          } catch {
+            /* noop */
+          }
+        }
         AriaAudioBus.notifyPlaying("hero-soundtrack", audio);
         markStarted();
       } catch {
@@ -170,7 +193,10 @@ export function HeroZeroIntro() {
 
     const attachGestureListeners = () => {
       const events: Array<keyof DocumentEventMap> = [
-        "pointerdown", "touchstart", "keydown", "wheel",
+        "pointerdown",
+        "touchstart",
+        "keydown",
+        "wheel",
       ];
       const onFirst = () => {
         for (const ev of events) {
@@ -201,10 +227,19 @@ export function HeroZeroIntro() {
       try {
         const granted = AriaAudioBus.acquire(
           "hero-soundtrack",
-          () => { try { audio.pause(); } catch { /* noop */ } },
+          () => {
+            try {
+              audio.pause();
+            } catch {
+              /* noop */
+            }
+          },
           { bypassGesture: true },
         );
-        if (!granted) { attachGestureListeners(); return; }
+        if (!granted) {
+          attachGestureListeners();
+          return;
+        }
         await waitReady(audio);
         audio.currentTime = 0;
         await audio.play();
@@ -219,11 +254,6 @@ export function HeroZeroIntro() {
     };
     void kick();
 
-
-
-
-
-
     // Audio-master drift correction — only runs while the user has enabled
     // sound. Nudges the muted video's playbackRate for sub-frame drift; hard
     // seek only when drift exceeds ~0.35s. When sound is off there is no
@@ -237,12 +267,22 @@ export function HeroZeroIntro() {
         try {
           video.currentTime = audio.currentTime;
           video.playbackRate = 1;
-        } catch { /* noop */ }
+        } catch {
+          /* noop */
+        }
       } else if (abs > 0.04) {
         const target = drift > 0 ? 0.96 : 1.04;
-        try { video.playbackRate = target; } catch { /* noop */ }
+        try {
+          video.playbackRate = target;
+        } catch {
+          /* noop */
+        }
       } else if (video.playbackRate !== 1) {
-        try { video.playbackRate = 1; } catch { /* noop */ }
+        try {
+          video.playbackRate = 1;
+        } catch {
+          /* noop */
+        }
       }
     }, 250);
 
@@ -251,7 +291,11 @@ export function HeroZeroIntro() {
     };
     const onVideoPlaying = () => {
       if (!soundOnRef.current) return;
-      try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+      try {
+        video.currentTime = audio.currentTime;
+      } catch {
+        /* noop */
+      }
       if (audio.paused) void audio.play().catch(() => {});
     };
     video.addEventListener("waiting", onVideoWaiting);
@@ -263,7 +307,12 @@ export function HeroZeroIntro() {
     let resuming = false;
     const onVisibility = () => {
       if (document.hidden) {
-        try { video.pause(); if (soundOnRef.current) audio.pause(); } catch { /* noop */ }
+        try {
+          video.pause();
+          if (soundOnRef.current) audio.pause();
+        } catch {
+          /* noop */
+        }
         return;
       }
       if (resuming) return;
@@ -273,8 +322,14 @@ export function HeroZeroIntro() {
           video.playbackRate = 1;
           if (soundOnRef.current) {
             await audio.play().catch(() => {});
-            await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-            try { video.currentTime = audio.currentTime; } catch { /* noop */ }
+            await new Promise<void>((r) =>
+              requestAnimationFrame(() => requestAnimationFrame(() => r())),
+            );
+            try {
+              video.currentTime = audio.currentTime;
+            } catch {
+              /* noop */
+            }
           }
           await video.play().catch(() => {});
         } finally {
@@ -287,8 +342,6 @@ export function HeroZeroIntro() {
     window.addEventListener("pageshow", onVisibility);
     cleanupFns.push(() => window.removeEventListener("pageshow", onVisibility));
 
-
-
     hardCapRef.current = window.setTimeout(finish, HARD_CAP_MS);
 
     const onAudioEnded = () => finish();
@@ -300,8 +353,9 @@ export function HeroZeroIntro() {
     audio.addEventListener("ended", onAudioEnded);
     video.addEventListener("ended", onVideoEnded);
 
-
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") finish(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") finish();
+    };
     window.addEventListener("keydown", onKey);
 
     return () => {
@@ -315,17 +369,22 @@ export function HeroZeroIntro() {
       video.removeEventListener("playing", onVideoPlaying);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("keydown", onKey);
-      try { audio.pause(); audio.currentTime = 0; } catch { /* noop */ }
-      try { video.pause(); } catch { /* noop */ }
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* noop */
+      }
+      try {
+        video.pause();
+      } catch {
+        /* noop */
+      }
       AriaAudioBus.release("hero-greeting");
     };
     // finish is stable via setState functional pattern
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
-
-
-
-
 
   // Ember/fire particle canvas — intentionally disabled. The wordmark now
   // uses a cool cyan palette, and the orange sparks were clashing with the
@@ -350,18 +409,14 @@ export function HeroZeroIntro() {
     };
   }, [mounted]);
 
-
   // Chip tap = valid user gesture. Re-uses the same ignition path (Tier 2/3).
   const handleChipTap = () => {
     void igniteAudioRef.current?.();
   };
 
-
-
   if (mounted === null || mounted === "done") return null;
 
   const closing = mounted === "closing";
-
 
   return (
     <div
@@ -379,8 +434,6 @@ export function HeroZeroIntro() {
         pointerEvents: closing ? "none" : "auto",
       }}
     >
-
-
       {/* Deep cosmic backdrop — sits BEHIND the transparent winged figure so
           the scene has depth even when the video is faded to ~25%. */}
       <div
@@ -476,10 +529,6 @@ export function HeroZeroIntro() {
         />
       </div>
 
-
-
-
-
       {/* Lower stack — ONE chrome "NEXIOS AI" wordmark, cold silver to match
           the winged figure. Sweep + gleam via ::after. All other lines
           (green-AI crest, KSA line, tagline) removed for a single statement. */}
@@ -530,10 +579,6 @@ export function HeroZeroIntro() {
         </p>
       </div>
 
-
-
-
-
       {/* TIER 3 — pulsing speaker hint. Any interaction anywhere ignites
           audio (Tier 2). Tapping the chip itself also counts as a gesture.
           Fades out the instant audio starts. */}
@@ -550,13 +595,12 @@ export function HeroZeroIntro() {
           }}
           dir="rtl"
         >
-          <span aria-hidden className="text-[15px]">🔊</span>
+          <span aria-hidden className="text-[15px]">
+            🔊
+          </span>
           <span>اضغط في أي مكان لتشغيل الصوت</span>
         </button>
       )}
-
-
-
 
       {/* Skip chip */}
       <button
@@ -781,7 +825,6 @@ export function HeroZeroIntro() {
           50%      { box-shadow: 0 0 0 14px rgba(0, 212, 255, 0), 0 0 32px rgba(0, 212, 255, 0.55); transform: translateY(-2px); }
         }
       `}</style>
-
     </div>
   );
 }

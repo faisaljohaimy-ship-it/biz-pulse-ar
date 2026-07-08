@@ -3,9 +3,7 @@
  */
 import type { GateResult, MetricSample } from "./types";
 
-export function computeMetrics(
-  gates: ReadonlyArray<GateResult>,
-): ReadonlyArray<MetricSample> {
+export function computeMetrics(gates: ReadonlyArray<GateResult>): ReadonlyArray<MetricSample> {
   const total = gates.length;
   const pass = gates.filter((g) => g.status === "pass").length;
   const fail = gates.filter((g) => g.status === "fail").length;

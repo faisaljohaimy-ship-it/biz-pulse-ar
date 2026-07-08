@@ -7,7 +7,16 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { AlertTriangle, GraduationCap, Sparkles, Target, MessageSquare, Award, Play, Activity } from "lucide-react";
+import {
+  AlertTriangle,
+  GraduationCap,
+  Sparkles,
+  Target,
+  MessageSquare,
+  Award,
+  Play,
+  Activity,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getLesson } from "@/lib/learn/lessons.functions";
 import { LessonVideo } from "@/components/learn/LessonVideo";
@@ -32,12 +41,19 @@ export const Route = createFileRoute("/_authenticated/learn/$slug")({
         <AlertTriangle className="mx-auto h-8 w-8 text-rose-400" />
         <div className="text-lg font-semibold text-white">Lesson unavailable</div>
         <div className="max-w-md text-sm text-white/60">{error.message}</div>
-        <button onClick={reset} className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10">Retry</button>
+        <button
+          onClick={reset}
+          className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
+        >
+          Retry
+        </button>
       </div>
     </div>
   ),
   notFoundComponent: () => (
-    <div className="grid min-h-[60vh] place-items-center p-8 text-center text-white/70">Lesson not found.</div>
+    <div className="grid min-h-[60vh] place-items-center p-8 text-center text-white/70">
+      Lesson not found.
+    </div>
   ),
 });
 
@@ -89,7 +105,11 @@ function LessonPage() {
         <div className="max-w-md space-y-3 text-white/70">
           <GraduationCap className="mx-auto h-10 w-10 text-cyan-300" />
           <div className="text-lg font-semibold text-white">{title}</div>
-          <p className="text-sm">{ar ? "هذه الحصة قيد الإنتاج. سيتم إتاحتها فور اكتمالها بالجودة التنفيذية المطلوبة." : "This lesson is in production. It will unlock once completed to executive quality."}</p>
+          <p className="text-sm">
+            {ar
+              ? "هذه الحصة قيد الإنتاج. سيتم إتاحتها فور اكتمالها بالجودة التنفيذية المطلوبة."
+              : "This lesson is in production. It will unlock once completed to executive quality."}
+          </p>
         </div>
       </div>
     );
@@ -112,7 +132,8 @@ function LessonPage() {
           </div>
           <div className="min-w-0">
             <div className="truncate text-[10px] uppercase tracking-[0.22em] text-cyan-300/80">
-              NEXIOS · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"} · {String(lesson.order_index).padStart(2, "0")}
+              NEXIOS · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"} ·{" "}
+              {String(lesson.order_index).padStart(2, "0")}
             </div>
             <h1 className="truncate text-2xl font-light text-white sm:text-3xl">{title}</h1>
             <div className="truncate text-sm text-cyan-100/80">{subtitle}</div>
@@ -145,12 +166,19 @@ function LessonPage() {
           )}
 
           {/* Summary + narration */}
-          <SectionCard icon={<Sparkles className="h-4 w-4" />} label={ar ? "الملخص التنفيذي" : "Executive Summary"}>
+          <SectionCard
+            icon={<Sparkles className="h-4 w-4" />}
+            label={ar ? "الملخص التنفيذي" : "Executive Summary"}
+          >
             <p className="text-base leading-relaxed text-white/85">{summary}</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
               <LessonAskAria
-                prompt={ar ? `آريا، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.` : `ARIA, give me the executive one-pager on what I must understand from the lesson "${title}".`}
+                prompt={
+                  ar
+                    ? `آريا، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
+                    : `ARIA, give me the executive one-pager on what I must understand from the lesson "${title}".`
+                }
                 label={ar ? "اسأل آريا حول هذه الحصة" : "Ask ARIA about this lesson"}
               />
             </div>
@@ -158,10 +186,16 @@ function LessonPage() {
 
           {/* Objectives */}
           {objectives.length > 0 && (
-            <SectionCard icon={<Target className="h-4 w-4" />} label={ar ? "أهداف التعلّم" : "Learning objectives"}>
+            <SectionCard
+              icon={<Target className="h-4 w-4" />}
+              label={ar ? "أهداف التعلّم" : "Learning objectives"}
+            >
               <ul className="grid gap-3 sm:grid-cols-2">
                 {objectives.map((o, i) => (
-                  <li key={i} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm text-white/85">
+                  <li
+                    key={i}
+                    className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm text-white/85"
+                  >
                     <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-cyan-400/15 text-xs font-semibold text-cyan-200 ring-1 ring-cyan-400/30">
                       {i + 1}
                     </span>
@@ -174,13 +208,19 @@ function LessonPage() {
 
           {/* Live executive KPIs (Golden-Reference lessons) */}
           {lessonKpis(lesson.slug, ar).length > 0 && (
-            <SectionCard icon={<Activity className="h-4 w-4" />} label={ar ? "المؤشرات التنفيذية الحيّة" : "Live executive KPIs"}>
+            <SectionCard
+              icon={<Activity className="h-4 w-4" />}
+              label={ar ? "المؤشرات التنفيذية الحيّة" : "Live executive KPIs"}
+            >
               <LessonLiveKpis kpis={lessonKpis(lesson.slug, ar)} />
             </SectionCard>
           )}
 
           {/* Simulation */}
-          <SectionCard icon={<Play className="h-4 w-4" />} label={ar ? "المحاكاة التنفيذية" : "Executive Simulation"}>
+          <SectionCard
+            icon={<Play className="h-4 w-4" />}
+            label={ar ? "المحاكاة التنفيذية" : "Executive Simulation"}
+          >
             <LessonSimulation
               slug={lesson.slug}
               lang={ar ? "ar" : "en"}
@@ -196,7 +236,10 @@ function LessonPage() {
           )}
 
           {/* Quiz */}
-          <SectionCard icon={<Award className="h-4 w-4" />} label={ar ? "اختبار المعرفة" : "Knowledge test"}>
+          <SectionCard
+            icon={<Award className="h-4 w-4" />}
+            label={ar ? "اختبار المعرفة" : "Knowledge test"}
+          >
             <LessonQuiz
               slug={lesson.slug}
               lang={ar ? "ar" : "en"}
@@ -205,7 +248,11 @@ function LessonPage() {
             />
           </SectionCard>
 
-          <LessonNav lang={ar ? "ar" : "en"} prev_slug={lesson.prev_slug} next_slug={lesson.next_slug} />
+          <LessonNav
+            lang={ar ? "ar" : "en"}
+            prev_slug={lesson.prev_slug}
+            next_slug={lesson.next_slug}
+          />
         </main>
 
         {/* ARIA sidecar (desktop) */}
@@ -218,11 +265,17 @@ function LessonPage() {
               <div>
                 <div className="text-sm font-semibold text-white">ARIA</div>
                 <div className="text-[11px] text-white/60">
-                  {ar ? "معلّمتك التنفيذية لهذه الحصة" : "Your executive instructor for this lesson"}
+                  {ar
+                    ? "معلّمتك التنفيذية لهذه الحصة"
+                    : "Your executive instructor for this lesson"}
                 </div>
               </div>
             </div>
-            <LessonARIAChat slug={lesson.slug} lang={ar ? "ar" : "en"} suggested={lesson.aria_suggested_prompts} />
+            <LessonARIAChat
+              slug={lesson.slug}
+              lang={ar ? "ar" : "en"}
+              suggested={lesson.aria_suggested_prompts}
+            />
           </div>
         </aside>
       </div>
@@ -230,7 +283,15 @@ function LessonPage() {
   );
 }
 
-function SectionCard({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function SectionCard({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-5 backdrop-blur-xl sm:p-6">
       <div className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
@@ -252,18 +313,29 @@ function ProgressPill({
   const status = lesson.progress?.status ?? "not_started";
   const label =
     status === "completed"
-      ? (ar ? "مكتملة" : "Completed")
+      ? ar
+        ? "مكتملة"
+        : "Completed"
       : status === "in_progress"
-      ? (ar ? "قيد التقدّم" : "In progress")
-      : (ar ? "لم تبدأ" : "Not started");
+        ? ar
+          ? "قيد التقدّم"
+          : "In progress"
+        : ar
+          ? "لم تبدأ"
+          : "Not started";
   const tone =
     status === "completed"
       ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
       : status === "in_progress"
-      ? "border-amber-400/40 bg-amber-400/10 text-amber-200"
-      : "border-white/15 bg-white/[0.03] text-white/60";
+        ? "border-amber-400/40 bg-amber-400/10 text-amber-200"
+        : "border-white/15 bg-white/[0.03] text-white/60";
   return (
-    <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em]", tone)}>
+    <div
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em]",
+        tone,
+      )}
+    >
       <span className="relative flex h-2 w-2">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-40" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
@@ -280,10 +352,30 @@ function ProgressPill({
 function lessonKpis(slug: string, ar: boolean): LiveKpi[] {
   if (slug === "digital-twin") {
     return [
-      { label: ar ? "تزامن التوأم" : "Twin sync", value: "99.4%", hint: ar ? "آخر مزامنة 3 ث" : "last sync 3s ago", tone: "ok" },
-      { label: ar ? "زمن كشف الشذوذ" : "Anomaly latency", value: "1.2s", hint: ar ? "متوسّط آخر ساعة" : "avg last hour", tone: "info" },
-      { label: ar ? "الحسّاسات النشطة" : "Sensors live", value: "128 / 132", hint: ar ? "4 خارج الخدمة" : "4 offline", tone: "warn" },
-      { label: ar ? "الجاهزية التنفيذية" : "Executive readiness", value: "96", hint: ar ? "من 100" : "of 100", tone: "ok" },
+      {
+        label: ar ? "تزامن التوأم" : "Twin sync",
+        value: "99.4%",
+        hint: ar ? "آخر مزامنة 3 ث" : "last sync 3s ago",
+        tone: "ok",
+      },
+      {
+        label: ar ? "زمن كشف الشذوذ" : "Anomaly latency",
+        value: "1.2s",
+        hint: ar ? "متوسّط آخر ساعة" : "avg last hour",
+        tone: "info",
+      },
+      {
+        label: ar ? "الحسّاسات النشطة" : "Sensors live",
+        value: "128 / 132",
+        hint: ar ? "4 خارج الخدمة" : "4 offline",
+        tone: "warn",
+      },
+      {
+        label: ar ? "الجاهزية التنفيذية" : "Executive readiness",
+        value: "96",
+        hint: ar ? "من 100" : "of 100",
+        tone: "ok",
+      },
     ];
   }
   return [];

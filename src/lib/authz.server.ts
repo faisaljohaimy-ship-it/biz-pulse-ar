@@ -17,8 +17,8 @@ export async function hasPlatformRole(userId: string, role: AppRole): Promise<bo
 
 export async function hasAnyPlatformRole(userId: string, roles: string[]): Promise<boolean> {
   if (!roles.length) return false;
-  const validRoles = roles.filter((role): role is AppRole =>
-    role === "admin" || role === "manager" || role === "member",
+  const validRoles = roles.filter(
+    (role): role is AppRole => role === "admin" || role === "manager" || role === "member",
   );
   if (!userId || !validRoles.length) return false;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

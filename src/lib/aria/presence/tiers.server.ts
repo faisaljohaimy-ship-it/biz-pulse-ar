@@ -24,8 +24,8 @@ interface Entry<T> {
 }
 
 const TIER_TTL_MS: Record<MemoryTier, number> = {
-  working: 60_000,                // 60s
-  session: 30 * 60_000,           // 30 min
+  working: 60_000, // 60s
+  session: 30 * 60_000, // 30 min
   executive: 7 * 24 * 60 * 60_000, // 7 days
   project: 30 * 24 * 60 * 60_000, // 30 days
   organization: 90 * 24 * 60 * 60_000, // 90 days
@@ -93,10 +93,10 @@ export function forget(tier: MemoryTier, scopeId: string, key?: string): void {
 }
 
 export interface PresenceCursor {
-  lastVisitAt: string;         // ISO
+  lastVisitAt: string; // ISO
   lastSeenIncidentId?: string; // most-recent incident id observed
-  lastSeenAlertAt?: string;    // ISO of most-recent alert observed
-  lastGreetingAt?: string;     // ISO of last greeting shown (avoid repeats)
+  lastSeenAlertAt?: string; // ISO of most-recent alert observed
+  lastGreetingAt?: string; // ISO of last greeting shown (avoid repeats)
 }
 
 const CURSOR_KEY = "presence_cursor";

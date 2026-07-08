@@ -51,7 +51,8 @@ export default function CityToBoardroomTransition({ isAr }: { isAr: boolean }) {
   const cityOpacity = p < 0.55 ? 1 : Math.max(0, 1 - (p - 0.55) * 4);
 
   // Light streaks (warp drive) peak around 0.35..0.7
-  const streak = Math.min(1, Math.max(0, (p - 0.25) / 0.35)) * (1 - Math.min(1, Math.max(0, (p - 0.7) / 0.2)));
+  const streak =
+    Math.min(1, Math.max(0, (p - 0.25) / 0.35)) * (1 - Math.min(1, Math.max(0, (p - 0.7) / 0.2)));
 
   // Phase 2 (0.45..0.85): grid warp / screen wall emerges
   const gridP = Math.min(1, Math.max(0, (p - 0.4) / 0.45));
@@ -68,16 +69,16 @@ export default function CityToBoardroomTransition({ isAr }: { isAr: boolean }) {
         ? "نطير فوق المدينة المؤسسية…"
         : "Flying over the enterprise city…"
       : p < 0.62
-      ? isAr
-        ? "المباني تتحول إلى شاشات ذكاء…"
-        : "Buildings becoming intelligence screens…"
-      : p < 0.9
-      ? isAr
-        ? "ندخل غرفة القيادة التنفيذية…"
-        : "Entering the executive command room…"
-      : isAr
-      ? "وصلنا. ARIA في انتظارك."
-      : "Arrived. ARIA is ready.";
+        ? isAr
+          ? "المباني تتحول إلى شاشات ذكاء…"
+          : "Buildings becoming intelligence screens…"
+        : p < 0.9
+          ? isAr
+            ? "ندخل غرفة القيادة التنفيذية…"
+            : "Entering the executive command room…"
+          : isAr
+            ? "وصلنا. ARIA في انتظارك."
+            : "Arrived. ARIA is ready.";
 
   return (
     <section
@@ -112,10 +113,7 @@ export default function CityToBoardroomTransition({ isAr }: { isAr: boolean }) {
         </div>
 
         {/* ===== Warp-speed light streaks ===== */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ opacity: streak }}
-        >
+        <div className="pointer-events-none absolute inset-0" style={{ opacity: streak }}>
           {Array.from({ length: 36 }).map((_, i) => {
             const angle = (i / 36) * 360;
             const len = 30 + (i % 7) * 18;
@@ -137,10 +135,7 @@ export default function CityToBoardroomTransition({ isAr }: { isAr: boolean }) {
         </div>
 
         {/* ===== Grid warp — buildings morphing into screen lattice ===== */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ opacity: gridEase }}
-        >
+        <div className="pointer-events-none absolute inset-0" style={{ opacity: gridEase }}>
           <div
             className="absolute inset-x-0 top-0 h-[70%]"
             style={{
@@ -149,8 +144,7 @@ export default function CityToBoardroomTransition({ isAr }: { isAr: boolean }) {
               backgroundSize: `${80 - gridEase * 30}px ${80 - gridEase * 30}px`,
               transform: `perspective(1000px) rotateX(${50 - gridEase * 12}deg) translateY(${-10 + gridEase * 8}%) scale(${1.2 + gridEase * 0.4})`,
               transformOrigin: "50% 0%",
-              maskImage:
-                "radial-gradient(ellipse 75% 60% at 50% 40%, #000 35%, transparent 85%)",
+              maskImage: "radial-gradient(ellipse 75% 60% at 50% 40%, #000 35%, transparent 85%)",
             }}
           />
           <div

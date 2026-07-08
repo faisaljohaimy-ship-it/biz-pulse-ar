@@ -33,10 +33,13 @@ const SSE_HEADERS: HeadersInit = {
 };
 
 function sseError(code: string, status: number) {
-  return new Response(`data: ${JSON.stringify({ error: code })}\n\ndata: ${JSON.stringify({ done: true })}\n\n`, {
-    status,
-    headers: SSE_HEADERS,
-  });
+  return new Response(
+    `data: ${JSON.stringify({ error: code })}\n\ndata: ${JSON.stringify({ done: true })}\n\n`,
+    {
+      status,
+      headers: SSE_HEADERS,
+    },
+  );
 }
 
 function clientIp(req: Request): string {
@@ -86,7 +89,8 @@ export const Route = createFileRoute("/api/public/aria-stream")({
         const parsed = Input.safeParse(body);
         if (!parsed.success) return sseError("invalid_input", 400);
         const { question } = parsed.data;
-        const lang: "ar" | "en" = parsed.data.lang ?? (/[\u0600-\u06FF]/.test(question) ? "ar" : "en");
+        const lang: "ar" | "en" =
+          parsed.data.lang ?? (/[\u0600-\u06FF]/.test(question) ? "ar" : "en");
 
         const ip = clientIp(request);
         const rate = await enforceRateLimit(`pub-aria-stream:${ip}`, 20, 60);
@@ -116,7 +120,10 @@ export const Route = createFileRoute("/api/public/aria-stream")({
             signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
           });
         } catch (err) {
-          console.error("[public/aria-stream] fetch failed", err instanceof Error ? err.message : String(err));
+          console.error(
+            "[public/aria-stream] fetch failed",
+            err instanceof Error ? err.message : String(err),
+          );
           return sseError("network_error", 502);
         }
 
@@ -124,10 +131,13 @@ export const Route = createFileRoute("/api/public/aria-stream")({
           const detail = (await upstream.text().catch(() => "")).slice(0, 240);
           console.error("[public/aria-stream] gateway", upstream.status, detail);
           const code =
-            upstream.status === 402 ? "quota_exceeded"
-            : upstream.status === 429 ? "rate_limited"
-            : upstream.status === 401 || upstream.status === 403 ? "provider_auth_failed"
-            : "provider_error";
+            upstream.status === 402
+              ? "quota_exceeded"
+              : upstream.status === 429
+                ? "rate_limited"
+                : upstream.status === 401 || upstream.status === 403
+                  ? "provider_auth_failed"
+                  : "provider_error";
           return sseError(code, upstream.status);
         }
 
@@ -163,21 +173,32 @@ export const Route = createFileRoute("/api/public/aria-stream")({
                       emitted = true;
                       send({ delta });
                     }
-                  } catch { /* ignore malformed line */ }
+                  } catch {
+                    /* ignore malformed line */
+                  }
                 }
               }
               if (!emitted) send({ error: "empty_response" });
               send({ done: true });
             } catch (err) {
-              console.error("[public/aria-stream] stream error", err instanceof Error ? err.message : String(err));
+              console.error(
+                "[public/aria-stream] stream error",
+                err instanceof Error ? err.message : String(err),
+              );
               send({ error: "stream_error" });
               send({ done: true });
             } finally {
-              try { controller.close(); } catch { /* ignore */ }
+              try {
+                controller.close();
+              } catch {
+                /* ignore */
+              }
             }
           },
           cancel() {
-            reader.cancel().catch(() => { /* ignore */ });
+            reader.cancel().catch(() => {
+              /* ignore */
+            });
           },
         });
 

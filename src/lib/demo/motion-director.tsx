@@ -13,7 +13,14 @@
 import * as React from "react";
 import { useDemoMode } from "@/lib/demo/demo-controller";
 
-interface Particle { x: number; y: number; vx: number; vy: number; r: number; a: number; }
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  a: number;
+}
 
 export function DemoMotionOverlay() {
   const demo = useDemoMode();
@@ -32,11 +39,15 @@ export function DemoMotionOverlay() {
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let w = 0, h = 0;
+    let w = 0,
+      h = 0;
     const resize = () => {
-      w = window.innerWidth; h = window.innerHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
@@ -59,7 +70,9 @@ export function DemoMotionOverlay() {
     };
     window.addEventListener("pointermove", onMove, { passive: true });
 
-    const onScroll = () => { scrollRef.current = window.scrollY; };
+    const onScroll = () => {
+      scrollRef.current = window.scrollY;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
 
     let running = true;
@@ -87,8 +100,12 @@ export function DemoMotionOverlay() {
       // Particles
       const parallaxY = -((scrollRef.current || 0) * 0.03);
       for (const p of particlesRef.current) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.y + parallaxY < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y + parallaxY < -10) {
+          p.y = h + 10;
+          p.x = Math.random() * w;
+        }
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
         ctx.beginPath();

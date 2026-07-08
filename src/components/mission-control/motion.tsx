@@ -170,29 +170,34 @@ export function StatusRing({
   const pulsing = state === "waiting" || state === "error";
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <motion.span
         aria-hidden
-        className={cn(
-          "absolute inset-0 rounded-full bg-gradient-to-tr",
-          RING_TONE[state],
-        )}
-        style={{ padding: 2, WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }}
+        className={cn("absolute inset-0 rounded-full bg-gradient-to-tr", RING_TONE[state])}
+        style={{
+          padding: 2,
+          WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude",
+        }}
         animate={
           reduced
             ? undefined
             : spinning
-            ? { rotate: 360 }
-            : pulsing
-            ? { opacity: [0.55, 1, 0.55] }
-            : { opacity: 1 }
+              ? { rotate: 360 }
+              : pulsing
+                ? { opacity: [0.55, 1, 0.55] }
+                : { opacity: 1 }
         }
         transition={
           spinning
             ? { repeat: Infinity, duration: 2.4, ease: "linear" }
             : pulsing
-            ? { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
-            : { duration: 0.3 }
+              ? { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
+              : { duration: 0.3 }
         }
       />
       <div className="relative z-10 grid place-items-center text-[11px] font-semibold text-white/90">

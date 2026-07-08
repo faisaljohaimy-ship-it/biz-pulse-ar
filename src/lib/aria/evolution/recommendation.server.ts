@@ -5,10 +5,7 @@
  * Executive Brain. They MUST cite at least one evidence reference.
  */
 
-import {
-  RecommendationInputSchema,
-  type RecommendationInput,
-} from "./contracts";
+import { RecommendationInputSchema, type RecommendationInput } from "./contracts";
 import { findProposal } from "./improvement.server";
 import type { ExecutiveRecommendation } from "./types";
 
@@ -24,9 +21,7 @@ function recId(proposal_id: string, ts: string): string {
 export function recommend(raw: RecommendationInput): ExecutiveRecommendation {
   const input = RecommendationInputSchema.parse(raw);
   if (!findProposal(input.proposal_id)) {
-    throw new Error(
-      `recommendation: proposal ${input.proposal_id} was never registered`,
-    );
+    throw new Error(`recommendation: proposal ${input.proposal_id} was never registered`);
   }
   const created_at = new Date().toISOString();
   const rec: ExecutiveRecommendation = Object.freeze({

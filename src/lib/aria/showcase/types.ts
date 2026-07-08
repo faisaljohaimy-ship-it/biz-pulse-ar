@@ -1,8 +1,15 @@
 // Phase 11.9 — Executive Showcase types (server-only).
 export type ShowcaseMode = "off" | "presenter" | "audience" | "boardroom";
 export type ShowcasePhase =
-  | "idle" | "intro" | "welcome" | "tour" | "kpi"
-  | "story" | "qa" | "recovery" | "closing";
+  | "idle"
+  | "intro"
+  | "welcome"
+  | "tour"
+  | "kpi"
+  | "story"
+  | "qa"
+  | "recovery"
+  | "closing";
 export type ShowcaseLanguage = "ar" | "en";
 export type ConfidenceLevel = "unknown" | "low" | "medium" | "high";
 

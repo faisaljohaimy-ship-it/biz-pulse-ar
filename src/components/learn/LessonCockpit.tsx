@@ -77,7 +77,11 @@ export function LessonCockpit({ slug, lang, lessonTitle }: Props) {
           icon={<Radio className="h-4 w-4" />}
           label={ar ? "إعادة تشغيل الحادث" : "Incident replay"}
         >
-          <IncidentReplay title={ar ? c.replay.title_ar : c.replay.title_en} frames={c.replay.frames} lang={lang} />
+          <IncidentReplay
+            title={ar ? c.replay.title_ar : c.replay.title_en}
+            frames={c.replay.frames}
+            lang={lang}
+          />
         </Panel>
 
         <Panel

@@ -9,8 +9,12 @@ class TransitionEngine {
     return current + (target - current) * k;
   }
 
-  clamp01(v: number): number { return v < 0 ? 0 : v > 1 ? 1 : v; }
-  clampBipolar(v: number): number { return v < -1 ? -1 : v > 1 ? 1 : v; }
+  clamp01(v: number): number {
+    return v < 0 ? 0 : v > 1 ? 1 : v;
+  }
+  clampBipolar(v: number): number {
+    return v < -1 ? -1 : v > 1 ? 1 : v;
+  }
 }
 
 export const transitionEngine = new TransitionEngine();

@@ -1,6 +1,16 @@
 // Cinematic Initialization HUD — shown while EnterpriseRuntime hydrates.
 import { useEffect, useState } from "react";
-import { ShieldCheck, Building2, Radar, Activity, BarChart3, Bot, Radio, Sparkles, AlertTriangle } from "lucide-react";
+import {
+  ShieldCheck,
+  Building2,
+  Radar,
+  Activity,
+  BarChart3,
+  Bot,
+  Radio,
+  Sparkles,
+  AlertTriangle,
+} from "lucide-react";
 
 const STAGES = [
   { key: "auth", label_ar: "المصادقة", label_en: "Authentication", icon: ShieldCheck },
@@ -13,7 +23,13 @@ const STAGES = [
   { key: "aria", label_ar: "ARIA", label_en: "ARIA Runtime", icon: Sparkles },
 ] as const;
 
-export function InitializingShell({ error, onRetry }: { error: string | null; onRetry?: () => void }) {
+export function InitializingShell({
+  error,
+  onRetry,
+}: {
+  error: string | null;
+  onRetry?: () => void;
+}) {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -42,7 +58,9 @@ export function InitializingShell({ error, onRetry }: { error: string | null; on
             {error ? "تعذّر تهيئة المنصة" : "تهيئة نظام التشغيل المؤسسي"}
           </h1>
           <p className="mt-1 text-sm text-white/60">
-            {error ? "تحقق من اتصالك وحاول مجدداً" : "NEXUS AI OS — Industrial Security, Western Region"}
+            {error
+              ? "تحقق من اتصالك وحاول مجدداً"
+              : "NEXUS AI OS — Industrial Security, Western Region"}
           </p>
         </div>
 
@@ -93,7 +111,9 @@ export function InitializingShell({ error, onRetry }: { error: string | null; on
                     </span>
                     <div className="text-right">
                       <div className="text-sm font-medium">{stage.label_ar}</div>
-                      <div className="text-[11px] uppercase tracking-wider text-white/40">{stage.label_en}</div>
+                      <div className="text-[11px] uppercase tracking-wider text-white/40">
+                        {stage.label_en}
+                      </div>
                     </div>
                   </div>
                   <span className="text-[11px] font-medium uppercase tracking-wider">

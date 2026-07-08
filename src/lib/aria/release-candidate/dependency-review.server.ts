@@ -1,12 +1,7 @@
 /**
  * Phase 10.0 — Dependency review summarizer.
  */
-import type {
-  EvidenceRef,
-  GateStatus,
-  ReviewFinding,
-  ReviewReport,
-} from "./types";
+import type { EvidenceRef, GateStatus, ReviewFinding, ReviewReport } from "./types";
 
 export interface DependencyInput {
   readonly audit_completed: boolean;

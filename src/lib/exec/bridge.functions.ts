@@ -59,26 +59,38 @@ export type BridgeState = {
   generated_at: string;
 };
 
-
 export const getBridgeState = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BridgeState> => {
     const sb = context.supabase;
 
-    const [agentDefsRes, agentRunsRes, incidentsRes, patrolsRes, visitorsRes, permitsRes, workOrdersRes, contractorsRes] = await Promise.all([
-      sb.from("agent_definitions")
+    const [
+      agentDefsRes,
+      agentRunsRes,
+      incidentsRes,
+      patrolsRes,
+      visitorsRes,
+      permitsRes,
+      workOrdersRes,
+      contractorsRes,
+    ] = await Promise.all([
+      sb
+        .from("agent_definitions")
         .select("id, name, goal, enabled, updated_at")
         .eq("enabled", true)
         .order("name", { ascending: true })
         .limit(12),
-      sb.from("agent_runs")
+      sb
+        .from("agent_runs")
         .select("id, agent_id, status, summary, started_at, finished_at, goal_override")
         .order("started_at", { ascending: false })
         .limit(120),
-      sb.from("sec_incidents")
+      sb
+        .from("sec_incidents")
         .select("id, severity, status")
         .in("status", ["open", "investigating", "in_progress", "new"]),
-      sb.from("sec_patrols")
+      sb
+        .from("sec_patrols")
         .select("id, status")
         .in("status", ["active", "in_progress", "started"]),
       sb.from("sec_visitors").select("status"),
@@ -88,11 +100,20 @@ export const getBridgeState = createServerFn({ method: "GET" })
     ]);
 
     const defs = (agentDefsRes.data ?? []) as Array<{
-      id: string; name: string; goal: string | null; enabled: boolean; updated_at: string;
+      id: string;
+      name: string;
+      goal: string | null;
+      enabled: boolean;
+      updated_at: string;
     }>;
     const runs = (agentRunsRes.data ?? []) as Array<{
-      id: string; agent_id: string; status: string; summary: string | null;
-      started_at: string; finished_at: string | null; goal_override: string | null;
+      id: string;
+      agent_id: string;
+      status: string;
+      summary: string | null;
+      started_at: string;
+      finished_at: string | null;
+      goal_override: string | null;
     }>;
     const incidents = (incidentsRes.data ?? []) as Array<{ severity: string; status: string }>;
     const patrols = (patrolsRes.data ?? []) as Array<{ status: string }>;
@@ -114,9 +135,10 @@ export const getBridgeState = createServerFn({ method: "GET" })
       const completed = recent.filter((r) => r.status === "completed").length;
       const failed = recent.filter((r) => r.status === "failed").length;
       const total = completed + failed;
-      const confidence = total === 0
-        ? 0.85 // baseline when no history
-        : Math.max(0.4, completed / total);
+      const confidence =
+        total === 0
+          ? 0.85 // baseline when no history
+          : Math.max(0.4, completed / total);
 
       let status: BridgeAgentStatus = d.enabled ? "monitoring" : "offline";
       if (last) {
@@ -128,7 +150,8 @@ export const getBridgeState = createServerFn({ method: "GET" })
           if (/search|بحث|قاعدة المعرفة|knowledge|kb\./.test(haystack)) status = "searching";
           else if (/analy|تحلي|risk|خطر|score/.test(haystack)) status = "analyzing";
           else if (/consult|coordinate|تنسيق|تشاور|delegat/.test(haystack)) status = "consulting";
-          else if (/dispatch|execute|تنفيذ|أمر عمل|teams\.post|email\.send/.test(haystack)) status = "executing";
+          else if (/dispatch|execute|تنفيذ|أمر عمل|teams\.post|email\.send/.test(haystack))
+            status = "executing";
           else status = "thinking";
         } else if (last.status === "completed" || last.status === "succeeded") {
           // recently completed within 90s reads as "speaking" to highlight latest voice
@@ -150,7 +173,7 @@ export const getBridgeState = createServerFn({ method: "GET" })
       const current_task =
         last?.status === "running"
           ? (last.goal_override?.slice(0, 120) ?? "Working")
-          : last?.summary?.slice(0, 120) ?? null;
+          : (last?.summary?.slice(0, 120) ?? null);
 
       return {
         id: d.id,
@@ -168,18 +191,27 @@ export const getBridgeState = createServerFn({ method: "GET" })
     const critical = incidents.filter((i) => i.severity === "critical").length;
     const high = incidents.filter((i) => i.severity === "high").length;
     const agentsOnline = agents.filter((a) => a.enabled).length;
-    const visitorsOnsite = visitors.filter((v) => ["checked_in", "onsite", "active"].includes(v.status)).length;
-    const activePermits = permits.filter((p) => ["active", "approved", "in_progress"].includes(p.status)).length;
-    const openWorkOrders = workOrders.filter((w) => w.status !== "closed" && w.status !== "cancelled").length;
+    const visitorsOnsite = visitors.filter((v) =>
+      ["checked_in", "onsite", "active"].includes(v.status),
+    ).length;
+    const activePermits = permits.filter((p) =>
+      ["active", "approved", "in_progress"].includes(p.status),
+    ).length;
+    const openWorkOrders = workOrders.filter(
+      (w) => w.status !== "closed" && w.status !== "cancelled",
+    ).length;
     const complianceScore = contractors.length
-      ? Math.round(contractors.reduce((s, c) => s + (c.compliance_score ?? 0), 0) / contractors.length)
+      ? Math.round(
+          contractors.reduce((s, c) => s + (c.compliance_score ?? 0), 0) / contractors.length,
+        )
       : 0;
     const aiConfidence = agents.length
       ? Math.round((agents.reduce((s, a) => s + a.confidence, 0) / agents.length) * 100)
       : 0;
 
     // Composite health: 100 minus weighted incident pressure, floored at 35.
-    const incidentPenalty = critical * 12 + high * 5 + Math.max(0, incidents.length - critical - high) * 2;
+    const incidentPenalty =
+      critical * 12 + high * 5 + Math.max(0, incidents.length - critical - high) * 2;
     const score = Math.max(35, Math.min(100, 100 - incidentPenalty));
 
     return {
@@ -229,10 +261,14 @@ export const getMissionTimeline = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<MissionTimelineEntry[]> => {
     const { data } = await context.supabase
       .from("enterprise_events")
-      .select("id, topic, source, severity, actor_id, org_id, subject_type, subject_id, correlation_id, duration_ms, status, payload_json, inputs_json, outputs_json, metrics_json, occurred_at, processed_at, error")
+      .select(
+        "id, topic, source, severity, actor_id, org_id, subject_type, subject_id, correlation_id, duration_ms, status, payload_json, inputs_json, outputs_json, metrics_json, occurred_at, processed_at, error",
+      )
       .order("occurred_at", { ascending: false })
       .limit(40);
-    const rows = (data ?? []) as Parameters<typeof import("@/lib/narrator/event-narrator").narrateEvent>[0][];
+    const rows = (data ?? []) as Parameters<
+      typeof import("@/lib/narrator/event-narrator").narrateEvent
+    >[0][];
     const { narrateEvent } = await import("@/lib/narrator/event-narrator");
     return rows.map((row) => {
       const n = narrateEvent(row);
@@ -256,4 +292,3 @@ export const getMissionTimeline = createServerFn({ method: "GET" })
       };
     });
   });
-

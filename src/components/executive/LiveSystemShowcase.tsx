@@ -63,7 +63,14 @@ export function LiveSystemShowcase() {
       { key: "muzdalifah", ar: "مزدلفة", en: "Muzdalifah", x: 48, y: 58, tone: "safe" as const },
       { key: "arafat", ar: "عرفات", en: "Arafat", x: 32, y: 72, tone: "alert" as const },
       { key: "jamarat", ar: "الجمرات", en: "Jamarat", x: 70, y: 34, tone: "safe" as const },
-      { key: "haram", ar: "المسجد الحرام", en: "Grand Mosque", x: 78, y: 62, tone: "safe" as const },
+      {
+        key: "haram",
+        ar: "المسجد الحرام",
+        en: "Grand Mosque",
+        x: 78,
+        y: 62,
+        tone: "safe" as const,
+      },
     ],
     [],
   );
@@ -94,7 +101,10 @@ export function LiveSystemShowcase() {
           <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-50 [background:conic-gradient(from_0deg,transparent_0deg,hsl(var(--primary)/0.45)_60deg,transparent_120deg,transparent_240deg,hsl(var(--primary)/0.45)_300deg,transparent_360deg)] [animation:spin_22s_linear_infinite] [mask:linear-gradient(#000,#000)_content-box,linear-gradient(#000,#000)] [mask-composite:exclude] p-[1px]" />
 
           {/* Title bar */}
-          <div dir="ltr" className="relative flex items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-3 py-2">
+          <div
+            dir="ltr"
+            className="relative flex items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-3 py-2"
+          >
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57] shadow-[0_0_6px_rgba(255,95,87,0.7)]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e] shadow-[0_0_6px_rgba(254,188,46,0.7)]" />
@@ -103,9 +113,17 @@ export function LiveSystemShowcase() {
 
             <div className="flex flex-1 items-center justify-center">
               <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] text-white/70">
-                <Moon className="h-3 w-3 shrink-0 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.9)]" aria-hidden />
-                <span className="text-center">{ar ? "مركز قيادة الحج · مشاعر 1447" : "Hajj Command · Mashaer 1447"}</span>
-                <Radio className="h-2.5 w-2.5 shrink-0 animate-pulse text-emerald-400" aria-hidden />
+                <Moon
+                  className="h-3 w-3 shrink-0 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.9)]"
+                  aria-hidden
+                />
+                <span className="text-center">
+                  {ar ? "مركز قيادة الحج · مشاعر 1447" : "Hajj Command · Mashaer 1447"}
+                </span>
+                <Radio
+                  className="h-2.5 w-2.5 shrink-0 animate-pulse text-emerald-400"
+                  aria-hidden
+                />
               </div>
             </div>
 
@@ -114,7 +132,7 @@ export function LiveSystemShowcase() {
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
                 className="rounded-md border border-white/10 bg-white/5 p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
-                aria-label={expanded ? (ar ? "تصغير" : "Minimize") : (ar ? "تكبير" : "Maximize")}
+                aria-label={expanded ? (ar ? "تصغير" : "Minimize") : ar ? "تكبير" : "Maximize"}
               >
                 {expanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
               </button>
@@ -137,29 +155,68 @@ export function LiveSystemShowcase() {
           >
             {/* KPI strip — top toolbar, never overlapping the map */}
             <div className="flex flex-wrap items-center gap-1.5 border-b border-white/10 bg-black/50 px-3 py-2 sm:gap-2">
-              <KpiChip icon={AlertTriangle} tone="rose" label={ar ? "حوادث" : "Incidents"} value={snapshot.openIncidents} />
-              <KpiChip icon={Radio} tone="amber" label={ar ? "تنبيهات" : "Alerts"} value={snapshot.activeAlerts} />
-              <KpiChip icon={CheckCircle2} tone="emerald" label={ar ? "منجزة" : "Done"} value={snapshot.tasksDone} />
-              <KpiChip icon={Users} tone="cyan" label={ar ? "ميداني" : "Field"} value={snapshot.staff} />
+              <KpiChip
+                icon={AlertTriangle}
+                tone="rose"
+                label={ar ? "حوادث" : "Incidents"}
+                value={snapshot.openIncidents}
+              />
+              <KpiChip
+                icon={Radio}
+                tone="amber"
+                label={ar ? "تنبيهات" : "Alerts"}
+                value={snapshot.activeAlerts}
+              />
+              <KpiChip
+                icon={CheckCircle2}
+                tone="emerald"
+                label={ar ? "منجزة" : "Done"}
+                value={snapshot.tasksDone}
+              />
+              <KpiChip
+                icon={Users}
+                tone="cyan"
+                label={ar ? "ميداني" : "Field"}
+                value={snapshot.staff}
+              />
               <KpiChip
                 icon={Activity}
                 tone="cyan"
                 label={ar ? "محطات" : "Stations"}
                 value={`${snapshot.stations.online}/${snapshot.stations.total}`}
               />
-              <KpiChip icon={Sparkles} tone="emerald" label={ar ? "امتثال" : "Compliance"} value={`${snapshot.compliance}%`} />
+              <KpiChip
+                icon={Sparkles}
+                tone="emerald"
+                label={ar ? "امتثال" : "Compliance"}
+                value={`${snapshot.compliance}%`}
+              />
             </div>
 
             {/* Map canvas */}
             <div className="relative aspect-[16/11] w-full sm:aspect-[16/9]">
               {/* Grid backdrop */}
-              <svg aria-hidden className="absolute inset-0 h-full w-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                aria-hidden
+                className="absolute inset-0 h-full w-full opacity-20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <defs>
-                  <pattern id="hajj-preview-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <pattern
+                    id="hajj-preview-grid"
+                    width="40"
+                    height="40"
+                    patternUnits="userSpaceOnUse"
+                  >
                     <path d="M40 0H0V40" fill="none" stroke="currentColor" strokeWidth="0.5" />
                   </pattern>
                 </defs>
-                <rect width="100%" height="100%" fill="url(#hajj-preview-grid)" className="text-primary" />
+                <rect
+                  width="100%"
+                  height="100%"
+                  fill="url(#hajj-preview-grid)"
+                  className="text-primary"
+                />
               </svg>
 
               {/* Radial glows */}
@@ -173,10 +230,16 @@ export function LiveSystemShowcase() {
                   style={{ left: `${s.x}%`, top: `${s.y}%` }}
                 >
                   <div className="relative flex flex-col items-center">
-                    <span className={`relative block size-3 rounded-full border sm:size-4 ${toneCls[s.tone]}`}>
-                      <span className={`absolute inset-0 rounded-full ${toneCls[s.tone]} animate-ping opacity-60`} />
+                    <span
+                      className={`relative block size-3 rounded-full border sm:size-4 ${toneCls[s.tone]}`}
+                    >
+                      <span
+                        className={`absolute inset-0 rounded-full ${toneCls[s.tone]} animate-ping opacity-60`}
+                      />
                     </span>
-                    <div className={`mt-1 whitespace-nowrap rounded border px-1.5 py-0.5 text-[9px] font-medium backdrop-blur-md sm:px-2 sm:text-[10px] ${toneCls[s.tone]}`}>
+                    <div
+                      className={`mt-1 whitespace-nowrap rounded border px-1.5 py-0.5 text-[9px] font-medium backdrop-blur-md sm:px-2 sm:text-[10px] ${toneCls[s.tone]}`}
+                    >
                       {ar ? s.ar : s.en}
                     </div>
                   </div>
@@ -227,7 +290,9 @@ function KpiChip({
     cyan: "border-cyan-500/40 text-cyan-200",
   }[tone];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border bg-black/45 px-2 py-1 text-[10px] font-semibold tabular-nums backdrop-blur ${cls}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border bg-black/45 px-2 py-1 text-[10px] font-semibold tabular-nums backdrop-blur ${cls}`}
+    >
       <Icon className="h-3 w-3 opacity-80" aria-hidden />
       <span className="opacity-75">{label}</span>
       <span>{value}</span>

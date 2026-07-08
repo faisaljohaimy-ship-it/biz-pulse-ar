@@ -13,13 +13,7 @@ import { planMission } from "./router.server";
 import { toBrainRequest } from "./context.server";
 import { loadSharedMemory, recordMissionRef } from "./memory.server";
 import { emitOrchestrationEvent } from "./events";
-import type {
-  AgentId,
-  AgentResult,
-  MissionOutcome,
-  MissionPlan,
-  MissionRequest,
-} from "./types";
+import type { AgentId, AgentResult, MissionOutcome, MissionPlan, MissionRequest } from "./types";
 import type {
   ExecutiveBrainAnswer,
   RiskSignal,
@@ -89,10 +83,7 @@ async function runWithTimeout<T>(
   });
 }
 
-async function runSingleAgent(
-  agentId: AgentId,
-  ctx: AgentRunContext,
-): Promise<AgentResult> {
+async function runSingleAgent(agentId: AgentId, ctx: AgentRunContext): Promise<AgentResult> {
   const agent = getAgent(agentId);
   if (!agent) return skipped(agentId, "agent not registered");
 
@@ -138,7 +129,12 @@ async function runSingleAgent(
     );
 
     if (result.ok) {
-      emitOrchestrationEvent("AgentCompleted", ctx.mission_id, { duration_ms: Date.now() - started }, agentId);
+      emitOrchestrationEvent(
+        "AgentCompleted",
+        ctx.mission_id,
+        { duration_ms: Date.now() - started },
+        agentId,
+      );
       return result;
     }
     if (result.status === "timeout") {
@@ -182,35 +178,34 @@ function assembleAnswer(results: AgentResult[]): ExecutiveBrainAnswer {
   // The Chief (executive_brain) always contributes a full answer. If it
   // failed, we degrade gracefully to "unavailable".
   const chief = results.find((r) => r.agent_id === "executive_brain" && r.contribution.answer);
-  const base: ExecutiveBrainAnswer =
-    chief?.contribution.answer ?? {
-      text_ar: "بيانات غير متوفرة",
-      text_en: "Data unavailable",
-      question: "",
-      intent: "question",
-      reasoning_type: "executive",
-      required_data: [],
-      evidence: [],
-      reasoning: "",
-      assumptions: [],
-      risks: [],
-      confidence: {
-        evidence_completeness: 0,
-        data_freshness: 0,
-        cross_validation: 0,
-        rule_confidence: 0,
-        historical_similarity: 0,
-        overall: 0.2,
-      },
-      recommendation: null,
-      decision: null,
-      next_action: null,
-      business_impact_en: "",
-      business_impact_ar: "",
-      plan: [],
-      insights: [],
-      sources: [],
-    };
+  const base: ExecutiveBrainAnswer = chief?.contribution.answer ?? {
+    text_ar: "بيانات غير متوفرة",
+    text_en: "Data unavailable",
+    question: "",
+    intent: "question",
+    reasoning_type: "executive",
+    required_data: [],
+    evidence: [],
+    reasoning: "",
+    assumptions: [],
+    risks: [],
+    confidence: {
+      evidence_completeness: 0,
+      data_freshness: 0,
+      cross_validation: 0,
+      rule_confidence: 0,
+      historical_similarity: 0,
+      overall: 0.2,
+    },
+    recommendation: null,
+    decision: null,
+    next_action: null,
+    business_impact_en: "",
+    business_impact_ar: "",
+    plan: [],
+    insights: [],
+    sources: [],
+  };
 
   const extraEvidence = new Set<string>(base.evidence);
   const extraSources = new Set<string>(base.sources);
@@ -234,8 +229,7 @@ function assembleAnswer(results: AgentResult[]): ExecutiveBrainAnswer {
   // Merge — keep highest-priority recommendation, most conservative decision.
   const rankPriority = { critical: 3, high: 2, medium: 1, low: 0 } as const;
   recs.sort((a, b) => rankPriority[b.priority] - rankPriority[a.priority]);
-  const decision =
-    decs.find((d) => d.requires_human_approval) ?? decs[0] ?? null;
+  const decision = decs.find((d) => d.requires_human_approval) ?? decs[0] ?? null;
 
   extraRisks.sort((a, b) => b.score - a.score);
 
@@ -293,10 +287,7 @@ export async function runAgentMission(
     if (external.aborted) controller.abort();
     else external.addEventListener("abort", onExternalAbort, { once: true });
   }
-  const missionTimeout = setTimeout(
-    () => controller.abort(),
-    req.timeoutMs ?? DEFAULT_TIMEOUT,
-  );
+  const missionTimeout = setTimeout(() => controller.abort(), req.timeoutMs ?? DEFAULT_TIMEOUT);
 
   let results: AgentResult[] = [];
   let cancelled = false;

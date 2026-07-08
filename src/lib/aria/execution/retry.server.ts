@@ -41,7 +41,12 @@ export function decideRetry(
     return { retry: false, attempt, delay_ms: 0, reason: "session missing" };
   }
   if (!failure.retryable) {
-    return { retry: false, attempt, delay_ms: 0, reason: `failure kind ${failure.kind} is not retryable` };
+    return {
+      retry: false,
+      attempt,
+      delay_ms: 0,
+      reason: `failure kind ${failure.kind} is not retryable`,
+    };
   }
   if (attempt >= policy.max_attempts) {
     return { retry: false, attempt, delay_ms: 0, reason: "attempts exhausted" };
@@ -52,5 +57,10 @@ export function decideRetry(
   const base = policy.base_backoff_ms * Math.pow(policy.factor, Math.max(0, attempt));
   const jitter = Math.floor(Math.random() * policy.jitter_ms);
   const delay = Math.min(30_000, Math.round(base + jitter));
-  return { retry: true, attempt: attempt + 1, delay_ms: delay, reason: `transient backoff #${attempt + 1}` };
+  return {
+    retry: true,
+    attempt: attempt + 1,
+    delay_ms: delay,
+    reason: `transient backoff #${attempt + 1}`,
+  };
 }

@@ -12,9 +12,7 @@ export function decide(
   gates: ReadonlyArray<GateResult>,
   blockers: ReadonlyArray<Blocker>,
 ): DecisionOutcome {
-  const criticalFail = gates.some(
-    (g) => g.severity === "critical" && g.status === "fail",
-  );
+  const criticalFail = gates.some((g) => g.severity === "critical" && g.status === "fail");
   if (criticalFail || blockers.some((b) => b.severity === "critical")) {
     return {
       decision: "NO-GO",
@@ -22,9 +20,7 @@ export function decide(
     };
   }
 
-  const criticalUnknown = gates.some(
-    (g) => g.severity === "critical" && g.status === "unknown",
-  );
+  const criticalUnknown = gates.some((g) => g.severity === "critical" && g.status === "unknown");
   if (criticalUnknown) {
     return {
       decision: "NO-GO",
@@ -32,17 +28,14 @@ export function decide(
     };
   }
 
-  const highFail = gates.some(
-    (g) => g.severity === "high" && g.status === "fail",
-  );
+  const highFail = gates.some((g) => g.severity === "high" && g.status === "fail");
   const anyUnknown = gates.some((g) => g.status === "unknown");
   const anyWarn = gates.some((g) => g.status === "warn");
 
   if (highFail || anyUnknown || anyWarn) {
     return {
       decision: "GO_WITH_KNOWN_LIMITATIONS",
-      reason:
-        "Non-critical gate issues remain; proceed with documented limitations.",
+      reason: "Non-critical gate issues remain; proceed with documented limitations.",
     };
   }
 

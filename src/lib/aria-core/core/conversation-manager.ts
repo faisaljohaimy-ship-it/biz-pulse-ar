@@ -26,10 +26,7 @@ export const conversationManager = {
   /** Returns null when the request is a duplicate inside the dedupe window. */
   beginTurn(text: string, intent: AriaIntent): AriaTurn | null {
     const now = Date.now();
-    if (
-      lastSubmittedText === text &&
-      now - lastSubmittedAt < DEDUPE_WINDOW_MS
-    ) {
+    if (lastSubmittedText === text && now - lastSubmittedAt < DEDUPE_WINDOW_MS) {
       return null;
     }
     lastSubmittedText = text;
@@ -56,9 +53,7 @@ export const conversationManager = {
     if (turnId !== activeTurnId) return;
     const current = useAriaStore.getState().activeTurn;
     if (!current) return;
-    useAriaStore
-      .getState()
-      .setActiveTurn({ ...current, status: "streaming" });
+    useAriaStore.getState().setActiveTurn({ ...current, status: "streaming" });
   },
   completeTurn(turnId: string) {
     if (turnId !== activeTurnId) return;

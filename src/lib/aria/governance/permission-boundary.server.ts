@@ -17,8 +17,7 @@ export function withinBoundary(
 ): BoundaryCheck {
   const reasons: string[] = [];
   if (!granted) reasons.push("no_authority");
-  else if (!canDecide(granted, action.kind))
-    reasons.push(`kind_beyond_authority:${action.kind}`);
+  else if (!canDecide(granted, action.kind)) reasons.push(`kind_beyond_authority:${action.kind}`);
 
   if (action.tenant_id && tenant_context && action.tenant_id !== tenant_context) {
     const rank = granted ? rankOf(granted) : 0;

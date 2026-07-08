@@ -23,9 +23,8 @@ export default defineTool({
       ctx?.getClientId?.() ||
       "anon";
     try {
-      const { enforceRateLimit, rateLimitResponse, rateLimitUnavailableResponse } = await import(
-        "@/lib/governance/rate-limit.server"
-      );
+      const { enforceRateLimit, rateLimitResponse, rateLimitUnavailableResponse } =
+        await import("@/lib/governance/rate-limit.server");
       const rate = await enforceRateLimit(`mcp-ask-aria:${callerKey}`, 20, 60);
       if (rate.unavailable) {
         const r = rateLimitUnavailableResponse();
@@ -44,7 +43,10 @@ export default defineTool({
     } catch (e) {
       return {
         content: [
-          { type: "text", text: `Rate limit check failed: ${e instanceof Error ? e.message : String(e)}` },
+          {
+            type: "text",
+            text: `Rate limit check failed: ${e instanceof Error ? e.message : String(e)}`,
+          },
         ],
         isError: true,
       };
@@ -53,7 +55,9 @@ export default defineTool({
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) {
       return {
-        content: [{ type: "text", text: "ARIA is unavailable: LOVABLE_API_KEY is not configured." }],
+        content: [
+          { type: "text", text: "ARIA is unavailable: LOVABLE_API_KEY is not configured." },
+        ],
         isError: true,
       };
     }

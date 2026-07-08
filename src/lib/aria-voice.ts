@@ -77,57 +77,73 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
   }, [listening, scribe, stopSpeaking]);
 
   const stopListening = useCallback(() => {
-    try { scribe.disconnect(); } catch { /* noop */ }
+    try {
+      scribe.disconnect();
+    } catch {
+      /* noop */
+    }
     setListening(false);
     setPartial("");
   }, [scribe]);
 
-  const speak = useCallback(async (text: string) => {
-    const clean = text.replace(/```[\s\S]*?```/g, "").replace(/[*_#`>]/g, "").trim();
-    if (!clean) return;
-    stopSpeaking();
-    try {
-      setSpeaking(true);
-      const res = await authenticatedFetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: clean.slice(0, 1800),
-          voiceId: ARIA_VOICE_ID,
-          stability: 0.55,
-          similarityBoost: 0.85,
-          style: 0.35,
-        }),
-      });
-      if (!res.ok) throw new Error(`tts ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => {
+  const speak = useCallback(
+    async (text: string) => {
+      const clean = text
+        .replace(/```[\s\S]*?```/g, "")
+        .replace(/[*_#`>]/g, "")
+        .trim();
+      if (!clean) return;
+      stopSpeaking();
+      try {
+        setSpeaking(true);
+        const res = await authenticatedFetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: clean.slice(0, 1800),
+            voiceId: ARIA_VOICE_ID,
+            stability: 0.55,
+            similarityBoost: 0.85,
+            style: 0.35,
+          }),
+        });
+        if (!res.ok) throw new Error(`tts ${res.status}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          if (mountedRef.current) setSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+        audio.onerror = () => {
+          if (mountedRef.current) setSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+        await audio.play().catch((err) => {
+          URL.revokeObjectURL(url);
+          throw err;
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "tts failed");
         if (mountedRef.current) setSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      audio.onerror = () => {
-        if (mountedRef.current) setSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      await audio.play().catch((err) => {
-        URL.revokeObjectURL(url);
-        throw err;
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "tts failed");
-      if (mountedRef.current) setSpeaking(false);
-    }
-  }, [stopSpeaking]);
+      }
+    },
+    [stopSpeaking],
+  );
 
-  useEffect(() => () => {
-    mountedRef.current = false;
-    stopSpeaking();
-    try { scribe.disconnect(); } catch { /* noop */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+      stopSpeaking();
+      try {
+        scribe.disconnect();
+      } catch {
+        /* noop */
+      }
+    },
+    [],
+  );
 
   return {
     listening,

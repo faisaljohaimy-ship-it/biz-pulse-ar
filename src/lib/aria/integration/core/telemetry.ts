@@ -41,7 +41,12 @@ function slot(id: ConnectorId): Counters {
   return s;
 }
 
-export function recordCall(id: ConnectorId, latencyMs: number, ok: boolean, errorClass?: string): void {
+export function recordCall(
+  id: ConnectorId,
+  latencyMs: number,
+  ok: boolean,
+  errorClass?: string,
+): void {
   const s = slot(id);
   s.calls_total += 1;
   s.last_latency_ms = latencyMs;
@@ -70,9 +75,14 @@ export function snapshotTelemetry(id: ConnectorId): ConnectorTelemetrySnapshot {
   const avg = s.latency_count ? Math.round(s.latency_sum / s.latency_count) : 0;
   const wins = s.success_window.length;
   const successRate = wins ? s.success_window.filter(Boolean).length / wins : -1;
-  const availability = s.last_health?.status === "healthy" ? 1
-    : s.last_health?.status === "degraded" ? 0.5
-      : s.last_health?.status === "unhealthy" ? 0 : -1;
+  const availability =
+    s.last_health?.status === "healthy"
+      ? 1
+      : s.last_health?.status === "degraded"
+        ? 0.5
+        : s.last_health?.status === "unhealthy"
+          ? 0
+          : -1;
   return {
     connector_id: id,
     calls_total: s.calls_total,
@@ -103,6 +113,7 @@ export function classifyIntegrationError(err: unknown): string {
   if (msg.includes("404")) return "not_found";
   if (msg.includes("409")) return "conflict";
   if (msg.includes("5")) return "upstream_5xx";
-  if (msg.includes("network") || msg.includes("econn") || msg.includes("fetch failed")) return "network";
+  if (msg.includes("network") || msg.includes("econn") || msg.includes("fetch failed"))
+    return "network";
   return "unknown";
 }

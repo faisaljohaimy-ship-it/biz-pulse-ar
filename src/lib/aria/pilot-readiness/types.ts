@@ -4,7 +4,13 @@ export type TriState = "pass" | "fail" | "unknown";
 export type ConfidenceBucket = "low" | "medium" | "high" | "unknown";
 export type PilotDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 export type StakeholderInfluence = "low" | "medium" | "high" | "critical" | "unknown";
-export type StakeholderStance = "champion" | "supporter" | "neutral" | "skeptic" | "blocker" | "unknown";
+export type StakeholderStance =
+  | "champion"
+  | "supporter"
+  | "neutral"
+  | "skeptic"
+  | "blocker"
+  | "unknown";
 export type Severity = "low" | "medium" | "high" | "critical" | "unknown";
 export type AcceptanceState = "pass" | "fail" | "not_run" | "unknown";
 

@@ -10,9 +10,7 @@ import { listExperiences } from "./experience-store.server";
 import { proposeImprovement } from "./improvement.server";
 
 export function analyzeWorkflowSignals(): ImprovementProposal | undefined {
-  const experiences = listExperiences().filter((e) =>
-    e.problem.toLowerCase().includes("workflow"),
-  );
+  const experiences = listExperiences().filter((e) => e.problem.toLowerCase().includes("workflow"));
   if (experiences.length < 3) return undefined;
   const failures = experiences.filter((e) => e.outcome === "failure").length;
   if (failures / experiences.length < 0.3) return undefined;

@@ -11,12 +11,7 @@ import { normalizeAttributes } from "./normalization.server";
 import { allowsEdge, describeRelationship } from "./ontology.server";
 import { deriveConfidence, provenanceScore } from "./confidence.server";
 import { relationshipFreshness, toFreshnessState } from "./freshness.server";
-import type {
-  EvidenceRef,
-  Provenance,
-  RelationshipKind,
-  RelationshipRecord,
-} from "./types";
+import type { EvidenceRef, Provenance, RelationshipKind, RelationshipRecord } from "./types";
 
 function relId(
   workspace_id: string,

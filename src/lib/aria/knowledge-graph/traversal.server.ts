@@ -7,11 +7,7 @@
  */
 
 import { getEntity, listRelationships } from "./graph-store.server";
-import type {
-  RelationshipRecord,
-  TraversalNode,
-  TraversalReport,
-} from "./types";
+import type { RelationshipRecord, TraversalNode, TraversalReport } from "./types";
 
 function reportId(root_id: string, ts: string, depth: number): string {
   let h = 5381;

@@ -3,9 +3,7 @@
  */
 import type { Blocker, GateResult } from "./types";
 
-export function computeBlockers(
-  gates: ReadonlyArray<GateResult>,
-): ReadonlyArray<Blocker> {
+export function computeBlockers(gates: ReadonlyArray<GateResult>): ReadonlyArray<Blocker> {
   const blockers: Blocker[] = [];
   for (const g of gates) {
     if (g.severity === "critical" && g.status === "fail") {

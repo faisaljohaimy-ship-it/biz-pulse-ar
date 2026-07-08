@@ -25,11 +25,11 @@ export interface AvatarFrame {
   face: FaceChannel;
   body: BodyChannel;
   gesture: GestureId;
-  lip: number;      // 0..1
-  breath: number;   // 0..1
-  sway: number;     // -1..1
-  gazeX: number;    // -1..1 eased
-  gazeY: number;    // -1..1 eased
+  lip: number; // 0..1
+  breath: number; // 0..1
+  sway: number; // -1..1
+  gazeX: number; // -1..1 eased
+  gazeY: number; // -1..1 eased
   ts: number;
 }
 
@@ -78,7 +78,9 @@ class AvatarRenderer {
     this.raf = null;
   }
 
-  getFrame(): AvatarFrame { return this.frame; }
+  getFrame(): AvatarFrame {
+    return this.frame;
+  }
 
   subscribe(fn: Subscriber): () => void {
     this.subs.add(fn);
@@ -100,15 +102,31 @@ class AvatarRenderer {
     // Attention override for gaze
     let targetGazeX = eyesTarget.gazeTargetX;
     let targetGazeY = eyesTarget.gazeTargetY;
-    if (attention.kind === "ui") { targetGazeX = attention.x; targetGazeY = attention.y; }
-    else if (attention.kind === "away") { targetGazeX = 0.35; targetGazeY = -0.1; }
+    if (attention.kind === "ui") {
+      targetGazeX = attention.x;
+      targetGazeY = attention.y;
+    } else if (attention.kind === "away") {
+      targetGazeX = 0.35;
+      targetGazeY = -0.1;
+    }
 
     const dt = this.frame.ts === 0 ? 16 : Math.max(1, nowMs - this.frame.ts);
-    const gazeX = transitionEngine.clampBipolar(transitionEngine.ease(this.frame.gazeX, targetGazeX, dt));
-    const gazeY = transitionEngine.clampBipolar(transitionEngine.ease(this.frame.gazeY, targetGazeY, dt));
-    const lip = transitionEngine.clamp01(transitionEngine.ease(this.frame.lip, lipSyncEngine.read(), dt, 80));
+    const gazeX = transitionEngine.clampBipolar(
+      transitionEngine.ease(this.frame.gazeX, targetGazeX, dt),
+    );
+    const gazeY = transitionEngine.clampBipolar(
+      transitionEngine.ease(this.frame.gazeY, targetGazeY, dt),
+    );
+    const lip = transitionEngine.clamp01(
+      transitionEngine.ease(this.frame.lip, lipSyncEngine.read(), dt, 80),
+    );
     const breath = transitionEngine.clamp01(
-      transitionEngine.ease(this.frame.breath, idle.breath * bodyTarget.breathingDepth + 0.2, dt, 400),
+      transitionEngine.ease(
+        this.frame.breath,
+        idle.breath * bodyTarget.breathingDepth + 0.2,
+        dt,
+        400,
+      ),
     );
 
     const next: AvatarFrame = {
@@ -127,7 +145,13 @@ class AvatarRenderer {
       ts: nowMs,
     };
     this.frame = next;
-    this.subs.forEach((s) => { try { s(next); } catch { /* isolate */ } });
+    this.subs.forEach((s) => {
+      try {
+        s(next);
+      } catch {
+        /* isolate */
+      }
+    });
   }
 }
 

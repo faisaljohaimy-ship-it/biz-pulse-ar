@@ -24,14 +24,23 @@ export type ErrorClass =
 export function classifyError(err: unknown): ErrorClass {
   const msg = (err instanceof Error ? err.message : String(err ?? "")).toLowerCase();
   if (!msg) return "unknown";
-  if (msg.includes("validation") || msg.includes("zod") || msg.includes("invalid")) return "validation";
-  if (msg.includes("unauthor") || msg.includes("forbidden") || msg.includes("401") || msg.includes("403")) return "auth";
+  if (msg.includes("validation") || msg.includes("zod") || msg.includes("invalid"))
+    return "validation";
+  if (
+    msg.includes("unauthor") ||
+    msg.includes("forbidden") ||
+    msg.includes("401") ||
+    msg.includes("403")
+  )
+    return "auth";
   if (msg.includes("rate") && msg.includes("limit")) return "rate_limit";
   if (msg.includes("not found") || msg.includes("404")) return "not_found";
   if (msg.includes("conflict") || msg.includes("409")) return "conflict";
   if (msg.includes("timeout") || msg.includes("timed out")) return "timeout";
-  if (msg.includes("network") || msg.includes("fetch failed") || msg.includes("econn")) return "network";
-  if (msg.includes("supabase") || msg.includes("postgres") || msg.includes("relation")) return "database";
+  if (msg.includes("network") || msg.includes("fetch failed") || msg.includes("econn"))
+    return "network";
+  if (msg.includes("supabase") || msg.includes("postgres") || msg.includes("relation"))
+    return "database";
   return "unknown";
 }
 

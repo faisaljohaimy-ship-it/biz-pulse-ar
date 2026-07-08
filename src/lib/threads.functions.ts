@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-
 export const listThreads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -59,4 +58,3 @@ export const getThreadMessages = createServerFn({ method: "POST" })
       parts: r.parts as Array<{ type: string; text?: string }>,
     }));
   });
-

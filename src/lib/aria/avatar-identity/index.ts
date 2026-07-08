@@ -18,28 +18,14 @@ export {
   type AnimationProfile,
 } from "./animation-profile.server";
 export { getExpression, listExpressions } from "./expression-profile.server";
-export {
-  getGesture,
-  getDefaultGesture,
-  listGestures,
-} from "./gesture-profile.server";
-export {
-  getLipSyncProfile,
-  isLipSyncCompliant,
-} from "./lip-sync-profile.server";
+export { getGesture, getDefaultGesture, listGestures } from "./gesture-profile.server";
+export { getLipSyncProfile, isLipSyncCompliant } from "./lip-sync-profile.server";
 export { getVoiceProfile, isVoiceCompliant } from "./voice-profile.server";
 export {
   getRenderingProfile,
   listRenderingProfiles,
   assertRenderingCompliant,
 } from "./rendering-profile.server";
-export {
-  IdentityAudit,
-  type IdentityAuditEntry,
-  type IdentityAuditKind,
-} from "./audit.server";
-export {
-  IdentityMetrics,
-  type IdentityMetricsSnapshot,
-} from "./metrics.server";
+export { IdentityAudit, type IdentityAuditEntry, type IdentityAuditKind } from "./audit.server";
+export { IdentityMetrics, type IdentityMetricsSnapshot } from "./metrics.server";
 export { verifyIdentity, type IdentityVerification } from "./verification.server";

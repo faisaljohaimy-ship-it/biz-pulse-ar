@@ -5,9 +5,9 @@ import type { QualityInput } from "./conversation-quality.server";
 import { responsivenessSnapshot } from "./responsiveness.server";
 
 export interface InteractionQualityScore {
-  readonly language: number;   // 0..100
-  readonly latency: number;    // 0..100
-  readonly composite: number;  // 0..100
+  readonly language: number; // 0..100
+  readonly latency: number; // 0..100
+  readonly composite: number; // 0..100
   readonly acceptable: boolean;
   readonly violations: readonly string[];
 }

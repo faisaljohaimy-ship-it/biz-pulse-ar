@@ -26,9 +26,7 @@ export const getCostBudgetStatus = createServerFn({ method: "GET" })
     const orgId = m?.org_id;
     if (!orgId) return [];
 
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const monthStart = new Date();
     monthStart.setUTCDate(1);
@@ -59,10 +57,7 @@ export const getCostBudgetStatus = createServerFn({ method: "GET" })
         : Promise.resolve({ data: [] as { cost_usd: number | null }[] }),
     ]);
 
-    const monthSpend = (usageRes.data ?? []).reduce(
-      (a, r) => a + Number(r.cost_usd ?? 0),
-      0,
-    );
+    const monthSpend = (usageRes.data ?? []).reduce((a, r) => a + Number(r.cost_usd ?? 0), 0);
 
     const budgets = budgetsRes.data ?? [];
     if (budgets.length === 0) {
@@ -123,18 +118,13 @@ export const getSecretsRotationStatus = createServerFn({ method: "GET" })
     const isAdmin = await hasPlatformRole(userId, "admin");
     if (!isAdmin) return [];
 
-    const { supabaseAdmin } = await import(
-      "@/integrations/supabase/client.server"
-    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("secrets_rotation_log")
       .select("secret_name, rotated_at, next_due_at")
       .order("rotated_at", { ascending: false });
 
-    const latest = new Map<
-      string,
-      { rotated_at: string; next_due_at: string | null }
-    >();
+    const latest = new Map<string, { rotated_at: string; next_due_at: string | null }>();
     for (const r of data ?? []) {
       if (!latest.has(r.secret_name)) {
         latest.set(r.secret_name, {
@@ -148,8 +138,7 @@ export const getSecretsRotationStatus = createServerFn({ method: "GET" })
     return TRACKED_SECRETS.map((name) => {
       const e = latest.get(name);
       const due = e?.next_due_at ? new Date(e.next_due_at).getTime() : null;
-      const overdue =
-        due !== null ? Math.floor((now - due) / 86_400_000) : null;
+      const overdue = due !== null ? Math.floor((now - due) / 86_400_000) : null;
       return {
         secret_name: name,
         last_rotated_at: e?.rotated_at ?? null,

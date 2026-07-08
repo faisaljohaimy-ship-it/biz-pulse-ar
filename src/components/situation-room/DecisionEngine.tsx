@@ -81,7 +81,12 @@ export function DecisionEngine({ ar }: Props) {
 }
 
 function DecisionGroup({
-  ar, title, Icon, tone, items, loading,
+  ar,
+  title,
+  Icon,
+  tone,
+  items,
+  loading,
 }: {
   ar: boolean;
   title: { ar: string; en: string };
@@ -108,13 +113,25 @@ function DecisionGroup({
         {items.map((it) => (
           <li key={it.id} className={cn("rounded-2xl border p-3", PRIORITY_TONE[it.priority])}>
             <div className="flex items-start gap-2">
-              <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[it.priority])} />
+              <span
+                className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[it.priority])}
+              />
               <div className="min-w-0 flex-1">
-                <div className={cn("truncate text-[14px] font-semibold text-white", ar && "text-right")}>
+                <div
+                  className={cn(
+                    "truncate text-[14px] font-semibold text-white",
+                    ar && "text-right",
+                  )}
+                >
                   {ar ? it.title_ar : it.title_en}
                 </div>
                 {(ar ? it.detail_ar : it.detail_en) && (
-                  <div className={cn("mt-1 line-clamp-2 text-[12.5px] leading-snug text-white/65", ar && "text-right")}>
+                  <div
+                    className={cn(
+                      "mt-1 line-clamp-2 text-[12.5px] leading-snug text-white/65",
+                      ar && "text-right",
+                    )}
+                  >
                     {ar ? it.detail_ar : it.detail_en}
                   </div>
                 )}

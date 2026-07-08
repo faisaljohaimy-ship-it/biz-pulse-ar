@@ -17,11 +17,7 @@ export type GapKind =
   | "reliability"
   | "unknown";
 export type ApprovalDecision = "approve" | "reject" | "defer" | "unknown";
-export type EngineDecision =
-  | "GO"
-  | "NO_GO"
-  | "GO_WITH_KNOWN_LIMITATIONS"
-  | "UNKNOWN";
+export type EngineDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 
 export interface EvidenceRef {
   readonly source: string; // e.g. "runtime.metrics" | "governance.audit"

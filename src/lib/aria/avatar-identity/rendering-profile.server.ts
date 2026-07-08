@@ -20,7 +20,9 @@ export function assertRenderingCompliant(
   const rule = getRenderingProfile(quality);
   const issues: string[] = [];
   if (input.w < rule.min_resolution_px.w || input.h < rule.min_resolution_px.h) {
-    issues.push(`resolution ${input.w}x${input.h} below minimum ${rule.min_resolution_px.w}x${rule.min_resolution_px.h}`);
+    issues.push(
+      `resolution ${input.w}x${input.h} below minimum ${rule.min_resolution_px.w}x${rule.min_resolution_px.h}`,
+    );
   }
   if (input.compression > rule.compression_max) {
     issues.push(`compression ${input.compression} exceeds max ${rule.compression_max}`);

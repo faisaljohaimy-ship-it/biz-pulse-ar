@@ -17,7 +17,7 @@ export interface PresenceSnapshot {
   emotion: Emotion;
   level: PresenceLevel;
   glow: PresenceGlow;
-  intensity: number;   // 0..1
+  intensity: number; // 0..1
   gazeContact: boolean;
   speaking: boolean;
   ts: number;
@@ -54,9 +54,14 @@ class ExecutivePresence {
 
   private seed(): PresenceSnapshot {
     return {
-      state: "closed", emotion: "neutral",
-      level: "dormant", glow: "muted", intensity: 0,
-      gazeContact: false, speaking: false, ts: 0,
+      state: "closed",
+      emotion: "neutral",
+      level: "dormant",
+      glow: "muted",
+      intensity: 0,
+      gazeContact: false,
+      speaking: false,
+      ts: 0,
     };
   }
 
@@ -67,12 +72,17 @@ class ExecutivePresence {
   }
 
   stop(): void {
-    if (this.unsub) { this.unsub(); this.unsub = null; }
+    if (this.unsub) {
+      this.unsub();
+      this.unsub = null;
+    }
     this.listeners.clear();
     this.last = this.seed();
   }
 
-  snapshot(): PresenceSnapshot { return this.last; }
+  snapshot(): PresenceSnapshot {
+    return this.last;
+  }
 
   subscribe(fn: Listener): () => void {
     this.listeners.add(fn);
@@ -103,7 +113,13 @@ class ExecutivePresence {
       ts: frame.ts,
     };
     this.last = snap;
-    this.listeners.forEach((l) => { try { l(snap); } catch { /* isolate */ } });
+    this.listeners.forEach((l) => {
+      try {
+        l(snap);
+      } catch {
+        /* isolate */
+      }
+    });
   }
 }
 

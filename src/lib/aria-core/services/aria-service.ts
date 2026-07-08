@@ -43,7 +43,9 @@ export async function pingChat(): Promise<{ ok: boolean; model?: string; key_pre
     const r = await ariaAuthedFetch("/api/chat/health", { method: "GET" });
     if (!r.ok) return { ok: false };
     const j = await r.json().catch(() => null);
-    return j && typeof j === "object" ? { ok: !!j.ok, model: j.model, key_present: j.key_present } : { ok: false };
+    return j && typeof j === "object"
+      ? { ok: !!j.ok, model: j.model, key_present: j.key_present }
+      : { ok: false };
   } catch {
     return { ok: false };
   }

@@ -10,7 +10,12 @@ export type ReadinessDimension = {
   label: string;
   score: number;
   weight: number;
-  signals: Array<{ key: string; value: string | number | boolean | null; ok: boolean; note?: string }>;
+  signals: Array<{
+    key: string;
+    value: string | number | boolean | null;
+    ok: boolean;
+    note?: string;
+  }>;
   blockers: string[];
 };
 
@@ -43,12 +48,23 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     const dims: ReadinessDimension[] = [];
 
     // --- Architecture: presence of core tables + RLS coverage approximation
-    const coreTables = ["workflows", "workflow_runs", "tool_registry", "tool_executions", "audit_logs", "enterprise_events", "agent_definitions"];
+    const coreTables = [
+      "workflows",
+      "workflow_runs",
+      "tool_registry",
+      "tool_executions",
+      "audit_logs",
+      "enterprise_events",
+      "agent_definitions",
+    ];
     const archSignals: ReadinessDimension["signals"] = [];
     let presentTables = 0;
     for (const t of coreTables) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabaseAdmin as any).from(t).select("*", { count: "exact", head: true }).limit(1);
+      const { error } = await (supabaseAdmin as any)
+        .from(t)
+        .select("*", { count: "exact", head: true })
+        .limit(1);
       const ok = !error;
       if (ok) presentTables++;
       archSignals.push({ key: `table.${t}`, value: ok ? "present" : "missing", ok });
@@ -60,7 +76,8 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
       score: archScore,
       weight: 1.0,
       signals: archSignals,
-      blockers: presentTables < coreTables.length ? ["Some core tables are missing or unreachable"] : [],
+      blockers:
+        presentTables < coreTables.length ? ["Some core tables are missing or unreachable"] : [],
     });
 
     // --- Runtime: workflow + tool throughput in last 24h
@@ -70,14 +87,20 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     let runScore = 0;
     if (orgId) {
       const { count: wfRuns } = await supabaseAdmin
-        .from("workflow_runs").select("id", { count: "exact", head: true })
-        .eq("org_id", orgId).gte("started_at", since24);
+        .from("workflow_runs")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .gte("started_at", since24);
       const { count: toolRuns } = await supabaseAdmin
-        .from("tool_executions").select("id", { count: "exact", head: true })
-        .eq("org_id", orgId).gte("created_at", since24);
+        .from("tool_executions")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .gte("created_at", since24);
       const { count: events24 } = await supabaseAdmin
-        .from("enterprise_events").select("id", { count: "exact", head: true })
-        .eq("org_id", orgId).gte("occurred_at", since24);
+        .from("enterprise_events")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .gte("occurred_at", since24);
       runtimeSignals.push(
         { key: "workflow_runs_24h", value: wfRuns ?? 0, ok: (wfRuns ?? 0) > 0 },
         { key: "tool_executions_24h", value: toolRuns ?? 0, ok: (toolRuns ?? 0) > 0 },
@@ -102,12 +125,23 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     const securitySignals: ReadinessDimension["signals"] = [];
     const securityBlockers: string[] = [];
     const { count: rolesCount } = await supabaseAdmin
-      .from("user_roles").select("user_id", { count: "exact", head: true });
-    securitySignals.push({ key: "user_roles_rows", value: rolesCount ?? 0, ok: (rolesCount ?? 0) > 0, note: (rolesCount ?? 0) === 0 ? "No admin assigned" : undefined });
+      .from("user_roles")
+      .select("user_id", { count: "exact", head: true });
+    securitySignals.push({
+      key: "user_roles_rows",
+      value: rolesCount ?? 0,
+      ok: (rolesCount ?? 0) > 0,
+      note: (rolesCount ?? 0) === 0 ? "No admin assigned" : undefined,
+    });
     if ((rolesCount ?? 0) === 0) securityBlockers.push("No users have admin role");
     const { count: auditCount } = await supabaseAdmin
-      .from("audit_logs").select("id", { count: "exact", head: true });
-    securitySignals.push({ key: "audit_logs_total", value: auditCount ?? 0, ok: (auditCount ?? 0) > 0 });
+      .from("audit_logs")
+      .select("id", { count: "exact", head: true });
+    securitySignals.push({
+      key: "audit_logs_total",
+      value: auditCount ?? 0,
+      ok: (auditCount ?? 0) > 0,
+    });
     const securityScore = Math.round(
       (securitySignals.filter((s) => s.ok).length / securitySignals.length) * 100,
     );
@@ -127,10 +161,15 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     let reliabilityScore = 0;
     if (orgId) {
       const { data: runs7 } = await supabaseAdmin
-        .from("workflow_runs").select("status")
-        .eq("org_id", orgId).gte("started_at", since7).limit(2000);
+        .from("workflow_runs")
+        .select("status")
+        .eq("org_id", orgId)
+        .gte("started_at", since7)
+        .limit(2000);
       const total = runs7?.length ?? 0;
-      const ok = (runs7 ?? []).filter((r) => r.status === "succeeded" || r.status === "completed").length;
+      const ok = (runs7 ?? []).filter(
+        (r) => r.status === "succeeded" || r.status === "completed",
+      ).length;
       const failed = (runs7 ?? []).filter((r) => r.status === "failed").length;
       const successRate = total > 0 ? Math.round((ok / total) * 100) : 0;
       reliabilitySignals.push(
@@ -138,9 +177,13 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
         { key: "success_rate_pct", value: successRate, ok: successRate >= 80 },
         { key: "failures_7d", value: failed, ok: failed === 0 },
       );
-      reliabilityScore = total === 0 ? 0 : Math.round((successRate + (failed === 0 ? 100 : Math.max(0, 100 - failed * 5))) / 2);
+      reliabilityScore =
+        total === 0
+          ? 0
+          : Math.round((successRate + (failed === 0 ? 100 : Math.max(0, 100 - failed * 5))) / 2);
       if (total === 0) reliabilityBlockers.push("No workflow history to evaluate reliability");
-      if (successRate < 80 && total > 0) reliabilityBlockers.push(`Workflow success rate below 80% (${successRate}%)`);
+      if (successRate < 80 && total > 0)
+        reliabilityBlockers.push(`Workflow success rate below 80% (${successRate}%)`);
     }
     dims.push({
       id: "reliability",
@@ -155,13 +198,22 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     const scalSignals: ReadinessDimension["signals"] = [];
     if (orgId) {
       const { count: pendingEv } = await supabaseAdmin
-        .from("enterprise_events").select("id", { count: "exact", head: true })
-        .eq("org_id", orgId).eq("status", "pending");
+        .from("enterprise_events")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .eq("status", "pending");
       const { count: runningWf } = await supabaseAdmin
-        .from("workflow_runs").select("id", { count: "exact", head: true })
-        .eq("org_id", orgId).eq("status", "running");
+        .from("workflow_runs")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .eq("status", "running");
       scalSignals.push(
-        { key: "pending_events", value: pendingEv ?? 0, ok: (pendingEv ?? 0) < 100, note: (pendingEv ?? 0) >= 100 ? "Backlog growing" : undefined },
+        {
+          key: "pending_events",
+          value: pendingEv ?? 0,
+          ok: (pendingEv ?? 0) < 100,
+          note: (pendingEv ?? 0) >= 100 ? "Backlog growing" : undefined,
+        },
         { key: "running_workflows", value: runningWf ?? 0, ok: true },
       );
     }
@@ -180,16 +232,22 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     // --- Maintainability: RAG corpus, tool registry size, agent definitions
     const maintSignals: ReadinessDimension["signals"] = [];
     const { count: tools } = await supabaseAdmin
-      .from("tool_registry").select("id", { count: "exact", head: true }).eq("enabled", true);
+      .from("tool_registry")
+      .select("id", { count: "exact", head: true })
+      .eq("enabled", true);
     const { count: agents } = await supabaseAdmin
-      .from("agent_definitions").select("id", { count: "exact", head: true }).eq("enabled", true);
+      .from("agent_definitions")
+      .select("id", { count: "exact", head: true })
+      .eq("enabled", true);
     maintSignals.push(
       { key: "tools_enabled", value: tools ?? 0, ok: (tools ?? 0) > 0 },
       { key: "agents_enabled", value: agents ?? 0, ok: (agents ?? 0) > 0 },
     );
     if (orgId) {
       const { count: kb } = await supabaseAdmin
-        .from("aria_knowledge").select("id", { count: "exact", head: true }).eq("org_id", orgId);
+        .from("aria_knowledge")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId);
       maintSignals.push({ key: "knowledge_documents", value: kb ?? 0, ok: (kb ?? 0) > 0 });
     }
     const maintScore = Math.round(
@@ -209,7 +267,12 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     const enterpriseScore = Math.round(weighted / totalWeight);
     // Production score weights runtime + reliability + security more
     const prodWeights: Record<string, number> = {
-      architecture: 1, runtime: 1.5, security: 1.5, reliability: 1.5, scalability: 0.8, maintainability: 0.7,
+      architecture: 1,
+      runtime: 1.5,
+      security: 1.5,
+      reliability: 1.5,
+      scalability: 0.8,
+      maintainability: 0.7,
     };
     const prodTotal = dims.reduce((a, d) => a + (prodWeights[d.id] ?? 1), 0);
     const prodWeighted = dims.reduce((a, d) => a + d.score * (prodWeights[d.id] ?? 1), 0);

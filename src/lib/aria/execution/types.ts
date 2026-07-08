@@ -21,12 +21,7 @@ export type ExecutionState =
   | "failed"
   | "cancelled";
 
-export type ExecutionHealth =
-  | "healthy"
-  | "degraded"
-  | "recovering"
-  | "blocked"
-  | "critical";
+export type ExecutionHealth = "healthy" | "degraded" | "recovering" | "blocked" | "critical";
 
 export type ExecutionFailureKind =
   | "transient"
