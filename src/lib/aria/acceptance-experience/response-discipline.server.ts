@@ -19,7 +19,7 @@ export function discipline(rawInput: unknown): DisciplinedResponse {
   let text = input.draft.trim();
 
   // Strip raw JSON blocks.
-  if (/^```json/i.test(text) || /^\s*[\[{][\s\S]*[\]}]\s*$/.test(text)) {
+  if (/^```json/i.test(text) || /^\s*[[{][\s\S]*[\]}]\s*$/.test(text)) {
     text =
       input.lang === "ar" ? "البيانات جاهزة في اللوحة." : "The data is ready on the dashboard.";
     notes.push("stripped_raw_json");
