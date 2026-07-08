@@ -29,10 +29,12 @@ export function OrgSwitcher({ compact = false }: { compact?: boolean }) {
   const fetchOrgs = useServerFn(listMyOrgs);
   const doSwitch = useServerFn(switchOrg);
 
+  const { user } = useAuth();
   const { data: orgs, isLoading } = useQuery({
-    queryKey: ["my-orgs"],
+    queryKey: ["my-orgs", user?.id ?? "anon"],
     queryFn: () => fetchOrgs(),
     staleTime: 60_000,
+    enabled: !!user,
   });
 
   const switchMutation = useMutation({
