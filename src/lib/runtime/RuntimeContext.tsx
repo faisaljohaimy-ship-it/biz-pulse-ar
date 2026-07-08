@@ -84,6 +84,28 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
   // Autonomous runtime scheduler — enabled once bootstrap data is hydrated.
   useRuntimeScheduler(!!data);
 
+  if (authLoading) {
+    return <InitializingShell error={null} />;
+  }
+
+  // Public-access mode: no session → render children with a stub runtime.
+  if (!user) {
+    const stub: RuntimeBootstrap = {
+      org: null,
+      user: { id: "anon", email: null, display_name: "Guest", avatar_url: null },
+      counts: {
+        sites: 0, assets: 0, incidents_open: 0, incidents_critical: 0,
+        patrols_active: 0, permits_active: 0, visitors_inside: 0, cctv_new: 0,
+        agents_enabled: 0, workflows_enabled: 0,
+      },
+      integrations: { microsoft_connected: false },
+      health: { realtime: "ready", ai_gateway: "ready", scheduler: "ready" },
+      generated_at: new Date().toISOString(),
+    };
+    const value: RuntimeContextValue = { ...stub, refresh: async () => undefined };
+    return <RuntimeCtx.Provider value={value}>{children}</RuntimeCtx.Provider>;
+  }
+
   if (isLoading || !data) {
     return <InitializingShell error={null} />;
   }
