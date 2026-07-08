@@ -26,9 +26,7 @@ import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
-import { OsCommandDeck } from "@/components/os/OsCommandDeck";
-import { OsLivePulse } from "@/components/os/OsLivePulse";
-import { OsExecutiveStrip } from "@/components/os/OsExecutiveStrip";
+import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
@@ -386,23 +384,15 @@ function IntroLanding() {
         `}</style>
       </section>
 
-      {/* ══ World-Class Executive Dashboard Zones ══ */}
+      {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══
+          Floats over the ARIA hologram as translucent glass instruments so
+          she remains visible as the living backdrop of the whole system. */}
       <section
         id="hero-dashboard"
-        aria-label={ar ? "لوحة القيادة التنفيذية الحية" : "Live executive dashboard"}
+        aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
         className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
       >
-        <div className="text-center">
-          <div className="text-[10px] uppercase tracking-[0.28em] text-[#3AE8FF]/80 sm:text-[11px]">
-            {ar ? "لوحة القيادة التنفيذية" : "Executive Command Deck"}
-          </div>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-            {ar ? "نبض المؤسسة — لحظياً" : "Enterprise Pulse — Live"}
-          </h2>
-        </div>
-        <OsCommandDeck ar={ar} />
-        <OsLivePulse ar={ar} />
-        <OsExecutiveStrip ar={ar} />
+        <SovereignCommandDeck ar={ar} />
         <OsDecisionQueue ar={ar} />
       </section>
 
