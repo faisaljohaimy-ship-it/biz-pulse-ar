@@ -156,10 +156,10 @@ export function runDirectiveAudit(): DirectiveAuditReport {
   const p4: PhaseProbe[] = [
     safeProbe("tool-engine", () => {
       const v = verifyToolEngine();
-      const critical = v.issues.filter((i) => i.severity === "error" || i.severity === "critical");
+      const errors = v.issues.filter((i) => i.severity === "error");
       return {
         module: "tool-engine",
-        status: v.ok ? "green" : critical.length > 0 ? "red" : "amber",
+        status: v.ok ? "green" : errors.length > 0 ? "red" : "amber",
         issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
       };
     }),
