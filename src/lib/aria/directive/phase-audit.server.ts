@@ -16,6 +16,9 @@ import { verifyGraph } from "@/lib/aria/knowledge-graph/verification.server";
 import { verifyHero } from "@/lib/aria/hero-integration/verification.server";
 import { verifyToolEngine } from "@/lib/aria/tools/verification.server";
 import { verifyRuntime } from "@/lib/aria/runtime/verification.server";
+import { reportHealth as reportRuntimeHealth } from "@/lib/aria/runtime/health.server";
+import { evaluateIntegrationReadiness } from "@/lib/aria/integration/readiness.server";
+
 
 export type PhaseStatus = "green" | "amber" | "red" | "deferred" | "unknown";
 
