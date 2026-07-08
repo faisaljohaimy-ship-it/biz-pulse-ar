@@ -8,6 +8,7 @@ import { Building2, Check, ChevronDown, Loader2 } from "lucide-react";
 import { listMyOrgs, switchOrg } from "@/lib/org/org.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,10 +29,12 @@ export function OrgSwitcher({ compact = false }: { compact?: boolean }) {
   const fetchOrgs = useServerFn(listMyOrgs);
   const doSwitch = useServerFn(switchOrg);
 
+  const { user } = useAuth();
   const { data: orgs, isLoading } = useQuery({
-    queryKey: ["my-orgs"],
+    queryKey: ["my-orgs", user?.id ?? "anon"],
     queryFn: () => fetchOrgs(),
     staleTime: 60_000,
+    enabled: !!user,
   });
 
   const switchMutation = useMutation({
