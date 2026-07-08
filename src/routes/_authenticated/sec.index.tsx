@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { AlertTriangle, Radar, UserCheck, Camera } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
@@ -18,7 +19,7 @@ function OpsRoom() {
   const { region, regionId } = useRegion();
   const sim = regionSim(regionId).counts;
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, dataUpdatedAt, isFetching } = useQuery({
     queryKey: ["sec-overview"],
     queryFn: () => fetchOverview(),
     refetchInterval: 30_000,
@@ -30,6 +31,7 @@ function OpsRoom() {
         title={`غرفة العمليات — ${region.labelAr}`}
         subtitle="نظرة فورية على البلاغات والدوريات والزوار والتصاريح والكاميرات والأصول"
       >
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
         <button
           onClick={() => router.invalidate()}
           className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"

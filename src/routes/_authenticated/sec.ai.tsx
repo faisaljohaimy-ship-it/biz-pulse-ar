@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
-import { SecPageHeader, SampleBadge } from "@/components/sec/sec-shell";
+import { SecPageHeader } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sec/ai")({
@@ -11,7 +12,10 @@ export const Route = createFileRoute("/_authenticated/sec/ai")({
 
 function AIRec() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const { data, dataUpdatedAt, isFetching } = useQuery({
+    queryKey: ["sec-overview"],
+    queryFn: () => fetchOverview(),
+  });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 
   const recs: {
@@ -73,8 +77,9 @@ function AIRec() {
         title="التوصيات الذكية"
         subtitle="مولّدة من بيانات العمليات لحظياً"
         badge="ARIA Insights"
-      />
-      <SampleBadge />
+      >
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
+      </SecPageHeader>
       <div className="grid gap-3 md:grid-cols-2">
         {recs.map((r, i) => (
           <div key={i} className="rounded-xl border border-border bg-card p-4">

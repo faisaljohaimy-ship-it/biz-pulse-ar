@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/facilities")({
   component: Facilities,
@@ -10,11 +11,16 @@ export const Route = createFileRoute("/_authenticated/sec/facilities")({
 
 function Facilities() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const { data, dataUpdatedAt, isFetching } = useQuery({
+    queryKey: ["sec-overview"],
+    queryFn: () => fetchOverview(),
+  });
   const sites = data?.sites ?? [];
   return (
     <div className="space-y-4">
-      <SecPageHeader title="حالة المواقع" subtitle={`${sites.length} موقع في المنطقة الغربية`} />
+      <SecPageHeader title="حالة المواقع" subtitle={`${sites.length} موقع في المنطقة الغربية`}>
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_sites" />
+      </SecPageHeader>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {sites.map((s) => (
           <div key={s.id} className="rounded-xl border border-border bg-card p-4">

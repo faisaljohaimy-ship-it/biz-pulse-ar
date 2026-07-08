@@ -106,3 +106,16 @@ System Prompt → History → Memory → Distillation → Recall → Tool Select
   - Beacons وحوادث العميل المجهولة تُكتب في جدول service-role فقط (`aria_public_incidents`)، لا في جداول المستخدمين.
 - أي جدول جديد في `public` يشحن مع GRANTs + RLS + policies في نفس الـ migration؛ إسقاط أيٍّ من الثلاثة خرق دستوري.
 - بعد كل جلسة إصلاح: آريا تُنهي بتقرير قصير — عدد النتائج قبل/بعد، وما تم إغلاقه، وما جرى تجاهله ولماذا.
+
+## 20. قانون ربط شارات لوحات SEC بالدليل الحيّ
+- كل لوحة تحت `/sec/*` يجب أن تعرض حالة LIVE/SYNC عبر `<SecLiveBadge>` (`src/components/sec/SecLiveBadge.tsx`) مربوطاً بـ `dataUpdatedAt` و `isFetching` من استعلام `useQuery(["sec-overview"], …)` أو أي `sec_*` مكافئ. ممنوع نص ثابت `"LIVE"`, `"SYNC"`, `"بث مباشر"` داخل JSX لهذه الطبقة.
+- إذا لم يُرجع الاستعلام بيانات بعد (`dataUpdatedAt === 0`) → `<SecLiveBadge>` لا يعرض شيئاً (FR-19: لا شارة بلا دليل).
+- إذا تجاوز عمر البيانات `maxAgeMs` (افتراضياً 60 ثانية) → الشارة تنخفض تلقائياً إلى حالة `(stale)` معتّمة عبر `EvidenceBadge`.
+- كل `SecPageHeader` في لوحات SEC يحمل شارة حيّة عبر `children`، مع تمرير `source` يعكس اسم الجدول/الاستعلام الفعلي (`sec_incidents`, `sec_patrols`, `sec_cameras`, `sec_assets`, `sec_sites`, `sec_kpis`, …) لتوفير أثر تدقيق قابل للتحقق.
+- بروتوكول التعميم الدائم لآريا:
+  1. تفحص دورياً: `rg -n "\"LIVE\"|\"SYNC\"|بث مباشر" src/routes/_authenticated/sec* src/components/sec/`.
+  2. كل نتيجة hardcoded تُستبدل بـ `<SecLiveBadge dataUpdatedAt={…} isFetching={…} source="sec_…" />`.
+  3. أي لوحة SEC جديدة تُنشأ مع الشارة الحيّة منذ اللحظة الأولى — لا يُقبل إضافة اللوحة أولاً ثم تركيب الشارة لاحقاً.
+  4. عند وجود لوحة بلا استعلام حيّ بعد (بيانات محاكاة فقط) يُستخدم `SampleBadge` — لا يُفبرك `dataUpdatedAt` مصطنع لإرضاء الشارة.
+- التحقق: `tests/e2e/10-continuous-audit.spec.ts` يمتد ليتأكد أن كل لوحة SEC تعرض شارة `data-evidence-source` أو أن الاستعلام لم يُنجز بعد.
+

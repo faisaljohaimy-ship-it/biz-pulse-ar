@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/cctv")({
   component: CCTV,
@@ -10,11 +11,16 @@ export const Route = createFileRoute("/_authenticated/sec/cctv")({
 
 function CCTV() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data } = useQuery({ queryKey: ["sec-overview"], queryFn: () => fetchOverview() });
+  const { data, dataUpdatedAt, isFetching } = useQuery({
+    queryKey: ["sec-overview"],
+    queryFn: () => fetchOverview(),
+  });
   const rows = data?.cctv ?? [];
   return (
     <div className="space-y-4">
-      <SecPageHeader title="لوحة مراقبة CCTV" subtitle="تنبيهات الكاميرات الذكية" />
+      <SecPageHeader title="لوحة مراقبة CCTV" subtitle="تنبيهات الكاميرات الذكية">
+        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_cameras" />
+      </SecPageHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard
           label="تنبيهات جديدة"
