@@ -23,6 +23,8 @@ export interface BrainEvent {
   type: "submitted" | "duplicate" | "cancelled" | "failed" | "completed";
   turnId?: string;
   reason?: string;
+  /** Client-observed latency from submit → completion (ms). */
+  latencyMs?: number;
 }
 
 export const ariaBrain = {
