@@ -506,10 +506,10 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               <span className="pointer-events-none absolute left-0 bottom-0 h-3 w-3 border-l border-b border-[#3AE8FF]/30" />
               <span className="pointer-events-none absolute right-0 bottom-0 h-3 w-3 border-r border-b border-[#3AE8FF]/70" />
 
-              {/* Hex serial tag */}
+              {/* Hex serial tag — desktop only (too dense on mobile) */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute -right-3 top-2 opacity-70 rtl:-left-3 rtl:right-auto"
+                className="pointer-events-none absolute -right-3 top-2 hidden opacity-70 sm:block rtl:-left-3 rtl:right-auto"
               >
                 <div className="relative">
                   <Hexagon
@@ -534,30 +534,30 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               />
 
               {/* Header row */}
-              <div className="flex items-start justify-between gap-2 pe-6">
-                <div className="min-w-0">
+              <div className="flex items-start justify-between gap-1 sm:gap-2 sm:pe-6">
+                <div className="min-w-0 flex-1">
                   <div
-                    className="truncate text-[11px] font-semibold leading-tight text-white/95"
+                    className="truncate text-[8.5px] font-semibold leading-tight text-white/95 sm:text-[11px]"
                     title={label}
                   >
                     {label}
                   </div>
-                  <div className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.24em] text-[#3AE8FF]/60">
+                  <div className="mt-0.5 hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-[#3AE8FF]/60 sm:block">
                     {sub}
                   </div>
                 </div>
                 <div
-                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border bg-[#04101C]/75 ${TONE_RING[k.tone]}`}
+                  className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full border bg-[#04101C]/75 sm:grid ${TONE_RING[k.tone]}`}
                 >
                   <Icon className="h-3.5 w-3.5" strokeWidth={2} />
                 </div>
               </div>
 
               {/* Numeric readout + radial gauge */}
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <div className="flex items-baseline gap-1.5">
+              <div className="mt-1.5 flex items-center justify-between gap-1 sm:mt-3 sm:gap-2">
+                <div className="flex items-baseline gap-1 sm:gap-1.5">
                   <span
-                    className={`text-3xl font-black leading-none sm:text-[38px] ${TONE_NUM[k.tone]}`}
+                    className={`text-lg font-black leading-none sm:text-3xl lg:text-[38px] ${TONE_NUM[k.tone]}`}
                     style={{
                       fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
                       fontVariantNumeric: "tabular-nums",
@@ -566,11 +566,11 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                   >
                     {displayValue}
                   </span>
-                  <span className="font-mono text-[8.5px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/60">
+                  <span className="hidden font-mono text-[8.5px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/60 sm:inline">
                     {k.unit}
                   </span>
                 </div>
-                <div className="relative shrink-0">
+                <div className="relative hidden shrink-0 sm:block">
                   <RadialGauge value={k.gauge} color={stroke} size={40} />
                   <span
                     className="absolute inset-0 grid place-items-center font-mono text-[8.5px] font-bold tabular-nums"
@@ -581,8 +581,8 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                 </div>
               </div>
 
-              {/* Delta / hint + evidence */}
-              <div className="mt-3 flex items-center justify-between gap-2">
+              {/* Delta / hint + evidence — desktop only */}
+              <div className="mt-3 hidden items-center justify-between gap-2 sm:flex">
                 <span
                   className={`font-mono text-[9px] uppercase tracking-[0.22em] ${TONE_DELTA[k.tone]}`}
                 >
@@ -597,14 +597,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               </div>
 
               {/* Micro sparkline strip */}
-              <div className="mt-3 flex h-3 items-end gap-[2px]" aria-hidden>
+              <div className="mt-1.5 flex h-2 items-end gap-[1.5px] sm:mt-3 sm:h-3 sm:gap-[2px]" aria-hidden>
                 {Array.from({ length: 22 }).map((_, i) => {
                   const seed = (i * 13 + k.key.length * 7) % 100;
                   const h = 20 + (seed % 70);
                   return (
                     <span
                       key={i}
-                      className={`w-[2px] rounded-sm ${
+                      className={`w-[1.5px] rounded-sm sm:w-[2px] ${
                         k.tone === "rose"
                           ? "bg-rose-400/55"
                           : k.tone === "amber"
