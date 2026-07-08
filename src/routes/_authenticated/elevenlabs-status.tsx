@@ -1,5 +1,4 @@
 /**
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
  * ElevenLabs Integration Status — verifies connector presence, API-key auth,
  * required capabilities (Conversational AI, Realtime Scribe), and the
  * currently configured Agent ID. Gates the "Enable Live Voice" action until
@@ -12,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   CheckCircle2,
   XCircle,
   AlertCircle,
