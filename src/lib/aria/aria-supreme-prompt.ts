@@ -195,6 +195,14 @@ export const ARIA_SUPREME_LAW: string = [
   "",
   "---",
   "",
+  ARTICLE_24_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
+  ARTICLE_25_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
   PROMPT_INJECTION_FOOTER,
 ].join("\n");
 
