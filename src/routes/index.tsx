@@ -26,6 +26,10 @@ import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
+import { OsCommandDeck } from "@/components/os/OsCommandDeck";
+import { OsLivePulse } from "@/components/os/OsLivePulse";
+import { OsExecutiveStrip } from "@/components/os/OsExecutiveStrip";
+import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
