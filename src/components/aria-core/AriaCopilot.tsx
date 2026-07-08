@@ -9,7 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AudioWaveform, Mic, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { AudioWaveform, Mic, Plus, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -240,6 +240,8 @@ export function AriaCopilot() {
   const setVoiceEnabled = useAriaStore((s) => s.setVoiceEnabled);
 
   const [draft, setDraft] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
@@ -720,24 +722,28 @@ export function AriaCopilot() {
 
   const submit = useCallback(
     (textOverride?: string, opts?: { fromVoice?: boolean }) => {
-      const text = (textOverride ?? draft).trim();
+      const baseText = (textOverride ?? draft).trim();
+      const attachmentNote = attachments.length
+        ? `\n\n[Attachments (${attachments.length}): ${attachments
+            .map((f) => `${f.name} · ${(f.size / 1024).toFixed(0)}KB · ${f.type || "unknown"}`)
+            .join(" | ")}]`
+        : "";
+      const text = `${baseText}${attachmentNote}`.trim();
       if (!text || isBusy) return;
       primeIOSAudio();
-      // Conversation Mode + typed (not from voice) → silent reply.
       if (convModeRef.current && !opts?.fromVoice) {
         pendingSilentRef.current = true;
       }
       setDraft("");
+      setAttachments([]);
       setLastUserText(text);
       pendingSendAtRef.current = performance.now();
       void chat.sendMessage({ text });
-      // Keep composer focused across turns (chat-agent-ui-contract requirement).
-      // rAF avoids fighting React's re-render focus loss.
       requestAnimationFrame(() => {
         composerRef.current?.focus({ preventScroll: true });
       });
     },
-    [draft, isBusy, chat, composerRef],
+    [draft, attachments, isBusy, chat, composerRef],
   );
 
   const retry = () => {
@@ -1231,46 +1237,101 @@ export function AriaCopilot() {
             <ExecutiveCard />
           </div>
 
-          {/* LAYER 4 — Composer, pinned bottom + safe-area */}
-          <form
-            className="relative z-10 flex items-end gap-2 border-t border-primary/15 bg-background/40 p-3 backdrop-blur-md"
+          {/* LAYER 4 — Composer, pinned bottom + safe-area (Article 23: self-attachment) */}
+          <div
+            className="relative z-10 border-t border-primary/15 bg-background/40 p-3 backdrop-blur-md"
             style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              submit();
-            }}
           >
-            <textarea
-              ref={composerRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  submit();
+            {attachments.length > 0 && (
+              <ul className="mb-2 flex flex-wrap gap-1.5" aria-label="Attachments">
+                {attachments.map((f, idx) => (
+                  <li
+                    key={`${f.name}-${idx}`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-primary/25 bg-primary/10 px-2 py-1 text-xs text-foreground"
+                  >
+                    <span className="max-w-[140px] truncate" title={f.name}>
+                      {f.name}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {(f.size / 1024).toFixed(0)}KB
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${f.name}`}
+                      onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                      className="grid h-4 w-4 place-items-center rounded hover:bg-primary/20"
+                    >
+                      <X className="h-3 w-3" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xlsx,.xls,.csv,.txt,.md,.json"
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                if (files.length) {
+                  setAttachments((prev) => [...prev, ...files].slice(0, 10));
                 }
+                if (fileInputRef.current) fileInputRef.current.value = "";
               }}
-              rows={1}
-              placeholder="اسأل آريا…"
-              aria-label="Ask ARIA"
-              className={cn(
-                "min-h-[38px] max-h-32 flex-1 resize-none rounded-lg border border-primary/20",
-                "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
-                "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
-              )}
             />
-            <button
-              type="submit"
-              disabled={isBusy || !draft.trim()}
-              aria-label="Send"
-              className={cn(
-                "grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground",
-                "transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
-              )}
+            <form
+              className="flex items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+              }}
             >
-              <Send className="h-4 w-4" aria-hidden />
-            </button>
-          </form>
+              <button
+                type="button"
+                aria-label="Attach files (images, video, audio, documents)"
+                title="إرفاق ملفات · Attach files"
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-primary/25",
+                  "bg-background/70 text-foreground transition-all hover:bg-primary/10 hover:border-primary/50",
+                )}
+              >
+                <Plus className="h-4 w-4" aria-hidden />
+              </button>
+              <textarea
+                ref={composerRef}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submit();
+                  }
+                }}
+                rows={1}
+                placeholder="اسأل آريا…"
+                aria-label="Ask ARIA"
+                className={cn(
+                  "min-h-[38px] max-h-32 flex-1 resize-none rounded-lg border border-primary/20",
+                  "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
+                  "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
+                )}
+              />
+              <button
+                type="submit"
+                disabled={isBusy || (!draft.trim() && attachments.length === 0)}
+                aria-label="Send"
+                className={cn(
+                  "grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground",
+                  "transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
+                )}
+              >
+                <Send className="h-4 w-4" aria-hidden />
+              </button>
+            </form>
+          </div>
         </aside>
       )}
     </>
