@@ -98,7 +98,7 @@ function severityToPriority(sev: string | null | undefined): Priority {
 
 export function AlertsPanel() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ["sec-overview-alerts"],
     queryFn: () => fetchOverview(),
     refetchInterval: 20_000,
