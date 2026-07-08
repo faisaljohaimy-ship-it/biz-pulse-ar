@@ -178,6 +178,7 @@ import { Route as AuthenticatedSecAiRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSecAccessRouteImport } from './routes/_authenticated/sec.access'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
+import { Route as AuthenticatedAriaTourRouteImport } from './routes/_authenticated/aria.tour'
 import { Route as AuthenticatedAriaDirectiveRouteImport } from './routes/_authenticated/aria.directive'
 import { Route as AuthenticatedAriaDemoRouteImport } from './routes/_authenticated/aria.demo'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -1079,6 +1080,11 @@ const AuthenticatedAssistantThreadIdRoute =
     path: '/assistant/$threadId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAriaTourRoute = AuthenticatedAriaTourRouteImport.update({
+  id: '/tour',
+  path: '/tour',
+  getParentRoute: () => AuthenticatedAriaRoute,
+} as any)
 const AuthenticatedAriaDirectiveRoute =
   AuthenticatedAriaDirectiveRouteImport.update({
     id: '/directive',
@@ -1302,6 +1308,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/aria/demo': typeof AuthenticatedAriaDemoRoute
   '/aria/directive': typeof AuthenticatedAriaDirectiveRoute
+  '/aria/tour': typeof AuthenticatedAriaTourRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1487,6 +1494,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/aria/demo': typeof AuthenticatedAriaDemoRoute
   '/aria/directive': typeof AuthenticatedAriaDirectiveRoute
+  '/aria/tour': typeof AuthenticatedAriaTourRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1676,6 +1684,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/aria/demo': typeof AuthenticatedAriaDemoRoute
   '/_authenticated/aria/directive': typeof AuthenticatedAriaDirectiveRoute
+  '/_authenticated/aria/tour': typeof AuthenticatedAriaTourRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
@@ -1865,6 +1874,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/aria/demo'
     | '/aria/directive'
+    | '/aria/tour'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -2050,6 +2060,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/aria/demo'
     | '/aria/directive'
+    | '/aria/tour'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sec/access'
@@ -2238,6 +2249,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/aria/demo'
     | '/_authenticated/aria/directive'
+    | '/_authenticated/aria/tour'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
@@ -3572,6 +3584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistantThreadIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/aria/tour': {
+      id: '/_authenticated/aria/tour'
+      path: '/tour'
+      fullPath: '/aria/tour'
+      preLoaderRoute: typeof AuthenticatedAriaTourRouteImport
+      parentRoute: typeof AuthenticatedAriaRoute
+    }
     '/_authenticated/aria/directive': {
       id: '/_authenticated/aria/directive'
       path: '/directive'
@@ -3697,11 +3716,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAriaRouteChildren {
   AuthenticatedAriaDemoRoute: typeof AuthenticatedAriaDemoRoute
   AuthenticatedAriaDirectiveRoute: typeof AuthenticatedAriaDirectiveRoute
+  AuthenticatedAriaTourRoute: typeof AuthenticatedAriaTourRoute
 }
 
 const AuthenticatedAriaRouteChildren: AuthenticatedAriaRouteChildren = {
   AuthenticatedAriaDemoRoute: AuthenticatedAriaDemoRoute,
   AuthenticatedAriaDirectiveRoute: AuthenticatedAriaDirectiveRoute,
+  AuthenticatedAriaTourRoute: AuthenticatedAriaTourRoute,
 }
 
 const AuthenticatedAriaRouteWithChildren =
