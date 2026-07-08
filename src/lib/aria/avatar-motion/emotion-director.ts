@@ -53,7 +53,7 @@ const AFFIRMATIONS = ["نعم", "بالتأكيد", "تم", "أكيد", "yes", "
 const NEGATIONS = ["لا ", "لم ", "ليس", " لن ", "no ", "not "];
 
 // numeric evidence marker
-const NUMBER_RE = /(\d+([\.,]\d+)?%?)/;
+const NUMBER_RE = /(\d+([.,]\d+)?%?)/;
 
 // question marks — Arabic ؟ + latin ?
 const QUESTION_RE = /[؟?]\s*$/;
@@ -123,7 +123,7 @@ export function gestureForSentence(sentence: string): AriaHeadGesture {
  */
 export function splitSentences(text: string): string[] {
   return text
-    .split(/(?<=[\.!\?؟。])\s+|\n+/g)
+    .split(/(?<=[.!?؟。])\s+|\n+/g)
     .map((s) => s.trim())
     .filter(Boolean);
 }

@@ -60,7 +60,7 @@ function allow(kind: Kind): boolean {
 function redact(s: string): string {
   // Strip anything that looks like a token/JWT/email/URL query strings.
   return s
-    .replace(/eyJ[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{20,}/g, "[jwt]")
+    .replace(/eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/g, "[jwt]")
     .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[email]")
     .replace(/(\?|&)[a-zA-Z0-9_]+=[^&\s]+/g, "$1[q]")
     .slice(0, 500);

@@ -117,7 +117,7 @@ function AriaDocumentsConsole() {
       const { data: u } = await supabase.auth.getUser();
       if (u.user) {
         setUploadState({ name: file.name, phase: "uploading" });
-        const path = `${u.user.id}/${Date.now()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
+        const path = `${u.user.id}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
         const { error: upErr } = await supabase.storage
           .from(BUCKET)
           .upload(path, file, { upsert: false });
