@@ -26,6 +26,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OsRouteImport } from './routes/os'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as IndexRouteImport } from './routes/index_'
 import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
@@ -276,6 +277,11 @@ const McpRoute = McpRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/index_',
+  path: '/index',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HajjPrimeRoute = HajjPrimeRouteImport.update({
@@ -1178,6 +1184,7 @@ export interface FileRoutesByFullPath {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
+  '/index': typeof IndexRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/os': typeof OsRoute
@@ -1362,6 +1369,7 @@ export interface FileRoutesByTo {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
+  '/index': typeof IndexRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/os': typeof OsRoute
@@ -1546,6 +1554,7 @@ export interface FileRoutesById {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
+  '/index_': typeof IndexRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/os': typeof OsRoute
@@ -1732,6 +1741,7 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
+    | '/index'
     | '/login'
     | '/mcp'
     | '/os'
@@ -1916,6 +1926,7 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
+    | '/index'
     | '/login'
     | '/mcp'
     | '/os'
@@ -2099,6 +2110,7 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
+    | '/index_'
     | '/login'
     | '/mcp'
     | '/os'
@@ -2285,6 +2297,7 @@ export interface RootRouteChildren {
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   HajjPrimeRoute: typeof HajjPrimeRoute
+  IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   OsRoute: typeof OsRoute
@@ -2468,6 +2481,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/index_': {
+      id: '/index_'
+      path: '/index'
+      fullPath: '/index'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hajj-prime': {
@@ -3906,6 +3926,7 @@ const rootRouteChildren: RootRouteChildren = {
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
   HajjPrimeRoute: HajjPrimeRoute,
+  IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   OsRoute: OsRoute,

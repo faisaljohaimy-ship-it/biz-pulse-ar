@@ -24,6 +24,8 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
+import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
+import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -240,11 +242,10 @@ export function AriaCopilot() {
   const [draft, setDraft] = useState("");
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
+  const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
-  const [pendingRevealId, setPendingRevealId] = useState<string | null>(null);
-  void pendingRevealId;
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
@@ -285,7 +286,11 @@ export function AriaCopilot() {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => {
-      if (!cancelled) setHealth(r.ok ? "ok" : "down");
+      if (!cancelled) {
+        const next = r.ok ? "ok" : "down";
+        setHealth(next);
+        setHealthEvidence(probeEvidence("GET /api/chat/health", next));
+      }
     });
     // iOS Safari: prime AudioContext on the same task as the open gesture
     // so the FIRST TTS clip plays with no autoplay block.
@@ -520,7 +525,6 @@ export function AriaCopilot() {
                 sent1,
                 tts,
               });
-              setPendingRevealId((cur) => (cur === messageId ? null : cur));
             }
             // Frame-perfect sync: motion is driven by the audio element's
             // real 'playing' event, not the play() promise (which resolves
@@ -627,7 +631,6 @@ export function AriaCopilot() {
       pendingSendAtRef.current = null;
       streamStateRef.current.set(last.id, s);
       spokenIdsRef.current.add(last.id);
-      setPendingRevealId(last.id);
       // Acquire bus lazily on first dispatch — see below.
     }
 
@@ -1026,17 +1029,21 @@ export function AriaCopilot() {
               <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 ARIA
                 <span
-                  title={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "…"}
-                  aria-label={
-                    health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "checking"
-                  }
-                  className={cn(
-                    "inline-block h-1.5 w-1.5 rounded-full",
-                    health === "ok" && "bg-emerald-400",
-                    health === "down" && "bg-red-500 animate-pulse",
-                    health === "unknown" && "bg-muted-foreground/50",
+                  className="inline-flex items-center"
+                  aria-label={health === "unknown" ? "checking" : undefined}
+                >
+                  {health === "unknown" ? (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                  ) : (
+                    <EvidenceBadge
+                      evidence={healthEvidence}
+                      label={health === "ok" ? "متصلة" : "غير متصل"}
+                      tone={health === "ok" ? "emerald" : "rose"}
+                      className="px-1.5 py-0 text-[8px] tracking-normal"
+                      maxAgeMs={60_000}
+                    />
                   )}
-                />
+                </span>
               </span>
               <span className="text-[11px] text-muted-foreground">
                 {health === "down" ? "غير متصل" : statusLabel}
@@ -1151,10 +1158,10 @@ export function AriaCopilot() {
                         "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-md backdrop-blur-md",
                         mine
                           ? "bg-primary/90 text-primary-foreground"
-                          : "bg-background/60 text-foreground ring-1 ring-primary/20",
+                          : "bg-background/85 text-foreground ring-1 ring-primary/35 shadow-[0_0_24px_rgba(0,212,255,0.12)]",
                       )}
                     >
-                      <div className="prose prose-sm prose-invert max-w-none break-words">
+                      <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                       </div>
                     </div>
