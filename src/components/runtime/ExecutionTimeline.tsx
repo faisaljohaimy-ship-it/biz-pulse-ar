@@ -166,7 +166,7 @@ export function ExecutionTimeline({
     queryKey: ["execution-timeline", id],
     queryFn: () => fetchTl({ data: { runId, executionId, traceId } }),
     enabled: !!id,
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     refetchIntervalInBackground: false,
     staleTime: 10_000,
   });

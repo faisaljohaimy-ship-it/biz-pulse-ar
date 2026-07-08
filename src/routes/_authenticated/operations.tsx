@@ -133,7 +133,7 @@ function OperationsCenter() {
   const { data: agentOps } = useQuery({
     queryKey: ["ops-agent-ops"],
     queryFn: () => fetchAgentOps(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     staleTime: 8_000,
   });
 

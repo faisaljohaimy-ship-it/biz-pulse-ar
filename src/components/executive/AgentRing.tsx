@@ -151,7 +151,7 @@ export function AgentRing() {
         return null;
       }
     },
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     staleTime: 10_000,
     retry: false,
     enabled: hasSession,

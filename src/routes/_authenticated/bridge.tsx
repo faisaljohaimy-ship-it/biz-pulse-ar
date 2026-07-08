@@ -88,7 +88,7 @@ function WarRoomPage() {
   const state = useQuery({
     queryKey: ["bridge-state"],
     queryFn: () => getState(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     refetchOnWindowFocus: false,
   });
 

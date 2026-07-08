@@ -126,7 +126,7 @@ function SituationRoomPage() {
   const state = useQuery({
     queryKey: ["situation-state"],
     queryFn: () => getState(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
   });

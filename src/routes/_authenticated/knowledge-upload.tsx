@@ -113,7 +113,7 @@ function KnowledgeUploadCenter() {
     queryKey: ["knowledge-upload", "stats", job?.documentId],
     queryFn: () => statsFn({ data: { document_id: job!.documentId! } }),
     enabled: !!job?.documentId && job.phase === "ingesting",
-    refetchInterval: 5000,
+    refetchInterval: 15000,
     refetchIntervalInBackground: false,
   });
 

@@ -278,13 +278,13 @@ function AgentsOps() {
   const opsQ = useQuery({
     queryKey: ["agents", "ops"],
     queryFn: async () => await callOverview(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
   });
 
   const runsQ = useQuery({
     queryKey: ["agents", "runs"],
     queryFn: async () => (await callListRuns()) as RunRow[],
-    refetchInterval: 10_000,
+    refetchInterval: 30_000,
   });
 
   const runM = useMutation({

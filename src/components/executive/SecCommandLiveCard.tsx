@@ -98,7 +98,7 @@ export function SecCommandLiveCard() {
   const pulse = useQuery({
     queryKey: ["sec-command-pulse"],
     queryFn: () => getPublicKpis(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     staleTime: 10_000,
   });
 

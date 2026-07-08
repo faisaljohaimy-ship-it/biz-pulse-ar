@@ -111,7 +111,7 @@ function HealthDashboard() {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["runtime-health"],
     queryFn: () => fetchHealth(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
   });
 
   return (

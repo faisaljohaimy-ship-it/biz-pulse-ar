@@ -30,7 +30,7 @@ function ObservabilityPage() {
         .limit(100);
       return data ?? [];
     },
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
   });
 
   const usage = useQuery({
