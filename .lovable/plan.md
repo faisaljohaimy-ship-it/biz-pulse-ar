@@ -45,3 +45,10 @@ Batches are executed autonomously per **Article 27 (c)**. The operator is asked 
 - AriaCopilot now uploads files via `uploadAriaAttachment` server fn on submit
 - Signed URLs appended to outgoing message body; upload state disables send
 - Article 23 enforcement now end-to-end (UI → storage → RLS → audit log)
+
+## Batch 4 — RAG regulation grounding (2026-07-08)
+- Created `src/lib/aria/rag.functions.ts` with `retrieveRegulationContext`
+- Uses OpenAI text-embedding-3-small @ 768 dims (matches vector column)
+- Enriches hits from `aria_documents` with is_official/source_kind
+- `official_only` filter for KSA industrial-security regulation lookups
+- Audit-logged under Article 25; ready to be called from AriaCopilot/SEC panels
