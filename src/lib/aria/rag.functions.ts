@@ -2,12 +2,10 @@
  * ARIA Regulation RAG — Article 25.
  *
  * Retrieves the top-k most relevant chunks from `aria_document_chunks`
- * for a natural-language query, prioritizing official regulations
- * (`is_official = true`). Returns citations with document title and
- * chunk index so ARIA can surface them in answers.
+ * via existing `aria_match_documents` RPC and enriches with
+ * `aria_documents` metadata (title, is_official, source_kind).
  *
- * Embedding: OpenAI `text-embedding-3-small` with `dimensions: 768` to
- * match the existing `vector(768)` column shape.
+ * Embedding: OpenAI `text-embedding-3-small` @ 768 dims (matches column).
  */
 
 import { createServerFn } from "@tanstack/react-start";
@@ -29,6 +27,7 @@ export interface RegulationCitation {
   similarity: number;
   is_official: boolean;
   source_kind: string;
+  tags: string[];
 }
 
 async function embedQuery(text: string): Promise<number[]> {
@@ -65,74 +64,75 @@ export const retrieveRegulationContext = createServerFn({ method: "POST" })
         surface: "rag",
         articleRefs: ["Article 25"],
         status: "error",
-        input: { query_len: data.query.length },
         output: { error: (err as Error).message },
         latencyMs: Date.now() - started,
       });
       throw err;
     }
 
-    const embeddingLiteral = `[${embedding.join(",")}]`;
+    const embeddingLiteral = `[${embedding.join(",")}]` as unknown as string;
 
-    let query = supabase
-      .from("aria_document_chunks")
-      .select(
-        "id, document_id, chunk_index, content, metadata, aria_documents!inner(title, is_official, source_kind)",
-      )
-      .order("embedding <=> " + embeddingLiteral as never, { ascending: true } as never)
-      .limit(data.top_k);
+    // Fetch more than requested so official_only filter still has candidates.
+    const overFetch = data.official_only ? data.top_k * 3 : data.top_k;
 
-    if (data.official_only) {
-      query = query.eq("aria_documents.is_official", true);
-    }
+    const { data: rows, error } = await supabase.rpc("aria_match_documents", {
+      _user_id: userId,
+      _query: embeddingLiteral as never,
+      _limit: overFetch,
+    });
 
-    const { data: rows, error } = await query;
     if (error) {
-      // Fallback: PostgREST may not accept operator ordering; use RPC instead.
-      const { data: rpcRows, error: rpcErr } = await supabase.rpc("match_regulation_chunks", {
-        query_embedding: embeddingLiteral,
-        match_count: data.top_k,
-        official_only: data.official_only,
-      });
-      if (rpcErr) {
-        await logAriaAction({
-          action: "aria.rag.query.failed",
-          userId,
-          surface: "rag",
-          articleRefs: ["Article 25"],
-          status: "error",
-          output: { error: rpcErr.message },
-          latencyMs: Date.now() - started,
-        });
-        throw new Error(rpcErr.message);
-      }
-      const citations = (rpcRows ?? []) as RegulationCitation[];
       await logAriaAction({
-        action: "aria.rag.query.ok",
+        action: "aria.rag.query.failed",
         userId,
         surface: "rag",
         articleRefs: ["Article 25"],
-        status: "ok",
-        output: { hits: citations.length, official_only: data.official_only },
+        status: "error",
+        output: { error: error.message },
         latencyMs: Date.now() - started,
       });
-      return { citations, query: data.query };
+      throw new Error(error.message);
     }
 
-    const citations: RegulationCitation[] = (rows ?? []).map((r: {
-      document_id: string;
-      chunk_index: number;
+    const raw = (rows ?? []) as Array<{
+      id: string;
       content: string;
-      aria_documents: { title: string; is_official: boolean; source_kind: string } | null;
-    }) => ({
-      document_id: r.document_id,
-      document_title: r.aria_documents?.title ?? "(untitled)",
-      chunk_index: r.chunk_index,
+      similarity: number;
+      title: string;
+      tags: string[];
+      source: string;
+    }>;
+
+    // Enrich with is_official / source_kind by hitting aria_documents once.
+    const docIds = Array.from(new Set(raw.map((r) => r.id)));
+    let meta: Record<string, { is_official: boolean; source_kind: string; title: string }> = {};
+    if (docIds.length > 0) {
+      const { data: docs } = await supabase
+        .from("aria_documents")
+        .select("id, title, is_official, source_kind")
+        .in("id", docIds);
+      for (const d of docs ?? []) {
+        meta[d.id] = {
+          is_official: d.is_official,
+          source_kind: d.source_kind,
+          title: d.title,
+        };
+      }
+    }
+
+    let citations: RegulationCitation[] = raw.map((r) => ({
+      document_id: r.id,
+      document_title: meta[r.id]?.title ?? r.title,
+      chunk_index: 0,
       content: r.content,
-      similarity: 0,
-      is_official: r.aria_documents?.is_official ?? false,
-      source_kind: r.aria_documents?.source_kind ?? "upload",
+      similarity: r.similarity,
+      is_official: meta[r.id]?.is_official ?? false,
+      source_kind: meta[r.id]?.source_kind ?? r.source ?? "upload",
+      tags: r.tags ?? [],
     }));
+
+    if (data.official_only) citations = citations.filter((c) => c.is_official);
+    citations = citations.slice(0, data.top_k);
 
     await logAriaAction({
       action: "aria.rag.query.ok",
