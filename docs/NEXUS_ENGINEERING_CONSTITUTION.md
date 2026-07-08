@@ -541,3 +541,77 @@ Any bug report of "voice doesn't work after tapping on mobile" or "the
 greeting doesn't finish on mobile" is treated as an FR-21 violation and
 takes priority over feature work until the Readiness Loop closes it.
 
+
+## FR-22 — Absolute Readiness Charter (permanent, supreme)
+
+The user standard for this system is **100% readiness, 100% accuracy, 100%
+effectiveness, 100% interaction**. This charter defines what that phrase
+means operationally and forbids the failure modes that break it.
+
+### §1 — Evidence-based repair (no scattershot)
+
+Every claim of "fixed" MUST be backed by one of:
+- A green `bunx tsgo --noEmit` (typecheck).
+- A green `security--run_security_scan` (0 unresolved findings) OR an
+  explicitly documented ignore with rationale in security memory.
+- A reproduced-then-passing manual verification (Playwright screenshot,
+  gateway log line, network request, or DB query result).
+
+Forbidden:
+- Rewriting working code to chase an imaginary "100%" when no failing
+  signal exists.
+- Reporting "fixed all errors" without listing the specific errors and
+  the evidence for each.
+- Silent regressions from bulk refactors — every diff MUST cite the FR /
+  finding it addresses.
+
+### §2 — Chat & voice visibility contract
+
+The chatbot and ARIA voice MUST always render observable output on every
+supported device (mobile Safari, Chrome Android, desktop Chrome/Safari/
+Firefox). Enforced via:
+- `MessageResponse` (AI Elements) renders every assistant text `part` with
+  live streaming; the streaming caret is visible while `status === "streaming"`.
+- `ReactMarkdown` + `prose prose-invert` renders the ARIA copilot bubble.
+- User-message and assistant-message color pairs are semantic tokens with
+  verified contrast (see `chat-ui-composition`).
+- The chat textarea auto-focuses on mount, after send, after stream
+  completion, and after thread switch.
+- Empty assistant responses (`textLen === 0` AND `toolCount === 0` for a
+  finished message) are treated as a defect and logged with a
+  `[assistant] empty-response` entry for the Readiness Loop to inspect.
+
+### §3 — Constitutional enforcement loop
+
+Every agent turn (self-evolution + human-driven) MUST:
+1. Read the constitution (this document) via the master constitution
+   memory pointer.
+2. Cite the FR / INVARIANT protected by the change in the commit / turn
+   rationale.
+3. Refuse to accept a "fix all errors" instruction without first
+   enumerating the actual failing signals — if none exist, respond with
+   the current-state evidence instead of manufacturing changes.
+
+### §4 — Definition of "100% ready"
+
+The system is 100% ready when ALL of the following hold at the same time:
+- `bunx tsgo --noEmit` → 0 errors.
+- `security--run_security_scan` → 0 unresolved findings (documented
+  ignores allowed with security-memory rationale).
+- Every route file has `head()` metadata; every route with a `loader` has
+  `errorComponent` + `notFoundComponent`.
+- ARIA voice plays on the first tap on iOS/Android (FR-20/FR-21) and the
+  greeting reaches `onEnded` naturally on all supported devices.
+- The chat pipeline (`/api/chat`) returns a valid `toUIMessageStreamResponse`
+  and the assistant UI renders `message.parts` through `MessageResponse`.
+- No PROTECTED_PATH file diff exists without a citation to this document.
+
+Any regression on any of these bullets is treated as an FR-22 §4 breach
+and blocks release.
+
+### §5 — Honest reporting
+
+When the user asks for "fix everything / 100% no errors", the correct
+response is to run the diagnostic suite (§1) and report the ACTUAL
+state — not to fabricate a rewrite. A clean baseline reported honestly
+is a passing FR-22 result, not a failure to act.
