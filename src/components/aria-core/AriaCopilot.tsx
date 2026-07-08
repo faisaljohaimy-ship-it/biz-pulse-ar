@@ -244,6 +244,7 @@ export function AriaCopilot() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
   const [pendingRevealId, setPendingRevealId] = useState<string | null>(null);
+  void pendingRevealId;
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
@@ -1140,12 +1141,10 @@ export function AriaCopilot() {
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
                 if (!text) return null;
-                const hidden = !mine && pendingRevealId === m.id;
                 return (
                   <li
                     key={m.id}
                     className={cn("flex", mine ? "justify-end" : "justify-start")}
-                    style={hidden ? { visibility: "hidden" } : undefined}
                   >
                     <div
                       className={cn(
