@@ -83,7 +83,7 @@ export function HologramOverlay() {
             boxShadow: "0 0 10px #10B981",
           }}
         />
-        <span className="font-mono text-[10px] tracking-widest text-emerald-300/70">LIVE</span>
+        <span className="font-mono text-[10px] tracking-widest text-emerald-300/70">HOLO</span>
       </div>
 
       {/* chromatic aberration edge ghost */}

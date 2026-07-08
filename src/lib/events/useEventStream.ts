@@ -75,7 +75,9 @@ export function useEventStream(filter: EventFilter = {}) {
       try {
         let q = supabase
           .from("enterprise_events")
-          .select("*")
+          .select(
+            "id, topic, source, severity, status, occurred_at, subject_type, subject_id, correlation_id, actor_id, org_id, duration_ms",
+          )
           .order("occurred_at", { ascending: false })
           .limit(limit);
         if (f.topicPrefix) q = q.like("topic", `${f.topicPrefix}%`);
