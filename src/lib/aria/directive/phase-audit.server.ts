@@ -108,12 +108,54 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     return { n, key, title_en, title_ar, status: rollUp(probes), probes };
   };
 
+  // ── PHASE 2 · EXECUTIVE EXECUTION ────────────────────────────────────
+  const p2: PhaseProbe[] = [
+    safeProbe("executive", () => {
+      const v = verifyExecutiveSurface({});
+      return {
+        module: "executive",
+        status: v.ok ? "green" : "amber",
+        issues: v.issues ?? [],
+        note: "surface schema check; live briefings arrive from ops feeds",
+      };
+    }),
+    { module: "governance", status: "deferred", issues: [], note: "requires ExecutionPermission input" },
+    { module: "orchestrator", status: "deferred", issues: [], note: "requires live orchestrator snapshot" },
+  ];
+
+  // ── PHASE 3 · LIVE DEMONSTRATION ─────────────────────────────────────
+  const p3: PhaseProbe[] = [
+    safeProbe("hero-integration", () => {
+      const v = verifyHero();
+      return {
+        module: "hero-integration",
+        status: v.ok ? "green" : "amber",
+        issues: v.issues ?? [],
+      };
+    }),
+    { module: "showcase", status: "deferred", issues: [], note: "requires steps + kpis payload" },
+    { module: "presence", status: "deferred", issues: [], note: "requires live presence snapshot" },
+  ];
+
+  // ── PHASE 5 · ENTERPRISE MEMORY ──────────────────────────────────────
+  const p5: PhaseProbe[] = [
+    safeProbe("knowledge-graph", () => {
+      const v = verifyGraph();
+      return {
+        module: "knowledge-graph",
+        status: v.ok ? "green" : "amber",
+        issues: (v.issues ?? []).map(String),
+      };
+    }),
+    { module: "long-term-memory", status: "deferred", issues: [], note: "requires memory-store snapshot" },
+  ];
+
   const phases: PhaseReport[] = [
     { n: 1, key: "aria-core", title_en: "ARIA Core", title_ar: "نواة أريا", status: rollUp(p1), probes: p1 },
-    scaffold(2, "executive-execution", "Executive Execution", "التنفيذ التنفيذي", ["executive", "governance", "orchestrator"]),
-    scaffold(3, "live-demonstration", "Live Demonstration", "العرض الحي", ["showcase", "hero-integration", "presence"]),
+    { n: 2, key: "executive-execution", title_en: "Executive Execution", title_ar: "التنفيذ التنفيذي", status: rollUp(p2), probes: p2 },
+    { n: 3, key: "live-demonstration", title_en: "Live Demonstration", title_ar: "العرض الحي", status: rollUp(p3), probes: p3 },
     scaffold(4, "command-center", "Command Center", "مركز القيادة", ["operations-center", "executive"]),
-    scaffold(5, "enterprise-memory", "Enterprise Memory", "الذاكرة المؤسسية", ["long-term-memory", "knowledge-graph"]),
+    { n: 5, key: "enterprise-memory", title_en: "Enterprise Memory", title_ar: "الذاكرة المؤسسية", status: rollUp(p5), probes: p5 },
     scaffold(6, "multi-agent", "Multi-Agent", "الوكلاء المتعددون", ["agent-mesh", "mesh", "orchestrator"]),
     scaffold(7, "digital-twin", "Digital Twin", "التوأم الرقمي", ["operations-center", "integration"]),
     scaffold(8, "performance-stability", "Performance & Stability", "الأداء والاستقرار", ["production", "deployment"]),
