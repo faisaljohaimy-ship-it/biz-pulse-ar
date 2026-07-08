@@ -23,9 +23,9 @@ interface Registry {
 const GLOBAL_KEY = "__ARIA_SINGLETONS__";
 
 function registry(): Registry {
-  if (typeof globalThis === "undefined") return { owners: {}, warned: {} };
+  if (typeof globalThis === "undefined") return { owners: {}, warned: {}, mounts: {} };
   const g = globalThis as unknown as Record<string, Registry | undefined>;
-  if (!g[GLOBAL_KEY]) g[GLOBAL_KEY] = { owners: {}, warned: {} };
+  if (!g[GLOBAL_KEY]) g[GLOBAL_KEY] = { owners: {}, warned: {}, mounts: {} };
   return g[GLOBAL_KEY]!;
 }
 
