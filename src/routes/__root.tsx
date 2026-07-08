@@ -240,6 +240,14 @@ function RootComponent() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let cancelled = false;
+    // Article XIII — Crash-Loop Breaker: React reached commit, so this boot
+    // is healthy. Reset the pre-hydration attempt counter so a future crash
+    // gets its own fresh 2-strike budget.
+    try {
+      window.sessionStorage.removeItem("nexios-boot-attempts");
+    } catch {
+      /* ignore */
+    }
     import("@/lib/aria/self-healing/watchdog").then((m) => {
       if (cancelled) return;
       cleanup = m.installAriaWatchdog();
