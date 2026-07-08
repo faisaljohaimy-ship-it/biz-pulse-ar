@@ -1353,7 +1353,7 @@ export function AriaCopilot() {
               />
               <button
                 type="submit"
-                disabled={isBusy || (!draft.trim() && attachments.length === 0)}
+                disabled={isBusy || uploadingAttachments || (!draft.trim() && attachments.length === 0)}
                 aria-label="Send"
                 className={cn(
                   "grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground",
