@@ -56,3 +56,25 @@ export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
 export function probeEvidence(source: string, value?: string | number): Evidence {
   return { kind: "runtime.probe", source, observedAt: new Date().toISOString(), value };
 }
+
+/**
+ * Build evidence for a TanStack Query result. Pass the query's
+ * `dataUpdatedAt` (0 when never resolved → returns null so the badge
+ * refuses to render, honouring FR-19).
+ */
+export function queryEvidence(
+  source: string,
+  dataUpdatedAt: number,
+  value?: string | number,
+  href?: string,
+): Evidence | null {
+  if (!dataUpdatedAt || dataUpdatedAt <= 0) return null;
+  return {
+    kind: "db.query",
+    source,
+    observedAt: new Date(dataUpdatedAt).toISOString(),
+    value,
+    href,
+  };
+}
+
