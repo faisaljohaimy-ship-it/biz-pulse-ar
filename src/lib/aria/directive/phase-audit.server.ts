@@ -166,7 +166,15 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
       };
     }),
-    { module: "executive", status: "deferred", issues: [], note: "requires live briefing feed" },
+    safeProbe("executive", () => {
+      const v = verifyExecutiveSurface({});
+      return {
+        module: "executive",
+        status: v.ok ? "green" : "amber",
+        issues: v.violations ?? [],
+        note: "surface schema live-check",
+      };
+    }),
   ];
 
   // ── PHASE 8 · PERFORMANCE & STABILITY (runtime graph invariants) ─────
@@ -180,8 +188,20 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
       };
     }),
-    { module: "deployment", status: "deferred", issues: [], note: "requires live deployment snapshot" },
+    safeProbe("integration", () => {
+      const r = evaluateIntegrationReadiness();
+      const s = r.summary;
+      const status: PhaseStatus =
+        s.fail > 0 ? "red" : s.warn > 0 ? "amber" : "green";
+      return {
+        module: "integration",
+        status,
+        issues: r.gates.filter((g) => g.status === "fail").map((g) => `${g.connector_id}:${g.reason}`),
+        note: `pass=${s.pass}/${s.total}`,
+      };
+    }),
   ];
+
 
   // ── PHASE 6 · MULTI-AGENT (live agent-mesh health) ───────────────────
   const p6: PhaseProbe[] = [
