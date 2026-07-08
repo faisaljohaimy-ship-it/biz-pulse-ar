@@ -59,7 +59,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
-  errorComponent: ({ error, reset }) => {
+  errorComponent: function AgentsErrorComponent({ error, reset }) {
     const router = useRouter();
     return (
       <div className="p-8 text-center space-y-3">
