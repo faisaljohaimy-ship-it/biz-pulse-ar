@@ -13,7 +13,7 @@ import {
 } from "./aria-supreme-prompt";
 
 describe("ARIA_SUPREME_LAW", () => {
-  it("compiles all 21 articles into a single non-empty string", () => {
+  it("compiles all 23 articles into a single non-empty string", () => {
     const report = verifyAriaSupremeLawIntegrity();
     expect(report.ok, `missing articles: ${report.missing_articles.join(", ")}`).toBe(true);
     expect(report.length_chars).toBeGreaterThan(4000);
