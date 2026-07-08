@@ -52,3 +52,13 @@ Batches are executed autonomously per **Article 27 (c)**. The operator is asked 
 - Enriches hits from `aria_documents` with is_official/source_kind
 - `official_only` filter for KSA industrial-security regulation lookups
 - Audit-logged under Article 25; ready to be called from AriaCopilot/SEC panels
+
+## Batch 6 — Voice latency regression beacon (2026-07-08)
+- AriaCopilot now fires `reportVoiceLatencyRegression` when first-token → sentence1 > 250ms (Article 24 b)
+- Feeds `/api/public/hooks/aria-incident` with device_class + latency detail
+- ARIA opens fix session on next turn per Article 27 (e)
+
+## Batch 7 — ARIA maintenance cron (2026-07-08)
+- `aria-actions-log-retention` scheduled daily 04:42 UTC → 90-day audit trim
+- `aria-corpus-stale-scan` scheduled daily 03:17 UTC → auto-raises `aria_corpus_stale` public incident
+- Both jobs idempotent (unschedule-then-schedule)

@@ -28,6 +28,7 @@ import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -519,6 +520,9 @@ export function AriaCopilot() {
                   ? Math.round(s.firstSentenceAt - s.firstTokenAt)
                   : -1;
               const tts = s.firstSentenceAt ? Math.round(t0 - s.firstSentenceAt) : -1;
+
+              // Article 24 (b): first-token → sentence1 hard ceiling 250ms.
+              if (sent1 > 250) reportVoiceLatencyRegression(sent1, `send_total=${total}ms`);
 
               console.log(`[aria-latency] send→first-audio ${total}ms`);
 
