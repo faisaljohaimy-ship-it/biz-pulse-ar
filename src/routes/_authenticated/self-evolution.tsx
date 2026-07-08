@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // ARIA Self-Evolution — Operator UI (analyze-only report renderer).
 // Bilingual AR/EN. No autonomous mutations. Full-sweep readout.
 import { createFileRoute } from "@tanstack/react-router";
@@ -21,6 +22,8 @@ import { Separator } from "@/components/ui/separator";
 import { runSelfEvolutionFn, listEvolutionCyclesFn } from "@/lib/self-evolution.functions";
 
 export const Route = createFileRoute("/_authenticated/self-evolution")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: SelfEvolutionPage,
   head: () => ({
     meta: [

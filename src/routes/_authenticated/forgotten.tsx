@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Ghost, ArrowRight, AlertOctagon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -6,6 +7,8 @@ import { useFabricSnapshot } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/forgotten")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ForgottenPage,
 });
 

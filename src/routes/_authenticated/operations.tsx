@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Operations Visualization Layer
 // Production runtime visualization built on the existing engine.
 // Reads live state from Supabase + server fns. No fabricated data.
@@ -37,6 +38,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/operations")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: OperationsCenter,
 });
 

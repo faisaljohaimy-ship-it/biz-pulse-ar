@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -28,6 +29,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { seedAriaCorpus } from "@/lib/aria/seed-corpus.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: SettingsPage,
 });
 

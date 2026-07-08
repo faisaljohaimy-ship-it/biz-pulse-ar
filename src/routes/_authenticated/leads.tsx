@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,8 @@ type Lead = {
 };
 
 export const Route = createFileRoute("/_authenticated/leads")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: LeadsAdmin,
 });
 

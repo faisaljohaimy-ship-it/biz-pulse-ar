@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useRef } from "react";
 import { Volume2, Download, Loader2, Sparkles } from "lucide-react";
@@ -28,6 +29,8 @@ const SAMPLE_AR =
   "دَخَلَ الْمُدِيرُ الِاجْتِمَاعَ، وَأَلْقَى كَلِمَةً مُوجَزَةً عَنْ خُطَّةِ التَّحَوُّلِ الرَّقْمِيِّ، ثُمَّ غَادَرَ الْقَاعَةَ.";
 
 export const Route = createFileRoute("/_authenticated/tts")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: TtsPage,
 });
 

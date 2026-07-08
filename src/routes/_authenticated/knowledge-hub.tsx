@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Enterprise Knowledge Center — unified search + stats + shortcuts.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
@@ -24,6 +25,8 @@ import {
 } from "@/lib/enterprise-search.functions";
 
 export const Route = createFileRoute("/_authenticated/knowledge-hub")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KnowledgeHubPage,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,6 +16,8 @@ import { ShieldAlert, ShieldCheck, Users, HardHat, Car, DoorOpen } from "lucide-
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/access")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AccessControlPage,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // ARIA Document Intelligence — Wave 1 console.
 // Upload PDFs / Word / Excel / text, then ask grounded questions across them.
 import { createFileRoute } from "@tanstack/react-router";
@@ -25,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/aria-documents")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AriaDocumentsConsole,
 });
 

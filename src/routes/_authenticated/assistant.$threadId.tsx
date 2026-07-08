@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
@@ -42,6 +43,8 @@ import {
 } from "@/components/aria/CitationsPanel";
 
 export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AssistantThread,
 });
 

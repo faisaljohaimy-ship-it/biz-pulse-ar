@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
@@ -19,6 +20,8 @@ import { useFabricSnapshot } from "@/lib/use-fabric";
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
 export const Route = createFileRoute("/_authenticated/briefing")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: BriefingPage,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -7,6 +8,8 @@ import { useFabricSnapshot, metric, usePredictions } from "@/lib/use-fabric";
 import { Crown, Send, Compass, Scale, Target, MessageSquare } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/chief-of-staff")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ChiefOfStaffPage,
 });
 

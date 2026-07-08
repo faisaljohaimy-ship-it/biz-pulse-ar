@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -14,6 +15,8 @@ import {
 } from "@/lib/oms-reports.functions";
 
 export const Route = createFileRoute("/_authenticated/sec/reports")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Reports,
 });
 

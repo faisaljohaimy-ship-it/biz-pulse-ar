@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useConversation } from "@elevenlabs/react";
@@ -9,6 +10,8 @@ import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 
 export const Route = createFileRoute("/_authenticated/voice")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: VoicePage,
 });
 

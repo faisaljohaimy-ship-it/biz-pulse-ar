@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { ShieldCheck, Wrench, Rocket } from "lucide-react";
@@ -5,6 +6,8 @@ import { useRegion } from "@/lib/region-context";
 import { regionSim } from "@/lib/sec/region-sim-data";
 
 export const Route = createFileRoute("/_authenticated/sec/sections")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Sections,
 });
 

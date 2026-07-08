@@ -1,9 +1,12 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { createThread, listThreads } from "@/lib/threads.functions";
 
 export const Route = createFileRoute("/_authenticated/assistant/")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AssistantIndex,
 });
 

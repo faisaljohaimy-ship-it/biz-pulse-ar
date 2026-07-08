@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +32,8 @@ import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, usePredictions } from "@/lib/use-fabric";
 
 export const Route = createFileRoute("/_authenticated/executive")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ExecutiveCommandCenter,
 });
 

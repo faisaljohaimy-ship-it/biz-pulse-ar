@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
@@ -7,6 +8,8 @@ import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
 import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/risk")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: RiskPage,
 });
 

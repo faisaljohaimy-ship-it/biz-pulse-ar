@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Shield, Users, MessageSquare, ListChecks, Database, Sparkles } from "lucide-react";
@@ -15,6 +16,8 @@ import { runExecutiveScenarioFn } from "@/lib/simulation/exec-scenario.functions
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AdminPage,
 });
 

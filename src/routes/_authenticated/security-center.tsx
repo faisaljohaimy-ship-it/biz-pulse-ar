@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Security Center — RBAC role matrix, audit trail, secret inventory.
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
@@ -26,6 +27,8 @@ import {
 } from "@/lib/security-center.functions";
 
 export const Route = createFileRoute("/_authenticated/security-center")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: SecurityCenterPage,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Runtime Diagnostics — live tail of enterprise events, workflow runs, tool
 // executions, and audit logs. Filter by trace_id / topic / status. Click any
 // row to open the unified Execution Timeline.
@@ -24,6 +25,8 @@ const SearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/diagnostics")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   validateSearch: (s) => SearchSchema.parse(s),
   component: Diagnostics,
 });

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
@@ -7,6 +8,8 @@ import { PredictionsPanel } from "@/components/predictions-panel";
 import { Crown, TrendingUp, TrendingDown, AlertTriangle, Sparkles, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cockpit")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: CockpitPage,
 });
 

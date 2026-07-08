@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -8,6 +9,8 @@ import { NewWorkOrderDialog, WorkOrderActions } from "@/components/sec/oms-dialo
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/maintenance")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Maintenance,
 });
 

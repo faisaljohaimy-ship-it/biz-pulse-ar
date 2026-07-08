@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Unified Integration Center — live data from Supabase, real connection tests.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -33,6 +34,8 @@ import {
 } from "@/lib/integrations-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: IntegrationsHubPage,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -35,6 +36,8 @@ import {
 } from "@/lib/integration-microsoft.functions";
 
 export const Route = createFileRoute("/_authenticated/settings/microsoft")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: MicrosoftSettingsPage,
 });
 

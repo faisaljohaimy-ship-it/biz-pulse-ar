@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Execution Center — live timeline of tool + agent executions.
 // Subscribes to tool_executions, agent_runs and workflow_runs in realtime.
 import { createFileRoute } from "@tanstack/react-router";
@@ -23,6 +24,8 @@ import { rollbackToolExecution } from "@/lib/exec.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/execution")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ExecutionRuntime,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,6 +33,8 @@ import { Plus, LogOut, ShieldX } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/vehicles")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: VehiclesPage,
 });
 

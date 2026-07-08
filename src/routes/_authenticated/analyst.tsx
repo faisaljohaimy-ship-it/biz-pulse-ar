@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill } from "@/components/nexus-frame";
@@ -5,6 +6,8 @@ import { Brain, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/analyst")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AnalystPage,
 });
 

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Knowledge Upload Center — enterprise SOP ingestion.
 // Pipeline: client extracts text (PDF.js / mammoth) → uploads file to the
 // aria-documents bucket → server fn creates the row and invokes
@@ -28,6 +29,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/knowledge-upload")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KnowledgeUploadCenter,
   head: () => ({
     meta: [

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect } from "react";
@@ -36,6 +37,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/aria")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   validateSearch: z.object({ prompt: z.string().optional() }),
   component: AriaConsole,
 });

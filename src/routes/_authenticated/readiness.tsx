@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Production Readiness Report — derived from real DB facts.
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -15,6 +16,8 @@ import { EmptyState } from "@/components/state/EmptyState";
 import { getProductionReadiness, type ReadinessDimension } from "@/lib/runtime/readiness.functions";
 
 export const Route = createFileRoute("/_authenticated/readiness")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ReadinessReportPage,
 });
 

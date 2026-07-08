@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Workflows page — live runtime view of workflow definitions and runs.
 // Subscribes to workflows + workflow_runs in realtime. No placeholders.
 import { createFileRoute } from "@tanstack/react-router";
@@ -24,6 +25,8 @@ import { triggerWorkflowFn, cancelWorkflowRunFn } from "@/lib/exec.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/workflows")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: WorkflowsRuntime,
 });
 

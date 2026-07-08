@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -6,6 +7,8 @@ import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/cctv")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: CCTV,
 });
 

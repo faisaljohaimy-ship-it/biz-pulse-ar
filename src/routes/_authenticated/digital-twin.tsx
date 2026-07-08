@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -37,6 +38,8 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: DigitalTwinPage,
 });
 

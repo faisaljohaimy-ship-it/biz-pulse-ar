@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Tools registry — live status with schema-driven execution. No raw JSON.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -35,6 +36,8 @@ import { ToolRunner } from "@/components/runtime/ToolRunner";
 import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 
 export const Route = createFileRoute("/_authenticated/tools")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ToolsRuntime,
 });
 

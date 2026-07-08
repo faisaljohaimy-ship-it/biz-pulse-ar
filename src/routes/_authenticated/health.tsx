@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Enterprise Health Dashboard — every subsystem and connector with evidence,
 // reason, and a quick link to live diagnostics. Powered by getRuntimeHealth.
 
@@ -28,6 +29,8 @@ import {
 import { EmptyState } from "@/components/state/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/health")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: HealthDashboard,
 });
 

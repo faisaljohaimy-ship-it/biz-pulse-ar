@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 /**
  * Tool Health — live forensic dashboard for tool_executions. Pure read.
  * Shows success/failure %, P50/P95/P99 latency, top error classes,
@@ -134,6 +135,8 @@ const healthOpts = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/tool-health")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   loader: ({ context }) => context.queryClient.ensureQueryData(healthOpts),
   component: ToolHealthPage,
 });

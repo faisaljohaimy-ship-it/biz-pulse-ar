@@ -1,9 +1,12 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Bot, Network, Cpu } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/ai-ops")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AiOpsPage,
 });
 

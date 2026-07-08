@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Enterprise Events — live realtime stream from enterprise_events.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -12,6 +13,8 @@ import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
 
 export const Route = createFileRoute("/_authenticated/events")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: EventsRuntime,
 });
 

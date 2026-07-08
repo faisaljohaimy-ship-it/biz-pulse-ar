@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Hajj Operations Command Center — مشاعر 1447
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -38,6 +39,8 @@ import {
 } from "@/lib/hajj.functions";
 
 export const Route = createFileRoute("/_authenticated/hajj")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: HajjCommandCenter,
 });
 

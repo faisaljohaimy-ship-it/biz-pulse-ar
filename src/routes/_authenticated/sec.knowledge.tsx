@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -57,6 +58,8 @@ import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/sec/knowledge")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KbPage,
 });
 
