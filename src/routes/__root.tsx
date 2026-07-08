@@ -305,6 +305,7 @@ function RootComponent() {
                   {!introActive && <AriaCopilot />}
                   {/* AriaPageNarrator removed — no auto-voice on route change */}
                   <AriaTourFab />
+                  {!suppressOverlays && <AriaTourWatermark />}
                   {!suppressOverlays && <AriaGreeter />}
                   <WelcomeThenGenesis />
                   <Toaster />
