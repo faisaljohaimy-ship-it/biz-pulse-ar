@@ -994,10 +994,16 @@ export function AriaCopilot() {
       }
       return;
     }
+    // Tapping «مخاطبة» is an explicit intent to talk to ARIA — auto-unmute
+    // voice if the user had it silenced so the mic actually opens instead
+    // of showing a "muted" notice with nothing happening.
     if (!voiceEnabled) {
-      setConvMode(true);
-      setConvNotice("الصوت مكتوم — فعّله للمخاطبة.");
-      return;
+      setVoiceEnabled(true);
+      try {
+        localStorage.setItem("aria-voice-on", "1");
+      } catch {
+        /* noop */
+      }
     }
     setConvMode(true);
     setConvNotice(null);
@@ -1009,7 +1015,7 @@ export function AriaCopilot() {
     setFirstConvOpen(false);
     AriaAudioBus.stopAll();
     startListening();
-  }, [convMode, sttSupported, voiceEnabled, startListening, stopListening, composerRef]);
+  }, [convMode, sttSupported, voiceEnabled, setVoiceEnabled, startListening, stopListening, composerRef]);
 
   // ESC exits conversation mode first, then closes panel.
   useEffect(() => {
