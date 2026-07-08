@@ -11,10 +11,7 @@ import {
   Moon,
   Play,
   Menu,
-  Mic,
 } from "lucide-react";
-import { AriaTourController } from "@/components/aria/AriaTourController";
-import { tourStopsFor } from "@/lib/aria/tour-narration";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
@@ -140,9 +137,7 @@ function IntroLanding() {
   // __root.tsx (single ARIA welcome video, once per session).
 
   const [deptsOpen, setDeptsOpen] = useState(false);
-  const [tourOpen, setTourOpen] = useState(false);
   const { speak } = useAriaSpeech();
-  const tourStops = tourStopsFor(ar ? "ar" : "en");
 
   const replayGreeting = () => {
     AriaAudioBus.unlock();
@@ -267,17 +262,6 @@ function IntroLanding() {
               <Play className="h-4 w-4" />
               {ar ? "جسر القيادة التنفيذي" : "Executive Bridge"}
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                AriaAudioBus.unlock();
-                setTourOpen(true);
-              }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#00D4FF]/45 bg-[#00D4FF]/[0.06] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/[0.12]"
-            >
-              <Mic className="h-4 w-4 text-[#3AE8FF]" />
-              {ar ? "جولة مع آريا" : "Tour with ARIA"}
-            </button>
           </div>
 
           {/* Secondary utility row */}
@@ -511,12 +495,6 @@ function IntroLanding() {
       {/* Grand closing wordmark */}
       <NexiosFootermark caption={ar ? "منصة الذكاء التنفيذي" : "Enterprise AI Operating System"} />
 
-      <AriaTourController
-        open={tourOpen}
-        lang={ar ? "ar" : "en"}
-        stops={tourStops}
-        onClose={() => setTourOpen(false)}
-      />
     </div>
   );
 }
