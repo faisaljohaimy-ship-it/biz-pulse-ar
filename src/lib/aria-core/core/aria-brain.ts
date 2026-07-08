@@ -10,6 +10,9 @@
  * `useChat` instance; the Brain runs the orchestrator, then invokes `send`.
  */
 import { executiveAiOrchestrator } from "./executive-ai-orchestrator";
+import { assertOne } from "@/lib/aria/singletons";
+
+assertOne("BRAIN", "ariaBrain@aria-core/core/aria-brain");
 
 export type BrainSender = (text: string) => Promise<void> | void;
 
