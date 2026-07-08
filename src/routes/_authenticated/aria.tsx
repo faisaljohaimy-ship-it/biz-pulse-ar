@@ -35,6 +35,7 @@ import type { PipelineResult } from "@/lib/aria/pipeline.server";
 import { PIPELINE_STAGES, type ReportKind } from "@/lib/aria/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/aria")({
   errorComponent: RouteError,
