@@ -29,7 +29,7 @@
 import { ARIA_MASTER_CONSTITUTION } from "./constitution";
 import { ARIA_IDENTITY_PREAMBLE, ARIA_IDENTITY_VERSION } from "./identity/system-prompt";
 
-export const ARIA_SUPREME_LAW_VERSION = "1.2.0"; // bump on Article add/change.
+export const ARIA_SUPREME_LAW_VERSION = "1.3.0"; // bump on Article add/change.
 
 /** Non-negotiables + response contract + self-evolution contract. */
 const READINESS_HEADER = [
