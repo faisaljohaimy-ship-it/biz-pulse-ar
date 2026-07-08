@@ -23,6 +23,8 @@ export function isSilentRoute(pathname: string): boolean {
 }
 
 // Compose helper — keeps every entry in the same executive shape.
+// Optional howAr/howEn enrich the narration with "how the page works"
+// so ARIA describes both the contents AND the mechanics on landing.
 function n(
   pageAr: string,
   pageEn: string,
@@ -30,10 +32,14 @@ function n(
   containsEn: string,
   valueAr: string,
   valueEn: string,
+  howAr?: string,
+  howEn?: string,
 ): PageNarration {
+  const arHow = howAr ? ` آلية العمل: ${howAr}.` : "";
+  const enHow = howEn ? ` How it works: ${howEn}.` : "";
   return {
-    ar: `أنت الآن في ${pageAr}. تشمل ${containsAr}. القيمة: ${valueAr}.`,
-    en: `You are in ${pageEn}. It contains ${containsEn}. Value: ${valueEn}.`,
+    ar: `أنت الآن في ${pageAr}. تشمل ${containsAr}.${arHow} القيمة: ${valueAr}.`,
+    en: `You are in ${pageEn}. It contains ${containsEn}.${enHow} Value: ${valueEn}.`,
   };
 }
 
@@ -46,6 +52,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "open incidents, priorities, assigned teams, and a live timeline",
     "قرار تنفيذي فوري لتقصير زمن الاستجابة والاحتواء",
     "immediate executive decisions that cut response and containment time",
+    "بطاقات KPI (إجمالي/مفتوحة/حرجة/زمن الاستجابة) مرتبطة بجدول sec_incidents، تحديث لحظي كل ١٥ث، وفلاتر بحسب الشدّة والحالة والموقع تُغيّر الشارات والقائمة معاً",
+    "KPI cards (total, open, critical, response time) bound to sec_incidents, refresh every 15s, and severity/status/site filters drive both badges and the list together",
   )],
   ["/_authenticated/sec.cctv", n(
     "لوحة كاميرات المراقبة", "CCTV Operations",
@@ -53,6 +61,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "active cameras, their status, and live visual alerts",
     "رؤية بصرية موحّدة تكشف الحوادث قبل تصاعدها",
     "unified visual awareness that catches incidents before they escalate",
+    "مؤشر توفّر CCTV محسوب من sec_cameras.status='online' مقابل الإجمالي، والتنبيهات تأتي من sec_cctv_alerts؛ اضغط أي كاميرا لفتح تدفّقها والقفز إلى الحادثة المرتبطة",
+    "the CCTV availability tile is computed from sec_cameras.status='online' over total, alerts stream from sec_cctv_alerts; tapping a camera opens its stream and jumps to the linked incident",
   )],
   ["/_authenticated/sec.patrols", n(
     "لوحة الدوريات", "Patrols",
@@ -60,6 +70,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "live patrol tracks, checkpoints, and route deviations",
     "ضمان التغطية الميدانية ورصد الفجوات فور حدوثها",
     "guaranteed field coverage and instant gap detection",
+    "التزام الدوريات = المكتملة/المجدولة من sec_patrols بهدف ≥٩٥٪، وكل انحراف عن نقطة تفتيش يفتح تنبيهًا وربطاً بالفرقة المسؤولة",
+    "Patrol Compliance = completed/scheduled from sec_patrols targeting ≥95%, and every checkpoint deviation opens an alert linked to the responsible team",
   )],
   ["/_authenticated/sec.permits", n(
     "لوحة تصاريح العمل", "Work Permits",
@@ -67,6 +79,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "active, pending, and expired permits with risk flags",
     "امتثال تشغيلي كامل وحماية من مخاطر الأعمال الحارة والمقيّدة",
     "full operational compliance and protection against hot- and restricted-work risk",
+    "مسار الحالة draft→pending→approved→expired من sec_permits، مع فحص تلقائي للمقاول والتأمين والتدريب قبل السماح بالاعتماد",
+    "status flow draft→pending→approved→expired from sec_permits, with automatic checks on contractor, insurance, and training before approval is allowed",
   )],
   ["/_authenticated/sec.assets", n(
     "لوحة الأصول الأمنية", "Security Assets",
@@ -74,6 +88,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "the operational status of every asset, due maintenance, and offline units",
     "توفر تشغيلي أعلى وتقليل مباشر لأثر الأعطال",
     "higher operational availability and a direct cut in outage impact",
+    "sec_assets يُحدَّث من الفحوصات الميدانية وتاريخ آخر معاينة last_inspected_at، وأي أصل متعطّل يولّد أمر عمل تلقائيًا في sec_work_orders",
+    "sec_assets is updated from field inspections and last_inspected_at, and any offline asset auto-generates a work order in sec_work_orders",
   )],
   ["/_authenticated/sec.kpi", n(
     "مؤشرات الأداء الأمنية", "Security KPIs",
@@ -81,13 +97,17 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "the numbers straight from measurement tables with no manual staging",
     "قياس تنفيذي موثوق يقود قرارات الميزانية والتحسين",
     "trustworthy executive measurement that steers budget and improvement decisions",
+    "كل مؤشر يعرض المصدر والاستعلام والفترة، ويُحتَسب لحظيًا من sec_* بلا تخزين وسيط، مع سقوف حمراء/صفراء/خضراء مقارنة بالمستهدف",
+    "each KPI shows source, query, and window, is computed live from sec_* with no intermediate store, and colored red/yellow/green against target",
   )],
   ["/_authenticated/sec.exec", n(
     "غرفة القيادة التنفيذية للأمن", "Security Executive Room",
-    "الملخص التنفيذي، أعلى المخاطر، والقرارات المطلوبة اليوم",
-    "the executive summary, top risks, and decisions required today",
+    "الجاهزية التشغيلية، مؤشر المخاطر، مؤشر السلامة، البلاغات، ونسبة الحل، وزمن الاستجابة MTTR، وأوامر الصيانة",
+    "operational readiness, risk index, safety index, incidents, resolution rate, MTTR, and maintenance work orders",
     "قرار يومي قصير المدى مبني على بيّنة حيّة",
     "a short-cycle daily decision loop grounded in live evidence",
+    "الجاهزية = تركيبة موزونة من صحّة CCTV والدخول وامتثال المقاولين والدوريات ومؤشر السلامة؛ كل بطاقة تفتح مصدرها مباشرة، والتحديث كل ١٥ث من sec_overview",
+    "readiness is a weighted composite of CCTV health, access, contractor compliance, patrols, and safety; each tile drills to its source and refreshes every 15s from sec_overview",
   )],
   ["/_authenticated/sec.risks", n(
     "سجل المخاطر", "Risk Register",
@@ -95,6 +115,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "classified risks, likelihood, impact, and mitigation plans",
     "توقّع الأزمات قبل وقوعها وإدارتها بحوكمة صريحة",
     "anticipate crises before they arrive and manage them with explicit governance",
+    "مصفوفة ٥×٥ (احتمال×أثر) مشتقّة من sec_incidents وsec_cctv_alerts وsec_sensors، مع مالك وخطة تخفيف ومهلة لكل خطر",
+    "a 5×5 likelihood×impact matrix derived from sec_incidents, sec_cctv_alerts, and sec_sensors, with owner, mitigation plan, and due date per risk",
   )],
   ["/_authenticated/sec.emergency", n(
     "لوحة الطوارئ", "Emergency Response",
@@ -102,6 +124,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "response protocols, on-call teams, and evacuation routes",
     "استجابة منسّقة تحمي الأرواح والأصول خلال ثوانٍ",
     "coordinated response that protects lives and assets within seconds",
+    "أي حادثة severity='critical' تُطلق حدث enterprise_events.topic='sec.emergency.*'، تُنبّه الفرق، وتفتح تسلسل IS-٠٠٧ من الإخلاء وحتى إخطار الجهات",
+    "any severity='critical' incident fires enterprise_events.topic='sec.emergency.*', alerts on-call teams, and opens the IS-007 flow from evacuation through authority notification",
   )],
   ["/_authenticated/sec.safety", n(
     "لوحة السلامة", "Safety",
@@ -109,13 +133,17 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "safety indicators, reported incidents, and proactive monitoring",
     "بيئة عمل خالية من الإصابات والانقطاعات",
     "an operating environment free of injuries and disruption",
+    "مؤشر السلامة = ١٠٠ − وزن الحوادث المفتوحة المصنّفة سلامة، مع تدرّج زمني ٧/٣٠/٩٠ يومًا لرصد الاتجاه",
+    "safety index = 100 − weighted open safety incidents, with 7/30/90-day trend windows",
   )],
   ["/_authenticated/sec.maintenance", n(
-    "لوحة الصيانة", "Maintenance",
-    "أوامر الصيانة، الصيانة الوقائية، والأعطال المفتوحة",
-    "work orders, preventive maintenance, and open breakdowns",
+    "لوحة الصيانة — أوامر العمل", "Maintenance — Work Orders",
+    "بطاقات الإجمالي والمفتوحة والمتأخرة ونسبة الإكمال، مع جدول WO يحمل المرجع والنوع (وقائية/تصحيحية) والأولوية والحالة",
+    "total/open/overdue and completion-rate tiles, plus a WO table with reference, type (preventive/corrective), priority, and status",
     "توفر أعلى للأصول وتكلفة صيانة أدنى",
     "higher asset availability and lower maintenance cost",
+    "الأرقام محسوبة من sec_work_orders لحظيًا، والأزرار (الكل/مفتوحة/وقائية/تصحيحية) تُطبّق الفلتر على الجدول والبطاقات معًا؛ 'أمر عمل جديد' يفتح نموذج ربط مباشر بالأصل والفرقة",
+    "figures compute live from sec_work_orders, the (All/Open/Preventive/Corrective) chips filter table and tiles together, and 'New WO' opens a form linked to asset and crew",
   )],
   ["/_authenticated/sec.facilities", n(
     "لوحة المنشآت", "Facilities",
@@ -123,6 +151,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "buildings, zones, and readiness level for each facility",
     "تشغيل موحّد للمنشآت متعدّدة المواقع",
     "unified operation across multi-site facilities",
+    "sec_sites + sec_buildings + sec_sections تُرسم شجرة تفاعلية، وحالة الجاهزية لكل مبنى مركّبة من CCTV والدخول والدوريات وأوامر الصيانة المفتوحة",
+    "sec_sites + sec_buildings + sec_sections form an interactive tree, with per-building readiness composed from CCTV, access, patrols, and open WOs",
   )],
   ["/_authenticated/sec.projects", n(
     "لوحة المشاريع الأمنية", "Security Projects",
@@ -130,13 +160,17 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "in-flight initiatives, their phases, and allocated budget",
     "حوكمة تنفيذ تحمي عائد الاستثمار وتوقيت التسليم",
     "delivery governance that protects ROI and go-live dates",
+    "كل مشروع مرتبط بمعالم ومهام وأوامر عمل، ومؤشر التقدّم محسوب من نسبة المهام المكتملة مقابل المجدولة، مع تنبيه انحراف عند تجاوز خط الأساس ١٥٪",
+    "each project ties to milestones, tasks, and WOs; progress is completed/scheduled ratio with a variance alert at 15% over baseline",
   )],
   ["/_authenticated/sec.reports", n(
     "لوحة التقارير التنفيذية للأمن", "Security Executive Reports",
-    "تقارير قابلة للتصدير مبنية على بيانات حيّة",
-    "exportable reports built on live data",
+    "تقارير يومية وأسبوعية وشهرية قابلة للتصدير مبنية على بيانات حيّة",
+    "daily, weekly, and monthly exportable reports built on live data",
     "شفافية للجهات الرقابية وقرارات مدعومة بالأدلة",
     "transparency for regulators and evidence-backed decisions",
+    "التقارير تُولَّد من aria_reports + executive_briefings عبر pg_cron، وتُصدَّر PDF/Excel، وتُسلَّم عبر Outlook تلقائيًا حسب الجدولة",
+    "reports are generated from aria_reports + executive_briefings via pg_cron, exported as PDF/Excel, and delivered via Outlook on schedule",
   )],
   ["/_authenticated/sec.timeline", n(
     "الخط الزمني الأمني", "Security Timeline",
@@ -144,6 +178,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "moment-by-moment event sequence across every subsystem",
     "قراءة سبب-وأثر واضحة لأي حادث",
     "clear cause-and-effect reading of any incident",
+    "دمج enterprise_events + sec_activity_events + sec_cctv_alerts في محور زمني موحّد، مع فلاتر بالمصدر والشدّة والموقع، وتصدير مقطع للأدلة",
+    "enterprise_events + sec_activity_events + sec_cctv_alerts merged on one axis with source/severity/site filters and evidence clip export",
   )],
   ["/_authenticated/sec.shifts", n(
     "لوحة المناوبات", "Shifts",
@@ -151,20 +187,26 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "team scheduling, coverage, and live rotation",
     "استمرارية تشغيل بدون فجوات بشرية",
     "operational continuity without human coverage gaps",
+    "التقويم يُطابق الحضور المسجّل مع الجدول المعتمد، وأي فجوة تغطية تفتح تنبيهًا وتقترح مناوبًا بديلاً حسب المؤهلات",
+    "the calendar reconciles recorded attendance with the approved plan, and any coverage gap raises an alert and suggests a qualified substitute",
   )],
   ["/_authenticated/sec.sections", n(
     "لوحة الأقسام الأمنية", "Security Sections",
-    "هيكلة الأقسام، الأدوار، ومسؤوليات كل قطاع",
-    "section structure, roles, and sector responsibilities",
+    "إجمالي الأقسام، إجمالي الموظفين، مدير الإدارة، وبطاقات كل قسم (الإسناد الأمني، الصيانة، المشاريع…) مع رئيس القسم وعدد الموظفين",
+    "total sections, total staff, division director, and per-section cards (Security Support, Maintenance, Projects…) with section head and headcount",
     "توزيع مسؤوليات دقيق يُلغي التداخل والتناقض",
     "precise responsibility distribution that eliminates overlap",
+    "البطاقات مبنية من hr_sections/hr_employees، اضغط أي قسم لفتح هيكله وأدواره وأوامر عمله المفتوحة؛ شارة 'محاكاة' تظهر عند غياب بيانات حيّة",
+    "cards come from hr_sections/hr_employees; tap a section to open its structure, roles, and open WOs; a 'simulation' badge appears when live data is missing",
   )],
   ["/_authenticated/sec.circles", n(
-    "الحلقات التشغيلية", "Operational Circles",
-    "حلقات الاجتماع اليومية والقرارات الميدانية",
-    "daily huddles and field-level decisions",
-    "إيقاع تنفيذي منتظم وشفافية بين المستويات",
-    "steady executive cadence and cross-level transparency",
+    "الدوائر التشغيلية", "Operational Circles",
+    "إجمالي الدوائر، إجمالي الموظفين، إجمالي المواقع، ومواقع تشغيلية، مع بطاقات لكل دائرة تشمل المدير والموظفين والمواقع والإحداثيات",
+    "total circles, total staff, total sites, and operational sites, with per-circle cards showing manager, headcount, sites, and coordinates",
+    "قيادة جغرافية موحّدة للأمن الصناعي",
+    "unified geographic command over industrial security",
+    "sec_circles + sec_sites تُغذّي البطاقات، والإحداثيات تُفتح مباشرة على الخريطة التنفيذية؛ الأرقام تُحدَّث لحظيًا وتحمل شارة LIVE من sec_overview",
+    "sec_circles + sec_sites feed the cards, coordinates open on the executive map, and figures refresh live with a LIVE badge from sec_overview",
   )],
   ["/_authenticated/sec.ai", n(
     "طبقة الذكاء الأمني", "Security AI Layer",
@@ -172,6 +214,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "detection models, event classification, and proactive recommendations",
     "استباق التهديدات بدلاً من الرد المتأخر",
     "anticipate threats instead of reacting late",
+    "النماذج تعمل عبر Lovable AI Gateway، تُنتج توصيات ذات درجة ثقة، ولا تُنفَّذ تلقائيًا بل تُعرض للاعتماد التنفيذي (needsApproval)",
+    "models run over Lovable AI Gateway, produce confidence-scored recommendations, and never auto-execute — every action needs executive approval (needsApproval)",
   )],
   ["/_authenticated/sec.integrations", n(
     "لوحة تكاملات الأمن", "Security Integrations",
@@ -179,6 +223,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "connected systems, per-integration status, and sync history",
     "تشغيل موحّد يمنع تشظّي البيانات",
     "unified operation that prevents data fragmentation",
+    "كل تكامل يعرض آخر مزامنة، معدّل الأخطاء، ومصدر البيانات؛ فشل المزامنة يفتح أمر عمل ويُظهر شارة انقطاع فورًا",
+    "each integration shows last sync, error rate, and data source; a failed sync opens a WO and flips its badge to outage instantly",
   )],
   ["/_authenticated/sec.access", n(
     "لوحة صلاحيات الوصول", "Access Control",
@@ -186,6 +232,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "roles, access levels, and authentication logs",
     "مبدأ أقل صلاحية مطبَّق على مستوى المؤسسة",
     "least-privilege enforced across the enterprise",
+    "sec_activity_events (action=access_*) يُغذّي المحاولات المرفوضة، والصلاحيات تُدار عبر has_role() بدون تخزين الأدوار على جدول الملف الشخصي",
+    "sec_activity_events (action=access_*) feeds denied attempts, and roles are checked via has_role() — never stored on the profile table",
   )],
   ["/_authenticated/sec.contractors", n(
     "لوحة المقاولين", "Contractors",
@@ -193,13 +241,17 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "active contractors, credentials, and attendance",
     "ضبط الأطراف الخارجية داخل الموقع بموثوقية كاملة",
     "reliable control of external parties on-site",
+    "sec_contractors + sec_permits تُقيَّم عبر مصفوفة vetting؛ انتهاء التأمين أو التدريب يوقف إصدار التصاريح تلقائيًا",
+    "sec_contractors + sec_permits scored via a vetting matrix; expired insurance or training automatically blocks new permits",
   )],
   ["/_authenticated/sec.visitors", n(
     "لوحة الزوار", "Visitors",
-    "الزوار داخل الموقع، مواعيدهم، وحالتهم",
-    "visitors on-site, appointments, and their status",
+    "الزوار داخل الموقع، مواعيدهم، وحالتهم (pending/checked_in/checked_out)",
+    "on-site visitors, appointments, and status (pending/checked_in/checked_out)",
     "أمان دخول ومغادرة موثّق لكل زائر",
     "documented entry-and-exit security for every visitor",
+    "الدخول يُنشئ سجلًا في sec_visitors مع بطاقة ومضيف؛ عدم الخروج قبل انتهاء الوردية يفتح تنبيهًا للمضيف",
+    "check-in creates a sec_visitors record with badge and host; a missed check-out before shift end alerts the host",
   )],
   ["/_authenticated/sec.vehicles", n(
     "لوحة المركبات", "Vehicles",
@@ -207,6 +259,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "the fleet, its movement, and inspection points",
     "ضبط الحركة داخل المنشآت الحسّاسة",
     "controlled movement across sensitive facilities",
+    "sec_vehicles + sec_gates تُطابق كل مرور مع تصريح ساري؛ عدم المطابقة يُصنَّف انتهاكاً في sec_activity_events",
+    "sec_vehicles + sec_gates match every pass against a valid permit; a mismatch is classified as a violation in sec_activity_events",
   )],
   ["/_authenticated/sec.knowledge", n(
     "قاعدة معرفة الأمن", "Security Knowledge",
@@ -214,13 +268,17 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "procedures, policies, and lessons learned",
     "تعلّم مؤسسي متراكم يمنع تكرار الأخطاء",
     "compounding institutional learning that prevents repeat errors",
+    "المستندات مفهرسة بتضمينات RAG لتُستشهَد داخل ردود آريا مع رابط للمصدر والصفحة",
+    "documents are RAG-indexed so ARIA cites them inline with a link to source and page",
   )],
   ["/_authenticated/sec.twin", n(
-    "التوأم الرقمي للأمن", "Security Digital Twin",
-    "نموذج حيّ ثلاثي الأبعاد للمواقع والأصول",
-    "a live 3D model of sites and assets",
+    "التوأم الرقمي للمنطقة", "Regional Digital Twin",
+    "نموذج هرمي تفاعلي: الإدارة ← الدوائر ← المواقع ← المباني ← الأصول، مع لوحة تفاصيل عند اختيار أي عنصر",
+    "an interactive hierarchical model: Division → Circles → Sites → Buildings → Assets, with a detail panel on selection",
     "محاكاة قرارات قبل تنفيذها في الميدان",
     "simulate decisions before executing them in the field",
+    "الشجرة تُبنى من sec_sites/sec_buildings/sec_sections لحظيًا، واختيار عقدة يعرض المؤشرات والأصول والحوادث المفتوحة الخاصة بها",
+    "the tree is built live from sec_sites/sec_buildings/sec_sections; selecting a node surfaces its KPIs, assets, and open incidents",
   )],
   ["/_authenticated/sec.index", n(
     "الصفحة الرئيسية للقيادة الأمنية", "Security Command Home",
@@ -228,6 +286,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "a unified overview of every security unit",
     "نقطة انطلاق واحدة لأي قرار أمني تنفيذي",
     "one launch point for any executive security decision",
+    "شبكة تبويبات (اللوحة التنفيذية · غرفة العمليات · التوأم الرقمي · الدوائر · الأقسام · المشاريع · أوامر العمل) تنقلك دون إعادة تحميل، وشارة LIVE موحّدة",
+    "a tab grid (Executive · Ops Room · Digital Twin · Circles · Sections · Projects · WOs) navigates without reload under one LIVE badge",
   )],
   ["/_authenticated/sec", n(
     "قسم القيادة الأمنية", "Security Command",
@@ -235,6 +295,8 @@ const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
     "a live overview of incidents, patrols, and cameras",
     "قيادة أمنية موحّدة مبنية على بيّنة",
     "unified evidence-based security command",
+    "غلاف موحّد يجمع كل صفحات /sec.* تحت شريط تبويبات ثابت وشارة LIVE مربوطة بـ dataUpdatedAt من sec_overview",
+    "one shell wrapping every /sec.* page under a persistent tab bar with a LIVE badge bound to dataUpdatedAt from sec_overview",
   )],
 
   // ── Executive / ARIA surfaces ───────────────────────────────────────
