@@ -40,3 +40,8 @@ _Last update: 2026-07-08 — session batches 1–3._
 ## Notes
 
 Batches are executed autonomously per **Article 27 (c)**. The operator is asked only for ambiguity, destructive actions, or external secrets. Every closed gap in a batch is published in the assistant reply's ledger.
+
+## Batch 3 — Attachments wired (2026-07-08)
+- AriaCopilot now uploads files via `uploadAriaAttachment` server fn on submit
+- Signed URLs appended to outgoing message body; upload state disables send
+- Article 23 enforcement now end-to-end (UI → storage → RLS → audit log)
