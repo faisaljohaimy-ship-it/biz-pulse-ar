@@ -69,6 +69,13 @@ ${ARIA_MASTER_CONSTITUTION}
 /**
  * Compose a full system prompt for an ARIA entry-point by placing the
  * identity preamble first and the caller's operational instructions after.
+ *
+ * NOTE: For NEW entry-points, prefer `withAriaSupremeLaw` from
+ * `../aria-supreme-prompt` — it bundles identity + readiness header +
+ * full constitution + Article 21 CI directive + prompt-injection defence
+ * in one canonical order. `withAriaIdentity` stays for backward
+ * compatibility (the identity preamble already embeds the master
+ * constitution, including Article 21).
  */
 export function withAriaIdentity(operational: string): string {
   const op = operational.trim();
