@@ -23,6 +23,8 @@ import { RuntimeTile } from "@/components/os/RuntimeTile";
 import { LiveDateTime } from "@/components/os/LiveDateTime";
 import { OsExecutiveStrip } from "@/components/os/OsExecutiveStrip";
 import { OsLivePulse } from "@/components/os/OsLivePulse";
+import { OsCommandDeck } from "@/components/os/OsCommandDeck";
+import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { AriaCinematicIntro } from "@/components/intro/AriaCinematicIntro";
 
 export const Route = createFileRoute("/os")({
@@ -159,6 +161,9 @@ function OsHub() {
           </p>
         </header>
 
+        {/* Command Deck */}
+        <OsCommandDeck ar={ar} />
+
         {/* Live pulse */}
         <OsLivePulse ar={ar} />
 
@@ -178,6 +183,10 @@ function OsHub() {
           </div>
           <OsExecutiveStrip ar={ar} />
         </section>
+
+        {/* Decision queue */}
+        <OsDecisionQueue ar={ar} />
+
 
         {/* Modules */}
         <section aria-labelledby="os-modules-heading" className="flex flex-col gap-3 sm:gap-4">
