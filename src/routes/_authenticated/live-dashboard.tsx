@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
 import { getExecTimeseries } from "@/lib/sec.functions";
+import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
+import { queryEvidence } from "@/lib/evidence/gate";
 import { getSystemPulse, getBusinessKpis } from "@/lib/executive-presentation.functions";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
