@@ -1140,12 +1140,10 @@ export function AriaCopilot() {
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
                 if (!text) return null;
-                const hidden = !mine && pendingRevealId === m.id;
                 return (
                   <li
                     key={m.id}
                     className={cn("flex", mine ? "justify-end" : "justify-start")}
-                    style={hidden ? { visibility: "hidden" } : undefined}
                   >
                     <div
                       className={cn(
