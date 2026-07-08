@@ -160,8 +160,3 @@ export function LiveSystemShowcase() {
   );
 }
 
-// Silence unused-effect linter when future consumers add polling; keep the
-// hook import stable for HMR-safe additions.
-export function __noop() {
-  useEffect(() => undefined, []);
-}
