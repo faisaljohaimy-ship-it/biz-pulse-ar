@@ -777,6 +777,8 @@ export function AriaCopilot() {
     },
     [draft, attachments, isBusy, chat, composerRef, uploadFn],
   );
+
+  const retry = () => {
     if (lastUserText) submit(lastUserText);
   };
 
