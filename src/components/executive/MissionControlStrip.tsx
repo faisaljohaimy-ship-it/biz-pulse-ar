@@ -20,7 +20,7 @@ export function MissionControlStrip() {
         return null;
       }
     },
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     refetchOnWindowFocus: true,
     retry: 1,
     staleTime: 10_000,

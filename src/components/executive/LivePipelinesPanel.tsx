@@ -167,7 +167,7 @@ export function LivePipelinesPanel() {
   const q = useQuery({
     queryKey: ["live-pipelines"],
     queryFn: () => fn(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     staleTime: 10_000,
   });
 

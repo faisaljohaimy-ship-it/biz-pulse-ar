@@ -117,7 +117,7 @@ function TheaterPage() {
   const bridgeQuery = useQuery({
     queryKey: ["theater", "bridge"],
     queryFn: () => getBridge(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
     staleTime: 10_000,
   });
 

@@ -129,7 +129,7 @@ function KbPage() {
   const statsQ = useQuery({
     queryKey: ["kb", "stats"],
     queryFn: () => statsFn(),
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
   });
   const articlesQ = useQuery({
     queryKey: ["kb", "list", category ?? "all", search],
