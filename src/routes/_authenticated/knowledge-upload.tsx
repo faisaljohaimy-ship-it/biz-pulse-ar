@@ -103,15 +103,18 @@ function KnowledgeUploadCenter() {
   const docsQ = useQuery({
     queryKey: ["knowledge-upload", "docs"],
     queryFn: () => listAriaDocuments(),
-    refetchInterval: 4000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
+    staleTime: 15_000,
   });
 
-  // Live stats for the active job (polls every 2s while ingesting).
+  // Live stats for the active job (polls every 5s while ingesting).
   const statsQ = useQuery({
     queryKey: ["knowledge-upload", "stats", job?.documentId],
     queryFn: () => statsFn({ data: { document_id: job!.documentId! } }),
     enabled: !!job?.documentId && job.phase === "ingesting",
-    refetchInterval: 2000,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
   });
 
   const delMut = useMutation({

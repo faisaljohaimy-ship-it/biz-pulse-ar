@@ -93,7 +93,9 @@ function AriaDocumentsConsole() {
   const docsQ = useQuery({
     queryKey: ["aria-documents"],
     queryFn: () => listAriaDocuments(),
-    refetchInterval: 5000,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    staleTime: 20_000,
   });
 
   const delMut = useMutation({
