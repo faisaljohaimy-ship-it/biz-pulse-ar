@@ -477,10 +477,9 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       </div>
 
       {/* ── KPI Grid: 6 engineered instrument tiles ──
-         Mobile → horizontal snap-scroll rail so all six tiles stay on
-         one axis (matches the executive brief). sm+ → full 6-col grid. */}
+         All viewports → single 6-column horizontal row spanning full width. */}
       <div
-        className="relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-6"
+        className="relative grid grid-cols-6 gap-1.5 sm:gap-3 lg:gap-4"
       >
         {kpis.map((k, idx) => {
           const Icon = k.icon;
