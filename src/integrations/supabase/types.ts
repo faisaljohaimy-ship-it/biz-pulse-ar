@@ -464,7 +464,7 @@ export type Database = {
           model: string | null
           occurred_at: string
           resolved: boolean
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           detail: string
@@ -474,7 +474,7 @@ export type Database = {
           model?: string | null
           occurred_at?: string
           resolved?: boolean
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           detail?: string
@@ -484,7 +484,7 @@ export type Database = {
           model?: string | null
           occurred_at?: string
           resolved?: boolean
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
