@@ -39,7 +39,7 @@ interface Props {
  */
 const FADE_MS = 600;
 const MIN_DISPLAY_MS = 3_500; // never disappear before this
-const MAX_MS = 12_000; // hard cap safety
+const MAX_MS = 40_000; // hard cap safety — must exceed full welcome video (33s) + fade buffer
 const BAR_COUNT = 14;
 
 export function AriaWelcomeVideo({ onDone }: Props) {
