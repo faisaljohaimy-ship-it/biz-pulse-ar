@@ -63,6 +63,9 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     return unbind;
   }, [chat]);
 
+  // ── Singleton mount guard: warn loudly if a 2nd AriaProvider mounts ────
+  useEffect(() => trackMount("PROVIDER", "AriaProvider@__root"), []);
+
   // ── Avatar Runtime lifecycle (mount once; dispose on unmount) ─────────
   useEffect(() => {
     avatarBrain.onOpen();
