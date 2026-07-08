@@ -17,6 +17,7 @@ export type AriaSingletonKey = "BRAIN" | "PROVIDER" | "VOICE" | "AVATAR" | "MEMO
 interface Registry {
   owners: Partial<Record<AriaSingletonKey, string>>;
   warned: Partial<Record<AriaSingletonKey, boolean>>;
+  mounts: Partial<Record<AriaSingletonKey, number>>;
 }
 
 const GLOBAL_KEY = "__ARIA_SINGLETONS__";
