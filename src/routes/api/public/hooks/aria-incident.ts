@@ -1,9 +1,10 @@
 /**
  * Public incident sink for the client watchdog.
- * Article III of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
+ * Articles 19, 21, 26 of src/lib/aria/constitution.ts.
  *
  * Called by `installAriaWatchdog()` via sendBeacon. Anonymous — no auth.
- * MUST be defensive: reject oversized bodies, clamp values, never trust input.
+ * MUST be defensive: rate-limited, size-capped, kind-whitelisted,
+ * and every request is logged into the executive audit trail (Article 26).
  */
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -16,9 +17,9 @@ const ALLOWED_KINDS = new Set([
   "offline",
   "chat_stream_error",
   "tts_failure",
-  // Article 21 — CI blocking-gate regressions land in the same public sink
-  // so ARIA sees them in the operational incident stream.
   "ci_security_gap_regression",
+  "aria_voice_latency_regression",
+  "aria_corpus_stale",
 ]);
 
 interface IncomingIncident {
@@ -30,12 +31,36 @@ interface IncomingIncident {
   ts?: number;
 }
 
+function clientBucketKey(request: Request): string {
+  const fwd = request.headers.get("x-forwarded-for") ?? "";
+  const ip = fwd.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+  return `aria-incident:${ip}`;
+}
+
 export const Route = createFileRoute("/api/public/hooks/aria-incident")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const startedAt = Date.now();
         const cl = Number(request.headers.get("content-length") ?? "0");
         if (cl > 4096) return new Response("payload too large", { status: 413 });
+
+        // Article 26 (c): rate-limit BEFORE parsing the body.
+        const { checkRateLimit, logAriaAction } = await import("@/lib/aria/audit-log.server");
+        const bucket = clientBucketKey(request);
+        const allowed = await checkRateLimit(bucket, 60, 60);
+        if (!allowed) {
+          void logAriaAction({
+            action: "public.aria-incident.throttled",
+            actor: "public-webhook",
+            surface: "api/public/hooks/aria-incident",
+            articleRefs: ["Article 26"],
+            status: "warn",
+            input: { bucket },
+            latencyMs: Date.now() - startedAt,
+          });
+          return new Response("rate limited", { status: 429, headers: { "Retry-After": "60" } });
+        }
 
         let body: IncomingIncident;
         try {
@@ -53,14 +78,23 @@ export const Route = createFileRoute("/api/public/hooks/aria-incident")({
           ? String(body.device_class)
           : "desktop";
 
-        // Anonymous client crashes go to the isolated public log,
-        // NOT the user-owned aria_incidents table (Constitution Art. 19).
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         await supabaseAdmin.from("aria_public_incidents").insert({
           kind,
           detail: detail.slice(0, 500),
           device_class: device,
           url,
+        });
+
+        void logAriaAction({
+          action: "public.aria-incident.received",
+          actor: "public-webhook",
+          surface: "api/public/hooks/aria-incident",
+          route: url,
+          articleRefs: ["Article 19", "Article 21", "Article 26"],
+          status: "ok",
+          input: { kind, device_class: device },
+          latencyMs: Date.now() - startedAt,
         });
 
         return new Response("ok", { status: 202 });
