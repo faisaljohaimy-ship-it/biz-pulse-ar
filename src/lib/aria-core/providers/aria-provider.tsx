@@ -129,7 +129,9 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     if (reportedRef.current.has(active.id)) return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
-    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+    const text =
+      last.parts.map((p) => (p.type === "text" ? p.text : "")).join("") ||
+      "ARIA completed a non-text tool step.";
     reportedRef.current.add(active.id);
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);

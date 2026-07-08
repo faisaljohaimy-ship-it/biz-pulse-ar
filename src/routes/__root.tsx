@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -34,6 +35,16 @@ import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
 
 function NotFoundComponent() {
+  const router = useRouter();
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/index") {
+      window.history.replaceState(null, "", "/");
+      void router.invalidate();
+    }
+  }, [router]);
+
+  if (typeof window !== "undefined" && window.location.pathname === "/index") return null;
+
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -241,6 +252,14 @@ function RootComponent() {
   }, []);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (pathname === "/index") {
+      void navigate({ to: "/", replace: true });
+    }
+  }, [pathname, navigate]);
+
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
   const isBridge = pathname.startsWith("/executive-bridge");

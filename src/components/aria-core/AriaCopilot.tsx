@@ -24,6 +24,8 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
+import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
+import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -145,8 +147,8 @@ function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
   t = t
-    .replace(/```json[\s\S]*?```/gi, "")
-    .replace(/```[\s\S]*?```/g, (m) => (/error|stack|trace|traceback/i.test(m) ? "" : m));
+    .replace(/```(?:log|trace|stacktrace)[\s\S]*?```/gi, "")
+    .replace(/```[\s\S]*?```/g, (m) => (/stack\s+trace|traceback/i.test(m) ? "" : m));
   t = t.replace(
     /\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi,
     "",
@@ -240,11 +242,10 @@ export function AriaCopilot() {
   const [draft, setDraft] = useState("");
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
+  const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
-  const [pendingRevealId, setPendingRevealId] = useState<string | null>(null);
-  void pendingRevealId;
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
@@ -285,7 +286,11 @@ export function AriaCopilot() {
     if (!isOpen) return;
     let cancelled = false;
     pingChat().then((r) => {
-      if (!cancelled) setHealth(r.ok ? "ok" : "down");
+      if (!cancelled) {
+        const next = r.ok ? "ok" : "down";
+        setHealth(next);
+        setHealthEvidence(probeEvidence("GET /api/chat/health", next));
+      }
     });
     // iOS Safari: prime AudioContext on the same task as the open gesture
     // so the FIRST TTS clip plays with no autoplay block.
@@ -520,7 +525,6 @@ export function AriaCopilot() {
                 sent1,
                 tts,
               });
-              setPendingRevealId((cur) => (cur === messageId ? null : cur));
             }
             // Frame-perfect sync: motion is driven by the audio element's
             // real 'playing' event, not the play() promise (which resolves
@@ -627,7 +631,6 @@ export function AriaCopilot() {
       pendingSendAtRef.current = null;
       streamStateRef.current.set(last.id, s);
       spokenIdsRef.current.add(last.id);
-      setPendingRevealId(last.id);
       // Acquire bus lazily on first dispatch — see below.
     }
 
@@ -1026,17 +1029,21 @@ export function AriaCopilot() {
               <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 ARIA
                 <span
-                  title={health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "…"}
-                  aria-label={
-                    health === "ok" ? "Connected" : health === "down" ? "غير متصل" : "checking"
-                  }
-                  className={cn(
-                    "inline-block h-1.5 w-1.5 rounded-full",
-                    health === "ok" && "bg-emerald-400",
-                    health === "down" && "bg-red-500 animate-pulse",
-                    health === "unknown" && "bg-muted-foreground/50",
+                  className="inline-flex items-center"
+                  aria-label={health === "unknown" ? "checking" : undefined}
+                >
+                  {health === "unknown" ? (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                  ) : (
+                    <EvidenceBadge
+                      evidence={healthEvidence}
+                      label={health === "ok" ? "متصلة" : "غير متصل"}
+                      tone={health === "ok" ? "emerald" : "rose"}
+                      className="px-1.5 py-0 text-[8px] tracking-normal"
+                      maxAgeMs={60_000}
+                    />
                   )}
-                />
+                </span>
               </span>
               <span className="text-[11px] text-muted-foreground">
                 {health === "down" ? "غير متصل" : statusLabel}
@@ -1131,7 +1138,7 @@ export function AriaCopilot() {
             className={cn(
               "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
               convMode
-                ? "max-h-[32%] flex-none bg-background/40 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black)]"
+                ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl"
                 : "flex-1",
             )}
           >
@@ -1140,7 +1147,8 @@ export function AriaCopilot() {
                 const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
-                if (!text) return null;
+                const hasNonTextWork = !mine && m.parts.some((p) => p.type !== "text");
+                if (!text && !hasNonTextWork) return null;
                 return (
                   <li
                     key={m.id}
@@ -1151,12 +1159,19 @@ export function AriaCopilot() {
                         "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-md backdrop-blur-md",
                         mine
                           ? "bg-primary/90 text-primary-foreground"
-                          : "bg-background/60 text-foreground ring-1 ring-primary/20",
+                          : "bg-background/85 text-foreground ring-1 ring-primary/35 shadow-[0_0_24px_rgba(0,212,255,0.12)]",
                       )}
                     >
-                      <div className="prose prose-sm prose-invert max-w-none break-words">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                      </div>
+                      {text ? (
+                        <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                          تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ…
+                        </div>
+                      )}
                     </div>
                   </li>
                 );
