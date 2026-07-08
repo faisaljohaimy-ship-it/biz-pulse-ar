@@ -244,6 +244,7 @@ export function AriaCopilot() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
   const [pendingRevealId, setPendingRevealId] = useState<string | null>(null);
+  void pendingRevealId;
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
