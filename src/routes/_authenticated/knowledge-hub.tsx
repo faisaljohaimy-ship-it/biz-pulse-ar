@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Enterprise Knowledge Center — unified search + stats + shortcuts.
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
@@ -14,7 +15,6 @@ import {
   Loader2,
   ArrowRight,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import {

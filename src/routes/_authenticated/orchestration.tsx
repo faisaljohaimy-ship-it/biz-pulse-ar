@@ -1,8 +1,8 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Workflow, GitMerge, Activity } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/orchestration")({
   errorComponent: RouteError,

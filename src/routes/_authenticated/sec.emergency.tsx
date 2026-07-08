@@ -1,7 +1,7 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
 import { Siren, Flame, Wind, Droplets, Phone } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/emergency")({
   errorComponent: RouteError,

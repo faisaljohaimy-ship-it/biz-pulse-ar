@@ -1,6 +1,6 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { SecSubNav } from "@/components/sec/sec-shell";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec")({
   errorComponent: RouteError,

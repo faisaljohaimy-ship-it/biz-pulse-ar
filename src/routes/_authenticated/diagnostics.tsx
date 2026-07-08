@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Runtime Diagnostics — live tail of enterprise events, workflow runs, tool
 // executions, and audit logs. Filter by trace_id / topic / status. Click any
 // row to open the unified Execution Timeline.
@@ -17,7 +18,6 @@ import { ExecutionTimeline } from "@/components/runtime/ExecutionTimeline";
 import { EmptyState } from "@/components/state/EmptyState";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
 import { useI18n } from "@/lib/i18n";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 const SearchSchema = z.object({
   subsystem: z.string().optional(),

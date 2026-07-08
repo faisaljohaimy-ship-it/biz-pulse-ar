@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 /**
  * Tool Health — live forensic dashboard for tool_executions. Pure read.
  * Shows success/failure %, P50/P95/P99 latency, top error classes,
@@ -9,7 +10,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 type ErrClass = "timeout" | "schema" | "auth" | "rate_limit" | "upstream" | "network" | "permanent";
 

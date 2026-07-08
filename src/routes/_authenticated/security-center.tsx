@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Security Center — RBAC role matrix, audit trail, secret inventory.
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
@@ -14,7 +15,6 @@ import {
   XCircle,
   AlertTriangle,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import {

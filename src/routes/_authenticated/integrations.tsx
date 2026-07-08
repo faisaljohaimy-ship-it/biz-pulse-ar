@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Unified Integration Center — live data from Supabase, real connection tests.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -22,7 +23,6 @@ import {
   BarChart3,
   Loader2,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import {

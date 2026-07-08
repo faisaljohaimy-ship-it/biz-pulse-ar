@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect } from "react";
@@ -19,7 +20,6 @@ import {
   Pin,
   Loader2,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   runAriaPipeline,
   listAriaReports,

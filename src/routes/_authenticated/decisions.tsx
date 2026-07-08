@@ -1,10 +1,10 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Gavel, CheckCircle2, Clock, AlertOctagon } from "lucide-react";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/decisions")({
   errorComponent: RouteError,

@@ -1,8 +1,8 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 type Lead = {
   id: string;

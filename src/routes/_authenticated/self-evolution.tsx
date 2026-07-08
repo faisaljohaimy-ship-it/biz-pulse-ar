@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // ARIA Self-Evolution — Operator UI (analyze-only report renderer).
 // Bilingual AR/EN. No autonomous mutations. Full-sweep readout.
 import { createFileRoute } from "@tanstack/react-router";
@@ -12,7 +13,6 @@ import {
   ShieldCheck,
   History,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

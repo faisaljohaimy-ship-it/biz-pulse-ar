@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -6,7 +7,6 @@ import { listIncidents, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { NewIncidentDialog, IncidentDrawer } from "@/components/sec/oms-dialogs";
 import { LiveStatus } from "@/components/state/LiveStatus";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/incidents")({
   errorComponent: RouteError,

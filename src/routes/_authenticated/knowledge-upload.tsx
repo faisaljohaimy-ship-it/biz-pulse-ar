@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Knowledge Upload Center — enterprise SOP ingestion.
 // Pipeline: client extracts text (PDF.js / mammoth) → uploads file to the
 // aria-documents bucket → server fn creates the row and invokes
@@ -18,7 +19,6 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   enqueueKnowledgeIngest,
   getKnowledgeChunkStats,

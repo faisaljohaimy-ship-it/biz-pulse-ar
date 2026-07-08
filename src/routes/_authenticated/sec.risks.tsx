@@ -1,6 +1,6 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { SecPageHeader, SampleBadge, severityClass } from "@/components/sec/sec-shell";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/risks")({
   errorComponent: RouteError,

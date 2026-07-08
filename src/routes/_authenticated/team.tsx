@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { Users, Mail } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -5,7 +6,6 @@ import { useAuth } from "@/lib/auth-context";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/team")({
   errorComponent: RouteError,

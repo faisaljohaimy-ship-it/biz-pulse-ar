@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { Brain, Filter, ArrowRight } from "lucide-react";
@@ -6,7 +7,6 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { supabase } from "@/integrations/supabase/client";
 import { useFabricSnapshot } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/memory")({
   errorComponent: RouteError,

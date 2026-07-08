@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Enterprise Health Dashboard — every subsystem and connector with evidence,
 // reason, and a quick link to live diagnostics. Powered by getRuntimeHealth.
 
@@ -14,7 +15,6 @@ import {
   RotateCcw,
   ExternalLink,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // ARIA Document Intelligence — Wave 1 console.
 // Upload PDFs / Word / Excel / text, then ask grounded questions across them.
 import { createFileRoute } from "@tanstack/react-router";
@@ -14,7 +15,6 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import {
   listAriaDocuments,
   ingestAriaDocument,

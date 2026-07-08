@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Workflows page — live runtime view of workflow definitions and runs.
 // Subscribes to workflows + workflow_runs in realtime. No placeholders.
 import { createFileRoute } from "@tanstack/react-router";
@@ -12,7 +13,6 @@ import {
   Loader2,
   Timer,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";

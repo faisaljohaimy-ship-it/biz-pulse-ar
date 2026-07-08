@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Tools registry — live status with schema-driven execution. No raw JSON.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -14,7 +15,6 @@ import {
   Eye,
   Search,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";

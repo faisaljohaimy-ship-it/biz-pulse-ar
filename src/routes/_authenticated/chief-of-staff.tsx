@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -5,7 +6,6 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { PredictionsPanel } from "@/components/predictions-panel";
 import { useFabricSnapshot, metric, usePredictions } from "@/lib/use-fabric";
 import { Crown, Send, Compass, Scale, Target, MessageSquare } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/chief-of-staff")({
   errorComponent: RouteError,

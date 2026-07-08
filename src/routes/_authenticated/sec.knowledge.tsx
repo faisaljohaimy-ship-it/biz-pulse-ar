@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +38,6 @@ import {
   Wand2,
   ChevronRight,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { SecPageHeader } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,5 +1,5 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   errorComponent: RouteError,

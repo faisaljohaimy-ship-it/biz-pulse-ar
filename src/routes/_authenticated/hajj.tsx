@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Hajj Operations Command Center — مشاعر 1447
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -18,7 +19,6 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

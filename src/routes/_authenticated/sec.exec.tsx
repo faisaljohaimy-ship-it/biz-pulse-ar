@@ -1,9 +1,9 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getExecKpis } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/exec")({
   errorComponent: RouteError,

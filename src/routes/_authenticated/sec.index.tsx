@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -9,7 +10,6 @@ import { RefreshCw } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
 import { regionSim } from "@/lib/sec/region-sim-data";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   errorComponent: RouteError,

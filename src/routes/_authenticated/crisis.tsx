@@ -1,9 +1,9 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, Activity, ArrowRight, Zap } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/crisis")({
   errorComponent: RouteError,

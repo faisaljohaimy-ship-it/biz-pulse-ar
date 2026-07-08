@@ -1,10 +1,10 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProjects, getCircles } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { Rocket } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/projects")({
   errorComponent: RouteError,

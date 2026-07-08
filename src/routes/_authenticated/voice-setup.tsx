@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 /**
  * Voice Setup Wizard — surfaces /api/voice-diagnostics in a clean, actionable
  * UI so executives know exactly what to do when live voice isn't fully wired.
@@ -9,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, AlertCircle, MinusCircle, RefreshCw } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 type Check = {
   id: string;

@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Investor Command Center — production-grade runtime visualization.
 // Every panel reads live state from real Supabase tables (no fabrication).
 // Empty windows render operational LiveStatus indicators, never "No data".
@@ -30,7 +31,6 @@ import {
   Bell,
   MapPin,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/investor")({

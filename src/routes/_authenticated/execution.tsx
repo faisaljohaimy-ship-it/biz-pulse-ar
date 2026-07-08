@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Execution Center — live timeline of tool + agent executions.
 // Subscribes to tool_executions, agent_runs and workflow_runs in realtime.
 import { createFileRoute } from "@tanstack/react-router";
@@ -11,7 +12,6 @@ import {
   RotateCcw,
   ListChecks,
 } from "lucide-react";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";

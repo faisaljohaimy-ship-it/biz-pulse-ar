@@ -1,3 +1,4 @@
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/files")({
   errorComponent: RouteError,
