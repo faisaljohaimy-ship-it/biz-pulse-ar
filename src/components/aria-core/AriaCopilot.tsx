@@ -26,6 +26,8 @@ import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
+import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -241,6 +243,8 @@ export function AriaCopilot() {
 
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const uploadFn = useServerFn(uploadAriaAttachment);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
@@ -721,15 +725,43 @@ export function AriaCopilot() {
   }, [chat.messages, isOpen, isBusy, hasError]);
 
   const submit = useCallback(
-    (textOverride?: string, opts?: { fromVoice?: boolean }) => {
+    async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
       const baseText = (textOverride ?? draft).trim();
-      const attachmentNote = attachments.length
-        ? `\n\n[Attachments (${attachments.length}): ${attachments
-            .map((f) => `${f.name} · ${(f.size / 1024).toFixed(0)}KB · ${f.type || "unknown"}`)
-            .join(" | ")}]`
-        : "";
+      if ((!baseText && attachments.length === 0) || isBusy) return;
+
+      let attachmentNote = "";
+      if (attachments.length > 0) {
+        setUploadingAttachments(true);
+        try {
+          const uploaded = await Promise.all(
+            attachments.map(async (f) => {
+              const buf = await f.arrayBuffer();
+              let binary = "";
+              const bytes = new Uint8Array(buf);
+              for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+              const data_b64 = btoa(binary);
+              const res = await uploadFn({
+                data: {
+                  filename: f.name,
+                  mime_type: f.type || "application/octet-stream",
+                  size_bytes: f.size,
+                  data_b64,
+                },
+              });
+              return `${f.name} (${f.type || "file"}, ${(f.size / 1024).toFixed(0)}KB) → ${res.signed_url}`;
+            }),
+          );
+          attachmentNote = `\n\n[Attachments (${uploaded.length}):\n- ${uploaded.join("\n- ")}]`;
+        } catch (err) {
+          console.error("[AriaCopilot] attachment upload failed", err);
+          attachmentNote = `\n\n[Attachment upload failed: ${(err as Error).message}]`;
+        } finally {
+          setUploadingAttachments(false);
+        }
+      }
+
       const text = `${baseText}${attachmentNote}`.trim();
-      if (!text || isBusy) return;
+      if (!text) return;
       primeIOSAudio();
       if (convModeRef.current && !opts?.fromVoice) {
         pendingSilentRef.current = true;
@@ -743,7 +775,7 @@ export function AriaCopilot() {
         composerRef.current?.focus({ preventScroll: true });
       });
     },
-    [draft, attachments, isBusy, chat, composerRef],
+    [draft, attachments, isBusy, chat, composerRef, uploadFn],
   );
 
   const retry = () => {
@@ -1321,7 +1353,7 @@ export function AriaCopilot() {
               />
               <button
                 type="submit"
-                disabled={isBusy || (!draft.trim() && attachments.length === 0)}
+                disabled={isBusy || uploadingAttachments || (!draft.trim() && attachments.length === 0)}
                 aria-label="Send"
                 className={cn(
                   "grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground",
