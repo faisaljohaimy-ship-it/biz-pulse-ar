@@ -147,8 +147,8 @@ function sanitiseAssistantText(raw: string): string {
   if (!raw) return "";
   let t = raw;
   t = t
-    .replace(/```json[\s\S]*?```/gi, "")
-    .replace(/```[\s\S]*?```/g, (m) => (/error|stack|trace|traceback/i.test(m) ? "" : m));
+    .replace(/```(?:log|trace|stacktrace)[\s\S]*?```/gi, "")
+    .replace(/```[\s\S]*?```/g, (m) => (/stack\s+trace|traceback/i.test(m) ? "" : m));
   t = t.replace(
     /\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi,
     "",
@@ -1138,7 +1138,7 @@ export function AriaCopilot() {
             className={cn(
               "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
               convMode
-                ? "max-h-[32%] flex-none bg-background/40 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,transparent,black_20%,black)]"
+                ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl"
                 : "flex-1",
             )}
           >
@@ -1147,7 +1147,8 @@ export function AriaCopilot() {
                 const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
-                if (!text) return null;
+                const hasNonTextWork = !mine && m.parts.some((p) => p.type !== "text");
+                if (!text && !hasNonTextWork) return null;
                 return (
                   <li
                     key={m.id}
@@ -1161,9 +1162,16 @@ export function AriaCopilot() {
                           : "bg-background/85 text-foreground ring-1 ring-primary/35 shadow-[0_0_24px_rgba(0,212,255,0.12)]",
                       )}
                     >
-                      <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                      </div>
+                      {text ? (
+                        <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                          تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ…
+                        </div>
+                      )}
                     </div>
                   </li>
                 );

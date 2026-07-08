@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -241,6 +242,14 @@ function RootComponent() {
   }, []);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (pathname === "/index") {
+      void navigate({ to: "/", replace: true });
+    }
+  }, [pathname, navigate]);
+
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
   const isBridge = pathname.startsWith("/executive-bridge");
