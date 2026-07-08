@@ -10,6 +10,8 @@ import { SPECIALISTS, type DigitalHumanSpec } from "@/lib/digital-humans/registr
 import { useDigitalHuman } from "@/lib/digital-humans/engine";
 import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
 import { cn } from "@/lib/utils";
+import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
+import { probeEvidence } from "@/lib/evidence/gate";
 
 export type RosterSignal = {
   id: string; // digital human id
