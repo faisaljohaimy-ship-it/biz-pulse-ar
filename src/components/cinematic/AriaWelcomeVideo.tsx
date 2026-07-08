@@ -152,7 +152,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       analyser.fftSize = 64;
       src.connect(analyser);
       analyser.connect(ctx.destination);
-      audioCtxRef.current = ctx;
+      // Only track ctx for teardown if we created it ourselves — never
+      // close() the shared primed context, other components rely on it.
+      audioCtxRef.current = primed ? null : ctx;
       analyserRef.current = analyser;
       const data = new Uint8Array(analyser.frequencyBinCount);
       const tick = () => {
