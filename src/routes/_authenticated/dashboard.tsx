@@ -385,9 +385,12 @@ function OperationsCockpit() {
                 />
                 SYSTEM · {sysStatus}
               </span>
-              <span className="text-[10px] text-foreground/40 font-mono">
-                {kpisQ.isFetching ? "SYNCING" : "LIVE"}
-              </span>
+              <EvidenceBadge
+                evidence={queryEvidence("sec_exec_kpis", kpisQ.dataUpdatedAt, kpisQ.isFetching ? "SYNCING" : "LIVE")}
+                label={kpisQ.isFetching ? "SYNCING" : "LIVE"}
+                tone="cyan"
+              />
+
               <span className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-primary/80">
                 <Cpu className="w-3 h-3" /> NEXUS · AI · OS
               </span>
