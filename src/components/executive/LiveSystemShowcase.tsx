@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Maximize2, Minimize2, ExternalLink, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
