@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
+import { useAuth } from "@/lib/auth-context";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence } from "@/lib/evidence/gate";
 
