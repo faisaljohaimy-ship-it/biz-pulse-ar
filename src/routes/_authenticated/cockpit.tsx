@@ -118,7 +118,7 @@ function CockpitPage() {
                     <div className="text-sm font-bold text-white">{ar ? p.name_ar : p.name_en}</div>
                   </div>
                 </div>
-                <NexusPill tone="cyan">LIVE</NexusPill>
+                <NexusPill tone="cyan">{p.key.toUpperCase()}</NexusPill>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-3">
                 {personaKpis.map((k) => {
