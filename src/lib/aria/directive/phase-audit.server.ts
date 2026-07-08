@@ -115,7 +115,7 @@ export function runDirectiveAudit(): DirectiveAuditReport {
       return {
         module: "executive",
         status: v.ok ? "green" : "amber",
-        issues: v.issues ?? [],
+        issues: v.violations ?? [],
         note: "surface schema check; live briefings arrive from ops feeds",
       };
     }),
