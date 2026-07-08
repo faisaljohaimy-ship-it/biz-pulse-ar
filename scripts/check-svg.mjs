@@ -5,9 +5,15 @@ import { join, extname } from "node:path";
 
 const ALIGN = new Set([
   "none",
-  "xMinYMin", "xMidYMin", "xMaxYMin",
-  "xMinYMid", "xMidYMid", "xMaxYMid",
-  "xMinYMax", "xMidYMax", "xMaxYMax",
+  "xMinYMin",
+  "xMidYMin",
+  "xMaxYMin",
+  "xMinYMid",
+  "xMidYMid",
+  "xMaxYMid",
+  "xMinYMax",
+  "xMidYMax",
+  "xMaxYMax",
 ]);
 const MEET_OR_SLICE = new Set(["meet", "slice"]);
 
@@ -53,9 +59,7 @@ walk(ROOT);
 if (errors.length) {
   console.error("\n❌ Invalid SVG preserveAspectRatio values found:\n");
   for (const e of errors) console.error("  " + e);
-  console.error(
-    `\nAllowed align: ${[...ALIGN].join(", ")}\nOptional suffix: meet | slice\n`,
-  );
+  console.error(`\nAllowed align: ${[...ALIGN].join(", ")}\nOptional suffix: meet | slice\n`);
   process.exit(1);
 }
 

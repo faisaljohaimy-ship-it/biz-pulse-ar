@@ -18,11 +18,14 @@ const browser = await openBrowser("chrome", {
 });
 
 const composition = await selectComposition({
-  serveUrl: bundled, id: "roiar", puppeteerInstance: browser,
+  serveUrl: bundled,
+  id: "roiar",
+  puppeteerInstance: browser,
 });
 
 await renderMedia({
-  composition, serveUrl: bundled,
+  composition,
+  serveUrl: bundled,
   codec: "h264",
   outputLocation: out,
   puppeteerInstance: browser,

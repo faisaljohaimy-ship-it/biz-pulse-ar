@@ -10,12 +10,12 @@ import { test, expect, devices } from "@playwright/test";
 type Vp = { name: string; width: number; height: number; expectFit: "cover" | "contain" };
 
 const VIEWPORTS: readonly Vp[] = [
-  { name: "mobile-portrait-390",  width: 390,  height: 844,  expectFit: "cover"   },
-  { name: "mobile-portrait-440",  width: 440,  height: 799,  expectFit: "cover"   },
-  { name: "mobile-landscape",     width: 844,  height: 390,  expectFit: "contain" },
-  { name: "tablet-portrait",      width: 1024, height: 1366, expectFit: "contain" },
-  { name: "laptop-1440",          width: 1440, height: 900,  expectFit: "contain" },
-  { name: "desktop-1920",         width: 1920, height: 1080, expectFit: "contain" },
+  { name: "mobile-portrait-390", width: 390, height: 844, expectFit: "cover" },
+  { name: "mobile-portrait-440", width: 440, height: 799, expectFit: "cover" },
+  { name: "mobile-landscape", width: 844, height: 390, expectFit: "contain" },
+  { name: "tablet-portrait", width: 1024, height: 1366, expectFit: "contain" },
+  { name: "laptop-1440", width: 1440, height: 900, expectFit: "contain" },
+  { name: "desktop-1920", width: 1920, height: 1080, expectFit: "contain" },
 ];
 
 for (const vp of VIEWPORTS) {
@@ -26,8 +26,16 @@ for (const vp of VIEWPORTS) {
       // Fresh session — intro must show.
       await context.clearCookies();
       await page.addInitScript(() => {
-        try { window.sessionStorage.removeItem("nexios-welcome"); } catch { /* noop */ }
-        try { window.localStorage.removeItem("aria_intro_seen_v1"); } catch { /* noop */ }
+        try {
+          window.sessionStorage.removeItem("nexios-welcome");
+        } catch {
+          /* noop */
+        }
+        try {
+          window.localStorage.removeItem("aria_intro_seen_v1");
+        } catch {
+          /* noop */
+        }
       });
 
       const start = Date.now();
@@ -60,8 +68,9 @@ for (const vp of VIEWPORTS) {
       await page.waitForTimeout(700);
       await expect(intro).toBeHidden({ timeout: 1500 });
       await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.getByRole("dialog", { name: /cinematic intro|مقدّمة/i }))
-        .toHaveCount(0, { timeout: 1500 });
+      await expect(page.getByRole("dialog", { name: /cinematic intro|مقدّمة/i })).toHaveCount(0, {
+        timeout: 1500,
+      });
     });
   });
 }

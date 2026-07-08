@@ -19,13 +19,19 @@ const browser = await openBrowser("chrome", {
 });
 
 const composition = await selectComposition({
-  serveUrl: bundled, id: compId, puppeteerInstance: browser,
+  serveUrl: bundled,
+  id: compId,
+  puppeteerInstance: browser,
 });
 
 await renderMedia({
-  composition, serveUrl: bundled, codec: "h264",
+  composition,
+  serveUrl: bundled,
+  codec: "h264",
   outputLocation: out,
-  puppeteerInstance: browser, muted: true, concurrency: 1,
+  puppeteerInstance: browser,
+  muted: true,
+  concurrency: 1,
 });
 
 await browser.close({ silent: false });

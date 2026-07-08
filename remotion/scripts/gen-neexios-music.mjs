@@ -4,7 +4,8 @@ import path from "node:path";
 const KEY = process.env.ELEVENLABS_API_KEY;
 if (!KEY) throw new Error("ELEVENLABS_API_KEY missing");
 
-const prompt = "Cinematic corporate keynote score, deep sub-bass pulse, soaring orchestral strings, warm synth pad, Middle Eastern percussion elements (subtle frame drum and oud accents), uplifting, epic, Apple keynote meets Vision 2030, no vocals, slow build to triumphant climax in final 30 seconds";
+const prompt =
+  "Cinematic corporate keynote score, deep sub-bass pulse, soaring orchestral strings, warm synth pad, Middle Eastern percussion elements (subtle frame drum and oud accents), uplifting, epic, Apple keynote meets Vision 2030, no vocals, slow build to triumphant climax in final 30 seconds";
 
 const res = await fetch("https://api.elevenlabs.io/v1/music", {
   method: "POST",

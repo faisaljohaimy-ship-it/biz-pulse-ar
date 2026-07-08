@@ -9,7 +9,10 @@ const OUT = path.resolve(__dirname, "../public/audio");
 fs.mkdirSync(OUT, { recursive: true });
 
 const KEY = process.env.ELEVENLABS_API_KEY;
-if (!KEY) { console.error("Missing ELEVENLABS_API_KEY"); process.exit(1); }
+if (!KEY) {
+  console.error("Missing ELEVENLABS_API_KEY");
+  process.exit(1);
+}
 // Default: Haytham — native Saudi/Gulf male voice. Override with EL_VOICE_ID.
 const VOICE = process.env.EL_VOICE_ID || "IES4nrmZdUBHByLBde0P";
 
@@ -38,24 +41,39 @@ const EN = [
 
 const OPTS = {
   model_id: "eleven_multilingual_v2",
-  voice_settings: { stability: 0.55, similarity_boost: 0.92, style: 0.45, use_speaker_boost: true, speed: 0.96 },
+  voice_settings: {
+    stability: 0.55,
+    similarity_boost: 0.92,
+    style: 0.45,
+    use_speaker_boost: true,
+    speed: 0.96,
+  },
 };
 
 for (let i = 0; i < AR.length; i++) {
   const out = path.join(OUT, `saudi-${String(i).padStart(2, "0")}.mp3`);
-  if (fs.existsSync(out) && fs.statSync(out).size > 3000 && !process.env.FORCE) { console.log("skip", out); continue; }
+  if (fs.existsSync(out) && fs.statSync(out).size > 3000 && !process.env.FORCE) {
+    console.log("skip", out);
+    continue;
+  }
   process.stdout.write(`gen ${i}... `);
-  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE}?output_format=mp3_44100_128`, {
-    method: "POST",
-    headers: { "xi-api-key": KEY, "Content-Type": "application/json", accept: "audio/mpeg" },
-    body: JSON.stringify({
-      text: AR[i],
-      previous_text: AR[i-1] ?? "",
-      next_text: AR[i+1] ?? "",
-      ...OPTS,
-    }),
-  });
-  if (!res.ok) { console.log("FAIL", res.status, await res.text()); process.exit(1); }
+  const res = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE}?output_format=mp3_44100_128`,
+    {
+      method: "POST",
+      headers: { "xi-api-key": KEY, "Content-Type": "application/json", accept: "audio/mpeg" },
+      body: JSON.stringify({
+        text: AR[i],
+        previous_text: AR[i - 1] ?? "",
+        next_text: AR[i + 1] ?? "",
+        ...OPTS,
+      }),
+    },
+  );
+  if (!res.ok) {
+    console.log("FAIL", res.status, await res.text());
+    process.exit(1);
+  }
   const buf = Buffer.from(await res.arrayBuffer());
   fs.writeFileSync(out, buf);
   console.log(buf.length, "bytes");
@@ -63,10 +81,12 @@ for (let i = 0; i < AR.length; i++) {
 
 const durations = AR.map((_, i) => {
   const f = path.join(OUT, `saudi-${String(i).padStart(2, "0")}.mp3`);
-  const o = execSync(`ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "${f}"`).toString().trim();
+  const o = execSync(`ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "${f}"`)
+    .toString()
+    .trim();
   return parseFloat(o);
 });
 fs.writeFileSync(path.join(OUT, "saudi-durations.json"), JSON.stringify(durations, null, 2));
 fs.writeFileSync(path.join(OUT, "saudi-en.json"), JSON.stringify(EN, null, 2));
 fs.writeFileSync(path.join(OUT, "saudi-ar.json"), JSON.stringify(AR, null, 2));
-console.log("durations:", durations, "total:", durations.reduce((a,b)=>a+b,0).toFixed(1));
+console.log("durations:", durations, "total:", durations.reduce((a, b) => a + b, 0).toFixed(1));

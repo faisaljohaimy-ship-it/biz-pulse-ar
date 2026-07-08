@@ -161,7 +161,8 @@ function KbPage() {
       const msg =
         `معالجة ${r.updated} — متبقي ${r.remaining}` +
         (r.failures.length ? ` — أخطاء ${r.failures.length}` : "");
-      if (r.failures.length) toast.warning(msg); else toast.success(msg);
+      if (r.failures.length) toast.warning(msg);
+      else toast.success(msg);
       qc.invalidateQueries({ queryKey: ["kb"] });
     },
     onError: (e: Error) => toast.error(e.message),

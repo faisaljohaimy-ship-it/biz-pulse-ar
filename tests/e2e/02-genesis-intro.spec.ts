@@ -11,9 +11,7 @@ test.describe("Genesis intro — once per session", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     // The intro exposes a skip control; look for common Arabic labels.
-    const skip = page
-      .getByRole("button", { name: /تخطي|تجاوز|Skip/i })
-      .first();
+    const skip = page.getByRole("button", { name: /تخطي|تجاوز|Skip/i }).first();
 
     // Intro is not guaranteed on every viewport; if visible, skip it.
     if (await skip.isVisible({ timeout: 5_000 }).catch(() => false)) {

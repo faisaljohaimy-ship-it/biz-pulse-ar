@@ -22,9 +22,18 @@ test.describe("Command Center — auth gate", () => {
     }
 
     await page.goto("/auth");
-    await page.getByLabel(/بريد|Email/i).first().fill(email);
-    await page.getByLabel(/كلمة|Password/i).first().fill(password);
-    await page.getByRole("button", { name: /دخول|تسجيل|Sign in|Log in/i }).first().click();
+    await page
+      .getByLabel(/بريد|Email/i)
+      .first()
+      .fill(email);
+    await page
+      .getByLabel(/كلمة|Password/i)
+      .first()
+      .fill(password);
+    await page
+      .getByRole("button", { name: /دخول|تسجيل|Sign in|Log in/i })
+      .first()
+      .click();
 
     await page.waitForURL((u) => !/\/auth/.test(u.pathname), { timeout: 15_000 });
     await page.goto("/command-center", { waitUntil: "domcontentloaded" });

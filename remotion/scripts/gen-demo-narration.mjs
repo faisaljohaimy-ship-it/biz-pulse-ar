@@ -8,7 +8,10 @@ const OUT = path.resolve(__dirname, "../public/audio");
 fs.mkdirSync(OUT, { recursive: true });
 
 const KEY = process.env.ELEVENLABS_API_KEY;
-if (!KEY) { console.error("Missing ELEVENLABS_API_KEY"); process.exit(1); }
+if (!KEY) {
+  console.error("Missing ELEVENLABS_API_KEY");
+  process.exit(1);
+}
 const VOICE = process.env.EL_VOICE_ID || "IES4nrmZdUBHByLBde0P"; // Arabic male executive
 
 const LINES = [
@@ -47,14 +50,20 @@ const OPTS = {
 
 for (let i = 0; i < LINES.length; i++) {
   const out = path.join(OUT, `dx-${String(i).padStart(2, "0")}.mp3`);
-  if (fs.existsSync(out) && fs.statSync(out).size > 3000) { console.log("skip", out); continue; }
+  if (fs.existsSync(out) && fs.statSync(out).size > 3000) {
+    console.log("skip", out);
+    continue;
+  }
   process.stdout.write(`gen ${i}... `);
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE}`, {
     method: "POST",
     headers: { "xi-api-key": KEY, "Content-Type": "application/json", accept: "audio/mpeg" },
     body: JSON.stringify({ text: LINES[i], ...OPTS }),
   });
-  if (!res.ok) { console.log("FAIL", res.status, await res.text()); process.exit(1); }
+  if (!res.ok) {
+    console.log("FAIL", res.status, await res.text());
+    process.exit(1);
+  }
   const buf = Buffer.from(await res.arrayBuffer());
   fs.writeFileSync(out, buf);
   console.log(buf.length, "bytes");
@@ -64,9 +73,11 @@ for (let i = 0; i < LINES.length; i++) {
 const { execSync } = await import("child_process");
 const durations = LINES.map((_, i) => {
   const f = path.join(OUT, `dx-${String(i).padStart(2, "0")}.mp3`);
-  const o = execSync(`ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "${f}"`).toString().trim();
+  const o = execSync(`ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "${f}"`)
+    .toString()
+    .trim();
   return parseFloat(o);
 });
 fs.writeFileSync(path.join(OUT, "dx-durations.json"), JSON.stringify(durations, null, 2));
 console.log("durations:", durations);
-console.log("total:", durations.reduce((a,b)=>a+b,0).toFixed(1), "s");
+console.log("total:", durations.reduce((a, b) => a + b, 0).toFixed(1), "s");
