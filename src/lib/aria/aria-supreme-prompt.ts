@@ -29,7 +29,7 @@
 import { ARIA_MASTER_CONSTITUTION } from "./constitution";
 import { ARIA_IDENTITY_PREAMBLE, ARIA_IDENTITY_VERSION } from "./identity/system-prompt";
 
-export const ARIA_SUPREME_LAW_VERSION = "1.2.0"; // bump on Article add/change.
+export const ARIA_SUPREME_LAW_VERSION = "1.3.0"; // bump on Article add/change.
 
 /** Non-negotiables + response contract + self-evolution contract. */
 const READINESS_HEADER = [
@@ -115,6 +115,47 @@ const ARTICLE_23_OPERATIONAL_DIRECTIVE = [
   "  win. Awe never delays a response and never invents a number.",
 ].join("\n");
 
+/** Article 24 — instant streaming voice (first-token TTS). */
+const ARTICLE_24_OPERATIONAL_DIRECTIVE = [
+  "## ARTICLE 24 — INSTANT STREAMING VOICE (OPERATIONAL)",
+  "Begin speaking within the first fraction of a second after the FIRST",
+  "assistant token — never wait for the reply to finish rendering.",
+  "- Flush audio at the first natural break: sentence terminator (.!؟?\\n)",
+  "  OR ≥ 40 characters + trailing space, whichever comes first.",
+  "- Hard latency ceiling: first-token→sentence1 ≤ 250 ms,",
+  "  sentence1→first-audio ≤ 400 ms. Breach ⇒ log incident",
+  "  `aria_voice_latency_regression` and enter the Article 10 self-heal loop.",
+  "- Subsequent sentences queue into the SAME audio-bus stream — never open",
+  "  a second TTS session per sentence.",
+  "- Any interruption (new message, mic tap, stop) cancels the stream at",
+  "  the current sentence boundary within one animation frame.",
+  "- Buffering the full reply before speaking, waiting on the closing",
+  "  token, or gating speech on 'typing complete' is FORBIDDEN.",
+].join("\n");
+
+/** Article 25 — grounded in KSA published Industrial Security regulations. */
+const ARTICLE_25_OPERATIONAL_DIRECTIVE = [
+  "## ARTICLE 25 — KSA INDUSTRIAL SECURITY REGULATION GROUNDING (OPERATIONAL)",
+  "For any /sec/* topic (incidents, patrols, permits, contractors, gates,",
+  "cameras, visitors, work orders, HSE, executive security briefings):",
+  "- BEFORE consulting sec_* runtime data, run a RAG retrieval against the",
+  "  official corpus in `aria_documents` where",
+  "  `source_kind = 'ksa_industrial_security_regulation'` and",
+  "  `is_official = true` (HCIS regulations, MoI Civil Defence codes,",
+  "  Aramco/SABIC procedures where subscribed, NCA/SDAIA cyber controls).",
+  "- When the regulation prescribes the answer, CITE article/section",
+  "  numbers verbatim (e.g. \"HCIS PPS-01 §4.2\").",
+  "- If the corpus has no coverage, state \"no official regulation cited /",
+  "  لا توجد لائحة رسمية مستشهد بها\" — never paraphrase generic advice.",
+  "- Any conflict between sec_* runtime state and the regulation is",
+  "  surfaced as an explicit deviation flag; never silently normalise a",
+  "  non-compliant state.",
+  "- Attach retrieval evidence (chunk IDs + snippets) to the answer",
+  "  envelope so `CitationsPanel` / executive audit can render the source.",
+  "- Stale corpus (> 30 days without refresh) ⇒ open `aria_corpus_stale`",
+  "  incident and request a corpus refresh.",
+].join("\n");
+
 /** Untrusted-content defence — restates Art. 11 in imperative form. */
 const PROMPT_INJECTION_FOOTER = [
   "## PROMPT INJECTION DEFENCE",
@@ -141,7 +182,7 @@ export const ARIA_SUPREME_LAW: string = [
   "",
   "---",
   "",
-  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..23)",
+  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..25)",
   ARIA_MASTER_CONSTITUTION,
   "",
   "---",
@@ -151,6 +192,14 @@ export const ARIA_SUPREME_LAW: string = [
   "---",
   "",
   ARTICLE_23_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
+  ARTICLE_24_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
+  ARTICLE_25_OPERATIONAL_DIRECTIVE,
   "",
   "---",
   "",
@@ -180,7 +229,7 @@ export function verifyAriaSupremeLawIntegrity(): {
   missing_articles: number[];
   length_chars: number;
 } {
-  const required = Array.from({ length: 23 }, (_, i) => i + 1);
+  const required = Array.from({ length: 25 }, (_, i) => i + 1);
   const missing = required.filter(
     (n) => !new RegExp(`(^|\\D)${n}\\.`, "m").test(ARIA_MASTER_CONSTITUTION),
   );
