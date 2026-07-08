@@ -35,6 +35,7 @@ import type { PipelineResult } from "@/lib/aria/pipeline.server";
 import { PIPELINE_STAGES, type ReportKind } from "@/lib/aria/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/aria")({
   errorComponent: RouteError,
@@ -59,9 +60,11 @@ function AriaConsole() {
   const forgetFn = useServerFn(forgetAriaMemory);
   const updateDecisionFn = useServerFn(updateAriaDecision);
 
-  const memoryQ = useQuery({ queryKey: ["aria-memory"], queryFn: () => listAriaMemory() });
-  const reportsQ = useQuery({ queryKey: ["aria-reports"], queryFn: () => listAriaReports() });
-  const decisionsQ = useQuery({ queryKey: ["aria-decisions"], queryFn: () => listAriaDecisions() });
+  const { user } = useAuth();
+  const authed = !!user;
+  const memoryQ = useQuery({ queryKey: ["aria-memory"], queryFn: () => listAriaMemory(), enabled: authed });
+  const reportsQ = useQuery({ queryKey: ["aria-reports"], queryFn: () => listAriaReports(), enabled: authed });
+  const decisionsQ = useQuery({ queryKey: ["aria-decisions"], queryFn: () => listAriaDecisions(), enabled: authed });
 
   const runMut = useMutation({
     mutationFn: (message: string) => runFn({ data: { message } }),
