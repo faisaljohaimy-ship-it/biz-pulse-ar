@@ -29,6 +29,9 @@ import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
+import { speakablePageScript, pageScriptParts } from "@/lib/aria/page-scripts";
+import { speakAria, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { useRouterState } from "@tanstack/react-router";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -329,6 +332,58 @@ export function AriaCopilot() {
       cancelled = true;
     };
   }, [isOpen, composerRef]);
+
+  // Page-aware panel intro (Article 22 · page announcer, panel-open edition).
+  // On every panel open — and again whenever the pathname changes while the
+  // panel is already open — ARIA speaks a DISTINCT three-part script for the
+  // current route (title · purpose · what you can do). Routes without a
+  // dedicated script fall back silently to the existing generic greeting
+  // path; there is no placeholder line.
+  const introHandleRef = useRef<SpeakHandle | null>(null);
+  const lastIntroKeyRef = useRef<string | null>(null);
+  const [panelIntro, setPanelIntro] = useState<ReturnType<typeof pageScriptParts>>(null);
+  const routerPathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    if (!isOpen) {
+      lastIntroKeyRef.current = null;
+      setPanelIntro(null);
+      introHandleRef.current?.stop();
+      introHandleRef.current = null;
+      return;
+    }
+    if (typeof window === "undefined") return;
+    const pathname = routerPathname || window.location.pathname;
+    const locale: "ar" | "en" =
+      typeof document !== "undefined" && document.documentElement.lang.startsWith("en")
+        ? "en"
+        : "ar";
+    const key = `${pathname}::${locale}`;
+    if (lastIntroKeyRef.current === key) return;
+    lastIntroKeyRef.current = key;
+
+    const parts = pageScriptParts(pathname);
+    setPanelIntro(parts);
+    if (!parts) return; // fallback: existing generic greeting owns silence/speech
+    const text = speakablePageScript(pathname, locale);
+    if (!text) return;
+
+    // Cancel any prior intro immediately — no stacking across route changes.
+    introHandleRef.current?.stop();
+    introHandleRef.current = null;
+    try {
+      const h = speakAria({ text, lang: locale });
+      introHandleRef.current = h;
+      void h.promise.catch(() => {
+        /* silent per ARIA policy */
+      });
+    } catch {
+      /* best-effort intro */
+    }
+    return () => {
+      introHandleRef.current?.stop();
+      introHandleRef.current = null;
+    };
+  }, [isOpen, routerPathname]);
 
   // Conversation Mode state
   const [convMode, setConvMode] = useState(false);
