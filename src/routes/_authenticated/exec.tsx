@@ -43,7 +43,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/exec")({
   component: ExecConsole,
-  errorComponent: ({ error, reset }) => {
+  errorComponent: function ExecErrorComponent({ error, reset }) {
     const router = useRouter();
     return (
       <div className="p-8 text-center space-y-3">
