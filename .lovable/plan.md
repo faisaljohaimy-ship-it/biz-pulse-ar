@@ -62,3 +62,10 @@ Batches are executed autonomously per **Article 27 (c)**. The operator is asked 
 - `aria-actions-log-retention` scheduled daily 04:42 UTC → 90-day audit trim
 - `aria-corpus-stale-scan` scheduled daily 03:17 UTC → auto-raises `aria_corpus_stale` public incident
 - Both jobs idempotent (unschedule-then-schedule)
+
+## Batch 5a — Evidence Gate sweep round 1 (2026-07-08)
+- `queryEvidence(source, dataUpdatedAt, value, href?)` added to `src/lib/evidence/gate.ts`
+- `_authenticated/dashboard.tsx` header LIVE badge now `<EvidenceBadge>` bound to `getExecKpis` `dataUpdatedAt`
+- `_authenticated/live-dashboard.tsx` header LIVE badge now `<EvidenceBadge>` bound to `max(kpis, timeseries).dataUpdatedAt`
+- `AgentRoster.tsx` "Live / البث مباشر" now `<EvidenceBadge>` gated by `signals.length` via `probeEvidence`
+
