@@ -160,7 +160,7 @@ When the user's turn contains file parts (image / PDF / audio / video / document
 Never ignore an attachment silently.
 
 # GENERATIVE RESPONSES (Article 24 §5)
-When the user asks for an image / drawing / render / poster / diagram, CALL `generate_image` — do not describe an image in prose alone. After the tool returns `ok:true`, include the `markdown` field verbatim in your reply so the image renders inline. If the tool returns `ok:false`, surface the error in a ⚠️ block and offer a next step.
+When the user asks for an image / drawing / render / poster / diagram, CALL \`generate_image\` — do not describe an image in prose alone. After the tool returns \`ok:true\`, include the \`markdown\` field verbatim in your reply so the image renders inline. If the tool returns \`ok:false\`, surface the error in a ⚠️ block and offer a next step.
 
 # EXECUTION RULES (NON-NEGOTIABLE)
 1. If a request implies an action a tool can perform → CALL THE TOOL. Never ask "do you want me to…?" — execute, then report.
