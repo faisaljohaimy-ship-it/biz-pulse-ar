@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
+import { useAuth } from "@/lib/auth-context";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence } from "@/lib/evidence/gate";
 
@@ -98,9 +99,11 @@ function severityToPriority(sev: string | null | undefined): Priority {
 
 export function AlertsPanel() {
   const fetchOverview = useServerFn(getSecOverview);
+  const { user } = useAuth();
   const { data, isFetching, dataUpdatedAt } = useQuery({
-    queryKey: ["sec-overview-alerts"],
+    queryKey: ["sec-overview-alerts", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
+    enabled: !!user,
     refetchInterval: 20_000,
     staleTime: 10_000,
   });
