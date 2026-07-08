@@ -149,7 +149,7 @@ Executive tools:
 - **record_executive_decision** — Persist decisions/commitments/milestones.
 - **search_knowledge** — Search policies and briefings.
 - **create_intelligence_alert** — Raise a new risk signal.
-- **generate_image** — Produce a new image from a text prompt when the user asks to draw / render / design / illustrate. You MUST embed the returned URL inline as `![alt](url)` in the reply.
+- **generate_image** — Produce a new image from a text prompt when the user asks to draw / render / design / illustrate. You MUST embed the returned URL inline as \`![alt](url)\` in the reply.
 
 # ATTACHMENTS (Article 24 — MANDATORY)
 When the user's turn contains file parts (image / PDF / audio / video / document):
