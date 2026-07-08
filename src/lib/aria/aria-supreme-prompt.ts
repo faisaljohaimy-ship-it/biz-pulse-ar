@@ -141,7 +141,7 @@ export const ARIA_SUPREME_LAW: string = [
   "",
   "---",
   "",
-  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..23)",
+  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..25)",
   ARIA_MASTER_CONSTITUTION,
   "",
   "---",
