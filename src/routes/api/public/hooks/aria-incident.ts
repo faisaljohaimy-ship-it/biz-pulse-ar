@@ -16,6 +16,9 @@ const ALLOWED_KINDS = new Set([
   "offline",
   "chat_stream_error",
   "tts_failure",
+  // Article 21 — CI blocking-gate regressions land in the same public sink
+  // so ARIA sees them in the operational incident stream.
+  "ci_security_gap_regression",
 ]);
 
 interface IncomingIncident {
@@ -46,7 +49,7 @@ export const Route = createFileRoute("/api/public/hooks/aria-incident")({
 
         const detail = String(body.detail ?? "").slice(0, 500);
         const url = body.url ? String(body.url).slice(0, 200) : null;
-        const device = ["mobile", "tablet", "desktop"].includes(String(body.device_class))
+        const device = ["mobile", "tablet", "desktop", "ci"].includes(String(body.device_class))
           ? String(body.device_class)
           : "desktop";
 

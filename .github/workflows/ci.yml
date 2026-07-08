@@ -23,3 +23,58 @@ jobs:
         run: bun run build
       - name: Smoke check bundle
         run: test -d dist || test -d .output
+
+  # Article 21 — Continuous security gate. The Article 19 E2E spec is a
+  # blocking check on every push/PR. If it fails, the merge is blocked and
+  # an incident is opened against the deployed public sink so ARIA sees the
+  # regression in the operational incident stream — not just in CI logs.
+  security-gap-closure-e2e:
+    runs-on: ubuntu-latest
+    needs: verify
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      PLAYWRIGHT_BASE_URL: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Install Playwright chromium
+        run: bunx playwright install --with-deps chromium
+      - name: Start dev server
+        run: |
+          bun run dev > /tmp/dev.log 2>&1 &
+          echo $! > /tmp/dev.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080 > /dev/null; then
+              echo "dev server up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "dev server failed to start"; tail -n 200 /tmp/dev.log; exit 1
+      - name: Run Article 19 E2E (blocking)
+        id: art19
+        run: bunx playwright test tests/e2e/11-security-gap-closure.spec.ts --project=desktop
+      - name: Report failure as public incident (Article 21)
+        if: failure() && steps.art19.conclusion == 'failure'
+        run: |
+          PUBLIC_URL="${PUBLIC_INCIDENT_URL:-https://biz-pulse-ar.lovable.app}/api/public/hooks/aria-incident"
+          curl -sS -X POST "$PUBLIC_URL" \
+            -H "content-type: application/json" \
+            -d "{\"kind\":\"ci_security_gap_regression\",\"detail\":\"Article 19 E2E failed on ${GITHUB_REPOSITORY}@${GITHUB_SHA} (run ${GITHUB_RUN_ID})\",\"url\":\"https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"device_class\":\"ci\"}" \
+            || echo "incident post failed (non-fatal for CI status)"
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-art19
+          path: playwright-report
+          if-no-files-found: ignore
+      - name: Stop dev server
+        if: always()
+        run: kill $(cat /tmp/dev.pid) || true
