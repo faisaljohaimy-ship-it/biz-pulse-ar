@@ -8,6 +8,7 @@ import { Building2, Check, ChevronDown, Loader2 } from "lucide-react";
 import { listMyOrgs, switchOrg } from "@/lib/org/org.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
