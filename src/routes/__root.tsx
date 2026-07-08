@@ -27,6 +27,7 @@ import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
 // AriaPageNarrator import removed — auto voice on navigation disabled
 import { AriaTourFab } from "@/components/aria/AriaTourFab";
+import { AriaTourWatermark } from "@/components/aria/AriaTourWatermark";
 import { WelcomeThenGenesis } from "@/components/cinematic/WelcomeThenGenesis";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
@@ -304,6 +305,7 @@ function RootComponent() {
                   {!introActive && <AriaCopilot />}
                   {/* AriaPageNarrator removed — no auto-voice on route change */}
                   <AriaTourFab />
+                  {!suppressOverlays && <AriaTourWatermark />}
                   {!suppressOverlays && <AriaGreeter />}
                   <WelcomeThenGenesis />
                   <Toaster />
