@@ -225,11 +225,29 @@ function AriaTourPage() {
           src={current.route}
           title="NEXIOS tour viewport"
           className="h-full w-full border-0 bg-[#061a2e]"
+          onLoad={silenceIframe}
+        />
+        {/* invisible pre-warm iframe: loads the NEXT cue's route so the
+            following window paints instantly when ARIA reaches it. */}
+        <iframe
+          ref={prefetchRef}
+          aria-hidden
+          tabIndex={-1}
+          title="prefetch"
+          className="pointer-events-none absolute h-1 w-1 opacity-0"
         />
 
-        {/* Floating ARIA video (draggable-feeling anchor, bottom-left) */}
+        {/* Floating ARIA video — links appearance to window opening:
+            expands when a new cue fires, then quietly shrinks to a pill
+            while the operator reads the freshly-opened surface. */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="pointer-events-auto absolute bottom-6 left-6 w-[220px] overflow-hidden rounded-2xl border border-cyan-400/40 bg-black/60 shadow-[0_10px_40px_rgba(0,212,255,0.35)] backdrop-blur-xl">
+          <div
+            className={cn(
+              "pointer-events-auto absolute bottom-6 left-6 overflow-hidden rounded-2xl border border-cyan-400/40 bg-black/60 shadow-[0_10px_40px_rgba(0,212,255,0.35)] backdrop-blur-xl transition-all duration-700 ease-out",
+              revealed ? "w-[260px] opacity-100 scale-100" : "w-[140px] opacity-70 scale-95",
+            )}
+          >
+
             <video
               ref={videoRef}
               src={ariaTour.url}
