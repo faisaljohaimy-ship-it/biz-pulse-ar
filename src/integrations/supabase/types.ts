@@ -196,6 +196,65 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_actions_log: {
+        Row: {
+          action: string
+          actor: string
+          article_refs: string[]
+          citations: Json
+          created_at: string
+          id: string
+          input: Json
+          latency_ms: number | null
+          org_id: string
+          output: Json
+          route: string | null
+          status: string
+          surface: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string
+          article_refs?: string[]
+          citations?: Json
+          created_at?: string
+          id?: string
+          input?: Json
+          latency_ms?: number | null
+          org_id?: string
+          output?: Json
+          route?: string | null
+          status?: string
+          surface?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string
+          article_refs?: string[]
+          citations?: Json
+          created_at?: string
+          id?: string
+          input?: Json
+          latency_ms?: number | null
+          org_id?: string
+          output?: Json
+          route?: string | null
+          status?: string
+          surface?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_actions_log_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aria_decisions: {
         Row: {
           confidence: number | null
