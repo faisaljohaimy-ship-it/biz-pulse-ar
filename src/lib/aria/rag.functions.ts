@@ -119,14 +119,14 @@ export const retrieveRegulationContext = createServerFn({ method: "POST" })
     }
 
     let citations: RegulationCitation[] = raw.map((r) => ({
-      document_id: r.id,
-      document_title: meta[r.id]?.title ?? r.title,
+      document_id: r.document_id,
+      document_title: meta[r.document_id]?.title ?? r.title,
       chunk_index: 0,
       content: r.content,
       similarity: r.similarity,
-      is_official: meta[r.id]?.is_official ?? false,
-      source_kind: meta[r.id]?.source_kind ?? r.source ?? "upload",
-      tags: r.tags ?? [],
+      is_official: meta[r.document_id]?.is_official ?? false,
+      source_kind: meta[r.document_id]?.source_kind ?? "upload",
+      tags: [],
     }));
 
     if (data.official_only) citations = citations.filter((c) => c.is_official);
