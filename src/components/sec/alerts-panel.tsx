@@ -212,14 +212,25 @@ export function AlertsPanel() {
           </span>
           <span className="text-xs text-foreground/40 font-mono">· {items.length}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono">
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${isFetching ? "bg-primary animate-pulse" : "bg-emerald-400"}`}
-          />
-          <span className="text-foreground/50 uppercase tracking-widest">
-            {isFetching ? "SYNC" : "LIVE"}
-          </span>
-        </div>
+        <EvidenceBadge
+          label={isFetching ? "SYNC" : "LIVE"}
+          tone={isFetching ? "cyan" : "emerald"}
+          maxAgeMs={60_000}
+          evidence={
+            data && dataUpdatedAt
+              ? {
+                  kind: "db.query",
+                  source: "sec_overview",
+                  observedAt: new Date(dataUpdatedAt).toISOString(),
+                  value: items.length,
+                }
+              : null
+          }
+        />
+        {/* fallback keeps a subtle idle dot when no evidence yet */}
+        {!data && (
+          <span className="w-1.5 h-1.5 rounded-full bg-white/20" aria-hidden="true" />
+        )}
       </header>
 
       {/* Priority filters */}
