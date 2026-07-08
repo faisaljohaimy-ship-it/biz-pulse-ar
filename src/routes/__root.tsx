@@ -159,6 +159,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         children: `(function(){try{var s=localStorage.getItem('locale');var l=(s==='ar'||s==='en')?s:'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';}catch(e){}})();`,
       },
+      {
+        // Article XIII — Crash-Loop Breaker (iOS Safari OOM recovery).
+        // Increments a boot-attempt counter before hydration; on 2+
+        // consecutive unfinished boots the shell enters safe-mode: skip the
+        // intro video and mark <html> so heavy scenes can opt out. A clean
+        // React mount resets the counter (see RootComponent effect below).
+        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n++;ss.setItem(k,String(n));if(n>=2){ss.setItem('nexios-welcome','complete:v2');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}}catch(e){}})();`,
+      },
 
       {
         type: "application/ld+json",
@@ -232,6 +240,14 @@ function RootComponent() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let cancelled = false;
+    // Article XIII — Crash-Loop Breaker: React reached commit, so this boot
+    // is healthy. Reset the pre-hydration attempt counter so a future crash
+    // gets its own fresh 2-strike budget.
+    try {
+      window.sessionStorage.removeItem("nexios-boot-attempts");
+    } catch {
+      /* ignore */
+    }
     import("@/lib/aria/self-healing/watchdog").then((m) => {
       if (cancelled) return;
       cleanup = m.installAriaWatchdog();
