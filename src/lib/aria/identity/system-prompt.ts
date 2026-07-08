@@ -67,16 +67,17 @@ ${ARIA_MASTER_CONSTITUTION}
 `.trim();
 
 /**
- * Compose a full system prompt for an ARIA entry-point.
- * Routes through the SUPREME LAW module so every caller (chat, briefing,
- * teach, TTS narration, agent loop) inherits the identity preamble +
- * readiness header + full constitution + Article 21 CI directive +
- * prompt-injection defence in one canonical order. Do NOT bypass this.
+ * Compose a full system prompt for an ARIA entry-point by placing the
+ * identity preamble first and the caller's operational instructions after.
+ *
+ * NOTE: For NEW entry-points, prefer `withAriaSupremeLaw` from
+ * `../aria-supreme-prompt` — it bundles identity + readiness header +
+ * full constitution + Article 21 CI directive + prompt-injection defence
+ * in one canonical order. `withAriaIdentity` stays for backward
+ * compatibility (the identity preamble already embeds the master
+ * constitution, including Article 21).
  */
 export function withAriaIdentity(operational: string): string {
-  // Lazy-require to keep the import graph acyclic between identity and law.
-  // Both modules are pure strings; no runtime side-effects.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { withAriaSupremeLaw } = require("../aria-supreme-prompt") as typeof import("../aria-supreme-prompt");
-  return withAriaSupremeLaw(operational);
+  const op = operational.trim();
+  return `${ARIA_IDENTITY_PREAMBLE}\n\n---\n\n${op}`;
 }
