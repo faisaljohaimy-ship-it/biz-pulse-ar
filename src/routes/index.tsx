@@ -207,8 +207,8 @@ function IntroLanding() {
       <section
         id="tour-hero"
         aria-label={ar ? "الواجهة التنفيذية" : "Executive hero"}
-        className="relative z-10 flex min-h-[100svh] w-full flex-col px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
-        style={{ paddingTop: "clamp(30dvh, 34dvh, 38dvh)" }}
+        className="relative z-10 flex w-full flex-col px-5 pb-6"
+        style={{ paddingTop: "clamp(14dvh, 16dvh, 20dvh)" }}
       >
         {/* Face-safe scrim — starts BELOW the top 34dvh so ARIA's face stays
             unobstructed while buttons below remain readable. */}
