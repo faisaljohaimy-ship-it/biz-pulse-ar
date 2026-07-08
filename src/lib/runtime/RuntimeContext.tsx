@@ -6,6 +6,7 @@ import { bootstrapEnterprise, type RuntimeBootstrap } from "./bootstrap.function
 import { supabase } from "@/integrations/supabase/client";
 import { InitializingShell } from "./InitializingShell";
 import { useRuntimeScheduler } from "./useRuntimeScheduler";
+import { useAuth } from "@/lib/auth-context";
 
 type RuntimeContextValue = RuntimeBootstrap & {
   refresh: () => Promise<unknown>;
