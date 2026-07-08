@@ -35,19 +35,19 @@ function cueForRoute(pathname: string): { cue: TourCue; endSec: number } {
 export function AriaTourWatermark() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const introActive = useIntroActive();
-  const [started, setStarted] = useState(false);
+  const [visible, setVisible] = useState(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const match = useMemo(() => cueForRoute(pathname), [pathname]);
 
-  // Collapse back to the watermark icon whenever the route changes.
+  // Re-show and restart on every route change (after leaving home).
   useEffect(() => {
-    setStarted(false);
+    setVisible(true);
   }, [pathname]);
 
-  // When the user starts playback, seek to the cue and play with sound.
+  // Auto-play the cue segment on mount / route change.
   useEffect(() => {
-    if (!started) return;
+    if (!visible) return;
     const v = videoRef.current;
     if (!v) return;
     try {
@@ -57,7 +57,7 @@ export function AriaTourWatermark() {
       const p = v.play();
       if (p && typeof p.catch === "function") {
         p.catch(() => {
-          // Extreme edge case — retry muted so at least the video plays.
+          // Mobile autoplay-with-sound blocked — fall back to muted.
           v.muted = true;
           v.play().catch(() => {});
         });
@@ -65,55 +65,35 @@ export function AriaTourWatermark() {
     } catch {
       /* noop */
     }
-  }, [started, match]);
+  }, [visible, match]);
 
-  // Auto-hide the video (back to icon) when the cue segment ends.
+  // Auto-hide the video when the cue segment ends.
   useEffect(() => {
-    if (!started) return;
+    if (!visible) return;
     const v = videoRef.current;
     if (!v) return;
     const onTime = () => {
       if (v.currentTime >= match.endSec - 0.1) {
         v.pause();
-        setStarted(false);
+        setVisible(false);
       }
     };
-    const onEnded = () => setStarted(false);
+    const onEnded = () => setVisible(false);
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("ended", onEnded);
     return () => {
       v.removeEventListener("timeupdate", onTime);
       v.removeEventListener("ended", onEnded);
     };
-  }, [started, match]);
+  }, [visible, match]);
 
   if (introActive) return null;
   if (pathname.startsWith("/aria/tour")) return null;
+  // Hide on the home/landing page — narration starts from the first window
+  // opened AFTER the home page.
+  if (pathname === "/") return null;
+  if (!visible) return null;
 
-  // Collapsed state — pulsing watermark icon at bottom-right.
-  if (!started) {
-    return (
-      <button
-        type="button"
-        dir="rtl"
-        onClick={() => setStarted(true)}
-        aria-label={`اريا — اضغط للمتابعة · ${match.cue.titleAr}`}
-        title={`اضغط للمتابعة — ${match.cue.titleAr}`}
-        className="group fixed bottom-4 right-4 z-[55] flex items-center gap-2 rounded-full border border-cyan-400/50 bg-[#061A2E]/90 py-2 pe-3 ps-2 text-cyan-100 shadow-[0_0_28px_rgba(0,212,255,0.35)] backdrop-blur-md transition hover:scale-105 hover:border-cyan-300 hover:bg-[#0a2540]/95 sm:bottom-6 sm:right-6"
-      >
-        <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-cyan-500/20 ring-1 ring-cyan-400/60">
-          <span className="absolute inset-0 animate-ping rounded-full bg-cyan-400/40" />
-          <Play className="relative h-4 w-4 fill-cyan-100 text-cyan-100" />
-        </span>
-        <span className="flex flex-col items-start leading-tight">
-          <span className="flex items-center gap-1 text-[11px] font-semibold text-cyan-100">
-            <Sparkles className="h-3 w-3 text-cyan-300" /> اضغط للمتابعة
-          </span>
-          <span className="text-[9px] text-cyan-300/80">Tap to continue with ARIA</span>
-        </span>
-      </button>
-    );
-  }
 
   // Expanded state — narration video for the current route.
   return (
