@@ -126,3 +126,14 @@ System Prompt → History → Memory → Distillation → Recall → Tool Select
   4. عند وجود لوحة بلا استعلام حيّ بعد (بيانات محاكاة فقط) يُستخدم `SampleBadge` — لا يُفبرك `dataUpdatedAt` مصطنع لإرضاء الشارة.
 - التحقق: `tests/e2e/10-continuous-audit.spec.ts` يمتد ليتأكد أن كل لوحة SEC تعرض شارة `data-evidence-source` أو أن الاستعلام لم يُنجز بعد.
 
+
+## 21. قانون بوابة CI الأمنية الحاجبة
+- اختبار المادة 19 (`tests/e2e/11-security-gap-closure.spec.ts`) مربوط تلقائياً كوظيفة **حاجبة** في `.github/workflows/ci.yml` تحت اسم `security-gap-closure-e2e`، تعمل على كل `push` و `pull_request`.
+- الوظيفة تعتمد على نجاح `verify` أولاً، ثم تُقلع خادم التطوير محلياً وتشغّل الاختبار على متصفح desktop. أي فشل يوقف الدمج فوراً — لا `|| true`، لا `continue-on-error`، لا تجاوز يدوي.
+- عند الفشل: الوظيفة ترسل حادثاً من نوع `ci_security_gap_regression` إلى `/api/public/hooks/aria-incident` على النطاق المنشور، فيسجَّل تلقائياً في `aria_public_incidents` مع repo و SHA ورابط تشغيل GitHub Actions. لا يبقى الفشل حبيس سجلات CI.
+- الـ sink العمومي يقبل `ci_security_gap_regression` و `device_class = "ci"` حصراً لهذا المسار. أي بوابة CI حاجبة جديدة تفتح حوادث تُمدّد الـ whitelist نفسه في نفس الـ PR — لا تُضاف أنواع أحداث خارج القائمة.
+- بروتوكول آريا الدائم:
+  1. ترصد أي صف جديد في `aria_public_incidents` من نوع `ci_security_gap_regression` كثغرة مفتوحة، لا كإشعار عابر.
+  2. تفتح جلسة إصلاح فوراً: تُحدّد السبب الجذري، تشحن migration/إصلاح، تُشغّل `security--run_security_scan` + الاختبار محلياً، ثم تتأكد أن CI أخضر.
+  3. تُقفل الحادث بتقرير قصير في `aria_public_incidents.detail` أو في مذكرة `mem://` مع رابط الـ commit المُصلح.
+- كل اختبار E2E أمني حاجب جديد يُضاف كوظيفة مستقلة بنفس النمط (dev server → spec → failure ⇒ incident post) — لا كخطوة اختيارية في مصفوفة.
