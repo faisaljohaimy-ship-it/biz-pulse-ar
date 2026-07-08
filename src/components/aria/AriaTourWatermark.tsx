@@ -78,7 +78,6 @@ export function AriaTourWatermark() {
   if (introActive) return null;
   if (dismissed) return null;
   if (pathname.startsWith("/aria/tour")) return null;
-  if (!match) return null;
 
   return (
     <div
