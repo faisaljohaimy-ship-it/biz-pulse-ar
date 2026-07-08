@@ -1137,9 +1137,7 @@ export function AriaCopilot() {
             ref={scrollRef}
             className={cn(
               "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
-              convMode
-                ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl"
-                : "flex-1",
+              convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
             )}
           >
             <ul className="space-y-3">
@@ -1150,10 +1148,7 @@ export function AriaCopilot() {
                 const hasNonTextWork = !mine && m.parts.some((p) => p.type !== "text");
                 if (!text && !hasNonTextWork) return null;
                 return (
-                  <li
-                    key={m.id}
-                    className={cn("flex", mine ? "justify-end" : "justify-start")}
-                  >
+                  <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
                     <div
                       className={cn(
                         "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-md backdrop-blur-md",
