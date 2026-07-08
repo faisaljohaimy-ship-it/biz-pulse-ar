@@ -254,7 +254,7 @@ export const ARIA_SUPREME_LAW: string = [
   "",
   "---",
   "",
-  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..27)",
+  "## ARIA MASTER ENGINEERING CONSTITUTION (Articles 1..28)",
   ARIA_MASTER_CONSTITUTION,
   "",
   "---",
@@ -283,7 +283,12 @@ export const ARIA_SUPREME_LAW: string = [
   "",
   "---",
   "",
+  ARTICLE_28_OPERATIONAL_DIRECTIVE,
+  "",
+  "---",
+  "",
   PROMPT_INJECTION_FOOTER,
+
 ].join("\n");
 
 /**
