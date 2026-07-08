@@ -23,7 +23,9 @@ import {
   hasPriorInteraction,
   installInteractionTracker,
   markInteracted,
+  getPrimedAudioContext,
 } from "@/lib/user-interaction";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
 interface Props {
   onDone: () => void;
