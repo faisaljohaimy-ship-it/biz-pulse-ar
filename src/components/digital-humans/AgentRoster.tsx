@@ -127,10 +127,17 @@ export function AgentRoster({ ar, signals }: Props) {
               : `${SPECIALISTS.length} specialist digital humans — live state`}
           </div>
         </div>
-        <span className="hidden sm:inline-flex items-center gap-2 text-[11px] text-white/50">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          {ar ? "البث مباشر" : "Live"}
-        </span>
+        <EvidenceBadge
+          evidence={
+            signals.length > 0
+              ? probeEvidence("digital_humans.roster_signals", signals.length)
+              : null
+          }
+          label={ar ? "البث مباشر" : "Live"}
+          tone="emerald"
+          className="hidden sm:inline-flex"
+        />
+
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
         {SPECIALISTS.map((spec) => (
