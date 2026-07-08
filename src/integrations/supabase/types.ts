@@ -6772,6 +6772,7 @@ export type Database = {
         }[]
       }
       runtime_cleanup_stale_executions: { Args: never; Returns: Json }
+      runtime_retention_sweep: { Args: never; Returns: Json }
       sec_kb_search: {
         Args: { _category_code?: string; _limit?: number; _query: string }
         Returns: {
