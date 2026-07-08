@@ -4,8 +4,11 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { TrendingUp, DollarSign } from "lucide-react";
 import { businessOutcomes } from "@/lib/enterprise-domains";
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/outcomes")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: OutcomesPage,
 });
 

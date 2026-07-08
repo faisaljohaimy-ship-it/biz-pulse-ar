@@ -4,8 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { getProjects, getCircles } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { Rocket } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/projects")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Projects,
 });
 

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Shield,
   Users,
   Key,
@@ -26,6 +27,8 @@ import {
 } from "@/lib/security-center.functions";
 
 export const Route = createFileRoute("/_authenticated/security-center")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: SecurityCenterPage,
 });
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Wrench,
   Play,
   Loader2,
@@ -35,6 +36,8 @@ import { ToolRunner } from "@/components/runtime/ToolRunner";
 import type { JsonSchema } from "@/components/runtime/JsonSchemaForm";
 
 export const Route = createFileRoute("/_authenticated/tools")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ToolsRuntime,
 });
 

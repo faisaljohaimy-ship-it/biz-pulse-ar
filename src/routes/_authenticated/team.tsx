@@ -5,8 +5,11 @@ import { useAuth } from "@/lib/auth-context";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/team")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: TeamPage,
 });
 

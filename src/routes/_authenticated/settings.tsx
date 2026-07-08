@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Loader2,
   LogOut,
   Save,
@@ -28,6 +29,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { seedAriaCorpus } from "@/lib/aria/seed-corpus.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: SettingsPage,
 });
 

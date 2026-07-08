@@ -15,6 +15,7 @@ import { EventTimeline } from "@/components/events/EventTimeline";
 import { useRuntime } from "@/lib/runtime/RuntimeContext";
 import { getExecKpis } from "@/lib/sec.functions";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   Bot,
   Workflow,
@@ -33,6 +34,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/investor")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: InvestorCenter,
 });
 

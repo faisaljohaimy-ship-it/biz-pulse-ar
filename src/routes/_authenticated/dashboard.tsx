@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   AlertTriangle,
   ArrowUpRight,
@@ -34,6 +35,8 @@ import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   head: () => ({
     meta: [
       { title: "AI Command Center — Nexus AI OS" },

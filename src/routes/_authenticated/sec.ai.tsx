@@ -5,8 +5,11 @@ import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { Sparkles, ArrowRight } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/ai")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AIRec,
 });
 

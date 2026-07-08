@@ -10,8 +10,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/events")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: EventsRuntime,
 });
 

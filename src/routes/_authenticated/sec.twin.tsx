@@ -5,6 +5,7 @@ import { useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   ChevronRight,
   Network,
   Building,
@@ -21,6 +22,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/sec/twin")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: TwinPage,
 });
 

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   ArrowLeft,
   CheckCircle2,
   Loader2,
@@ -35,6 +36,8 @@ import {
 } from "@/lib/integration-microsoft.functions";
 
 export const Route = createFileRoute("/_authenticated/settings/microsoft")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: MicrosoftSettingsPage,
 });
 

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getAccessOverview, setGateStatus } from "@/lib/access.functions";
 import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Select,
   SelectContent,
   SelectItem,
@@ -15,6 +16,8 @@ import { ShieldAlert, ShieldCheck, Users, HardHat, Car, DoorOpen } from "lucide-
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/access")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AccessControlPage,
 });
 

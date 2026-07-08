@@ -7,8 +7,11 @@ import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/voice")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: VoicePage,
 });
 

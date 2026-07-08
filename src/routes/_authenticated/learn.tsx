@@ -1,6 +1,9 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/learn")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   head: () => ({
     meta: [
       { title: "Executive Knowledge Bridge — NEXIOS AI OS" },

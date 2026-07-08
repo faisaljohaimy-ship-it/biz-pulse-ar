@@ -1,4 +1,5 @@
 /**
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
  * Voice Setup Wizard — surfaces /api/voice-diagnostics in a clean, actionable
  * UI so executives know exactly what to do when live voice isn't fully wired.
  */
@@ -25,6 +26,8 @@ type Diagnostics = {
 };
 
 export const Route = createFileRoute("/_authenticated/voice-setup")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: VoiceSetupPage,
 });
 

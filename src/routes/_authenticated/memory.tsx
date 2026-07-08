@@ -6,8 +6,11 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { supabase } from "@/integrations/supabase/client";
 import { useFabricSnapshot } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/memory")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: MemoryPage,
 });
 

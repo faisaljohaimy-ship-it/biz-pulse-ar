@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   UploadCloud,
   FileText,
   Loader2,
@@ -28,6 +29,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/knowledge-upload")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KnowledgeUploadCenter,
   head: () => ({
     meta: [

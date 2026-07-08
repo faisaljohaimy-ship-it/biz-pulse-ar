@@ -4,8 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { listIntegrations } from "@/lib/integrations/stubs.functions";
 import { SecPageHeader } from "@/components/sec/sec-shell";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/integrations")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Integrations,
 });
 

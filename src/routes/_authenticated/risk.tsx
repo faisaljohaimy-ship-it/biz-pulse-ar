@@ -5,8 +5,11 @@ import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
 import { PredictionsPanel } from "@/components/predictions-panel";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/risk")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: RiskPage,
 });
 

@@ -17,6 +17,7 @@ import { ExecutionTimeline } from "@/components/runtime/ExecutionTimeline";
 import { EmptyState } from "@/components/state/EmptyState";
 import { useLiveRows, fmtRel } from "@/lib/runtime/useLiveRows";
 import { useI18n } from "@/lib/i18n";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 const SearchSchema = z.object({
   subsystem: z.string().optional(),
@@ -24,6 +25,8 @@ const SearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/diagnostics")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   validateSearch: (s) => SearchSchema.parse(s),
   component: Diagnostics,
 });

@@ -8,8 +8,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/files")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: FilesPage,
 });
 

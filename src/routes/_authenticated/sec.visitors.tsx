@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   getAccessOverview,
   createVisitor,
   checkOutVisitor,
@@ -32,6 +33,8 @@ import { Plus, LogOut, LogIn, QrCode } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/visitors")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: VisitorsPage,
 });
 

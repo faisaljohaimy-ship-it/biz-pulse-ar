@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Store,
   Sparkles,
   Image,
@@ -20,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/marketplace")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: MarketplacePage,
 });
 

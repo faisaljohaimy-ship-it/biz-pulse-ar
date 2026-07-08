@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Workflow as WorkflowIcon,
   Play,
   Pause,
@@ -24,6 +25,8 @@ import { triggerWorkflowFn, cancelWorkflowRunFn } from "@/lib/exec.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/workflows")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: WorkflowsRuntime,
 });
 

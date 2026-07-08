@@ -13,8 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { useI18n } from "@/lib/i18n";
 import { EmptyState } from "@/components/state/EmptyState";
 import { getProductionReadiness, type ReadinessDimension } from "@/lib/runtime/readiness.functions";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/readiness")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ReadinessReportPage,
 });
 

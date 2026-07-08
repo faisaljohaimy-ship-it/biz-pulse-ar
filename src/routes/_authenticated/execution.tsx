@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   CheckCircle2,
   AlertTriangle,
@@ -23,6 +24,8 @@ import { rollbackToolExecution } from "@/lib/exec.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/execution")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ExecutionRuntime,
 });
 

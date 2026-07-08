@@ -5,8 +5,11 @@ import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
 import { Crown, TrendingUp, TrendingDown, AlertTriangle, Sparkles, ArrowRight } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/cockpit")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: CockpitPage,
 });
 

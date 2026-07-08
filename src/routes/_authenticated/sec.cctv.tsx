@@ -4,8 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/cctv")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: CCTV,
 });
 

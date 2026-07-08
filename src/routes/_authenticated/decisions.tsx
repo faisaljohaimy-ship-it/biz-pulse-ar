@@ -4,8 +4,11 @@ import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-f
 import { Gavel, CheckCircle2, Clock, AlertOctagon } from "lucide-react";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/decisions")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: DecisionsPage,
 });
 

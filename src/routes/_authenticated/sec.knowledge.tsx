@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   BookOpen,
   Search,
   Sparkles,
@@ -57,6 +58,8 @@ import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/sec/knowledge")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KbPage,
 });
 

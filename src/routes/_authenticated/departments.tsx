@@ -2,8 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Building2, Users, DollarSign, Cog, Cpu, ShoppingCart, HeadphonesIcon } from "lucide-react";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/departments")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: DepartmentsPage,
 });
 

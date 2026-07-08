@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/shifts")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Shifts,
 });
 

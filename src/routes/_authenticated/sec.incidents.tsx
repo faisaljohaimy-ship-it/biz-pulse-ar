@@ -6,8 +6,11 @@ import { listIncidents, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { NewIncidentDialog, IncidentDrawer } from "@/components/sec/oms-dialogs";
 import { LiveStatus } from "@/components/state/LiveStatus";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/incidents")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Incidents,
 });
 

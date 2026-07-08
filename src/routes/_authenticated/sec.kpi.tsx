@@ -4,8 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/kpi")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KPI,
 });
 

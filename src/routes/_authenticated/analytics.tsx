@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   CartesianGrid,
   Line,
   LineChart,
@@ -15,6 +16,8 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Analytics,
 });
 

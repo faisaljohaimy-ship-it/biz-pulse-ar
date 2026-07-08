@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Brain,
   Sparkles,
   Send,
@@ -36,6 +37,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/aria")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   validateSearch: z.object({ prompt: z.string().optional() }),
   component: AriaConsole,
 });

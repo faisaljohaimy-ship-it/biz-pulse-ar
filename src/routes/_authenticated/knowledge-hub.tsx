@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Search,
   BookOpen,
   FileText,
@@ -24,6 +25,8 @@ import {
 } from "@/lib/enterprise-search.functions";
 
 export const Route = createFileRoute("/_authenticated/knowledge-hub")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: KnowledgeHubPage,
 });
 

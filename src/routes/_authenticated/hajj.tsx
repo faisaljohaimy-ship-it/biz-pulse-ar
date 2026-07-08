@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   MapPin,
   AlertTriangle,
   CheckCircle2,
@@ -38,6 +39,8 @@ import {
 } from "@/lib/hajj.functions";
 
 export const Route = createFileRoute("/_authenticated/hajj")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: HajjCommandCenter,
 });
 

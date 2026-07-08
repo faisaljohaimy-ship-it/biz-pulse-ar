@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   getAccessOverview,
   createContractor,
   updateContractorStatus,
@@ -31,6 +32,8 @@ import { Plus, Ban, Pause, RotateCcw } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/contractors")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ContractorsPage,
 });
 

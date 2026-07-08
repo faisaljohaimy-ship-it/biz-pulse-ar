@@ -4,8 +4,11 @@ import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useFabricSnapshot } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/forgotten")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ForgottenPage,
 });
 

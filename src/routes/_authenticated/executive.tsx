@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Crown,
   Sparkles,
   AlertTriangle,
@@ -31,6 +32,8 @@ import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, usePredictions } from "@/lib/use-fabric";
 
 export const Route = createFileRoute("/_authenticated/executive")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ExecutiveCommandCenter,
 });
 

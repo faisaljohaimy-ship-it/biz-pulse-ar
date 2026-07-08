@@ -1,4 +1,5 @@
 /**
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
  * ElevenLabs Integration Status — verifies connector presence, API-key auth,
  * required capabilities (Conversational AI, Realtime Scribe), and the
  * currently configured Agent ID. Gates the "Enable Live Voice" action until
@@ -40,6 +41,8 @@ type Diagnostics = {
 };
 
 export const Route = createFileRoute("/_authenticated/elevenlabs-status")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: ElevenLabsStatusPage,
 });
 

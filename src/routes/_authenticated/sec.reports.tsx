@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileText, FileSpreadsheet, Download, RefreshCw } from "lucide-react";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   generateDailyOperationsReport,
   listReports,
   getReportDownloadUrl,
 } from "@/lib/oms-reports.functions";
 
 export const Route = createFileRoute("/_authenticated/sec/reports")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Reports,
 });
 

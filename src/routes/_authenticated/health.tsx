@@ -5,6 +5,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Activity,
   CheckCircle2,
   AlertTriangle,
@@ -28,6 +29,8 @@ import {
 import { EmptyState } from "@/components/state/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/health")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: HealthDashboard,
 });
 

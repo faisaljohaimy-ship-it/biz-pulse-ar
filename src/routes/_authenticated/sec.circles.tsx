@@ -3,8 +3,11 @@ import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { Building, MapPin } from "lucide-react";
 import { useRegion } from "@/lib/region-context";
 import { regionSim } from "@/lib/sec/region-sim-data";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 
 export const Route = createFileRoute("/_authenticated/sec/circles")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: Circles,
 });
 

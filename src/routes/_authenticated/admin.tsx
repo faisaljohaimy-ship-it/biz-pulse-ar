@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, Section, ModuleCard } from "@/components/page-header";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   runSimulationSeedFn,
   validateSimulationFn,
   getSimulationStatusFn,
@@ -15,6 +16,8 @@ import { runExecutiveScenarioFn } from "@/lib/simulation/exec-scenario.functions
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AdminPage,
 });
 

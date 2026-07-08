@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   Plug,
   Activity,
   RefreshCw,
@@ -33,6 +34,8 @@ import {
 } from "@/lib/integrations-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: IntegrationsHubPage,
 });
 

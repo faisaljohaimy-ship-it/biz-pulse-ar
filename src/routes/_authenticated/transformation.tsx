@@ -3,6 +3,7 @@ import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Rocket, Brain, GitBranch } from "lucide-react";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   transformationPrograms,
   transformationMilestones,
   useEnterpriseFabricAdapter,
@@ -10,6 +11,8 @@ import {
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
 export const Route = createFileRoute("/_authenticated/transformation")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: TransformationPage,
 });
 

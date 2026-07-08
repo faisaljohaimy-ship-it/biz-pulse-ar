@@ -5,6 +5,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
   createThread,
   deleteThread,
   getThreadMessages,
@@ -42,6 +43,8 @@ import {
 } from "@/components/aria/CitationsPanel";
 
 export const Route = createFileRoute("/_authenticated/assistant/$threadId")({
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   component: AssistantThread,
 });
 
