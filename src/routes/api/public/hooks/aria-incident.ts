@@ -50,13 +50,14 @@ export const Route = createFileRoute("/api/public/hooks/aria-incident")({
           ? String(body.device_class)
           : "desktop";
 
-        // Import server-only client lazily to keep this route lean.
+        // Anonymous client crashes go to the isolated public log,
+        // NOT the user-owned aria_incidents table (Constitution Art. 19).
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin.from("aria_incidents").insert({
-          user_id: null,
+        await supabaseAdmin.from("aria_public_incidents").insert({
           kind,
-          detail: `${detail} · ${device} · ${url ?? ""}`.slice(0, 500),
-          model: null,
+          detail: detail.slice(0, 500),
+          device_class: device,
+          url,
         });
 
         return new Response("ok", { status: 202 });

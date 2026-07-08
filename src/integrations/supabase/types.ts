@@ -464,7 +464,7 @@ export type Database = {
           model: string | null
           occurred_at: string
           resolved: boolean
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           detail: string
@@ -474,7 +474,7 @@ export type Database = {
           model?: string | null
           occurred_at?: string
           resolved?: boolean
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           detail?: string
@@ -484,7 +484,7 @@ export type Database = {
           model?: string | null
           occurred_at?: string
           resolved?: boolean
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -668,6 +668,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      aria_public_incidents: {
+        Row: {
+          created_at: string
+          detail: string | null
+          device_class: string | null
+          id: string
+          kind: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          device_class?: string | null
+          id?: string
+          kind: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          device_class?: string | null
+          id?: string
+          kind?: string
+          url?: string | null
+        }
+        Relationships: []
       }
       aria_reports: {
         Row: {
