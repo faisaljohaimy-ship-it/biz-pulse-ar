@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
+import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, severityClass } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { AlertTriangle, Radar, UserCheck, Camera, FileBadge } from "lucide-react";
@@ -22,10 +23,12 @@ type Ev = {
 };
 
 function Timeline() {
+  const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
   const { data, dataUpdatedAt, isFetching } = useQuery({
-    queryKey: ["sec-overview"],
+    queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
+    enabled: !!user && !authLoading,
   });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 

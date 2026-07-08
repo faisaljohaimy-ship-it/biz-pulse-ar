@@ -24,6 +24,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
+import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
@@ -877,11 +878,13 @@ function MissionControl() {
   const { locale, setLocale } = useI18n();
   const ar = locale === "ar";
   const [welcomeDone, setWelcomeDone] = useState(false);
+  const { user, loading: authLoading } = useAuth();
 
   const fetchOverview = useServerFn(getSecOverview);
   const q = useQuery({
-    queryKey: ["mission-control-overview"],
+    queryKey: ["mission-control-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
+    enabled: !!user && !authLoading,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
