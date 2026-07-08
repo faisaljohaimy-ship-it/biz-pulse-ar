@@ -26,6 +26,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
+import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
+import { queryEvidence } from "@/lib/evidence/gate";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
 import { HoloCommandStage } from "@/components/cinematic/HoloCommandStage";
 import { NexusRevealHero } from "@/components/cinematic/NexusRevealHero";
