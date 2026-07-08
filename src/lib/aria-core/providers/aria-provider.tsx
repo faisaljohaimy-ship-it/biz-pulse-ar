@@ -19,6 +19,7 @@ import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
+import { trackMount } from "@/lib/aria/singletons";
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
@@ -61,6 +62,9 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     });
     return unbind;
   }, [chat]);
+
+  // ── Singleton mount guard: warn loudly if a 2nd AriaProvider mounts ────
+  useEffect(() => trackMount("PROVIDER", "AriaProvider@__root"), []);
 
   // ── Avatar Runtime lifecycle (mount once; dispose on unmount) ─────────
   useEffect(() => {

@@ -6,6 +6,9 @@
  * empty array; `remember` is a no-op.
  */
 import type { AriaMemoryRecall } from "../types/aria";
+import { assertOne } from "@/lib/aria/singletons";
+
+assertOne("MEMORY", "memoryManager@aria-core/core/memory-manager");
 
 export interface MemoryManager {
   recall(query: string): Promise<readonly AriaMemoryRecall[]>;

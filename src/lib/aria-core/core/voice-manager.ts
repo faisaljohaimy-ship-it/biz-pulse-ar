@@ -7,6 +7,9 @@
  */
 import type { AriaVoiceCapabilities, AriaVoiceState } from "../types/aria";
 import { useAriaStore } from "../state/aria-store";
+import { assertOne } from "@/lib/aria/singletons";
+
+assertOne("VOICE", "voiceManager@aria-core/core/voice-manager");
 
 export interface VoiceManager {
   readonly capabilities: AriaVoiceCapabilities;

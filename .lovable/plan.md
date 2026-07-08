@@ -1,76 +1,57 @@
-# .lovable/plan.md — ARIA continuous gap ledger
+# خطة تنفيذ التوجيه النهائي — NEXIOS ARIA
 
-_Maintained per **Constitution Article 27** (Continuous Autonomous Gap Closure)._
-_Last update: 2026-07-08 — session batches 1–3._
+الهدف: إغلاق النواقص فقط، بدون إعادة بناء، بدون تكرار، بدون كسر مسارات أو معماريّة. تنفيذ متسلسل عبر عدة جولات مع تحقق بعد كل مرحلة.
 
-## Ledger
+## الحالة الحالية (بعد فحص سريع)
 
-### ✅ Batch 1 — closed
-- (26) `aria_actions_log` table + RLS org-scope + RESTRICTIVE tenant isolation
-- (26) `logAriaAction()` + `checkRateLimit()` helpers (`src/lib/aria/audit-log.server.ts`)
-- (26) `/api/public/hooks/aria-incident` — rate-limited (60/60s/IP) + audit-logged
-- (26) Constitution Article 26 added; whitelist extended (`aria_voice_latency_regression`, `aria_corpus_stale`)
+- ✅ `AriaAudioBus` (`src/lib/aria/audio-bus.ts`) يحظر `speechSynthesis.speak` كليًا، يمرّر واحدًا في كل لحظة، يوقف على `pagehide`/إخفاء التبويب، وفيه watchdog يقتل أي صوت متصفح دخيل أثناء `chat-tts`.
+- ✅ `AriaProvider` مُركَّب في `__root.tsx` مرة واحدة.
+- ✅ Ledger توجيه أريا موجود على `/aria/directive` مع تحقق حي للمراحل 1–5.
+- ⚠️ لا يوجد فحص وقت-تشغيل واضح "singleton hard-assert" لـ Brain / Provider / Voice / Avatar / Memory (المطلوب في P0).
+- ⚠️ `ExecutionEnvelope` موجود كوحدة (`execution-envelope.ts`) لكن يحتاج ربط عرض موحّد (Summary/Risk/Priority/Confidence/Action/Approval/NextStep).
+- ⚠️ Command Center موجود (`command-center.tsx`) لكن يحتاج جرد للبطاقات المطلوبة وتأكيد ربطها بمصادر حية.
+- ⚠️ سيناريو Live Demo التنفيذي يحتاج مسارًا واحدًا واضحًا يخرج المغلَّف الكامل.
 
-### ✅ Batch 2 — closed
-- (27) Constitution **Article 27** — continuous autonomous gap closure
-- (23) Private storage bucket `aria-attachments` + owner-scoped RLS on `storage.objects`
-- (23) `uploadAriaAttachment` server fn (`src/lib/aria/attachments.functions.ts`) — 25 MB cap, MIME allowlist, signed URL 1h
-- (25) `aria_documents.source_kind` + `is_official` + `revision_hash` (unique per official URL)
-- (25) `public.aria_scan_corpus_stale()` + daily cron `aria-corpus-stale-scan` (03:17 UTC) → opens `aria_corpus_stale` incident when official corpus > 30d
-- (26) `public.aria_actions_log_retention()` + daily cron `aria-actions-log-retention` (04:42 UTC) → 90d retention
-- (24) `createSentenceFlusher()` + `reportVoiceLatencyRegression()` (`src/lib/aria/stream-sentence-flusher.ts`) — first-sentence budget 250 ms + auto-beacon on breach
+## الجولات (تُنفَّذ متسلسلة)
 
-### 🔜 Open — high
-- (24) Wire `createSentenceFlusher` into `speakAria` / `AriaCopilot` streaming boundary (replace full-reply-then-speak with sentence-by-sentence)
-- (23) Wire `uploadAriaAttachment` into `AriaCopilot` "+" button (currently serialises to metadata text only) + attach `signed_url` to the outgoing chat message parts
-- (25) RAG binding in chat transport: retrieve from `aria_documents WHERE is_official = true AND source_kind = 'ksa_industrial_security_regulation'` BEFORE `sec_*` for `/sec/*` scoped requests, and attach citations to the answer envelope
-- (25) Corpus ingestion job: HCIS / MoI Civil Defence / NCA / SDAIA — idempotent by `(source, revision_hash)`
+### الجولة 1 — P0 قفل الاستقرار (هذه الجولة القادمة)
+1. `src/lib/aria/singletons.ts`: سجل runtime لخمسة مفردات (BRAIN, PROVIDER, VOICE, AVATAR, MEMORY) مع `assertOne(key)` يرمي في dev ويسجّل تحذيرًا في prod.
+2. تسجيل المفردات من: `AriaProvider`، `voice-manager`، `avatar-runtime`، `aria-brain`، `memory-manager`.
+3. تعزيز `AriaAudioBus`: عند دخول جلسة chat جديدة استدعاء `stopAll()` قبل `acquire('chat-tts')` (مضاعف حماية للـ "prevent double playback").
+4. تحقق: typecheck + جولة Playwright قصيرة على الصفحة الرئيسية للتأكد أن لا تحذيرات مفرد مكررة.
 
-### 🔜 Open — medium
-- (11/26) E2E spec `tests/e2e/12-article-26-rate-limit.spec.ts`: 61st call within 60s → 429 + audit row visible to org owner, hidden from other tenants
-- (20) EvidenceBadge legacy sweep: `rg -n '"LIVE"|"SYNC"|بث مباشر|UPTIME|TLS 1\.3' src/routes src/components` and convert every remaining hit
-- (multi-tenancy) Retrofit `org_id` + RESTRICTIVE RLS on legacy `sec_*` tables that predate the multi-tenancy migration
-- (22) Data-driven narration adapters for dynamic routes (`/sec/incidents/$id`, `/oms/work-orders/$id`) via `setAriaPageContext`
+### الجولة 2 — P0 مزامنة الأفاتار
+1. تدقيق `avatar-state-manager` + `avatar-voice-sync` وتأكيد الحالات: `idle/listening/thinking/speaking/explaining/warning/success`.
+2. ربط `AriaAudioBus.subscribe` → `avatar-state-manager.transition` (bus `playing` → `speaking`, `stopped/end` → `idle`).
+3. ضبط blink/breathing/gestures القائمة (`idle-engine`, `body-engine`, `gesture-engine`) للعمل تلقائيًا في `idle`/`speaking`.
 
-### 🔜 Open — low
-- (SEO) Fill missing `og:image` on leaf routes; derive from loader data where a cover exists
-- (a11y) Storybook + visual regression for HUD components
-- (aria-supreme-prompt) Integrity test bump to 27 articles
+### الجولة 3 — P1 المغلَّف التنفيذي
+1. مكوّن `src/components/aria/ExecutiveEnvelopeCard.tsx`: يعرض Summary/Risk/Priority/Confidence/RecommendedAction/ApprovalRequired/NextStep من `ExecutiveBrainAnswer`.
+2. توصيل `AriaCopilot` لعرض المغلَّف بعد كل رد Brain (بديل عن JSON الخام).
+3. زر "طلب موافقة" يُفعِّل `approval-gate` عندما `requires_human_approval=true`.
 
-## Notes
+### الجولة 4 — P2 Live Demo
+1. مسار `/aria/demo` (تحت `_authenticated`) يشغّل سيناريو "ما حالة العمليات الآن؟" ويعرض بالتسلسل: Summary → TopRisks → Recommended Decision → Execution Steps → Final Report.
+2. يستخدم `getExecutiveBrainAnswer` الحالي + قناة صوت واحدة عبر البص.
 
-Batches are executed autonomously per **Article 27 (c)**. The operator is asked only for ambiguity, destructive actions, or external secrets. Every closed gap in a batch is published in the assistant reply's ledger.
+### الجولة 5 — P3 Command Center Cards
+1. جرد بطاقات `command-center.tsx` وإضافة/تفعيل المفقود من: SystemHealth, ARIAStatus, ActiveOperations, Risks, KPIs, Alerts, ExecutionQueue, RecentDecisions.
+2. كل بطاقة تربط `EvidenceBadge` + `SecLiveBadge` وفق FR-19.
 
-## Batch 3 — Attachments wired (2026-07-08)
-- AriaCopilot now uploads files via `uploadAriaAttachment` server fn on submit
-- Signed URLs appended to outgoing message body; upload state disables send
-- Article 23 enforcement now end-to-end (UI → storage → RLS → audit log)
+### الجولة 6 — UI Rules + Validation النهائي
+1. مسح شامل لأي: مصطلحات مطوّر ظاهرة، JSON خام في UI، أسماء موفّرين (OpenAI/ElevenLabs...)، شرطات `—` بديلها "لا توجد بيانات مباشرة حاليًا".
+2. RTL: تدقيق `dir="rtl"` على البطاقات الجديدة.
+3. تحقق نهائي: `tsgo --noEmit` = 0، بناء نظيف، Playwright لثلاث صفحات (`/`, `/aria/directive`, `/command-center`)، تحديث `/aria/directive` ledger.
 
-## Batch 4 — RAG regulation grounding (2026-07-08)
-- Created `src/lib/aria/rag.functions.ts` with `retrieveRegulationContext`
-- Uses OpenAI text-embedding-3-small @ 768 dims (matches vector column)
-- Enriches hits from `aria_documents` with is_official/source_kind
-- `official_only` filter for KSA industrial-security regulation lookups
-- Audit-logged under Article 25; ready to be called from AriaCopilot/SEC panels
+## التفاصيل التقنية
 
-## Batch 6 — Voice latency regression beacon (2026-07-08)
-- AriaCopilot now fires `reportVoiceLatencyRegression` when first-token → sentence1 > 250ms (Article 24 b)
-- Feeds `/api/public/hooks/aria-incident` with device_class + latency detail
-- ARIA opens fix session on next turn per Article 27 (e)
+- كل server fn جديد يعيش في `*.functions.ts` منفصل، والمساعدات في `*.server.ts` (قاعدة splitting).
+- لا تعديل على `client.ts`/`auth-attacher.ts`/`types.ts`/`.env`.
+- لا `speechSynthesis` جديد نهائيًا — فقط عبر البص.
+- الألوان من tokens في `src/styles.css`، لا hardcode.
+- كل شارة/مقياس جديد عبر `EvidenceBadge` وفق FR-19.
 
-## Batch 7 — ARIA maintenance cron (2026-07-08)
-- `aria-actions-log-retention` scheduled daily 04:42 UTC → 90-day audit trim
-- `aria-corpus-stale-scan` scheduled daily 03:17 UTC → auto-raises `aria_corpus_stale` public incident
-- Both jobs idempotent (unschedule-then-schedule)
+## المخرجات لكل جولة
+`FilesModified · FixesApplied · ARIAStatus · VoiceStatus · AvatarStatus · ExecutiveDemoStatus · CommandCenterStatus · BuildResult · TSResult · ReadinessScore`
 
-## Batch 5a — Evidence Gate sweep round 1 (2026-07-08)
-- `queryEvidence(source, dataUpdatedAt, value, href?)` added to `src/lib/evidence/gate.ts`
-- `_authenticated/dashboard.tsx` header LIVE badge now `<EvidenceBadge>` bound to `getExecKpis` `dataUpdatedAt`
-- `_authenticated/live-dashboard.tsx` header LIVE badge now `<EvidenceBadge>` bound to `max(kpis, timeseries).dataUpdatedAt`
-- `AgentRoster.tsx` "Live / البث مباشر" now `<EvidenceBadge>` gated by `signals.length` via `probeEvidence`
-
-## Batch 9 — DB hardening (2026-07-08)
-- REVOKE EXECUTE from PUBLIC/anon/authenticated on 13 privileged `SECURITY DEFINER` maintenance functions (ARIA retention/corpus scan, Microsoft sync dispatch/secret, runtime cleanup, KPI schedule, email queue dispatch/wake/enqueue/read/delete/dlq, unsubscribe cleanup); only `service_role` + cron keep EXECUTE
-- Remaining linter WARNs are pre-existing legitimate signed-in helpers (`has_role`, `is_org_member`, `current_org_id`) that MUST stay callable by `authenticated`
-
-
+بعد موافقتك ابدأ فورًا بالجولة 1.

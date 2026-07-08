@@ -21,6 +21,9 @@ import { liveEmotion } from "./live-emotion";
 import { realtimeAnimation } from "./realtime-animation";
 import { thinkingAnimation } from "./thinking-animation";
 import { voiceBrain } from "./voice-brain";
+import { assertOne } from "@/lib/aria/singletons";
+
+assertOne("AVATAR", "avatarRuntime@aria-core/core/avatar-runtime");
 
 class AvatarRuntime {
   private started = false;
