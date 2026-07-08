@@ -12,7 +12,9 @@ export function MissionControlStrip() {
   const fetchKpis = useServerFn(getPublicKpis);
 
   const q = useQuery<PublicKpis | null>({
-    queryKey: ["public-kpis", "mission-strip"],
+    // Shared queryKey with SecCommandLiveCard → React Query dedupes the fetch
+    // so only one getPublicKpis call fires per interval (Article 28 §5).
+    queryKey: ["sec-command-pulse"],
     queryFn: async () => {
       try {
         return await fetchKpis();
@@ -21,9 +23,9 @@ export function MissionControlStrip() {
       }
     },
     refetchInterval: 45_000,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     retry: 1,
-    staleTime: 10_000,
+    staleTime: 30_000,
   });
 
   const k = q.data;
