@@ -368,7 +368,7 @@ function IntroLanding() {
                       {inner}
                     </a>
                   ) : (
-                    <Link to={p.to} aria-label={title} className={cardClass}>
+                    <Link to={p.to as "/"} aria-label={title} className={cardClass}>
                       {inner}
                     </Link>
                   )}
