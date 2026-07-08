@@ -11,6 +11,9 @@
 import { verifyIdentity } from "@/lib/aria/avatar-identity/verification.server";
 import { verifyLiveVoice } from "@/lib/aria/live-voice/verification.server";
 import { verifyAcceptance } from "@/lib/aria/acceptance-experience/verification.server";
+import { verifyExecutiveSurface } from "@/lib/aria/executive/verification.server";
+import { verifyGraph } from "@/lib/aria/knowledge-graph/verification.server";
+import { verifyHero } from "@/lib/aria/hero-integration/verification.server";
 
 export type PhaseStatus = "green" | "amber" | "red" | "deferred" | "unknown";
 
