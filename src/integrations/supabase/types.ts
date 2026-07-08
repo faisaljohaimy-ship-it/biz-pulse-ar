@@ -669,6 +669,33 @@ export type Database = {
           },
         ]
       }
+      aria_public_incidents: {
+        Row: {
+          created_at: string
+          detail: string | null
+          device_class: string | null
+          id: string
+          kind: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          device_class?: string | null
+          id?: string
+          kind: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          device_class?: string | null
+          id?: string
+          kind?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       aria_reports: {
         Row: {
           confidence: number | null
