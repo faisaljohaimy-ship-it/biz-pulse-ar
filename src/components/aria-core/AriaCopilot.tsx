@@ -243,6 +243,8 @@ export function AriaCopilot() {
 
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const uploadFn = useServerFn(uploadAriaAttachment);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
