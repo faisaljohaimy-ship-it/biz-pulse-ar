@@ -232,9 +232,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     if (hasPriorInteraction()) {
       // Belt-and-suspenders: ensure the bus is unlocked even if the
       // root-level tracker somehow missed this render (SSR hydration edge).
-      void import("@/lib/aria/audio-bus").then((m) => {
-        try { m.AriaAudioBus.unlock(); } catch { /* ignore */ }
-      });
+      // Synchronous — never break the gesture chain with async import().
+      try { AriaAudioBus.unlock(); } catch { /* ignore */ }
     }
     void tryWithSound();
 
