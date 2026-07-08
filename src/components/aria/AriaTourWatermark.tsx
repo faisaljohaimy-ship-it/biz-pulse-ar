@@ -16,8 +16,10 @@ import { useIntroActive } from "@/lib/intro-store";
 
 const DISMISS_KEY = "aria-tour-watermark-dismissed";
 
-function cueForRoute(pathname: string): { cue: TourCue; endSec: number } | null {
-  // Prefer the most-specific route match by longest prefix.
+function cueForRoute(pathname: string): { cue: TourCue; endSec: number } {
+  // Prefer the most-specific route match by longest prefix. Falls back to
+  // the opening cue so the watermark always has something to play — even
+  // on public pages that aren't part of the tour schedule.
   let best: TourCue | null = null;
   let bestLen = -1;
   for (const c of TOUR_CUES) {
@@ -28,10 +30,10 @@ function cueForRoute(pathname: string): { cue: TourCue; endSec: number } | null 
       }
     }
   }
-  if (!best) return null;
-  const idx = TOUR_CUES.indexOf(best);
-  const endSec = idx + 1 < TOUR_CUES.length ? TOUR_CUES[idx + 1].tSec : best.tSec + 20;
-  return { cue: best, endSec };
+  const chosen = best ?? TOUR_CUES[0];
+  const idx = TOUR_CUES.indexOf(chosen);
+  const endSec = idx + 1 < TOUR_CUES.length ? TOUR_CUES[idx + 1].tSec : chosen.tSec + 20;
+  return { cue: chosen, endSec };
 }
 
 export function AriaTourWatermark() {
