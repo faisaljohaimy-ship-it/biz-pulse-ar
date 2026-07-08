@@ -555,7 +555,13 @@ function KpiMini({ kpis }: { kpis: PipelineResult["kpis"] }) {
   );
 }
 
-function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<void> }) {
+function PinForm({
+  disabled = false,
+  onPin,
+}: {
+  disabled?: boolean;
+  onPin: (key: string, content: string) => Promise<void>;
+}) {
   const [k, setK] = useState("");
   const [c, setC] = useState("");
   const [busy, setBusy] = useState(false);
@@ -564,7 +570,7 @@ function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<v
       className="mt-2 space-y-1"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!k.trim() || !c.trim()) return;
+        if (disabled || !k.trim() || !c.trim()) return;
         setBusy(true);
         await onPin(k.trim(), c.trim());
         setK("");
@@ -577,19 +583,21 @@ function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<v
         onChange={(e) => setK(e.target.value)}
         placeholder="مفتاح (مثل: تفضيلات_التقارير)"
         className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+        disabled={disabled}
       />
       <input
         value={c}
         onChange={(e) => setC(e.target.value)}
         placeholder="محتوى الذاكرة"
         className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+        disabled={disabled}
       />
       <Button
         type="submit"
         size="sm"
         variant="outline"
         className="h-6 text-[10px] px-2 w-full"
-        disabled={busy || !k.trim() || !c.trim()}
+        disabled={disabled || busy || !k.trim() || !c.trim()}
       >
         {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : "حفظ كذاكرة دائمة"}
       </Button>
@@ -602,15 +610,18 @@ function ReportRow({
   title,
   kind,
   createdAt,
+  disabled = false,
 }: {
   id: string;
   title: string;
   kind: string;
   createdAt: string;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const fetchFn = useServerFn(getAriaReport);
   const download = async () => {
+    if (disabled) return;
     setLoading(true);
     try {
       const r = await fetchFn({ data: { id } });
@@ -636,7 +647,7 @@ function ReportRow({
       </div>
       <button
         onClick={download}
-        disabled={loading}
+        disabled={disabled || loading}
         className="text-muted-foreground hover:text-primary"
         aria-label="تنزيل"
       >
