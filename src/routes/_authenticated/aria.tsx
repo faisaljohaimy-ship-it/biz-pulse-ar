@@ -50,24 +50,46 @@ function AriaConsole() {
   const { prompt: prefill } = Route.useSearch();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState(prefill ?? "");
+  const [reportError, setReportError] = useState<string | null>(null);
   useEffect(() => {
     if (prefill) setDraft(prefill);
   }, [prefill]);
   const qc = useQueryClient();
   const runFn = useServerFn(runAriaPipeline);
+  const listMemoryFn = useServerFn(listAriaMemory);
+  const listReportsFn = useServerFn(listAriaReports);
+  const listDecisionsFn = useServerFn(listAriaDecisions);
   const generateFn = useServerFn(generateAriaReport);
   const pinFn = useServerFn(pinAriaMemory);
   const forgetFn = useServerFn(forgetAriaMemory);
   const updateDecisionFn = useServerFn(updateAriaDecision);
 
-  const { user } = useAuth();
-  const authed = !!user;
-  const memoryQ = useQuery({ queryKey: ["aria-memory"], queryFn: () => listAriaMemory(), enabled: authed });
-  const reportsQ = useQuery({ queryKey: ["aria-reports"], queryFn: () => listAriaReports(), enabled: authed });
-  const decisionsQ = useQuery({ queryKey: ["aria-decisions"], queryFn: () => listAriaDecisions(), enabled: authed });
+  const { user, loading: authLoading } = useAuth();
+  const authed = !authLoading && !!user;
+  const authRequiredMessage = authLoading
+    ? "جاري التحقق من الجلسة…"
+    : "سجّل الدخول لتشغيل وظائف ARIA التنفيذية.";
+  const memoryQ = useQuery({
+    queryKey: ["aria-memory", user?.id ?? "anon"],
+    queryFn: () => listMemoryFn(),
+    enabled: authed,
+  });
+  const reportsQ = useQuery({
+    queryKey: ["aria-reports", user?.id ?? "anon"],
+    queryFn: () => listReportsFn(),
+    enabled: authed,
+  });
+  const decisionsQ = useQuery({
+    queryKey: ["aria-decisions", user?.id ?? "anon"],
+    queryFn: () => listDecisionsFn(),
+    enabled: authed,
+  });
 
   const runMut = useMutation({
-    mutationFn: (message: string) => runFn({ data: { message } }),
+    mutationFn: (message: string) => {
+      if (!authed) throw new Error(authRequiredMessage);
+      return runFn({ data: { message } });
+    },
     onSuccess: (result, message) => {
       setTurns((prev) =>
         prev.map((t) => (t.question === message && !t.result ? { ...t, result } : t)),
@@ -85,13 +107,18 @@ function AriaConsole() {
   });
 
   const generateMut = useMutation({
-    mutationFn: (kind: ReportKind) => generateFn({ data: { kind, language: "ar" } }),
+    mutationFn: (kind: ReportKind) => {
+      if (!authed) throw new Error(authRequiredMessage);
+      return generateFn({ data: { kind, language: "ar" } });
+    },
+    onMutate: () => setReportError(null),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["aria-reports"] }),
+    onError: (error) => setReportError(error instanceof Error ? error.message : String(error)),
   });
 
   const send = () => {
     const q = draft.trim();
-    if (!q || runMut.isPending) return;
+    if (!q || runMut.isPending || !authed) return;
     setTurns((p) => [...p, { id: crypto.randomUUID(), question: q, result: null }]);
     setDraft("");
     runMut.mutate(q);
@@ -136,7 +163,9 @@ function AriaConsole() {
             )}
           </div>
           <PinForm
+            disabled={!authed}
             onPin={async (key, content) => {
+              if (!authed) return;
               await pinFn({ data: { key, content, scope: "pinned", importance: 0.95 } });
               qc.invalidateQueries({ queryKey: ["aria-memory"] });
             }}
@@ -161,8 +190,8 @@ function AriaConsole() {
                 size="sm"
                 variant="outline"
                 className="h-6 text-[10px] px-2"
-                onClick={() => generateMut.mutate(k)}
-                disabled={generateMut.isPending}
+                onClick={() => (authed ? generateMut.mutate(k) : setReportError(authRequiredMessage))}
+                disabled={authLoading || !authed || generateMut.isPending}
               >
                 {generateMut.isPending && generateMut.variables === k ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -172,6 +201,11 @@ function AriaConsole() {
               </Button>
             ))}
           </div>
+          {reportError && (
+            <div className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
+              {reportError}
+            </div>
+          )}
           <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
             {reportsQ.data?.length ? (
               reportsQ.data.map((r) => (
@@ -181,6 +215,7 @@ function AriaConsole() {
                   title={r.title}
                   kind={r.kind}
                   createdAt={r.created_at}
+                  disabled={!authed}
                 />
               ))
             ) : (
@@ -229,9 +264,13 @@ function AriaConsole() {
             placeholder="اسأل ARIA: ما حالة العمليات الآن؟ ما أبرز المخاطر؟ أنشئ تقريراً تنفيذياً…"
             rows={2}
             className="flex-1 resize-none rounded-md border border-input bg-card px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            disabled={runMut.isPending}
+            disabled={authLoading || !authed || runMut.isPending}
           />
-          <Button onClick={send} disabled={!draft.trim() || runMut.isPending} className="self-end">
+          <Button
+            onClick={send}
+            disabled={!draft.trim() || authLoading || !authed || runMut.isPending}
+            className="self-end"
+          >
             {runMut.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -304,9 +343,11 @@ function AriaConsole() {
                         variant="outline"
                         className="h-6 text-[10px] px-2"
                         onClick={async () => {
+                          if (!authed) return;
                           await updateDecisionFn({ data: { id: d.id, status: "approved" } });
                           qc.invalidateQueries({ queryKey: ["aria-decisions"] });
                         }}
+                        disabled={!authed}
                       >
                         موافقة
                       </Button>
@@ -315,9 +356,11 @@ function AriaConsole() {
                         variant="ghost"
                         className="h-6 text-[10px] px-2"
                         onClick={async () => {
+                          if (!authed) return;
                           await updateDecisionFn({ data: { id: d.id, status: "dismissed" } });
                           qc.invalidateQueries({ queryKey: ["aria-decisions"] });
                         }}
+                        disabled={!authed}
                       >
                         تجاهل
                       </Button>
@@ -512,7 +555,13 @@ function KpiMini({ kpis }: { kpis: PipelineResult["kpis"] }) {
   );
 }
 
-function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<void> }) {
+function PinForm({
+  disabled = false,
+  onPin,
+}: {
+  disabled?: boolean;
+  onPin: (key: string, content: string) => Promise<void>;
+}) {
   const [k, setK] = useState("");
   const [c, setC] = useState("");
   const [busy, setBusy] = useState(false);
@@ -521,7 +570,7 @@ function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<v
       className="mt-2 space-y-1"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!k.trim() || !c.trim()) return;
+        if (disabled || !k.trim() || !c.trim()) return;
         setBusy(true);
         await onPin(k.trim(), c.trim());
         setK("");
@@ -534,19 +583,21 @@ function PinForm({ onPin }: { onPin: (key: string, content: string) => Promise<v
         onChange={(e) => setK(e.target.value)}
         placeholder="مفتاح (مثل: تفضيلات_التقارير)"
         className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+        disabled={disabled}
       />
       <input
         value={c}
         onChange={(e) => setC(e.target.value)}
         placeholder="محتوى الذاكرة"
         className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
+        disabled={disabled}
       />
       <Button
         type="submit"
         size="sm"
         variant="outline"
         className="h-6 text-[10px] px-2 w-full"
-        disabled={busy || !k.trim() || !c.trim()}
+        disabled={disabled || busy || !k.trim() || !c.trim()}
       >
         {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : "حفظ كذاكرة دائمة"}
       </Button>
@@ -559,15 +610,18 @@ function ReportRow({
   title,
   kind,
   createdAt,
+  disabled = false,
 }: {
   id: string;
   title: string;
   kind: string;
   createdAt: string;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const fetchFn = useServerFn(getAriaReport);
   const download = async () => {
+    if (disabled) return;
     setLoading(true);
     try {
       const r = await fetchFn({ data: { id } });
@@ -593,7 +647,7 @@ function ReportRow({
       </div>
       <button
         onClick={download}
-        disabled={loading}
+        disabled={disabled || loading}
         className="text-muted-foreground hover:text-primary"
         aria-label="تنزيل"
       >
