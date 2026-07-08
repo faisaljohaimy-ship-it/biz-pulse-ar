@@ -1,11 +1,13 @@
 /**
- * ARIA Page Narrations — deterministic bilingual (AR default) blurbs that
- * ARIA speaks the moment the user lands on any page in the system. Keyed
- * by pathname prefix. First matching prefix wins; longest first.
+ * ARIA Page Narrations — deterministic bilingual (AR default) executive
+ * blurbs that ARIA MUST speak the moment a user lands on any page in the
+ * system. Every entry follows the same executive template:
  *
- * Rule (Constitution Article 22): every route the app ships MUST have an
- * entry here. Missing routes fall back to a neutral "you are now in
- * <label>" line derived from the last path segment.
+ *   "You are in <PAGE>. It contains <WHAT>. Value: <WHY>."
+ *
+ * Article 22 · Enforcement: every shipping route MUST have an entry. If
+ * a route is added without one, the matcher falls back to a neutral line
+ * derived from the path segment so ARIA is never silent by accident.
  */
 
 export interface PageNarration {
@@ -13,175 +15,990 @@ export interface PageNarration {
   readonly en: string;
 }
 
-// Longest prefixes first — matcher picks the first startsWith() hit.
-const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
-  [
-    "/_authenticated/sec.incidents",
-    {
-      ar: "أنت الآن في لوحة الحوادث الأمنية. أعرض هنا الحوادث المفتوحة، أولوياتها، والفرق المُكلَّفة، مع تحديث مباشر من قاعدة البيانات.",
-      en: "You are in Security Incidents. I show open incidents, priority, and assigned teams — live from the database.",
-    },
-  ],
-  [
-    "/_authenticated/sec.cctv",
-    {
-      ar: "لوحة كاميرات المراقبة. تُعرض الكاميرات النشطة وحالتها وأي تنبيهات مرئية جارية.",
-      en: "CCTV panel. Active cameras, status, and live visual alerts.",
-    },
-  ],
-  [
-    "/_authenticated/sec.patrols",
-    {
-      ar: "لوحة الدوريات. مسارات الدوريات الحيّة، نقاط التفتيش، والانحرافات إن وُجدت.",
-      en: "Patrols panel. Live patrol tracks, checkpoints, and deviations.",
-    },
-  ],
-  [
-    "/_authenticated/sec.permits",
-    {
-      ar: "لوحة التصاريح. التصاريح السارية والمنتهية والمعلقة، مع تنبيه للمخاطر.",
-      en: "Permits. Active, expired, and pending permits with risk flags.",
-    },
-  ],
-  [
-    "/_authenticated/sec.assets",
-    {
-      ar: "لوحة الأصول الأمنية. الحالة التشغيلية والصيانة الواجبة.",
-      en: "Security assets. Operational status and maintenance due.",
-    },
-  ],
-  [
-    "/_authenticated/sec.kpi",
-    {
-      ar: "مؤشرات الأداء الأمنية. تُقرأ الأرقام مباشرة من جداول القياس.",
-      en: "Security KPIs, read directly from measurement tables.",
-    },
-  ],
-  [
-    "/_authenticated/sec.exec",
-    {
-      ar: "غرفة القيادة التنفيذية للأمن. الملخص التنفيذي، المخاطر العليا، والقرارات المطلوبة.",
-      en: "Security executive room. Exec summary, top risks, decisions required.",
-    },
-  ],
-  [
-    "/_authenticated/sec",
-    {
-      ar: "قسم القيادة الأمنية. أعرض النظرة العامة الحيّة للحوادث والدوريات والكاميرات.",
-      en: "Security command. Live overview of incidents, patrols, and cameras.",
-    },
-  ],
-  [
-    "/_authenticated/analytics",
-    {
-      ar: "لوحة التحليلات. الاتجاهات، المقارنات الزمنية، والانحرافات المهمّة.",
-      en: "Analytics. Trends, time comparisons, notable deviations.",
-    },
-  ],
-  [
-    "/_authenticated/cockpit",
-    {
-      ar: "قمرة القيادة التنفيذية. مؤشرات النظام والقرارات الحيّة.",
-      en: "Executive cockpit. System indicators and live decisions.",
-    },
-  ],
-  [
-    "/_authenticated/crisis",
-    {
-      ar: "غرفة الأزمات. الأحداث الحرجة المفتوحة والإجراءات الجارية.",
-      en: "Crisis room. Open critical events and in-flight actions.",
-    },
-  ],
-  [
-    "/_authenticated/departments",
-    { ar: "لوحة الأقسام والفرق التشغيلية.", en: "Departments and operational teams." },
-  ],
-  [
-    "/_authenticated/events",
-    { ar: "الجدول الزمني للأحداث المؤسسية.", en: "Enterprise events timeline." },
-  ],
-  [
-    "/_authenticated/knowledge",
-    { ar: "قاعدة المعرفة. الوثائق والمقاطع المفهرسة.", en: "Knowledge base. Indexed docs and chunks." },
-  ],
-  [
-    "/_authenticated/leads",
-    { ar: "لوحة العملاء المحتملين ومرحلة كل صفقة.", en: "Leads pipeline and stages." },
-  ],
-  [
-    "/_authenticated/learn",
-    { ar: "أكاديمية التعلم. الدروس والتقدّم.", en: "Learning academy. Lessons and progress." },
-  ],
-  [
-    "/_authenticated/marketplace",
-    { ar: "سوق الحلول والتكاملات المتاحة.", en: "Solutions and integrations marketplace." },
-  ],
-  [
-    "/_authenticated/orchestration",
-    { ar: "لوحة تنسيق الوكلاء والمهام الآلية.", en: "Agent orchestration and automated tasks." },
-  ],
-  [
-    "/_authenticated/outcomes",
-    { ar: "لوحة النتائج التجارية والقيمة المُتحققة.", en: "Business outcomes and realized value." },
-  ],
-  [
-    "/_authenticated/prompts",
-    { ar: "مكتبة الموجّهات القياسية.", en: "Standard prompt library." },
-  ],
-  [
-    "/_authenticated/readiness",
-    { ar: "مؤشر الجاهزية التشغيلية للمنصة.", en: "Platform operational readiness index." },
-  ],
-  [
-    "/_authenticated/tasks",
-    { ar: "لوحة المهام العاجلة والموكولة.", en: "Urgent and assigned tasks." },
-  ],
-  [
-    "/_authenticated/team",
-    { ar: "أعضاء الفريق والأدوار.", en: "Team members and roles." },
-  ],
-  [
-    "/_authenticated/voice",
-    { ar: "إعدادات الصوت لأريا.", en: "ARIA voice settings." },
-  ],
-  [
-    "/_authenticated/health",
-    { ar: "صحّة المنصة والخدمات.", en: "Platform and services health." },
-  ],
-  [
-    "/_authenticated/files",
-    { ar: "مركز الملفات والوثائق.", en: "Files and documents center." },
-  ],
-  [
-    "/_authenticated/assistant",
-    { ar: "مساعد أريا التنفيذي.", en: "ARIA executive assistant." },
-  ],
-  [
-    "/_authenticated",
-    { ar: "دخلت إلى منطقة العمل المصادقة.", en: "You are in the authenticated workspace." },
-  ],
-  ["/pricing", { ar: "صفحة الباقات والأسعار.", en: "Pricing and plans." }],
-  ["/contact", { ar: "صفحة التواصل معنا.", en: "Contact us." }],
-  ["/book", { ar: "حجز عرض توضيحي مع الفريق.", en: "Book a demo with the team." }],
-  ["/auth", { ar: "شاشة تسجيل الدخول.", en: "Sign-in screen." }],
-  ["/login", { ar: "شاشة تسجيل الدخول.", en: "Sign-in screen." }],
-  ["/os", { ar: "واجهة نظام تشغيل نيكسيوس.", en: "NEXIOS OS surface." }],
-  ["/status", { ar: "حالة النظام في الوقت الحقيقي.", en: "Real-time system status." }],
-  [
-    "/",
-    {
-      ar: "الصفحة الرئيسية لنيكسيوس AI. أعرّفك بالمنصة والقدرات التنفيذية.",
-      en: "NEXIOS AI landing. Introducing the platform and its executive capabilities.",
-    },
-  ],
-];
-
 // Prefixes where ARIA MUST stay silent (intros, cinematic promos, sinks).
 const SILENT_PREFIXES = ["/promo", "/lovable", "/.well-known", "/.mcp", "/mcp", "/api"] as const;
 
 export function isSilentRoute(pathname: string): boolean {
   return SILENT_PREFIXES.some((p) => pathname.startsWith(p));
 }
+
+// Compose helper — keeps every entry in the same executive shape.
+function n(
+  pageAr: string,
+  pageEn: string,
+  containsAr: string,
+  containsEn: string,
+  valueAr: string,
+  valueEn: string,
+): PageNarration {
+  return {
+    ar: `أنت الآن في ${pageAr}. تشمل ${containsAr}. القيمة: ${valueAr}.`,
+    en: `You are in ${pageEn}. It contains ${containsEn}. Value: ${valueEn}.`,
+  };
+}
+
+// Longest prefixes FIRST — matcher picks the first startsWith() hit.
+const ENTRIES: ReadonlyArray<readonly [string, PageNarration]> = [
+  // ── SEC command surface ─────────────────────────────────────────────
+  ["/_authenticated/sec.incidents", n(
+    "لوحة الحوادث الأمنية", "Security Incidents",
+    "الحوادث المفتوحة، الأولويات، الفرق المُكلَّفة، والخط الزمني الحيّ",
+    "open incidents, priorities, assigned teams, and a live timeline",
+    "قرار تنفيذي فوري لتقصير زمن الاستجابة والاحتواء",
+    "immediate executive decisions that cut response and containment time",
+  )],
+  ["/_authenticated/sec.cctv", n(
+    "لوحة كاميرات المراقبة", "CCTV Operations",
+    "الكاميرات النشطة، حالتها، وأي تنبيهات مرئية جارية",
+    "active cameras, their status, and live visual alerts",
+    "رؤية بصرية موحّدة تكشف الحوادث قبل تصاعدها",
+    "unified visual awareness that catches incidents before they escalate",
+  )],
+  ["/_authenticated/sec.patrols", n(
+    "لوحة الدوريات", "Patrols",
+    "مسارات الدوريات الحيّة، نقاط التفتيش، والانحرافات",
+    "live patrol tracks, checkpoints, and route deviations",
+    "ضمان التغطية الميدانية ورصد الفجوات فور حدوثها",
+    "guaranteed field coverage and instant gap detection",
+  )],
+  ["/_authenticated/sec.permits", n(
+    "لوحة تصاريح العمل", "Work Permits",
+    "التصاريح السارية والمعلّقة والمنتهية، مع علامات المخاطر",
+    "active, pending, and expired permits with risk flags",
+    "امتثال تشغيلي كامل وحماية من مخاطر الأعمال الحارة والمقيّدة",
+    "full operational compliance and protection against hot- and restricted-work risk",
+  )],
+  ["/_authenticated/sec.assets", n(
+    "لوحة الأصول الأمنية", "Security Assets",
+    "الحالة التشغيلية لكل أصل، الصيانة المستحقّة، والأصول المتعطلة",
+    "the operational status of every asset, due maintenance, and offline units",
+    "توفر تشغيلي أعلى وتقليل مباشر لأثر الأعطال",
+    "higher operational availability and a direct cut in outage impact",
+  )],
+  ["/_authenticated/sec.kpi", n(
+    "مؤشرات الأداء الأمنية", "Security KPIs",
+    "الأرقام مباشرة من جداول القياس دون تدخّل يدوي",
+    "the numbers straight from measurement tables with no manual staging",
+    "قياس تنفيذي موثوق يقود قرارات الميزانية والتحسين",
+    "trustworthy executive measurement that steers budget and improvement decisions",
+  )],
+  ["/_authenticated/sec.exec", n(
+    "غرفة القيادة التنفيذية للأمن", "Security Executive Room",
+    "الملخص التنفيذي، أعلى المخاطر، والقرارات المطلوبة اليوم",
+    "the executive summary, top risks, and decisions required today",
+    "قرار يومي قصير المدى مبني على بيّنة حيّة",
+    "a short-cycle daily decision loop grounded in live evidence",
+  )],
+  ["/_authenticated/sec.risks", n(
+    "سجل المخاطر", "Risk Register",
+    "المخاطر المصنّفة، احتمالها، وأثرها، وخطط تخفيفها",
+    "classified risks, likelihood, impact, and mitigation plans",
+    "توقّع الأزمات قبل وقوعها وإدارتها بحوكمة صريحة",
+    "anticipate crises before they arrive and manage them with explicit governance",
+  )],
+  ["/_authenticated/sec.emergency", n(
+    "لوحة الطوارئ", "Emergency Response",
+    "بروتوكولات الاستجابة، الفرق الجاهزة، ومسارات الإخلاء",
+    "response protocols, on-call teams, and evacuation routes",
+    "استجابة منسّقة تحمي الأرواح والأصول خلال ثوانٍ",
+    "coordinated response that protects lives and assets within seconds",
+  )],
+  ["/_authenticated/sec.safety", n(
+    "لوحة السلامة", "Safety",
+    "مؤشرات السلامة، الحوادث المُبلَّغ عنها، والمراقبة الاستباقية",
+    "safety indicators, reported incidents, and proactive monitoring",
+    "بيئة عمل خالية من الإصابات والانقطاعات",
+    "an operating environment free of injuries and disruption",
+  )],
+  ["/_authenticated/sec.maintenance", n(
+    "لوحة الصيانة", "Maintenance",
+    "أوامر الصيانة، الصيانة الوقائية، والأعطال المفتوحة",
+    "work orders, preventive maintenance, and open breakdowns",
+    "توفر أعلى للأصول وتكلفة صيانة أدنى",
+    "higher asset availability and lower maintenance cost",
+  )],
+  ["/_authenticated/sec.facilities", n(
+    "لوحة المنشآت", "Facilities",
+    "المباني، المناطق، ومستوى الجاهزية لكل مرفق",
+    "buildings, zones, and readiness level for each facility",
+    "تشغيل موحّد للمنشآت متعدّدة المواقع",
+    "unified operation across multi-site facilities",
+  )],
+  ["/_authenticated/sec.projects", n(
+    "لوحة المشاريع الأمنية", "Security Projects",
+    "المبادرات الجارية، مراحلها، والميزانية المرصودة",
+    "in-flight initiatives, their phases, and allocated budget",
+    "حوكمة تنفيذ تحمي عائد الاستثمار وتوقيت التسليم",
+    "delivery governance that protects ROI and go-live dates",
+  )],
+  ["/_authenticated/sec.reports", n(
+    "لوحة التقارير التنفيذية للأمن", "Security Executive Reports",
+    "تقارير قابلة للتصدير مبنية على بيانات حيّة",
+    "exportable reports built on live data",
+    "شفافية للجهات الرقابية وقرارات مدعومة بالأدلة",
+    "transparency for regulators and evidence-backed decisions",
+  )],
+  ["/_authenticated/sec.timeline", n(
+    "الخط الزمني الأمني", "Security Timeline",
+    "تسلسل الأحداث لحظة بلحظة عبر جميع الأنظمة",
+    "moment-by-moment event sequence across every subsystem",
+    "قراءة سبب-وأثر واضحة لأي حادث",
+    "clear cause-and-effect reading of any incident",
+  )],
+  ["/_authenticated/sec.shifts", n(
+    "لوحة المناوبات", "Shifts",
+    "جدولة الفرق، التغطية، والتناوب اللحظي",
+    "team scheduling, coverage, and live rotation",
+    "استمرارية تشغيل بدون فجوات بشرية",
+    "operational continuity without human coverage gaps",
+  )],
+  ["/_authenticated/sec.sections", n(
+    "لوحة الأقسام الأمنية", "Security Sections",
+    "هيكلة الأقسام، الأدوار، ومسؤوليات كل قطاع",
+    "section structure, roles, and sector responsibilities",
+    "توزيع مسؤوليات دقيق يُلغي التداخل والتناقض",
+    "precise responsibility distribution that eliminates overlap",
+  )],
+  ["/_authenticated/sec.circles", n(
+    "الحلقات التشغيلية", "Operational Circles",
+    "حلقات الاجتماع اليومية والقرارات الميدانية",
+    "daily huddles and field-level decisions",
+    "إيقاع تنفيذي منتظم وشفافية بين المستويات",
+    "steady executive cadence and cross-level transparency",
+  )],
+  ["/_authenticated/sec.ai", n(
+    "طبقة الذكاء الأمني", "Security AI Layer",
+    "نماذج الاكتشاف، تصنيف الأحداث، والتوصيات الاستباقية",
+    "detection models, event classification, and proactive recommendations",
+    "استباق التهديدات بدلاً من الرد المتأخر",
+    "anticipate threats instead of reacting late",
+  )],
+  ["/_authenticated/sec.integrations", n(
+    "لوحة تكاملات الأمن", "Security Integrations",
+    "الأنظمة المرتبطة، حالة كل تكامل، وسجل المزامنة",
+    "connected systems, per-integration status, and sync history",
+    "تشغيل موحّد يمنع تشظّي البيانات",
+    "unified operation that prevents data fragmentation",
+  )],
+  ["/_authenticated/sec.access", n(
+    "لوحة صلاحيات الوصول", "Access Control",
+    "الأدوار، مستويات الدخول، وسجلات المصادقة",
+    "roles, access levels, and authentication logs",
+    "مبدأ أقل صلاحية مطبَّق على مستوى المؤسسة",
+    "least-privilege enforced across the enterprise",
+  )],
+  ["/_authenticated/sec.contractors", n(
+    "لوحة المقاولين", "Contractors",
+    "المقاولين النشطين، شهاداتهم، وحضورهم",
+    "active contractors, credentials, and attendance",
+    "ضبط الأطراف الخارجية داخل الموقع بموثوقية كاملة",
+    "reliable control of external parties on-site",
+  )],
+  ["/_authenticated/sec.visitors", n(
+    "لوحة الزوار", "Visitors",
+    "الزوار داخل الموقع، مواعيدهم، وحالتهم",
+    "visitors on-site, appointments, and their status",
+    "أمان دخول ومغادرة موثّق لكل زائر",
+    "documented entry-and-exit security for every visitor",
+  )],
+  ["/_authenticated/sec.vehicles", n(
+    "لوحة المركبات", "Vehicles",
+    "الأسطول، حركته، ونقاط الفحص",
+    "the fleet, its movement, and inspection points",
+    "ضبط الحركة داخل المنشآت الحسّاسة",
+    "controlled movement across sensitive facilities",
+  )],
+  ["/_authenticated/sec.knowledge", n(
+    "قاعدة معرفة الأمن", "Security Knowledge",
+    "الإجراءات، السياسات، والدروس المستفادة",
+    "procedures, policies, and lessons learned",
+    "تعلّم مؤسسي متراكم يمنع تكرار الأخطاء",
+    "compounding institutional learning that prevents repeat errors",
+  )],
+  ["/_authenticated/sec.twin", n(
+    "التوأم الرقمي للأمن", "Security Digital Twin",
+    "نموذج حيّ ثلاثي الأبعاد للمواقع والأصول",
+    "a live 3D model of sites and assets",
+    "محاكاة قرارات قبل تنفيذها في الميدان",
+    "simulate decisions before executing them in the field",
+  )],
+  ["/_authenticated/sec.index", n(
+    "الصفحة الرئيسية للقيادة الأمنية", "Security Command Home",
+    "نظرة عامة موحّدة على كل وحدات الأمن",
+    "a unified overview of every security unit",
+    "نقطة انطلاق واحدة لأي قرار أمني تنفيذي",
+    "one launch point for any executive security decision",
+  )],
+  ["/_authenticated/sec", n(
+    "قسم القيادة الأمنية", "Security Command",
+    "نظرة عامة حيّة على الحوادث والدوريات والكاميرات",
+    "a live overview of incidents, patrols, and cameras",
+    "قيادة أمنية موحّدة مبنية على بيّنة",
+    "unified evidence-based security command",
+  )],
+
+  // ── Executive / ARIA surfaces ───────────────────────────────────────
+  ["/_authenticated/aria.demo", n(
+    "عرض آريا التنفيذي", "ARIA Executive Demo",
+    "مشاهد حيّة تُظهر كفاءة آريا في اتخاذ القرار",
+    "live scenes that showcase ARIA's decision throughput",
+    "تجربة مباشرة لقدرات النظام دون بيئة اختبار منفصلة",
+    "hands-on capability experience with no separate sandbox",
+  )],
+  ["/_authenticated/aria.directive", n(
+    "لوحة الميثاق التنفيذي لآريا", "ARIA Executive Directive",
+    "المواثيق، الحوكمة، ومسارات التطوّر",
+    "the charter, governance, and evolution paths",
+    "شفافية كاملة لسلطة آريا وقيودها",
+    "full transparency of ARIA's authority and boundaries",
+  )],
+  ["/_authenticated/aria-documents", n(
+    "وثائق آريا", "ARIA Documents",
+    "المستندات المُغذّية لذاكرة آريا",
+    "documents that feed ARIA's memory",
+    "قرارات مبنية على مصادر معرفة موثّقة",
+    "decisions grounded in cited knowledge sources",
+  )],
+  ["/_authenticated/aria", n(
+    "واجهة آريا", "ARIA Console",
+    "محادثة تنفيذية مباشرة مع المحرّك",
+    "a direct executive conversation with the engine",
+    "استشارة فورية بلغة القرار",
+    "instant consultation in the language of decisions",
+  )],
+  ["/_authenticated/assistant.index", n(
+    "مساعد آريا التنفيذي", "ARIA Executive Assistant",
+    "المحادثات، السياق، والإجراءات المُنجَزة",
+    "conversations, context, and completed actions",
+    "تنفيذ مهام بدلاً من مجرّد الإجابة عليها",
+    "actions completed, not just answers delivered",
+  )],
+  ["/_authenticated/assistant", n(
+    "مساعد آريا", "ARIA Assistant",
+    "خيط محادثة مركّز مع سياق كامل",
+    "a focused thread with the full context loaded",
+    "استمرارية معرفية بين الجلسات",
+    "knowledge continuity across sessions",
+  )],
+
+  // ── Executive command / decision surfaces ───────────────────────────
+  ["/_authenticated/command-center", n(
+    "مركز القيادة", "Command Center",
+    "الوحدات التشغيلية، الحالة، والقرارات الحيّة",
+    "operational modules, status, and live decisions",
+    "قيادة تنفيذية موحّدة عبر قناة واحدة",
+    "unified executive command through a single channel",
+  )],
+  ["/_authenticated/mission-control", n(
+    "مراقبة المهمة", "Mission Control",
+    "الأهداف، التقدّم، والانحرافات",
+    "objectives, progress, and deviations",
+    "انضباط تنفيذ الأهداف الاستراتيجية",
+    "disciplined execution of strategic objectives",
+  )],
+  ["/_authenticated/situation-room", n(
+    "غرفة الموقف", "Situation Room",
+    "مؤشرات الحالة، الأحداث الحرجة، وقرارات اللحظة",
+    "situation indicators, critical events, and in-the-moment decisions",
+    "قرار متزامن بين قادة الجهات",
+    "synchronized decisions across leadership functions",
+  )],
+  ["/_authenticated/crisis", n(
+    "غرفة الأزمات", "Crisis Room",
+    "الأحداث الحرجة المفتوحة والإجراءات الجارية",
+    "open critical events and in-flight actions",
+    "احتواء أسرع وسيطرة كاملة على السرد",
+    "faster containment and full narrative control",
+  )],
+  ["/_authenticated/urgent-ops", n(
+    "العمليات العاجلة", "Urgent Operations",
+    "المهام الحرجة، أصحاب المسؤولية، والمواعيد النهائية",
+    "critical tasks, owners, and deadlines",
+    "استجابة تنفيذية أسرع للحوادث الحرجة",
+    "faster executive response to critical events",
+  )],
+  ["/_authenticated/decisions", n(
+    "لوحة القرارات", "Decisions Ledger",
+    "القرارات المسجّلة، سياقها، وأثرها",
+    "recorded decisions, their context, and their impact",
+    "ذاكرة قرار مؤسسية قابلة للتدقيق",
+    "an auditable institutional decision memory",
+  )],
+  ["/_authenticated/executive-map", n(
+    "الخريطة التنفيذية", "Executive Map",
+    "التوزيع الجغرافي للعمليات والأصول",
+    "geographic distribution of operations and assets",
+    "قراءة مكانية سريعة للوضع",
+    "instant spatial reading of the situation",
+  )],
+  ["/_authenticated/executive-reports", n(
+    "التقارير التنفيذية", "Executive Reports",
+    "تقارير معتمدة للقيادة العليا والمساهمين",
+    "reports certified for senior leadership and stakeholders",
+    "لغة قرار موحّدة بين المستويات",
+    "one decision language shared across levels",
+  )],
+  ["/_authenticated/executive", n(
+    "المساحة التنفيذية", "Executive Workspace",
+    "الأدوات والمؤشرات الخاصة بالإدارة العليا",
+    "the tools and indicators reserved for senior leadership",
+    "تركيز على القرار، لا على البيانات الخام",
+    "focus on decision, not raw data",
+  )],
+  ["/_authenticated/cockpit", n(
+    "قمرة القيادة", "Executive Cockpit",
+    "مؤشرات النظام والقرارات الحيّة",
+    "system indicators and live decisions",
+    "رؤية طيّار للمؤسسة كاملة",
+    "a pilot's view of the whole enterprise",
+  )],
+  ["/_authenticated/boardroom", n(
+    "قاعة مجلس الإدارة", "Boardroom",
+    "لوحات جاهزة للعرض على مجلس الإدارة",
+    "board-ready dashboards",
+    "اجتماعات مجلس أقصر وأكثر إنتاجية",
+    "shorter and more productive board meetings",
+  )],
+  ["/_authenticated/briefing", n(
+    "الإيجاز التنفيذي", "Executive Briefing",
+    "الملخص اليومي، الأولويات، والمخاطر",
+    "the daily brief, priorities, and risks",
+    "بداية يوم تنفيذي مبني على بيّنة",
+    "an evidence-based start to the executive day",
+  )],
+  ["/_authenticated/chief-of-staff", n(
+    "رئيس الديوان", "Chief of Staff",
+    "مسارات القرار، التفويض، والمتابعة",
+    "decision routes, delegation, and follow-through",
+    "تنفيذ منضبط للأجندة التنفيذية",
+    "disciplined execution of the executive agenda",
+  )],
+  ["/_authenticated/execution", n(
+    "لوحة التنفيذ", "Execution Board",
+    "المبادرات، مالكيها، ومؤشرات التقدّم",
+    "initiatives, owners, and progress indicators",
+    "تحويل الاستراتيجية إلى نتائج قابلة للقياس",
+    "translate strategy into measurable outcomes",
+  )],
+  ["/_authenticated/transformation", n(
+    "لوحة التحوّل", "Transformation",
+    "المبادرات التحوّلية والمعالم الرئيسية",
+    "transformation initiatives and key milestones",
+    "قيادة تغيير مؤسسي دون فوضى",
+    "leading enterprise change without chaos",
+  )],
+  ["/_authenticated/portfolio", n(
+    "محفظة المبادرات", "Portfolio",
+    "المبادرات، مواردها، وترتيب أولوياتها",
+    "initiatives, their resources, and prioritization",
+    "توزيع أفضل للموارد التنفيذية",
+    "better allocation of executive resources",
+  )],
+  ["/_authenticated/outcomes", n(
+    "لوحة النتائج", "Outcomes",
+    "النتائج التجارية والقيمة المُتحقّقة",
+    "business outcomes and realized value",
+    "ربط كل نشاط بأثر ملموس",
+    "linking every activity to measurable impact",
+  )],
+  ["/_authenticated/dashboard", n(
+    "اللوحة التنفيذية", "Dashboard",
+    "المؤشرات الرئيسية للمؤسسة",
+    "the enterprise's headline indicators",
+    "نظرة شاملة بلا ضجيج",
+    "a comprehensive view without noise",
+  )],
+  ["/_authenticated/analytics", n(
+    "لوحة التحليلات", "Analytics",
+    "الاتجاهات، المقارنات الزمنية، والانحرافات المهمّة",
+    "trends, time comparisons, and notable deviations",
+    "قرارات مبنية على بيانات لا حدس",
+    "decisions built on data, not hunches",
+  )],
+  ["/_authenticated/analyst", n(
+    "مساحة المحلل", "Analyst Workspace",
+    "أدوات الاستكشاف والاستعلام والرسم",
+    "exploration, query, and charting tools",
+    "تحقيقات بيانية أعمق دون خبرة تقنية طويلة",
+    "deeper data investigations without heavy technical overhead",
+  )],
+  ["/_authenticated/intelligence", n(
+    "غرفة الاستخبارات", "Intelligence Room",
+    "التقارير الاستخبارية والإشارات المبكّرة",
+    "intelligence reports and early signals",
+    "استباق المتغيّرات قبل ظهورها في الأرقام",
+    "anticipating shifts before they surface in the numbers",
+  )],
+  ["/_authenticated/risk", n(
+    "لوحة المخاطر التنفيذية", "Executive Risk",
+    "خريطة المخاطر ومسارات التخفيف",
+    "the risk map and mitigation paths",
+    "حوكمة استباقية لمخاطر المؤسسة",
+    "proactive governance of enterprise risk",
+  )],
+  ["/_authenticated/governance", n(
+    "الحوكمة", "Governance",
+    "السياسات، الأدوار، وسجلات القرار",
+    "policies, roles, and decision logs",
+    "امتثال حقيقي لا صوري",
+    "genuine, not superficial, compliance",
+  )],
+  ["/_authenticated/live-dashboard", n(
+    "اللوحة الحيّة", "Live Dashboard",
+    "دفق مؤشرات لحظي عبر المؤسسة",
+    "a real-time indicator stream across the enterprise",
+    "قراءة الوضع في الثانية التي يتغيّر فيها",
+    "reading the situation the second it changes",
+  )],
+
+  // ── ARIA operations / runtime ───────────────────────────────────────
+  ["/_authenticated/orchestration", n(
+    "تنسيق الوكلاء", "Agent Orchestration",
+    "الوكلاء النشطون، المهام الآلية، ومسار كل مهمة",
+    "active agents, automated tasks, and per-task lineage",
+    "تشغيل آلي موثوق بدون فقدان السيطرة",
+    "reliable automation without losing control",
+  )],
+  ["/_authenticated/agents", n(
+    "الوكلاء الأذكياء", "AI Agents",
+    "قائمة الوكلاء، صلاحياتهم، وأدائهم",
+    "the agent roster, permissions, and performance",
+    "قدرة تنفيذية موازية تضاعف إنتاجية الفريق",
+    "parallel executive capacity that multiplies team output",
+  )],
+  ["/_authenticated/workflows", n(
+    "مسارات العمل", "Workflows",
+    "الأتمتة القابلة للتكوين وسجل التنفيذ",
+    "configurable automations and their execution log",
+    "توحيد الإجراءات الحرجة عبر المؤسسة",
+    "standardization of critical procedures enterprise-wide",
+  )],
+  ["/_authenticated/ai-ops", n(
+    "عمليات الذكاء الاصطناعي", "AI Operations",
+    "صحة النماذج، الطلبات، والاستهلاك",
+    "model health, requests, and consumption",
+    "تشغيل ذكاء اصطناعي بجودة إنتاجية",
+    "running AI at production quality",
+  )],
+  ["/_authenticated/self-evolution", n(
+    "التطوّر الذاتي", "Self-Evolution",
+    "الدروس التي تعلّمها النظام وحلقات التحسين",
+    "what the system has learned and its improvement loops",
+    "منصّة تتحسّن بنفسها بمرور الوقت",
+    "a platform that improves itself over time",
+  )],
+  ["/_authenticated/memory", n(
+    "ذاكرة آريا", "ARIA Memory",
+    "السياق طويل الأمد والحقائق المؤسسية",
+    "long-term context and enterprise facts",
+    "استمرارية معرفية عبر كل تفاعل",
+    "knowledge continuity across every interaction",
+  )],
+  ["/_authenticated/forgotten", n(
+    "المُنسَى", "Forgotten Items",
+    "العناصر التي تجاوزت المهلة أو تُركت دون متابعة",
+    "items past due or left unhandled",
+    "استعادة كل ما يسقط بين الشقوق",
+    "recovering everything that would slip through the cracks",
+  )],
+  ["/_authenticated/knowledge-hub", n(
+    "مركز المعرفة", "Knowledge Hub",
+    "المستندات، المصادر، والفهارس",
+    "documents, sources, and indexes",
+    "مرجع تنفيذي واحد بدل ملفات مبعثرة",
+    "one executive reference in place of scattered files",
+  )],
+  ["/_authenticated/knowledge-upload", n(
+    "رفع المعرفة", "Knowledge Upload",
+    "استيراد مستندات جديدة لذاكرة آريا",
+    "ingest new documents into ARIA's memory",
+    "توسيع نطاق ذكاء المؤسسة بسرعة",
+    "expand enterprise intelligence quickly",
+  )],
+  ["/_authenticated/knowledge", n(
+    "قاعدة المعرفة", "Knowledge Base",
+    "الوثائق المفهرسة والمقاطع القابلة للاستشهاد",
+    "indexed documents and citable chunks",
+    "أجوبة موثّقة يمكن تدقيقها للحظتها",
+    "cited answers you can audit in the moment",
+  )],
+  ["/_authenticated/prompts", n(
+    "مكتبة الموجّهات", "Prompt Library",
+    "الموجّهات القياسية المعتمدة للفرق",
+    "team-approved standard prompts",
+    "توحيد جودة التفاعل مع الذكاء الاصطناعي",
+    "standardized AI interaction quality",
+  )],
+  ["/_authenticated/tools", n(
+    "الأدوات التنفيذية", "Executive Tools",
+    "الأدوات الجاهزة داخل النظام",
+    "the tools bundled inside the system",
+    "إنجاز أسرع دون الخروج من المنصّة",
+    "faster delivery without leaving the platform",
+  )],
+  ["/_authenticated/tool-health", n(
+    "صحّة الأدوات", "Tool Health",
+    "حالة كل أداة داخلية وأثرها التشغيلي",
+    "the status of every internal tool and its operational impact",
+    "تشغيل موثوق للطبقة الأتمتيّة",
+    "reliable operation of the automation layer",
+  )],
+  ["/_authenticated/fabric", n(
+    "النسيج التشغيلي", "Operational Fabric",
+    "الترابط بين الأنظمة، البيانات، والوكلاء",
+    "the fabric linking systems, data, and agents",
+    "شفافية كاملة لتدفّق العمل عبر الحدود",
+    "full transparency of workflow across boundaries",
+  )],
+  ["/_authenticated/observability", n(
+    "المراقبة الشاملة", "Observability",
+    "السجلّات، القياسات، والتتبّع الموزّع",
+    "logs, metrics, and distributed tracing",
+    "اكتشاف المشاكل قبل أن يشعر بها المستخدم",
+    "detecting issues before users feel them",
+  )],
+  ["/_authenticated/diagnostics", n(
+    "التشخيصات", "Diagnostics",
+    "أدوات فحص النظام والفحوصات الذاتية",
+    "system inspection tools and self-checks",
+    "استقرار تشغيلي عالي المستوى",
+    "high-level operational stability",
+  )],
+  ["/_authenticated/integrations", n(
+    "التكاملات", "Integrations",
+    "الأنظمة المرتبطة، حالتها، ومزامنتها",
+    "connected systems, status, and sync",
+    "تشغيل موحّد بلا صوامع بيانات",
+    "unified operation with no data silos",
+  )],
+  ["/_authenticated/settings.microsoft", n(
+    "إعدادات مايكروسوفت", "Microsoft Settings",
+    "ربط منظومة مايكروسوفت 365 وامتيازاتها",
+    "Microsoft 365 wiring and permissions",
+    "تجربة عمل موحّدة داخل المنظومة الشائعة",
+    "a unified work experience inside the common suite",
+  )],
+  ["/_authenticated/settings", n(
+    "الإعدادات", "Settings",
+    "تكوين المؤسسة، المستخدمين، والصلاحيات",
+    "organization, users, and permissions configuration",
+    "ضبط دقيق يعكس هيكل مؤسستك",
+    "fine-grained control that mirrors your organization",
+  )],
+  ["/_authenticated/admin", n(
+    "لوحة المشرف", "Admin",
+    "أدوات الإدارة العليا للمنصّة",
+    "top-level platform administration tools",
+    "سيطرة كاملة على تكوين النظام",
+    "complete control over system configuration",
+  )],
+  ["/_authenticated/security-center", n(
+    "مركز الأمن المعلوماتي", "Security Center",
+    "التهديدات، الأدلة، وسجلات المراجعة",
+    "threats, evidence, and audit trails",
+    "حماية سيبرانية موثّقة للجهات الرقابية",
+    "regulator-grade cybersecurity assurance",
+  )],
+  ["/_authenticated/health", n(
+    "صحّة المنصة", "Platform Health",
+    "حالة الخدمات، الأداء، والاستقرار",
+    "service status, performance, and stability",
+    "توفّر خدمي عالٍ وثقة تنفيذية",
+    "high service availability and executive trust",
+  )],
+  ["/_authenticated/tts", n(
+    "تركيب الكلام", "Text-to-Speech",
+    "أصوات آريا وإعدادات النطق",
+    "ARIA's voices and pronunciation settings",
+    "صوت طبيعي راقٍ يليق بحضور تنفيذي",
+    "a natural, refined voice worthy of executive presence",
+  )],
+  ["/_authenticated/voice-setup", n(
+    "إعداد الصوت", "Voice Setup",
+    "خطوات معايرة الصوت والاختبار",
+    "voice calibration and test steps",
+    "تجربة صوتية موثوقة من أوّل تشغيل",
+    "a reliable voice experience from the very first run",
+  )],
+  ["/_authenticated/voice", n(
+    "الصوت التنفيذي لآريا", "ARIA Voice",
+    "إعدادات الصوت، المعاينة، وسجل التشغيل",
+    "voice settings, preview, and playback log",
+    "حضور صوتي احترافي لآريا",
+    "professional voice presence for ARIA",
+  )],
+  ["/_authenticated/elevenlabs-status", n(
+    "حالة موفّر الصوت", "Voice Provider Status",
+    "توفّر خدمة الصوت الخارجية",
+    "external voice service availability",
+    "شفافية تشغيلية لمزوّد الصوت",
+    "operational transparency for the voice provider",
+  )],
+
+  // ── Work & delivery ─────────────────────────────────────────────────
+  ["/_authenticated/tasks", n(
+    "لوحة المهام", "Tasks",
+    "المهام العاجلة، المُوكَلة، والمُنجَزة",
+    "urgent, assigned, and completed tasks",
+    "تنفيذ يومي منضبط بلا تسرّبات",
+    "disciplined daily execution with no leaks",
+  )],
+  ["/_authenticated/team", n(
+    "الفريق", "Team",
+    "أعضاء الفريق، الأدوار، والحضور",
+    "team members, roles, and presence",
+    "توزيع مسؤوليات واضح ومساءلة صريحة",
+    "clear responsibility split and explicit accountability",
+  )],
+  ["/_authenticated/departments", n(
+    "الأقسام", "Departments",
+    "الأقسام والفرق التشغيلية",
+    "departments and their operational teams",
+    "قراءة أفقية لعمق التشغيل",
+    "a horizontal reading of operational depth",
+  )],
+  ["/_authenticated/events", n(
+    "الأحداث المؤسسية", "Enterprise Events",
+    "الجدول الزمني للأحداث المهمّة",
+    "the timeline of significant events",
+    "تسلسل زمني موحّد لكل ما جرى",
+    "a unified chronological record of everything that happened",
+  )],
+  ["/_authenticated/files", n(
+    "مركز الملفات", "Files Center",
+    "الملفات، إصداراتها، وصلاحيات الوصول",
+    "files, versions, and access permissions",
+    "مصدر ملفات موحّد بلا نسخ متناثرة",
+    "a single file source with no scattered copies",
+  )],
+  ["/_authenticated/leads", n(
+    "العملاء المحتملون", "Leads",
+    "لوحة الصفقات ومراحل كل عميل محتمل",
+    "the pipeline and stage for every prospect",
+    "تحويل أعلى وعائد مبيعات أوضح",
+    "higher conversion and clearer sales return",
+  )],
+  ["/_authenticated/marketplace", n(
+    "سوق الحلول", "Marketplace",
+    "الحلول والتكاملات المتاحة للتثبيت",
+    "solutions and integrations ready to install",
+    "توسيع قدرات النظام دون تطوير مخصّص",
+    "expanding system capability without custom builds",
+  )],
+  ["/_authenticated/investor", n(
+    "لوحة المستثمر", "Investor",
+    "مؤشرات النمو والقيمة المطلوبة للمستثمرين",
+    "growth and value indicators needed by investors",
+    "شفافية استثمارية جاهزة على مدار الساعة",
+    "24/7-ready investor transparency",
+  )],
+  ["/_authenticated/customers", n(
+    "العملاء", "Customers",
+    "قاعدة العملاء، حالتهم، وقيمة كل حساب",
+    "the customer base, status, and per-account value",
+    "علاقات عملاء موثوقة وأداء تنافسي",
+    "trusted customer relationships and competitive performance",
+  )],
+
+  // ── Learning & readiness ────────────────────────────────────────────
+  ["/_authenticated/learn.index", n(
+    "أكاديمية التعلّم", "Learning Academy",
+    "المسارات، الدروس، والتقدّم",
+    "learning tracks, lessons, and progress",
+    "بناء كفاءة داخلية سريعة",
+    "building rapid internal capability",
+  )],
+  ["/_authenticated/learn", n(
+    "التعلّم", "Learning",
+    "الدروس المفتوحة والمُقتَرَحة",
+    "open and recommended lessons",
+    "تطوير مستمر مُدمَج في يوم العمل",
+    "continuous development embedded in the workday",
+  )],
+  ["/_authenticated/readiness", n(
+    "مؤشر الجاهزية", "Readiness",
+    "جاهزية المنصّة، الأشخاص، والإجراءات",
+    "platform, people, and process readiness",
+    "قراءة موحّدة للاستعداد التشغيلي",
+    "a unified reading of operational readiness",
+  )],
+  ["/_authenticated/theater", n(
+    "قاعة العرض", "Theater",
+    "مشاهد حيّة لتوضيح القدرات للقيادة",
+    "live scenes that explain capability to leadership",
+    "تبنٍّ أسرع من قِبَل صنّاع القرار",
+    "faster adoption by decision-makers",
+  )],
+  ["/_authenticated/hajj", n(
+    "منظومة الحج ١٤٤٧", "Hajj 1447",
+    "المؤشرات التشغيلية للحج بأدق تفصيل",
+    "the operational indicators for Hajj at the finest detail",
+    "أداء حج آمن يليق بمكانة المشعر",
+    "safe Hajj operations worthy of the holy site",
+  )],
+  ["/_authenticated/digital-twin", n(
+    "التوأم الرقمي", "Digital Twin",
+    "نموذج حيّ للمؤسسة وأصولها",
+    "a live model of the enterprise and its assets",
+    "محاكاة القرار قبل تنفيذه",
+    "simulate the decision before executing it",
+  )],
+  ["/_authenticated/bridge", n(
+    "الجسر التنفيذي", "Executive Bridge",
+    "ربط بين الفرق والقرارات الحيّة",
+    "linking teams and live decisions",
+    "قرار تنفيذي متزامن بلا فجوات",
+    "synchronized executive decisions with no gaps",
+  )],
+  ["/_authenticated/exec", n(
+    "المشغّل التنفيذي", "Executive Runner",
+    "تنفيذ مباشر لأوامر الطبقة العليا",
+    "direct execution of top-tier commands",
+    "سرعة تحويل القرار إلى فعل",
+    "speed from decision to action",
+  )],
+  ["/_authenticated/operations", n(
+    "العمليات", "Operations",
+    "قلب النشاط التشغيلي الحيّ",
+    "the beating heart of live operations",
+    "تحكّم تشغيلي كامل من مكان واحد",
+    "complete operational control from one place",
+  )],
+  ["/_authenticated", { ar: "أنت الآن في منطقة العمل المصادَقة. جميع القدرات التنفيذية متاحة هنا.", en: "You are in the authenticated workspace. Every executive capability is available here." }],
+
+  // ── Public marketing / trust surfaces ───────────────────────────────
+  ["/executive-briefing", n(
+    "صفحة الإيجاز التنفيذي", "Executive Briefing Page",
+    "الإيجاز التنفيذي القابل للمشاركة مع القيادة",
+    "the executive briefing you can share with leadership",
+    "قناة تعريف تنفيذية موحّدة بلغتك",
+    "a unified executive introduction channel in your language",
+  )],
+  ["/executive-booking", n(
+    "حجز جلسة تنفيذية", "Executive Booking",
+    "خيارات مواعيد مباشرة مع الفريق التنفيذي",
+    "direct calendar options with the executive team",
+    "توفير وقت في الوصول إلى قرار الشراء",
+    "shortening time-to-decision",
+  )],
+  ["/executive-showcase", n(
+    "العرض التنفيذي", "Executive Showcase",
+    "أبرز القدرات مقدَّمة بلغة القرار",
+    "the top capabilities framed in decision language",
+    "تبنٍّ سريع من صنّاع القرار",
+    "rapid buy-in from decision-makers",
+  )],
+  ["/executive-bridge", n(
+    "الجسر التنفيذي العام", "Executive Bridge (Public)",
+    "توضيح قناة القيادة بين المؤسسات",
+    "clarifying the leadership channel between organizations",
+    "شفافية استراتيجية للشركاء",
+    "strategic transparency for partners",
+  )],
+  ["/executive", n(
+    "الصفحة التنفيذية العامة", "Public Executive Page",
+    "ملخص القدرات للمستوى التنفيذي",
+    "an executive-level capability summary",
+    "قراءة سريعة قبل الاجتماع",
+    "a fast pre-meeting read",
+  )],
+  ["/government-brief", n(
+    "الإيجاز الحكومي", "Government Brief",
+    "ملخص المنصّة للجهات الحكومية",
+    "the platform summary tailored for government",
+    "شفافية سيادية تليق بالجهات الرقابية",
+    "sovereign-grade transparency for regulators",
+  )],
+  ["/hajj-prime", n(
+    "الحج برايم", "Hajj Prime",
+    "الطبقة التنفيذية لمنظومة الحج",
+    "the executive layer for the Hajj system",
+    "أداء حج ذو جودة سيادية",
+    "sovereign-quality Hajj performance",
+  )],
+  ["/runtime-hub", n(
+    "مركز التشغيل", "Runtime Hub",
+    "المكوّنات التشغيلية للمنصّة",
+    "the runtime components of the platform",
+    "شفافية هندسية موثوقة",
+    "trustworthy engineering transparency",
+  )],
+  ["/data-room", n(
+    "غرفة البيانات", "Data Room",
+    "الوثائق الحسّاسة للاطلاع المُقيَّد",
+    "sensitive documents for restricted access",
+    "بيئة عناية واجبة سريعة وآمنة",
+    "a fast, secure due-diligence environment",
+  )],
+  ["/demo-videos", n(
+    "مقاطع العرض", "Demo Videos",
+    "مقاطع تُوضح القدرات التنفيذية",
+    "clips that showcase executive capabilities",
+    "فهم بصري سريع للنظام",
+    "quick visual understanding of the system",
+  )],
+  ["/demo", n(
+    "العرض التوضيحي", "Demo",
+    "تجربة موجّهة للقدرات الرئيسية",
+    "a guided tour of the main capabilities",
+    "قرار تبنٍّ مبني على تجربة، لا وعود",
+    "adoption grounded in experience, not promises",
+  )],
+  ["/films", n(
+    "الأفلام التنفيذية", "Executive Films",
+    "أفلام قصيرة تُقدّم الرؤية بلغة القيادة",
+    "short films that present the vision in leadership language",
+    "أثر تنفيذي طويل الأمد",
+    "long-lasting executive impact",
+  )],
+  ["/roi", n(
+    "حاسبة العائد", "ROI",
+    "قراءة العائد المتوقّع من التبنّي",
+    "expected return from adoption",
+    "قرار استثماري مبني على أرقام",
+    "an investment decision built on numbers",
+  )],
+  ["/security", n(
+    "صفحة الأمن", "Security",
+    "منظومة الأمن السيبراني وضوابطها",
+    "the cybersecurity posture and controls",
+    "ثقة تنفيذية موثّقة",
+    "documented executive trust",
+  )],
+  ["/trust", n(
+    "مركز الثقة", "Trust Center",
+    "الشفافية، الشهادات، والامتثال",
+    "transparency, certifications, and compliance",
+    "علاقة موردٍ موثوقة من اليوم الأوّل",
+    "a trusted-vendor relationship from day one",
+  )],
+  ["/subprocessors", n(
+    "المعالجات الفرعية", "Sub-processors",
+    "قائمة الأطراف الفرعية المعتمدة",
+    "the approved sub-processor list",
+    "امتثال حماية بيانات كامل",
+    "full data-protection compliance",
+  )],
+  ["/dpa", n(
+    "اتفاقية معالجة البيانات", "Data Processing Agreement",
+    "بنود المعالجة والالتزامات المتبادلة",
+    "processing terms and mutual obligations",
+    "غطاء قانوني كامل لمعالجة البيانات",
+    "complete legal cover for data processing",
+  )],
+  ["/sla", n(
+    "اتفاقية مستوى الخدمة", "SLA",
+    "التزامات التوفّر والاستجابة والدعم",
+    "availability, response, and support commitments",
+    "توقّعات مُتفَق عليها ومقاسة",
+    "agreed and measured expectations",
+  )],
+  ["/aup", n(
+    "سياسة الاستخدام المقبول", "Acceptable Use Policy",
+    "حدود الاستخدام السليم للنظام",
+    "the boundaries of proper system use",
+    "بيئة تشغيل آمنة للجميع",
+    "a safe operating environment for everyone",
+  )],
+  ["/responsible-ai", n(
+    "الذكاء الاصطناعي المسؤول", "Responsible AI",
+    "مبادئ التصميم الأخلاقي والحوكمة",
+    "ethical design and governance principles",
+    "ذكاء اصطناعي جدير بالثقة تنفيذياً",
+    "AI worthy of executive trust",
+  )],
+  ["/privacy", n(
+    "سياسة الخصوصية", "Privacy",
+    "كيف نجمع ونعالج ونحمي البيانات",
+    "how we collect, process, and protect data",
+    "احترام كامل لخصوصية المستخدم",
+    "full respect for user privacy",
+  )],
+  ["/cookie-policy", n(
+    "سياسة الكوكيز", "Cookie Policy",
+    "استخدام الكوكيز وخيارات التحكّم",
+    "cookie usage and control options",
+    "شفافية تشغيلية للمتصفّح",
+    "operational browser transparency",
+  )],
+  ["/terms", n(
+    "شروط الاستخدام", "Terms",
+    "الشروط القانونية للاستخدام",
+    "the legal terms of use",
+    "علاقة تعاقدية واضحة",
+    "a clear contractual relationship",
+  )],
+  ["/status", n(
+    "حالة النظام", "Status",
+    "توفّر الخدمات في الوقت الحقيقي",
+    "real-time service availability",
+    "شفافية تشغيلية دائمة",
+    "always-on operational transparency",
+  )],
+  ["/pricing", n(
+    "الباقات والأسعار", "Pricing",
+    "الخيارات والقيمة لكل باقة",
+    "options and value per plan",
+    "قرار اشتراك مبني على وضوح",
+    "a subscription decision built on clarity",
+  )],
+  ["/contact", n(
+    "التواصل معنا", "Contact",
+    "قنوات التواصل مع الفريق",
+    "channels to reach the team",
+    "استجابة سريعة لطلبك",
+    "a fast response to your request",
+  )],
+  ["/request-demo", n(
+    "طلب عرض توضيحي", "Request a Demo",
+    "استمارة حجز عرض مباشر",
+    "the form to book a live demonstration",
+    "بدء رحلة التبنّي بأقل احتكاك",
+    "starting the adoption journey with minimum friction",
+  )],
+  ["/book", n(
+    "حجز موعد", "Book a Session",
+    "جدولة جلسة مع الفريق",
+    "scheduling a session with the team",
+    "استثمار وقتك مع خبير",
+    "investing your time with an expert",
+  )],
+  ["/os", n(
+    "نظام التشغيل المؤسسي", "Enterprise Operating System",
+    "قاعة القيادة، النبض التشغيلي، والمؤشرات التنفيذية",
+    "the command deck, live pulse, and executive indicators",
+    "قرار تنفيذي من المشهد الأول للمنصّة",
+    "an executive decision from the platform's very first screen",
+  )],
+  ["/auth", n(
+    "شاشة تسجيل الدخول", "Sign-in",
+    "خيارات الدخول الآمن للنظام",
+    "secure sign-in options",
+    "دخول محمي بالمصادقة الحديثة",
+    "entry protected by modern authentication",
+  )],
+  ["/login", n(
+    "شاشة الدخول", "Login",
+    "خيارات الدخول الآمن للنظام",
+    "secure sign-in options",
+    "دخول محمي بالمصادقة الحديثة",
+    "entry protected by modern authentication",
+  )],
+  ["/unsubscribe", n(
+    "إلغاء الاشتراك", "Unsubscribe",
+    "خيارات إيقاف الرسائل",
+    "options to stop messages",
+    "احترام كامل لتفضيلات التواصل",
+    "full respect for communication preferences",
+  )],
+  ["/", n(
+    "الصفحة الرئيسية لنيكسيوس", "NEXIOS Home",
+    "التعريف الأوّل بالمنصّة وقدراتها التنفيذية",
+    "the first introduction to the platform and its executive capability",
+    "قراءة سريعة لقيمة النظام",
+    "a fast reading of the system's value",
+  )],
+];
 
 /**
  * Return the narration for a route. Falls back to a neutral "you are now in
@@ -193,23 +1010,23 @@ export function narrationFor(
   locale: "ar" | "en" = "ar",
 ): PageNarration | null {
   if (isSilentRoute(pathname)) return null;
-  const routeKey = pathname.startsWith("/_authenticated")
-    ? pathname
-    : pathname === "/"
-      ? "/"
-      : pathname;
-  // Sort by length desc once — cheap for < 100 entries.
   const sorted = [...ENTRIES].sort((a, b) => b[0].length - a[0].length);
-  for (const [prefix, n] of sorted) {
-    if (routeKey === prefix || routeKey.startsWith(prefix + "/") || routeKey.startsWith(prefix)) {
-      return n;
+  for (const [prefix, entry] of sorted) {
+    if (pathname === prefix || pathname.startsWith(prefix + "/") || pathname.startsWith(prefix)) {
+      return entry;
     }
   }
-  const last = pathname.split("/").filter(Boolean).pop() ?? "";
+  const last = pathname.split("/").filter(Boolean).pop() ?? "الرئيسية";
   const label = last.replace(/[-_.]/g, " ").trim() || "الرئيسية";
   return locale === "ar"
-    ? { ar: `أنت الآن في صفحة ${label}.`, en: `You are on ${label}.` }
-    : { ar: `أنت الآن في صفحة ${label}.`, en: `You are on ${label}.` };
+    ? {
+        ar: `أنت الآن في صفحة ${label}. أعرض هنا محتوى الصفحة والقيمة التنفيذية المرتبطة بها.`,
+        en: `You are on ${label}. I present the page content and its executive value here.`,
+      }
+    : {
+        ar: `أنت الآن في صفحة ${label}. أعرض هنا محتوى الصفحة والقيمة التنفيذية المرتبطة بها.`,
+        en: `You are on ${label}. I present the page content and its executive value here.`,
+      };
 }
 
 export const NARRATE_STORAGE_KEY = "aria:narrate:enabled";
