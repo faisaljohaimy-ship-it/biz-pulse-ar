@@ -69,3 +69,8 @@ Batches are executed autonomously per **Article 27 (c)**. The operator is asked 
 - `_authenticated/live-dashboard.tsx` header LIVE badge now `<EvidenceBadge>` bound to `max(kpis, timeseries).dataUpdatedAt`
 - `AgentRoster.tsx` "Live / البث مباشر" now `<EvidenceBadge>` gated by `signals.length` via `probeEvidence`
 
+## Batch 9 — DB hardening (2026-07-08)
+- REVOKE EXECUTE from PUBLIC/anon/authenticated on 13 privileged `SECURITY DEFINER` maintenance functions (ARIA retention/corpus scan, Microsoft sync dispatch/secret, runtime cleanup, KPI schedule, email queue dispatch/wake/enqueue/read/delete/dlq, unsubscribe cleanup); only `service_role` + cron keep EXECUTE
+- Remaining linter WARNs are pre-existing legitimate signed-in helpers (`has_role`, `is_org_member`, `current_org_id`) that MUST stay callable by `authenticated`
+
+
