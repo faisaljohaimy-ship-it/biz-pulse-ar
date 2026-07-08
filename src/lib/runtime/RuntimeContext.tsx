@@ -27,10 +27,12 @@ export function useRuntimeOptional(): RuntimeContextValue | null {
 export function RuntimeProvider({ children }: { children: ReactNode }) {
   const bootstrap = useServerFn(bootstrapEnterprise);
   const qc = useQueryClient();
+  const { user, loading: authLoading } = useAuth();
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["enterprise-runtime"],
+    queryKey: ["enterprise-runtime", user?.id ?? "anon"],
     queryFn: () => bootstrap(),
+    enabled: !!user,
     staleTime: 60_000,
     refetchOnWindowFocus: false,
     retry: 1,
