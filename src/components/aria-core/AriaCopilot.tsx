@@ -733,11 +733,16 @@ export function AriaCopilot() {
       const baseText = (textOverride ?? draft).trim();
       if ((!baseText && attachments.length === 0) || isBusy) return;
 
-      let attachmentNote = "";
+      // Article 24 §3 — build AI SDK multimodal parts so the model actually
+      // SEES the attachment. Never flatten into a text URL note.
+      type FilePart = { type: "file"; mediaType: string; url: string; filename?: string };
+      const fileParts: FilePart[] = [];
+      let uploadError: string | null = null;
+
       if (attachments.length > 0) {
         setUploadingAttachments(true);
         try {
-          const uploaded = await Promise.all(
+          await Promise.all(
             attachments.map(async (f) => {
               const buf = await f.arrayBuffer();
               let binary = "";
@@ -752,29 +757,48 @@ export function AriaCopilot() {
                   data_b64,
                 },
               });
-              return `${f.name} (${f.type || "file"}, ${(f.size / 1024).toFixed(0)}KB) → ${res.signed_url}`;
+              fileParts.push({
+                type: "file",
+                mediaType: res.mime_type,
+                url: res.signed_url,
+                filename: f.name,
+              });
             }),
           );
-          attachmentNote = `\n\n[Attachments (${uploaded.length}):\n- ${uploaded.join("\n- ")}]`;
         } catch (err) {
           console.error("[AriaCopilot] attachment upload failed", err);
-          attachmentNote = `\n\n[Attachment upload failed: ${(err as Error).message}]`;
+          uploadError = (err as Error).message;
         } finally {
           setUploadingAttachments(false);
         }
       }
 
-      const text = `${baseText}${attachmentNote}`.trim();
-      if (!text) return;
+      const promptText = uploadError
+        ? `${baseText}\n\n[Attachment upload failed: ${uploadError}]`.trim()
+        : baseText;
+      if (!promptText && fileParts.length === 0) return;
+
       primeIOSAudio();
       if (convModeRef.current && !opts?.fromVoice) {
         pendingSilentRef.current = true;
       }
       setDraft("");
       setAttachments([]);
-      setLastUserText(text);
+      setLastUserText(promptText || `[${fileParts.length} attachment(s)]`);
       pendingSendAtRef.current = performance.now();
-      void chat.sendMessage({ text });
+
+      if (fileParts.length > 0) {
+        // AI SDK v5: send typed parts array so file blocks reach the model.
+        const parts: Array<
+          { type: "text"; text: string } | FilePart
+        > = [];
+        if (promptText) parts.push({ type: "text", text: promptText });
+        parts.push(...fileParts);
+        void chat.sendMessage({ role: "user", parts });
+      } else {
+        void chat.sendMessage({ text: promptText });
+      }
+
       requestAnimationFrame(() => {
         composerRef.current?.focus({ preventScroll: true });
       });
