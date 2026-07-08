@@ -16,6 +16,9 @@ import { verifyGraph } from "@/lib/aria/knowledge-graph/verification.server";
 import { verifyHero } from "@/lib/aria/hero-integration/verification.server";
 import { verifyToolEngine } from "@/lib/aria/tools/verification.server";
 import { verifyRuntime } from "@/lib/aria/runtime/verification.server";
+import { reportHealth as reportRuntimeHealth } from "@/lib/aria/runtime/health.server";
+import { evaluateIntegrationReadiness } from "@/lib/aria/integration/readiness.server";
+
 
 export type PhaseStatus = "green" | "amber" | "red" | "deferred" | "unknown";
 
@@ -163,7 +166,15 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
       };
     }),
-    { module: "executive", status: "deferred", issues: [], note: "requires live briefing feed" },
+    safeProbe("executive", () => {
+      const v = verifyExecutiveSurface({});
+      return {
+        module: "executive",
+        status: v.ok ? "green" : "amber",
+        issues: v.violations ?? [],
+        note: "surface schema live-check",
+      };
+    }),
   ];
 
   // ── PHASE 8 · PERFORMANCE & STABILITY (runtime graph invariants) ─────
@@ -177,7 +188,76 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         issues: v.issues.map((i) => `${i.severity}: ${i.detail}`),
       };
     }),
-    { module: "deployment", status: "deferred", issues: [], note: "requires live deployment snapshot" },
+    safeProbe("integration", () => {
+      const r = evaluateIntegrationReadiness();
+      const s = r.summary;
+      const status: PhaseStatus =
+        s.fail > 0 ? "red" : s.warn > 0 ? "amber" : "green";
+      return {
+        module: "integration",
+        status,
+        issues: r.gates.filter((g) => g.status === "fail").map((g) => `${g.connector_id}:${g.reason}`),
+        note: `pass=${s.pass}/${s.total}`,
+      };
+    }),
+  ];
+
+
+  // ── PHASE 6 · MULTI-AGENT (live agent-mesh health) ───────────────────
+  const p6: PhaseProbe[] = [
+    safeProbe("agent-mesh", () => {
+      const h = reportRuntimeHealth();
+      const issues: string[] = [];
+      if (h.agents_failed > 0) issues.push(`agents_failed:${h.agents_failed}`);
+      if (h.agents_degraded > 0) issues.push(`agents_degraded:${h.agents_degraded}`);
+      const status: PhaseStatus =
+        h.agents_failed > 0 ? "red" : h.agents_degraded > 0 ? "amber" : "green";
+      return {
+        module: "agent-mesh",
+        status,
+        issues,
+        note: `agents=${h.agents_total} running=${h.agents_running} workers=${h.workers_online}`,
+      };
+    }),
+  ];
+
+  // ── PHASE 7 · DIGITAL TWIN (live integration readiness) ──────────────
+  const p7: PhaseProbe[] = [
+    safeProbe("integration", () => {
+      const r = evaluateIntegrationReadiness();
+      const s = r.summary;
+      const status: PhaseStatus =
+        s.fail > 0 ? "red" : s.warn > 0 || s.unknown === s.total ? "amber" : "green";
+      const issues = r.gates
+        .filter((g) => g.status !== "pass")
+        .map((g) => `${g.status}:${g.connector_id}:${g.reason}`);
+      return {
+        module: "integration",
+        status,
+        issues,
+        note: `pass=${s.pass}/${s.total} warn=${s.warn} fail=${s.fail} unknown=${s.unknown}`,
+      };
+    }),
+  ];
+
+  // ── PHASE 9 · EXECUTIVE EXPERIENCE (composed acceptance+hero) ────────
+  const p9: PhaseProbe[] = [
+    safeProbe("acceptance-experience", () => {
+      const v = verifyAcceptance();
+      return {
+        module: "acceptance-experience",
+        status: v.ok ? "green" : "amber",
+        issues: v.issues,
+      };
+    }),
+    safeProbe("hero-integration", () => {
+      const v = verifyHero();
+      return {
+        module: "hero-integration",
+        status: v.ok ? "green" : "amber",
+        issues: v.issues ?? [],
+      };
+    }),
   ];
 
   const phases: PhaseReport[] = [
@@ -186,10 +266,11 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     { n: 3, key: "live-demonstration", title_en: "Live Demonstration", title_ar: "العرض الحي", status: rollUp(p3), probes: p3 },
     { n: 4, key: "command-center", title_en: "Command Center", title_ar: "مركز القيادة", status: rollUp(p4), probes: p4 },
     { n: 5, key: "enterprise-memory", title_en: "Enterprise Memory", title_ar: "الذاكرة المؤسسية", status: rollUp(p5), probes: p5 },
-    scaffold(6, "multi-agent", "Multi-Agent", "الوكلاء المتعددون", ["agent-mesh", "mesh", "orchestrator"]),
-    scaffold(7, "digital-twin", "Digital Twin", "التوأم الرقمي", ["operations-center", "integration"]),
+    { n: 6, key: "multi-agent", title_en: "Multi-Agent", title_ar: "الوكلاء المتعددون", status: rollUp(p6), probes: p6 },
+    { n: 7, key: "digital-twin", title_en: "Digital Twin", title_ar: "التوأم الرقمي", status: rollUp(p7), probes: p7 },
     { n: 8, key: "performance-stability", title_en: "Performance & Stability", title_ar: "الأداء والاستقرار", status: rollUp(p8), probes: p8 },
-    scaffold(9, "executive-experience", "Executive Experience", "التجربة التنفيذية", ["conversation-experience", "acceptance-experience", "hero-ui"]),
+    { n: 9, key: "executive-experience", title_en: "Executive Experience", title_ar: "التجربة التنفيذية", status: rollUp(p9), probes: p9 },
+
   ];
 
   const overall: PhaseStatus = phases.some((p) => p.status === "red")
