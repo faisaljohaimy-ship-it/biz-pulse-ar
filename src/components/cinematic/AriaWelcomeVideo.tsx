@@ -117,12 +117,36 @@ export function AriaWelcomeVideo({ onDone }: Props) {
   };
 
   // Attach WebAudio analyser once video is playing with sound.
+  // FR-20 mobile guarantee: on touch devices we NEVER route audio through
+  // WebAudio (createMediaElementSource + a fresh AudioContext strands the
+  // audio output on iOS/Android because the new ctx starts suspended and
+  // resume() outside the gesture is refused). Instead we reuse the shared
+  // primed AudioContext with a time-based fallback so the video element
+  // keeps outputting to the device speakers unchanged.
   const attachAnalyser = () => {
     const v = videoRef.current;
     if (!v || analyserRef.current) return;
+    const isTouch = typeof window !== "undefined"
+      && (("ontouchstart" in window) || (navigator.maxTouchPoints ?? 0) > 0);
+    const startFallbackBars = () => {
+      const start = performance.now();
+      const tick = () => {
+        const t = (performance.now() - start) / 1000;
+        setBars(Array.from({ length: BAR_COUNT }, (_, i) =>
+          0.25 + 0.35 * Math.abs(Math.sin(t * 2 + i * 0.4))
+        ));
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    if (isTouch) { startFallbackBars(); return; }
     try {
+      const primed = getPrimedAudioContext();
       const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
-      const ctx = new Ctx();
+      const ctx = primed ?? new Ctx();
+      // Resume synchronously — if the caller is still inside a gesture,
+      // this is what actually turns audio output back on.
+      void ctx.resume().catch(() => {});
       const src = ctx.createMediaElementSource(v);
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 64;
@@ -145,16 +169,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       };
       rafRef.current = requestAnimationFrame(tick);
     } catch {
-      // Fallback: idle pulse driven by time
-      const start = performance.now();
-      const tick = () => {
-        const t = (performance.now() - start) / 1000;
-        setBars(Array.from({ length: BAR_COUNT }, (_, i) =>
-          0.25 + 0.35 * Math.abs(Math.sin(t * 2 + i * 0.4))
-        ));
-        rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
+      startFallbackBars();
     }
   };
 
