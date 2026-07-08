@@ -19,6 +19,7 @@ import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
+import { trackMount } from "@/lib/aria/singletons";
 
 interface AriaProviderValue {
   chat: ReturnType<typeof useChat>;
