@@ -180,7 +180,7 @@ export function verifyAriaSupremeLawIntegrity(): {
   missing_articles: number[];
   length_chars: number;
 } {
-  const required = Array.from({ length: 23 }, (_, i) => i + 1);
+  const required = Array.from({ length: 25 }, (_, i) => i + 1);
   const missing = required.filter(
     (n) => !new RegExp(`(^|\\D)${n}\\.`, "m").test(ARIA_MASTER_CONSTITUTION),
   );
