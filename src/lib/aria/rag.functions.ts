@@ -95,16 +95,14 @@ export const retrieveRegulationContext = createServerFn({ method: "POST" })
     }
 
     const raw = (rows ?? []) as Array<{
-      id: string;
+      chunk_id: string;
+      document_id: string;
       content: string;
       similarity: number;
       title: string;
-      tags: string[];
-      source: string;
     }>;
 
-    // Enrich with is_official / source_kind by hitting aria_documents once.
-    const docIds = Array.from(new Set(raw.map((r) => r.id)));
+    const docIds = Array.from(new Set(raw.map((r) => r.document_id)));
     let meta: Record<string, { is_official: boolean; source_kind: string; title: string }> = {};
     if (docIds.length > 0) {
       const { data: docs } = await supabase
