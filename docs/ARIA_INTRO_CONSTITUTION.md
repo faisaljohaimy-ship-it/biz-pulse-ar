@@ -38,6 +38,12 @@ Files under jurisdiction:
   button). None of them cause the gate to disappear early.
 - **INVARIANT-8 — Skip is explicit.** The Skip button is the only user
   action that may bypass INVARIANT-3.
+- **INVARIANT-14 — Full greeting completion.** `MAX_MS` (hard-cap timeout)
+  MUST exceed the actual welcome video duration + fade buffer. Any change
+  to the `aria-welcome.mp4` asset MUST be paired with a re-measurement
+  (`ffprobe -show_entries format=duration`) and a corresponding update to
+  `MAX_MS` in `AriaWelcomeVideo.tsx`. Current asset: 33s → MAX_MS = 40s.
+  Violation symptom: greeting cut off mid-sentence before `onEnded` fires.
 - **INVARIANT-13 — No self-unmount.** The root shell may hide marquee, chat,
   watermark, and greeter while `introActive=true`, but it MUST keep
   `WelcomeThenGenesis` mounted independently of `suppressOverlays`.
