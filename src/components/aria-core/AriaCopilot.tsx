@@ -363,7 +363,7 @@ export function AriaCopilot() {
   // current route (title · purpose · what you can do). Routes without a
   // dedicated script fall back silently to the existing generic greeting
   // path; there is no placeholder line.
-  const introHandleRef = useRef<SpeakHandle | null>(null);
+  const introHandleRef = useRef<{ stop: () => void } | null>(null);
   const lastIntroKeyRef = useRef<string | null>(null);
   const [panelIntro, setPanelIntro] = useState<ReturnType<typeof pageScriptParts>>(null);
   const routerPathname = useRouterState({ select: (s) => s.location.pathname });
