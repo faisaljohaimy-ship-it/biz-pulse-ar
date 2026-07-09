@@ -74,28 +74,91 @@ export function AriaAutoIntroducer() {
     };
   }, [pathname, mode]);
 
-  // Global click delegate for [data-aria-intro] icons/tiles.
+  // Global click delegate — activates ARIA on every interactive icon/button/link
+  // across all pages and devices. Priority: explicit data-aria-intro wins,
+  // else fall back to aria-label / title / visible text on the nearest
+  // interactive ancestor (button, a, [role=button|link|tab|menuitem|switch|checkbox]).
   useEffect(() => {
     if (typeof window === "undefined") return;
     let iconHandle: SpeakHandle | null = null;
+    let lastAt = 0;
+    let lastText = "";
+
+    const INTERACTIVE_SEL =
+      'button, a, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="switch"], [role="checkbox"], [data-aria-intro]';
+
+    const readLabel = (el: HTMLElement): string => {
+      const aria = el.getAttribute("aria-label")?.trim();
+      if (aria) return aria;
+      const labelledby = el.getAttribute("aria-labelledby");
+      if (labelledby) {
+        const parts = labelledby
+          .split(/\s+/)
+          .map((id) => document.getElementById(id)?.textContent?.trim() ?? "")
+          .filter(Boolean);
+        if (parts.length) return parts.join(" ");
+      }
+      const title = el.getAttribute("title")?.trim();
+      if (title) return title;
+      const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+      if (text && text.length <= 80) return text;
+      const svg = el.querySelector("svg[aria-label], svg[data-icon]");
+      if (svg) {
+        return (
+          svg.getAttribute("aria-label")?.trim() ||
+          svg.getAttribute("data-icon")?.trim() ||
+          ""
+        );
+      }
+      return "";
+    };
+
     const onClick = (ev: MouseEvent) => {
       if (!autoIntroEnabled()) return;
       const target = ev.target;
       if (!(target instanceof Element)) return;
-      const el = target.closest<HTMLElement>("[data-aria-intro]");
+      const el = target.closest<HTMLElement>(INTERACTIVE_SEL);
       if (!el) return;
+      // Ignore inputs the user is typing into.
+      if (el.matches("input, textarea, select")) return;
+
       const locale = pickLocale();
-      const intro = el.getAttribute("data-aria-intro") ?? "";
-      const example =
+      const explicitIntro =
+        el.getAttribute(locale === "en" ? "data-aria-intro-en" : "data-aria-intro-ar") ??
+        el.getAttribute("data-aria-intro") ??
+        "";
+      const explicitExample =
         el.getAttribute(locale === "en" ? "data-aria-example-en" : "data-aria-example-ar") ??
         el.getAttribute("data-aria-example") ??
         "";
-      const introText =
-        el.getAttribute(locale === "en" ? "data-aria-intro-en" : "data-aria-intro-ar") ?? intro;
-      if (!introText) return;
-      const exampleLead =
-        locale === "en" ? "Example one: " : "المِثَالُ الأَوَّل: ";
-      const full = example ? `${introText} ${exampleLead}${example}.` : introText;
+
+      let introText = explicitIntro;
+      let exampleText = explicitExample;
+
+      if (!introText) {
+        const label = readLabel(el);
+        if (!label) return;
+        introText =
+          locale === "en"
+            ? `${label}. This control lets you ${label.toLowerCase()} directly from here.`
+            : `${label}. هٰذَا العُنْصُر يُتِيحُ لَكَ ${label} مُبَاشَرَةً مِنْ هٰذِهِ النَّافِذَة.`;
+        if (!exampleText) {
+          exampleText =
+            locale === "en"
+              ? `tap ${label} to open the related view instantly`
+              : `اضْغَطْ ${label} لِفَتْحِ الوَاجِهَةِ المُرْتَبِطَة فَوْرًا`;
+        }
+      }
+
+      const exampleLead = locale === "en" ? "Example one: " : "المِثَالُ الأَوَّل: ";
+      const full = exampleText ? `${introText} ${exampleLead}${exampleText}.` : introText;
+
+      // Debounce rapid duplicate clicks on same control.
+      const now = Date.now();
+      if (full === lastText && now - lastAt < 1500) return;
+      lastText = full;
+      lastAt = now;
+
       iconHandle?.stop();
       try {
         iconHandle = speakAria({ text: full, lang: locale });
@@ -110,6 +173,7 @@ export function AriaAutoIntroducer() {
       iconHandle?.stop();
     };
   }, []);
+
 
   return null;
 }
