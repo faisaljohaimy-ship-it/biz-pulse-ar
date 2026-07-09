@@ -135,8 +135,8 @@ export async function runExecutiveBrain(
   req: BrainRequest,
   opts: RunExecutiveBrainOptions,
 ): Promise<ExecutiveBrainAnswer> {
-  // 1. Intent + retrieval + plan + insights + prompt
-  const reasoning = await composeReasoning(req.question);
+  // 1. Intent + retrieval + plan + insights + prompt (scoped by caller org)
+  const reasoning = await composeReasoning(req.question, { orgId: req.orgId ?? null });
 
   // 2. Memory
   const mem = loadMemory(req.sessionId);
