@@ -29,8 +29,8 @@ import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
-import { speakablePageScript, pageScriptParts } from "@/lib/aria/page-scripts";
-import { speakAria, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { pageScriptParts } from "@/lib/aria/page-scripts";
+// speakAria / speakablePageScript intentionally NOT imported — chat is silent.
 import { useRouterState } from "@tanstack/react-router";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
