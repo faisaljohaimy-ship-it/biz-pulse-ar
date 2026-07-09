@@ -47,11 +47,10 @@ interface AriaState {
 export const useAriaStore = create<AriaState>((set, get) => ({
   mode: "collapsed",
   voice: "idle",
-  // Default ON — ARIA auto-introduces every window/sub-page on entry and
-  // narrates icon taps automatically until the user explicitly mutes.
-  voiceEnabled:
-    typeof window === "undefined" ||
-    window.localStorage.getItem("aria.voiceEnabled") !== "false",
+  // Voice permanently OFF — ARIA chat is a silent, text-only assistant on
+  // every device. The toggle still exists but flips a store flag that has
+  // no audible effect (all speak paths early-return).
+  voiceEnabled: false,
   pageContext: null,
   activeTurn: null,
   activeEnvelope: null,
