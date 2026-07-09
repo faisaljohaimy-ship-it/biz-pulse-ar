@@ -151,15 +151,25 @@ export function AriaAutoIntroducer() {
         el.getAttribute("data-aria-example") ??
         "";
 
-      // Only narrate elements that explicitly opt in via data-aria-intro.
-      // Narrating every button by label interrupted ARIA replies and
-      // generated a TTS request on every click.
-      if (!explicitIntro) return;
+      // Fallback: if no explicit data-aria-intro, use the accessible label
+      // of the interactive element itself, so EVERY icon/button narrates
+      // a brief intro + example on tap (per user directive).
+      const label = explicitIntro || readLabel(el);
+      if (!label) return;
+
+      const introText = explicitIntro
+        ? explicitIntro
+        : locale === "en"
+          ? `${label}. Tap to open ${label} and view its details.`
+          : `${label}. اضْغُطْ لِفَتْحِ ${label} وَعَرْضِ تَفَاصِيلِهِ.`;
 
       const exampleLead = locale === "en" ? "Example one: " : "المِثَالُ الأَوَّل: ";
-      const full = explicitExample
-        ? `${explicitIntro} ${exampleLead}${explicitExample}.`
-        : explicitIntro;
+      const derivedExample = explicitExample
+        ? explicitExample
+        : locale === "en"
+          ? `ask me for a quick brief on ${label}`
+          : `اطْلُبْ مِنِّي مُلَخَّصًا تَنْفِيذِيًّا عَنْ ${label}`;
+      const full = `${introText} ${exampleLead}${derivedExample}.`;
 
       // Debounce rapid duplicate clicks on same control.
       const now = Date.now();
