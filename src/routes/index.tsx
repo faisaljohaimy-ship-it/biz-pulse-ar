@@ -132,18 +132,7 @@ function IntroLanding() {
   // __root.tsx (single ARIA welcome video, once per session).
 
   const [deptsOpen, setDeptsOpen] = useState(false);
-  const { speak } = useAriaSpeech();
 
-  const replayGreeting = () => {
-    AriaAudioBus.unlock();
-    AriaAudioBus.forceReplayGreeting();
-    try {
-      window.sessionStorage.setItem("aria-demo-greeted", "1");
-    } catch {
-      /* noop */
-    }
-    void speak(GREETING_AR, "panel-greeting");
-  };
 
   useEffect(() => {
     if (typeof document === "undefined") return;
