@@ -6,23 +6,24 @@
  *   - runThinkingLoopFn: full loop (intent + plan + insights + evidence)
  *     returning a structured executive bundle without a model call.
  *
- * Both are authenticated to protect the underlying operational data.
+ * Both are authenticated AND org-scoped so evidence retrieval never leaks
+ * cross-tenant rows from the service-role client.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireOrgContext } from "@/lib/org/org-middleware";
 import { runInsightScan } from "./insight-engine.server";
 import { runThinkingLoop } from "./thinking-loop.server";
 
 export const runInsightScanFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async () => runInsightScan());
+  .middleware([requireOrgContext])
+  .handler(async ({ context }) => runInsightScan(context.orgId));
 
 export const runThinkingLoopFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireOrgContext])
   .inputValidator((v) => z.object({ question: z.string().min(1).max(600) }).parse(v))
-  .handler(async ({ data }) => {
-    const bundle = await runThinkingLoop(data.question);
+  .handler(async ({ data, context }) => {
+    const bundle = await runThinkingLoop(data.question, { orgId: context.orgId });
     // Strip the raw system prompt from the client-visible payload.
     return {
       intent: bundle.intent,
