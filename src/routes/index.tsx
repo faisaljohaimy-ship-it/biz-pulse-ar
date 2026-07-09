@@ -275,15 +275,7 @@ function IntroLanding() {
               <span>{t.cta_depts}</span>
             </button>
             <DemoModeLauncher />
-            <button
-              type="button"
-              onClick={replayGreeting}
-              className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20"
-              aria-label={ar ? "استمع للتعريف" : "Play greeting"}
-            >
-              <span aria-hidden>🔊</span>
-              <span>{ar ? "استمع للتعريف" : "Play greeting"}</span>
-            </button>
+            {/* "استمع للتعريف" removed per directive — ARIA voice auto-intro disabled on home. */}
           </div>
 
           {/* Telemetry footer — tabular numerals, executive signal */}
