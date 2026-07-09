@@ -47,8 +47,11 @@ interface AriaState {
 export const useAriaStore = create<AriaState>((set, get) => ({
   mode: "collapsed",
   voice: "idle",
+  // Default ON — ARIA auto-introduces every window/sub-page on entry and
+  // narrates icon taps automatically until the user explicitly mutes.
   voiceEnabled:
-    typeof window !== "undefined" && window.localStorage.getItem("aria.voiceEnabled") === "true",
+    typeof window === "undefined" ||
+    window.localStorage.getItem("aria.voiceEnabled") !== "false",
   pageContext: null,
   activeTurn: null,
   activeEnvelope: null,
