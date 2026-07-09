@@ -554,11 +554,17 @@ export function speakablePageScript(
   locale: SpeechLocale,
 ): string | null {
   const s = pageScriptFor(pathname);
-  if (!s) return null;
+  if (!s) return genericSpeakable(pathname, locale);
+  const ex1Ar = s.example1Ar ?? deriveExampleAr(s.actionAr, 1);
+  const ex2Ar = s.example2Ar ?? deriveExampleAr(s.actionAr, 2);
+  const ex1En = s.example1En ?? deriveExampleEn(s.actionEn, 1);
+  const ex2En = s.example2En ?? deriveExampleEn(s.actionEn, 2);
   if (locale === "en") {
-    return `You are in ${s.titleEn}. ${s.purposeEn} ${s.actionEn}`;
+    const base = `You are in ${s.titleEn}. ${s.purposeEn} ${s.actionEn} Example one: ${ex1En}. Example two: ${ex2En}.`;
+    return s.extendedEn ? `${base} ${s.extendedEn}` : base;
   }
-  return `أَنْتَ فِي ${s.titleAr}. ${s.purposeAr} ${s.actionAr}`;
+  const base = `أَنْتَ فِي ${s.titleAr}. ${s.purposeAr} ${s.actionAr} المِثَالُ الأَوَّل: ${ex1Ar}. المِثَالُ الثَّانِي: ${ex2Ar}.`;
+  return s.extendedAr ? `${base} ${s.extendedAr}` : base;
 }
 
 /**
@@ -568,3 +574,31 @@ export function speakablePageScript(
 export function pageScriptParts(pathname: string): PageScript | null {
   return pageScriptFor(pathname);
 }
+
+// ── Fallbacks ─────────────────────────────────────────────────────────
+function deriveExampleAr(action: string, n: 1 | 2): string {
+  const trimmed = action.replace(/[.،]+$/g, "").trim();
+  return n === 1
+    ? `جَرِّبْ الآن — ${trimmed}`
+    : `اطْلُبْ مِنِّي مُلَخَّصًا تَنْفِيذِيًّا عَنْ هَذِهِ النَّافِذَة`;
+}
+function deriveExampleEn(action: string, n: 1 | 2): string {
+  const trimmed = action.replace(/[.]+$/g, "").trim();
+  return n === 1 ? `Try now — ${trimmed}` : `Ask me for an executive brief on this window`;
+}
+
+function humanizeSegment(seg: string): { ar: string; en: string } {
+  const clean = seg.replace(/[-_.]+/g, " ").trim();
+  return { ar: clean, en: clean.replace(/\b\w/g, (c) => c.toUpperCase()) };
+}
+
+function genericSpeakable(pathname: string, locale: SpeechLocale): string {
+  const p = normalizePath(pathname);
+  const last = p.split("/").filter(Boolean).pop() ?? "home";
+  const { ar, en } = humanizeSegment(last);
+  if (locale === "en") {
+    return `You are on ${en}. This surface lets you review live data for ${en}. Example one: open a card to inspect details. Example two: ask me for a quick executive brief.`;
+  }
+  return `أَنْتَ فِي نَافِذَةِ ${ar}. تَعْرِضُ هَذِهِ النَّافِذَةُ البَيَانَاتِ الحَيَّةَ الخَاصَّةَ بِـ ${ar}. المِثَالُ الأَوَّل: افْتَحْ أَيَّ بِطَاقَةٍ لِمُرَاجَعَةِ تَفَاصِيلِهَا. المِثَالُ الثَّانِي: اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً مُوجَزَة.`;
+}
+
