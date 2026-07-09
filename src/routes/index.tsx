@@ -27,15 +27,10 @@ import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
-import { useAriaSpeech } from "@/hooks/useAriaSpeech";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
-// from __root.tsx via <WelcomeThenGenesis />.
-
-const GREETING_AR =
-  "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
+// from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
 
 export const Route = createFileRoute("/")({
   head: () => ({
