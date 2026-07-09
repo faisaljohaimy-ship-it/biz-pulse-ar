@@ -261,7 +261,7 @@ function IntroLanding() {
               <span>{t.cta_depts}</span>
             </button>
             <DemoModeLauncher />
-            <AriaListenChip ar={ar} />
+            {/* Homepage voice intro removed — no auto-play, no listen chip. */}
           </div>
 
           {/* Telemetry footer — tabular numerals, executive signal */}
