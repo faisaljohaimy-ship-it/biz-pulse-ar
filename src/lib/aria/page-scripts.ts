@@ -25,6 +25,17 @@ export interface PageScript {
   readonly purposeEn: string;
   readonly actionAr: string;
   readonly actionEn: string;
+  /** Two concrete usage examples. If absent, examples are synthesized
+   *  from `actionAr/En` so every route still speaks Example 1 & Example 2. */
+  readonly example1Ar?: string;
+  readonly example1En?: string;
+  readonly example2Ar?: string;
+  readonly example2En?: string;
+  /** Optional extended narration appended after examples — used for a
+   *  small set of flagship surfaces (e.g. `/hajj`) that require a full,
+   *  end-to-end explanation on entry. */
+  readonly extendedAr?: string;
+  readonly extendedEn?: string;
 }
 
 /**
