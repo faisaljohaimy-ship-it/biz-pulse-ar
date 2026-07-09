@@ -389,27 +389,6 @@ export function AriaCopilot() {
     setPanelIntro(parts);
     // ARIA chat is silent by policy — no panel-open voice intro on any device.
     return;
-    // eslint-disable-next-line no-unreachable
-    if (!parts) return;
-    const text = speakablePageScript(pathname, locale);
-    if (!text) return;
-
-    // Cancel any prior intro immediately — no stacking across route changes.
-    introHandleRef.current?.stop();
-    introHandleRef.current = null;
-    try {
-      const h = speakAria({ text, lang: locale });
-      introHandleRef.current = h;
-      void h.promise.catch(() => {
-        /* silent per ARIA policy */
-      });
-    } catch {
-      /* best-effort intro */
-    }
-    return () => {
-      introHandleRef.current?.stop();
-      introHandleRef.current = null;
-    };
   }, [isOpen, routerPathname]);
 
   // Conversation Mode state
