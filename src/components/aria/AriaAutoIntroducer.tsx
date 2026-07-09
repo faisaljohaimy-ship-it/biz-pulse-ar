@@ -74,7 +74,7 @@ export function AriaAutoIntroducer() {
       handleRef.current?.stop();
       handleRef.current = null;
     };
-  }, [pathname, mode]);
+  }, [pathname, mode, voiceEnabled]);
 
   // Global click delegate — activates ARIA on every interactive icon/button/link
   // across all pages and devices. Priority: explicit data-aria-intro wins,
