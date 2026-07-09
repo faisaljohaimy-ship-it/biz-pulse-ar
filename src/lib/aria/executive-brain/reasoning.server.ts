@@ -65,8 +65,11 @@ export interface ReasoningBundle extends ThinkingBundle {
   contract: string;
 }
 
-export async function composeReasoning(question: string): Promise<ReasoningBundle> {
-  const base = await runThinkingLoop(question);
+export async function composeReasoning(
+  question: string,
+  options?: { orgId?: string | null },
+): Promise<ReasoningBundle> {
+  const base = await runThinkingLoop(question, { orgId: options?.orgId ?? null });
   // Replace the base JSON contract paragraph with the richer Brain contract.
   const stripped = base.system.replace(/RESPONSE CONTRACT[\s\S]*$/m, "").trimEnd();
   const system = `${stripped}\n\n${BRAIN_JSON_CONTRACT}`;
