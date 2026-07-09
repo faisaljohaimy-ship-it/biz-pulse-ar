@@ -134,7 +134,9 @@ const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تس�
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
-const STILL_SRC = "/aria-backdrop.webp";
+import ariaHologramPortrait from "@/assets/aria-hologram-portrait.jpeg.asset.json";
+
+const STILL_SRC = ariaHologramPortrait.url;
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
 // and provider re-renders. Any second speak(replyId) for the same id is dropped
