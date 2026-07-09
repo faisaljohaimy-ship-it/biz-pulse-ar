@@ -61,13 +61,41 @@ function getAudioContext(): AudioContext {
 }
 
 /**
+ * Global singleton speech lock — guarantees only ONE ARIA voice is audible
+ * across the entire system at any time. Any new speakAria() call stops the
+ * previous handle before starting, preventing overlapping/duplicate audio
+ * from route auto-intros, icon narration, copilot replies, greetings, etc.
+ */
+let activeHandle: SpeakHandle | null = null;
+export function stopActiveAriaVoice(): void {
+  try {
+    activeHandle?.stop();
+  } catch {
+    /* ignore */
+  }
+  activeHandle = null;
+}
+
+/**
  * Speak `text` using the ARIA voice. Returns a handle whose `promise`
  * resolves after playback completes or is stopped. Pure client runtime
  * (no localStorage / no cookies).
  */
 export function speakAria(opts: SpeakOptions): SpeakHandle {
+  // Enforce single-voice invariant: cancel any currently-playing utterance.
+  stopActiveAriaVoice();
+  // Also silence any browser SpeechSynthesis that other subsystems may have
+  // triggered, so voices never overlap across engines.
+  try {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  } catch {
+    /* ignore */
+  }
   const lang = opts.lang ?? detectLang(opts.text);
   const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
+
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
   let raf = 0;
