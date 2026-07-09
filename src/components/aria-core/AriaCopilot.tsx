@@ -134,7 +134,9 @@ const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تس�
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
-const STILL_SRC = "/aria-backdrop.webp";
+import ariaHologramPortrait from "@/assets/aria-hologram-portrait.jpeg.asset.json";
+
+const STILL_SRC = ariaHologramPortrait.url;
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
 // and provider re-renders. Any second speak(replyId) for the same id is dropped
@@ -177,6 +179,28 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
       className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
+      {/* ARIA hologram portrait — full-panel cinematic backdrop */}
+      <img
+        src={ariaHologramPortrait.url}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-60"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)",
+          maskImage:
+            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)",
+          filter: "saturate(115%)",
+        }}
+      />
+      {/* Readability veil so chat text remains crisp over the portrait. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(4,7,15,0.15) 0%, rgba(4,7,15,0.55) 55%, rgba(4,7,15,0.85) 100%)",
+        }}
+      />
       <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
       {convMode && (
         <div
