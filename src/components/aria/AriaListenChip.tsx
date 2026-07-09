@@ -65,7 +65,7 @@ export function AriaListenChip({ ar }: Props) {
 
     const audio = new Audio("/aria-greeting-voice.mp3");
     audio.preload = "auto";
-    audio.playsInline = true;
+    audio.setAttribute("playsinline", "true");
     audio.crossOrigin = "anonymous";
     audioRef.current = audio;
     setPlaying(true);
