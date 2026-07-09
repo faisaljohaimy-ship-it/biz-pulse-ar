@@ -302,7 +302,8 @@ function RootComponent() {
                     <Outlet />
                   </div>
                   {!introActive && <AriaCopilot />}
-                  {/* AriaPageNarrator removed — no auto-voice on route change */}
+                  {/* AriaPageNarrator removed — auto voice reintroduced via AriaAutoIntroducer */}
+                  {!introActive && !suppressOverlays && <AriaAutoIntroducer />}
                   {!suppressOverlays && <AriaGreeter />}
                   <WelcomeThenGenesis />
                   <Toaster />
