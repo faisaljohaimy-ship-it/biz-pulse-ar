@@ -260,7 +260,7 @@ function IntroLanding() {
               <span>{t.cta_depts}</span>
             </button>
             <DemoModeLauncher />
-            {/* "استمع للتعريف" removed per directive — ARIA voice auto-intro disabled on home. */}
+            <AriaListenChip ar={ar} />
           </div>
 
           {/* Telemetry footer — tabular numerals, executive signal */}
