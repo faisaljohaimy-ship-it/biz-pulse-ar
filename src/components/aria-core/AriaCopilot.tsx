@@ -134,7 +134,7 @@ const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تس�
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 
-import ariaHologramPortrait from "@/assets/aria-hologram-portrait.jpeg.asset.json";
+import ariaHologramPortrait from "@/assets/aria-global-bg.jpeg.asset.json";
 
 const STILL_SRC = ariaHologramPortrait.url;
 
