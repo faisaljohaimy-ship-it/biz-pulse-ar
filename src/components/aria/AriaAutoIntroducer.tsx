@@ -38,6 +38,7 @@ function autoIntroEnabled(): boolean {
 export function AriaAutoIntroducer() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const mode = useAriaStore((s) => s.mode);
+  const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const lastKeyRef = useRef<string | null>(null);
   const handleRef = useRef<SpeakHandle | null>(null);
 
@@ -45,6 +46,7 @@ export function AriaAutoIntroducer() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!autoIntroEnabled()) return;
+    if (!voiceEnabled) return;
     // When the copilot panel is open, AriaCopilot narrates. Skip here.
     if (mode !== "collapsed") return;
 
