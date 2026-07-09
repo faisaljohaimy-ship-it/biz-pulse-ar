@@ -80,6 +80,9 @@ export interface BrainRequest {
   history?: BrainTurn[];
   /** Session id used to load/save Executive Memory. */
   sessionId?: string;
+  /** Caller's tenant/org id. REQUIRED for evidence retrieval — without it,
+   *  cross-tenant leak protection returns an empty evidence block. */
+  orgId?: string | null;
 }
 
 export interface RiskSignal {
