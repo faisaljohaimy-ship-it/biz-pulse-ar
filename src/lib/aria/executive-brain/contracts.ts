@@ -42,6 +42,7 @@ export const BrainRequestSchema = z.object({
   anchors: z.array(BrainAnchorSchema).max(16).optional(),
   history: z.array(BrainTurnSchema).max(16).optional(),
   sessionId: z.string().max(120).optional(),
+  orgId: z.string().uuid().nullable().optional(),
 });
 
 /** Strict JSON shape the model must return. */

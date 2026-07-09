@@ -128,10 +128,20 @@ interface EvidenceBundle {
  * silently (evidence is optional; the model must say "Data unavailable"
  * rather than fabricate).
  */
-export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundle> {
+export async function collectEvidence(
+  intent: AriaIntent,
+  orgId?: string | null,
+): Promise<EvidenceBundle> {
   const sources: string[] = [];
   const sections: string[] = [];
   const plan = retrievalPlan(intent);
+
+  // Tenant isolation: this collector hits the service-role client (which
+  // bypasses RLS), so we MUST filter every query by the caller's org_id.
+  // When no org id is available (public/unauthenticated caller, missing
+  // membership, orchestrator that forgot to thread it), return an empty
+  // bundle rather than leak cross-tenant rows into ARIA's grounded evidence.
+  if (!orgId) return { intent, sources, block: "" };
 
   let admin:
     | Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"]
@@ -151,6 +161,7 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
         const { data } = await admin!
           .from("sec_incidents")
           .select("id,title_ar,title_en,severity,status,site_id,reported_at")
+          .eq("org_id", orgId)
           .order("reported_at", { ascending: false })
           .limit(6);
         if (data?.length) {
@@ -173,6 +184,7 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
         const { data } = await admin!
           .from("pulse_kpis")
           .select("key,label,label_en,value,delta,trend,tone,updated_at")
+          .eq("org_id", orgId)
           .order("updated_at", { ascending: false })
           .limit(10);
         if (data?.length) {
@@ -195,6 +207,7 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
         const { data } = await admin!
           .from("sim_notifications")
           .select("title,severity,body,created_at")
+          .eq("org_id", orgId)
           .order("created_at", { ascending: false })
           .limit(6);
         if (data?.length) {
@@ -214,6 +227,7 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
         const { data } = await admin!
           .from("sim_risks")
           .select("title,category,likelihood,impact,status")
+          .eq("org_id", orgId)
           .order("impact", { ascending: false })
           .limit(6);
         if (data?.length) {
@@ -236,6 +250,7 @@ export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundl
         const { data } = await admin!
           .from("sec_work_orders")
           .select("id,title_ar,title_en,priority,status,due_at")
+          .eq("org_id", orgId)
           .order("due_at", { ascending: true })
           .limit(6);
         if (data?.length) {
@@ -311,11 +326,12 @@ export interface ExecutiveBrief {
 
 /** Public entry point: run layers 2–4 and return the composed prompt parts.
  *  Pass `{ skipEvidence: true }` for public/unauthenticated callers so no
- *  service-role live rows are pulled into the prompt (cross-tenant leak
- *  protection). */
+ *  service-role live rows are pulled into the prompt. `orgId` MUST be set
+ *  for authenticated callers — collectEvidence refuses to run without it
+ *  and returns an empty evidence block (cross-tenant leak protection). */
 export async function buildExecutiveBrief(
   question: string,
-  options?: { skipEvidence?: boolean },
+  options?: { skipEvidence?: boolean; orgId?: string | null },
 ): Promise<ExecutiveBrief> {
   const intent = classifyIntent(question);
   if (options?.skipEvidence) {
@@ -326,7 +342,7 @@ export async function buildExecutiveBrief(
       sources: [],
     };
   }
-  const { block, sources } = await collectEvidence(intent);
+  const { block, sources } = await collectEvidence(intent, options?.orgId ?? null);
   return {
     intent,
     system: buildExecutiveSystemPrompt(intent, sources),
