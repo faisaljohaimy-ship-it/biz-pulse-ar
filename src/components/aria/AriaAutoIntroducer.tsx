@@ -54,6 +54,9 @@ export function AriaAutoIntroducer() {
     const SILENT_PATHS = ["/", "/executive-bridge", "/bridge"];
     if (SILENT_PATHS.includes(pathname)) return;
 
+    const locale = pickLocale();
+    const key = `${pathname}::${locale}`;
+
     if (lastKeyRef.current === key) return;
     lastKeyRef.current = key;
 
