@@ -184,6 +184,7 @@ export async function collectEvidence(
         const { data } = await admin!
           .from("pulse_kpis")
           .select("key,label,label_en,value,delta,trend,tone,updated_at")
+          .eq("org_id", orgId)
           .order("updated_at", { ascending: false })
           .limit(10);
         if (data?.length) {
