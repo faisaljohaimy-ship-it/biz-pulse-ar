@@ -387,7 +387,10 @@ export function AriaCopilot() {
 
     const parts = pageScriptParts(pathname);
     setPanelIntro(parts);
-    if (!parts) return; // fallback: existing generic greeting owns silence/speech
+    // ARIA chat is silent by policy — no panel-open voice intro on any device.
+    return;
+    // eslint-disable-next-line no-unreachable
+    if (!parts) return;
     const text = speakablePageScript(pathname, locale);
     if (!text) return;
 
