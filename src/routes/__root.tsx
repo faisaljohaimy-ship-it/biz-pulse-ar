@@ -24,6 +24,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
+import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
 import { AriaAutoIntroducer } from "@/components/aria/AriaAutoIntroducer";
 // AriaPageNarrator import removed — auto voice on navigation disabled
@@ -296,7 +297,9 @@ function RootComponent() {
             <DemoModeProvider>
               <RegionProvider>
                 <AriaProvider>
-                  {/* AriaGlobalBackdrop removed — ARIA lives ONLY in the top-circle inside AriaCopilot */}
+                  {/* Global ARIA hologram backdrop for every non-home page.
+                      Homepage owns its own HomeVideoBackdrop. */}
+                  {!isHero && !isPromo && !introActive && <GlobalPageBackdrop />}
                   {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
                   {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
                   {!suppressOverlays && <AriaWatermark />}
