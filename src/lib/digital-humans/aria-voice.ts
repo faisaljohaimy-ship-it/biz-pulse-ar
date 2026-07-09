@@ -186,8 +186,14 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
     }
   })();
 
-  return { promise, stop };
+  const handle: SpeakHandle = { promise, stop };
+  activeHandle = handle;
+  promise.finally(() => {
+    if (activeHandle === handle) activeHandle = null;
+  });
+  return handle;
 }
+
 
 /**
  * Speak `text` in the voice of a specific Digital Human persona.
