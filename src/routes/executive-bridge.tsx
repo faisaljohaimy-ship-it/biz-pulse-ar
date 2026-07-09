@@ -147,7 +147,8 @@ function ExecutiveBridgePage() {
   const [primary, setPrimary] = React.useState<"ar" | "en">(search.lang ?? "ar");
   // Continuous narration mode: ARIA reads each scene, then auto-advances
   // on audio-ended. Falls back to a silent timer if audio is unavailable.
-  const [narrating, setNarrating] = React.useState(true);
+  // Auto-narration disabled per directive — user starts narration manually via the play control.
+  const [narrating, setNarrating] = React.useState(false);
   const [completed, setCompleted] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const reduced = usePrefersReducedMotion();

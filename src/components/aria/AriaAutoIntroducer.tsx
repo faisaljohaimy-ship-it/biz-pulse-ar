@@ -49,9 +49,14 @@ export function AriaAutoIntroducer() {
     if (!voiceEnabled) return;
     // When the copilot panel is open, AriaCopilot narrates. Skip here.
     if (mode !== "collapsed") return;
+    // Explicit silence zones: home, executive experience, and command bridge.
+    // These surfaces have their own owned narration lifecycle (or must stay silent per directive).
+    const SILENT_PATHS = ["/", "/executive-bridge", "/bridge"];
+    if (SILENT_PATHS.includes(pathname)) return;
 
     const locale = pickLocale();
     const key = `${pathname}::${locale}`;
+
     if (lastKeyRef.current === key) return;
     lastKeyRef.current = key;
 

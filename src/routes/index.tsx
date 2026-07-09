@@ -27,15 +27,10 @@ import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
-import { useAriaSpeech } from "@/hooks/useAriaSpeech";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
-// from __root.tsx via <WelcomeThenGenesis />.
-
-const GREETING_AR =
-  "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.";
+// from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -137,18 +132,7 @@ function IntroLanding() {
   // __root.tsx (single ARIA welcome video, once per session).
 
   const [deptsOpen, setDeptsOpen] = useState(false);
-  const { speak } = useAriaSpeech();
 
-  const replayGreeting = () => {
-    AriaAudioBus.unlock();
-    AriaAudioBus.forceReplayGreeting();
-    try {
-      window.sessionStorage.setItem("aria-demo-greeted", "1");
-    } catch {
-      /* noop */
-    }
-    void speak(GREETING_AR, "panel-greeting");
-  };
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -275,15 +259,7 @@ function IntroLanding() {
               <span>{t.cta_depts}</span>
             </button>
             <DemoModeLauncher />
-            <button
-              type="button"
-              onClick={replayGreeting}
-              className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20"
-              aria-label={ar ? "استمع للتعريف" : "Play greeting"}
-            >
-              <span aria-hidden>🔊</span>
-              <span>{ar ? "استمع للتعريف" : "Play greeting"}</span>
-            </button>
+            {/* "استمع للتعريف" removed per directive — ARIA voice auto-intro disabled on home. */}
           </div>
 
           {/* Telemetry footer — tabular numerals, executive signal */}
