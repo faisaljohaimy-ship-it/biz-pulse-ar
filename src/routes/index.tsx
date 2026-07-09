@@ -27,7 +27,7 @@ import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
-import { AriaGlobalBackdrop } from "@/components/aria/AriaGlobalBackdrop";
+import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
@@ -165,9 +165,10 @@ function IntroLanding() {
       {/* Pre-hero intros retired. The single ARIA welcome video is mounted
           globally in __root.tsx via <WelcomeThenGenesis />. */}
 
-      {/* ARIA transparent full-screen backdrop — homepage only. Face centered
-          at 20% (mobile) / 30% (desktop). Content sits above via z-10. */}
-      <AriaGlobalBackdrop />
+      {/* Homepage video backdrop — plays with sound once per system session,
+          silent on every subsequent mount (including returns from inner
+          windows). Replaces the retired AriaGlobalBackdrop. */}
+      <HomeVideoBackdrop />
 
       {/* Lightweight gradient hero glow layered above her, still behind content. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
