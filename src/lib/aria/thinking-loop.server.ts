@@ -45,16 +45,21 @@ The text_ar and text_en fields are the only fields shown to the user; the rest a
 
 export async function runThinkingLoop(
   question: string,
-  options?: { skipEvidence?: boolean; skipInsights?: boolean },
+  options?: { skipEvidence?: boolean; skipInsights?: boolean; orgId?: string | null },
 ): Promise<ThinkingBundle> {
-  // Layers 2–4 (intent + retrieval + reasoning prompt). Public callers must
-  // pass skipEvidence:true — collectEvidence and runInsightScan both use the
-  // service-role client with no tenant filter and would leak cross-org data.
-  const brief = await buildExecutiveBrief(question, { skipEvidence: options?.skipEvidence });
+  // Layers 2–4 (intent + retrieval + reasoning prompt). Both `collectEvidence`
+  // and `runInsightScan` hit the service-role client and MUST be scoped by
+  // orgId; when the caller has no org id (public/unauthenticated) they either
+  // pass skipEvidence:true or receive an empty evidence bundle by construction.
+  const orgId = options?.orgId ?? null;
+  const brief = await buildExecutiveBrief(question, {
+    skipEvidence: options?.skipEvidence,
+    orgId,
+  });
   const [insightBundle, plan] = await Promise.all([
-    options?.skipInsights || options?.skipEvidence
+    options?.skipInsights || options?.skipEvidence || !orgId
       ? Promise.resolve({ block: "", sources: [] as string[], insights: [] as Insight[] })
-      : runInsightScan(),
+      : runInsightScan(orgId),
     Promise.resolve(buildPlan(brief.intent)),
   ]);
 
