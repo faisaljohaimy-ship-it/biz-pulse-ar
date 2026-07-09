@@ -128,10 +128,20 @@ interface EvidenceBundle {
  * silently (evidence is optional; the model must say "Data unavailable"
  * rather than fabricate).
  */
-export async function collectEvidence(intent: AriaIntent): Promise<EvidenceBundle> {
+export async function collectEvidence(
+  intent: AriaIntent,
+  orgId?: string | null,
+): Promise<EvidenceBundle> {
   const sources: string[] = [];
   const sections: string[] = [];
   const plan = retrievalPlan(intent);
+
+  // Tenant isolation: this collector hits the service-role client (which
+  // bypasses RLS), so we MUST filter every query by the caller's org_id.
+  // When no org id is available (public/unauthenticated caller, missing
+  // membership, orchestrator that forgot to thread it), return an empty
+  // bundle rather than leak cross-tenant rows into ARIA's grounded evidence.
+  if (!orgId) return { intent, sources, block: "" };
 
   let admin:
     | Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"]
