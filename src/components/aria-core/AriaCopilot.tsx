@@ -387,26 +387,8 @@ export function AriaCopilot() {
 
     const parts = pageScriptParts(pathname);
     setPanelIntro(parts);
-    if (!parts) return; // fallback: existing generic greeting owns silence/speech
-    const text = speakablePageScript(pathname, locale);
-    if (!text) return;
-
-    // Cancel any prior intro immediately — no stacking across route changes.
-    introHandleRef.current?.stop();
-    introHandleRef.current = null;
-    try {
-      const h = speakAria({ text, lang: locale });
-      introHandleRef.current = h;
-      void h.promise.catch(() => {
-        /* silent per ARIA policy */
-      });
-    } catch {
-      /* best-effort intro */
-    }
-    return () => {
-      introHandleRef.current?.stop();
-      introHandleRef.current = null;
-    };
+    // ARIA chat is silent by policy — no panel-open voice intro on any device.
+    return;
   }, [isOpen, routerPathname]);
 
   // Conversation Mode state
@@ -671,117 +653,10 @@ export function AriaCopilot() {
   }, []);
 
   useEffect(() => {
-    const voiceOn = (() => {
-      try {
-        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
-      } catch {
-        return voiceEnabled;
-      }
-    })();
-    if (!voiceOn) return;
-    const last = chat.messages[chat.messages.length - 1];
-    if (!last || last.role !== "assistant") return;
-
-    const fullText = sanitiseAssistantText(
-      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
-    );
-    if (!fullText || fullText.length < 2) return;
-
-    // Silent-in-conv-mode short-circuit: consume the flag once when message first appears.
-    if (
-      pendingSilentRef.current &&
-      !streamStateRef.current.has(last.id) &&
-      !spokenIdsRef.current.has(last.id)
-    ) {
-      pendingSilentRef.current = false;
-      spokenIdsRef.current.add(last.id);
-      return;
-    }
-    if (spokenIdsRef.current.has(last.id) && !streamStateRef.current.has(last.id)) return;
-
-    let s = streamStateRef.current.get(last.id);
-    if (!s) {
-      // Exactly-once gate — module-level so StrictMode/remount can't dup.
-      if (!markSpokenOrDrop(last.id)) return;
-      s = {
-        sendAt: pendingSendAtRef.current,
-        firstTokenAt: performance.now(),
-        firstSentenceAt: null,
-        firstAudioAt: null,
-        dispatched: 0,
-        audios: [],
-        playingIdx: 0,
-        pumping: false,
-        busAcquired: false,
-        finalized: false,
-        aborts: [],
-        latencyLogged: false,
-      };
-      pendingSendAtRef.current = null;
-      streamStateRef.current.set(last.id, s);
-      spokenIdsRef.current.add(last.id);
-      // Acquire bus lazily on first dispatch — see below.
-    }
-
-    const { complete, tail } = splitCompleteSentences(fullText);
-    // Streaming still in progress? isBusy tells us.
-    const streaming = isBusy;
-    // Which sentences to dispatch NOW:
-    //  - While streaming: any newly-completed sentences beyond s.dispatched.
-    //  - When streaming ends: also include the trailing tail as the final sentence.
-    const toDispatch: string[] = [];
-    if (complete.length > s.dispatched) {
-      toDispatch.push(...complete.slice(s.dispatched));
-    }
-    if (
-      !streaming &&
-      tail.length >= 2 &&
-      complete.length + (tail ? 1 : 0) > s.dispatched + toDispatch.length
-    ) {
-      toDispatch.push(tail);
-    }
-
-    if (toDispatch.length > 0 && !s.busAcquired) {
-      const ok = AriaAudioBus.acquire("chat-tts", () => {
-        const cur = streamStateRef.current.get(last.id);
-        if (!cur) return;
-        for (const c of cur.aborts) {
-          try {
-            c.abort();
-          } catch {
-            /* noop */
-          }
-        }
-        const a = audioRef.current;
-        if (a) {
-          try {
-            a.pause();
-            a.currentTime = 0;
-          } catch {
-            /* noop */
-          }
-        }
-        cur.finalized = true;
-        streamStateRef.current.delete(last.id);
-      });
-      if (!ok) return;
-      s.busAcquired = true;
-    }
-
-    for (const sentence of toDispatch) {
-      const dispatchIdx = s.dispatched;
-      s.dispatched++;
-      const ctrl = new AbortController();
-      s.aborts.push(ctrl);
-      if (s.firstSentenceAt === null) s.firstSentenceAt = performance.now();
-      s.audios.push(fetchTTS(sentence, dispatchIdx, ctrl));
-    }
-
-    if (!streaming) {
-      s.finalized = true;
-    }
-
-    if (s.audios.length > 0) void pumpPlayback(last.id);
+    // ARIA chat TTS permanently disabled on all devices (mobile + desktop).
+    // Every assistant reply is text-only; no /api/tts calls, no audio bus
+    // acquisition, no browser SpeechSynthesis fallback. Kept as an empty
+    // effect so the surrounding component structure is unchanged.
   }, [chat.messages, isBusy, voiceEnabled, splitCompleteSentences, fetchTTS, pumpPlayback]);
 
   // Stop TTS when panel closes — barge-in / silence guarantee.
