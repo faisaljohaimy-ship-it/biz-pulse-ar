@@ -511,7 +511,34 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Open the users module to grant a role or audit a log.",
     },
   ],
+  // ── Flagship: Hajj platform (full end-to-end explanation on entry) ───
+  [
+    "/hajj",
+    {
+      titleAr: "مِنَصَّةُ الحَجّ التَّنْفِيذِيَّة",
+      titleEn: "Hajj Executive Platform",
+      purposeAr:
+        "مَرْكَزُ القِيَادَةِ الحَيُّ لِمَوْسِمِ الحَجّ — يَرْبِطُ خَرَائِطَ الحُشُودِ وَمَسَارَاتِ الحَافِلَاتِ وَحَالَةَ المَخَيَّمَاتِ وَالخِدْمَاتِ الطِّبِّيَّةِ وَبَلَاغَاتِ الأَمْنِ وَمُؤَشِّرَاتِ الجَاهِزِيَّةِ فِي مَشْهَدٍ تَنْفِيذِيٍّ وَاحِد.",
+      purposeEn:
+        "The live command center for the Hajj season — unifying crowd heatmaps, bus routes, camp status, medical services, security incidents, and readiness indices in one executive view.",
+      actionAr:
+        "تَنَقَّلْ بَيْنَ الأَقْسَامِ لِمُتَابَعَةِ الحُشُودِ وَالحَافِلَاتِ وَالمَخَيَّمَاتِ وَالطَّوَارِئِ، أَوِ اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً فَوْرِيَّة.",
+      actionEn:
+        "Navigate the sections to track crowds, buses, camps, and emergencies, or ask me for an instant executive briefing.",
+      example1Ar:
+        "قُلْ لِي: أَظْهِرْ أَعْلَى ثَلَاثِ مَنَاطِقَ ازْدِحَامًا الآن",
+      example1En: "Say: show the top three most crowded zones right now",
+      example2Ar:
+        "قُلْ لِي: مَا حَالَةُ الحَافِلَاتِ المُتَأَخِّرَةِ عَنِ الجَدْوَل؟",
+      example2En: "Say: what is the status of buses running behind schedule?",
+      extendedAr:
+        "خِلَالَ زِيَارَتِكَ هُنَا سَأُنَبِّهُكَ تِلْقَائِيًّا عِنْدَ تَجَاوُزِ أَيِّ مُؤَشِّرٍ حَرِجٍ، وَأَعْرِضُ عَلَيْكَ التَّوْصِيَاتِ التَّنْفِيذِيَّةَ الأَوْلَى بِالتَّنْفِيذِ، وَأَرْبِطُ كُلَّ بَلَاغٍ بِمَصْدَرِهِ فِي قَاعِدَةِ البَيَانَاتِ الحَيَّة.",
+      extendedEn:
+        "While you are here I will auto-alert you when any critical KPI is breached, surface the top executive recommendations, and link every incident back to its live data source.",
+    },
+  ],
 ];
+
 
 export type SpeechLocale = "ar" | "en";
 
