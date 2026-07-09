@@ -25,6 +25,7 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { AriaGreeter } from "@/components/aria/AriaGreeter";
+import { AriaAutoIntroducer } from "@/components/aria/AriaAutoIntroducer";
 // AriaPageNarrator import removed — auto voice on navigation disabled
 import { WelcomeThenGenesis } from "@/components/cinematic/WelcomeThenGenesis";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
@@ -301,7 +302,8 @@ function RootComponent() {
                     <Outlet />
                   </div>
                   {!introActive && <AriaCopilot />}
-                  {/* AriaPageNarrator removed — no auto-voice on route change */}
+                  {/* AriaPageNarrator removed — auto voice reintroduced via AriaAutoIntroducer */}
+                  {!introActive && !suppressOverlays && <AriaAutoIntroducer />}
                   {!suppressOverlays && <AriaGreeter />}
                   <WelcomeThenGenesis />
                   <Toaster />

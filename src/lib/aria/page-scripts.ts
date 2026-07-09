@@ -25,6 +25,17 @@ export interface PageScript {
   readonly purposeEn: string;
   readonly actionAr: string;
   readonly actionEn: string;
+  /** Two concrete usage examples. If absent, examples are synthesized
+   *  from `actionAr/En` so every route still speaks Example 1 & Example 2. */
+  readonly example1Ar?: string;
+  readonly example1En?: string;
+  readonly example2Ar?: string;
+  readonly example2En?: string;
+  /** Optional extended narration appended after examples — used for a
+   *  small set of flagship surfaces (e.g. `/hajj`) that require a full,
+   *  end-to-end explanation on entry. */
+  readonly extendedAr?: string;
+  readonly extendedEn?: string;
 }
 
 /**
@@ -500,7 +511,34 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Open the users module to grant a role or audit a log.",
     },
   ],
+  // ── Flagship: Hajj platform (full end-to-end explanation on entry) ───
+  [
+    "/hajj",
+    {
+      titleAr: "مِنَصَّةُ الحَجّ التَّنْفِيذِيَّة",
+      titleEn: "Hajj Executive Platform",
+      purposeAr:
+        "مَرْكَزُ القِيَادَةِ الحَيُّ لِمَوْسِمِ الحَجّ — يَرْبِطُ خَرَائِطَ الحُشُودِ وَمَسَارَاتِ الحَافِلَاتِ وَحَالَةَ المَخَيَّمَاتِ وَالخِدْمَاتِ الطِّبِّيَّةِ وَبَلَاغَاتِ الأَمْنِ وَمُؤَشِّرَاتِ الجَاهِزِيَّةِ فِي مَشْهَدٍ تَنْفِيذِيٍّ وَاحِد.",
+      purposeEn:
+        "The live command center for the Hajj season — unifying crowd heatmaps, bus routes, camp status, medical services, security incidents, and readiness indices in one executive view.",
+      actionAr:
+        "تَنَقَّلْ بَيْنَ الأَقْسَامِ لِمُتَابَعَةِ الحُشُودِ وَالحَافِلَاتِ وَالمَخَيَّمَاتِ وَالطَّوَارِئِ، أَوِ اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً فَوْرِيَّة.",
+      actionEn:
+        "Navigate the sections to track crowds, buses, camps, and emergencies, or ask me for an instant executive briefing.",
+      example1Ar:
+        "قُلْ لِي: أَظْهِرْ أَعْلَى ثَلَاثِ مَنَاطِقَ ازْدِحَامًا الآن",
+      example1En: "Say: show the top three most crowded zones right now",
+      example2Ar:
+        "قُلْ لِي: مَا حَالَةُ الحَافِلَاتِ المُتَأَخِّرَةِ عَنِ الجَدْوَل؟",
+      example2En: "Say: what is the status of buses running behind schedule?",
+      extendedAr:
+        "خِلَالَ زِيَارَتِكَ هُنَا سَأُنَبِّهُكَ تِلْقَائِيًّا عِنْدَ تَجَاوُزِ أَيِّ مُؤَشِّرٍ حَرِجٍ، وَأَعْرِضُ عَلَيْكَ التَّوْصِيَاتِ التَّنْفِيذِيَّةَ الأَوْلَى بِالتَّنْفِيذِ، وَأَرْبِطُ كُلَّ بَلَاغٍ بِمَصْدَرِهِ فِي قَاعِدَةِ البَيَانَاتِ الحَيَّة.",
+      extendedEn:
+        "While you are here I will auto-alert you when any critical KPI is breached, surface the top executive recommendations, and link every incident back to its live data source.",
+    },
+  ],
 ];
+
 
 export type SpeechLocale = "ar" | "en";
 
@@ -543,11 +581,17 @@ export function speakablePageScript(
   locale: SpeechLocale,
 ): string | null {
   const s = pageScriptFor(pathname);
-  if (!s) return null;
+  if (!s) return genericSpeakable(pathname, locale);
+  const ex1Ar = s.example1Ar ?? deriveExampleAr(s.actionAr, 1);
+  const ex2Ar = s.example2Ar ?? deriveExampleAr(s.actionAr, 2);
+  const ex1En = s.example1En ?? deriveExampleEn(s.actionEn, 1);
+  const ex2En = s.example2En ?? deriveExampleEn(s.actionEn, 2);
   if (locale === "en") {
-    return `You are in ${s.titleEn}. ${s.purposeEn} ${s.actionEn}`;
+    const base = `You are in ${s.titleEn}. ${s.purposeEn} ${s.actionEn} Example one: ${ex1En}. Example two: ${ex2En}.`;
+    return s.extendedEn ? `${base} ${s.extendedEn}` : base;
   }
-  return `أَنْتَ فِي ${s.titleAr}. ${s.purposeAr} ${s.actionAr}`;
+  const base = `أَنْتَ فِي ${s.titleAr}. ${s.purposeAr} ${s.actionAr} المِثَالُ الأَوَّل: ${ex1Ar}. المِثَالُ الثَّانِي: ${ex2Ar}.`;
+  return s.extendedAr ? `${base} ${s.extendedAr}` : base;
 }
 
 /**
@@ -557,3 +601,31 @@ export function speakablePageScript(
 export function pageScriptParts(pathname: string): PageScript | null {
   return pageScriptFor(pathname);
 }
+
+// ── Fallbacks ─────────────────────────────────────────────────────────
+function deriveExampleAr(action: string, n: 1 | 2): string {
+  const trimmed = action.replace(/[.،]+$/g, "").trim();
+  return n === 1
+    ? `جَرِّبْ الآن — ${trimmed}`
+    : `اطْلُبْ مِنِّي مُلَخَّصًا تَنْفِيذِيًّا عَنْ هَذِهِ النَّافِذَة`;
+}
+function deriveExampleEn(action: string, n: 1 | 2): string {
+  const trimmed = action.replace(/[.]+$/g, "").trim();
+  return n === 1 ? `Try now — ${trimmed}` : `Ask me for an executive brief on this window`;
+}
+
+function humanizeSegment(seg: string): { ar: string; en: string } {
+  const clean = seg.replace(/[-_.]+/g, " ").trim();
+  return { ar: clean, en: clean.replace(/\b\w/g, (c) => c.toUpperCase()) };
+}
+
+function genericSpeakable(pathname: string, locale: SpeechLocale): string {
+  const p = normalizePath(pathname);
+  const last = p.split("/").filter(Boolean).pop() ?? "home";
+  const { ar, en } = humanizeSegment(last);
+  if (locale === "en") {
+    return `You are on ${en}. This surface lets you review live data for ${en}. Example one: open a card to inspect details. Example two: ask me for a quick executive brief.`;
+  }
+  return `أَنْتَ فِي نَافِذَةِ ${ar}. تَعْرِضُ هَذِهِ النَّافِذَةُ البَيَانَاتِ الحَيَّةَ الخَاصَّةَ بِـ ${ar}. المِثَالُ الأَوَّل: افْتَحْ أَيَّ بِطَاقَةٍ لِمُرَاجَعَةِ تَفَاصِيلِهَا. المِثَالُ الثَّانِي: اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً مُوجَزَة.`;
+}
+
