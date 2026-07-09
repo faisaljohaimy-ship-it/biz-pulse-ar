@@ -250,6 +250,7 @@ export async function collectEvidence(
         const { data } = await admin!
           .from("sec_work_orders")
           .select("id,title_ar,title_en,priority,status,due_at")
+          .eq("org_id", orgId)
           .order("due_at", { ascending: true })
           .limit(6);
         if (data?.length) {
