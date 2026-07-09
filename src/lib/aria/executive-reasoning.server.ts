@@ -207,6 +207,7 @@ export async function collectEvidence(
         const { data } = await admin!
           .from("sim_notifications")
           .select("title,severity,body,created_at")
+          .eq("org_id", orgId)
           .order("created_at", { ascending: false })
           .limit(6);
         if (data?.length) {
