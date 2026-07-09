@@ -161,6 +161,7 @@ export async function collectEvidence(
         const { data } = await admin!
           .from("sec_incidents")
           .select("id,title_ar,title_en,severity,status,site_id,reported_at")
+          .eq("org_id", orgId)
           .order("reported_at", { ascending: false })
           .limit(6);
         if (data?.length) {
