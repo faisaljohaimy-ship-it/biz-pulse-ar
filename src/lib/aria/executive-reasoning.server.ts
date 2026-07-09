@@ -326,11 +326,12 @@ export interface ExecutiveBrief {
 
 /** Public entry point: run layers 2–4 and return the composed prompt parts.
  *  Pass `{ skipEvidence: true }` for public/unauthenticated callers so no
- *  service-role live rows are pulled into the prompt (cross-tenant leak
- *  protection). */
+ *  service-role live rows are pulled into the prompt. `orgId` MUST be set
+ *  for authenticated callers — collectEvidence refuses to run without it
+ *  and returns an empty evidence block (cross-tenant leak protection). */
 export async function buildExecutiveBrief(
   question: string,
-  options?: { skipEvidence?: boolean },
+  options?: { skipEvidence?: boolean; orgId?: string | null },
 ): Promise<ExecutiveBrief> {
   const intent = classifyIntent(question);
   if (options?.skipEvidence) {
@@ -341,7 +342,7 @@ export async function buildExecutiveBrief(
       sources: [],
     };
   }
-  const { block, sources } = await collectEvidence(intent);
+  const { block, sources } = await collectEvidence(intent, options?.orgId ?? null);
   return {
     intent,
     system: buildExecutiveSystemPrompt(intent, sources),
