@@ -653,14 +653,10 @@ export function AriaCopilot() {
   }, []);
 
   useEffect(() => {
-    const voiceOn = (() => {
-      try {
-        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
-      } catch {
-        return voiceEnabled;
-      }
-    })();
-    if (!voiceOn) return;
+    // ARIA chat TTS permanently disabled on all devices (mobile + desktop).
+    // Every assistant reply is text-only; no /api/tts calls, no audio bus
+    // acquisition, no browser SpeechSynthesis fallback.
+    return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
 
