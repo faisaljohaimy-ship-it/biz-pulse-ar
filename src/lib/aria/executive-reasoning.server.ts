@@ -227,6 +227,7 @@ export async function collectEvidence(
         const { data } = await admin!
           .from("sim_risks")
           .select("title,category,likelihood,impact,status")
+          .eq("org_id", orgId)
           .order("impact", { ascending: false })
           .limit(6);
         if (data?.length) {
