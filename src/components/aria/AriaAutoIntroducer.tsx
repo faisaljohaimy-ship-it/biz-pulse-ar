@@ -115,12 +115,29 @@ export function AriaAutoIntroducer() {
 
     const onClick = (ev: MouseEvent) => {
       if (!autoIntroEnabled()) return;
+      // Respect the mute toggle in the aria store — if the user muted ARIA,
+      // click-narration must be silent everywhere in the app.
+      if (!useAriaStore.getState().voiceEnabled) return;
       const target = ev.target;
       if (!(target instanceof Element)) return;
       const el = target.closest<HTMLElement>(INTERACTIVE_SEL);
       if (!el) return;
       // Ignore inputs the user is typing into.
       if (el.matches("input, textarea, select")) return;
+      // Never narrate the mute button itself, or anything opted out.
+      if (el.closest('[data-aria-no-intro], [data-aria-mute]')) return;
+      const ariaLabelLower = (el.getAttribute("aria-label") ?? "").toLowerCase();
+      if (
+        ariaLabelLower.includes("mute") ||
+        ariaLabelLower.includes("unmute") ||
+        ariaLabelLower.includes("كتم") ||
+        ariaLabelLower.includes("إلغاء الكتم")
+      ) {
+        return;
+      }
+      // Do not interrupt an in-progress ARIA reply with click narration.
+      const voiceState = useAriaStore.getState().voice;
+      if (voiceState === "speaking" || voiceState === "processing") return;
 
       const locale = pickLocale();
       const explicitIntro =
@@ -132,26 +149,15 @@ export function AriaAutoIntroducer() {
         el.getAttribute("data-aria-example") ??
         "";
 
-      let introText = explicitIntro;
-      let exampleText = explicitExample;
-
-      if (!introText) {
-        const label = readLabel(el);
-        if (!label) return;
-        introText =
-          locale === "en"
-            ? `${label}. This control lets you ${label.toLowerCase()} directly from here.`
-            : `${label}. هٰذَا العُنْصُر يُتِيحُ لَكَ ${label} مُبَاشَرَةً مِنْ هٰذِهِ النَّافِذَة.`;
-        if (!exampleText) {
-          exampleText =
-            locale === "en"
-              ? `tap ${label} to open the related view instantly`
-              : `اضْغَطْ ${label} لِفَتْحِ الوَاجِهَةِ المُرْتَبِطَة فَوْرًا`;
-        }
-      }
+      // Only narrate elements that explicitly opt in via data-aria-intro.
+      // Narrating every button by label interrupted ARIA replies and
+      // generated a TTS request on every click.
+      if (!explicitIntro) return;
 
       const exampleLead = locale === "en" ? "Example one: " : "المِثَالُ الأَوَّل: ";
-      const full = exampleText ? `${introText} ${exampleLead}${exampleText}.` : introText;
+      const full = explicitExample
+        ? `${explicitIntro} ${exampleLead}${explicitExample}.`
+        : explicitIntro;
 
       // Debounce rapid duplicate clicks on same control.
       const now = Date.now();
