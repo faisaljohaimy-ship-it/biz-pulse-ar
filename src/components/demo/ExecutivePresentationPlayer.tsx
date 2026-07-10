@@ -1,12 +1,12 @@
 /**
  * ExecutivePresentationPlayer — the guided executive presentation on the
- * demo page. ARIA's narrator video (public/aria/aria-narrator.mp4)
- * plays on the LEFT in a dark #04111f frame, full face visible; on the
- * RIGHT a window-preview pane switches automatically in sync with the
- * narration cues, ending on a closing screen.
+ * demo page. ARIA's narrator video (public/aria/aria-narrator.mp4) plays on
+ * the LEFT in a dark #04111f frame, full face visible; on the RIGHT a
+ * cinematic scene panel (kicker · title · body) switches automatically in
+ * sync with the narration cues, ending on a closing CTA.
  *
- * Cues (seconds): 0 home · 6 dashboard · 18 industrial security & the four
- * regions · 26 agents · 33 digital twin & reports · 40 finale.
+ * Cues (seconds): 0 home · 6 command · 18 sec-regions · 26 agents ·
+ * 33 twin-reports · 40 closing.
  *
  * Rules: audio starts ONLY after the first user interaction (the start
  * button); full RTL; responsive mobile + laptop; clean stop on exit
@@ -14,289 +14,197 @@
  * "hero-soundtrack" channel so any ARIA chat voice preempts it instantly.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Activity,
-  BarChart3,
-  Bot,
-  Boxes,
-  FileText,
-  Home,
-  Pause,
-  Play,
-  RotateCcw,
-  Shield,
-  Sparkles,
-} from "lucide-react";
+import { Bot, Boxes, Gauge, Home, Pause, Play, RotateCcw, Shield, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
-import { REGIONS } from "@/lib/regions";
+import { useI18n } from "@/lib/i18n";
 
 const VIDEO_SRC = "/aria/aria-narrator.mp4";
 
-type CueId = "home" | "dashboard" | "sec" | "agents" | "twin" | "finale";
+type Accent = "navy" | "emerald" | "gold";
 
-interface Cue {
-  at: number;
-  id: CueId;
-  label: string;
+interface Scene {
+  id: string;
+  at: number; // cue time in seconds
   icon: typeof Home;
+  kicker_ar: string;
+  kicker_en: string;
+  title_ar: string;
+  title_en: string;
+  body_ar: string;
+  body_en: string;
+  accent: Accent;
+  showSimRibbon?: boolean;
+  render?: () => React.JSX.Element;
 }
 
-const CUES: readonly Cue[] = [
-  { at: 0, id: "home", label: "الرئيسية", icon: Home },
-  { at: 6, id: "dashboard", label: "لوحة القيادة", icon: BarChart3 },
-  { at: 18, id: "sec", label: "الأمن الصناعي", icon: Shield },
-  { at: 26, id: "agents", label: "الوكلاء", icon: Bot },
-  { at: 33, id: "twin", label: "التوأم الرقمي والتقارير", icon: Boxes },
-  { at: 40, id: "finale", label: "الختام", icon: Sparkles },
+const ACCENT: Record<Accent, { text: string; border: string; glow: string; dot: string }> = {
+  navy: {
+    text: "text-cyan-200",
+    border: "border-cyan-400/30",
+    glow: "radial-gradient(80% 70% at 50% 0%, rgba(52,182,255,0.16), transparent 70%)",
+    dot: "bg-cyan-400",
+  },
+  emerald: {
+    text: "text-emerald-200",
+    border: "border-emerald-400/30",
+    glow: "radial-gradient(80% 70% at 50% 0%, rgba(30,233,182,0.16), transparent 70%)",
+    dot: "bg-emerald-400",
+  },
+  gold: {
+    text: "text-amber-200",
+    border: "border-amber-400/35",
+    glow: "radial-gradient(80% 70% at 50% 0%, rgba(242,199,110,0.18), transparent 70%)",
+    dot: "bg-amber-300",
+  },
+};
+
+function ClosingCTA() {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Link
+        to="/request-demo"
+        className="rounded-full bg-cyan-400/90 px-5 py-2.5 text-xs font-bold text-[#04111f] transition hover:bg-cyan-300"
+      >
+        اطلب عرضاً خاصاً
+      </Link>
+      <Link
+        to="/demo"
+        className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-semibold text-white/85 transition hover:bg-white/10"
+      >
+        تصفّح العرض
+      </Link>
+    </div>
+  );
+}
+
+const SCENES: readonly Scene[] = [
+  {
+    id: "home",
+    at: 0,
+    icon: Home,
+    kicker_ar: "الواجهة الرئيسية",
+    kicker_en: "Home",
+    title_ar: "لوحة القيادة السيادية · نبض المؤسسة",
+    title_en: "Sovereign command deck · the pulse of the enterprise.",
+    body_ar: "نظرة عامة موحّدة على الأمن، العمليات، والتوأم الرقمي — من الرؤية إلى التنفيذ.",
+    body_en:
+      "One unified view of security, operations, and the digital twin — vision to execution.",
+    accent: "navy",
+  },
+  {
+    id: "command",
+    at: 6,
+    icon: Gauge,
+    kicker_ar: "غرفة القيادة",
+    kicker_en: "Command Center",
+    title_ar: "قرار واحد يربط الأمن والسلامة والصيانة.",
+    title_en: "A single decision surface across security, safety, and maintenance.",
+    body_ar: "الحوادث، الدوريات، التصاريح، والزوّار — في تدفّق قرارات حيّ واحد.",
+    body_en: "Incidents, patrols, permits, and visitors — one live decision stream.",
+    accent: "emerald",
+  },
+  {
+    id: "sec-regions",
+    at: 18,
+    icon: Shield,
+    kicker_ar: "القطاعات الأربعة",
+    kicker_en: "Regions · Sec",
+    title_ar: "المملكة على خارطة واحدة.",
+    title_en: "The Kingdom on one operational map.",
+    body_ar: "الوسطى، الغربية، الشرقية، الجنوبية — مؤشرات المواقع والحوادث والدوريات لحظياً.",
+    body_en: "Central, Western, Eastern, Southern — live site, incident, and patrol telemetry.",
+    accent: "emerald",
+  },
+  {
+    id: "agents",
+    at: 26,
+    icon: Bot,
+    kicker_ar: "وكلاء آريا",
+    kicker_en: "ARIA Agents",
+    title_ar: "وكلاء تنفيذيون يعملون معك.",
+    title_en: "Executive agents that work alongside you.",
+    body_ar: "يفهمون، ويحلّلون، وينفّذون بموافقة بشرية — لا قرار دون إذن.",
+    body_en: "They understand, analyze, and execute with human approval — never without consent.",
+    accent: "navy",
+  },
+  {
+    id: "twin-reports",
+    at: 33,
+    icon: Boxes,
+    kicker_ar: "التوأم والتقارير",
+    kicker_en: "Twin · Reports",
+    title_ar: "التوأم الرقمي الحيّ.",
+    title_en: "The live digital twin.",
+    body_ar: "محاكاة مرجعية للمواقع والأصول، وتقارير تنفيذية جاهزة للمجلس.",
+    body_en: "A reference simulation of sites and assets, with board-ready executive reports.",
+    accent: "emerald",
+    showSimRibbon: true,
+  },
+  {
+    id: "closing",
+    at: 40,
+    icon: Sparkles,
+    kicker_ar: "الختام",
+    kicker_en: "Closing",
+    title_ar: "ابدأ رحلة القيادة الذكية.",
+    title_en: "Begin the intelligent-leadership journey.",
+    body_ar: "برنامج تجريبي مركّز — نطاق واضح، جدولة ٩٠ يوماً، وفريق تفعيل مخصّص.",
+    body_en: "A focused pilot — clear scope, a 90-day timeline, and a dedicated activation team.",
+    accent: "gold",
+    render: () => <ClosingCTA />,
+  },
 ];
 
-function cueIndexAt(t: number): number {
+function sceneIndexAt(t: number): number {
   let idx = 0;
-  for (let i = 0; i < CUES.length; i++) if (t >= CUES[i].at) idx = i;
+  for (let i = 0; i < SCENES.length; i++) if (t >= SCENES[i].at) idx = i;
   return idx;
 }
 
-/* ── Window-preview mockups (pure presentational, RTL) ─────────────────── */
-
-function PreviewWindow({ title, children }: { title: string; children: React.ReactNode }) {
+/* ── Scene view (right panel) ──────────────────────────────────────────── */
+function SceneView({ scene, ar }: { scene: Scene; ar: boolean }) {
+  const a = ACCENT[scene.accent];
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#050d1a]/90">
-      {/* Window title bar */}
-      <div className="flex items-center justify-between border-b border-cyan-400/15 bg-[#071426] px-4 py-2.5">
-        <span className="text-xs font-semibold text-cyan-100">{title}</span>
-        <span className="flex gap-1.5" aria-hidden>
-          <i className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <i className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <i className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-        </span>
-      </div>
-      <div className="relative flex-1 overflow-hidden p-4">{children}</div>
-    </div>
-  );
-}
-
-function StatTile({ label, value, tone }: { label: string; value: string; tone?: "up" | "warn" }) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5">
-      <div className="text-[10px] text-white/55">{label}</div>
+    <div
+      className={cn(
+        "flex h-full flex-col justify-center gap-3 rounded-2xl border bg-[#050d1a]/90 p-5 sm:p-7",
+        a.border,
+      )}
+      style={{ backgroundImage: a.glow }}
+    >
       <div
-        className={cn(
-          "mt-0.5 text-base font-bold tabular-nums",
-          tone === "up" ? "text-emerald-300" : tone === "warn" ? "text-amber-300" : "text-white",
-        )}
+        className={cn("flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em]", a.text)}
       >
-        {value}
+        <span className={cn("h-1.5 w-1.5 rounded-full", a.dot)} />
+        <span className="uppercase">{ar ? scene.kicker_ar : scene.kicker_en}</span>
       </div>
+      <h3 className="text-lg font-bold leading-snug text-white sm:text-2xl">
+        {ar ? scene.title_ar : scene.title_en}
+      </h3>
+      <p className="max-w-prose text-sm leading-relaxed text-white/70 sm:text-[15px]">
+        {ar ? scene.body_ar : scene.body_en}
+      </p>
+
+      {scene.showSimRibbon && (
+        <span className="inline-flex w-fit items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2.5 py-1 text-[10px] font-semibold text-[#3AE8FF]">
+          {ar ? "محاكاة · لقطة عامة" : "SIM · PUBLIC SNAPSHOT"}
+        </span>
+      )}
+
+      {scene.render && <div className="mt-1">{scene.render()}</div>}
     </div>
   );
 }
-
-function Bars({ heights }: { heights: number[] }) {
-  return (
-    <div className="flex h-16 items-end gap-1.5" aria-hidden>
-      {heights.map((h, i) => (
-        <span
-          key={i}
-          className="w-full rounded-t bg-gradient-to-t from-cyan-500/50 to-cyan-300/90"
-          style={{ height: `${h}%` }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function HomePreview() {
-  return (
-    <PreviewWindow title="NEXIOS · المنصة الرئيسية">
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-400/15 ring-1 ring-cyan-300/40">
-          <Sparkles className="h-6 w-6 text-cyan-300" />
-        </div>
-        <div className="text-lg font-bold text-white">منصة إنجاز الأعمال التنفيذية</div>
-        <div className="max-w-xs text-xs leading-relaxed text-white/60">
-          نظام تشغيل تنفيذي واحد: أمن صناعي، وكلاء أذكياء، توأم رقمي، وتقارير قيادية — بذاكرة واحدة
-          وصوت واحد.
-        </div>
-        <div className="mt-1 flex gap-2">
-          {["أمن", "وكلاء", "تقارير"].map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[10px] text-cyan-200"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </PreviewWindow>
-  );
-}
-
-function DashboardPreview() {
-  return (
-    <PreviewWindow title="لوحة القيادة التنفيذية">
-      <div className="grid grid-cols-3 gap-2">
-        <StatTile label="الجاهزية التشغيلية" value="98.2%" tone="up" />
-        <StatTile label="مهام اليوم" value="47" />
-        <StatTile label="تنبيهات نشطة" value="3" tone="warn" />
-      </div>
-      <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-        <div className="mb-2 flex items-center justify-between text-[10px] text-white/55">
-          <span>الأداء الأسبوعي</span>
-          <Activity className="h-3.5 w-3.5 text-cyan-300" />
-        </div>
-        <Bars heights={[42, 58, 50, 72, 64, 85, 78]} />
-      </div>
-    </PreviewWindow>
-  );
-}
-
-function SecPreview() {
-  return (
-    <PreviewWindow title="الأمن الصناعي · الإدارات الإقليمية">
-      <div className="grid grid-cols-2 gap-2">
-        {REGIONS.map((r) => (
-          <div
-            key={r.id}
-            className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5"
-          >
-            <Shield className="h-4 w-4 shrink-0 text-cyan-300" />
-            <div className="leading-tight">
-              <div className="text-[11px] font-semibold text-white">{r.shortAr}</div>
-              <div className="text-[9px] text-emerald-300">تعمل · مباشر</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <StatTile label="دوائر" value="24" />
-        <StatTile label="دوريات نشطة" value="61" tone="up" />
-        <StatTile label="بلاغات مفتوحة" value="2" tone="warn" />
-      </div>
-    </PreviewWindow>
-  );
-}
-
-function AgentsPreview() {
-  const agents = [
-    { name: "وكيل المخاطر", status: "يحلّل" },
-    { name: "وكيل الدوريات", status: "ميداني" },
-    { name: "وكيل الامتثال", status: "يراجع" },
-    { name: "وكيل التقارير", status: "يُعِدّ" },
-  ];
-  return (
-    <PreviewWindow title="الوكلاء الأذكياء">
-      <div className="grid grid-cols-2 gap-2">
-        {agents.map((a) => (
-          <div
-            key={a.name}
-            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3"
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-400/15 ring-1 ring-cyan-300/30">
-              <Bot className="h-4 w-4 text-cyan-300" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-[11px] font-semibold text-white">{a.name}</div>
-              <div className="flex items-center gap-1 text-[9px] text-emerald-300">
-                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                {a.status}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </PreviewWindow>
-  );
-}
-
-function TwinPreview() {
-  return (
-    <PreviewWindow title="التوأم الرقمي · التقارير التنفيذية">
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] text-white/55">
-            <Boxes className="h-3.5 w-3.5 text-cyan-300" />
-            التوأم الرقمي
-          </div>
-          <div className="grid grid-cols-3 gap-1.5" aria-hidden>
-            {Array.from({ length: 9 }, (_, i) => (
-              <span
-                key={i}
-                className={cn("h-6 rounded", i % 4 === 0 ? "bg-cyan-400/40" : "bg-cyan-400/15")}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] text-white/55">
-            <FileText className="h-3.5 w-3.5 text-cyan-300" />
-            تقارير القيادة
-          </div>
-          <div className="space-y-1.5">
-            {["الموجز الصباحي", "تقرير المخاطر", "أداء القطاعات"].map((r) => (
-              <div
-                key={r}
-                className="rounded-lg bg-white/[0.05] px-2 py-1.5 text-[10px] text-white/75"
-              >
-                {r}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </PreviewWindow>
-  );
-}
-
-function FinaleScreen({ onReplay }: { onReplay: () => void }) {
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 rounded-2xl border border-cyan-400/25 bg-[radial-gradient(80%_70%_at_50%_30%,rgba(0,212,255,0.14),transparent_70%)] bg-[#050d1a] p-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/15 ring-1 ring-cyan-300/40">
-        <Sparkles className="h-7 w-7 text-cyan-300" />
-      </div>
-      <div>
-        <div className="text-xl font-bold text-white">نهاية العرض التنفيذي</div>
-        <p className="mt-2 max-w-sm text-xs leading-relaxed text-white/60">
-          شاهدت المنصة الرئيسية، لوحة القيادة، الأمن الصناعي بقطاعاته الأربعة، الوكلاء الأذكياء،
-          والتوأم الرقمي والتقارير. جاهز للخطوة التالية؟
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link
-          to="/request-demo"
-          className="rounded-full bg-cyan-400/90 px-5 py-2 text-xs font-bold text-[#04111f] transition hover:bg-cyan-300"
-        >
-          اطلب عرضاً خاصاً
-        </Link>
-        <button
-          type="button"
-          onClick={onReplay}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white/85 transition hover:bg-white/10"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          إعادة العرض
-        </button>
-      </div>
-    </div>
-  );
-}
-
-const PREVIEWS: Record<Exclude<CueId, "finale">, () => React.JSX.Element> = {
-  home: HomePreview,
-  dashboard: DashboardPreview,
-  sec: SecPreview,
-  agents: AgentsPreview,
-  twin: TwinPreview,
-};
 
 /* ── Player ────────────────────────────────────────────────────────────── */
-
 export function ExecutivePresentationPlayer() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [phase, setPhase] = useState<"idle" | "playing" | "paused" | "done">("idle");
-  const [cueIdx, setCueIdx] = useState(0);
+  const [sceneIdx, setSceneIdx] = useState(0);
   const phaseRef = useRef(phase);
   useEffect(() => {
     phaseRef.current = phase;
@@ -321,7 +229,6 @@ export function ExecutivePresentationPlayer() {
     if (!v) return;
     AriaAudioBus.unlock();
     const granted = AriaAudioBus.acquire("hero-soundtrack", () => {
-      // Preempted by ARIA's chat voice — pause cleanly.
       const el = videoRef.current;
       if (el) {
         try {
@@ -339,7 +246,7 @@ export function ExecutivePresentationPlayer() {
       } catch {
         /* ignore */
       }
-      setCueIdx(0);
+      setSceneIdx(0);
     }
     v.muted = false;
     v.volume = 1;
@@ -354,12 +261,12 @@ export function ExecutivePresentationPlayer() {
   const onTimeUpdate = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
-    const idx = cueIndexAt(v.currentTime);
-    setCueIdx((prev) => (prev === idx ? prev : idx));
+    const idx = sceneIndexAt(v.currentTime);
+    setSceneIdx((prev) => (prev === idx ? prev : idx));
   }, []);
 
   const onEnded = useCallback(() => {
-    setCueIdx(CUES.length - 1);
+    setSceneIdx(SCENES.length - 1);
     stopPlayback("done");
   }, [stopPlayback]);
 
@@ -378,9 +285,7 @@ export function ExecutivePresentationPlayer() {
     };
   }, []);
 
-  const activeCue = CUES[cueIdx];
-  const showFinale = phase === "done" || activeCue.id === "finale";
-  const ActivePreview = showFinale ? null : PREVIEWS[activeCue.id as Exclude<CueId, "finale">];
+  const activeScene = SCENES[sceneIdx];
 
   return (
     <section
@@ -390,24 +295,27 @@ export function ExecutivePresentationPlayer() {
     >
       {/* Cue timeline */}
       <div className="mb-3 flex flex-wrap items-center gap-1.5 px-1">
-        {CUES.map((c, i) => (
-          <span
-            key={c.id}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] transition-all",
-              i === cueIdx && (phase === "playing" || phase === "paused" || phase === "done")
-                ? "border-cyan-300/70 bg-cyan-400/15 font-semibold text-cyan-100"
-                : "border-white/10 text-white/45",
-            )}
-          >
-            <c.icon className="h-3 w-3" aria-hidden />
-            {c.label}
-          </span>
-        ))}
+        {SCENES.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <span
+              key={s.id}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] transition-all",
+                i === sceneIdx && (phase === "playing" || phase === "paused" || phase === "done")
+                  ? "border-cyan-300/70 bg-cyan-400/15 font-semibold text-cyan-100"
+                  : "border-white/10 text-white/45",
+              )}
+            >
+              <Icon className="h-3 w-3" aria-hidden />
+              {ar ? s.kicker_ar : s.kicker_en}
+            </span>
+          );
+        })}
       </div>
 
-      {/* LTR grid so the video is physically LEFT and the preview RIGHT on
-          every locale; inner content is RTL. Mobile stacks: video then preview. */}
+      {/* LTR grid so the video is physically LEFT and the scene panel RIGHT
+          on every locale; inner content is RTL. Mobile stacks: video then panel. */}
       <div dir="ltr" className="grid gap-3 md:grid-cols-[minmax(220px,300px)_1fr]">
         {/* LEFT — ARIA narrator video, full face, dark #04111f frame */}
         <div className="relative mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl bg-[#04111f] ring-1 ring-cyan-400/25 md:mx-0 md:max-w-none">
@@ -432,14 +340,18 @@ export function ExecutivePresentationPlayer() {
               aria-label={phase === "paused" ? "متابعة العرض" : "ابدأ العرض التنفيذي"}
             >
               <span className="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-400/90 text-[#04111f] shadow-[0_0_40px_rgba(0,212,255,0.6)]">
-                {phase === "paused" ? (
-                  <Play className="h-7 w-7 translate-x-0.5" />
+                {phase === "done" ? (
+                  <RotateCcw className="h-7 w-7" />
                 ) : (
                   <Play className="h-7 w-7 translate-x-0.5" />
                 )}
               </span>
               <span dir="rtl" className="text-sm font-bold text-white">
-                {phase === "paused" ? "متابعة العرض" : "ابدأ العرض التنفيذي"}
+                {phase === "paused"
+                  ? "متابعة العرض"
+                  : phase === "done"
+                    ? "إعادة العرض"
+                    : "ابدأ العرض التنفيذي"}
               </span>
               <span dir="rtl" className="text-[10px] text-cyan-200/80">
                 آريا ترافقك صوتياً خلال جولة المنصة
@@ -460,18 +372,14 @@ export function ExecutivePresentationPlayer() {
           )}
         </div>
 
-        {/* RIGHT — auto-switching window preview / finale */}
+        {/* RIGHT — auto-switching cinematic scene panel */}
         <div dir="rtl" className="min-h-[280px] md:min-h-[360px]">
-          {showFinale ? (
-            <FinaleScreen onReplay={() => start(true)} />
-          ) : (
-            <div
-              key={activeCue.id}
-              className="h-full animate-in fade-in slide-in-from-bottom-2 duration-500"
-            >
-              {ActivePreview && <ActivePreview />}
-            </div>
-          )}
+          <div
+            key={activeScene.id}
+            className="h-full animate-in fade-in slide-in-from-bottom-2 duration-500"
+          >
+            <SceneView scene={activeScene} ar={ar} />
+          </div>
         </div>
       </div>
     </section>
