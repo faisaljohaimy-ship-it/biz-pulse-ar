@@ -444,7 +444,7 @@ function CommandCenterPage() {
           .join("، ") + ".";
       // tts = diacritized approximation; ElevenLabs multilingual handles the rest.
       const tts = display.replace(/([اأإآ])/g, "$1").normalize("NFC");
-      await speak(tts, "chat-tts");
+      await speak(tts);
       toast.success("ملخص آريا", { description: display });
     } catch (e) {
       toast.error("تعذّر توليد الملخص", { description: (e as Error).message });

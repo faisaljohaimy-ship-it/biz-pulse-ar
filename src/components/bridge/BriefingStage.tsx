@@ -1,14 +1,14 @@
 /**
  * Executive Briefing Stage — full-screen takeover that plays the
- * generated briefing in sequence with voice + spotlight on the current
- * speaker. ≤60s end-to-end. All segments come from
- * `generateExecutiveBriefing()` — never fabricated.
+ * generated briefing in sequence with a spotlight on the current speaker.
+ * ≤60s end-to-end, text-only narration (ARIA speaks ONLY in the copilot's
+ * Conversation Mode). All segments come from `generateExecutiveBriefing()`
+ * — never fabricated.
  */
-import { useEffect, useRef, useState } from "react";
-import { X, Pause, Play, Volume2, VolumeX, Sparkles, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Pause, Play, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ExecutiveBriefing, BriefingSegment } from "@/lib/exec/briefing.functions";
-import { ariaSpeak } from "@/lib/narrator/tts.functions";
 
 interface Props {
   briefing: ExecutiveBriefing;
@@ -21,9 +21,6 @@ interface Props {
 export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const spokenRef = useRef<Set<number>>(new Set());
 
   // Tick.
   useEffect(() => {
@@ -52,15 +49,6 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
     onSegmentChange?.(active ?? null);
   }, [activeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Audio removed site-wide — ARIA (chat panel) is the only voice.
-  // Segment progression still runs; narration is text-only.
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-    };
-  }, []);
-
   const progress = Math.min(100, (elapsed / briefing.total_seconds) * 100);
   const done = elapsed >= briefing.total_seconds;
 
@@ -78,13 +66,6 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setMuted((m) => !m)}
-            className="rounded-full p-2 text-white/70 hover:bg-white/5 hover:text-white"
-            aria-label="toggle voice"
-          >
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
           <button
             onClick={() => setPaused((p) => !p)}
             className="rounded-full p-2 text-white/70 hover:bg-white/5 hover:text-white"

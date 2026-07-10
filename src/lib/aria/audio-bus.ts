@@ -6,23 +6,14 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-type Source =
-  | "hero-greeting"
-  | "genesis-intro"
-  | "hero-soundtrack"
-  | "panel-greeting"
-  | "chat-tts"
-  | "tour-tts"
-  | "tour-video";
+// The two live voice sources: the homepage greeting video's soundtrack and
+// the copilot's Conversation-Mode reply TTS. Chat replies always outrank
+// the greeting.
+type Source = "hero-soundtrack" | "chat-tts";
 
 const PRIORITY: Record<Source, number> = {
-  "hero-greeting": 1,
-  "genesis-intro": 1,
   "hero-soundtrack": 1,
-  "panel-greeting": 2,
   "chat-tts": 3,
-  "tour-tts": 3,
-  "tour-video": 3,
 };
 
 // Owners allowed to bypass the "no gesture yet" guard when they pass
@@ -81,10 +72,6 @@ function stopWatchdog() {
   }
 }
 
-// Module-scope singleton — survives React remounts, StrictMode double-invoke,
-// and any component re-registration. The ONLY way to reset is a full reload.
-let greetingPlayedThisSession = false;
-
 // ── Runtime assertion: browser SpeechSynthesis is FULLY BANNED. ARIA speaks
 // only through pre-generated MP3 (greeting) or ElevenLabs (chat). Any call
 // is dropped and logged with a stack trace — never robotic voice again.
@@ -117,21 +104,6 @@ export const AriaAudioBus = {
   },
   isUnlocked() {
     return unlocked;
-  },
-
-  /** True if the auto-greeting has already been claimed this session. */
-  hasGreeted(): boolean {
-    return greetingPlayedThisSession;
-  },
-  /** Atomic claim — returns true only for the FIRST caller this session. */
-  claimGreeting(): boolean {
-    if (greetingPlayedThisSession) return false;
-    greetingPlayedThisSession = true;
-    return true;
-  },
-  /** For the on-demand replay chip: force replay without resetting the flag. */
-  forceReplayGreeting() {
-    greetingPlayedThisSession = true;
   },
 
   /**

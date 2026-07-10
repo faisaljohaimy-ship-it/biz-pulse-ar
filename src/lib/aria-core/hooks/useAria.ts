@@ -17,12 +17,10 @@ import { ariaBrain } from "../core/aria-brain";
 export function useAria() {
   const mode = useAriaStore((s) => s.mode);
   const voice = useAriaStore((s) => s.voice);
-  const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const pageContext = useAriaStore((s) => s.pageContext);
   const activeTurn = useAriaStore((s) => s.activeTurn);
   const enqueue = useAriaStore((s) => s.enqueue);
   const setMode = useAriaStore((s) => s.setMode);
-  const setVoiceEnabled = useAriaStore((s) => s.setVoiceEnabled);
   const setPageContext = useAriaStore((s) => s.setPageContext);
 
   const open = useCallback(
@@ -38,7 +36,6 @@ export function useAria() {
   return {
     mode,
     voice,
-    voiceEnabled,
     pageContext,
     activeTurn,
     open,
@@ -46,7 +43,6 @@ export function useAria() {
     focus,
     ask,
     setMode,
-    setVoiceEnabled,
     setPageContext,
   };
 }

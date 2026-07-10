@@ -43,7 +43,6 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const setMode = useAriaStore((s) => s.setMode);
   const setPageContext = useAriaStore((s) => s.setPageContext);
-  const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const drainCommands = useAriaStore((s) => s.drainCommands);
   const pendingCommands = useAriaStore((s) => s.pendingCommands);
 
@@ -146,7 +145,6 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   // ── robotic" bug: both pipelines called AriaAudioBus.acquire("chat-tts"),
   // ── stomped each other, and the loser dropped into browser
   // ── SpeechSynthesis fallback mid-reply. Do NOT re-add speak here.
-  void voiceEnabled;
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;

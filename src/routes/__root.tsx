@@ -25,9 +25,6 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
-import { AriaGreeter } from "@/components/aria/AriaGreeter";
-import { AriaAutoIntroducer } from "@/components/aria/AriaAutoIntroducer";
-// AriaPageNarrator import removed — auto voice on navigation disabled
 import { WelcomeThenGenesis } from "@/components/cinematic/WelcomeThenGenesis";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
@@ -307,9 +304,9 @@ function RootComponent() {
                     <Outlet />
                   </div>
                   {!introActive && <AriaCopilot />}
-                  {/* AriaPageNarrator removed — auto voice reintroduced via AriaAutoIntroducer */}
-                  {!introActive && !suppressOverlays && <AriaAutoIntroducer />}
-                  {!suppressOverlays && <AriaGreeter />}
+                  {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
+                      copilot panel, and via the homepage greeting button. No
+                      route auto-narration, no page greeters. */}
                   <WelcomeThenGenesis />
                   <Toaster />
                 </AriaProvider>

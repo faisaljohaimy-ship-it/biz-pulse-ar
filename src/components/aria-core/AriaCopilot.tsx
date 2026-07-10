@@ -9,17 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AudioWaveform,
-  Mic,
-  Plus,
-  RefreshCcw,
-  Send,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-} from "lucide-react";
+import { AudioWaveform, Mic, Plus, RefreshCcw, Send, Sparkles, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -277,10 +267,8 @@ export function AriaCopilot() {
   const { chat, composerRef } = useAriaChat();
   const mode = useAriaStore((s) => s.mode);
   const voice = useAriaStore((s) => s.voice);
-  const voiceEnabled = useAriaStore((s) => s.voiceEnabled);
   const pageContext = useAriaStore((s) => s.pageContext);
   const setMode = useAriaStore((s) => s.setMode);
-  const setVoiceEnabled = useAriaStore((s) => s.setVoiceEnabled);
 
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -417,8 +405,11 @@ export function AriaCopilot() {
     }
   });
   const convModeRef = useRef(false);
-  const pendingSilentRef = useRef(false);
+  // Armed on every send: true ⇢ the upcoming assistant reply is spoken
+  // (voice turn in Conversation Mode), false ⇢ text-only (typed turn).
+  const speakNextReplyRef = useRef(false);
   const relistenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startListeningRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     convModeRef.current = convMode;
@@ -665,21 +656,12 @@ export function AriaCopilot() {
     }
   }, []);
 
-  // Streaming TTS pipeline — restored so «مخاطبة» (Conversation Mode) is a
-  // full two-way voice loop on every device (mobile + laptop + desktop):
-  // the user speaks, ARIA answers aloud sentence-by-sentence as the reply
-  // streams, then the mic automatically re-opens. Speech only plays when
-  // voice is enabled (the conversation toggle auto-enables it; the header
-  // speaker button mutes it again).
+  // Streaming TTS pipeline — voice replies are EXCLUSIVE to Conversation
+  // Mode («مخاطبة») on every device: a reply is spoken aloud only when it
+  // answers a voice turn captured by the conversation mic; ARIA then
+  // re-opens the mic to continue the exchange. Anything the user TYPES is
+  // answered in text only — no TTS call is made at all.
   useEffect(() => {
-    const voiceOn = (() => {
-      try {
-        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
-      } catch {
-        return voiceEnabled;
-      }
-    })();
-    if (!voiceOn) return;
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
 
@@ -688,15 +670,14 @@ export function AriaCopilot() {
     );
     if (!fullText || fullText.length < 2) return;
 
-    // Silent-in-conv-mode short-circuit: consume the flag once when message first appears.
-    if (
-      pendingSilentRef.current &&
-      !streamStateRef.current.has(last.id) &&
-      !spokenIdsRef.current.has(last.id)
-    ) {
-      pendingSilentRef.current = false;
-      spokenIdsRef.current.add(last.id);
-      return;
+    // First sight of this reply: speak it ONLY if it answers a voice turn.
+    // The flag is armed per-send in submit() and consumed exactly once here.
+    if (!streamStateRef.current.has(last.id) && !spokenIdsRef.current.has(last.id)) {
+      if (!speakNextReplyRef.current) {
+        spokenIdsRef.current.add(last.id); // typed turn → text-only reply
+        return;
+      }
+      speakNextReplyRef.current = false;
     }
     if (spokenIdsRef.current.has(last.id) && !streamStateRef.current.has(last.id)) return;
 
@@ -783,7 +764,7 @@ export function AriaCopilot() {
     }
 
     if (s.audios.length > 0) void pumpPlayback(last.id);
-  }, [chat.messages, isBusy, voiceEnabled, splitCompleteSentences, fetchTTS, pumpPlayback]);
+  }, [chat.messages, isBusy, splitCompleteSentences, fetchTTS, pumpPlayback]);
 
   // Stop TTS when panel closes — barge-in / silence guarantee.
   useEffect(() => {
@@ -859,9 +840,9 @@ export function AriaCopilot() {
       if (!promptText && fileParts.length === 0) return;
 
       primeIOSAudio();
-      if (convModeRef.current && !opts?.fromVoice) {
-        pendingSilentRef.current = true;
-      }
+      // Voice replies only for voice turns in Conversation Mode; typed
+      // messages (anywhere, any device) always get a text-only reply.
+      speakNextReplyRef.current = !!(convModeRef.current && opts?.fromVoice);
       setDraft("");
       setAttachments([]);
       setLastUserText(promptText || `[${fileParts.length} attachment(s)]`);
@@ -1007,21 +988,13 @@ export function AriaCopilot() {
       return;
     }
     primeIOSAudio();
-    // Tapping «مخاطبة» is an explicit intent to talk to ARIA — auto-unmute
-    // voice FIRST, before any capability branch, so spoken replies work on
-    // every device (even browsers without speech input, where the user
-    // types and ARIA still answers aloud).
-    if (!voiceEnabled) {
-      setVoiceEnabled(true);
-      try {
-        localStorage.setItem("aria-voice-on", "1");
-      } catch {
-        /* noop */
-      }
-    }
     if (!sttSupported) {
-      setConvMode(true);
-      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — استخدم لوحة المفاتيح، وآريا سترد صوتياً.");
+      // No speech input on this browser → Conversation Mode cannot work.
+      // Stay in the text chat (typed turns are text-only by rule) and show
+      // a transient notice instead of a half-broken voice mode.
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد آريا نصياً.");
+      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+      noticeTimerRef.current = setTimeout(() => setConvNotice(null), 5000);
       try {
         composerRef.current?.focus();
       } catch {
@@ -1039,15 +1012,7 @@ export function AriaCopilot() {
     setFirstConvOpen(false);
     AriaAudioBus.stopAll();
     startListening();
-  }, [
-    convMode,
-    sttSupported,
-    voiceEnabled,
-    setVoiceEnabled,
-    startListening,
-    stopListening,
-    composerRef,
-  ]);
+  }, [convMode, sttSupported, startListening, stopListening, composerRef]);
 
   // ESC exits conversation mode first, then closes panel.
   useEffect(() => {
@@ -1079,6 +1044,7 @@ export function AriaCopilot() {
   useEffect(
     () => () => {
       stopListening();
+      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
     },
     [stopListening],
   );
@@ -1238,27 +1204,6 @@ export function AriaCopilot() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                const next = !voiceEnabled;
-                setVoiceEnabled(next);
-                try {
-                  localStorage.setItem("aria-voice-on", next ? "1" : "0");
-                } catch {
-                  /* noop */
-                }
-              }}
-              aria-pressed={voiceEnabled}
-              aria-label={voiceEnabled ? "كتم الصوت" : "تفعيل الصوت"}
-              className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
-            >
-              {voiceEnabled ? (
-                <Volume2 className="h-4 w-4" aria-hidden />
-              ) : (
-                <VolumeX className="h-4 w-4" aria-hidden />
-              )}
-            </button>
-            <button
-              type="button"
               onClick={() => setMode("collapsed")}
               aria-label="Close ARIA"
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
@@ -1267,8 +1212,8 @@ export function AriaCopilot() {
             </button>
           </header>
 
-          {/* Conversation Mode notice + resume chip */}
-          {convMode && (convNotice || convPaused) && (
+          {/* Voice notice + Conversation Mode resume chip */}
+          {(convNotice || (convMode && convPaused)) && (
             <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
               {convNotice && (
                 <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[11px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
