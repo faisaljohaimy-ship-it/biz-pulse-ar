@@ -45,14 +45,36 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
         const { runAgent } = await import("@/lib/exec/agent-runtime.server");
 
         let actorId = authenticatedActorId;
-        if (!actorId) {
+        let requiredOrgId: string | null = null;
+
+        if (authenticatedActorId) {
+          // Bearer-auth fallback path: caller must be manager+ in an org, and
+          // may only invoke agents that belong to that same org.
+          const { data: membership } = await supabaseAdmin
+            .from("org_members")
+            .select("org_id, role")
+            .eq("user_id", authenticatedActorId)
+            .in("role", ["manager", "admin", "owner"])
+            .order("joined_at", { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (!membership?.org_id) {
+            return new Response(JSON.stringify({ error: "forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          requiredOrgId = membership.org_id as string;
+        } else {
+          // Cron/hook-secret path: still needs a real actor row.
           const { data: member } = await supabaseAdmin
             .from("org_members")
-            .select("user_id")
+            .select("user_id, org_id")
             .in("role", ["admin", "owner"])
             .limit(1)
             .maybeSingle();
           actorId = member?.user_id ?? null;
+          requiredOrgId = (member?.org_id as string | undefined) ?? null;
         }
         if (!actorId) {
           return new Response(JSON.stringify({ error: "no_admin_org_member" }), {
@@ -60,6 +82,7 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
             headers: { "Content-Type": "application/json" },
           });
         }
+
 
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
