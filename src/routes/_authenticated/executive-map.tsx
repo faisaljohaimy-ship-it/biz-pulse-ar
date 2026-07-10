@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { Activity, AlertTriangle, Building2, MapPin, Radio, Shield } from "lucide-react";
+import { Activity, AlertTriangle, Building2, Globe2, MapPin, Radio, Shield } from "lucide-react";
 import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
+import { CommandBackdrop } from "@/components/executive/CommandBackdrop";
+import { RegionGlobe } from "@/components/executive/RegionGlobe";
+import { REGION_MARKERS } from "@/components/executive/region-markers";
+import { SimBadge } from "@/components/os/SimBadge";
 
 export const Route = createFileRoute("/_authenticated/executive-map")({
   component: ExecutiveMapPage,
@@ -235,7 +239,9 @@ function ExecutiveMapPage() {
   );
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
+    <div dir={isAr ? "rtl" : "ltr"} className="relative space-y-4 p-4 md:p-6">
+      <CommandBackdrop />
+
       <PageHeader
         icon={MapPin}
         title={isAr ? "الخريطة التنفيذية" : "Executive Map"}
@@ -246,7 +252,9 @@ function ExecutiveMapPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {/* Command row: responsive horizontal stat cards — a clean horizontal
+          scroll on mobile (each card snaps), a 4-across grid on md+ screens. */}
+      <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0 md:pb-0">
         <StatCard
           icon={Building2}
           label={isAr ? "إجمالي المواقع" : "Total Sites"}
@@ -267,6 +275,39 @@ function ExecutiveMapPage() {
           tone="critical"
         />
       </div>
+
+      {/* 3D region globe — the four Saudi regions, lazy-loaded & reduced-motion
+          aware. Data is the deterministic regional snapshot (labelled sim). */}
+      <Card className="overflow-hidden border-border/60 bg-transparent">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 bg-muted/20 px-4 py-2">
+          <div className="flex items-center gap-2 text-sm">
+            <Globe2 className="h-4 w-4 text-emerald-400" />
+            <span className="font-medium">{isAr ? "القطاعات الأربعة" : "Four Regions"}</span>
+          </div>
+          <SimBadge ar={isAr} className="text-[9px]" />
+        </div>
+        <div className="grid grid-cols-1 items-center gap-4 p-4 sm:grid-cols-[minmax(0,360px)_1fr]">
+          <div className="mx-auto w-full">
+            <RegionGlobe />
+          </div>
+          <ul className="grid grid-cols-2 gap-2">
+            {REGION_MARKERS.map((m) => (
+              <li
+                key={m.id}
+                className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2.5"
+              >
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
+                </span>
+                <span className="truncate text-[13px] font-semibold text-foreground">
+                  {isAr ? `المنطقة ${m.ar}` : m.id}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Card>
 
       <Card className="overflow-hidden border-border/60">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 bg-muted/30 px-4 py-2">
@@ -335,7 +376,7 @@ function StatCard({
           ? "text-destructive"
           : "text-foreground";
   return (
-    <Card className="p-4">
+    <Card className="min-w-[42%] shrink-0 snap-start bg-background/60 p-4 backdrop-blur-sm sm:min-w-[30%] md:min-w-0">
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">{label}</div>
         <Icon className={`h-4 w-4 ${toneClass}`} />
