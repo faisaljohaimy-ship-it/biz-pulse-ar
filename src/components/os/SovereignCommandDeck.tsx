@@ -534,7 +534,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             return (
               <div
                 key={k.key}
-                className="group relative overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-3 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 lg:p-4"
+                className="group relative w-[140px] shrink-0 snap-start overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-3 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 sm:w-[170px] lg:w-auto lg:shrink lg:p-4"
                 style={{
                   animation: `sov-tile-in 700ms cubic-bezier(0.22,1,0.36,1) ${140 + idx * 90}ms both`,
                   boxShadow:
