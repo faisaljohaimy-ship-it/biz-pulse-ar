@@ -401,7 +401,7 @@ function IntroLanding() {
       <section
         dir="rtl"
         aria-label={`معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`}
-        className="relative z-10 mx-auto mt-8 w-full max-w-none px-4 sm:px-6"
+        className="relative left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] mt-8 w-screen max-w-[100vw] px-2 sm:px-4 lg:px-6"
       >
         <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
           <div className="flex min-w-0 items-center gap-2">
@@ -420,6 +420,7 @@ function IntroLanding() {
         <div className="overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25">
           <HajjEmbedFrame ar interactive={false} />
         </div>
+
         {/* External access link — visible OUTSIDE the icon/preview, on all devices */}
         <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           {HAJJ_EMBED_URL ? (
