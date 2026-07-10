@@ -484,35 +484,45 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       </div>
 
       {/* ── Horizontal command band: console rail + KPI instruments ──
-         Matches the executive command layout: a «وحدة القيادة» console on
-         the side, KPI instruments flowing horizontally beside it. Stacks to
-         a single column on mobile; console + KPIs sit side-by-side on lg+. */}
-      <div className="relative grid grid-cols-1 gap-3 lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-4">
+         Executive layout: «وحدة القيادة» console on the side, KPI
+         instruments flowing horizontally beside it on ALL viewports.
+         On mobile/tablet the KPI rail scrolls horizontally (snap x) so
+         the deck stays cinematic instead of collapsing into a tall
+         stack. On lg+ it fits as a 6-across grid. */}
+      <div className="relative grid grid-cols-[minmax(0,150px)_minmax(0,1fr)] gap-2 sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)] sm:gap-3 lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-4">
         {/* Command console rail */}
-        <div className="relative overflow-hidden rounded-sm border border-[#3AE8FF]/25 bg-gradient-to-b from-[#061A2E]/70 to-[#04101C]/80 p-3 backdrop-blur-xl">
+        <div className="relative overflow-hidden rounded-sm border border-[#3AE8FF]/25 bg-gradient-to-b from-[#061A2E]/70 to-[#04101C]/80 p-2.5 backdrop-blur-xl sm:p-3">
           <span className="pointer-events-none absolute left-0 top-0 h-3 w-3 border-l border-t border-[#3AE8FF]/70" />
           <span className="pointer-events-none absolute right-0 bottom-0 h-3 w-3 border-r border-b border-[#3AE8FF]/70" />
-          <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.28em] text-[#3AE8FF]/70 sm:text-[9px] sm:tracking-[0.3em]">
             Command Console
           </div>
-          <div className="mt-0.5 text-[13px] font-semibold text-white">
+          <div className="mt-0.5 text-[12px] font-semibold text-white sm:text-[13px]">
             {ar ? "وحدة القيادة" : "Command Unit"}
           </div>
           <Link
             to="/"
             aria-label={ar ? "الرئيسية" : "Home"}
-            className="mt-3 flex min-h-11 items-center justify-between gap-2 rounded-2xl border border-[#3AE8FF]/45 bg-gradient-to-l from-[#1933E6]/50 via-[#0066FF]/35 to-[#3AE8FF]/25 px-3 py-2.5 text-white shadow-[0_0_22px_rgba(52,182,255,0.35)] transition hover:border-[#3AE8FF]/80 hover:shadow-[0_0_30px_rgba(52,182,255,0.5)]"
+            className="mt-3 flex min-h-11 items-center justify-between gap-2 rounded-2xl border border-[#3AE8FF]/45 bg-gradient-to-l from-[#1933E6]/50 via-[#0066FF]/35 to-[#3AE8FF]/25 px-2.5 py-2.5 text-white shadow-[0_0_22px_rgba(52,182,255,0.35)] transition hover:border-[#3AE8FF]/80 hover:shadow-[0_0_30px_rgba(52,182,255,0.5)] sm:px-3"
           >
             <span className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#3AE8FF]" aria-hidden />
-              <span className="text-[13px] font-semibold">{ar ? "الرئيسية" : "Home"}</span>
+              <span className="text-[12px] font-semibold sm:text-[13px]">
+                {ar ? "الرئيسية" : "Home"}
+              </span>
             </span>
             <Home className="h-4 w-4 text-white/80" aria-hidden />
           </Link>
         </div>
 
-        {/* KPI instruments — 2 cols on phones, 3 on tablets, 6-across on xl. */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-6 lg:gap-4">
+        {/* KPI instruments — horizontal snap-scroll rail on mobile/tablet,
+           promoted to a 6-across grid on lg+. min-w-0 lets the rail actually
+           shrink inside the grid instead of forcing overflow on the page. */}
+        <div className="min-w-0">
+          <div
+            className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-1 pb-2 sm:gap-3 lg:mx-0 lg:grid lg:grid-cols-6 lg:gap-4 lg:overflow-visible lg:px-0 lg:pb-0"
+            style={{ scrollbarWidth: "none" }}
+          >
           {kpis.map((k, idx) => {
             const Icon = k.icon;
             const label = ar ? k.labelAr : k.labelEn;
