@@ -91,6 +91,7 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
             actorId: actorId as string,
             goalOverride: body.goalOverride ?? null,
             context: { source: "public.hook.run-agent" },
+            requiredOrgId,
           });
           return new Response(JSON.stringify({ ok: true, result: res }, null, 2), {
             status: 200,
