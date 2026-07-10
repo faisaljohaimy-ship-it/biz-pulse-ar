@@ -359,7 +359,7 @@ function IntroLanding() {
       <section
         id="hero-dashboard"
         aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
-        className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
+        className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
       >
         <SovereignCommandDeck ar={ar} />
         <OsDecisionQueue ar={ar} />
@@ -383,7 +383,7 @@ function IntroLanding() {
       <section
         dir="rtl"
         aria-label={`لوحة قيادة · ${HAJJ_PLATFORM_LABEL_AR}`}
-        className="relative z-10 mx-auto mt-8 w-full max-w-6xl px-4 sm:mt-12 sm:px-6"
+        className="relative z-10 mx-auto mt-8 w-full max-w-[1600px] px-4 sm:mt-12 sm:px-6"
       >
         <div className="mb-4 text-center">
           <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
@@ -401,7 +401,7 @@ function IntroLanding() {
       <section
         dir="rtl"
         aria-label={`معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`}
-        className="relative z-10 mx-auto mt-8 w-full max-w-5xl px-4 sm:px-6"
+        className="relative z-10 mx-auto mt-8 w-full max-w-[1600px] px-4 sm:px-6"
       >
         <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
           <div className="flex min-w-0 items-center gap-2">
@@ -453,7 +453,7 @@ function IntroLanding() {
 
       <div
         id="tour-positioning"
-        className="relative z-10 mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6"
+        className="relative z-10 mx-auto mt-6 w-full max-w-[1600px] px-4 sm:mt-10 sm:px-6"
       >
         <MissionControlStrip />
       </div>
@@ -462,7 +462,7 @@ function IntroLanding() {
         <AgentRing />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+      <div className="relative z-10 mx-auto w-full max-w-[1600px] px-4 py-10 sm:px-6 sm:py-16">
         <section id="tour-capabilities" className="mt-6 sm:mt-16">
           <div className="mb-5 text-center sm:mb-6">
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#3AE8FF]/70 sm:text-[11px] sm:tracking-[0.3em]">
