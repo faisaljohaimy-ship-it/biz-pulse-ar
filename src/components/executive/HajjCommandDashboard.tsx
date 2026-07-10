@@ -668,19 +668,19 @@ export function HajjCommandDashboard() {
       <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
         {/* Main column */}
         <div className="flex flex-col gap-3 sm:gap-4">
-          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 [&>*]:w-[88%] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-auto sm:[&>*]:shrink">
             <StationsPanel />
             <AlertsPanel />
           </div>
           <CamerasPanel />
-          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 [&>*]:w-[85%] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-auto sm:[&>*]:shrink">
             <IncidentDonut />
             <RiskGauge />
             <ComplianceChart />
           </div>
         </div>
         {/* Side rail */}
-        <aside className="flex flex-col gap-3 sm:gap-4">
+        <aside className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:flex-col lg:snap-none lg:gap-4 lg:overflow-visible lg:px-0 [&>*]:w-[80%] [&>*]:shrink-0 [&>*]:snap-start lg:[&>*]:w-auto lg:[&>*]:shrink">
           <QuickActions />
           <WeatherWidget />
         </aside>
