@@ -9,7 +9,17 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AudioWaveform, Mic, Plus, RefreshCcw, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import {
+  AudioWaveform,
+  Mic,
+  Plus,
+  RefreshCcw,
+  Send,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -31,7 +41,9 @@ import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 import { pageScriptParts } from "@/lib/aria/page-scripts";
-// speakAria / speakablePageScript intentionally NOT imported — chat is silent.
+// speakAria / speakablePageScript intentionally NOT imported — the panel-open
+// page intro stays silent; reply speech runs through the streaming TTS
+// pipeline below (ElevenLabs via /api/tts, gated on the voice toggle).
 import { useRouterState } from "@tanstack/react-router";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
@@ -653,11 +665,124 @@ export function AriaCopilot() {
     }
   }, []);
 
+  // Streaming TTS pipeline — restored so «مخاطبة» (Conversation Mode) is a
+  // full two-way voice loop on every device (mobile + laptop + desktop):
+  // the user speaks, ARIA answers aloud sentence-by-sentence as the reply
+  // streams, then the mic automatically re-opens. Speech only plays when
+  // voice is enabled (the conversation toggle auto-enables it; the header
+  // speaker button mutes it again).
   useEffect(() => {
-    // ARIA chat TTS permanently disabled on all devices (mobile + desktop).
-    // Every assistant reply is text-only; no /api/tts calls, no audio bus
-    // acquisition, no browser SpeechSynthesis fallback. Kept as an empty
-    // effect so the surrounding component structure is unchanged.
+    const voiceOn = (() => {
+      try {
+        return localStorage.getItem("aria-voice-on") === "1" || voiceEnabled;
+      } catch {
+        return voiceEnabled;
+      }
+    })();
+    if (!voiceOn) return;
+    const last = chat.messages[chat.messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+
+    const fullText = sanitiseAssistantText(
+      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    );
+    if (!fullText || fullText.length < 2) return;
+
+    // Silent-in-conv-mode short-circuit: consume the flag once when message first appears.
+    if (
+      pendingSilentRef.current &&
+      !streamStateRef.current.has(last.id) &&
+      !spokenIdsRef.current.has(last.id)
+    ) {
+      pendingSilentRef.current = false;
+      spokenIdsRef.current.add(last.id);
+      return;
+    }
+    if (spokenIdsRef.current.has(last.id) && !streamStateRef.current.has(last.id)) return;
+
+    let s = streamStateRef.current.get(last.id);
+    if (!s) {
+      // Exactly-once gate — module-level so StrictMode/remount can't dup.
+      if (!markSpokenOrDrop(last.id)) return;
+      s = {
+        sendAt: pendingSendAtRef.current,
+        firstTokenAt: performance.now(),
+        firstSentenceAt: null,
+        firstAudioAt: null,
+        dispatched: 0,
+        audios: [],
+        playingIdx: 0,
+        pumping: false,
+        busAcquired: false,
+        finalized: false,
+        aborts: [],
+        latencyLogged: false,
+      };
+      pendingSendAtRef.current = null;
+      streamStateRef.current.set(last.id, s);
+      spokenIdsRef.current.add(last.id);
+      // Acquire bus lazily on first dispatch — see below.
+    }
+
+    const { complete, tail } = splitCompleteSentences(fullText);
+    // Streaming still in progress? isBusy tells us.
+    const streaming = isBusy;
+    // Which sentences to dispatch NOW:
+    //  - While streaming: any newly-completed sentences beyond s.dispatched.
+    //  - When streaming ends: also include the trailing tail as the final sentence.
+    const toDispatch: string[] = [];
+    if (complete.length > s.dispatched) {
+      toDispatch.push(...complete.slice(s.dispatched));
+    }
+    if (
+      !streaming &&
+      tail.length >= 2 &&
+      complete.length + (tail ? 1 : 0) > s.dispatched + toDispatch.length
+    ) {
+      toDispatch.push(tail);
+    }
+
+    if (toDispatch.length > 0 && !s.busAcquired) {
+      const ok = AriaAudioBus.acquire("chat-tts", () => {
+        const cur = streamStateRef.current.get(last.id);
+        if (!cur) return;
+        for (const c of cur.aborts) {
+          try {
+            c.abort();
+          } catch {
+            /* noop */
+          }
+        }
+        const a = audioRef.current;
+        if (a) {
+          try {
+            a.pause();
+            a.currentTime = 0;
+          } catch {
+            /* noop */
+          }
+        }
+        cur.finalized = true;
+        streamStateRef.current.delete(last.id);
+      });
+      if (!ok) return;
+      s.busAcquired = true;
+    }
+
+    for (const sentence of toDispatch) {
+      const dispatchIdx = s.dispatched;
+      s.dispatched++;
+      const ctrl = new AbortController();
+      s.aborts.push(ctrl);
+      if (s.firstSentenceAt === null) s.firstSentenceAt = performance.now();
+      s.audios.push(fetchTTS(sentence, dispatchIdx, ctrl));
+    }
+
+    if (!streaming) {
+      s.finalized = true;
+    }
+
+    if (s.audios.length > 0) void pumpPlayback(last.id);
   }, [chat.messages, isBusy, voiceEnabled, splitCompleteSentences, fetchTTS, pumpPlayback]);
 
   // Stop TTS when panel closes — barge-in / silence guarantee.
@@ -744,9 +869,7 @@ export function AriaCopilot() {
 
       if (fileParts.length > 0) {
         // AI SDK v5: send typed parts array so file blocks reach the model.
-        const parts: Array<
-          { type: "text"; text: string } | FilePart
-        > = [];
+        const parts: Array<{ type: "text"; text: string } | FilePart> = [];
         if (promptText) parts.push({ type: "text", text: promptText });
         parts.push(...fileParts);
         void chat.sendMessage({ role: "user", parts });
@@ -884,19 +1007,10 @@ export function AriaCopilot() {
       return;
     }
     primeIOSAudio();
-    if (!sttSupported) {
-      setConvMode(true);
-      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — استخدم لوحة المفاتيح.");
-      try {
-        composerRef.current?.focus();
-      } catch {
-        /* noop */
-      }
-      return;
-    }
     // Tapping «مخاطبة» is an explicit intent to talk to ARIA — auto-unmute
-    // voice if the user had it silenced so the mic actually opens instead
-    // of showing a "muted" notice with nothing happening.
+    // voice FIRST, before any capability branch, so spoken replies work on
+    // every device (even browsers without speech input, where the user
+    // types and ARIA still answers aloud).
     if (!voiceEnabled) {
       setVoiceEnabled(true);
       try {
@@ -904,6 +1018,16 @@ export function AriaCopilot() {
       } catch {
         /* noop */
       }
+    }
+    if (!sttSupported) {
+      setConvMode(true);
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — استخدم لوحة المفاتيح، وآريا سترد صوتياً.");
+      try {
+        composerRef.current?.focus();
+      } catch {
+        /* noop */
+      }
+      return;
     }
     setConvMode(true);
     setConvNotice(null);
@@ -915,7 +1039,15 @@ export function AriaCopilot() {
     setFirstConvOpen(false);
     AriaAudioBus.stopAll();
     startListening();
-  }, [convMode, sttSupported, voiceEnabled, setVoiceEnabled, startListening, stopListening, composerRef]);
+  }, [
+    convMode,
+    sttSupported,
+    voiceEnabled,
+    setVoiceEnabled,
+    startListening,
+    stopListening,
+    composerRef,
+  ]);
 
   // ESC exits conversation mode first, then closes panel.
   useEffect(() => {
@@ -1273,9 +1405,7 @@ export function AriaCopilot() {
                     <span className="max-w-[140px] truncate" title={f.name}>
                       {f.name}
                     </span>
-                    <span className="text-muted-foreground">
-                      {(f.size / 1024).toFixed(0)}KB
-                    </span>
+                    <span className="text-muted-foreground">{(f.size / 1024).toFixed(0)}KB</span>
                     <button
                       type="button"
                       aria-label={`Remove ${f.name}`}
@@ -1342,7 +1472,9 @@ export function AriaCopilot() {
               />
               <button
                 type="submit"
-                disabled={isBusy || uploadingAttachments || (!draft.trim() && attachments.length === 0)}
+                disabled={
+                  isBusy || uploadingAttachments || (!draft.trim() && attachments.length === 0)
+                }
                 aria-label="Send"
                 className={cn(
                   "grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground",

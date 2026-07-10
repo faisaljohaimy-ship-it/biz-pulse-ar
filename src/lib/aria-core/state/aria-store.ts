@@ -44,13 +44,25 @@ interface AriaState {
   drainCommands: () => PendingCommand[];
 }
 
+// Voice starts OFF on first visit; once the user enables it (the «مخاطبة»
+// toggle or the header speaker button) the choice persists across reloads
+// on every device. Both historical storage keys are honoured.
+function initialVoiceEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return (
+      window.localStorage.getItem("aria-voice-on") === "1" ||
+      window.localStorage.getItem("aria.voiceEnabled") === "true"
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const useAriaStore = create<AriaState>((set, get) => ({
   mode: "collapsed",
   voice: "idle",
-  // Voice permanently OFF — ARIA chat is a silent, text-only assistant on
-  // every device. The toggle still exists but flips a store flag that has
-  // no audible effect (all speak paths early-return).
-  voiceEnabled: false,
+  voiceEnabled: initialVoiceEnabled(),
   pageContext: null,
   activeTurn: null,
   activeEnvelope: null,
@@ -61,7 +73,13 @@ export const useAriaStore = create<AriaState>((set, get) => ({
   setVoice: (voice) => set({ voice }),
   setVoiceEnabled: (enabled) => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("aria.voiceEnabled", String(enabled));
+      try {
+        window.localStorage.setItem("aria.voiceEnabled", String(enabled));
+        // Keep the legacy key in sync — the TTS pipeline reads it directly.
+        window.localStorage.setItem("aria-voice-on", enabled ? "1" : "0");
+      } catch {
+        /* private mode — session-only toggle */
+      }
     }
     set({ voiceEnabled: enabled });
   },
