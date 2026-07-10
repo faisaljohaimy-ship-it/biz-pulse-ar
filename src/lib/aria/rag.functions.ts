@@ -103,7 +103,7 @@ export const retrieveRegulationContext = createServerFn({ method: "POST" })
     }>;
 
     const docIds = Array.from(new Set(raw.map((r) => r.document_id)));
-    let meta: Record<string, { is_official: boolean; source_kind: string; title: string }> = {};
+    const meta: Record<string, { is_official: boolean; source_kind: string; title: string }> = {};
     if (docIds.length > 0) {
       const { data: docs } = await supabase
         .from("aria_documents")

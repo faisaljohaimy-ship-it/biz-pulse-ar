@@ -188,7 +188,6 @@ function ExecConsole() {
     staleTime: 30_000,
   });
 
-
   const approveFn = useServerFn(approveToolExecution);
   const rollbackFn = useServerFn(rollbackToolExecution);
 

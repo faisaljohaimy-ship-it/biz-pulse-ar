@@ -25,14 +25,9 @@
  */
 import { test, expect, request as pwRequest } from "@playwright/test";
 
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ??
-  process.env.VITE_SUPABASE_URL ??
-  "";
+const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const SUPABASE_ANON =
-  process.env.SUPABASE_PUBLISHABLE_KEY ??
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  "";
+  process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
 
 test.describe("Constitution Art. 19 · security gap-closure", () => {
   test("public incident sink accepts a well-formed beacon (202)", async ({ request }) => {
@@ -99,10 +94,7 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
       // is a constitution breach.
       if (res.status() === 200) {
         const rows = (await res.json()) as unknown[];
-        expect(
-          Array.isArray(rows) && rows.length,
-          `anon must not read from ${table}`,
-        ).toBeFalsy();
+        expect(Array.isArray(rows) && rows.length, `anon must not read from ${table}`).toBeFalsy();
       } else {
         expect(
           [401, 403, 404],

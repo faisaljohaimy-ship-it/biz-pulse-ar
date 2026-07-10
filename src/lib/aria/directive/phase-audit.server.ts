@@ -19,7 +19,6 @@ import { verifyRuntime } from "@/lib/aria/runtime/verification.server";
 import { reportHealth as reportRuntimeHealth } from "@/lib/aria/runtime/health.server";
 import { evaluateIntegrationReadiness } from "@/lib/aria/integration/readiness.server";
 
-
 export type PhaseStatus = "green" | "amber" | "red" | "deferred" | "unknown";
 
 export interface PhaseProbe {
@@ -91,8 +90,18 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         issues: v.issues,
       };
     }),
-    { module: "executive-brain", status: "deferred", issues: [], note: "requires live BrainRequest" },
-    { module: "long-term-memory", status: "deferred", issues: [], note: "requires memory-store snapshot" },
+    {
+      module: "executive-brain",
+      status: "deferred",
+      issues: [],
+      note: "requires live BrainRequest",
+    },
+    {
+      module: "long-term-memory",
+      status: "deferred",
+      issues: [],
+      note: "requires memory-store snapshot",
+    },
     { module: "reasoning", status: "deferred", issues: [], note: "requires evidence set" },
   ];
 
@@ -124,8 +133,18 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         note: "surface schema check; live briefings arrive from ops feeds",
       };
     }),
-    { module: "governance", status: "deferred", issues: [], note: "requires ExecutionPermission input" },
-    { module: "orchestrator", status: "deferred", issues: [], note: "requires live orchestrator snapshot" },
+    {
+      module: "governance",
+      status: "deferred",
+      issues: [],
+      note: "requires ExecutionPermission input",
+    },
+    {
+      module: "orchestrator",
+      status: "deferred",
+      issues: [],
+      note: "requires live orchestrator snapshot",
+    },
   ];
 
   // ── PHASE 3 · LIVE DEMONSTRATION ─────────────────────────────────────
@@ -152,7 +171,12 @@ export function runDirectiveAudit(): DirectiveAuditReport {
         issues: (v.issues ?? []).map(String),
       };
     }),
-    { module: "long-term-memory", status: "deferred", issues: [], note: "requires memory-store snapshot" },
+    {
+      module: "long-term-memory",
+      status: "deferred",
+      issues: [],
+      note: "requires memory-store snapshot",
+    },
   ];
 
   // ── PHASE 4 · COMMAND CENTER (tool engine health) ────────────────────
@@ -191,17 +215,17 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     safeProbe("integration", () => {
       const r = evaluateIntegrationReadiness();
       const s = r.summary;
-      const status: PhaseStatus =
-        s.fail > 0 ? "red" : s.warn > 0 ? "amber" : "green";
+      const status: PhaseStatus = s.fail > 0 ? "red" : s.warn > 0 ? "amber" : "green";
       return {
         module: "integration",
         status,
-        issues: r.gates.filter((g) => g.status === "fail").map((g) => `${g.connector_id}:${g.reason}`),
+        issues: r.gates
+          .filter((g) => g.status === "fail")
+          .map((g) => `${g.connector_id}:${g.reason}`),
         note: `pass=${s.pass}/${s.total}`,
       };
     }),
   ];
-
 
   // ── PHASE 6 · MULTI-AGENT (live agent-mesh health) ───────────────────
   const p6: PhaseProbe[] = [
@@ -261,16 +285,78 @@ export function runDirectiveAudit(): DirectiveAuditReport {
   ];
 
   const phases: PhaseReport[] = [
-    { n: 1, key: "aria-core", title_en: "ARIA Core", title_ar: "نواة أريا", status: rollUp(p1), probes: p1 },
-    { n: 2, key: "executive-execution", title_en: "Executive Execution", title_ar: "التنفيذ التنفيذي", status: rollUp(p2), probes: p2 },
-    { n: 3, key: "live-demonstration", title_en: "Live Demonstration", title_ar: "العرض الحي", status: rollUp(p3), probes: p3 },
-    { n: 4, key: "command-center", title_en: "Command Center", title_ar: "مركز القيادة", status: rollUp(p4), probes: p4 },
-    { n: 5, key: "enterprise-memory", title_en: "Enterprise Memory", title_ar: "الذاكرة المؤسسية", status: rollUp(p5), probes: p5 },
-    { n: 6, key: "multi-agent", title_en: "Multi-Agent", title_ar: "الوكلاء المتعددون", status: rollUp(p6), probes: p6 },
-    { n: 7, key: "digital-twin", title_en: "Digital Twin", title_ar: "التوأم الرقمي", status: rollUp(p7), probes: p7 },
-    { n: 8, key: "performance-stability", title_en: "Performance & Stability", title_ar: "الأداء والاستقرار", status: rollUp(p8), probes: p8 },
-    { n: 9, key: "executive-experience", title_en: "Executive Experience", title_ar: "التجربة التنفيذية", status: rollUp(p9), probes: p9 },
-
+    {
+      n: 1,
+      key: "aria-core",
+      title_en: "ARIA Core",
+      title_ar: "نواة أريا",
+      status: rollUp(p1),
+      probes: p1,
+    },
+    {
+      n: 2,
+      key: "executive-execution",
+      title_en: "Executive Execution",
+      title_ar: "التنفيذ التنفيذي",
+      status: rollUp(p2),
+      probes: p2,
+    },
+    {
+      n: 3,
+      key: "live-demonstration",
+      title_en: "Live Demonstration",
+      title_ar: "العرض الحي",
+      status: rollUp(p3),
+      probes: p3,
+    },
+    {
+      n: 4,
+      key: "command-center",
+      title_en: "Command Center",
+      title_ar: "مركز القيادة",
+      status: rollUp(p4),
+      probes: p4,
+    },
+    {
+      n: 5,
+      key: "enterprise-memory",
+      title_en: "Enterprise Memory",
+      title_ar: "الذاكرة المؤسسية",
+      status: rollUp(p5),
+      probes: p5,
+    },
+    {
+      n: 6,
+      key: "multi-agent",
+      title_en: "Multi-Agent",
+      title_ar: "الوكلاء المتعددون",
+      status: rollUp(p6),
+      probes: p6,
+    },
+    {
+      n: 7,
+      key: "digital-twin",
+      title_en: "Digital Twin",
+      title_ar: "التوأم الرقمي",
+      status: rollUp(p7),
+      probes: p7,
+    },
+    {
+      n: 8,
+      key: "performance-stability",
+      title_en: "Performance & Stability",
+      title_ar: "الأداء والاستقرار",
+      status: rollUp(p8),
+      probes: p8,
+    },
+    {
+      n: 9,
+      key: "executive-experience",
+      title_en: "Executive Experience",
+      title_ar: "التجربة التنفيذية",
+      status: rollUp(p9),
+      probes: p9,
+    },
   ];
 
   const overall: PhaseStatus = phases.some((p) => p.status === "red")

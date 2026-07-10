@@ -32,7 +32,6 @@ function Timeline() {
   });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 
-
   const events: Ev[] = [
     ...data.incidents.map((i) => ({
       t: i.reported_at,

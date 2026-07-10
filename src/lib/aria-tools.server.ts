@@ -859,28 +859,25 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return { ok: false, error: "missing_lovable_api_key" };
         try {
-          const upstream = await fetch(
-            "https://ai.gateway.lovable.dev/v1/chat/completions",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Lovable-API-Key": key,
-                "X-Lovable-AIG-SDK": "nexios-aria-generate-image",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash-image-preview",
-                modalities: ["image", "text"],
-                messages: [
-                  {
-                    role: "user",
-                    content: `Generate an image (${aspect_ratio}). ${prompt}`,
-                  },
-                ],
-              }),
-              signal: AbortSignal.timeout(60_000),
+          const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Lovable-API-Key": key,
+              "X-Lovable-AIG-SDK": "nexios-aria-generate-image",
             },
-          );
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash-image-preview",
+              modalities: ["image", "text"],
+              messages: [
+                {
+                  role: "user",
+                  content: `Generate an image (${aspect_ratio}). ${prompt}`,
+                },
+              ],
+            }),
+            signal: AbortSignal.timeout(60_000),
+          });
           if (!upstream.ok) {
             const detail = (await upstream.text().catch(() => "")).slice(0, 240);
             return { ok: false, error: `gateway_${upstream.status}`, detail };

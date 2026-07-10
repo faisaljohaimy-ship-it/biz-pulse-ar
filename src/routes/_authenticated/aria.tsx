@@ -190,7 +190,9 @@ function AriaConsole() {
                 size="sm"
                 variant="outline"
                 className="h-6 text-[10px] px-2"
-                onClick={() => (authed ? generateMut.mutate(k) : setReportError(authRequiredMessage))}
+                onClick={() =>
+                  authed ? generateMut.mutate(k) : setReportError(authRequiredMessage)
+                }
                 disabled={authLoading || !authed || generateMut.isPending}
               >
                 {generateMut.isPending && generateMut.variables === k ? (

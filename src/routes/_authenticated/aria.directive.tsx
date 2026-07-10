@@ -15,7 +15,10 @@ export const Route = createFileRoute("/_authenticated/aria/directive")({
   head: () => ({
     meta: [
       { title: "ARIA Directive Ledger — NEXIOS" },
-      { name: "description", content: "Live phase-by-phase audit of the ARIA Impact Priority Directive." },
+      {
+        name: "description",
+        content: "Live phase-by-phase audit of the ARIA Impact Priority Directive.",
+      },
     ],
   }),
   component: DirectivePage,
@@ -50,7 +53,9 @@ function DirectivePage() {
             سجل التنفيذ الحي لمراحل توجيه أريا التنفيذي (v{data.version}). آخر تحديث:{" "}
             {new Date(data.generated_at).toLocaleString("ar-SA")}
           </p>
-          <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${STATUS_TONE[data.overall]}`}>
+          <div
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${STATUS_TONE[data.overall]}`}
+          >
             <span className="uppercase tracking-wider">Overall</span>
             <span>·</span>
             <span>{data.overall}</span>
@@ -96,9 +101,7 @@ function DirectivePage() {
                         {probe.status}
                       </span>
                     </div>
-                    {probe.note && (
-                      <p className="mt-1 text-xs text-slate-400">{probe.note}</p>
-                    )}
+                    {probe.note && <p className="mt-1 text-xs text-slate-400">{probe.note}</p>}
                     {probe.issues.length > 0 && (
                       <ul className="mt-2 list-disc pl-4 text-xs text-amber-300/80 space-y-0.5">
                         {probe.issues.map((issue, i) => (

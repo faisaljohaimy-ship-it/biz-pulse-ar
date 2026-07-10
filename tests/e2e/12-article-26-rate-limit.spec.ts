@@ -14,12 +14,9 @@
 import { test, expect, request as pwRequest } from "@playwright/test";
 
 const APP_BASE = process.env.APP_BASE_URL ?? "http://localhost:8080";
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
+const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const SUPABASE_PUBLISHABLE_KEY =
-  process.env.SUPABASE_PUBLISHABLE_KEY ??
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  "";
+  process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
 
 test.describe("Article 26 — audit trail + rate limiting", () => {
   test("public incident sink throttles after > 60 requests in 60s", async () => {
@@ -55,7 +52,10 @@ test.describe("Article 26 — audit trail + rate limiting", () => {
     await ctx.dispose();
 
     expect(accepted, "at least the first burst must be accepted").toBeGreaterThanOrEqual(50);
-    expect(throttled, "the sink MUST throttle after the 60 req / 60 s budget").toBeGreaterThanOrEqual(1);
+    expect(
+      throttled,
+      "the sink MUST throttle after the 60 req / 60 s budget",
+    ).toBeGreaterThanOrEqual(1);
     expect(lastRetryAfter).toBeTruthy();
   });
 

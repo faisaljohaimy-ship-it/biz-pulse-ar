@@ -16,11 +16,22 @@ import { logAriaAction } from "./audit-log.server";
 import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 
 const ALLOWED_MIME = new Set([
-  "image/png", "image/jpeg", "image/webp", "image/gif",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
   "application/pdf",
-  "audio/mpeg", "audio/wav", "audio/webm", "audio/mp4", "audio/ogg",
-  "video/mp4", "video/webm", "video/quicktime",
-  "text/plain", "text/markdown", "application/json",
+  "audio/mpeg",
+  "audio/wav",
+  "audio/webm",
+  "audio/mp4",
+  "audio/ogg",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "text/plain",
+  "text/markdown",
+  "application/json",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-excel",
@@ -60,7 +71,6 @@ export const uploadAriaAttachment = createServerFn({ method: "POST" })
       });
       throw new Error("Upload rate limit exceeded — try again shortly.");
     }
-
 
     if (!ALLOWED_MIME.has(data.mime_type)) {
       await logAriaAction({

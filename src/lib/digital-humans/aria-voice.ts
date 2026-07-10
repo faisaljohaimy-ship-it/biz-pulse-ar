@@ -194,7 +194,6 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
   return handle;
 }
 
-
 /**
  * Speak `text` in the voice of a specific Digital Human persona.
  * Thin convenience over `speakAria` — picks the persona's voice and

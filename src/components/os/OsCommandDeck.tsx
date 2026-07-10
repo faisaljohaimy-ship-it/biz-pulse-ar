@@ -41,10 +41,7 @@ async function fetchOverview(): Promise<OverviewPayload> {
 function computeHealth(c?: Counts): { score: number; tone: "emerald" | "amber" | "rose" } {
   if (!c) return { score: 0, tone: "amber" };
   const penalties =
-    c.incidents_critical * 12 +
-    c.incidents_open * 3 +
-    c.assets_offline * 4 +
-    c.cctv_new * 2;
+    c.incidents_critical * 12 + c.incidents_open * 3 + c.assets_offline * 4 + c.cctv_new * 2;
   const score = Math.max(40, Math.min(100, 100 - penalties));
   const tone = score >= 85 ? "emerald" : score >= 65 ? "amber" : "rose";
   return { score, tone };

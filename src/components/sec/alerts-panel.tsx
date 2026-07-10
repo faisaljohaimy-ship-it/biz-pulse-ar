@@ -231,9 +231,7 @@ export function AlertsPanel() {
           }
         />
         {/* fallback keeps a subtle idle dot when no evidence yet */}
-        {!data && (
-          <span className="w-1.5 h-1.5 rounded-full bg-white/20" aria-hidden="true" />
-        )}
+        {!data && <span className="w-1.5 h-1.5 rounded-full bg-white/20" aria-hidden="true" />}
       </header>
 
       {/* Priority filters */}

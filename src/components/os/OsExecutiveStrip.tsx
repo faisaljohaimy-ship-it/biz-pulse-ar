@@ -5,14 +5,7 @@
  * gate via <KpiCard>/<EvidenceBadge>.
  */
 import { useQuery } from "@tanstack/react-query";
-import {
-  ShieldAlert,
-  Radar,
-  Activity,
-  UserCheck,
-  Camera,
-  ClipboardCheck,
-} from "lucide-react";
+import { ShieldAlert, Radar, Activity, UserCheck, Camera, ClipboardCheck } from "lucide-react";
 import { KpiCard } from "./KpiCard";
 import type { Evidence } from "@/lib/evidence/gate";
 

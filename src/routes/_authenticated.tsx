@@ -11,7 +11,6 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
-
 function AuthLayout() {
   return (
     <RuntimeProvider>

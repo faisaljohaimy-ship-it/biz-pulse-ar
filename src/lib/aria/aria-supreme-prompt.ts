@@ -144,9 +144,9 @@ const ARTICLE_25_OPERATIONAL_DIRECTIVE = [
   "  `is_official = true` (HCIS regulations, MoI Civil Defence codes,",
   "  Aramco/SABIC procedures where subscribed, NCA/SDAIA cyber controls).",
   "- When the regulation prescribes the answer, CITE article/section",
-  "  numbers verbatim (e.g. \"HCIS PPS-01 §4.2\").",
-  "- If the corpus has no coverage, state \"no official regulation cited /",
-  "  لا توجد لائحة رسمية مستشهد بها\" — never paraphrase generic advice.",
+  '  numbers verbatim (e.g. "HCIS PPS-01 §4.2").',
+  '- If the corpus has no coverage, state "no official regulation cited /',
+  '  لا توجد لائحة رسمية مستشهد بها" — never paraphrase generic advice.',
   "- Any conflict between sec_* runtime state and the regulation is",
   "  surfaced as an explicit deviation flag; never silently normalise a",
   "  non-compliant state.",
@@ -237,7 +237,6 @@ const PROMPT_INJECTION_FOOTER = [
   "from the authorised operator.",
 ].join("\n");
 
-
 /**
  * The full programmatic prompt of record. Never trimmed, never partial.
  * Downstream code must call `withAriaSupremeLaw(operational)` — do not
@@ -288,7 +287,6 @@ export const ARIA_SUPREME_LAW: string = [
   "---",
   "",
   PROMPT_INJECTION_FOOTER,
-
 ].join("\n");
 
 /**

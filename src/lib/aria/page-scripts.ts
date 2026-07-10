@@ -70,8 +70,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "An interactive hierarchy of every circle, site, building, and security asset in the Western Region.",
       actionAr:
         "تَنَقَّلْ بَيْنَ العُقَدِ لِرُؤْيَةِ الأَعْدَادِ الحَيَّةِ لِلْأُصُولِ وَحَالَتِهَا التَّشْغِيلِيَّة.",
-      actionEn:
-        "Walk the tree to inspect live asset counts and per-node operational status.",
+      actionEn: "Walk the tree to inspect live asset counts and per-node operational status.",
     },
   ],
   [
@@ -85,8 +84,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Totals for circles, sites, and headcount, with per-circle cards showing manager and coordinates.",
       actionAr:
         "اضْغُطْ إِحْدَاثِيَّاتِ أَيِّ دَائِرَةٍ لِفَتْحِهَا عَلَى الخَرِيطَةِ التَّنْفِيذِيَّة.",
-      actionEn:
-        "Tap a circle's coordinates to open it on the executive map.",
+      actionEn: "Tap a circle's coordinates to open it on the executive map.",
     },
   ],
   [
@@ -98,10 +96,8 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "تَعْرِضُ هَيْكَلَ الأَقْسَامِ الأَمْنِيَّةِ مَعَ رَئِيسِ كُلِّ قِسْمٍ وَعَدَدِ مُوَظَّفِيهِ وَإِسْنَادِ المَسْؤُولِيَّات.",
       purposeEn:
         "The security division structure — each section, its head, headcount, and responsibility mapping.",
-      actionAr:
-        "افْتَحْ أَيَّ قِسْمٍ لِرُؤْيَةِ أَدْوَارِهِ وَأَوَامِرِ عَمَلِهِ المَفْتُوحَة.",
-      actionEn:
-        "Open a section to see its roles and open work orders.",
+      actionAr: "افْتَحْ أَيَّ قِسْمٍ لِرُؤْيَةِ أَدْوَارِهِ وَأَوَامِرِ عَمَلِهِ المَفْتُوحَة.",
+      actionEn: "Open a section to see its roles and open work orders.",
     },
   ],
   [
@@ -111,12 +107,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Security Projects",
       purposeAr:
         "تُتَابِعُ المُبَادَرَاتِ الأَمْنِيَّةَ الجَارِيَةَ وَمَرَاحِلَهَا وَالمِيزَانِيَّةَ المَرْصُودَةَ لَهَا.",
-      purposeEn:
-        "Tracks in-flight security initiatives, their phases, and allocated budget.",
+      purposeEn: "Tracks in-flight security initiatives, their phases, and allocated budget.",
       actionAr:
         "افْتَحْ أَيَّ مَشْرُوعٍ لِمُرَاجَعَةِ المَعَالِمِ وَالمَهَامِّ وَنِسْبَةِ التَّقَدُّم.",
-      actionEn:
-        "Open a project to review milestones, tasks, and completion ratio.",
+      actionEn: "Open a project to review milestones, tasks, and completion ratio.",
     },
   ],
   [
@@ -126,12 +120,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Maintenance & Work Orders",
       purposeAr:
         "تَعْرِضُ إِجْمَالِيَّ أَوَامِرِ العَمَلِ وَالمَفْتُوحَةَ وَالمُتَأَخِّرَةَ مَعَ نَوْعِهَا وَقَائِيَّةً أَوْ تَصْحِيحِيَّة.",
-      purposeEn:
-        "Total, open, and overdue work orders with preventive vs corrective typing.",
+      purposeEn: "Total, open, and overdue work orders with preventive vs corrective typing.",
       actionAr:
         "أَنْشِئْ أَمْرَ عَمَلٍ جَدِيدًا أَوْ فَلْتِرِ الجَدْوَلَ بِحَسَبِ الحَالَةِ وَالنَّوْع.",
-      actionEn:
-        "Create a new work order or filter the table by type and status.",
+      actionEn: "Create a new work order or filter the table by type and status.",
     },
   ],
   [
@@ -145,8 +137,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Live open incidents with priority, assigned teams, and timeline pulled from sec_incidents.",
       actionAr:
         "فَلْتِرْ بِحَسَبِ الشِّدَّةِ أَوِ المَوْقِعِ أَوِ اطْلُبْ مِنِّي فَتْحَ حَادِثَةٍ حَرِجَة.",
-      actionEn:
-        "Filter by severity or site, or ask me to open a specific critical incident.",
+      actionEn: "Filter by severity or site, or ask me to open a specific critical incident.",
     },
   ],
   [
@@ -156,12 +147,9 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Security Patrols",
       purposeAr:
         "تَتَبُّعٌ لَحْظِيٌّ لِمَسَارَاتِ الدَّوْرِيَّاتِ وَنِقَاطِ التَّفْتِيشِ وَنِسْبَةِ الالْتِزَامِ مُقَابِلَ الجَدْوَل.",
-      purposeEn:
-        "Live tracking of patrol routes, checkpoints, and compliance vs schedule.",
-      actionAr:
-        "افْحَصْ أَيَّ انْحِرَافٍ عَنْ نُقْطَةِ تَفْتِيشٍ أَوْ أَعِدْ تَعْيِينَ فِرْقَة.",
-      actionEn:
-        "Inspect any checkpoint deviation or re-assign a patrol team.",
+      purposeEn: "Live tracking of patrol routes, checkpoints, and compliance vs schedule.",
+      actionAr: "افْحَصْ أَيَّ انْحِرَافٍ عَنْ نُقْطَةِ تَفْتِيشٍ أَوْ أَعِدْ تَعْيِينَ فِرْقَة.",
+      actionEn: "Inspect any checkpoint deviation or re-assign a patrol team.",
     },
   ],
   [
@@ -175,8 +163,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "A unified view of visitors, vehicles, contractors, and every gate's current state.",
       actionAr:
         "افْتَحْ أَوْ أَغْلِقْ بَوَّابَةً أَوِ اضْغُطْ أَيَّ بِطَاقَةٍ لِلتَّعَمُّقِ فِي مَصْدَرِهَا.",
-      actionEn:
-        "Open or close a gate, or drill into any stat card's source.",
+      actionEn: "Open or close a gate, or drill into any stat card's source.",
     },
   ],
   [
@@ -190,8 +177,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Registered visitor log with who is on-site now, expected arrivals, and permit linkage.",
       actionAr:
         "سَجِّلْ دُخُولَ زَائِرٍ أَوْ خُرُوجَهُ أَوْ أَضِفْ زَائِرًا جَدِيدًا مَعَ صُورَةٍ وَتَصْرِيح.",
-      actionEn:
-        "Check a visitor in or out, or register a new visitor with photo and permit.",
+      actionEn: "Check a visitor in or out, or register a new visitor with photo and permit.",
     },
   ],
   [
@@ -203,10 +189,8 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "المُقَاوِلُونَ النَّشِطُونَ، وَعُقُودُ التَّأْمِينِ المُنْتَهِيَةُ قَرِيبًا، وَالمَوْقُوفُونَ عَنِ العَمَل.",
       purposeEn:
         "Active contractors, contracts and insurance expiring soon, and suspended parties.",
-      actionAr:
-        "حَدِّثْ حَالَةَ مُقَاوِلٍ أَوْ رَاجِعْ وَثَائِقَهُ قَبْلَ إِصْدَارِ تَصْرِيح.",
-      actionEn:
-        "Update a contractor's status or review their documents before issuing a permit.",
+      actionAr: "حَدِّثْ حَالَةَ مُقَاوِلٍ أَوْ رَاجِعْ وَثَائِقَهُ قَبْلَ إِصْدَارِ تَصْرِيح.",
+      actionEn: "Update a contractor's status or review their documents before issuing a permit.",
     },
   ],
   [
@@ -216,12 +200,9 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Vehicle Management",
       purposeAr:
         "سِجِلُّ المَرْكَبَاتِ (سَيَّارَات، شَاحِنَات، صَهَارِيج، حَافِلَات) مَعَ حَالَةِ الدُّخُولِ وَالخُرُوج.",
-      purposeEn:
-        "Vehicle registry (cars, trucks, tankers, buses) with entry and exit state.",
-      actionAr:
-        "سَجِّلْ دُخُولَ مَرْكَبَةٍ أَوْ رَبْطَهَا بِتَصْرِيحٍ أَوْ حَظْرَ لَوْحَة.",
-      actionEn:
-        "Log a vehicle entry, link it to a permit, or blacklist a plate.",
+      purposeEn: "Vehicle registry (cars, trucks, tankers, buses) with entry and exit state.",
+      actionAr: "سَجِّلْ دُخُولَ مَرْكَبَةٍ أَوْ رَبْطَهَا بِتَصْرِيحٍ أَوْ حَظْرَ لَوْحَة.",
+      actionEn: "Log a vehicle entry, link it to a permit, or blacklist a plate.",
     },
   ],
   [
@@ -231,8 +212,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Work Permits",
       purposeAr:
         "التَّصَارِيحُ السَّارِيَةُ وَالمُعَلَّقَةُ وَالمُنْتَهِيَةُ مَعَ عَلَامَاتِ المَخَاطِرِ لِلْأَعْمَالِ الحَارَّة.",
-      purposeEn:
-        "Active, pending, and expired permits flagged for hot- and restricted-work risk.",
+      purposeEn: "Active, pending, and expired permits flagged for hot- and restricted-work risk.",
       actionAr:
         "اعْتَمِدْ أَوِ ارْفُضْ تَصْرِيحًا بَعْدَ مُرَاجَعَةِ فُحُوصَاتِ المُقَاوِلِ وَالتَّأْمِينِ وَالتَّدْرِيب.",
       actionEn:
@@ -250,8 +230,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Response protocols, on-call teams, and evacuation routes for any critical incident.",
       actionAr:
         "فَعِّلْ تَسَلْسُلَ IS-٠٠٧ أَوْ أَخْطِرِ الجِهَاتِ المَعْنِيَّةَ مِنْ هُنَا مُبَاشَرَة.",
-      actionEn:
-        "Trigger the IS-007 sequence or notify the concerned authorities from here.",
+      actionEn: "Trigger the IS-007 sequence or notify the concerned authorities from here.",
     },
   ],
   [
@@ -261,12 +240,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "CCTV Operations",
       purposeAr:
         "الكَامِيرَاتُ النَّشِطَةُ وَحَالَتُهَا الفَنِّيَّةُ وَأَيُّ تَنْبِيهَاتٍ مَرْئِيَّةٍ لَحْظِيَّة.",
-      purposeEn:
-        "Active cameras, technical status, and any live visual alerts.",
+      purposeEn: "Active cameras, technical status, and any live visual alerts.",
       actionAr:
         "افْتَحْ تَدَفُّقَ كَامِيرَا أَوِ اقْفِزْ إِلَى الحَادِثَةِ المَرْبُوطَةِ بِأَيِّ تَنْبِيه.",
-      actionEn:
-        "Open a camera stream or jump to the incident linked to any alert.",
+      actionEn: "Open a camera stream or jump to the incident linked to any alert.",
     },
   ],
   [
@@ -276,12 +253,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Safety Dashboard",
       purposeAr:
         "مُؤَشِّرُ السَّلَامَةِ وَبَلَاغَاتُ الحَوَادِثِ وَاتِّجَاهَاتُ ٧ وَ٣٠ وَ٩٠ يَوْمًا.",
-      purposeEn:
-        "Safety index, reported incidents, and 7/30/90-day trend windows.",
+      purposeEn: "Safety index, reported incidents, and 7/30/90-day trend windows.",
       actionAr:
         "افْحَصْ سَبَبَ أَيِّ انْخِفَاضٍ فِي المُؤَشِّرِ أَوْ سَجِّلْ بَلَاغَ سَلَامَةٍ جَدِيدًا.",
-      actionEn:
-        "Investigate any dip in the index or log a new safety observation.",
+      actionEn: "Investigate any dip in the index or log a new safety observation.",
     },
   ],
   [
@@ -291,12 +266,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Risk Register",
       purposeAr:
         "مَصْفُوفَةُ الاحْتِمَالِ وَالأَثَرِ ٥×٥ مَعَ مَالِكٍ وَخُطَّةِ تَخْفِيفٍ لِكُلِّ خَطَر.",
-      purposeEn:
-        "A 5×5 likelihood-vs-impact matrix with owner and mitigation plan per risk.",
+      purposeEn: "A 5×5 likelihood-vs-impact matrix with owner and mitigation plan per risk.",
       actionAr:
         "حَدِّثْ حَالَةَ خَطَرٍ أَوْ عَيِّنْ مَالِكًا أَوْ أَصْدِرْ خُطَّةَ تَخْفِيفٍ جَدِيدَة.",
-      actionEn:
-        "Update a risk, assign an owner, or issue a fresh mitigation plan.",
+      actionEn: "Update a risk, assign an owner, or issue a fresh mitigation plan.",
     },
   ],
   [
@@ -306,12 +279,9 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Security Executive Reports",
       purposeAr:
         "تَقَارِيرُ يَوْمِيَّةٌ وَأُسْبُوعِيَّةٌ وَشَهْرِيَّةٌ قَابِلَةٌ لِلتَّصْدِيرِ مَبْنِيَّةٌ عَلَى بَيَانَاتٍ حَيَّة.",
-      purposeEn:
-        "Daily, weekly, and monthly exportable reports built on live data.",
-      actionAr:
-        "صَدِّرْ تَقْرِيرًا بِـ PDF أَوْ Excel أَوْ جَدْوِلْ تَسْلِيمَهُ عَبْرَ Outlook.",
-      actionEn:
-        "Export a report as PDF or Excel, or schedule Outlook delivery.",
+      purposeEn: "Daily, weekly, and monthly exportable reports built on live data.",
+      actionAr: "صَدِّرْ تَقْرِيرًا بِـ PDF أَوْ Excel أَوْ جَدْوِلْ تَسْلِيمَهُ عَبْرَ Outlook.",
+      actionEn: "Export a report as PDF or Excel, or schedule Outlook delivery.",
     },
   ],
   [
@@ -321,12 +291,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Security Assets",
       purposeAr:
         "الحَالَةُ التَّشْغِيلِيَّةُ لِكُلِّ أَصْلٍ، وَالصِّيَانَةُ المُسْتَحَقَّةُ، وَالأَصُولُ المُتَعَطِّلَة.",
-      purposeEn:
-        "The operational status of every asset, due maintenance, and offline units.",
+      purposeEn: "The operational status of every asset, due maintenance, and offline units.",
       actionAr:
         "افْتَحْ سِجِلَّ أَصْلٍ لِرُؤْيَةِ آخِرِ فَحْصٍ أَوْ أَصْدِرْ أَمْرَ عَمَلٍ فَوْرِيًّا.",
-      actionEn:
-        "Open an asset record to inspect its last check or issue an immediate work order.",
+      actionEn: "Open an asset record to inspect its last check or issue an immediate work order.",
     },
   ],
   [
@@ -336,12 +304,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Facilities & Buildings",
       purposeAr:
         "شَجَرَةُ المَوَاقِعِ وَالمَبَانِي وَالأَقْسَامِ مَعَ جَاهِزِيَّةِ كُلِّ مِرْفَقٍ لَحْظِيًّا.",
-      purposeEn:
-        "The site–building–section tree with live readiness per facility.",
+      purposeEn: "The site–building–section tree with live readiness per facility.",
       actionAr:
         "افْتَحْ أَيَّ مَبْنًى لِفَحْصِ CCTV وَالدُّخُولِ وَالدَّوْرِيَّاتِ وَأَوَامِرِ العَمَلِ فِيه.",
-      actionEn:
-        "Open a building to inspect its CCTV, access, patrols, and open work orders.",
+      actionEn: "Open a building to inspect its CCTV, access, patrols, and open work orders.",
     },
   ],
   [
@@ -355,8 +321,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Moment-by-moment enterprise_events, sec_activity, and CCTV events merged on a single axis.",
       actionAr:
         "فَلْتِرْ بِحَسَبِ المَصْدَرِ أَوِ الشِّدَّةِ أَوْ صَدِّرْ مَقْطَعًا كَدَلِيلٍ لِلْحَادِثَة.",
-      actionEn:
-        "Filter by source or severity, or export a clip as incident evidence.",
+      actionEn: "Filter by source or severity, or export a clip as incident evidence.",
     },
   ],
   [
@@ -381,12 +346,9 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Security Integrations",
       purposeAr:
         "الأَنْظِمَةُ المَرْبُوطَةُ وَحَالَةُ كُلِّ تَكَامُلٍ وَمُعَدَّلُ أَخْطَاءِ المُزَامَنَة.",
-      purposeEn:
-        "Connected systems, per-integration status, and sync error rate.",
-      actionAr:
-        "أَعِدْ تَشْغِيلَ تَكَامُلٍ مُتَعَطِّلٍ أَوْ رَاجِعْ سِجِلَّ آخِرِ مُزَامَنَة.",
-      actionEn:
-        "Restart a failing integration or inspect its last sync log.",
+      purposeEn: "Connected systems, per-integration status, and sync error rate.",
+      actionAr: "أَعِدْ تَشْغِيلَ تَكَامُلٍ مُتَعَطِّلٍ أَوْ رَاجِعْ سِجِلَّ آخِرِ مُزَامَنَة.",
+      actionEn: "Restart a failing integration or inspect its last sync log.",
     },
   ],
   [
@@ -396,12 +358,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Shifts Schedule",
       purposeAr:
         "جَدْوَلَةُ الفِرَقِ وَتَغْطِيَتُهَا وَتَنَاوُبُهَا اللَّحْظِيُّ مَعَ مُطَابَقَةِ الحُضُور.",
-      purposeEn:
-        "Team scheduling, coverage, and live rotation reconciled against attendance.",
+      purposeEn: "Team scheduling, coverage, and live rotation reconciled against attendance.",
       actionAr:
         "أَصْلِحْ فَجْوَةَ تَغْطِيَةٍ أَوِ اقْبَلِ الاقْتِرَاحَ الآلِيَّ لِمُنَاوِبٍ بَدِيل.",
-      actionEn:
-        "Close a coverage gap or accept the auto-suggested substitute.",
+      actionEn: "Close a coverage gap or accept the auto-suggested substitute.",
     },
   ],
   [
@@ -411,12 +371,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Industrial Knowledge Repository",
       purposeAr:
         "سِيَاسَاتٌ وَإِجْرَاءَاتٌ وَنَمَاذِجُ وَقَوَائِمُ تَحَقُّقٍ لِلْأَمْنِ الصِّنَاعِيِّ ثُنَائِيَّةُ اللُّغَة.",
-      purposeEn:
-        "Bilingual industrial-security policies, procedures, forms, and checklists.",
+      purposeEn: "Bilingual industrial-security policies, procedures, forms, and checklists.",
       actionAr:
         "ابْحَثْ فِي المُسْتَوْدَعِ أَوْ أَجْرِ زَرْعًا تَأْسِيسِيًّا لِلْمَقَالَاتِ المَرْجِعِيَّة.",
-      actionEn:
-        "Search the repository or run a foundational seed of reference articles.",
+      actionEn: "Search the repository or run a foundational seed of reference articles.",
     },
   ],
   [
@@ -430,8 +388,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "Live figures straight from sec_* with no intermediate store, plus red/yellow/green thresholds.",
       actionAr:
         "افْتَحْ أَيَّ مُؤَشِّرٍ لِرُؤْيَةِ مَصْدَرِهِ وَاسْتِعْلَامِهِ وَنَافِذَتِهِ الزَّمَنِيَّة.",
-      actionEn:
-        "Open any KPI to inspect its source, query, and measurement window.",
+      actionEn: "Open any KPI to inspect its source, query, and measurement window.",
     },
   ],
   // ── SEC root (must come AFTER every /sec/* path) ─────────────────────
@@ -446,8 +403,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "An immediate cross-view of incidents, patrols, visitors, permits, cameras, and assets.",
       actionAr:
         "اضْغُطْ أَيَّ لَوْحَةٍ لِفَتْحِ وَحْدَتِهَا التَّفْصِيلِيَّةِ أَوِ اطْلُبْ مِنِّي مُلَخَّصَ اليَوْم.",
-      actionEn:
-        "Tap any panel to open its detailed module, or ask me for today's summary.",
+      actionEn: "Tap any panel to open its detailed module, or ask me for today's summary.",
     },
   ],
   // ── Top-level surfaces ───────────────────────────────────────────────
@@ -458,12 +414,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Enterprise Operating System",
       purposeAr:
         "لَوْحَةُ القِيَادَةِ السِّيَادِيَّةُ لِلْمُؤَسَّسَةِ تَعْرِضُ نَبْضَهَا الحَيَّ عَبْرَ سِتَّةِ مُؤَشِّرَاتٍ تَنْفِيذِيَّة.",
-      purposeEn:
-        "The sovereign command deck — live enterprise pulse across six executive KPIs.",
+      purposeEn: "The sovereign command deck — live enterprise pulse across six executive KPIs.",
       actionAr:
         "افْتَحْ أَيَّ بِطَاقَةٍ لِلتَّعَمُّقِ فِي مَصْدَرِهَا أَوِ ادْخُلْ إِلَى وِحْدَاتِ التَّشْغِيل.",
-      actionEn:
-        "Drill into any tile's source, or enter the runtime modules from here.",
+      actionEn: "Drill into any tile's source, or enter the runtime modules from here.",
     },
   ],
   [
@@ -473,12 +427,9 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Operations Visualization Layer",
       purposeAr:
         "حَالَةُ التَّشْغِيلِ الحَيَّةُ لِلْوُكَلَاءِ وَسَيْرِ العَمَلِ وَتَدَفُّقِ الأَحْدَاثِ المُؤَسَّسِيَّة.",
-      purposeEn:
-        "Live runtime state of agents, workflows, and the enterprise event stream.",
-      actionAr:
-        "افْحَصْ أَيَّ تَشْغِيلٍ جَارٍ أَوِ اقْفِزْ إِلَى الحَادِثَةِ المَرْبُوطَةِ بِهِ.",
-      actionEn:
-        "Inspect any running job or jump to the incident it's linked to.",
+      purposeEn: "Live runtime state of agents, workflows, and the enterprise event stream.",
+      actionAr: "افْحَصْ أَيَّ تَشْغِيلٍ جَارٍ أَوِ اقْفِزْ إِلَى الحَادِثَةِ المَرْبُوطَةِ بِهِ.",
+      actionEn: "Inspect any running job or jump to the incident it's linked to.",
     },
   ],
   [
@@ -490,10 +441,8 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "إِدَارَةُ المَلَفِّ الشَّخْصِيِّ وَالمَظْهَرِ وَاللُّغَةِ وَالإِشْعَارَاتِ وَتَكَامُلِ Microsoft Identity.",
       purposeEn:
         "Manage profile, appearance, language, notifications, and Microsoft Identity integration.",
-      actionAr:
-        "بَدِّلْ اللُّغَةَ أَوِ اضْبُطْ Tenant وَClient ID لِتَكَامُلِ Microsoft Graph.",
-      actionEn:
-        "Switch language or configure Tenant/Client ID for Microsoft Graph.",
+      actionAr: "بَدِّلْ اللُّغَةَ أَوِ اضْبُطْ Tenant وَClient ID لِتَكَامُلِ Microsoft Graph.",
+      actionEn: "Switch language or configure Tenant/Client ID for Microsoft Graph.",
     },
   ],
   [
@@ -503,12 +452,10 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleEn: "Admin Console",
       purposeAr:
         "إِدَارَةُ المُسْتَخْدِمِينَ وَالأَدْوَارِ وَضَوَابِطِ النِّظَامِ وَسِجِلَّاتِ المُحَادَثَاتِ وَالمَهَامّ.",
-      purposeEn:
-        "Manage users, roles, system controls, threads, messages, and tasks.",
+      purposeEn: "Manage users, roles, system controls, threads, messages, and tasks.",
       actionAr:
         "افْتَحْ وِحْدَةَ المُسْتَخْدِمِينَ لِتَعْيِينِ صَلَاحِيَّةٍ أَوْ تَدْقِيقِ سِجِلٍّ.",
-      actionEn:
-        "Open the users module to grant a role or audit a log.",
+      actionEn: "Open the users module to grant a role or audit a log.",
     },
   ],
   // ── Flagship: Hajj platform (full end-to-end explanation on entry) ───
@@ -525,11 +472,9 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
         "تَنَقَّلْ بَيْنَ الأَقْسَامِ لِمُتَابَعَةِ الحُشُودِ وَالحَافِلَاتِ وَالمَخَيَّمَاتِ وَالطَّوَارِئِ، أَوِ اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً فَوْرِيَّة.",
       actionEn:
         "Navigate the sections to track crowds, buses, camps, and emergencies, or ask me for an instant executive briefing.",
-      example1Ar:
-        "قُلْ لِي: أَظْهِرْ أَعْلَى ثَلَاثِ مَنَاطِقَ ازْدِحَامًا الآن",
+      example1Ar: "قُلْ لِي: أَظْهِرْ أَعْلَى ثَلَاثِ مَنَاطِقَ ازْدِحَامًا الآن",
       example1En: "Say: show the top three most crowded zones right now",
-      example2Ar:
-        "قُلْ لِي: مَا حَالَةُ الحَافِلَاتِ المُتَأَخِّرَةِ عَنِ الجَدْوَل؟",
+      example2Ar: "قُلْ لِي: مَا حَالَةُ الحَافِلَاتِ المُتَأَخِّرَةِ عَنِ الجَدْوَل؟",
       example2En: "Say: what is the status of buses running behind schedule?",
       extendedAr:
         "خِلَالَ زِيَارَتِكَ هُنَا سَأُنَبِّهُكَ تِلْقَائِيًّا عِنْدَ تَجَاوُزِ أَيِّ مُؤَشِّرٍ حَرِجٍ، وَأَعْرِضُ عَلَيْكَ التَّوْصِيَاتِ التَّنْفِيذِيَّةَ الأَوْلَى بِالتَّنْفِيذِ، وَأَرْبِطُ كُلَّ بَلَاغٍ بِمَصْدَرِهِ فِي قَاعِدَةِ البَيَانَاتِ الحَيَّة.",
@@ -538,7 +483,6 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
     },
   ],
 ];
-
 
 export type SpeechLocale = "ar" | "en";
 
@@ -576,10 +520,7 @@ function normalizePath(pathname: string): string {
  * Returns `null` when the route has no dedicated script yet — the caller
  * is expected to fall back to the generic greeting.
  */
-export function speakablePageScript(
-  pathname: string,
-  locale: SpeechLocale,
-): string | null {
+export function speakablePageScript(pathname: string, locale: SpeechLocale): string | null {
   const s = pageScriptFor(pathname);
   if (!s) return genericSpeakable(pathname, locale);
   const ex1Ar = s.example1Ar ?? deriveExampleAr(s.actionAr, 1);
@@ -628,4 +569,3 @@ function genericSpeakable(pathname: string, locale: SpeechLocale): string {
   }
   return `أَنْتَ فِي نَافِذَةِ ${ar}. تَعْرِضُ هَذِهِ النَّافِذَةُ البَيَانَاتِ الحَيَّةَ الخَاصَّةَ بِـ ${ar}. المِثَالُ الأَوَّل: افْتَحْ أَيَّ بِطَاقَةٍ لِمُرَاجَعَةِ تَفَاصِيلِهَا. المِثَالُ الثَّانِي: اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً مُوجَزَة.`;
 }
-

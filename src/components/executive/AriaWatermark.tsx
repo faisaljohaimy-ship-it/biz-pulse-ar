@@ -17,8 +17,7 @@ export function AriaWatermark() {
         insetInlineEnd: "-6%",
         height: "96vh",
         opacity: 0.18,
-        WebkitMaskImage:
-          "radial-gradient(ellipse at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 82%)",
+        WebkitMaskImage: "radial-gradient(ellipse at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 82%)",
         maskImage: "radial-gradient(ellipse at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 82%)",
       }}
     >

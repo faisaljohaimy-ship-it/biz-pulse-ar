@@ -60,13 +60,50 @@ type Stage = {
 };
 
 const STAGES: readonly Stage[] = [
-  { key: "twin", ar: "التَّوْأَمُ الرَّقْمِيّ", en: "Digital Twin", icon: Radar, to: "/operations" },
-  { key: "org", ar: "بَيَانَاتُ المُؤَسَّسَة", en: "Organization", icon: Building2, to: "/command-center" },
-  { key: "auth", ar: "المُصَادَقَة", en: "Authentication", icon: ShieldCheck, to: "/command-center" },
-  { key: "kpi", ar: "مُؤَشِّرَاتُ الأَدَاءِ التَّنْفِيذِيَّة", en: "Executive KPIs", icon: BarChart3, to: "/executive-reports" },
-  { key: "hajj", ar: "مَنْظُومَةُ الحَجِّ ١٤٤٧", en: "Hajj 1447", icon: Moon, to: "/hajj", featured: true },
+  {
+    key: "twin",
+    ar: "التَّوْأَمُ الرَّقْمِيّ",
+    en: "Digital Twin",
+    icon: Radar,
+    to: "/operations",
+  },
+  {
+    key: "org",
+    ar: "بَيَانَاتُ المُؤَسَّسَة",
+    en: "Organization",
+    icon: Building2,
+    to: "/command-center",
+  },
+  {
+    key: "auth",
+    ar: "المُصَادَقَة",
+    en: "Authentication",
+    icon: ShieldCheck,
+    to: "/command-center",
+  },
+  {
+    key: "kpi",
+    ar: "مُؤَشِّرَاتُ الأَدَاءِ التَّنْفِيذِيَّة",
+    en: "Executive KPIs",
+    icon: BarChart3,
+    to: "/executive-reports",
+  },
+  {
+    key: "hajj",
+    ar: "مَنْظُومَةُ الحَجِّ ١٤٤٧",
+    en: "Hajj 1447",
+    icon: Moon,
+    to: "/hajj",
+    featured: true,
+  },
   { key: "ops", ar: "العَمَلِيَّات", en: "Operations", icon: Activity, to: "/operations" },
-  { key: "aria", ar: "آرِيَا — المُحَرِّكُ التَّنْفِيذِيّ", en: "ARIA Runtime", icon: Sparkles, to: "/command-center" },
+  {
+    key: "aria",
+    ar: "آرِيَا — المُحَرِّكُ التَّنْفِيذِيّ",
+    en: "ARIA Runtime",
+    icon: Sparkles,
+    to: "/command-center",
+  },
   { key: "realtime", ar: "البَثُّ اللَّحْظِيّ", en: "Realtime", icon: Radio, to: "/operations" },
   { key: "agents", ar: "الوُكَلَاءُ الأَذْكِيَاء", en: "AI Agents", icon: Bot, to: "/exec" },
 ] as const;
@@ -186,7 +223,6 @@ function OsHub() {
 
         {/* Decision queue */}
         <OsDecisionQueue ar={ar} />
-
 
         {/* Modules */}
         <section aria-labelledby="os-modules-heading" className="flex flex-col gap-3 sm:gap-4">

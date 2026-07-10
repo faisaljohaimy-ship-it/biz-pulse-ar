@@ -17,10 +17,7 @@ describe("NEXIOS Final Quality Directive — live phase sensors", () => {
     expect(phase, `phase ${n} missing from audit`).toBeDefined();
     expect(phase!.status).not.toBe("deferred");
     for (const probe of phase!.probes) {
-      expect(
-        probe.status,
-        `phase ${n} probe ${probe.module} is deferred`,
-      ).not.toBe("deferred");
+      expect(probe.status, `phase ${n} probe ${probe.module} is deferred`).not.toBe("deferred");
     }
   });
 

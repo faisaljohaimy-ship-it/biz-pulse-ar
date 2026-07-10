@@ -389,7 +389,11 @@ function OperationsCockpit() {
                 SYSTEM · {sysStatus}
               </span>
               <EvidenceBadge
-                evidence={queryEvidence("sec_exec_kpis", kpisQ.dataUpdatedAt, kpisQ.isFetching ? "SYNCING" : "LIVE")}
+                evidence={queryEvidence(
+                  "sec_exec_kpis",
+                  kpisQ.dataUpdatedAt,
+                  kpisQ.isFetching ? "SYNCING" : "LIVE",
+                )}
                 label={kpisQ.isFetching ? "SYNCING" : "LIVE"}
                 tone="cyan"
               />

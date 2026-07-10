@@ -5,14 +5,7 @@
  * of "3 critical incidents" is verifiable to source + observedAt.
  */
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  Camera,
-  ClipboardCheck,
-  Server,
-  ArrowRight,
-  ArrowLeft,
-} from "lucide-react";
+import { AlertTriangle, Camera, ClipboardCheck, Server, ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import type { Evidence } from "@/lib/evidence/gate";

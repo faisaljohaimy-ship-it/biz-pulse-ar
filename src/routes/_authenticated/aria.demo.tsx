@@ -18,13 +18,20 @@ export const Route = createFileRoute("/_authenticated/aria/demo")({
   head: () => ({
     meta: [
       { title: "ARIA — سيناريو تنفيذي مباشر" },
-      { name: "description", content: "سيناريو حي لعرض قدرات ARIA التنفيذية: قرار، توصية، موافقة." },
+      {
+        name: "description",
+        content: "سيناريو حي لعرض قدرات ARIA التنفيذية: قرار، توصية، موافقة.",
+      },
     ],
   }),
   errorComponent: ({ error, reset }) => (
     <RouteErrorBoundary error={error} reset={reset} routeLabel="/aria/demo" />
   ),
-  notFoundComponent: () => <div dir="rtl" className="p-6">الصفحة غير موجودة</div>,
+  notFoundComponent: () => (
+    <div dir="rtl" className="p-6">
+      الصفحة غير موجودة
+    </div>
+  ),
 });
 
 const SCENARIOS: ReadonlyArray<{ id: string; label_ar: string; prompt: string }> = [
@@ -67,8 +74,8 @@ function AriaDemoPage() {
         </div>
         <h1 className="text-2xl font-semibold text-foreground">تجربة ARIA التنفيذية</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          اختر سيناريو تنفيذي وسيتم إرساله إلى ARIA عبر القناة المفردة.
-          ستظهر بطاقة الملخص التنفيذي أدناه فور اكتمال التحليل.
+          اختر سيناريو تنفيذي وسيتم إرساله إلى ARIA عبر القناة المفردة. ستظهر بطاقة الملخص التنفيذي
+          أدناه فور اكتمال التحليل.
         </p>
       </header>
 
@@ -91,7 +98,10 @@ function AriaDemoPage() {
         ))}
       </section>
 
-      <section aria-label="ملخص ARIA التنفيذي الحالي" className="rounded-xl border border-border/40 bg-background/40 p-1">
+      <section
+        aria-label="ملخص ARIA التنفيذي الحالي"
+        className="rounded-xl border border-border/40 bg-background/40 p-1"
+      >
         <ExecutiveCard />
         <p className="px-4 py-3 text-center text-xs text-muted-foreground">
           سيظهر الملخص التنفيذي هنا بعد تشغيل أي سيناريو.
