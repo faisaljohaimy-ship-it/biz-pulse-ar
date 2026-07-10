@@ -10,12 +10,27 @@ export const HAJJ_PLATFORM_LABEL_EN = "Hajj Nusuk Platform";
 /** Internal fallback route when the embed URL is not configured. */
 export const HAJJ_INTERNAL_ROUTE = "/hajj";
 
+/**
+ * Hosts we know refuse iframing (X-Frame-Options: deny). Rendering an
+ * iframe against them produces a browser-generated "refused to connect"
+ * error page that surfaces the raw hostname as visible text — a direct
+ * violation of the project rule that no raw platform URL may ever appear
+ * in the UI. For these hosts we return `null` so consumers fall back to
+ * the connect card / internal route and never mount the frame.
+ */
+const IFRAME_BLOCKED_HOSTS = new Set<string>([
+  "hajj.neexios.com",
+  "hajj-nexus-prime.lovable.app",
+]);
+
 export function hajjEmbedUrl(): string | null {
   const raw = (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined)?.trim();
   if (!raw) return null;
   try {
     const u = new URL(raw);
-    return u.protocol === "https:" ? u.toString() : null;
+    if (u.protocol !== "https:") return null;
+    if (IFRAME_BLOCKED_HOSTS.has(u.hostname)) return null;
+    return u.toString();
   } catch {
     return null;
   }
