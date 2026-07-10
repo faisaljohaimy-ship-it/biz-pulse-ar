@@ -18,7 +18,10 @@ export const HAJJ_INTERNAL_ROUTE = "/hajj";
  * in the UI. For these hosts we return `null` so consumers fall back to
  * the connect card / internal route and never mount the frame.
  */
-const IFRAME_BLOCKED_HOSTS = new Set<string>(["hajj.neexios.com", "hajj-nexus-prime.lovable.app"]);
+// hajj-nexus-prime.lovable.app was verified to allow framing (no
+// X-Frame-Options / CSP frame-ancestors), so it is intentionally NOT in
+// this list. hajj.neexios.com still serves `X-Frame-Options: deny`.
+const IFRAME_BLOCKED_HOSTS = new Set<string>(["hajj.neexios.com"]);
 
 /** Validated https URL from the env var (any host), or null. */
 function resolvedUrl(): URL | null {
