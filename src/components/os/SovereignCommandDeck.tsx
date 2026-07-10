@@ -657,6 +657,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
