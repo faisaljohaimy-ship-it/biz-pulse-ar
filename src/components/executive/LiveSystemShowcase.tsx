@@ -67,7 +67,7 @@ export function LiveSystemShowcase() {
               <button
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
-                className="rounded-md border border-white/10 bg-white/5 p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white sm:h-7 sm:w-7"
                 aria-label={expanded ? (ar ? "تصغير" : "Minimize") : ar ? "تكبير" : "Maximize"}
               >
                 {expanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
@@ -77,18 +77,18 @@ export function LiveSystemShowcase() {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-primary/40 bg-primary/10 text-white transition hover:bg-primary/20 sm:h-7 sm:w-7"
                   aria-label={ar ? `فتح ${label} في نافذة جديدة` : `Open ${label} in a new tab`}
                 >
-                  <ExternalLink className="h-2.5 w-2.5" />
+                  <ExternalLink className="h-3 w-3" />
                 </a>
               ) : (
                 <Link
                   to={HAJJ_INTERNAL_ROUTE}
-                  className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-primary/40 bg-primary/10 text-white transition hover:bg-primary/20 sm:h-7 sm:w-7"
                   aria-label={label}
                 >
-                  <ExternalLink className="h-2.5 w-2.5" />
+                  <ExternalLink className="h-3 w-3" />
                 </Link>
               )}
             </div>

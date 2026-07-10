@@ -453,7 +453,7 @@ export function ExecutivePresentationPlayer() {
               type="button"
               onClick={() => stopPlayback("paused")}
               aria-label="إيقاف مؤقت"
-              className="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/25 backdrop-blur transition hover:bg-black/70"
+              className="absolute bottom-3 left-3 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white ring-1 ring-white/25 backdrop-blur transition hover:bg-black/70 sm:h-9 sm:w-9"
             >
               <Pause className="h-4 w-4" />
             </button>
