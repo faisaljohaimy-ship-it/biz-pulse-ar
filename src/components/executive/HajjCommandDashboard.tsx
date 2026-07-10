@@ -19,11 +19,20 @@ import {
   AlertTriangle,
   Bell,
   Building,
+  Camera,
   CheckCircle2,
+  Cloud,
+  Droplets,
   FileText,
+  FileWarning,
+  Phone,
+  Radio,
   ShieldAlert,
   ShieldCheck,
+  StickyNote,
+  Sun,
   Users,
+  Wind,
 } from "lucide-react";
 import {
   Area,
@@ -379,6 +388,120 @@ function AlertsPanel() {
   );
 }
 
+/* ── Cameras (surveillance) ───────────────────────────────────────────── */
+const CAMS = [
+  { ar: "منى 1 — المحطة الرئيسية", g: "from-[#0a1b3a] to-[#1e3a5f]" },
+  { ar: "عرفات — منطقة الخدمات", g: "from-[#0a1b3a] to-[#1a3c2a]" },
+  { ar: "مزدلفة — محطة التبريد", g: "from-[#0a1b3a] to-[#2d2d4a]" },
+  { ar: "منى 2 — المستودعات", g: "from-[#0a1b3a] to-[#3a1a2a]" },
+] as const;
+
+function CamerasPanel() {
+  return (
+    <Panel
+      title="المراقبة"
+      icon={<Camera className="h-4 w-4 text-[#1EE9B6]" />}
+      action={
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1EE9B6]/40 bg-[#1EE9B6]/10 px-2 py-0.5">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#1EE9B6]" />
+          <span className="text-[10px] tracking-widest text-[#1EE9B6]">مباشر</span>
+        </span>
+      }
+    >
+      <div className="grid grid-cols-2 gap-2">
+        {CAMS.map((c) => (
+          <div
+            key={c.ar}
+            className={`relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br ${c.g}`}
+          >
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-30"
+              style={{
+                backgroundImage:
+                  "linear-gradient(rgba(52,182,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(52,182,255,.12) 1px,transparent 1px)",
+                backgroundSize: "18px 18px",
+              }}
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(52,182,255,.18),transparent_60%)]" />
+            <div className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FF4D6D]" />
+              <span className="text-[8px] tracking-widest text-white/80">REC</span>
+            </div>
+            <div className="absolute inset-x-1.5 bottom-1.5 rounded-md bg-black/55 px-2 py-1 backdrop-blur">
+              <div className="truncate text-[10px] text-white">{c.ar}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+/* ── Quick actions ────────────────────────────────────────────────────── */
+const QUICK_ACTIONS = [
+  { ar: "بلاغ حادث", c: C.red, Ic: FileWarning },
+  { ar: "جولة تفتيشية", c: C.mint, Ic: ShieldCheck },
+  { ar: "تصريح عمل", c: C.gold, Ic: FileText },
+  { ar: "ملاحظة أمنية", c: C.cyan, Ic: StickyNote },
+  { ar: "اتصل بالطوارئ", c: C.red, Ic: Phone },
+] as const;
+
+function QuickActions() {
+  return (
+    <Panel title="إجراءات سريعة" icon={<Radio className="h-4 w-4 text-[#34B6FF]" />}>
+      <ul className="space-y-2">
+        {QUICK_ACTIONS.map((a) => (
+          <li key={a.ar}>
+            <button
+              type="button"
+              className="flex min-h-11 w-full items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-right transition hover:-translate-x-0.5"
+              style={{
+                borderColor: `color-mix(in oklab, ${a.c} 45%, transparent)`,
+                background: `color-mix(in oklab, ${a.c} 10%, transparent)`,
+              }}
+            >
+              <span
+                className="flex h-8 w-8 items-center justify-center rounded-lg"
+                style={{ background: `color-mix(in oklab, ${a.c} 22%, transparent)`, color: a.c }}
+              >
+                <a.Ic className="h-4 w-4" />
+              </span>
+              <span className="text-[12px] text-white">{a.ar}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
+/* ── Weather ──────────────────────────────────────────────────────────── */
+function WeatherWidget() {
+  return (
+    <Panel title="حالة الطقس" icon={<Cloud className="h-4 w-4 text-[#7DD3FC]" />}>
+      <div className="text-center">
+        <div className="text-[12px] text-white/70">منى</div>
+        <div className="my-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#F2C76E]/30 to-[#FF9F1C]/20">
+          <Sun className="h-7 w-7 text-[#F2C76E]" />
+        </div>
+        <div className="text-3xl font-bold tabular-nums text-white">36°</div>
+        <div className="text-[11px] text-white/60">مشمس</div>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+        <span className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/5 bg-black/25 px-2 py-1.5 text-white/80">
+          <Droplets className="h-3 w-3" />
+          <span className="tabular-nums">12%</span>
+        </span>
+        <span className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/5 bg-black/25 px-2 py-1.5 text-white/80">
+          <Wind className="h-3 w-3" />
+          <span className="tabular-nums">6 كم/س</span>
+        </span>
+      </div>
+    </Panel>
+  );
+}
+
 /* ── Incident donut ───────────────────────────────────────────────────── */
 function IncidentDonut() {
   const total = INCIDENTS.reduce((s, d) => s + d.value, 0);
@@ -538,14 +661,27 @@ export function HajjCommandDashboard() {
     <div dir="rtl" className="flex flex-col gap-3 sm:gap-4">
       <HeaderStrip />
       <KpiStrip />
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
-        <StationsPanel />
-        <AlertsPanel />
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
-        <IncidentDonut />
-        <RiskGauge />
-        <ComplianceChart />
+      {/* Platform layout: wide main column + a side rail on large screens;
+          everything stacks to a single column on mobile/tablet. */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        {/* Main column */}
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+            <StationsPanel />
+            <AlertsPanel />
+          </div>
+          <CamerasPanel />
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+            <IncidentDonut />
+            <RiskGauge />
+            <ComplianceChart />
+          </div>
+        </div>
+        {/* Side rail */}
+        <aside className="flex flex-col gap-3 sm:gap-4">
+          <QuickActions />
+          <WeatherWidget />
+        </aside>
       </div>
     </div>
   );
