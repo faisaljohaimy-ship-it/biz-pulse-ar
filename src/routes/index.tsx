@@ -24,6 +24,7 @@ import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
+import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
@@ -363,6 +364,12 @@ function IntroLanding() {
         <SovereignCommandDeck ar={ar} />
         <OsDecisionQueue ar={ar} />
       </section>
+
+      {/* Horizontal system-modules dashboard — every icon links to a real
+          module route (activated), responsive across all devices. */}
+      <div className="mt-4 sm:mt-6">
+        <SystemModulesDashboard />
+      </div>
 
       <LiveSystemShowcase />
 
