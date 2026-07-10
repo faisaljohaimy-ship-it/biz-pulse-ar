@@ -286,11 +286,13 @@ function KpiStrip() {
     },
   ];
   return (
-    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-6">
+    <div
+      className="-mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 md:grid-cols-6"
+    >
       {items.map((it) => (
         <div
           key={it.ar}
-          className="relative overflow-hidden rounded-2xl border bg-[#061A2E]/55 p-3 backdrop-blur-xl"
+          className="relative w-[62%] shrink-0 snap-start overflow-hidden rounded-2xl border bg-[#061A2E]/55 p-3 backdrop-blur-xl xs:w-[46%] sm:w-auto sm:shrink"
           style={{ borderColor: `color-mix(in oklab, ${it.c} 35%, transparent)` }}
         >
           <div className="flex items-start justify-between gap-2">
