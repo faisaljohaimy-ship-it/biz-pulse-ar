@@ -1,130 +1,98 @@
 /**
- * HomeVideoBackdrop — fullscreen looping video backdrop for the homepage.
+ * HomeVideoBackdrop — fullscreen video backdrop for the homepage.
  *
- * Voice policy: ARIA speaks AUTOMATICALLY on every homepage entry. Her
- * voice is the video's own audio track, so speech and motion start on the
- * same frame (restarted from t=0 together — frame-accurate sync). When she
- * finishes speaking (first full playthrough ends) the voice stops for good
- * and only the silent motion loop remains.
+ * Voice + motion policy: NOTHING plays automatically. The video (which
+ * carries ARIA's voice on its own audio track) stays frozen on its first
+ * frame until the user presses the greeting button. On press, voice and
+ * motion start together from frame zero — same media element, so they are
+ * frame-accurately in sync. The moment she finishes speaking (the video
+ * ends) both the voice AND the motion stop, frozen back on the first
+ * frame. No loop, no idle movement, no repetition.
  *
- * Coordination:
- *  - never talks over the WelcomeThenGenesis intro — the voice waits until
- *    the intro is fully complete (motion runs muted underneath meanwhile);
- *  - owns the AriaAudioBus "hero-soundtrack" channel while speaking, so any
- *    higher-priority ARIA voice (panel greeting / chat reply) preempts and
- *    mutes it instantly — one voice at a time, always;
- *  - if the browser refuses unmuted autoplay (no gesture yet), the first
- *    pointer/key gesture retries the voice automatically — no button.
+ * The greeting button talks to this component through home-greeting-store
+ * (registerHomeGreeting / startHomeGreeting / stopHomeGreeting).
+ *
+ * While speaking, the video owns the AriaAudioBus "hero-soundtrack"
+ * channel, so any higher-priority ARIA voice (panel greeting / chat reply)
+ * preempts it and the greeting stops instantly — one voice at a time.
  */
 import { useEffect, useRef, useState } from "react";
 import homeBg from "@/assets/home-bg.mp4.asset.json";
-import { useIntroActive } from "@/lib/intro-store";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
-import { INTRO_SESSION_KEY, INTRO_COMPLETE_VALUE } from "@/components/cinematic/WelcomeThenGenesis";
+import { registerHomeGreeting, setHomeGreetingState } from "@/lib/home-greeting-store";
 
 export function HomeVideoBackdrop() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [muted, setMuted] = useState(true);
-  const introActive = useIntroActive();
-  // Latched when the greeting ends (or a higher-priority voice takes over).
-  // The voice must never restart within this mount — motion only.
-  const doneSpeakingRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const v = videoRef.current;
     if (!v) return;
 
-    // Is the welcome intro on screen, or about to mount this session?
-    let introPending = introActive;
-    if (!introPending) {
+    // Freeze the greeting: voice off, motion off, back to the first frame.
+    const freeze = () => {
       try {
-        introPending = window.sessionStorage.getItem(INTRO_SESSION_KEY) !== INTRO_COMPLETE_VALUE;
+        v.pause();
       } catch {
-        introPending = false;
+        /* ignore */
       }
-    }
-
-    let cancelled = false;
-
-    const silentLoop = () => {
       v.muted = true;
-      v.loop = true;
-      setMuted(true);
-      void v.play().catch(() => {});
-    };
-
-    const onVoiceEnded = () => {
-      // She finished speaking — stop the voice, keep the motion looping.
-      doneSpeakingRef.current = true;
-      AriaAudioBus.release("hero-soundtrack");
-      silentLoop();
-    };
-
-    // Start voice + motion together from frame zero.
-    const startSpeaking = async (viaGesture: boolean): Promise<boolean> => {
-      if (cancelled || doneSpeakingRef.current) return false;
-      if (viaGesture) AriaAudioBus.unlock();
-      const granted = AriaAudioBus.acquire(
-        "hero-soundtrack",
-        () => {
-          // Preempted by a higher-priority ARIA voice — yield for good.
-          doneSpeakingRef.current = true;
-          silentLoop();
-        },
-        viaGesture ? undefined : { bypassGesture: true },
-      );
-      if (!granted) return false;
       try {
-        v.loop = false; // `ended` marks the exact end of her speech
-        v.currentTime = 0; // voice and motion begin together
-        v.muted = false;
-        v.volume = 1;
-        setMuted(false);
-        await v.play();
-        AriaAudioBus.notifyPlaying("hero-soundtrack", v);
-        return true;
+        v.currentTime = 0;
       } catch {
-        // Unmuted autoplay refused by the browser.
-        AriaAudioBus.release("hero-soundtrack");
-        return false;
+        /* metadata not ready yet — first frame is where we already are */
       }
+      setMuted(true);
+      setHomeGreetingState("idle");
     };
 
-    if (introPending) {
-      // Intro owns the audio stage — run the motion muted. When the intro
-      // completes, introActive flips and this effect re-runs to speak.
-      silentLoop();
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    v.addEventListener("ended", onVoiceEnded);
-
-    const onFirstGesture = () => {
-      void startSpeaking(true).then((ok) => {
-        if (!ok && !cancelled && !doneSpeakingRef.current) silentLoop();
-      });
+    const stopGreeting = () => {
+      AriaAudioBus.release("hero-soundtrack");
+      freeze();
     };
 
-    void startSpeaking(false).then((ok) => {
-      if (ok || cancelled || doneSpeakingRef.current) return;
-      // Blocked before any user gesture — keep the motion running and arm a
-      // one-shot retry so the voice still starts by itself on first touch.
-      silentLoop();
-      window.addEventListener("pointerdown", onFirstGesture, { once: true });
-      window.addEventListener("keydown", onFirstGesture, { once: true });
-    });
+    // She finished speaking — voice and motion stop together.
+    const onEnded = () => stopGreeting();
+
+    // Button press (a real user gesture): voice + motion from frame zero.
+    const startGreeting = () => {
+      AriaAudioBus.unlock();
+      const granted = AriaAudioBus.acquire("hero-soundtrack", freeze);
+      if (!granted) return;
+      try {
+        v.currentTime = 0;
+      } catch {
+        /* ignore */
+      }
+      v.loop = false;
+      v.muted = false;
+      v.volume = 1;
+      setMuted(false);
+      v.play()
+        .then(() => {
+          AriaAudioBus.notifyPlaying("hero-soundtrack", v);
+          setHomeGreetingState("speaking");
+        })
+        .catch(() => {
+          stopGreeting();
+        });
+    };
+
+    v.addEventListener("ended", onEnded);
+    const unregister = registerHomeGreeting({ start: startGreeting, stop: stopGreeting });
 
     return () => {
-      cancelled = true;
-      v.removeEventListener("ended", onVoiceEnded);
-      window.removeEventListener("pointerdown", onFirstGesture);
-      window.removeEventListener("keydown", onFirstGesture);
+      v.removeEventListener("ended", onEnded);
+      unregister();
       AriaAudioBus.release("hero-soundtrack");
+      try {
+        v.pause();
+      } catch {
+        /* ignore */
+      }
     };
-  }, [introActive]);
+  }, []);
 
   return (
     <div
@@ -132,11 +100,10 @@ export function HomeVideoBackdrop() {
       dir="ltr"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
+      {/* Static until the greeting button is pressed — no autoPlay, no loop. */}
       <video
         ref={videoRef}
         src={homeBg.url}
-        autoPlay
-        loop
         playsInline
         muted={muted}
         preload="auto"

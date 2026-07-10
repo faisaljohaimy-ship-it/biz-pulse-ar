@@ -6,10 +6,8 @@
 import { useEffect, useState } from "react";
 import { AriaWelcomeVideo } from "./AriaWelcomeVideo";
 
-// Exported so the homepage backdrop can tell whether the intro is about to
-// mount (and hold its auto-voice until the intro is fully complete).
-export const INTRO_SESSION_KEY = "nexios-welcome";
-export const INTRO_COMPLETE_VALUE = "complete:v3";
+const INTRO_SESSION_KEY = "nexios-welcome";
+const INTRO_COMPLETE_VALUE = "complete:v3";
 const INTRO_SHOWING_VALUE = "showing:v3";
 
 function setIntroSessionValue(value: string) {
