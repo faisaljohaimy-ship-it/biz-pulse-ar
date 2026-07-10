@@ -1,0 +1,81 @@
+# Deploy pipeline — replaces Lovable's auto-deploy.
+#
+#   Claude Code → git push → GitHub → GitHub Actions (this file)
+#                → build (Vite/nitro, Cloudflare Workers target)
+#                → wrangler deploy → Cloudflare Workers → neexios.com
+#
+# The app is a TanStack Start + nitro SSR app whose build already targets
+# Cloudflare Workers (see .output/server/wrangler.json). This workflow builds
+# it and deploys the generated Worker.
+#
+# ── REQUIRED GitHub repository secrets (Settings → Secrets → Actions) ──
+#   CLOUDFLARE_API_TOKEN   — Cloudflare token with "Edit Workers" permission
+#   CLOUDFLARE_ACCOUNT_ID  — your Cloudflare account id
+# Until BOTH are set, the deploy step is skipped (no red failures), so this
+# file is safe to merge before the cutover — Lovable keeps serving prod.
+#
+# ── RUNTIME secrets (set as Cloudflare Worker variables, NOT here) ──
+# Server env like SUPABASE_SERVICE_ROLE_KEY, ELEVENLABS_API_KEY, DATABASE_URL,
+# STRIPE_SECRET_KEY, OPENROUTER_API_KEY, LOVABLE_API_KEY, HEYGEN_*, MICROSOFT_*,
+# POWERBI_* … are configured on the Cloudflare Worker (dashboard → Settings →
+# Variables, or `wrangler secret put`). They are never committed to the repo.
+# Public build-time vars (VITE_SUPABASE_*) come from the committed .env.
+
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Only one deploy at a time; newer pushes cancel superseded runs.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Skip gracefully until Cloudflare credentials are configured.
+      - name: Check deploy credentials
+        id: guard
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Cloudflare secrets not set yet — skipping deploy. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to enable."
+          fi
+
+      - name: Setup Bun
+        if: steps.guard.outputs.ready == 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # The committed bun.lock resolves from Lovable's private registry mirror;
+      # point it at the public npm registry so install works off-platform.
+      - name: Install dependencies
+        if: steps.guard.outputs.ready == 'true'
+        run: |
+          sed -i 's#https://europe-west[0-9]*-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache#https://registry.npmjs.org#g' bun.lock
+          bun install
+
+      - name: Build (Cloudflare Workers target)
+        if: steps.guard.outputs.ready == 'true'
+        run: bun run build
+
+      - name: Deploy Worker
+        if: steps.guard.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # The build emits the Worker + its wrangler.json here.
+          workingDirectory: .output/server
+          command: deploy
