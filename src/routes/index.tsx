@@ -401,41 +401,54 @@ function IntroLanding() {
       <section
         dir="rtl"
         aria-label={`معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`}
-        className="relative z-10 mx-auto mt-8 w-full max-w-xl px-4 sm:px-6"
+        className="relative z-10 mx-auto mt-8 w-full max-w-5xl px-4 sm:px-6"
       >
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
+        <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            <span className="text-[11px] font-bold text-white/85">
+            <span className="truncate text-[11px] font-bold text-white/85 sm:text-xs">
               معاينة حيّة · {HAJJ_PLATFORM_LABEL_AR}
             </span>
           </div>
-          <span className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]">
+          <span className="shrink-0 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]">
             Live
           </span>
         </div>
-        {HAJJ_EMBED_URL ? (
-          <a
-            href={HAJJ_EMBED_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={HAJJ_PLATFORM_LABEL_AR}
-            className="block overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25 transition hover:ring-[#3AE8FF]/60"
-          >
-            <HajjEmbedFrame ar interactive={false} />
-          </a>
-        ) : (
+        <div className="overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25">
+          <HajjEmbedFrame ar interactive={false} />
+        </div>
+        {/* External access link — visible OUTSIDE the icon/preview, on all devices */}
+        <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+          {HAJJ_EMBED_URL ? (
+            <a
+              href={HAJJ_EMBED_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`فتح ${HAJJ_PLATFORM_LABEL_AR}`}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
+            >
+              <span aria-hidden>↗</span>
+              فتح {HAJJ_PLATFORM_LABEL_AR}
+            </a>
+          ) : (
+            <Link
+              to={HAJJ_INTERNAL_ROUTE}
+              aria-label={HAJJ_PLATFORM_LABEL_AR}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
+            >
+              الانتقال إلى {HAJJ_PLATFORM_LABEL_AR}
+            </Link>
+          )}
           <Link
-            to={HAJJ_INTERNAL_ROUTE}
-            aria-label={HAJJ_PLATFORM_LABEL_AR}
-            className="block overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25 transition hover:ring-[#3AE8FF]/60"
+            to="/hajj-prime"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/10"
           >
-            <HajjEmbedFrame ar interactive={false} />
+            عرض الشاشة الكاملة
           </Link>
-        )}
+        </div>
       </section>
 
       <div
