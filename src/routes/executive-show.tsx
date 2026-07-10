@@ -338,10 +338,12 @@ function ExecutiveShowPage() {
                       : "border-slate-600/40 bg-slate-800/40 text-slate-300 hover:bg-slate-800/70"
                   }`}
                 >
-                  <c.icon
-                    className="h-3.5 w-3.5"
+                  <span
                     style={{ color: active ? c.accent : "#94A3B8" }}
-                  />
+                    className="inline-flex"
+                  >
+                    <c.icon className="h-3.5 w-3.5" />
+                  </span>
                   <span className="font-semibold">{c.ar}</span>
                   <span className="opacity-60">{fmt(c.at)}</span>
                 </button>
