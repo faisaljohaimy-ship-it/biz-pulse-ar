@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
 import { useI18n } from "@/lib/i18n";
+import { ExecutivePresentationPlayer } from "@/components/demo/ExecutivePresentationPlayer";
 
 import {
   RotateCcw,
@@ -103,6 +104,11 @@ function DemoCenter() {
               ? "اختر تجربة العرض المناسبة لك. كل بيئة محملة ببيانات تنفيذية واقعية من Fortune 500."
               : "Pick your experience. Every environment is preloaded with realistic Fortune-500 executive data."}
           </p>
+        </div>
+
+        {/* Guided executive presentation — ARIA narrates, previews follow. */}
+        <div className="mt-10">
+          <ExecutivePresentationPlayer />
         </div>
 
         {/* Mode cards */}
