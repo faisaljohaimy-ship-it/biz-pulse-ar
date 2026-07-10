@@ -32,12 +32,12 @@ import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
 import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
-import { HAJJ_INTERNAL_ROUTE, HAJJ_PLATFORM_LABEL_AR, hajjEmbedUrl } from "@/lib/hajj-embed";
+import { HAJJ_INTERNAL_ROUTE, HAJJ_PLATFORM_LABEL_AR, hajjOpenUrl } from "@/lib/hajj-embed";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
 
 // Resolved once — the raw URL never appears as text anywhere in this file.
-const HAJJ_EMBED_URL = hajjEmbedUrl();
+const HAJJ_EMBED_URL = hajjOpenUrl();
 
 export const Route = createFileRoute("/")({
   head: () => ({

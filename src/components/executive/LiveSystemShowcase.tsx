@@ -7,7 +7,7 @@ import {
   HAJJ_INTERNAL_ROUTE,
   HAJJ_PLATFORM_LABEL_AR,
   HAJJ_PLATFORM_LABEL_EN,
-  hajjEmbedUrl,
+  hajjOpenUrl,
 } from "@/lib/hajj-embed";
 
 /**
@@ -21,7 +21,7 @@ export function LiveSystemShowcase() {
   const [expanded, setExpanded] = useState(true);
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const url = hajjEmbedUrl();
+  const url = hajjOpenUrl();
   const label = ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN;
 
   return (

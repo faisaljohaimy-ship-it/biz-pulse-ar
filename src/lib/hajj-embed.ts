@@ -18,20 +18,37 @@ export const HAJJ_INTERNAL_ROUTE = "/hajj";
  * in the UI. For these hosts we return `null` so consumers fall back to
  * the connect card / internal route and never mount the frame.
  */
-const IFRAME_BLOCKED_HOSTS = new Set<string>([
-  "hajj.neexios.com",
-  "hajj-nexus-prime.lovable.app",
-]);
+const IFRAME_BLOCKED_HOSTS = new Set<string>(["hajj.neexios.com", "hajj-nexus-prime.lovable.app"]);
 
-export function hajjEmbedUrl(): string | null {
+/** Validated https URL from the env var (any host), or null. */
+function resolvedUrl(): URL | null {
   const raw = (import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined)?.trim();
   if (!raw) return null;
   try {
     const u = new URL(raw);
-    if (u.protocol !== "https:") return null;
-    if (IFRAME_BLOCKED_HOSTS.has(u.hostname)) return null;
-    return u.toString();
+    return u.protocol === "https:" ? u : null;
   } catch {
     return null;
   }
+}
+
+/**
+ * URL to use as an <iframe> src. Returns null for hosts that refuse framing
+ * (IFRAME_BLOCKED_HOSTS) so the embed surface shows its connect card instead
+ * of a browser "refused to connect" page that would leak the raw hostname.
+ */
+export function hajjEmbedUrl(): string | null {
+  const u = resolvedUrl();
+  if (!u) return null;
+  return IFRAME_BLOCKED_HOSTS.has(u.hostname) ? null : u.toString();
+}
+
+/**
+ * URL for external "open in a new tab" links. Unlike hajjEmbedUrl this works
+ * for ANY valid https host (including framing-blocked ones) — opening the
+ * platform in its own tab has no X-Frame-Options constraint, so the "open
+ * platform" links keep reaching the real site instead of the internal route.
+ */
+export function hajjOpenUrl(): string | null {
+  return resolvedUrl()?.toString() ?? null;
 }

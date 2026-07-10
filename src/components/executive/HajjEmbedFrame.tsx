@@ -17,6 +17,7 @@ import {
   HAJJ_PLATFORM_LABEL_AR,
   HAJJ_PLATFORM_LABEL_EN,
   hajjEmbedUrl,
+  hajjOpenUrl,
 } from "@/lib/hajj-embed";
 
 // Virtual desktop viewport the external dashboard is designed for.
@@ -34,7 +35,7 @@ interface Props {
 }
 
 function ConnectCard({ ar }: { readonly ar: boolean }) {
-  const url = hajjEmbedUrl();
+  const url = hajjOpenUrl();
   const label = ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN;
   const cta = (
     <span className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#3AE8FF]/20">
