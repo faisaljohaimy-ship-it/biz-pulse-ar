@@ -9,9 +9,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Voice is PINNED server-side — clients cannot pick a voice, so the narrator
+// always sounds the same. (Any `voice` key sent by a caller is stripped.)
+const NARRATOR_VOICE = "alloy";
+
 const Input = z.object({
   text: z.string().min(1).max(4000),
-  voice: z.string().default("alloy"),
   instructions: z.string().max(500).optional(),
 });
 
@@ -37,7 +40,7 @@ export const ariaSpeak = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "openai/gpt-4o-mini-tts",
         input: data.text,
-        voice: data.voice,
+        voice: NARRATOR_VOICE,
         response_format: "mp3",
         ...(data.instructions ? { instructions: data.instructions } : {}),
       }),

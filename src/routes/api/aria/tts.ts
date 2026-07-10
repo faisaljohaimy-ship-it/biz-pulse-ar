@@ -1,7 +1,8 @@
 /**
  * ARIA voice — server TTS route.
  * POST /api/aria/tts { text }  → audio/mpeg stream (ElevenLabs multilingual v2).
- * Optional env: ELEVENLABS_VOICE_ID (defaults to "Sarah" — Arabic-capable female).
+ * Voice identity is HARD-LOCKED to the canonical ARIA voice from
+ * `@/lib/aria/voice-config` — no env override, no client override.
  * Requires an authenticated Supabase user; rate limit 40 req / 5 min per user.
  */
 import { createFileRoute } from "@tanstack/react-router";
@@ -12,8 +13,12 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
+import {
+  ARIA_ELEVENLABS_VOICE_ID,
+  ARIA_ELEVENLABS_VOICE_SETTINGS,
+  ARIA_ELEVENLABS_MODEL,
+} from "@/lib/aria/voice-config";
 
-const DEFAULT_VOICE_ID = "gVzwmdZzRgBrNjXaTmi5"; // ARIA canonical — Layan (The Professional, ar-SA)
 const MAX_CHARS = 600;
 const RATE_LIMIT = 40;
 const RATE_WINDOW_SECONDS = 5 * 60;
@@ -60,11 +65,10 @@ export const Route = createFileRoute("/api/aria/tts")({
         if (rawText.length > MAX_CHARS) {
           return Response.json({ error: "text_too_long" }, { status: 400 });
         }
-        const voiceId = process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
         // Auto-diacritize unvocalized Arabic (display text unaffected).
         const ttsText = await diacritizeForTts(rawText);
         const upstream = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_22050_32`,
+          `https://api.elevenlabs.io/v1/text-to-speech/${ARIA_ELEVENLABS_VOICE_ID}/stream?output_format=mp3_22050_32`,
           {
             method: "POST",
             headers: {
@@ -74,14 +78,8 @@ export const Route = createFileRoute("/api/aria/tts")({
             },
             body: JSON.stringify({
               text: ttsText,
-              model_id: "eleven_multilingual_v2",
-              voice_settings: {
-                stability: 0.5,
-                similarity_boost: 0.8,
-                style: 0.45,
-                use_speaker_boost: true,
-                speed: 1.0,
-              },
+              model_id: ARIA_ELEVENLABS_MODEL,
+              voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
             }),
           },
         );

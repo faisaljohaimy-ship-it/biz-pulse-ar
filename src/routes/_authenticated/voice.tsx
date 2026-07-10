@@ -8,6 +8,7 @@ import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
+import { ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
 
 export const Route = createFileRoute("/_authenticated/voice")({
   errorComponent: RouteError,
@@ -28,7 +29,7 @@ function VoicePage() {
       if (msg?.message) setTranscript((t) => [...t, `${msg.source ?? "?"}: ${msg.message}`]);
     },
     overrides: {
-      tts: { voiceId: "EXAVITQu4vr4xnSDxMaL" }, // Sarah — female bilingual AR/EN
+      tts: { voiceId: ARIA_ELEVENLABS_VOICE_ID }, // canonical ARIA voice — same everywhere
       agent: {
         language: locale === "ar" ? "ar" : "en",
         firstMessage:

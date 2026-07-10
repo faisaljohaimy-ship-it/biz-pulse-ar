@@ -22,6 +22,7 @@ import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
+import { ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
@@ -532,7 +533,7 @@ export function AriaCopilot() {
           AriaVoiceDebug.emit({
             source: "elevenlabs",
             reason: token ? "authenticated" : "anonymous",
-            voiceId: "gVzwmdZzRgBrNjXaTmi5",
+            voiceId: ARIA_ELEVENLABS_VOICE_ID,
           });
         }
         return audio;

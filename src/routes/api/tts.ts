@@ -40,7 +40,9 @@ export const Route = createFileRoute("/api/tts")({
         }
 
         const { text, preserveDiacritics = true } = parsed.data;
-        const voiceId = process.env.ELEVENLABS_VOICE_ID || ARIA_VOICE_ID;
+        // HARD-LOCKED to the canonical ARIA voice — no env / client override,
+        // so the voice can never drift between deployments or requests.
+        const voiceId = ARIA_VOICE_ID;
 
         // CRITICAL: We must NOT normalize/strip Arabic diacritics (tashkeel) when the user wants
         // فصيح pronunciation. The harakat are in the Unicode range U+064B..U+0652 plus U+0670 and
