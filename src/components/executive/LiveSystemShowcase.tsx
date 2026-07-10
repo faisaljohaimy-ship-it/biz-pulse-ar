@@ -1,58 +1,28 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Maximize2, Minimize2, ExternalLink, MapPin } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-
-// External Hajj Nusuk platform — kept as its own standalone deployment,
-// intentionally NOT merged into the neexios.com domain.
-const HAJJ_PLATFORM_URL = "https://hajj-nexus-prime.lovable.app/";
-
-// Target virtual viewport the external Hajj dashboard is designed for.
-// We render the iframe at this fixed width and scale it uniformly to fit
-// the container, so mobile/tablet/desktop viewers all see the SAME
-// desktop-fidelity dashboard as in the reference screenshot.
-const VIRTUAL_W = 1440;
-const VIRTUAL_H = 900;
+import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
+import {
+  HAJJ_INTERNAL_ROUTE,
+  HAJJ_PLATFORM_LABEL_AR,
+  HAJJ_PLATFORM_LABEL_EN,
+  hajjEmbedUrl,
+} from "@/lib/hajj-embed";
 
 /**
- * LiveSystemShowcase — live embed of the external Hajj Nusuk platform.
+ * LiveSystemShowcase — framed live embed of the external Hajj platform.
  *
- * The dashboard the user sees INSIDE this preview must be identical to
- * https://hajj-nexus-prime.lovable.app/ so that the promo page mirrors
- * the actual product — no mock KPIs, no synthesized markers.
- *
- * The internal "Hajj Command Center" title bar was removed per user
- * requirement: the Hajj icon/pillar is the only entry-point label; the
- * embedded preview shows the live platform's own header/branding.
+ * The dashboard inside the frame is the actual platform (embedded via
+ * <HajjEmbedFrame>, URL from VITE_HAJJ_EMBED_URL only). No raw URL is
+ * ever rendered as text anywhere — every label is the product name.
  */
 export function LiveSystemShowcase() {
   const [expanded, setExpanded] = useState(true);
   const { locale } = useI18n();
   const ar = locale === "ar";
-
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const [scale, setScale] = useState(1);
-
-  // Uniform scale-to-fit: measure container width, derive scale from
-  // VIRTUAL_W. Runs on mount + resize so mobile shows the identical
-  // desktop dashboard, just shrunk.
-  useLayoutEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const compute = () => {
-      const w = el.clientWidth;
-      if (w > 0) setScale(w / VIRTUAL_W);
-    };
-    compute();
-    const ro = new ResizeObserver(compute);
-    ro.observe(el);
-    window.addEventListener("orientationchange", compute);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("orientationchange", compute);
-    };
-  }, [expanded]);
-
-  const scaledHeight = Math.round(VIRTUAL_H * scale);
+  const url = hajjEmbedUrl();
+  const label = ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN;
 
   return (
     <section
@@ -73,8 +43,7 @@ export function LiveSystemShowcase() {
           {/* Conic animated border */}
           <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-50 [background:conic-gradient(from_0deg,transparent_0deg,hsl(var(--primary)/0.45)_60deg,transparent_120deg,transparent_240deg,hsl(var(--primary)/0.45)_300deg,transparent_360deg)] [animation:spin_22s_linear_infinite] [mask:linear-gradient(#000,#000)_content-box,linear-gradient(#000,#000)] [mask-composite:exclude] p-[1px]" />
 
-          {/* Minimal browser chrome — traffic dots + expand + open-new-tab.
-              Intentionally no "Hajj Command Center" title (removed per spec). */}
+          {/* Minimal browser chrome — traffic dots + product pill + controls. */}
           <div
             dir="ltr"
             className="relative flex items-center justify-between gap-2 border-b border-white/10 bg-black/40 px-3 py-2"
@@ -85,10 +54,12 @@ export function LiveSystemShowcase() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#28c840] shadow-[0_0_6px_rgba(40,200,64,0.7)]" />
             </div>
 
-            {/* Address pill — shows the actual external URL, no product label */}
+            {/* Address pill — the product name, NEVER a raw URL. */}
             <div className="flex flex-1 items-center justify-center">
-              <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] text-white/60 max-w-[70%] truncate">
-                <span className="truncate">hajj-nexus-prime.lovable.app</span>
+              <div className="flex max-w-[70%] items-center gap-1.5 truncate rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[10px] text-white/60">
+                <span dir="rtl" className="truncate">
+                  {HAJJ_PLATFORM_LABEL_AR}
+                </span>
               </div>
             </div>
 
@@ -101,58 +72,56 @@ export function LiveSystemShowcase() {
               >
                 {expanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
               </button>
-              <a
-                href={HAJJ_PLATFORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
-                aria-label={ar ? "فتح منصة الحج في نافذة جديدة" : "Open Hajj platform in new tab"}
-              >
-                <ExternalLink className="h-2.5 w-2.5" />
-              </a>
+              {url ? (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
+                  aria-label={ar ? `فتح ${label} في نافذة جديدة` : `Open ${label} in a new tab`}
+                >
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </a>
+              ) : (
+                <Link
+                  to={HAJJ_INTERNAL_ROUTE}
+                  className="inline-flex items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-1.5 py-1 text-[10px] font-semibold text-white transition hover:bg-primary/20"
+                  aria-label={label}
+                >
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </Link>
+              )}
             </div>
           </div>
 
-          {/* Live embed stage — scaled 1440×900 iframe of the actual Hajj
-              platform, uniformly downscaled so every device sees the
-              identical desktop dashboard. */}
-          <div
-            ref={stageRef}
-            className="relative w-full overflow-hidden bg-[#04111f]"
-            style={{ colorScheme: "dark", height: scaledHeight || undefined }}
-          >
-            <iframe
-              src={HAJJ_PLATFORM_URL}
-              title={ar ? "منصة نُسك الحج" : "Hajj Nusuk Platform"}
-              loading="lazy"
-              // sandbox intentionally omitted so the iframe runs its own scripts
-              className="absolute left-0 top-0 border-0"
-              style={{
-                width: `${VIRTUAL_W}px`,
-                height: `${VIRTUAL_H}px`,
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
-              }}
-              referrerPolicy="no-referrer-when-downgrade"
-              allow="fullscreen"
-            />
-          </div>
+          {/* Live embed stage — identical desktop dashboard on every device. */}
+          <HajjEmbedFrame ar={ar} interactive />
 
           {/* Bottom action row */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5">
             <span className="text-[10px] uppercase tracking-[0.2em] text-white/50">
               {ar ? "منصة مستقلة · نُسك الحج" : "Standalone · Nusuk Hajj"}
             </span>
-            <a
-              href={HAJJ_PLATFORM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-1.5 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
-            >
-              <MapPin className="h-3.5 w-3.5" />
-              {ar ? "فتح منصة نُسك الحج" : "Open Hajj Nusuk Platform"}
-              <ExternalLink className="h-3 w-3 opacity-80" />
-            </a>
+            {url ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-1.5 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                {ar ? `فتح ${HAJJ_PLATFORM_LABEL_AR}` : `Open ${HAJJ_PLATFORM_LABEL_EN}`}
+                <ExternalLink className="h-3 w-3 opacity-80" />
+              </a>
+            ) : (
+              <Link
+                to={HAJJ_INTERNAL_ROUTE}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/15 px-4 py-1.5 text-xs font-semibold text-white shadow-[0_6px_24px_hsl(var(--primary)/0.25)] transition hover:border-primary hover:bg-primary/25"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                {ar ? `فتح ${HAJJ_PLATFORM_LABEL_AR}` : `Open ${HAJJ_PLATFORM_LABEL_EN}`}
+              </Link>
+            )}
           </div>
         </div>
       </div>

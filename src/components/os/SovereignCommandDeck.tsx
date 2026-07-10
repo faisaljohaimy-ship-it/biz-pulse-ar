@@ -7,11 +7,14 @@
  * instrument (numeric + micro-gauge + secondary readout + evidence badge),
  * framed by a blueprint grid, coordinate rulers, and a schematic title block.
  *
- * All metrics flow through /api/public/os-overview and render via
- * <EvidenceBadge> (FR-19). Panels are translucent so the ARIA hologram
- * remains the living backdrop of the whole system.
+ * Data: the public homepage deck renders the deterministic simulation
+ * snapshot (sim_* — aggregated across the four regional administrations
+ * from region-sim-data). Every value is explicitly badged
+ * «محاكاة · لقطة عامة» — no unlabeled numbers, no network dependency, so
+ * the instruments are populated in the SSR HTML itself and can never
+ * render empty. Panels are translucent so the ARIA hologram remains the
+ * living backdrop of the whole system.
  */
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
   ShieldAlert,
@@ -26,36 +29,45 @@ import {
   CircuitBoard,
   Hexagon,
 } from "lucide-react";
-import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
-import type { Evidence } from "@/lib/evidence/gate";
+import { REGIONS } from "@/lib/regions";
+import { regionSim } from "@/lib/sec/region-sim-data";
 
-type OverviewPayload = {
-  ok: boolean;
-  observedAt: string;
-  source: string;
-  counts?: {
-    sites: number;
-    incidents_open: number;
-    incidents_critical: number;
-    patrols_active: number;
-    visitors_inside: number;
-    permits_active: number;
-    cctv_new: number;
-    assets_offline: number;
-    contractors_active: number;
-  };
-};
+// Deterministic simulation snapshot — the four regions' sim counts summed.
+const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
+  (acc, c) => ({
+    incidents_open: acc.incidents_open + c.incidents_open,
+    incidents_critical: acc.incidents_critical + c.incidents_critical,
+    patrols_active: acc.patrols_active + c.patrols_active,
+    visitors_inside: acc.visitors_inside + c.visitors_inside,
+    permits_active: acc.permits_active + c.permits_active,
+    cctv_new: acc.cctv_new + c.cctv_new,
+  }),
+  {
+    incidents_open: 0,
+    incidents_critical: 0,
+    patrols_active: 0,
+    visitors_inside: 0,
+    permits_active: 0,
+    cctv_new: 0,
+  },
+);
 
-async function fetchOverview(): Promise<OverviewPayload> {
-  const res = await fetch("/api/public/os-overview", {
-    headers: { accept: "application/json" },
-  });
-  if (!res.ok) throw new Error(`overview_http_${res.status}`);
-  return (await res.json()) as OverviewPayload;
+/** «محاكاة · لقطة عامة» chip — the mandatory tag on every simulated value. */
+function SimBadge({ ar, className = "" }: { readonly ar: boolean; readonly className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-1.5 py-0.5 font-semibold text-[#3AE8FF] ${className}`}
+    >
+      {ar ? "محاكاة · لقطة عامة" : "SIM · PUBLIC SNAPSHOT"}
+    </span>
+  );
 }
 
+// Live wall clock. Initialised synchronously (SSR renders real server time,
+// suppressHydrationWarning on the readouts absorbs the client re-stamp), so
+// the clock is NEVER empty — then ticks every second after hydration.
 function useLiveClock() {
-  const [now, setNow] = useState<Date | null>(null);
+  const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 1000);
@@ -128,7 +140,14 @@ function RadialGauge({
   const v = Math.max(0, Math.min(1, value));
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-      <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(58,232,255,0.14)" strokeWidth={2} fill="none" />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        stroke="rgba(58,232,255,0.14)"
+        strokeWidth={2}
+        fill="none"
+      />
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -140,7 +159,10 @@ function RadialGauge({
         strokeDasharray={c}
         strokeDashoffset={c * (1 - v)}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        style={{ filter: `drop-shadow(0 0 4px ${color})`, transition: "stroke-dashoffset 600ms ease" }}
+        style={{
+          filter: `drop-shadow(0 0 4px ${color})`,
+          transition: "stroke-dashoffset 600ms ease",
+        }}
       />
     </svg>
   );
@@ -163,32 +185,8 @@ interface KpiSpec {
 }
 
 export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
-  const q = useQuery({
-    queryKey: ["os-overview"],
-    queryFn: fetchOverview,
-    refetchInterval: 20_000,
-    staleTime: 10_000,
-    refetchOnWindowFocus: false,
-    retry: 1,
-  });
   const now = useLiveClock();
-  const counts = q.data?.counts;
-  const observedAt = q.data?.observedAt;
-
-  const mkEvidence = (value: number | undefined): Evidence | null => {
-    if (!observedAt || value === undefined) return null;
-    return {
-      kind: "db.query",
-      source: q.data?.source ?? "sec_overview.public_counts",
-      observedAt,
-      value,
-    };
-  };
-  const runtimeEvidence: Evidence | null = observedAt
-    ? { kind: "runtime.probe", source: "os_runtime", observedAt, value: "online" }
-    : null;
-
-  const liveLabel = ar ? "لحظي" : "LIVE";
+  const counts = SIM_TOTALS;
 
   const kpis: readonly KpiSpec[] = [
     {
@@ -301,12 +299,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             "linear-gradient(90deg, rgba(58,232,255,0.05) 1px, transparent 1px)",
           ].join(","),
           backgroundSize: "48px 48px, 48px 48px",
-          maskImage:
-            "radial-gradient(ellipse 90% 70% at 50% 45%, black 55%, transparent 100%)",
+          maskImage: "radial-gradient(ellipse 90% 70% at 50% 45%, black 55%, transparent 100%)",
         }}
       />
       {/* left/right coordinate ticks */}
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 hidden w-2 sm:block">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 hidden w-2 sm:block"
+      >
         {Array.from({ length: 22 }).map((_, i) => (
           <div
             key={i}
@@ -316,7 +316,10 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           />
         ))}
       </div>
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 hidden w-2 sm:block">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-2 sm:block"
+      >
         {Array.from({ length: 22 }).map((_, i) => (
           <div
             key={i}
@@ -386,7 +389,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#4ade80]" />
               </span>
-              {liveLabel}
+              {ar ? "لحظي" : "LIVE"}
               <span className="text-[#3AE8FF]/40">·</span>
               <span className="text-emerald-300/90">ON&nbsp;AIR</span>
             </div>
@@ -395,11 +398,11 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "0.05em" }}
             >
               <span className="text-white/35">[</span>
-              {fmtClock(now)}
+              <span suppressHydrationWarning>{fmtClock(now)}</span>
               <span className="text-white/35">]</span>
             </div>
             <div className="mt-1.5 font-mono text-[9.5px] uppercase tracking-[0.28em] text-[#3AE8FF]/70">
-              STARDATE · {fmtStardate(now)}
+              STARDATE · <span suppressHydrationWarning>{fmtStardate(now)}</span>
             </div>
           </div>
           {/* Right cell: coordinates */}
@@ -445,12 +448,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-emerald-200/90">
             ALL&nbsp;SYSTEMS&nbsp;NOMINAL
           </span>
-          <EvidenceBadge
-            evidence={runtimeEvidence}
-            label={liveLabel}
-            tone="emerald"
-            className="text-[9px]"
-          />
+          <SimBadge ar={ar} className="text-[9px]" />
         </div>
       </div>
 
@@ -461,10 +459,11 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             {ar ? "لوحة القيادة السيادية" : "Sovereign Command Deck"}
           </div>
           <div
-            className="mt-1 text-lg font-semibold tracking-tight text-white sm:text-xl"
+            className="mt-1 flex flex-wrap items-center gap-2 text-lg font-semibold tracking-tight text-white sm:text-xl"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
-            {ar ? "نبض المؤسسة — لحظياً" : "Enterprise Pulse — Live"}
+            {ar ? "نبض المؤسسة — لقطة عامة" : "Enterprise Pulse — Snapshot"}
+            <SimBadge ar={ar} className="text-[9px]" />
           </div>
         </div>
         <div className="hidden items-center gap-2 font-mono text-[9px] uppercase tracking-[0.28em] text-[#3AE8FF]/55 sm:flex">
@@ -478,16 +477,13 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
 
       {/* ── KPI Grid: 6 engineered instrument tiles ──
          All viewports → single 6-column horizontal row spanning full width. */}
-      <div
-        className="relative grid grid-cols-6 gap-1.5 sm:gap-3 lg:gap-4"
-      >
+      <div className="relative grid grid-cols-6 gap-1.5 sm:gap-3 lg:gap-4">
         {kpis.map((k, idx) => {
           const Icon = k.icon;
-          const ev = mkEvidence(k.value);
           const label = ar ? k.labelAr : k.labelEn;
           const sub = ar ? k.subAr : k.subEn;
           const hint = ar ? k.hintAr : k.hintEn;
-          const displayValue = k.padded ? pad2(k.value) : k.value ?? "—";
+          const displayValue = k.padded ? pad2(k.value) : (k.value ?? "—");
           const stroke = TONE_STROKE[k.tone];
           const pct = Math.round(k.gauge * 100);
           return (
@@ -512,10 +508,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                 className="pointer-events-none absolute -right-3 top-2 hidden opacity-70 sm:block rtl:-left-3 rtl:right-auto"
               >
                 <div className="relative">
-                  <Hexagon
-                    className="h-8 w-8 text-[#3AE8FF]/25"
-                    strokeWidth={1.5}
-                  />
+                  <Hexagon className="h-8 w-8 text-[#3AE8FF]/25" strokeWidth={1.5} />
                   <span className="absolute inset-0 grid place-items-center font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70">
                     K{String(idx + 1).padStart(2, "0")}
                   </span>
@@ -581,23 +574,21 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                 </div>
               </div>
 
-              {/* Delta / hint + evidence — desktop only */}
+              {/* Delta / hint + simulation tag — desktop only */}
               <div className="mt-3 hidden items-center justify-between gap-2 sm:flex">
                 <span
                   className={`font-mono text-[9px] uppercase tracking-[0.22em] ${TONE_DELTA[k.tone]}`}
                 >
                   {hint}
                 </span>
-                <EvidenceBadge
-                  evidence={ev}
-                  label={liveLabel}
-                  tone={k.tone}
-                  className="text-[8px] px-1.5 py-0.5"
-                />
+                <SimBadge ar={ar} className="text-[8px]" />
               </div>
 
               {/* Micro sparkline strip */}
-              <div className="mt-1.5 flex h-2 items-end gap-[1.5px] sm:mt-3 sm:h-3 sm:gap-[2px]" aria-hidden>
+              <div
+                className="mt-1.5 flex h-2 items-end gap-[1.5px] sm:mt-3 sm:h-3 sm:gap-[2px]"
+                aria-hidden
+              >
                 {Array.from({ length: 22 }).map((_, i) => {
                   const seed = (i * 13 + k.key.length * 7) % 100;
                   const h = 20 + (seed % 70);
@@ -634,8 +625,11 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           <span className="hidden md:inline">SCHEMA · SEC-OVR&nbsp;R7</span>
         </div>
         <div className="flex items-center gap-4">
+          <SimBadge ar={ar} className="text-[8px]" />
           <span>UPTIME&nbsp;99.97%</span>
-          <span>LAT&nbsp;<span className="text-[#3AE8FF]/85">42ms</span></span>
+          <span>
+            LAT&nbsp;<span className="text-[#3AE8FF]/85">42ms</span>
+          </span>
           <span className="hidden sm:inline">
             TERMINAL <span className="text-[#3AE8FF]/85">HQS-01-SEC</span>
           </span>

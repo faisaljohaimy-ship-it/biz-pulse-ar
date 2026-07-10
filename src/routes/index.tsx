@@ -30,8 +30,13 @@ import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
+import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
+import { HAJJ_INTERNAL_ROUTE, HAJJ_PLATFORM_LABEL_AR, hajjEmbedUrl } from "@/lib/hajj-embed";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
+
+// Resolved once — the raw URL never appears as text anywhere in this file.
+const HAJJ_EMBED_URL = hajjEmbedUrl();
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -103,8 +108,9 @@ const PILLARS = [
   },
   {
     anchor: "tour-pillar-hajj",
-    to: "https://hajj-nexus-prime.lovable.app/",
-    external: true,
+    // URL comes exclusively from VITE_HAJJ_EMBED_URL; unset → internal route.
+    to: HAJJ_EMBED_URL ?? HAJJ_INTERNAL_ROUTE,
+    external: HAJJ_EMBED_URL != null,
     icon: Moon,
     title_ar: "منصة نُسك الحج",
     title_en: "Hajj Nusuk Platform",
@@ -133,7 +139,6 @@ function IntroLanding() {
   // __root.tsx (single ARIA welcome video, once per session).
 
   const [deptsOpen, setDeptsOpen] = useState(false);
-
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -360,10 +365,51 @@ function IntroLanding() {
 
       <LiveSystemShowcase />
 
-
       <div id="tour-hajj">
         <HajjExecutiveStage />
       </div>
+
+      {/* Frameless live mini-preview of the SAME Hajj dashboard, directly on
+          the homepage (identical content to the framed showcase above). */}
+      <section
+        dir="rtl"
+        aria-label={`معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`}
+        className="relative z-10 mx-auto mt-8 w-full max-w-xl px-4 sm:px-6"
+      >
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="text-[11px] font-bold text-white/85">
+              معاينة حيّة · {HAJJ_PLATFORM_LABEL_AR}
+            </span>
+          </div>
+          <span className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]">
+            Live
+          </span>
+        </div>
+        {HAJJ_EMBED_URL ? (
+          <a
+            href={HAJJ_EMBED_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={HAJJ_PLATFORM_LABEL_AR}
+            className="block overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25 transition hover:ring-[#3AE8FF]/60"
+          >
+            <HajjEmbedFrame ar interactive={false} />
+          </a>
+        ) : (
+          <Link
+            to={HAJJ_INTERNAL_ROUTE}
+            aria-label={HAJJ_PLATFORM_LABEL_AR}
+            className="block overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25 transition hover:ring-[#3AE8FF]/60"
+          >
+            <HajjEmbedFrame ar interactive={false} />
+          </Link>
+        )}
+      </section>
 
       <div
         id="tour-positioning"
@@ -472,7 +518,6 @@ function IntroLanding() {
 
       {/* Grand closing wordmark */}
       <NexiosFootermark caption={ar ? "منصة الذكاء التنفيذي" : "Enterprise AI Operating System"} />
-
     </div>
   );
 }

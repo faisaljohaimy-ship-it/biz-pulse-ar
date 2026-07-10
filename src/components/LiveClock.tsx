@@ -50,27 +50,16 @@ interface LiveClockProps {
 }
 
 export function LiveClock({ variant = "chip", showArabic = true, className = "" }: LiveClockProps) {
-  const [now, setNow] = useState<Date | null>(null);
+  // Initialised synchronously so the SSR HTML already contains a real
+  // timestamp — the clock is NEVER an empty chip. The client re-stamps on
+  // hydration (suppressHydrationWarning below) then ticks every second.
+  const [now, setNow] = useState<Date>(() => new Date());
 
   useEffect(() => {
     setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
-
-  // Reserve stable width before mount so hydration doesn't shift layout.
-  if (!now) {
-    return (
-      <div
-        aria-hidden
-        className={
-          variant === "chip"
-            ? `inline-flex h-[28px] w-[190px] rounded-full border border-white/10 bg-white/[0.04] ${className}`
-            : `inline-flex h-[16px] w-[150px] ${className}`
-        }
-      />
-    );
-  }
 
   const dEn = gregDateEn.format(now);
   const dAr = showArabic ? gregDateAr.format(now) : "";
@@ -83,11 +72,15 @@ export function LiveClock({ variant = "chip", showArabic = true, className = "" 
         className={`inline-flex items-center gap-2 text-[11px] font-medium tabular-nums text-white/70 ${className}`}
         aria-label="Live Gregorian date and time (Asia/Riyadh)"
       >
-        <span className="whitespace-nowrap">{dEn}</span>
+        <span suppressHydrationWarning className="whitespace-nowrap">
+          {dEn}
+        </span>
         <span aria-hidden className="text-white/30">
           ·
         </span>
-        <span className="whitespace-nowrap text-white/90">{t}</span>
+        <span suppressHydrationWarning className="whitespace-nowrap text-white/90">
+          {t}
+        </span>
       </span>
     );
   }
@@ -111,17 +104,22 @@ export function LiveClock({ variant = "chip", showArabic = true, className = "" 
       <span aria-hidden className="text-white/20">
         ·
       </span>
-      <span className="whitespace-nowrap text-white">{t}</span>
+      <span suppressHydrationWarning className="whitespace-nowrap text-white">
+        {t}
+      </span>
       <span aria-hidden className="text-white/20">
         ·
       </span>
-      <span className="whitespace-nowrap text-white/80">{dEn}</span>
+      <span suppressHydrationWarning className="whitespace-nowrap text-white/80">
+        {dEn}
+      </span>
       {showArabic && dAr && (
         <>
           <span aria-hidden className="hidden text-white/20 sm:inline">
             ·
           </span>
           <span
+            suppressHydrationWarning
             dir="rtl"
             lang="ar"
             className="hidden whitespace-nowrap text-white/70 sm:inline"
