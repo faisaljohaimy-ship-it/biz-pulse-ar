@@ -1,6 +1,6 @@
 /**
  * ExecutivePresentationPlayer — the guided executive presentation on the
- * demo page. ARIA's narrator video (public/aria/aria-narrator-web.mp4)
+ * demo page. ARIA's narrator video (public/aria/aria-narrator.mp4)
  * plays on the LEFT in a dark #04111f frame, full face visible; on the
  * RIGHT a window-preview pane switches automatically in sync with the
  * narration cues, ending on a closing screen.
@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { REGIONS } from "@/lib/regions";
 
-const VIDEO_SRC = "/aria/aria-narrator-web.mp4";
+const VIDEO_SRC = "/aria/aria-narrator.mp4";
 
 type CueId = "home" | "dashboard" | "sec" | "agents" | "twin" | "finale";
 
