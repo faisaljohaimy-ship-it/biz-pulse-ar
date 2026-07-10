@@ -18,6 +18,7 @@ const RunAgentParamsSchema = z.object({
   actorId: z.string().uuid(),
   goalOverride: z.string().trim().max(4000).optional().nullable(),
   context: z.record(z.string(), z.unknown()).optional().nullable(),
+  requiredOrgId: z.string().uuid().optional().nullable(),
 });
 
 export type RunAgentParams = z.infer<typeof RunAgentParamsSchema>;
