@@ -470,7 +470,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         dir={isAr ? "rtl" : "ltr"}
-        className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition focus:border-amber-400/40 focus:bg-white/[0.05] focus:ring-2 focus:ring-amber-400/15"
+        className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-amber-400/40 focus:bg-white/[0.05] focus:ring-2 focus:ring-amber-400/15"
       />
     </label>
   );
