@@ -60,7 +60,13 @@ export async function runAgent(
   supabase: SupabaseClient<Database>,
   params: RunAgentParams,
 ): Promise<RunAgentResult> {
-  const { agentId, actorId, goalOverride, context: ctxData } = RunAgentParamsSchema.parse(params);
+  const {
+    agentId,
+    actorId,
+    goalOverride,
+    context: ctxData,
+    requiredOrgId,
+  } = RunAgentParamsSchema.parse(params);
 
   // ALL orchestration writes go through the service-role admin client so RLS
   // RESTRICTIVE policies on workflows/workflow_runs/workflow_step_runs cannot
@@ -70,14 +76,17 @@ export async function runAgent(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = supabaseAdmin as any;
 
-  // 1) Load agent definition (admin — wrapper runs as system).
-  const { data: def, error: defErr } = await admin
+  // 1) Load agent definition (admin — wrapper runs as system). Scope by
+  // caller's org when provided to prevent cross-tenant agent execution
+  // (bypassing the agent_definitions RLS select policy via service role).
+  let defQuery = admin
     .from("agent_definitions")
-    .select("id, name, goal, system_prompt, permissions, tool_allowlist, model, enabled")
-    .eq("id", agentId)
-    .maybeSingle();
+    .select("id, name, goal, system_prompt, permissions, tool_allowlist, model, enabled, org_id")
+    .eq("id", agentId);
+  if (requiredOrgId) defQuery = defQuery.eq("org_id", requiredOrgId);
+  const { data: def, error: defErr } = await defQuery.maybeSingle();
   if (defErr || !def) throw new Error(`Agent not found: ${agentId}`);
-  const agent = def as AgentDef;
+  const agent = def as AgentDef & { org_id: string };
   if (!agent.enabled) throw new Error(`Agent disabled: ${agentId}`);
 
   const goal = (goalOverride?.trim() || agent.goal).trim();
