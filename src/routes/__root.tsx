@@ -137,13 +137,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:alt", content: "ARIA · NEXIOS AI OS" },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "NEXIOS AI OS" },
+      { name: "twitter:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
       {
         name: "twitter:description",
         content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/aria-icon.jpeg` },
       { name: "twitter:image:alt", content: "ARIA · NEXIOS AI OS" },
+      { title: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:title", content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/4oFn87w5GiXP8JBD99DtcazaWOB2/social-images/social-1783673843487-14AEE944-7ACB-4DDE-93F1-E17909C04813.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/4oFn87w5GiXP8JBD99DtcazaWOB2/social-images/social-1783673843487-14AEE944-7ACB-4DDE-93F1-E17909C04813.webp" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -153,9 +157,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/jpeg", href: "/aria-icon.jpeg" },
+      { rel: "icon", type: "image/x-icon", href: "/aria-icon.jpeg" },
       { rel: "apple-touch-icon", href: "/aria-icon.jpeg" },
-      { rel: "shortcut icon", type: "image/jpeg", href: "/aria-icon.jpeg" },
+      { rel: "shortcut icon", type: "image/x-icon", href: "/aria-icon.jpeg" },
     ],
     scripts: [
       {
