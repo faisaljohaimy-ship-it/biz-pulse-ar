@@ -249,7 +249,9 @@ function ExecutiveShowPage() {
             />
             {/* Chapter label */}
             <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-2.5 py-1 text-[11px] backdrop-blur">
-              <activeCue.icon className="h-3.5 w-3.5" style={{ color: activeCue.accent }} />
+              <span style={{ color: activeCue.accent }} className="inline-flex">
+                <activeCue.icon className="h-3.5 w-3.5" />
+              </span>
               <span className="font-semibold" style={{ color: activeCue.accent }}>
                 {activeCue.ar}
               </span>
