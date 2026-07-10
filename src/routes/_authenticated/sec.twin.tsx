@@ -385,7 +385,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
   if (!selected) {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
-        <Network className="h-12 w-12 text-muted-foreground/40" />
+        <Network className="h-12 w-12 text-muted-foreground/70" aria-hidden />
         <p className="mt-3 text-sm text-muted-foreground">اختر أي عنصر من الشجرة لعرض تفاصيله</p>
         <p className="mt-1 text-[11px] text-muted-foreground">
           المنطقة ← الدائرة ← الموقع ← المبنى ← الأصل
