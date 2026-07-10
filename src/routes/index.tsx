@@ -31,6 +31,7 @@ import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
+import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
 import { HAJJ_INTERNAL_ROUTE, HAJJ_PLATFORM_LABEL_AR, hajjEmbedUrl } from "@/lib/hajj-embed";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
@@ -368,6 +369,25 @@ function IntroLanding() {
       <div id="tour-hajj">
         <HajjExecutiveStage />
       </div>
+
+      {/* Native Hajj command dashboard — rendered directly on the homepage
+          (outside the embed iframe) so the full command center is visible as
+          real content. Responsive + RTL; all figures are labelled simulation. */}
+      <section
+        dir="rtl"
+        aria-label={`لوحة قيادة · ${HAJJ_PLATFORM_LABEL_AR}`}
+        className="relative z-10 mx-auto mt-8 w-full max-w-6xl px-4 sm:mt-12 sm:px-6"
+      >
+        <div className="mb-4 text-center">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+            Hajj Command Center · مشاعر 1447
+          </div>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
+            لوحة قيادة {HAJJ_PLATFORM_LABEL_AR}
+          </h2>
+        </div>
+        <HajjCommandDashboard />
+      </section>
 
       {/* Frameless live mini-preview of the SAME Hajj dashboard, directly on
           the homepage (identical content to the framed showcase above). */}
