@@ -31,7 +31,11 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local env files
-.env
+# Local env files.
+# NOTE: `.env` is intentionally NOT ignored — it is committed on purpose as
+# the deploy env source for Lovable (public Supabase keys only, no secrets).
+# Keeping it in .gitignore while tracked made deploy tooling skip loading it,
+# which blanked VITE_SUPABASE_* in the production bundle. Only truly-local
+# override files stay ignored below.
 .env.local
 .env.*.local
