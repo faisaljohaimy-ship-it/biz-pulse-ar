@@ -19,11 +19,12 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ShieldAlert,
-  Radar,
-  Activity,
-  UserCheck,
-  Camera,
-  ClipboardCheck,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
+  FileText,
+  Users,
+  Building2,
   ChevronRight,
   Signal,
   Lock,
@@ -36,25 +37,23 @@ import { REGIONS } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
 import { SimBadge } from "@/components/os/SimBadge";
 
-// Deterministic simulation snapshot — the four regions' sim counts summed.
-const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
-  (acc, c) => ({
-    incidents_open: acc.incidents_open + c.incidents_open,
-    incidents_critical: acc.incidents_critical + c.incidents_critical,
-    patrols_active: acc.patrols_active + c.patrols_active,
-    visitors_inside: acc.visitors_inside + c.visitors_inside,
-    permits_active: acc.permits_active + c.permits_active,
-    cctv_new: acc.cctv_new + c.cctv_new,
-  }),
-  {
-    incidents_open: 0,
-    incidents_critical: 0,
-    patrols_active: 0,
-    visitors_inside: 0,
-    permits_active: 0,
-    cctv_new: 0,
-  },
-);
+// Deterministic simulation snapshot — aggregated across the four regions.
+// Operational KPIs (compliance, stations, staff, tasks, alerts, incidents)
+// derived here so the deck mirrors the executive command layout.
+const SIM = (() => {
+  const per = REGIONS.map((r) => regionSim(r.id).counts);
+  const sum = (f: (c: (typeof per)[number]) => number) => per.reduce((a, c) => a + f(c), 0);
+  const avg = (f: (c: (typeof per)[number]) => number) => Math.round(sum(f) / per.length);
+  return {
+    regions: REGIONS.length,
+    stationsOperational: per.filter((c) => c.readiness >= 90).length,
+    compliance: avg((c) => c.safety), // % — average safety/compliance
+    fieldStaff: sum((c) => c.contractors_active + c.patrols_active),
+    completedTasks: sum((c) => c.permits_active),
+    activeAlerts: sum((c) => c.cctv_new),
+    openIncidents: sum((c) => c.incidents_open),
+  };
+})();
 
 // Live wall clock. Initialised synchronously (SSR renders real server time,
 // suppressHydrationWarning on the readouts absorbs the client re-stamp), so
@@ -169,6 +168,7 @@ interface KpiSpec {
   readonly subAr: string;
   readonly subEn: string;
   readonly value: number | undefined;
+  readonly display?: string; // override for ratio/percent values (e.g. "3/4", "97%")
   readonly tone: Tone;
   readonly hintAr: string;
   readonly hintEn: string;
@@ -179,98 +179,102 @@ interface KpiSpec {
 
 export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
   const now = useLiveClock();
-  const counts = SIM_TOTALS;
 
+  // Operational KPIs mirroring the executive command layout (see design ref):
+  // compliance · operational stations · field staff · completed tasks ·
+  // active alerts · open incidents. All derived from the sim snapshot.
   const kpis: readonly KpiSpec[] = [
     {
-      key: "incidents_critical",
-      icon: ShieldAlert,
-      labelAr: "الحوادث الحرجة",
-      labelEn: "Critical Incidents",
-      subAr: "مفتوحة الآن",
-      subEn: "OPEN NOW",
-      value: counts?.incidents_critical,
-      tone: "rose",
-      hintAr: "▼ تتطلّب قرارًا",
-      hintEn: "▼ NEEDS DECISION",
-      unit: "SEV-1",
-      gauge: 1 - Math.min(1, (counts?.incidents_critical ?? 0) / 5),
-      padded: true,
+      key: "compliance",
+      icon: CheckCircle2,
+      labelAr: "معدّل الامتثال",
+      labelEn: "Compliance Rate",
+      subAr: "إنجاز المهام",
+      subEn: "TASK DELIVERY",
+      value: SIM.compliance,
+      display: `${SIM.compliance}%`,
+      tone: "cyan",
+      hintAr: "▲ امتثال كامل",
+      hintEn: "▲ FULLY COMPLIANT",
+      unit: "%",
+      gauge: SIM.compliance / 100,
+      padded: false,
     },
     {
-      key: "incidents_open",
-      icon: Activity,
-      labelAr: "الحوادث المفتوحة",
-      labelEn: "Open Incidents",
-      subAr: "قيد المعالجة",
-      subEn: "IN PROGRESS",
-      value: counts?.incidents_open,
-      tone: "amber",
-      hintAr: "◆ تحت المتابعة",
-      hintEn: "◆ MONITORED",
-      unit: "OPEN",
-      gauge: 1 - Math.min(1, (counts?.incidents_open ?? 0) / 20),
-      padded: true,
+      key: "stations",
+      icon: Building2,
+      labelAr: "المحطات التشغيلية",
+      labelEn: "Operational Stations",
+      subAr: "حالة الشبكة",
+      subEn: "NETWORK STATE",
+      value: SIM.stationsOperational,
+      display: `${SIM.stationsOperational}/${SIM.regions}`,
+      tone: "emerald",
+      hintAr: "▲ ضمن النطاق",
+      hintEn: "▲ IN RANGE",
+      unit: "OPS",
+      gauge: SIM.stationsOperational / SIM.regions,
+      padded: false,
     },
     {
-      key: "patrols_active",
-      icon: Radar,
-      labelAr: "الدوريات النشطة",
-      labelEn: "Active Patrols",
-      subAr: "في الميدان",
-      subEn: "IN FIELD",
-      value: counts?.patrols_active,
+      key: "field_staff",
+      icon: Users,
+      labelAr: "الموظفون في الميدان",
+      labelEn: "Field Staff",
+      subAr: "متصل الآن",
+      subEn: "ONLINE NOW",
+      value: SIM.fieldStaff,
       tone: "cyan",
       hintAr: "▲ تغطية حيّة",
       hintEn: "▲ LIVE COVERAGE",
-      unit: "UNITS",
-      gauge: Math.min(1, (counts?.patrols_active ?? 0) / 12),
-      padded: false,
-    },
-    {
-      key: "cctv_new",
-      icon: Camera,
-      labelAr: "تنبيهات الكاميرات",
-      labelEn: "CCTV Alerts",
-      subAr: "جديدة",
-      subEn: "NEW",
-      value: counts?.cctv_new,
-      tone: "cyan",
-      hintAr: "● تدفّق مستمرّ",
-      hintEn: "● STREAM ON",
-      unit: "FEEDS",
-      gauge: 0.72,
-      padded: false,
-    },
-    {
-      key: "visitors_inside",
-      icon: UserCheck,
-      labelAr: "الزوار داخل الموقع",
-      labelEn: "Visitors On-Site",
-      subAr: "الآن",
-      subEn: "NOW",
-      value: counts?.visitors_inside,
-      tone: "emerald",
-      hintAr: "▲ متطابق مع التصاريح",
-      hintEn: "▲ PERMIT MATCHED",
       unit: "PAX",
-      gauge: Math.min(1, (counts?.visitors_inside ?? 0) / 500),
+      gauge: Math.min(1, SIM.fieldStaff / 300),
       padded: false,
     },
     {
-      key: "permits_active",
-      icon: ClipboardCheck,
-      labelAr: "تصاريح العمل النشطة",
-      labelEn: "Active Permits",
-      subAr: "سارية",
-      subEn: "VALID",
-      value: counts?.permits_active,
+      key: "completed_tasks",
+      icon: ShieldCheck,
+      labelAr: "المهام المنجزة",
+      labelEn: "Completed Tasks",
+      subAr: "خلال اليوم",
+      subEn: "TODAY",
+      value: SIM.completedTasks,
       tone: "emerald",
-      hintAr: "▲ امتثال كامل",
-      hintEn: "▲ FULLY COMPLIANT",
-      unit: "PTW",
-      gauge: 0.97,
+      hintAr: "▲ ضمن الخطة",
+      hintEn: "▲ ON PLAN",
+      unit: "DONE",
+      gauge: Math.min(1, SIM.completedTasks / 40),
       padded: false,
+    },
+    {
+      key: "active_alerts",
+      icon: ShieldAlert,
+      labelAr: "التنبيهات النشطة",
+      labelEn: "Active Alerts",
+      subAr: "تتطلّب اهتماماً",
+      subEn: "NEEDS ATTENTION",
+      value: SIM.activeAlerts,
+      tone: "amber",
+      hintAr: "◆ تحت المتابعة",
+      hintEn: "◆ MONITORED",
+      unit: "ALERT",
+      gauge: 1 - Math.min(1, SIM.activeAlerts / 30),
+      padded: true,
+    },
+    {
+      key: "open_incidents",
+      icon: AlertTriangle,
+      labelAr: "الحوادث المفتوحة",
+      labelEn: "Open Incidents",
+      subAr: "آخر 24 ساعة",
+      subEn: "LAST 24H",
+      value: SIM.openIncidents,
+      tone: "rose",
+      hintAr: "▼ تتطلّب قرارًا",
+      hintEn: "▼ NEEDS DECISION",
+      unit: "OPEN",
+      gauge: 1 - Math.min(1, SIM.openIncidents / 40),
+      padded: true,
     },
   ];
 
@@ -360,19 +364,30 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         <span className="pointer-events-none absolute left-0 bottom-0 h-4 w-4 border-l-2 border-b-2 border-[#3AE8FF]/70" />
         <span className="pointer-events-none absolute right-0 bottom-0 h-4 w-4 border-r-2 border-b-2 border-[#3AE8FF]/70" />
         <div className="grid grid-cols-1 items-stretch divide-y divide-[#3AE8FF]/15 sm:grid-cols-[1.1fr_1fr_1.1fr] sm:divide-x sm:divide-y-0 rtl:sm:divide-x-reverse">
-          {/* Left cell: designation */}
-          <div className="px-4 py-3">
-            <div className="font-mono text-[9px] uppercase tracking-[0.32em] text-[#3AE8FF]/60">
-              {ar ? "الوحدة" : "UNIT"}
-            </div>
-            <div
-              className="mt-1 text-sm font-bold uppercase tracking-[0.22em] text-white sm:text-[15px]"
-              style={{ fontFamily: '"Space Grotesk", ui-sans-serif, system-ui' }}
+          {/* Left cell: designation + Saudi Energy brand */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            {/* Saudi Energy mark */}
+            <span
+              aria-hidden
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#3AE8FF]/40 bg-gradient-to-br from-[#0a2a44] to-[#04101c] shadow-[0_0_18px_rgba(52,182,255,0.35)]"
             >
-              {ar ? "الأمن الصناعي" : "INDUSTRIAL SECURITY"}
-            </div>
-            <div className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.28em] text-[#3AE8FF]/80">
-              COMMAND · PLATFORM
+              <span
+                className="text-[15px] font-black lowercase text-[#3AE8FF]"
+                style={{ fontFamily: '"Space Grotesk", ui-sans-serif, system-ui' }}
+              >
+                se
+              </span>
+            </span>
+            <div className="min-w-0">
+              <div className="truncate text-[13px] font-bold text-white sm:text-sm">
+                {ar ? "الشركة السعودية للطاقة" : "Saudi Energy Company"}
+              </div>
+              <div className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-[0.24em] text-[#3AE8FF]/80">
+                Saudi Energy · Industrial Security
+              </div>
+              <div className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.28em] text-[#3AE8FF]/55">
+                {ar ? "منصة قيادة الأمن الصناعي" : "Industrial Security Command"}
+              </div>
             </div>
           </div>
           {/* Center cell: LIVE clock */}
@@ -503,7 +518,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             const label = ar ? k.labelAr : k.labelEn;
             const sub = ar ? k.subAr : k.subEn;
             const hint = ar ? k.hintAr : k.hintEn;
-            const displayValue = k.padded ? pad2(k.value) : (k.value ?? "—");
+            const displayValue = k.display ?? (k.padded ? pad2(k.value) : (k.value ?? "—"));
             const stroke = TONE_STROKE[k.tone];
             const pct = Math.round(k.gauge * 100);
             return (
