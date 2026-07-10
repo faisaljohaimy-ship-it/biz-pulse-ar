@@ -1197,7 +1197,7 @@ export function AriaCopilot() {
                   ? listening
                     ? "bg-emerald-500/25 text-emerald-300 ring-2 ring-emerald-400/70 animate-pulse"
                     : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                  : "text-muted-foreground/40 cursor-not-allowed",
+                  : "text-muted-foreground/70 cursor-not-allowed",
               )}
             >
               <Mic className="h-4 w-4" aria-hidden />
