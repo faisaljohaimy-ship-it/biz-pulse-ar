@@ -68,6 +68,17 @@ function GlobeGroup({ animate }: { animate: boolean }) {
 
   return (
     <group ref={ref} rotation={[0.35, initialY, 0]}>
+      {/* Atmospheric halo — soft emerald/cyan aura behind the globe */}
+      <mesh>
+        <sphereGeometry args={[R * 1.14, 32, 32]} />
+        <meshBasicMaterial
+          color={EMERALD}
+          transparent
+          opacity={0.08}
+          side={THREE.BackSide}
+          toneMapped={false}
+        />
+      </mesh>
       {/* Solid navy sphere */}
       <mesh>
         <sphereGeometry args={[R, 48, 48]} />
