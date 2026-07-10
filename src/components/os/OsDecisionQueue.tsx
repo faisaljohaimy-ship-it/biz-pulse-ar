@@ -1,54 +1,30 @@
 /**
  * OsDecisionQueue — top decisions awaiting executive action.
- * Derived from live counts on the public os-overview endpoint.
- * Every actionable row carries an <EvidenceBadge> (FR-19) so a claim
- * of "3 critical incidents" is verifiable to source + observedAt.
+ * Public homepage edition: values come from the deterministic simulation
+ * snapshot (sim_* aggregated across the four regions) computed
+ * synchronously — populated in the SSR HTML, never empty — and every row
+ * is explicitly badged «محاكاة · لقطة عامة» (constitution art. 11).
  */
-import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Camera, ClipboardCheck, Server, ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
-import type { Evidence } from "@/lib/evidence/gate";
 import { cn } from "@/lib/utils";
+import { REGIONS } from "@/lib/regions";
+import { regionSim } from "@/lib/sec/region-sim-data";
+import { SimBadge } from "@/components/os/SimBadge";
 
-type OverviewPayload = {
-  ok: boolean;
-  observedAt: string;
-  source: string;
-  counts?: {
-    incidents_critical: number;
-    incidents_open: number;
-    cctv_new: number;
-    permits_active: number;
-    assets_offline: number;
-  };
-};
-
-async function fetchOverview(): Promise<OverviewPayload> {
-  const res = await fetch("/api/public/os-overview", {
-    headers: { accept: "application/json" },
-  });
-  if (!res.ok) throw new Error(`overview_http_${res.status}`);
-  return (await res.json()) as OverviewPayload;
-}
+// Deterministic simulation snapshot — the four regions' sim counts summed.
+const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
+  (acc, c) => ({
+    incidents_critical: acc.incidents_critical + c.incidents_critical,
+    cctv_new: acc.cctv_new + c.cctv_new,
+    permits_active: acc.permits_active + c.permits_active,
+    assets_offline: acc.assets_offline + c.assets_offline,
+  }),
+  { incidents_critical: 0, cctv_new: 0, permits_active: 0, assets_offline: 0 },
+);
 
 export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
-  const q = useQuery({
-    queryKey: ["os-overview"],
-    queryFn: fetchOverview,
-    refetchInterval: 20_000,
-    staleTime: 10_000,
-    refetchOnWindowFocus: false,
-    retry: 1,
-  });
-  const counts = q.data?.counts;
-  const observedAt = q.data?.observedAt;
-  const liveLabel = ar ? "لحظي" : "LIVE";
-
-  const mk = (value: number | undefined, source: string): Evidence | null =>
-    observedAt !== undefined && value !== undefined
-      ? { kind: "db.query", source, observedAt, value }
-      : null;
+  const counts = SIM_TOTALS;
 
   const decisions = [
     {
@@ -61,7 +37,6 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
       value: counts?.incidents_critical ?? 0,
       to: "/sec/incidents",
       tone: "rose" as const,
-      evidence: mk(counts?.incidents_critical, "sec_incidents.critical"),
     },
     {
       key: "cctv",
@@ -73,7 +48,6 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
       value: counts?.cctv_new ?? 0,
       to: "/sec/cctv",
       tone: "amber" as const,
-      evidence: mk(counts?.cctv_new, "sec_cctv_alerts.new"),
     },
     {
       key: "assets",
@@ -85,7 +59,6 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
       value: counts?.assets_offline ?? 0,
       to: "/sec/assets",
       tone: "amber" as const,
-      evidence: mk(counts?.assets_offline, "sec_assets.offline"),
     },
     {
       key: "permits",
@@ -97,7 +70,6 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
       value: counts?.permits_active ?? 0,
       to: "/sec/permits",
       tone: "cyan" as const,
-      evidence: mk(counts?.permits_active, "sec_permits.active"),
     },
   ]
     .sort((a, b) => b.value - a.value)
@@ -156,7 +128,7 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
                     </div>
                   </div>
                 </div>
-                <EvidenceBadge evidence={d.evidence} label={liveLabel} tone={d.tone} />
+                <SimBadge ar={ar} className="text-[9px]" />
               </div>
               <div className="mt-auto flex items-end justify-between gap-3">
                 <span

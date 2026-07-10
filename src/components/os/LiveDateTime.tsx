@@ -39,22 +39,15 @@ const gregDate = new Intl.DateTimeFormat("en-GB", {
 });
 
 export function LiveDateTime({ ar }: { readonly ar: boolean }) {
-  const [now, setNow] = useState<Date | null>(null);
+  // Initialised synchronously so SSR HTML already carries a real timestamp
+  // (never an empty chip); ticks every second after hydration.
+  const [now, setNow] = useState<Date>(() => new Date());
 
   useEffect(() => {
     setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
-
-  if (!now) {
-    return (
-      <div
-        aria-hidden
-        className="pointer-events-auto inline-flex h-[30px] items-center rounded-full border border-white/10 bg-white/5 px-3 backdrop-blur"
-      />
-    );
-  }
 
   const timeAr = arTime.format(now);
   const timeEn = enTime.format(now);
@@ -72,6 +65,7 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
       <div className="flex items-center gap-2 text-[11px] font-medium tabular-nums">
         <Clock aria-hidden className="h-3 w-3 text-[#3AE8FF]" strokeWidth={2.25} />
         <span
+          suppressHydrationWarning
           dir="rtl"
           lang="ar"
           className="text-[#3AE8FF]"
@@ -82,13 +76,14 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
         <span aria-hidden className="text-white/25">
           ·
         </span>
-        <span dir="ltr" lang="en" className="text-white/80">
+        <span suppressHydrationWarning dir="ltr" lang="en" className="text-white/80">
           {timeEn}
         </span>
       </div>
       {/* Row 2 — Hijri · Gregorian */}
       <div className="flex items-center gap-2 text-[10px] font-medium text-white/60">
         <span
+          suppressHydrationWarning
           dir="rtl"
           lang="ar"
           className="whitespace-nowrap"
@@ -99,7 +94,7 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
         <span aria-hidden className="text-white/25">
           ·
         </span>
-        <span dir="ltr" lang="en" className="whitespace-nowrap">
+        <span suppressHydrationWarning dir="ltr" lang="en" className="whitespace-nowrap">
           {dGreg}
         </span>
       </div>

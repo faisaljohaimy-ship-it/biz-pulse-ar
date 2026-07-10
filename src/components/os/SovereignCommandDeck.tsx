@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { REGIONS } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
+import { SimBadge } from "@/components/os/SimBadge";
 
 // Deterministic simulation snapshot — the four regions' sim counts summed.
 const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
@@ -51,17 +52,6 @@ const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
     cctv_new: 0,
   },
 );
-
-/** «محاكاة · لقطة عامة» chip — the mandatory tag on every simulated value. */
-function SimBadge({ ar, className = "" }: { readonly ar: boolean; readonly className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-1.5 py-0.5 font-semibold text-[#3AE8FF] ${className}`}
-    >
-      {ar ? "محاكاة · لقطة عامة" : "SIM · PUBLIC SNAPSHOT"}
-    </span>
-  );
-}
 
 // Live wall clock. Initialised synchronously (SSR renders real server time,
 // suppressHydrationWarning on the readouts absorbs the client re-stamp), so
@@ -476,8 +466,9 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       </div>
 
       {/* ── KPI Grid: 6 engineered instrument tiles ──
-         All viewports → single 6-column horizontal row spanning full width. */}
-      <div className="relative grid grid-cols-6 gap-1.5 sm:gap-3 lg:gap-4">
+         Responsive: 2 columns on phones (readable tiles), 3 on tablets,
+         the full 6-across row on laptops and larger. */}
+      <div className="relative grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6 lg:gap-4">
         {kpis.map((k, idx) => {
           const Icon = k.icon;
           const label = ar ? k.labelAr : k.labelEn;
@@ -489,7 +480,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           return (
             <div
               key={k.key}
-              className="group relative overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-1.5 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 sm:p-3 lg:p-4"
+              className="group relative overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-3 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 lg:p-4"
               style={{
                 animation: `sov-tile-in 700ms cubic-bezier(0.22,1,0.36,1) ${140 + idx * 90}ms both`,
                 boxShadow:
@@ -530,7 +521,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               <div className="flex items-start justify-between gap-1 sm:gap-2 sm:pe-6">
                 <div className="min-w-0 flex-1">
                   <div
-                    className="truncate text-[8.5px] font-semibold leading-tight text-white/95 sm:text-[11px]"
+                    className="truncate text-[10px] font-semibold leading-tight text-white/95 sm:text-[11px]"
                     title={label}
                   >
                     {label}
@@ -550,7 +541,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               <div className="mt-1.5 flex items-center justify-between gap-1 sm:mt-3 sm:gap-2">
                 <div className="flex items-baseline gap-1 sm:gap-1.5">
                   <span
-                    className={`text-lg font-black leading-none sm:text-3xl lg:text-[38px] ${TONE_NUM[k.tone]}`}
+                    className={`text-2xl font-black leading-none sm:text-3xl lg:text-[38px] ${TONE_NUM[k.tone]}`}
                     style={{
                       fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
                       fontVariantNumeric: "tabular-nums",
