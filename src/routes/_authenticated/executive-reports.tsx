@@ -40,7 +40,7 @@ const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: strin
   teams_post: { en: "Teams post", ar: "نشر Teams" },
   unknown: { en: "Unknown", ar: "غير معروف" },
 };
-import { MOCK_SCENARIOS, type MockScenario } from "./executive-reports.mocks";
+import { MOCK_SCENARIOS, type MockScenario } from "./-executive-reports.mocks";
 
 const ENABLE_GRAPH_SIMULATION = import.meta.env.DEV;
 
