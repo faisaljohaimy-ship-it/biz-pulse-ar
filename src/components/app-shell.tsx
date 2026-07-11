@@ -39,6 +39,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
+import { SectorGlobeCorner } from "@/components/executive/SectorGlobeCorner";
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
@@ -93,7 +94,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="nexus-main min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
+          <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
+            {/* Cinematic sector globe — pinned to the windows workspace corner
+                (top-right in RTL). Sticky so it persists as windows scroll. */}
+            <div className="pointer-events-none sticky top-0 z-30 h-0">
+              <div className="absolute top-16 start-3 md:top-3 md:start-4">
+                <SectorGlobeCorner />
+              </div>
+            </div>
             {children}
           </div>
         </main>
