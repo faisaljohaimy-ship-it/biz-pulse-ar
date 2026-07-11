@@ -302,6 +302,8 @@ function ExecutiveBridgePage() {
   const scene = SCENES[idx];
   const isPrimaryAr = primary === "ar";
   const overallProgress = ((idx + progress) / SCENES.length) * 100;
+  const accentHex =
+    scene.accent === "gold" ? "#F5C560" : scene.accent === "emerald" ? "#2FBF8F" : "#3AE8FF";
 
   return (
     <div
@@ -370,6 +372,38 @@ function ExecutiveBridgePage() {
           />
         ))}
       </div>
+
+      {/* Cross-scene transition — accent bloom + light sweep on every change */}
+      {!reduced && (
+        <div
+          key={idx}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[25] overflow-hidden"
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(60% 50% at 50% 45%, ${accentHex}, transparent 70%)`,
+              animation: "bridge-flash 640ms ease-out both",
+            }}
+          />
+          <div
+            className="absolute inset-y-0 w-2/3"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${accentHex}33, transparent)`,
+              animation: "bridge-sweep 700ms ease-out both",
+            }}
+          />
+          <style>{`
+            @keyframes bridge-flash { 0% { opacity: 0.4; } 100% { opacity: 0; } }
+            @keyframes bridge-sweep {
+              0%   { transform: translateX(140%); opacity: 0; }
+              25%  { opacity: 1; }
+              100% { transform: translateX(-160%); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Bottom controls */}
       <div className="absolute inset-x-0 bottom-0 z-40 flex flex-col items-center gap-3 pb-5 sm:pb-8">
@@ -911,8 +945,17 @@ function SkylineBackground({ reduced, accent }: { reduced: boolean; accent: Acce
         }}
       />
       <div
-        className="absolute -top-[10%] left-1/2 h-[60vh] w-[80vw] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+        className={reduced ? "" : "bridge-aurora"}
         style={{
+          position: "absolute",
+          top: "-10%",
+          left: "50%",
+          height: "60vh",
+          width: "80vw",
+          transform: "translateX(-50%)",
+          opacity: 0.4,
+          filter: "blur(48px)",
+          borderRadius: "9999px",
           background:
             accent === "gold"
               ? "radial-gradient(closest-side, rgba(245,197,96,0.55), transparent 70%)"
@@ -922,6 +965,39 @@ function SkylineBackground({ reduced, accent }: { reduced: boolean; accent: Acce
           transition: reduced ? "none" : "background 900ms ease",
         }}
       />
+      {/* Secondary drifting aurora ribbon for depth */}
+      <div
+        aria-hidden
+        className={reduced ? "" : "bridge-aurora2"}
+        style={{
+          position: "absolute",
+          bottom: "-20%",
+          left: "30%",
+          height: "50vh",
+          width: "60vw",
+          opacity: 0.22,
+          filter: "blur(64px)",
+          borderRadius: "9999px",
+          background:
+            accent === "gold"
+              ? "radial-gradient(closest-side, rgba(245,197,96,0.4), transparent 70%)"
+              : accent === "emerald"
+                ? "radial-gradient(closest-side, rgba(47,191,143,0.4), transparent 70%)"
+                : "radial-gradient(closest-side, rgba(0,212,255,0.4), transparent 70%)",
+        }}
+      />
+      <style>{`
+        .bridge-aurora { animation: bridge-aurora-drift 22s ease-in-out infinite; }
+        .bridge-aurora2 { animation: bridge-aurora-drift2 28s ease-in-out infinite; }
+        @keyframes bridge-aurora-drift {
+          0%,100% { transform: translateX(-50%) translateY(0) scale(1); }
+          50%     { transform: translateX(-50%) translateY(4%) scale(1.08); }
+        }
+        @keyframes bridge-aurora-drift2 {
+          0%,100% { transform: translate(0,0) scale(1); opacity: 0.18; }
+          50%     { transform: translate(6%,-4%) scale(1.12); opacity: 0.28; }
+        }
+      `}</style>
     </div>
   );
 }

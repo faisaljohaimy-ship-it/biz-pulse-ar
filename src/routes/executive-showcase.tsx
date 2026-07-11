@@ -312,7 +312,7 @@ function ExecutiveShowcasePage() {
     >
       <SimulationRibbon />
 
-      <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="absolute inset-0 opacity-70"
           style={{
@@ -320,7 +320,63 @@ function ExecutiveShowcasePage() {
             transition: "background 800ms ease",
           }}
         />
+        {/* Drifting aurora ribbon for depth */}
+        <div
+          className={reduced ? "" : "showcase-aurora"}
+          style={{
+            position: "absolute",
+            top: "-15%",
+            left: "50%",
+            height: "55vh",
+            width: "75vw",
+            transform: "translateX(-50%)",
+            opacity: 0.28,
+            filter: "blur(60px)",
+            borderRadius: "9999px",
+            background: `radial-gradient(closest-side, ${scene.accent}66, transparent 70%)`,
+            transition: "background 800ms ease",
+          }}
+        />
+        <style>{`
+          .showcase-aurora { animation: showcase-aurora-drift 24s ease-in-out infinite; }
+          @keyframes showcase-aurora-drift {
+            0%,100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.24; }
+            50%     { transform: translateX(-50%) translateY(5%) scale(1.1); opacity: 0.34; }
+          }
+        `}</style>
       </div>
+
+      {/* Cross-scene transition — accent bloom + light sweep on scene change */}
+      {!reduced && (
+        <div
+          key={idx}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[35] overflow-hidden"
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(60% 50% at 50% 45%, ${scene.accent}, transparent 70%)`,
+              animation: "showcase-flash 640ms ease-out both",
+            }}
+          />
+          <div
+            className="absolute inset-y-0 w-2/3"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${scene.accent}33, transparent)`,
+              animation: "showcase-sweep 700ms ease-out both",
+            }}
+          />
+          <style>{`
+            @keyframes showcase-flash { 0% { opacity: 0.38; } 100% { opacity: 0; } }
+            @keyframes showcase-sweep {
+              0%   { transform: translateX(140%); opacity: 0; }
+              25%  { opacity: 1; }
+              100% { transform: translateX(-160%); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Top bar */}
       <header className="relative z-30 flex items-center justify-between gap-3 px-4 pt-3 sm:px-8 sm:pt-4">
