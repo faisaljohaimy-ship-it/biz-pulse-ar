@@ -313,7 +313,15 @@ function IntroLanding() {
               dir={ar ? "rtl" : "ltr"}
               className="whitespace-nowrap font-black leading-none"
               style={{
-                fontFamily: '"Space Grotesk", "Tajawal", ui-sans-serif, system-ui',
+                // Arabic MUST lead with an Arabic-capable, actually-loaded font
+                // (Cairo / IBM Plex Sans Arabic are in the Google Fonts link).
+                // Space Grotesk is Latin-only — leading with it made the Arabic
+                // headline render as tofu (□) wherever per-glyph fallback to an
+                // Arabic face is unavailable (e.g. Vercel's headless preview
+                // screenshotter). "Tajawal" was referenced but never loaded.
+                fontFamily: ar
+                  ? '"Cairo", "IBM Plex Sans Arabic", ui-sans-serif, system-ui'
+                  : '"Space Grotesk", ui-sans-serif, system-ui',
                 fontWeight: 900,
                 letterSpacing: "0.04em",
                 fontSize: "clamp(1.9rem, 7vw, 4.4rem)",
