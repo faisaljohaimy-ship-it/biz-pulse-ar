@@ -36,6 +36,7 @@ import {
 import { REGIONS } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
 import { SimBadge } from "@/components/os/SimBadge";
+import { useOperationalLive } from "@/lib/sec/operational-live";
 
 // Deterministic simulation snapshot — aggregated across the four regions.
 // Operational KPIs (compliance, stations, staff, tasks, alerts, incidents)
@@ -175,14 +176,21 @@ interface KpiSpec {
   readonly unit: string; // small unit chip (e.g. "OPEN", "PCS", "%")
   readonly gauge: number; // 0..1 completion for radial arc
   readonly padded: boolean; // show two-digit padded (00) style
+  readonly live?: boolean; // value sourced from live sec_* tables (not sim)
 }
 
 export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
   const now = useLiveClock();
+  // Read-only live counters from the security tables. Null → fall back to the
+  // tagged simulation value (unauthenticated visitors / empty org / error).
+  const liveOps = useOperationalLive();
 
   // Operational KPIs mirroring the executive command layout (see design ref):
   // compliance · operational stations · field staff · completed tasks ·
-  // active alerts · open incidents. All derived from the sim snapshot.
+  // active alerts · open incidents. Active alerts and open incidents come from
+  // live sec_* tables when available; the rest are the tagged sim snapshot.
+  const activeAlerts = liveOps.activeAlerts ?? SIM.activeAlerts;
+  const openIncidents = liveOps.openIncidents ?? SIM.openIncidents;
   const kpis: readonly KpiSpec[] = [
     {
       key: "compliance",
@@ -253,13 +261,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       labelEn: "Active Alerts",
       subAr: "تتطلّب اهتماماً",
       subEn: "NEEDS ATTENTION",
-      value: SIM.activeAlerts,
+      value: activeAlerts,
       tone: "amber",
       hintAr: "◆ تحت المتابعة",
       hintEn: "◆ MONITORED",
       unit: "ALERT",
-      gauge: 1 - Math.min(1, SIM.activeAlerts / 30),
+      gauge: 1 - Math.min(1, activeAlerts / 30),
       padded: true,
+      live: liveOps.activeAlerts != null,
     },
     {
       key: "open_incidents",
@@ -268,13 +277,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       labelEn: "Open Incidents",
       subAr: "آخر 24 ساعة",
       subEn: "LAST 24H",
-      value: SIM.openIncidents,
+      value: openIncidents,
       tone: "rose",
       hintAr: "▼ تتطلّب قرارًا",
       hintEn: "▼ NEEDS DECISION",
       unit: "OPEN",
-      gauge: 1 - Math.min(1, SIM.openIncidents / 40),
+      gauge: 1 - Math.min(1, openIncidents / 40),
       padded: true,
+      live: liveOps.openIncidents != null,
     },
   ];
 
@@ -626,7 +636,17 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                     >
                       {hint}
                     </span>
-                    <SimBadge ar={ar} className="text-[8px]" />
+                    {k.live ? (
+                      <span className="inline-flex items-center gap-1 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-300/90">
+                        <span
+                          className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"
+                          style={{ animation: "sov-live-pulse 1.8s ease-in-out infinite" }}
+                        />
+                        {ar ? "حيّ" : "LIVE"}
+                      </span>
+                    ) : (
+                      <SimBadge ar={ar} className="text-[8px]" />
+                    )}
                   </div>
 
                   {/* Micro sparkline strip */}
@@ -697,9 +717,13 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
         }
+        @keyframes sov-live-pulse {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0.35; }
+        }
         @media (prefers-reduced-motion: reduce) {
           [style*="sov-deck-rise"], [style*="sov-tile-in"] { animation: none !important; }
-          [style*="sov-marquee"] { animation: none !important; }
+          [style*="sov-marquee"], [style*="sov-live-pulse"] { animation: none !important; }
         }
       `}</style>
     </div>
