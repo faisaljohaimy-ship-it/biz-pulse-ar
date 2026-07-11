@@ -1,0 +1,668 @@
+// Auto-split from page-narrations.ts — pure data (uses the n() composer).
+import type { PageNarration } from "./page-narrations.base";
+import { n } from "./page-narrations.base";
+
+export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
+  [
+    "/_authenticated/settings",
+    n(
+      "الإعدادات",
+      "Settings",
+      "تكوين المؤسسة، المستخدمين، والصلاحيات",
+      "organization, users, and permissions configuration",
+      "ضبط دقيق يعكس هيكل مؤسستك",
+      "fine-grained control that mirrors your organization",
+    ),
+  ],
+  [
+    "/_authenticated/admin",
+    n(
+      "لوحة المشرف",
+      "Admin",
+      "أدوات الإدارة العليا للمنصّة",
+      "top-level platform administration tools",
+      "سيطرة كاملة على تكوين النظام",
+      "complete control over system configuration",
+    ),
+  ],
+  [
+    "/_authenticated/security-center",
+    n(
+      "مركز الأمن المعلوماتي",
+      "Security Center",
+      "التهديدات، الأدلة، وسجلات المراجعة",
+      "threats, evidence, and audit trails",
+      "حماية سيبرانية موثّقة للجهات الرقابية",
+      "regulator-grade cybersecurity assurance",
+    ),
+  ],
+  [
+    "/_authenticated/health",
+    n(
+      "صحّة المنصة",
+      "Platform Health",
+      "حالة الخدمات، الأداء، والاستقرار",
+      "service status, performance, and stability",
+      "توفّر خدمي عالٍ وثقة تنفيذية",
+      "high service availability and executive trust",
+    ),
+  ],
+  [
+    "/_authenticated/tts",
+    n(
+      "تركيب الكلام",
+      "Text-to-Speech",
+      "أصوات آريا وإعدادات النطق",
+      "ARIA's voices and pronunciation settings",
+      "صوت طبيعي راقٍ يليق بحضور تنفيذي",
+      "a natural, refined voice worthy of executive presence",
+    ),
+  ],
+  [
+    "/_authenticated/voice-setup",
+    n(
+      "إعداد الصوت",
+      "Voice Setup",
+      "خطوات معايرة الصوت والاختبار",
+      "voice calibration and test steps",
+      "تجربة صوتية موثوقة من أوّل تشغيل",
+      "a reliable voice experience from the very first run",
+    ),
+  ],
+  [
+    "/_authenticated/voice",
+    n(
+      "الصوت التنفيذي لآريا",
+      "ARIA Voice",
+      "إعدادات الصوت، المعاينة، وسجل التشغيل",
+      "voice settings, preview, and playback log",
+      "حضور صوتي احترافي لآريا",
+      "professional voice presence for ARIA",
+    ),
+  ],
+  [
+    "/_authenticated/elevenlabs-status",
+    n(
+      "حالة موفّر الصوت",
+      "Voice Provider Status",
+      "توفّر خدمة الصوت الخارجية",
+      "external voice service availability",
+      "شفافية تشغيلية لمزوّد الصوت",
+      "operational transparency for the voice provider",
+    ),
+  ],
+
+  // ── Work & delivery ─────────────────────────────────────────────────
+  [
+    "/_authenticated/tasks",
+    n(
+      "لوحة المهام",
+      "Tasks",
+      "المهام العاجلة، المُوكَلة، والمُنجَزة",
+      "urgent, assigned, and completed tasks",
+      "تنفيذ يومي منضبط بلا تسرّبات",
+      "disciplined daily execution with no leaks",
+    ),
+  ],
+  [
+    "/_authenticated/team",
+    n(
+      "الفريق",
+      "Team",
+      "أعضاء الفريق، الأدوار، والحضور",
+      "team members, roles, and presence",
+      "توزيع مسؤوليات واضح ومساءلة صريحة",
+      "clear responsibility split and explicit accountability",
+    ),
+  ],
+  [
+    "/_authenticated/departments",
+    n(
+      "الأقسام",
+      "Departments",
+      "الأقسام والفرق التشغيلية",
+      "departments and their operational teams",
+      "قراءة أفقية لعمق التشغيل",
+      "a horizontal reading of operational depth",
+    ),
+  ],
+  [
+    "/_authenticated/events",
+    n(
+      "الأحداث المؤسسية",
+      "Enterprise Events",
+      "الجدول الزمني للأحداث المهمّة",
+      "the timeline of significant events",
+      "تسلسل زمني موحّد لكل ما جرى",
+      "a unified chronological record of everything that happened",
+    ),
+  ],
+  [
+    "/_authenticated/files",
+    n(
+      "مركز الملفات",
+      "Files Center",
+      "الملفات، إصداراتها، وصلاحيات الوصول",
+      "files, versions, and access permissions",
+      "مصدر ملفات موحّد بلا نسخ متناثرة",
+      "a single file source with no scattered copies",
+    ),
+  ],
+  [
+    "/_authenticated/leads",
+    n(
+      "العملاء المحتملون",
+      "Leads",
+      "لوحة الصفقات ومراحل كل عميل محتمل",
+      "the pipeline and stage for every prospect",
+      "تحويل أعلى وعائد مبيعات أوضح",
+      "higher conversion and clearer sales return",
+    ),
+  ],
+  [
+    "/_authenticated/marketplace",
+    n(
+      "سوق الحلول",
+      "Marketplace",
+      "الحلول والتكاملات المتاحة للتثبيت",
+      "solutions and integrations ready to install",
+      "توسيع قدرات النظام دون تطوير مخصّص",
+      "expanding system capability without custom builds",
+    ),
+  ],
+  [
+    "/_authenticated/investor",
+    n(
+      "لوحة المستثمر",
+      "Investor",
+      "مؤشرات النمو والقيمة المطلوبة للمستثمرين",
+      "growth and value indicators needed by investors",
+      "شفافية استثمارية جاهزة على مدار الساعة",
+      "24/7-ready investor transparency",
+    ),
+  ],
+  [
+    "/_authenticated/customers",
+    n(
+      "العملاء",
+      "Customers",
+      "قاعدة العملاء، حالتهم، وقيمة كل حساب",
+      "the customer base, status, and per-account value",
+      "علاقات عملاء موثوقة وأداء تنافسي",
+      "trusted customer relationships and competitive performance",
+    ),
+  ],
+
+  // ── Learning & readiness ────────────────────────────────────────────
+  [
+    "/_authenticated/learn.index",
+    n(
+      "أكاديمية التعلّم",
+      "Learning Academy",
+      "المسارات، الدروس، والتقدّم",
+      "learning tracks, lessons, and progress",
+      "بناء كفاءة داخلية سريعة",
+      "building rapid internal capability",
+    ),
+  ],
+  [
+    "/_authenticated/learn",
+    n(
+      "التعلّم",
+      "Learning",
+      "الدروس المفتوحة والمُقتَرَحة",
+      "open and recommended lessons",
+      "تطوير مستمر مُدمَج في يوم العمل",
+      "continuous development embedded in the workday",
+    ),
+  ],
+  [
+    "/_authenticated/readiness",
+    n(
+      "مؤشر الجاهزية",
+      "Readiness",
+      "جاهزية المنصّة، الأشخاص، والإجراءات",
+      "platform, people, and process readiness",
+      "قراءة موحّدة للاستعداد التشغيلي",
+      "a unified reading of operational readiness",
+    ),
+  ],
+  [
+    "/_authenticated/theater",
+    n(
+      "قاعة العرض",
+      "Theater",
+      "مشاهد حيّة لتوضيح القدرات للقيادة",
+      "live scenes that explain capability to leadership",
+      "تبنٍّ أسرع من قِبَل صنّاع القرار",
+      "faster adoption by decision-makers",
+    ),
+  ],
+  [
+    "/_authenticated/hajj",
+    n(
+      "منظومة الحج ١٤٤٧",
+      "Hajj 1447",
+      "المؤشرات التشغيلية للحج بأدق تفصيل",
+      "the operational indicators for Hajj at the finest detail",
+      "أداء حج آمن يليق بمكانة المشعر",
+      "safe Hajj operations worthy of the holy site",
+    ),
+  ],
+  [
+    "/_authenticated/digital-twin",
+    n(
+      "التوأم الرقمي",
+      "Digital Twin",
+      "نموذج حيّ للمؤسسة وأصولها",
+      "a live model of the enterprise and its assets",
+      "محاكاة القرار قبل تنفيذه",
+      "simulate the decision before executing it",
+    ),
+  ],
+  [
+    "/_authenticated/bridge",
+    n(
+      "الجسر التنفيذي",
+      "Executive Bridge",
+      "ربط بين الفرق والقرارات الحيّة",
+      "linking teams and live decisions",
+      "قرار تنفيذي متزامن بلا فجوات",
+      "synchronized executive decisions with no gaps",
+    ),
+  ],
+  [
+    "/_authenticated/exec",
+    n(
+      "المشغّل التنفيذي",
+      "Executive Runner",
+      "تنفيذ مباشر لأوامر الطبقة العليا",
+      "direct execution of top-tier commands",
+      "سرعة تحويل القرار إلى فعل",
+      "speed from decision to action",
+    ),
+  ],
+  [
+    "/_authenticated/operations",
+    n(
+      "العمليات",
+      "Operations",
+      "قلب النشاط التشغيلي الحيّ",
+      "the beating heart of live operations",
+      "تحكّم تشغيلي كامل من مكان واحد",
+      "complete operational control from one place",
+    ),
+  ],
+  [
+    "/_authenticated",
+    {
+      ar: "أنت الآن في منطقة العمل المصادَقة. جميع القدرات التنفيذية متاحة هنا.",
+      en: "You are in the authenticated workspace. Every executive capability is available here.",
+    },
+  ],
+
+  // ── Public marketing / trust surfaces ───────────────────────────────
+  [
+    "/executive-briefing",
+    n(
+      "صفحة الإيجاز التنفيذي",
+      "Executive Briefing Page",
+      "الإيجاز التنفيذي القابل للمشاركة مع القيادة",
+      "the executive briefing you can share with leadership",
+      "قناة تعريف تنفيذية موحّدة بلغتك",
+      "a unified executive introduction channel in your language",
+    ),
+  ],
+  [
+    "/executive-booking",
+    n(
+      "حجز جلسة تنفيذية",
+      "Executive Booking",
+      "خيارات مواعيد مباشرة مع الفريق التنفيذي",
+      "direct calendar options with the executive team",
+      "توفير وقت في الوصول إلى قرار الشراء",
+      "shortening time-to-decision",
+    ),
+  ],
+  [
+    "/executive-showcase",
+    n(
+      "العرض التنفيذي",
+      "Executive Showcase",
+      "أبرز القدرات مقدَّمة بلغة القرار",
+      "the top capabilities framed in decision language",
+      "تبنٍّ سريع من صنّاع القرار",
+      "rapid buy-in from decision-makers",
+    ),
+  ],
+  [
+    "/executive-bridge",
+    n(
+      "الجسر التنفيذي العام",
+      "Executive Bridge (Public)",
+      "توضيح قناة القيادة بين المؤسسات",
+      "clarifying the leadership channel between organizations",
+      "شفافية استراتيجية للشركاء",
+      "strategic transparency for partners",
+    ),
+  ],
+  [
+    "/executive",
+    n(
+      "الصفحة التنفيذية العامة",
+      "Public Executive Page",
+      "ملخص القدرات للمستوى التنفيذي",
+      "an executive-level capability summary",
+      "قراءة سريعة قبل الاجتماع",
+      "a fast pre-meeting read",
+    ),
+  ],
+  [
+    "/government-brief",
+    n(
+      "الإيجاز الحكومي",
+      "Government Brief",
+      "ملخص المنصّة للجهات الحكومية",
+      "the platform summary tailored for government",
+      "شفافية سيادية تليق بالجهات الرقابية",
+      "sovereign-grade transparency for regulators",
+    ),
+  ],
+  [
+    "/hajj-prime",
+    n(
+      "الحج برايم",
+      "Hajj Prime",
+      "الطبقة التنفيذية لمنظومة الحج",
+      "the executive layer for the Hajj system",
+      "أداء حج ذو جودة سيادية",
+      "sovereign-quality Hajj performance",
+    ),
+  ],
+  [
+    "/runtime-hub",
+    n(
+      "مركز التشغيل",
+      "Runtime Hub",
+      "المكوّنات التشغيلية للمنصّة",
+      "the runtime components of the platform",
+      "شفافية هندسية موثوقة",
+      "trustworthy engineering transparency",
+    ),
+  ],
+  [
+    "/data-room",
+    n(
+      "غرفة البيانات",
+      "Data Room",
+      "الوثائق الحسّاسة للاطلاع المُقيَّد",
+      "sensitive documents for restricted access",
+      "بيئة عناية واجبة سريعة وآمنة",
+      "a fast, secure due-diligence environment",
+    ),
+  ],
+  [
+    "/demo-videos",
+    n(
+      "مقاطع العرض",
+      "Demo Videos",
+      "مقاطع تُوضح القدرات التنفيذية",
+      "clips that showcase executive capabilities",
+      "فهم بصري سريع للنظام",
+      "quick visual understanding of the system",
+    ),
+  ],
+  [
+    "/demo",
+    n(
+      "العرض التوضيحي",
+      "Demo",
+      "تجربة موجّهة للقدرات الرئيسية",
+      "a guided tour of the main capabilities",
+      "قرار تبنٍّ مبني على تجربة، لا وعود",
+      "adoption grounded in experience, not promises",
+    ),
+  ],
+  [
+    "/films",
+    n(
+      "الأفلام التنفيذية",
+      "Executive Films",
+      "أفلام قصيرة تُقدّم الرؤية بلغة القيادة",
+      "short films that present the vision in leadership language",
+      "أثر تنفيذي طويل الأمد",
+      "long-lasting executive impact",
+    ),
+  ],
+  [
+    "/roi",
+    n(
+      "حاسبة العائد",
+      "ROI",
+      "قراءة العائد المتوقّع من التبنّي",
+      "expected return from adoption",
+      "قرار استثماري مبني على أرقام",
+      "an investment decision built on numbers",
+    ),
+  ],
+  [
+    "/security",
+    n(
+      "صفحة الأمن",
+      "Security",
+      "منظومة الأمن السيبراني وضوابطها",
+      "the cybersecurity posture and controls",
+      "ثقة تنفيذية موثّقة",
+      "documented executive trust",
+    ),
+  ],
+  [
+    "/trust",
+    n(
+      "مركز الثقة",
+      "Trust Center",
+      "الشفافية، الشهادات، والامتثال",
+      "transparency, certifications, and compliance",
+      "علاقة موردٍ موثوقة من اليوم الأوّل",
+      "a trusted-vendor relationship from day one",
+    ),
+  ],
+  [
+    "/subprocessors",
+    n(
+      "المعالجات الفرعية",
+      "Sub-processors",
+      "قائمة الأطراف الفرعية المعتمدة",
+      "the approved sub-processor list",
+      "امتثال حماية بيانات كامل",
+      "full data-protection compliance",
+    ),
+  ],
+  [
+    "/dpa",
+    n(
+      "اتفاقية معالجة البيانات",
+      "Data Processing Agreement",
+      "بنود المعالجة والالتزامات المتبادلة",
+      "processing terms and mutual obligations",
+      "غطاء قانوني كامل لمعالجة البيانات",
+      "complete legal cover for data processing",
+    ),
+  ],
+  [
+    "/sla",
+    n(
+      "اتفاقية مستوى الخدمة",
+      "SLA",
+      "التزامات التوفّر والاستجابة والدعم",
+      "availability, response, and support commitments",
+      "توقّعات مُتفَق عليها ومقاسة",
+      "agreed and measured expectations",
+    ),
+  ],
+  [
+    "/aup",
+    n(
+      "سياسة الاستخدام المقبول",
+      "Acceptable Use Policy",
+      "حدود الاستخدام السليم للنظام",
+      "the boundaries of proper system use",
+      "بيئة تشغيل آمنة للجميع",
+      "a safe operating environment for everyone",
+    ),
+  ],
+  [
+    "/responsible-ai",
+    n(
+      "الذكاء الاصطناعي المسؤول",
+      "Responsible AI",
+      "مبادئ التصميم الأخلاقي والحوكمة",
+      "ethical design and governance principles",
+      "ذكاء اصطناعي جدير بالثقة تنفيذياً",
+      "AI worthy of executive trust",
+    ),
+  ],
+  [
+    "/privacy",
+    n(
+      "سياسة الخصوصية",
+      "Privacy",
+      "كيف نجمع ونعالج ونحمي البيانات",
+      "how we collect, process, and protect data",
+      "احترام كامل لخصوصية المستخدم",
+      "full respect for user privacy",
+    ),
+  ],
+  [
+    "/cookie-policy",
+    n(
+      "سياسة الكوكيز",
+      "Cookie Policy",
+      "استخدام الكوكيز وخيارات التحكّم",
+      "cookie usage and control options",
+      "شفافية تشغيلية للمتصفّح",
+      "operational browser transparency",
+    ),
+  ],
+  [
+    "/terms",
+    n(
+      "شروط الاستخدام",
+      "Terms",
+      "الشروط القانونية للاستخدام",
+      "the legal terms of use",
+      "علاقة تعاقدية واضحة",
+      "a clear contractual relationship",
+    ),
+  ],
+  [
+    "/status",
+    n(
+      "حالة النظام",
+      "Status",
+      "توفّر الخدمات في الوقت الحقيقي",
+      "real-time service availability",
+      "شفافية تشغيلية دائمة",
+      "always-on operational transparency",
+    ),
+  ],
+  [
+    "/pricing",
+    n(
+      "الباقات والأسعار",
+      "Pricing",
+      "الخيارات والقيمة لكل باقة",
+      "options and value per plan",
+      "قرار اشتراك مبني على وضوح",
+      "a subscription decision built on clarity",
+    ),
+  ],
+  [
+    "/contact",
+    n(
+      "التواصل معنا",
+      "Contact",
+      "قنوات التواصل مع الفريق",
+      "channels to reach the team",
+      "استجابة سريعة لطلبك",
+      "a fast response to your request",
+    ),
+  ],
+  [
+    "/request-demo",
+    n(
+      "طلب عرض توضيحي",
+      "Request a Demo",
+      "استمارة حجز عرض مباشر",
+      "the form to book a live demonstration",
+      "بدء رحلة التبنّي بأقل احتكاك",
+      "starting the adoption journey with minimum friction",
+    ),
+  ],
+  [
+    "/book",
+    n(
+      "حجز موعد",
+      "Book a Session",
+      "جدولة جلسة مع الفريق",
+      "scheduling a session with the team",
+      "استثمار وقتك مع خبير",
+      "investing your time with an expert",
+    ),
+  ],
+  [
+    "/os",
+    n(
+      "نظام التشغيل المؤسسي",
+      "Enterprise Operating System",
+      "قاعة القيادة، النبض التشغيلي، والمؤشرات التنفيذية",
+      "the command deck, live pulse, and executive indicators",
+      "قرار تنفيذي من المشهد الأول للمنصّة",
+      "an executive decision from the platform's very first screen",
+    ),
+  ],
+  [
+    "/auth",
+    n(
+      "شاشة تسجيل الدخول",
+      "Sign-in",
+      "خيارات الدخول الآمن للنظام",
+      "secure sign-in options",
+      "دخول محمي بالمصادقة الحديثة",
+      "entry protected by modern authentication",
+    ),
+  ],
+  [
+    "/login",
+    n(
+      "شاشة الدخول",
+      "Login",
+      "خيارات الدخول الآمن للنظام",
+      "secure sign-in options",
+      "دخول محمي بالمصادقة الحديثة",
+      "entry protected by modern authentication",
+    ),
+  ],
+  [
+    "/unsubscribe",
+    n(
+      "إلغاء الاشتراك",
+      "Unsubscribe",
+      "خيارات إيقاف الرسائل",
+      "options to stop messages",
+      "احترام كامل لتفضيلات التواصل",
+      "full respect for communication preferences",
+    ),
+  ],
+  [
+    "/",
+    n(
+      "الصفحة الرئيسية لنيكسيوس",
+      "NEXIOS Home",
+      "التعريف الأوّل بالمنصّة وقدراتها التنفيذية",
+      "the first introduction to the platform and its executive capability",
+      "قراءة سريعة لقيمة النظام",
+      "a fast reading of the system's value",
+    ),
+  ],
+];
