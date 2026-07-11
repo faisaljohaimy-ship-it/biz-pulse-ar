@@ -861,10 +861,12 @@ const secCreateIncident: ToolExecutor = {
     const id = (payload as { incidentId?: string } | null)?.incidentId;
     if (!id) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (ctx.supabase as any)
+    const { error: rbErr } = await (ctx.supabase as any)
       .from("sec_incidents")
       .update({ status: "closed", root_cause: "Rolled back by agent runtime" })
       .eq("id", id);
+    // A failed rollback silently leaves the incident open — surface it.
+    if (rbErr) console.error("[tool-registry] incident rollback failed:", rbErr.message);
   },
 };
 

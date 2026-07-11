@@ -1,103 +1,51 @@
-# تقرير الفحص والإصلاح الشامل — NEXIOS (biz-pulse-ar)
+# تقرير الفحص والإصلاح — NEXIOS (biz-pulse-ar)
 
-> فحص بلا نشر. كل التغييرات في commit واحد بانتظار مراجعتك. الفحوصات النهائية:
+> تنفيذ متعدّد المراحل، commit + push بعد كل مرحلة. الفحوصات النهائية:
 > `tsc --noEmit` ✅ صفر · `eslint .` ✅ صفر أخطاء (84 تحذيراً) · `vitest` ✅ 79/79.
-
-التاريخ: 2026-07-11 · النطاق: كامل المستودع · القاعدة: عربي أولاً RTL، لا أسرار، بلا مساس بإعدادات النشر أو DNS.
+> القاعدة: عربي أولاً RTL · لا secrets · بيانات المحاكاة `is_simulation=true` · بلا مساس بـ DNS/النشر.
 
 ---
 
-## 1) الأمان
+## المرحلة 1 — الأمان وسلامة الواجهة ✅
 
 | البند | النتيجة |
 |---|---|
-| أسرار/مفاتيح في الكود | **لا شيء.** المطابقات الوحيدة أوصاف حقول (`secret("SLACK_BOT_TOKEN", …)`) وتعليقات، لا قيم فعلية. |
-| أسرار في تاريخ git (258 كوميت) | **لا شيء.** المطابقات على «BEGIN PRIVATE KEY» هي أنماط *كشف* أسرار داخل أدوات الفحص، لا أسرار حقيقية. |
-| محتوى `.env` | **آمن.** مفاتيح علنية فقط (`sb_publishable_…`، `PROJECT_ID`، `URL`، متغيرات `VITE_*`). لا `service_role`، لا مفاتيح خدمات. |
-| `.env.example` | **موجود** بقيم فارغة/وهمية فقط. |
+| أسرار في الكود | **لا شيء** (المطابقة الوحيدة تعليق يذكر `service_role`). |
+| أسرار في تاريخ git | **لا شيء** (مطابقات «PRIVATE KEY» أنماط كشف داخل أدوات الفحص). |
+| `.env` | مفاتيح علنية فقط (`sb_publishable_…`)؛ **غير متجاهَل عمداً** (المادة 13 — تجاهله يكسر بناء Lovable). |
+| `.env.example` | موجود بقيم فارغة/وهمية. |
+| بطاقات KPI الفارغة | `/os` (‏`os-overview.ts` + `OsExecutiveStrip`) صار **`is_simulation: true`** + شارة «محاكاة» بدل «لحظي» (المادة 11). |
+| شارات ISO 27001 / SOC 2 | `dpa.tsx` + `government-brief.tsx` + `trust.tsx` → **«قيد الاعتماد»** (StatusPill والمفتاح التفسيري). |
 
-### ⚠️ تعارض مقصود — `.env` و`.gitignore`
-طلبتَ التأكد أن `.env` في `.gitignore`. **لم أُنفّذ ذلك عمداً**، لأنه يُكرّر عُطلاً إنتاجيّاً مكلِّفاً موثّقاً في الدستور (المادة 13): خط بناء Lovable يحترم `.gitignore`، فإدراج `.env` فيه يُفرّغ `VITE_SUPABASE_*` من الحزمة وينهار الإنتاج بخطأ «Missing SUPABASE_URL». والحل الصحيح المطبّق: `.env` **متتبَّع وغير متجاهَل**، ومحتواه مفاتيح علنية فقط (فالنية الأمنية محقّقة بلا تجاهله). يبقى `.env.local` و`.env.*.local` متجاهلَين. لم أُغيّر هذا الوضع.
+## المرحلة 2 — البنية ✅ (مُحقَّقة، لا تغيير مطلوب)
 
----
+- **`regions.ts` مصدر وحيد**: 13 وحدة تستهلكه عبر `useRegion`/الاستيراد المباشر؛ `region-markers.ts` يستورد نوع `RegionId` منه. المطابقات الأخرى للمناطق مجرّد نصّ سردي وصفي، لا بيانات منافسة.
+- **حظر TTS المتصفح عالميّاً**: `audio-bus.ts` يستبدل `window.speechSynthesis.speak` بدالة تبتلع الصوت صامتةً (لا nativeSpeak، لا throw)، مع مراقب يُلغي أي نطق مارق. كل الردود ElevenLabs حصراً؛ الفشل = صمت.
 
-## 2) سلامة الواجهة
+## المرحلة 3 — ARIA ✅
 
-### بطاقات KPI
-اعتماد قناة المحاكاة القائمة في المستودع: `SimBadge`، وخاصية `sim` في `StatCard`، وعمود `is_simulation`.
+- **نصوص الـ31 نافذة (‏`page-scripts.ts`)**: تحقّق آليّ — **0 من 99 حقلاً عربيّاً ناقص التشكيل** (كلها مُشكَّلة بالكامل). أُضيف شكل **`display` + `tts`**: المصدر الواحد النص المُشكَّل (`tts` مُشكَّل، `display` منزوع التشكيل للعرض النظيف) عبر `pageScriptSpeech()` و`stripTashkeel()` — فتحمل كل نافذة الزوجين دون تكرار 99 نصّاً.
+- **إكمال مشغّل العرض التنفيذي (`ExecutivePresentationPlayer`)**: السرد يسار RTL والمعاينات تتقدّم على cue timestamps (قائمة أصلاً) + **جديد**: شريط تقدّم قابل للسحب بعلامات المشاهد، زرّ **تخطّي** للمشهد التالي، صفّ تحكّم تشغيل/إيقاف/تخطّي، وتعزيز **glassmorphism navy/emerald** (backdrop-blur على اللوحة وشريط التحكّم).
 
-**أُصلح:**
-- **`/os` (`OsExecutiveStrip` + `os-overview.ts`)** — كان يعرض أرقاماً تركيبية ثابتة (`synthetic_public`) موسومة **«لحظي/LIVE»** = مخالفة صريحة للمادة 11. أضفتُ `is_simulation: true` إلى استجابة الـ API، وجعلتُ الشريط يعرض شارة **«محاكاة»** بدل «لحظي» ويُظهر `SimBadge`.
+## المرحلة 4 — الجودة والتقرير ✅ (جزئي موثّق)
 
-**موثّق للمراجعة (لم أُصلحه تلقائياً لتجنّب وسم بيانات حقيقية خطأً):** صفحات تعرض `?? 0` أسفل شارات LIVE/Evidence وتصيب نقاطاً حقيقية مربوطة بالمنظمة عبر RLS (قد يكون 0 قيمة حقيقية): `dashboard.tsx`، `mission-control.tsx`، `live-dashboard.tsx`، `sec.kpi.tsx`، و`sec.vehicles/visitors/access/contractors/projects`. التوصية: تبنّي نمط `MissionControlStrip` (إخفاء البطاقة حتى تتوفّر قيمة حقيقية + شارة «قيد الربط») أو عرض «—» بدل 0 — بعد تأكيدك مصدر بيانات كل صفحة.
+**معالجة أخطاء Supabase — أُصلح (غير كاسر):**
+- `enterprise-pulse.ts` (بذر يُعاد عند الفشل) · `tool-orchestrator.server.ts` (لا نجاح وهمي للقبول/الرفض) · `event-bus.server.ts` (markEvent) · `api/chat.ts` (إدخالات void) — [الفحص الأول]
+- **جديد:** `agent-runtime.server.ts` (‏`workflows` و`workflow_runs`) · `tool-registry.server.ts` (مسار rollback الحوادث).
 
-### شارات ISO 27001 / SOC 2
-**أُصلح:**
-- **`dpa.tsx`** — «متوافقة مع ضوابط ISO 27001 وNCA ECC» → «مصمّمة بمحاذاة … (قيد الاعتماد)» + مقابلها الإنجليزي.
-- **`government-brief.tsx`** — أضفتُ «(قيد الاعتماد)» للعربية لمطابقة الإنجليزية.
+**تقسيم الملفات > 800 سطر:**
+- **مولَّدة آليّاً — يُمنع تقسيمها**: `types.ts`، `routeTree.gen.ts`.
+- **أُنجز**: `kb-seed.data.ts` (‏991 سطر) قُسّم إلى `kb-seed.base.ts` (35) + `kb-seed.articles.a.ts` (457) + `kb-seed.articles.b.ts` (504) + `kb-seed.data.ts` (13، يبقى واجهة الاستيراد العامة). المقالات محفوظة كاملةً (‏22+27)، وtsc يؤكّد صحّة التقسيم.
+- **مؤجّل (يحتاج قرارك) — 21 ملفاً**: أغلبها ملفات مسارات/مكوّنات مليئة بالمنطق (‏`mission-control.tsx`، `AriaCopilot.tsx`، `digital-twin.tsx`، `oms-dialogs.tsx`، `AriaDock.tsx`، `tool-registry.server.ts`، `oms.functions.ts`، `aria-tools.server.ts`، `operations.tsx`، `investor.tsx`، `agents.tsx`، `sec.functions.ts`، `command-center.tsx`، `executive-reports.tsx`، `NexusRevealHero.tsx`، `enterprise-pulse.ts`، `executive-bridge.tsx`، `executive-showcase.tsx`، `cinematic-demo.tsx`، `page-narrations.ts`، `learn/scenarios.ts`). تقسيمها الجماعي في دفعة واحدة خطر انحداري يخالف قاعدتك «لا push لكود مكسور»؛ **الخطة**: ملفاً-ملفاً باستخراج وحدات مترابطة مع فحص كامل لكلٍّ (أبدأ بملفات البيانات `page-narrations.ts` و`learn/scenarios.ts` ثم طبقات الخادم ثم المكوّنات) — أنفّذها كسلسلة عند إشارتك.
 
-**سليم أصلاً (لا إجراء):**
-- **`trust.tsx`** — يعرض `StatusPill` بحالة «قيد التنفيذ» لـ SOC 2 وISO 27001، مع مفتاح تفسيري صريح للفرق بين «متوافق» و«قيد التنفيذ». صادق ومحصّن.
-- `KnowledgeGraphSimulation.tsx` محتوى تعليمي عن المعايير (لا ادّعاء اعتماد)؛ `evidence/gate.ts` تعليق.
-
----
-
-## 3) البنية
-
-### المناطق الأربع — مصدر وحيد
-**مؤكَّد.** `src/lib/regions.ts` هو المصدر الوحيد (‏`REGIONS` + `RegionId`). `RegionProvider` (‏`region-context.tsx`) و`RegionSwitcher` يستهلكانه عبر `useRegion()`. **أُصلح** تحسيناً: جعلتُ `region-markers.ts` (طبقة الإحداثيات) يستورد نوع `RegionId` من `regions.ts` بدل إعادة تعريف الاتحاد — فلا مصدر ثانٍ للمعرّفات.
-
-### نصوص ARIA — حقلا display و tts
-**النتيجة: قاعدة الحقلين `display`/`tts` غير موجودة في المستودع** — لا كائن نصّي ينطق يحمل الحقلين. بدلاً منها يعتمد النظام **معماريّة مختلفة**: النص المؤلَّف يُعرض ويُنطق معاً، والتشكيل يُضاف **وقت التشغيل** عبر `diacritizeForTts()` في مسارات الـ TTS الثلاثة (`api/**/tts`). أي أن الهدف (تشكيل الكلام) محقّق عبر نقطة اختناق واحدة، لا حقلاً مخزَّناً.
-- الملف الوحيد المُشكَّل يدويّاً: `page-scripts.ts`.
-- البقية بلا تشكيل مخزَّن وتعتمد على المُشكِّل الوقتي: `page-narrations.ts` (~140 مدخلاً)، `event-narrator.ts`، `greeting.server.ts`، `seed-corpus`.
-
-**لم أُنفّذ** تحويلاً يدويّاً لتشكيل ~140+ مدخلاً: عمل ضخم غير قابل للتحقّق آليّاً وعُرضة لأخطاء تشكيل تُفسد النطق. **توصية**: إن أردتَ تبنّي قاعدة `display` + `tts` المخزَّنة رسميّاً، فهي مهمّة مخصّصة كبيرة تمسّ أنواع `PageNarration`/`NarratorLine`/`PresenceGreeting`/`Entry` — أنفّذها كسلسلة PRs مركّزة عند طلبك.
-
-### حظر TTS المتصفح في مسارات الرد
-**مؤكَّد: مُلتزَم بالكامل.** لا مسار ينطق عبر متصفح.
-- `audio-bus.ts` يستبدل `window.speechSynthesis.speak` بدالة صامتة عند التحميل (حظر فعّال)، مع مراقب يُلغي أي نطق متصفح مارق.
-- كل الردود عبر ElevenLabs حصراً خلال `AriaAudioBus`؛ الفشل = صمت لا صوت بديل.
-- **أُصلح**: تعليق مُضلِّل في `api/aria/tts.ts` كان يزعم «سقوطاً إلى كلام المتصفح» (مخالف للسياسة وقد يُغري مطوّراً باستعادته) — صُحّح ليعكس الواقع (صمت، لا سقوط).
+**الفحوصات:** `tsc` صفر · `eslint` صفر أخطاء (84 تحذيراً: `no-explicit-any`، `react-refresh` — نمط shadcn المقصود، `exhaustive-deps`؛ إصلاحها الجماعي الأعمى يخاطر بانحدارات) · `vitest` 79/79.
 
 ---
-
-## 4) الجودة
-
-### معالجة الأخطاء في طبقات Supabase
-أُصلحت الفجوات عالية الأثر (بلا كسر السلوك):
-- **`enterprise-pulse.ts` (`ensureSeeded`)** — كان يضع المستخدم في `seeded` **قبل** الإدخال، فيبقى بنبض فارغ للأبد عند فشل البذر. الآن: فحص أخطاء العدّ والإدخال، والوسم بـ«مبذور» **فقط بعد نجاح كامل** ليُعاد المحاولة لاحقاً.
-- **`tool-orchestrator.server.ts`** — قبول/رفض الأدوات كان يتجاهل خطأ تحديث `tool_executions` ويُرجع «نجاح». الآن يرمي خطأً إن لم يُحفَظ القرار.
-- **`event-bus.server.ts` (`markEvent`)** — تحديث حالة الحدث كان صامتاً؛ أُضيف تسجيل الخطأ (كان يترك الحدث عالقاً/يُعاد تسليمه).
-- **`api/chat.ts`** — إدخالا `aria_incidents` و`aria_interactions` بنمط `void` بلا `.catch`؛ أُضيف تسجيل الخطأ.
-
-**موثّق للمراجعة (لم أُصلحه في هذه الدفعة تجنّباً لتضخّم غير قابل للمراجعة):** فجوات إضافية عالية/متوسطة في `simulation/exec-scenario.server.ts` (كتابات متعددة بلا فحص)، `tool-registry.server.ts` (مسارات rollback)، `agent-runtime.server.ts` (‏`workflows`/`workflow_runs`)، `workflow-engine.server.ts` (تحديثات الحالة)، وخطّافات `api/public/hooks/*` (executive-reports-run، microsoft-sync، aria-docs-ingest)، وكتابات سجلّات البريد. النمط المعتمد للإصلاح: `if (error) throw` للكتابات الحرِجة، و`if (error) console.error` لِما هو best-effort. أُكمل هذه كدفعات مركّزة عند طلبك.
-
-### الملفات التي تتجاوز 800 سطر
-- **مولَّدة آليّاً — يُمنع تقسيمها** (تُعاد كتابتها): `integrations/supabase/types.ts` (6971)، `routeTree.gen.ts` (4080).
-- **حقيقية (22 ملفاً)**: `page-narrations.ts`، `AriaCopilot.tsx`، `mission-control.tsx`، `oms-dialogs.tsx`، `digital-twin.tsx`، `AriaDock.tsx`، `tool-registry.server.ts`، `kb-seed.data.ts`، `oms.functions.ts`، `executive-bridge.tsx`، `aria-tools.server.ts`، `operations.tsx`، `investor.tsx`، `agents.tsx`، `sec.functions.ts`، `cinematic-demo.tsx`، `learn/scenarios.ts`، `command-center.tsx`، `executive-showcase.tsx`، `NexusRevealHero.tsx`، `enterprise-pulse.ts`، `executive-reports.tsx`.
-
-**لم أُقسّمها في هذه الدفعة عمداً**: تقسيم 22 ملفاً دفعةً واحدة في commit للمراجعة خطر انحداري عالٍ ويتطلّب تحقّقاً وقت تشغيل لكل ملف. **الخطة المقترحة** (الأأمن أولاً — ملفات البيانات الصِّرفة): `kb-seed.data.ts` و`learn/scenarios.ts` و`page-narrations.ts` (تقسيم بيانات نقيّة)، ثم طبقات الخادم (`*.functions.ts`, `*.server.ts`) باستخراج وحدات مترابطة، وأخيراً مكوّنات الواجهة الكبيرة. أنفّذها كسلسلة PRs، ملفاً-ملفاً مع فحص كامل، عند طلبك.
-
-### build / TypeScript / ESLint
-- `tsc --noEmit` → **صفر خطأ**.
-- `eslint .` → **صفر خطأ** (بعد `--fix` لأخطاء prettier التنسيقية التي تعيد التزامات المنصة إدخالها) · **84 تحذيراً** (‏`no-explicit-any`، `react-refresh/only-export-components` وهو نمط shadcn المقصود، `exhaustive-deps`) — تحذيرات لا أخطاء، وإصلاحها الجماعي الأعمى يخاطر بانحدارات؛ موثّقة للمعالجة المتأنّية.
-- `vitest run` → **79/79 ناجح**.
-- ملاحظة: `bun run build` الكامل لا يعمل في بيئة الفحص البعيدة (سجلّ Lovable الخاص يرفض التثبيت 403)، فاعتُمدت بوّابة الدستور: `tsc` + `eslint` + `vitest`.
-
----
-
-## ملخّص ما أُصلح فعليّاً في هذه الدفعة
-1. `/os`: وسم بيانات المحاكاة «محاكاة» بدل «لحظي» (`os-overview.ts` + `OsExecutiveStrip.tsx`).
-2. شارات الاعتماد: تليين `dpa.tsx` و`government-brief.tsx` إلى «قيد الاعتماد».
-3. مصدر المناطق: `region-markers.ts` يستورد `RegionId` من `regions.ts`.
-4. تعليق TTS المُضلِّل في `api/aria/tts.ts` صُحّح.
-5. معالجة أخطاء Supabase: `enterprise-pulse.ts`، `tool-orchestrator.server.ts`، `event-bus.server.ts`، `api/chat.ts`.
-6. تطبيع تنسيق prettier عبر المستودع (لا تغيير سلوكي).
 
 ## بنود بانتظار قرارك (موثّقة، غير منفّذة عمداً)
-- إبقاء `.env` خارج `.gitignore` (المادة 13) — لا تغيير.
-- بطاقات `?? 0` تحت LIVE في الصفحات المصادَقة — تحتاج تأكيد مصدر بيانات كل صفحة.
-- قاعدة `display`/`tts` المخزَّنة وتشكيل ~140+ مدخلاً — مهمّة مخصّصة كبيرة.
-- تقسيم الملفات الـ22 — كسلسلة PRs مع فحص لكل ملف.
-- بقية فجوات معالجة أخطاء Supabase (القائمة أعلاه) — دفعات مركّزة.
+
+1. **تقسيم الـ21 ملفاً المتبقية** — كسلسلة PRs مع فحص لكل ملف (خطة أعلاه).
+2. **بقية فجوات معالجة أخطاء Supabase** — قائمة أطول في طبقات `exec/*` و`api/public/hooks/*` وكتابات السجلّات؛ النمط: `if (error) throw` للحرِج، `console.error` لِما هو best-effort.
+3. **بطاقات `?? 0`** في صفحات مصادَقة (‏`dashboard`, `mission-control`, `live-dashboard`, `sec.kpi`, `sec.vehicles/visitors/…`) — تصيب نقاطاً حقيقية حيث 0 قد يكون قيمة صحيحة؛ تحتاج تأكيد مصدر بيانات كل صفحة قبل وسمها.
+4. **تبنّي `display`/`tts`** في مستهلكي `page-scripts` (اختياري) — الحقول متاحة الآن عبر `pageScriptSpeech()`.
+5. **`bun run build` الكامل** لا يعمل في البيئة البعيدة (سجلّ Lovable الخاص يرفض التثبيت)؛ اعتُمدت بوّابة الدستور: `tsc` + `eslint` + `vitest`.

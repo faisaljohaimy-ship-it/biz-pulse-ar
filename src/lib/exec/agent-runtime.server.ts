@@ -114,7 +114,7 @@ export async function runAgent(
     .limit(1)
     .maybeSingle();
   if (!wfRow) {
-    const { data: created } = await admin
+    const { data: created, error: wfErr } = await admin
       .from("workflows")
       .insert({
         org_id: orgId,
@@ -127,6 +127,9 @@ export async function runAgent(
       })
       .select("id")
       .single();
+    // Non-fatal: the agent still runs without the workflow wrapper, but log
+    // the failure so lifecycle/evidence gaps are visible instead of silent.
+    if (wfErr) console.error("[agent-runtime] workflows insert failed:", wfErr.message);
     wfRow = created;
   }
   const workflowId = (wfRow?.id as string | undefined) ?? null;
@@ -155,7 +158,7 @@ export async function runAgent(
   // 2b) Wrap the agent execution in a workflow_run for full lifecycle evidence.
   let workflowRunId: string | null = null;
   if (workflowId) {
-    const { data: wfRunRow } = await admin
+    const { data: wfRunRow, error: wfRunErr } = await admin
       .from("workflow_runs")
       .insert({
         workflow_id: workflowId,
@@ -169,6 +172,7 @@ export async function runAgent(
       })
       .select("id")
       .single();
+    if (wfRunErr) console.error("[agent-runtime] workflow_runs insert failed:", wfRunErr.message);
     workflowRunId = (wfRunRow?.id as string | undefined) ?? null;
   }
 
