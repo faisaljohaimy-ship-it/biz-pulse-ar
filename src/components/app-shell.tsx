@@ -18,7 +18,9 @@ import {
   Moon,
   Network,
   Plug,
+  Presentation,
   Radar,
+  RadioTower,
   Rocket,
   Settings,
   Shield,
@@ -143,6 +145,21 @@ function useNavGroups(): NavGroup[] {
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
         { to: "/agents", icon: Bot, label: ar("الوكلاء", "Agents") },
         { to: "/sec/ai", icon: Brain, label: ar("توصيات ARIA", "ARIA Recos") },
+      ],
+    },
+    {
+      label: ar("العرض التنفيذي", "Executive Showcase"),
+      items: [
+        {
+          to: "/executive-bridge",
+          icon: RadioTower,
+          label: ar("جسر القيادة التنفيذي", "Command Bridge"),
+        },
+        {
+          to: "/executive-showcase",
+          icon: Presentation,
+          label: ar("العرض التنفيذي", "Executive Showcase"),
+        },
       ],
     },
     {
