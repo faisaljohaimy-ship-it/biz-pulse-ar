@@ -25,6 +25,7 @@ import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher"
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
+import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
@@ -369,6 +370,10 @@ function IntroLanding() {
         <SovereignCommandDeck ar={ar} />
         <OsDecisionQueue ar={ar} />
       </section>
+
+      {/* ══ Executive Showcase hub — premium entry to the Command Bridge and
+          the Executive Presentation. ══ */}
+      <ExecutiveShowcaseHub />
 
       {/* Horizontal system-modules dashboard — every icon links to a real
           module route (activated), responsive across all devices. */}
