@@ -111,6 +111,10 @@ export function DigitalHumanAvatar({
   const lip = useLipFrame(speaking && mouthAmplitude === undefined);
   const p = spec.palette;
   const f = spec.features;
+  // Every specialist agent (everyone except ARIA, the primary) wears an
+  // industrial safety hard-hat and renders with a stronger holographic,
+  // transparent treatment — a 3D-digital field-operative identity.
+  const showHelmet = spec.role !== "primary";
 
   // Audio-driven mouth: amplitude (0..1) → 1.2..6.5 height; falls back to
   // synthetic lip frames when no audio analyser is attached.
@@ -206,6 +210,12 @@ export function DigitalHumanAvatar({
             <linearGradient id={`dh-lip-${spec.id}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#A8334A" />
               <stop offset="100%" stopColor="#5C1320" />
+            </linearGradient>
+            {/* Industrial hard-hat — holographic, tinted by the agent accent */}
+            <linearGradient id={`dh-helmet-${spec.id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.55" />
+              <stop offset="30%" stopColor={p.accent} stopOpacity="0.82" />
+              <stop offset="100%" stopColor={p.suit} stopOpacity="0.9" />
             </linearGradient>
           </defs>
 
@@ -369,6 +379,66 @@ export function DigitalHumanAvatar({
                   opacity="0.95"
                 />
               </>
+            )}
+
+            {/* Industrial hard-hat (safety helmet) — caps hair/hijab/headset */}
+            {showHelmet && (
+              <g>
+                {/* Dome */}
+                <path
+                  d="M27,39 C27,20 39,12 50,12 C61,12 73,20 73,39 Z"
+                  fill={`url(#dh-helmet-${spec.id})`}
+                  opacity="0.94"
+                />
+                {/* Dome outline */}
+                <path
+                  d="M27,39 C27,20 39,12 50,12 C61,12 73,20 73,39"
+                  fill="none"
+                  stroke="#000"
+                  strokeOpacity="0.22"
+                  strokeWidth="0.8"
+                />
+                {/* Reinforcement ridges */}
+                <path d="M50,12 L50,39" stroke="rgba(255,255,255,0.55)" strokeWidth="1.1" />
+                <path
+                  d="M41,14 C43,25 43,33 42,39"
+                  stroke="rgba(0,0,0,0.16)"
+                  strokeWidth="0.6"
+                  fill="none"
+                />
+                <path
+                  d="M59,14 C57,25 57,33 58,39"
+                  stroke="rgba(0,0,0,0.16)"
+                  strokeWidth="0.6"
+                  fill="none"
+                />
+                {/* Front brim */}
+                <path
+                  d="M22,39 Q50,33 78,39 Q79,43 74,45 Q50,39.5 26,45 Q21,43 22,39 Z"
+                  fill={`url(#dh-helmet-${spec.id})`}
+                  opacity="0.96"
+                />
+                {/* Brim highlight */}
+                <path
+                  d="M26,40.5 Q50,36 74,40.5"
+                  stroke="rgba(255,255,255,0.42)"
+                  strokeWidth="0.6"
+                  fill="none"
+                />
+                {/* Glowing accent band */}
+                <path
+                  d="M28,33 Q50,28 72,33"
+                  stroke={p.accent}
+                  strokeWidth="1.5"
+                  fill="none"
+                  opacity="0.95"
+                  style={{ filter: `drop-shadow(0 0 1.1px ${p.accent})` }}
+                />
+                {/* Dome highlight + vents */}
+                <ellipse cx="43" cy="22" rx="5" ry="3" fill="#fff" opacity="0.18" />
+                <circle cx="38" cy="26" r="0.8" fill="#000" opacity="0.22" />
+                <circle cx="62" cy="26" r="0.8" fill="#000" opacity="0.22" />
+              </g>
             )}
 
             {/* Eyelashes (subtle) */}
@@ -541,6 +611,24 @@ export function DigitalHumanAvatar({
                 Neural rim glow, scan line, floating particles and iris
                 aura — driven by state. Additive look via screen blend. */}
             <g style={{ mixBlendMode: "screen" }}>
+              {/* Holographic-transparent treatment for the field agents:
+                  accent wash + horizontal scanlines → 3D-digital hologram. */}
+              {showHelmet && (
+                <>
+                  <rect x="0" y="0" width="100" height="100" fill={p.accent} opacity="0.07" />
+                  {[24, 33, 42, 51, 60, 69, 78, 87].map((y) => (
+                    <rect
+                      key={y}
+                      x="6"
+                      y={y}
+                      width="88"
+                      height="0.35"
+                      fill={p.accent}
+                      opacity="0.13"
+                    />
+                  ))}
+                </>
+              )}
               {/* Outer Fresnel rim glow */}
               <circle
                 cx="50"
