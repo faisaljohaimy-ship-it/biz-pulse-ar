@@ -29,6 +29,11 @@ export default defineConfig({
             if (!id.includes("node_modules")) return;
             if (/[\\/](three|@react-three)[\\/]/.test(id)) return "three-vendor";
             if (/[\\/](recharts|d3-[a-z]+|internmap|victory)[\\/]/.test(id)) return "charts-vendor";
+            // Markdown/highlighter/diagram stack (reached only via the lazy
+            // MessageResponse) — kept in dedicated async chunks.
+            if (/[\\/](shiki|@shikijs|mermaid|streamdown|@streamdown)[\\/]/.test(id))
+              return "markdown-vendor";
+            if (/[\\/]framer-motion[\\/]/.test(id)) return "motion-vendor";
             return undefined;
           },
         },
