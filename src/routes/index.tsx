@@ -387,25 +387,34 @@ function IntroLanding() {
           real content. Responsive + RTL; all figures are labelled simulation. */}
       <section
         dir="rtl"
-        aria-label={`لوحة قيادة · ${HAJJ_PLATFORM_LABEL_AR}`}
-        className="relative z-10 mx-auto mt-8 w-full max-w-none px-4 sm:mt-12 sm:px-6"
-      >
-        <div className="mb-4 text-center">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
-            Hajj Command Center · مشاعر 1447
+      {/* Native Hajj command dashboard — Arabic-only content, only shown in AR locale. */}
+      {ar && (
+        <section
+          dir="rtl"
+          aria-label={`لوحة قيادة · ${HAJJ_PLATFORM_LABEL_AR}`}
+          className="relative z-10 mx-auto mt-8 w-full max-w-none px-4 sm:mt-12 sm:px-6"
+        >
+          <div className="mb-4 text-center">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+              Hajj Command Center · مشاعر 1447
+            </div>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
+              لوحة قيادة {HAJJ_PLATFORM_LABEL_AR}
+            </h2>
           </div>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-            لوحة قيادة {HAJJ_PLATFORM_LABEL_AR}
-          </h2>
-        </div>
-        <HajjCommandDashboard />
-      </section>
+          <HajjCommandDashboard />
+        </section>
+      )}
 
       {/* Frameless live mini-preview of the SAME Hajj dashboard, directly on
           the homepage (identical content to the framed showcase above). */}
       <section
-        dir="rtl"
-        aria-label={`معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`}
+        dir={ar ? "rtl" : "ltr"}
+        aria-label={
+          ar
+            ? `معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`
+            : `Live preview · ${HAJJ_PLATFORM_LABEL_EN}`
+        }
         className="relative left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] mt-8 w-screen max-w-[100vw] px-2 sm:px-4 lg:px-6"
       >
         <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
@@ -415,7 +424,9 @@ function IntroLanding() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
             <span className="truncate text-[11px] font-bold text-white/85 sm:text-xs">
-              معاينة حيّة · {HAJJ_PLATFORM_LABEL_AR}
+              {ar
+                ? `معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`
+                : `Live preview · ${HAJJ_PLATFORM_LABEL_EN}`}
             </span>
           </div>
           <span className="shrink-0 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]">
@@ -423,7 +434,7 @@ function IntroLanding() {
           </span>
         </div>
         <div className="overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25">
-          <HajjEmbedFrame ar interactive={false} />
+          <HajjEmbedFrame ar={ar} interactive={false} />
         </div>
 
         {/* External access link — visible OUTSIDE the icon/preview, on all devices */}
@@ -433,29 +444,32 @@ function IntroLanding() {
               href={HAJJ_EMBED_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`فتح ${HAJJ_PLATFORM_LABEL_AR}`}
+              aria-label={ar ? `فتح ${HAJJ_PLATFORM_LABEL_AR}` : `Open ${HAJJ_PLATFORM_LABEL_EN}`}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
             >
               <span aria-hidden>↗</span>
-              فتح {HAJJ_PLATFORM_LABEL_AR}
+              {ar ? `فتح ${HAJJ_PLATFORM_LABEL_AR}` : `Open ${HAJJ_PLATFORM_LABEL_EN}`}
             </a>
           ) : (
             <Link
               to={HAJJ_INTERNAL_ROUTE}
-              aria-label={HAJJ_PLATFORM_LABEL_AR}
+              aria-label={ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
             >
-              الانتقال إلى {HAJJ_PLATFORM_LABEL_AR}
+              {ar
+                ? `الانتقال إلى ${HAJJ_PLATFORM_LABEL_AR}`
+                : `Go to ${HAJJ_PLATFORM_LABEL_EN}`}
             </Link>
           )}
           <Link
             to="/hajj-prime"
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/10"
           >
-            عرض الشاشة الكاملة
+            {ar ? "عرض الشاشة الكاملة" : "Open full screen"}
           </Link>
         </div>
       </section>
+
 
       <div
         id="tour-positioning"
