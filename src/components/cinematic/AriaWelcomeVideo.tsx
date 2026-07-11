@@ -16,7 +16,6 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import welcomeAsset from "@/assets/aria-welcome.mp4.asset.json";
 import posterAsset from "@/assets/aria-holo-v2.png.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
 import {
@@ -39,8 +38,11 @@ interface Props {
  */
 const FADE_MS = 600;
 const MIN_DISPLAY_MS = 3_500; // never disappear before this
-const MAX_MS = 40_000; // hard cap safety — must exceed full welcome video (33s) + fade buffer
+const MAX_MS = 52_000; // hard cap safety — must exceed the narrator welcome video (~47s) + fade buffer
 const BAR_COUNT = 14;
+// Welcome uses the current ARIA narrator (local, dark-bg avatar). The former
+// remote aria-welcome.mp4 asset showed the retired white-bg avatar and was removed.
+const WELCOME_VIDEO_SRC = "/aria/aria-narrator.mp4";
 
 export function AriaWelcomeVideo({ onDone }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -465,7 +467,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       {!videoFailed && (
         <video
           ref={bgVideoRef}
-          src={welcomeAsset.url}
+          src={WELCOME_VIDEO_SRC}
           playsInline
           muted
           preload="auto"
@@ -493,7 +495,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
         {!videoFailed && (
           <video
             ref={videoRef}
-            src={welcomeAsset.url}
+            src={WELCOME_VIDEO_SRC}
             playsInline
             preload="auto"
             onLoadedData={() => setVideoReady(true)}
