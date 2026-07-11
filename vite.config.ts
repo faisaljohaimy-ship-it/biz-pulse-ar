@@ -13,6 +13,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Nitro deploy target. The wrapper defaults to Cloudflare and, inside the
+  // Lovable sandbox, force-pins `cloudflare-module` regardless of what we set
+  // here — so this only takes effect on real (non-sandbox) builds. On Vercel
+  // (VERCEL=1 is injected into the build env) we switch nitro to its `vercel`
+  // preset so it emits Build Output API v3 (`.vercel/output`) and the SSR +
+  // /api routes actually run as serverless functions. Without this the pages
+  // render blank and the chatbot returns "could not complete". The GitHub
+  // Actions → Cloudflare path (no VERCEL env) keeps the Cloudflare default,
+  // so no existing deploy target is disturbed.
+  ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
   vite: {
     plugins: [mcpPlugin()],
     build: {
