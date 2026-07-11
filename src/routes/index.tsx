@@ -382,11 +382,6 @@ function IntroLanding() {
         <HajjExecutiveStage />
       </div>
 
-      {/* Native Hajj command dashboard — rendered directly on the homepage
-          (outside the embed iframe) so the full command center is visible as
-          real content. Responsive + RTL; all figures are labelled simulation. */}
-      <section
-        dir="rtl"
       {/* Native Hajj command dashboard — Arabic-only content, only shown in AR locale. */}
       {ar && (
         <section
