@@ -4,15 +4,20 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { cjk } from "@streamdown/cjk";
-import { code } from "@streamdown/code";
-import { math } from "@streamdown/math";
-import { mermaid } from "@streamdown/mermaid";
 import type { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
-import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Streamdown } from "streamdown";
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { MessageResponseProps } from "./MessageResponseImpl";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
@@ -268,20 +273,22 @@ export const MessageBranchPage = ({ className, ...props }: MessageBranchPageProp
   );
 };
 
-export type MessageResponseProps = ComponentProps<typeof Streamdown>;
+export type { MessageResponseProps };
 
-const streamdownPlugins = { cjk, code, math, mermaid };
+// Lazy — the heavy streamdown/shiki/mermaid/math bundle loads on demand only
+// when a message is actually rendered, keeping it out of the main chunk.
+const LazyMessageResponse = lazy(() => import("./MessageResponseImpl"));
 
-export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
-    <Streamdown
-      className={cn("size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
-      plugins={streamdownPlugins}
-      {...props}
-    />
-  ),
-  (prevProps, nextProps) =>
-    prevProps.children === nextProps.children && nextProps.isAnimating === prevProps.isAnimating,
+export const MessageResponse = (props: MessageResponseProps) => (
+  <Suspense
+    fallback={
+      <div className="size-full whitespace-pre-wrap break-words">
+        {typeof props.children === "string" ? props.children : null}
+      </div>
+    }
+  >
+    <LazyMessageResponse {...props} />
+  </Suspense>
 );
 
 MessageResponse.displayName = "MessageResponse";

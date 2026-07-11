@@ -15,5 +15,24 @@ export default defineConfig({
   },
   vite: {
     plugins: [mcpPlugin()],
+    build: {
+      // Source maps for 8000+ modules are a major build-memory consumer and
+      // are not needed in production — disabling them is the biggest single
+      // reduction in peak RSS (fixes Vercel Hobby OOM / SIGKILL).
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          // Split the heaviest vendors into their own chunks so Rollup renders
+          // them separately and peak memory during "rendering chunks" stays low.
+          // (SSR/server build ignores manualChunks — this only shapes the client.)
+          manualChunks(id: string) {
+            if (!id.includes("node_modules")) return;
+            if (/[\\/](three|@react-three)[\\/]/.test(id)) return "three-vendor";
+            if (/[\\/](recharts|d3-[a-z]+|internmap|victory)[\\/]/.test(id)) return "charts-vendor";
+            return undefined;
+          },
+        },
+      },
+    },
   },
 });
