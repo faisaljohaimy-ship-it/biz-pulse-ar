@@ -25,6 +25,7 @@ import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
+import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
 import { WelcomeThenGenesis } from "@/components/cinematic/WelcomeThenGenesis";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
@@ -312,6 +313,10 @@ function RootComponent() {
             <DemoModeProvider>
               <RegionProvider>
                 <AriaProvider>
+                  {/* Deepest ambient layer on EVERY page (incl. home): the
+                      Arabian Peninsula, light-green pulse, four sector borders
+                      in sky-blue, the active sector's border pulsing. */}
+                  {!introActive && <ArabianPeninsulaBackdrop />}
                   {/* Global ARIA hologram backdrop for every non-home page.
                       Homepage owns its own HomeVideoBackdrop. */}
                   {!isHero && !isPromo && !introActive && <GlobalPageBackdrop />}
