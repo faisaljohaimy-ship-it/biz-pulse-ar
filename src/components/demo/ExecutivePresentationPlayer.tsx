@@ -336,6 +336,7 @@ export function ExecutivePresentationPlayer() {
       dir="rtl"
       aria-label="العرض التنفيذي الموجّه"
       className="rounded-3xl border border-cyan-400/20 bg-[#04111f] p-3 shadow-[0_20px_60px_-20px_rgba(0,212,255,0.25)] md:p-4"
+      style={{ fontFamily: "var(--font-arabic)" }}
     >
       {/* Cue timeline */}
       <div className="mb-3 flex flex-wrap items-center gap-1.5 px-1">
