@@ -14,7 +14,18 @@
  * "hero-soundtrack" channel so any ARIA chat voice preempts it instantly.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Boxes, Gauge, Home, Pause, Play, RotateCcw, Shield, Sparkles } from "lucide-react";
+import {
+  Bot,
+  Boxes,
+  Gauge,
+  Home,
+  Pause,
+  Play,
+  RotateCcw,
+  Shield,
+  SkipForward,
+  Sparkles,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
@@ -169,7 +180,7 @@ function SceneView({ scene, ar }: { scene: Scene; ar: boolean }) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col justify-center gap-3 rounded-2xl border bg-[#050d1a]/90 p-5 sm:p-7",
+        "flex h-full flex-col justify-center gap-3 rounded-2xl border bg-[#050d1a]/70 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] backdrop-blur-xl sm:p-7",
         a.border,
       )}
       style={{ backgroundImage: a.glow }}
@@ -205,6 +216,8 @@ export function ExecutivePresentationPlayer() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [phase, setPhase] = useState<"idle" | "playing" | "paused" | "done">("idle");
   const [sceneIdx, setSceneIdx] = useState(0);
+  const [progress, setProgress] = useState(0); // 0..1 of the whole narration
+  const [duration, setDuration] = useState(0);
   const phaseRef = useRef(phase);
   useEffect(() => {
     phaseRef.current = phase;
@@ -263,12 +276,43 @@ export function ExecutivePresentationPlayer() {
     if (!v) return;
     const idx = sceneIndexAt(v.currentTime);
     setSceneIdx((prev) => (prev === idx ? prev : idx));
+    if (v.duration) setProgress(Math.min(1, v.currentTime / v.duration));
+  }, []);
+
+  const onLoadedMetadata = useCallback(() => {
+    const v = videoRef.current;
+    if (v && Number.isFinite(v.duration)) setDuration(v.duration);
   }, []);
 
   const onEnded = useCallback(() => {
     setSceneIdx(SCENES.length - 1);
+    setProgress(1);
     stopPlayback("done");
   }, [stopPlayback]);
+
+  // Skip to a specific cue (scene). Works while playing or paused.
+  const skipToScene = useCallback((idx: number) => {
+    const v = videoRef.current;
+    if (!v) return;
+    const clamped = Math.max(0, Math.min(SCENES.length - 1, idx));
+    try {
+      v.currentTime = SCENES[clamped].at + 0.05;
+    } catch {
+      /* ignore */
+    }
+    setSceneIdx(clamped);
+  }, []);
+
+  // Seek by clicking the progress track.
+  const seek = useCallback((fraction: number) => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    try {
+      v.currentTime = Math.max(0, Math.min(1, fraction)) * v.duration;
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   // Clean stop on exit: pause + release the audio channel on unmount.
   useEffect(() => {
@@ -326,6 +370,7 @@ export function ExecutivePresentationPlayer() {
               playsInline
               preload="metadata"
               onTimeUpdate={onTimeUpdate}
+              onLoadedMetadata={onLoadedMetadata}
               onEnded={onEnded}
               className="h-full w-full object-cover object-top"
             />
@@ -379,6 +424,88 @@ export function ExecutivePresentationPlayer() {
             className="h-full animate-in fade-in slide-in-from-bottom-2 duration-500"
           >
             <SceneView scene={activeScene} ar={ar} />
+          </div>
+        </div>
+      </div>
+
+      {/* Transport bar — progress + play/pause/skip. navy→emerald glassmorphism. */}
+      <div className="mt-3 rounded-2xl border border-cyan-400/20 bg-white/[0.04] p-3 backdrop-blur-xl">
+        {/* Progress track with cue ticks (seekable) */}
+        <div
+          role="slider"
+          aria-label={ar ? "شريط تقدّم العرض" : "Presentation progress"}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress * 100)}
+          tabIndex={0}
+          onClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            // RTL track: progress grows from the right edge.
+            seek((r.right - e.clientX) / r.width);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") skipToScene(sceneIdx + 1);
+            else if (e.key === "ArrowRight") skipToScene(sceneIdx - 1);
+          }}
+          className="group relative h-2.5 cursor-pointer rounded-full bg-white/10"
+        >
+          <div
+            className="absolute inset-y-0 right-0 rounded-full"
+            style={{
+              width: `${progress * 100}%`,
+              background: "linear-gradient(90deg, #34D399, #22B6FF)",
+              boxShadow: "0 0 12px rgba(34,182,255,0.5)",
+            }}
+          />
+          {/* Cue ticks */}
+          {duration > 0 &&
+            SCENES.map((s) => (
+              <span
+                key={s.id}
+                aria-hidden
+                className="absolute top-1/2 h-2.5 w-px -translate-y-1/2 bg-white/30"
+                style={{ right: `${(s.at / duration) * 100}%` }}
+              />
+            ))}
+        </div>
+
+        {/* Controls row */}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                phase === "playing" ? stopPlayback("paused") : start(phase === "done")
+              }
+              aria-label={
+                phase === "playing" ? (ar ? "إيقاف مؤقت" : "Pause") : ar ? "تشغيل" : "Play"
+              }
+              className="grid h-11 w-11 place-items-center rounded-full bg-cyan-400/90 text-[#04111f] shadow-[0_0_24px_rgba(0,212,255,0.5)] transition hover:bg-cyan-300"
+            >
+              {phase === "playing" ? (
+                <Pause className="h-5 w-5" />
+              ) : phase === "done" ? (
+                <RotateCcw className="h-5 w-5" />
+              ) : (
+                <Play className="h-5 w-5 translate-x-0.5" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => skipToScene(sceneIdx + 1)}
+              disabled={sceneIdx >= SCENES.length - 1}
+              aria-label={ar ? "تخطّي إلى المشهد التالي" : "Skip to next scene"}
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/[0.06] text-white transition hover:border-emerald-400/50 hover:bg-white/10 disabled:opacity-40"
+            >
+              <SkipForward className="h-5 w-5" data-flip-rtl />
+            </button>
+          </div>
+          <div className="text-[11px] font-semibold tracking-wide text-white/60">
+            {ar ? activeScene.kicker_ar : activeScene.kicker_en}
+            <span className="mx-1.5 text-white/25">·</span>
+            <span className="font-mono tabular-nums">
+              {String(sceneIdx + 1).padStart(2, "0")}/{String(SCENES.length).padStart(2, "0")}
+            </span>
           </div>
         </div>
       </div>

@@ -569,3 +569,56 @@ function genericSpeakable(pathname: string, locale: SpeechLocale): string {
   }
   return `أَنْتَ فِي نَافِذَةِ ${ar}. تَعْرِضُ هَذِهِ النَّافِذَةُ البَيَانَاتِ الحَيَّةَ الخَاصَّةَ بِـ ${ar}. المِثَالُ الأَوَّل: افْتَحْ أَيَّ بِطَاقَةٍ لِمُرَاجَعَةِ تَفَاصِيلِهَا. المِثَالُ الثَّانِي: اطْلُبْ مِنِّي إِحَاطَةً تَنْفِيذِيَّةً مُوجَزَة.`;
 }
+
+// ── Display / TTS pairs ──────────────────────────────────────────────────
+// Every one of the 31 window scripts formally carries a `display` (clean,
+// on-screen) and a `tts` (fully diacritized, spoken) form. The single source
+// of truth is the diacritized `*Ar` string: `tts` keeps it verbatim, and
+// `display` is derived by stripping the tashkeel so the UI stays clean while
+// the spoken output keeps full Arabic diacritics.
+
+/** Arabic diacritics (tashkeel) + tatweel — stripped for on-screen display. */
+const TASHKEEL_RE = /[ً-ْٰـ]/g;
+
+/** Remove tashkeel for clean UI display; letters are left intact. */
+export function stripTashkeel(input: string): string {
+  return input.replace(TASHKEEL_RE, "");
+}
+
+/** A display/TTS pair. `tts` retains full tashkeel; `display` is clean text. */
+export interface DisplayTts {
+  readonly display: string;
+  readonly tts: string;
+}
+
+function toDisplayTts(ar: string): DisplayTts {
+  return { display: stripTashkeel(ar), tts: ar };
+}
+
+/** A window's whole script exposed as display+tts pairs (Arabic). */
+export interface PageScriptSpeech {
+  readonly title: DisplayTts;
+  readonly purpose: DisplayTts;
+  readonly action: DisplayTts;
+  readonly example1?: DisplayTts;
+  readonly example2?: DisplayTts;
+  readonly extended?: DisplayTts;
+}
+
+/**
+ * The Arabic script for a window as display+tts pairs. Returns null for
+ * unknown routes (callers fall back to the generic greeting). Guarantees:
+ * every returned `tts` is fully diacritized; every `display` is clean.
+ */
+export function pageScriptSpeech(pathname: string): PageScriptSpeech | null {
+  const s = pageScriptFor(pathname);
+  if (!s) return null;
+  return {
+    title: toDisplayTts(s.titleAr),
+    purpose: toDisplayTts(s.purposeAr),
+    action: toDisplayTts(s.actionAr),
+    example1: s.example1Ar ? toDisplayTts(s.example1Ar) : undefined,
+    example2: s.example2Ar ? toDisplayTts(s.example2Ar) : undefined,
+    extended: s.extendedAr ? toDisplayTts(s.extendedAr) : undefined,
+  };
+}
