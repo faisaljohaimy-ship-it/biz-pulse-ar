@@ -451,9 +451,7 @@ function IntroLanding() {
               aria-label={ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
             >
-              {ar
-                ? `الانتقال إلى ${HAJJ_PLATFORM_LABEL_AR}`
-                : `Go to ${HAJJ_PLATFORM_LABEL_EN}`}
+              {ar ? `الانتقال إلى ${HAJJ_PLATFORM_LABEL_AR}` : `Go to ${HAJJ_PLATFORM_LABEL_EN}`}
             </Link>
           )}
           <Link
@@ -464,7 +462,6 @@ function IntroLanding() {
           </Link>
         </div>
       </section>
-
 
       <div
         id="tour-positioning"

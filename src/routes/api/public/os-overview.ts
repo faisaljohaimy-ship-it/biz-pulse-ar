@@ -17,6 +17,9 @@ export const Route = createFileRoute("/api/public/os-overview")({
             ok: true,
             observedAt,
             source: "sec_overview.synthetic_public",
+            // Explicit simulation marker — these are fixed, non-tenant-derived
+            // counters, NOT live data. The UI must tag them «محاكاة», never LIVE.
+            is_simulation: true,
             counts: {
               sites: 12,
               incidents_open: 3,

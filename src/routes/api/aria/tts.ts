@@ -27,9 +27,10 @@ export const Route = createFileRoute("/api/aria/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Option A: authenticated-only ElevenLabs. Anonymous callers get 403
-        // immediately so the client silently falls back to browser speech —
-        // no ElevenLabs call is made.
+        // Authenticated-only ElevenLabs. Anonymous callers get 403 immediately
+        // and no ElevenLabs call is made. The client then stays SILENT — there
+        // is NO browser-speech fallback anywhere (voice constitution: ElevenLabs
+        // only; failure means silence, never a different/robotic voice).
         const authHeader = request.headers.get("authorization");
         if (!authHeader || !/^Bearer\s+/i.test(authHeader)) {
           return Response.json({ error: "auth_required" }, { status: 403 });

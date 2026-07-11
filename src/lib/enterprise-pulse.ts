@@ -567,13 +567,21 @@ const seeded = new Set<string>();
 
 async function ensureSeeded(userId: string, openTasks: number) {
   if (seeded.has(userId)) return;
-  seeded.add(userId);
-  const { count } = await supabase
+  // Do NOT mark seeded up-front: a failed count/insert must be retryable on a
+  // later call, otherwise the user is stranded with a permanently empty pulse.
+  const { count, error: countError } = await supabase
     .from("pulse_kpis")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
-  if ((count ?? 0) > 0) return;
-  await Promise.all([
+  if (countError) {
+    console.error("[enterprise-pulse] seed count check failed:", countError.message);
+    return; // transient read failure — leave unseeded so it retries
+  }
+  if ((count ?? 0) > 0) {
+    seeded.add(userId); // already has data — no seeding needed
+    return;
+  }
+  const results = await Promise.all([
     supabase
       .from("pulse_kpis")
       .insert(seedKpis(openTasks).map((r, i) => ({ ...r, user_id: userId, sort_order: i }))),
@@ -587,6 +595,12 @@ async function ensureSeeded(userId: string, openTasks: number) {
       .from("pulse_memory")
       .insert(seedMemory().map((r, i) => ({ ...r, user_id: userId, sort_order: i }))),
   ]);
+  const insertError = results.find((r) => r.error)?.error;
+  if (insertError) {
+    console.error("[enterprise-pulse] seed insert failed:", insertError.message);
+    return; // leave unseeded so a later call retries the seed
+  }
+  seeded.add(userId); // mark seeded ONLY after a fully successful seed
 }
 
 // ─── Row mappers ─────────────────────────────────────────────────────────────

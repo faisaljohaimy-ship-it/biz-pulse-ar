@@ -79,7 +79,7 @@ export async function markEvent(
   error?: string,
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  const { error: updateError } = await (supabase as any)
     .from("enterprise_events")
     .update({
       status,
@@ -87,4 +87,9 @@ export async function markEvent(
       error: error ?? null,
     })
     .eq("id", id);
+  if (updateError) {
+    // Surface the failure: a silently-dropped mark leaves the event stuck as
+    // unprocessed and it may be redelivered indefinitely.
+    console.error(`[event-bus] markEvent(${id}, ${status}) failed:`, updateError.message);
+  }
 }

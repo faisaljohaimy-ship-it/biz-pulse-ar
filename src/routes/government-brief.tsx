@@ -184,7 +184,7 @@ function GovernmentBriefPage() {
             {
               k: isAr ? "الجاهزية" : "Readiness",
               v: isAr
-                ? "مصمَّم بما يتوائم مع SOC2 · ISO27001 · ECC"
+                ? "مصمَّم بما يتوائم مع SOC2 · ISO27001 · ECC (قيد الاعتماد)"
                 : "Aligned to SOC2 · ISO27001 · ECC (in progress)",
             },
             {

@@ -7,12 +7,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert, Radar, Activity, UserCheck, Camera, ClipboardCheck } from "lucide-react";
 import { KpiCard } from "./KpiCard";
+import { SimBadge } from "@/components/os/SimBadge";
 import type { Evidence } from "@/lib/evidence/gate";
 
 type OverviewPayload = {
   ok: boolean;
   observedAt: string;
   source: string;
+  is_simulation?: boolean;
   counts?: {
     sites: number;
     incidents_open: number;
@@ -56,7 +58,10 @@ export function OsExecutiveStrip({ ar }: { readonly ar: boolean }) {
     };
   };
 
-  const liveLabel = ar ? "لحظي" : "LIVE";
+  // The public /os overview is a fixed synthetic snapshot (is_simulation).
+  // Constitution art. 11: never stamp «لحظي/LIVE» on non-live data.
+  const isSim = q.data?.is_simulation ?? true;
+  const liveLabel = isSim ? (ar ? "محاكاة" : "SIM") : ar ? "لحظي" : "LIVE";
 
   const items: {
     key: string;
@@ -120,23 +125,27 @@ export function OsExecutiveStrip({ ar }: { readonly ar: boolean }) {
   ];
 
   return (
-    <section
-      aria-label={ar ? "لوحة المؤشرات التنفيذية" : "Executive KPIs"}
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
-    >
-      {items.map((it) => (
-        <KpiCard
-          key={it.key}
-          icon={it.icon as unknown as import("lucide-react").LucideIcon}
-          labelPrimary={it.labelPrimary}
-          labelSecondary={it.labelSecondary}
-          value={it.value}
-          evidence={mkEvidence(it.value)}
-          liveLabel={liveLabel}
-          tone={it.tone}
-          hint={it.hint}
-        />
-      ))}
+    <section aria-label={ar ? "لوحة المؤشرات التنفيذية" : "Executive KPIs"} className="space-y-3">
+      {isSim ? (
+        <div className="flex justify-end">
+          <SimBadge ar={ar} />
+        </div>
+      ) : null}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        {items.map((it) => (
+          <KpiCard
+            key={it.key}
+            icon={it.icon as unknown as import("lucide-react").LucideIcon}
+            labelPrimary={it.labelPrimary}
+            labelSecondary={it.labelSecondary}
+            value={it.value}
+            evidence={mkEvidence(it.value)}
+            liveLabel={liveLabel}
+            tone={it.tone}
+            hint={it.hint}
+          />
+        ))}
+      </div>
     </section>
   );
 }

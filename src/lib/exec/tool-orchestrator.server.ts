@@ -275,7 +275,7 @@ export async function decideApproval(
 
   if (decision === "reject") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    const { error: rejectError } = await (supabase as any)
       .from("tool_executions")
       .update({
         status: "rejected",
@@ -283,6 +283,10 @@ export async function decideApproval(
         approved_at: new Date().toISOString(),
       })
       .eq("id", executionId);
+    if (rejectError) {
+      // Never report a rejection that did not persist.
+      throw new Error(`Failed to persist rejection: ${rejectError.message}`);
+    }
     await audit(supabase, {
       actor_id: approverId,
       action: "tool.approval.rejected",
@@ -293,7 +297,7 @@ export async function decideApproval(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  const { error: approveError } = await (supabase as any)
     .from("tool_executions")
     .update({
       status: "queued",
@@ -301,6 +305,10 @@ export async function decideApproval(
       approved_at: new Date().toISOString(),
     })
     .eq("id", executionId);
+  if (approveError) {
+    // Never report an approval that did not persist.
+    throw new Error(`Failed to persist approval: ${approveError.message}`);
+  }
   await audit(supabase, {
     actor_id: approverId,
     action: "tool.approval.approved",

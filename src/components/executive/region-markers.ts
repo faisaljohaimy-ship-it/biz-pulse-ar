@@ -4,8 +4,11 @@
  * and its static fallback with no heavy (Three.js) dependency, so importing
  * it never pulls the 3D bundle into the initial load.
  */
+import type { RegionId } from "@/lib/regions";
+
 export interface RegionMarker {
-  readonly id: "central" | "western" | "eastern" | "southern";
+  // regions.ts is the single source of truth for the four region ids.
+  readonly id: RegionId;
   readonly ar: string;
   readonly lat: number;
   readonly lng: number;

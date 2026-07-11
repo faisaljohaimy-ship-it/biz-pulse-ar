@@ -407,12 +407,18 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             // INVARIANT-11 (self-healing ledger): record model errors so the
             // evolution engine can react.
             if (userId) {
-              void supabase.from("aria_incidents").insert({
-                user_id: userId,
-                kind: "model_error",
-                detail: (error instanceof Error ? error.message : String(error)).slice(0, 500),
-                model: selectedModelId,
-              });
+              void supabase
+                .from("aria_incidents")
+                .insert({
+                  user_id: userId,
+                  kind: "model_error",
+                  detail: (error instanceof Error ? error.message : String(error)).slice(0, 500),
+                  model: selectedModelId,
+                })
+                .then(({ error: insErr }) => {
+                  if (insErr)
+                    console.error("[api/chat] aria_incidents insert failed:", insErr.message);
+                });
             }
           },
           onStepFinish: ({ text, toolCalls, toolResults, finishReason }) => {
@@ -507,16 +513,22 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
                   : /iPad|Tablet/i.test(ua)
                     ? "tablet"
                     : "desktop";
-                void supabase.from("aria_interactions").insert({
-                  user_id: userId,
-                  thread_id: threadId ?? null,
-                  question: q.slice(0, 4000),
-                  answer: a.slice(0, 8000),
-                  model: selectedModelId,
-                  latency_ms: Date.now() - startAt,
-                  first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
-                  device_class: deviceClass,
-                });
+                void supabase
+                  .from("aria_interactions")
+                  .insert({
+                    user_id: userId,
+                    thread_id: threadId ?? null,
+                    question: q.slice(0, 4000),
+                    answer: a.slice(0, 8000),
+                    model: selectedModelId,
+                    latency_ms: Date.now() - startAt,
+                    first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
+                    device_class: deviceClass,
+                  })
+                  .then(({ error: insErr }) => {
+                    if (insErr)
+                      console.error("[api/chat] aria_interactions insert failed:", insErr.message);
+                  });
               }
             } catch (logErr) {
               console.warn("[api/chat] interaction log skipped", logErr);

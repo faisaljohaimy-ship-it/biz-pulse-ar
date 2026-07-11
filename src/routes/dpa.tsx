@@ -90,8 +90,8 @@ function DpaPage() {
       titleAr: "4 · التدابير الأمنية",
       items: [
         {
-          en: "Technical and organizational measures aligned with ISO/IEC 27001 Annex A and NCA ECC controls.",
-          ar: "تدابير تقنية وإدارية متوافقة مع ضوابط ISO 27001 وNCA ECC.",
+          en: "Technical and organizational measures designed to align with ISO/IEC 27001 Annex A and NCA ECC controls (certification in progress).",
+          ar: "تدابير تقنية وإدارية مصمّمة بمحاذاة ضوابط ISO 27001 وNCA ECC (قيد الاعتماد).",
         },
         {
           en: "Encryption in transit (TLS 1.3) and at rest (AES-256), per-tenant key separation.",
