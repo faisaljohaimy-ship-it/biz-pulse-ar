@@ -523,140 +523,140 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-1 pb-2 sm:gap-3 lg:mx-0 lg:grid lg:grid-cols-6 lg:gap-4 lg:overflow-visible lg:px-0 lg:pb-0"
             style={{ scrollbarWidth: "none" }}
           >
-          {kpis.map((k, idx) => {
-            const Icon = k.icon;
-            const label = ar ? k.labelAr : k.labelEn;
-            const sub = ar ? k.subAr : k.subEn;
-            const hint = ar ? k.hintAr : k.hintEn;
-            const displayValue = k.display ?? (k.padded ? pad2(k.value) : (k.value ?? "—"));
-            const stroke = TONE_STROKE[k.tone];
-            const pct = Math.round(k.gauge * 100);
-            return (
-              <div
-                key={k.key}
-                className="group relative w-[140px] shrink-0 snap-start overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-3 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 sm:w-[170px] lg:w-auto lg:shrink lg:p-4"
-                style={{
-                  animation: `sov-tile-in 700ms cubic-bezier(0.22,1,0.36,1) ${140 + idx * 90}ms both`,
-                  boxShadow:
-                    "inset 0 1px 0 0 rgba(58,232,255,0.08), 0 12px 40px -20px rgba(0,0,0,0.9)",
-                }}
-              >
-                {/* L-bracket corners */}
-                <span className="pointer-events-none absolute left-0 top-0 h-3 w-3 border-l border-t border-[#3AE8FF]/70" />
-                <span className="pointer-events-none absolute right-0 top-0 h-3 w-3 border-r border-t border-[#3AE8FF]/30" />
-                <span className="pointer-events-none absolute left-0 bottom-0 h-3 w-3 border-l border-b border-[#3AE8FF]/30" />
-                <span className="pointer-events-none absolute right-0 bottom-0 h-3 w-3 border-r border-b border-[#3AE8FF]/70" />
-
-                {/* Hex serial tag — desktop only (too dense on mobile) */}
+            {kpis.map((k, idx) => {
+              const Icon = k.icon;
+              const label = ar ? k.labelAr : k.labelEn;
+              const sub = ar ? k.subAr : k.subEn;
+              const hint = ar ? k.hintAr : k.hintEn;
+              const displayValue = k.display ?? (k.padded ? pad2(k.value) : (k.value ?? "—"));
+              const stroke = TONE_STROKE[k.tone];
+              const pct = Math.round(k.gauge * 100);
+              return (
                 <div
-                  aria-hidden
-                  className="pointer-events-none absolute -right-3 top-2 hidden opacity-70 sm:block rtl:-left-3 rtl:right-auto"
-                >
-                  <div className="relative">
-                    <Hexagon className="h-8 w-8 text-[#3AE8FF]/25" strokeWidth={1.5} />
-                    <span className="absolute inset-0 grid place-items-center font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70">
-                      K{String(idx + 1).padStart(2, "0")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Scan-line shimmer on hover */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  key={k.key}
+                  className="group relative w-[140px] shrink-0 snap-start overflow-hidden rounded-sm border border-[#3AE8FF]/15 bg-gradient-to-b from-[#061A2E]/60 to-[#04101C]/75 p-3 backdrop-blur-xl transition-all duration-300 hover:border-[#3AE8FF]/50 hover:bg-[#061A2E]/70 sm:w-[170px] lg:w-auto lg:shrink lg:p-4"
                   style={{
-                    background:
-                      "linear-gradient(90deg, transparent 0%, rgba(58,232,255,0.9) 50%, transparent 100%)",
-                    boxShadow: "0 0 8px rgba(58,232,255,0.7)",
+                    animation: `sov-tile-in 700ms cubic-bezier(0.22,1,0.36,1) ${140 + idx * 90}ms both`,
+                    boxShadow:
+                      "inset 0 1px 0 0 rgba(58,232,255,0.08), 0 12px 40px -20px rgba(0,0,0,0.9)",
                   }}
-                />
-
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-1 sm:gap-2 sm:pe-6">
-                  <div className="min-w-0 flex-1">
-                    <div
-                      className="truncate text-[10px] font-semibold leading-tight text-white/95 sm:text-[11px]"
-                      title={label}
-                    >
-                      {label}
-                    </div>
-                    <div className="mt-0.5 hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-[#3AE8FF]/60 sm:block">
-                      {sub}
-                    </div>
-                  </div>
-                  <div
-                    className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full border bg-[#04101C]/75 sm:grid ${TONE_RING[k.tone]}`}
-                  >
-                    <Icon className="h-3.5 w-3.5" strokeWidth={2} />
-                  </div>
-                </div>
-
-                {/* Numeric readout + radial gauge */}
-                <div className="mt-1.5 flex items-center justify-between gap-1 sm:mt-3 sm:gap-2">
-                  <div className="flex items-baseline gap-1 sm:gap-1.5">
-                    <span
-                      className={`text-2xl font-black leading-none sm:text-3xl lg:text-[38px] ${TONE_NUM[k.tone]}`}
-                      style={{
-                        fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
-                        fontVariantNumeric: "tabular-nums",
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {displayValue}
-                    </span>
-                    <span className="hidden font-mono text-[8.5px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/60 sm:inline">
-                      {k.unit}
-                    </span>
-                  </div>
-                  <div className="relative hidden shrink-0 sm:block">
-                    <RadialGauge value={k.gauge} color={stroke} size={40} />
-                    <span
-                      className="absolute inset-0 grid place-items-center font-mono text-[8.5px] font-bold tabular-nums"
-                      style={{ color: stroke }}
-                    >
-                      {pct}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Delta / hint + simulation tag — desktop only */}
-                <div className="mt-3 hidden items-center justify-between gap-2 sm:flex">
-                  <span
-                    className={`font-mono text-[9px] uppercase tracking-[0.22em] ${TONE_DELTA[k.tone]}`}
-                  >
-                    {hint}
-                  </span>
-                  <SimBadge ar={ar} className="text-[8px]" />
-                </div>
-
-                {/* Micro sparkline strip */}
-                <div
-                  className="mt-1.5 flex h-2 items-end gap-[1.5px] sm:mt-3 sm:h-3 sm:gap-[2px]"
-                  aria-hidden
                 >
-                  {Array.from({ length: 22 }).map((_, i) => {
-                    const seed = (i * 13 + k.key.length * 7) % 100;
-                    const h = 20 + (seed % 70);
-                    return (
+                  {/* L-bracket corners */}
+                  <span className="pointer-events-none absolute left-0 top-0 h-3 w-3 border-l border-t border-[#3AE8FF]/70" />
+                  <span className="pointer-events-none absolute right-0 top-0 h-3 w-3 border-r border-t border-[#3AE8FF]/30" />
+                  <span className="pointer-events-none absolute left-0 bottom-0 h-3 w-3 border-l border-b border-[#3AE8FF]/30" />
+                  <span className="pointer-events-none absolute right-0 bottom-0 h-3 w-3 border-r border-b border-[#3AE8FF]/70" />
+
+                  {/* Hex serial tag — desktop only (too dense on mobile) */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-3 top-2 hidden opacity-70 sm:block rtl:-left-3 rtl:right-auto"
+                  >
+                    <div className="relative">
+                      <Hexagon className="h-8 w-8 text-[#3AE8FF]/25" strokeWidth={1.5} />
+                      <span className="absolute inset-0 grid place-items-center font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70">
+                        K{String(idx + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Scan-line shimmer on hover */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent 0%, rgba(58,232,255,0.9) 50%, transparent 100%)",
+                      boxShadow: "0 0 8px rgba(58,232,255,0.7)",
+                    }}
+                  />
+
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-1 sm:gap-2 sm:pe-6">
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="truncate text-[10px] font-semibold leading-tight text-white/95 sm:text-[11px]"
+                        title={label}
+                      >
+                        {label}
+                      </div>
+                      <div className="mt-0.5 hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-[#3AE8FF]/60 sm:block">
+                        {sub}
+                      </div>
+                    </div>
+                    <div
+                      className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full border bg-[#04101C]/75 sm:grid ${TONE_RING[k.tone]}`}
+                    >
+                      <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+                    </div>
+                  </div>
+
+                  {/* Numeric readout + radial gauge */}
+                  <div className="mt-1.5 flex items-center justify-between gap-1 sm:mt-3 sm:gap-2">
+                    <div className="flex items-baseline gap-1 sm:gap-1.5">
                       <span
-                        key={i}
-                        className={`w-[1.5px] rounded-sm sm:w-[2px] ${
-                          k.tone === "rose"
-                            ? "bg-rose-400/55"
-                            : k.tone === "amber"
-                              ? "bg-amber-300/55"
-                              : k.tone === "emerald"
-                                ? "bg-emerald-300/55"
-                                : "bg-[#3AE8FF]/60"
-                        }`}
-                        style={{ height: `${h}%` }}
-                      />
-                    );
-                  })}
+                        className={`text-2xl font-black leading-none sm:text-3xl lg:text-[38px] ${TONE_NUM[k.tone]}`}
+                        style={{
+                          fontFamily: '"Space Grotesk", ui-sans-serif, system-ui, sans-serif',
+                          fontVariantNumeric: "tabular-nums",
+                          letterSpacing: "-0.02em",
+                        }}
+                      >
+                        {displayValue}
+                      </span>
+                      <span className="hidden font-mono text-[8.5px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/60 sm:inline">
+                        {k.unit}
+                      </span>
+                    </div>
+                    <div className="relative hidden shrink-0 sm:block">
+                      <RadialGauge value={k.gauge} color={stroke} size={40} />
+                      <span
+                        className="absolute inset-0 grid place-items-center font-mono text-[8.5px] font-bold tabular-nums"
+                        style={{ color: stroke }}
+                      >
+                        {pct}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Delta / hint + simulation tag — desktop only */}
+                  <div className="mt-3 hidden items-center justify-between gap-2 sm:flex">
+                    <span
+                      className={`font-mono text-[9px] uppercase tracking-[0.22em] ${TONE_DELTA[k.tone]}`}
+                    >
+                      {hint}
+                    </span>
+                    <SimBadge ar={ar} className="text-[8px]" />
+                  </div>
+
+                  {/* Micro sparkline strip */}
+                  <div
+                    className="mt-1.5 flex h-2 items-end gap-[1.5px] sm:mt-3 sm:h-3 sm:gap-[2px]"
+                    aria-hidden
+                  >
+                    {Array.from({ length: 22 }).map((_, i) => {
+                      const seed = (i * 13 + k.key.length * 7) % 100;
+                      const h = 20 + (seed % 70);
+                      return (
+                        <span
+                          key={i}
+                          className={`w-[1.5px] rounded-sm sm:w-[2px] ${
+                            k.tone === "rose"
+                              ? "bg-rose-400/55"
+                              : k.tone === "amber"
+                                ? "bg-amber-300/55"
+                                : k.tone === "emerald"
+                                  ? "bg-emerald-300/55"
+                                  : "bg-[#3AE8FF]/60"
+                          }`}
+                          style={{ height: `${h}%` }}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         </div>
       </div>

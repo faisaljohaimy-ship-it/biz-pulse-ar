@@ -83,7 +83,6 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
           });
         }
 
-
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res = await runAgent(supabaseAdmin as any, {

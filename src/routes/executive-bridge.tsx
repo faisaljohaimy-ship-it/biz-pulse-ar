@@ -59,7 +59,8 @@ const SCENES: Scene[] = [
     title_ar: "لوحة القيادة السيادية · نبض المؤسسة",
     title_en: "Sovereign command deck · the pulse of the enterprise.",
     body_ar: "نظرة عامة موحّدة على الأمن، العمليات، والتوأم الرقمي — من الرؤية إلى التنفيذ.",
-    body_en: "One unified view of security, operations, and the digital twin — vision to execution.",
+    body_en:
+      "One unified view of security, operations, and the digital twin — vision to execution.",
     accent: "navy",
   },
   {
@@ -115,7 +116,6 @@ const SCENES: Scene[] = [
     render: () => <ClosingCTA />,
   },
 ];
-
 
 const AUTO_ADVANCE_MS = 14000;
 

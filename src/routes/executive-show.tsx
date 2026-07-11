@@ -203,9 +203,7 @@ function ExecutiveShowPage() {
             <Sparkles className="h-4 w-4 text-emerald-300" />
           </span>
           <div className="min-w-0">
-            <div className="truncate text-sm font-bold text-emerald-200">
-              مشغّل العرض التنفيذي
-            </div>
+            <div className="truncate text-sm font-bold text-emerald-200">مشغّل العرض التنفيذي</div>
             <div className="truncate text-[11px] text-slate-400">
               رواية آريا · معاينة النوافذ التلقائية
             </div>
@@ -243,8 +241,7 @@ function ExecutiveShowPage() {
             <div
               className="pointer-events-none absolute inset-x-0 bottom-0 h-40"
               style={{
-                background:
-                  "linear-gradient(to top, rgba(4,17,31,0.9), rgba(4,17,31,0) 100%)",
+                background: "linear-gradient(to top, rgba(4,17,31,0.9), rgba(4,17,31,0) 100%)",
               }}
             />
             {/* Chapter label */}
@@ -338,10 +335,7 @@ function ExecutiveShowPage() {
                       : "border-slate-600/40 bg-slate-800/40 text-slate-300 hover:bg-slate-800/70"
                   }`}
                 >
-                  <span
-                    style={{ color: active ? c.accent : "#94A3B8" }}
-                    className="inline-flex"
-                  >
+                  <span style={{ color: active ? c.accent : "#94A3B8" }} className="inline-flex">
                     <c.icon className="h-3.5 w-3.5" />
                   </span>
                   <span className="font-semibold">{c.ar}</span>

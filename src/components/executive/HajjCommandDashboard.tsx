@@ -286,9 +286,7 @@ function KpiStrip() {
     },
   ];
   return (
-    <div
-      className="-mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
+    <div className="-mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {items.map((it) => (
         <div
           key={it.ar}
