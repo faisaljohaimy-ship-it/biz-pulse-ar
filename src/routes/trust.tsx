@@ -50,8 +50,8 @@ function StatusPill({ status, isAr }: { status: Status; isAr: boolean }) {
       cls: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
     },
     "in-progress": {
-      en: "In Progress",
-      ar: "قيد التنفيذ",
+      en: "Pending certification",
+      ar: "قيد الاعتماد",
       cls: "border-amber-400/30 bg-amber-400/10 text-amber-200",
     },
     operational: {
@@ -432,8 +432,8 @@ function TrustPage() {
           </div>
           <p className="mt-4 text-xs text-muted-foreground/70">
             {isAr
-              ? "«متوافق» تعني أن الضوابط مطبّقة ومُوثّقة. «قيد التنفيذ» تعني أن التدقيق المستقل قيد الإعداد."
-              : "“Aligned” means the controls are implemented and documented. “In Progress” means independent audit is in preparation."}
+              ? "«متوافق» تعني أن الضوابط مطبّقة ومُوثّقة. «قيد الاعتماد» تعني أن التدقيق المستقل قيد الإعداد ولم تصدر الشهادة بعد."
+              : "“Aligned” means the controls are implemented and documented. “Pending certification” means independent audit is in preparation and no certificate has issued yet."}
           </p>
         </section>
 
