@@ -343,12 +343,19 @@ function ExecutiveBridgePage() {
       {/* Progress bar */}
       <div className="pointer-events-none absolute inset-x-0 top-[68px] z-30 h-[2px] bg-white/10 sm:top-[76px]">
         <div
-          className="h-full bg-gradient-to-l from-[#F5C560] via-[#3AE8FF] to-[#00D4FF]"
+          className="relative h-full bg-gradient-to-l from-[#F5C560] via-[#3AE8FF] to-[#00D4FF]"
           style={{
             width: `${overallProgress}%`,
             transition: reduced ? "none" : "width 180ms linear",
           }}
-        />
+        >
+          {/* Glowing leading head */}
+          <span
+            aria-hidden
+            className="absolute -top-[3px] left-0 h-2 w-2 -translate-x-1/2 rounded-full bg-white"
+            style={{ boxShadow: "0 0 12px 2px #3AE8FF, 0 0 4px #fff" }}
+          />
+        </div>
       </div>
 
       {/* Scenes */}
@@ -462,8 +469,15 @@ function SceneLayer({
       className="absolute inset-0 flex items-center justify-center px-4 sm:px-10"
       style={{
         opacity: active ? 1 : 0,
-        transform: reduced ? "none" : active ? "translateY(0)" : "translateY(8px)",
-        transition: reduced ? "opacity 0ms" : "opacity 600ms ease, transform 600ms ease",
+        transform: reduced
+          ? "none"
+          : active
+            ? "translateY(0) scale(1)"
+            : "translateY(14px) scale(0.985)",
+        filter: reduced ? "none" : active ? "blur(0)" : "blur(6px)",
+        transition: reduced
+          ? "opacity 0ms"
+          : "opacity 700ms cubic-bezier(0.22,1,0.36,1), transform 700ms cubic-bezier(0.22,1,0.36,1), filter 700ms cubic-bezier(0.22,1,0.36,1)",
         pointerEvents: active ? "auto" : "none",
       }}
     >
@@ -474,6 +488,7 @@ function SceneLayer({
             borderColor: `${accentColor}66`,
             color: accentColor,
             background: `${accentColor}14`,
+            boxShadow: reduced ? "none" : `0 0 22px ${accentColor}33`,
           }}
         >
           <span>{scene.kicker_ar}</span>

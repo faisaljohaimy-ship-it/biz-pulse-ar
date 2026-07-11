@@ -546,6 +546,7 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
             borderColor: `${scene.accent}66`,
             color: scene.accent,
             background: `${scene.accent}14`,
+            boxShadow: reduced ? "none" : `0 0 22px ${scene.accent}33`,
           }}
         >
           <Icon className="h-3.5 w-3.5" />
@@ -583,7 +584,10 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
         </div>
       </div>
       <style>{`
-        @keyframes showcase-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes showcase-in {
+          from { opacity: 0; transform: translateY(16px) scale(0.99); filter: blur(6px); }
+          to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
       `}</style>
     </div>
   );
