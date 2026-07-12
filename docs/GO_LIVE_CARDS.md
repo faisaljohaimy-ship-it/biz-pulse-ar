@@ -74,6 +74,18 @@
 
    > كل الأسرار غير المضبوطة تتحلّل بأمان (fallback) — لا انهيار صفحة، والقسم المتأثّر وحده يعرض رسالة عربية واضحة.
 
+   **(هـ) متغيّرات وكيلة آريا (ARIA Agent)** — تُفعّل قدرات المراحل المتقدّمة. كلها اختيارية؛ الميزة المرتبطة تعرض «غير مفعّل بعد» حتى تُضاف. **أسماء فقط — لا قيم في أي ملف:**
+   | Key | يُفعّل | من أين آخذ القيمة |
+   |---|---|---|
+   | `ANTHROPIC_API_KEY` | نماذج Claude كمزوّد أساسي أصيل لعقل آريا | console.anthropic.com → API Keys |
+   | `RESEND_API_KEY` | إرسال إيميل آريا من `ARIA@nexios.com` | resend.com → API Keys (وتوثيق نطاق الإرسال) |
+   | `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `TWILIO_FROM_NUMBER` | رسائل SMS للطوارئ والتذكير | twilio.com → Console |
+   | `STRIPE_SECRET_KEY` · `STRIPE_WEBHOOK_SECRET` · `STRIPE_PRICE_ID` | الاشتراك الشهري وبوابة الدفع | dashboard.stripe.com → Developers |
+   | `ALLOWED_EMAIL_DOMAIN` | حصر التسجيل بإيميل الشركة (مثال: `nexios.com`) | تكتبه بنفسك |
+   | `ARIA_DAILY_MESSAGE_CAP` | سقف رسائل يومي لكل موظف (حماية التكلفة) | رقم تختاره (مثال: `200`) |
+
+   > التوجيه: `ANTHROPIC_API_KEY` أساسي عند توفّره، و`OPENROUTER_API_KEY`/`LOVABLE_API_KEY` بديل — أيٌّ منها يُشغّل الشات.
+
 8. بعد إضافة المتغيّرات، اضغط **Deploy**.
 9. انتظر حتى تظهر كلمة **Congratulations** ورابط ينتهي بـ **.vercel.app**. **انسخ هذا الرابط** — نحتاجه في البطاقة ②.
 10. افتح الرابط `.vercel.app` وتأكّد أن الصفحة الرئيسية تظهر بلا خطأ.
