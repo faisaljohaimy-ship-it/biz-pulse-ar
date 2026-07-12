@@ -106,7 +106,10 @@ export function SectorGlobeCorner() {
   const { regionId, region, setRegion, regions } = useRegion();
   const [mode, setMode] = useState<"static" | "scene">("static");
   const [animate, setAnimate] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  // Start collapsed on every device so the widget never covers page headers
+  // / primary CTAs (New Incident, New Work Order, New Permit …). Users open
+  // it explicitly via the floating globe button.
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -114,8 +117,6 @@ export function SectorGlobeCorner() {
     const cores = navigator.hardwareConcurrency ?? 8;
     const small = window.matchMedia("(max-width: 640px)").matches;
     const weak = !hasWebGL() || (cores <= 4 && small);
-    // Start collapsed on small screens so it never covers content.
-    if (small) setCollapsed(true);
     if (!weak) {
       setAnimate(!reduced);
       setMode("scene");
