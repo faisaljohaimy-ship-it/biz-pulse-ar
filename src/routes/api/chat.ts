@@ -186,8 +186,19 @@ export const Route = createFileRoute("/api/chat")({
         const useLovable = !!lovableKey;
         if (!useLovable && !openrouterKey) {
           const rid = getChatRequestId(request);
-          console.error("[api/chat] no AI provider key configured", { requestId: rid });
-          return jsonError("ARIA is not configured. Missing AI provider credentials.", 500, rid);
+          console.warn("[api/chat] no AI provider key configured", { requestId: rid });
+          // Graceful, not a crash: 503 + machine code so the client renders an
+          // elegant "not activated yet" state instead of a raw error. Add
+          // OPENROUTER_API_KEY (or LOVABLE_API_KEY) to the deployment env to enable.
+          return Response.json(
+            {
+              ok: false,
+              code: "provider_unconfigured",
+              error: "المساعد الذكي غير مفعّل بعد على هذا النشر.",
+              requestId: rid,
+            },
+            { status: 503, headers: responseHeaders(rid) },
+          );
         }
 
         const guard = await validateChatRequest(request);

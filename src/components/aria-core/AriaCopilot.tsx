@@ -278,6 +278,9 @@ export function AriaCopilot() {
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
+  // null = unknown; false = endpoint reachable but no AI provider key on this
+  // deployment → show an elegant "not activated yet" notice instead of errors.
+  const [providerReady, setProviderReady] = useState<boolean | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
@@ -325,6 +328,7 @@ export function AriaCopilot() {
         const next = r.ok ? "ok" : "down";
         setHealth(next);
         setHealthEvidence(probeEvidence("GET /api/chat/health", next));
+        setProviderReady(r.ok ? (r.key_present ?? null) : null);
       }
     });
     // iOS Safari: prime AudioContext on the same task as the open gesture
@@ -1377,6 +1381,16 @@ export function AriaCopilot() {
                 if (fileInputRef.current) fileInputRef.current.value = "";
               }}
             />
+            {health === "ok" && providerReady === false && (
+              <div
+                dir="rtl"
+                role="status"
+                className="mb-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[12px] leading-relaxed text-amber-200/90"
+              >
+                المساعد الذكي <span className="font-semibold">غير مفعّل بعد</span> على هذا النشر —
+                يعمل فور إضافة مفتاح المزوّد في إعدادات النشر. بقية النظام يعمل بالكامل.
+              </div>
+            )}
             <form
               className="flex items-end gap-2"
               onSubmit={(e) => {
