@@ -24,6 +24,7 @@ import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
+import { DashboardPreviewRail } from "@/components/os/DashboardPreviewRail";
 import { AriaTodayRecommendations } from "@/components/aria/AriaTodayRecommendations";
 import { AriaDailySummary } from "@/components/aria/AriaDailySummary";
 import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
@@ -379,6 +380,7 @@ function IntroLanding() {
       >
         <AriaDailySummary />
         <SovereignCommandDeck ar={ar} />
+        <DashboardPreviewRail ar={ar} />
         <AriaTodayRecommendations />
         <OsDecisionQueue ar={ar} />
       </section>
