@@ -8,52 +8,8 @@
  * screens. Full RTL, ≥44px touch targets, works on phone/laptop/desktop.
  */
 import { Link } from "@tanstack/react-router";
-import {
-  Activity,
-  BarChart3,
-  Bot,
-  Boxes,
-  Building2,
-  ClipboardCheck,
-  FileText,
-  Gauge,
-  Map as MapIcon,
-  Moon,
-  Radar,
-  Shield,
-  ShieldAlert,
-  Siren,
-  Sparkles,
-  Wrench,
-} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-
-interface ModuleTile {
-  readonly to: string;
-  readonly ar: string;
-  readonly en: string;
-  readonly icon: typeof Shield;
-}
-
-// Every `to` verified to exist under src/routes/_authenticated.
-const MODULES: readonly ModuleTile[] = [
-  { to: "/sec", ar: "الأمن الصناعي", en: "Industrial Security", icon: Shield },
-  { to: "/mission-control", ar: "مركز القيادة", en: "Mission Control", icon: Gauge },
-  { to: "/situation-room", ar: "غرفة العمليات", en: "Situation Room", icon: Radar },
-  { to: "/executive-map", ar: "الخريطة التنفيذية", en: "Executive Map", icon: MapIcon },
-  { to: "/agents", ar: "الوكلاء الأذكياء", en: "AI Agents", icon: Bot },
-  { to: "/digital-twin", ar: "التوأم الرقمي", en: "Digital Twin", icon: Boxes },
-  { to: "/executive-reports", ar: "التقارير التنفيذية", en: "Executive Reports", icon: BarChart3 },
-  { to: "/analytics", ar: "الإحصائيات", en: "Analytics", icon: Activity },
-  { to: "/governance", ar: "الحوكمة", en: "Governance", icon: ClipboardCheck },
-  { to: "/risk", ar: "المخاطر", en: "Risk", icon: ShieldAlert },
-  { to: "/sec/maintenance", ar: "الصيانة", en: "Maintenance", icon: Wrench },
-  { to: "/sec/permits", ar: "التصاريح", en: "Permits", icon: FileText },
-  { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
-  { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
-  { to: "/hajj", ar: "منصة نُسك الحج", en: "Hajj Platform", icon: Moon },
-  { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
-];
+import { MODULES } from "@/lib/nav/modules";
 
 export function SystemModulesDashboard() {
   const { locale } = useI18n();

@@ -32,6 +32,7 @@ import {
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
+import { moduleByRoute } from "@/lib/nav/modules";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { useRegion } from "@/lib/region-context";
@@ -116,7 +117,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function useNavGroups(): NavGroup[] {
   const { locale } = useI18n();
   const ar = (arText: string, enText: string) => (locale === "ar" ? arText : enText);
-  return [
+  // Single source of truth: any nav item whose route is a canonical module
+  // takes its label + icon from the module registry, so a module's identity
+  // can never drift between the sidebar and the dashboard (constitution 13.5).
+  // Routes not in the registry (sub-pages, admin) keep their own labels.
+  const canon = (i: NavItem): NavItem => {
+    const m = moduleByRoute(i.to);
+    return m ? { to: i.to, icon: m.icon, label: locale === "ar" ? m.ar : m.en } : i;
+  };
+  const groups: NavGroup[] = [
     {
       label: ar("الرئيسية", "Home"),
       items: [{ to: "/", icon: Home, label: ar("الرئيسية", "Home") }],
@@ -178,6 +187,7 @@ function useNavGroups(): NavGroup[] {
       ],
     },
   ];
+  return groups.map((g) => ({ ...g, items: g.items.map(canon) }));
 }
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
