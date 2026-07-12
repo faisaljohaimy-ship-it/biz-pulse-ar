@@ -26,6 +26,7 @@ import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { DashboardPreviewRail } from "@/components/os/DashboardPreviewRail";
 import { AriaTodayRecommendations } from "@/components/aria/AriaTodayRecommendations";
+import { AriaAnomalyStrip } from "@/components/aria/AriaAnomalyStrip";
 import { AriaDailySummary } from "@/components/aria/AriaDailySummary";
 import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
@@ -381,6 +382,7 @@ function IntroLanding() {
         <AriaDailySummary />
         <SovereignCommandDeck ar={ar} />
         <DashboardPreviewRail ar={ar} />
+        <AriaAnomalyStrip />
         <AriaTodayRecommendations />
         <OsDecisionQueue ar={ar} />
       </section>
