@@ -160,7 +160,7 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
         />
       </div>
 
-      <div className="relative mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-3 sm:gap-4">
+      <div className="relative mt-4 flex snap-x gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&>*]:min-w-[62%] [&>*]:shrink-0 [&>*]:snap-start sm:mt-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:pb-0 sm:[&>*]:min-w-0">
         {tiles.map((t) => (
           <div
             key={t.key}

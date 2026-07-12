@@ -185,7 +185,7 @@ function IntelligencePage() {
       {/* Panel 1 — Agent Council */}
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">{ar ? "مجلس الوكلاء" : "Agent Council"}</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {agents.map((a) => {
             const Icon = ROLE_ICON[a.role] ?? Brain;
             return (

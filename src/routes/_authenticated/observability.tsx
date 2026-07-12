@@ -93,7 +93,7 @@ function ObservabilityPage() {
         subtitle="Cost budgets, secrets rotation, AI consumption, audit trail"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat label="AI calls (last 500)" value={totals.calls.toLocaleString()} />
         <Stat label="Total tokens" value={totals.tokens.toLocaleString()} />
         <Stat label="Estimated cost (USD)" value={`$${totals.cost.toFixed(4)}`} />
