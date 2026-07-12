@@ -45,3 +45,13 @@ git push origin main --force-with-lease
 - افتح `https://neexios.com` → الصفحة الرئيسية تظهر بلا أخطاء.
 - سجّل الدخول → يعمل.
 - لا رسالة «Missing Supabase environment variable(s)».
+
+## التراجع عن هجرة ARIA Phase 1 (aria_conversations/preferences/learning_log)
+الهجرة `20260712100000_aria_conversations_preferences_learning.sql` **إضافية
+بالكامل** ولا تمسّ أي جدول قائم. للتراجع (نادراً ما يلزم) نفّذ في SQL Editor:
+```sql
+DROP TABLE IF EXISTS public.aria_learning_log CASCADE;
+DROP TABLE IF EXISTS public.aria_preferences CASCADE;
+DROP TABLE IF EXISTS public.aria_conversations CASCADE;
+```
+لا تأثير على بيانات إنتاجية أخرى — هذه جداول جديدة فارغة عند الإنشاء.
