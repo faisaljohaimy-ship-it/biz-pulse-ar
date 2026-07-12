@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import {
+  createAnthropicProvider,
   createLovableAiGatewayProvider,
   createOpenRouterProvider,
-  DEFAULT_LOVABLE_MODEL,
-  DEFAULT_OPENROUTER_MODEL,
+  ANTHROPIC_MODELS,
   LOVABLE_MODELS,
   OPENROUTER_MODELS,
 } from "@/lib/ai-gateway.server";
@@ -30,6 +30,7 @@ void CORS_HEADERS_OPTIONS;
 
 const OPENROUTER_MODEL_IDS = new Set<string>(OPENROUTER_MODELS.map((m) => m.id));
 const LOVABLE_MODEL_IDS = new Set<string>(LOVABLE_MODELS.map((m) => m.id));
+const ANTHROPIC_MODEL_IDS = new Set<string>(ANTHROPIC_MODELS.map((m) => m.id));
 
 const responseHeaders = chatResponseHeaders;
 const jsonError = chatJsonError;
@@ -181,20 +182,22 @@ export const Route = createFileRoute("/api/chat")({
         return new Response(null, { status: 204, headers: responseHeaders(requestId) });
       },
       POST: async ({ request }) => {
+        const anthropicKey = process.env.ANTHROPIC_API_KEY;
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openrouterKey = process.env.OPENROUTER_API_KEY;
+        const useAnthropic = !!anthropicKey;
         // The Lovable AI gateway is bound to Lovable's own platform and can
         // reject requests from other hosts. On Vercel, when an OpenRouter key
         // is available, prefer the platform-neutral OpenRouter provider so the
         // chat works regardless of where it's deployed.
         const preferOpenRouterOnVercel = !!process.env.VERCEL && !!openrouterKey;
         const useLovable = !!lovableKey && !preferOpenRouterOnVercel;
-        if (!useLovable && !openrouterKey) {
+        if (!useAnthropic && !useLovable && !openrouterKey) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
           // Graceful, not a crash: 503 + machine code so the client renders an
           // elegant "not activated yet" state instead of a raw error. Add
-          // OPENROUTER_API_KEY (or LOVABLE_API_KEY) to the deployment env to enable.
+          // ANTHROPIC_API_KEY / OPENROUTER_API_KEY / LOVABLE_API_KEY to enable.
           return Response.json(
             {
               ok: false,
@@ -218,22 +221,22 @@ export const Route = createFileRoute("/api/chat")({
         const routerDecision = resolveModel(parseIntent(intentHeader), {
           lovable: useLovable,
           openrouter: !!openrouterKey,
+          anthropic: useAnthropic,
         });
 
-        let vendor: "lovable" | "openrouter";
+        let vendor: "lovable" | "openrouter" | "anthropic";
         let selectedModelId: string;
-        if (modelId && useLovable && LOVABLE_MODEL_IDS.has(modelId)) {
+        // Honor an explicit client-picked model only if that provider is
+        // actually configured; otherwise defer to the router's best choice.
+        if (modelId && useAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
+          vendor = "anthropic";
+          selectedModelId = modelId;
+        } else if (modelId && useLovable && LOVABLE_MODEL_IDS.has(modelId)) {
           vendor = "lovable";
           selectedModelId = modelId;
-        } else if (modelId && !useLovable && OPENROUTER_MODEL_IDS.has(modelId)) {
+        } else if (modelId && !!openrouterKey && OPENROUTER_MODEL_IDS.has(modelId)) {
           vendor = "openrouter";
           selectedModelId = modelId;
-        } else if (modelId && useLovable) {
-          vendor = "lovable";
-          selectedModelId = DEFAULT_LOVABLE_MODEL;
-        } else if (modelId) {
-          vendor = "openrouter";
-          selectedModelId = DEFAULT_OPENROUTER_MODEL;
         } else {
           vendor = routerDecision.vendor;
           selectedModelId = routerDecision.modelId;
@@ -283,13 +286,20 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const provider =
-          vendor === "lovable"
-            ? createLovableAiGatewayProvider(lovableKey!)
-            : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
+          vendor === "anthropic"
+            ? createAnthropicProvider(anthropicKey!)
+            : vendor === "lovable"
+              ? createLovableAiGatewayProvider(lovableKey!)
+              : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
         const model = provider(selectedModelId);
         console.log("[api/chat] provider", {
           requestId,
-          provider: vendor === "lovable" ? "lovable-ai-gateway" : "openrouter",
+          provider:
+            vendor === "anthropic"
+              ? "anthropic"
+              : vendor === "lovable"
+                ? "lovable-ai-gateway"
+                : "openrouter",
           model: selectedModelId,
           intent: parseIntent(intentHeader),
           anonymous: isAnonymous,

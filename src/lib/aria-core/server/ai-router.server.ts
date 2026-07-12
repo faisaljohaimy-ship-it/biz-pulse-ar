@@ -19,7 +19,7 @@ export type AriaIntent =
   | "engineering"
   | "unknown";
 
-export type Vendor = "lovable" | "openrouter";
+export type Vendor = "lovable" | "openrouter" | "anthropic";
 
 export interface ResolvedModel {
   vendor: Vendor;
@@ -30,6 +30,7 @@ export interface ResolvedModel {
 const LOVABLE_GEMINI_FLASH = "google/gemini-3-flash-preview";
 const LOVABLE_GPT_5_MINI = "openai/gpt-5-mini";
 const OPENROUTER_CLAUDE = "anthropic/claude-3.5-sonnet";
+const ANTHROPIC_SONNET = "claude-3-5-sonnet-latest";
 
 export function parseIntent(header: string | null | undefined): AriaIntent {
   const v = (header ?? "").toLowerCase().trim();
@@ -48,9 +49,20 @@ export function parseIntent(header: string | null | undefined): AriaIntent {
 export interface AvailableProviders {
   lovable: boolean;
   openrouter: boolean;
+  anthropic?: boolean;
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
+  // Native Anthropic (Claude) is the PRIMARY provider when configured.
+  if (providers.anthropic) {
+    return {
+      vendor: "anthropic",
+      modelId: ANTHROPIC_SONNET,
+      fallback: providers.openrouter
+        ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
+        : undefined,
+    };
+  }
   if (providers.lovable) {
     return {
       vendor: "lovable",

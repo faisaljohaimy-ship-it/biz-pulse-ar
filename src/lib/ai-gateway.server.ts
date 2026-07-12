@@ -52,3 +52,22 @@ export const OPENROUTER_MODELS = [
 ] as const;
 
 export const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.5-flash";
+
+// Native Anthropic — via Anthropic's OpenAI-compatible endpoint, so it reuses
+// the same createOpenAICompatible pipeline (no extra package). Key is passed as
+// a Bearer token. This is the PRIMARY provider when ANTHROPIC_API_KEY is set.
+export const createAnthropicProvider = (apiKey: string) =>
+  createOpenAICompatible({
+    name: "anthropic",
+    baseURL: "https://api.anthropic.com/v1",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
+
+export const ANTHROPIC_MODELS = [
+  { id: "claude-3-5-haiku-latest", label: "Claude 3.5 Haiku" },
+  { id: "claude-3-5-sonnet-latest", label: "Claude 3.5 Sonnet" },
+] as const;
+
+export const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-latest";
