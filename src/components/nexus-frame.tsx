@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { ArrowRight, Sparkles, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
@@ -71,6 +72,7 @@ export function NexusPage({
   nextAction,
   why,
   whatNext,
+  backdropImage,
 }: {
   eyebrow?: string;
   title: string;
@@ -83,11 +85,14 @@ export function NexusPage({
   nextAction?: { label: string; onClick: () => void };
   why?: string;
   whatNext?: string;
+  /** Optional glossy photographic backdrop for this page. */
+  backdropImage?: string;
 }) {
   return (
-    <div className="relative min-h-[calc(100vh-3.5rem)] overflow-hidden bg-[#04060f] text-slate-200">
+    <div className="relative isolate min-h-[calc(100vh-3.5rem)] overflow-hidden bg-[#04060f] text-slate-200">
       {/* Background field */}
       <div className="pointer-events-none absolute inset-0">
+        {backdropImage && <GlossyImageBackdrop src={backdropImage} className="z-0" opacity={0.38} />}
         <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-cyan-500/15 blur-[120px]" />
         <div className="absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-blue-600/20 blur-[120px]" />
         <div className="absolute bottom-0 left-1/2 h-80 w-[80%] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[120px]" />

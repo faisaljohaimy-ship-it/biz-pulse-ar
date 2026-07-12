@@ -18,6 +18,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
+import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -479,9 +480,11 @@ function CommandCenterPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#04101E] text-white"
+      className="relative isolate min-h-screen overflow-hidden bg-[#04101E] text-white"
       style={{ fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif" }}
     >
+      {/* Themed command-center backdrop (glossy). */}
+      <GlossyImageBackdrop src="/command-center-bg.jpeg" opacity={0.6} />
       {/* Header */}
       <header className="border-b border-emerald-400/15 bg-[#061A2E]/80 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
