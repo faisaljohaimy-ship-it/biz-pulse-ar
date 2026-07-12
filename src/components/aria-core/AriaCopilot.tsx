@@ -27,6 +27,7 @@ import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
+import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
 import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
@@ -182,20 +183,25 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
       className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
-      {/* ARIA hologram portrait — full-panel cinematic backdrop */}
-      <img
-        src={ariaHologramPortrait.url}
-        alt=""
-        draggable={false}
-        className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-60"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)",
-          maskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)",
-          filter: "saturate(115%)",
-        }}
-      />
+      {/* Phase 0 — ARIA cinematic signature (the visual brand of the window). */}
+      <AriaSignatureBackdrop />
+      {/* ARIA hologram portrait — shown only in voice-conversation mode so the
+          default text chat keeps the clean signature backdrop. */}
+      {convMode && (
+        <img
+          src={ariaHologramPortrait.url}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-60"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)",
+            maskImage:
+              "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)",
+            filter: "saturate(115%)",
+          }}
+        />
+      )}
       {/* Readability veil so chat text remains crisp over the portrait. */}
       <div
         className="absolute inset-0"
