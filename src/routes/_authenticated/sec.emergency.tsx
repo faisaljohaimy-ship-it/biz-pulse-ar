@@ -2,6 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
 import { Siren, Flame, Wind, Droplets, Phone } from "lucide-react";
+import { EmergencyBroadcast } from "@/components/aria/EmergencyBroadcast";
 
 export const Route = createFileRoute("/_authenticated/sec/emergency")({
   errorComponent: RouteError,
@@ -82,6 +83,7 @@ function Emergency() {
           </p>
         </div>
       </div>
+      <EmergencyBroadcast />
     </div>
   );
 }

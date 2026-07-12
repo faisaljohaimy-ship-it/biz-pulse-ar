@@ -55,3 +55,11 @@ DROP TABLE IF EXISTS public.aria_preferences CASCADE;
 DROP TABLE IF EXISTS public.aria_conversations CASCADE;
 ```
 لا تأثير على بيانات إنتاجية أخرى — هذه جداول جديدة فارغة عند الإنشاء.
+
+## التراجع عن هجرة تنبيهات الطوارئ (aria_alerts/aria_alert_acks)
+الهجرة `20260713100000_aria_emergency_alerts.sql` إضافية بالكامل. للتراجع:
+```sql
+DROP TABLE IF EXISTS public.aria_alert_acks CASCADE;
+DROP TABLE IF EXISTS public.aria_alerts CASCADE;
+```
+لا تأثير على بيانات إنتاجية أخرى — جداول جديدة فارغة عند الإنشاء.
