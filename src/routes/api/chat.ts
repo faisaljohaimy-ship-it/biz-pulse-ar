@@ -183,7 +183,12 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) => {
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openrouterKey = process.env.OPENROUTER_API_KEY;
-        const useLovable = !!lovableKey;
+        // The Lovable AI gateway is bound to Lovable's own platform and can
+        // reject requests from other hosts. On Vercel, when an OpenRouter key
+        // is available, prefer the platform-neutral OpenRouter provider so the
+        // chat works regardless of where it's deployed.
+        const preferOpenRouterOnVercel = !!process.env.VERCEL && !!openrouterKey;
+        const useLovable = !!lovableKey && !preferOpenRouterOnVercel;
         if (!useLovable && !openrouterKey) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
@@ -485,18 +490,27 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
           },
 
           onError: (error) => {
-            console.error("[api/chat] stream response error", { requestId, error });
             const msg = error instanceof Error ? error.message : String(error);
-            if (msg.includes("401") || msg.includes("403"))
-              return "ARIA could not authenticate with the AI gateway. Please contact support.";
-            if (msg.includes("402"))
-              return "AI credits are exhausted on the workspace. Please add credits in Settings → Plans & credits.";
-            if (msg.includes("429"))
-              return "ARIA is temporarily rate limited. Please retry in a moment.";
-            if (msg.includes("AbortError") || msg.toLowerCase().includes("timeout")) {
-              return "ARIA took too long to respond. Please retry; the chat will reconnect automatically.";
-            }
-            return "ARIA could not complete this response. Please retry or open the diagnostics panel with the request ID.";
+            console.error("[api/chat] stream response error", {
+              requestId,
+              vendor,
+              model: selectedModelId,
+              error: msg,
+            });
+            const status = (msg.match(/\b(4\d\d|5\d\d)\b/) ?? [])[1];
+            const lower = msg.toLowerCase();
+            if (status === "401" || status === "403" || lower.includes("authenticat"))
+              return "تعذّر توثيق آريا مع مزوّد الذكاء — تحقّق من صحة مفتاح المزوّد في إعدادات النشر.";
+            if (status === "402" || lower.includes("credit") || lower.includes("quota"))
+              return "رصيد الذكاء غير كافٍ لدى المزوّد — أضف رصيداً ثم أعد المحاولة.";
+            if (status === "429") return "الطلبات كثيرة الآن — أعد المحاولة بعد لحظات.";
+            if (status === "404" || lower.includes("not found") || lower.includes("no such model"))
+              return "النموذج غير متاح لمفتاحك لدى المزوّد — راجع الخطة أو النموذج في إعدادات النشر.";
+            if (status === "400")
+              return "رفض المزوّد الطلب (400) — غالبًا النموذج غير مدعوم بمفتاحك الحالي؛ جرّب مزوّدًا آخر.";
+            if (lower.includes("aborterror") || lower.includes("timeout"))
+              return "استغرقت آريا وقتًا طويلًا — أعد المحاولة، وستُعيد الاتصال تلقائيًا.";
+            return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة أو راجع إعدادات المزوّد. المعرّف: ${requestId}`;
           },
           onFinish: async ({ messages: finalMessages }) => {
             // Anonymous visitors: no persistence, no memory writes.
