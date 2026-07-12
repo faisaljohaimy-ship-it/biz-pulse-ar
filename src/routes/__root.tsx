@@ -23,6 +23,7 @@ import { Toaster } from "@/components/ui/sonner";
 // `src/lib/aria-core/README.md` for the migration kill-list.
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
+import { InstallAppBar } from "@/components/aria/InstallAppBar";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
 import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
@@ -119,6 +120,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      // PWA — installable on iPhone/Android/Windows/Mac from one link.
+      { name: "theme-color", content: "#04070F" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "ARIA" },
+      { name: "application-name", content: "ARIA · NEXIOS" },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
       {
@@ -175,10 +183,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/x-icon", href: "/aria-icon.jpeg" },
       { rel: "apple-touch-icon", href: "/aria-icon.jpeg" },
       { rel: "shortcut icon", type: "image/x-icon", href: "/aria-icon.jpeg" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
       {
         children: `(function(){try{var s=localStorage.getItem('locale');var l=(s==='ar'||s==='en')?s:'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';}catch(e){}})();`,
+      },
+      {
+        // PWA service-worker registration (offline shell + faster loads). Runs
+        // after load so it never blocks first paint; failures are swallowed.
+        children: `(function(){if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}})();`,
       },
       {
         // Article XIII — Crash-Loop Breaker (iOS Safari OOM recovery).
@@ -327,6 +341,7 @@ function RootComponent() {
                     <Outlet />
                   </div>
                   {!introActive && <AriaCopilot />}
+                  <InstallAppBar />
                   {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
                       route auto-narration, no page greeters. */}

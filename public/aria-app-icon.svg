@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="ARIA">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="80%">
+      <stop offset="0%" stop-color="#0A1B33"/>
+      <stop offset="55%" stop-color="#06101F"/>
+      <stop offset="100%" stop-color="#04070F"/>
+    </radialGradient>
+    <linearGradient id="a" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#3AE8FF"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Full-bleed background so the icon is safe as a maskable icon. -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- Orbit ring -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#3AE8FF" stroke-opacity="0.18" stroke-width="3"/>
+  <circle cx="256" cy="106" r="7" fill="#3AE8FF" filter="url(#glow)"/>
+  <!-- Stylized "A" (ARIA) within the maskable safe zone -->
+  <g filter="url(#glow)">
+    <path d="M256 150 L332 360 L292 360 L276 314 L236 314 L220 360 L180 360 Z"
+          fill="url(#a)"/>
+    <rect x="243" y="270" width="26" height="26" rx="6" fill="#04070F"/>
+  </g>
+</svg>
