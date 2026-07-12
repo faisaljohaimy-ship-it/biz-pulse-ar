@@ -7,16 +7,16 @@
 import { memo, type ComponentProps } from "react";
 import { cjk } from "@streamdown/cjk";
 import { math } from "@streamdown/math";
+import { code } from "@streamdown/code";
+import { mermaid } from "@streamdown/mermaid";
 import { Streamdown } from "streamdown";
 import { cn } from "@/lib/utils";
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
-// NOTE: the `code` (shiki) and `mermaid` plugins are intentionally NOT loaded —
-// together they pulled a ~13 MB vendor chunk whose Rollup render phase blew the
-// Vercel Hobby build memory (OOM/SIGKILL). Code blocks still render as <pre>
-// and mermaid blocks as plain code; markdown/tables/math are unaffected.
-const streamdownPlugins = { cjk, math };
+// Restore syntax highlighting (shiki) and mermaid diagram rendering for
+// assistant messages — see monitoring finding 5d3d756f.
+const streamdownPlugins = { cjk, math, code, mermaid };
 
 export const MessageResponseImpl = memo(
   ({ className, ...props }: MessageResponseProps) => (
