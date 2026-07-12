@@ -28,6 +28,7 @@ import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
+import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
 import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
@@ -879,6 +880,20 @@ export function AriaCopilot() {
     if (lastUserText) submit(lastUserText);
   };
 
+  // Quick commands (Phase 2 §4). A search-style command focuses the composer
+  // with a prefix; the rest send a ready-made prompt to ARIA immediately.
+  const runQuickCommand = useCallback(
+    (cmd: QuickCommand) => {
+      if (cmd.needsInput) {
+        setDraft(cmd.inputPrefix ?? "");
+        requestAnimationFrame(() => composerRef.current?.focus({ preventScroll: true }));
+        return;
+      }
+      void submit(cmd.prompt);
+    },
+    [submit, composerRef],
+  );
+
   const stopListening = useCallback(() => {
     const r = recRef.current;
     if (r) {
@@ -1395,6 +1410,58 @@ export function AriaCopilot() {
               >
                 المساعد الذكي <span className="font-semibold">غير مفعّل بعد</span> على هذا النشر —
                 يعمل فور إضافة مفتاح المزوّد في إعدادات النشر. بقية النظام يعمل بالكامل.
+              </div>
+            )}
+            {/* Slash-command menu — appears while the draft starts with "/". */}
+            {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
+              <div
+                dir="rtl"
+                role="listbox"
+                aria-label="أوامر سريعة"
+                className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
+              >
+                {matchQuickCommands(draft.slice(1)).map((cmd) => {
+                  const Icon = cmd.icon;
+                  return (
+                    <button
+                      key={cmd.id}
+                      type="button"
+                      role="option"
+                      aria-selected={false}
+                      onClick={() => runQuickCommand(cmd)}
+                      className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      <span className="font-semibold">/{cmd.slash}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {cmd.prompt || cmd.inputPrefix}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Quick-command chips — shown when the composer is empty. */}
+            {!draft.trim() && !isBusy && (
+              <div
+                dir="rtl"
+                className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {QUICK_COMMANDS.map((cmd) => {
+                  const Icon = cmd.icon;
+                  return (
+                    <button
+                      key={cmd.id}
+                      type="button"
+                      onClick={() => runQuickCommand(cmd)}
+                      title={cmd.prompt || cmd.inputPrefix}
+                      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/25 bg-background/70 px-3 py-1.5 text-xs font-medium text-foreground/90 transition-all hover:border-primary/50 hover:bg-primary/10"
+                    >
+                      <Icon className="h-3.5 w-3.5 text-primary" aria-hidden />
+                      <span>{cmd.ar}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
             <form
