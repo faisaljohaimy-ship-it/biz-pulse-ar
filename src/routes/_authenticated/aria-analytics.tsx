@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { AriaUsageAnalytics } from "@/components/aria/AriaUsageAnalytics";
+import { AriaAnomalyStrip } from "@/components/aria/AriaAnomalyStrip";
 import { AriaDailySummary } from "@/components/aria/AriaDailySummary";
 
 export const Route = createFileRoute("/_authenticated/aria-analytics")({
@@ -22,6 +23,7 @@ function AriaAnalyticsPage() {
         </p>
       </div>
       <AriaDailySummary />
+      <AriaAnomalyStrip />
       <AriaUsageAnalytics />
     </div>
   );
