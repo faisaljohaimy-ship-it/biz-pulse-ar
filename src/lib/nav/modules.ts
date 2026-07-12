@@ -19,6 +19,7 @@ import {
   ClipboardCheck,
   FileText,
   Gauge,
+  LineChart,
   Map as MapIcon,
   Moon,
   Radar,
@@ -54,6 +55,7 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
   { to: "/hajj", ar: "منصة نُسك الحج", en: "Hajj Platform", icon: Moon },
   { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
+  { to: "/aria-analytics", ar: "تحليلات آريا", en: "ARIA Analytics", icon: LineChart },
 ];
 
 const BY_ROUTE = new Map<string, ModuleEntry>(MODULES.map((m) => [m.to, m]));
