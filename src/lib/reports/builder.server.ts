@@ -1,9 +1,10 @@
 // Server-only binary report generators (PDF + XLSX) for the Executive Snapshot.
 // Uses pdf-lib and xlsx — both already in dependencies.
 
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import * as XLSX from "xlsx";
 import type { ExecutiveSnapshot } from "./snapshot.server";
+import { ARIA_SIGNATURE_WORDMARK } from "@/lib/aria/signature";
 
 const PAGE = { width: 612, height: 792 }; // US Letter
 const MARGIN = 40;
@@ -26,7 +27,28 @@ function newPage(ctx: Ctx): void {
   drawHeader(ctx);
 }
 
+// Faint tiled «ARIA@nexios.com» wordmark behind every page — the same visual
+// signature as the chat backdrop and loading screen (unified identity). The
+// wordmark is Latin, so it encodes cleanly in pdf-lib's WinAnsi fonts.
+function drawSignatureWatermark(page: PDFPage, font: PDFFont): void {
+  const line = `${ARIA_SIGNATURE_WORDMARK}   ${ARIA_SIGNATURE_WORDMARK}   ${ARIA_SIGNATURE_WORDMARK}`;
+  const ink = rgb(0.55, 0.63, 0.73);
+  for (let i = 0; i < 11; i++) {
+    page.drawText(line, {
+      x: -60,
+      y: 40 + i * 72,
+      size: 26,
+      font,
+      color: ink,
+      opacity: 0.05,
+      rotate: degrees(-19),
+    });
+  }
+}
+
 function drawHeader(ctx: Ctx): void {
+  // Signature watermark first, so all content sits above it.
+  drawSignatureWatermark(ctx.page, ctx.font);
   ctx.page.drawRectangle({
     x: 0,
     y: PAGE.height - 28,
