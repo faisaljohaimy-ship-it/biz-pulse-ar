@@ -67,7 +67,7 @@ export function ExecutiveShowcaseHub() {
         <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#3AE8FF]/40 to-transparent" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
         {CARDS.map((c) => {
           const Icon = c.icon;
           return (
@@ -87,7 +87,7 @@ export function ExecutiveShowcaseHub() {
                 }}
               />
               {/* Glass body (inset creates the 1.5px gradient border) */}
-              <div className="relative m-[1.5px] overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-[#04101c]/88 p-6 backdrop-blur-xl transition-colors duration-500 group-hover:bg-[#061a2e]/88 sm:p-8">
+              <div className="relative m-[1.5px] overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-[#04101c]/88 p-4 backdrop-blur-xl transition-colors duration-500 group-hover:bg-[#061a2e]/88 sm:p-8">
                 {/* Accent glow blob */}
                 <span
                   aria-hidden
@@ -107,10 +107,10 @@ export function ExecutiveShowcaseHub() {
                   }}
                 />
 
-                <div className="relative flex items-start gap-4">
+                <div className="relative flex items-start gap-3 sm:gap-4">
                   {/* Icon chip */}
                   <span
-                    className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border transition-transform duration-500 group-hover:scale-105"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border transition-transform duration-500 group-hover:scale-105 sm:h-14 sm:w-14"
                     style={{
                       borderColor: `${c.accent}66`,
                       background: `${c.accent}1A`,
@@ -130,7 +130,7 @@ export function ExecutiveShowcaseHub() {
                   </div>
                 </div>
 
-                <p className="relative mt-4 text-sm leading-relaxed text-white/65">
+                <p className="relative mt-3 text-xs leading-relaxed text-white/65 sm:mt-4 sm:text-sm">
                   {ar ? c.descAr : c.descEn}
                 </p>
 
