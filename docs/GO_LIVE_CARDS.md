@@ -26,15 +26,17 @@
    |---|---|
    | `NITRO_PRESET` | `vercel` |
 
-   **(ب) مفاتيح Supabase العلنية** — انسخ قيمتها من ملف `.env` في مستودعك على GitHub (افتح `github.com` → مستودع biz-pulse-ar → ملف `.env`)، أو من **Supabase Dashboard → Project Settings → API**:
-   | Key | من أين آخذ القيمة |
-   |---|---|
-   | `VITE_SUPABASE_URL` | حقل **Project URL** في Supabase → Settings → API |
-   | `VITE_SUPABASE_PUBLISHABLE_KEY` | مفتاح **publishable/anon** في Supabase → Settings → API |
-   | `VITE_SUPABASE_PROJECT_ID` | **Reference ID** في Supabase → Settings → General |
-   | `SUPABASE_URL` | نفس قيمة `VITE_SUPABASE_URL` |
-   | `SUPABASE_PUBLISHABLE_KEY` | نفس قيمة `VITE_SUPABASE_PUBLISHABLE_KEY` |
-   | `SUPABASE_PROJECT_ID` | نفس قيمة `VITE_SUPABASE_PROJECT_ID` |
+   **(ب) مفاتيح Supabase العلنية (إلزامية — الحد الأدنى للتشغيل)** — قيمتها من **Supabase Dashboard → Project Settings → API**. الكود يقبل الاسم الجديد `ANON` أو القديم `PUBLISHABLE`، فيكفي أحدهما:
+   | Key | إلزامي؟ | من أين آخذ القيمة |
+   |---|---|---|
+   | `VITE_SUPABASE_URL` | ✅ إلزامي | حقل **Project URL** في Supabase → Settings → API |
+   | `VITE_SUPABASE_ANON_KEY` | ✅ إلزامي | مفتاح **anon / publishable** (يبدأ بـ `sb_publishable_…`) في Supabase → Settings → API |
+   | `SUPABASE_URL` | موصى به | نفس قيمة `VITE_SUPABASE_URL` (لعمل الخادم/SSR) |
+   | `SUPABASE_ANON_KEY` | موصى به | نفس قيمة `VITE_SUPABASE_ANON_KEY` (لعمل تسجيل الدخول من الخادم) |
+   | `VITE_SUPABASE_PROJECT_ID` | اختياري | **Reference ID** في Supabase → Settings → General |
+
+   > الكود يقرأ المفتاح بهذا الترتيب: `VITE_SUPABASE_ANON_KEY` ← `VITE_SUPABASE_PUBLISHABLE_KEY` ←
+   > `SUPABASE_ANON_KEY` ← `SUPABASE_PUBLISHABLE_KEY`. أي واحد منها يكفي — لا حاجة لإضافتها كلها.
 
    **(ج) أعلام تشغيل عامة** (اكتبها كما هي):
    | Key | Value |
@@ -44,29 +46,39 @@
    | `VITE_VOICE_FALLBACK` | `el-only` |
    | `VITE_HAJJ_EMBED_URL` | `https://hajj-nexus-prime.lovable.app/` |
 
-   **(د) الأسرار الخادمية** — انسخ قيمتها من **إعدادات Lovable الحالية** (نفس المفاتيح التي يعمل بها موقعك الآن) أو من مصدرها المذكور. **لا تكتب أي منها في أي ملف — فقط في خانة Vercel:**
-   | Key | من أين آخذ القيمة |
-   |---|---|
-   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → **service_role** (سرّي) |
-   | `DATABASE_URL` | Supabase → Settings → Database → **Connection string** |
-   | `ELEVENLABS_API_KEY` | لوحة ElevenLabs → Profile → API Key |
-   | `ELEVENLABS_AGENT_ID` | لوحة ElevenLabs → Agents (يُفعّل المحادثة الصوتية) |
-   | `OPENROUTER_API_KEY` | لوحة OpenRouter → Keys |
-   | `LOVABLE_API_KEY` | إعدادات Lovable الحالية |
-   | `LOVABLE_SEND_URL` | إعدادات Lovable الحالية |
-   | `CRON_HOOK_SECRET` | إعدادات Lovable الحالية |
-   | `SITE_URL` | اكتب `https://neexios.com` |
-   | `STRIPE_SECRET_KEY` | لوحة Stripe (إن كنت تستخدم الدفع) |
-   | `MICROSOFT_OUTLOOK_API_KEY` وبقية `MICROSOFT_*` | إعدادات Lovable الحالية (إن مستخدمة) |
-   | `POWERBI_CLIENT_ID` وبقية `POWERBI_*` | إعدادات Lovable الحالية (إن مستخدمة) |
-   | `HEYGEN_API_KEY` وبقية `HEYGEN_*` | إعدادات Lovable الحالية (إن مستخدمة) |
+   **(د) الأسرار الخادمية** — قيمتها من مصدرها المذكور. **لا تكتب أي منها في أي ملف أو محادثة — فقط في خانة Vercel Environment Variables:**
 
-   > الأسرار غير المستخدمة حاليًا يمكن تركها إلى وقت الحاجة — الموقع يعمل بدونها.
+   *لتشغيل الشات بوت (آريا) — أضِف **واحداً** من هذين يكفي:*
+   | Key | الأثر | من أين آخذ القيمة |
+   |---|---|---|
+   | `OPENROUTER_API_KEY` | يُفعّل الشات بوت | لوحة OpenRouter → Keys |
+   | `LOVABLE_API_KEY` | بديل يُفعّل الشات بوت | إعدادات Lovable الحالية |
+
+   > بدون أيٍّ منهما لا ينهار الموقع — يظهر الشات بحالة أنيقة «المساعد الذكي غير مفعّل بعد».
+
+   *أسرار اختيارية (الموقع يعمل بدونها — أضِفها عند الحاجة فقط):*
+   | Key | الأثر عند الإضافة | من أين آخذ القيمة |
+   |---|---|---|
+   | `SUPABASE_SERVICE_ROLE_KEY` | عمليات خادمية تتجاوز RLS (تدقيق/تعلّم) | Supabase → Settings → API → **service_role** (سرّي) |
+   | `DATABASE_URL` | اتصال مباشر بقاعدة البيانات | Supabase → Settings → Database → **Connection string** |
+   | `ELEVENLABS_API_KEY` | صوت آريا (TTS) | لوحة ElevenLabs → Profile → API Key |
+   | `ELEVENLABS_AGENT_ID` | وضع المحادثة الصوتية | لوحة ElevenLabs → Agents |
+   | `SITE_URL` / `PUBLIC_SITE_URL` | روابط مطلقة صحيحة في الرسائل | اكتب `https://neexios.com` |
+   | `LOVABLE_SEND_URL` | إرسال بريد عبر Lovable | إعدادات Lovable الحالية |
+   | `CRON_HOOK_SECRET` / `MICROSOFT_SYNC_HOOK_SECRET` | تأمين نقاط الـ webhooks | إعدادات Lovable الحالية |
+   | `STRIPE_SECRET_KEY` | الدفع | لوحة Stripe |
+   | `MICROSOFT_*` (Outlook/Teams/SharePoint) | تكاملات مايكروسوفت | إعدادات Lovable الحالية |
+   | `POWERBI_*` / `POWER_BI_API_KEY` | تضمين Power BI | إعدادات Lovable الحالية |
+   | `HEYGEN_*` / `LIVEAVATAR_API_KEY` | الأفاتار الحيّ | إعدادات المزوّد |
+   | `NEXIOS_DEMO_PASSWORD` / `DEMO_PASSWORD` | قفل وضع العرض التوضيحي | تختاره بنفسك |
+
+   > كل الأسرار غير المضبوطة تتحلّل بأمان (fallback) — لا انهيار صفحة، والقسم المتأثّر وحده يعرض رسالة عربية واضحة.
 
 8. بعد إضافة المتغيّرات، اضغط **Deploy**.
 9. انتظر حتى تظهر كلمة **Congratulations** ورابط ينتهي بـ **.vercel.app**. **انسخ هذا الرابط** — نحتاجه في البطاقة ②.
 10. افتح الرابط `.vercel.app` وتأكّد أن الصفحة الرئيسية تظهر بلا خطأ.
-    - إن ظهر خطأ **Missing Supabase…** فمعناه أن أحد مفاتيح `VITE_SUPABASE_*` ناقص أو خاطئ — راجع الخطوة 7(ب)، أصلحه، ثم اضغط **Redeploy**.
+    - إن ظهر خطأ **Missing Supabase…** فمعناه أن `VITE_SUPABASE_URL` أو `VITE_SUPABASE_ANON_KEY` ناقص أو خاطئ — راجع الخطوة 7(ب)، أصلحه، ثم اضغط **Redeploy**.
+    - إن ظهر في الشات «المساعد الذكي غير مفعّل بعد» — أضِف `OPENROUTER_API_KEY` (أو `LOVABLE_API_KEY`) في الخطوة 7(د) ثم **Redeploy**.
 
 ---
 
