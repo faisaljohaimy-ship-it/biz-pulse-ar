@@ -35,7 +35,7 @@ export function BusinessKpiPanel({ data }: { data: BusinessKpiSet }) {
       </div>
 
       {data.outcomes.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
           {data.outcomes.slice(0, 6).map((o) => (
             <div key={o.id} className="rounded-lg border border-white/5 bg-background/30 p-3">
               <div className="text-[10px] font-mono uppercase text-foreground/40">{o.category}</div>

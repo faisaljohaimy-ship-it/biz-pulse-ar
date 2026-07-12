@@ -131,7 +131,7 @@ export function OsExecutiveStrip({ ar }: { readonly ar: boolean }) {
           <SimBadge ar={ar} />
         </div>
       ) : null}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
         {items.map((it) => (
           <KpiCard
             key={it.key}

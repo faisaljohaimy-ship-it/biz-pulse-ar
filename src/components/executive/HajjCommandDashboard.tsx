@@ -324,7 +324,7 @@ function KpiStrip() {
 function StationsPanel() {
   return (
     <Panel title="شبكة المحطات" icon={<Building className="h-4 w-4 text-[#3AE8FF]" />}>
-      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <ul className="grid grid-cols-2 gap-2">
         {STATIONS.map((s) => {
           const m = STATUS_META[s.status];
           return (

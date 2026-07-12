@@ -91,7 +91,7 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
           className="hidden h-px flex-1 bg-gradient-to-r from-[#3AE8FF]/40 via-white/10 to-transparent sm:ms-4 sm:block"
         />
       </div>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+      <ul className="grid grid-cols-2 gap-2.5 sm:gap-4">
         {decisions.map((d) => (
           <li key={d.key}>
             <Link
