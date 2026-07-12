@@ -124,6 +124,7 @@ import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedBridgeRouteImport } from './routes/_authenticated/bridge'
 import { Route as AuthenticatedBoardroomRouteImport } from './routes/_authenticated/boardroom'
 import { Route as AuthenticatedAriaDocumentsRouteImport } from './routes/_authenticated/aria-documents'
+import { Route as AuthenticatedAriaAnalyticsRouteImport } from './routes/_authenticated/aria-analytics'
 import { Route as AuthenticatedAriaRouteImport } from './routes/_authenticated/aria'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAnalystRouteImport } from './routes/_authenticated/analyst'
@@ -794,6 +795,12 @@ const AuthenticatedAriaDocumentsRoute =
     path: '/aria-documents',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAriaAnalyticsRoute =
+  AuthenticatedAriaAnalyticsRouteImport.update({
+    id: '/aria-analytics',
+    path: '/aria-analytics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAriaRoute = AuthenticatedAriaRouteImport.update({
   id: '/aria',
   path: '/aria',
@@ -1236,6 +1243,7 @@ export interface FileRoutesByFullPath {
   '/analyst': typeof AuthenticatedAnalystRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/aria': typeof AuthenticatedAriaRouteWithChildren
+  '/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
   '/aria-documents': typeof AuthenticatedAriaDocumentsRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
   '/bridge': typeof AuthenticatedBridgeRoute
@@ -1425,6 +1433,7 @@ export interface FileRoutesByTo {
   '/analyst': typeof AuthenticatedAnalystRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/aria': typeof AuthenticatedAriaRouteWithChildren
+  '/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
   '/aria-documents': typeof AuthenticatedAriaDocumentsRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
   '/bridge': typeof AuthenticatedBridgeRoute
@@ -1614,6 +1623,7 @@ export interface FileRoutesById {
   '/_authenticated/analyst': typeof AuthenticatedAnalystRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/aria': typeof AuthenticatedAriaRouteWithChildren
+  '/_authenticated/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
   '/_authenticated/aria-documents': typeof AuthenticatedAriaDocumentsRoute
   '/_authenticated/boardroom': typeof AuthenticatedBoardroomRoute
   '/_authenticated/bridge': typeof AuthenticatedBridgeRoute
@@ -1805,6 +1815,7 @@ export interface FileRouteTypes {
     | '/analyst'
     | '/analytics'
     | '/aria'
+    | '/aria-analytics'
     | '/aria-documents'
     | '/boardroom'
     | '/bridge'
@@ -1994,6 +2005,7 @@ export interface FileRouteTypes {
     | '/analyst'
     | '/analytics'
     | '/aria'
+    | '/aria-analytics'
     | '/aria-documents'
     | '/boardroom'
     | '/bridge'
@@ -2182,6 +2194,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analyst'
     | '/_authenticated/analytics'
     | '/_authenticated/aria'
+    | '/_authenticated/aria-analytics'
     | '/_authenticated/aria-documents'
     | '/_authenticated/boardroom'
     | '/_authenticated/bridge'
@@ -3220,6 +3233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAriaDocumentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/aria-analytics': {
+      id: '/_authenticated/aria-analytics'
+      path: '/aria-analytics'
+      fullPath: '/aria-analytics'
+      preLoaderRoute: typeof AuthenticatedAriaAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/aria': {
       id: '/_authenticated/aria'
       path: '/aria'
@@ -3843,6 +3863,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAnalystRoute: typeof AuthenticatedAnalystRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedAriaRoute: typeof AuthenticatedAriaRouteWithChildren
+  AuthenticatedAriaAnalyticsRoute: typeof AuthenticatedAriaAnalyticsRoute
   AuthenticatedAriaDocumentsRoute: typeof AuthenticatedAriaDocumentsRoute
   AuthenticatedBoardroomRoute: typeof AuthenticatedBoardroomRoute
   AuthenticatedBridgeRoute: typeof AuthenticatedBridgeRoute
@@ -3916,6 +3937,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnalystRoute: AuthenticatedAnalystRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedAriaRoute: AuthenticatedAriaRouteWithChildren,
+  AuthenticatedAriaAnalyticsRoute: AuthenticatedAriaAnalyticsRoute,
   AuthenticatedAriaDocumentsRoute: AuthenticatedAriaDocumentsRoute,
   AuthenticatedBoardroomRoute: AuthenticatedBoardroomRoute,
   AuthenticatedBridgeRoute: AuthenticatedBridgeRoute,
