@@ -117,6 +117,7 @@ function IntegrationsHubPage() {
 
   return (
     <NexusPage
+      backdropImage="/integration-gateway-bg.jpeg"
       eyebrow="INTEGRATION CONTROL"
       title={ar ? "مركز التكاملات الموحد" : "Unified Integration Center"}
       subtitle={

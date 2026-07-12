@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -1087,8 +1088,9 @@ function MissionControl() {
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
-      className="min-h-screen bg-[#061A2E] text-white relative overflow-hidden"
+      className="relative isolate min-h-screen overflow-hidden bg-[#061A2E] text-white"
     >
+      <GlossyImageBackdrop src="/ceo-dashboard-bg.png" opacity={0.5} />
       {!welcomeDone && (
         <WelcomeOverlay ar={ar} onDone={() => setWelcomeDone(true)} name={displayName} />
       )}

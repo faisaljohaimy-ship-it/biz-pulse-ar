@@ -83,6 +83,7 @@ function FabricPage() {
 
   return (
     <NexusPage
+      backdropImage="/enterprise-erp-bg.jpeg"
       eyebrow="NEXUS INTELLIGENCE FABRIC"
       title={ar ? "النسيج الذكي المؤسسي" : "Nexus Intelligence Fabric"}
       subtitle={
