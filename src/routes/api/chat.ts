@@ -206,12 +206,22 @@ export const Route = createFileRoute("/api/chat")({
         // deprioritize Lovable to a last resort: only used when it is the sole key.
         const hasNeutralProvider = useGoogle || useAnthropic || useOpenrouter;
         const useLovable = !!lovableKey && !isCooling("lovable") && !hasNeutralProvider;
-        if (!hasNeutralProvider && !useLovable) {
+        // Last-ditch: if EVERY configured vendor is cooling, ignore the
+        // cool-down and let the router pick anyway. Keeping ARIA "permanently
+        // on" is worth one more upstream attempt — if it fails, the vendor
+        // will just re-cool.
+        const hasAnyKey = !!(googleKey || anthropicKey || openrouterKey || lovableKey);
+        const forceUncool = hasAnyKey && !hasNeutralProvider && !useLovable;
+        const effUseGoogle = useGoogle || (forceUncool && !!googleKey);
+        const effUseAnthropic = useAnthropic || (forceUncool && !!anthropicKey);
+        const effUseOpenrouter = useOpenrouter || (forceUncool && !!openrouterKey);
+        const effHasNeutral = effUseGoogle || effUseAnthropic || effUseOpenrouter;
+        const effUseLovable =
+          !!lovableKey && (useLovable || (forceUncool && !effHasNeutral));
+
+        if (!effHasNeutral && !effUseLovable) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
-          // Graceful, not a crash: 503 + machine code so the client renders an
-          // elegant "not activated yet" state instead of a raw error. Add
-          // ANTHROPIC_API_KEY / OPENROUTER_API_KEY / LOVABLE_API_KEY to enable.
           return Response.json(
             {
               ok: false,
