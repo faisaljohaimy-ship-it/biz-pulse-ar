@@ -9,25 +9,30 @@ export const Route = createFileRoute("/api/chat/health")({
     handlers: {
       GET: async () => {
         // Report the provider that WOULD actually serve a request, mirroring
-        // the priority in ai-router.server.ts: Anthropic → OpenRouter → Lovable.
-        // Never returns the secret itself — only which provider is active.
+        // the priority in ai-router.server.ts: Google → Anthropic → OpenRouter
+        // → Lovable. Never returns the secret itself — only which is active.
+        const google = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
         const anthropic = !!process.env.ANTHROPIC_API_KEY;
         const openrouter = !!process.env.OPENROUTER_API_KEY;
         const lovable = !!process.env.LOVABLE_API_KEY;
-        const provider = anthropic
-          ? "anthropic"
-          : openrouter
-            ? "openrouter"
-            : lovable
-              ? "lovable"
-              : null;
-        const model = anthropic
-          ? "claude-3-5-sonnet-latest"
-          : openrouter
-            ? "anthropic/claude-3.5-sonnet"
-            : lovable
-              ? "google/gemini-3-flash-preview"
-              : null;
+        const provider = google
+          ? "google-gemini"
+          : anthropic
+            ? "anthropic"
+            : openrouter
+              ? "openrouter"
+              : lovable
+                ? "lovable"
+                : null;
+        const model = google
+          ? "gemini-2.5-flash"
+          : anthropic
+            ? "claude-3-5-sonnet-latest"
+            : openrouter
+              ? "anthropic/claude-3.5-sonnet"
+              : lovable
+                ? "google/gemini-3-flash-preview"
+                : null;
         return Response.json({ ok: true, provider, model, key_present: !!provider });
       },
     },

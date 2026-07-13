@@ -71,3 +71,25 @@ export const ANTHROPIC_MODELS = [
 ] as const;
 
 export const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-latest";
+
+// Native Google Gemini — via Google's OpenAI-compatible endpoint, so it reuses
+// the same createOpenAICompatible pipeline (no extra package). The key is a
+// FREE Google AI Studio key (aistudio.google.com/apikey) with a generous free
+// tier for Gemini Flash — so ARIA runs on Gemini Flash WITHOUT the credit-gated
+// Lovable gateway. Set GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY) to use.
+export const createGoogleGeminiProvider = (apiKey: string) =>
+  createOpenAICompatible({
+    name: "google",
+    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
+
+export const GOOGLE_MODELS = [
+  { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+  { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+] as const;
+
+export const DEFAULT_GOOGLE_MODEL = "gemini-2.5-flash";

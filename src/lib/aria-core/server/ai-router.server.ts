@@ -19,7 +19,7 @@ export type AriaIntent =
   | "engineering"
   | "unknown";
 
-export type Vendor = "lovable" | "openrouter" | "anthropic";
+export type Vendor = "google" | "lovable" | "openrouter" | "anthropic";
 
 export interface ResolvedModel {
   vendor: Vendor;
@@ -27,6 +27,7 @@ export interface ResolvedModel {
   fallback?: { vendor: Vendor; modelId: string };
 }
 
+const GOOGLE_GEMINI_FLASH = "gemini-2.5-flash";
 const LOVABLE_GEMINI_FLASH = "google/gemini-3-flash-preview";
 const LOVABLE_GPT_5_MINI = "openai/gpt-5-mini";
 const OPENROUTER_CLAUDE = "anthropic/claude-3.5-sonnet";
@@ -47,19 +48,35 @@ export function parseIntent(header: string | null | undefined): AriaIntent {
 }
 
 export interface AvailableProviders {
+  google?: boolean;
   lovable: boolean;
   openrouter: boolean;
   anthropic?: boolean;
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
-  // Priority: Anthropic → OpenRouter → Lovable.
+  // Priority: Google (Gemini) → Anthropic → OpenRouter → Lovable.
   //
   // The Lovable AI gateway is bound to Lovable's own platform and is credit
   // gated — when its credits run out every call returns HTTP 402 and ARIA goes
-  // silent. So any PLATFORM-NEUTRAL provider (native Anthropic, then OpenRouter)
-  // is always preferred over it on every host. Lovable stays only as the final
-  // resort when it is the sole configured provider.
+  // silent. So any PLATFORM-NEUTRAL provider is always preferred over it. Native
+  // Google Gemini is first because its free AI-Studio tier runs Gemini Flash at
+  // no cost — the exact model ARIA already uses — with no credit gate.
+
+  // Native Google Gemini (Gemini Flash) is the PRIMARY provider when configured.
+  if (providers.google) {
+    return {
+      vendor: "google",
+      modelId: GOOGLE_GEMINI_FLASH,
+      fallback: providers.anthropic
+        ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
+        : providers.openrouter
+          ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
+          : providers.lovable
+            ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
+            : undefined,
+    };
+  }
 
   // Native Anthropic (Claude) is the PRIMARY provider when configured.
   if (providers.anthropic) {

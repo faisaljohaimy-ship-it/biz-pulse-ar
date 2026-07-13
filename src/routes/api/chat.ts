@@ -2,9 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import {
   createAnthropicProvider,
+  createGoogleGeminiProvider,
   createLovableAiGatewayProvider,
   createOpenRouterProvider,
   ANTHROPIC_MODELS,
+  GOOGLE_MODELS,
   LOVABLE_MODELS,
   OPENROUTER_MODELS,
 } from "@/lib/ai-gateway.server";
@@ -31,6 +33,7 @@ void CORS_HEADERS_OPTIONS;
 const OPENROUTER_MODEL_IDS = new Set<string>(OPENROUTER_MODELS.map((m) => m.id));
 const LOVABLE_MODEL_IDS = new Set<string>(LOVABLE_MODELS.map((m) => m.id));
 const ANTHROPIC_MODEL_IDS = new Set<string>(ANTHROPIC_MODELS.map((m) => m.id));
+const GOOGLE_MODEL_IDS = new Set<string>(GOOGLE_MODELS.map((m) => m.id));
 
 const responseHeaders = chatResponseHeaders;
 const jsonError = chatJsonError;
@@ -185,15 +188,19 @@ export const Route = createFileRoute("/api/chat")({
         const anthropicKey = process.env.ANTHROPIC_API_KEY;
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openrouterKey = process.env.OPENROUTER_API_KEY;
+        // Native Google Gemini — a FREE Google AI Studio key runs Gemini Flash
+        // with no credit gate. Accept either common env name.
+        const googleKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        const useGoogle = !!googleKey;
         const useAnthropic = !!anthropicKey;
         // The Lovable AI gateway is bound to Lovable's own platform and is
         // credit-gated — when credits run out every call returns HTTP 402 and
-        // ARIA goes silent. So whenever ANY platform-neutral provider (native
-        // Anthropic or OpenRouter) is configured, on ANY host, we deprioritize
-        // Lovable to a last resort: it is only used when it is the sole key.
-        const hasNeutralProvider = useAnthropic || !!openrouterKey;
+        // ARIA goes silent. So whenever ANY platform-neutral provider (Google
+        // Gemini, native Anthropic or OpenRouter) is configured, on ANY host, we
+        // deprioritize Lovable to a last resort: only used when it is the sole key.
+        const hasNeutralProvider = useGoogle || useAnthropic || !!openrouterKey;
         const useLovable = !!lovableKey && !hasNeutralProvider;
-        if (!useAnthropic && !useLovable && !openrouterKey) {
+        if (!hasNeutralProvider && !useLovable) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
           // Graceful, not a crash: 503 + machine code so the client renders an
@@ -220,16 +227,20 @@ export const Route = createFileRoute("/api/chat")({
         // Otherwise resolve from the intent hint the Brain publishes via header.
         const intentHeader = request.headers.get("x-aria-intent");
         const routerDecision = resolveModel(parseIntent(intentHeader), {
+          google: useGoogle,
           lovable: useLovable,
           openrouter: !!openrouterKey,
           anthropic: useAnthropic,
         });
 
-        let vendor: "lovable" | "openrouter" | "anthropic";
+        let vendor: "google" | "lovable" | "openrouter" | "anthropic";
         let selectedModelId: string;
         // Honor an explicit client-picked model only if that provider is
         // actually configured; otherwise defer to the router's best choice.
-        if (modelId && useAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
+        if (modelId && useGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
+          vendor = "google";
+          selectedModelId = modelId;
+        } else if (modelId && useAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
           vendor = "anthropic";
           selectedModelId = modelId;
         } else if (modelId && useLovable && LOVABLE_MODEL_IDS.has(modelId)) {
@@ -287,20 +298,24 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const provider =
-          vendor === "anthropic"
-            ? createAnthropicProvider(anthropicKey!)
-            : vendor === "lovable"
-              ? createLovableAiGatewayProvider(lovableKey!)
-              : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
+          vendor === "google"
+            ? createGoogleGeminiProvider(googleKey!)
+            : vendor === "anthropic"
+              ? createAnthropicProvider(anthropicKey!)
+              : vendor === "lovable"
+                ? createLovableAiGatewayProvider(lovableKey!)
+                : createOpenRouterProvider(openrouterKey!, new URL(request.url).origin);
         const model = provider(selectedModelId);
         console.log("[api/chat] provider", {
           requestId,
           provider:
-            vendor === "anthropic"
-              ? "anthropic"
-              : vendor === "lovable"
-                ? "lovable-ai-gateway"
-                : "openrouter",
+            vendor === "google"
+              ? "google-gemini"
+              : vendor === "anthropic"
+                ? "anthropic"
+                : vendor === "lovable"
+                  ? "lovable-ai-gateway"
+                  : "openrouter",
           model: selectedModelId,
           intent: parseIntent(intentHeader),
           anonymous: isAnonymous,
