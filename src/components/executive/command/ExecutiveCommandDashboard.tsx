@@ -25,6 +25,9 @@ import { ActivityRing } from "./ActivityRing";
 import { CommandHeader } from "./CommandHeader";
 import { KpiRow } from "./KpiRow";
 import { AriaPanel } from "./AriaPanel";
+import { InitiativesList } from "./InitiativesList";
+import { QuickModules } from "./QuickModules";
+import { SummaryBar } from "./SummaryBar";
 
 export function ExecutiveCommandDashboard() {
   const { locale } = useI18n();
@@ -71,6 +74,8 @@ export function ExecutiveCommandDashboard() {
                 </p>
               </div>
               <KpiRow ar={ar} accent={accent} counts={counts} />
+              <InitiativesList ar={ar} accent={accent} counts={counts} />
+              <QuickModules ar={ar} accent={accent} />
             </div>
 
             {/* ── Center · activity stage ────────────────────────────── */}
@@ -86,6 +91,11 @@ export function ExecutiveCommandDashboard() {
 
             {/* ── Right · ARIA panel ─────────────────────────────────── */}
             <AriaPanel ar={ar} accent={accent} />
+          </div>
+
+          {/* ── Full-width overall performance summary ─────────────── */}
+          <div className="mt-4">
+            <SummaryBar ar={ar} accent={accent} counts={counts} />
           </div>
 
           {/* footer hint — quick jump to the full modules grid */}
