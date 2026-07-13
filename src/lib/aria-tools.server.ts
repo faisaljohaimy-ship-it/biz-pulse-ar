@@ -605,6 +605,17 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         note: z.string().max(500).optional(),
       }),
       execute: async ({ id, decision, note }) => {
+        // Defense-in-depth: approving/rejecting a permit-to-work is an
+        // authority decision, so require admin/manager at the application
+        // layer too — not just RLS. Mirrors send_executive_email. Additive
+        // only (never loosens); RLS remains the primary enforcement.
+        const { hasAnyPlatformRole } = await import("@/lib/authz.server");
+        if (!(await hasAnyPlatformRole(userId, ["admin", "manager"]))) {
+          return {
+            ok: false,
+            error: "Forbidden: deciding a permit-to-work requires admin or manager role.",
+          };
+        }
         const { data, error } = await supabase
           .from("sec_permits")
           .update({ status: decision })
