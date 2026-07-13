@@ -27,7 +27,7 @@ export default defineConfig({
   // markdown/shiki chunk — with oniguruma wasm inlined in module mode — is the
   // peak build-memory consumer that OOM-kills the Vercel build. Turning it off
   // slashes peak RSS. The CLIENT bundle stays minified (Vite default).
-  ...(process.env.VERCEL ? { nitro: { preset: "vercel", minify: false } } : {}),
+  ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
   vite: {
     plugins: [mcpPlugin()],
     build: {
