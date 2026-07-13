@@ -20,6 +20,11 @@ import {
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
 import { evaluateRagCoverage } from "@/lib/aria/rag.server";
 import { parseIntent, resolveModel } from "@/lib/aria-core/server/ai-router.server";
+import {
+  isCooling,
+  markVendorFatal,
+  shouldCoolFromError,
+} from "@/lib/aria-core/server/vendor-health.server";
 import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
 
 const CORS_HEADERS_OPTIONS = {
@@ -191,21 +196,32 @@ export const Route = createFileRoute("/api/chat")({
         // Native Google Gemini — a FREE Google AI Studio key runs Gemini Flash
         // with no credit gate. Accept either common env name.
         const googleKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-        const useGoogle = !!googleKey;
-        const useAnthropic = !!anthropicKey;
+        const useGoogle = !!googleKey && !isCooling("google");
+        const useAnthropic = !!anthropicKey && !isCooling("anthropic");
+        const useOpenrouter = !!openrouterKey && !isCooling("openrouter");
         // The Lovable AI gateway is bound to Lovable's own platform and is
         // credit-gated — when credits run out every call returns HTTP 402 and
         // ARIA goes silent. So whenever ANY platform-neutral provider (Google
         // Gemini, native Anthropic or OpenRouter) is configured, on ANY host, we
         // deprioritize Lovable to a last resort: only used when it is the sole key.
-        const hasNeutralProvider = useGoogle || useAnthropic || !!openrouterKey;
-        const useLovable = !!lovableKey && !hasNeutralProvider;
-        if (!hasNeutralProvider && !useLovable) {
+        const hasNeutralProvider = useGoogle || useAnthropic || useOpenrouter;
+        const useLovable = !!lovableKey && !isCooling("lovable") && !hasNeutralProvider;
+        // Last-ditch: if EVERY configured vendor is cooling, ignore the
+        // cool-down and let the router pick anyway. Keeping ARIA "permanently
+        // on" is worth one more upstream attempt — if it fails, the vendor
+        // will just re-cool.
+        const hasAnyKey = !!(googleKey || anthropicKey || openrouterKey || lovableKey);
+        const forceUncool = hasAnyKey && !hasNeutralProvider && !useLovable;
+        const effUseGoogle = useGoogle || (forceUncool && !!googleKey);
+        const effUseAnthropic = useAnthropic || (forceUncool && !!anthropicKey);
+        const effUseOpenrouter = useOpenrouter || (forceUncool && !!openrouterKey);
+        const effHasNeutral = effUseGoogle || effUseAnthropic || effUseOpenrouter;
+        const effUseLovable =
+          !!lovableKey && (useLovable || (forceUncool && !effHasNeutral));
+
+        if (!effHasNeutral && !effUseLovable) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
-          // Graceful, not a crash: 503 + machine code so the client renders an
-          // elegant "not activated yet" state instead of a raw error. Add
-          // ANTHROPIC_API_KEY / OPENROUTER_API_KEY / LOVABLE_API_KEY to enable.
           return Response.json(
             {
               ok: false,
@@ -227,26 +243,24 @@ export const Route = createFileRoute("/api/chat")({
         // Otherwise resolve from the intent hint the Brain publishes via header.
         const intentHeader = request.headers.get("x-aria-intent");
         const routerDecision = resolveModel(parseIntent(intentHeader), {
-          google: useGoogle,
-          lovable: useLovable,
-          openrouter: !!openrouterKey,
-          anthropic: useAnthropic,
+          google: effUseGoogle,
+          lovable: effUseLovable,
+          openrouter: effUseOpenrouter,
+          anthropic: effUseAnthropic,
         });
 
         let vendor: "google" | "lovable" | "openrouter" | "anthropic";
         let selectedModelId: string;
-        // Honor an explicit client-picked model only if that provider is
-        // actually configured; otherwise defer to the router's best choice.
-        if (modelId && useGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
+        if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
           vendor = "google";
           selectedModelId = modelId;
-        } else if (modelId && useAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
+        } else if (modelId && effUseAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
           vendor = "anthropic";
           selectedModelId = modelId;
-        } else if (modelId && useLovable && LOVABLE_MODEL_IDS.has(modelId)) {
+        } else if (modelId && effUseLovable && LOVABLE_MODEL_IDS.has(modelId)) {
           vendor = "lovable";
           selectedModelId = modelId;
-        } else if (modelId && !!openrouterKey && OPENROUTER_MODEL_IDS.has(modelId)) {
+        } else if (modelId && effUseOpenrouter && OPENROUTER_MODEL_IDS.has(modelId)) {
           vendor = "openrouter";
           selectedModelId = modelId;
         } else {
@@ -445,7 +459,11 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             : {}),
 
           onError: ({ error }) => {
-            console.error("[api/chat] streamText error", { requestId, error });
+            const errMsg = error instanceof Error ? error.message : String(error);
+            if (shouldCoolFromError(errMsg)) {
+              markVendorFatal(vendor, errMsg.slice(0, 200));
+            }
+            console.error("[api/chat] streamText error", { requestId, vendor, error: errMsg });
             // INVARIANT-11 (self-healing ledger): record model errors so the
             // evolution engine can react.
             if (userId) {
@@ -517,6 +535,9 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
 
           onError: (error) => {
             const msg = error instanceof Error ? error.message : String(error);
+            if (shouldCoolFromError(msg)) {
+              markVendorFatal(vendor, msg.slice(0, 200));
+            }
             console.error("[api/chat] stream response error", {
               requestId,
               vendor,
