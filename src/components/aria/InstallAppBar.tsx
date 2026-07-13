@@ -10,6 +10,7 @@
  */
 import { useEffect, useState } from "react";
 import { Download, Share, Plus, X } from "lucide-react";
+import { useAriaStore } from "@/lib/aria-core/state/aria-store";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
