@@ -953,6 +953,15 @@ html, body { overflow-x: hidden; }
 @keyframes nx-hub-ping { 0% { transform: scale(0.55); opacity: 0.8; } 100% { transform: scale(1.7); opacity: 0; } }
 .nx-hub-ping { transform-box: fill-box; transform-origin: center; animation: nx-hub-ping 2.6s ease-out infinite; }
 
+/* ARIA — animated voice waveform (staggered bars) + a slow orbiting ring. */
+@keyframes nx-wave { 0%, 100% { transform: scaleY(0.32); } 50% { transform: scaleY(1); } }
+.nx-wave-bar { transform-origin: center; animation: nx-wave 1.3s ease-in-out infinite; }
+@keyframes nx-orb-spin { to { transform: rotate(360deg); } }
+.nx-orb-ring { animation: nx-orb-spin 14s linear infinite; transform-origin: center; }
+@keyframes nx-orb-spin-rev { to { transform: rotate(-360deg); } }
+.nx-orb-ring-rev { animation: nx-orb-spin-rev 20s linear infinite; transform-origin: center; }
+
 @media (prefers-reduced-motion: reduce) {
-  .nx-living-border, .nx-radar-sweep, .nx-hub-ping { animation: none !important; }
+  .nx-living-border, .nx-radar-sweep, .nx-hub-ping,
+  .nx-wave-bar, .nx-orb-ring, .nx-orb-ring-rev { animation: none !important; }
 }
