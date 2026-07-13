@@ -92,7 +92,9 @@ export function NexusPage({
     <div className="relative isolate min-h-[calc(100vh-3.5rem)] overflow-hidden bg-[#04060f] text-slate-200">
       {/* Background field */}
       <div className="pointer-events-none absolute inset-0">
-        {backdropImage && <GlossyImageBackdrop src={backdropImage} className="z-0" opacity={0.38} />}
+        {backdropImage && (
+          <GlossyImageBackdrop src={backdropImage} className="z-0" opacity={0.38} />
+        )}
         <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-cyan-500/15 blur-[120px]" />
         <div className="absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-blue-600/20 blur-[120px]" />
         <div className="absolute bottom-0 left-1/2 h-80 w-[80%] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[120px]" />
