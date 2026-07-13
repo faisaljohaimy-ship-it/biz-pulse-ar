@@ -889,3 +889,66 @@ html, body { overflow-x: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .nx-icon-soft { animation: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Executive Command Console (poster) — region-themed glass + living borders.
+   All colour flows from --nx-region-rgb so the whole console re-tints on
+   region switch. GPU-composited (box-shadow/opacity/border-color only).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Frosted command surface — the console's panels/cards. Region-tinted glass. */
+.nx-cmd-surface {
+  background:
+    linear-gradient(150deg,
+      rgba(var(--nx-region-rgb, 58, 232, 255), 0.08),
+      rgba(6, 22, 42, 0.55) 42%),
+    rgba(4, 15, 28, 0.62);
+  border: 1px solid rgba(var(--nx-region-rgb, 58, 232, 255), 0.18);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 60px -34px rgba(var(--nx-region-rgb, 58, 232, 255), 0.55);
+}
+
+/* Living border — a calm glowing frame that breathes in the region colour.
+   Used on the console shell and hero panels. */
+@keyframes nx-living-border-breathe {
+  0%, 100% {
+    border-color: rgba(var(--nx-region-rgb, 58, 232, 255), 0.22);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 26px -8px rgba(var(--nx-region-rgb, 58, 232, 255), 0.35);
+  }
+  50% {
+    border-color: rgba(var(--nx-region-rgb, 58, 232, 255), 0.44);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 40px -6px rgba(var(--nx-region-rgb, 58, 232, 255), 0.55);
+  }
+}
+.nx-living-border {
+  border: 1px solid rgba(var(--nx-region-rgb, 58, 232, 255), 0.22);
+  animation: nx-living-border-breathe 7s ease-in-out infinite;
+  will-change: box-shadow, border-color;
+}
+
+/* Corner brackets — the HUD "frame" accents in the poster. Pure border tint. */
+.nx-hud-corner::before,
+.nx-hud-corner::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: rgba(var(--nx-region-rgb, 58, 232, 255), 0.6);
+  pointer-events: none;
+}
+.nx-hud-corner::before { top: 8px; inset-inline-start: 8px; border-top: 2px solid; border-inline-start: 2px solid; border-start-start-radius: 8px; }
+.nx-hud-corner::after  { bottom: 8px; inset-inline-end: 8px; border-bottom: 2px solid; border-inline-end: 2px solid; border-end-end-radius: 8px; }
+
+/* Radar sweep — a slow rotating beam inside the central activity stage. */
+@keyframes nx-radar-sweep { to { transform: rotate(360deg); } }
+.nx-radar-sweep { animation: nx-radar-sweep 8s linear infinite; transform-origin: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-living-border, .nx-radar-sweep { animation: none !important; }
+}

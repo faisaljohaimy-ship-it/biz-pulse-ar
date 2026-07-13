@@ -37,6 +37,7 @@ import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
 import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
+import { ExecutiveCommandDashboard } from "@/components/executive/command/ExecutiveCommandDashboard";
 import {
   HAJJ_INTERNAL_ROUTE,
   HAJJ_PLATFORM_LABEL_AR,
@@ -351,6 +352,13 @@ function IntroLanding() {
           }
         `}</style>
       </section>
+
+      {/* ══ Executive Command Console (poster) — the region-themed command
+          center: HUD header, KPIs, activity radar and the ARIA panel. This is
+          the first-page dashboard; it re-tints live on region switch. ══ */}
+      <div className="relative z-10 mt-2 sm:mt-4">
+        <ExecutiveCommandDashboard />
+      </div>
 
       {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══
           Floats over the ARIA hologram as translucent glass instruments so
