@@ -7,6 +7,234 @@ import * as React from "react";
 import { z } from "zod";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
+import { REGIONS } from "@/lib/regions";
+import { regionSim } from "@/lib/sec/region-sim-data";
+import { Shield, HardHat, Wrench, Bot, FileText, Boxes, Activity, ShieldAlert } from "lucide-react";
+
+/* ─────────── Scene visuals — real fixture data, honestly «محاكاة»-badged
+   (constitution art. 11 + 13.5). Compact glass instruments below each scene. */
+
+const SIM_CHIP =
+  "inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold text-[#3AE8FF]";
+
+function bridgeAggregate() {
+  const per = REGIONS.map((r) => ({ r, c: regionSim(r.id).counts }));
+  const sum = (f: (c: (typeof per)[number]["c"]) => number) => per.reduce((a, x) => a + f(x.c), 0);
+  const avg = (f: (c: (typeof per)[number]["c"]) => number) => Math.round(sum(f) / per.length);
+  return { per, sum, avg };
+}
+
+function GlassPanel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mx-auto w-full max-w-2xl rounded-2xl border border-[#3AE8FF]/20 bg-[#061A2E]/45 p-4 backdrop-blur-md">
+      {children}
+    </div>
+  );
+}
+
+// Scene 1 — Enterprise pulse: four aggregate KPIs across the regions.
+function SceneEnterprisePulse() {
+  const { sum, avg } = bridgeAggregate();
+  const stats = [
+    { ar: "الامتثال العام", v: `${avg((c) => c.safety)}%`, tone: "text-emerald-300" },
+    { ar: "بلاغات مفتوحة", v: String(sum((c) => c.incidents_open)), tone: "text-amber-300" },
+    { ar: "تنبيهات كاميرات", v: String(sum((c) => c.cctv_new)), tone: "text-[#3AE8FF]" },
+    { ar: "متوسط الجاهزية", v: `${avg((c) => c.readiness)}%`, tone: "text-emerald-300" },
+  ];
+  return (
+    <GlassPanel>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+          نبض المؤسسة · لقطة حيّة
+        </span>
+        <span className={SIM_CHIP}>محاكاة · لقطة عامة</span>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {stats.map((s) => (
+          <div
+            key={s.ar}
+            className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-center"
+          >
+            <div
+              className={`text-lg font-black sm:text-2xl ${s.tone}`}
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {s.v}
+            </div>
+            <div className="mt-1 text-[10px] leading-tight text-white/70">{s.ar}</div>
+          </div>
+        ))}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// Scene 2 — One decision links Security ↔ Safety ↔ Maintenance.
+function SceneDecisionLink() {
+  const { sum } = bridgeAggregate();
+  const nodes = [
+    { ar: "الأمن", icon: Shield, v: sum((c) => c.incidents_open), unit: "بلاغ" },
+    { ar: "السلامة", icon: HardHat, v: sum((c) => c.cctv_new), unit: "تنبيه" },
+    { ar: "الصيانة", icon: Wrench, v: sum((c) => c.assets_offline), unit: "أصل" },
+  ];
+  return (
+    <GlassPanel>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+          قرار واحد · ثلاثة مسارات
+        </span>
+        <span className={SIM_CHIP}>محاكاة</span>
+      </div>
+      <div className="flex items-center justify-center gap-2 sm:gap-4">
+        {nodes.map((n, i) => {
+          const Icon = n.icon;
+          return (
+            <React.Fragment key={n.ar}>
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 text-[#3AE8FF]">
+                  <Icon className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="text-[12px] font-bold text-white">{n.ar}</span>
+                <span
+                  className="text-[11px] text-white/60"
+                  style={{ fontVariantNumeric: "tabular-nums" }}
+                >
+                  {n.v} {n.unit}
+                </span>
+              </div>
+              {i < nodes.length - 1 && (
+                <span
+                  aria-hidden
+                  className="h-px w-6 bg-gradient-to-r from-[#3AE8FF]/60 to-[#3AE8FF]/20 sm:w-10"
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// Scene 3 — The four regional administrations on one board.
+function SceneRegions() {
+  const { per } = bridgeAggregate();
+  return (
+    <GlassPanel>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+          القطاعات الأربعة · جاهزية حيّة
+        </span>
+        <span className={SIM_CHIP}>محاكاة</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {per.map(({ r, c }) => (
+          <div
+            key={r.id}
+            className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-center"
+          >
+            <div className="text-[12px] font-bold text-white">{r.shortAr}</div>
+            <div
+              className="mt-1 text-xl font-black text-emerald-300"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {c.readiness}%
+            </div>
+            <div className="mt-0.5 text-[10px] text-white/55">{c.incidents_open} بلاغ · جاهزية</div>
+          </div>
+        ))}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// Scene 4 — ARIA executive agents at work.
+function SceneAgents() {
+  const agents = [
+    { ar: "وكيل البلاغات", icon: ShieldAlert },
+    { ar: "وكيل التقارير", icon: FileText },
+    { ar: "وكيل الدوريات", icon: Activity },
+    { ar: "وكيل آريا التنفيذي", icon: Bot },
+  ];
+  return (
+    <GlassPanel>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+          وكلاء تنفيذيون · باقتراح واعتماد بشري
+        </span>
+        <span className={SIM_CHIP}>محاكاة</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {agents.map((a) => {
+          const Icon = a.icon;
+          return (
+            <div
+              key={a.ar}
+              className="flex items-center gap-2 rounded-xl border border-[#3AE8FF]/20 bg-[#3AE8FF]/[0.05] p-2.5"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#3AE8FF]/12 text-[#3AE8FF]">
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[11px] font-semibold text-white">{a.ar}</div>
+                <div className="flex items-center gap-1 text-[9px] text-emerald-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> نشط
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// Scene 5 — Live digital twin + executive reports.
+function SceneTwinReports() {
+  const { sum } = bridgeAggregate();
+  const reports = ["تنفيذي", "أسبوعي", "المخاطر", "العمليات"];
+  return (
+    <GlassPanel>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+          التوأم الرقمي الحيّ · التقارير
+        </span>
+        <span className={SIM_CHIP}>محاكاة</span>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#3AE8FF]/12 text-[#3AE8FF]">
+            <Boxes className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <div className="text-[12px] font-bold text-white">التوأم الرقمي</div>
+            <div
+              className="text-[11px] text-white/60"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {sum((c) => c.contractors_active + c.patrols_active)} فرداً في الميدان
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/45">
+            تقارير جاهزة
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {reports.map((rp) => (
+              <span
+                key={rp}
+                className="inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[10px] font-semibold text-[#BEEBFF]"
+              >
+                <FileText className="h-3 w-3" aria-hidden /> {rp}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </GlassPanel>
+  );
+}
 
 export const Route = createFileRoute("/executive-bridge")({
   validateSearch: (s) =>
@@ -62,6 +290,7 @@ const SCENES: Scene[] = [
     body_en:
       "One unified view of security, operations, and the digital twin — vision to execution.",
     accent: "navy",
+    render: () => <SceneEnterprisePulse />,
   },
   {
     id: "command",
@@ -72,6 +301,7 @@ const SCENES: Scene[] = [
     body_ar: "الحوادث، الدوريات، التصاريح، والزوّار — في تدفّق قرارات حيّ واحد.",
     body_en: "Incidents, patrols, permits, and visitors — one live decision stream.",
     accent: "emerald",
+    render: () => <SceneDecisionLink />,
   },
   {
     id: "sec-regions",
@@ -82,6 +312,7 @@ const SCENES: Scene[] = [
     body_ar: "الوسطى، الغربية، الشرقية، الجنوبية — مؤشرات المواقع والحوادث والدوريات لحظياً.",
     body_en: "Central, Western, Eastern, Southern — live site, incident, and patrol telemetry.",
     accent: "emerald",
+    render: () => <SceneRegions />,
   },
   {
     id: "agents",
@@ -92,6 +323,7 @@ const SCENES: Scene[] = [
     body_ar: "يفهمون، ويحلّلون، وينفّذون بموافقة بشرية — لا قرار دون إذن.",
     body_en: "They understand, analyze, and execute with human approval — never without consent.",
     accent: "navy",
+    render: () => <SceneAgents />,
   },
   {
     id: "twin-reports",
@@ -103,6 +335,7 @@ const SCENES: Scene[] = [
     body_en: "A reference simulation of sites and assets, with board-ready executive reports.",
     accent: "emerald",
     showSimRibbon: true,
+    render: () => <SceneTwinReports />,
   },
   {
     id: "closing",
