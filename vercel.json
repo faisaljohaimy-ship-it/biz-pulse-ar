@@ -7,6 +7,11 @@
       "NODE_OPTIONS": "--max-old-space-size=6144"
     }
   },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

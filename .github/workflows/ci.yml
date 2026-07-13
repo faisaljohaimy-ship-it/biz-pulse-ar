@@ -13,8 +13,12 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      # bun.lock resolves from Lovable's private registry mirror; repoint it at
+      # public npm so install works on GitHub's runners (same fix as deploy.yml).
       - name: Install
-        run: bun install --frozen-lockfile
+        run: |
+          sed -i 's#https://europe-west[0-9]*-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache#https://registry.npmjs.org#g' bun.lock
+          bun install
       - name: Typecheck
         run: bunx tsc --noEmit
       - name: Lint
@@ -43,7 +47,9 @@ jobs:
         with:
           bun-version: latest
       - name: Install
-        run: bun install --frozen-lockfile
+        run: |
+          sed -i 's#https://europe-west[0-9]*-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache#https://registry.npmjs.org#g' bun.lock
+          bun install
       - name: Install Playwright chromium
         run: bunx playwright install --with-deps chromium
       - name: Start dev server
