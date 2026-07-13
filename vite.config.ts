@@ -22,7 +22,12 @@ export default defineConfig({
   // render blank and the chatbot returns "could not complete". The GitHub
   // Actions → Cloudflare path (no VERCEL env) keeps the Cloudflare default,
   // so no existing deploy target is disturbed.
-  ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
+  // `minify: false` on the server bundle: the SSR/serverless output does NOT
+  // need minification (size is not perf-critical there), and minifying the huge
+  // markdown/shiki chunk — with oniguruma wasm inlined in module mode — is the
+  // peak build-memory consumer that OOM-kills the Vercel build. Turning it off
+  // slashes peak RSS. The CLIENT bundle stays minified (Vite default).
+  ...(process.env.VERCEL ? { nitro: { preset: "vercel", minify: false } } : {}),
   vite: {
     plugins: [mcpPlugin()],
     build: {

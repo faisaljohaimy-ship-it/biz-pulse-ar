@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "NODE_OPTIONS=--max-old-space-size=6144 vite build",
-    "build:dev": "NODE_OPTIONS=--max-old-space-size=6144 vite build --mode development",
+    "build": "NODE_OPTIONS=--max-old-space-size=7680 vite build",
+    "build:dev": "NODE_OPTIONS=--max-old-space-size=7680 vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsgo --noEmit",
