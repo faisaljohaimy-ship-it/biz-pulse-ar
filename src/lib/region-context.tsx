@@ -12,7 +12,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DEFAULT_REGION_ID, REGIONS, getRegion, type Region, type RegionId } from "./regions";
+import {
+  DEFAULT_REGION_ID,
+  REGION_ACCENT_RGB,
+  REGIONS,
+  getRegion,
+  type Region,
+  type RegionId,
+} from "./regions";
 
 interface RegionContextValue {
   region: Region;
@@ -38,6 +45,16 @@ export function RegionProvider({ children }: { children: ReactNode }) {
       /* localStorage may be unavailable — silently keep default */
     }
   }, []);
+
+  // Drive the app-wide pulse colour from the active region: every icon/sector
+  // halo (--nx-region-rgb in styles.css) breathes in this region's colour.
+  useEffect(() => {
+    try {
+      document.documentElement.style.setProperty("--nx-region-rgb", REGION_ACCENT_RGB[regionId]);
+    } catch {
+      /* noop */
+    }
+  }, [regionId]);
 
   const setRegion = useCallback((id: RegionId) => {
     setRegionState(id);
