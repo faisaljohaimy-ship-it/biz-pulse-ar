@@ -79,14 +79,14 @@ export function InstallAppBar() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  if (!visible || ariaOpen) return null;
 
   return (
     <div
       dir="rtl"
       role="region"
       aria-label="تثبيت التطبيق"
-      className="fixed inset-x-0 bottom-0 z-[120] mx-auto max-w-2xl px-3 pb-[calc(env(safe-area-inset-bottom,0)+12px)]"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-2xl ps-3 pe-[96px] pb-[calc(env(safe-area-inset-bottom,0)+12px)] sm:pe-3"
     >
       <div className="rounded-2xl border border-[#3AE8FF]/25 bg-[#06101F]/95 p-3 shadow-2xl backdrop-blur-md">
         <div className="flex items-center gap-3">
