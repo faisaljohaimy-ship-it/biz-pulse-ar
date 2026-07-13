@@ -149,6 +149,10 @@ function ExecutiveShowcasePage() {
   const [ended, setEnded] = React.useState(false);
   const [duration, setDuration] = React.useState(0);
   const [currentTime, setCurrentTime] = React.useState(0);
+  // The narration video is a Lovable-hosted asset that isn't served on every
+  // host (404 off-Lovable). When it can't load, we self-play the scene tour on
+  // a timer so the showcase always plays instead of sitting on an empty panel.
+  const [videoFailed, setVideoFailed] = React.useState(false);
   const isFinale = ended;
   const scene = SCENES[Math.min(idx, SCENES.length - 1)];
 
@@ -184,6 +188,36 @@ function ExecutiveShowcasePage() {
       v.removeEventListener("pause", onPause);
     };
   }, []);
+
+  // Self-play fallback (no video): advance through the scene tour on a timer so
+  // the showcase plays a full visual sequence even when the narration video is
+  // unavailable. Also kicks in if metadata never loads within a short window.
+  React.useEffect(() => {
+    if (videoFailed) return;
+    const t = window.setTimeout(() => {
+      const v = videoRef.current;
+      if (!v || v.readyState < 1 || Number.isNaN(v.duration) || v.duration === 0) {
+        setVideoFailed(true);
+      }
+    }, 3500);
+    return () => window.clearTimeout(t);
+  }, [videoFailed]);
+
+  React.useEffect(() => {
+    if (!videoFailed || isFinale) return;
+    setNeedsStart(false);
+    setPlaying(true);
+    const last = idx >= SCENES.length - 1;
+    const t = window.setTimeout(() => {
+      if (last) {
+        setEnded(true);
+        setPlaying(false);
+      } else {
+        setIdx((i) => Math.min(i + 1, SCENES.length - 1));
+      }
+    }, 7000);
+    return () => window.clearTimeout(t);
+  }, [videoFailed, idx, isFinale]);
 
   // Clean unmount: stop video, no double audio.
   React.useEffect(() => {
@@ -235,13 +269,18 @@ function ExecutiveShowcasePage() {
 
   const startShow = async () => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v) {
+      setVideoFailed(true);
+      return;
+    }
     v.muted = muted;
     try {
       await v.play();
       setNeedsStart(false);
     } catch {
-      setNeedsStart(true);
+      // Video can't play (missing/blocked) → self-play the visual tour instead
+      // of leaving the panel empty.
+      setVideoFailed(true);
     }
   };
   const togglePlay = () => {
@@ -460,7 +499,38 @@ function ExecutiveShowcasePage() {
               playsInline
               preload="metadata"
               controls={false}
+              onError={() => setVideoFailed(true)}
             />
+            {/* Graceful fallback when the narration video can't load: an ARIA
+                stage that mirrors the current scene, so the panel is never
+                empty and the visual tour still plays. */}
+            {videoFailed && !isFinale && (
+              <div
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 px-6 text-center"
+                style={{
+                  background: `radial-gradient(ellipse 90% 70% at 50% 35%, ${scene.accent}22, #04111f 72%)`,
+                }}
+              >
+                <span
+                  className="grid h-20 w-20 place-items-center rounded-full border"
+                  style={{
+                    borderColor: `${scene.accent}66`,
+                    boxShadow: `0 0 42px ${scene.accent}55`,
+                    color: scene.accent,
+                  }}
+                >
+                  <scene.icon className="h-9 w-9" />
+                </span>
+                <div className="text-lg font-black text-white">آريا · ARIA</div>
+                <div className="text-sm font-semibold text-white/85">{scene.title_ar}</div>
+                <div className="max-w-xs text-[12px] leading-relaxed text-white/60">
+                  {scene.value_ar}
+                </div>
+                <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-200/80">
+                  العرض التلقائي · Auto-play
+                </div>
+              </div>
+            )}
             {/* ARIA · LIVE badge */}
             <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full border border-emerald-300/50 bg-black/60 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-200 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
