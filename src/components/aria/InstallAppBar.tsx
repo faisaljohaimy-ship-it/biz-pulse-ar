@@ -37,6 +37,8 @@ export function InstallAppBar() {
   const [visible, setVisible] = useState(false);
   const [iosHelp, setIosHelp] = useState(false);
   const ios = isIOS();
+  const ariaMode = useAriaStore((s) => s.mode);
+  const ariaOpen = ariaMode !== "collapsed";
 
   useEffect(() => {
     if (isStandalone()) return;
