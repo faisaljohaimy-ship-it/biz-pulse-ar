@@ -535,6 +535,9 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
 
           onError: (error) => {
             const msg = error instanceof Error ? error.message : String(error);
+            if (shouldCoolFromError(msg)) {
+              markVendorFatal(vendor, msg.slice(0, 200));
+            }
             console.error("[api/chat] stream response error", {
               requestId,
               vendor,
