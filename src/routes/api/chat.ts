@@ -459,7 +459,11 @@ ${rag.contextBlock ? `# SEMANTIC RAG (top-k matches for this query)\n${rag.conte
             : {}),
 
           onError: ({ error }) => {
-            console.error("[api/chat] streamText error", { requestId, error });
+            const errMsg = error instanceof Error ? error.message : String(error);
+            if (shouldCoolFromError(errMsg)) {
+              markVendorFatal(vendor, errMsg.slice(0, 200));
+            }
+            console.error("[api/chat] streamText error", { requestId, vendor, error: errMsg });
             // INVARIANT-11 (self-healing ledger): record model errors so the
             // evolution engine can react.
             if (userId) {
