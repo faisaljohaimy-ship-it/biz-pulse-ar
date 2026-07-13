@@ -36,7 +36,7 @@ export function SystemModulesDashboard() {
         className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:snap-none sm:grid-cols-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-6"
         style={{ scrollbarWidth: "thin" }}
       >
-        {MODULES.map((m) => {
+        {MODULES.map((m, i) => {
           const Icon = m.icon;
           const label = ar ? m.ar : m.en;
           return (
@@ -44,7 +44,8 @@ export function SystemModulesDashboard() {
               <Link
                 to={m.to as "/"}
                 aria-label={label}
-                className="group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl border border-[#00D4FF]/25 bg-[#00D4FF]/[0.05] p-3 text-center shadow-[0_0_20px_rgba(0,212,255,0.12)] transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.1] hover:shadow-[0_0_32px_rgba(58,232,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60"
+                style={{ animationDelay: `${-((i % 4) * 3)}s` }}
+                className="nx-sector-pulse group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.1] hover:shadow-[0_0_32px_rgba(58,232,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60"
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00D4FF]/15 text-[#3AE8FF] shadow-[0_0_16px_rgba(0,212,255,0.4)] transition group-hover:bg-[#3AE8FF]/25">
                   <Icon className="h-5 w-5" aria-hidden />

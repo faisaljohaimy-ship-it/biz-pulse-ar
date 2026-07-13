@@ -258,7 +258,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                       className={cn(
                         "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
                         active
-                          ? "bg-primary/15 text-primary"
+                          ? "nx-icon-pulse bg-primary/15 text-primary"
                           : "bg-muted/30 text-muted-foreground group-hover:bg-muted/50 group-hover:text-foreground",
                       )}
                     >
