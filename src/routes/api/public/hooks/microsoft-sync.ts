@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
+import { timingSafeStringEqual } from "@/lib/hook-auth.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev";
 
@@ -53,7 +54,7 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
         const provided = auth.startsWith("Bearer ")
           ? auth.slice(7)
           : (request.headers.get("x-sync-secret") ?? "");
-        if (!secret || provided !== secret) {
+        if (!secret || !timingSafeStringEqual(provided, secret)) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
