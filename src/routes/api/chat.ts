@@ -243,26 +243,24 @@ export const Route = createFileRoute("/api/chat")({
         // Otherwise resolve from the intent hint the Brain publishes via header.
         const intentHeader = request.headers.get("x-aria-intent");
         const routerDecision = resolveModel(parseIntent(intentHeader), {
-          google: useGoogle,
-          lovable: useLovable,
-          openrouter: !!openrouterKey,
-          anthropic: useAnthropic,
+          google: effUseGoogle,
+          lovable: effUseLovable,
+          openrouter: effUseOpenrouter,
+          anthropic: effUseAnthropic,
         });
 
         let vendor: "google" | "lovable" | "openrouter" | "anthropic";
         let selectedModelId: string;
-        // Honor an explicit client-picked model only if that provider is
-        // actually configured; otherwise defer to the router's best choice.
-        if (modelId && useGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
+        if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
           vendor = "google";
           selectedModelId = modelId;
-        } else if (modelId && useAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
+        } else if (modelId && effUseAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
           vendor = "anthropic";
           selectedModelId = modelId;
-        } else if (modelId && useLovable && LOVABLE_MODEL_IDS.has(modelId)) {
+        } else if (modelId && effUseLovable && LOVABLE_MODEL_IDS.has(modelId)) {
           vendor = "lovable";
           selectedModelId = modelId;
-        } else if (modelId && !!openrouterKey && OPENROUTER_MODEL_IDS.has(modelId)) {
+        } else if (modelId && effUseOpenrouter && OPENROUTER_MODEL_IDS.has(modelId)) {
           vendor = "openrouter";
           selectedModelId = modelId;
         } else {
