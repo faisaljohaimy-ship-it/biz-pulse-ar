@@ -37,7 +37,7 @@ import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
 import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
-import { ExecutiveCommandDashboard } from "@/components/executive/command/ExecutiveCommandDashboard";
+import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
 import {
   HAJJ_INTERNAL_ROUTE,
   HAJJ_PLATFORM_LABEL_AR,
@@ -353,11 +353,11 @@ function IntroLanding() {
         `}</style>
       </section>
 
-      {/* ══ Executive Command Console (poster) — the region-themed command
-          center: HUD header, KPIs, activity radar and the ARIA panel. This is
-          the first-page dashboard; it re-tints live on region switch. ══ */}
+      {/* ══ NEXIOS Command Center (poster) — the PRIMARY dashboard: all four
+          regions around a central split Saudi map, ARIA console, system status
+          and smart alerts. One horizontal canvas on every device. ══ */}
       <div className="relative z-10 mt-2 sm:mt-4">
-        <ExecutiveCommandDashboard />
+        <NexiosCommandCenter />
       </div>
 
       {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══

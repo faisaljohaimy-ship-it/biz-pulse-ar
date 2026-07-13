@@ -61,7 +61,7 @@
   --nx-card: #184E77;        /* card */
   --nx-cyan: #00D4FF;        /* primary accent */
   --nx-cyan-2: #3AE8FF;      /* secondary accent */
-  --nx-region-rgb: 58, 232, 255; /* active-region pulse colour (set by region-context) */
+  --nx-region-rgb: 56, 189, 248; /* active-region pulse colour (set by region-context) */
   --nx-cyan-3: #6FFFE9;      /* premium */
   --nx-exec: #00B8D9;        /* executive highlight */
   --nx-success: #20E3B2;

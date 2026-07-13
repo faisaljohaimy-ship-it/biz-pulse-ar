@@ -53,18 +53,18 @@ export const DEFAULT_REGION_ID: RegionId = "western";
  * breathes in the ACTIVE region's colour and updates live on region switch.
  */
 export const REGION_ACCENT_RGB: Record<RegionId, string> = {
-  central: "58, 232, 255", // cyan
-  western: "52, 211, 153", // emerald
-  eastern: "255, 183, 3", // amber
-  southern: "155, 139, 255", // violet
+  central: "59, 130, 246", // royal blue
+  western: "56, 189, 248", // sky blue
+  eastern: "34, 197, 94", // green
+  southern: "16, 185, 129", // emerald
 };
 
 /** Hex form of the region accent (for inline styles / SVG). */
 export const REGION_ACCENT_HEX: Record<RegionId, string> = {
-  central: "#3AE8FF",
-  western: "#34D399",
-  eastern: "#FFB703",
-  southern: "#9B8BFF",
+  central: "#3B82F6",
+  western: "#38BDF8",
+  eastern: "#22C55E",
+  southern: "#10B981",
 };
 
 export function getRegion(id: RegionId): Region {
