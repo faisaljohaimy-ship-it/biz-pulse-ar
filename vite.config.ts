@@ -74,17 +74,16 @@ export default defineConfig({
       sourcemap: false,
       rollupOptions: {
         output: {
-          // Split the heaviest vendors into their own chunks so Rollup renders
-          // them separately and peak memory during "rendering chunks" stays low.
-          // (SSR/server build ignores manualChunks — this only shapes the client.)
+          // Only split framer-motion (broadly shared, genuinely eager) into its
+          // own vendor chunk. Do NOT force-group three/charts/markdown: those
+          // are reached ONLY via lazy boundaries (r3f scenes, lazy dashboards,
+          // the lazy MessageResponse), so letting Rollup split them naturally
+          // keeps them in async chunks. Force-grouping them into named vendor
+          // chunks was pulling shared transitive deps (micromark/hast, also used
+          // eagerly by react-markdown) into a 12.8 MB "markdown-vendor" chunk
+          // that the shared/core bundle then imported EAGERLY on every page.
           manualChunks(id: string) {
             if (!id.includes("node_modules")) return;
-            if (/[\\/](three|@react-three)[\\/]/.test(id)) return "three-vendor";
-            if (/[\\/](recharts|d3-[a-z]+|internmap|victory)[\\/]/.test(id)) return "charts-vendor";
-            // Markdown/highlighter/diagram stack (reached only via the lazy
-            // MessageResponse) — kept in dedicated async chunks.
-            if (/[\\/](shiki|@shikijs|mermaid|streamdown|@streamdown)[\\/]/.test(id))
-              return "markdown-vendor";
             if (/[\\/]framer-motion[\\/]/.test(id)) return "motion-vendor";
             return undefined;
           },
