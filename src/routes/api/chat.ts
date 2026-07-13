@@ -196,15 +196,16 @@ export const Route = createFileRoute("/api/chat")({
         // Native Google Gemini — a FREE Google AI Studio key runs Gemini Flash
         // with no credit gate. Accept either common env name.
         const googleKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-        const useGoogle = !!googleKey;
-        const useAnthropic = !!anthropicKey;
+        const useGoogle = !!googleKey && !isCooling("google");
+        const useAnthropic = !!anthropicKey && !isCooling("anthropic");
+        const useOpenrouter = !!openrouterKey && !isCooling("openrouter");
         // The Lovable AI gateway is bound to Lovable's own platform and is
         // credit-gated — when credits run out every call returns HTTP 402 and
         // ARIA goes silent. So whenever ANY platform-neutral provider (Google
         // Gemini, native Anthropic or OpenRouter) is configured, on ANY host, we
         // deprioritize Lovable to a last resort: only used when it is the sole key.
-        const hasNeutralProvider = useGoogle || useAnthropic || !!openrouterKey;
-        const useLovable = !!lovableKey && !hasNeutralProvider;
+        const hasNeutralProvider = useGoogle || useAnthropic || useOpenrouter;
+        const useLovable = !!lovableKey && !isCooling("lovable") && !hasNeutralProvider;
         if (!hasNeutralProvider && !useLovable) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
