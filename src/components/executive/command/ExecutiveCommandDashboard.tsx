@@ -21,7 +21,8 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
-import { ActivityRing } from "./ActivityRing";
+import { RegionMapStage } from "./RegionMapStage";
+import { PerformanceChart } from "./PerformanceChart";
 import { CommandHeader } from "./CommandHeader";
 import { KpiRow } from "./KpiRow";
 import { AriaPanel } from "./AriaPanel";
@@ -78,15 +79,19 @@ export function ExecutiveCommandDashboard() {
               <QuickModules ar={ar} accent={accent} />
             </div>
 
-            {/* ── Center · activity stage ────────────────────────────── */}
-            <div className="flex items-center justify-center">
-              <ActivityRing
+            {/* ── Center · region map + performance trend ────────────── */}
+            <div className="flex flex-col items-center justify-center gap-3">
+              <RegionMapStage
                 ar={ar}
                 accent={accent}
                 value={counts.readiness}
+                activeId={region.id}
                 label={ar ? "النشاط" : "Activity"}
                 regionLabel={ar ? region.shortAr : region.shortEn}
               />
+              <div className="w-full max-w-[320px]">
+                <PerformanceChart ar={ar} accent={accent} seed={2.4} />
+              </div>
             </div>
 
             {/* ── Right · ARIA panel ─────────────────────────────────── */}

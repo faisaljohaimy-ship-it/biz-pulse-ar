@@ -949,6 +949,10 @@ html, body { overflow-x: hidden; }
 @keyframes nx-radar-sweep { to { transform: rotate(360deg); } }
 .nx-radar-sweep { animation: nx-radar-sweep 8s linear infinite; transform-origin: center; }
 
+/* Active sector hub — an expanding ping ring on the region map. */
+@keyframes nx-hub-ping { 0% { transform: scale(0.55); opacity: 0.8; } 100% { transform: scale(1.7); opacity: 0; } }
+.nx-hub-ping { transform-box: fill-box; transform-origin: center; animation: nx-hub-ping 2.6s ease-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
-  .nx-living-border, .nx-radar-sweep { animation: none !important; }
+  .nx-living-border, .nx-radar-sweep, .nx-hub-ping { animation: none !important; }
 }
