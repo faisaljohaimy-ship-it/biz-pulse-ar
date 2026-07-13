@@ -48,7 +48,7 @@ export function SystemModulesDashboard() {
                 className="nx-sector-pulse group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.1] hover:shadow-[0_0_32px_rgba(58,232,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60"
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00D4FF]/15 text-[#3AE8FF] shadow-[0_0_16px_rgba(0,212,255,0.4)] transition group-hover:bg-[#3AE8FF]/25">
-                  <Icon className="h-5 w-5" aria-hidden />
+                  <Icon className="nx-icon-soft h-5 w-5" aria-hidden />
                 </span>
                 <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/85">
                   {label}

@@ -875,3 +875,16 @@ html, body { overflow-x: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .nx-icon-pulse, .nx-sector-pulse { animation: none !important; }
 }
+
+/* Soft, slow, light pulse for ALL system icon glyphs — a calm "alive" breath
+   (opacity + faint cyan halo). Very subtle so it never distracts. */
+@keyframes nx-icon-soft-breathe {
+  0%, 100% { opacity: 0.72; filter: drop-shadow(0 0 0 rgba(58, 232, 255, 0)); }
+  50%      { opacity: 1;    filter: drop-shadow(0 0 4px rgba(58, 232, 255, 0.45)); }
+}
+.nx-icon-soft { animation: nx-icon-soft-breathe 5.6s ease-in-out infinite; }
+.nx-icon-soft:nth-child(2n) { animation-delay: -1.4s; }
+.nx-icon-soft:nth-child(3n) { animation-delay: -2.8s; }
+@media (prefers-reduced-motion: reduce) {
+  .nx-icon-soft { animation: none !important; }
+}

@@ -249,15 +249,8 @@ function IntroLanding() {
             </p>
           </div>
 
-          {/* Primary + secondary CTAs */}
+          {/* Primary CTA */}
           <div className="flex w-full flex-col gap-3">
-            <Link
-              to="/os"
-              className="group inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#3AE8FF] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#061A2E] shadow-[0_6px_28px_rgba(58,232,255,0.35)] transition hover:bg-[#5CEEFF] active:scale-[0.98]"
-            >
-              {ar ? "بدء العملية" : "Start Operation"}
-              <Arrow className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-            </Link>
             <Link
               to="/executive-bridge"
               className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#3AE8FF]/35 bg-[#3AE8FF]/[0.04] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.09]"

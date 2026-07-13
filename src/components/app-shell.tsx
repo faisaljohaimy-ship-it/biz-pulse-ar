@@ -262,7 +262,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                           : "bg-muted/30 text-muted-foreground group-hover:bg-muted/50 group-hover:text-foreground",
                       )}
                     >
-                      <it.icon className="size-4" />
+                      <it.icon className="nx-icon-soft size-4" />
                     </span>
                     <span className="min-w-0 flex-1 truncate">{it.label}</span>
                   </Link>
