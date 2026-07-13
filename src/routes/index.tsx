@@ -9,7 +9,6 @@ import {
   Radar,
   BarChart3,
   Moon,
-  Play,
   Menu,
 } from "lucide-react";
 import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
@@ -32,7 +31,6 @@ import { SystemModulesDashboard } from "@/components/executive/SystemModulesDash
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
-import { DemoModeLauncher } from "@/components/executive/DemoModeLauncher";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
@@ -249,19 +247,9 @@ function IntroLanding() {
             </p>
           </div>
 
-          {/* Primary CTA */}
-          <div className="flex w-full flex-col gap-3">
-            <Link
-              to="/executive-bridge"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#3AE8FF]/35 bg-[#3AE8FF]/[0.04] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#3AE8FF] transition hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.09]"
-            >
-              <Play className="h-4 w-4" />
-              {ar ? "جسر القيادة التنفيذي" : "Executive Bridge"}
-            </Link>
-          </div>
-
-          {/* Secondary utility row */}
-          <div className="mt-4 flex w-full items-center justify-center gap-2 sm:gap-3">
+          {/* Utility row (per owner directive: Executive Bridge + Executive
+              Showcase launcher buttons removed from the hero). */}
+          <div className="mt-2 flex w-full items-center justify-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => setDeptsOpen(true)}
@@ -270,7 +258,6 @@ function IntroLanding() {
               <Menu className="h-3.5 w-3.5" />
               <span>{t.cta_depts}</span>
             </button>
-            <DemoModeLauncher />
             <AriaResumeVoiceButton />
           </div>
 
