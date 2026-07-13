@@ -48,6 +48,23 @@ export default defineConfig({
         "@streamdown/mermaid",
         "@streamdown/math",
         "@streamdown/cjk",
+        // Browser-only heavy libraries (WebGL / WebRTC / canvas / DOM-map /
+        // PDF-viewer). They are ONLY reached from click handlers or lazy,
+        // client-rendered scenes — the server never executes them — so keeping
+        // them out of the SSR rollup render + minify (and the nitro packaging)
+        // removes the remaining peak-memory that OOM-killed the Vercel build.
+        // The Three.js chunk is additionally dead-code-eliminated at its lazy
+        // import sites via `import.meta.env.SSR`; listing it here is defensive.
+        "three",
+        "@react-three/fiber",
+        "@react-three/drei",
+        "postprocessing",
+        "pdfjs-dist",
+        "livekit-client",
+        "leaflet",
+        "react-leaflet",
+        "html2canvas",
+        "canvg",
       ],
     },
     build: {

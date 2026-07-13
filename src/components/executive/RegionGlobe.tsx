@@ -12,8 +12,18 @@
  */
 import { Suspense, lazy, useEffect, useState } from "react";
 import { REGION_MARKERS } from "./region-markers";
+import type RegionGlobeSceneT from "./RegionGlobeScene";
 
-const RegionGlobeScene = lazy(() => import("./RegionGlobeScene"));
+// Client-only: on the server the ternary's `import()` is dead code, so Vite
+// tree-shakes the entire Three.js chunk out of the SSR/serverless bundle
+// (keeps Vercel's build memory well under its container limit). The scene is
+// WebGL — it can only render in the browser anyway; SSR shows the SVG fallback.
+const RegionGlobeScene = lazy(
+  (): Promise<{ default: typeof RegionGlobeSceneT }> =>
+    import.meta.env.SSR
+      ? Promise.resolve({ default: (() => null) as unknown as typeof RegionGlobeSceneT })
+      : import("./RegionGlobeScene"),
+);
 
 function hasWebGL(): boolean {
   try {

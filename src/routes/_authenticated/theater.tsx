@@ -36,10 +36,17 @@ import { getBridgeState } from "@/lib/exec/bridge.functions";
 import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { speakAgent } from "@/lib/digital-humans/speak-agent";
+import type { AriaScene as AriaSceneT } from "@/components/digital-humans/r3f/AriaScene";
 
-// Lazy: react-three-fiber + three.js (~870KB) only loads when Theater renders
-const AriaScene = lazy(() =>
-  import("@/components/digital-humans/r3f/AriaScene").then((m) => ({ default: m.AriaScene })),
+// Lazy + client-only: react-three-fiber + three.js only loads when Theater
+// renders in the browser. The SSR branch makes the `import()` dead code so
+// Vite excludes the Three.js chunk from the server bundle (Vercel build-memory
+// guard); the server renders nothing for the WebGL scene.
+const AriaScene = lazy(
+  (): Promise<{ default: typeof AriaSceneT }> =>
+    import.meta.env.SSR
+      ? Promise.resolve({ default: (() => null) as unknown as typeof AriaSceneT })
+      : import("@/components/digital-humans/r3f/AriaScene").then((m) => ({ default: m.AriaScene })),
 );
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";

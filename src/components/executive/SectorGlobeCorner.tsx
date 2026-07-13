@@ -19,8 +19,17 @@ import { Layers, ChevronDown, Globe2 } from "lucide-react";
 import { useRegion } from "@/lib/region-context";
 import { REGION_MARKERS } from "./region-markers";
 import { REGIONS, type RegionId } from "@/lib/regions";
+import type SectorGlobeSceneT from "./SectorGlobeScene";
 
-const SectorGlobeScene = lazy(() => import("./SectorGlobeScene"));
+// Client-only: the SSR branch makes the `import()` dead code so Vite excludes
+// the Three.js chunk from the server bundle (Vercel build-memory guard). SSR
+// renders the static SVG; the WebGL scene loads only in capable browsers.
+const SectorGlobeScene = lazy(
+  (): Promise<{ default: typeof SectorGlobeSceneT }> =>
+    import.meta.env.SSR
+      ? Promise.resolve({ default: (() => null) as unknown as typeof SectorGlobeSceneT })
+      : import("./SectorGlobeScene"),
+);
 
 function hasWebGL(): boolean {
   try {

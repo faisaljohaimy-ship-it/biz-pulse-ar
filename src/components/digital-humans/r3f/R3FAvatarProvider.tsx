@@ -11,8 +11,17 @@ import {
   registerAvatarProvider,
   type AvatarRenderProps,
 } from "@/lib/digital-humans/avatar-provider";
+import type { AriaScene as AriaSceneT } from "./AriaScene";
 
-const AriaScene = lazy(() => import("./AriaScene").then((m) => ({ default: m.AriaScene })));
+// Client-only: SSR takes the stub branch so Vite drops the Three.js/R3F chunk
+// from the server bundle (Vercel build-memory guard). The avatar is WebGL —
+// browser-only; the server renders nothing here.
+const AriaScene = lazy(
+  (): Promise<{ default: typeof AriaSceneT }> =>
+    import.meta.env.SSR
+      ? Promise.resolve({ default: (() => null) as unknown as typeof AriaSceneT })
+      : import("./AriaScene").then((m) => ({ default: m.AriaScene })),
+);
 
 function R3FRender(props: AvatarRenderProps) {
   const size = props.size ?? 96;
