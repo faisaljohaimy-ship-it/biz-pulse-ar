@@ -35,6 +35,7 @@ import { useI18n } from "@/lib/i18n";
 import { moduleByRoute } from "@/lib/nav/modules";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
+import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { useRegion } from "@/lib/region-context";
@@ -57,8 +58,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="nexus-app-shell relative flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#04070F]/55 backdrop-blur-[2px]">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        {pageBackdrop && (
+        {pageBackdrop ? (
           <GlossyImageBackdrop src={pageBackdrop} className="absolute inset-0 z-0" opacity={0.55} />
+        ) : (
+          // Pages without a themed photo get a cinematic "fantastical" aurora
+          // backdrop (pure CSS/SVG) so no surface is ever a flat dark void.
+          <AuroraFantasyBackdrop className="z-0" intensity={0.85} />
         )}
         <div className="absolute -top-40 start-[-10%] h-[480px] w-[480px] rounded-full bg-primary/20 blur-3xl" />
         <div className="absolute bottom-[-160px] end-[-10%] h-[420px] w-[420px] rounded-full bg-accent/20 blur-3xl" />
