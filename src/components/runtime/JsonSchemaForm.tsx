@@ -6,7 +6,7 @@
 // uri, date, date-time, uuid), required, minimum/maximum, minLength/maxLength,
 // pattern, default, description, title.
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -142,15 +142,16 @@ function fieldErrorFor(errors: FieldError[], path: string): string | null {
 function Field({ name, schema, value, onChange, required, errors, path }: FieldProps) {
   const err = fieldErrorFor(errors, path);
   const title = schema.title ?? name;
+  const fieldId = useId();
 
   if (schema.enum && (schema.type === "string" || !schema.type)) {
     return (
       <div className="space-y-1.5">
-        <Label className="text-xs">
+        <Label htmlFor={fieldId} className="text-xs">
           {title} {required && <span className="text-rose-400">*</span>}
         </Label>
         <Select value={String(value ?? "")} onValueChange={(v) => onChange(v)}>
-          <SelectTrigger className="h-9 text-xs">
+          <SelectTrigger id={fieldId} className="h-9 text-xs">
             <SelectValue placeholder={`Select ${title.toLowerCase()}`} />
           </SelectTrigger>
           <SelectContent>
@@ -173,12 +174,14 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
     return (
       <div className="flex items-center justify-between gap-2 rounded-md border border-border/40 p-2.5">
         <div className="min-w-0">
-          <Label className="text-xs">{title}</Label>
+          <Label htmlFor={fieldId} className="text-xs">
+            {title}
+          </Label>
           {schema.description && (
             <p className="truncate text-[10px] text-muted-foreground">{schema.description}</p>
           )}
         </div>
-        <Switch checked={Boolean(value)} onCheckedChange={onChange} />
+        <Switch id={fieldId} checked={Boolean(value)} onCheckedChange={onChange} />
       </div>
     );
   }
@@ -186,10 +189,11 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
   if (schema.type === "number" || schema.type === "integer") {
     return (
       <div className="space-y-1.5">
-        <Label className="text-xs">
+        <Label htmlFor={fieldId} className="text-xs">
           {title} {required && <span className="text-rose-400">*</span>}
         </Label>
         <Input
+          id={fieldId}
           type="number"
           className="h-9 text-xs"
           value={value === undefined || value === null ? "" : String(value)}
@@ -293,10 +297,11 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
   const Cmp = isLong ? Textarea : Input;
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs">
+      <Label htmlFor={fieldId} className="text-xs">
         {title} {required && <span className="text-rose-400">*</span>}
       </Label>
       <Cmp
+        id={fieldId}
         className={isLong ? "min-h-[80px] text-xs" : "h-9 text-xs"}
         value={value === undefined || value === null ? "" : String(value)}
         placeholder={schema.examples?.[0] ? String(schema.examples[0]) : undefined}

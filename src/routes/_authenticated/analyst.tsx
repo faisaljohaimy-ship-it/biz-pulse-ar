@@ -188,10 +188,12 @@ function AnalystPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={ar ? "اطرح سؤالاً..." : "Ask a question..."}
+              aria-label={ar ? "اطرح سؤالاً" : "Ask a question"}
               className="flex-1 bg-transparent px-2 text-sm text-slate-100 outline-none placeholder:text-slate-500"
             />
             <button
               type="submit"
+              aria-label={ar ? "إرسال" : "Send"}
               className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/80 text-white hover:bg-violet-500"
             >
               <Send className="h-4 w-4" />

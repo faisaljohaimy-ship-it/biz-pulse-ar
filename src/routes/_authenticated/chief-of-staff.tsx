@@ -168,10 +168,14 @@ function ChiefOfStaffPage() {
                   ? "اطلب قراراً، توصية، أو تحليلاً تنفيذياً..."
                   : "Request a decision, recommendation, or executive analysis..."
               }
+              aria-label={
+                ar ? "اطلب قراراً أو تحليلاً تنفيذياً" : "Request a decision or executive analysis"
+              }
               className="flex-1 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-violet-400/40 focus:outline-none"
             />
             <button
               onClick={send}
+              aria-label={ar ? "إرسال" : "Send"}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 text-white shadow-[0_0_25px_-5px_rgba(139,92,246,0.7)]"
             >
               <Send className="h-4 w-4" />

@@ -495,6 +495,8 @@ function NewAlertDialog({ ar }: { ar: boolean }) {
             </label>
             <input
               type="range"
+              aria-label={ar ? "الأثر التجاري" : "Business impact"}
+              aria-valuetext={String(impact)}
               min={0}
               max={100}
               value={impact}

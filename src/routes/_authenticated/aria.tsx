@@ -584,6 +584,7 @@ function PinForm({
         value={k}
         onChange={(e) => setK(e.target.value)}
         placeholder="مفتاح (مثل: تفضيلات_التقارير)"
+        aria-label="مفتاح الذاكرة"
         className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
         disabled={disabled}
       />
@@ -591,6 +592,7 @@ function PinForm({
         value={c}
         onChange={(e) => setC(e.target.value)}
         placeholder="محتوى الذاكرة"
+        aria-label="محتوى الذاكرة"
         className="w-full rounded border border-input bg-background px-2 py-1 text-xs"
         disabled={disabled}
       />

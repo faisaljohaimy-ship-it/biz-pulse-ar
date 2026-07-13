@@ -238,10 +238,14 @@ function ExecutiveBookingPage() {
                   <Field name="phone" label={isAr ? "هاتف (اختياري)" : "Phone (optional)"} />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <label
+                    htmlFor="notes"
+                    className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground"
+                  >
                     {isAr ? "ملاحظات سرّية" : "Confidential notes"}
                   </label>
                   <textarea
+                    id="notes"
                     name="notes"
                     rows={4}
                     className="w-full rounded-lg border border-white/10 bg-black/30 p-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-amber-400/40 focus:outline-none"
@@ -294,11 +298,15 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-xs uppercase tracking-[0.18em] text-muted-foreground"
+      >
         {label}
         {required && <span className="text-amber-300"> *</span>}
       </label>
       <input
+        id={name}
         name={name}
         type={type}
         required={required}

@@ -545,7 +545,7 @@ function ExecutiveReportsPage() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-5 w-5 ml-auto"
+                            className="ml-auto"
                             onClick={copyRequestId}
                             aria-label={isAr ? "نسخ معرّف الطلب" : "Copy request ID"}
                           >

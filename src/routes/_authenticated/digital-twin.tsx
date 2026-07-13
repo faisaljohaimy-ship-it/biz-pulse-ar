@@ -1019,6 +1019,10 @@ function AriaDock({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setAutoSpeak((v) => !v)}
+                aria-label={
+                  autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : ar ? "الصوت مغلق" : "Voice off"
+                }
+                aria-pressed={autoSpeak}
                 className={`rounded p-1 ${autoSpeak ? "text-cyan-300" : "text-slate-500"} hover:bg-white/5`}
                 title={
                   autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : ar ? "الصوت مغلق" : "Voice off"
@@ -1028,6 +1032,7 @@ function AriaDock({
               </button>
               <button
                 onClick={onToggle}
+                aria-label={ar ? "إغلاق" : "Close"}
                 className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white"
               >
                 <X className="h-4 w-4" />
@@ -1136,6 +1141,7 @@ function AriaDock({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={ar ? "اسأل ARIA أو تكلم…" : "Ask ARIA or speak…"}
+              aria-label={ar ? "اسأل آريا" : "Ask ARIA"}
               className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
               disabled={isLoading}
             />

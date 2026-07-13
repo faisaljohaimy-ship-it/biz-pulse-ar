@@ -136,6 +136,7 @@ export function LessonARIAChat({ slug, lang, suggested }: Props) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={ar ? "اكتب سؤالك لآريا…" : "Type your question to ARIA…"}
+          aria-label={ar ? "اكتب سؤالك لآريا" : "Type your question to ARIA"}
           className="flex-1 rounded-xl border border-cyan-400/20 bg-[#04111F]/60 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/60 focus:outline-none"
           dir={ar ? "rtl" : "ltr"}
         />

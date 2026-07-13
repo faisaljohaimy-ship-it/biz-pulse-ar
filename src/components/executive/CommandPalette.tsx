@@ -195,6 +195,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={ar ? "ابحث، انتقل، شغّل وكيلاً…" : "Search, navigate, run an agent…"}
+            aria-label={ar ? "ابحث أو انتقل" : "Search or navigate"}
             className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
             onKeyDown={(e) => {
               if (e.key === "Enter" && filtered[0]) run(filtered[0]);

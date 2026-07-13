@@ -517,7 +517,20 @@ function PromoImpact() {
           50% { transform: translateY(-20px) translateX(6px); opacity: 0.9; }
         }
       `}</style>
-      <div onClick={() => setPaused((v) => !v)} className="cursor-pointer">
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={paused ? "تشغيل العرض" : "إيقاف العرض مؤقتاً"}
+        aria-pressed={paused}
+        onClick={() => setPaused((v) => !v)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setPaused((v) => !v);
+          }
+        }}
+        className="cursor-pointer"
+      >
         <ScenePlayer scenes={scenes} duration={DURATION} paused={paused} />
         <HologramOverlay />
       </div>

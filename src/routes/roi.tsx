@@ -414,6 +414,8 @@ function SliderField({
       </div>
       <input
         type="range"
+        aria-label={label}
+        aria-valuetext={format(value)}
         className="roi-range w-full"
         min={min}
         max={max}

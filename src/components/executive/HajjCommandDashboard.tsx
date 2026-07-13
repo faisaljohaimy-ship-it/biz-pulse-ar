@@ -508,7 +508,9 @@ function IncidentDonut() {
   return (
     <Panel title="تحليل الحوادث" icon={<Activity className="h-4 w-4 text-[#34B6FF]" />}>
       <div className="grid grid-cols-[1fr_1.1fr] items-center gap-2">
-        <div className="relative aspect-square">
+        {/* Decorative viz — the same data is available as text in the legend
+            list beside it, so hide the SVG segments from assistive tech. */}
+        <div className="relative aspect-square" aria-hidden="true">
           <ResponsiveContainer>
             <PieChart>
               <Pie
@@ -663,17 +665,31 @@ export function HajjCommandDashboard() {
       <KpiStrip />
       {/* Horizontal-only layout: every row scrolls sideways on all devices. */}
       <div className="flex flex-col gap-3 sm:gap-4">
-        <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[88%] [&>*]:shrink-0 [&>*]:snap-start">
+        <div
+          tabIndex={0}
+          role="group"
+          aria-label="المحطات والتنبيهات — تمرير أفقي"
+          className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[88%] [&>*]:shrink-0 [&>*]:snap-start"
+        >
           <StationsPanel />
           <AlertsPanel />
         </div>
         <CamerasPanel />
-        <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[85%] [&>*]:shrink-0 [&>*]:snap-start">
+        <div
+          tabIndex={0}
+          role="group"
+          aria-label="مؤشرات المخاطر والامتثال — تمرير أفقي"
+          className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[85%] [&>*]:shrink-0 [&>*]:snap-start"
+        >
           <IncidentDonut />
           <RiskGauge />
           <ComplianceChart />
         </div>
-        <aside className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[80%] [&>*]:shrink-0 [&>*]:snap-start">
+        <aside
+          tabIndex={0}
+          aria-label="إجراءات سريعة والطقس — تمرير أفقي"
+          className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[80%] [&>*]:shrink-0 [&>*]:snap-start"
+        >
           <QuickActions />
           <WeatherWidget />
         </aside>

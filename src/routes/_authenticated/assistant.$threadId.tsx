@@ -620,6 +620,7 @@ function ChatWindow({
               <button
                 type="button"
                 onClick={() => setChatError(null)}
+                aria-label={locale === "ar" ? "إغلاق" : "Dismiss"}
                 className="opacity-60 hover:opacity-100"
               >
                 ×
@@ -670,6 +671,9 @@ function ChatWindow({
               }
             }}
             placeholder={t("assistant.placeholder")}
+            aria-label={
+              t("assistant.placeholder") ?? (locale === "ar" ? "اكتب رسالة" : "Type a message")
+            }
             rows={1}
             className="min-h-[40px] max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
             autoFocus
@@ -678,6 +682,7 @@ function ChatWindow({
             type="submit"
             size="icon"
             disabled={isLoading || !input.trim()}
+            aria-label={locale === "ar" ? "إرسال" : "Send"}
             className="bg-gradient-primary shadow-glow"
           >
             <Send className="h-4 w-4" data-flip-rtl />
