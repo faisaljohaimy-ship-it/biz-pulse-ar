@@ -290,10 +290,13 @@ const SsrTextResponse = (props: MessageResponseProps): ReactElement => (
 // in the server build — keeping shiki/mermaid out of the SSR bundle AND out of
 // nitro's serverless function trace. That heavy bundle was the peak build-memory
 // consumer that OOM-killed the Vercel production build.
-const LazyMessageResponse = lazy((): Promise<{ default: ComponentType<MessageResponseProps> }> =>
-  import.meta.env.SSR
-    ? Promise.resolve({ default: SsrTextResponse })
-    : (import("./MessageResponseImpl") as Promise<{ default: ComponentType<MessageResponseProps> }>),
+const LazyMessageResponse = lazy(
+  (): Promise<{ default: ComponentType<MessageResponseProps> }> =>
+    import.meta.env.SSR
+      ? Promise.resolve({ default: SsrTextResponse })
+      : (import("./MessageResponseImpl") as Promise<{
+          default: ComponentType<MessageResponseProps>;
+        }>),
 );
 
 export const MessageResponse = (props: MessageResponseProps) => (
