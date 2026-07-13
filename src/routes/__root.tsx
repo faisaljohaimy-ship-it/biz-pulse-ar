@@ -344,8 +344,12 @@ function RootComponent() {
                   <InstallAppBar />
                   {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
-                      route auto-narration, no page greeters. */}
-                  <WelcomeThenGenesis />
+                      route auto-narration, no page greeters. The cinematic
+                      welcome plays on the HOMEPAGE only — otherwise its
+                      full-screen overlay (up to 52s) covered every route
+                      (bridge, showcase…), making them look empty when landed on
+                      directly (constitution art. 10: no auto motion off-home). */}
+                  {isHero && <WelcomeThenGenesis />}
                   <Toaster />
                 </AriaProvider>
               </RegionProvider>
