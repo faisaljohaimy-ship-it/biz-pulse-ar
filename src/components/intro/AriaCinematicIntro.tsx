@@ -230,7 +230,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
           }}
           aria-label={muted ? (ar ? "تشغيل الصوت" : "Unmute") : ar ? "كتم الصوت" : "Mute"}
           aria-pressed={!muted}
-          className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-primary/40 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
           <span>
@@ -254,7 +254,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
             finish();
           }}
           aria-label={ar ? "تخطّي المقدّمة · Skip intro" : "Skip intro · تخطّي المقدّمة"}
-          className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <span>{ar ? "تخطّي" : "Skip"}</span>
           <span aria-hidden className="text-[10px] opacity-70">

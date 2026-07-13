@@ -392,7 +392,7 @@ function ExecutiveShowcasePage() {
             type="button"
             onClick={toggleMute}
             aria-label={muted ? "تشغيل الصوت · Unmute" : "كتم الصوت · Mute"}
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
           >
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
@@ -413,7 +413,7 @@ function ExecutiveShowcasePage() {
                 }
               }
             }}
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
           >
             <X className="h-4 w-4" />
           </Link>
@@ -513,13 +513,20 @@ function ExecutiveShowcasePage() {
               type="button"
               onClick={() => goToScene(i)}
               aria-label={`${i + 1}. ${s.title_ar}`}
-              className={`h-2 rounded-full transition-all ${!isFinale && i === idx ? "w-8" : "w-2 bg-white/30 hover:bg-white/60"}`}
-              style={
-                !isFinale && i === idx
-                  ? { background: scene.accent, boxShadow: `0 0 10px ${scene.accent}` }
-                  : undefined
-              }
-            />
+              // ≥44px touch target (art. 5); the visual pill stays small inside.
+              className="group grid h-11 min-w-[20px] place-items-center"
+            >
+              <span
+                className={`block h-2 rounded-full transition-all ${
+                  !isFinale && i === idx ? "w-8" : "w-2 bg-white/30 group-hover:bg-white/60"
+                }`}
+                style={
+                  !isFinale && i === idx
+                    ? { background: scene.accent, boxShadow: `0 0 10px ${scene.accent}` }
+                    : undefined
+                }
+              />
+            </button>
           ))}
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -578,7 +585,7 @@ function CtrlBtn({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white/85 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:text-white"
+      className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white/85 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:text-white"
     >
       {children}
     </button>

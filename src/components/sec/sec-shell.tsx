@@ -74,7 +74,9 @@ export function SecSubNav() {
               <Link
                 to={it.to}
                 className={cn(
-                  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                  // ≥44px touch target on mobile/tablet (constitution art. 5);
+                  // compact on desktop where pointer precision is higher.
+                  "inline-flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors md:min-h-0 md:py-1.5",
                   active
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
