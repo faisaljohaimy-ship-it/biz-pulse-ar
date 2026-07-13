@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
+import type { ComponentProps, ComponentType, HTMLAttributes, ReactElement } from "react";
 import {
   createContext,
   lazy,
@@ -275,9 +275,26 @@ export const MessageBranchPage = ({ className, ...props }: MessageBranchPageProp
 
 export type { MessageResponseProps };
 
-// Lazy — the heavy streamdown/shiki/mermaid/math bundle loads on demand only
-// when a message is actually rendered, keeping it out of the main chunk.
-const LazyMessageResponse = lazy(() => import("./MessageResponseImpl"));
+// Plain-text stand-in used ON THE SERVER only (see below).
+const SsrTextResponse = (props: MessageResponseProps): ReactElement => (
+  <div className="size-full whitespace-pre-wrap break-words">
+    {typeof props.children === "string" ? props.children : null}
+  </div>
+);
+
+// Lazy — the heavy streamdown/shiki/mermaid/math bundle (~10 MB, incl. shiki's
+// oniguruma wasm) loads on demand only on the CLIENT. During SSR the chat is
+// empty (messages arrive after the user interacts), so the server resolves this
+// to a plain-text stub instead of importing the renderer. `import.meta.env.SSR`
+// is statically replaced by Vite, so the real `import()` is dead-code-eliminated
+// in the server build — keeping shiki/mermaid out of the SSR bundle AND out of
+// nitro's serverless function trace. That heavy bundle was the peak build-memory
+// consumer that OOM-killed the Vercel production build.
+const LazyMessageResponse = lazy((): Promise<{ default: ComponentType<MessageResponseProps> }> =>
+  import.meta.env.SSR
+    ? Promise.resolve({ default: SsrTextResponse })
+    : (import("./MessageResponseImpl") as Promise<{ default: ComponentType<MessageResponseProps> }>),
+);
 
 export const MessageResponse = (props: MessageResponseProps) => (
   <Suspense
