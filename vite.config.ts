@@ -22,14 +22,34 @@ export default defineConfig({
   // render blank and the chatbot returns "could not complete". The GitHub
   // Actions → Cloudflare path (no VERCEL env) keeps the Cloudflare default,
   // so no existing deploy target is disturbed.
-  // `minify: false` on the server bundle: the SSR/serverless output does NOT
-  // need minification (size is not perf-critical there), and minifying the huge
-  // markdown/shiki chunk — with oniguruma wasm inlined in module mode — is the
-  // peak build-memory consumer that OOM-kills the Vercel build. Turning it off
-  // slashes peak RSS. The CLIENT bundle stays minified (Vite default).
   ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
   vite: {
     plugins: [mcpPlugin()],
+    // Keep the heavy CLIENT-ONLY markdown/highlighter stack OUT of the SSR
+    // (serverless) bundle. `MessageResponseImpl` is "use client" + lazy, so the
+    // server never executes shiki/mermaid — but bundling & minifying shiki's
+    // ~7 MB of language grammars (with oniguruma wasm inlined) into the server
+    // was the peak build-memory consumer that OOM-killed the Vercel build.
+    // Externalizing them cuts memory in BOTH the SSR render and the nitro
+    // packaging stages, without bloating the function (loaded from node_modules
+    // at runtime — though the server never actually calls them).
+    ssr: {
+      external: [
+        "shiki",
+        "@shikijs/langs",
+        "@shikijs/themes",
+        "@shikijs/core",
+        "@shikijs/engine-javascript",
+        "@shikijs/engine-oniguruma",
+        "mermaid",
+        "@mermaid-js/parser",
+        "streamdown",
+        "@streamdown/code",
+        "@streamdown/mermaid",
+        "@streamdown/math",
+        "@streamdown/cjk",
+      ],
+    },
     build: {
       // Source maps for 8000+ modules are a major build-memory consumer and
       // are not needed in production — disabling them is the biggest single
