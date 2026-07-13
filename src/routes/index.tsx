@@ -36,6 +36,7 @@ import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
 import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
+import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import {
   HAJJ_INTERNAL_ROUTE,
   HAJJ_PLATFORM_LABEL_AR,
@@ -376,6 +377,10 @@ function IntroLanding() {
       <div className="mt-4 sm:mt-6">
         <SystemModulesDashboard />
       </div>
+
+      {/* Executive pitch band — capabilities, value-props, tech stack and the
+          vision, every pulsing icon breathing in the active region's colour. */}
+      <HomeShowcaseSections />
 
       <LiveSystemShowcase />
 
