@@ -186,12 +186,13 @@ export const Route = createFileRoute("/api/chat")({
         const lovableKey = process.env.LOVABLE_API_KEY;
         const openrouterKey = process.env.OPENROUTER_API_KEY;
         const useAnthropic = !!anthropicKey;
-        // The Lovable AI gateway is bound to Lovable's own platform and can
-        // reject requests from other hosts. On Vercel, when an OpenRouter key
-        // is available, prefer the platform-neutral OpenRouter provider so the
-        // chat works regardless of where it's deployed.
-        const preferOpenRouterOnVercel = !!process.env.VERCEL && !!openrouterKey;
-        const useLovable = !!lovableKey && !preferOpenRouterOnVercel;
+        // The Lovable AI gateway is bound to Lovable's own platform and is
+        // credit-gated — when credits run out every call returns HTTP 402 and
+        // ARIA goes silent. So whenever ANY platform-neutral provider (native
+        // Anthropic or OpenRouter) is configured, on ANY host, we deprioritize
+        // Lovable to a last resort: it is only used when it is the sole key.
+        const hasNeutralProvider = useAnthropic || !!openrouterKey;
+        const useLovable = !!lovableKey && !hasNeutralProvider;
         if (!useAnthropic && !useLovable && !openrouterKey) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });

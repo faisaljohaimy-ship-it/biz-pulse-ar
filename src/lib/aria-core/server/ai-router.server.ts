@@ -53,6 +53,14 @@ export interface AvailableProviders {
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
+  // Priority: Anthropic → OpenRouter → Lovable.
+  //
+  // The Lovable AI gateway is bound to Lovable's own platform and is credit
+  // gated — when its credits run out every call returns HTTP 402 and ARIA goes
+  // silent. So any PLATFORM-NEUTRAL provider (native Anthropic, then OpenRouter)
+  // is always preferred over it on every host. Lovable stays only as the final
+  // resort when it is the sole configured provider.
+
   // Native Anthropic (Claude) is the PRIMARY provider when configured.
   if (providers.anthropic) {
     return {
@@ -60,19 +68,25 @@ export function resolveModel(_intent: AriaIntent, providers: AvailableProviders)
       modelId: ANTHROPIC_SONNET,
       fallback: providers.openrouter
         ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
+        : providers.lovable
+          ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
+          : undefined,
+    };
+  }
+  // OpenRouter is platform-neutral → preferred over the credit-gated Lovable gateway.
+  if (providers.openrouter) {
+    return {
+      vendor: "openrouter",
+      modelId: OPENROUTER_CLAUDE,
+      fallback: providers.lovable
+        ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
         : undefined,
     };
   }
-  if (providers.lovable) {
-    return {
-      vendor: "lovable",
-      modelId: LOVABLE_GEMINI_FLASH,
-      fallback: { vendor: "lovable", modelId: LOVABLE_GPT_5_MINI },
-    };
-  }
-  // Last resort: only OpenRouter available.
+  // Last resort: only the Lovable gateway is configured.
   return {
-    vendor: "openrouter",
-    modelId: OPENROUTER_CLAUDE,
+    vendor: "lovable",
+    modelId: LOVABLE_GEMINI_FLASH,
+    fallback: { vendor: "lovable", modelId: LOVABLE_GPT_5_MINI },
   };
 }
