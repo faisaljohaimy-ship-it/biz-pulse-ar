@@ -20,6 +20,11 @@ import {
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
 import { evaluateRagCoverage } from "@/lib/aria/rag.server";
 import { parseIntent, resolveModel } from "@/lib/aria-core/server/ai-router.server";
+import {
+  isCooling,
+  markVendorFatal,
+  shouldCoolFromError,
+} from "@/lib/aria-core/server/vendor-health.server";
 import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
 
 const CORS_HEADERS_OPTIONS = {
