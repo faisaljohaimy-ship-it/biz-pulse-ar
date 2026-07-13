@@ -605,15 +605,16 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         note: z.string().max(500).optional(),
       }),
       execute: async ({ id, decision, note }) => {
-        // Defense-in-depth: approving/rejecting a permit-to-work is an
-        // authority decision, so require admin/manager at the application
-        // layer too — not just RLS. Mirrors send_executive_email. Additive
-        // only (never loosens); RLS remains the primary enforcement.
-        const { hasAnyPlatformRole } = await import("@/lib/authz.server");
-        if (!(await hasAnyPlatformRole(userId, ["admin", "manager"]))) {
+        // Defense-in-depth: faithfully mirror the effective RLS policy
+        // `sec_permits_admin_write` (has_role(auth.uid(),'admin')) — writing to
+        // sec_permits requires the platform admin role. Checking it here gives
+        // a clear early 403 instead of an opaque RLS rejection. Additive only
+        // (never loosens); RLS remains the primary enforcement.
+        const { hasPlatformRole } = await import("@/lib/authz.server");
+        if (!(await hasPlatformRole(userId, "admin"))) {
           return {
             ok: false,
-            error: "Forbidden: deciding a permit-to-work requires admin or manager role.",
+            error: "Forbidden: deciding a permit-to-work requires the admin role.",
           };
         }
         const { data, error } = await supabase
