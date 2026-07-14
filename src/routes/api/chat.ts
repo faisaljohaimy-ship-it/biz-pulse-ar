@@ -258,17 +258,22 @@ export const Route = createFileRoute("/api/chat")({
 
         let vendor: "openai" | "google" | "lovable" | "openrouter" | "anthropic";
         let selectedModelId: string;
-        if (modelId && effUseOpenai && OPENAI_MODEL_IDS.has(modelId)) {
-          vendor = "openai";
-          selectedModelId = modelId;
-        } else if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
+        if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
           vendor = "google";
-          selectedModelId = modelId;
-        } else if (modelId && effUseAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
-          vendor = "anthropic";
           selectedModelId = modelId;
         } else if (modelId && effUseLovable && LOVABLE_MODEL_IDS.has(modelId)) {
           vendor = "lovable";
+          selectedModelId = modelId;
+        } else if (modelId && !effUseLovable && effUseOpenai && OPENAI_MODEL_IDS.has(modelId)) {
+          vendor = "openai";
+          selectedModelId = modelId;
+        } else if (
+          modelId &&
+          !effUseLovable &&
+          effUseAnthropic &&
+          ANTHROPIC_MODEL_IDS.has(modelId)
+        ) {
+          vendor = "anthropic";
           selectedModelId = modelId;
         } else if (modelId && effUseOpenrouter && OPENROUTER_MODEL_IDS.has(modelId)) {
           vendor = "openrouter";
