@@ -32,3 +32,11 @@ class ROStub {
   disconnect() {}
 }
 (window as unknown as { ResizeObserver: typeof ROStub }).ResizeObserver ||= ROStub;
+
+// jsdom deliberately leaves canvas unimplemented and emits noisy diagnostics.
+// Returning null matches a browser where WebGL is unavailable and exercises
+// each component's lightweight fallback path.
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+  configurable: true,
+  value: () => null,
+});

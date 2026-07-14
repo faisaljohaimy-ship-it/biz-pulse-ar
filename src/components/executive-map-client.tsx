@@ -28,11 +28,11 @@ const TYPE_RADIUS: Record<MapSite["type"], number> = {
 };
 
 type LeafletModules = {
-  MapContainer: any;
-  TileLayer: any;
-  CircleMarker: any;
-  Popup: any;
-  LayersControl: any;
+  MapContainer: (typeof import("react-leaflet"))["MapContainer"];
+  TileLayer: (typeof import("react-leaflet"))["TileLayer"];
+  CircleMarker: (typeof import("react-leaflet"))["CircleMarker"];
+  Popup: (typeof import("react-leaflet"))["Popup"];
+  LayersControl: (typeof import("react-leaflet"))["LayersControl"];
 };
 
 export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: boolean }) {
@@ -43,7 +43,7 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
     (async () => {
       const [rl, L] = await Promise.all([import("react-leaflet"), import("leaflet")]);
       await import("leaflet/dist/leaflet.css");
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",

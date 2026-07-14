@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { runSimulationSeed } from "./sim.seeder.server";
 
 // biome-ignore lint/suspicious/noExplicitAny: admin client
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic simulation tables require an untyped admin client
 type Admin = SupabaseClient<any, any, any>;
 
 const RIYADH_OFFSET_H = 3; // UTC+3, no DST

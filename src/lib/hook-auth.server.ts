@@ -68,3 +68,27 @@ export async function verifySupabaseUser(request: Request): Promise<{ userId: st
   }
   return { userId: data.user.id };
 }
+
+/** Require a signed-in platform administrator or manager for paid token minting. */
+export async function verifySupabaseExecutive(
+  request: Request,
+): Promise<{ userId: string } | Response> {
+  const auth = await verifySupabaseUser(request);
+  if (auth instanceof Response) return auth;
+
+  try {
+    const { hasAnyPlatformRole } = await import("@/lib/authz.server");
+    const allowed = await hasAnyPlatformRole(auth.userId, ["admin", "manager"]);
+    if (!allowed) {
+      return Response.json(
+        { error: "forbidden", required_role: "admin_or_manager" },
+        { status: 403 },
+      );
+    }
+  } catch (error) {
+    console.error("[auth] role verification unavailable", error);
+    return Response.json({ error: "authorization_unavailable" }, { status: 503 });
+  }
+
+  return auth;
+}

@@ -2,11 +2,22 @@
 
 All notable changes to NEXIOS AI OS.
 
+## [1.0.1] — 2026-07-15
+
+### Closed
+- Restored reproducible npm installation, strict CI gates, public/PWA assets, and production build.
+- Re-enabled the authenticated route boundary and server-side bearer validation.
+- Added executive role gates, fail-closed rate limits, lead abuse controls, and privacy-safe logging.
+- Replaced vulnerable `xlsx` with the maintained `@e965/xlsx` alias; production audit is clean.
+- Removed the deprecated unused HeyGen SDK and disabled paid token minting until LiveAvatar support exists.
+- Added the interactive 44-control ARIA command-center artwork, exact regional colors, active-region glow, and transparent 3D region selector.
+- Normalized integration status reporting, Power BI credential testing, role names, deployment docs, and GitHub workflows.
+
 ## [1.0.0] — 2026-06-30
 
 ### Production Readiness Certification
 - **Security**: 0 active findings across 4 scanners (Supabase, supabase_lov, connector, supply chain).
-- **Type safety**: `tsgo --noEmit` passes with 0 errors across the full codebase.
+- **Type safety**: `tsc --noEmit` passes with 0 errors across the full codebase.
 - **Code hygiene**: 0 TODO/FIXME/HACK markers in shipped source.
 - **Runtime**: Workflow engine, agent runtime, tool registry, RAG, memory, and pulse subsystems verified against live production tables.
 

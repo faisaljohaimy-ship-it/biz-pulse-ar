@@ -50,7 +50,7 @@ Files under jurisdiction:
 
 ## Enforcement
 
-1. `bunx tsgo --noEmit` MUST be green.
+1. `npm run typecheck` MUST be green.
 2. E2E test `tests/e2e/02-genesis-intro.spec.ts` MUST assert:
    - a visible surface within 500ms of `/`,
    - the gate remains mounted for ≥ MIN_DISPLAY_MS unless Skip is clicked,
@@ -112,7 +112,7 @@ Files under jurisdiction:
 
 ## Enforcement
 
-1. `bunx tsgo --noEmit` MUST be green.
+1. `npm run typecheck` MUST be green.
 2. The chat handler `onFinish` MUST insert into `aria_interactions` for
    every authenticated turn — never fire-and-forget without try/catch.
 3. The chat handler MUST query `aria_learned_patterns` with the exact
@@ -175,7 +175,7 @@ proposals that do not.
 
 ## Enforcement
 
-1. `bunx tsgo --noEmit` MUST be green.
+1. `npm run typecheck` MUST be green.
 2. `tests/e2e/09-intro-multi-device.spec.ts` MUST pass on all listed
    viewports (390×844, 440×799, 844×390, 1024×1366, 1440×900, 1920×1080).
    It asserts: visible surface ≤500ms, no cropping, Skip button reachable,

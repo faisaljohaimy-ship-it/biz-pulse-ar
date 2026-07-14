@@ -1,129 +1,264 @@
 /**
- * SectorGlobeScene — the Three.js globe used by the corner sector widget
- * (default export, dynamically imported so the heavy 3D bundle loads ONLY on
- * demand). A slowly-drifting navy globe with the four Saudi regions as glowing
- * markers; the ACTIVE sector is pinned: emphasised with a larger pulsing halo
- * and ring, and the globe eases to bring that marker to the front.
+ * SectorGlobeScene — transparent glass 3D globe for the corner region control.
  *
- * `animate=false` (prefers-reduced-motion) freezes the cinematic drift AND
- * switches the render loop to on-demand, but the globe still orients to face
- * the active sector so the pin stays meaningful.
+ * The sphere uses physical transmission rather than an opaque Earth texture.
+ * Its atmosphere, grid, arcs and active marker inherit the selected region's
+ * canonical colour and pulse gently while the globe eases toward that region.
  */
-import { Canvas, useFrame } from "@react-three/fiber";
 import { Line } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { REGION_ACCENT_HEX } from "@/lib/regions";
 import { REGION_MARKERS } from "./region-markers";
 
-const EMERALD = "#34D399";
-const CYAN = "#3AE8FF";
-const R = 1;
+const RADIUS = 1;
 
-/** lat/lng (degrees) → point on a sphere of radius `r`. */
-function toVec3(lat: number, lng: number, r = R): THREE.Vector3 {
+function toVector3(lat: number, lng: number, radius = RADIUS): THREE.Vector3 {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lng + 180) * (Math.PI / 180);
   return new THREE.Vector3(
-    -r * Math.sin(phi) * Math.cos(theta),
-    r * Math.cos(phi),
-    r * Math.sin(phi) * Math.sin(theta),
+    -radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta),
   );
 }
 
-/** Group-rotation.y that brings a marker at longitude `lng` to the front. */
-function facingY(lng: number): number {
+function facingRotation(lng: number): number {
   return -((lng + 180) * Math.PI) / 180 + Math.PI;
 }
 
-function Marker({ pos, active }: { pos: THREE.Vector3; active: boolean }) {
+function RegionMarker({
+  position,
+  active,
+  color,
+}: {
+  readonly position: THREE.Vector3;
+  readonly active: boolean;
+  readonly color: string;
+}) {
   const haloRef = useRef<THREE.Mesh>(null);
+  const ringRef = useRef<THREE.Mesh>(null);
+
   useFrame((state) => {
-    if (!active || !haloRef.current) return;
-    const s = 1 + Math.sin(state.clock.elapsedTime * 3) * 0.18;
-    haloRef.current.scale.setScalar(s);
+    if (!active) return;
+    const pulse = 1 + Math.sin(state.clock.elapsedTime * 3.1) * 0.2;
+    haloRef.current?.scale.setScalar(pulse);
+    if (ringRef.current) {
+      ringRef.current.scale.setScalar(0.88 + ((state.clock.elapsedTime * 0.34) % 1) * 0.8);
+      const material = ringRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = 0.44 * (1 - ((state.clock.elapsedTime * 0.34) % 1));
+    }
   });
-  const color = active ? CYAN : EMERALD;
+
   return (
-    <group position={pos}>
+    <group position={position}>
       <mesh>
-        <sphereGeometry args={[active ? 0.042 : 0.026, 16, 16]} />
+        <sphereGeometry args={[active ? 0.045 : 0.027, 20, 20]} />
         <meshBasicMaterial color={color} toneMapped={false} />
       </mesh>
       <mesh ref={haloRef}>
-        <sphereGeometry args={[active ? 0.1 : 0.05, 16, 16]} />
+        <sphereGeometry args={[active ? 0.115 : 0.055, 20, 20]} />
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={active ? 0.32 : 0.2}
+          opacity={active ? 0.28 : 0.13}
+          depthWrite={false}
           toneMapped={false}
         />
       </mesh>
+      {active && (
+        <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.075, 0.095, 32]} />
+          <meshBasicMaterial
+            color={color}
+            transparent
+            opacity={0.42}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
     </group>
   );
 }
 
-function Arc({ a, b }: { a: THREE.Vector3; b: THREE.Vector3 }) {
+function ConnectionArc({
+  start,
+  end,
+  color,
+}: {
+  readonly start: THREE.Vector3;
+  readonly end: THREE.Vector3;
+  readonly color: string;
+}) {
   const points = useMemo(() => {
-    const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(1.28);
-    return new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(28);
-  }, [a, b]);
-  return <Line points={points} color={EMERALD} lineWidth={1} transparent opacity={0.36} />;
+    const middle = start.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(1.29);
+    return new THREE.QuadraticBezierCurve3(start, middle, end).getPoints(30);
+  }, [start, end]);
+
+  return <Line points={points} color={color} lineWidth={1} transparent opacity={0.3} />;
 }
 
-function GlobeGroup({ animate, activeIndex }: { animate: boolean; activeIndex: number }) {
-  const ref = useRef<THREE.Group>(null);
-  const markers = useMemo(() => REGION_MARKERS.map((m) => toVec3(m.lat, m.lng, 1.02)), []);
+function GlassGlobe({
+  animate,
+  activeIndex,
+  activeColor,
+}: {
+  readonly animate: boolean;
+  readonly activeIndex: number;
+  readonly activeColor: string;
+}) {
+  const globeRef = useRef<THREE.Group>(null);
+  const atmosphereRef = useRef<THREE.Mesh>(null);
+  const orbitRef = useRef<THREE.Group>(null);
+
+  const markers = useMemo(
+    () => REGION_MARKERS.map((marker) => toVector3(marker.lat, marker.lng, 1.025)),
+    [],
+  );
   const arcs = useMemo(() => {
-    const out: Array<[THREE.Vector3, THREE.Vector3]> = [];
-    for (let i = 0; i < markers.length; i++)
-      for (let j = i + 1; j < markers.length; j++) out.push([markers[i], markers[j]]);
-    return out;
+    const connections: Array<[THREE.Vector3, THREE.Vector3]> = [];
+    for (let first = 0; first < markers.length; first += 1) {
+      for (let second = first + 1; second < markers.length; second += 1) {
+        connections.push([markers[first], markers[second]]);
+      }
+    }
+    return connections;
   }, [markers]);
 
-  // Base orientation faces the active sector; a gentle sway keeps it cinematic.
-  const baseY = useMemo(() => {
-    const m = REGION_MARKERS[activeIndex] ?? REGION_MARKERS[0];
-    return facingY(m.lng);
+  const baseRotation = useMemo(() => {
+    const marker = REGION_MARKERS[activeIndex] ?? REGION_MARKERS[0];
+    return facingRotation(marker.lng);
   }, [activeIndex]);
 
   useFrame((state, delta) => {
-    if (!ref.current) return;
-    const sway = animate ? Math.sin(state.clock.elapsedTime * 0.16) * 0.28 : 0;
-    const target = baseY + sway;
-    // Ease toward the (swaying) target so switching sector glides into view.
-    const k = Math.min(1, delta * 2.2);
-    ref.current.rotation.y += (target - ref.current.rotation.y) * k;
+    if (!globeRef.current) return;
+    const drift = animate ? Math.sin(state.clock.elapsedTime * 0.17) * 0.24 : 0;
+    const target = baseRotation + drift;
+    const easing = Math.min(1, delta * 2.25);
+    globeRef.current.rotation.y += (target - globeRef.current.rotation.y) * easing;
+
+    if (animate && orbitRef.current) {
+      orbitRef.current.rotation.z += delta * 0.11;
+      orbitRef.current.rotation.y += delta * 0.045;
+    }
+    if (atmosphereRef.current) {
+      const scale = animate ? 1 + Math.sin(state.clock.elapsedTime * 1.8) * 0.025 : 1;
+      atmosphereRef.current.scale.setScalar(scale);
+    }
   });
 
   return (
-    <group ref={ref} rotation={[0.35, baseY, 0]}>
-      {/* Atmospheric halo */}
-      <mesh>
-        <sphereGeometry args={[R * 1.14, 32, 32]} />
+    <group ref={globeRef} rotation={[0.3, baseRotation, -0.04]}>
+      {/* Living atmospheric shell. */}
+      <mesh ref={atmosphereRef}>
+        <sphereGeometry args={[RADIUS * 1.15, 48, 48]} />
         <meshBasicMaterial
-          color={EMERALD}
+          color={activeColor}
           transparent
-          opacity={0.08}
+          opacity={0.075}
           side={THREE.BackSide}
+          depthWrite={false}
           toneMapped={false}
         />
       </mesh>
-      {/* Solid navy sphere */}
-      <mesh>
-        <sphereGeometry args={[R, 48, 48]} />
-        <meshStandardMaterial color="#071a2e" roughness={0.85} metalness={0.15} />
+
+      {/* Transparent physical glass sphere. */}
+      <mesh renderOrder={1}>
+        <sphereGeometry args={[RADIUS, 64, 64]} />
+        <meshPhysicalMaterial
+          color="#071827"
+          emissive={activeColor}
+          emissiveIntensity={0.07}
+          transparent
+          opacity={0.2}
+          transmission={0.88}
+          thickness={0.55}
+          ior={1.35}
+          roughness={0.08}
+          metalness={0.08}
+          clearcoat={1}
+          clearcoatRoughness={0.06}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
       </mesh>
-      {/* Wireframe overlay */}
+
+      {/* Inner refraction tint and dual holographic grids. */}
       <mesh>
-        <sphereGeometry args={[R * 1.001, 24, 18]} />
-        <meshBasicMaterial color="#155e75" wireframe transparent opacity={0.3} />
+        <sphereGeometry args={[RADIUS * 0.97, 40, 40]} />
+        <meshBasicMaterial
+          color={activeColor}
+          transparent
+          opacity={0.028}
+          side={THREE.BackSide}
+          depthWrite={false}
+          toneMapped={false}
+        />
       </mesh>
-      {arcs.map(([a, b], i) => (
-        <Arc key={i} a={a} b={b} />
+      <mesh renderOrder={2}>
+        <sphereGeometry args={[RADIUS * 1.006, 28, 20]} />
+        <meshBasicMaterial
+          color={activeColor}
+          wireframe
+          transparent
+          opacity={0.24}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh renderOrder={2} rotation={[0, Math.PI / 12, Math.PI / 10]}>
+        <sphereGeometry args={[RADIUS * 1.025, 16, 12]} />
+        <meshBasicMaterial
+          color="#FFFFFF"
+          wireframe
+          transparent
+          opacity={0.045}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Two thin, independently drifting orbital rings. */}
+      <group ref={orbitRef} rotation={[0.7, 0.2, -0.38]}>
+        <mesh>
+          <torusGeometry args={[1.22, 0.006, 8, 96]} />
+          <meshBasicMaterial
+            color={activeColor}
+            transparent
+            opacity={0.48}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh rotation={[Math.PI / 2.4, 0, Math.PI / 5]}>
+          <torusGeometry args={[1.29, 0.004, 8, 96]} />
+          <meshBasicMaterial
+            color="#FFFFFF"
+            transparent
+            opacity={0.2}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+
+      {arcs.map(([start, end], index) => (
+        <ConnectionArc key={index} start={start} end={end} color={activeColor} />
       ))}
-      {markers.map((pos, i) => (
-        <Marker key={i} pos={pos} active={i === activeIndex} />
-      ))}
+      {markers.map((position, index) => {
+        const marker = REGION_MARKERS[index];
+        return (
+          <RegionMarker
+            key={marker.id}
+            position={position}
+            active={index === activeIndex}
+            color={REGION_ACCENT_HEX[marker.id]}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -131,22 +266,24 @@ function GlobeGroup({ animate, activeIndex }: { animate: boolean; activeIndex: n
 export default function SectorGlobeScene({
   animate,
   activeIndex,
+  activeColor,
 }: {
-  animate: boolean;
-  activeIndex: number;
+  readonly animate: boolean;
+  readonly activeIndex: number;
+  readonly activeColor: string;
 }) {
   return (
     <Canvas
-      dpr={[1, 1.5]}
-      camera={{ position: [0, 0, 3.1], fov: 42 }}
+      dpr={[1, 1.6]}
+      camera={{ position: [0, 0, 3.25], fov: 41 }}
       frameloop={animate ? "always" : "demand"}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
       style={{ background: "transparent" }}
     >
-      <ambientLight intensity={0.65} />
-      <pointLight position={[3, 2, 4]} intensity={1.3} color={CYAN} />
-      <pointLight position={[-3, -1, -2]} intensity={0.5} color={EMERALD} />
-      <GlobeGroup animate={animate} activeIndex={activeIndex} />
+      <ambientLight intensity={0.55} />
+      <pointLight position={[3.2, 2.4, 4]} intensity={1.55} color="#FFFFFF" />
+      <pointLight position={[-3, -1.3, -2]} intensity={0.9} color={activeColor} />
+      <GlassGlobe animate={animate} activeIndex={activeIndex} activeColor={activeColor} />
     </Canvas>
   );
 }

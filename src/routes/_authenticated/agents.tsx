@@ -356,9 +356,9 @@ function AgentsOps() {
   });
 
   const ops = opsQ.data;
-  const agents = ops?.agents ?? [];
+  const agents = useMemo(() => ops?.agents ?? [], [ops?.agents]);
   const system = ops?.system;
-  const runs = runsQ.data ?? [];
+  const runs = useMemo(() => runsQ.data ?? [], [runsQ.data]);
   const agentById = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a])), [agents]);
 
   const filteredAgents = useMemo(() => {

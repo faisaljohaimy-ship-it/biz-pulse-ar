@@ -1,40 +1,20 @@
 {
-  "name": "ARIA · NEXIOS — منصة إنجاز الأعمال التنفيذية",
-  "short_name": "ARIA",
-  "description": "آريا — الوكيلة التنفيذية لإدارة الأمن الصناعي في NEXIOS.",
+  "name": "NEXIOS AI OS · ARIA",
+  "short_name": "NEXIOS",
+  "description": "منصة إنجاز الأعمال التنفيذية",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "any",
   "background_color": "#04070F",
   "theme_color": "#04070F",
-  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/aria-app-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/nexus-icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/aria-icon.jpeg",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "اسأل آريا",
-      "short_name": "آريا",
-      "url": "/?aria=1"
-    },
-    {
-      "name": "الأمن الصناعي",
-      "short_name": "الأمن",
-      "url": "/sec"
     }
   ]
 }

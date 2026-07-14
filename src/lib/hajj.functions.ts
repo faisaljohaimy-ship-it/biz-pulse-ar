@@ -76,7 +76,7 @@ export const getHajjOverview = createServerFn({ method: "GET" })
 
 export const updateHajjTaskStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         id: z.string().uuid(),

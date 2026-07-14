@@ -45,6 +45,8 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
       onFinal?.(txt);
     },
   });
+  const scribeRef = useRef(scribe);
+  scribeRef.current = scribe;
 
   const stopSpeaking = useCallback(() => {
     if (audioRef.current) {
@@ -132,18 +134,18 @@ export function useAriaVoice({ onPartial, onFinal }: Opts = {}) {
     [stopSpeaking],
   );
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
       mountedRef.current = false;
       stopSpeaking();
       try {
-        scribe.disconnect();
+        scribeRef.current.disconnect();
       } catch {
         /* noop */
       }
-    },
-    [],
-  );
+    };
+  }, [stopSpeaking]);
 
   return {
     listening,

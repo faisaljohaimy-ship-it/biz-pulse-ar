@@ -49,7 +49,7 @@ const emptyBySource: Record<SearchSource, number> = {
 
 export const enterpriseSearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => schema.parse(d))
+  .validator((d: unknown) => schema.parse(d))
   .handler(async ({ data, context }): Promise<SearchResponse> => {
     const started = Date.now();
     const supabase = context.supabase;

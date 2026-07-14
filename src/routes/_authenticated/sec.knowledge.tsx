@@ -172,7 +172,7 @@ function KbPage() {
   });
 
   const categories = categoriesQ.data ?? [];
-  const articles = articlesQ.data ?? [];
+  const articles = useMemo(() => articlesQ.data ?? [], [articlesQ.data]);
   const counts = useMemo(() => {
     const m: Record<string, number> = {};
     for (const a of articles) {
@@ -508,13 +508,14 @@ function ArticleDetail({ a }: { a: NonNullable<Awaited<ReturnType<typeof kbGetAr
           {a.related_agents.length > 0 && (
             <div>
               🤖 <strong>Agents:</strong>{" "}
-              {a.related_agents
-                .map((ag) => (
-                  <Link key={ag} to="/agents" className="font-mono text-primary hover:underline">
-                    {ag}
+              {a.related_agents.map((agent, index) => (
+                <span key={agent}>
+                  {index > 0 ? " • " : null}
+                  <Link to="/agents" className="font-mono text-primary hover:underline">
+                    {agent}
                   </Link>
-                ))
-                .reduce((p: any, c, i) => (i === 0 ? [c] : [...p, " • ", c]), [])}
+                </span>
+              ))}
             </div>
           )}
           {a.related_forms.length > 0 && (

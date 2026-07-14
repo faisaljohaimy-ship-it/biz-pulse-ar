@@ -150,7 +150,7 @@ const updateRoleSchema = z.object({
 
 export const updateMemberRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => updateRoleSchema.parse(d))
+  .validator((d: unknown) => updateRoleSchema.parse(d))
   .handler(async ({ data, context }) => {
     // Only platform admins OR org owners can change roles.
     const platformAdmin = await hasPlatformRole(context.userId, "admin");
@@ -227,7 +227,10 @@ export const getSecretInventory = createServerFn({ method: "GET" })
       { name: "RESEND_API_KEY", category: "Email" },
       { name: "SESSION_SECRET", category: "Auth" },
       { name: "SUPABASE_SERVICE_ROLE_KEY", category: "Platform" },
-      { name: "POWER_BI_API_KEY", category: "Analytics" },
+      { name: "POWERBI_TENANT_ID", category: "Analytics" },
+      { name: "POWERBI_CLIENT_ID", category: "Analytics" },
+      { name: "POWERBI_CLIENT_SECRET", category: "Analytics" },
+      { name: "POWERBI_WORKSPACE_ID", category: "Analytics" },
     ];
     return known.map((k) => ({ ...k, configured: Boolean(process.env[k.name]) }));
   });

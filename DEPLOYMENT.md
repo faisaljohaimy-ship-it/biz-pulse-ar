@@ -1,52 +1,57 @@
 # NEXIOS AI OS — Deployment
 
-## Target
-- **Edge**: Cloudflare Workers (workerd) via TanStack Start adapter
-- **Data**: Supabase Postgres 15 (Lovable Cloud managed)
-- **Static**: Vite-built assets served by Workers
+## Canonical target
 
-## Environments
-| Env | URL | Notes |
-|---|---|---|
-| Preview | `https://id-preview--<project-id>.lovable.app` | Latest build, auth required |
-| Stable Preview | `https://project--<project-id>-dev.lovable.app` | Immutable URL for external integrations |
-| Production | `https://biz-pulse-ar.lovable.app` | Published deployment |
-| Stable Production | `https://project--<project-id>.lovable.app` | Immutable URL for webhooks |
-| Custom Domain | `https://neexios.com`, `https://www.neexios.com` | DNS-attached |
+Cloudflare Workers is the primary production target. The production build emits
+`.output/server/wrangler.json`; `.github/workflows/deploy.yml` verifies the
+release and deploys that output. `vercel.json` remains an optional manual target,
+but automatic deployment of the same production branch to two providers is not
+recommended.
 
-## Required Server Env
-| Variable | Purpose |
+## Required GitHub secrets
+
+| Secret | Purpose |
 |---|---|
-| `SUPABASE_URL` | Postgres + Auth |
-| `SUPABASE_PUBLISHABLE_KEY` | Publishable client (RLS as anon/user) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Admin server client (`supabaseAdmin`) |
-| `LOVABLE_API_KEY` | AI Gateway |
-| `ELEVENLABS_API_KEY` | TTS/STT (optional — voice features) |
-| `MICROSOFT_*` | Outlook/SharePoint adapters (optional) |
-| `HEYGEN_API_KEY` | LiveAvatar (optional — falls back to R3F) |
+| `CLOUDFLARE_API_TOKEN` | Worker deployment permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Target Cloudflare account |
+| `VITE_SUPABASE_URL` | Browser and SSR Supabase URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Browser-safe Supabase key |
 
-## Required Client Env
-| Variable | Purpose |
-|---|---|
-| `VITE_SUPABASE_URL` | Browser Supabase client |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Browser Supabase client |
-| `VITE_SUPABASE_PROJECT_ID` | Project ref |
+The workflow fails when these values are missing; it never reports a skipped
+deployment as successful.
 
-## Deploy
-- **Backend changes** (server fns, RLS, migrations): auto-deploy on push.
-- **Frontend changes**: require explicit "Publish" via the editor.
+## Required runtime secrets
 
-## Cron / Scheduled Jobs (pg_cron)
-- Executive Reports daily run → `POST /api/public/hooks/executive-reports-run`
-- Microsoft Sync → `POST /api/public/hooks/microsoft-sync`
-- ARIA Docs Ingest → `POST /api/public/hooks/aria-docs-ingest`
-- Runtime Bootstrap → `POST /api/public/hooks/runtime-bootstrap` (cold-start)
+Configure these in the Worker environment, never in a committed `.env` file:
 
-All hooks are credentialed and Zod-validated.
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- `CRON_HOOK_SECRET` (at least 16 characters)
+- At least one configured AI provider key for live ARIA responses
+- `LEADS_NOTIFY_EMAIL` if internal lead notifications are required
+- Optional voice and enterprise connector values documented in `.env.example`
 
-## Health
-- `GET /api/public/health` → 200 always; body reports per-subsystem status.
-- `GET /api/public/version` → product/version/channel JSON.
+## Release procedure
+
+1. Apply pending files in `supabase/migrations/` to the intended Supabase project.
+2. Configure Worker runtime secrets and GitHub Actions secrets.
+3. Add `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` for the authenticated E2E leg.
+4. Run `npm ci` and `npm run check` locally.
+5. Push to `main`, or invoke **Deploy to Cloudflare** manually.
+6. Verify `/api/public/health`, authentication redirect, ARIA fallback, lead form,
+   and one tenant-scoped read against production.
+
+The deploy workflow repeats lint, typecheck, unit tests, and production build
+before `wrangler deploy`.
 
 ## Rollback
-Re-publish a prior preview build via the Lovable editor. Database migrations are forward-only; design every migration to be backward-compatible for at least one release.
+
+Redeploy the last known-good application artifact or Git revision. Database
+migrations are forward-only: use a new compensating migration and keep schema
+changes backward-compatible for at least one application release.
+
+## Current handoff state — 2026-07-15
+
+The code and deployment workflow are prepared and the local production build is
+green. No live deployment was performed from the remediation workspace because
+Cloudflare credentials, the target Supabase project, and production approval are
+external to the code archive.

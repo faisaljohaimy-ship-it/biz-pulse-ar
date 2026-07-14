@@ -219,20 +219,20 @@ function ExecutiveShowcasePage() {
     return () => window.clearTimeout(t);
   }, [videoFailed, idx, isFinale]);
 
-  // Clean unmount: stop video, no double audio.
-  React.useEffect(() => {
-    return () => {
-      const v = videoRef.current;
-      if (v) {
-        try {
-          v.pause();
-          v.currentTime = 0;
-        } catch {
-          /* ignore */
-        }
+  const stopVideo = React.useCallback(() => {
+    const video = videoRef.current;
+    if (video) {
+      try {
+        video.pause();
+        video.currentTime = 0;
+      } catch {
+        /* ignore */
       }
-    };
+    }
   }, []);
+
+  // Clean unmount: stop video, no double audio.
+  React.useEffect(() => stopVideo, [stopVideo]);
 
   // Lock scroll while showcase is mounted.
   React.useEffect(() => {

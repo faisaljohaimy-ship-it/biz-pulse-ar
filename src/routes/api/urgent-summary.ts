@@ -6,25 +6,41 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+import { requireBearerUser } from "@/lib/aria/require-bearer.server";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 
 export const Route = createFileRoute("/api/urgent-summary")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const auth = request.headers.get("authorization") ?? "";
-        if (!auth.toLowerCase().startsWith("bearer ")) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        const supabase = createClient(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_PUBLISHABLE_KEY!,
-          {
-            auth: { persistSession: false, autoRefreshToken: false },
-            global: { headers: { Authorization: auth } },
-          },
-        );
+        const auth = await requireBearerUser(request);
+        if ("response" in auth) return auth.response;
 
-        const [{ data: tasks }, { data: reqs }, { data: proposals }] = await Promise.all([
+        const rate = await enforceRateLimit(`urgent-summary:${auth.userId}`, 30, 60);
+        if (rate.unavailable) return rateLimitUnavailableResponse();
+        if (!rate.allowed) return rateLimitResponse();
+
+        const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+        const publishableKey =
+          process.env.SUPABASE_PUBLISHABLE_KEY ??
+          process.env.SUPABASE_ANON_KEY ??
+          process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+          process.env.VITE_SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !publishableKey) {
+          return Response.json({ error: "data_source_not_configured" }, { status: 503 });
+        }
+
+        const supabase = createClient<Database>(supabaseUrl, publishableKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+          global: { headers: { Authorization: `Bearer ${auth.token}` } },
+        });
+
+        const [taskResult, requestResult, proposalResult] = await Promise.all([
           supabase
             .from("urgent_tasks")
             .select("id, title_ar, department, priority, status, due_at, sla_hours")
@@ -33,6 +49,19 @@ export const Route = createFileRoute("/api/urgent-summary")({
           supabase.from("support_requests").select("id, status, channel").limit(200),
           supabase.from("aria_improvement_proposals").select("id, status").limit(200),
         ]);
+
+        const queryError = taskResult.error ?? requestResult.error ?? proposalResult.error;
+        if (queryError) {
+          console.error("[api/urgent-summary] query failed", {
+            code: queryError.code,
+            details: queryError.details,
+          });
+          return Response.json({ error: "summary_unavailable" }, { status: 502 });
+        }
+
+        const tasks = taskResult.data;
+        const reqs = requestResult.data;
+        const proposals = proposalResult.data;
 
         const now = Date.now();
         const rows = tasks ?? [];
@@ -67,6 +96,7 @@ export const Route = createFileRoute("/api/urgent-summary")({
           generated_at: new Date().toISOString(),
           tasks: {
             total: rows.length,
+            truncated: rows.length === 200,
             open: rows.filter((t) => t.status !== "مغلق").length,
             overdue,
             breaching_soon: breachingSoon,

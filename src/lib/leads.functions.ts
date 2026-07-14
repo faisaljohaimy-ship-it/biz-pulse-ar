@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequest, getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
+import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 
 const LeadSchema = z.object({
   kind: z.enum(["contact", "demo", "book"]),
@@ -19,8 +20,6 @@ const LeadSchema = z.object({
 });
 
 export type LeadInput = z.infer<typeof LeadSchema>;
-
-const INTERNAL_NOTIFY_TO = "Faisaljohaimy@gmail.com";
 
 async function sendNotificationEmails(args: {
   requestId: string;
@@ -48,13 +47,18 @@ async function sendNotificationEmails(args: {
     source: data.source ?? "",
   };
 
+  const internalRecipient = process.env.LEADS_NOTIFY_EMAIL?.trim();
+  const internalPromise = internalRecipient
+    ? enqueueTemplateEmail({
+        templateName: "demo-internal",
+        recipientEmail: internalRecipient,
+        templateData: internalData,
+        idempotencyKey: `lead-internal-${requestId}`,
+      })
+    : Promise.resolve({ ok: true, error: undefined });
+
   const [internalRes, confirmRes] = await Promise.allSettled([
-    enqueueTemplateEmail({
-      templateName: "demo-internal",
-      recipientEmail: INTERNAL_NOTIFY_TO,
-      templateData: internalData,
-      idempotencyKey: `lead-internal-${requestId}`,
-    }),
+    internalPromise,
     enqueueTemplateEmail({
       templateName: "demo-confirmation",
       recipientEmail: data.email,
@@ -65,6 +69,7 @@ async function sendNotificationEmails(args: {
 
   return {
     provider: "lovable-email" as const,
+    internal_skipped: !internalRecipient,
     internal_ok: internalRes.status === "fulfilled" && !!internalRes.value.ok,
     confirm_ok: confirmRes.status === "fulfilled" && !!confirmRes.value.ok,
     internal_error:
@@ -79,7 +84,7 @@ async function sendNotificationEmails(args: {
 }
 
 export const submitLead = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => LeadSchema.parse(d))
+  .validator((d: unknown) => LeadSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -95,6 +100,16 @@ export const submitLead = createServerFn({ method: "POST" })
     } catch {
       /* not in request context */
     }
+
+    // Public lead forms are intentionally anonymous, so abuse protection is
+    // keyed by a one-way digest of network context + normalized email.
+    const { createHash } = await import("node:crypto");
+    const rateKey = createHash("sha256")
+      .update(`${ip ?? "unknown"}:${data.email.trim().toLowerCase()}`)
+      .digest("hex");
+    const rate = await enforceRateLimit(`lead:${rateKey}`, 5, 3600);
+    if (rate.unavailable) throw new Error("Lead submission is temporarily unavailable");
+    if (!rate.allowed) throw new Error("Too many submissions. Please try again later.");
 
     const { data: inserted, error } = await supabaseAdmin
       .from("leads")
@@ -132,6 +147,7 @@ export const submitLead = createServerFn({ method: "POST" })
     // never lost.
     let emailStatus: Awaited<ReturnType<typeof sendNotificationEmails>> & { error?: string } = {
       provider: "lovable-email",
+      internal_skipped: !process.env.LEADS_NOTIFY_EMAIL?.trim(),
       internal_ok: false,
       confirm_ok: false,
       internal_error: undefined,

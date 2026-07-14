@@ -1,6 +1,6 @@
 /**
  * ExecutivePresentationPlayer — the guided executive presentation on the
- * demo page. ARIA's narrator video (public/aria/aria-narrator.mp4) plays on
+ * demo page. ARIA's managed narrator video plays on
  * the LEFT in a dark #04111f frame, full face visible; on the RIGHT a
  * cinematic scene panel (kicker · title · body) switches automatically in
  * sync with the narration cues, ending on a closing CTA.
@@ -30,8 +30,9 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { useI18n } from "@/lib/i18n";
+import narratorAsset from "@/assets/aria-executive-brief.mp4.asset.json";
 
-const VIDEO_SRC = "/aria/aria-narrator.mp4";
+const VIDEO_SRC = narratorAsset.url;
 
 type Accent = "navy" | "emerald" | "gold";
 

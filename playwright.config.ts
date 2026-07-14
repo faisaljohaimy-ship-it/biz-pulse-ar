@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Playwright E2E — critical executive-demo paths only.
- * Not wired into the deploy pipeline; run on demand with `bun run test:e2e`.
+ * The security subset is wired into CI; run the full suite with `npm run test:e2e`.
  * Base URL defaults to the local dev server; override with PLAYWRIGHT_BASE_URL
  * to hit preview/published (e.g. https://neexios.com).
  */

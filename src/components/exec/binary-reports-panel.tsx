@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,7 +127,7 @@ export function BinaryReportsPanel({
   const [schedules, setSchedules] = useState<ReportScheduleRow[]>([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
 
-  async function refreshSchedules() {
+  const refreshSchedules = useCallback(async () => {
     setLoadingSchedules(true);
     try {
       setSchedules(await listFn());
@@ -136,10 +136,10 @@ export function BinaryReportsPanel({
     } finally {
       setLoadingSchedules(false);
     }
-  }
+  }, [listFn]);
   useEffect(() => {
     void refreshSchedules();
-  }, []);
+  }, [refreshSchedules]);
 
   // New schedule draft
   const [draft, setDraft] = useState({

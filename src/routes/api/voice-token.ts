@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError, toApiErrorShape } from "@/lib/api";
-import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import { verifySupabaseExecutive } from "@/lib/hook-auth.server";
 import {
   enforceRateLimit,
   rateLimitUnavailableResponse,
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/voice-token")({
     handlers: {
       POST: async ({ request }) => {
         // Auth: only signed-in executives may mint ElevenLabs tokens.
-        const auth = await verifySupabaseUser(request);
+        const auth = await verifySupabaseExecutive(request);
         if (auth instanceof Response) return auth;
         // Per-user rate limit — cap token minting to 20/min.
         const { allowed, unavailable } = await enforceRateLimit(

@@ -34,7 +34,7 @@ export interface EnqueueResult {
 export async function enqueueTemplateEmail(opts: {
   templateName: string;
   recipientEmail?: string;
-  templateData?: Record<string, any>;
+  templateData?: Record<string, unknown>;
   idempotencyKey?: string;
 }): Promise<EnqueueResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -96,7 +96,8 @@ export async function enqueueTemplateEmail(opts: {
   let html: string;
   let text: string;
   try {
-    const element = React.createElement(template.component as any, templateData);
+    const component = template.component as React.ComponentType<Record<string, unknown>>;
+    const element = React.createElement(component, templateData);
     html = await render(element);
     text = await render(element, { plainText: true });
   } catch (err) {

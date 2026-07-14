@@ -1,13 +1,13 @@
-import type { ComponentType } from "react";
+import type { ElementType } from "react";
 
 import { template as demoConfirmation } from "./demo-confirmation";
 import { template as demoInternal } from "./demo-internal";
 
 export interface TemplateEntry {
-  component: ComponentType<any>;
-  subject: string | ((data: Record<string, any>) => string);
+  component: ElementType;
+  subject: string | ((data: Readonly<Record<string, unknown>>) => string);
   displayName?: string;
-  previewData?: Record<string, any>;
+  previewData?: Readonly<Record<string, unknown>>;
   /** Fixed recipient — overrides caller-provided recipientEmail when set. */
   to?: string;
 }

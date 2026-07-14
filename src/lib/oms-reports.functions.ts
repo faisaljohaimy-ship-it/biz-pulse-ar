@@ -227,7 +227,7 @@ async function buildIncidentPdf(
 
 export const generateIncidentReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         incident_id: z.string().uuid(),
@@ -381,7 +381,7 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
 // ───────────────────────────────────────────────────────────────────────────
 export const generateDailyOperationsReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         date: z
@@ -510,7 +510,7 @@ export const listReports = createServerFn({ method: "GET" })
 
 export const getReportDownloadUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ report_id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ report_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("sec_reports")

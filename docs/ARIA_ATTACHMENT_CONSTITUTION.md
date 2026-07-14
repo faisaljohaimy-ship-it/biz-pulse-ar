@@ -110,7 +110,7 @@ reports attachment counts or generation availability.
 - ✅ At least one generative tool (`generate_image`) live and
       returning owned, signed URLs.
 - ✅ System prompt teaches ARIA the acknowledgement + grounding rule.
-- ✅ Tests: `tsgo --noEmit` clean; upload rejects a `.exe`; a
+- ✅ Tests: `tsc --noEmit` clean; upload rejects a `.exe`; a
       user-uploaded image returns a description that references the file.
 
 Violations are treated as production defects and MUST block release.

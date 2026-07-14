@@ -157,7 +157,7 @@ function SituationRoomPage() {
   });
 
   const aria = findHuman("aria")!;
-  const agents = state.data?.agents ?? [];
+  const agents = useMemo(() => state.data?.agents ?? [], [state.data?.agents]);
   const health = state.data?.health;
   const threat = threatLevel(health?.score ?? 0);
 

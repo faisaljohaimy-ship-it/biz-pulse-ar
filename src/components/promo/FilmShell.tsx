@@ -2,7 +2,7 @@
 // Handles: play gate (user gesture unlocks audio), scene timeline,
 // audio sync with hard-stop on exit, download button with graceful
 // disabled state, captions, replay, prefers-reduced-motion fallback.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ScenePlayer, type Scene } from "@/components/promo/ScenePlayer";
 
@@ -64,20 +64,20 @@ export function FilmShell({ film }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [runKey, setRunKey] = useState(0);
 
-  // Hard-stop audio on unmount / route exit.
-  useEffect(() => {
-    return () => {
-      const a = audioRef.current;
-      if (a) {
-        try {
-          a.pause();
-          a.currentTime = 0;
-        } catch {
-          /* noop */
-        }
+  const stopAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* noop */
       }
-    };
+    }
   }, []);
+
+  // Hard-stop audio on unmount / route exit.
+  useEffect(() => stopAudio, [stopAudio]);
 
   useEffect(() => {
     const a = audioRef.current;

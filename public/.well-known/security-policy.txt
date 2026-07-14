@@ -1,7 +1,0 @@
-NEEXIOS Technologies — Coordinated Vulnerability Disclosure
-============================================================
-
-Report to: security@neexios.com (PGP available on request)
-Response SLA: acknowledgement within 24h, triage within 72h, fix or mitigation within 90 days for High/Critical.
-Safe Harbor: Good-faith research that respects user privacy, avoids service disruption, and follows this policy will not be pursued legally.
-Out of scope: Social engineering of staff, physical attacks, DoS/DDoS, automated scanner output without proof of exploitability, third-party services not operated by NEEXIOS.

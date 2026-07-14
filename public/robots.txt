@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /_authenticated/
-Disallow: /admin
+Disallow: /auth/
 
 Sitemap: https://neexios.com/sitemap.xml

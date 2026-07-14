@@ -80,7 +80,7 @@ const ListInput = z.object({
 
 export const kbListArticles = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => ListInput.parse(data))
+  .validator((data: unknown) => ListInput.parse(data))
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("sec_knowledge_articles")
@@ -109,7 +109,7 @@ export const kbListArticles = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return (rows ?? []).map((r: any) => ({
+    return (rows ?? []).map((r) => ({
       id: r.id,
       doc_code: r.doc_code,
       category_code: r.sec_knowledge_categories?.code ?? null,
@@ -126,7 +126,7 @@ export const kbListArticles = createServerFn({ method: "POST" })
 
 export const kbGetArticle = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ doc_code: z.string().min(1) }).parse(data))
+  .validator((data: unknown) => z.object({ doc_code: z.string().min(1) }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("sec_knowledge_articles")
@@ -137,7 +137,7 @@ export const kbGetArticle = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) return null;
-    const r = row as any;
+    const r = row;
     return {
       id: r.id,
       doc_code: r.doc_code,
@@ -187,7 +187,7 @@ const SemanticInput = z.object({
 
 export const kbSemanticSearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => SemanticInput.parse(data))
+  .validator((data: unknown) => SemanticInput.parse(data))
   .handler(async ({ data, context }) => {
     const { embedText } = await import("@/lib/kb-embed.server");
     let vec: number[];
@@ -215,7 +215,7 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
       return {
         mode: "keyword" as const,
         reason: (e as Error).message,
-        hits: (rows ?? []).map((r: any) => ({
+        hits: (rows ?? []).map((r) => ({
           id: r.id,
           doc_code: r.doc_code,
           title_ar: r.title_ar,
@@ -239,7 +239,7 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
     return {
       mode: "semantic" as const,
       reason: null,
-      hits: (rows ?? []).map((r: any) => ({
+      hits: (rows ?? []).map((r) => ({
         id: r.id,
         doc_code: r.doc_code,
         title_ar: r.title_ar,
@@ -256,15 +256,14 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
 
 /* ------------------------------ Admin: seed ----------------------------- */
 
-async function assertAdmin(supabase: any, userId: string) {
-  void supabase;
+async function assertAdmin(userId: string) {
   await requirePlatformAdmin(userId);
 }
 
 export const kbSeedFoundational = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { ARTICLES } = await import("@/lib/kb-seed.data");
 
@@ -319,11 +318,11 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
 
 export const kbEmbedMissing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z.object({ batch: z.number().int().min(1).max(50).default(15) }).parse(data ?? {}),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { embedText, EMBEDDING_MODEL } = await import("@/lib/kb-embed.server");
 
@@ -341,7 +340,7 @@ export const kbEmbedMissing = createServerFn({ method: "POST" })
     const failures: Array<{ doc_code: string; reason: string }> = [];
 
     for (const row of pending ?? []) {
-      const r = row as any;
+      const r = row;
       const text = [
         r.title_ar,
         r.title_en,

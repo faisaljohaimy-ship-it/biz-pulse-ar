@@ -6,7 +6,7 @@ _Last updated: 2026-06-26 (Ω-003 — Waves 1 + 3 partial)._
 
 | Gate | Result |
 | --- | --- |
-| TypeScript (`tsgo --noEmit`) | **0 errors** |
+| TypeScript (`tsc --noEmit`) | **0 errors** |
 | `any` / `as any` in source | **0** |
 | `react-router-dom` imports | **0** |
 | `supabase.functions.invoke` | **0** |

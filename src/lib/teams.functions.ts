@@ -69,7 +69,7 @@ export const listTeamsChannels = createServerFn({ method: "GET" })
 
 export const sendTeamsAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     input(
       z.object({
         teamId: z.string().min(1),

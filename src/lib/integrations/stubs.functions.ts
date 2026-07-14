@@ -25,7 +25,7 @@ const PROVIDERS: IntegrationStatus[] = [
     id: "m365",
     label: "Microsoft 365",
     category: "productivity",
-    status: "configured",
+    status: "not_configured",
     scopes: ["Mail.Send", "Sites.ReadWrite.All", "ChannelMessage.Send"],
     doc: "Microsoft Graph عبر موصّل Lovable",
     note: "متصل عبر Outlook/SharePoint/Teams — يُستخدم في التقارير التنفيذية.",
@@ -34,7 +34,7 @@ const PROVIDERS: IntegrationStatus[] = [
     id: "sharepoint",
     label: "SharePoint",
     category: "productivity",
-    status: "configured",
+    status: "not_configured",
     scopes: ["Sites.ReadWrite.All", "Files.ReadWrite.All"],
     doc: "Graph Sites/Drives API",
     note: "متصل — نشر تقارير PDF تنفيذية.",
@@ -61,7 +61,7 @@ const PROVIDERS: IntegrationStatus[] = [
     id: "openrouter",
     label: "OpenRouter",
     category: "ai",
-    status: "configured",
+    status: "not_configured",
     scopes: ["chat.completions"],
     doc: "OPENROUTER_API_KEY",
     note: "متصل — موجّه احتياطي للنماذج.",
@@ -70,7 +70,7 @@ const PROVIDERS: IntegrationStatus[] = [
     id: "lovable_ai",
     label: "Lovable AI Gateway",
     category: "ai",
-    status: "configured",
+    status: "not_configured",
     scopes: ["chat.completions", "image.generate", "tts"],
     doc: "LOVABLE_API_KEY (مُدار)",
     note: "متصل — المحرك الافتراضي لـ ARIA.",
@@ -79,7 +79,7 @@ const PROVIDERS: IntegrationStatus[] = [
     id: "supabase",
     label: "Supabase (Lovable Cloud)",
     category: "data",
-    status: "configured",
+    status: "not_configured",
     scopes: ["postgrest", "auth", "storage", "realtime"],
     doc: "Managed",
     note: "متصل — قاعدة البيانات الأساسية.",
@@ -104,6 +104,65 @@ const PROVIDERS: IntegrationStatus[] = [
   },
 ];
 
+function hasEnv(...names: string[]): boolean {
+  return names.every((name) => Boolean(process.env[name]?.trim()));
+}
+
+function isProviderConfigured(id: string): boolean {
+  switch (id) {
+    case "sap":
+      return hasEnv("SAP_BASE_URL", "SAP_CLIENT_ID", "SAP_CLIENT_SECRET");
+    case "m365":
+      return Boolean(
+        process.env.MICROSOFT_OUTLOOK_API_KEY ||
+        process.env.MICROSOFT_ONEDRIVE_API_KEY ||
+        process.env.MICROSOFT_SHAREPOINT_API_KEY ||
+        process.env.MICROSOFT_TEAMS_API_KEY,
+      );
+    case "sharepoint":
+      return hasEnv("MICROSOFT_SHAREPOINT_API_KEY");
+    case "azure_ad":
+      return hasEnv("MICROSOFT_TENANT_ID", "MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET");
+    case "power_bi":
+      return hasEnv(
+        "POWERBI_TENANT_ID",
+        "POWERBI_CLIENT_ID",
+        "POWERBI_CLIENT_SECRET",
+        "POWERBI_WORKSPACE_ID",
+      );
+    case "openrouter":
+      return hasEnv("OPENROUTER_API_KEY");
+    case "lovable_ai":
+      return hasEnv("LOVABLE_API_KEY");
+    case "supabase":
+      return Boolean(
+        (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) &&
+        (process.env.SUPABASE_PUBLISHABLE_KEY ||
+          process.env.SUPABASE_ANON_KEY ||
+          process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+          process.env.VITE_SUPABASE_ANON_KEY),
+      );
+    case "n8n":
+      return hasEnv("N8N_WEBHOOK_URL", "N8N_TOKEN");
+    case "rest":
+      return hasEnv("GENERIC_REST_BASE_URL", "GENERIC_REST_TOKEN");
+    default:
+      return false;
+  }
+}
+
 export const listIntegrations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async (): Promise<IntegrationStatus[]> => PROVIDERS);
+  .handler(
+    async (): Promise<IntegrationStatus[]> =>
+      PROVIDERS.map((provider) => {
+        const configured = isProviderConfigured(provider.id);
+        return {
+          ...provider,
+          status: configured ? "configured" : "not_configured",
+          note: configured
+            ? provider.note.replace(/^Disabled —\s*/i, "")
+            : `غير متصل — ${provider.doc}`,
+        };
+      }),
+  );

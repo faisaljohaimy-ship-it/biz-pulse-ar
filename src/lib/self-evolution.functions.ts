@@ -22,7 +22,7 @@ const RunInput = z
 
 export const runSelfEvolutionFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => RunInput.parse(data))
+  .validator((data: unknown) => RunInput.parse(data))
   .handler(async ({ data, context }) => {
     await requirePlatformAdmin(context.userId);
     const report = await runSelfEvolution({
@@ -51,7 +51,7 @@ const ListInput = z
 
 export const listEvolutionCyclesFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => ListInput.parse(data))
+  .validator((data: unknown) => ListInput.parse(data))
   .handler(async ({ data, context }) => {
     await requirePlatformAdmin(context.userId);
     const limit = data?.limit ?? 25;

@@ -1,5 +1,5 @@
 // /executive-show — Executive Show player.
-// Left: ARIA narrator video (public/aria/aria-narrator.mp4), full face, RTL.
+// Left: ARIA narrator video from the managed asset pipeline, full face, RTL.
 // Right: window preview that auto-switches per cues, driven by video
 // `timeupdate`. When the video ends, a closing screen replaces the preview.
 // Audio starts only after the first user interaction (browser autoplay policy).
@@ -17,6 +17,9 @@ import {
   VolumeX,
   RotateCcw,
 } from "lucide-react";
+import narratorAsset from "@/assets/aria-executive-brief.mp4.asset.json";
+
+const NARRATOR_VIDEO_SRC = narratorAsset.url;
 
 export const Route = createFileRoute("/executive-show")({
   head: () => ({
@@ -228,7 +231,7 @@ function ExecutiveShowPage() {
           <div className="relative aspect-[9/16] max-h-[78dvh] w-full sm:aspect-[4/5] lg:aspect-[9/12]">
             <video
               ref={videoRef}
-              src="/aria/aria-narrator.mp4"
+              src={NARRATOR_VIDEO_SRC}
               className="absolute inset-0 h-full w-full object-cover"
               // object-cover keeps the face full-frame across aspect ratios
               playsInline

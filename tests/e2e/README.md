@@ -4,9 +4,9 @@
 لا تُشغَّل تلقائياً في خط النشر — نفّذها عند الحاجة فقط:
 
 ```bash
-bun run test:e2e            # جميع الاختبارات على localhost:8080
-bun run test:e2e:ui         # وضع UI التفاعلي
-PLAYWRIGHT_BASE_URL=https://neexios.com bun run test:e2e   # ضد الإنتاج
+npm run test:e2e            # جميع الاختبارات على localhost:8080
+npm run test:e2e:ui         # وضع UI التفاعلي
+PLAYWRIGHT_BASE_URL=https://neexios.com npm run test:e2e   # ضد الإنتاج
 ```
 
 ## المتطلبات

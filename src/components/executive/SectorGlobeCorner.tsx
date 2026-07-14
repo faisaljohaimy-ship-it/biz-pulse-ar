@@ -1,29 +1,22 @@
 /**
- * SectorGlobeCorner — a compact, always-present cinematic 3D globe that lives
- * in the top-inline-start (top-right in RTL) corner of the windows workspace.
- * It shows all four sectors, PINS the active one (bound to the shared region
- * context), and beneath it exposes a single "change sector" control that
- * switches which sector the windows operate on — so every window in the shell
- * follows the pinned sector.
+ * SectorGlobeCorner — transparent, living 3D region controller.
  *
- * Performance & devices (constitution art. 5):
- *  • Server + first paint render a lightweight static SVG — the Three.js scene
- *    is React.lazy'd and only downloads on capable devices.
- *  • Weak devices (no WebGL / low core-count on a small screen) keep the SVG.
- *  • prefers-reduced-motion freezes the cinematic drift.
- *  • Collapsible so it never blocks content on small screens; ≥44px touch
- *    targets on every control; full RTL.
+ * The controller is physically mounted at the workspace's top-left by
+ * AppShell. It keeps the active region bound to the shared RegionContext,
+ * colours every halo from the canonical regional palette, and offers both
+ * direct region selection and one-tap cycling.
  */
 import { Suspense, lazy, useEffect, useState } from "react";
-import { Layers, ChevronDown, Globe2 } from "lucide-react";
+import { ChevronDown, Globe2, Layers } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
+import { REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
+import { cn } from "@/lib/utils";
 import { REGION_MARKERS } from "./region-markers";
-import { REGIONS, type RegionId } from "@/lib/regions";
 import type SectorGlobeSceneT from "./SectorGlobeScene";
 
-// Client-only: the SSR branch makes the `import()` dead code so Vite excludes
-// the Three.js chunk from the server bundle (Vercel build-memory guard). SSR
-// renders the static SVG; the WebGL scene loads only in capable browsers.
+// Client-only: SSR keeps the transparent SVG fallback and excludes the heavy
+// Three.js chunk. Capable clients lazy-load the real glass globe.
 const SectorGlobeScene = lazy(
   (): Promise<{ default: typeof SectorGlobeSceneT }> =>
     import.meta.env.SSR
@@ -33,77 +26,159 @@ const SectorGlobeScene = lazy(
 
 function hasWebGL(): boolean {
   try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl") || c.getContext("experimental-webgl"));
+    const canvas = document.createElement("canvas");
+    return !!(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
   } catch {
     return false;
   }
 }
 
-/** Compact static SVG globe with the active sector highlighted. Zero 3D cost. */
-function StaticSectorGlobe({ activeIndex }: { activeIndex: number }) {
+/** Transparent holographic fallback with no Three.js cost. */
+function StaticSectorGlobe({
+  activeIndex,
+  activeColor,
+}: {
+  readonly activeIndex: number;
+  readonly activeColor: string;
+}) {
   const dots = [
-    { cx: 100, cy: 84 }, // central
-    { cx: 74, cy: 108 }, // western
-    { cx: 128, cy: 96 }, // eastern
-    { cx: 92, cy: 132 }, // southern
+    { cx: 100, cy: 82 },
+    { cx: 72, cy: 107 },
+    { cx: 130, cy: 96 },
+    { cx: 91, cy: 133 },
   ];
+
   return (
-    <svg viewBox="0 0 200 200" className="h-full w-full" role="img" aria-label="كرة القطاعات">
+    <svg
+      viewBox="0 0 200 200"
+      className="h-full w-full overflow-visible"
+      role="img"
+      aria-label="كرة المناطق الشفافة"
+    >
       <defs>
-        <radialGradient id="sgc-globe" cx="42%" cy="38%" r="70%">
-          <stop offset="0%" stopColor="#0d3a5c" />
-          <stop offset="70%" stopColor="#071a2e" />
-          <stop offset="100%" stopColor="#04111f" />
+        <radialGradient id="nx-glass-sphere" cx="38%" cy="32%" r="72%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.14" />
+          <stop offset="36%" stopColor={activeColor} stopOpacity="0.07" />
+          <stop offset="78%" stopColor={activeColor} stopOpacity="0.025" />
+          <stop offset="100%" stopColor="#020817" stopOpacity="0.12" />
         </radialGradient>
+        <linearGradient id="nx-glass-rim" x1="15%" y1="10%" x2="85%" y2="90%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.7" />
+          <stop offset="34%" stopColor={activeColor} stopOpacity="0.86" />
+          <stop offset="72%" stopColor={activeColor} stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.35" />
+        </linearGradient>
+        <filter id="nx-glass-glow" x="-70%" y="-70%" width="240%" height="240%">
+          <feGaussianBlur stdDeviation="3.2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      <circle cx="100" cy="100" r="78" fill="url(#sgc-globe)" stroke="#155e75" strokeWidth="0.6" />
-      {[30, 55, 78].map((r) => (
+
+      <circle
+        cx="100"
+        cy="100"
+        r="82"
+        fill="none"
+        stroke={activeColor}
+        strokeOpacity="0.14"
+        strokeWidth="8"
+        filter="url(#nx-glass-glow)"
+      />
+      <circle
+        cx="100"
+        cy="100"
+        r="78"
+        fill="url(#nx-glass-sphere)"
+        stroke="url(#nx-glass-rim)"
+        strokeWidth="1.1"
+      />
+
+      {/* Longitude and latitude glass lines create convincing depth. */}
+      {[28, 52, 75].map((radius) => (
         <ellipse
-          key={r}
+          key={`longitude-${radius}`}
           cx="100"
           cy="100"
-          rx={r}
+          rx={radius}
           ry="78"
           fill="none"
-          stroke="#155e75"
-          strokeOpacity="0.28"
-          strokeWidth="0.5"
+          stroke={activeColor}
+          strokeOpacity="0.18"
+          strokeWidth="0.65"
         />
       ))}
-      {dots.map((a, i) =>
+      {[36, 58].map((radius) => (
+        <ellipse
+          key={`latitude-${radius}`}
+          cx="100"
+          cy="100"
+          rx="76"
+          ry={radius}
+          fill="none"
+          stroke={activeColor}
+          strokeOpacity="0.14"
+          strokeWidth="0.65"
+        />
+      ))}
+      <ellipse
+        cx="100"
+        cy="100"
+        rx="94"
+        ry="36"
+        fill="none"
+        stroke={activeColor}
+        strokeDasharray="3 5"
+        strokeOpacity="0.42"
+        strokeWidth="0.8"
+        transform="rotate(-24 100 100)"
+      />
+
+      {dots.map((a, index) =>
         dots
-          .slice(i + 1)
-          .map((b, j) => (
+          .slice(index + 1)
+          .map((b, connectionIndex) => (
             <line
-              key={`${i}-${j}`}
+              key={`${index}-${connectionIndex}`}
               x1={a.cx}
               y1={a.cy}
               x2={b.cx}
               y2={b.cy}
-              stroke="#34D399"
-              strokeOpacity="0.32"
+              stroke={activeColor}
+              strokeOpacity="0.28"
               strokeWidth="0.7"
             />
           )),
       )}
-      {dots.map((d, i) => {
-        const active = i === activeIndex;
+
+      {dots.map((dot, index) => {
+        const marker = REGION_MARKERS[index];
+        const markerColor = REGION_ACCENT_HEX[marker.id];
+        const active = index === activeIndex;
         return (
-          <g key={i}>
+          <g key={marker.id}>
+            {active && (
+              <circle
+                className="nx-hub-ping"
+                cx={dot.cx}
+                cy={dot.cy}
+                r="10"
+                fill="none"
+                stroke={markerColor}
+                strokeWidth="1.2"
+              />
+            )}
             <circle
-              cx={d.cx}
-              cy={d.cy}
-              r={active ? 8 : 5}
-              fill={active ? "#3AE8FF" : "#34D399"}
-              opacity={active ? 0.3 : 0.22}
+              cx={dot.cx}
+              cy={dot.cy}
+              r={active ? 8.5 : 5.5}
+              fill={markerColor}
+              opacity={active ? 0.28 : 0.14}
+              filter={active ? "url(#nx-glass-glow)" : undefined}
             />
-            <circle
-              cx={d.cx}
-              cy={d.cy}
-              r={active ? 3.4 : 2.4}
-              fill={active ? "#3AE8FF" : "#34D399"}
-            />
+            <circle cx={dot.cx} cy={dot.cy} r={active ? 3.6 : 2.5} fill={markerColor} />
           </g>
         );
       })}
@@ -112,12 +187,11 @@ function StaticSectorGlobe({ activeIndex }: { activeIndex: number }) {
 }
 
 export function SectorGlobeCorner() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const { regionId, region, setRegion, regions } = useRegion();
   const [mode, setMode] = useState<"static" | "scene">("static");
   const [animate, setAnimate] = useState(false);
-  // Start collapsed on every device so the widget never covers page headers
-  // / primary CTAs (New Incident, New Work Order, New Permit …). Users open
-  // it explicitly via the floating globe button.
   const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
@@ -134,12 +208,13 @@ export function SectorGlobeCorner() {
 
   const activeIndex = Math.max(
     0,
-    REGION_MARKERS.findIndex((m) => m.id === regionId),
+    REGION_MARKERS.findIndex((marker) => marker.id === regionId),
   );
+  const activeColor = REGION_ACCENT_HEX[regionId];
 
-  const cycleSector = () => {
-    const idx = REGIONS.findIndex((r) => r.id === regionId);
-    const next = REGIONS[(idx + 1) % REGIONS.length];
+  const cycleRegion = () => {
+    const index = regions.findIndex((item) => item.id === regionId);
+    const next = regions[(index + 1) % regions.length];
     setRegion(next.id as RegionId);
   };
 
@@ -148,80 +223,169 @@ export function SectorGlobeCorner() {
       <button
         type="button"
         onClick={() => setCollapsed(false)}
-        aria-label="إظهار كرة القطاعات"
-        className="pointer-events-auto grid size-11 place-items-center rounded-full border border-[#3AE8FF]/40 bg-[#04111f]/80 text-[#3AE8FF] shadow-[0_0_22px_rgba(58,232,255,0.35)] backdrop-blur transition hover:bg-[#04111f]/95"
+        aria-label={ar ? "إظهار محدد المناطق ثلاثي الأبعاد" : "Show 3D region selector"}
+        className="group pointer-events-auto relative grid size-14 place-items-center rounded-full border bg-[#020817]/35 backdrop-blur-xl transition duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 active:scale-95"
+        style={{
+          borderColor: `${activeColor}88`,
+          boxShadow: `inset 0 0 18px ${activeColor}20, 0 0 18px ${activeColor}55, 0 0 42px -10px ${activeColor}CC`,
+        }}
       >
-        <Globe2 className="size-5" />
+        <span
+          aria-hidden
+          className="nx-holo-globe-pulse pointer-events-none absolute inset-1 rounded-full border"
+          style={{ borderColor: `${activeColor}55` }}
+        />
+        <span className="relative size-12 transition-transform duration-500 group-hover:rotate-6">
+          <StaticSectorGlobe activeIndex={activeIndex} activeColor={activeColor} />
+        </span>
+        <span
+          aria-hidden
+          className="absolute bottom-0.5 right-0.5 size-2 rounded-full border border-[#020817]"
+          style={{ backgroundColor: activeColor, boxShadow: `0 0 9px ${activeColor}` }}
+        />
       </button>
     );
   }
 
   return (
     <div
-      dir="rtl"
-      className="pointer-events-auto w-[132px] rounded-2xl border border-[#3AE8FF]/25 bg-[#04111f]/75 p-2 shadow-[0_10px_40px_-16px_rgba(0,0,0,0.9),inset_0_1px_0_0_rgba(58,232,255,0.08)] backdrop-blur-xl sm:w-[156px] sm:p-2.5"
+      dir={ar ? "rtl" : "ltr"}
+      className="pointer-events-auto w-[184px] overflow-hidden rounded-[22px] border bg-[#020817]/48 p-2.5 backdrop-blur-2xl sm:w-[196px] sm:p-3"
+      style={{
+        borderColor: `${activeColor}66`,
+        background: `linear-gradient(145deg, ${activeColor}12, rgba(2,8,23,0.62) 42%, rgba(2,8,23,0.4))`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 30px ${activeColor}12, 0 16px 46px -18px rgba(0,0,0,0.92), 0 0 32px -8px ${activeColor}88`,
+      }}
     >
-      {/* Header: title + collapse */}
       <div className="mb-1 flex items-center justify-between gap-1">
-        <span className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#3AE8FF]/80">
-          <Globe2 className="size-3" />
-          القطاعات
+        <span
+          className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.16em]"
+          style={{ color: activeColor }}
+        >
+          <Globe2 className="size-3.5" />
+          {ar ? "محدد المناطق" : "REGIONS"}
         </span>
         <button
           type="button"
           onClick={() => setCollapsed(true)}
-          aria-label="إخفاء كرة القطاعات"
-          className="grid size-6 place-items-center rounded-md text-white/50 transition hover:bg-white/10 hover:text-white"
+          aria-label={ar ? "تصغير محدد المناطق" : "Collapse region selector"}
+          className="grid size-7 place-items-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2"
+          style={{ outlineColor: activeColor }}
         >
           <ChevronDown className="size-4" />
         </button>
       </div>
 
-      {/* Globe */}
-      <div className="relative aspect-square w-full">
-        {mode === "static" ? (
-          <StaticSectorGlobe activeIndex={activeIndex} />
-        ) : (
-          <Suspense fallback={<StaticSectorGlobe activeIndex={activeIndex} />}>
-            <SectorGlobeScene animate={animate} activeIndex={activeIndex} />
-          </Suspense>
-        )}
-      </div>
-
-      {/* Pinned sector label */}
-      <div className="mt-1 text-center">
-        <div className="text-[8px] uppercase tracking-[0.2em] text-emerald-300/80">
-          القطاع المثبَّت
-        </div>
-        <div className="truncate text-[11px] font-bold text-white" title={region.shortAr}>
-          {region.shortAr}
-        </div>
-      </div>
-
-      {/* Sector position dots */}
-      <div className="mt-1 flex items-center justify-center gap-1">
-        {regions.map((r) => (
-          <span
-            key={r.id}
-            aria-hidden
-            className={
-              r.id === regionId
-                ? "h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]"
-                : "h-1.5 w-1.5 rounded-full bg-white/25"
-            }
-          />
-        ))}
-      </div>
-
-      {/* Change-sector control (drives which windows are shown) */}
+      {/* The globe itself is a large control: tapping it cycles the region. */}
       <button
         type="button"
-        onClick={cycleSector}
-        aria-label="تغيير القطاع"
-        className="mt-1.5 inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2 text-[11px] font-semibold text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20 active:scale-[0.98]"
+        onClick={cycleRegion}
+        aria-label={ar ? "تغيير المنطقة التالية" : "Select next region"}
+        className="group relative block aspect-square w-full rounded-full focus-visible:outline-none focus-visible:ring-2"
+        style={{ outlineColor: activeColor }}
+      >
+        <span
+          aria-hidden
+          className="nx-holo-globe-pulse pointer-events-none absolute inset-[7%] rounded-full border"
+          style={{ borderColor: `${activeColor}45` }}
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-[13%] rounded-full border border-dashed opacity-45 motion-safe:animate-[spin_18s_linear_infinite]"
+          style={{ borderColor: activeColor }}
+        />
+        <span className="pointer-events-none absolute inset-[4%]">
+          {mode === "static" ? (
+            <StaticSectorGlobe activeIndex={activeIndex} activeColor={activeColor} />
+          ) : (
+            <Suspense
+              fallback={<StaticSectorGlobe activeIndex={activeIndex} activeColor={activeColor} />}
+            >
+              <SectorGlobeScene
+                animate={animate}
+                activeIndex={activeIndex}
+                activeColor={activeColor}
+              />
+            </Suspense>
+          )}
+        </span>
+      </button>
+
+      <div className="-mt-1 text-center">
+        <div className="text-[8px] uppercase tracking-[0.2em] text-white/45">
+          {ar ? "المنطقة النشطة" : "ACTIVE REGION"}
+        </div>
+        <div className="mt-0.5 flex items-center justify-center gap-1.5">
+          <span
+            aria-hidden
+            className="size-1.5 rounded-full"
+            style={{ backgroundColor: activeColor, boxShadow: `0 0 8px ${activeColor}` }}
+          />
+          <span className="truncate text-[12px] font-bold text-white" title={region.shortAr}>
+            {ar ? region.shortAr : region.shortEn}
+          </span>
+        </div>
+      </div>
+
+      {/* Direct selection keeps the visual identity and operating context in sync. */}
+      <div
+        className="mt-2 grid grid-cols-2 gap-1.5"
+        role="group"
+        aria-label={ar ? "المناطق" : "Regions"}
+      >
+        {regions.map((item) => {
+          const selected = item.id === regionId;
+          const color = REGION_ACCENT_HEX[item.id];
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setRegion(item.id)}
+              aria-pressed={selected}
+              className={cn(
+                "relative flex min-h-11 items-center justify-center gap-1.5 overflow-hidden rounded-xl border px-2 text-[10px] font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.97]",
+                selected ? "text-white" : "border-white/10 text-white/58 hover:text-white",
+              )}
+              style={{
+                borderColor: selected ? `${color}CC` : `${color}35`,
+                background: selected
+                  ? `linear-gradient(145deg, ${color}30, ${color}0A)`
+                  : "rgba(255,255,255,0.025)",
+                boxShadow: selected
+                  ? `inset 0 0 14px ${color}18, 0 0 14px ${color}70, 0 0 28px -8px ${color}`
+                  : undefined,
+                outlineColor: color,
+              }}
+            >
+              <span
+                aria-hidden
+                className={cn("size-1.5 rounded-full", selected && "animate-pulse")}
+                style={{
+                  backgroundColor: color,
+                  boxShadow: selected ? `0 0 8px ${color}` : undefined,
+                }}
+              />
+              <span className="truncate">{ar ? item.shortAr : item.shortEn}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={cycleRegion}
+        aria-label={ar ? "التبديل إلى المنطقة التالية" : "Switch to the next region"}
+        className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] font-semibold transition duration-200 hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98]"
+        style={{
+          color: activeColor,
+          borderColor: `${activeColor}77`,
+          background: `linear-gradient(135deg, ${activeColor}1F, ${activeColor}08)`,
+          boxShadow: `inset 0 0 14px ${activeColor}12, 0 0 16px -6px ${activeColor}`,
+          outlineColor: activeColor,
+        }}
       >
         <Layers className="size-4" />
-        تغيير النافذة
+        {ar ? "تغيير منطقة العمل" : "Change work region"}
       </button>
     </div>
   );

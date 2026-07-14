@@ -99,7 +99,7 @@ Every engineering surface renders both Arabic (primary) and English (secondary).
 ## 8. Definition of done / تعريف الإنجاز
 
 A cycle is complete only when:
-1. TypeScript compilation passes (`bunx tsgo --noEmit`) — ✅
+1. TypeScript compilation passes (`npm run typecheck`) — ✅
 2. Build passes (harness-managed) — ✅
 3. Zero duplicate engines/singletons introduced — ✅
 4. Public API of composed modules unchanged — ✅

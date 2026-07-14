@@ -116,7 +116,7 @@ function WarRoomPage() {
   });
 
   const aria = findHuman("aria")!;
-  const agents = state.data?.agents ?? [];
+  const agents = useMemo(() => state.data?.agents ?? [], [state.data?.agents]);
   const health = state.data?.health;
 
   const spotlightAgentId = useMemo(() => {

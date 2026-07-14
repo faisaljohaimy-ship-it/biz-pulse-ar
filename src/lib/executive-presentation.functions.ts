@@ -621,7 +621,7 @@ const DecisionActionSchema = z.object({ id: z.string().uuid() });
 
 export const approveDecision = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => DecisionActionSchema.parse(d))
+  .validator((d: unknown) => DecisionActionSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Load the decision (RLS enforces ownership + org).
@@ -702,7 +702,7 @@ export const approveDecision = createServerFn({ method: "POST" })
 
 export const dismissDecision = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => DecisionActionSchema.parse(d))
+  .validator((d: unknown) => DecisionActionSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("aria_decisions")
