@@ -59,19 +59,20 @@ export interface AvailableProviders {
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
-  // Priority: OpenAI → Google (Gemini) → Anthropic → OpenRouter → Lovable.
+  // Priority: Google (Gemini) → OpenAI → Anthropic → OpenRouter → Lovable.
   //
-  // The Lovable AI gateway is bound to Lovable's own platform and is credit
-  // gated — when its credits run out every call returns HTTP 402 and ARIA goes
-  // silent. So any PLATFORM-NEUTRAL provider is always preferred over it.
+  // FREE-FIRST: native Google Gemini leads because its AI-Studio free tier runs
+  // Gemini Flash at no cost — so ARIA never incurs spend even if a paid OpenAI
+  // key is also present. The Lovable gateway is credit-gated (HTTP 402 when out)
+  // so any platform-neutral provider is always preferred over it.
 
-  // Native OpenAI is the PRIMARY provider when OPENAI_API_KEY is configured.
-  if (providers.openai) {
+  // Native Google Gemini (Gemini Flash) is the PRIMARY provider — free tier.
+  if (providers.google) {
     return {
-      vendor: "openai",
-      modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT,
-      fallback: providers.google
-        ? { vendor: "google", modelId: GOOGLE_GEMINI_FLASH }
+      vendor: "google",
+      modelId: GOOGLE_GEMINI_FLASH,
+      fallback: providers.openai
+        ? { vendor: "openai", modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT }
         : providers.anthropic
           ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
           : providers.openrouter
@@ -82,11 +83,11 @@ export function resolveModel(_intent: AriaIntent, providers: AvailableProviders)
     };
   }
 
-  // Native Google Gemini (Gemini Flash) is the PRIMARY provider when configured.
-  if (providers.google) {
+  // Native OpenAI is next when configured (paid — used only if no Gemini key).
+  if (providers.openai) {
     return {
-      vendor: "google",
-      modelId: GOOGLE_GEMINI_FLASH,
+      vendor: "openai",
+      modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT,
       fallback: providers.anthropic
         ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
         : providers.openrouter
