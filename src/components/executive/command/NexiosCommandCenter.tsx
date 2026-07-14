@@ -4,13 +4,16 @@
  * ARIA console, the system-status + smart-alerts panel, a HUD top bar and a
  * horizontal navigation bar.
  *
- * The whole console is a single HORIZONTAL canvas on every device: on narrow
- * screens it scrolls sideways (min-width preserved) instead of reflowing to a
- * tall stack, so the command-center composition is identical everywhere.
+ * HORIZONTAL ON EVERY DEVICE (عرضاً لا طولاً): the whole console is authored at
+ * a fixed landscape width and SCALED DOWN to fit the screen width — so it always
+ * appears as one wide band identical to the poster, never reflowing into a tall
+ * vertical stack. On desktop it renders near full size; on phones it shrinks to
+ * fit the width while keeping the exact landscape composition.
  *
  * Every figure is «محاكاة»; every icon links to a REAL route. Region panels are
  * tinted by their own accent (west/central = blue, east/south = green).
  */
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
 import { REGION_ACCENT_HEX } from "@/lib/regions";
 import { CC_REGIONS } from "./commandCenterData";
@@ -20,6 +23,58 @@ import { CentralSaudiMap } from "./cc/CentralSaudiMap";
 import { AriaConsole } from "./cc/AriaConsole";
 import { SystemStatusPanel } from "./cc/SystemStatusPanel";
 import { CommandBottomNav } from "./cc/CommandBottomNav";
+
+/** The fixed landscape authoring width of the command center. */
+const BASE_W = 1180;
+
+/**
+ * FitScale — renders `children` at a fixed BASE_W width and scales the whole
+ * block DOWN to fit the parent's width, so a wide landscape layout stays
+ * horizontal (never stacks) on phones. Outer height tracks the scaled content.
+ */
+function FitScale({ children }: { children: ReactNode }) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
+    const measure = () => {
+      const cw = outer.clientWidth;
+      const s = Math.min(1, cw / BASE_W);
+      setScale(s);
+      setHeight(inner.offsetHeight * s);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(outer);
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={outerRef}
+      className="relative w-full overflow-hidden"
+      // aspect-ratio gives a sensible height on first paint (before measuring);
+      // the measured height overrides it once the observer runs.
+      style={{ height, aspectRatio: height ? undefined : `${BASE_W} / 1140` }}
+    >
+      <div
+        ref={innerRef}
+        // physical left/top + top-left origin so scaling anchors correctly in
+        // both LTR and RTL (logical `start` would flip and anchor off-screen).
+        className="absolute left-0 top-0"
+        style={{ width: BASE_W, transform: `scale(${scale})`, transformOrigin: "top left" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export function NexiosCommandCenter() {
   const { locale } = useI18n();
@@ -32,14 +87,10 @@ export function NexiosCommandCenter() {
     <section
       dir={ar ? "rtl" : "ltr"}
       aria-label={ar ? "مركز القيادة التنفيذي الموحّد" : "Unified executive command center"}
-      className="relative z-10 mx-auto w-full max-w-[1440px] px-2 sm:px-4"
+      className="relative z-10 mx-auto w-full max-w-[1200px] px-2 sm:px-4"
     >
-      {/* horizontal canvas — scrolls sideways on narrow screens */}
-      <div
-        className="nx-cmd-surface nx-living-border overflow-x-auto rounded-[24px] p-3 sm:p-4"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        <div className="mx-auto min-w-[1180px]">
+      <FitScale>
+        <div className="nx-cmd-surface nx-living-border rounded-[24px] p-4">
           <CommandTopBar ar={ar} accent={chrome} />
 
           <div className="grid grid-cols-12 gap-3">
@@ -85,11 +136,7 @@ export function NexiosCommandCenter() {
 
           <CommandBottomNav ar={ar} accent={chrome} />
         </div>
-      </div>
-
-      <p className="mt-1.5 text-center text-[10px] text-white/40 sm:hidden">
-        {ar ? "اسحب أفقيًا لاستكشاف كامل المركز" : "Swipe horizontally to explore"}
-      </p>
+      </FitScale>
     </section>
   );
 }
