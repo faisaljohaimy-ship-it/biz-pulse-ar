@@ -9,8 +9,8 @@ export const Route = createFileRoute("/api/chat/health")({
     handlers: {
       GET: async () => {
         // Report the provider that WOULD actually serve a request, mirroring
-        // the FREE-FIRST priority in ai-router.server.ts: Google → OpenAI →
-        // Anthropic → OpenRouter → Lovable. Never returns the secret itself —
+        // the permanent-on priority in ai-router.server.ts: Google → Lovable →
+        // OpenAI → Anthropic → OpenRouter. Never returns the secret itself —
         // only which is active.
         const google = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
         const openai = !!process.env.OPENAI_API_KEY;
@@ -19,25 +19,25 @@ export const Route = createFileRoute("/api/chat/health")({
         const lovable = !!process.env.LOVABLE_API_KEY;
         const provider = google
           ? "google-gemini"
-          : openai
-            ? "openai"
-            : anthropic
-              ? "anthropic"
-              : openrouter
-                ? "openrouter"
-                : lovable
-                  ? "lovable"
+          : lovable
+            ? "lovable"
+            : openai
+              ? "openai"
+              : anthropic
+                ? "anthropic"
+                : openrouter
+                  ? "openrouter"
                   : null;
         const model = google
           ? "gemini-2.5-flash"
-          : openai
-            ? process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini"
-            : anthropic
-              ? "claude-3-5-sonnet-latest"
-              : openrouter
-                ? "anthropic/claude-3.5-sonnet"
-                : lovable
-                  ? "google/gemini-3-flash-preview"
+          : lovable
+            ? "google/gemini-3-flash-preview"
+            : openai
+              ? process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini"
+              : anthropic
+                ? "claude-3-5-sonnet-latest"
+                : openrouter
+                  ? "anthropic/claude-3.5-sonnet"
                   : null;
         return Response.json({ ok: true, provider, model, key_present: !!provider });
       },
