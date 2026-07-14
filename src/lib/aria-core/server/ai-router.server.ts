@@ -19,7 +19,7 @@ export type AriaIntent =
   | "engineering"
   | "unknown";
 
-export type Vendor = "google" | "lovable" | "openrouter" | "anthropic";
+export type Vendor = "openai" | "google" | "lovable" | "openrouter" | "anthropic";
 
 export interface ResolvedModel {
   vendor: Vendor;
@@ -27,6 +27,9 @@ export interface ResolvedModel {
   fallback?: { vendor: Vendor; modelId: string };
 }
 
+// OpenAI default — overridable via OPENAI_MODEL (resolved where the provider is
+// built). "gpt-5.4-mini" is not a real model id, so we default to gpt-4o-mini.
+const OPENAI_DEFAULT = "gpt-4o-mini";
 const GOOGLE_GEMINI_FLASH = "gemini-2.5-flash";
 const LOVABLE_GEMINI_FLASH = "google/gemini-3-flash-preview";
 const LOVABLE_GPT_5_MINI = "openai/gpt-5-mini";
@@ -48,6 +51,7 @@ export function parseIntent(header: string | null | undefined): AriaIntent {
 }
 
 export interface AvailableProviders {
+  openai?: boolean;
   google?: boolean;
   lovable: boolean;
   openrouter: boolean;
@@ -55,13 +59,28 @@ export interface AvailableProviders {
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
-  // Priority: Google (Gemini) → Anthropic → OpenRouter → Lovable.
+  // Priority: OpenAI → Google (Gemini) → Anthropic → OpenRouter → Lovable.
   //
   // The Lovable AI gateway is bound to Lovable's own platform and is credit
   // gated — when its credits run out every call returns HTTP 402 and ARIA goes
-  // silent. So any PLATFORM-NEUTRAL provider is always preferred over it. Native
-  // Google Gemini is first because its free AI-Studio tier runs Gemini Flash at
-  // no cost — the exact model ARIA already uses — with no credit gate.
+  // silent. So any PLATFORM-NEUTRAL provider is always preferred over it.
+
+  // Native OpenAI is the PRIMARY provider when OPENAI_API_KEY is configured.
+  if (providers.openai) {
+    return {
+      vendor: "openai",
+      modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT,
+      fallback: providers.google
+        ? { vendor: "google", modelId: GOOGLE_GEMINI_FLASH }
+        : providers.anthropic
+          ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
+          : providers.openrouter
+            ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
+            : providers.lovable
+              ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
+              : undefined,
+    };
+  }
 
   // Native Google Gemini (Gemini Flash) is the PRIMARY provider when configured.
   if (providers.google) {

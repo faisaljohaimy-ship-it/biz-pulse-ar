@@ -93,3 +93,33 @@ export const GOOGLE_MODELS = [
 ] as const;
 
 export const DEFAULT_GOOGLE_MODEL = "gemini-2.5-flash";
+
+// Native OpenAI — via OpenAI's own API, reusing the same createOpenAICompatible
+// pipeline (OpenAI's /v1/chat/completions is the reference implementation). Set
+// OPENAI_API_KEY to make ARIA answer directly on OpenAI. This is the PRIMARY
+// provider when the key is present.
+export const createOpenAiProvider = (apiKey: string) =>
+  createOpenAICompatible({
+    name: "openai",
+    baseURL: "https://api.openai.com/v1",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
+
+export const OPENAI_MODELS = [
+  { id: "gpt-4o-mini", label: "GPT-4o mini" },
+  { id: "gpt-4o", label: "GPT-4o" },
+  { id: "gpt-4.1-mini", label: "GPT-4.1 mini" },
+  { id: "gpt-4.1", label: "GPT-4.1" },
+] as const;
+
+// Real, widely-available default. NOTE: "gpt-5.4-mini" is not a released OpenAI
+// model id; override with the OPENAI_MODEL env var to use whatever the account
+// has access to.
+export const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
+
+/** Resolve the configured OpenAI model id (env override → default). */
+export function resolveOpenAiModel(): string {
+  return process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL;
+}

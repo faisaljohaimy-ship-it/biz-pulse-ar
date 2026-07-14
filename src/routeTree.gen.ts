@@ -152,6 +152,7 @@ import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
+import { Route as ApiAriaChatRouteImport } from './routes/api/aria/chat'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
@@ -939,6 +940,11 @@ const ApiAriaTtsRoute = ApiAriaTtsRouteImport.update({
   path: '/api/aria/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAriaChatRoute = ApiAriaChatRouteImport.update({
+  id: '/api/aria/chat',
+  path: '/api/aria/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsMicrosoftRoute =
   AuthenticatedSettingsMicrosoftRouteImport.update({
     id: '/microsoft',
@@ -1353,6 +1359,7 @@ export interface FileRoutesByFullPath {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/aria/chat': typeof ApiAriaChatRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
@@ -1541,6 +1548,7 @@ export interface FileRoutesByTo {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/aria/chat': typeof ApiAriaChatRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
@@ -1733,6 +1741,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/aria/chat': typeof ApiAriaChatRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
@@ -1925,6 +1934,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/aria/chat'
     | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
@@ -2113,6 +2123,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/aria/chat'
     | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
@@ -2304,6 +2315,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
+    | '/api/aria/chat'
     | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
@@ -2396,6 +2408,7 @@ export interface RootRouteChildren {
   PromoIndexRoute: typeof PromoIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiAriaChatRoute: typeof ApiAriaChatRoute
   ApiAriaTtsRoute: typeof ApiAriaTtsRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
@@ -3429,6 +3442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAriaTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/aria/chat': {
+      id: '/api/aria/chat'
+      path: '/api/aria/chat'
+      fullPath: '/api/aria/chat'
+      preLoaderRoute: typeof ApiAriaChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/settings/microsoft': {
       id: '/_authenticated/settings/microsoft'
       path: '/microsoft'
@@ -4078,6 +4098,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromoIndexRoute: PromoIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiAriaChatRoute: ApiAriaChatRoute,
   ApiAriaTtsRoute: ApiAriaTtsRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,

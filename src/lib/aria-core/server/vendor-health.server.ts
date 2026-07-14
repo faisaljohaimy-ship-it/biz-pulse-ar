@@ -11,7 +11,7 @@
  * transient upstream blip auto-recovers without a deploy.
  */
 
-export type AiVendor = "google" | "anthropic" | "openrouter" | "lovable";
+export type AiVendor = "openai" | "google" | "anthropic" | "openrouter" | "lovable";
 
 const COOLDOWN_MS = 10 * 60 * 1000;
 const state = new Map<AiVendor, number>(); // vendor → coolingUntil (epoch ms)
