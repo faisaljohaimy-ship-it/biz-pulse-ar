@@ -9,7 +9,8 @@ function resolvePublicSiteUrl() {
   );
 }
 
-// Kept for backwards compatibility (not used after OpenRouter migration).
+// Canonical ARIA provider: Lovable AI Gateway is the permanent default for
+// in-app AI so third-party billing/auth outages cannot take ARIA offline.
 export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
   createOpenAICompatible({
     name: "lovable",

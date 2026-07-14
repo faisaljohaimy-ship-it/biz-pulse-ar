@@ -193,12 +193,14 @@ export const Route = createFileRoute("/api/chat")({
         return new Response(null, { status: 204, headers: responseHeaders(requestId) });
       },
       POST: async ({ request }) => {
-        // Native OpenAI — set OPENAI_API_KEY to make ARIA answer directly on
-        // OpenAI. This is the PRIMARY provider when configured.
-        const openaiKey = process.env.OPENAI_API_KEY;
-        const anthropicKey = process.env.ANTHROPIC_API_KEY;
-        const lovableKey = process.env.LOVABLE_API_KEY;
-        const openrouterKey = process.env.OPENROUTER_API_KEY;
+        // ARIA is permanently anchored to Lovable AI Gateway when available.
+        // Third-party keys may exist in old deployments, but they must never
+        // preempt Lovable: Anthropic billing and OpenRouter auth outages were
+        // the root cause of user-visible chat failures.
+        const openaiKey = process.env.OPENAI_API_KEY?.trim() || undefined;
+        const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim() || undefined;
+        const lovableKey = process.env.LOVABLE_API_KEY?.trim() || undefined;
+        const openrouterKey = process.env.OPENROUTER_API_KEY?.trim() || undefined;
         // Native Google Gemini — a FREE Google AI Studio key runs Gemini Flash
         // with no credit gate. Accept either common env name.
         const googleKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -206,27 +208,24 @@ export const Route = createFileRoute("/api/chat")({
         const useGoogle = !!googleKey && !isCooling("google");
         const useAnthropic = !!anthropicKey && !isCooling("anthropic");
         const useOpenrouter = !!openrouterKey && !isCooling("openrouter");
-        // The Lovable AI gateway is bound to Lovable's own platform and is
-        // credit-gated — when credits run out every call returns HTTP 402 and
-        // ARIA goes silent. So whenever ANY platform-neutral provider (OpenAI,
-        // Google Gemini, native Anthropic or OpenRouter) is configured, on ANY
-        // host, we deprioritize Lovable to a last resort: only used when sole key.
-        const hasNeutralProvider = useOpenai || useGoogle || useAnthropic || useOpenrouter;
-        const useLovable = !!lovableKey && !isCooling("lovable") && !hasNeutralProvider;
+        const useLovable = !!lovableKey && !isCooling("lovable");
         // Last-ditch: if EVERY configured vendor is cooling, ignore the
         // cool-down and let the router pick anyway. Keeping ARIA "permanently
         // on" is worth one more upstream attempt — if it fails, the vendor
         // will just re-cool.
         const hasAnyKey = !!(openaiKey || googleKey || anthropicKey || openrouterKey || lovableKey);
-        const forceUncool = hasAnyKey && !hasNeutralProvider && !useLovable;
+        const hasAnyActiveProvider =
+          useOpenai || useGoogle || useAnthropic || useOpenrouter || useLovable;
+        const forceUncool = hasAnyKey && !hasAnyActiveProvider;
         const effUseOpenai = useOpenai || (forceUncool && !!openaiKey);
         const effUseGoogle = useGoogle || (forceUncool && !!googleKey);
         const effUseAnthropic = useAnthropic || (forceUncool && !!anthropicKey);
         const effUseOpenrouter = useOpenrouter || (forceUncool && !!openrouterKey);
-        const effHasNeutral = effUseOpenai || effUseGoogle || effUseAnthropic || effUseOpenrouter;
-        const effUseLovable = !!lovableKey && (useLovable || (forceUncool && !effHasNeutral));
+        const effUseLovable = useLovable || (forceUncool && !!lovableKey);
+        const effHasAnyProvider =
+          effUseOpenai || effUseGoogle || effUseAnthropic || effUseOpenrouter || effUseLovable;
 
-        if (!effHasNeutral && !effUseLovable) {
+        if (!effHasAnyProvider) {
           const rid = getChatRequestId(request);
           console.warn("[api/chat] no AI provider key configured", { requestId: rid });
           return Response.json(
@@ -259,19 +258,29 @@ export const Route = createFileRoute("/api/chat")({
 
         let vendor: "openai" | "google" | "lovable" | "openrouter" | "anthropic";
         let selectedModelId: string;
-        if (modelId && effUseOpenai && OPENAI_MODEL_IDS.has(modelId)) {
-          vendor = "openai";
-          selectedModelId = modelId;
-        } else if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
+        if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
           vendor = "google";
-          selectedModelId = modelId;
-        } else if (modelId && effUseAnthropic && ANTHROPIC_MODEL_IDS.has(modelId)) {
-          vendor = "anthropic";
           selectedModelId = modelId;
         } else if (modelId && effUseLovable && LOVABLE_MODEL_IDS.has(modelId)) {
           vendor = "lovable";
           selectedModelId = modelId;
-        } else if (modelId && effUseOpenrouter && OPENROUTER_MODEL_IDS.has(modelId)) {
+        } else if (modelId && !effUseLovable && effUseOpenai && OPENAI_MODEL_IDS.has(modelId)) {
+          vendor = "openai";
+          selectedModelId = modelId;
+        } else if (
+          modelId &&
+          !effUseLovable &&
+          effUseAnthropic &&
+          ANTHROPIC_MODEL_IDS.has(modelId)
+        ) {
+          vendor = "anthropic";
+          selectedModelId = modelId;
+        } else if (
+          modelId &&
+          !effUseLovable &&
+          effUseOpenrouter &&
+          OPENROUTER_MODEL_IDS.has(modelId)
+        ) {
           vendor = "openrouter";
           selectedModelId = modelId;
         } else {

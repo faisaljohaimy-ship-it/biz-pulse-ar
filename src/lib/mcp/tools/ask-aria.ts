@@ -68,7 +68,11 @@ export default defineTool({
     try {
       const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+        headers: {
+          "Content-Type": "application/json",
+          "Lovable-API-Key": apiKey,
+          "X-Lovable-AIG-SDK": "nexios-mcp-ask-aria",
+        },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
