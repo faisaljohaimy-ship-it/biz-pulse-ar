@@ -102,6 +102,15 @@ const MS_PROVIDERS: Array<{
   },
 ];
 
+function getPowerBiConfig() {
+  const tenantId = process.env.POWERBI_TENANT_ID?.trim();
+  const clientId = process.env.POWERBI_CLIENT_ID?.trim();
+  const clientSecret = process.env.POWERBI_CLIENT_SECRET?.trim();
+  const workspaceId = process.env.POWERBI_WORKSPACE_ID?.trim();
+  if (!tenantId || !clientId || !clientSecret || !workspaceId) return null;
+  return { tenantId, clientId, clientSecret, workspaceId };
+}
+
 function classifyHealth(
   configured: boolean,
   lastTestStatus: string | null,
@@ -226,15 +235,15 @@ export const getIntegrationsOverview = createServerFn({ method: "GET" })
       setup_hint_ar: "أضف اتصال SAP من الإدارة → SAP",
     });
 
-    // Power BI — connector not linked yet; surface as not configured (no fake data)
+    const powerBiConfigured = Boolean(getPowerBiConfig());
     providers.push({
       id: "power_bi",
       name: "Power BI",
       name_ar: "باور بي آي",
       category: "Analytics",
-      configured: Boolean(process.env.POWER_BI_API_KEY),
+      configured: powerBiConfigured,
       connected: false,
-      health: process.env.POWER_BI_API_KEY ? "unknown" : "not_configured",
+      health: powerBiConfigured ? "unknown" : "not_configured",
       last_test_at: null,
       last_test_status: null,
       last_test_error: null,
@@ -328,11 +337,10 @@ export type ProviderTestResult = { ok: boolean; status: number; message: string 
 
 export const testProvider = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => testSchema.parse(d))
+  .validator((d: unknown) => testSchema.parse(d))
   .handler(async ({ data, context }): Promise<ProviderTestResult> => {
     const provider = data.provider;
     const lovableKey = process.env.LOVABLE_API_KEY;
-    if (!lovableKey) return { ok: false, status: 0, message: "Lovable API key missing" };
 
     const { httpFetch } = await import("@/lib/api/http.server");
 
@@ -345,6 +353,7 @@ export const testProvider = createServerFn({ method: "POST" })
     };
     const ms = msMap[provider];
     if (ms) {
+      if (!lovableKey) return { ok: false, status: 0, message: "Lovable API key missing" };
       const key = process.env[ms.env];
       if (!key) return { ok: false, status: 0, message: `${provider} connector not linked` };
       const base =
@@ -410,7 +419,62 @@ export const testProvider = createServerFn({ method: "POST" })
     }
 
     if (provider === "power_bi") {
-      return { ok: false, status: 0, message: "Power BI connector not yet linked" };
+      const config = getPowerBiConfig();
+      if (!config) {
+        return {
+          ok: false,
+          status: 0,
+          message: "Power BI tenant, client, secret, and workspace are required",
+        };
+      }
+
+      try {
+        const tokenBody = new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
+          scope: "https://analysis.windows.net/powerbi/api/.default",
+        });
+        const tokenResponse = await httpFetch(
+          `https://login.microsoftonline.com/${encodeURIComponent(config.tenantId)}/oauth2/v2.0/token`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: tokenBody.toString(),
+            label: "power-bi oauth",
+            timeoutMs: 12_000,
+            retries: 1,
+          },
+        );
+        if (!tokenResponse.ok) {
+          return { ok: false, status: tokenResponse.status, message: "Power BI OAuth failed" };
+        }
+        const tokenJson = (await tokenResponse.json()) as { access_token?: string };
+        if (!tokenJson.access_token) {
+          return { ok: false, status: 502, message: "Power BI access token missing" };
+        }
+
+        const reportsResponse = await httpFetch(
+          `https://api.powerbi.com/v1.0/myorg/groups/${encodeURIComponent(config.workspaceId)}/reports?$top=1`,
+          {
+            headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+            label: "power-bi workspace test",
+            timeoutMs: 12_000,
+            retries: 1,
+          },
+        );
+        return {
+          ok: reportsResponse.ok,
+          status: reportsResponse.status,
+          message: reportsResponse.ok ? "Connected" : "Power BI workspace test failed",
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          status: 0,
+          message: error instanceof Error ? error.message : String(error),
+        };
+      }
     }
 
     return { ok: false, status: 0, message: "Unknown provider" };

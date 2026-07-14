@@ -154,7 +154,7 @@ export type PublishBinaryResult = {
 
 export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: PublishBinaryInput) => {
+  .validator((d: PublishBinaryInput) => {
     if (!d?.siteId)
       fail({
         stage: "validation",
@@ -440,7 +440,7 @@ function computeNextRun(s: {
 
 export const upsertReportSchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: UpsertScheduleInput) => {
+  .validator((d: UpsertScheduleInput) => {
     if (!d?.name || d.name.length > 120) throw new Error("Invalid name");
     if (!["daily", "weekly"].includes(d.frequency)) throw new Error("Invalid frequency");
     if (d.hour_utc < 0 || d.hour_utc > 23) throw new Error("hour_utc must be 0–23");
@@ -496,7 +496,7 @@ export const upsertReportSchedule = createServerFn({ method: "POST" })
 
 export const deleteReportSchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { id: string }) => {
+  .validator((d: { id: string }) => {
     if (!d?.id) throw new Error("id required");
     return d;
   })

@@ -85,7 +85,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           واجهت المنصة عائقًا مؤقتًا. يمكنك المحاولة مجددًا الآن، ولن تُفقد بياناتك. تم تسجيل الحدث
           في سجل التدقيق تلقائيًا.
         </p>
-        {error?.message && (
+        {import.meta.env.DEV && error?.message && (
           <p
             dir="ltr"
             className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left font-mono text-[11px] text-white/40"

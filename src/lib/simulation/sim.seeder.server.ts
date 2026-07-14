@@ -29,6 +29,7 @@ import {
 
 // Any admin client — kept loose so this module stays testable.
 // biome-ignore lint/suspicious/noExplicitAny: admin client
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic simulation tables require an untyped admin client
 type Admin = SupabaseClient<any, any, any>;
 
 export type SeedResult = {

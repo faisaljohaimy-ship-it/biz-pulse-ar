@@ -41,7 +41,7 @@ in production. If a capability cannot be truthfully delivered, mark it
 
 ### Law 2 — No Silent Regression
 Every change MUST be verified by:
-1. Typecheck (`bunx tsgo --noEmit`) — zero errors.
+1. Typecheck (`npm run typecheck`) — zero errors.
 2. Constitution invariants (INVARIANT-1..N + FR-1..N) — all green.
 3. Playwright smoke on any UI change.
 4. Server function log check for any backend change.

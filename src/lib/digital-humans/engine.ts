@@ -61,6 +61,7 @@ export function useDigitalHuman(
   const queueRef = useRef<SpokenTurn[]>([]);
   const [queueSize, setQueueSize] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playTurnRef = useRef<(turn: SpokenTurn) => void>(() => {});
   const onTurnEndRef = useRef(opts?.onTurnEnd);
   onTurnEndRef.current = opts?.onTurnEnd;
 
@@ -81,7 +82,7 @@ export function useDigitalHuman(
     timerRef.current = setTimeout(() => {
       const next = queueRef.current.shift() ?? null;
       setQueueSize(queueRef.current.length);
-      if (next) playTurn(next);
+      if (next) playTurnRef.current(next);
       else setStateRaw("idle");
     }, 350);
   }, []);
@@ -104,6 +105,7 @@ export function useDigitalHuman(
     },
     [finishTurn],
   );
+  playTurnRef.current = playTurn;
 
   const enqueue = useCallback(
     (turn: SpokenTurn) => {

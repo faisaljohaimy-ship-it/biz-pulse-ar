@@ -202,8 +202,6 @@ export const FILM_4 = buildFilm({
   smallPrint: "مستهدفات استرشادية",
 });
 
-import f5VideoAsset from "../../../public/promo/video/f5.mp4.asset.json";
-
 /* ================= FILM 5 — Saudi Holographic ================= */
 export const FILM_5: FilmDefinition = {
   ...buildFilm({
@@ -227,7 +225,6 @@ export const FILM_5: FilmDefinition = {
     cta: "شاهد المملكة تتحوّل",
     smallPrint: "مستهدف استرشادي · No affiliation with named entities",
   }),
-  videoOverrideUrl: f5VideoAsset.url,
 };
 
 export const FILMS: FilmDefinition[] = [FILM_1, FILM_2, FILM_3, FILM_4, FILM_5];

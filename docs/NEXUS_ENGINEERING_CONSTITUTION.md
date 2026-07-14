@@ -221,8 +221,8 @@ docs/NEXUS_ENGINEERING_CONSTITUTION.md
 
 A change is complete **only when** all pass:
 
-1. ✅ `bunx tsgo --noEmit` — zero errors.
-2. ✅ `bun run build` — zero warnings that block ship.
+1. ✅ `npm run typecheck` — zero errors.
+2. ✅ `npm run build` — zero warnings that block ship.
 3. ✅ Relevant E2E specs pass:
    - `tests/e2e/02-genesis-intro.spec.ts`
    - `tests/e2e/09-intro-multi-device.spec.ts` (6 viewports)
@@ -243,7 +243,7 @@ A change is complete **only when** all pass:
 
 | Layer | Enforcer | Trigger |
 |-------|----------|---------|
-| Type safety | `tsgo` in CI | Every push |
+| Type safety | `tsc --noEmit` in CI | Every push |
 | Route + syntax | Vite plugins | Every dev/build |
 | Runtime invariants | E2E suite | Every PR |
 | Data safety | Supabase linter + migration review | Every migration |
@@ -551,7 +551,7 @@ means operationally and forbids the failure modes that break it.
 ### §1 — Evidence-based repair (no scattershot)
 
 Every claim of "fixed" MUST be backed by one of:
-- A green `bunx tsgo --noEmit` (typecheck).
+- A green `npm run typecheck` (typecheck).
 - A green `security--run_security_scan` (0 unresolved findings) OR an
   explicitly documented ignore with rationale in security memory.
 - A reproduced-then-passing manual verification (Playwright screenshot,
@@ -595,7 +595,7 @@ Every agent turn (self-evolution + human-driven) MUST:
 ### §4 — Definition of "100% ready"
 
 The system is 100% ready when ALL of the following hold at the same time:
-- `bunx tsgo --noEmit` → 0 errors.
+- `npm run typecheck` → 0 errors.
 - `security--run_security_scan` → 0 unresolved findings (documented
   ignores allowed with security-memory rationale).
 - Every route file has `head()` metadata; every route with a `loader` has

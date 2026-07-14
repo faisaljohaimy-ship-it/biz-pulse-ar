@@ -195,7 +195,7 @@ Storytelling · Journey · Interactive Presentation · Operational Narrative · 
 | Architecture Review | Manual + `agent-architecture-audit` skill | Zero critical/high |
 | Runtime Validation | `stack_modern--invoke-server-function` on core endpoints | All 200 · valid envelope |
 | Performance Benchmark | Playwright + Lighthouse | LCP < 2.0s · CLS < 0.1 |
-| TypeScript Validation | `tsgo --noEmit` | 0 errors |
+| TypeScript Validation | `tsc --noEmit` | 0 errors |
 | Build Validation | production build | success · no warnings |
 | Accessibility | axe + manual RTL sweep | 0 serious violations |
 | Responsive | 320 / 768 / 1280 / 1920 | no overflow · touch-safe |

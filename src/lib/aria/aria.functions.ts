@@ -7,7 +7,7 @@ import { ReportKindSchema } from "./types";
 
 export const runAriaPipeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z
       .object({ message: z.string().min(1).max(4000), threadId: z.string().uuid().optional() })
       .parse(data),
@@ -36,7 +36,7 @@ export const listAriaReports = createServerFn({ method: "GET" })
 
 export const getAriaReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .validator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("aria_reports")
@@ -50,7 +50,7 @@ export const getAriaReport = createServerFn({ method: "POST" })
 
 export const generateAriaReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z.object({ kind: ReportKindSchema, language: z.enum(["ar", "en"]).default("ar") }).parse(data),
   )
   .handler(async ({ data, context }) => {
@@ -101,7 +101,7 @@ export const listAriaMemory = createServerFn({ method: "GET" })
 
 export const pinAriaMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z
       .object({
         scope: z.string().min(1).max(40).default("pinned"),
@@ -126,7 +126,7 @@ export const pinAriaMemory = createServerFn({ method: "POST" })
 
 export const forgetAriaMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .validator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("aria_memory").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -147,7 +147,7 @@ export const listAriaDecisions = createServerFn({ method: "GET" })
 
 export const updateAriaDecision = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z
       .object({
         id: z.string().uuid(),

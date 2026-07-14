@@ -4,7 +4,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // row to open the unified Execution Timeline.
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Stethoscope, Filter, Eye } from "lucide-react";
 import { z } from "zod";
 import { PageHeader, Section } from "@/components/page-header";
@@ -124,29 +124,32 @@ function Diagnostics() {
   );
 
   const f = filter.trim().toLowerCase();
-  const match = (s: string | null | undefined) => !f || (s ?? "").toLowerCase().includes(f);
+  const match = useCallback(
+    (s: string | null | undefined) => !f || (s ?? "").toLowerCase().includes(f),
+    [f],
+  );
 
   const fEvents = useMemo(
     () =>
       events.filter(
         (e) => match(e.topic) || match(e.source) || match(e.correlation_id) || match(e.subject_id),
       ),
-    [events, f],
+    [events, match],
   );
   const fRuns = useMemo(
     () =>
       runs.filter(
         (r) => match(r.id) || match(r.workflow_id) || match(r.status) || match(r.current_step),
       ),
-    [runs, f],
+    [runs, match],
   );
   const fTools = useMemo(
     () => tools.filter((t) => match(t.id) || match(t.tool_id) || match(t.status)),
-    [tools, f],
+    [tools, match],
   );
   const fAudits = useMemo(
     () => audits.filter((a) => match(a.action) || match(a.resource_id) || match(a.correlation_id)),
-    [audits, f],
+    [audits, match],
   );
 
   return (

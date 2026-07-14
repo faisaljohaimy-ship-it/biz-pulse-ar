@@ -91,7 +91,7 @@ verified operational evidence via the FR-19 Evidence Gate.
 3. Wire every value to `sec_overview` via the public `os-overview` endpoint
    (cached 15s) or an authenticated `createServerFn` when scoped.
 4. Compose zones into `/os` in the fixed order.
-5. Verify: `tsgo --noEmit`, phase audit, mobile+desktop Playwright screenshots.
+5. Verify: `tsc --noEmit`, phase audit, mobile+desktop Playwright screenshots.
 6. Stop when §6 is satisfied. Report only: Files, Optimizations, Metrics, Score.
 
 ---

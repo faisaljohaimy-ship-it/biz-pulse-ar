@@ -87,9 +87,9 @@ function HajjCommandCenter() {
   useLiveRows<unknown>("hajj_stations", (q) => q.select("id").limit(1), [qc]);
   useLiveRows<unknown>("hajj_sites", (q) => q.select("id").limit(1), [qc]);
 
-  const sites: HajjSite[] = data?.sites ?? [];
-  const stations: HajjStation[] = data?.stations ?? [];
-  const tasks: HajjTask[] = data?.tasks ?? [];
+  const sites: HajjSite[] = useMemo(() => data?.sites ?? [], [data?.sites]);
+  const stations: HajjStation[] = useMemo(() => data?.stations ?? [], [data?.stations]);
+  const tasks: HajjTask[] = useMemo(() => data?.tasks ?? [], [data?.tasks]);
   const kpi: HajjKpi | null = data?.kpi ?? null;
 
   const taskMut = useMutation({

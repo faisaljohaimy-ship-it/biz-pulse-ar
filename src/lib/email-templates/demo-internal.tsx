@@ -62,10 +62,12 @@ const InternalDemoNotification = (p: Props) => (
 
 export const template = {
   component: InternalDemoNotification,
-  subject: (d: Record<string, any>) =>
-    `🚀 New Enterprise Demo Request | ${d.company || d.fullName || "NEXUS AI OS"}`,
+  subject: (data: Readonly<Record<string, unknown>>) => {
+    const company = typeof data.company === "string" ? data.company : "";
+    const fullName = typeof data.fullName === "string" ? data.fullName : "";
+    return `🚀 New Enterprise Demo Request | ${company || fullName || "NEXUS AI OS"}`;
+  },
   displayName: "Demo Request — Internal Notification",
-  to: "Faisaljohaimy@gmail.com",
   previewData: {
     fullName: "Faisal Aljohaimy",
     email: "faisal@example.com",

@@ -6,7 +6,7 @@ import { requirePlatformAdmin, getCurrentOrgIdForUser } from "@/lib/authz.server
 
 export const runExecutiveScenarioFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { day?: string; orgId?: string }) =>
+  .validator((d: { day?: string; orgId?: string }) =>
     z
       .object({
         day: z

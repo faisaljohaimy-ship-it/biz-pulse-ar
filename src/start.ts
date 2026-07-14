@@ -3,19 +3,32 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { renderErrorPage } from "./lib/error-page";
 
-/**
- * Security response headers — safe cross-cutting hardening.
- * CSP is intentionally omitted here: a strict Content-Security-Policy
- * without a per-app audit of inline scripts, third-party fonts, images,
- * and edge widgets is a white-screen risk. Ship it in a dedicated turn.
- */
+/** Security response headers applied to every application response. */
 const SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "SAMEORIGIN",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+  "Cross-Origin-Resource-Policy": "same-site",
   "Permissions-Policy":
     "camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'self'",
+    "form-action 'self'",
+    "script-src 'self' 'unsafe-inline' https:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' blob: https:",
+    "connect-src 'self' https: wss:",
+    "frame-src 'self' https:",
+    "worker-src 'self' blob:",
+    "upgrade-insecure-requests",
+  ].join("; "),
 };
 
 function withSecurityHeaders(response: Response): Response {

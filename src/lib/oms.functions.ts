@@ -48,7 +48,7 @@ const createIncidentSchema = z.object({
 
 export const createIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createIncidentSchema.parse(d))
+  .validator((d: unknown) => createIncidentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const ref = genRef("INC");
@@ -169,7 +169,7 @@ const updateIncidentSchema = z.object({
 
 export const updateIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => updateIncidentSchema.parse(d))
+  .validator((d: unknown) => updateIncidentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actorName =
@@ -196,7 +196,7 @@ export const updateIncident = createServerFn({ method: "POST" })
 
 export const addCorrectiveAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         incident_id: z.string().uuid(),
@@ -250,7 +250,7 @@ export const addCorrectiveAction = createServerFn({ method: "POST" })
 
 export const escalateIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ incident_id: z.string().uuid(), reason: z.string().max(500).optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -278,7 +278,7 @@ export const escalateIncident = createServerFn({ method: "POST" })
 
 export const closeIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         incident_id: z.string().uuid(),
@@ -350,7 +350,7 @@ const createWorkOrderSchema = z.object({
 
 export const createWorkOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createWorkOrderSchema.parse(d))
+  .validator((d: unknown) => createWorkOrderSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actorName =
@@ -398,7 +398,7 @@ export const createWorkOrder = createServerFn({ method: "POST" })
 
 export const approveWorkOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ work_order_id: z.string().uuid(), note: z.string().max(500).optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -430,7 +430,7 @@ export const approveWorkOrder = createServerFn({ method: "POST" })
 
 export const completeWorkOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         work_order_id: z.string().uuid(),
@@ -494,7 +494,7 @@ const createPermitSchema = z.object({
 
 export const createPermit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createPermitSchema.parse(d))
+  .validator((d: unknown) => createPermitSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actorName =
@@ -531,7 +531,7 @@ export const createPermit = createServerFn({ method: "POST" })
 
 export const approvePermit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ permit_id: z.string().uuid(), note: z.string().max(500).optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -564,7 +564,7 @@ export const approvePermit = createServerFn({ method: "POST" })
 
 export const denyPermit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ permit_id: z.string().uuid(), reason: z.string().min(3).max(500) }).parse(d),
   )
   .handler(async ({ data, context }) => {

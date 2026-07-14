@@ -1,7 +1,12 @@
 {
   "name": "nexios-ai-os",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
+  "packageManager": "npm@11.9.0",
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
   "sideEffects": false,
   "type": "module",
   "scripts": {
@@ -10,7 +15,7 @@
     "build:dev": "NODE_OPTIONS=--max-old-space-size=5120 vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "check:svg": "node scripts/check-svg.mjs",
     "test": "vitest run",
     "test:visual": "python3 tests/visual/hero_emblem_visual.py",
@@ -18,13 +23,13 @@
     "test:stacking": "python3 tests/visual/hero_stacking.py",
     "format": "prettier --write .",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.48",
     "@ai-sdk/react": "^3.0.193",
     "@elevenlabs/react": "^1.6.3",
-    "@heygen/streaming-avatar": "2.0.17",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@lovable.dev/email-js": "^0.0.4",
@@ -108,7 +113,7 @@
     "use-stick-to-bottom": "^1.1.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
-    "xlsx": "^0.18.5",
+    "xlsx": "npm:@e965/xlsx@^0.20.3",
     "zod": "^3.23",
     "zustand": "^5.0.14"
   },
@@ -117,6 +122,7 @@
     "@lovable.dev/vite-tanstack-config": "2.7.1",
     "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest-axe": "^3.5.9",
@@ -147,6 +153,7 @@
     }
   },
   "overrides": {
-    "protobufjs": "^7.5.3"
+    "protobufjs": "^7.5.3",
+    "esbuild": "^0.28.1"
   }
 }

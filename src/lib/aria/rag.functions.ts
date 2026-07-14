@@ -49,7 +49,7 @@ async function embedQuery(text: string): Promise<number[]> {
 
 export const retrieveRegulationContext = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw) => InputSchema.parse(raw))
+  .validator((raw) => InputSchema.parse(raw))
   .handler(async ({ data, context }) => {
     const started = Date.now();
     const { supabase, userId } = context;

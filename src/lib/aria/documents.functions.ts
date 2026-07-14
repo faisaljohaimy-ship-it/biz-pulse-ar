@@ -67,7 +67,7 @@ export const listAriaDocuments = createServerFn({ method: "GET" })
 
 export const deleteAriaDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .validator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: doc } = await context.supabase
       .from("aria_documents")
@@ -98,7 +98,7 @@ const IngestInput = z.object({
 
 export const ingestAriaDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => IngestInput.parse(i))
+  .validator((i: unknown) => IngestInput.parse(i))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -183,7 +183,7 @@ const SearchInput = z.object({
 
 export const searchAriaDocuments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => SearchInput.parse(i))
+  .validator((i: unknown) => SearchInput.parse(i))
   .handler(async ({ data, context }) => {
     const vec = await embedText(data.query);
     if (!vec)
@@ -217,7 +217,7 @@ export const searchAriaDocuments = createServerFn({ method: "POST" })
 
 export const getAriaDocumentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .validator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: doc, error } = await context.supabase
       .from("aria_documents")

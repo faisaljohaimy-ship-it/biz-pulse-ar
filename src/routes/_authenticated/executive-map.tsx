@@ -30,6 +30,22 @@ export const Route = createFileRoute("/_authenticated/executive-map")({
 });
 
 type Site = MapSite;
+type IncidentGeoRow = {
+  id: string;
+  title: string | null;
+  severity: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  status: string | null;
+};
+type CrisisGeoRow = {
+  id: string;
+  title: string | null;
+  severity: string | null;
+  lat: number | null;
+  lng: number | null;
+  status: string | null;
+};
 
 // Seed of strategic locations in MENA + key global hubs. Augmented at runtime
 // by sec_incidents / pulse_crises so the map reflects real signals.
@@ -183,7 +199,7 @@ function ExecutiveMapPage() {
         ]);
         if (!alive) return;
         const extra: Site[] = [];
-        for (const i of (incidents ?? []) as any[]) {
+        for (const i of (incidents ?? []) as unknown as IncidentGeoRow[]) {
           if (typeof i.location_lat === "number" && typeof i.location_lng === "number") {
             extra.push({
               id: `inc-${i.id}`,
@@ -193,11 +209,11 @@ function ExecutiveMapPage() {
               lng: i.location_lng,
               status: i.severity === "high" || i.severity === "critical" ? "critical" : "warn",
               metric: `Severity: ${i.severity ?? "n/a"}`,
-              detail: i.status,
+              detail: i.status ?? undefined,
             });
           }
         }
-        for (const c of (crises ?? []) as any[]) {
+        for (const c of (crises ?? []) as unknown as CrisisGeoRow[]) {
           if (typeof c.lat === "number" && typeof c.lng === "number") {
             extra.push({
               id: `cri-${c.id}`,
@@ -207,7 +223,7 @@ function ExecutiveMapPage() {
               lng: c.lng,
               status: "critical",
               metric: `Severity: ${c.severity ?? "n/a"}`,
-              detail: c.status,
+              detail: c.status ?? undefined,
             });
           }
         }

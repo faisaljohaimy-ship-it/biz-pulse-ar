@@ -1,24 +1,8 @@
-/*
- * ARIA · NEXIOS service worker — offline shell + faster repeat loads.
- *
- * Deliberately conservative so it can never serve stale authenticated data:
- *  - /api/* and every non-GET request bypass the SW entirely (always network).
- *  - Navigations use network-first with a cached shell fallback (offline only).
- *  - Hashed build assets (/assets/*) are cache-first (they are immutable).
- *  - Cross-origin requests are ignored (fonts, Supabase, etc. hit the network).
- */
-const VERSION = "aria-v1";
-const STATIC_CACHE = `${VERSION}-static`;
-const SHELL_CACHE = `${VERSION}-shell`;
-const SHELL_URL = "/";
+const CACHE_NAME = "nexios-static-v1";
+const PRECACHE = ["/nexus-icon.png", "/aria-icon.jpeg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((c) => c.add(new Request(SHELL_URL, { cache: "reload" })))
-      .catch(() => {}),
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
@@ -27,55 +11,42 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k))),
+        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
       )
       .then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET") return;
+  const { request } = event;
+  const url = new URL(request.url);
 
-  const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // let cross-origin pass through
-  if (url.pathname.startsWith("/api/")) return; // never cache API
-
-  // Navigations: network-first, fall back to cached shell when offline.
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req).catch(() => caches.match(SHELL_URL).then((r) => r || Response.error())),
-    );
+  // Never cache authenticated navigation, API responses, or third-party data.
+  if (
+    request.method !== "GET" ||
+    url.origin !== self.location.origin ||
+    request.mode === "navigate" ||
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/__l5e/")
+  ) {
     return;
   }
 
-  // Immutable hashed build assets: cache-first.
-  if (url.pathname.startsWith("/assets/")) {
-    event.respondWith(
-      caches.match(req).then(
-        (hit) =>
-          hit ||
-          fetch(req).then((res) => {
-            const copy = res.clone();
-            caches.open(STATIC_CACHE).then((c) => c.put(req, copy));
-            return res;
-          }),
-      ),
-    );
-    return;
-  }
+  const isStaticAsset = /\.(?:avif|css|gif|ico|jpe?g|js|png|svg|webmanifest|webp|woff2?)$/i.test(
+    url.pathname,
+  );
+  if (!isStaticAsset) return;
 
-  // Other same-origin GETs (icons, static files): stale-while-revalidate.
   event.respondWith(
-    caches.match(req).then((hit) => {
-      const network = fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(STATIC_CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => hit);
-      return hit || network;
+    caches.match(request).then((cached) => {
+      const network = fetch(request).then((response) => {
+        if (response.ok && response.type === "basic") {
+          const copy = response.clone();
+          void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      });
+      return cached ?? network;
     }),
   );
 });

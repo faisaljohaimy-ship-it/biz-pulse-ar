@@ -1,54 +1,59 @@
 # NEXIOS AI OS — Security
 
-## Posture (GA build 2026-06-30)
-- 0 findings across 4 scanners: `connector_security_scan`, `supabase`, `supabase_lov`, `supply_chain`.
-- All `public` schema tables: RLS enabled + explicit GRANTs.
-- All `SECURITY DEFINER` functions: `EXECUTE` revoked from `anon`/`authenticated`; callable only via server-side wrappers (`src/lib/authz.server.ts`).
+## Authentication and authorization
 
-## Authentication
-- Supabase Auth (email/password + Google OAuth via Lovable broker).
-- Protected routes live under `src/routes/_authenticated/`; the integration-managed `_authenticated/route.tsx` (`ssr: false`) calls `supabase.auth.getUser()` and redirects to `/auth` otherwise.
-- Bearer token attached automatically to every `createServerFn` call via registered `functionMiddleware` in `src/start.ts`.
-- Demo auto-login removed. URL `?demo=1` synthetic sessions removed.
+- Public marketing routes remain public; the complete `/_authenticated` route
+  tree checks the Supabase session and redirects unauthenticated users to
+  `/auth?redirect=…`.
+- Sensitive APIs validate the bearer token server-side. Merely supplying an
+  `Authorization` header is not sufficient.
+- Canonical platform roles are `admin`, `manager`, and `member`.
+- Paid voice-token endpoints require `admin` or `manager`; they also fail closed
+  when authorization or rate-limit storage is unavailable.
+- The deprecated HeyGen browser provider is disabled honestly: no paid vendor
+  token is minted until a supported LiveAvatar client is implemented.
 
-## Authorization
-- Roles in `user_roles` (enum `app_role`: `admin`, `moderator`, `user`).
-- `has_role(uuid, app_role)` SECURITY DEFINER; called only from server.
-- `user_roles` DML revoked from `anon`/`authenticated`; explicit `false` policies for INSERT/UPDATE/DELETE.
-- Multi-tenant: `org_members` + `current_org_id()` enforced via RESTRICTIVE RLS policies across 50+ tables.
-- PII tables (`sec_visitors`, `sec_vehicles`, `sec_contractors`): readable only by creator + org admin.
+## Abuse, privacy, and secrets
 
-## Secrets
-- Server-only env: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY`, `ELEVENLABS_API_KEY`, `MICROSOFT_*`, etc.
-- `supabaseAdmin` imported only inside handler bodies via `await import('@/integrations/supabase/client.server')` — never at module scope of client-reachable files.
-- No `VITE_*` exposure of service-role values.
+- Public lead submissions are limited to five per hour using a SHA-256 digest
+  of network context and normalized email.
+- Internal lead recipients come only from `LEADS_NOTIFY_EMAIL`; no personal
+  recipient address is embedded in source code.
+- Unsubscribe errors never log raw tokens, and the production error boundary
+  does not expose internal exception messages.
+- `.env` and `.env.*` are ignored except `.env.example`. Server secrets must be
+  configured in the hosting platform.
 
-## Input / Output
-- Every `createServerFn` and every `/api/public/*` handler uses Zod `.inputValidator()`.
-- Tool registry `sql.read`: `z.enum` table allowlist + `TABLE_COLUMNS` whitelist per table.
-- Webhook endpoints verify HMAC-SHA256 with timing-safe compare before any write.
-- No `dangerouslySetInnerHTML` with user content anywhere in the codebase.
+## Data and input controls
 
-## Rate Limiting & Abuse
-- `rate_limit_buckets` table backs `/api/chat` guard (`src/routes/api/-chat-guard.ts`).
-- Public hook endpoints (`run-agent`, `executive-reports-run`, `microsoft-sync`, `aria-docs-ingest`, `runtime-bootstrap`) are credentialed via hook secret or signed payload.
+- Supabase tables created by the migration set have RLS enabled and explicit
+  policies. Live policy behavior must still be validated against the selected
+  production project after migrations are applied.
+- Server functions use typed `.validator(...)` schemas where input is accepted.
+- Operational summaries query with the caller's bearer token so RLS applies;
+  query failures return a generic error instead of partial data.
+- The vulnerable npm `xlsx` release was replaced by the maintained
+  `@e965/xlsx` package through an npm alias, preserving imports while removing
+  the published advisories.
 
-## Audit & Forensics
-- `audit_logs` (actor_id enforced = `auth.uid()`), `enterprise_events`, `tool_executions`, `workflow_step_runs` all carry `correlation_id`.
-- Agent runs are 100% reconstructable from these tables — verified in prior live runs.
+## Browser and transport hardening
+
+Application responses include HSTS, CSP, `nosniff`, same-origin framing,
+strict-origin referrers, permissions policy, COOP, and CORP. The CSP permits the
+current HTTPS integrations and inline bootstrap scripts while blocking plugins,
+foreign base URLs, and foreign form targets.
+
+The service worker caches same-origin static assets only. It never caches API
+responses, authenticated navigations, or managed media endpoints.
 
 ## Reporting
-- Vulnerabilities: see `public/.well-known/security.txt`.
-- Responsible disclosure: see `src/routes/responsible-ai.tsx`.
 
-## Threats Explicitly Mitigated
-| Threat | Control |
-|---|---|
-| Privilege escalation via `user_roles` write | DML revoked + policies = `false` |
-| Cross-tenant read | RESTRICTIVE RLS on every `sec_*` and tenant table |
-| Service-role leak | Handler-local imports, no module-scope, no `VITE_*` |
-| Webhook spoofing | HMAC + timing-safe compare on public hooks |
-| Agent fabrication | `z.enum` tool input + column whitelist + charter v10.0 prompt |
-| SSRF on image proxy | N/A — no user-controlled image proxy implemented |
-| XSS | React escapes by default; no `dangerouslySetInnerHTML` with user data |
-| CSRF | Same-origin server functions; bearer-token auth (not cookies for authorization) |
+Responsible disclosure instructions are published at
+`/.well-known/security.txt`. Rotate credentials and review audit events before
+sharing logs with third parties.
+
+## Verification boundary
+
+The 2026-07-15 remediation verified typecheck, lint, unit tests, production
+build, and npm advisory state locally. It did not claim a live penetration test,
+production backup restore, vendor SLA, or production tenant-isolation exercise.

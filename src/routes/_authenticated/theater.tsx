@@ -137,7 +137,7 @@ function TheaterPage() {
   });
 
   const health = bridgeQuery.data?.health;
-  const agents = bridgeQuery.data?.agents ?? [];
+  const agents = useMemo(() => bridgeQuery.data?.agents ?? [], [bridgeQuery.data?.agents]);
 
   const healthScore = health?.score ?? 0;
   const tone =

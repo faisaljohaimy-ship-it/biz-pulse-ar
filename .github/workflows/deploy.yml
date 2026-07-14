@@ -19,7 +19,7 @@
 # STRIPE_SECRET_KEY, OPENROUTER_API_KEY, LOVABLE_API_KEY, HEYGEN_*, MICROSOFT_*,
 # POWERBI_* … are configured on the Cloudflare Worker (dashboard → Settings →
 # Variables, or `wrangler secret put`). They are never committed to the repo.
-# Public build-time vars (VITE_SUPABASE_*) come from the committed .env.
+# Public build-time vars (VITE_SUPABASE_*) come from GitHub Actions secrets.
 
 name: Deploy to Cloudflare
 
@@ -37,41 +37,41 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment: production
+    permissions:
+      contents: read
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Skip gracefully until Cloudflare credentials are configured.
       - name: Check deploy credentials
-        id: guard
         run: |
-          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Cloudflare secrets not set yet — skipping deploy. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to enable."
-          fi
+          test -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" || { echo "::error::CLOUDFLARE_API_TOKEN is required"; exit 1; }
+          test -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" || { echo "::error::CLOUDFLARE_ACCOUNT_ID is required"; exit 1; }
+          test -n "$VITE_SUPABASE_URL" || { echo "::error::VITE_SUPABASE_URL is required"; exit 1; }
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "::error::VITE_SUPABASE_PUBLISHABLE_KEY is required"; exit 1; }
 
-      - name: Setup Bun
-        if: steps.guard.outputs.ready == 'true'
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: 22
+          cache: npm
 
-      # The committed bun.lock resolves from Lovable's private registry mirror;
-      # point it at the public npm registry so install works off-platform.
       - name: Install dependencies
-        if: steps.guard.outputs.ready == 'true'
-        run: |
-          sed -i 's#https://europe-west[0-9]*-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache#https://registry.npmjs.org#g' bun.lock
-          bun install
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify release
+        run: npm run lint && npm run typecheck && npm test
 
       - name: Build (Cloudflare Workers target)
-        if: steps.guard.outputs.ready == 'true'
-        run: bun run build
+        run: npm run build
 
       - name: Deploy Worker
-        if: steps.guard.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

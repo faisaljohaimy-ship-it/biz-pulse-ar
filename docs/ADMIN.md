@@ -1,7 +1,7 @@
 # Administrator Handbook
 
 ## Roles
-Roles live in `public.user_roles` (`admin`, `moderator`, `user`). Promote a user:
+Roles live in `public.user_roles` (`admin`, `manager`, `member`). Promote a user:
 ```sql
 INSERT INTO public.user_roles (user_id, role) VALUES ('<uuid>', 'admin');
 ```

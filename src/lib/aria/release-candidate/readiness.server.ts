@@ -21,7 +21,7 @@ interface GateSpec {
 
 export const GATE_SPECS: ReadonlyArray<GateSpec> = [
   { gate: "build", severity: "critical", description: "npm run build succeeds" },
-  { gate: "typecheck", severity: "critical", description: "bunx tsgo --noEmit passes" },
+  { gate: "typecheck", severity: "critical", description: "npm run typecheck passes" },
   { gate: "lint", severity: "high", description: "lint passes without errors" },
   { gate: "core_runtime", severity: "critical", description: "Core runtime boots" },
   { gate: "aria_os", severity: "critical", description: "ARIA OS kernel available" },

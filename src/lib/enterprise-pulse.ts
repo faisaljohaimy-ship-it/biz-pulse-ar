@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { seedKpis, seedCrises, seedExecution, seedMemory } from "./enterprise-pulse.seed";
 
 /**
@@ -171,25 +172,46 @@ async function ensureSeeded(userId: string, openTasks: number) {
 
 // ─── Row mappers ─────────────────────────────────────────────────────────────
 
-function mapKpi(r: any): PulseKpi {
+type PulseKpiRow = Database["public"]["Tables"]["pulse_kpis"]["Row"];
+type PulseCrisisRow = Database["public"]["Tables"]["pulse_crises"]["Row"];
+type PulseExecutionRow = Database["public"]["Tables"]["pulse_execution"]["Row"];
+type PulseMemoryRow = Database["public"]["Tables"]["pulse_memory"]["Row"];
+
+function enumOr<T extends string>(value: string, allowed: readonly T[], fallback: T): T {
+  return (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
+}
+
+function mapKpi(r: PulseKpiRow): PulseKpi {
   return {
     id: r.key,
     label_ar: r.label,
     label_en: r.label_en,
     value: r.value,
     delta: r.delta,
-    trend: r.trend,
-    tone: r.tone,
+    trend: enumOr(r.trend, ["up", "down", "flat"] as const, "flat"),
+    tone: enumOr(r.tone, ["cyan", "emerald", "amber", "rose", "violet"] as const, "cyan"),
     why_ar: r.why,
     why_en: r.why_en,
   };
 }
-function mapCrisis(r: any): CrisisPrediction {
+function mapCrisis(r: PulseCrisisRow): CrisisPrediction {
   return {
     id: r.key,
     title_ar: r.title,
     title_en: r.title_en,
-    category: r.category,
+    category: enumOr(
+      r.category,
+      [
+        "delay",
+        "silence",
+        "bottleneck",
+        "dependency",
+        "workflow",
+        "escalation",
+        "missed_commitment",
+      ] as const,
+      "workflow",
+    ),
     riskScore: r.risk_score,
     probability: r.probability,
     impact_ar: r.impact,
@@ -201,7 +223,7 @@ function mapCrisis(r: any): CrisisPrediction {
     route: r.route,
   };
 }
-function mapExecution(r: any): ExecutionStep {
+function mapExecution(r: PulseExecutionRow): ExecutionStep {
   return {
     id: r.key,
     decision_ar: r.decision,
@@ -212,24 +234,45 @@ function mapExecution(r: any): ExecutionStep {
     department: r.department,
     dependency_ar: r.dependency,
     dependency_en: r.dependency_en,
-    risk: r.risk,
+    risk: enumOr(r.risk, ["low", "medium", "high", "critical"] as const, "medium"),
     completion: r.completion,
-    status: r.status,
+    status: enumOr(
+      r.status,
+      ["open", "in_progress", "blocked", "done", "forgotten"] as const,
+      "open",
+    ),
   };
 }
-function mapMemory(r: any): MemoryEntry {
+function mapMemory(r: PulseMemoryRow): MemoryEntry {
   return {
     id: r.key,
-    kind: r.kind,
+    kind: enumOr(
+      r.kind,
+      [
+        "decision",
+        "initiative",
+        "commitment",
+        "risk",
+        "escalation",
+        "meeting",
+        "recommendation",
+        "dependency",
+      ] as const,
+      "decision",
+    ),
     title_ar: r.title,
     title_en: r.title_en,
     owner: r.owner,
     department: r.department,
     due: r.due_at ?? new Date().toISOString(),
     createdAt: r.created_at ?? new Date().toISOString(),
-    status: r.status,
+    status: enumOr(
+      r.status,
+      ["open", "in_progress", "blocked", "done", "forgotten"] as const,
+      "open",
+    ),
     progress: r.progress,
-    impact: r.impact,
+    impact: enumOr(r.impact, ["low", "medium", "high", "critical"] as const, "medium"),
     daysSilent: r.days_silent,
     dependsOn: r.depends_on?.length ? r.depends_on : undefined,
     decisionRoute: r.decision_route ?? undefined,

@@ -448,7 +448,7 @@ export async function triggerWorkflow(
     triggerPayload.__idempotency_key = params.idempotencyKey;
   }
 
-  const { data: member } = await (supabase as any)
+  const { data: member } = await supabase
     .from("org_members")
     .select("org_id")
     .eq("user_id", params.triggeredBy)

@@ -7,7 +7,7 @@ import { requirePlatformAdmin, getCurrentOrgIdForUser } from "@/lib/authz.server
 
 export const runSimulationSeedFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { seed?: number; orgId?: string }) =>
+  .validator((d: { seed?: number; orgId?: string }) =>
     z
       .object({ seed: z.number().int().optional(), orgId: z.string().uuid().optional() })
       .parse(d ?? {}),
@@ -54,6 +54,7 @@ export const getSimulationStatusFn = createServerFn({ method: "GET" })
     const counts: Record<string, number> = {};
     for (const t of tables) {
       // biome-ignore lint/suspicious/noExplicitAny: table names come from a runtime list
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table name is selected from the fixed list above
       const { count } = await (supabase as any)
         .from(t)
         .select("id", { count: "exact", head: true });

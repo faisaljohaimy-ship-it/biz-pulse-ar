@@ -2,11 +2,9 @@
  * HeyGen Interactive Avatar persona map — single source of truth for which
  * HeyGen `avatar_id` / `voice_id` represents each Digital Human persona.
  *
- * Uses the official HeyGen Streaming Avatar SDK
- * (https://github.com/HeyGen-Official/StreamingAvatarSDK) at @heygen/streaming-avatar 2.1.1.
- * Per HeyGen's official migration guide, v1/v2 streaming endpoints remain
- * fully supported through October 31, 2026; this SDK is the current
- * officially recommended path for Interactive Avatar.
+ * The legacy Streaming Avatar client was removed after deprecation. These
+ * identifiers remain as the server contract for a future LiveAvatar adapter;
+ * the current UI intentionally uses the built-in SVG/R3F fallback.
  *
  * IDs live in backend env (`HEYGEN_AVATAR_<HUMAN_ID>` / `HEYGEN_VOICE_<HUMAN_ID>`)
  * so the frontend never sees secrets. HeyGen-only — no other providers.

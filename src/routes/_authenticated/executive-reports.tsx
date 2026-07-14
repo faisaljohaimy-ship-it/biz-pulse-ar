@@ -150,13 +150,15 @@ function ExecutiveReportsPage() {
         if (spRes.status === "fulfilled") setSites(spRes.value.sites);
         else toast.error(isAr ? "تعذّر تحميل مواقع SharePoint" : "Failed to load SharePoint sites");
         if (tRes.status === "fulfilled") {
-          const teamMap = new Map((tRes.value.teams ?? []).map((t: any) => [t.id, t.displayName]));
+          const teamMap = new Map(
+            (tRes.value.teams ?? []).map((team) => [team.id, team.displayName]),
+          );
           setChannels(
-            (tRes.value.channels ?? []).map((c: any) => ({
-              id: c.id,
-              teamId: c.teamId,
-              displayName: c.displayName,
-              teamName: teamMap.get(c.teamId) ?? "",
+            (tRes.value.channels ?? []).map((channel) => ({
+              id: channel.id,
+              teamId: channel.teamId,
+              displayName: channel.displayName,
+              teamName: teamMap.get(channel.teamId) ?? "",
             })),
           );
         } else

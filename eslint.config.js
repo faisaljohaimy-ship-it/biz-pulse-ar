@@ -47,7 +47,11 @@ export default tseslint.config(
           ],
         },
       ],
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      // TanStack route/provider and design-system modules intentionally
+      // co-locate components with typed helpers. The Vite refresh runtime
+      // handles these modules; enforcing component-only exports is a false
+      // positive across this architecture.
+      "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "warn",
     },

@@ -45,7 +45,7 @@ function providerChannels(): string[] {
 
 export const broadcastAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => broadcastSchema.parse(d))
+  .validator((d: unknown) => broadcastSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const channels = providerChannels();
@@ -76,7 +76,7 @@ const ackSchema = z.object({ alertId: z.string().uuid() });
 
 export const acknowledgeAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => ackSchema.parse(d))
+  .validator((d: unknown) => ackSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const db = supabase as unknown as {
