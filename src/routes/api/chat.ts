@@ -275,7 +275,12 @@ export const Route = createFileRoute("/api/chat")({
         ) {
           vendor = "anthropic";
           selectedModelId = modelId;
-        } else if (modelId && effUseOpenrouter && OPENROUTER_MODEL_IDS.has(modelId)) {
+        } else if (
+          modelId &&
+          !effUseLovable &&
+          effUseOpenrouter &&
+          OPENROUTER_MODEL_IDS.has(modelId)
+        ) {
           vendor = "openrouter";
           selectedModelId = modelId;
         } else {
