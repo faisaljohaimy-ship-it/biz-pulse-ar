@@ -59,31 +59,40 @@ export interface AvailableProviders {
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
-  // Priority: Google (Gemini) → OpenAI → Anthropic → OpenRouter → Lovable.
+  // Priority: Google (native free tier) → Lovable Gateway (always provisioned)
+  // → OpenAI → Anthropic → OpenRouter.
   //
-  // FREE-FIRST: native Google Gemini leads because its AI-Studio free tier runs
-  // Gemini Flash at no cost — so ARIA never incurs spend even if a paid OpenAI
-  // key is also present. The Lovable gateway is credit-gated (HTTP 402 when out)
-  // so any platform-neutral provider is always preferred over it.
+  // ARIA PERMANENT-ON policy: LOVABLE_API_KEY is auto-provisioned for every
+  // project and backed by workspace credits, so it is the reliable default
+  // whenever third-party billing (Anthropic) or third-party auth (OpenRouter)
+  // is failing. Only native Google Gemini's free tier outranks it.
 
-  // Native Google Gemini (Gemini Flash) is the PRIMARY provider — free tier.
   if (providers.google) {
     return {
       vendor: "google",
       modelId: GOOGLE_GEMINI_FLASH,
-      fallback: providers.openai
-        ? { vendor: "openai", modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT }
-        : providers.anthropic
-          ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
-          : providers.openrouter
-            ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
-            : providers.lovable
-              ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
+      fallback: providers.lovable
+        ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
+        : providers.openai
+          ? { vendor: "openai", modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT }
+          : providers.anthropic
+            ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
+            : providers.openrouter
+              ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
               : undefined,
     };
   }
 
-  // Native OpenAI is next when configured (paid — used only if no Gemini key).
+  // Lovable Gateway — always-provisioned, workspace-credit backed. This is
+  // the permanent-on default when native Google is not configured.
+  if (providers.lovable) {
+    return {
+      vendor: "lovable",
+      modelId: LOVABLE_GEMINI_FLASH,
+      fallback: { vendor: "lovable", modelId: LOVABLE_GPT_5_MINI },
+    };
+  }
+
   if (providers.openai) {
     return {
       vendor: "openai",
@@ -92,38 +101,24 @@ export function resolveModel(_intent: AriaIntent, providers: AvailableProviders)
         ? { vendor: "anthropic", modelId: ANTHROPIC_SONNET }
         : providers.openrouter
           ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
-          : providers.lovable
-            ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
-            : undefined,
+          : undefined,
     };
   }
 
-  // Native Anthropic (Claude) is the PRIMARY provider when configured.
   if (providers.anthropic) {
     return {
       vendor: "anthropic",
       modelId: ANTHROPIC_SONNET,
       fallback: providers.openrouter
         ? { vendor: "openrouter", modelId: OPENROUTER_CLAUDE }
-        : providers.lovable
-          ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
-          : undefined,
-    };
-  }
-  // OpenRouter is platform-neutral → preferred over the credit-gated Lovable gateway.
-  if (providers.openrouter) {
-    return {
-      vendor: "openrouter",
-      modelId: OPENROUTER_CLAUDE,
-      fallback: providers.lovable
-        ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
         : undefined,
     };
   }
-  // Last resort: only the Lovable gateway is configured.
-  return {
-    vendor: "lovable",
-    modelId: LOVABLE_GEMINI_FLASH,
-    fallback: { vendor: "lovable", modelId: LOVABLE_GPT_5_MINI },
-  };
+
+  if (providers.openrouter) {
+    return { vendor: "openrouter", modelId: OPENROUTER_CLAUDE };
+  }
+
+  // No provider configured — caller surfaces localized "unavailable" message.
+  return { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH };
 }
