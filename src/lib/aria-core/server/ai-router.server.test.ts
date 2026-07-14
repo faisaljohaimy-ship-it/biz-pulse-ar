@@ -2,13 +2,13 @@ import { describe, it, expect } from "vitest";
 import { resolveModel, parseIntent } from "./ai-router.server";
 
 /**
- * Locks in the provider priority: Google(Gemini) → Anthropic → OpenRouter →
- * Lovable.
+ * Locks in the provider priority: Google(Gemini) → Lovable → OpenAI →
+ * Anthropic → OpenRouter.
  *
- * The Lovable gateway is credit-gated (HTTP 402 when exhausted), so ARIA must
- * always prefer a platform-neutral provider when one is configured — on any
- * host — and only fall back to Lovable when it is the sole key. Native Google
- * Gemini is first because its free AI-Studio tier runs Gemini Flash at no cost.
+ * ARIA PERMANENT-ON policy: LOVABLE_API_KEY is auto-provisioned and backed by
+ * workspace credits, so it is the reliable default whenever third-party
+ * billing (Anthropic) or third-party auth (OpenRouter) is failing. Only
+ * native Google Gemini's free tier outranks it.
  */
 describe("resolveModel — provider priority", () => {
   it("prefers Google Gemini when its key is present, even alongside others", () => {
@@ -21,38 +21,34 @@ describe("resolveModel — provider priority", () => {
     expect(r.vendor).toBe("google");
   });
 
-  it("Google primary keeps Anthropic as fallback when available", () => {
+  it("Google primary keeps Lovable as fallback when available", () => {
     const r = resolveModel("general", {
       google: true,
       anthropic: true,
       openrouter: false,
-      lovable: false,
+      lovable: true,
     });
-    expect(r.fallback?.vendor).toBe("anthropic");
+    expect(r.fallback?.vendor).toBe("lovable");
   });
 
-  it("prefers Anthropic when its key is present and Google is absent", () => {
+  it("prefers Lovable over Anthropic/OpenRouter when Google is absent", () => {
     const r = resolveModel("general", { anthropic: true, openrouter: true, lovable: true });
-    expect(r.vendor).toBe("anthropic");
-  });
-
-  it("prefers OpenRouter over the credit-gated Lovable gateway", () => {
-    const r = resolveModel("general", { anthropic: false, openrouter: true, lovable: true });
-    expect(r.vendor).toBe("openrouter");
-  });
-
-  it("falls back to Lovable only when it is the sole provider", () => {
-    const r = resolveModel("general", { anthropic: false, openrouter: false, lovable: true });
     expect(r.vendor).toBe("lovable");
   });
 
-  it("Anthropic primary keeps a neutral OpenRouter fallback when available", () => {
-    const r = resolveModel("executive", { anthropic: true, openrouter: true, lovable: false });
-    expect(r.fallback?.vendor).toBe("openrouter");
+  it("prefers Anthropic when Google and Lovable are absent", () => {
+    const r = resolveModel("general", { anthropic: true, openrouter: true, lovable: false });
+    expect(r.vendor).toBe("anthropic");
   });
 
-  it("OpenRouter primary keeps Lovable as its last-resort fallback", () => {
-    const r = resolveModel("general", { anthropic: false, openrouter: true, lovable: true });
+  it("falls back to OpenRouter when it is the sole provider", () => {
+    const r = resolveModel("general", { anthropic: false, openrouter: true, lovable: false });
+    expect(r.vendor).toBe("openrouter");
+  });
+
+  it("Lovable primary keeps a Lovable gpt-5-mini fallback", () => {
+    const r = resolveModel("general", { anthropic: false, openrouter: false, lovable: true });
+    expect(r.vendor).toBe("lovable");
     expect(r.fallback?.vendor).toBe("lovable");
   });
 });
