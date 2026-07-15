@@ -38,14 +38,6 @@ type IncidentGeoRow = {
   location_lng: number | null;
   status: string | null;
 };
-type CrisisGeoRow = {
-  id: string;
-  title: string | null;
-  severity: string | null;
-  lat: number | null;
-  lng: number | null;
-  status: string | null;
-};
 
 // Seed of strategic locations in MENA + key global hubs. Augmented at runtime
 // by sec_incidents / pulse_crises so the map reflects real signals.
