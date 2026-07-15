@@ -306,7 +306,7 @@ async function appendLedgerEvent(input: {
   payloadHash: string;
   occurredAt?: string | null;
 }): Promise<"inserted" | "duplicate"> {
-  const { error } = await supabaseAdmin.from("aria_outbound_message_events").insert({
+  const { error } = await outboundDb.from("aria_outbound_message_events").insert({
     message_id: input.messageId,
     org_id: input.orgId,
     provider: input.provider,
@@ -366,7 +366,7 @@ export async function prepareAriaOutboundMessage(
     });
     const idempotencyKey = `aria-${payload.channel}-${id}`;
 
-    const { error } = await supabaseAdmin.from("aria_outbound_messages").insert({
+    const { error } = await outboundDb.from("aria_outbound_messages").insert({
       id,
       org_id: orgId,
       actor_id: userId,
