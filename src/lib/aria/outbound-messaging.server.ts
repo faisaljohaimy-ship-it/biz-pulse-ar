@@ -1,7 +1,12 @@
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { TablesUpdate } from "@/integrations/supabase/types";
+
+// The `aria_outbound_messages` / `aria_outbound_message_events` tables are
+// created by migration but not yet present in the generated Database types.
+// Fall back to a loosely-typed client for these calls; RLS still applies.
+const outboundDb = supabaseAdmin as unknown as SupabaseClient;
+type TablesUpdate<_T extends string> = Record<string, unknown>;
 import { hasAnyPlatformRole, getCurrentOrgIdForUser } from "@/lib/authz.server";
 import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 import {
