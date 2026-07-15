@@ -3,7 +3,6 @@ import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
 import {
   ArrowLeft,
-  Download,
   Shield,
   Globe2,
   Building2,
@@ -38,9 +37,6 @@ function GovernmentBriefPage() {
   const { locale } = useI18n();
   const isAr = locale === "ar";
 
-  const pdfHref = isAr
-    ? "/briefs/nexus-government-brief-ar.pdf"
-    : "/briefs/nexus-government-brief-en.pdf";
 
   const sections = isAr
     ? [
@@ -149,31 +145,18 @@ function GovernmentBriefPage() {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={pdfHref}
-              download
+            <Link
+              to="/executive-briefing"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 px-6 py-3 text-sm font-medium text-[#0a0a0f] transition hover:from-amber-300 hover:to-amber-400"
             >
-              <Download className="h-4 w-4" />
-              {isAr ? "تحميل النسخة العربية (PDF)" : "Download English PDF"}
-            </a>
-            <a
-              href={
-                isAr
-                  ? "/briefs/nexus-government-brief-en.pdf"
-                  : "/briefs/nexus-government-brief-ar.pdf"
-              }
-              download
+              {isAr ? "طلب إحاطة تنفيذية" : "Request an Executive Briefing"}
+            </Link>
+            <Link
+              to="/contact"
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-400/30 px-6 py-3 text-sm text-amber-200/90 transition hover:bg-amber-400/5"
             >
               <FileText className="h-4 w-4" />
-              {isAr ? "English version (PDF)" : "تحميل النسخة العربية (PDF)"}
-            </a>
-            <Link
-              to="/executive-briefing"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-6 py-3 text-sm text-foreground transition hover:bg-white/5"
-            >
-              {isAr ? "طلب إحاطة تنفيذية" : "Request an Executive Briefing"}
+              {isAr ? "طلب النسخة الرسمية (PDF)" : "Request official PDF"}
             </Link>
           </div>
         </section>
