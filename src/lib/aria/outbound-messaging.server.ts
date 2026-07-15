@@ -492,7 +492,7 @@ export async function approveAriaOutboundMessageInternal(input: {
     throw new Error("Approval token does not belong to this request.");
   }
 
-  const { data: current, error: readError } = await supabaseAdmin
+  const { data: current, error: readError } = await outboundDb
     .from("aria_outbound_messages")
     .select(
       "id,org_id,actor_id,channel,content_hash,payload_ciphertext,payload_iv,idempotency_key,status,approval_expires_at,provider,provider_message_id,provider_status",
@@ -508,7 +508,7 @@ export async function approveAriaOutboundMessageInternal(input: {
     new Date(row.approval_expires_at).getTime() <= Date.now()
   ) {
     if (row.status === "pending_approval") {
-      await supabaseAdmin
+      await outboundDb
         .from("aria_outbound_messages")
         .update({ status: "expired" })
         .eq("id", row.id)
@@ -540,7 +540,7 @@ export async function approveAriaOutboundMessageInternal(input: {
   // row; every other request receives zero rows and therefore cannot call a
   // provider. A stuck dispatch is reconciled manually, never auto-retried.
   const now = new Date().toISOString();
-  const { data: claimed, error: claimError } = await supabaseAdmin
+  const { data: claimed, error: claimError } = await outboundDb
     .from("aria_outbound_messages")
     .update({ status: "dispatching", approved_by: input.userId, approved_at: now })
     .eq("id", row.id)
@@ -563,7 +563,7 @@ export async function approveAriaOutboundMessageInternal(input: {
   const claimedRow = claimed as LedgerRow;
   const payload = await decryptPayload(claimedRow);
   if ((await sha256Hex(JSON.stringify(payload))) !== claimedRow.content_hash) {
-    await supabaseAdmin
+    await outboundDb
       .from("aria_outbound_messages")
       .update({ status: "failed", failure_code: "content_integrity_failed" })
       .eq("id", claimedRow.id);
@@ -589,7 +589,7 @@ export async function approveAriaOutboundMessageInternal(input: {
         : await dispatchSms(payload);
   } catch (error) {
     const failure = safeFailure(error);
-    await supabaseAdmin
+    await outboundDb
       .from("aria_outbound_messages")
       .update({
         status: "unknown",
@@ -623,7 +623,7 @@ export async function approveAriaOutboundMessageInternal(input: {
   const delivered = result.status === "delivered";
   const state: OutboundLedgerStatus = delivered ? "delivered" : "accepted";
   const dispatchedAt = new Date().toISOString();
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await outboundDb
     .from("aria_outbound_messages")
     .update({
       status: state,
@@ -685,7 +685,7 @@ export async function cancelAriaOutboundMessageInternal(input: {
   if (claims.ledgerId !== input.ledgerId || claims.actorId !== input.userId) {
     throw new Error("Approval token does not belong to this request.");
   }
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await outboundDb
     .from("aria_outbound_messages")
     .update({ status: "cancelled" })
     .eq("id", input.ledgerId)
@@ -731,7 +731,7 @@ export async function recordOutboundProviderEvent(input: {
   occurredAt?: string | null;
   failureCode?: string | null;
 }): Promise<"updated" | "duplicate" | "not_found"> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await outboundDb
     .from("aria_outbound_messages")
     .select("id,org_id,status,content_hash")
     .eq("provider", input.provider)
@@ -764,7 +764,7 @@ export async function recordOutboundProviderEvent(input: {
   } else if (input.status === "failed" && status === "failed") {
     deliveryUpdate.failure_code = input.failureCode ?? "provider_failed";
   }
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await outboundDb
     .from("aria_outbound_messages")
     .update(deliveryUpdate)
     .eq("id", data.id);
