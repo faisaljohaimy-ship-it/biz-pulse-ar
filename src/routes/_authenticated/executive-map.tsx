@@ -190,13 +190,10 @@ function ExecutiveMapPage() {
     let alive = true;
     (async () => {
       try {
-        const [{ data: incidents }, { data: crises }] = await Promise.all([
-          supabase
-            .from("sec_incidents")
-            .select("id,title,severity,location_lat,location_lng,status")
-            .limit(50),
-          supabase.from("pulse_crises").select("id,title,severity,lat,lng,status").limit(50),
-        ]);
+        const { data: incidents } = await supabase
+          .from("sec_incidents")
+          .select("id,title,severity,location_lat,location_lng,status")
+          .limit(50);
         if (!alive) return;
         const extra: Site[] = [];
         for (const i of (incidents ?? []) as unknown as IncidentGeoRow[]) {
@@ -210,20 +207,6 @@ function ExecutiveMapPage() {
               status: i.severity === "high" || i.severity === "critical" ? "critical" : "warn",
               metric: `Severity: ${i.severity ?? "n/a"}`,
               detail: i.status ?? undefined,
-            });
-          }
-        }
-        for (const c of (crises ?? []) as unknown as CrisisGeoRow[]) {
-          if (typeof c.lat === "number" && typeof c.lng === "number") {
-            extra.push({
-              id: `cri-${c.id}`,
-              name: c.title ?? "Crisis",
-              type: "incident",
-              lat: c.lat,
-              lng: c.lng,
-              status: "critical",
-              metric: `Severity: ${c.severity ?? "n/a"}`,
-              detail: c.status ?? undefined,
             });
           }
         }

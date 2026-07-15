@@ -37,21 +37,13 @@ const SECTIONS: Section[] = [
     title: "Investor Documents",
     titleAr: "وثائق المستثمرين",
     docs: [
-      {
-        title: "Investor Deck V2 (Series A)",
-        titleAr: "العرض الاستثماري V2",
-        href: "/decks/nexus-investor-deck-v2.pptx",
-        kind: "pdf",
-        note: "PPTX · 14 slides",
-        noteAr: "PPTX · 14 شريحة",
-      },
-      {
-        title: "Final Readiness Audit",
-        titleAr: "تدقيق الجاهزية النهائي",
-        href: "/briefs/nexus-final-readiness-audit.pdf",
-        kind: "pdf",
-      },
       { title: "ROI Model", titleAr: "نموذج العائد", href: "/roi", kind: "page" },
+      {
+        title: "Executive Briefing",
+        titleAr: "الإحاطة التنفيذية",
+        href: "/executive-briefing",
+        kind: "page",
+      },
     ],
   },
   {
@@ -60,18 +52,6 @@ const SECTIONS: Section[] = [
     title: "Government Documents",
     titleAr: "وثائق حكومية",
     docs: [
-      {
-        title: "Government Executive Brief (EN)",
-        titleAr: "الملف الحكومي التنفيذي (EN)",
-        href: "/briefs/nexus-government-brief-en.pdf",
-        kind: "pdf",
-      },
-      {
-        title: "الملف الحكومي التنفيذي (AR)",
-        titleAr: "الملف الحكومي التنفيذي (عربي)",
-        href: "/briefs/nexus-government-brief-ar.pdf",
-        kind: "pdf",
-      },
       {
         title: "Government Brief — Web",
         titleAr: "الملف الحكومي — صفحة",

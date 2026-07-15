@@ -63,7 +63,6 @@ const VIDEOS: Video[] = [
     descAr: "رؤية 2030، NCA ECC، النشر السيادي.",
     duration: "2:10",
     audience: "Ministers & Public Sector",
-    pdf: "/briefs/nexus-government-brief-ar.pdf",
   },
   {
     id: "enterprise",
