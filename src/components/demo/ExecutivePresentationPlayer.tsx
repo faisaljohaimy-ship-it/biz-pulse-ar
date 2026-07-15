@@ -1,12 +1,12 @@
 /**
  * ExecutivePresentationPlayer — the guided executive presentation on the
- * demo page. ARIA's managed narrator video plays on
+ * demo page. ARIA's self-hosted executive film plays on
  * the LEFT in a dark #04111f frame, full face visible; on the RIGHT a
  * cinematic scene panel (kicker · title · body) switches automatically in
  * sync with the narration cues, ending on a closing CTA.
  *
- * Cues (seconds): 0 home · 6 command · 18 sec-regions · 26 agents ·
- * 33 twin-reports · 40 closing.
+ * Cues (seconds): 0 home · 8 command · 16 sec-regions · 24 agents ·
+ * 32 twin-reports · 40 closing.
  *
  * Rules: audio starts ONLY after the first user interaction (the start
  * button); full RTL; responsive mobile + laptop; clean stop on exit
@@ -30,9 +30,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { useI18n } from "@/lib/i18n";
-import narratorAsset from "@/assets/aria-executive-brief.mp4.asset.json";
-
-const VIDEO_SRC = narratorAsset.url;
+import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
 type Accent = "navy" | "emerald" | "gold";
 
@@ -94,7 +92,7 @@ function ClosingCTA() {
 const SCENES: readonly Scene[] = [
   {
     id: "home",
-    at: 0,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[0],
     icon: Home,
     kicker_ar: "الواجهة الرئيسية",
     kicker_en: "Home",
@@ -107,7 +105,7 @@ const SCENES: readonly Scene[] = [
   },
   {
     id: "command",
-    at: 6,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[1],
     icon: Gauge,
     kicker_ar: "غرفة القيادة",
     kicker_en: "Command Center",
@@ -119,7 +117,7 @@ const SCENES: readonly Scene[] = [
   },
   {
     id: "sec-regions",
-    at: 18,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[2],
     icon: Shield,
     kicker_ar: "القطاعات الأربعة",
     kicker_en: "Regions · Sec",
@@ -131,7 +129,7 @@ const SCENES: readonly Scene[] = [
   },
   {
     id: "agents",
-    at: 26,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[3],
     icon: Bot,
     kicker_ar: "وكلاء آريا",
     kicker_en: "ARIA Agents",
@@ -143,7 +141,7 @@ const SCENES: readonly Scene[] = [
   },
   {
     id: "twin-reports",
-    at: 33,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[4],
     icon: Boxes,
     kicker_ar: "التوأم والتقارير",
     kicker_en: "Twin · Reports",
@@ -156,7 +154,7 @@ const SCENES: readonly Scene[] = [
   },
   {
     id: "closing",
-    at: 40,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[5],
     icon: Sparkles,
     kicker_ar: "الختام",
     kicker_en: "Closing",
@@ -219,6 +217,7 @@ export function ExecutivePresentationPlayer() {
   const [sceneIdx, setSceneIdx] = useState(0);
   const [progress, setProgress] = useState(0); // 0..1 of the whole narration
   const [duration, setDuration] = useState(0);
+  const [videoFailed, setVideoFailed] = useState(false);
   const phaseRef = useRef(phase);
   useEffect(() => {
     phaseRef.current = phase;
@@ -238,39 +237,42 @@ export function ExecutivePresentationPlayer() {
   }, []);
 
   // Start / resume — always inside a user gesture, so sound is allowed.
-  const start = useCallback((fromBeginning: boolean) => {
-    const v = videoRef.current;
-    if (!v) return;
-    AriaAudioBus.unlock();
-    const granted = AriaAudioBus.acquire("hero-soundtrack", () => {
-      const el = videoRef.current;
-      if (el) {
+  const start = useCallback(
+    (fromBeginning: boolean) => {
+      const v = videoRef.current;
+      if (!v || videoFailed) return;
+      AriaAudioBus.unlock();
+      const granted = AriaAudioBus.acquire("hero-soundtrack", () => {
+        const el = videoRef.current;
+        if (el) {
+          try {
+            el.pause();
+          } catch {
+            /* ignore */
+          }
+        }
+        if (phaseRef.current === "playing") setPhase("paused");
+      });
+      if (!granted) return;
+      if (fromBeginning) {
         try {
-          el.pause();
+          v.currentTime = 0;
         } catch {
           /* ignore */
         }
+        setSceneIdx(0);
       }
-      if (phaseRef.current === "playing") setPhase("paused");
-    });
-    if (!granted) return;
-    if (fromBeginning) {
-      try {
-        v.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
-      setSceneIdx(0);
-    }
-    v.muted = false;
-    v.volume = 1;
-    v.play()
-      .then(() => setPhase("playing"))
-      .catch(() => {
-        AriaAudioBus.release("hero-soundtrack");
-        setPhase("idle");
-      });
-  }, []);
+      v.muted = false;
+      v.volume = 1;
+      v.play()
+        .then(() => setPhase("playing"))
+        .catch(() => {
+          AriaAudioBus.release("hero-soundtrack");
+          setPhase("idle");
+        });
+    },
+    [videoFailed],
+  );
 
   const onTimeUpdate = useCallback(() => {
     const v = videoRef.current;
@@ -364,22 +366,83 @@ export function ExecutivePresentationPlayer() {
           on every locale; inner content is RTL. Mobile stacks: video then panel. */}
       <div dir="ltr" className="grid gap-3 md:grid-cols-[minmax(220px,300px)_1fr]">
         {/* LEFT — ARIA narrator video, full face, dark #04111f frame */}
-        <div className="relative mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl bg-[#04111f] ring-1 ring-cyan-400/25 md:mx-0 md:max-w-none">
+        <div className="relative mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl bg-[#04111f] shadow-[0_24px_80px_-28px_rgba(34,182,255,0.8)] ring-1 ring-cyan-300/35 md:mx-0 md:max-w-none">
           <div className="aspect-[9/16] max-h-[62vh] w-full">
             <video
               ref={videoRef}
-              src={VIDEO_SRC}
+              src={EXECUTIVE_PRESENTATION_MEDIA.videoSrc}
+              poster={EXECUTIVE_PRESENTATION_MEDIA.posterSrc}
               playsInline
               preload="metadata"
               onTimeUpdate={onTimeUpdate}
               onLoadedMetadata={onLoadedMetadata}
+              onLoadedData={() => setVideoFailed(false)}
               onEnded={onEnded}
+              onError={() => {
+                AriaAudioBus.release("hero-soundtrack");
+                setPhase("idle");
+                setVideoFailed(true);
+              }}
+              aria-label={ar ? "فيلم آريا للعرض التنفيذي" : "ARIA executive presentation film"}
+              disablePictureInPicture
               className="h-full w-full object-cover object-top"
-            />
+            >
+              <track
+                kind="chapters"
+                src={EXECUTIVE_PRESENTATION_MEDIA.chaptersSrc}
+                srcLang="ar"
+                label="فصول العرض التنفيذي"
+                default
+              />
+            </video>
           </div>
 
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#020812]/95 via-[#04111f]/45 to-transparent"
+          />
+
+          {phase === "playing" && !videoFailed && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-2 p-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200/30 bg-[#04111f]/65 px-2.5 py-1 text-[9px] font-bold tracking-[0.2em] text-cyan-100 backdrop-blur-xl">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_10px_#22d3ee]" />
+                ARIA · FILM
+              </span>
+              <span className="rounded-full border border-white/15 bg-black/45 px-2 py-1 font-mono text-[9px] text-white/70 backdrop-blur-xl">
+                {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
+              </span>
+            </div>
+          )}
+
+          {videoFailed && (
+            <div
+              role="alert"
+              className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-[#04111f]/88 px-6 text-center backdrop-blur-md"
+              style={{
+                backgroundImage: `linear-gradient(rgba(4,17,31,.78), rgba(4,17,31,.96)), url(${EXECUTIVE_PRESENTATION_MEDIA.posterSrc})`,
+                backgroundPosition: "center",
+                backgroundSize: "cover",
+              }}
+            >
+              <Sparkles className="h-8 w-8 text-cyan-200 drop-shadow-[0_0_14px_rgba(34,211,238,.9)]" />
+              <p className="text-sm font-bold text-white">
+                {ar ? "تعذّر تحميل الفيلم التنفيذي" : "The executive film could not be loaded"}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setVideoFailed(false);
+                  videoRef.current?.load();
+                }}
+                className="rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-300/20"
+              >
+                {ar ? "إعادة المحاولة" : "Try again"}
+              </button>
+            </div>
+          )}
+
           {/* Start / resume overlay — sound begins only from this gesture. */}
-          {phase !== "playing" && (
+          {!videoFailed && phase !== "playing" && (
             <button
               type="button"
               onClick={() => start(phase === "idle" || phase === "done")}
@@ -407,7 +470,7 @@ export function ExecutivePresentationPlayer() {
           )}
 
           {/* Pause control while playing */}
-          {phase === "playing" && (
+          {phase === "playing" && !videoFailed && (
             <button
               type="button"
               onClick={() => stopPlayback("paused")}

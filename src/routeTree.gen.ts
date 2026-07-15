@@ -191,9 +191,11 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksTwilioMessageStatusRouteImport } from './routes/api/public/hooks/twilio-message-status'
 import { Route as ApiPublicHooksSelfEvolutionTickRouteImport } from './routes/api/public/hooks/self-evolution-tick'
 import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api/public/hooks/runtime-bootstrap'
 import { Route as ApiPublicHooksRunAgentRouteImport } from './routes/api/public/hooks/run-agent'
+import { Route as ApiPublicHooksResendMessageStatusRouteImport } from './routes/api/public/hooks/resend-message-status'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 import { Route as ApiPublicHooksAriaPatternMinerRouteImport } from './routes/api/public/hooks/aria-pattern-miner'
@@ -1154,6 +1156,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksTwilioMessageStatusRoute =
+  ApiPublicHooksTwilioMessageStatusRouteImport.update({
+    id: '/api/public/hooks/twilio-message-status',
+    path: '/api/public/hooks/twilio-message-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksSelfEvolutionTickRoute =
   ApiPublicHooksSelfEvolutionTickRouteImport.update({
     id: '/api/public/hooks/self-evolution-tick',
@@ -1171,6 +1179,12 @@ const ApiPublicHooksRunAgentRoute = ApiPublicHooksRunAgentRouteImport.update({
   path: '/api/public/hooks/run-agent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksResendMessageStatusRoute =
+  ApiPublicHooksResendMessageStatusRouteImport.update({
+    id: '/api/public/hooks/resend-message-status',
+    path: '/api/public/hooks/resend-message-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksMicrosoftSyncRoute =
   ApiPublicHooksMicrosoftSyncRouteImport.update({
     id: '/api/public/hooks/microsoft-sync',
@@ -1384,9 +1398,11 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
+  '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
   '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
+  '/api/public/hooks/twilio-message-status': typeof ApiPublicHooksTwilioMessageStatusRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1573,9 +1589,11 @@ export interface FileRoutesByTo {
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
+  '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
   '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
+  '/api/public/hooks/twilio-message-status': typeof ApiPublicHooksTwilioMessageStatusRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1766,9 +1784,11 @@ export interface FileRoutesById {
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
+  '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
   '/api/public/hooks/runtime-bootstrap': typeof ApiPublicHooksRuntimeBootstrapRoute
   '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
+  '/api/public/hooks/twilio-message-status': typeof ApiPublicHooksTwilioMessageStatusRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1959,9 +1979,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
+    | '/api/public/hooks/resend-message-status'
     | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
     | '/api/public/hooks/self-evolution-tick'
+    | '/api/public/hooks/twilio-message-status'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -2148,9 +2170,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
+    | '/api/public/hooks/resend-message-status'
     | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
     | '/api/public/hooks/self-evolution-tick'
+    | '/api/public/hooks/twilio-message-status'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -2340,9 +2364,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
+    | '/api/public/hooks/resend-message-status'
     | '/api/public/hooks/run-agent'
     | '/api/public/hooks/runtime-bootstrap'
     | '/api/public/hooks/self-evolution-tick'
+    | '/api/public/hooks/twilio-message-status'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -2429,9 +2455,11 @@ export interface RootRouteChildren {
   ApiPublicHooksAriaPatternMinerRoute: typeof ApiPublicHooksAriaPatternMinerRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
+  ApiPublicHooksResendMessageStatusRoute: typeof ApiPublicHooksResendMessageStatusRoute
   ApiPublicHooksRunAgentRoute: typeof ApiPublicHooksRunAgentRoute
   ApiPublicHooksRuntimeBootstrapRoute: typeof ApiPublicHooksRuntimeBootstrapRoute
   ApiPublicHooksSelfEvolutionTickRoute: typeof ApiPublicHooksSelfEvolutionTickRoute
+  ApiPublicHooksTwilioMessageStatusRoute: typeof ApiPublicHooksTwilioMessageStatusRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -3715,6 +3743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/twilio-message-status': {
+      id: '/api/public/hooks/twilio-message-status'
+      path: '/api/public/hooks/twilio-message-status'
+      fullPath: '/api/public/hooks/twilio-message-status'
+      preLoaderRoute: typeof ApiPublicHooksTwilioMessageStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/self-evolution-tick': {
       id: '/api/public/hooks/self-evolution-tick'
       path: '/api/public/hooks/self-evolution-tick'
@@ -3734,6 +3769,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/run-agent'
       fullPath: '/api/public/hooks/run-agent'
       preLoaderRoute: typeof ApiPublicHooksRunAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/resend-message-status': {
+      id: '/api/public/hooks/resend-message-status'
+      path: '/api/public/hooks/resend-message-status'
+      fullPath: '/api/public/hooks/resend-message-status'
+      preLoaderRoute: typeof ApiPublicHooksResendMessageStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/microsoft-sync': {
@@ -4120,9 +4162,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
+  ApiPublicHooksResendMessageStatusRoute:
+    ApiPublicHooksResendMessageStatusRoute,
   ApiPublicHooksRunAgentRoute: ApiPublicHooksRunAgentRoute,
   ApiPublicHooksRuntimeBootstrapRoute: ApiPublicHooksRuntimeBootstrapRoute,
   ApiPublicHooksSelfEvolutionTickRoute: ApiPublicHooksSelfEvolutionTickRoute,
+  ApiPublicHooksTwilioMessageStatusRoute:
+    ApiPublicHooksTwilioMessageStatusRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,

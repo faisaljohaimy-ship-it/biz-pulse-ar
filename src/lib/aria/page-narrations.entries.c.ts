@@ -338,12 +338,12 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/executive-bridge",
     n(
-      "الجسر التنفيذي العام",
-      "Executive Bridge (Public)",
-      "توضيح قناة القيادة بين المؤسسات",
-      "clarifying the leadership channel between organizations",
-      "شفافية استراتيجية للشركاء",
-      "strategic transparency for partners",
+      "جسر القيادة التنفيذي بصوت آريا",
+      "ARIA Executive Command Bridge",
+      "تحويل الإشارات التشغيلية إلى موقف تنفيذي وقرار محكوم",
+      "turning operational signals into an executive posture and governed decision",
+      "قيادة أسرع، أوضح، وقابلة للتفسير",
+      "faster, clearer, and explainable leadership",
     ),
   ],
   [

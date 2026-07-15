@@ -7,7 +7,16 @@
  * answers from the system's own RAG/fixtures. `slash` is the Arabic trigger
  * typed after "/"; `needsInput` commands append the user's follow-up text.
  */
-import { FileText, CalendarClock, Siren, LineChart, Search, type LucideIcon } from "lucide-react";
+import {
+  FileText,
+  CalendarClock,
+  Siren,
+  LineChart,
+  Mail,
+  MessageSquareText,
+  Search,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface QuickCommand {
   readonly id: string;
@@ -70,6 +79,26 @@ export const QUICK_COMMANDS: readonly QuickCommand[] = [
     prompt: "",
     needsInput: true,
     inputPrefix: "ابحث في المعرفة عن: ",
+  },
+  {
+    id: "email",
+    slash: "بريد",
+    ar: "بريد",
+    en: "Email",
+    icon: Mail,
+    prompt: "",
+    needsInput: true,
+    inputPrefix: "أرسل بريداً إلكترونياً إلى [البريد] بعنوان [الموضوع] ومحتواه: ",
+  },
+  {
+    id: "sms",
+    slash: "رسالة",
+    ar: "SMS",
+    en: "SMS",
+    icon: MessageSquareText,
+    prompt: "",
+    needsInput: true,
+    inputPrefix: "أرسل رسالة SMS إلى الرقم الدولي +966... نصها: ",
   },
 ];
 

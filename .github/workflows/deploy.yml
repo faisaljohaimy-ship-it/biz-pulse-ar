@@ -11,8 +11,8 @@
 # ── REQUIRED GitHub repository secrets (Settings → Secrets → Actions) ──
 #   CLOUDFLARE_API_TOKEN   — Cloudflare token with "Edit Workers" permission
 #   CLOUDFLARE_ACCOUNT_ID  — your Cloudflare account id
-# Until BOTH are set, the deploy step is skipped (no red failures), so this
-# file is safe to merge before the cutover — Lovable keeps serving prod.
+# All deployment and public Supabase values are required. A missing value fails
+# the production job clearly instead of reporting a skipped deployment as green.
 #
 # ── RUNTIME secrets (set as Cloudflare Worker variables, NOT here) ──
 # Server env like SUPABASE_SERVICE_ROLE_KEY, ELEVENLABS_API_KEY, DATABASE_URL,

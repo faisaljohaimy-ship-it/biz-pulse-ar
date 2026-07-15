@@ -46,4 +46,11 @@ describe("NexiosCommandCenter artwork contract", () => {
       );
     }
   });
+
+  it("gives every artwork icon an approved semantic edge colour", () => {
+    const approved = new Set([...Object.values(REGION_ACCENT_HEX), "#EF4444"]);
+    for (const hotspot of HOTSPOTS) {
+      expect(approved.has(hotspot.color)).toBe(true);
+    }
+  });
 });

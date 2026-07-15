@@ -1,5 +1,5 @@
 // /executive-show — Executive Show player.
-// Left: ARIA narrator video from the managed asset pipeline, full face, RTL.
+// Left: the self-hosted ARIA executive film, full face, RTL.
 // Right: window preview that auto-switches per cues, driven by video
 // `timeupdate`. When the video ends, a closing screen replaces the preview.
 // Audio starts only after the first user interaction (browser autoplay policy).
@@ -17,9 +17,7 @@ import {
   VolumeX,
   RotateCcw,
 } from "lucide-react";
-import narratorAsset from "@/assets/aria-executive-brief.mp4.asset.json";
-
-const NARRATOR_VIDEO_SRC = narratorAsset.url;
+import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
 export const Route = createFileRoute("/executive-show")({
   head: () => ({
@@ -56,7 +54,7 @@ const EMERALD = "#34D399";
 const CUES: Cue[] = [
   {
     id: "home",
-    at: 0,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[0],
     ar: "الواجهة الرئيسية",
     en: "Home",
     icon: Home,
@@ -65,7 +63,7 @@ const CUES: Cue[] = [
   },
   {
     id: "command",
-    at: 6,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[1],
     ar: "غرفة القيادة",
     en: "Command Center",
     icon: LayoutDashboard,
@@ -74,7 +72,7 @@ const CUES: Cue[] = [
   },
   {
     id: "sec-regions",
-    at: 18,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[2],
     ar: "القطاعات الأربعة",
     en: "Sec · Regions",
     icon: MapPin,
@@ -83,7 +81,7 @@ const CUES: Cue[] = [
   },
   {
     id: "agents",
-    at: 26,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[3],
     ar: "وكلاء آريا",
     en: "ARIA Agents",
     icon: Bot,
@@ -92,7 +90,7 @@ const CUES: Cue[] = [
   },
   {
     id: "twin-reports",
-    at: 33,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[4],
     ar: "التوأم والتقارير",
     en: "Twin · Reports",
     icon: Radar,
@@ -101,7 +99,7 @@ const CUES: Cue[] = [
   },
   {
     id: "closing",
-    at: 40,
+    at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[5],
     ar: "الختام",
     en: "Closing",
     icon: Sparkles,
@@ -117,6 +115,7 @@ function ExecutiveShowPage() {
   const [ended, setEnded] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [progress, setProgress] = useState(0); // 0..1
+  const [videoFailed, setVideoFailed] = useState(false);
 
   // Advance active cue from video timeupdate.
   useEffect(() => {
@@ -143,22 +142,25 @@ function ExecutiveShowPage() {
 
   async function startPlayback() {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || videoFailed) return;
+    let playbackStarted = false;
     try {
       v.muted = false;
       setMuted(false);
       await v.play();
+      playbackStarted = true;
     } catch {
       // Fallback: keep muted (some browsers still block); user can unmute.
       v.muted = true;
       setMuted(true);
       try {
         await v.play();
+        playbackStarted = true;
       } catch {
-        /* noop */
+        setVideoFailed(true);
       }
     }
-    setStarted(true);
+    if (playbackStarted) setStarted(true);
   }
 
   function toggleMute() {
@@ -228,18 +230,29 @@ function ExecutiveShowPage() {
       <section className="mx-auto grid max-w-[1600px] gap-4 px-4 pb-6 md:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-6">
         {/* LEFT — ARIA narrator */}
         <div className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-black/60 shadow-[0_20px_60px_-20px_rgba(58,232,255,0.35)]">
-          <div className="relative aspect-[9/16] max-h-[78dvh] w-full sm:aspect-[4/5] lg:aspect-[9/12]">
+          <div className="relative aspect-[9/16] max-h-[78dvh] w-full">
             <video
               ref={videoRef}
-              src={NARRATOR_VIDEO_SRC}
-              className="absolute inset-0 h-full w-full object-cover"
+              src={EXECUTIVE_PRESENTATION_MEDIA.videoSrc}
+              poster={EXECUTIVE_PRESENTATION_MEDIA.posterSrc}
+              className="absolute inset-0 h-full w-full object-cover object-top"
               // object-cover keeps the face full-frame across aspect ratios
               playsInline
               muted
               preload="metadata"
-              poster=""
+              disablePictureInPicture
+              onLoadedData={() => setVideoFailed(false)}
+              onError={() => setVideoFailed(true)}
               aria-label="آريا · الراوية التنفيذية"
-            />
+            >
+              <track
+                kind="chapters"
+                src={EXECUTIVE_PRESENTATION_MEDIA.chaptersSrc}
+                srcLang="ar"
+                label="فصول العرض التنفيذي"
+                default
+              />
+            </video>
             {/* Bottom gradient for legibility */}
             <div
               className="pointer-events-none absolute inset-x-0 bottom-0 h-40"
@@ -257,7 +270,7 @@ function ExecutiveShowPage() {
               </span>
             </div>
             {/* Mute / restart controls (visible after start) */}
-            {started && (
+            {started && !videoFailed && (
               <div className="absolute bottom-3 right-3 flex items-center gap-2">
                 <button
                   type="button"
@@ -278,7 +291,31 @@ function ExecutiveShowPage() {
               </div>
             )}
             {/* Start overlay — required for audio autoplay policies */}
-            {!started && (
+            {videoFailed && (
+              <div
+                role="alert"
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[#04111f]/90 px-6 text-center backdrop-blur-md"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(4,17,31,.78), rgba(4,17,31,.96)), url(${EXECUTIVE_PRESENTATION_MEDIA.posterSrc})`,
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                }}
+              >
+                <Sparkles className="h-9 w-9 text-cyan-200 drop-shadow-[0_0_16px_rgba(34,211,238,.95)]" />
+                <p className="text-sm font-bold text-white">تعذّر تحميل الفيلم التنفيذي</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVideoFailed(false);
+                    videoRef.current?.load();
+                  }}
+                  className="rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-300/20"
+                >
+                  إعادة المحاولة
+                </button>
+              </div>
+            )}
+            {!started && !videoFailed && (
               <button
                 type="button"
                 onClick={startPlayback}
@@ -297,6 +334,9 @@ function ExecutiveShowPage() {
                   </span>
                   <span className="rounded-full border border-cyan-300/40 bg-cyan-500/10 px-4 py-1.5 text-xs font-semibold text-cyan-100">
                     اضغط للبدء · مع الصوت
+                  </span>
+                  <span className="font-mono text-[10px] tracking-[0.18em] text-cyan-100/60">
+                    ARIA FILM · {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
                   </span>
                 </span>
               </button>

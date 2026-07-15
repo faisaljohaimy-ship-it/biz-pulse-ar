@@ -24,7 +24,7 @@ test.describe("Genesis intro — once per session", () => {
     const flag = await page.evaluate(() => {
       return sessionStorage.getItem("nexios-welcome");
     });
-    expect(flag, "expected the intro completion flag in sessionStorage").toBe("complete:v2");
+    expect(flag, "expected the intro completion flag in sessionStorage").toBe("complete:v4");
 
     // Second navigation in the same session must not re-mount the intro.
     await page.goto("/", { waitUntil: "domcontentloaded" });

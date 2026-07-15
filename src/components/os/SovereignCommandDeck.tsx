@@ -187,10 +187,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
 
   // Operational KPIs mirroring the executive command layout (see design ref):
   // compliance · operational stations · field staff · completed tasks ·
-  // active alerts · open incidents. Active alerts and open incidents come from
-  // live sec_* tables when available; the rest are the tagged sim snapshot.
+  // active alerts · open incidents. Every metric with an authoritative table
+  // is live-first; only compliance remains a visibly tagged simulation.
   const activeAlerts = liveOps.activeAlerts ?? SIM.activeAlerts;
   const openIncidents = liveOps.openIncidents ?? SIM.openIncidents;
+  const operationalSites = liveOps.operationalSites ?? SIM.stationsOperational;
+  const totalSites = liveOps.totalSites ?? SIM.regions;
+  const fieldStaff = liveOps.fieldStaff ?? SIM.fieldStaff;
+  const completedTasks = liveOps.completedTasks ?? SIM.completedTasks;
   const kpis: readonly KpiSpec[] = [
     {
       key: "compliance",
@@ -211,18 +215,19 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
     {
       key: "stations",
       icon: Building2,
-      labelAr: "المحطات التشغيلية",
-      labelEn: "Operational Stations",
+      labelAr: "المواقع التشغيلية",
+      labelEn: "Operational Sites",
       subAr: "حالة الشبكة",
       subEn: "NETWORK STATE",
-      value: SIM.stationsOperational,
-      display: `${SIM.stationsOperational}/${SIM.regions}`,
+      value: operationalSites,
+      display: `${operationalSites}/${totalSites}`,
       tone: "emerald",
       hintAr: "▲ ضمن النطاق",
       hintEn: "▲ IN RANGE",
       unit: "OPS",
-      gauge: SIM.stationsOperational / SIM.regions,
+      gauge: totalSites > 0 ? operationalSites / totalSites : 0,
       padded: false,
+      live: liveOps.operationalSites != null && liveOps.totalSites != null,
     },
     {
       key: "field_staff",
@@ -231,13 +236,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       labelEn: "Field Staff",
       subAr: "متصل الآن",
       subEn: "ONLINE NOW",
-      value: SIM.fieldStaff,
+      value: fieldStaff,
       tone: "cyan",
       hintAr: "▲ تغطية حيّة",
       hintEn: "▲ LIVE COVERAGE",
       unit: "PAX",
-      gauge: Math.min(1, SIM.fieldStaff / 300),
+      gauge: Math.min(1, fieldStaff / 300),
       padded: false,
+      live: liveOps.fieldStaff != null,
     },
     {
       key: "completed_tasks",
@@ -246,13 +252,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       labelEn: "Completed Tasks",
       subAr: "خلال اليوم",
       subEn: "TODAY",
-      value: SIM.completedTasks,
+      value: completedTasks,
       tone: "emerald",
       hintAr: "▲ ضمن الخطة",
       hintEn: "▲ ON PLAN",
       unit: "DONE",
-      gauge: Math.min(1, SIM.completedTasks / 40),
+      gauge: Math.min(1, completedTasks / 40),
       padded: false,
+      live: liveOps.completedTasks != null,
     },
     {
       key: "active_alerts",

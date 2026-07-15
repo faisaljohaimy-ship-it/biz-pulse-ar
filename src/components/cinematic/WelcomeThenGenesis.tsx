@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 import { AriaWelcomeVideo } from "./AriaWelcomeVideo";
 
 const INTRO_SESSION_KEY = "nexios-welcome";
-const INTRO_COMPLETE_VALUE = "complete:v3";
-const INTRO_SHOWING_VALUE = "showing:v3";
+const INTRO_COMPLETE_VALUE = "complete:v4";
+const INTRO_SHOWING_VALUE = "showing:v4";
 
 function setIntroSessionValue(value: string) {
   try {

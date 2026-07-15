@@ -6,10 +6,10 @@
  */
 import { useNavigate } from "@tanstack/react-router";
 import { MapPin, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
-import { REGION_ACCENT_HEX } from "@/lib/regions";
+import { REGION_ACCENT_HEX, REGION_ACCENT_RGB } from "@/lib/regions";
 import { cn } from "@/lib/utils";
 
 export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
@@ -39,12 +39,13 @@ export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex w-full items-center gap-2 rounded-lg border bg-[#04111f]/60 px-3 py-2 text-start text-xs font-semibold text-sidebar-foreground transition hover:bg-[#04111f]/85 focus-visible:outline-none focus-visible:ring-2"
-        style={{
-          borderColor: `${activeColor}66`,
-          boxShadow: `inset 0 0 12px ${activeColor}0D, 0 0 14px -7px ${activeColor}`,
-          outlineColor: activeColor,
-        }}
+        className="nx-region-control nx-region-control-active flex w-full items-center gap-2 rounded-lg border bg-[#04111f]/60 px-3 py-2 text-start text-xs font-semibold text-sidebar-foreground transition hover:bg-[#04111f]/85 focus-visible:outline-none focus-visible:ring-2"
+        style={
+          {
+            "--region-control-rgb": REGION_ACCENT_RGB[regionId],
+            outlineColor: activeColor,
+          } as CSSProperties
+        }
       >
         <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: activeColor }} />
         <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -65,7 +66,7 @@ export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
             boxShadow: `0 14px 34px -12px ${activeColor}66`,
           }}
         >
-          {regions.map((r) => {
+          {regions.map((r, index) => {
             const active = r.id === region.id;
             const optionColor = REGION_ACCENT_HEX[r.id];
             return (
@@ -81,15 +82,19 @@ export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
                     navigate({ to: "/sec" });
                   }}
                   className={cn(
-                    "flex w-full items-center gap-2 px-3 py-2 text-start text-xs transition",
+                    "nx-region-control flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2 text-start text-xs transition",
+                    active && "nx-region-control-active",
                     active
                       ? "text-white"
                       : "text-sidebar-foreground/80 hover:bg-white/5 hover:text-white",
                   )}
-                  style={{
-                    backgroundColor: active ? `${optionColor}20` : undefined,
-                    boxShadow: active ? `inset 3px 0 0 ${optionColor}` : undefined,
-                  }}
+                  style={
+                    {
+                      "--region-control-rgb": REGION_ACCENT_RGB[r.id],
+                      "--region-control-delay": `${-(index * 0.55)}s`,
+                      backgroundColor: active ? `${optionColor}20` : undefined,
+                    } as CSSProperties
+                  }
                 >
                   <span
                     className="h-1.5 w-1.5 shrink-0 rounded-full"

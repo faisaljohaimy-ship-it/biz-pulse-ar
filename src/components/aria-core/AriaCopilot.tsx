@@ -9,7 +9,17 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AudioWaveform, Mic, Plus, RefreshCcw, Send, Sparkles, X } from "lucide-react";
+import {
+  AudioWaveform,
+  Mail,
+  MessageSquareText,
+  Mic,
+  Paperclip,
+  RefreshCcw,
+  Send,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -33,6 +43,8 @@ import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 import { pageScriptParts } from "@/lib/aria/page-scripts";
+import { shouldSpeakAriaReply } from "@/lib/aria/reply-modality";
+import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 // speakAria / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
 // pipeline below (ElevenLabs via /api/tts, gated on the voice toggle).
@@ -853,7 +865,10 @@ export function AriaCopilot() {
       primeIOSAudio();
       // Voice replies only for voice turns in Conversation Mode; typed
       // messages (anywhere, any device) always get a text-only reply.
-      speakNextReplyRef.current = !!(convModeRef.current && opts?.fromVoice);
+      speakNextReplyRef.current = shouldSpeakAriaReply({
+        conversationMode: convModeRef.current,
+        fromVoice: opts?.fromVoice,
+      });
       setDraft("");
       setAttachments([]);
       setLastUserText(promptText || `[${fileParts.length} attachment(s)]`);
@@ -892,6 +907,14 @@ export function AriaCopilot() {
       void submit(cmd.prompt);
     },
     [submit, composerRef],
+  );
+
+  const prepareChannelCommand = useCallback(
+    (id: "email" | "sms") => {
+      const command = QUICK_COMMANDS.find((item) => item.id === id);
+      if (command) runQuickCommand(command);
+    },
+    [runQuickCommand],
   );
 
   const stopListening = useCallback(() => {
@@ -1098,8 +1121,8 @@ export function AriaCopilot() {
           aria-label="Open ARIA"
           className={cn(
             "fixed bottom-6 end-6 z-50 flex h-14 w-14 items-center justify-center",
-            "rounded-full border border-primary/40 bg-card/80 text-primary shadow-lg backdrop-blur-xl",
-            "transition-all hover:scale-105 hover:border-primary hover:shadow-primary/30",
+            "nexus-aria-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
+            "transition-all hover:scale-105 hover:border-primary",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           )}
         >
@@ -1123,24 +1146,19 @@ export function AriaCopilot() {
           className={cn(
             // Mobile: dock sits BELOW the marquee/date-time strip so the header
             // (including the Close X) is always tappable. Desktop: centered.
-            "fixed left-1/2 z-[110] flex -translate-x-1/2 flex-col overflow-hidden rounded-3xl border border-primary/25",
-            "shadow-2xl",
+            "nexus-window nexus-aria-window fixed left-1/2 z-[110] flex -translate-x-1/2 flex-col overflow-hidden rounded-[1.7rem]",
             "top-[calc(52px+env(safe-area-inset-top))]",
             "w-[min(94vw,440px)]",
             "h-[calc(100dvh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]",
             "sm:top-1/2 sm:-translate-y-1/2 sm:h-[min(92vh,760px)]",
           )}
-          style={{
-            boxShadow:
-              "0 20px 60px -20px hsl(var(--primary) / 0.4), 0 0 0 1px hsl(var(--primary) / 0.1)",
-          }}
         >
           {/* LAYER 0 — ARIA cinematic backdrop */}
           <AriaPanelBackdrop convMode={convMode} caption={convCaption} />
           <AriaVoiceDebugBadge />
 
           {/* LAYER 2 — Header */}
-          <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-background/30 px-4 py-3 backdrop-blur-sm">
+          <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-4 py-3 backdrop-blur-xl">
             {/* Conversation Mode talk toggle — start side, before mic/close */}
             <div className="relative flex flex-col items-center gap-0.5">
               <button
@@ -1175,7 +1193,7 @@ export function AriaCopilot() {
                 aria-hidden
               />
             </div>
-            <div className="flex flex-1 flex-col leading-tight">
+            <div className="flex min-w-0 flex-1 flex-col leading-tight">
               <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 ARIA
                 <span
@@ -1195,8 +1213,8 @@ export function AriaCopilot() {
                   )}
                 </span>
               </span>
-              <span className="text-[11px] text-muted-foreground">
-                {health === "down" ? "غير متصل" : statusLabel}
+              <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
+                {health === "down" ? "غير متصل" : `${statusLabel} · صوت · بريد · SMS · ملفات`}
               </span>
             </div>
             <button
@@ -1275,6 +1293,11 @@ export function AriaCopilot() {
                 const mine = m.role === "user";
                 const text = mine ? raw : sanitiseAssistantText(raw);
                 const hasNonTextWork = !mine && m.parts.some((p) => p.type !== "text");
+                const toolParts = !mine
+                  ? m.parts.filter(
+                      (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
+                    )
+                  : [];
                 if (!text && !hasNonTextWork) return null;
                 return (
                   <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
@@ -1290,12 +1313,18 @@ export function AriaCopilot() {
                         <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                         </div>
-                      ) : (
+                      ) : toolParts.length === 0 ? (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                           تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ…
                         </div>
-                      )}
+                      ) : null}
+                      {toolParts.map((part, index) => (
+                        <ToolInvocation
+                          key={`${m.id}-tool-${index}`}
+                          part={part as Parameters<typeof ToolInvocation>[0]["part"]}
+                        />
+                      ))}
                     </div>
                   </li>
                 );
@@ -1362,9 +1391,54 @@ export function AriaCopilot() {
 
           {/* LAYER 4 — Composer, pinned bottom + safe-area (Article 23: self-attachment) */}
           <div
-            className="relative z-10 border-t border-primary/15 bg-background/40 p-3 backdrop-blur-md"
+            className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
             style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
           >
+            <div
+              role="toolbar"
+              aria-label="قنوات آريا التنفيذية"
+              className="mb-2 grid grid-cols-4 gap-1.5"
+            >
+              <button
+                type="button"
+                onClick={toggleConversationMode}
+                aria-pressed={convMode}
+                className={cn(
+                  "nexus-aria-channel",
+                  convMode && "is-active border-emerald-400/55 text-emerald-200",
+                )}
+              >
+                <AudioWaveform className="h-4 w-4" aria-hidden />
+                <span>مخاطبة</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => prepareChannelCommand("email")}
+                className="nexus-aria-channel"
+                title="إرسال بريد إلكتروني عبر أريا"
+              >
+                <Mail className="h-4 w-4" aria-hidden />
+                <span>بريد</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => prepareChannelCommand("sms")}
+                className="nexus-aria-channel"
+                title="إرسال رسالة SMS عبر أريا"
+              >
+                <MessageSquareText className="h-4 w-4" aria-hidden />
+                <span>SMS</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="nexus-aria-channel"
+                title="رفع صور ووسائط وملفات"
+              >
+                <Paperclip className="h-4 w-4" aria-hidden />
+                <span>ملفات</span>
+              </button>
+            </div>
             {attachments.length > 0 && (
               <ul className="mb-2 flex flex-wrap gap-1.5" aria-label="Attachments">
                 {attachments.map((f, idx) => (
@@ -1477,11 +1551,11 @@ export function AriaCopilot() {
                 title="إرفاق ملفات · Attach files"
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-primary/25",
+                  "nexus-field grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/25",
                   "bg-background/70 text-foreground transition-all hover:bg-primary/10 hover:border-primary/50",
                 )}
               >
-                <Plus className="h-4 w-4" aria-hidden />
+                <Paperclip className="h-4 w-4" aria-hidden />
               </button>
               <textarea
                 ref={composerRef}
@@ -1497,7 +1571,7 @@ export function AriaCopilot() {
                 placeholder="اسأل آريا…"
                 aria-label="Ask ARIA"
                 className={cn(
-                  "min-h-[38px] max-h-32 flex-1 resize-none rounded-lg border border-primary/20",
+                  "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
                   "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
                   "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
                 )}
@@ -1509,8 +1583,8 @@ export function AriaCopilot() {
                 }
                 aria-label="Send"
                 className={cn(
-                  "grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground",
-                  "transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
+                  "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
+                  "transition-all hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
                 )}
               >
                 <Send className="h-4 w-4" aria-hidden />

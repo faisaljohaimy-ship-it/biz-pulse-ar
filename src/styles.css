@@ -1437,33 +1437,193 @@ body {
   will-change: box-shadow, border-color;
 }
 
-/* Image-hotspot edge for the icons that belong to the SELECTED region.
-   --hotspot-rgb is set by NexiosCommandCenter from the same region source of
-   truth, so the edge switches colour immediately with the operating region. */
+/* Every command-centre icon owns a live edge in its assigned colour.
+   The selected region receives a stronger breathing halo, while the pressed
+   control gets a short high-energy bloom before navigation. */
+@keyframes nx-hotspot-live-edge {
+  0%,
+  100% {
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.28);
+    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.018);
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.06),
+      inset 0 0 10px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045),
+      0 0 7px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.18);
+  }
+  50% {
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
+    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045);
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.16),
+      inset 0 0 16px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.11),
+      0 0 13px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.4),
+      0 0 28px -10px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.72);
+  }
+}
+
+@keyframes nx-hotspot-edge-sweep {
+  0%,
+  18% {
+    background-position: 180% 50%;
+    opacity: 0.12;
+  }
+  48% {
+    opacity: 0.95;
+  }
+  82%,
+  100% {
+    background-position: -80% 50%;
+    opacity: 0.18;
+  }
+}
+
+@keyframes nx-hotspot-inner-bloom {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.06);
+  }
+}
+
 @keyframes nx-active-region-edge {
   0%,
   100% {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.46);
-    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.035);
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.58);
+    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045);
     box-shadow:
-      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.12),
-      inset 0 0 14px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.08),
-      0 0 12px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.28);
+      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.16),
+      inset 0 0 16px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.1),
+      0 0 14px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.38),
+      0 0 30px -9px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.72);
   }
   50% {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.94);
-    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.075);
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
+    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.095);
     box-shadow:
-      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.3),
-      inset 0 0 22px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.18),
-      0 0 20px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.68),
-      0 0 44px -8px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.92);
+      inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+      inset 0 0 24px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.22),
+      0 0 22px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.82),
+      0 0 48px -7px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
   }
 }
-.nx-active-region-hotspot {
-  animation: nx-active-region-edge 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  will-change: box-shadow, border-color, background-color;
+
+@keyframes nx-hotspot-activation-bloom {
+  0% {
+    transform: scale(0.95);
+    filter: brightness(1);
+  }
+  38% {
+    transform: scale(1.055);
+    filter: brightness(1.55);
+    border-color: rgba(255, 255, 255, 0.98);
+    box-shadow:
+      inset 0 0 28px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.34),
+      0 0 26px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1),
+      0 0 58px -2px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1.12);
+  }
+}
+
+.nx-region-hotspot {
   isolation: isolate;
+}
+
+.nx-hotspot-frame {
+  border: 1px solid rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.34);
+  background: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.025);
+  animation: nx-hotspot-live-edge 4.4s ease-in-out infinite;
+  animation-delay: var(--hotspot-delay, 0s);
+  will-change: border-color, box-shadow, background-color;
+}
+
+.nx-hotspot-frame::before {
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+      112deg,
+      transparent 18%,
+      rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.12) 34%,
+      rgba(255, 255, 255, 0.98) 49%,
+      rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.96) 57%,
+      transparent 78%
+    )
+    180% 50% / 260% 100% no-repeat;
+  content: "";
+  opacity: 0.55;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: nx-hotspot-edge-sweep 4.9s ease-in-out infinite;
+  animation-delay: var(--hotspot-delay, 0s);
+}
+
+.nx-hotspot-frame::after {
+  position: absolute;
+  inset: 18%;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle,
+    rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.32),
+    transparent 72%
+  );
+  content: "";
+  filter: blur(8px);
+  animation: nx-hotspot-inner-bloom 4.4s ease-in-out infinite;
+  animation-delay: var(--hotspot-delay, 0s);
+}
+
+.nx-region-hotspot:hover .nx-hotspot-frame,
+.nx-region-hotspot:focus-visible .nx-hotspot-frame {
+  border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.95);
+  box-shadow:
+    inset 0 0 18px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.2),
+    0 0 20px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.72),
+    0 0 42px -8px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.94);
+}
+
+.nx-region-hotspot:focus-visible {
+  outline: 2px solid rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.95);
+  outline-offset: 2px;
+}
+
+.nx-active-region-hotspot {
+  background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.035);
+}
+
+.nx-active-region-hotspot .nx-hotspot-frame {
+  animation: nx-active-region-edge 2.45s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: var(--hotspot-delay, 0s);
+}
+
+.nx-active-region-hotspot .nx-hotspot-frame::before {
+  opacity: 0.98;
+  animation-duration: 3.1s;
+}
+
+.nx-hotspot-activated .nx-hotspot-frame,
+.nx-region-hotspot:active .nx-hotspot-frame {
+  animation:
+    nx-hotspot-activation-bloom 0.78s cubic-bezier(0.16, 1, 0.3, 1) both,
+    nx-active-region-edge 2.15s ease-in-out 0.78s infinite;
+}
+
+.nx-hotspot-activated .nx-hotspot-frame::before {
+  opacity: 1;
+  animation-duration: 2.2s;
 }
 
 /* Transparent holographic shell surrounding the region globe. */
@@ -1521,12 +1681,99 @@ body {
   animation-delay: -4.8s;
 }
 
+/* Region-picker buttons reuse the same living edge language outside the
+   command-centre artwork. --region-control-rgb is the option's own colour. */
+@keyframes nx-region-control-breathe {
+  0%,
+  100% {
+    border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.26);
+    box-shadow:
+      inset 0 0 10px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.05),
+      0 0 9px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.18);
+  }
+  50% {
+    border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.68);
+    box-shadow:
+      inset 0 0 16px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.14),
+      0 0 17px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.48),
+      0 0 34px -10px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.78);
+  }
+}
+
+.nx-region-control {
+  position: relative;
+  isolation: isolate;
+  border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.3);
+  animation: nx-region-control-breathe 4s ease-in-out infinite;
+  animation-delay: var(--region-control-delay, 0s);
+  will-change: border-color, box-shadow;
+}
+
+.nx-region-control::after {
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+      110deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.9) 49%,
+      rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.96) 57%,
+      transparent 80%
+    )
+    180% 50% / 260% 100% no-repeat;
+  content: "";
+  pointer-events: none;
+  opacity: 0.48;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: nx-hotspot-edge-sweep 4.6s ease-in-out infinite;
+  animation-delay: var(--region-control-delay, 0s);
+}
+
+.nx-region-control-active {
+  animation-duration: 2.35s;
+}
+
+.nx-region-control-active::after {
+  opacity: 0.95;
+  animation-duration: 2.8s;
+}
+
+.nx-region-control:hover,
+.nx-region-control:focus-visible,
+.nx-region-control:active {
+  border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.96);
+  box-shadow:
+    inset 0 0 18px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.18),
+    0 0 20px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.72),
+    0 0 42px -8px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.94);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nx-icon-pulse,
   .nx-sector-pulse,
-  .nx-active-region-hotspot,
-  .nx-holo-globe-pulse {
+  .nx-holo-globe-pulse,
+  .nx-hotspot-frame,
+  .nx-hotspot-frame::before,
+  .nx-hotspot-frame::after,
+  .nx-region-control,
+  .nx-region-control::after {
     animation: none !important;
+  }
+
+  .nx-active-region-hotspot .nx-hotspot-frame,
+  .nx-hotspot-activated .nx-hotspot-frame {
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.95);
+    box-shadow:
+      inset 0 0 18px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.18),
+      0 0 18px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.58);
   }
 }
 
@@ -1696,6 +1943,369 @@ body {
   .nx-wave-bar,
   .nx-orb-ring,
   .nx-orb-ring-rev {
+    animation: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   NEXIOS Spatial Window System 3.0
+   One premium glass language for dialogs, sheets, drawers, menus and fields.
+   Kept CSS-native so the visual upgrade adds no runtime JavaScript cost.
+   -------------------------------------------------------------------------- */
+@keyframes nexus-window-reveal {
+  0% {
+    opacity: 0;
+    filter: saturate(0.75) brightness(0.82);
+  }
+  100% {
+    opacity: 1;
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes nexus-window-scan {
+  0%,
+  12% {
+    transform: translate3d(-145%, 0, 0) skewX(-18deg);
+    opacity: 0;
+  }
+  24% {
+    opacity: 0.28;
+  }
+  54%,
+  100% {
+    transform: translate3d(520%, 0, 0) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes aria-approval-scan {
+  0%, 16% {
+    transform: translate3d(-180%, 0, 0) skewX(-18deg);
+    opacity: 0;
+  }
+  28% {
+    opacity: 0.46;
+  }
+  62%, 100% {
+    transform: translate3d(820%, 0, 0) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes aria-approval-border {
+  0%, 100% { box-shadow: 0 24px 70px rgba(0,7,18,.52), 0 0 28px rgba(34,211,238,.10), inset 0 1px 0 rgba(255,255,255,.08); }
+  50% { box-shadow: 0 24px 74px rgba(0,7,18,.58), 0 0 42px rgba(59,130,246,.18), inset 0 1px 0 rgba(255,255,255,.11); }
+}
+
+.aria-approval-card {
+  animation: aria-approval-border 5.6s ease-in-out infinite;
+}
+
+.aria-approval-scan {
+  animation: aria-approval-scan 5.8s cubic-bezier(.22,1,.36,1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aria-approval-card,
+  .aria-approval-scan {
+    animation: none !important;
+  }
+}
+
+@keyframes nexus-window-rail {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scaleX(0.72);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.nexus-window-overlay {
+  background:
+    radial-gradient(circle at 18% 12%, rgba(0, 212, 255, 0.14), transparent 35%),
+    radial-gradient(circle at 82% 86%, rgba(32, 227, 178, 0.1), transparent 36%),
+    rgba(1, 7, 16, 0.76);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  backdrop-filter: blur(14px) saturate(125%);
+}
+
+.nexus-window,
+.nexus-floating-surface,
+.nexus-toast {
+  border: 1px solid transparent;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(0, 212, 255, 0.13), transparent 34%) padding-box,
+    radial-gradient(circle at 100% 100%, rgba(32, 227, 178, 0.08), transparent 40%) padding-box,
+    linear-gradient(145deg, rgba(8, 31, 52, 0.97), rgba(3, 15, 29, 0.98)) padding-box,
+    linear-gradient(
+        118deg,
+        rgba(111, 255, 233, 0.72),
+        rgba(0, 212, 255, 0.18) 28%,
+        rgba(255, 255, 255, 0.06) 56%,
+        rgba(0, 184, 217, 0.55)
+      )
+      border-box;
+  -webkit-backdrop-filter: blur(26px) saturate(135%);
+  backdrop-filter: blur(26px) saturate(135%);
+  box-shadow:
+    0 42px 110px -42px rgba(0, 0, 0, 0.92),
+    0 24px 70px -36px rgba(0, 212, 255, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    inset 0 -1px 0 rgba(0, 212, 255, 0.08);
+}
+
+.nexus-window {
+  isolation: isolate;
+}
+
+.nexus-window::before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  inset-inline: 14%;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(111, 255, 233, 0.95), transparent);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.72);
+  transform-origin: center;
+  animation: nexus-window-rail 4.8s ease-in-out infinite;
+}
+
+.nexus-window::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 0;
+  width: 18%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 15%, rgba(111, 255, 233, 0.22), transparent 78%);
+  mix-blend-mode: screen;
+  animation: nexus-window-scan 9s ease-in-out infinite;
+}
+
+.nexus-floating-surface {
+  box-shadow:
+    0 24px 60px -28px rgba(0, 0, 0, 0.9),
+    0 14px 38px -28px rgba(0, 212, 255, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.nexus-window-close {
+  border: 1px solid rgba(0, 212, 255, 0.18);
+  background: rgba(5, 22, 39, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.nexus-window-close:hover {
+  border-color: rgba(0, 212, 255, 0.5);
+  background: rgba(0, 212, 255, 0.12);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.22);
+  transform: rotate(4deg) scale(1.04);
+}
+
+.nexus-card {
+  border: 1px solid rgba(0, 212, 255, 0.13);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 44%),
+    linear-gradient(160deg, rgba(13, 48, 72, 0.72), rgba(5, 25, 43, 0.82));
+  box-shadow:
+    0 16px 46px -34px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.nexus-card:hover {
+  border-color: rgba(0, 212, 255, 0.25);
+  box-shadow:
+    0 20px 54px -36px rgba(0, 212, 255, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.nexus-field {
+  border-color: rgba(0, 212, 255, 0.16);
+  background: linear-gradient(145deg, rgba(3, 15, 29, 0.62), rgba(14, 48, 70, 0.34));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 8px 24px -22px rgba(0, 212, 255, 0.5);
+}
+
+.nexus-field:hover {
+  border-color: rgba(0, 212, 255, 0.32);
+}
+
+.nexus-field:focus,
+.nexus-field:focus-visible,
+.nexus-field:focus-within {
+  border-color: rgba(58, 232, 255, 0.68);
+  background: linear-gradient(145deg, rgba(3, 15, 29, 0.82), rgba(14, 55, 78, 0.42));
+  box-shadow:
+    0 0 0 3px rgba(0, 212, 255, 0.11),
+    0 0 26px -12px rgba(0, 212, 255, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.nexus-field[data-slot="input-group-control"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+.nexus-tooltip {
+  border: 1px solid rgba(111, 255, 233, 0.34);
+  background: rgba(4, 24, 40, 0.94);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 32px -18px rgba(0, 212, 255, 0.72);
+}
+
+.nexus-toast {
+  border-radius: 1rem !important;
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  backdrop-filter: blur(22px) saturate(130%);
+}
+
+.light .nexus-window,
+.light .nexus-floating-surface,
+.light .nexus-toast {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(0, 184, 217, 0.1), transparent 34%) padding-box,
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(235, 247, 252, 0.98)) padding-box,
+    linear-gradient(118deg, rgba(0, 184, 217, 0.5), rgba(11, 39, 66, 0.1)) border-box;
+  box-shadow: 0 32px 90px -42px rgba(5, 38, 60, 0.42);
+}
+
+.light .nexus-card {
+  border-color: rgba(0, 132, 164, 0.15);
+  background:
+    linear-gradient(145deg, rgba(0, 184, 217, 0.055), transparent 46%), rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 18px 46px -36px rgba(5, 38, 60, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.light .nexus-field {
+  border-color: rgba(0, 132, 164, 0.2);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.light .nexus-tooltip {
+  border-color: rgba(0, 132, 164, 0.25);
+  background: rgba(255, 255, 255, 0.96);
+  color: #061a2e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-window,
+  .nexus-window::before,
+  .nexus-window::after {
+    animation: none !important;
+  }
+
+  .nexus-window-close,
+  .nexus-card {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes nexus-aria-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes nexus-aria-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(0, 212, 255, 0.25),
+      0 18px 46px -18px rgba(0, 212, 255, 0.7);
+  }
+  50% {
+    box-shadow:
+      0 0 0 9px rgba(0, 212, 255, 0),
+      0 22px 58px -14px rgba(0, 212, 255, 0.86);
+  }
+}
+
+.nexus-aria-window {
+  animation: nexus-window-reveal 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  box-shadow:
+    0 48px 120px -42px rgba(0, 0, 0, 0.95),
+    0 26px 78px -34px rgba(0, 212, 255, 0.72),
+    0 0 0 1px rgba(111, 255, 233, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.nexus-aria-launcher {
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px rgba(111, 255, 233, 0.12),
+    0 18px 46px -18px rgba(0, 212, 255, 0.7);
+  animation: nexus-aria-pulse 3.6s ease-in-out infinite;
+}
+
+.nexus-aria-launcher::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  z-index: -1;
+  border-radius: inherit;
+  border: 1px dashed rgba(111, 255, 233, 0.38);
+  animation: nexus-aria-orbit 12s linear infinite;
+}
+
+.nexus-aria-channel {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(0, 212, 255, 0.16);
+  border-radius: 0.8rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent), rgba(3, 19, 34, 0.62);
+  color: rgba(215, 234, 244, 0.84);
+  font-size: 0.68rem;
+  font-weight: 650;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.nexus-aria-channel:hover,
+.nexus-aria-channel:focus-visible,
+.nexus-aria-channel.is-active {
+  border-color: rgba(58, 232, 255, 0.5);
+  background: rgba(0, 212, 255, 0.1);
+  color: #ffffff;
+  box-shadow:
+    0 0 22px -12px rgba(0, 212, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-aria-launcher,
+  .nexus-aria-launcher::before {
     animation: none !important;
   }
 }
