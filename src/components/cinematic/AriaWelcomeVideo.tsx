@@ -16,9 +16,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import posterAsset from "@/assets/aria-holo-v2.png.asset.json";
-import narratorAsset from "@/assets/aria-intro.mp4.asset.json";
 import { setIntroActive } from "@/lib/intro-store";
+import { WELCOME_INTRO_MEDIA } from "@/lib/welcome-intro.media";
 import {
   hasPriorInteraction,
   installInteractionTracker,
@@ -37,12 +36,11 @@ interface Props {
  *   INVARIANT-3 no finish before MIN_DISPLAY_MS  INVARIANT-4 finishOnce
  *   INVARIANT-5 setIntroActive paired  INVARIANT-6 SSR-safe
  */
-const FADE_MS = 600;
-const MIN_DISPLAY_MS = 3_500; // never disappear before this
-const MAX_MS = 52_000; // hard cap safety — must exceed the narrator welcome video (~47s) + fade buffer
+const FADE_MS = WELCOME_INTRO_MEDIA.fadeMs;
+const MIN_DISPLAY_MS = WELCOME_INTRO_MEDIA.minimumDisplayMs; // never disappear before this
+const MAX_MS = WELCOME_INTRO_MEDIA.hardCapMs; // measured 64.62s film + exit/network buffer
 const BAR_COUNT = 14;
-// Keep the narrator in the managed asset pipeline so every deployment resolves it.
-const WELCOME_VIDEO_SRC = narratorAsset.url;
+const WELCOME_VIDEO_SRC = WELCOME_INTRO_MEDIA.videoSrc;
 
 export function AriaWelcomeVideo({ onDone }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -450,7 +448,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       {/* Poster fallback — guarantees INVARIANT-2 (visual ≤200ms) and stays
           on-screen if the video source fails to load. */}
       <img
-        src={posterAsset.url}
+        src={WELCOME_INTRO_MEDIA.posterSrc}
         alt=""
         aria-hidden
         className="absolute inset-0 h-full w-full"
@@ -471,6 +469,8 @@ export function AriaWelcomeVideo({ onDone }: Props) {
           playsInline
           muted
           preload="auto"
+          poster={WELCOME_INTRO_MEDIA.posterSrc}
+          disablePictureInPicture
           aria-hidden
           onError={() => {
             /* backdrop is decorative; ignore */
@@ -498,6 +498,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
             src={WELCOME_VIDEO_SRC}
             playsInline
             preload="auto"
+            poster={WELCOME_INTRO_MEDIA.posterSrc}
+            disablePictureInPicture
+            aria-label="فيلم المقدمة الترحيبية لآريا · ARIA cinematic welcome film"
             onLoadedData={() => setVideoReady(true)}
             onPlaying={() => setVideoReady(true)}
             onEnded={() => finish()}
@@ -536,6 +539,9 @@ export function AriaWelcomeVideo({ onDone }: Props) {
       >
         <div className="text-[10px] font-semibold uppercase tracking-[0.4em] text-[#3AE8FF]/85">
           NEXUS AI OS · EXECUTIVE INTELLIGENCE
+        </div>
+        <div className="text-[8px] font-medium uppercase tracking-[0.32em] text-white/45">
+          CINEMATIC WELCOME · {WELCOME_INTRO_MEDIA.durationLabel}
         </div>
         <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#3AE8FF]/60 to-transparent" />
       </div>

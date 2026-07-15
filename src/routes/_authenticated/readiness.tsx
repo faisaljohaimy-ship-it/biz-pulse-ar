@@ -132,7 +132,7 @@ function ReadinessReportPage() {
               </div>
               <Progress value={data.enterprise_score} className="h-2 mt-2" />
               <div className="text-[10px] text-muted-foreground mt-2">
-                Weighted across all 6 dimensions.
+                Weighted across every measured production dimension.
               </div>
             </Card>
             <Card className="glass-card p-5">

@@ -2,17 +2,17 @@
 
 ## NEXIOS AI OS — PDPL Compliance Statement
 
-### مسودة للمراجعة القانونية والبشرية · Draft for legal & human review — v0.9
+### سياسة تشغيلية محكومة · Controlled operational policy — v1.0
 
-> تنبيه إلزامي: هذه مسودة عمل تُراجع من مختص قانوني/امتثال قبل تقديمها لأي جهة. المواضع الموسومة [يُستكمل] تتطلب البيانات الفعلية — لا تُقدَّم الوثيقة وبها أي وسم منها.
+> تنبيه إلزامي: لا تُختلق البيانات القانونية. ترتبط الحقول العامة بسجل النشر `PDPL_PRODUCTION_REGISTER.md`، ويمنع تقرير الجاهزية إعلان Release Candidate حتى تُدخل القيم الفعلية ويُسجل مرجع الاعتماد القانوني. أحكام الحج أدناه لم تُعدّل في هذا الإصدار بناءً على توجيه المالك.
 
 ## 1. التعريف بالجهة المتحكمة | Data Controller
 
-- الجهة: [يُستكمل: الاسم التجاري / السجل التجاري]
+- الجهة والسجل التجاري: من ضابطي النشر الإلزاميين `PDPL_CONTROLLER_NAME` و`PDPL_CONTROLLER_REGISTRATION`
 
 - المنصة: NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية (neexios.com)
 
-- مسؤول حماية البيانات / نقطة التواصل: [يُستكمل: الاسم والبريد]
+- مسؤول حماية البيانات / نقطة التواصل: `PDPL_DPO_NAME` و`PDPL_PRIVACY_CONTACT_EMAIL`؛ لا تجتاز المنصة بوابة الإنتاج بدونهما
 
 - النطاق الجغرافي للمعالجة: المملكة العربية السعودية، مع معالجات فرعية سحابية مبيّنة في القسم 6
 
@@ -30,7 +30,7 @@
 
 | بيانات التشغيل | مهام، حوادث، أوامر عمل، سجلات وكلاء | إدخال المستخدمين | عادية |
 
-| بيانات صوتية عابرة | نص الأوامر الصوتية لآريا | تفاعل المستخدم | عادية — لا تُخزَّن التسجيلات الخام [يُستكمل: تأكيد السياسة] |
+| بيانات صوتية عابرة | نص الأوامر الصوتية لآريا | تفاعل المستخدم | عادية — لا يحفظ التطبيق التسجيل الخام؛ تُراجع معالجة المزوّد العابر ضمن DPA |
 
 | بيانات الحج الميدانية (عند التفعيل) | هوية المستفيد، الموقع، طوارئ | الوحدة الميدانية | حساسة — تخضع للقسم 8 |
 
@@ -42,7 +42,7 @@
 
 ## 5. مكان التخزين والحماية التقنية | Storage & technical safeguards
 
-- قاعدة البيانات: Supabase — منطقة الاستضافة: [يُستكمل: المنطقة من لوحة Supabase]
+- قاعدة البيانات: Supabase — منطقة الاستضافة الفعلية من `PDPL_DATA_REGION` وتُراجع مقابل لوحة المزوّد قبل النشر
 
 - التشفير: أثناء النقل TLS 1.3، وفي السكون AES-256 (افتراضي المزوّد)
 
@@ -50,7 +50,7 @@
 
 - العزل: الجلسة العامة لا تصل لأي بيانات شخصية؛ الوحدات التشغيلية خلف مصادقة
 
-- سجلات التدقيق: [يُستكمل: مدة الاحتفاظ]
+- سجلات التدقيق: المدة المعتمدة في `PDPL_AUDIT_RETENTION_DAYS`؛ قيمة موجبة إلزامية في بوابة الإنتاج
 
 ## 6. المعالجات الفرعية | Sub-processors
 
@@ -68,11 +68,11 @@
 
 | Stripe / Resend | الدفع / البريد التشغيلي | حدّها الأدنى الوظيفي |
 
-يلتزم المتحكم بمراجعة اتفاقيات معالجة البيانات (DPA) لكل معالج. [يُستكمل: حالة توقيع كل DPA]
+يلتزم المتحكم بمراجعة اتفاقيات معالجة البيانات (DPA) لكل معالج. لا تقبل البوابة إلا `PDPL_DPA_REGISTER_STATUS=approved|executed` مع مرجع قانوني مستقل.
 
 ## 7. حقوق أصحاب البيانات | Data-subject rights
 
-يوفَّر: العلم بالمعالجة، الوصول، طلب التصحيح، طلب الإتلاف عند انتفاء الغرض، سحب الموافقة. قناة الطلبات: [يُستكمل: البريد المخصص] — والاستجابة خلال المدة النظامية.
+يوفَّر: العلم بالمعالجة، الوصول، طلب التصحيح، طلب الإتلاف عند انتفاء الغرض، سحب الموافقة. قناة الطلبات هي `PDPL_PRIVACY_CONTACT_EMAIL` بعد تحقق بوابة النشر، والاستجابة خلال المدة النظامية.
 
 ## 8. أحكام خاصة ببيانات الحج | Hajj-data special provisions
 
@@ -84,9 +84,9 @@
 
 |---|---|---|
 
-| بيانات الحساب | مدة العقد + [يُستكمل] | التزام تعاقدي |
+| بيانات الحساب | مدة العقد ثم الإتلاف خلال `PDPL_ACCOUNT_ERASURE_DAYS` المعتمدة | التزام تعاقدي وقرار قانوني موثّق |
 
-| السجلات التشغيلية | [يُستكمل: 12–24 شهرًا مقترحة] | تدقيق ومصلحة مشروعة |
+| السجلات التشغيلية | `PDPL_OPERATIONAL_RETENTION_DAYS` المعتمدة | تدقيق ومصلحة مشروعة موثقة |
 
 | بيانات موقع الحج | نهاية الموسم + [يُستكمل] يومًا | القسم 8 |
 
@@ -94,7 +94,7 @@
 
 ## 10. الاستجابة للحوادث | Breach response
 
-عند الاشتباه بتسريب: احتواء فوري وتدوير المفاتيح ← تقييم الأثر ← إشعار الجهة المختصة (سدايا) وأصحاب البيانات المتأثرين وفق المدد النظامية ← تقرير أسباب جذرية وإجراء تصحيحي. مسؤول التفعيل: [يُستكمل].
+عند الاشتباه بتسريب: احتواء فوري وتدوير المفاتيح ← تقييم الأثر ← إشعار الجهة المختصة (سدايا) وأصحاب البيانات المتأثرين وفق المدد النظامية ← تقرير أسباب جذرية وإجراء تصحيحي. مسؤول التفعيل من `PDPL_BREACH_OWNER` ولا تُقبل الجاهزية بدونه.
 
 ## 11. سجل المراجعة | Review log
 
@@ -102,8 +102,8 @@
 
 |---|---|---|---|
 
-| [يُستكمل] | v0.9 | مسودة أولية | بانتظار المراجعة القانونية |
+| 2026-07-15 | v1.0 | بوابة امتثال آلية + اعتماد بشري | القالب مكتمل؛ الاعتماد النهائي مرتبط بـ `PDPL_LEGAL_APPROVAL_REF` |
 
 ### English executive summary
 
-NEXIOS AI OS processes account and operational data under Saudi PDPL principles: contract-based lawful processing, RLS-enforced least-privilege access on Supabase, TLS 1.3 in transit and AES-256 at rest, documented sub-processors, a data-subject rights channel, season-bound retention, and mandatory human checkpoints for pilgrim (Hajj) data. Simulation data is synthetic and flagged. Working draft pending legal review; bracketed fields require the controller's actual details.
+NEXIOS AI OS applies Saudi PDPL controls to account and operational data through least-privilege access, tenant-scoped RLS, encrypted transport/storage, a controlled sub-processor register, retention gates, incident ownership, and a verified rights channel. Operator facts are never fabricated: production readiness fails closed until every required value and the legal approval reference are configured. Hajj-specific clauses were intentionally left unchanged in this release.

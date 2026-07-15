@@ -6,7 +6,7 @@
  * are relative to the image, so image and controls always scale together.
  */
 import { Link } from "@tanstack/react-router";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import commandCenterAria from "@/assets/nexios-command-center-aria.png";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
@@ -539,11 +539,19 @@ function regionForHotspot(id: string): RegionId | undefined {
   return undefined;
 }
 
+/** Every overlay edge must use the exact visible icon colour, including global controls. */
+function hexToRgbTriplet(hex: `#${string}`): string {
+  const value = hex.slice(1);
+  if (!/^[\da-f]{6}$/i.test(value)) return "34, 211, 238";
+  return [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16)).join(", ");
+}
+
 export function NexiosCommandCenter() {
   const { locale } = useI18n();
   const { regionId, region, setRegion } = useRegion();
   const ar = locale === "ar";
   const activeColor = REGION_ACCENT_HEX[regionId];
+  const [activatedHotspotId, setActivatedHotspotId] = useState<string | null>(null);
 
   return (
     <section
@@ -598,27 +606,35 @@ export function NexiosCommandCenter() {
           />
 
           <nav aria-label={ar ? "روابط لوحة القيادة التفاعلية" : "Interactive dashboard links"}>
-            {HOTSPOTS.map((hotspot) => {
+            {HOTSPOTS.map((hotspot, index) => {
               const label = ar ? hotspot.labelAr : hotspot.labelEn;
               const ownerRegion = regionForHotspot(hotspot.id);
               const isActiveRegionIcon = ownerRegion === regionId;
+              const isActivated = hotspot.id === activatedHotspotId;
               const glowColor = ownerRegion ? REGION_ACCENT_HEX[ownerRegion] : hotspot.color;
-              const glowRgb = REGION_ACCENT_RGB[ownerRegion ?? regionId];
+              const glowRgb = ownerRegion
+                ? REGION_ACCENT_RGB[ownerRegion]
+                : hexToRgbTriplet(hotspot.color);
               return (
                 <Link
                   key={hotspot.id}
                   to={hotspot.to}
                   preload="intent"
                   onClick={() => {
+                    setActivatedHotspotId(hotspot.id);
                     if (ownerRegion) setRegion(ownerRegion);
                   }}
+                  onPointerDown={() => setActivatedHotspotId(hotspot.id)}
                   aria-label={label}
                   title={label}
                   data-hotspot={hotspot.id}
+                  data-region-owner={ownerRegion}
                   data-region-active={isActiveRegionIcon ? "true" : undefined}
+                  data-hotspot-activated={isActivated ? "true" : undefined}
                   className={cn(
-                    "group absolute z-10 block cursor-pointer touch-manipulation rounded-[clamp(4px,0.6vw,10px)] border border-transparent bg-transparent transition duration-200 hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98]",
+                    "nx-region-hotspot group absolute z-10 block cursor-pointer touch-manipulation rounded-[clamp(4px,0.6vw,10px)] border border-transparent bg-transparent transition duration-200 hover:bg-white/[0.07] focus-visible:outline-none active:scale-[0.98]",
                     isActiveRegionIcon && "nx-active-region-hotspot",
+                    isActivated && "nx-hotspot-activated",
                   )}
                   style={
                     {
@@ -627,6 +643,7 @@ export function NexiosCommandCenter() {
                       width: `${hotspot.width}%`,
                       height: `${hotspot.height}%`,
                       "--hotspot-rgb": glowRgb,
+                      "--hotspot-delay": `${-((index % 9) * 0.37)}s`,
                       // Keep keyboard focus aligned with each region's identity.
                       outlineColor: glowColor,
                     } as CSSProperties
@@ -634,11 +651,7 @@ export function NexiosCommandCenter() {
                 >
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 rounded-[inherit] border opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
-                    style={{
-                      borderColor: `${glowColor}CC`,
-                      boxShadow: `inset 0 0 18px ${glowColor}2E, 0 0 22px ${glowColor}70`,
-                    }}
+                    className="nx-hotspot-frame pointer-events-none absolute inset-0 rounded-[inherit]"
                   />
                   <span className="sr-only">{label}</span>
                 </Link>

@@ -7,6 +7,7 @@ invariant below. Violations are release-blockers.
 ## Scope
 
 Files under jurisdiction:
+
 - `src/components/cinematic/AriaWelcomeVideo.tsx`
 - `src/components/cinematic/WelcomeThenGenesis.tsx`
 - `src/routes/__root.tsx` (mount order; MUST NOT hide the gate when `introActive=true`)
@@ -18,7 +19,7 @@ Files under jurisdiction:
 - **INVARIANT-1 — Single gate.** `WelcomeThenGenesis` is the ONLY pre-system
   gate. No sibling intro, splash, curtain, or hero-zero may mount before the
   landing route. The session guard key is `sessionStorage["nexios-welcome"]`;
-  only value `complete:v2` may skip the intro. Interrupted/stale values MUST replay.
+  only value `complete:v4` may skip the intro. Interrupted/stale values MUST replay.
 - **INVARIANT-2 — Fast paint.** A visible layer (poster, HUD, or video)
   must reach the screen within ≤200ms of mount. A blank frame is a bug.
 - **INVARIANT-3 — Minimum display.** `finish()` MUST NOT run before
@@ -40,9 +41,9 @@ Files under jurisdiction:
   action that may bypass INVARIANT-3.
 - **INVARIANT-14 — Full greeting completion.** `MAX_MS` (hard-cap timeout)
   MUST exceed the actual welcome video duration + fade buffer. Any change
-  to the `aria-welcome.mp4` asset MUST be paired with a re-measurement
+  to the `nexios-welcome-intro.mp4` asset MUST be paired with a re-measurement
   (`ffprobe -show_entries format=duration`) and a corresponding update to
-  `MAX_MS` in `AriaWelcomeVideo.tsx`. Current asset: 33s → MAX_MS = 40s.
+  `MAX_MS` in `AriaWelcomeVideo.tsx`. Current asset: 64.62s → MAX_MS = 72s.
   Violation symptom: greeting cut off mid-sentence before `onEnded` fires.
 - **INVARIANT-13 — No self-unmount.** The root shell may hide marquee, chat,
   watermark, and greeter while `introActive=true`, but it MUST keep
@@ -78,6 +79,7 @@ MUST cite this section and preserve every invariant below.
 ## Scope
 
 Files under jurisdiction:
+
 - `src/routes/api/chat.ts` (streaming chat handler)
 - `src/components/aria-core/AriaCopilot.tsx` (chat UI + TTS pipeline)
 - `src/lib/aria/learning/*` (interaction log, pattern miner, prompt injector)
@@ -156,20 +158,20 @@ mobile, tablet, laptop, and desktop.
 Any of the following reappearing in production is a release-blocking bug
 and MUST be reverted or hot-fixed, never re-litigated:
 
-| ID    | Regression                                                               | Root cause to avoid                                                        |
-|-------|--------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| FR-1  | ARIA cropped at the head on portrait mobile                              | `object-fit: contain` on portrait mobile, or `object-position: center`     |
-| FR-2  | Large black letterbox bars on laptop / desktop / ultrawide               | `object-fit: cover` forced on wide viewports, or missing blurred backdrop  |
-| FR-3  | Intro disappears entirely when the video errors / CDN fails              | `onError` calling `finish()` before `MIN_DISPLAY_MS`, or no poster/HUD     |
-| FR-4  | Skip / Sound button hidden behind the iOS notch                          | Top-anchored control without `env(safe-area-inset-top)`                    |
-| FR-5  | Intro auto-dismisses before 3500 ms on any failure path                  | Any `finish()` path not routed through the `finishOnce` guard              |
-| FR-6  | React hydration mismatch on first paint                                  | Reading `window` / `matchMedia` outside a `useEffect`                      |
-| FR-7  | Intro replays on every hard refresh in the same session                  | Writing the session-guard key AFTER flipping state, or not writing at all  |
-| FR-8  | Chat/composer or marquee ribbon covers the intro                         | Any element with `z-index > 100` mounted at the same time as the intro    |
-| FR-9  | Intro flashes then disappears / never appears on laptop or mobile         | Root shell gates `WelcomeThenGenesis` behind `!introActive`/`suppressOverlays`, or writes completion before `onDone` |
+| ID   | Regression                                                        | Root cause to avoid                                                                                                  |
+| ---- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| FR-1 | ARIA cropped at the head on portrait mobile                       | `object-fit: contain` on portrait mobile, or `object-position: center`                                               |
+| FR-2 | Large black letterbox bars on laptop / desktop / ultrawide        | `object-fit: cover` forced on wide viewports, or missing blurred backdrop                                            |
+| FR-3 | Intro disappears entirely when the video errors / CDN fails       | `onError` calling `finish()` before `MIN_DISPLAY_MS`, or no poster/HUD                                               |
+| FR-4 | Skip / Sound button hidden behind the iOS notch                   | Top-anchored control without `env(safe-area-inset-top)`                                                              |
+| FR-5 | Intro auto-dismisses before 3500 ms on any failure path           | Any `finish()` path not routed through the `finishOnce` guard                                                        |
+| FR-6 | React hydration mismatch on first paint                           | Reading `window` / `matchMedia` outside a `useEffect`                                                                |
+| FR-7 | Intro replays on every hard refresh in the same session           | Writing the session-guard key AFTER flipping state, or not writing at all                                            |
+| FR-8 | Chat/composer or marquee ribbon covers the intro                  | Any element with `z-index > 100` mounted at the same time as the intro                                               |
+| FR-9 | Intro flashes then disappears / never appears on laptop or mobile | Root shell gates `WelcomeThenGenesis` behind `!introActive`/`suppressOverlays`, or writes completion before `onDone` |
 
 Every future fix that touches `AriaCinematicIntro.tsx` MUST cite the FR
-  ID(s) it protects in the commit / proposal rationale. `PROTECTED_PATHS`
+ID(s) it protects in the commit / proposal rationale. `PROTECTED_PATHS`
 in `src/lib/aria/self-evolution/engine.server.ts` blocks self-evolution
 proposals that do not.
 
@@ -197,14 +199,12 @@ product. Codifying the rendering contract + forbidden regressions turns
 these into deterministic, machine-enforceable invariants that the
 self-evolution loop cannot silently undo.
 
-
-
 ---
 
 ## INVARIANT-14 — Mobile Audio Gesture Contract (LOCKED)
 
 Mobile browsers (iOS Safari, Android Chrome, WebView) forbid autoplay with
-sound and route `<video>` audio through a *suspended* `AudioContext` when
+sound and route `<video>` audio through a _suspended_ `AudioContext` when
 `createMediaElementSource()` is called before a user gesture. The intro
 therefore obeys these rules — permanently:
 
@@ -231,6 +231,7 @@ therefore obeys these rules — permanently:
    so any tap anywhere on the intro unlocks sound.
 
 ### Enforcement
+
 - `PROTECTED_PATHS` in `src/lib/aria/self-evolution/engine.server.ts`
   includes `src/components/cinematic/AriaWelcomeVideo.tsx`.
 - Self-healing watchdog logs a `mobile_audio_locked` incident if the

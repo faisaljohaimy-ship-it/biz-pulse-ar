@@ -6,11 +6,11 @@
  * colours every halo from the canonical regional palette, and offers both
  * direct region selection and one-tap cycling.
  */
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState, type CSSProperties } from "react";
 import { ChevronDown, Globe2, Layers } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
-import { REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
+import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
 import { cn } from "@/lib/utils";
 import { REGION_MARKERS } from "./region-markers";
 import type SectorGlobeSceneT from "./SectorGlobeScene";
@@ -224,11 +224,12 @@ export function SectorGlobeCorner() {
         type="button"
         onClick={() => setCollapsed(false)}
         aria-label={ar ? "إظهار محدد المناطق ثلاثي الأبعاد" : "Show 3D region selector"}
-        className="group pointer-events-auto relative grid size-14 place-items-center rounded-full border bg-[#020817]/35 backdrop-blur-xl transition duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 active:scale-95"
-        style={{
-          borderColor: `${activeColor}88`,
-          boxShadow: `inset 0 0 18px ${activeColor}20, 0 0 18px ${activeColor}55, 0 0 42px -10px ${activeColor}CC`,
-        }}
+        className="nx-region-control nx-region-control-active group pointer-events-auto relative grid size-14 place-items-center rounded-full border bg-[#020817]/35 backdrop-blur-xl transition duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 active:scale-95"
+        style={
+          {
+            "--region-control-rgb": REGION_ACCENT_RGB[regionId],
+          } as CSSProperties
+        }
       >
         <span
           aria-hidden
@@ -281,8 +282,13 @@ export function SectorGlobeCorner() {
         type="button"
         onClick={cycleRegion}
         aria-label={ar ? "تغيير المنطقة التالية" : "Select next region"}
-        className="group relative block aspect-square w-full rounded-full focus-visible:outline-none focus-visible:ring-2"
-        style={{ outlineColor: activeColor }}
+        className="nx-region-control nx-region-control-active group relative block aspect-square w-full rounded-full border focus-visible:outline-none focus-visible:ring-2"
+        style={
+          {
+            "--region-control-rgb": REGION_ACCENT_RGB[regionId],
+            outlineColor: activeColor,
+          } as CSSProperties
+        }
       >
         <span
           aria-hidden
@@ -333,7 +339,7 @@ export function SectorGlobeCorner() {
         role="group"
         aria-label={ar ? "المناطق" : "Regions"}
       >
-        {regions.map((item) => {
+        {regions.map((item, index) => {
           const selected = item.id === regionId;
           const color = REGION_ACCENT_HEX[item.id];
           return (
@@ -343,19 +349,20 @@ export function SectorGlobeCorner() {
               onClick={() => setRegion(item.id)}
               aria-pressed={selected}
               className={cn(
-                "relative flex min-h-11 items-center justify-center gap-1.5 overflow-hidden rounded-xl border px-2 text-[10px] font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.97]",
+                "nx-region-control relative flex min-h-11 items-center justify-center gap-1.5 overflow-hidden rounded-xl border px-2 text-[10px] font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.97]",
+                selected && "nx-region-control-active",
                 selected ? "text-white" : "border-white/10 text-white/58 hover:text-white",
               )}
-              style={{
-                borderColor: selected ? `${color}CC` : `${color}35`,
-                background: selected
-                  ? `linear-gradient(145deg, ${color}30, ${color}0A)`
-                  : "rgba(255,255,255,0.025)",
-                boxShadow: selected
-                  ? `inset 0 0 14px ${color}18, 0 0 14px ${color}70, 0 0 28px -8px ${color}`
-                  : undefined,
-                outlineColor: color,
-              }}
+              style={
+                {
+                  "--region-control-rgb": REGION_ACCENT_RGB[item.id],
+                  "--region-control-delay": `${-(index * 0.55)}s`,
+                  background: selected
+                    ? `linear-gradient(145deg, ${color}30, ${color}0A)`
+                    : "rgba(255,255,255,0.025)",
+                  outlineColor: color,
+                } as CSSProperties
+              }
             >
               <span
                 aria-hidden
@@ -375,14 +382,15 @@ export function SectorGlobeCorner() {
         type="button"
         onClick={cycleRegion}
         aria-label={ar ? "التبديل إلى المنطقة التالية" : "Switch to the next region"}
-        className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] font-semibold transition duration-200 hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98]"
-        style={{
-          color: activeColor,
-          borderColor: `${activeColor}77`,
-          background: `linear-gradient(135deg, ${activeColor}1F, ${activeColor}08)`,
-          boxShadow: `inset 0 0 14px ${activeColor}12, 0 0 16px -6px ${activeColor}`,
-          outlineColor: activeColor,
-        }}
+        className="nx-region-control nx-region-control-active mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] font-semibold transition duration-200 hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98]"
+        style={
+          {
+            "--region-control-rgb": REGION_ACCENT_RGB[regionId],
+            color: activeColor,
+            background: `linear-gradient(135deg, ${activeColor}1F, ${activeColor}08)`,
+            outlineColor: activeColor,
+          } as CSSProperties
+        }
       >
         <Layers className="size-4" />
         {ar ? "تغيير منطقة العمل" : "Change work region"}

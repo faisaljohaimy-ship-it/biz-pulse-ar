@@ -2,19 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
-
-const GW = "https://connector-gateway.lovable.dev";
-
-function connectorHeaders(connectionKeyEnv: string) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connKey = process.env[connectionKeyEnv];
-  if (!lovableKey || !connKey) return null;
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": connKey,
-    "Content-Type": "application/json",
-  } as Record<string, string>;
-}
+import { prepareAriaOutboundMessage } from "@/lib/aria/outbound-messaging.server";
 
 function genRef(prefix: string) {
   const d = new Date();
@@ -146,62 +134,32 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     send_executive_email: tool({
       description:
-        "Send an HTML executive briefing email via Microsoft Outlook on behalf of the workspace.",
+        "Prepare an HTML executive email for human review. This tool NEVER sends directly: it returns a preview and a short-lived approval request that the user must explicitly confirm in the UI.",
       inputSchema: z.object({
         to: z.string().email(),
         cc: z.string().email().optional(),
         subject: z.string().min(2).max(300),
         html: z.string().min(5).max(120000),
       }),
-      execute: async (args) => {
-        // Anti-abuse: only platform admin/manager may use the shared org
-        // Outlook connector to send email to arbitrary recipients. Prevents
-        // any signed-in user from using ARIA as an open mail relay.
-        const { hasAnyPlatformRole } = await import("@/lib/authz.server");
-        const allowed = await hasAnyPlatformRole(userId, ["admin", "manager"]);
-        if (!allowed) {
-          return {
-            ok: false,
-            error:
-              "Forbidden: sending email via the shared Outlook connector requires admin or manager role.",
-          };
-        }
-        // Best-effort per-user rate limit (10 sends / 10 min).
-        try {
-          const { data: rateOk } = await supabase.rpc("check_rate_limit", {
-            _bucket_key: `aria-email:${userId}`,
-            _max_requests: 10,
-            _window_seconds: 600,
-          });
-          if (rateOk === false) {
-            return { ok: false, error: "Rate limit exceeded for ARIA email sends." };
-          }
-        } catch {
-          /* rate limit best-effort */
-        }
+      execute: async (args) =>
+        prepareAriaOutboundMessage(supabase, userId, { channel: "email", ...args }),
+    }),
 
-        const headers = connectorHeaders("MICROSOFT_OUTLOOK_API_KEY");
-        if (!headers) return { ok: false, error: "Outlook connector not configured" };
-        const message: Record<string, unknown> = {
-          subject: args.subject,
-          body: { contentType: "HTML", content: args.html },
-          toRecipients: [{ emailAddress: { address: args.to } }],
-        };
-        if (args.cc) message.ccRecipients = [{ emailAddress: { address: args.cc } }];
-        try {
-          const { httpJson } = await import("@/lib/api/http.server");
-          await httpJson(`${GW}/microsoft_outlook/me/sendMail`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ message, saveToSentItems: true }),
-            label: "aria-tools outlook sendMail",
-          });
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          return { ok: false, error: `Outlook send failed: ${msg.slice(0, 240)}` };
-        }
-        return { ok: true, sentAt: new Date().toISOString() };
-      },
+    send_executive_sms: tool({
+      description:
+        "Prepare an executive SMS/MMS for human review. This tool NEVER sends directly: it returns the exact preview and a short-lived approval request. Recipient numbers must use E.164 format.",
+      inputSchema: z.object({
+        to: z.string().min(8).max(24).describe("E.164 phone number, e.g. +9665XXXXXXXX"),
+        body: z.string().min(1).max(1600),
+        media_urls: z.array(z.string().url()).max(10).optional(),
+      }),
+      execute: async (args) =>
+        prepareAriaOutboundMessage(supabase, userId, {
+          channel: "sms",
+          to: args.to,
+          body: args.body,
+          mediaUrls: args.media_urls,
+        }),
     }),
 
     record_executive_decision: tool({

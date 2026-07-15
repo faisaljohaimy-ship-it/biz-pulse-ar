@@ -1,5 +1,5 @@
 // Production Readiness Report — scores Architecture / Runtime / Security /
-// Reliability / Scalability / Maintainability from real DB facts. No
+// Reliability / Scalability / Maintainability / PDPL from real facts. No
 // synthetic numbers — every score is derived from a measurable signal.
 
 import { createServerFn } from "@tanstack/react-start";
@@ -262,6 +262,20 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
       blockers: maintSignals.filter((s) => !s.ok).map((s) => `${s.key} = 0`),
     });
 
+    // --- PDPL: operator-owned legal identity, retention and DPA controls.
+    // Values are never returned; the report exposes presence/validity only.
+    // This deliberately fails closed instead of inventing legal facts.
+    const { evaluatePdplReadiness } = await import("@/lib/compliance/pdpl-readiness.server");
+    const pdpl = evaluatePdplReadiness();
+    dims.push({
+      id: "pdpl",
+      label: "PDPL Compliance",
+      score: Math.round((pdpl.signals.filter((s) => s.ok).length / pdpl.signals.length) * 100),
+      weight: 1.4,
+      signals: pdpl.signals,
+      blockers: pdpl.blockers,
+    });
+
     const totalWeight = dims.reduce((a, d) => a + d.weight, 0);
     const weighted = dims.reduce((a, d) => a + d.score * d.weight, 0);
     const enterpriseScore = Math.round(weighted / totalWeight);
@@ -273,6 +287,7 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
       reliability: 1.5,
       scalability: 0.8,
       maintainability: 0.7,
+      pdpl: 1.6,
     };
     const prodTotal = dims.reduce((a, d) => a + (prodWeights[d.id] ?? 1), 0);
     const prodWeighted = dims.reduce((a, d) => a + d.score * (prodWeights[d.id] ?? 1), 0);

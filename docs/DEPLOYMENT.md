@@ -1,48 +1,35 @@
 # النشر التلقائي — NEXIOS (neexios.com)
 
-النشر **تلقائي عند كل `git push` إلى `main`** عبر مسارين مستقلّين لا تعارض
-بينهما. لا أسرار في المستودع إطلاقاً — كل مفاتيح وقت التشغيل تُدار في لوحة
-المنصة (المادة 13).
+هدف الإنتاج المعتمد هو **Cloudflare Workers**. عند كل `git push` إلى `main`
+تعمل بوابة GitHub Actions، وتفشل بوضوح إذا غابت بيانات النشر المطلوبة. لا أسرار
+في المستودع؛ كل مفاتيح وقت التشغيل تُدار في بيئة Worker (المادة 13).
 
 ```
-Claude Code → git push origin main → GitHub
-                                   ├─▶ Vercel (Git integration)      → إنتاج neexios.com
-                                   └─▶ GitHub Actions (deploy.yml)   → Cloudflare Workers (بديل)
+Claude Code → git push origin main → GitHub Actions → Verify → Cloudflare Workers → neexios.com
 ```
 
-كلا المسارين يُفعَّلان تلقائياً على `push`؛ الجزء الوحيد المتبقّي في كلٍّ منهما
-هو ربط اعتماد/سرّ **خارج المستودع** (لا يمكن وضعه في git).
+يبقى Vercel هدفاً يدوياً اختيارياً فقط؛ `vercel.json` يعطّل نشر `main`
+التلقائي لمنع نشر الفرع الإنتاجي نفسه إلى مزودين في الوقت ذاته.
 
 ---
 
-## ١) Vercel — الإنتاج (تلقائي)
+## ١) Cloudflare Workers — الإنتاج المعتمد
 
-- **ما هو مضبوط في المستودع:** `vercel.json` يحدّد أمر البناء وذاكرة Node
-  وترويسات الأمان، و**`git.deploymentEnabled.main: true`** يضمن أن كل push إلى
-  `main` يُطلق نشراً إنتاجياً. ونيترو يتحوّل تلقائياً إلى `preset: "vercel"`
-  حين تكون `VERCEL=1` (انظر `vite.config.ts`) فيُخرج Build Output API v3.
-- **الخطوة الوحيدة خارج المستودع (تُفعَّل مرّة واحدة):** في لوحة Vercel تأكّد أن
-  المشروع مربوط بمستودع GitHub وأن **Production Branch = `main`** وأن
-  Auto-Deploy مفعّل (هو الوضع الافتراضي عند ربط المستودع). متغيّرات البيئة
-  (`VITE_SUPABASE_*` وأي مفاتيح خادم) تُضاف في Vercel → Settings → Environment
-  Variables.
-- **النتيجة:** بعد ذلك كل push إلى `main` يُنشر إنتاجياً بلا أي تدخّل يدوي.
-
-## ٢) Cloudflare Workers — البديل (تلقائي، متوقّف حتى تُضاف الأسرار)
-
-- **ما هو مضبوط في المستودع:** `.github/workflows/deploy.yml` يعمل على كل push
-  إلى `main` (و`workflow_dispatch` يدوياً)، يبني بهدف Cloudflare Workers ثم ينشر
-  عبر `wrangler deploy`. مع حارس أنيق: إن لم تُضبَط الأسرار **يتخطّى النشر دون
-  فشل أحمر**.
-- **الخطوة الوحيدة خارج المستودع (لتفعيله):** أضف سرّين في
-  **GitHub → Settings → Secrets and variables → Actions**:
+- `.github/workflows/deploy.yml` يعمل على كل push إلى `main` وعلى
+  `workflow_dispatch`، ويشغّل الاختبارات والبناء ثم `wrangler deploy`.
+- أضف في **GitHub → Settings → Secrets and variables → Actions**:
   - `CLOUDFLARE_API_TOKEN` — رمز Cloudflare بصلاحية «Edit Workers».
   - `CLOUDFLARE_ACCOUNT_ID` — معرّف حساب Cloudflare.
-  بمجرّد إضافتهما يبدأ النشر التلقائي إلى Cloudflare عند كل push.
-- **مفاتيح وقت التشغيل** (SUPABASE_SERVICE_ROLE_KEY, ELEVENLABS_API_KEY,
-  ANTHROPIC_API_KEY, STRIPE_*, RESEND_API_KEY, TWILIO_* …) تُضبط كمتغيّرات على
-  Worker نفسه (Cloudflare → Settings → Variables أو `wrangler secret put`) —
-  لا في المستودع.
+  - `VITE_SUPABASE_URL` و`VITE_SUPABASE_PUBLISHABLE_KEY`.
+- مفاتيح وقت التشغيل مثل `SUPABASE_SERVICE_ROLE_KEY` و`ELEVENLABS_API_KEY`
+  و`RESEND_API_KEY` و`TWILIO_AUTH_TOKEN` تُضبط على Worker نفسه، لا في git.
+- غياب أي اعتماد نشر مطلوب يجعل الوظيفة **تفشل** ولا تعلن نجاحاً زائفاً.
+
+## ٢) Vercel — هدف يدوي اختياري
+
+`vite.config.ts` يتحول إلى preset Vercel عندما تكون `VERCEL=1`، لكن
+`vercel.json` يضبط `git.deploymentEnabled.main: false`. لا تفعّل النشر التلقائي
+إلا بعد قرار تحويل رسمي وإيقاف مسار Cloudflare لتفادي بيئتي إنتاج متنافستين.
 
 ---
 
@@ -52,6 +39,40 @@ Claude Code → git push origin main → GitHub
 `bun.lock` إلى npm العام) ثم **Typecheck + Lint + Build + فحص حزمة + اختبار
 E2E أمني حاجب**. القاعدة الثابتة: لا push لكود مكسور — تُشغَّل الفحوصات محلياً
 (`tsc --noEmit` + ESLint + `vitest`) قبل الدفع، وCI شبكة أمان.
+
+## ٣) بوابات الإصدار v1.3 — إلزامية
+
+### قاعدة البيانات والرسائل الخارجية
+
+1. طبّق ترحيلات Supabase بالترتيب، وبالأخص
+   `20260715190000_aria_outbound_approval_ledger.sql`.
+2. أنشئ `ARIA_MESSAGE_APPROVAL_SECRET` عشوائياً بطول 32 محرفاً على الأقل.
+   تغيير هذا السر يبطل طلبات الاعتماد المعلّقة، ولا يؤثر في السجل المكتمل.
+3. اضبط موفر البريد (`OUTLOOK_*` أو `RESEND_API_KEY` + `RESEND_FROM_EMAIL`)
+   و/أو Twilio، ثم نفّذ إرسالاً تجريبياً إلى مستلم مخصص للاختبار.
+4. سجّل عنوان HTTPS المطابق تماماً في `TWILIO_STATUS_CALLBACK_URL`، وسجّل
+   `https://<domain>/api/public/hooks/resend-message-status` في Resend واضبط
+   `RESEND_WEBHOOK_SECRET`.
+5. تحقّق من الدورة كاملة: `pending_approval → dispatching → accepted →
+delivered/failed`، ومن أن إعادة الضغط أو إعادة webhook لا تنشئ إرسالاً أو
+   حدثاً مكرراً.
+
+المحتوى والوجهة مشفران في سجل الاعتماد، ولا تظهر رموز الاعتماد في الواجهة أو
+السجلات. الإرسال مجهول النتيجة لا يُعاد تلقائياً حتى لا تصل رسالة مزدوجة.
+
+### بوابة PDPL العامة
+
+أدخل جميع قيم `PDPL_*` الفعلية الواردة في
+`docs/PDPL_PRODUCTION_REGISTER.md`. لا تُستخدم قيم افتراضية قانونية، ويجب أن
+يعرض `/readiness` بعد **PDPL Compliance** بحالة جاهزة قبل اعتماد الإصدار.
+أحكام منصة الحج خارج نطاق هذا الإصدار ولم تُعدّل.
+
+### مصادر البيانات الحية
+
+بعد تطبيق المخطط، اختبر `/sec` و`/sec/sections` و`/sec/circles` وجسر القيادة
+بحسابين من مؤسستين مختلفتين. يجب أن تأتي الأرقام التشغيلية من جداول `sec_*`
+والـ tasks عبر RLS، وألا يظهر أي سجل للمؤسسة الأخرى. المؤشرات التي لا يوجد لها
+مصدر موثوق تبقى موسومة صراحةً «محاكاة» ولا تتحول إلى ادعاء حي.
 
 ## التراجع
 

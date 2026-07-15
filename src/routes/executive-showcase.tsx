@@ -20,7 +20,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
-import ariaBriefAsset from "@/assets/aria-executive-brief.mp4.asset.json";
+import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
 export const Route = createFileRoute("/executive-showcase")({
   head: () => ({
@@ -49,8 +49,8 @@ type Scene = {
 const ACCENT_NAVY = "#3AE8FF";
 const ACCENT_EMERALD = "#34D399";
 
-// Video is ~112.7s; distribute six chapters. Content on the right advances
-// automatically as the video crosses each timestamp.
+// The supplied 46.85-second ARIA film is divided into six concise chapters.
+// Content on the right advances from the video clock, never from an unsynced timer.
 const SCENES: Scene[] = [
   {
     id: "security",
@@ -60,7 +60,7 @@ const SCENES: Scene[] = [
     value_ar: "حوادث، دوريات، تصاريح، زوّار ومركبات في منصة موحّدة.",
     value_en: "Incidents, patrols, permits, visitors and vehicles — one unified surface.",
     accent: ACCENT_NAVY,
-    startAt: 0,
+    startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[0],
     visual: () => <SecurityHUD />,
   },
   {
@@ -71,7 +71,7 @@ const SCENES: Scene[] = [
     value_ar: "14+ وكيل ذكاء مع تنسيق أدوات وسجل شرعي للأحداث.",
     value_en: "14+ AI agents with tool orchestration and an immutable event ledger.",
     accent: ACCENT_NAVY,
-    startAt: 19,
+    startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[1],
     visual: () => <AgentsHUD />,
   },
   {
@@ -82,7 +82,7 @@ const SCENES: Scene[] = [
     value_ar: "نبض حي للأصول والمواقع والعمليات عبر المؤسسة.",
     value_en: "Live pulse of assets, sites and operations across the enterprise.",
     accent: ACCENT_EMERALD,
-    startAt: 38,
+    startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[2],
     visual: () => <TwinHUD />,
   },
   {
@@ -93,7 +93,7 @@ const SCENES: Scene[] = [
     value_ar: "مؤشرات أداء لحظية، ذاكرة إنتاجية، وتسليم عبر Outlook.",
     value_en: "Real-time KPIs, production memory, and Outlook delivery.",
     accent: ACCENT_EMERALD,
-    startAt: 57,
+    startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[3],
     visual: () => <ReportsHUD />,
   },
   {
@@ -104,7 +104,7 @@ const SCENES: Scene[] = [
     value_ar: "وحدة مشاعر 1447 لإدارة العمليات الميدانية في الموسم.",
     value_en: "Mashaer 1447 module for field operations during the season.",
     accent: ACCENT_NAVY,
-    startAt: 76,
+    startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[4],
     visual: () => <HajjHUD />,
   },
   {
@@ -115,7 +115,7 @@ const SCENES: Scene[] = [
     value_ar: "محرك تنفيذي ثنائي اللغة بصوت طبيعي وذاكرة حيّة.",
     value_en: "Bilingual executive engine with natural voice and live memory.",
     accent: ACCENT_EMERALD,
-    startAt: 95,
+    startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[5],
     visual: () => <AriaHUD />,
   },
 ];
@@ -149,9 +149,8 @@ function ExecutiveShowcasePage() {
   const [ended, setEnded] = React.useState(false);
   const [duration, setDuration] = React.useState(0);
   const [currentTime, setCurrentTime] = React.useState(0);
-  // The narration video is a Lovable-hosted asset that isn't served on every
-  // host (404 off-Lovable). When it can't load, we self-play the scene tour on
-  // a timer so the showcase always plays instead of sitting on an empty panel.
+  // A self-play fallback keeps the presentation useful if a network or codec
+  // failure prevents the self-hosted film from loading.
   const [videoFailed, setVideoFailed] = React.useState(false);
   const isFinale = ended;
   const scene = SCENES[Math.min(idx, SCENES.length - 1)];
@@ -328,7 +327,10 @@ function ExecutiveShowcasePage() {
     const v = videoRef.current;
     if (!v) return;
     try {
-      v.currentTime = Math.max(0, (v.duration || 113) - 0.5);
+      v.currentTime = Math.max(
+        0,
+        (v.duration || EXECUTIVE_PRESENTATION_MEDIA.durationSeconds) - 0.5,
+      );
     } catch {
       /* ignore */
     }
@@ -381,6 +383,11 @@ function ExecutiveShowcasePage() {
           @keyframes showcase-aurora-drift {
             0%,100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.24; }
             50%     { transform: translateX(-50%) translateY(5%) scale(1.1); opacity: 0.34; }
+          }
+          @keyframes showcase-video-scan {
+            0%, 100% { transform: translateY(12px); opacity: 0; }
+            18%, 82% { opacity: .7; }
+            50% { transform: translateY(43vh); opacity: .35; }
           }
         `}</style>
       </div>
@@ -477,10 +484,11 @@ function ExecutiveShowcasePage() {
         {/* Left: ARIA video */}
         <div className="relative order-1 flex w-full shrink-0 items-center justify-center md:h-full md:w-[42%]">
           <div
-            className="relative h-[48vh] w-auto max-w-full overflow-hidden rounded-2xl border border-emerald-400/25 bg-[#04111f] md:h-full md:w-auto"
+            className="relative h-[48vh] w-auto max-w-full overflow-hidden rounded-[1.4rem] border border-cyan-300/30 bg-[#04111f] md:h-full md:w-auto"
             style={{
-              aspectRatio: "1080 / 1590",
-              boxShadow: `0 30px 80px ${ACCENT_EMERALD}22, 0 0 0 1px ${ACCENT_EMERALD}22 inset, 0 0 60px -10px ${ACCENT_EMERALD}33`,
+              aspectRatio: EXECUTIVE_PRESENTATION_MEDIA.aspectRatio,
+              boxShadow: `0 30px 90px ${scene.accent}25, 0 0 0 1px ${scene.accent}25 inset, 0 0 70px -10px ${scene.accent}48`,
+              transition: "box-shadow 700ms ease",
             }}
           >
             {/* Soft emerald glow that draws attention to Aria's face */}
@@ -493,14 +501,37 @@ function ExecutiveShowcasePage() {
             />
             <video
               ref={videoRef}
-              src={ariaBriefAsset.url}
-              className="h-full w-full object-contain object-top"
+              src={EXECUTIVE_PRESENTATION_MEDIA.videoSrc}
+              poster={EXECUTIVE_PRESENTATION_MEDIA.posterSrc}
+              className="h-full w-full object-cover object-top"
               style={{ backgroundColor: "#04111f" }}
               playsInline
               preload="metadata"
               controls={false}
+              disablePictureInPicture
+              aria-label="فيلم آريا للعرض التنفيذي · ARIA executive presentation film"
+              onLoadedData={() => setVideoFailed(false)}
               onError={() => setVideoFailed(true)}
+            >
+              <track
+                kind="chapters"
+                src={EXECUTIVE_PRESENTATION_MEDIA.chaptersSrc}
+                srcLang="ar"
+                label="فصول العرض التنفيذي"
+                default
+              />
+            </video>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 bg-gradient-to-t from-[#020812]/95 via-[#04111f]/40 to-transparent"
             />
+            {!reduced && playing && !videoFailed && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent shadow-[0_0_18px_4px_rgba(34,211,238,.38)]"
+                style={{ animation: "showcase-video-scan 4.8s ease-in-out infinite" }}
+              />
+            )}
             {/* Graceful fallback when the narration video can't load: an ARIA
                 stage that mirrors the current scene, so the panel is never
                 empty and the visual tour still plays. */}
@@ -542,6 +573,19 @@ function ExecutiveShowcasePage() {
               </span>
               ARIA · LIVE
             </div>
+            {!needsStart && !isFinale && !videoFailed && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-3 p-3.5">
+                <div className="min-w-0">
+                  <div className="truncate text-[11px] font-black text-white">العرض التنفيذي</div>
+                  <div className="truncate text-[9px] tracking-[0.18em] text-cyan-100/65">
+                    NEXIOS EXECUTIVE FILM
+                  </div>
+                </div>
+                <span className="rounded-full border border-white/15 bg-black/40 px-2 py-1 font-mono text-[9px] text-white/70 backdrop-blur-xl">
+                  {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
+                </span>
+              </div>
+            )}
             {/* Start overlay */}
             {needsStart && !isFinale && (
               <button

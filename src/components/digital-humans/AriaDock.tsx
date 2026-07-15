@@ -60,26 +60,6 @@ import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import { useAriaSpeech } from "@/hooks/useAriaSpeech";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 
-/** Strip markdown / emoji so TTS reads clean prose. */
-function stripForSpeech(input: string): string {
-  return (
-    input
-      // fenced + inline code
-      .replace(/```[\s\S]*?```/g, " ")
-      .replace(/`([^`]+)`/g, "$1")
-      // images and links → keep label
-      .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-      // emphasis, headings, blockquotes, list bullets
-      .replace(/[*_~#>]+/g, " ")
-      .replace(/^\s*[-•·]\s+/gm, "")
-      // emoji + pictographic symbols
-      .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}]/gu, "")
-      .replace(/\s+/g, " ")
-      .trim()
-  );
-}
-
 interface QueuedLine {
   id: string;
   text_ar: string;
@@ -497,9 +477,8 @@ export function AriaDock() {
     // Barge-in: cut any prior ARIA voice the moment the user sends again.
     AriaAudioBus.unlock();
     ariaSpeech.stop();
-    // Route reply audio exclusively through useAriaSpeech (ElevenLabs → browser fallback).
-    // Silencing the internal queue speaker prevents double-voicing while keeping the
-    // visual pulse animation via the silent-narration path in playNext().
+    // Keyboard turns are text-only by contract. Silence any previous voice
+    // turn before streaming the visual reply.
     setVoiceOn(false);
     handleRef.current?.stop();
     handleRef.current = null;
@@ -575,76 +554,17 @@ export function AriaDock() {
         throw new Error(j.error || `stream_${r.status}`);
       }
 
-      // Show a streaming bubble; bypass the enqueue/silent-narration path.
+      // Show a streaming text bubble; typed questions never invoke TTS.
       const streamId = `stream-${Date.now()}`;
       const initial: QueuedLine = { id: streamId, text_ar: "", text_en: "", speaker: ARIA };
       setCurrent(initial);
       lastLineRef.current = initial;
-      setState("speaking");
-
-      // Sequential sentence-level speech chain (barge-in safe).
-      let speechChain: Promise<void> = Promise.resolve();
-      const speakSentence = (sentence: string) => {
-        const clean = stripForSpeech(sentence).trim();
-        if (!clean) return;
-        speechChain = speechChain.then(
-          () =>
-            new Promise<void>((resolve) => {
-              let settled = false;
-              const finish = () => {
-                if (settled) return;
-                settled = true;
-                unsub();
-                resolve();
-              };
-              const unsub = AriaAudioBus.subscribe((e) => {
-                if (e.source !== "chat-tts") return;
-                if (e.kind === "stopped" || e.kind === "end") {
-                  // small tail so tokens don't collide
-                  setTimeout(finish, 30);
-                }
-              });
-              // If the bus never acquires (mute, no auth, fallback silent),
-              // don't block the chain forever.
-              const guard = setTimeout(() => {
-                if (AriaAudioBus.currentSource() !== "chat-tts") finish();
-              }, 500);
-              // Absolute safety cap proportional to text length.
-              const cap = setTimeout(finish, Math.max(3500, clean.length * 95));
-              void ariaSpeech.speak(clean).finally(() => {
-                clearTimeout(guard);
-                clearTimeout(cap);
-              });
-            }),
-        );
-      };
+      setState("thinking");
 
       const reader = r.body.getReader();
       const dec = new TextDecoder();
       let sseBuf = "";
       let full = "";
-      let spokenUpTo = 0;
-      const SENT_RE = /[^.!?؟\n]+[.!?؟]+|[^.!?؟\n]+\n{2,}/g;
-
-      const flushSentences = (final: boolean) => {
-        const pending = full.slice(spokenUpTo);
-        if (final) {
-          const rest = pending.trim();
-          if (rest) {
-            speakSentence(rest);
-            spokenUpTo = full.length;
-          }
-          return;
-        }
-        let lastEnd = 0;
-        SENT_RE.lastIndex = 0;
-        let m: RegExpExecArray | null;
-        while ((m = SENT_RE.exec(pending)) !== null) {
-          lastEnd = m.index + m[0].length;
-          speakSentence(m[0]);
-        }
-        if (lastEnd > 0) spokenUpTo += lastEnd;
-      };
 
       let streamErr: string | null = null;
       while (true) {
@@ -674,11 +594,9 @@ export function AriaDock() {
             setCurrent((prev) =>
               prev && prev.id === streamId ? { ...prev, text_ar: full, text_en: full } : prev,
             );
-            flushSentences(false);
           }
         }
       }
-      flushSentences(true);
 
       if (!full.trim()) {
         throw new Error(streamErr || "empty_response");
@@ -687,10 +605,7 @@ export function AriaDock() {
       const finalLine: QueuedLine = { id: streamId, text_ar: full, text_en: full, speaker: ARIA };
       lastLineRef.current = finalLine;
       w.__aria_context?.pushTurn({ role: "assistant", text: full, page: snap?.page?.path });
-      // Let the speech chain finish naturally; UI returns to idle after last sentence.
-      speechChain.finally(() => {
-        setState("idle");
-      });
+      setState("idle");
     } catch (error) {
       setState("idle");
       setCurrent(null);
