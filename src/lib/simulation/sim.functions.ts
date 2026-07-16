@@ -7,16 +7,17 @@ import { requirePlatformAdmin, getCurrentOrgIdForUser } from "@/lib/authz.server
 
 export const runSimulationSeedFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { seed?: number; orgId?: string }) =>
-    z
-      .object({ seed: z.number().int().optional(), orgId: z.string().uuid().optional() })
-      .parse(d ?? {}),
+  .inputValidator((d: { seed?: number }) =>
+    z.object({ seed: z.number().int().optional() }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await requirePlatformAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runSimulationSeed } = await import("./sim.seeder.server");
-    const orgId = data.orgId ?? (await getCurrentOrgIdForUser(context.userId));
+    // SECURITY: the target org is always derived from the authenticated caller's
+    // own membership — never taken from client input. A client-supplied orgId
+    // combined with the service-role client would allow cross-tenant writes.
+    const orgId = await getCurrentOrgIdForUser(context.userId);
     if (!orgId) throw new Error("No org for current user");
     return await runSimulationSeed(supabaseAdmin, { orgId, seed: data.seed });
   });

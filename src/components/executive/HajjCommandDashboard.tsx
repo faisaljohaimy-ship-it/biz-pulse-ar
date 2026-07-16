@@ -164,19 +164,35 @@ function HeaderStrip() {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
-  const time = now.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-    timeZone: "Asia/Riyadh",
-  });
-  const date = now.toLocaleDateString("ar-SA", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: "Asia/Riyadh",
-  });
+  // Guard Intl formatting: on runtimes with a reduced ICU build (e.g. some
+  // Cloudflare Workers configurations) the "ar-SA" Islamic calendar or the
+  // "Asia/Riyadh" zone can be missing and throw RangeError during SSR render,
+  // which would bubble to the root error boundary. Fall back to ISO-ish text.
+  const time = ((): string => {
+    try {
+      return now.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Riyadh",
+      });
+    } catch {
+      return now.toISOString().slice(11, 19);
+    }
+  })();
+  const date = ((): string => {
+    try {
+      return now.toLocaleDateString("ar-SA", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        timeZone: "Asia/Riyadh",
+      });
+    } catch {
+      return now.toISOString().slice(0, 10);
+    }
+  })();
 
   return (
     <header className="relative overflow-hidden rounded-2xl border border-[#3AE8FF]/20 bg-gradient-to-b from-[#04243c]/70 to-[#04111f]/80 px-4 py-4">

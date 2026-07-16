@@ -6,14 +6,13 @@ import { requirePlatformAdmin, getCurrentOrgIdForUser } from "@/lib/authz.server
 
 export const runExecutiveScenarioFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { day?: string; orgId?: string }) =>
+  .inputValidator((d: { day?: string }) =>
     z
       .object({
         day: z
           .string()
           .regex(/^\d{4}-\d{2}-\d{2}$/)
           .optional(),
-        orgId: z.string().uuid().optional(),
       })
       .parse(d ?? {}),
   )
@@ -21,7 +20,9 @@ export const runExecutiveScenarioFn = createServerFn({ method: "POST" })
     await requirePlatformAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runExecutiveScenario } = await import("./exec-scenario.server");
-    const orgId = data.orgId ?? (await getCurrentOrgIdForUser(context.userId));
+    // SECURITY: derive the target org from the authenticated caller only —
+    // never trust a client-supplied orgId on a service-role (RLS-bypassing) path.
+    const orgId = await getCurrentOrgIdForUser(context.userId);
     if (!orgId) throw new Error("No org for current user");
     return await runExecutiveScenario(supabaseAdmin, {
       orgId,
