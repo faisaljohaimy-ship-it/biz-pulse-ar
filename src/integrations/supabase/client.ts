@@ -2,7 +2,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-function createSupabaseClient() {
+function resolveSupabaseConfig() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
   const SUPABASE_URL =
@@ -18,6 +18,22 @@ function createSupabaseClient() {
     process.env.VITE_SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+  return { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY };
+}
+
+/**
+ * True when the public Supabase config is present. Auth-dependent surfaces can
+ * read this to render a clear "not configured" state instead of failing
+ * silently or crashing.
+ */
+export const isSupabaseConfigured: boolean = (() => {
+  const { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } = resolveSupabaseConfig();
+  return Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+})();
+
+function createSupabaseClient() {
+  const { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } = resolveSupabaseConfig();
+
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
       ...(!SUPABASE_URL ? ["VITE_SUPABASE_URL"] : []),
@@ -25,9 +41,28 @@ function createSupabaseClient() {
         ? ["VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY)"]
         : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}. Set them in the deployment's Environment Variables.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
+    // Log loudly for operators — but do NOT throw. A throw here bubbles to the
+    // root error boundary and takes the ENTIRE app down, including the public,
+    // no-login homepage that never calls Supabase. Instead, return an
+    // unconfigured client pointed at an unresolvable host: public routes render
+    // normally, and any auth/data call fails at call-time (handled by each
+    // feature's error state) rather than at import-time.
+    console.error(
+      `[Supabase] Missing environment variable(s): ${missing.join(", ")}. ` +
+        `Set them in the deployment's Environment Variables. Auth-dependent ` +
+        `features stay disabled until configured.`,
+    );
+    return createClient<Database>(
+      "https://unconfigured.supabase.invalid",
+      "unconfigured-anon-key",
+      {
+        auth: {
+          storage: typeof window !== "undefined" ? localStorage : undefined,
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      },
+    );
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
