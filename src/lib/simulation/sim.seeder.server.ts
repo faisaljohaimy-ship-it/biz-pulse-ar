@@ -10,6 +10,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { makeRng, type Rng } from "./sim.rng";
 import { SIM_VOLUMES, SIM_SEED_DEFAULT } from "./sim.config";
+import { seedSystemCoverage } from "./system-coverage.seeder.server";
 import {
   DEPARTMENTS,
   FIRST_AR,
@@ -505,6 +506,17 @@ export async function runSimulationSeed(
   pushHist("sec_incident", incIds, ["created", "status_changed"]);
   await chunkInsert(admin, "sim_history", histRows, 200);
 
+  // 16) system-coverage tables — the last dashboard tables no other seeder
+  // fills (executive intelligence fabric + gate vehicles), so the simulation
+  // covers 100% of the system with no empty module.
+  const coverage = await seedSystemCoverage(admin, {
+    orgId: org_id,
+    userId: opts.userId,
+    seed,
+    rng,
+    siteIds,
+  });
+
   return {
     seed,
     org_id,
@@ -524,6 +536,7 @@ export async function runSimulationSeed(
       notifications: notifRows.length,
       daily_ops: opsRows.length,
       history: histRows.length,
+      ...coverage,
     },
   };
 }
