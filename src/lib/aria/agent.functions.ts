@@ -21,7 +21,7 @@ export const runInsightScanFn = createServerFn({ method: "POST" })
 
 export const runThinkingLoopFn = createServerFn({ method: "POST" })
   .middleware([requireOrgContext])
-  .validator((v) => z.object({ question: z.string().min(1).max(600) }).parse(v))
+  .inputValidator((v) => z.object({ question: z.string().min(1).max(600) }).parse(v))
   .handler(async ({ data, context }) => {
     const bundle = await runThinkingLoop(data.question, { orgId: context.orgId });
     // Strip the raw system prompt from the client-visible payload.

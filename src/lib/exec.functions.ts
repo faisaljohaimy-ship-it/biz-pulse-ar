@@ -36,7 +36,7 @@ const RunToolSchema = z.object({
 
 export const runTool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => RunToolSchema.parse(d))
+  .inputValidator((d: unknown) => RunToolSchema.parse(d))
   .handler(async ({ data, context }) => {
     const res = await executeTool(context.supabase, {
       toolId: data.toolId,
@@ -53,7 +53,7 @@ const ApproveSchema = z.object({
 
 export const approveToolExecution = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => ApproveSchema.parse(d))
+  .inputValidator((d: unknown) => ApproveSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
     const res = await decideApproval(
@@ -69,7 +69,7 @@ const RollbackSchema = z.object({ executionId: z.string().uuid() });
 
 export const rollbackToolExecution = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => RollbackSchema.parse(d))
+  .inputValidator((d: unknown) => RollbackSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
     const res = await rollbackExecution(context.supabase, data.executionId, context.userId);
@@ -124,7 +124,7 @@ const CreateWorkflowSchema = z.object({
 
 export const createWorkflow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => CreateWorkflowSchema.parse(d))
+  .inputValidator((d: unknown) => CreateWorkflowSchema.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (context.supabase as any)
@@ -175,7 +175,7 @@ const TriggerSchema = z.object({
 
 export const triggerWorkflowFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => TriggerSchema.parse(d))
+  .inputValidator((d: unknown) => TriggerSchema.parse(d))
   .handler(async ({ data, context }) => {
     const res = await triggerWorkflow(context.supabase, {
       workflowId: data.workflowId,
@@ -264,7 +264,7 @@ const TriggerWithDefaultsSchema = z.object({ workflowId: z.string().uuid() });
 
 export const triggerWorkflowWithDefaultsFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => TriggerWithDefaultsSchema.parse(d))
+  .inputValidator((d: unknown) => TriggerWithDefaultsSchema.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (context.supabase as any)
@@ -287,7 +287,7 @@ const RunIdSchema = z.object({ runId: z.string().uuid() });
 
 export const resumeWorkflowRunFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => RunIdSchema.parse(d))
+  .inputValidator((d: unknown) => RunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
     const res = await resumeWorkflowRun(context.supabase, data.runId, context.userId);
@@ -296,7 +296,7 @@ export const resumeWorkflowRunFn = createServerFn({ method: "POST" })
 
 export const cancelWorkflowRunFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => RunIdSchema.parse(d))
+  .inputValidator((d: unknown) => RunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     const res = await cancelWorkflowRun(context.supabase, data.runId, context.userId);
     return toJson(res);
@@ -304,7 +304,7 @@ export const cancelWorkflowRunFn = createServerFn({ method: "POST" })
 
 export const getWorkflowRunDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => RunIdSchema.parse(d))
+  .inputValidator((d: unknown) => RunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: run, error } = await (context.supabase as any)
@@ -379,7 +379,7 @@ const RunAgentSchema = z.object({
 
 export const runAgentFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => RunAgentSchema.parse(d))
+  .inputValidator((d: unknown) => RunAgentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const res = await runAgent(context.supabase, {
       agentId: data.agentId,
@@ -575,7 +575,7 @@ const SetEnabledSchema = z.object({
 
 export const setAgentEnabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => SetEnabledSchema.parse(d))
+  .inputValidator((d: unknown) => SetEnabledSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -591,7 +591,7 @@ const AgentRunIdSchema = z.object({ runId: z.string().uuid() });
 
 export const cancelAgentRun = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => AgentRunIdSchema.parse(d))
+  .inputValidator((d: unknown) => AgentRunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context.supabase, context.userId);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -620,7 +620,7 @@ export const cancelAgentRun = createServerFn({ method: "POST" })
 
 export const retryAgentRun = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => AgentRunIdSchema.parse(d))
+  .inputValidator((d: unknown) => AgentRunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (context.supabase as any)

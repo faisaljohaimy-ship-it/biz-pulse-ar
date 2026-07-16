@@ -67,7 +67,7 @@ export const listMyOrgs = createServerFn({ method: "GET" })
  */
 export const switchOrg = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => z.object({ org_id: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ org_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 

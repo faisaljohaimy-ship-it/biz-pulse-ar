@@ -68,7 +68,7 @@ const upsertSchema = z.object({
 
 export const upsertMicrosoftIntegration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => upsertSchema.parse(d))
+  .inputValidator((d: unknown) => upsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const payload = { ...data, updated_by: context.userId };
@@ -195,7 +195,7 @@ async function ensureSyncSecretSeeded() {
 
 export const updateMicrosoftSyncSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => syncSettingsSchema.parse(d))
+  .inputValidator((d: unknown) => syncSettingsSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { data: existing, error: selErr } = await context.supabase

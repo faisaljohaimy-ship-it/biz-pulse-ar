@@ -78,7 +78,7 @@ const GetLessonInput = z.object({ slug: z.string().min(1).max(120) });
 
 export const getLesson = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => GetLessonInput.parse(data))
+  .inputValidator((data: unknown) => GetLessonInput.parse(data))
   .handler(async ({ data, context }): Promise<LessonDetail> => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -137,7 +137,7 @@ export const getLesson = createServerFn({ method: "GET" })
 
 export const getQuiz = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => GetLessonInput.parse(data))
+  .inputValidator((data: unknown) => GetLessonInput.parse(data))
   .handler(async ({ data, context }): Promise<QuizQuestionPublic[]> => {
     const { supabase } = context;
     // Look up lesson via user-scoped client (RLS allows read).
@@ -178,7 +178,7 @@ const SubmitInput = z.object({
 
 export const submitQuiz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => SubmitInput.parse(data))
+  .inputValidator((data: unknown) => SubmitInput.parse(data))
   .handler(async ({ data, context }): Promise<QuizSubmissionResult> => {
     const { supabase, userId } = context;
     const { data: lesson, error: lErr } = await supabase
@@ -281,7 +281,7 @@ const UpdateProgressInput = z.object({
 
 export const updateProgress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => UpdateProgressInput.parse(data))
+  .inputValidator((data: unknown) => UpdateProgressInput.parse(data))
   .handler(async ({ data, context }): Promise<LessonProgress> => {
     const { supabase, userId } = context;
     const { data: lesson, error: lErr } = await supabase

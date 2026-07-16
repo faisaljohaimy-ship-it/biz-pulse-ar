@@ -9,7 +9,7 @@ import type { JsonValue, ActivityEvent } from "./oms.shared";
 
 export const getEntityTimeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z.object({ entity_type: z.string(), entity_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -122,7 +122,7 @@ export const getOmsKpis = createServerFn({ method: "GET" })
 
 export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: inc, error } = await context.supabase
       .from("sec_incidents")
@@ -177,7 +177,7 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
 
 export const setExecutiveReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z
       .object({
         incident_id: z.string().uuid(),
@@ -225,7 +225,7 @@ const attachmentSchema = z.object({
 
 export const addIncidentAttachment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => attachmentSchema.parse(d))
+  .inputValidator((d: unknown) => attachmentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actorName =
@@ -269,7 +269,7 @@ export const addIncidentAttachment = createServerFn({ method: "POST" })
 
 export const removeIncidentAttachment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z.object({ incident_id: z.string().uuid(), attachment_id: z.string() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -313,7 +313,7 @@ export const removeIncidentAttachment = createServerFn({ method: "POST" })
 
 export const getIncidentAttachmentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ storage_path: z.string() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ storage_path: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: signed, error } = await context.supabase.storage
       .from("uploads")
@@ -324,7 +324,7 @@ export const getIncidentAttachmentUrl = createServerFn({ method: "POST" })
 
 export const getIncidentDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: inc, error } = await context.supabase
       .from("sec_incidents")

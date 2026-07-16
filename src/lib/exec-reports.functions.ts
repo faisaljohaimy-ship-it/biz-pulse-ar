@@ -299,7 +299,7 @@ function safeFileName(s: string) {
  */
 export const publishExecutiveReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
+  .inputValidator(
     (d: {
       siteId: string;
       teamId: string;

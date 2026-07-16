@@ -141,7 +141,7 @@ const createVisitorSchema = z.object({
 
 export const createVisitor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => createVisitorSchema.parse(d))
+  .inputValidator((d: unknown) => createVisitorSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
@@ -192,7 +192,7 @@ export const createVisitor = createServerFn({ method: "POST" })
 
 export const checkOutVisitor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ visitor_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ visitor_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
@@ -220,7 +220,7 @@ export const checkOutVisitor = createServerFn({ method: "POST" })
 
 export const checkInExpectedVisitor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z.object({ visitor_id: z.string().uuid(), badge_no: z.string().max(60).optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -269,7 +269,7 @@ const createContractorSchema = z.object({
 
 export const createContractor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => createContractorSchema.parse(d))
+  .inputValidator((d: unknown) => createContractorSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
@@ -312,7 +312,7 @@ export const createContractor = createServerFn({ method: "POST" })
 
 export const updateContractorStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z
       .object({
         contractor_id: z.string().uuid(),
@@ -367,7 +367,7 @@ const createVehicleSchema = z.object({
 
 export const createVehicle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => createVehicleSchema.parse(d))
+  .inputValidator((d: unknown) => createVehicleSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
@@ -413,7 +413,7 @@ export const createVehicle = createServerFn({ method: "POST" })
 
 export const vehicleCheckOut = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => z.object({ vehicle_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ vehicle_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const actor = actorOf(claims);
@@ -438,7 +438,7 @@ export const vehicleCheckOut = createServerFn({ method: "POST" })
 
 export const denyVehicleAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z
       .object({
         plate: z.string().min(2).max(40),
@@ -473,7 +473,7 @@ export const denyVehicleAccess = createServerFn({ method: "POST" })
 
 export const setGateStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
+  .inputValidator((d: unknown) =>
     z
       .object({
         gate_id: z.string().uuid(),

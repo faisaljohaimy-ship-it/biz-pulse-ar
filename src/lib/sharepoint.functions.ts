@@ -66,7 +66,7 @@ export const listSharePointSites = createServerFn({ method: "GET" })
 
 export const uploadReportToSharePoint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
+  .inputValidator(
     input(
       z.object({
         siteId: z.string().min(1),

@@ -21,7 +21,7 @@ const EnqueueInput = z.object({
 
 export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: unknown) => EnqueueInput.parse(i))
+  .inputValidator((i: unknown) => EnqueueInput.parse(i))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -88,7 +88,7 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
 // Bilingual chunk stats for the progress UI.
 export const getKnowledgeChunkStats = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: unknown) => z.object({ document_id: z.string().uuid() }).parse(i))
+  .inputValidator((i: unknown) => z.object({ document_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("aria_document_chunks")
@@ -121,7 +121,7 @@ export const getKnowledgeChunkStats = createServerFn({ method: "POST" })
 // Signed URL for downloading the original file from the bucket.
 export const getKnowledgeFileUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: unknown) => z.object({ storage_path: z.string().min(1).max(500) }).parse(i))
+  .inputValidator((i: unknown) => z.object({ storage_path: z.string().min(1).max(500) }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: signed, error } = await context.supabase.storage
       .from(BUCKET)

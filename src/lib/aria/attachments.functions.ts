@@ -129,7 +129,7 @@ async function scanForMalware(input: {
 
 export const uploadAriaAttachment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((raw) => InputSchema.parse(raw))
+  .inputValidator((raw) => InputSchema.parse(raw))
   .handler(async ({ data, context }) => {
     const startedAt = Date.now();
     const { userId } = context;

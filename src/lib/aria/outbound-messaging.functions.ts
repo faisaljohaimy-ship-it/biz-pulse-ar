@@ -17,7 +17,7 @@ const ApprovalInput = z.object({
  */
 export const approveAriaOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => ApprovalInput.parse(input))
+  .inputValidator((input) => ApprovalInput.parse(input))
   .handler(async ({ data, context }) => {
     const { approveAriaOutboundMessageInternal } =
       await import("@/lib/aria/outbound-messaging.server");
@@ -30,7 +30,7 @@ export const approveAriaOutboundMessage = createServerFn({ method: "POST" })
 
 export const cancelAriaOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => ApprovalInput.parse(input))
+  .inputValidator((input) => ApprovalInput.parse(input))
   .handler(async ({ data, context }) => {
     const { cancelAriaOutboundMessageInternal } =
       await import("@/lib/aria/outbound-messaging.server");

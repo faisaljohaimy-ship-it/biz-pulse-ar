@@ -80,7 +80,7 @@ const ListInput = z.object({
 
 export const kbListArticles = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => ListInput.parse(data))
+  .inputValidator((data: unknown) => ListInput.parse(data))
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("sec_knowledge_articles")
@@ -126,7 +126,7 @@ export const kbListArticles = createServerFn({ method: "POST" })
 
 export const kbGetArticle = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => z.object({ doc_code: z.string().min(1) }).parse(data))
+  .inputValidator((data: unknown) => z.object({ doc_code: z.string().min(1) }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("sec_knowledge_articles")
@@ -187,7 +187,7 @@ const SemanticInput = z.object({
 
 export const kbSemanticSearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => SemanticInput.parse(data))
+  .inputValidator((data: unknown) => SemanticInput.parse(data))
   .handler(async ({ data, context }) => {
     const { embedText } = await import("@/lib/kb-embed.server");
     let vec: number[];
@@ -318,7 +318,7 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
 
 export const kbEmbedMissing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) =>
+  .inputValidator((data: unknown) =>
     z.object({ batch: z.number().int().min(1).max(50).default(15) }).parse(data ?? {}),
   )
   .handler(async ({ data, context }) => {

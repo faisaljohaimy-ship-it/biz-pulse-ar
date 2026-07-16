@@ -337,7 +337,7 @@ export type ProviderTestResult = { ok: boolean; status: number; message: string 
 
 export const testProvider = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => testSchema.parse(d))
+  .inputValidator((d: unknown) => testSchema.parse(d))
   .handler(async ({ data, context }): Promise<ProviderTestResult> => {
     const provider = data.provider;
     const lovableKey = process.env.LOVABLE_API_KEY;

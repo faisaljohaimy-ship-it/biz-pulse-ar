@@ -150,7 +150,7 @@ const updateRoleSchema = z.object({
 
 export const updateMemberRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => updateRoleSchema.parse(d))
+  .inputValidator((d: unknown) => updateRoleSchema.parse(d))
   .handler(async ({ data, context }) => {
     // Only platform admins OR org owners can change roles.
     const platformAdmin = await hasPlatformRole(context.userId, "admin");

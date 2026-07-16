@@ -173,7 +173,7 @@ const EventInput = z.object({
 
 export const createIntelligenceEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => EventInput.parse(input))
+  .inputValidator((input) => EventInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error, data: row } = await supabase
@@ -199,7 +199,7 @@ const AlertInput = z.object({
 
 export const createIntelligenceAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => AlertInput.parse(input))
+  .inputValidator((input) => AlertInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error, data: row } = await supabase
@@ -213,7 +213,7 @@ export const createIntelligenceAlert = createServerFn({ method: "POST" })
 
 export const resolveAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase

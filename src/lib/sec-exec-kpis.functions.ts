@@ -322,7 +322,7 @@ export type ExecTimeseries = {
 
 export const getExecTimeseries = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { days?: number } | undefined) =>
+  .inputValidator((input: { days?: number } | undefined) =>
     z.object({ days: z.number().int().min(1).max(180).default(30) }).parse(input ?? {}),
   )
   .handler(async ({ context, data }): Promise<ExecTimeseries> => {

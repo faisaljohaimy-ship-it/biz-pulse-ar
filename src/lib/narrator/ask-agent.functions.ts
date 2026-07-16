@@ -54,7 +54,7 @@ function detectReportMode(q: string): boolean {
 
 export const askAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => Input.parse(d))
+  .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");

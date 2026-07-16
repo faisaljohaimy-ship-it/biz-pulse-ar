@@ -7,7 +7,7 @@ import { requirePlatformAdmin, getCurrentOrgIdForUser } from "@/lib/authz.server
 
 export const runSimulationSeedFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: { seed?: number; orgId?: string }) =>
+  .inputValidator((d: { seed?: number; orgId?: string }) =>
     z
       .object({ seed: z.number().int().optional(), orgId: z.string().uuid().optional() })
       .parse(d ?? {}),

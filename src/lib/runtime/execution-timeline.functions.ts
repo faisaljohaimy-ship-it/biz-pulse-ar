@@ -56,7 +56,7 @@ function asJson(v: unknown): JsonVal {
 
 export const getExecutionTimeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) => Input.parse(d))
+  .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = context.supabase as any;

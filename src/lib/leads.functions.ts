@@ -84,7 +84,7 @@ async function sendNotificationEmails(args: {
 }
 
 export const submitLead = createServerFn({ method: "POST" })
-  .validator((d: unknown) => LeadSchema.parse(d))
+  .inputValidator((d: unknown) => LeadSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
