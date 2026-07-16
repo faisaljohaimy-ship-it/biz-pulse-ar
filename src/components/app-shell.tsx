@@ -153,6 +153,8 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/sections", icon: Grid3x3, label: ar("الأقسام", "Sections") },
         { to: "/sec/projects", icon: Rocket, label: ar("المشاريع", "Projects") },
         { to: "/sec/maintenance", icon: Wrench, label: ar("أوامر العمل", "Work Orders") },
+        { to: "/hcis", icon: Shield, label: ar("الامتثال HCIS", "HCIS Compliance") },
+        { to: "/ptw", icon: FileText, label: ar("تصاريح العمل الرقمية", "Digital PTW") },
         { to: "/sec/incidents", icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
         { to: "/sec/patrols", icon: Radar, label: ar("الدوريات", "Patrols") },
         { to: "/sec/cctv", icon: Camera, label: ar("CCTV", "CCTV") },

@@ -136,6 +136,83 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       },
     }),
 
+    // ── HCIS Compliance + Digital PTW (new modules) ──────────────────────
+    hcis_compliance_status: tool({
+      description:
+        "HCIS compliance percentage — overall and per region (central/western/eastern/southern). Use for questions like 'ما نسبة امتثال المنطقة الغربية؟'.",
+      inputSchema: z.object({
+        region: z.enum(["central", "western", "eastern", "southern"]).optional(),
+      }),
+      execute: async (args) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new table not yet in generated types
+        const db = supabase as unknown as { from: (t: string) => any };
+        const { data, error } = await db.from("hcis_assessments").select("region,status");
+        if (error) return { ok: false, error: error.message };
+        const rows = (data ?? []) as Array<{ region: string; status: string }>;
+        const pct = (rs: Array<{ status: string }>) => {
+          const scored = rs.filter((r) => r.status !== "not_applicable");
+          if (!scored.length) return 0;
+          const w = (s: string) => (s === "compliant" ? 1 : s === "partial" ? 0.5 : 0);
+          return Math.round((scored.reduce((a, r) => a + w(r.status), 0) / scored.length) * 100);
+        };
+        const byRegion: Record<string, number> = {};
+        for (const r of ["central", "western", "eastern", "southern"])
+          byRegion[r] = pct(rows.filter((x) => x.region === r));
+        return {
+          ok: true,
+          overallPct: pct(rows),
+          byRegion: args.region ? { [args.region]: byRegion[args.region] } : byRegion,
+        };
+      },
+    }),
+
+    hcis_critical_findings: tool({
+      description:
+        "List critical/high-severity or overdue HCIS compliance findings (gaps) with their target dates. Use for 'ما الفجوات الحرجة المتأخرة؟'.",
+      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(8) }),
+      execute: async (args) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new table not yet in generated types
+        const db = supabase as unknown as { from: (t: string) => any };
+        const { data, error } = await db
+          .from("hcis_findings")
+          .select("title_ar,region,severity,status,target_date")
+          .neq("status", "resolved")
+          .order("target_date", { ascending: true })
+          .limit(50);
+        if (error) return { ok: false, error: error.message };
+        const rows = (data ?? []) as Array<{ severity: string; status: string }>;
+        const critical = rows.filter(
+          (r) => r.status === "overdue" || r.severity === "critical" || r.severity === "high",
+        );
+        return { ok: true, findings: critical.slice(0, args.limit), count: critical.length };
+      },
+    }),
+
+    ptw_active_permits: tool({
+      description:
+        "List currently ACTIVE work permits (PTW), optionally filtered by region or type (hot_work, confined_space, restricted_area, excavation, lifting, electrical_isolation). Use for 'كم تصريح عمل ساخن ساري في الشرقية؟' / 'من يعمل في المنطقة المحظورة الآن؟'.",
+      inputSchema: z.object({
+        region: z.enum(["central", "western", "eastern", "southern"]).optional(),
+        type_key: z.string().max(40).optional(),
+        limit: z.number().int().min(1).max(50).default(20),
+      }),
+      execute: async (args) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new table not yet in generated types
+        const db = supabase as unknown as { from: (t: string) => any };
+        let q = db
+          .from("permits")
+          .select("ref,type_key,region,location,contractor,worker_count,ends_at,status")
+          .eq("status", "active")
+          .order("ends_at", { ascending: true })
+          .limit(args.limit);
+        if (args.region) q = q.eq("region", args.region);
+        if (args.type_key) q = q.eq("type_key", args.type_key);
+        const { data, error } = await q;
+        if (error) return { ok: false, error: error.message };
+        return { ok: true, permits: data ?? [], count: (data ?? []).length };
+      },
+    }),
+
     send_executive_email: tool({
       description:
         "Send an HTML executive email. When auto-approve is enabled it sends directly (no human confirmation); otherwise it returns a preview + short-lived approval request the user confirms in the UI. All safety controls (role, rate limits, provider config, audit ledger) apply either way.",

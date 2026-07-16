@@ -13,6 +13,7 @@ import {
   getSimulationStatusFn,
 } from "@/lib/simulation/sim.functions";
 import { runExecutiveScenarioFn } from "@/lib/simulation/exec-scenario.functions";
+import { runHcisPtwSeedFn } from "@/lib/compliance/hcis-ptw.functions";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -119,6 +120,7 @@ function SimulationPanel({ locale }: { locale: string }) {
   const validate = useServerFn(validateSimulationFn);
   const getStatus = useServerFn(getSimulationStatusFn);
   const runScenario = useServerFn(runExecutiveScenarioFn);
+  const runHcisPtwSeed = useServerFn(runHcisPtwSeedFn);
   const [log, setLog] = useState<string>("");
 
   const status = useQuery({
@@ -138,6 +140,15 @@ function SimulationPanel({ locale }: { locale: string }) {
   const validateMut = useMutation({
     mutationFn: () => validate(),
     onSuccess: (r) => setLog(JSON.stringify(r, null, 2)),
+    onError: (e: Error) => setLog(`Error: ${e.message}`),
+  });
+
+  const hcisSeedMut = useMutation({
+    mutationFn: () => runHcisPtwSeed({ data: { seed: 20260101 } }),
+    onSuccess: (r) => {
+      setLog(JSON.stringify(r.counts, null, 2));
+      status.refetch();
+    },
     onError: (e: Error) => setLog(`Error: ${e.message}`),
   });
 
@@ -185,6 +196,19 @@ function SimulationPanel({ locale }: { locale: string }) {
             : locale === "ar"
               ? "توليد بيانات المحاكاة"
               : "Run Simulation Seed"}
+        </button>
+        <button
+          onClick={() => hcisSeedMut.mutate()}
+          disabled={hcisSeedMut.isPending}
+          className="rounded-lg bg-emerald-500/80 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        >
+          {hcisSeedMut.isPending
+            ? locale === "ar"
+              ? "جارٍ التوليد…"
+              : "Seeding…"
+            : locale === "ar"
+              ? "بذر HCIS + التصاريح"
+              : "Seed HCIS + PTW"}
         </button>
         <button
           onClick={() => validateMut.mutate()}

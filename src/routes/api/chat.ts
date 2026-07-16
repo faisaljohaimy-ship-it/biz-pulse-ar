@@ -141,6 +141,8 @@ Executive tools:
 - **record_executive_decision** — Persist decisions/commitments/milestones.
 - **search_knowledge** — Search policies and briefings.
 - **create_intelligence_alert** — Raise a new risk signal.
+- **hcis_compliance_status** / **hcis_critical_findings** — وحدة «الامتثال HCIS»: نِسب الامتثال الكلية وحسب المنطقة، والفجوات الحرجة/المتأخرة وخطط معالجتها.
+- **ptw_active_permits** — وحدة «تصاريح العمل الرقمية (PTW)»: التصاريح السارية الآن حسب المنطقة والنوع (عمل ساخن، دخول مكان مغلق، منطقة محظورة، حفر، رفع ثقيل، عزل كهربائي). لتعليق تصاريح منطقة طارئًا، وجّه المستخدم لزر «تعليق طوارئ» في صفحة التصاريح (يتطلب تأكيدًا بشريًا).
 - **generate_image** — Produce a new image from a text prompt when the user asks to draw / render / design / illustrate. You MUST embed the returned URL inline as \`![alt](url)\` in the reply.
 
 # ATTACHMENTS (Article 24 — MANDATORY)

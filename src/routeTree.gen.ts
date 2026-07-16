@@ -80,6 +80,7 @@ import { Route as AuthenticatedSecurityCenterRouteImport } from './routes/_authe
 import { Route as AuthenticatedSecRouteImport } from './routes/_authenticated/sec'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
 import { Route as AuthenticatedReadinessRouteImport } from './routes/_authenticated/readiness'
+import { Route as AuthenticatedPtwRouteImport } from './routes/_authenticated/ptw'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedOutcomesRouteImport } from './routes/_authenticated/outcomes'
@@ -99,6 +100,7 @@ import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
+import { Route as AuthenticatedHcisRouteImport } from './routes/_authenticated/hcis'
 import { Route as AuthenticatedHajjRouteImport } from './routes/_authenticated/hajj'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
@@ -136,8 +138,10 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as AuthenticatedSecIndexRouteImport } from './routes/_authenticated/sec.index'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
+import { Route as VerifyPermitPermitIdRouteImport } from './routes/verify.permit.$permitId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
+import { Route as ApiPublicPermitVerifyRouteImport } from './routes/api/public/permit-verify'
 import { Route as ApiPublicOsOverviewRouteImport } from './routes/api/public/os-overview'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
@@ -560,6 +564,11 @@ const AuthenticatedReadinessRoute = AuthenticatedReadinessRouteImport.update({
   path: '/readiness',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPtwRoute = AuthenticatedPtwRouteImport.update({
+  id: '/ptw',
+  path: '/ptw',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
   id: '/prompts',
   path: '/prompts',
@@ -662,6 +671,11 @@ const AuthenticatedIntegrationsRoute =
 const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
   id: '/health',
   path: '/health',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHcisRoute = AuthenticatedHcisRouteImport.update({
+  id: '/hcis',
+  path: '/hcis',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedHajjRoute = AuthenticatedHajjRouteImport.update({
@@ -862,6 +876,11 @@ const AuthenticatedAssistantIndexRoute =
     path: '/assistant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const VerifyPermitPermitIdRoute = VerifyPermitPermitIdRouteImport.update({
+  id: '/verify/permit/$permitId',
+  path: '/verify/permit/$permitId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -870,6 +889,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
 const ApiPublicVersionRoute = ApiPublicVersionRouteImport.update({
   id: '/api/public/version',
   path: '/api/public/version',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPermitVerifyRoute = ApiPublicPermitVerifyRouteImport.update({
+  id: '/api/public/permit-verify',
+  path: '/api/public/permit-verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicOsOverviewRoute = ApiPublicOsOverviewRouteImport.update({
@@ -1289,6 +1313,7 @@ export interface FileRoutesByFullPath {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/hajj': typeof AuthenticatedHajjRoute
+  '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
@@ -1308,6 +1333,7 @@ export interface FileRoutesByFullPath {
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/ptw': typeof AuthenticatedPtwRoute
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/sec': typeof AuthenticatedSecRouteWithChildren
@@ -1388,8 +1414,10 @@ export interface FileRoutesByFullPath {
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
+  '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
@@ -1482,6 +1510,7 @@ export interface FileRoutesByTo {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/hajj': typeof AuthenticatedHajjRoute
+  '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
@@ -1500,6 +1529,7 @@ export interface FileRoutesByTo {
   '/outcomes': typeof AuthenticatedOutcomesRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/ptw': typeof AuthenticatedPtwRoute
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/security-center': typeof AuthenticatedSecurityCenterRoute
@@ -1579,8 +1609,10 @@ export interface FileRoutesByTo {
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
+  '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
@@ -1675,6 +1707,7 @@ export interface FileRoutesById {
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/hajj': typeof AuthenticatedHajjRoute
+  '/_authenticated/hcis': typeof AuthenticatedHcisRoute
   '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
@@ -1694,6 +1727,7 @@ export interface FileRoutesById {
   '/_authenticated/outcomes': typeof AuthenticatedOutcomesRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
+  '/_authenticated/ptw': typeof AuthenticatedPtwRoute
   '/_authenticated/readiness': typeof AuthenticatedReadinessRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
@@ -1774,8 +1808,10 @@ export interface FileRoutesById {
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
+  '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
@@ -1870,6 +1906,7 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/hajj'
+    | '/hcis'
     | '/health'
     | '/integrations'
     | '/intelligence'
@@ -1889,6 +1926,7 @@ export interface FileRouteTypes {
     | '/outcomes'
     | '/portfolio'
     | '/prompts'
+    | '/ptw'
     | '/readiness'
     | '/risk'
     | '/sec'
@@ -1969,8 +2007,10 @@ export interface FileRouteTypes {
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
+    | '/api/public/permit-verify'
     | '/api/public/version'
     | '/lovable/email/suppression'
+    | '/verify/permit/$permitId'
     | '/assistant/'
     | '/learn/'
     | '/sec/'
@@ -2063,6 +2103,7 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/hajj'
+    | '/hcis'
     | '/health'
     | '/integrations'
     | '/intelligence'
@@ -2081,6 +2122,7 @@ export interface FileRouteTypes {
     | '/outcomes'
     | '/portfolio'
     | '/prompts'
+    | '/ptw'
     | '/readiness'
     | '/risk'
     | '/security-center'
@@ -2160,8 +2202,10 @@ export interface FileRouteTypes {
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
+    | '/api/public/permit-verify'
     | '/api/public/version'
     | '/lovable/email/suppression'
+    | '/verify/permit/$permitId'
     | '/assistant'
     | '/learn'
     | '/sec'
@@ -2255,6 +2299,7 @@ export interface FileRouteTypes {
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/hajj'
+    | '/_authenticated/hcis'
     | '/_authenticated/health'
     | '/_authenticated/integrations'
     | '/_authenticated/intelligence'
@@ -2274,6 +2319,7 @@ export interface FileRouteTypes {
     | '/_authenticated/outcomes'
     | '/_authenticated/portfolio'
     | '/_authenticated/prompts'
+    | '/_authenticated/ptw'
     | '/_authenticated/readiness'
     | '/_authenticated/risk'
     | '/_authenticated/sec'
@@ -2354,8 +2400,10 @@ export interface FileRouteTypes {
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
+    | '/api/public/permit-verify'
     | '/api/public/version'
     | '/lovable/email/suppression'
+    | '/verify/permit/$permitId'
     | '/_authenticated/assistant/'
     | '/_authenticated/learn/'
     | '/_authenticated/sec/'
@@ -2448,8 +2496,10 @@ export interface RootRouteChildren {
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicOsOverviewRoute: typeof ApiPublicOsOverviewRoute
+  ApiPublicPermitVerifyRoute: typeof ApiPublicPermitVerifyRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  VerifyPermitPermitIdRoute: typeof VerifyPermitPermitIdRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksAriaIncidentRoute: typeof ApiPublicHooksAriaIncidentRoute
   ApiPublicHooksAriaPatternMinerRoute: typeof ApiPublicHooksAriaPatternMinerRoute
@@ -2966,6 +3016,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReadinessRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/ptw': {
+      id: '/_authenticated/ptw'
+      path: '/ptw'
+      fullPath: '/ptw'
+      preLoaderRoute: typeof AuthenticatedPtwRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/prompts': {
       id: '/_authenticated/prompts'
       path: '/prompts'
@@ -3097,6 +3154,13 @@ declare module '@tanstack/react-router' {
       path: '/health'
       fullPath: '/health'
       preLoaderRoute: typeof AuthenticatedHealthRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/hcis': {
+      id: '/_authenticated/hcis'
+      path: '/hcis'
+      fullPath: '/hcis'
+      preLoaderRoute: typeof AuthenticatedHcisRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/hajj': {
@@ -3358,6 +3422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/verify/permit/$permitId': {
+      id: '/verify/permit/$permitId'
+      path: '/verify/permit/$permitId'
+      fullPath: '/verify/permit/$permitId'
+      preLoaderRoute: typeof VerifyPermitPermitIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -3370,6 +3441,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/version'
       fullPath: '/api/public/version'
       preLoaderRoute: typeof ApiPublicVersionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/permit-verify': {
+      id: '/api/public/permit-verify'
+      path: '/api/public/permit-verify'
+      fullPath: '/api/public/permit-verify'
+      preLoaderRoute: typeof ApiPublicPermitVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/os-overview': {
@@ -3951,6 +4029,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedHajjRoute: typeof AuthenticatedHajjRoute
+  AuthenticatedHcisRoute: typeof AuthenticatedHcisRoute
   AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
@@ -3970,6 +4049,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOutcomesRoute: typeof AuthenticatedOutcomesRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
+  AuthenticatedPtwRoute: typeof AuthenticatedPtwRoute
   AuthenticatedReadinessRoute: typeof AuthenticatedReadinessRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
@@ -4025,6 +4105,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedHajjRoute: AuthenticatedHajjRoute,
+  AuthenticatedHcisRoute: AuthenticatedHcisRoute,
   AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
@@ -4044,6 +4125,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOutcomesRoute: AuthenticatedOutcomesRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
+  AuthenticatedPtwRoute: AuthenticatedPtwRoute,
   AuthenticatedReadinessRoute: AuthenticatedReadinessRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
@@ -4154,8 +4236,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicOsOverviewRoute: ApiPublicOsOverviewRoute,
+  ApiPublicPermitVerifyRoute: ApiPublicPermitVerifyRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  VerifyPermitPermitIdRoute: VerifyPermitPermitIdRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
   ApiPublicHooksAriaIncidentRoute: ApiPublicHooksAriaIncidentRoute,
   ApiPublicHooksAriaPatternMinerRoute: ApiPublicHooksAriaPatternMinerRoute,
