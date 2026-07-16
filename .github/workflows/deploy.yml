@@ -48,11 +48,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check deploy credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          test -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" || { echo "::error::CLOUDFLARE_API_TOKEN is required"; exit 1; }
-          test -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" || { echo "::error::CLOUDFLARE_ACCOUNT_ID is required"; exit 1; }
-          test -n "$VITE_SUPABASE_URL" || { echo "::error::VITE_SUPABASE_URL is required"; exit 1; }
-          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "::error::VITE_SUPABASE_PUBLISHABLE_KEY is required"; exit 1; }
+          # Diagnostic: print presence (length only — values stay masked) of each
+          # secret as resolved in THIS repo's Actions context, so a missing secret
+          # is pinpointed instead of failing on the first one.
+          echo "Deploy secret presence in this repo's Actions context:"
+          missing=0
+          check() { if [ -n "$2" ]; then echo "  ✓ $1 = set (len ${#2})"; else echo "  ✗ $1 = EMPTY"; missing=1; fi; }
+          check CLOUDFLARE_API_TOKEN "$CF_TOKEN"
+          check CLOUDFLARE_ACCOUNT_ID "$CF_ACCOUNT"
+          check VITE_SUPABASE_URL "$VITE_SUPABASE_URL"
+          check VITE_SUPABASE_PUBLISHABLE_KEY "$VITE_SUPABASE_PUBLISHABLE_KEY"
+          if [ "$missing" = "1" ]; then
+            echo "::error::One or more deploy secrets resolve EMPTY on this repo. If you added them under Repository secrets on THIS exact repo, the cause is an Actions/org secret-access restriction — check Settings → Actions → General (workflow permissions) and, for org repos, the org's secret-access policy."
+            exit 1
+          fi
+          echo "All deploy secrets present — proceeding."
 
       - name: Setup Node
         uses: actions/setup-node@v4
