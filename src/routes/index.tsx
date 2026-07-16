@@ -253,7 +253,14 @@ function IntroLanding() {
 
           {/* Utility row (per owner directive: Executive Bridge + Executive
               Showcase launcher buttons removed from the hero). */}
-          <div className="mt-2 flex w-full items-center justify-center gap-2 sm:gap-3">
+          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <Link
+              to="/executive-bridge"
+              className="nexus-command-chip min-h-11 border-[#3AE8FF]/45 bg-[#3AE8FF]/[0.09] px-4 text-[#BEEBFF] hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.14]"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{ar ? "افتح الجسر التنفيذي" : "Open Executive Bridge"}</span>
+            </Link>
             <Link
               to="/executive-showcase"
               className="nexus-command-chip min-h-11 border-emerald-300/35 bg-emerald-300/8 px-4 text-emerald-100 hover:border-emerald-300/60"
