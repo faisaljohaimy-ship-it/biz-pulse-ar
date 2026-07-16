@@ -78,13 +78,19 @@ export const Route = createFileRoute("/api/public/hooks/aria-incident")({
           ? String(body.device_class)
           : "desktop";
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin.from("aria_public_incidents").insert({
-          kind,
-          detail: detail.slice(0, 500),
-          device_class: device,
-          url,
-        });
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          await supabaseAdmin.from("aria_public_incidents").insert({
+            kind,
+            detail: detail.slice(0, 500),
+            device_class: device,
+            url,
+          });
+        } catch (err) {
+          // Beacon is fire-and-forget; never surface a 500 to the client when
+          // the sink is misconfigured (missing service role, RLS drift, etc.).
+          console.error("[aria-incident] sink insert failed", err);
+        }
 
         void logAriaAction({
           action: "public.aria-incident.received",
