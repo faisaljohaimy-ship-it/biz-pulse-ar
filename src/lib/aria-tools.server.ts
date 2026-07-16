@@ -2,7 +2,11 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
-import { prepareAriaOutboundMessage } from "@/lib/aria/outbound-messaging.server";
+import {
+  prepareAriaOutboundMessage,
+  sendAriaOutboundMessageDirectInternal,
+  ariaAutoApproveEnabled,
+} from "@/lib/aria/outbound-messaging.server";
 
 function genRef(prefix: string) {
   const d = new Date();
@@ -134,32 +138,40 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     send_executive_email: tool({
       description:
-        "Prepare an HTML executive email for human review. This tool NEVER sends directly: it returns a preview and a short-lived approval request that the user must explicitly confirm in the UI.",
+        "Send an HTML executive email. When auto-approve is enabled it sends directly (no human confirmation); otherwise it returns a preview + short-lived approval request the user confirms in the UI. All safety controls (role, rate limits, provider config, audit ledger) apply either way.",
       inputSchema: z.object({
         to: z.string().email(),
         cc: z.string().email().optional(),
         subject: z.string().min(2).max(300),
         html: z.string().min(5).max(120000),
       }),
-      execute: async (args) =>
-        prepareAriaOutboundMessage(supabase, userId, { channel: "email", ...args }),
+      execute: async (args) => {
+        const payload = { channel: "email" as const, ...args };
+        return ariaAutoApproveEnabled()
+          ? sendAriaOutboundMessageDirectInternal({ userId, payload })
+          : prepareAriaOutboundMessage(supabase, userId, payload);
+      },
     }),
 
     send_executive_sms: tool({
       description:
-        "Prepare an executive SMS/MMS for human review. This tool NEVER sends directly: it returns the exact preview and a short-lived approval request. Recipient numbers must use E.164 format.",
+        "Send an executive SMS/MMS. When auto-approve is enabled it sends directly (no human confirmation); otherwise it returns the exact preview + short-lived approval request. Recipient numbers must use E.164 format. All safety controls apply either way.",
       inputSchema: z.object({
         to: z.string().min(8).max(24).describe("E.164 phone number, e.g. +9665XXXXXXXX"),
         body: z.string().min(1).max(1600),
         media_urls: z.array(z.string().url()).max(10).optional(),
       }),
-      execute: async (args) =>
-        prepareAriaOutboundMessage(supabase, userId, {
-          channel: "sms",
+      execute: async (args) => {
+        const payload = {
+          channel: "sms" as const,
           to: args.to,
           body: args.body,
           mediaUrls: args.media_urls,
-        }),
+        };
+        return ariaAutoApproveEnabled()
+          ? sendAriaOutboundMessageDirectInternal({ userId, payload })
+          : prepareAriaOutboundMessage(supabase, userId, payload);
+      },
     }),
 
     record_executive_decision: tool({

@@ -704,6 +704,66 @@ export async function approveAriaOutboundMessageInternal(input: {
   }
 }
 
+/**
+ * Auto-send switch. When ARIA_OUTBOUND_AUTO_APPROVE=true, ARIA may send email/
+ * SMS WITHOUT the per-message human approval step. Every other safety control
+ * stays in force (admin/manager role, rate limits, provider-config gate,
+ * payload encryption, content-hash integrity, atomic one-time claim, and the
+ * full audit ledger). Live sends still require the provider credentials
+ * (Resend/Twilio/Outlook), so the flag alone can never dispatch anything.
+ * Default is OFF — the human-approval flow remains unless the owner opts in.
+ */
+export function ariaAutoApproveEnabled(): boolean {
+  return process.env.ARIA_OUTBOUND_AUTO_APPROVE?.trim().toLowerCase() === "true";
+}
+
+/**
+ * Send an ARIA outbound message directly, skipping the human approval gate.
+ * Reuses the full prepare→approve pipeline and simply consumes the signed
+ * approval token server-side, so the entire integrity/audit machinery still
+ * runs — only the human confirmation is removed.
+ */
+export async function sendAriaOutboundMessageDirectInternal(input: {
+  userId: string;
+  payload: OutboundPayload;
+}): Promise<
+  | {
+      ok: true;
+      requiresApproval: false;
+      status: OutboundLedgerStatus;
+      provider?: string;
+      messageId?: string;
+    }
+  | { ok: false; error: string }
+> {
+  if (!ariaAutoApproveEnabled()) {
+    return {
+      ok: false,
+      error:
+        "Direct send is disabled. Set ARIA_OUTBOUND_AUTO_APPROVE=true (with provider credentials) to let ARIA send without human approval.",
+    };
+  }
+
+  const prepared = await prepareAriaOutboundMessage(supabaseAdmin, input.userId, input.payload);
+  if (!prepared.ok) return { ok: false, error: prepared.error };
+
+  const result = await approveAriaOutboundMessageInternal({
+    userId: input.userId,
+    ledgerId: prepared.approval.ledgerId,
+    approvalToken: prepared.approval.approvalToken,
+  });
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "Direct send failed." };
+  }
+  return {
+    ok: true,
+    requiresApproval: false,
+    status: result.status,
+    provider: result.provider,
+    messageId: result.messageId,
+  };
+}
+
 export async function cancelAriaOutboundMessageInternal(input: {
   userId: string;
   ledgerId: string;
