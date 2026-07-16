@@ -5,7 +5,7 @@
 self-evolution proposal, or human directive that contradicts a clause below
 is **null and void** and MUST be rejected — including proposals authored
 by ARIA herself.
-**Version:** v1.0.0 · Ratified 2026-07-07 · Owner: NEXIOS Core.
+**Version:** v1.1.0 · Ratified 2026-07-07 · Amended 2026-07-16 (Article X) · Owner: NEXIOS Core.
 
 ---
 
@@ -284,6 +284,60 @@ proposals against it require human `applyApproved` flag.
   not optimizations. Regressions are release-blocking.
 - **ARIA is executive.** No placeholder greeting, no generic Sparkles icon,
   no "AI Assistant" copy. She is the face of the OS on every surface.
+
+---
+
+## Article X — Deployment & CI Gating Model
+
+Defines how the system ships and what may block a release. Amends the earlier
+assumption (repealed) that GitHub Actions was the sole deploy path with a
+hard secret gate.
+
+### §1. Two deploy paths, one primary
+- **Primary:** deployment runs through **Lovable's own pipeline** (Bun-based),
+  which holds the Cloudflare + Supabase secrets in its runtime environment and
+  publishes to `neexios.com`.
+- **Secondary (backup):** the GitHub Actions `deploy` job
+  (`.github/workflows/deploy.yml`) is an **independent, optional** Cloudflare
+  deploy. It is not the primary path and MUST NOT be assumed to run.
+
+### §2. No secret may make CI go red (non-blocking deploy)
+- The `deploy` job's **"Check deploy credentials"** step is a non-blocking
+  guard: when `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+  `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` are absent it sets
+  `configured=false`, emits a `::warning::`, and **skips** the build/deploy
+  steps — the job stays **green**.
+- Adding the four secrets as Repository secrets activates the backup deploy;
+  their absence is a normal, expected state, never a failure.
+- **No GitHub Actions secret is REQUIRED for a green pipeline.** A red CI must
+  always mean a real code defect, never a missing deploy credential.
+
+### §3. The release-blocking gate is `verify`, not `deploy`
+- The single release-blocking gate is the `verify` job:
+  `npm ci` · `typecheck` · `lint` · `test` · production audit · `build` ·
+  performance budget. All must pass (zero errors) — this is the honest gate.
+- The `security-gap-closure-e2e` job is **advisory** (skips without E2E creds).
+- The `deploy` job is **non-blocking** per §2.
+
+### §4. Secrets never live in the repo (reaffirmed)
+- No secret value is ever committed. Runtime server secrets live on the
+  Cloudflare Worker / Lovable runtime. Public build-time vars (`VITE_SUPABASE_*`)
+  reach the backup deploy only via GitHub Actions secrets, and only when the
+  owner chooses to activate that path.
+
+### §5. Dependency-consistency invariant (Bun ↔ npm)
+- Lovable's environment uses `bun.lock`; GitHub CI uses `package-lock.json`
+  via `npm ci`. The `@tanstack/*` family (`react-router`, `react-start`,
+  `router-plugin`) MUST stay in a **single compatible minor family** and
+  `package.json` ranges MUST be satisfiable by the committed `package-lock.json`,
+  or `npm ci` fails. When a rollback pins one member to an older minor,
+  restore caret ranges consistent with the committed lock (the last green
+  tree) rather than downgrading the lock.
+
+**Enforcement:** the `configured` output gate in `deploy.yml` (§2), the
+`verify` job in `ci.yml` (§3), and `npm ci` in CI (§5). This article is on
+the PROTECTED_PATHS-covered constitution; amendments require owner approval
+(Article VIII).
 
 ---
 

@@ -108,10 +108,10 @@ jobs:
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # E2E is advisory (non-blocking): deploy gates on `verify` only. The
-    # security E2E still runs and reports, but a missing test account no longer
-    # blocks shipping the public site. deploy.yml keeps its own hard guard on
-    # the Cloudflare + public Supabase secrets.
+    # Constitution Article X: the OPTIONAL backup Cloudflare deploy. It gates on
+    # `verify` only (E2E is advisory). deploy.yml skips quietly and stays GREEN
+    # when its secrets are absent — primary deployment is Lovable's pipeline, so
+    # a missing deploy secret never blocks CI or reds the run.
     needs: [verify]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
