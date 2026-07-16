@@ -2,14 +2,10 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { useI18n } from "@/lib/i18n";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { PredictionsPanel } from "@/components/predictions-panel";
 import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
-import { useAriaVoice } from "@/lib/aria-voice";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Boxes,
   Building2,
@@ -26,15 +22,10 @@ import {
   Brain,
   Zap,
   TrendingUp,
-  Mic,
-  MicOff,
-  Send,
   ArrowRight,
   X,
   Maximize2,
   Minimize2,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/digital-twin")({
@@ -245,7 +236,6 @@ function DigitalTwinPage() {
   const [t, setT] = useState(0); // animation clock (frames)
   const [active, setActive] = useState<string | null>("data");
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
-  const [ariaOpen, setAriaOpen] = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -665,16 +655,7 @@ function DigitalTwinPage() {
             : "Predictions"}
       </button>
 
-      {/* ARIA dock */}
-      <AriaDock
-        open={ariaOpen}
-        onToggle={() => setAriaOpen((v) => !v)}
-        ar={ar}
-        signals={signals}
-        pulseHealth={pulse.health}
-        pulseStatus={pulse.status}
-        threadId={signals?.generatedAt ?? "digital-twin"}
-      />
+      {/* The single global AriaCopilot is mounted by __root.tsx. */}
 
       {/* Keyframes */}
       <style>{`
@@ -813,363 +794,5 @@ function Starfield() {
         />
       ))}
     </svg>
-  );
-}
-
-/* ────────── ARIA Copilot Dock ────────── */
-
-function AriaDock({
-  open,
-  onToggle,
-  ar,
-  signals,
-  pulseHealth,
-  pulseStatus,
-  threadId,
-}: {
-  open: boolean;
-  onToggle: () => void;
-  ar: boolean;
-  signals: TwinSignals | undefined;
-  pulseHealth: number;
-  pulseStatus: string;
-  threadId: string;
-}) {
-  const navigate = useNavigate();
-  const [input, setInput] = useState("");
-  const [voiceMode, setVoiceMode] = useState(false);
-  const [autoSpeak, setAutoSpeak] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const spokenRef = useRef<Set<string>>(new Set());
-  const sendRef = useRef<(t: string) => void>(() => {});
-
-  const [transport] = useState(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/chat",
-        body: () => ({
-          threadId: undefined,
-          model: "google/gemini-3-flash-preview",
-          agent: "digital_twin",
-          twinSessionId: threadId,
-        }),
-        fetch: async (url, init) => {
-          const { data } = await supabase.auth.getSession();
-          const token = data.session?.access_token;
-          const headers = new Headers(init?.headers);
-          headers.set("X-ARIA-Request-ID", `twin-${Date.now().toString(36)}`);
-          if (token) headers.set("Authorization", `Bearer ${token}`);
-          return fetch(url, { ...init, headers });
-        },
-      }),
-  );
-  const { messages, sendMessage, status, error } = useChat({ id: "aria-digital-twin", transport });
-  const isLoading = status === "submitted" || status === "streaming";
-
-  // Voice command routing — intercept navigation intents before sending to LLM
-  const VOICE_ROUTES: Array<{
-    patterns: RegExp[];
-    to: string;
-    speak_ar: string;
-    speak_en: string;
-  }> = [
-    {
-      patterns: [/digital\s*twin|توأم|الكون/i],
-      to: "/digital-twin",
-      speak_ar: "جاري فتح التوأم الرقمي",
-      speak_en: "Opening Digital Twin",
-    },
-    {
-      patterns: [/risk|مخاطر/i],
-      to: "/risk",
-      speak_ar: "أعرض سجل المخاطر",
-      speak_en: "Showing risk register",
-    },
-    {
-      patterns: [/board\s*room|مجلس|قاعة الإدارة|board summary|ملخص.*مجلس/i],
-      to: "/boardroom",
-      speak_ar: "أفتح قاعة الإدارة",
-      speak_en: "Opening boardroom",
-    },
-    {
-      patterns: [/decision|قرار/i],
-      to: "/decisions",
-      speak_ar: "أعرض القرارات",
-      speak_en: "Opening decisions",
-    },
-    {
-      patterns: [/intelligence|ذكاء|signals|إشارات/i],
-      to: "/intelligence",
-      speak_ar: "أعرض الذكاء",
-      speak_en: "Opening intelligence",
-    },
-    {
-      patterns: [/forgotten|منس/i],
-      to: "/forgotten",
-      speak_ar: "البنود المنسية",
-      speak_en: "Opening forgotten items",
-    },
-    {
-      patterns: [/cockpit|قمرة/i],
-      to: "/cockpit",
-      speak_ar: "قمرة القيادة",
-      speak_en: "Opening cockpit",
-    },
-    {
-      patterns: [/fabric|نسيج/i],
-      to: "/fabric",
-      speak_ar: "نسيج الذكاء",
-      speak_en: "Opening intelligence fabric",
-    },
-    {
-      patterns: [/memory|ذاكرة/i],
-      to: "/memory",
-      speak_ar: "ذاكرة المؤسسة",
-      speak_en: "Opening memory",
-    },
-  ];
-
-  const send = (text: string) => {
-    const t = text.trim();
-    if (!t || isLoading) return;
-    // voice navigation intent
-    const lower = t.toLowerCase();
-    const hit = VOICE_ROUTES.find((r) => r.patterns.some((p) => p.test(lower)));
-    if (hit && /^(open|show|go to|navigate|افتح|اعرض|انتقل|اذهب)/i.test(t)) {
-      voice.speak(ar ? hit.speak_ar : hit.speak_en);
-      navigate({ to: hit.to });
-      setInput("");
-      return;
-    }
-    const ctx = ar
-      ? `سياق Nexus Digital Twin (مباشر): الصحة ${pulseHealth}%، الحالة ${pulseStatus}، الإدارات ${signals?.departments ?? "?"}، أحداث الذكاء ${signals?.events ?? "?"}، الوكلاء النشطون ${signals?.agents ?? "?"}، التكاملات ${signals?.integrations ?? "?"}، المهام ${signals?.automations ?? "?"}، الوثائق ${signals?.documents ?? "?"}، مخاطر حرجة ${signals?.criticalRisks ?? "?"}، قرارات مجلس معلَّقة ${signals?.boardActions ?? "?"}، إشارات مفتوحة ${signals?.intelligenceSignals ?? "?"}، سرعة التنفيذ ${signals?.executionVelocity ?? "?"}%. أجب باختصار تنفيذي.`
-      : `Nexus Digital Twin context (live): health ${pulseHealth}%, status ${pulseStatus}, departments ${signals?.departments ?? "?"}, intelligence events ${signals?.events ?? "?"}, active agents ${signals?.agents ?? "?"}, integrations ${signals?.integrations ?? "?"}, tasks ${signals?.automations ?? "?"}, documents ${signals?.documents ?? "?"}, critical risks ${signals?.criticalRisks ?? "?"}, pending board actions ${signals?.boardActions ?? "?"}, open signals ${signals?.intelligenceSignals ?? "?"}, execution velocity ${signals?.executionVelocity ?? "?"}%. Answer with an executive-grade brief.`;
-    sendMessage({ text: `${ctx}\n\n${t}` });
-    setInput("");
-  };
-  sendRef.current = send;
-
-  const voice = useAriaVoice({
-    onFinal: (txt) => sendRef.current(txt),
-  });
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isLoading]);
-
-  // auto-speak assistant final replies
-  useEffect(() => {
-    if (!autoSpeak || isLoading) return;
-    const last = messages[messages.length - 1];
-    if (!last || last.role !== "assistant") return;
-    if (spokenRef.current.has(last.id)) return;
-    const text = last.parts
-      .filter((p) => p.type === "text")
-      .map((p) => (p as { text: string }).text)
-      .join("")
-      .trim();
-    if (text.length < 4) return;
-    spokenRef.current.add(last.id);
-    voice.speak(text);
-  }, [messages, isLoading, autoSpeak, voice]);
-
-  const suggestions = ar
-    ? [
-        "لخص حالة المؤسسة الآن",
-        "ما أكبر المخاطر الحرجة؟",
-        "افتح التوأم الرقمي",
-        "جهز ملخص قاعة الإدارة",
-      ]
-    : [
-        "Summarize enterprise state now",
-        "Top critical risks?",
-        "Open Digital Twin",
-        "Prep board briefing",
-      ];
-
-  return (
-    <div className="absolute bottom-4 end-4 z-40">
-      {open && (
-        <div
-          className="mb-3 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-2xl"
-          style={{ boxShadow: "0 24px 64px -16px rgba(34,211,238,0.4)" }}
-        >
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 text-white">
-                <Sparkles className="h-3.5 w-3.5" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-[0.25em] text-cyan-300">ARIA</div>
-                <div className="text-[10px] text-slate-400">
-                  {voice.listening
-                    ? ar
-                      ? "أستمع…"
-                      : "Listening…"
-                    : voice.speaking
-                      ? ar
-                        ? "أتحدث…"
-                        : "Speaking…"
-                      : ar
-                        ? "كوبايلوت تنفيذي"
-                        : "Executive Copilot"}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setAutoSpeak((v) => !v)}
-                aria-label={
-                  autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : ar ? "الصوت مغلق" : "Voice off"
-                }
-                aria-pressed={autoSpeak}
-                className={`rounded p-1 ${autoSpeak ? "text-cyan-300" : "text-slate-500"} hover:bg-white/5`}
-                title={
-                  autoSpeak ? (ar ? "الصوت مفعَّل" : "Voice on") : ar ? "الصوت مغلق" : "Voice off"
-                }
-              >
-                {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              </button>
-              <button
-                onClick={onToggle}
-                aria-label={ar ? "إغلاق" : "Close"}
-                className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-          <div ref={scrollRef} className="max-h-72 overflow-y-auto px-3 py-3 space-y-2">
-            {messages.length === 0 && (
-              <div className="rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-slate-200">
-                {ar
-                  ? "أنا ARIA. تكلم أو اكتب — جرّب: «افتح التوأم الرقمي» أو «ما المخاطر الحرجة؟»"
-                  : "I'm ARIA. Talk or type — try: 'Open Digital Twin' or 'What are critical risks?'"}
-              </div>
-            )}
-            {messages.map((m) => {
-              const text = m.parts
-                .filter((p) => p.type === "text")
-                .map((p) => (p as { text: string }).text)
-                .join("");
-              const isUser = m.role === "user";
-              const display = isUser ? text.split("\n\n").slice(-1)[0] : text;
-              return (
-                <div key={m.id} className={isUser ? "text-end" : ""}>
-                  <div
-                    className={`inline-block max-w-[90%] whitespace-pre-wrap rounded-xl px-3 py-2 text-xs leading-relaxed ${
-                      isUser
-                        ? "bg-gradient-to-br from-cyan-500 to-violet-500 text-white"
-                        : "border border-cyan-300/20 bg-cyan-400/5 text-slate-100"
-                    }`}
-                  >
-                    {display || (isLoading ? "…" : "")}
-                  </div>
-                </div>
-              );
-            })}
-            {voice.partial && (
-              <div className="text-end">
-                <div className="inline-block max-w-[90%] rounded-xl bg-cyan-500/30 px-3 py-2 text-xs italic text-white">
-                  {voice.partial}
-                </div>
-              </div>
-            )}
-            {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <div className="inline-block rounded-xl border border-cyan-300/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200">
-                …
-              </div>
-            )}
-            {error && (
-              <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">
-                {ar ? "تعذّر رد ARIA: " : "ARIA error: "}
-                {error.message}
-              </div>
-            )}
-            {voice.error && (
-              <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[10px] text-rose-200">
-                {ar ? "خطأ صوتي: " : "Voice error: "}
-                {voice.error}
-              </div>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5 border-t border-white/10 px-3 py-2">
-            {suggestions.map((s) => (
-              <button
-                key={s}
-                onClick={() => send(s)}
-                disabled={isLoading}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] text-slate-300 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-cyan-200 disabled:opacity-40"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              send(input);
-            }}
-            className="flex items-center gap-2 border-t border-white/10 p-2"
-          >
-            <button
-              type="button"
-              onPointerDown={() => {
-                setVoiceMode(true);
-                voice.startListening();
-              }}
-              onPointerUp={() => {
-                if (voiceMode) {
-                  voice.stopListening();
-                  setVoiceMode(false);
-                }
-              }}
-              onClick={() => {
-                if (!voiceMode) voice.toggleListening();
-              }}
-              className={`rounded-lg p-2 ${voice.listening ? "bg-rose-500/20 text-rose-300" : "text-slate-400 hover:bg-white/5 hover:text-cyan-300"}`}
-              aria-label="mic"
-              title={
-                ar
-                  ? "اضغط للتحدث (ضغطة طويلة) أو اضغط لتشغيل/إيقاف"
-                  : "Hold to talk, click to toggle"
-              }
-            >
-              {voice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </button>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={ar ? "اسأل ARIA أو تكلم…" : "Ask ARIA or speak…"}
-              aria-label={ar ? "اسأل آريا" : "Ask ARIA"}
-              className="flex-1 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 p-2 text-white disabled:opacity-40"
-            >
-              <Send className="h-3.5 w-3.5" />
-            </button>
-          </form>
-        </div>
-      )}
-      <button
-        onClick={onToggle}
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-cyan-500/30 to-violet-500/30 backdrop-blur-xl transition hover:scale-105"
-        style={{ boxShadow: "0 0 40px rgba(34,211,238,0.5), inset 0 0 20px rgba(255,255,255,0.1)" }}
-        aria-label="ARIA"
-      >
-        <span
-          className="absolute inset-0 rounded-full"
-          style={{
-            animation: "twin-pulse 3s ease-in-out infinite",
-            background: "radial-gradient(circle, rgba(34,211,238,0.3) 0%, transparent 70%)",
-          }}
-        />
-        <Sparkles className="relative h-6 w-6 text-white" />
-      </button>
-    </div>
   );
 }

@@ -262,15 +262,16 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
       blockers: maintSignals.filter((s) => !s.ok).map((s) => `${s.key} = 0`),
     });
 
-    // --- PDPL: operator-owned legal identity, retention and DPA controls.
-    // Values are never returned; the report exposes presence/validity only.
-    // This deliberately fails closed instead of inventing legal facts.
+    // Operator-owned legal identity, retention and DPA controls. The report
+    // exposes only validity/presence, never the configured legal values.
     const { evaluatePdplReadiness } = await import("@/lib/compliance/pdpl-readiness.server");
     const pdpl = evaluatePdplReadiness();
     dims.push({
       id: "pdpl",
       label: "PDPL Compliance",
-      score: Math.round((pdpl.signals.filter((s) => s.ok).length / pdpl.signals.length) * 100),
+      score: Math.round(
+        (pdpl.signals.filter((signal) => signal.ok).length / pdpl.signals.length) * 100,
+      ),
       weight: 1.4,
       signals: pdpl.signals,
       blockers: pdpl.blockers,

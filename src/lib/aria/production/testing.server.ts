@@ -14,10 +14,10 @@ function seedIfEmpty(): void {
   if (REGISTRY.size > 0) return;
   const seed: TestRegistryEntry[] = [
     {
-      id: "unit.aria-dock",
+      id: "unit.aria-singleton",
       kind: "unit",
-      label: "ARIA Dock component",
-      target: "src/components/digital-humans/AriaDock.test.tsx",
+      label: "ARIA singleton contract",
+      target: "src/lib/aria-core/singleton-contract.test.ts",
       status: "unknown",
     },
     {

@@ -14,7 +14,7 @@ interface Subsystem {
   detail?: string;
 }
 
-const VERSION = process.env.APP_VERSION ?? "1.0.0";
+const VERSION = process.env.APP_VERSION ?? "1.5.1";
 
 export const Route = createFileRoute("/api/public/health")({
   server: {

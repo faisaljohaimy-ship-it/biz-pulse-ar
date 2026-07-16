@@ -10,7 +10,8 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { REGIONS } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
-import { SimBadge } from "@/components/os/SimBadge";
+import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
+import { useExecutiveKpiSource } from "@/lib/sec/use-executive-kpi-source";
 
 // Deterministic simulation snapshot — the four regions' sim counts summed.
 const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
@@ -24,7 +25,16 @@ const SIM_TOTALS = REGIONS.map((r) => regionSim(r.id).counts).reduce(
 );
 
 export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
-  const counts = SIM_TOTALS;
+  const source = useExecutiveKpiSource();
+  const live = source.data;
+  const counts = live
+    ? {
+        incidents_critical: live.incidents_critical,
+        cctv_new: Math.max(0, live.cameras_total - live.cameras_online),
+        permits_active: live.permits_active,
+        assets_offline: live.wo_open,
+      }
+    : SIM_TOTALS;
 
   const decisions = [
     {
@@ -41,10 +51,10 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
     {
       key: "cctv",
       icon: Camera,
-      titleAr: "تنبيهات كاميرات جديدة",
-      titleEn: "New CCTV Alerts",
-      bodyAr: "في انتظار مراجعة غرفة العمليات.",
-      bodyEn: "Awaiting operations-room review.",
+      titleAr: live ? "كاميرات تحتاج متابعة" : "تنبيهات كاميرات جديدة",
+      titleEn: live ? "Cameras Needing Attention" : "New CCTV Alerts",
+      bodyAr: live ? "مشتقة من حالة الاتصال الحية." : "في انتظار مراجعة غرفة العمليات.",
+      bodyEn: live ? "Derived from live connectivity state." : "Awaiting operations-room review.",
       value: counts?.cctv_new ?? 0,
       to: "/sec/cctv",
       tone: "amber" as const,
@@ -52,12 +62,12 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
     {
       key: "assets",
       icon: Server,
-      titleAr: "أصول متعطلة",
-      titleEn: "Assets Offline",
-      bodyAr: "أثر تشغيلي محتمل — يتطلّب صيانة.",
-      bodyEn: "Potential operational impact — needs service.",
+      titleAr: live ? "أوامر صيانة مفتوحة" : "أصول متعطلة",
+      titleEn: live ? "Open Work Orders" : "Assets Offline",
+      bodyAr: "أثر تشغيلي محتمل — يتطلّب متابعة.",
+      bodyEn: "Potential operational impact — needs follow-through.",
       value: counts?.assets_offline ?? 0,
-      to: "/sec/assets",
+      to: "/sec/maintenance",
       tone: "amber" as const,
     },
     {
@@ -128,7 +138,7 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
                     </div>
                   </div>
                 </div>
-                <SimBadge ar={ar} className="text-[9px]" />
+                <ExecutiveSourceBadge source={source} ar={ar} className="text-[9px]" />
               </div>
               <div className="mt-auto flex items-end justify-between gap-3">
                 <span

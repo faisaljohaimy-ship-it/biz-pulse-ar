@@ -6,10 +6,10 @@ import * as React from "react";
 import { z } from "zod";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
+import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
 import { REGIONS, REGION_ACCENT_HEX } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
-import { useOperationalLive, type OperationalLive } from "@/lib/sec/operational-live";
-import { cn } from "@/lib/utils";
+import { useExecutiveKpiSource } from "@/lib/sec/use-executive-kpi-source";
 import {
   Activity,
   ArrowUpLeft,
@@ -52,17 +52,6 @@ import {
 const SIM_CHIP =
   "inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold text-[#3AE8FF]";
 
-function SourceChip({ live, mixed = false }: { live: boolean; mixed?: boolean }) {
-  return live ? (
-    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[9px] font-bold text-emerald-200 shadow-[0_0_16px_rgba(52,211,153,.1)]">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_8px_#34D399]" />
-      {mixed ? "حي + محاكاة · LIVE + SIM" : "مصدر حي · LIVE"}
-    </span>
-  ) : (
-    <span className={SIM_CHIP}>محاكاة · DEMO</span>
-  );
-}
-
 function bridgeAggregate() {
   const per = REGIONS.map((r) => ({ r, c: regionSim(r.id).counts }));
   const sum = (f: (c: (typeof per)[number]["c"]) => number) => per.reduce((a, x) => a + f(x.c), 0);
@@ -87,41 +76,40 @@ function GlassPanel({ children }: { children: React.ReactNode }) {
 }
 
 // Scene 1 — Enterprise pulse: four aggregate KPIs across the regions.
-function SceneEnterprisePulse({ live }: { live: OperationalLive }) {
+function SceneEnterprisePulse() {
+  const source = useExecutiveKpiSource();
+  const live = source.data;
   const { sum, avg } = bridgeAggregate();
-  const hasLive = live.openIncidents != null || live.activeAlerts != null;
   const stats = [
     {
       ar: "الامتثال العام",
       en: "Compliance",
-      v: `${avg((c) => c.safety)}%`,
+      v: `${live?.contractors_compliance ?? avg((c) => c.safety)}%`,
       tone: "#34D399",
       icon: Shield,
-      live: false,
     },
     {
       ar: "بلاغات مفتوحة",
       en: "Open signals",
-      v: String(live.openIncidents ?? sum((c) => c.incidents_open)),
+      v: String(live?.incidents_open ?? sum((c) => c.incidents_open)),
       tone: "#F5C560",
       icon: ShieldAlert,
-      live: live.openIncidents != null,
     },
     {
       ar: "إشارات مرئية",
       en: "Vision signals",
-      v: String(live.activeAlerts ?? sum((c) => c.cctv_new)),
+      v: String(
+        live ? Math.max(0, live.cameras_total - live.cameras_online) : sum((c) => c.cctv_new),
+      ),
       tone: "#3AE8FF",
       icon: Eye,
-      live: live.activeAlerts != null,
     },
     {
       ar: "متوسط الجاهزية",
       en: "Readiness",
-      v: `${avg((c) => c.readiness)}%`,
+      v: `${live?.executive_readiness ?? avg((c) => c.readiness)}%`,
       tone: "#60A5FA",
       icon: Gauge,
-      live: false,
     },
   ];
   return (
@@ -136,7 +124,7 @@ function SceneEnterprisePulse({ live }: { live: OperationalLive }) {
             نبض المؤسسة · Executive pulse
           </span>
         </div>
-        <SourceChip live={hasLive} mixed />
+        <ExecutiveSourceBadge source={source} ar />
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {stats.map((s, index) => {
@@ -155,7 +143,7 @@ function SceneEnterprisePulse({ live }: { live: OperationalLive }) {
                   <Icon className="h-3.5 w-3.5" aria-hidden />
                 </span>
                 <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
-                  {s.live ? "LIVE" : s.en}
+                  {s.en}
                 </span>
               </div>
               <div
@@ -195,32 +183,31 @@ function SceneEnterprisePulse({ live }: { live: OperationalLive }) {
 }
 
 // Scene 2 — One decision links Security ↔ Safety ↔ Maintenance.
-function SceneDecisionLink({ live }: { live: OperationalLive }) {
+function SceneDecisionLink() {
+  const source = useExecutiveKpiSource();
+  const live = source.data;
   const { sum } = bridgeAggregate();
   const nodes = [
     {
       ar: "الأمن",
       en: "Security",
       icon: Shield,
-      v: live.openIncidents ?? sum((c) => c.incidents_open),
+      v: live?.incidents_open ?? sum((c) => c.incidents_open),
       unit: "بلاغ",
-      live: live.openIncidents != null,
     },
     {
       ar: "السلامة",
       en: "Safety",
       icon: HardHat,
-      v: live.activeAlerts ?? sum((c) => c.cctv_new),
+      v: live?.sensors_alarming ?? sum((c) => c.cctv_new),
       unit: "تنبيه",
-      live: live.activeAlerts != null,
     },
     {
       ar: "الصيانة",
       en: "Maintenance",
       icon: Wrench,
-      v: live.offlineAssets ?? sum((c) => c.assets_offline),
+      v: live?.wo_open ?? sum((c) => c.assets_offline),
       unit: "أصل",
-      live: live.offlineAssets != null,
     },
   ];
   const decisionRail = [
@@ -236,10 +223,7 @@ function SceneDecisionLink({ live }: { live: OperationalLive }) {
         <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
           مسار القرار المحكوم · Governed decision path
         </span>
-        <SourceChip
-          live={nodes.some((node) => node.live)}
-          mixed={nodes.some((node) => !node.live)}
-        />
+        <ExecutiveSourceBadge source={source} ar />
       </div>
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {nodes.map((n, i) => {
@@ -266,13 +250,8 @@ function SceneDecisionLink({ live }: { live: OperationalLive }) {
                   {n.v} {n.unit}
                 </span>
               </div>
-              <span
-                className={cn(
-                  "absolute left-1.5 top-1.5 font-mono text-[8px]",
-                  n.live ? "text-emerald-300/70" : "text-white/20",
-                )}
-              >
-                {n.live ? "LIVE" : `0${i + 1}`}
+              <span className="absolute left-1.5 top-1.5 text-[8px] font-mono text-white/20">
+                0{i + 1}
               </span>
             </div>
           );
@@ -502,14 +481,8 @@ function SceneAgents() {
 }
 
 // Scene 5 — Live digital twin + executive reports.
-function SceneTwinReports({ live }: { live: OperationalLive }) {
+function SceneTwinReports() {
   const { sum } = bridgeAggregate();
-  const hasLive = [
-    live.activeContractors,
-    live.activePatrols,
-    live.totalAssets,
-    live.totalSites,
-  ].some((value) => value != null);
   const reports = ["موجز المجلس", "المخاطر", "العمليات", "الأثر"];
   return (
     <GlassPanel>
@@ -517,7 +490,7 @@ function SceneTwinReports({ live }: { live: OperationalLive }) {
         <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
           التوأم التشغيلي · Operational twin
         </span>
-        <SourceChip live={hasLive} mixed />
+        <span className={SIM_CHIP}>محاكاة</span>
       </div>
       <div className="grid gap-3 sm:grid-cols-[1.15fr_0.85fr]">
         <div className="relative min-h-36 overflow-hidden rounded-2xl border border-[#3AE8FF]/18 bg-[#03111f]/55 p-3">
@@ -551,18 +524,11 @@ function SceneTwinReports({ live }: { live: OperationalLive }) {
             {[
               {
                 label: "الميدان",
-                value:
-                  live.activeContractors != null && live.activePatrols != null
-                    ? live.activeContractors + live.activePatrols
-                    : sum((c) => c.contractors_active + c.patrols_active),
+                value: sum((c) => c.contractors_active + c.patrols_active),
                 unit: "فرد",
               },
-              {
-                label: "الأصول",
-                value: live.totalAssets ?? sum((c) => c.cameras_total + c.gates_total),
-                unit: "أصل",
-              },
-              { label: "المواقع", value: live.totalSites ?? sum((c) => c.sites), unit: "موقع" },
+              { label: "الأصول", value: sum((c) => c.cameras_total + c.gates_total), unit: "أصل" },
+              { label: "المواقع", value: sum((c) => c.sites), unit: "موقع" },
             ].map((metric) => (
               <div
                 key={metric.label}
@@ -720,15 +686,15 @@ export const Route = createFileRoute("/executive-bridge")({
 /* ─────────── Scene content (both languages, always) ─────────── */
 
 interface Scene extends ExecutiveBridgeSceneCopy {
-  render?: (live: OperationalLive) => React.ReactNode;
+  render?: () => React.ReactNode;
 }
 
-const SCENE_VISUALS: Record<ExecutiveBridgeSceneId, (live: OperationalLive) => React.ReactNode> = {
-  "command-pulse": (live) => <SceneEnterprisePulse live={live} />,
-  "decision-engine": (live) => <SceneDecisionLink live={live} />,
+const SCENE_VISUALS: Record<ExecutiveBridgeSceneId, () => React.ReactNode> = {
+  "command-pulse": () => <SceneEnterprisePulse />,
+  "decision-engine": () => <SceneDecisionLink />,
   "regional-grid": () => <SceneRegions />,
   "aria-council": () => <SceneAgents />,
-  "digital-twin": (live) => <SceneTwinReports live={live} />,
+  "digital-twin": () => <SceneTwinReports />,
   "sovereign-trust": () => <SceneSovereignTrust />,
   activation: () => <ClosingCTA />,
 };
@@ -743,7 +709,7 @@ type VoiceState = "idle" | "loading" | "playing" | "error";
 /* ─────────── Page ─────────── */
 
 function ExecutiveBridgePage() {
-  const liveOps = useOperationalLive();
+  const executiveSource = useExecutiveKpiSource();
   const search = useSearch({ from: "/executive-bridge" });
   const navigate = useNavigate({ from: "/executive-bridge" });
   const initial = Math.min(Math.max(search.p ?? 0, 0), SCENES.length - 1);
@@ -978,6 +944,10 @@ function ExecutiveBridgePage() {
   }, []);
 
   const scene = SCENES[idx];
+  const sceneSupportsLiveData = scene.id === "command-pulse" || scene.id === "decision-engine";
+  const showSimulationRibbon = Boolean(
+    scene.showSimRibbon && !(sceneSupportsLiveData && executiveSource.mode === "live"),
+  );
   const isPrimaryAr = primary === "ar";
   const overallProgress = ((idx + progress) / SCENES.length) * 100;
   const accentHex =
@@ -995,7 +965,7 @@ function ExecutiveBridgePage() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {scene.showSimRibbon && <SimulationRibbon />}
+      {showSimulationRibbon && <SimulationRibbon />}
 
       <SkylineBackground reduced={reduced} accent={scene.accent} />
       <Scrim />
@@ -1003,7 +973,7 @@ function ExecutiveBridgePage() {
       {/* Top bar */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between gap-3 px-4 pt-3 sm:px-8 sm:pt-5"
-        style={{ marginTop: scene.showSimRibbon ? 32 : 0 }}
+        style={{ marginTop: showSimulationRibbon ? 32 : 0 }}
       >
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-white/75">
@@ -1026,7 +996,7 @@ function ExecutiveBridgePage() {
       {/* Progress bar */}
       <div
         className="pointer-events-none absolute inset-x-0 z-30 h-[2px] bg-white/10"
-        style={{ top: scene.showSimRibbon ? 100 : 76 }}
+        style={{ top: showSimulationRibbon ? 100 : 76 }}
       >
         <div
           className="relative h-full bg-gradient-to-l from-[#F5C560] via-[#3AE8FF] to-[#00D4FF]"
@@ -1056,7 +1026,6 @@ function ExecutiveBridgePage() {
             voiceState={voiceState}
             narrating={narrating}
             onToggleNarration={toggleNarration}
-            live={liveOps}
           />
         ))}
       </div>
@@ -1212,7 +1181,6 @@ function SceneLayer({
   voiceState,
   narrating,
   onToggleNarration,
-  live,
 }: {
   active: boolean;
   reduced: boolean;
@@ -1221,7 +1189,6 @@ function SceneLayer({
   voiceState: VoiceState;
   narrating: boolean;
   onToggleNarration: () => void;
-  live: OperationalLive;
 }) {
   const accentColor =
     scene.accent === "gold" ? "#F5C560" : scene.accent === "emerald" ? "#2FBF8F" : "#3AE8FF";
@@ -1342,7 +1309,7 @@ function SceneLayer({
           </>
         )}
 
-        {scene.render && <div className="mt-5">{scene.render(live)}</div>}
+        {scene.render && <div className="mt-5">{scene.render()}</div>}
 
         <div className="mt-3 flex items-center justify-center">
           <ListenButton

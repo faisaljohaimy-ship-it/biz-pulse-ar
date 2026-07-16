@@ -23,7 +23,7 @@ import {
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
-import { supabase } from "@/integrations/supabase/client";
+import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -47,7 +47,7 @@ import { shouldSpeakAriaReply } from "@/lib/aria/reply-modality";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 // speakAria / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
-// pipeline below (ElevenLabs via /api/tts, gated on the voice toggle).
+// pipeline below (ElevenLabs via /api/aria/tts, gated on the voice toggle).
 import { useRouterState } from "@tanstack/react-router";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
@@ -78,7 +78,7 @@ function primeIOSAudio(): void {
   }
 }
 
-/** Semaphore limiting concurrent /api/tts requests. ElevenLabs subscription
+/** Semaphore limiting concurrent /api/aria/tts requests. ElevenLabs subscription
  *  caps parallel calls at 5; we use 3 to stay safely under while multiple
  *  sentence-level TTS requests are in-flight. */
 const ttsGate = (() => {
@@ -502,15 +502,12 @@ export function AriaCopilot() {
       // never trigger `concurrent_limit_exceeded` (429).
       await ttsGate.acquire(ctrl.signal);
       const reqT = performance.now();
-      VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/tts`, { idx, chars: text.length });
+      VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/aria/tts`, { idx, chars: text.length });
       try {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        const r = await fetch("/api/tts", {
+        const r = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ text: text.slice(0, 4000) }),
           signal: ctrl.signal,
@@ -558,7 +555,7 @@ export function AriaCopilot() {
         if (idx === 0) {
           AriaVoiceDebug.emit({
             source: "elevenlabs",
-            reason: token ? "authenticated" : "anonymous",
+            reason: "authenticated",
             voiceId: ARIA_ELEVENLABS_VOICE_ID,
           });
         }
@@ -1466,7 +1463,7 @@ export function AriaCopilot() {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xlsx,.xls,.csv,.txt,.md,.json"
+              accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.docx,.xlsx,.csv,.txt,.log,.md,.markdown,.json,.mp3,.mpeg,.wav,.webm,.m4a,.mp4,.ogg,.oga,.m4v,.mov,.qt"
               className="hidden"
               onChange={(e) => {
                 const files = Array.from(e.target.files ?? []);

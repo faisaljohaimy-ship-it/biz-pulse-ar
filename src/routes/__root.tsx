@@ -314,9 +314,10 @@ function RootComponent() {
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
   const isBridge = pathname.startsWith("/executive-bridge");
+  const isAccessGate = pathname.startsWith("/auth");
   const introActive = useIntroActive();
-  const suppressOverlays = isPromo || introActive;
-  const suppressMarquee = introActive;
+  const suppressOverlays = isPromo || isAccessGate || introActive;
+  const suppressMarquee = isAccessGate || introActive;
   const suppressClock = isPromo || isBridge;
 
   return (
@@ -330,17 +331,17 @@ function RootComponent() {
                   {/* Deepest ambient layer on EVERY page (incl. home): the
                       Arabian Peninsula, light-green pulse, four sector borders
                       in sky-blue, the active sector's border pulsing. */}
-                  {!introActive && <ArabianPeninsulaBackdrop />}
+                  {!introActive && !isAccessGate && <ArabianPeninsulaBackdrop />}
                   {/* Global ARIA hologram backdrop for every non-home page.
                       Homepage owns its own HomeVideoBackdrop. */}
-                  {!isHero && !isPromo && !introActive && <GlobalPageBackdrop />}
+                  {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}
                   {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
                   {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
                   {!suppressOverlays && <AriaWatermark />}
                   <div className="relative z-10">
                     <Outlet />
                   </div>
-                  {!introActive && <AriaCopilot />}
+                  {!introActive && !isAccessGate && <AriaCopilot />}
                   <InstallAppBar />
                   {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No

@@ -6,13 +6,14 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-// The two live voice sources: the homepage greeting video's soundtrack and
-// the copilot's Conversation-Mode reply TTS. Chat replies always outrank
-// the greeting.
-type Source = "hero-soundtrack" | "chat-tts";
+// The three live voice sources: homepage greeting, specialist-agent speech,
+// and the copilot's Conversation-Mode reply TTS. ARIA chat always wins;
+// specialist narration may preempt the greeting but never ARIA.
+type Source = "hero-soundtrack" | "agent-tts" | "chat-tts";
 
 const PRIORITY: Record<Source, number> = {
   "hero-soundtrack": 1,
+  "agent-tts": 2,
   "chat-tts": 3,
 };
 
@@ -33,6 +34,10 @@ let current: { source: Source; stop: StopFn } | null = null;
 let currentAudioEl: HTMLMediaElement | null = null;
 let unlocked = false;
 const listeners = new Set<Listener>();
+
+let browserSpeech: SpeechSynthesis | null = null;
+let nativeSpeak: ((utterance: SpeechSynthesisUtterance) => void) | null = null;
+let nativeCancel: (() => void) | null = null;
 
 function emit(e: BusEvent) {
   for (const l of listeners) {
@@ -72,28 +77,29 @@ function stopWatchdog() {
   }
 }
 
-// ── Runtime assertion: browser SpeechSynthesis is FULLY BANNED. ARIA speaks
-// only through pre-generated MP3 (greeting) or ElevenLabs (chat). Any call
-// is dropped and logged with a stack trace — never robotic voice again.
+// Capture the native engine once, then block every direct call. Specialist
+// speech can reach it only through speakAgentUtterance while agent-tts owns
+// the arbiter. ARIA never uses this engine; she remains ElevenLabs-only.
 if (typeof window !== "undefined" && window.speechSynthesis) {
-  const nativeCancel = window.speechSynthesis.cancel.bind(window.speechSynthesis);
+  browserSpeech = window.speechSynthesis;
+  nativeSpeak = browserSpeech.speak.bind(browserSpeech);
+  nativeCancel = browserSpeech.cancel.bind(browserSpeech);
   window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
     const owner = current?.source ?? null;
     const stack = new Error().stack?.split("\n").slice(2, 6).join(" | ");
-    VoiceTimeline.push("SPEECH_SYNTH", "speak() BLOCKED (browser TTS banned)", {
+    VoiceTimeline.push("SPEECH_SYNTH", "direct speak() BLOCKED (use governed agent voice)", {
       owner,
       lang: u.lang,
       voice: u.voice?.name,
       text: u.text?.slice(0, 60),
       stack,
     });
-    console.warn("[aria-voice] browser SpeechSynthesis blocked — no robotic voice", { owner });
-    // swallow silently: do NOT call nativeSpeak, do NOT throw.
+    console.warn("[agent-voice] ungoverned browser speech blocked", { owner });
     return;
   };
   window.speechSynthesis.cancel = () => {
     VoiceTimeline.push("CANCEL", "speechSynthesis.cancel()", { owner: current?.source ?? null });
-    return nativeCancel();
+    return nativeCancel?.();
   };
 }
 
@@ -104,6 +110,40 @@ export const AriaAudioBus = {
   },
   isUnlocked() {
     return unlocked;
+  },
+
+  /** Free voices currently exposed by the user's browser/operating system. */
+  systemVoices(): SpeechSynthesisVoice[] {
+    try {
+      return browserSpeech?.getVoices() ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /**
+   * The only authorized bridge to browser speech. It succeeds exclusively
+   * while the specialist channel owns the bus; callers cannot use it for ARIA.
+   */
+  speakAgentUtterance(utterance: SpeechSynthesisUtterance): boolean {
+    if (current?.source !== "agent-tts" || !nativeSpeak) return false;
+    VoiceTimeline.push("SPEECH_SYNTH", "governed free agent voice", {
+      owner: current.source,
+      lang: utterance.lang,
+      voice: utterance.voice?.name ?? "system-default",
+      text: utterance.text.slice(0, 60),
+    });
+    nativeSpeak(utterance);
+    return true;
+  },
+
+  cancelAgentUtterance(): void {
+    if (current?.source !== "agent-tts") return;
+    try {
+      nativeCancel?.();
+    } catch {
+      /* ignore */
+    }
   },
 
   /**
@@ -156,7 +196,12 @@ export const AriaAudioBus = {
     current = { source, stop };
     VoiceTimeline.push("OWNER", "ACQUIRED", {
       owner: source,
-      provider: source === "chat-tts" ? "elevenlabs-queue" : "greeting",
+      provider:
+        source === "chat-tts"
+          ? "elevenlabs-queue"
+          : source === "agent-tts"
+            ? "free-system-agent-voice"
+            : "greeting",
       stack,
       bypass,
     });

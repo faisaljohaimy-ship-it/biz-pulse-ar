@@ -1,60 +1,82 @@
 /**
- * speakAgent — single source of truth for tap-to-speak agent interaction.
+ * Specialist-agent speech adapters.
  *
- * Composes a bilingual self-introduction line for the selected agent
- * (identity + current task + confidence + last run) and pushes it onto
- * the AriaDock queue using the agent's own voice profile via the global
- * `window.aria.speak({ speaker })` bridge. Works across desktop, tablet,
- * and mobile because AriaDock itself is responsive.
+ * Every production agent id resolves deterministically to one of the canonical
+ * Digital Human specialists. Speech never replaces execution: these helpers
+ * only narrate verified state or the real summary returned by an agent run.
  */
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
-import { findHuman, ARIA, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import { speakAs, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
 
-function pickPersona(name: string): DigitalHumanSpec {
-  const n = name.toLowerCase();
-  const id = n.includes("incident")
-    ? "incident_commander"
-    : n.includes("risk")
-      ? "risk_intelligence"
-      : n.includes("compliance") || n.includes("audit")
-        ? "compliance_auditor"
-        : n.includes("cctv") || n.includes("camera")
-          ? "cctv_intelligence"
-          : n.includes("patrol")
-            ? "patrol_intelligence"
-            : n.includes("emergency")
-              ? "emergency_coordinator"
-              : n.includes("visitor")
-                ? "visitor_intelligence"
-                : n.includes("knowledge") || n.includes("kb")
-                  ? "knowledge_ai"
-                  : n.includes("report") || n.includes("brief")
-                    ? "executive_reporter"
-                    : n.includes("twin") || n.includes("asset")
-                      ? "digital_twin"
-                      : "risk_intelligence";
+type RuntimeAgentIdentity = {
+  id: string;
+  name: string;
+  metadata?: unknown;
+};
+
+function human(id: string): DigitalHumanSpec {
   return findHuman(id) ?? ARIA;
+}
+
+/** Maps every runtime definition — including legacy ids — to a voice persona. */
+export function resolveAgentSpeaker(agent: RuntimeAgentIdentity): DigitalHumanSpec {
+  const metadata =
+    agent.metadata && typeof agent.metadata === "object"
+      ? (agent.metadata as { category?: unknown; department?: unknown })
+      : {};
+  const haystack = [agent.id, agent.name, metadata.category, metadata.department]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+
+  if (/\baria\b/.test(haystack)) return ARIA;
+  if (/incident|triage/.test(haystack)) return human("incident_commander");
+  if (/emergency|crisis/.test(haystack)) return human("emergency_coordinator");
+  if (/compliance|audit|governance/.test(haystack)) return human("compliance_auditor");
+  if (/transport|visitor|access/.test(haystack)) return human("visitor_intelligence");
+  if (/knowledge|rag|document/.test(haystack)) return human("knowledge_ai");
+  if (/report|brief|notification|communication/.test(haystack)) {
+    return human("executive_reporter");
+  }
+  if (/twin|asset|maintenance/.test(haystack)) return human("digital_twin");
+  if (/patrol|operations|workflow|automation/.test(haystack)) return human("patrol_commander");
+  if (/cctv|camera|industrial.security|threat/.test(haystack)) {
+    return human("cctv_intelligence");
+  }
+  if (/risk|kpi|analytic|intelligence/.test(haystack)) return human("risk_intelligence");
+  return human("risk_intelligence");
 }
 
 const STATUS_AR: Record<string, string> = {
   idle: "في وضع الاستعداد",
+  ready: "جاهز للعمل",
+  running: "أنفّذ المهمة الحالية",
+  queued: "بانتظار دوري في التنفيذ",
   monitoring: "أراقب البيانات الحية",
   waiting: "بانتظار مدخلات",
   thinking: "أحلّل الوضع الراهن",
   searching: "أبحث في السجلات",
-  analyzing: "أجري تحليلًا تفصيليًا",
+  analyzing: "أجري تحليلاً تفصيلياً",
   consulting: "أتشاور مع الوكلاء",
   executing: "أنفّذ المهمة الحالية",
   speaking: "أتحدث الآن",
+  succeeded: "أكملت المهمة بنجاح",
   completed: "أكملت مهمتي الأخيرة",
+  failed: "تعذر إكمال المهمة",
   escalated: "أصعّد الحدث للقيادة",
   warning: "ألاحظ مؤشر تحذير",
-  error: "أعالج خطأً تشغيليًا",
+  error: "أعالج خطأً تشغيلياً",
   recovery: "في وضع الاسترداد",
-  offline: "غير متصل حاليًا",
+  disabled: "متوقف حالياً",
+  offline: "غير متصل حالياً",
 };
+
 const STATUS_EN: Record<string, string> = {
   idle: "on standby",
+  ready: "ready for work",
+  running: "executing the current task",
+  queued: "waiting in the execution queue",
   monitoring: "monitoring live telemetry",
   waiting: "awaiting input",
   thinking: "analyzing the current situation",
@@ -63,48 +85,61 @@ const STATUS_EN: Record<string, string> = {
   consulting: "consulting other agents",
   executing: "executing the current task",
   speaking: "speaking now",
-  completed: "have just completed my last task",
+  succeeded: "completed the task successfully",
+  completed: "completed my latest task",
+  failed: "could not complete the task",
   escalated: "escalating an event",
   warning: "tracking a warning indicator",
   error: "recovering from an operational error",
   recovery: "in recovery mode",
+  disabled: "currently disabled",
   offline: "currently offline",
 };
 
-export function speakAgent(agent: BridgeAgent, ar: boolean): void {
-  const w = window as unknown as {
-    aria?: {
-      speak: (turn: {
-        id?: string;
-        text_ar: string;
-        text_en: string;
-        speaker?: DigitalHumanSpec;
-      }) => void;
-    };
-  };
-  if (!w.aria?.speak) return;
+function cleanForSpeech(value: string | null | undefined, max = 900): string {
+  return (value ?? "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[*_#`>|{}[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
 
-  const speaker = pickPersona(agent.name);
+/** Speaks the real result or current state of any runtime agent. */
+export function speakRuntimeAgent(
+  agent: RuntimeAgentIdentity,
+  options: {
+    ar: boolean;
+    status: string;
+    summary?: string | null;
+    goal?: string | null;
+  },
+): SpeakHandle {
+  const speaker = resolveAgentSpeaker(agent);
+  const statusAr = STATUS_AR[options.status] ?? "أتابع العمل التشغيلي";
+  const statusEn = STATUS_EN[options.status] ?? "continuing operational work";
+  const detail = cleanForSpeech(options.summary || options.goal);
+  const text = options.ar
+    ? `أنا ${speaker.name_ar}، ${speaker.title_ar}. ${statusAr}.${detail ? ` النتيجة: ${detail}` : ""}`
+    : `I am ${speaker.name_en}, ${speaker.title_en}. I am ${statusEn}.${detail ? ` Result: ${detail}` : ""}`;
+
+  return speakAs(speaker, { text, lang: options.ar ? "ar" : "en" });
+}
+
+/** Tap-to-speak adapter used by the live Executive Bridge agent ring. */
+export function speakAgent(agent: BridgeAgent, ar: boolean): void {
+  const speaker = resolveAgentSpeaker({ id: agent.id, name: agent.name });
   const pct = Math.round(agent.confidence * 100);
   const statusAr = STATUS_AR[agent.status] ?? "في وضع المراقبة";
   const statusEn = STATUS_EN[agent.status] ?? "monitoring";
+  const task = cleanForSpeech(agent.current_task, 500);
+  const last = cleanForSpeech(agent.last_run_status, 120);
+  const text = ar
+    ? `أنا ${speaker.name_ar}، ${speaker.title_ar}. ${statusAr} بثقة ${pct} بالمئة.${task ? ` مهمتي الحالية: ${task}.` : ""}${last ? ` آخر تنفيذ: ${last}.` : ""}`
+    : `I am ${speaker.name_en}, ${speaker.title_en}. I am ${statusEn} with ${pct} percent confidence.${task ? ` Current task: ${task}.` : ""}${last ? ` Last run: ${last}.` : ""}`;
 
-  const taskAr = agent.current_task
-    ? `مهمتي الحالية: ${agent.current_task}.`
-    : "لا توجد مهمة مفتوحة في هذه اللحظة.";
-  const taskEn = agent.current_task
-    ? `Current task: ${agent.current_task}.`
-    : "No open task right now.";
-
-  const lastAr = agent.last_run_status
-    ? `آخر تنفيذ: ${agent.last_run_status === "completed" ? "اكتمل بنجاح" : agent.last_run_status}.`
-    : "";
-  const lastEn = agent.last_run_status ? `Last run: ${agent.last_run_status}.` : "";
-
-  const text_ar =
-    `أنا ${speaker.name_ar}، ${speaker.title_ar}. ${statusAr} بثقة ${pct} بالمئة. ${taskAr} ${lastAr}`.trim();
-  const text_en =
-    `I am ${speaker.name_en}, ${speaker.title_en}. I am ${statusEn} with ${pct} percent confidence. ${taskEn} ${lastEn}`.trim();
-
-  w.aria.speak({ id: `agent-tap-${agent.id}-${Date.now()}`, text_ar, text_en, speaker });
+  void speakAs(speaker, { text, lang: ar ? "ar" : "en" }).promise.catch((error) => {
+    console.warn("[agent-voice] tap narration failed", error);
+  });
 }

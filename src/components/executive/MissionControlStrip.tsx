@@ -22,10 +22,10 @@ export function MissionControlStrip() {
         return null;
       }
     },
-    refetchInterval: 45_000,
+    refetchInterval: false,
     refetchOnWindowFocus: false,
     retry: 1,
-    staleTime: 30_000,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const k = q.data;
@@ -45,7 +45,7 @@ export function MissionControlStrip() {
     isFiniteNumber(k.maintenance_pending) &&
     isFiniteNumber(k.projects_in_progress);
 
-  const pendingLabel = ar ? "قيد الربط" : "Live sync pending";
+  const pendingLabel = ar ? "قيد التحضير" : "Preview pending";
 
   const tiles = useMemo(() => {
     const has = (v: number | null | undefined): v is number =>
@@ -118,7 +118,7 @@ export function MissionControlStrip() {
 
   return (
     <section
-      aria-label="Mission Control live KPIs"
+      aria-label="Mission Control demonstration KPIs"
       className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6"
     >
       <div className="mb-3 flex items-center justify-between">
@@ -127,7 +127,7 @@ export function MissionControlStrip() {
             Mission Control
           </div>
           <h2 className="text-base font-semibold text-white">
-            {ar ? "نبض العمليات الحي" : "Live Operations Pulse"}
+            {ar ? "نبض العرض التنفيذي" : "Executive Demo Pulse"}
           </h2>
         </div>
         <span
@@ -138,19 +138,15 @@ export function MissionControlStrip() {
             className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-[color:var(--nx-warning)]" : q.isFetching || loading ? "bg-[color:var(--nx-cyan-2)] animate-pulse" : "bg-[color:var(--nx-success)]"}`}
             aria-hidden
           />
-          {failed
+          {failed || loading
             ? pendingLabel
-            : loading
+            : q.isFetching
               ? ar
-                ? "تحميل…"
-                : "Loading…"
-              : q.isFetching
-                ? ar
-                  ? "تحديث…"
-                  : "Updating…"
-                : ar
-                  ? "حي"
-                  : "Live"}
+                ? "تحديث العرض…"
+                : "Updating preview…"
+              : ar
+                ? "محاكاة معلنة"
+                : "LABELLED DEMO"}
         </span>
       </div>
 

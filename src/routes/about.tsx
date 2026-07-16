@@ -3,8 +3,8 @@ import { Sparkles, Shield, Bot, FileText, Smartphone, Radar } from "lucide-react
 import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
 import { DOMAIN_URL } from "@/lib/domain";
 
-const APP_VERSION = "1.3.0";
-const LAST_UPDATE = "2026-07-13";
+const APP_VERSION = "1.5.1";
+const LAST_UPDATE = "2026-07-16";
 
 const CAPABILITIES = [
   { icon: Sparkles, title: "عقل تنفيذي", desc: "RAG فوق المعرفة والذاكرة، وتعلّم أسبوعي ذاتي." },

@@ -2,10 +2,8 @@
  * Canonical self-hosted media contract for the pre-system cinematic welcome.
  * Keep the measured duration and hard cap aligned with the shipped MP4.
  */
-import welcomeIntroAsset from "../../public/media/nexios-welcome-intro.mp4.asset.json";
-
 export const WELCOME_INTRO_MEDIA = {
-  videoSrc: welcomeIntroAsset.url,
+  videoSrc: "/media/nexios-welcome-intro.mp4",
   posterSrc: "/media/nexios-welcome-intro-poster.webp",
   durationSeconds: 64.62,
   durationLabel: "01:05",

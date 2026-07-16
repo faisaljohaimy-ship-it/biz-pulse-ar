@@ -10,7 +10,12 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PlayCircle, StopCircle, Sparkles, Volume2, VolumeX } from "lucide-react";
-import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import {
+  ARIA,
+  DIGITAL_HUMANS,
+  findHuman,
+  type DigitalHumanSpec,
+} from "@/lib/digital-humans/registry";
 import { useDigitalHuman, type SpokenTurn } from "@/lib/digital-humans/engine";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
 import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
@@ -195,32 +200,16 @@ interface Props {
 
 export function PresentationMode({ ar, overview, displayName }: Props) {
   const [running, setRunning] = useState(false);
-  const [voiceOn, setVoiceOn] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(true);
   const [stepIdx, setStepIdx] = useState(0);
   const stepIdxRef = useRef(0);
   const voiceHandleRef = useRef<SpeakHandle | null>(null);
   const ampMapRef = useRef<Record<string, number>>({});
   const [, forceTick] = useState(0);
 
-  // ARIA + the 8 most-used specialists are rendered live on the stage
-  const stageSpecs = useMemo<DigitalHumanSpec[]>(
-    () => [
-      ARIA,
-      ...[
-        "incident_commander",
-        "risk_intelligence",
-        "compliance_auditor",
-        "cctv_intelligence",
-        "patrol_commander",
-        "emergency_coordinator",
-        "knowledge_ai",
-        "executive_reporter",
-      ]
-        .map((id) => findHuman(id))
-        .filter((s): s is DigitalHumanSpec => !!s),
-    ],
-    [],
-  );
+  // All 11 canonical Digital Humans are present — no specialist silently
+  // falls back to ARIA when its turn begins.
+  const stageSpecs = useMemo<DigitalHumanSpec[]>(() => DIGITAL_HUMANS, []);
 
   // Build one engine per stage human
   const aria = useDigitalHuman(stageSpecs[0]);
@@ -230,8 +219,10 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
   const cv = useDigitalHuman(stageSpecs[4]);
   const pt = useDigitalHuman(stageSpecs[5]);
   const em = useDigitalHuman(stageSpecs[6]);
-  const kb = useDigitalHuman(stageSpecs[7]);
-  const rp = useDigitalHuman(stageSpecs[8]);
+  const vi = useDigitalHuman(stageSpecs[7]);
+  const kb = useDigitalHuman(stageSpecs[8]);
+  const rp = useDigitalHuman(stageSpecs[9]);
+  const dt = useDigitalHuman(stageSpecs[10]);
 
   const runtimes = useMemo(
     () => ({
@@ -242,10 +233,12 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
       cctv_intelligence: cv,
       patrol_commander: pt,
       emergency_coordinator: em,
+      visitor_intelligence: vi,
       knowledge_ai: kb,
       executive_reporter: rp,
+      digital_twin: dt,
     }),
-    [aria, ic, ri, ca, cv, pt, em, kb, rp],
+    [aria, ic, ri, ca, cv, pt, em, vi, kb, rp, dt],
   );
 
   const script = useMemo(
@@ -415,9 +408,9 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
       </div>
 
       {/* Live stage */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 mb-5">
+      <div className="mb-5 grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-[repeat(11,minmax(0,1fr))]">
         {stageSpecs.map((s, i) => {
-          const r = [aria, ic, ri, ca, cv, pt, em, kb, rp][i];
+          const r = [aria, ic, ri, ca, cv, pt, em, vi, kb, rp, dt][i];
           const isActive = currentSpeakerId === s.id;
           const liveAmp = voiceOn ? (ampMapRef.current[s.id] ?? 0) : undefined;
           return (

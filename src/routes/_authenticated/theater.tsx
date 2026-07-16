@@ -128,7 +128,7 @@ function TheaterPage() {
     staleTime: 10_000,
   });
 
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const conductor = useConductor({ ar, voiceEnabled });
 
   const briefingMutation = useMutation({
@@ -441,7 +441,7 @@ function TheaterPage() {
         </section>
       </div>
 
-      {/* Spacer so AriaDock (mobile, bottom-center) doesn't overlap last card */}
+      {/* Mobile breathing room for the global ARIA launcher. */}
       <div className="h-32 sm:h-0" aria-hidden />
 
       <ExplainPanel

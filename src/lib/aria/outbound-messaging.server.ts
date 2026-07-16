@@ -1,12 +1,7 @@
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
-// The `aria_outbound_messages` / `aria_outbound_message_events` tables are
-// created by migration but not yet present in the generated Database types.
-// Fall back to a loosely-typed client for these calls; RLS still applies.
-const outboundDb = supabaseAdmin as unknown as SupabaseClient;
-type TablesUpdate<_T extends string> = Record<string, unknown>;
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { hasAnyPlatformRole, getCurrentOrgIdForUser } from "@/lib/authz.server";
 import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 import {
@@ -66,8 +61,8 @@ type LedgerRow = {
   actor_id: string;
   channel: OutboundChannel;
   content_hash: string;
-  payload_ciphertext: string;
-  payload_iv: string;
+  payload_ciphertext: string | null;
+  payload_iv: string | null;
   idempotency_key: string;
   status: OutboundLedgerStatus;
   approval_expires_at: string;
@@ -114,6 +109,15 @@ function base64ToBytes(value: string): Uint8Array {
   return bytes;
 }
 
+/**
+ * TypeScript 5.7 models a generic Uint8Array buffer as ArrayBufferLike, while
+ * WebCrypto deliberately rejects SharedArrayBuffer. Copying into a fresh
+ * ArrayBuffer keeps the boundary explicit and works in both Workers and Node.
+ */
+function cryptoBuffer(bytes: Uint8Array): ArrayBuffer {
+  return Uint8Array.from(bytes).buffer;
+}
+
 function toBase64Url(bytes: Uint8Array): string {
   return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
@@ -129,10 +133,6 @@ function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
   return diff === 0;
-}
-
-function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return bytes.slice().buffer as ArrayBuffer;
 }
 
 export async function sha256Hex(value: string): Promise<string> {
@@ -196,11 +196,9 @@ function additionalData(row: {
   actorId: string;
   orgId: string;
   contentHash: string;
-}): ArrayBuffer {
-  return asArrayBuffer(
-    new TextEncoder().encode(
-      `${row.id}|${row.actorId}|${row.orgId}|${row.contentHash}|aria-outbound-v1`,
-    ),
+}): Uint8Array {
+  return new TextEncoder().encode(
+    `${row.id}|${row.actorId}|${row.orgId}|${row.contentHash}|aria-outbound-v1`,
   );
 }
 
@@ -210,7 +208,11 @@ async function encryptPayload(
 ): Promise<{ ciphertext: string; iv: string }> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: asArrayBuffer(iv), additionalData: additionalData(row) },
+    {
+      name: "AES-GCM",
+      iv: cryptoBuffer(iv),
+      additionalData: cryptoBuffer(additionalData(row)),
+    },
     await encryptionKey(),
     new TextEncoder().encode(JSON.stringify(payload)),
   );
@@ -218,19 +220,24 @@ async function encryptPayload(
 }
 
 async function decryptPayload(row: LedgerRow): Promise<OutboundPayload> {
+  if (!row.payload_ciphertext || !row.payload_iv) {
+    throw new Error("Outbound payload has already been purged.");
+  }
   const plaintext = await crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: asArrayBuffer(base64ToBytes(row.payload_iv)),
-      additionalData: additionalData({
-        id: row.id,
-        actorId: row.actor_id,
-        orgId: row.org_id,
-        contentHash: row.content_hash,
-      }),
+      iv: cryptoBuffer(base64ToBytes(row.payload_iv)),
+      additionalData: cryptoBuffer(
+        additionalData({
+          id: row.id,
+          actorId: row.actor_id,
+          orgId: row.org_id,
+          contentHash: row.content_hash,
+        }),
+      ),
     },
     await encryptionKey(),
-    asArrayBuffer(base64ToBytes(row.payload_ciphertext)),
+    cryptoBuffer(base64ToBytes(row.payload_ciphertext)),
   );
   const parsed = JSON.parse(new TextDecoder().decode(plaintext)) as unknown;
   return OutboundPayloadSchema.parse(parsed);
@@ -311,7 +318,7 @@ async function appendLedgerEvent(input: {
   payloadHash: string;
   occurredAt?: string | null;
 }): Promise<"inserted" | "duplicate"> {
-  const { error } = await outboundDb.from("aria_outbound_message_events").insert({
+  const { error } = await supabaseAdmin.from("aria_outbound_message_events").insert({
     message_id: input.messageId,
     org_id: input.orgId,
     provider: input.provider,
@@ -371,7 +378,7 @@ export async function prepareAriaOutboundMessage(
     });
     const idempotencyKey = `aria-${payload.channel}-${id}`;
 
-    const { error } = await outboundDb.from("aria_outbound_messages").insert({
+    const { error } = await supabaseAdmin.from("aria_outbound_messages").insert({
       id,
       org_id: orgId,
       actor_id: userId,
@@ -386,16 +393,22 @@ export async function prepareAriaOutboundMessage(
     });
     if (error) throw new Error(`Unable to persist approval request: ${error.message}`);
 
-    await appendLedgerEvent({
-      messageId: id,
-      orgId,
-      provider: "internal",
-      providerEventId: `approval-requested:${id}`,
-      eventType: "approval.requested",
-      status: "pending_approval",
-      payloadHash: contentHash,
-      occurredAt: new Date().toISOString(),
-    });
+    try {
+      await appendLedgerEvent({
+        messageId: id,
+        orgId,
+        provider: "internal",
+        providerEventId: `approval-requested:${id}`,
+        eventType: "approval.requested",
+        status: "pending_approval",
+        payloadHash: contentHash,
+        occurredAt: new Date().toISOString(),
+      });
+    } catch (eventError) {
+      // Approval must never exist without its mandatory audit event.
+      await supabaseAdmin.from("aria_outbound_messages").delete().eq("id", id);
+      throw eventError;
+    }
 
     const approvalToken = await createApprovalToken({
       v: 1,
@@ -418,6 +431,23 @@ export async function prepareAriaOutboundMessage(
 }
 
 async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempotencyKey: string) {
+  // Prefer the provider with a signed delivery-event channel when both paths
+  // are configured. Outlook remains a compatible fallback but its gateway only
+  // confirms acceptance, not final mailbox delivery.
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const from = process.env.RESEND_FROM_EMAIL?.trim();
+  if (apiKey && from) {
+    const result = await sendResendEmail(apiKey, {
+      from,
+      to: payload.to,
+      cc: payload.cc,
+      subject: payload.subject,
+      html: payload.html,
+      idempotencyKey,
+    });
+    return { provider: "resend" as const, providerId: result.id, status: "accepted" };
+  }
+
   const headers = outlookHeaders();
   if (headers) {
     const message: Record<string, unknown> = {
@@ -445,18 +475,7 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
     };
   }
 
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  const from = process.env.RESEND_FROM_EMAIL?.trim();
-  if (!apiKey || !from) throw new Error("Resend is not configured.");
-  const result = await sendResendEmail(apiKey, {
-    from,
-    to: payload.to,
-    cc: payload.cc,
-    subject: payload.subject,
-    html: payload.html,
-    idempotencyKey,
-  });
-  return { provider: "resend" as const, providerId: result.id, status: "accepted" };
+  throw new Error("Email provider is not configured.");
 }
 
 async function dispatchSms(payload: z.infer<typeof SmsPayloadSchema>) {
@@ -497,7 +516,7 @@ export async function approveAriaOutboundMessageInternal(input: {
     throw new Error("Approval token does not belong to this request.");
   }
 
-  const { data: current, error: readError } = await outboundDb
+  const { data: current, error: readError } = await supabaseAdmin
     .from("aria_outbound_messages")
     .select(
       "id,org_id,actor_id,channel,content_hash,payload_ciphertext,payload_iv,idempotency_key,status,approval_expires_at,provider,provider_message_id,provider_status",
@@ -513,7 +532,7 @@ export async function approveAriaOutboundMessageInternal(input: {
     new Date(row.approval_expires_at).getTime() <= Date.now()
   ) {
     if (row.status === "pending_approval") {
-      await outboundDb
+      await supabaseAdmin
         .from("aria_outbound_messages")
         .update({ status: "expired" })
         .eq("id", row.id)
@@ -545,7 +564,7 @@ export async function approveAriaOutboundMessageInternal(input: {
   // row; every other request receives zero rows and therefore cannot call a
   // provider. A stuck dispatch is reconciled manually, never auto-retried.
   const now = new Date().toISOString();
-  const { data: claimed, error: claimError } = await outboundDb
+  const { data: claimed, error: claimError } = await supabaseAdmin
     .from("aria_outbound_messages")
     .update({ status: "dispatching", approved_by: input.userId, approved_at: now })
     .eq("id", row.id)
@@ -568,7 +587,7 @@ export async function approveAriaOutboundMessageInternal(input: {
   const claimedRow = claimed as LedgerRow;
   const payload = await decryptPayload(claimedRow);
   if ((await sha256Hex(JSON.stringify(payload))) !== claimedRow.content_hash) {
-    await outboundDb
+    await supabaseAdmin
       .from("aria_outbound_messages")
       .update({ status: "failed", failure_code: "content_integrity_failed" })
       .eq("id", claimedRow.id);
@@ -586,17 +605,76 @@ export async function approveAriaOutboundMessageInternal(input: {
     occurredAt: now,
   });
 
-  let result: Awaited<ReturnType<typeof dispatchEmail>> | Awaited<ReturnType<typeof dispatchSms>>;
   try {
-    result =
+    const result =
       payload.channel === "email"
         ? await dispatchEmail(payload, claimedRow.idempotency_key)
         : await dispatchSms(payload);
-  } catch (error) {
-    const failure = safeFailure(error);
-    await outboundDb
+    const delivered = result.status === "delivered";
+    const state: OutboundLedgerStatus = delivered ? "delivered" : "accepted";
+    const dispatchedAt = new Date().toISOString();
+    const { error: updateError } = await supabaseAdmin
       .from("aria_outbound_messages")
       .update({
+        status: state,
+        provider: result.provider,
+        provider_message_id: result.providerId,
+        provider_status: result.status,
+        dispatched_at: dispatchedAt,
+        delivered_at: delivered ? dispatchedAt : null,
+        failure_code: null,
+        failure_detail: null,
+      })
+      .eq("id", claimedRow.id)
+      .eq("status", "dispatching");
+    if (updateError) {
+      // The provider may have accepted the send. Keep the row in dispatching
+      // and never retry automatically; this is safer than risking a duplicate.
+      return {
+        ok: true,
+        status: "unknown",
+        provider: result.provider,
+        messageId: result.providerId,
+        error: "Provider accepted the message; ledger reconciliation is required.",
+      };
+    }
+    try {
+      await appendLedgerEvent({
+        messageId: claimedRow.id,
+        orgId: claimedRow.org_id,
+        provider: result.provider,
+        providerEventId: `provider-accepted:${claimedRow.id}`,
+        eventType: "provider.accepted",
+        status: result.status,
+        payloadHash: claimedRow.content_hash,
+        occurredAt: dispatchedAt,
+      });
+    } catch {
+      // The provider and primary ledger already confirm acceptance. Never mark
+      // this as failed or retry the send because the secondary event write
+      // needs reconciliation.
+      return {
+        ok: true,
+        status: state,
+        provider: result.provider,
+        messageId: result.providerId,
+        error: "Message accepted; delivery-event audit reconciliation is required.",
+      };
+    }
+    return {
+      ok: true,
+      status: state,
+      provider: result.provider,
+      messageId: result.providerId,
+    };
+  } catch (error) {
+    const failure = safeFailure(error);
+    await supabaseAdmin
+      .from("aria_outbound_messages")
+      .update({
+        // A thrown provider request can be ambiguous after the one-time claim:
+        // the remote service may have accepted it before the connection failed.
+        // Keep the outcome unknown and never expose an automatic retry path.
         status: "unknown",
         failure_code: "provider_dispatch_uncertain",
         failure_detail: failure.detail,
@@ -615,8 +693,8 @@ export async function approveAriaOutboundMessageInternal(input: {
         occurredAt: new Date().toISOString(),
       });
     } catch {
-      // The message row is the durable source of truth. Event reconciliation
-      // is an operator action and must never trigger an automatic resend.
+      // The primary ledger remains the durable source of truth. Event repair
+      // is an operator action and must never trigger another provider call.
     }
     return {
       ok: false,
@@ -624,61 +702,6 @@ export async function approveAriaOutboundMessageInternal(input: {
       error: `Provider outcome is uncertain; no retry was attempted. ${failure.detail}`,
     };
   }
-
-  const delivered = result.status === "delivered";
-  const state: OutboundLedgerStatus = delivered ? "delivered" : "accepted";
-  const dispatchedAt = new Date().toISOString();
-  const { error: updateError } = await outboundDb
-    .from("aria_outbound_messages")
-    .update({
-      status: state,
-      provider: result.provider,
-      provider_message_id: result.providerId,
-      provider_status: result.status,
-      dispatched_at: dispatchedAt,
-      delivered_at: delivered ? dispatchedAt : null,
-      failure_code: null,
-      failure_detail: null,
-    })
-    .eq("id", claimedRow.id)
-    .eq("status", "dispatching");
-  if (updateError) {
-    // The provider accepted the send. Keep the one-time claim consumed and
-    // never retry automatically; this is safer than risking a duplicate.
-    return {
-      ok: true,
-      status: "unknown",
-      provider: result.provider,
-      messageId: result.providerId,
-      error: "Provider accepted the message; ledger reconciliation is required.",
-    };
-  }
-  try {
-    await appendLedgerEvent({
-      messageId: claimedRow.id,
-      orgId: claimedRow.org_id,
-      provider: result.provider,
-      providerEventId: `provider-accepted:${claimedRow.id}`,
-      eventType: "provider.accepted",
-      status: result.status,
-      payloadHash: claimedRow.content_hash,
-      occurredAt: dispatchedAt,
-    });
-  } catch {
-    return {
-      ok: true,
-      status: state,
-      provider: result.provider,
-      messageId: result.providerId,
-      error: "Message accepted; the event ledger requires reconciliation.",
-    };
-  }
-  return {
-    ok: true,
-    status: state,
-    provider: result.provider,
-    messageId: result.providerId,
-  };
 }
 
 export async function cancelAriaOutboundMessageInternal(input: {
@@ -686,11 +709,12 @@ export async function cancelAriaOutboundMessageInternal(input: {
   ledgerId: string;
   approvalToken: string;
 }): Promise<{ ok: boolean; status: OutboundLedgerStatus }> {
+  await requireSenderRole(input.userId);
   const claims = await verifyApprovalToken(input.approvalToken);
   if (claims.ledgerId !== input.ledgerId || claims.actorId !== input.userId) {
     throw new Error("Approval token does not belong to this request.");
   }
-  const { data, error } = await outboundDb
+  const { data, error } = await supabaseAdmin
     .from("aria_outbound_messages")
     .update({ status: "cancelled" })
     .eq("id", input.ledgerId)
@@ -736,7 +760,7 @@ export async function recordOutboundProviderEvent(input: {
   occurredAt?: string | null;
   failureCode?: string | null;
 }): Promise<"updated" | "duplicate" | "not_found"> {
-  const { data, error } = await outboundDb
+  const { data, error } = await supabaseAdmin
     .from("aria_outbound_messages")
     .select("id,org_id,status,content_hash")
     .eq("provider", input.provider)
@@ -769,7 +793,7 @@ export async function recordOutboundProviderEvent(input: {
   } else if (input.status === "failed" && status === "failed") {
     deliveryUpdate.failure_code = input.failureCode ?? "provider_failed";
   }
-  const { error: updateError } = await outboundDb
+  const { error: updateError } = await supabaseAdmin
     .from("aria_outbound_messages")
     .update(deliveryUpdate)
     .eq("id", data.id);

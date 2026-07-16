@@ -68,6 +68,10 @@
   --nx-warning: #ffb703;
   --nx-critical: #ff4d6d;
   --nx-info: #4cc9f0;
+  --nx-obsidian: #020811;
+  --nx-ink: #04111f;
+  --nx-pearl: #eaf8ff;
+  --nx-gold: #f5c560;
   --nx-white: #ffffff;
   --nx-text-soft: #d7eaf4;
   --nx-text-muted: #8fafc4;
@@ -273,18 +277,15 @@
 
   /* Glassmorphism — Executive Frosted */
   .glass {
-    background:
-      linear-gradient(135deg, rgba(125, 211, 252, 0.12), transparent 42%),
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--nx-surface) 55%, transparent),
-        color-mix(in srgb, var(--nx-bg-2) 45%, transparent)
-      );
-    backdrop-filter: blur(22px) saturate(170%);
-    border: 1px solid rgba(125, 211, 252, 0.28);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--nx-surface) 55%, transparent),
+      color-mix(in srgb, var(--nx-bg-2) 45%, transparent)
+    );
+    backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid color-mix(in srgb, var(--nx-cyan) 16%, transparent);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      inset 0 0 28px -14px rgba(125, 211, 252, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
       0 8px 32px -12px rgba(2, 8, 20, 0.55);
   }
   .glass-strong {
@@ -309,16 +310,11 @@
     border-right: 1px solid color-mix(in srgb, var(--nx-cyan) 12%, transparent);
   }
   .glass-card {
-    background:
-      linear-gradient(135deg, rgba(125, 211, 252, 0.12), transparent 44%),
-      var(--gradient-glass), color-mix(in srgb, var(--nx-card) 55%, var(--nx-bg-2));
-    backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(125, 211, 252, 0.26);
+    background: var(--gradient-glass), color-mix(in srgb, var(--nx-card) 55%, var(--nx-bg-2));
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid color-mix(in srgb, var(--nx-cyan) 14%, transparent);
     border-radius: var(--radius);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      inset 0 0 26px -14px rgba(125, 211, 252, 0.4),
-      var(--shadow-card);
+    box-shadow: var(--shadow-card);
     transition:
       transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
       box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -1987,40 +1983,6 @@ body {
   }
 }
 
-@keyframes aria-approval-scan {
-  0%, 16% {
-    transform: translate3d(-180%, 0, 0) skewX(-18deg);
-    opacity: 0;
-  }
-  28% {
-    opacity: 0.46;
-  }
-  62%, 100% {
-    transform: translate3d(820%, 0, 0) skewX(-18deg);
-    opacity: 0;
-  }
-}
-
-@keyframes aria-approval-border {
-  0%, 100% { box-shadow: 0 24px 70px rgba(0,7,18,.52), 0 0 28px rgba(34,211,238,.10), inset 0 1px 0 rgba(255,255,255,.08); }
-  50% { box-shadow: 0 24px 74px rgba(0,7,18,.58), 0 0 42px rgba(59,130,246,.18), inset 0 1px 0 rgba(255,255,255,.11); }
-}
-
-.aria-approval-card {
-  animation: aria-approval-border 5.6s ease-in-out infinite;
-}
-
-.aria-approval-scan {
-  animation: aria-approval-scan 5.8s cubic-bezier(.22,1,.36,1) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aria-approval-card,
-  .aria-approval-scan {
-    animation: none !important;
-  }
-}
-
 @keyframes nexus-window-rail {
   0%,
   100% {
@@ -2122,6 +2084,8 @@ body {
 }
 
 .nexus-card {
+  position: relative;
+  isolation: isolate;
   border: 1px solid rgba(0, 212, 255, 0.13);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 44%),
@@ -2140,7 +2104,16 @@ body {
 .nexus-card:hover {
   border-color: rgba(0, 212, 255, 0.25);
   box-shadow:
-    0 20px 54px -36px rgba(0, 212, 255, 0.34),
+    0 24px 64px -38px rgba(var(--nx-region-rgb), 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.nexus-card:focus-within {
+  border-color: rgba(var(--nx-region-rgb), 0.42);
+  box-shadow:
+    0 0 0 3px rgba(var(--nx-region-rgb), 0.08),
+    0 24px 64px -38px rgba(var(--nx-region-rgb), 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -2259,6 +2232,136 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+/* --------------------------------------------------------------------------
+   NEXIOS Identity System 4.0 — sovereign spatial intelligence
+   High-recognition public/activation surfaces with no image dependency.
+   -------------------------------------------------------------------------- */
+@keyframes nexus-identity-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+  }
+}
+
+@keyframes nexus-chip-breathe {
+  0%,
+  100% {
+    border-color: rgba(0, 212, 255, 0.2);
+    box-shadow: 0 0 0 rgba(0, 212, 255, 0);
+  }
+  50% {
+    border-color: rgba(58, 232, 255, 0.42);
+    box-shadow: 0 0 24px -14px rgba(0, 212, 255, 0.72);
+  }
+}
+
+.nexus-identity-stage {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(0, 212, 255, 0.12), transparent 68%),
+    linear-gradient(155deg, #020811 0%, #04111f 42%, #061a2e 74%, #020811 100%);
+}
+
+.nexus-identity-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.012), transparent),
+    radial-gradient(ellipse 60% 38% at 50% 100%, rgba(32, 227, 178, 0.08), transparent 70%);
+  mix-blend-mode: screen;
+}
+
+.nexus-identity-grid {
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(58, 232, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 232, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size:
+    64px 64px,
+    64px 64px,
+    16px 16px,
+    16px 16px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 35%, #000 20%, transparent 82%);
+  mask-image: radial-gradient(ellipse 90% 75% at 50% 35%, #000 20%, transparent 82%);
+}
+
+.nexus-identity-aurora {
+  opacity: 0.32;
+  filter: blur(80px);
+  background: radial-gradient(closest-side, rgba(0, 212, 255, 0.34), transparent 72%);
+  animation: nexus-identity-drift 22s ease-in-out infinite;
+}
+
+.nexus-identity-aurora-secondary {
+  opacity: 0.22;
+  background: radial-gradient(closest-side, rgba(32, 227, 178, 0.3), transparent 72%);
+  animation-duration: 29s;
+  animation-direction: reverse;
+}
+
+.nexus-command-chip {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.09), rgba(4, 17, 31, 0.58));
+  padding: 0.35rem 0.72rem;
+  color: rgba(234, 248, 255, 0.78);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
+  backdrop-filter: blur(12px) saturate(135%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 12px 28px -22px rgba(0, 212, 255, 0.7);
+  animation: nexus-chip-breathe 5s ease-in-out infinite;
+}
+
+.nexus-hero-title {
+  color: var(--nx-pearl);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18),
+    0 16px 60px rgba(0, 0, 0, 0.72),
+    0 0 44px rgba(0, 212, 255, 0.14);
+  text-wrap: balance;
+}
+
+.nexus-sidebar {
+  box-shadow:
+    18px 0 80px -46px rgba(0, 212, 255, 0.28),
+    inset -1px 0 0 rgba(255, 255, 255, 0.025);
+}
+
+[dir="rtl"] .nexus-sidebar {
+  box-shadow:
+    -18px 0 80px -46px rgba(0, 212, 255, 0.28),
+    inset 1px 0 0 rgba(255, 255, 255, 0.025);
+}
+
+.nexus-mobile-header {
+  box-shadow:
+    0 16px 40px -30px rgba(0, 212, 255, 0.55),
+    inset 0 -1px 0 rgba(58, 232, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-identity-aurora,
+  .nexus-command-chip {
+    animation: none !important;
+  }
+}
+
 .nexus-aria-launcher {
   isolation: isolate;
   box-shadow:
@@ -2316,49 +2419,4 @@ body {
   .nexus-aria-launcher::before {
     animation: none !important;
   }
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   Premium light-blue glass window — dazzling, modern, with a moving shine.
-   Region-tinted surfaces (.nx-cmd-surface) are intentionally NOT affected.
-   ══════════════════════════════════════════════════════════════════════════ */
-.nx-glass-blue {
-  position: relative;
-  background:
-    linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(59, 130, 246, 0.06) 46%, rgba(4, 17, 31, 0.55));
-  backdrop-filter: blur(22px) saturate(170%);
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-  border: 1px solid rgba(125, 211, 252, 0.4);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 0 34px -14px rgba(125, 211, 252, 0.55),
-    0 24px 60px -28px rgba(56, 189, 248, 0.55);
-  overflow: hidden;
-}
-.nx-glass-blue::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%);
-  pointer-events: none;
-  z-index: 1;
-}
-@keyframes nx-glass-shine {
-  0%, 55% { transform: translateX(-160%) skewX(-18deg); }
-  100% { transform: translateX(320%) skewX(-18deg); }
-}
-.nx-glass-blue::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 35%;
-  left: 0;
-  background: linear-gradient(105deg, transparent, rgba(191, 235, 255, 0.3), transparent);
-  animation: nx-glass-shine 6.5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 2;
-}
-@media (prefers-reduced-motion: reduce) {
-  .nx-glass-blue::after { animation: none; opacity: 0; }
 }

@@ -1,20 +1,24 @@
 /**
  * ARIA Voice — bilingual client-side speech for the Executive Digital
- * Human. Calls the public ARIA TTS route (Lovable AI Gateway fallback),
- * plays the returned MP3 through a Web Audio graph, and emits 0..1 amplitude samples so the SVG avatar
- * (or any future provider) can drive natural lip-sync.
+ * Human. ARIA uses her authenticated ElevenLabs MP3 route; specialist agents
+ * use free browser/OS voices through the governed audio bus. Both paths emit
+ * 0..1 amplitude samples so the avatar can drive lip-sync.
  *
- * Voice profile selection is fully automatic: the engine inspects the
- * text for Arabic script and chooses an appropriate voice/instruction
- * pair. Callers do not pick voices.
+ * Voice routing is fully automatic. ARIA always uses her locked ElevenLabs
+ * endpoint; specialists use curated device-voice preferences with automatic
+ * same-language fallbacks. Callers can never inject a provider voice id.
  *
  * Designed to be replaceable: when an external avatar provider (Azure
  * AI Avatar, HeyGen, D-ID) is wired in, that provider can either consume
  * the same amplitude callback to drive its own lip-sync or take over
  * audio synthesis entirely — only this file changes.
  */
-import { resolveVoice, type VoiceLang } from "./voice-profiles";
+import type { VoiceLang } from "./voice-profiles";
 import type { DigitalHumanSpec } from "./registry";
+import { speakFreeAgent } from "./free-agent-speech";
+import { authenticatedFetch } from "@/lib/auth-fetch";
+import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { getPrimedAudioContext } from "@/lib/user-interaction";
 
 export type { VoiceLang } from "./voice-profiles";
 
@@ -28,6 +32,8 @@ export interface SpeakOptions {
   lang?: VoiceLang;
   /** Optional persona — picks voice + instructions for that Digital Human. */
   voiceProfileId?: string;
+  /** Registry identity. Omitted means the canonical ARIA identity. */
+  speakerId?: string;
   /** Called continuously with 0..1 mouth amplitude. */
   onAmplitude?: (a: number) => void;
   /** Called once when audio actually begins. */
@@ -43,6 +49,11 @@ export function detectLang(text: string): VoiceLang {
 
 let sharedCtx: AudioContext | null = null;
 function getAudioContext(): AudioContext {
+  const primed = getPrimedAudioContext();
+  if (primed && primed.state !== "closed") {
+    sharedCtx = primed;
+    return primed;
+  }
   try {
     if (sharedCtx && sharedCtx.state !== "closed") return sharedCtx;
   } catch {
@@ -60,20 +71,29 @@ function getAudioContext(): AudioContext {
   return sharedCtx;
 }
 
-/**
- * Global singleton speech lock — guarantees only ONE ARIA voice is audible
- * across the entire system at any time. Any new speakAria() call stops the
- * previous handle before starting, preventing overlapping/duplicate audio
- * from route auto-intros, icon narration, copilot replies, greetings, etc.
+/** Pending and active Digital Human speech handles. Audible ownership itself
+ * stays with AriaAudioBus so a lower-priority specialist can never cancel ARIA.
  */
-let activeHandle: SpeakHandle | null = null;
+const activeHandles = new Set<SpeakHandle>();
+
+function trackHandle<T extends SpeakHandle>(handle: T): T {
+  activeHandles.add(handle);
+  void handle.promise.then(
+    () => activeHandles.delete(handle),
+    () => activeHandles.delete(handle),
+  );
+  return handle;
+}
+
 export function stopActiveAriaVoice(): void {
-  try {
-    activeHandle?.stop();
-  } catch {
-    /* ignore */
+  for (const handle of activeHandles) {
+    try {
+      handle.stop();
+    } catch {
+      /* ignore */
+    }
   }
-  activeHandle = null;
+  activeHandles.clear();
 }
 
 /**
@@ -82,23 +102,26 @@ export function stopActiveAriaVoice(): void {
  * (no localStorage / no cookies).
  */
 export function speakAria(opts: SpeakOptions): SpeakHandle {
-  // Enforce single-voice invariant: cancel any currently-playing utterance.
-  stopActiveAriaVoice();
-  // Also silence any browser SpeechSynthesis that other subsystems may have
-  // triggered, so voices never overlap across engines.
-  try {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  } catch {
-    /* ignore */
-  }
   const lang = opts.lang ?? detectLang(opts.text);
-  const { voice, instructions } = resolveVoice(opts.voiceProfileId ?? "aria", lang);
+  const speakerId = opts.speakerId ?? "aria";
+
+  if (speakerId !== "aria") {
+    return trackHandle(
+      speakFreeAgent({
+        text: opts.text,
+        lang,
+        voiceProfileId: opts.voiceProfileId,
+        onAmplitude: opts.onAmplitude,
+        onStart: opts.onStart,
+        signal: opts.signal,
+      }),
+    );
+  }
 
   let stopped = false;
   let source: AudioBufferSourceNode | null = null;
   let raf = 0;
+  let ownsBus = false;
 
   const stop = () => {
     stopped = true;
@@ -109,6 +132,10 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
     }
     cancelAnimationFrame(raf);
     opts.onAmplitude?.(0);
+    if (ownsBus) {
+      ownsBus = false;
+      AriaAudioBus.release("chat-tts");
+    }
   };
 
   if (opts.signal) {
@@ -118,10 +145,14 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   const promise = (async () => {
     try {
-      const res = await fetch("/api/public/aria-tts", {
+      // Do not spend ARIA provider quota before the first real gesture.
+      // The global interaction tracker unlocks this synchronously on pointer,
+      // keyboard, or touch input across desktop and mobile.
+      if (!AriaAudioBus.isUnlocked()) return;
+      const res = await authenticatedFetch("/api/aria/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: opts.text, voiceId: voice, instructions }),
+        body: JSON.stringify({ text: opts.text }),
       });
       if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       if (stopped) return;
@@ -130,6 +161,9 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       const buf = await res.arrayBuffer();
       const audio = await ctx.decodeAudioData(buf);
       if (stopped) return;
+
+      ownsBus = AriaAudioBus.acquire("chat-tts", stop);
+      if (!ownsBus) return;
 
       source = ctx.createBufferSource();
       source.buffer = audio;
@@ -171,27 +205,27 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
       opts.onStart?.();
       source.start();
+      AriaAudioBus.notifyPlaying("chat-tts");
       sampleAmp();
       await done;
     } catch (err) {
       cancelAnimationFrame(raf);
       opts.onAmplitude?.(0);
-      // Browser SpeechSynthesis fallback REMOVED — outside Greeting Mode the
-      // policy is silence over a robotic voice. Segment is skipped.
-      console.warn(
-        "[aria-voice] speakAria TTS failed — segment skipped (no browser fallback)",
-        err,
-      );
+      // ARIA never falls back to a specialist/system voice: identity over
+      // substitution. Her failed segment remains silent.
+      console.warn("[aria-voice] ARIA TTS failed — segment skipped", err);
       if (!stopped) throw err;
+    } finally {
+      if (ownsBus) {
+        AriaAudioBus.notifyStopped("chat-tts");
+        ownsBus = false;
+        AriaAudioBus.release("chat-tts");
+      }
     }
   })();
 
   const handle: SpeakHandle = { promise, stop };
-  activeHandle = handle;
-  promise.finally(() => {
-    if (activeHandle === handle) activeHandle = null;
-  });
-  return handle;
+  return trackHandle(handle);
 }
 
 /**
@@ -200,8 +234,8 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
  * tone instructions. The lip-sync amplitude contract is identical.
  */
 export function speakAs(
-  spec: Pick<DigitalHumanSpec, "voiceProfileId">,
+  spec: Pick<DigitalHumanSpec, "id" | "voiceProfileId">,
   opts: Omit<SpeakOptions, "voiceProfileId">,
 ): SpeakHandle {
-  return speakAria({ ...opts, voiceProfileId: spec.voiceProfileId });
+  return speakAria({ ...opts, speakerId: spec.id, voiceProfileId: spec.voiceProfileId });
 }

@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { randomUUID } from "crypto";
 import { httpFetch } from "@/lib/api/http.server";
-import { isApiError } from "@/lib/api/errors";
+import { isApiError } from "@/lib/api";
 import { hasPlatformRole } from "@/lib/authz.server";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
@@ -33,11 +34,7 @@ export type PublishErrorEnvelope = {
 };
 
 function fail(env: Omit<PublishErrorEnvelope, "__publishError" | "requestId">): never {
-  const payload: PublishErrorEnvelope = {
-    __publishError: true,
-    requestId: crypto.randomUUID(),
-    ...env,
-  };
+  const payload: PublishErrorEnvelope = { __publishError: true, requestId: randomUUID(), ...env };
   throw new Error(JSON.stringify(payload));
 }
 

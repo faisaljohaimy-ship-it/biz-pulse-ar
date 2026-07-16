@@ -24,8 +24,12 @@ jobs:
         run: npm run lint
       - name: Unit tests
         run: npm test
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
       - name: Build
         run: npm run build
+      - name: Enforce performance budget
+        run: npm run check:performance
       - name: Smoke check bundle
         run: test -d dist || test -d .output
 
@@ -43,6 +47,8 @@ jobs:
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
       PLAYWRIGHT_BASE_URL: http://localhost:8080
     steps:
       - uses: actions/checkout@v4
@@ -50,6 +56,8 @@ jobs:
         run: |
           test -n "$VITE_SUPABASE_URL" || { echo "::error::VITE_SUPABASE_URL is required"; exit 1; }
           test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "::error::VITE_SUPABASE_PUBLISHABLE_KEY is required"; exit 1; }
+          test -n "$E2E_TEST_EMAIL" || { echo "::error::E2E_TEST_EMAIL is required"; exit 1; }
+          test -n "$E2E_TEST_PASSWORD" || { echo "::error::E2E_TEST_PASSWORD is required"; exit 1; }
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -60,7 +68,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Start dev server
         run: |
-          npm run dev > /tmp/dev.log 2>&1 &
+          npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/dev.log 2>&1 &
           echo $! > /tmp/dev.pid
           for i in $(seq 1 60); do
             if curl -sf http://localhost:8080 > /dev/null; then
@@ -82,3 +90,9 @@ jobs:
       - name: Stop dev server
         if: always()
         run: if [ -f /tmp/dev.pid ]; then kill "$(cat /tmp/dev.pid)" || true; fi
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [verify, security-gap-closure-e2e]
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

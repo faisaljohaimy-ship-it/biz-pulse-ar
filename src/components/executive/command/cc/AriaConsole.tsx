@@ -1,30 +1,27 @@
 /**
  * AriaConsole — the command center's ARIA assistant: a holographic avatar
- * frame, a live status + waveform, the capability checklist and a mic CTA to
- * the full ARIA engine. Pure CSS/SVG (no external avatar asset — those 404 on
- * the edge). Reduced-motion safe.
+ * frame, the singleton runtime status + waveform, the capability checklist,
+ * and a CTA to the one official ARIA surface. It never simulates a second
+ * listening/speaking state.
  */
-import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, Mic, User } from "lucide-react";
 import { CC_ARIA_CAPS } from "../commandCenterData";
+import { useAria } from "@/lib/aria-core/hooks/useAria";
 
 const BARS = Array.from({ length: 26 }, (_, i) => 26 + Math.abs(Math.sin(i * 0.9)) * 74);
-const STATES = [
-  { ar: "جاهزة للمساعدة", en: "Ready to assist" },
-  { ar: "تستمع…", en: "Listening…" },
-  { ar: "تُفكّر…", en: "Thinking…" },
-  { ar: "تتحدّث…", en: "Speaking…" },
-] as const;
+const STATES = {
+  idle: { ar: "جاهزة للمساعدة", en: "Ready to assist" },
+  listening: { ar: "تستمع…", en: "Listening…" },
+  processing: { ar: "تُفكّر…", en: "Thinking…" },
+  speaking: { ar: "تتحدّث…", en: "Speaking…" },
+  unavailable: { ar: "الصوت غير متاح", en: "Voice unavailable" },
+} as const;
 
 export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
-  const [phase, setPhase] = useState(0);
-  useEffect(() => {
-    const id = window.setInterval(() => setPhase((p) => (p + 1) % STATES.length), 2600);
-    return () => window.clearInterval(id);
-  }, []);
-  const active = phase !== 0;
-  const status = STATES[phase];
+  const { voice } = useAria();
+  const active = voice === "listening" || voice === "processing" || voice === "speaking";
+  const status = STATES[voice];
 
   return (
     <section

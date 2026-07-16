@@ -140,7 +140,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   }, [chat.status, chat.messages]);
 
   // ── TTS is owned EXCLUSIVELY by <AriaCopilot> (sentence-queued ElevenLabs
-  // ── pipeline via /api/tts on a single AriaAudioBus "chat-tts" token).
+  // ── pipeline via /api/aria/tts on a single AriaAudioBus "chat-tts" token).
   // ── A second speak() path here caused the "first sentence clean, rest
   // ── robotic" bug: both pipelines called AriaAudioBus.acquire("chat-tts"),
   // ── stomped each other, and the loser dropped into browser

@@ -1,9 +1,9 @@
 /**
- * Voice diagnostics — explicit, no-silent-fail probe of the ElevenLabs
- * voice stack. Returns structured per-check results so the Voice Setup
- * wizard can show the executive exactly which layer is broken.
+ * Canonical ARIA voice diagnostics.
  *
- * Never returns the API key, agent ID, or any token. Authenticated only.
+ * This endpoint verifies the single server-side ElevenLabs TTS identity used
+ * by ARIA. It intentionally does not mint realtime, Scribe, or Conversational
+ * AI tokens: conversation ownership stays in the root-mounted ARIA copilot.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
@@ -12,9 +12,10 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { ARIA_ELEVENLABS_MODEL, ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
 
 type Check = {
-  id: string;
+  id: "api_key" | "canonical_voice" | "canonical_runtime";
   label: string;
   status: "ok" | "missing" | "failed" | "skipped";
   detail?: string;
@@ -27,176 +28,94 @@ async function probeApiKey(apiKey: string | undefined): Promise<Check> {
       id: "api_key",
       label: "ElevenLabs API key",
       status: "missing",
-      fix: "Link the ElevenLabs connector in Settings → Connectors, or add ELEVENLABS_API_KEY.",
+      fix: "Add ELEVENLABS_API_KEY as a protected deployment secret.",
     };
   }
+
   try {
-    const r = await fetch("https://api.elevenlabs.io/v1/user", {
+    const response = await fetch("https://api.elevenlabs.io/v1/user", {
       headers: { "xi-api-key": apiKey },
       signal: AbortSignal.timeout(8_000),
     });
-    if (r.status === 401) {
+    if (!response.ok) {
       return {
         id: "api_key",
         label: "ElevenLabs API key",
         status: "failed",
-        detail: "401 Unauthorized — key invalid or revoked.",
-        fix: "Rotate the key in the ElevenLabs dashboard and re-link the connector.",
+        detail:
+          response.status === 401
+            ? "401 Unauthorized — key invalid or revoked."
+            : `ElevenLabs returned HTTP ${response.status}.`,
+        fix:
+          response.status === 401
+            ? "Rotate the key in ElevenLabs and update the deployment secret."
+            : "Verify provider availability and the deployment network policy.",
       };
     }
-    if (!r.ok) {
-      return {
-        id: "api_key",
-        label: "ElevenLabs API key",
-        status: "failed",
-        detail: `HTTP ${r.status}`,
-      };
-    }
-    const j = (await r.json()) as {
-      subscription?: { tier?: string; character_limit?: number; character_count?: number };
+
+    const payload = (await response.json()) as { subscription?: { tier?: string } };
+    return {
+      id: "api_key",
+      label: "ElevenLabs API key",
+      status: "ok",
+      detail: `Authenticated${payload.subscription?.tier ? ` · ${payload.subscription.tier}` : ""}`,
     };
-    const tier = j.subscription?.tier ?? "unknown";
-    return { id: "api_key", label: "ElevenLabs API key", status: "ok", detail: `tier=${tier}` };
-  } catch (e) {
+  } catch (error) {
     return {
       id: "api_key",
       label: "ElevenLabs API key",
       status: "failed",
-      detail: e instanceof Error ? e.message : "network error",
+      detail: error instanceof Error ? error.message : "Network error.",
+      fix: "Verify provider availability and the deployment network policy.",
     };
   }
 }
 
-async function probeAgent(apiKey: string | undefined, agentId: string | undefined): Promise<Check> {
-  if (!agentId) {
-    return {
-      id: "agent_id",
-      label: "Conversational agent",
-      status: "missing",
-      detail:
-        "ELEVENLABS_AGENT_ID not configured — live two-way conversation disabled; STT-only mode is in effect.",
-      fix: "Create a Conversational AI agent at elevenlabs.io/app/conversational-ai, then save its ID as ELEVENLABS_AGENT_ID.",
-    };
-  }
+async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
   if (!apiKey) {
     return {
-      id: "agent_id",
-      label: "Conversational agent",
+      id: "canonical_voice",
+      label: "ARIA canonical voice",
       status: "skipped",
-      detail: "API key missing — cannot validate agent.",
+      detail: "API key missing — identity could not be verified.",
     };
   }
+
   try {
-    const r = await fetch(
-      `https://api.elevenlabs.io/v1/convai/agents/${encodeURIComponent(agentId)}`,
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/voices/${encodeURIComponent(ARIA_ELEVENLABS_VOICE_ID)}`,
       {
         headers: { "xi-api-key": apiKey },
         signal: AbortSignal.timeout(8_000),
       },
     );
-    if (r.status === 404) {
+    if (!response.ok) {
       return {
-        id: "agent_id",
-        label: "Conversational agent",
+        id: "canonical_voice",
+        label: "ARIA canonical voice",
         status: "failed",
-        detail: "Agent ID not found in this ElevenLabs account.",
-        fix: "Check the agent ID matches the account the API key belongs to.",
+        detail:
+          response.status === 404
+            ? "The locked ARIA voice is not available to this ElevenLabs account."
+            : `ElevenLabs returned HTTP ${response.status}.`,
+        fix: "Grant this account access to the locked ARIA voice; do not substitute another voice.",
       };
     }
-    if (!r.ok) {
-      return {
-        id: "agent_id",
-        label: "Conversational agent",
-        status: "failed",
-        detail: `HTTP ${r.status}`,
-      };
-    }
-    const j = (await r.json()) as { name?: string };
+
+    const payload = (await response.json()) as { name?: string };
     return {
-      id: "agent_id",
-      label: "Conversational agent",
+      id: "canonical_voice",
+      label: "ARIA canonical voice",
       status: "ok",
-      detail: j.name ? `agent="${j.name}"` : "agent reachable",
+      detail: payload.name ? `${payload.name} · identity locked` : "Identity locked and reachable.",
     };
-  } catch (e) {
+  } catch (error) {
     return {
-      id: "agent_id",
-      label: "Conversational agent",
+      id: "canonical_voice",
+      label: "ARIA canonical voice",
       status: "failed",
-      detail: e instanceof Error ? e.message : "network error",
-    };
-  }
-}
-
-async function probeScribeToken(apiKey: string | undefined): Promise<Check> {
-  if (!apiKey) return { id: "scribe_token", label: "Realtime STT token mint", status: "skipped" };
-  try {
-    const r = await fetch("https://api.elevenlabs.io/v1/single-use-token/realtime_scribe", {
-      method: "POST",
-      headers: { "xi-api-key": apiKey },
-      signal: AbortSignal.timeout(8_000),
-    });
-    if (!r.ok) {
-      const t = await r.text().catch(() => "");
-      return {
-        id: "scribe_token",
-        label: "Realtime STT token mint",
-        status: "failed",
-        detail: `HTTP ${r.status} ${t.slice(0, 140)}`,
-      };
-    }
-    const j = (await r.json()) as { token?: string };
-    return {
-      id: "scribe_token",
-      label: "Realtime STT token mint",
-      status: j.token ? "ok" : "failed",
-      detail: j.token ? "single-use token issued" : "no token in response",
-    };
-  } catch (e) {
-    return {
-      id: "scribe_token",
-      label: "Realtime STT token mint",
-      status: "failed",
-      detail: e instanceof Error ? e.message : "network error",
-    };
-  }
-}
-
-async function probeConvaiToken(
-  apiKey: string | undefined,
-  agentId: string | undefined,
-): Promise<Check> {
-  if (!apiKey || !agentId)
-    return { id: "convai_token", label: "Conversation token mint", status: "skipped" };
-  try {
-    const r = await fetch(
-      `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${encodeURIComponent(agentId)}`,
-      {
-        headers: { "xi-api-key": apiKey },
-        signal: AbortSignal.timeout(8_000),
-      },
-    );
-    if (!r.ok) {
-      const t = await r.text().catch(() => "");
-      return {
-        id: "convai_token",
-        label: "Conversation token mint",
-        status: "failed",
-        detail: `HTTP ${r.status} ${t.slice(0, 140)}`,
-      };
-    }
-    const j = (await r.json()) as { token?: string };
-    return {
-      id: "convai_token",
-      label: "Conversation token mint",
-      status: j.token ? "ok" : "failed",
-    };
-  } catch (e) {
-    return {
-      id: "convai_token",
-      label: "Conversation token mint",
-      status: "failed",
-      detail: e instanceof Error ? e.message : "network error",
+      detail: error instanceof Error ? error.message : "Network error.",
+      fix: "Verify provider availability and retry without changing ARIA's voice identity.",
     };
   }
 }
@@ -207,47 +126,44 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
       GET: async ({ request }) => {
         const auth = await verifySupabaseUser(request);
         if (auth instanceof Response) return auth;
-        const rl = await enforceRateLimit(`voice-diag:${auth.userId}`, 10, 60);
-        if (rl.unavailable) return rateLimitUnavailableResponse();
-        if (!rl.allowed) return rateLimitResponse();
+
+        const limit = await enforceRateLimit(`voice-diag:${auth.userId}`, 10, 60);
+        if (limit.unavailable) return rateLimitUnavailableResponse();
+        if (!limit.allowed) return rateLimitResponse();
 
         const apiKey = process.env.ELEVENLABS_API_KEY;
-        const agentId = process.env.ELEVENLABS_AGENT_ID;
-
-        const checks: Check[] = [];
-        checks.push(await probeApiKey(apiKey));
-        checks.push(await probeAgent(apiKey, agentId));
-        checks.push(await probeScribeToken(apiKey));
-        checks.push(await probeConvaiToken(apiKey, agentId));
-
-        const hasFailure = checks.some(
-          (c) => c.status === "failed" || (c.status === "missing" && c.id === "api_key"),
-        );
-        const mode: "conversation" | "scribe" | "unavailable" =
-          checks.find((c) => c.id === "convai_token")?.status === "ok"
-            ? "conversation"
-            : checks.find((c) => c.id === "scribe_token")?.status === "ok"
-              ? "scribe"
-              : "unavailable";
-
-        const mask = (v: string | undefined) =>
-          !v ? null : v.length <= 6 ? "•".repeat(v.length) : `${v.slice(0, 3)}…${v.slice(-3)}`;
+        const apiKeyCheck = await probeApiKey(apiKey);
+        const voiceCheck =
+          apiKeyCheck.status === "ok"
+            ? await probeCanonicalVoice(apiKey)
+            : await probeCanonicalVoice(undefined);
+        const ready = apiKeyCheck.status === "ok" && voiceCheck.status === "ok";
+        const runtimeCheck: Check = {
+          id: "canonical_runtime",
+          label: "Governed ARIA TTS runtime",
+          status: ready ? "ok" : "skipped",
+          detail: ready
+            ? `/api/aria/tts · ${ARIA_ELEVENLABS_MODEL} · authenticated · rate-limited`
+            : "Runtime remains closed until the provider key and locked voice pass verification.",
+        };
 
         return Response.json({
-          ok: !hasFailure,
-          mode,
-          checks,
+          ok: ready,
+          mode: ready ? "canonical" : "unavailable",
+          checks: [apiKeyCheck, voiceCheck, runtimeCheck],
           connector: {
             present: Boolean(apiKey),
             auth_type: "api_key",
             scopes_note:
-              "ElevenLabs uses API-key auth — permissions are derived from the key's plan/quota (no Lovable-managed OAuth scopes).",
+              "The server secret is used only by the governed ARIA TTS endpoint and is never exposed to the browser.",
           },
-          agent: {
-            configured: Boolean(agentId),
-            id_masked: mask(agentId),
+          voice: {
+            configured: true,
+            identity: "ARIA · Layan",
+            model: ARIA_ELEVENLABS_MODEL,
+            id_masked: `${ARIA_ELEVENLABS_VOICE_ID.slice(0, 3)}…${ARIA_ELEVENLABS_VOICE_ID.slice(-3)}`,
           },
-          live_voice_ready: mode === "conversation",
+          live_voice_ready: ready,
           generated_at: new Date().toISOString(),
         });
       },

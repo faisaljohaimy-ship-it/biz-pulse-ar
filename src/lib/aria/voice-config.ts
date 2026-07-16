@@ -2,8 +2,8 @@
  * Shared ARIA voice config.
  *
  * This module is the single source of truth for the ElevenLabs voice
- * identity used across the entire product: the ARIA chatbot (via
- * `/api/tts`), the public landing voice (via `/api/public/aria-tts`),
+ * identity used across the entire product: the ARIA chatbot (via the
+ * canonical `/api/aria/tts` runtime), the public landing voice (via `/api/public/aria-tts`),
  * and the Executive Voice Tour. Anything that speaks as ARIA MUST
  * import from here — never hardcode a second voice ID.
  */

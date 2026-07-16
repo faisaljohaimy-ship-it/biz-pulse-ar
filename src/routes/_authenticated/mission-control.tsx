@@ -342,7 +342,7 @@ function greeting(): { ar: string; en: string } {
 }
 
 /* ────────────────────────────────────────────────────────────
-   AGENT RUNTIME PROFILES (voice-ready, no implementation)
+   AGENT RUNTIME PROFILES (voice-enabled; playback remains gesture-safe)
    ──────────────────────────────────────────────────────────── */
 function buildAgentRuntimeProfiles(): AgentRuntimeProfile[] {
   const make = (
@@ -355,7 +355,7 @@ function buildAgentRuntimeProfiles(): AgentRuntimeProfile[] {
     personality,
     voiceProfile: DEFAULT_VOICE_PROFILES[id].ar,
     language: "ar",
-    voiceEnabled: false,
+    voiceEnabled: true,
     speechQueue: [],
     conversationHistory: [],
   });
