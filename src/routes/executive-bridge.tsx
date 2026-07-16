@@ -782,6 +782,33 @@ function ExecutiveBridgePage() {
       }
     };
 
+    // Silent-narration fallback timer id — used when ElevenLabs is
+    // unavailable so the briefing still activates and progresses.
+    let silentTimer: ReturnType<typeof setTimeout> | null = null;
+    let silentTick: ReturnType<typeof setInterval> | null = null;
+
+    const runSilent = (message: string | null) => {
+      if (cancelled) return;
+      // Estimate a reading duration from the scene text so the pacing
+      // matches an actual narration — ~180 wpm, floor 6s, ceil 18s.
+      const words = text.trim().split(/\s+/).length;
+      const durationMs = Math.max(6000, Math.min(18000, Math.round((words / 180) * 60_000)));
+      const startedAt = performance.now();
+      setVoiceState("playing");
+      setVoiceError(message);
+      silentTick = setInterval(() => {
+        if (cancelled) return;
+        const p = Math.min(1, (performance.now() - startedAt) / durationMs);
+        setProgress(p);
+      }, 120);
+      silentTimer = setTimeout(() => {
+        if (cancelled) return;
+        setProgress(1);
+        setVoiceState("idle");
+        advance();
+      }, durationMs);
+    };
+
     const fail = (message: string) => {
       if (cancelled) return;
       if (ownsBus) {
@@ -789,10 +816,12 @@ function ExecutiveBridgePage() {
         AriaAudioBus.release("chat-tts");
         ownsBus = false;
       }
-      setVoiceState("error");
-      setVoiceError(message);
-      setNarrating(false);
+      // Keep the briefing running silently instead of hard-stopping —
+      // the Executive Command Bridge stays activated even if the voice
+      // provider is unreachable (Article 24 graceful-degradation).
+      runSilent(message);
     };
+
 
     (async () => {
       try {
@@ -859,6 +888,8 @@ function ExecutiveBridgePage() {
 
     return () => {
       cancelled = true;
+      if (silentTimer) clearTimeout(silentTimer);
+      if (silentTick) clearInterval(silentTick);
       if (audio) {
         audio.onplaying = null;
         audio.ontimeupdate = null;
