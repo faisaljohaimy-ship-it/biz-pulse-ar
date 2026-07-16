@@ -40,6 +40,11 @@ jobs:
   security-gap-closure-e2e:
     runs-on: ubuntu-latest
     needs: verify
+    # Bind to the production environment so this gate can read secrets whether
+    # they were added as repository secrets OR under the `production`
+    # environment (matching the deploy job). Without this, environment-scoped
+    # secrets are invisible here and the credential guard fails.
+    environment: production
     permissions:
       contents: read
     env:
