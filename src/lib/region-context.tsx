@@ -14,12 +14,27 @@ import {
 } from "react";
 import {
   DEFAULT_REGION_ID,
+  REGION_ACCENT_HEX,
   REGION_ACCENT_RGB,
   REGIONS,
   getRegion,
   type Region,
   type RegionId,
 } from "./regions";
+
+// Semantic accent tokens driven by the active region. Setting these inline on
+// :root overrides both the light and dark stylesheet values, so every
+// Tailwind primary/accent/ring utility across the whole system — nav, icons,
+// buttons, borders, rings, glows — repaints in the active region's colour for
+// instant regional distinction.
+const REGION_ACCENT_TOKENS = [
+  "--primary",
+  "--accent",
+  "--ring",
+  "--sidebar-primary",
+  "--sidebar-ring",
+  "--sidebar-accent",
+] as const;
 
 interface RegionContextValue {
   region: Region;
@@ -46,11 +61,19 @@ export function RegionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Drive the app-wide pulse colour from the active region: every icon/sector
-  // halo (--nx-region-rgb in styles.css) breathes in this region's colour.
+  // Drive the whole system's colour from the active region: the pulse halo
+  // (--nx-region-rgb) AND every semantic accent token, so all system chrome and
+  // icons repaint in the active region's colour — clear visual distinction
+  // between the four regions/sectors. Updates live on region switch.
   useEffect(() => {
     try {
-      document.documentElement.style.setProperty("--nx-region-rgb", REGION_ACCENT_RGB[regionId]);
+      const root = document.documentElement;
+      root.style.setProperty("--nx-region-rgb", REGION_ACCENT_RGB[regionId]);
+      const hex = REGION_ACCENT_HEX[regionId];
+      for (const token of REGION_ACCENT_TOKENS) {
+        root.style.setProperty(token, hex);
+      }
+      root.setAttribute("data-region", regionId);
     } catch {
       /* noop */
     }
