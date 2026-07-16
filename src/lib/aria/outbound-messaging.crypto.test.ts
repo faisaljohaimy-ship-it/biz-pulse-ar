@@ -54,7 +54,16 @@ describe("ARIA outbound approval boundary", () => {
       nonce: crypto.randomUUID(),
     };
     const valid = await createApprovalToken({ ...base, expiresAt: Date.now() + 60_000 });
-    await expect(verifyApprovalToken(`${valid.slice(0, -1)}x`)).rejects.toThrow(/signature/i);
+    // Tamper the FIRST signature char, not the last: for a 32-byte HMAC the
+    // final base64url char only encodes 4 significant bits, so flipping it can
+    // decode to the SAME signature bytes (flaky pass). The first char carries a
+    // full 6 bits → changing it always changes the decoded signature → a real,
+    // deterministic tamper. Pick a replacement guaranteed different.
+    const dot = valid.indexOf(".");
+    const firstSig = valid[dot + 1];
+    const tampered =
+      valid.slice(0, dot + 1) + (firstSig === "A" ? "B" : "A") + valid.slice(dot + 2);
+    await expect(verifyApprovalToken(tampered)).rejects.toThrow(/signature/i);
     const expired = await createApprovalToken({ ...base, expiresAt: Date.now() - 1 });
     await expect(verifyApprovalToken(expired)).rejects.toThrow(/expired/i);
   });

@@ -722,6 +722,12 @@ export function ariaAutoApproveEnabled(): boolean {
  * Reuses the full prepare→approve pipeline and simply consumes the signed
  * approval token server-side, so the entire integrity/audit machinery still
  * runs — only the human confirmation is removed.
+ *
+ * Auto-approved sends are marked in the immutable ledger with a distinct
+ * `approval.auto_approved` event BEFORE dispatch, so an auditor can always
+ * tell an ARIA-bypassed send apart from a human-confirmed one. Consistent with
+ * the rest of this module, the send does not proceed if that audit marker
+ * cannot be written (no auto-send may exist without its bypass record).
  */
 export async function sendAriaOutboundMessageDirectInternal(input: {
   userId: string;
@@ -746,6 +752,31 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
 
   const prepared = await prepareAriaOutboundMessage(supabaseAdmin, input.userId, input.payload);
   if (!prepared.ok) return { ok: false, error: prepared.error };
+
+  // Immutable bypass marker: record that the human approval step was skipped
+  // (ARIA_OUTBOUND_AUTO_APPROVE) before any dispatch. The token claims carry
+  // the org + content hash the ledger event needs. If this cannot be written,
+  // fail closed — never dispatch an auto-approved send without its audit trail.
+  try {
+    const claims = await verifyApprovalToken(prepared.approval.approvalToken);
+    await appendLedgerEvent({
+      messageId: prepared.approval.ledgerId,
+      orgId: claims.orgId,
+      provider: "internal",
+      providerEventId: `auto-approved:${prepared.approval.ledgerId}`,
+      eventType: "approval.auto_approved",
+      status: "pending_approval",
+      payloadHash: claims.contentHash,
+      occurredAt: new Date().toISOString(),
+    });
+  } catch (markerError) {
+    return {
+      ok: false,
+      error: `Auto-approval audit marker could not be written; no message was sent. ${
+        markerError instanceof Error ? markerError.message : String(markerError)
+      }`,
+    };
+  }
 
   const result = await approveAriaOutboundMessageInternal({
     userId: input.userId,
