@@ -18,12 +18,16 @@
  */
 import { useEffect, useRef, useState } from "react";
 import homeBg from "@/assets/home-bg.mp4.asset.json";
+import commandHomeDesktop from "@/assets/nexios-command-home-desktop.webp";
+import commandHomeMobile from "@/assets/nexios-command-home-mobile.webp";
+import commandHomeTablet from "@/assets/nexios-command-home-tablet.webp";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { registerHomeGreeting, setHomeGreetingState } from "@/lib/home-greeting-store";
 
 export function HomeVideoBackdrop() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [muted, setMuted] = useState(true);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -38,6 +42,7 @@ export function HomeVideoBackdrop() {
         /* ignore */
       }
       v.muted = true;
+      setActive(false);
       try {
         v.currentTime = 0;
       } catch {
@@ -71,6 +76,7 @@ export function HomeVideoBackdrop() {
       setMuted(false);
       v.play()
         .then(() => {
+          setActive(true);
           AriaAudioBus.notifyPlaying("hero-soundtrack", v);
           setHomeGreetingState("speaking");
         })
@@ -100,15 +106,34 @@ export function HomeVideoBackdrop() {
       dir="ltr"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
-      {/* Static until the greeting button is pressed — no autoPlay, no loop. */}
+      {/* The supplied command-room artwork is the permanent homepage
+          background. Purpose-made crops keep its focal point intact on
+          phones, tablets, laptops, ultrawide screens, and rotated devices. */}
+      <picture className="absolute inset-0 block h-full w-full">
+        <source media="(max-width: 639px)" srcSet={commandHomeMobile} />
+        <source media="(max-width: 1199px)" srcSet={commandHomeTablet} />
+        <source media="(min-width: 1200px)" srcSet={commandHomeDesktop} />
+        <img
+          src={commandHomeTablet}
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          className="h-full w-full object-cover object-center"
+        />
+      </picture>
+
+      {/* ARIA's greeting film temporarily cross-fades above the artwork only
+          after an explicit user gesture, then yields back to the image. */}
       <video
         ref={videoRef}
         src={homeBg.url}
         playsInline
         muted={muted}
         preload="auto"
-        className="absolute inset-0 h-full w-full object-cover object-[center_25%]"
+        className={`absolute inset-0 h-full w-full object-cover object-[center_25%] transition-opacity duration-700 ${active ? "opacity-100" : "opacity-0"}`}
       />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.34)_0%,rgba(2,8,18,0.12)_34%,rgba(2,8,18,0.5)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(0,212,255,0.08),transparent_42%)]" />
       {/* Readability scrims */}
       <div
         className="absolute inset-x-0 top-0 h-[18%] md:h-[10%]"

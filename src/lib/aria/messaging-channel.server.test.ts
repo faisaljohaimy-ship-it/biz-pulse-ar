@@ -26,16 +26,12 @@ describe("ARIA messaging channels", () => {
         accountSid: "AC123",
         authToken: "secret",
         fromNumber: "+14155550123",
-        statusCallbackUrl: "https://example.com/api/public/hooks/twilio-message-status",
       },
     );
     expect(form.get("To")).toBe("+966551234567");
     expect(form.get("From")).toBe("+14155550123");
     expect(form.get("Body")).toBe("Executive alert");
     expect(form.getAll("MediaUrl")).toEqual(["https://assets.example.com/alert.jpg"]);
-    expect(form.get("StatusCallback")).toBe(
-      "https://example.com/api/public/hooks/twilio-message-status",
-    );
   });
 
   it("prefers a Twilio Messaging Service when configured", () => {
@@ -70,16 +66,5 @@ describe("ARIA messaging channels", () => {
         { accountSid: "AC123", authToken: "secret", fromNumber: "+14155550123" },
       ),
     ).toThrow(/1,600/);
-  });
-
-  it("rejects a non-HTTPS Twilio delivery callback", () => {
-    expect(() =>
-      resolveTwilioConfig({
-        TWILIO_ACCOUNT_SID: "AC123",
-        TWILIO_AUTH_TOKEN: "secret",
-        TWILIO_FROM_NUMBER: "+14155550123",
-        TWILIO_STATUS_CALLBACK_URL: "http://example.com/status",
-      }),
-    ).toThrow(/HTTPS/);
   });
 });

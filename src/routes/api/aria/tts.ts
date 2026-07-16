@@ -1,11 +1,12 @@
 /**
  * ARIA voice — server TTS route.
- * POST /api/aria/tts { text }  → audio/mpeg stream (ElevenLabs multilingual v2).
+ * POST /api/aria/tts { text } → audio/mpeg stream (ElevenLabs).
  * Voice identity is HARD-LOCKED to the canonical ARIA voice from
  * `@/lib/aria/voice-config` — no env override, no client override.
  * Requires an authenticated Supabase user; rate limit 40 req / 5 min per user.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
 import {
   enforceRateLimit,
@@ -19,9 +20,13 @@ import {
   ARIA_ELEVENLABS_MODEL,
 } from "@/lib/aria/voice-config";
 
-const MAX_CHARS = 600;
+const MAX_CHARS = 4_000;
 const RATE_LIMIT = 40;
 const RATE_WINDOW_SECONDS = 5 * 60;
+const BodySchema = z.object({
+  text: z.string().trim().min(1).max(MAX_CHARS),
+  preserveDiacritics: z.boolean().optional(),
+});
 
 export const Route = createFileRoute("/api/aria/tts")({
   server: {
@@ -53,51 +58,76 @@ export const Route = createFileRoute("/api/aria/tts")({
         if (unavailable) return rateLimitUnavailableResponse();
         if (!allowed) return rateLimitResponse();
 
-        let body: { text?: unknown };
-        try {
-          body = (await request.json()) as { text?: unknown };
-        } catch {
+        const parsed = BodySchema.safeParse(await request.json().catch(() => null));
+        if (!parsed.success) {
           return Response.json({ error: "bad_json" }, { status: 400 });
         }
-        const rawText = typeof body.text === "string" ? body.text.trim() : "";
-        if (!rawText) {
-          return Response.json({ error: "empty_text" }, { status: 400 });
-        }
-        if (rawText.length > MAX_CHARS) {
-          return Response.json({ error: "text_too_long" }, { status: 400 });
-        }
+        const { text: rawText, preserveDiacritics = true } = parsed.data;
+        const preTts = preserveDiacritics
+          ? rawText
+          : rawText.replace(/[\u064B-\u0652\u0670\u0671]/g, "");
         // Auto-diacritize unvocalized Arabic (display text unaffected).
-        const ttsText = await diacritizeForTts(rawText);
-        const upstream = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${ARIA_ELEVENLABS_VOICE_ID}/stream?output_format=mp3_22050_32`,
-          {
-            method: "POST",
-            headers: {
-              "xi-api-key": apiKey,
-              "content-type": "application/json",
-              accept: "audio/mpeg",
+        const ttsText = await diacritizeForTts(preTts);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30_000);
+        try {
+          const upstream = await fetch(
+            `https://api.elevenlabs.io/v1/text-to-speech/${ARIA_ELEVENLABS_VOICE_ID}/stream?output_format=mp3_22050_32&optimize_streaming_latency=3`,
+            {
+              method: "POST",
+              headers: {
+                "xi-api-key": apiKey,
+                "content-type": "application/json",
+                accept: "audio/mpeg",
+              },
+              body: JSON.stringify({
+                text: ttsText,
+                model_id: ARIA_ELEVENLABS_MODEL,
+                voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
+              }),
+              signal: controller.signal,
             },
-            body: JSON.stringify({
-              text: ttsText,
-              model_id: ARIA_ELEVENLABS_MODEL,
-              voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
-            }),
-          },
-        );
-        if (!upstream.ok || !upstream.body) {
-          const msg = await upstream.text().catch(() => "");
-          return Response.json(
-            { error: "tts_upstream", status: upstream.status, detail: msg.slice(0, 200) },
-            { status: 502 },
           );
+          if (!upstream.ok || !upstream.body) {
+            const detail = await upstream.text().catch(() => "");
+            let providerStatus: string | undefined;
+            let providerReason: string | undefined;
+            try {
+              const payload = JSON.parse(detail) as {
+                detail?: { status?: string; message?: string };
+              };
+              providerStatus = payload.detail?.status;
+              providerReason = payload.detail?.message;
+            } catch {
+              // Provider occasionally returns a non-JSON body.
+            }
+            return Response.json(
+              {
+                error: "tts_upstream",
+                status: upstream.status,
+                providerStatus,
+                providerReason: providerReason ?? detail.slice(0, 200),
+              },
+              { status: 502 },
+            );
+          }
+          return new Response(upstream.body, {
+            status: 200,
+            headers: {
+              "content-type": "audio/mpeg",
+              "cache-control": "no-store",
+              "x-content-type-options": "nosniff",
+            },
+          });
+        } catch (error) {
+          const timedOut = error instanceof DOMException && error.name === "AbortError";
+          return Response.json(
+            { error: timedOut ? "tts_timeout" : "tts_unavailable" },
+            { status: 503 },
+          );
+        } finally {
+          clearTimeout(timeout);
         }
-        return new Response(upstream.body, {
-          status: 200,
-          headers: {
-            "content-type": "audio/mpeg",
-            "cache-control": "no-store",
-          },
-        });
       },
     },
   },

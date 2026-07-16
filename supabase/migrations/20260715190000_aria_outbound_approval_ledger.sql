@@ -14,8 +14,10 @@ CREATE TABLE public.aria_outbound_messages (
   channel text NOT NULL CHECK (channel IN ('email', 'sms')),
   recipient_hint text NOT NULL,
   content_hash text NOT NULL CHECK (length(content_hash) = 64),
-  payload_ciphertext text NOT NULL,
-  payload_iv text NOT NULL,
+  payload_ciphertext text,
+  payload_iv text,
+  payload_purge_at timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
+  metadata_purge_at timestamptz NOT NULL DEFAULT (now() + interval '24 months'),
   idempotency_key text NOT NULL UNIQUE,
   status text NOT NULL DEFAULT 'pending_approval' CHECK (
     status IN (
@@ -43,6 +45,8 @@ CREATE INDEX aria_outbound_org_created_idx
   ON public.aria_outbound_messages(org_id, created_at DESC);
 CREATE INDEX aria_outbound_status_idx
   ON public.aria_outbound_messages(org_id, status, created_at DESC);
+CREATE INDEX aria_outbound_retention_idx
+  ON public.aria_outbound_messages(payload_purge_at, metadata_purge_at);
 
 CREATE TABLE public.aria_outbound_message_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -84,7 +88,41 @@ CREATE TRIGGER aria_outbound_messages_updated_at
   BEFORE UPDATE ON public.aria_outbound_messages
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- Called by the deployment scheduler. It strips encrypted content after 30
+-- days and deletes metadata/events after 24 months. The function is restricted
+-- to service_role so no browser client can accelerate or bypass retention.
+CREATE OR REPLACE FUNCTION public.purge_aria_outbound_retention()
+RETURNS TABLE(payloads_purged bigint, ledgers_deleted bigint)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  payload_count bigint;
+  ledger_count bigint;
+BEGIN
+  UPDATE public.aria_outbound_messages
+  SET payload_ciphertext = NULL,
+      payload_iv = NULL,
+      updated_at = now()
+  WHERE payload_purge_at <= now()
+    AND (payload_ciphertext IS NOT NULL OR payload_iv IS NOT NULL);
+  GET DIAGNOSTICS payload_count = ROW_COUNT;
+
+  DELETE FROM public.aria_outbound_messages
+  WHERE metadata_purge_at <= now();
+  GET DIAGNOSTICS ledger_count = ROW_COUNT;
+
+  RETURN QUERY SELECT payload_count, ledger_count;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.purge_aria_outbound_retention() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.purge_aria_outbound_retention() TO service_role;
+
 COMMENT ON TABLE public.aria_outbound_messages IS
   'Durable, tenant-scoped ARIA send ledger. Payload is AES-GCM ciphertext; recipient_hint is masked.';
 COMMENT ON TABLE public.aria_outbound_message_events IS
   'Idempotent metadata-only delivery events from trusted provider webhooks.';
+COMMENT ON FUNCTION public.purge_aria_outbound_retention() IS
+  'Retention job: purge encrypted payloads after 30 days and ledger metadata after 24 months.';

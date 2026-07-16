@@ -20,8 +20,8 @@ function constantTimeTextEqual(left: string, right: string): boolean {
   return diff === 0;
 }
 
-function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return bytes.slice().buffer as ArrayBuffer;
+function cryptoBuffer(bytes: Uint8Array): ArrayBuffer {
+  return Uint8Array.from(bytes).buffer;
 }
 
 async function sign(
@@ -31,7 +31,7 @@ async function sign(
 ): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    asArrayBuffer(secret),
+    cryptoBuffer(secret),
     { name: "HMAC", hash: algorithm },
     false,
     ["sign"],

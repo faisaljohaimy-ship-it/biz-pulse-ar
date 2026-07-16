@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   listAgentRuns,
   getAgentOpsOverview,
@@ -54,8 +54,12 @@ import {
   Search,
   TimerReset,
   Power,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
+import { speakRuntimeAgent } from "@/lib/digital-humans/speak-agent";
+import { stopActiveAriaVoice } from "@/lib/digital-humans/aria-voice";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
@@ -243,6 +247,59 @@ function AgentsOps() {
   const [runDetail, setRunDetail] = useState<RunRow | null>(null);
   const [stateFilter, setStateFilter] = useState<AgentOpsRecord["state"] | "all">("all");
   const [search, setSearch] = useState("");
+  const [agentVoiceEnabled, setAgentVoiceEnabled] = useState(true);
+  const agentMapRef = useRef<Record<string, AgentOpsRecord>>({});
+  const spokenRunsRef = useRef<Set<string>>(new Set());
+  const voiceEnabledRef = useRef(true);
+  const localeRef = useRef(locale);
+
+  useEffect(() => {
+    localeRef.current = locale;
+  }, [locale]);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("nexios-agent-voices");
+      if (stored === "0") setAgentVoiceEnabled(false);
+    } catch {
+      /* storage is optional */
+    }
+  }, []);
+
+  useEffect(() => {
+    voiceEnabledRef.current = agentVoiceEnabled;
+    try {
+      window.localStorage.setItem("nexios-agent-voices", agentVoiceEnabled ? "1" : "0");
+    } catch {
+      /* storage is optional */
+    }
+    if (!agentVoiceEnabled) stopActiveAriaVoice();
+  }, [agentVoiceEnabled]);
+
+  const narrateAgentRun = useCallback(
+    (input: { agentId: string; status: string; summary?: string | null; runId?: string }) => {
+      if (!voiceEnabledRef.current || document.visibilityState === "hidden") return;
+      if (input.runId) {
+        if (spokenRunsRef.current.has(input.runId)) return;
+        spokenRunsRef.current.add(input.runId);
+        if (spokenRunsRef.current.size > 120) {
+          const oldest = spokenRunsRef.current.values().next().value;
+          if (oldest) spokenRunsRef.current.delete(oldest);
+        }
+      }
+      const agent = agentMapRef.current[input.agentId];
+      if (!agent) return;
+      void speakRuntimeAgent(agent, {
+        ar: localeRef.current === "ar",
+        status: input.status,
+        summary: input.summary,
+        goal: agent.goal,
+      }).promise.catch((error) => {
+        console.warn("[agent-voice] runtime narration failed", error);
+      });
+    },
+    [],
+  );
 
   // Realtime: refresh on agent_runs changes (best-effort)
   useEffect(() => {
@@ -251,10 +308,29 @@ function AgentsOps() {
     let ch: any = null;
     try {
       ch = supabase.channel(topic);
-      ch.on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, () => {
-        void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
-        void qc.invalidateQueries({ queryKey: ["agents", "runs"] });
-      });
+      ch.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "agent_runs" },
+        (payload: { new?: Record<string, unknown>; old?: Record<string, unknown> }) => {
+          void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
+          void qc.invalidateQueries({ queryKey: ["agents", "runs"] });
+          const next = payload.new ?? {};
+          const previous = payload.old ?? {};
+          const status = typeof next.status === "string" ? next.status : "";
+          if (
+            (status === "succeeded" || status === "failed") &&
+            status !== previous.status &&
+            typeof next.agent_id === "string"
+          ) {
+            narrateAgentRun({
+              agentId: next.agent_id,
+              status,
+              summary: typeof next.summary === "string" ? next.summary : null,
+              runId: typeof next.id === "string" ? next.id : undefined,
+            });
+          }
+        },
+      );
       ch.on(
         "postgres_changes",
         { event: "*", schema: "public", table: "agent_definitions" },
@@ -273,7 +349,7 @@ function AgentsOps() {
         }
       }
     };
-  }, [qc]);
+  }, [narrateAgentRun, qc]);
 
   const opsQ = useQuery({
     queryKey: ["agents", "ops"],
@@ -302,22 +378,38 @@ function AgentsOps() {
       });
       const json = (await resp.json()) as {
         ok?: boolean;
-        result?: { status: string; error?: string };
+        result?: {
+          runId: string;
+          status: "succeeded" | "failed";
+          summary: string;
+          steps: number;
+          error?: string;
+        };
         error?: string;
       };
       if (!resp.ok || json.ok === false) throw new Error(json.error ?? `HTTP ${resp.status}`);
-      return json.result ?? { status: "succeeded" };
+      if (!json.result) throw new Error("Agent runtime returned no result");
+      return json.result;
     },
-    onSuccess: (res) => {
-      const r = res as { status: string; error?: string };
+    onSuccess: (r, variables) => {
       if (r.status === "succeeded")
         toast.success(locale === "ar" ? "اكتمل التشغيل" : "Run succeeded");
       else toast.error(r.error ?? (locale === "ar" ? "فشل التشغيل" : "Run failed"));
+      narrateAgentRun({
+        agentId: variables.agentId,
+        status: r.status,
+        summary: r.summary,
+        runId: r.runId,
+      });
       setSelected(null);
       setGoalOverride("");
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown, variables) => {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(message);
+      narrateAgentRun({ agentId: variables.agentId, status: "failed", summary: message });
+    },
   });
 
   const toggleM = useMutation({
@@ -361,6 +453,10 @@ function AgentsOps() {
   const runs = useMemo(() => runsQ.data ?? [], [runsQ.data]);
   const agentById = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a])), [agents]);
 
+  useEffect(() => {
+    agentMapRef.current = agentById;
+  }, [agentById]);
+
   const filteredAgents = useMemo(() => {
     const q = search.trim().toLowerCase();
     return agents.filter(
@@ -385,9 +481,30 @@ function AgentsOps() {
         }
         badge="Runtime"
         actions={
-          <Button asChild variant="outline">
-            <Link to="/exec">{locale === "ar" ? "وحدة التنفيذ" : "Execution Console"}</Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant={agentVoiceEnabled ? "default" : "outline"}
+              onClick={() => setAgentVoiceEnabled((enabled) => !enabled)}
+              aria-pressed={agentVoiceEnabled}
+            >
+              {agentVoiceEnabled ? (
+                <Volume2 className="me-2 h-4 w-4" />
+              ) : (
+                <VolumeX className="me-2 h-4 w-4" />
+              )}
+              {locale === "ar"
+                ? agentVoiceEnabled
+                  ? "أصوات الوكلاء مفعّلة"
+                  : "تفعيل أصوات الوكلاء"
+                : agentVoiceEnabled
+                  ? "Agent voices on"
+                  : "Enable agent voices"}
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/exec">{locale === "ar" ? "وحدة التنفيذ" : "Execution Console"}</Link>
+            </Button>
+          </div>
         }
       />
 
@@ -578,6 +695,27 @@ function AgentsOps() {
                         <Play className="me-1 h-3 w-3" />
                         {locale === "ar" ? "تشغيل" : "Start"}
                       </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        disabled={!agentVoiceEnabled}
+                        aria-label={locale === "ar" ? `استمع إلى ${a.name}` : `Hear ${a.name}`}
+                        title={locale === "ar" ? "نطق حالة الوكيل" : "Speak agent status"}
+                        onClick={() =>
+                          narrateAgentRun({
+                            agentId: a.id,
+                            status: a.state,
+                            summary: a.last_status
+                              ? locale === "ar"
+                                ? `آخر تشغيل: ${a.last_status}`
+                                : `Last run: ${a.last_status}`
+                              : a.goal,
+                          })
+                        }
+                      >
+                        <Volume2 className="h-4 w-4" />
+                      </Button>
                       <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-background/40 px-2 py-1.5">
                         <Switch
                           checked={a.enabled}
@@ -749,13 +887,18 @@ function AgentsOps() {
             </Button>
             <Button
               disabled={runM.isPending || !selected}
-              onClick={() =>
-                selected &&
+              onClick={() => {
+                if (!selected) return;
+                narrateAgentRun({
+                  agentId: selected.id,
+                  status: "running",
+                  summary: goalOverride.trim() || selected.goal,
+                });
                 runM.mutate({
                   agentId: selected.id,
                   goalOverride: goalOverride.trim(),
-                })
-              }
+                });
+              }}
             >
               {runM.isPending ? (
                 <Loader2 className="me-1 h-4 w-4 animate-spin" />

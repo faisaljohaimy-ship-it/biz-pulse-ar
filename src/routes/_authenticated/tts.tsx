@@ -56,7 +56,7 @@ function TtsPage() {
     if (!text.trim()) return;
     setLoading(true);
     try {
-      const r = await authenticatedFetch("/api/tts", {
+      const r = await authenticatedFetch("/api/aria/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

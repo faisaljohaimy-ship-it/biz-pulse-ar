@@ -8,6 +8,7 @@
 import { REGIONS } from "@/lib/regions";
 import { REGION_MARKERS } from "@/components/executive/region-markers";
 import { regionSim } from "@/lib/sec/region-sim-data";
+import type { ExecKpis } from "@/lib/sec-exec-kpis.functions";
 
 export type RecoTone = "rose" | "amber" | "cyan";
 
@@ -25,7 +26,32 @@ const shortName = (id: string): string => REGION_MARKERS.find((m) => m.id === id
  * Three prioritized recommendations, computed from the region fixtures:
  * most open incidents, lowest compliance, and total pending CCTV alerts.
  */
-export function getTodayRecommendations(): readonly AriaRecommendation[] {
+export function getTodayRecommendations(live?: ExecKpis): readonly AriaRecommendation[] {
+  if (live) {
+    return [
+      {
+        id: "incidents",
+        tone: live.incidents_critical > 0 ? "rose" : "cyan",
+        to: "/sec/incidents",
+        textAr:
+          live.incidents_critical > 0
+            ? `${live.incidents_critical} بلاغ حرج من أصل ${live.incidents_open} بلاغ مفتوح — ابدأ بالحرج.`
+            : `${live.incidents_open} بلاغ مفتوح بلا حالات حرجة حالياً — استمر في المتابعة.`,
+      },
+      {
+        id: "maintenance",
+        tone: live.wo_open > 0 ? "amber" : "cyan",
+        to: "/sec/maintenance",
+        textAr: `${live.wo_open} أمر عمل مفتوح، و${live.wo_closed} مغلق — راجع الأولويات المتأخرة.`,
+      },
+      {
+        id: "readiness",
+        tone: live.executive_readiness >= 75 ? "cyan" : "amber",
+        to: "/sec/kpi",
+        textAr: `الجاهزية التنفيذية ${live.executive_readiness}% ومؤشر المخاطر ${live.risk_index}% — المؤشر محسوب من المصادر التشغيلية الحية.`,
+      },
+    ];
+  }
   const per = REGIONS.map((r) => ({ id: r.id, c: regionSim(r.id).counts }));
 
   const worstIncidents = per.reduce((a, b) => (b.c.incidents_open > a.c.incidents_open ? b : a));

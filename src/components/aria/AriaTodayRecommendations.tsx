@@ -9,8 +9,9 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkles, ChevronLeft, AlertTriangle, ShieldCheck, Camera } from "lucide-react";
 import { getTodayRecommendations, type RecoTone } from "@/lib/aria/today-recommendations";
-import { SimBadge } from "@/components/os/SimBadge";
 import { cn } from "@/lib/utils";
+import { useExecutiveKpiSource } from "@/lib/sec/use-executive-kpi-source";
+import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
 
 const TONE_RING: Record<RecoTone, string> = {
   rose: "border-rose-400/40 bg-rose-400/[0.06] text-rose-200",
@@ -24,7 +25,8 @@ const TONE_ICON = {
 } as const;
 
 export function AriaTodayRecommendations({ className }: { className?: string }) {
-  const recos = getTodayRecommendations();
+  const source = useExecutiveKpiSource();
+  const recos = getTodayRecommendations(source.data);
   return (
     <section
       dir="rtl"
@@ -41,7 +43,7 @@ export function AriaTodayRecommendations({ className }: { className?: string }) 
           </span>
           <h2 className="text-sm font-bold text-white">توصيات آريا اليوم</h2>
         </div>
-        <SimBadge ar className="text-[9px]" />
+        <ExecutiveSourceBadge source={source} ar className="text-[9px]" />
       </div>
       <ul className="flex flex-col gap-2">
         {recos.map((r) => {

@@ -1,93 +1,139 @@
 /**
- * Voice Profiles — deterministic mapping from a Digital Human's
- * `voiceProfileId` to a concrete OpenAI gpt-4o-mini-tts voice for each
- * language. Pure data; safe on client and server.
+ * Free specialist voice profiles.
  *
- * Voices are intentionally distinct per persona so executives can
- * recognize who is speaking without looking at the dock. Both AR and EN
- * are mapped to voices the model supports for both languages.
- *
- * If a future provider (Azure / HeyGen / D-ID) is wired in, this map is
- * the only thing that changes — the avatar layer keeps consuming
- * amplitude from `aria-voice.ts`.
+ * ARIA is deliberately absent: she keeps her locked ElevenLabs identity.
+ * Every specialist instead uses the browser/operating-system Web Speech
+ * catalogue, so NEXIOS does not need a paid agent-TTS key. Names are ranked
+ * preferences rather than assumptions because the catalogue differs across
+ * iOS, Android, Windows, macOS, and installed language packs.
  */
 export type VoiceLang = "ar" | "en";
 
-interface VoicePair {
-  ar: string;
-  en: string;
-  /** Optional natural-language steering for tone / cadence / accent. */
-  instructions?: string;
+export interface FreeVoicePreset {
+  languageTag: string;
+  preferredNames: readonly string[];
+  rate: number;
+  pitch: number;
+  fallbackIndex: number;
+  label: string;
 }
 
-// Curated to keep each persona acoustically unique. All voices are valid
-// names accepted by openai/gpt-4o-mini-tts.
-const VOICES: Record<string, VoicePair> = {
-  aria: {
-    ar: "shimmer",
-    en: "nova",
-    instructions: "Calm, warm, executive female voice. Confident and precise.",
-  },
+interface FreeVoicePair {
+  ar: FreeVoicePreset;
+  en: FreeVoicePreset;
+}
+
+const preset = (
+  languageTag: string,
+  preferredNames: readonly string[],
+  rate: number,
+  pitch: number,
+  fallbackIndex: number,
+  label: string,
+): FreeVoicePreset => ({ languageTag, preferredNames, rate, pitch, fallbackIndex, label });
+
+/** Ten intentionally different, zero-API-cost specialist personalities. */
+const VOICES: Record<string, FreeVoicePair> = {
   incident: {
-    ar: "onyx",
-    en: "onyx",
-    instructions: "Decisive command voice. Clear, calm authority. Slightly clipped.",
+    ar: preset("ar-SA", ["hamed", "tarik", "majed", "maged"], 1.03, 0.82, 0, "قيادي حازم"),
+    en: preset("en-US", ["guy", "david", "mark", "alex"], 1.02, 0.82, 0, "decisive command"),
   },
   risk: {
-    ar: "echo",
-    en: "echo",
-    instructions: "Measured analytical male voice. Neutral, precise, slightly deliberate.",
+    ar: preset("ar-SA", ["naayf", "fahd", "tarik", "majed"], 0.92, 0.94, 1, "تحليلي متزن"),
+    en: preset("en-GB", ["daniel", "ryan", "george", "oliver"], 0.92, 0.94, 1, "measured analysis"),
   },
   compliance: {
-    ar: "sage",
-    en: "sage",
-    instructions: "Advisory, composed, respectful tone with policy gravitas.",
+    ar: preset("ar-SA", ["salma", "zariyah", "hoda", "laila"], 0.9, 1.04, 2, "استشاري رصين"),
+    en: preset("en-GB", ["susan", "serena", "karen", "moira"], 0.9, 1.04, 2, "composed advisory"),
   },
   cctv: {
-    ar: "ash",
-    en: "ash",
-    instructions: "Vigilant operations voice. Crisp, observational, low pitch.",
+    ar: preset("ar-SA", ["tarik", "hamed", "maged", "majed"], 1.08, 0.78, 3, "مراقبة يقظة"),
+    en: preset("en-US", ["alex", "fred", "david", "guy"], 1.08, 0.78, 3, "vigilant operations"),
   },
   patrol: {
-    ar: "fable",
-    en: "fable",
-    instructions: "Field commander cadence. Steady, alert, slightly outdoor energy.",
+    ar: preset("ar-SA", ["majed", "maged", "hamed", "tarik"], 1.06, 0.9, 4, "قائد ميداني"),
+    en: preset("en-US", ["aaron", "tom", "matthew", "mark"], 1.06, 0.9, 4, "field commander"),
   },
   emergency: {
-    ar: "onyx",
-    en: "onyx",
-    instructions: "Crisis coordinator. Calm, urgent, no panic. Short clean phrases.",
+    ar: preset("ar-SA", ["hoda", "salma", "laila", "zariyah"], 1.1, 1, 5, "عاجل وهادئ"),
+    en: preset("en-US", ["zira", "samantha", "victoria", "ava"], 1.1, 1, 5, "calm urgency"),
   },
   visitor: {
-    ar: "coral",
-    en: "coral",
-    instructions: "Welcoming corporate concierge tone. Polite, clear.",
+    ar: preset("ar-SA", ["laila", "mouna", "salma", "hoda"], 0.98, 1.12, 6, "ترحيبي واضح"),
+    en: preset("en-US", ["samantha", "karen", "tessa", "fiona"], 0.98, 1.12, 6, "warm concierge"),
   },
   knowledge: {
-    ar: "echo",
-    en: "echo",
-    instructions: "Senior knowledge officer. Even, instructional, slightly thoughtful.",
+    ar: preset("ar-SA", ["fahd", "naayf", "maged", "tarik"], 0.88, 0.96, 7, "معرفي تعليمي"),
+    en: preset(
+      "en-GB",
+      ["george", "daniel", "arthur", "oliver"],
+      0.88,
+      0.96,
+      7,
+      "instructional knowledge",
+    ),
   },
   reporting: {
-    ar: "fable",
-    en: "fable",
-    instructions: "Executive briefing narrator. Polished, smooth, news-anchor pacing.",
+    ar: preset("ar-SA", ["zariyah", "salma", "mouna", "laila"], 0.94, 1.06, 8, "موجز تنفيذي"),
+    en: preset("en-GB", ["serena", "kate", "fiona", "susan"], 0.94, 1.06, 8, "executive briefing"),
   },
   twin: {
-    ar: "ash",
-    en: "ash",
-    instructions: "Technical narrator for simulation results. Neutral, precise.",
+    ar: preset("ar-SA", ["maged", "naayf", "majed", "hamed"], 0.96, 0.86, 9, "تقني دقيق"),
+    en: preset("en-US", ["fred", "alex", "tom", "david"], 0.96, 0.86, 9, "precise technical"),
   },
 };
 
-const DEFAULT: VoicePair = VOICES.aria;
+const DEFAULT: FreeVoicePair = VOICES.risk;
 
-export function resolveVoice(
+export function resolveVoice(profileId: string | undefined, lang: VoiceLang): FreeVoicePreset {
+  const pair = (profileId && VOICES[profileId]) || DEFAULT;
+  return pair[lang];
+}
+
+export interface SelectedSystemVoice extends FreeVoicePreset {
+  voice: SpeechSynthesisVoice | null;
+  voiceName: string;
+  local: boolean;
+}
+
+function sameLanguage(voice: SpeechSynthesisVoice, languageTag: string): boolean {
+  const wanted = languageTag.toLowerCase().split("-")[0];
+  return voice.lang.toLowerCase().split("-")[0] === wanted;
+}
+
+/**
+ * Picks the best installed free voice. A named local match wins, then any
+ * named match, then a deterministic local voice, then any same-language
+ * voice. If the list is still loading, a null voice lets the browser choose
+ * its default for the requested BCP-47 language.
+ */
+export function selectSystemVoice(
   profileId: string | undefined,
   lang: VoiceLang,
-): { voice: string; instructions?: string } {
-  const pair = (profileId && VOICES[profileId]) || DEFAULT;
-  return { voice: lang === "ar" ? pair.ar : pair.en, instructions: pair.instructions };
+  voices: readonly SpeechSynthesisVoice[],
+): SelectedSystemVoice {
+  const profile = resolveVoice(profileId, lang);
+  const matching = voices.filter((voice) => sameLanguage(voice, profile.languageTag));
+  const byPreference = profile.preferredNames
+    .map(
+      (name) =>
+        matching.find(
+          (voice) => voice.localService && voice.name.toLowerCase().includes(name.toLowerCase()),
+        ) ?? matching.find((voice) => voice.name.toLowerCase().includes(name.toLowerCase())),
+    )
+    .find((voice): voice is SpeechSynthesisVoice => Boolean(voice));
+  const local = matching.filter((voice) => voice.localService);
+  const fallbackPool = local.length > 0 ? local : matching;
+  const voice =
+    byPreference ??
+    (fallbackPool.length > 0 ? fallbackPool[profile.fallbackIndex % fallbackPool.length] : null);
+
+  return {
+    ...profile,
+    voice,
+    voiceName: voice?.name ?? `${profile.languageTag} system default`,
+    local: voice?.localService ?? false,
+  };
 }
 
 /**

@@ -22,13 +22,13 @@ import {
 export const Route = createFileRoute("/trust")({
   head: () => ({
     meta: [
-      { title: "Trust & Security — Nexus AI OS" },
+      { title: "Trust & Security — NEXIOS AI OS" },
       {
         name: "description",
         content:
-          "Trust, security, and compliance posture for Nexus AI OS — designed to align with SOC 2, ISO 27001, NCA ECC, and Saudi PDPL. Certifications in-progress. Covers data residency, encryption, audit logging, and incident response.",
+          "Trust, security, and compliance posture for NEXIOS AI OS — designed to align with SOC 2, ISO 27001, NCA ECC, and Saudi PDPL. Certifications in progress. Covers data residency, encryption, audit logging, and incident response.",
       },
-      { property: "og:title", content: "Trust & Security — Nexus AI OS" },
+      { property: "og:title", content: "Trust & Security — NEXIOS AI OS" },
       { property: "og:description", content: "Procurement-ready security & compliance overview." },
       { property: "og:url", content: `${DOMAIN_URL}/trust` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
@@ -390,17 +390,17 @@ function TrustPage() {
               : "Enterprise & Government Procurement Ready"}
           </div>
           <h1 className="mt-5 bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-4xl font-semibold leading-tight text-transparent sm:text-5xl">
-            {isAr ? "الثقة والأمان في NEXUS" : "Trust at NEXUS"}
+            {isAr ? "الثقة والأمان في NEXIOS" : "Trust at NEXIOS"}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
             {isAr
-              ? "نبني NEXUS AI OS وفق متطلبات الجهات السيادية والمؤسسات الكبرى: ضوابط الهيئة الوطنية للأمن السيبراني، تشفير من الدرجة العسكرية، سيادة بيانات داخل المملكة، وسجلات تدقيق محصّنة."
-              : "NEXUS AI OS is built to the bar of sovereign and enterprise procurement: NCA-aligned controls, defence-grade encryption, in-Kingdom data residency, and tamper-evident audit logging."}
+              ? "صُممت NEXIOS AI OS لمتطلبات الجهات السيادية والمؤسسات الكبرى: صلاحيات بأقل امتياز، عزل مؤسسي، تشفير وتدقيق وفق الضوابط المثبتة لبيئة النشر، وبوابة تمنع الإنتاج حتى اعتماد الإقامة والمعالجات الفرعية."
+              : "NEXIOS AI OS is designed for sovereign and enterprise procurement: least privilege, tenant isolation, deployment-verified encryption and auditing, and an activation gate that blocks production until residency and subprocessors are approved."}
           </p>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground/70">
             {isAr
-              ? "هذه الصفحة يحرّرها فريق NEXUS لتلخيص الضوابط المُفعّلة وممارسات الأمان. ليست شهادة أو تدقيقًا مستقلًا. تتوفر تقارير التدقيق وملحق معالجة البيانات (DPA) وقائمة المورّدين الفرعيين بموجب اتفاقية عدم إفصاح."
-              : "This page is maintained by the NEXUS team to summarize enabled controls and current practices. It is not an independent attestation. Audit reports, DPA, and subprocessor list are available under NDA."}
+              ? "هذه الصفحة يحرّرها فريق NEXIOS لتلخيص الضوابط المُفعّلة وممارسات الأمان. ليست شهادة أو تدقيقًا مستقلاً. تتوفر تقارير التدقيق وملحق معالجة البيانات (DPA) وقائمة المورّدين الفرعيين بموجب اتفاقية عدم إفصاح."
+              : "This page is maintained by the NEXIOS team to summarize enabled controls and current practices. It is not an independent attestation. Audit reports, DPA, and subprocessor list are available under NDA."}
           </p>
         </section>
 
@@ -485,7 +485,7 @@ function TrustPage() {
           />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <RespCard
-              title={isAr ? "NEXUS" : "NEXUS"}
+              title={isAr ? "NEXIOS" : "NEXIOS"}
               items={
                 isAr
                   ? [
@@ -604,11 +604,11 @@ function TrustPage() {
             titleEn="Privacy & DPO"
             titleAr="الخصوصية ومسؤول حماية البيانات"
             isAr={isAr}
-            valueEn="privacy@nexus-ai-os.com"
-            valueAr="privacy@nexus-ai-os.com"
+            valueEn="privacy@neexios.com"
+            valueAr="privacy@neexios.com"
             descEn="Data subject requests, DPA, subprocessors, and PDPL inquiries."
             descAr="طلبات أصحاب البيانات وملحق المعالجة وقائمة المورّدين الفرعيين."
-            href="mailto:privacy@nexus-ai-os.com"
+            href="mailto:privacy@neexios.com"
           />
           <ContactCard
             icon={<AlertTriangle className="h-5 w-5" />}
@@ -617,8 +617,8 @@ function TrustPage() {
             isAr={isAr}
             valueEn="soc@nexus-ai-os.com"
             valueAr="soc@nexus-ai-os.com"
-            descEn="For confirmed or suspected security incidents involving NEXUS services."
-            descAr="للحوادث الأمنية المؤكدة أو المشتبه بها المتعلقة بخدمات NEXUS."
+            descEn="For confirmed or suspected security incidents involving NEXIOS services."
+            descAr="للحوادث الأمنية المؤكدة أو المشتبه بها المتعلقة بخدمات NEXIOS."
             href="mailto:soc@nexus-ai-os.com"
           />
         </section>

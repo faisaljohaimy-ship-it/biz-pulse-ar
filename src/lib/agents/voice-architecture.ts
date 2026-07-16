@@ -2,6 +2,7 @@
  * Voice-Ready Agent Architecture (types only — no runtime).
  * Prepared for future TTS/voice integration. Do not implement speech here.
  */
+import { ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
 
 export type AgentLocale = "ar" | "en";
 
@@ -63,14 +64,14 @@ export interface AgentRuntimeProfile {
 export const DEFAULT_VOICE_PROFILES: Record<string, { ar: VoiceProfile; en: VoiceProfile }> = {
   aria: {
     ar: {
-      voiceId: "aria-ar-executive",
+      voiceId: ARIA_ELEVENLABS_VOICE_ID,
       displayName: "آريا التنفيذية",
       rate: 1.0,
       pitch: 0,
       language: "ar",
     },
     en: {
-      voiceId: "aria-en-executive",
+      voiceId: ARIA_ELEVENLABS_VOICE_ID,
       displayName: "ARIA Executive",
       rate: 1.0,
       pitch: 0,

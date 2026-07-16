@@ -35,8 +35,8 @@ import {
 } from "lucide-react";
 import { REGIONS } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
-import { SimBadge } from "@/components/os/SimBadge";
-import { useOperationalLive } from "@/lib/sec/operational-live";
+import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
+import { useExecutiveKpiSource } from "@/lib/sec/use-executive-kpi-source";
 
 // Deterministic simulation snapshot — aggregated across the four regions.
 // Operational KPIs (compliance, stations, staff, tasks, alerts, incidents)
@@ -181,20 +181,21 @@ interface KpiSpec {
 
 export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
   const now = useLiveClock();
-  // Read-only live counters from the security tables. Null → fall back to the
-  // tagged simulation value (unauthenticated visitors / empty org / error).
-  const liveOps = useOperationalLive();
+  const source = useExecutiveKpiSource();
+  const live = source.data;
 
   // Operational KPIs mirroring the executive command layout (see design ref):
   // compliance · operational stations · field staff · completed tasks ·
-  // active alerts · open incidents. Every metric with an authoritative table
-  // is live-first; only compliance remains a visibly tagged simulation.
-  const activeAlerts = liveOps.activeAlerts ?? SIM.activeAlerts;
-  const openIncidents = liveOps.openIncidents ?? SIM.openIncidents;
-  const operationalSites = liveOps.operationalSites ?? SIM.stationsOperational;
-  const totalSites = liveOps.totalSites ?? SIM.regions;
-  const fieldStaff = liveOps.fieldStaff ?? SIM.fieldStaff;
-  const completedTasks = liveOps.completedTasks ?? SIM.completedTasks;
+  // active alerts · open incidents. Active alerts and open incidents come from
+  // live sec_* tables when available; the rest are the tagged sim snapshot.
+  const compliance = live?.contractors_compliance ?? SIM.compliance;
+  const stationsOperational = live?.sites_operational ?? SIM.stationsOperational;
+  const stationsTotal = live?.sites_total ?? SIM.regions;
+  const fieldStaff = live ? live.patrols_active + live.contractors_active : SIM.fieldStaff;
+  const completedTasks = live ? live.wo_closed + live.projects_completed : SIM.completedTasks;
+  const activeAlerts = live?.sensors_alarming ?? SIM.activeAlerts;
+  const openIncidents = live?.incidents_open ?? SIM.openIncidents;
+  const allLive = source.mode === "live";
   const kpis: readonly KpiSpec[] = [
     {
       key: "compliance",
@@ -203,31 +204,32 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       labelEn: "Compliance Rate",
       subAr: "إنجاز المهام",
       subEn: "TASK DELIVERY",
-      value: SIM.compliance,
-      display: `${SIM.compliance}%`,
+      value: compliance,
+      display: `${compliance}%`,
       tone: "cyan",
       hintAr: "▲ امتثال كامل",
       hintEn: "▲ FULLY COMPLIANT",
       unit: "%",
-      gauge: SIM.compliance / 100,
+      gauge: compliance / 100,
       padded: false,
+      live: allLive,
     },
     {
       key: "stations",
       icon: Building2,
-      labelAr: "المواقع التشغيلية",
-      labelEn: "Operational Sites",
+      labelAr: "المحطات التشغيلية",
+      labelEn: "Operational Stations",
       subAr: "حالة الشبكة",
       subEn: "NETWORK STATE",
-      value: operationalSites,
-      display: `${operationalSites}/${totalSites}`,
+      value: stationsOperational,
+      display: `${stationsOperational}/${stationsTotal}`,
       tone: "emerald",
       hintAr: "▲ ضمن النطاق",
       hintEn: "▲ IN RANGE",
       unit: "OPS",
-      gauge: totalSites > 0 ? operationalSites / totalSites : 0,
+      gauge: stationsTotal > 0 ? stationsOperational / stationsTotal : 0,
       padded: false,
-      live: liveOps.operationalSites != null && liveOps.totalSites != null,
+      live: allLive,
     },
     {
       key: "field_staff",
@@ -243,7 +245,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       unit: "PAX",
       gauge: Math.min(1, fieldStaff / 300),
       padded: false,
-      live: liveOps.fieldStaff != null,
+      live: allLive,
     },
     {
       key: "completed_tasks",
@@ -259,7 +261,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       unit: "DONE",
       gauge: Math.min(1, completedTasks / 40),
       padded: false,
-      live: liveOps.completedTasks != null,
+      live: allLive,
     },
     {
       key: "active_alerts",
@@ -275,7 +277,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       unit: "ALERT",
       gauge: 1 - Math.min(1, activeAlerts / 30),
       padded: true,
-      live: liveOps.activeAlerts != null,
+      live: allLive,
     },
     {
       key: "open_incidents",
@@ -291,7 +293,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       unit: "OPEN",
       gauge: 1 - Math.min(1, openIncidents / 40),
       padded: true,
-      live: liveOps.openIncidents != null,
+      live: allLive,
     },
   ];
 
@@ -471,9 +473,9 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         </div>
         <div className="flex items-center justify-end gap-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-emerald-200/90">
-            ALL&nbsp;SYSTEMS&nbsp;NOMINAL
+            {allLive ? "RLS SOURCE CONNECTED" : "PUBLIC DEMO READY"}
           </span>
-          <SimBadge ar={ar} className="text-[9px]" />
+          <ExecutiveSourceBadge source={source} ar={ar} className="text-[9px]" />
         </div>
       </div>
 
@@ -487,8 +489,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             className="mt-1 flex flex-wrap items-center gap-2 text-lg font-semibold tracking-tight text-white sm:text-xl"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
-            {ar ? "نبض المؤسسة — لقطة عامة" : "Enterprise Pulse — Snapshot"}
-            <SimBadge ar={ar} className="text-[9px]" />
+            {allLive
+              ? ar
+                ? "نبض المؤسسة — بيانات حية"
+                : "Enterprise Pulse — Live"
+              : ar
+                ? "نبض المؤسسة — عرض توضيحي"
+                : "Enterprise Pulse — Demo"}
+            <ExecutiveSourceBadge source={source} ar={ar} className="text-[9px]" />
           </div>
         </div>
         <div className="hidden items-center gap-2 font-mono text-[9px] uppercase tracking-[0.28em] text-[#3AE8FF]/55 sm:flex">
@@ -652,7 +660,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                         {ar ? "حيّ" : "LIVE"}
                       </span>
                     ) : (
-                      <SimBadge ar={ar} className="text-[8px]" />
+                      <ExecutiveSourceBadge source={source} ar={ar} className="text-[8px]" />
                     )}
                   </div>
 
@@ -693,17 +701,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className="h-1 w-1 rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]" />
-            SYS&nbsp;v2.4.0 · ARIA
+            SYS&nbsp;v1.5.1 · ARIA
           </span>
           <span className="hidden sm:inline">TLS&nbsp;1.3 · AES-256</span>
           <span className="hidden md:inline">SCHEMA · SEC-OVR&nbsp;R7</span>
         </div>
         <div className="flex items-center gap-4">
-          <SimBadge ar={ar} className="text-[8px]" />
-          <span>UPTIME&nbsp;99.97%</span>
-          <span>
-            LAT&nbsp;<span className="text-[#3AE8FF]/85">42ms</span>
-          </span>
+          <ExecutiveSourceBadge source={source} ar={ar} className="text-[8px]" />
+          <span>{allLive ? "SOURCE · SEC_EXEC_KPIS" : "SOURCE · DEMO_SNAPSHOT"}</span>
           <span className="hidden sm:inline">
             TERMINAL <span className="text-[#3AE8FF]/85">HQS-01-SEC</span>
           </span>

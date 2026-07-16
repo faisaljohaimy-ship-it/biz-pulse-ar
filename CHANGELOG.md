@@ -2,24 +2,99 @@
 
 All notable changes to NEXIOS AI OS.
 
+## [1.5.1] — 2026-07-16
+
+### Free bilingual voices for every specialist agent
+
+- Replaced the paid specialist speech API with the free Web Speech catalogue
+  supplied by each user's browser and operating system. Agent narration no
+  longer needs `OPENAI_API_KEY` or incurs application-level TTS usage charges.
+- Assigned ten distinct Arabic/English voice personalities with preferred
+  names, language tags, cadence, pitch, and deterministic same-language local
+  fallbacks for iOS, Android, Windows, macOS, and other supporting browsers.
+- Added correct asynchronous `voiceschanged` loading, safe system-default
+  fallback, and sentence-aware chunking so long execution summaries continue
+  reliably without clipping.
+- Kept every call behind the shared audio arbiter: ungoverned browser speech is
+  blocked, specialist speech cannot interrupt ARIA, and ARIA can safely preempt
+  a specialist. ARIA remains exclusively on her ElevenLabs identity.
+- Removed `/api/agents/tts` and its provider secret/deployment dependency, while
+  retaining actual-result narration, persistent mute, and animated lip cadence.
+
+## [1.5.0] — 2026-07-16
+
+### Responsive command environment and working agent voices
+
+- Added the supplied command-room artwork as the permanent home environment,
+  with purpose-built mobile, tablet, and desktop WebP crops, responsive source
+  selection, priority loading, readability lighting, and a seamless greeting-
+  film crossfade instead of stretching one image across every display.
+- Voice-enabled all eleven Digital Humans. ARIA keeps her canonical ElevenLabs
+  identity, while the ten specialist agents use an authenticated, rate-limited,
+  server-governed speech route with fixed per-agent voices and instructions.
+- Connected agent speech to real work: manual and realtime runs announce their
+  actual status and returned summary, preserve the underlying execution, expose
+  a persistent mute control, and never narrate invented progress.
+- Added a shared audio priority arbiter so specialist speech cannot overlap or
+  interrupt ARIA, and prevented provider calls before a genuine browser gesture.
+- Added contract coverage for all agents, voice ownership, audio priority,
+  responsive image sources, endpoint authorization, and server-side voice
+  locking. The Hajj platform remains outside this release and unchanged.
+
+## [1.4.0] — 2026-07-16
+
+### Attachment security, one ARIA, and release integrity
+
+- Moved ARIA attachments through a service-role-only quarantine bucket before
+  promotion, added real signature/MIME/extension validation, executable and
+  active-content blocking, Office macro/path/decompression-bomb inspection,
+  EICAR detection, content hashing, and a privacy-minimal scan ledger.
+- Made upload rate limiting fail closed and added an optional enterprise
+  malware-scanner contract whose timeout, malformed response, or outage blocks
+  promotion rather than bypassing the security boundary.
+- Consolidated authenticated speech on `/api/aria/tts`, reduced `/api/tts` to a
+  method-preserving compatibility redirect, and removed the separate Digital
+  Twin and legacy assistant conversation/voice runtimes. Historical assistant
+  links, the former `/aria` console, and learning dialogs now open the single
+  root-mounted ARIA surface; command-center voice state reads that runtime
+  instead of animating a parallel simulated assistant.
+- Made Cloudflare deployment callable only from the successful CI workflow
+  after unit, type, lint, production audit, authenticated security E2E, build,
+  and performance-budget gates. Missing E2E user credentials now fail CI.
+- Added enforced ceilings for total output, JavaScript, CSS, and media assets so
+  material bundle regressions block release.
+- Kept the Hajj platform outside this release and unchanged.
+
 ## [1.3.0] — 2026-07-15
 
-### Governed intelligence and live operations
+### Identity, open presentation, and production governance
 
-- Replaced direct ARIA email/SMS execution with encrypted, tenant-scoped
-  pending actions and an explicit one-use human approval surface.
-- Added an idempotent outbound ledger, conservative unknown-state handling,
-  cancellation, duplicate suppression, and verified Twilio/Resend delivery
-  webhooks.
-- Added a fail-closed PDPL release dimension covering controller identity, DPO,
-  privacy channel, data region, DPA status, retention decisions, breach owner,
-  and legal approval reference without inventing legal facts.
-- Replaced simulated security KPIs with live tenant-scoped sources on protected
-  security pages, the sovereign deck, and authenticated Executive Bridge
-  scenes; unsupported sources remain explicitly labelled simulation.
-- Upgraded confirmation and source-state surfaces with NEXIOS glass depth,
-  living light, responsive Arabic layout, and reduced-motion fallbacks.
-- Preserved the Hajj platform unchanged, as requested by the owner.
+- Introduced NEXIOS Identity System 4.0 across public, activation, window,
+  sidebar, mobile-header, and ARIA surfaces with spatial glass, restrained
+  living light, responsive depth, and reduced-motion equivalents.
+- Moved credentials behind an open executive presentation and explicit
+  transition acceptance. Visitors can assess the system without an account;
+  protected routes and data still require real authentication and RLS.
+- Replaced direct ARIA email/SMS execution with durable drafts, exact previews,
+  content-bound ten-minute approval tokens, one-time atomic dispatch, encrypted
+  payloads, masked recipients, and signed Twilio/Resend delivery webhooks.
+- Added database retention enforcement for outbound encrypted content and
+  delivery metadata, mandatory audit events, and a no-retry reconciliation
+  state when a provider may already have accepted a message.
+- Published the completed core-platform PDPL operating baseline: 30-day rights
+  handling, incident workflow, retention schedule, residency/subprocessor
+  activation gates, and official Saudi references. The Hajj platform remains
+  outside this release and was not modified.
+- Added a fail-closed PDPL readiness dimension covering controller identity,
+  DPO/contact, residency, DPA register state, retention decisions, breach
+  ownership, and legal approval without exposing their configured values.
+- Connected the public executive deck, decision queue, ARIA recommendations,
+  and the first two command-bridge chapters to tenant-scoped live KPIs after
+  authentication; anonymous presentation values remain visibly labelled demo
+  data.
+- Replaced regional simulation fixtures on the protected operations room,
+  sections, and circles pages with authenticated RLS-scoped database sources,
+  while relabelling public marketing snapshots as demo data.
 
 ## [1.2.0] — 2026-07-15
 

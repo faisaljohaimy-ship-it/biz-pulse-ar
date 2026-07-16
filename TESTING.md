@@ -10,9 +10,10 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run check:performance
 ```
 
-`npm run check` runs the same four code gates after dependencies are installed.
+`npm run check` runs the same five code gates after dependencies are installed.
 
 For a manual release review, run `npm run preview` after the build, inspect the
 application, then stop the Wrangler process with `Ctrl+C`.
@@ -35,11 +36,23 @@ application, then stop the Wrangler process with `Ctrl+C`.
   must all be configured before release-candidate status is possible.
 - ARIA modality tests lock text-only keyboard replies and voice replies only for
   microphone turns captured inside Conversation Mode.
+- ARIA singleton tests lock one root-mounted copilot, one authenticated TTS
+  runtime, compatibility-only historical routes, and the absence of a second
+  Digital Twin or legacy assistant voice/conversation owner.
+- Agent-voice contract tests lock all eleven Digital Humans, ten distinct free
+  bilingual system-voice profiles, preferred and deterministic fallback
+  selection, paid-endpoint removal, ARIA/specialist separation, non-overlapping
+  audio priority, and the three responsive home-artwork sources.
+- Attachment inspection tests lock real magic-byte matching, executable and
+  active-content rejection, valid UTF-8/JSON, EICAR blocking, and macro-free
+  Office containers. The upload path additionally quarantines before promotion.
 - Executive Bridge tests lock the seven-chapter bilingual story, simulation
   labels, and the 1,200-character public ARIA voice limit for every narration.
 - Playwright covers the unauthenticated `/command-center` redirect and the
   authenticated route when E2E credentials are supplied.
 - CI uses `npm ci`; lint failures are blocking and tests are no longer omitted.
+- CI audits production dependencies, enforces build-size budgets, and requires a
+  real E2E user before its only deployment job can start.
 
 ## Environment-backed checks
 
@@ -67,15 +80,27 @@ With two tenant accounts, compare `/sec`, `/sec/sections`, `/sec/circles`, and
 freshness timestamp and the LIVE/SIM labels separately; a missing authoritative
 source must degrade to a visible simulation label, never a fabricated live KPI.
 
-## Verified locally — 2026-07-15
+### Live attachment exercise
+
+Apply the quarantine migration, upload one permitted image and one macro-free
+Office document, and verify that each receives an approved scan-ledger row and
+exists only in `aria-attachments`. Attempt a renamed executable, an active PDF,
+and an Office macro file; verify that no clean object or signed URL is produced.
+When an external scanner is configured, test clean, malware, timeout, malformed
+JSON, and HTTP 5xx responses. Every non-clean result must fail closed and leave
+the quarantine bucket empty after request cleanup.
+
+## Verified locally — 2026-07-16
 
 - TypeScript: `tsc --noEmit` passed.
 - ESLint: passed with no findings.
-- Vitest: 21 test files and 116 tests passed.
+- Vitest: 24 files and 141 tests passed.
 - Production build: client, SSR, and Cloudflare Worker output passed;
   `.output/server/wrangler.json` was generated.
 - Production dependency audit: `npm audit --omit=dev` reported zero
   vulnerabilities.
+- Production performance budget: total output, JavaScript, CSS, largest chunk,
+  and largest media ceilings passed.
 - Hajj application source files matched the previous release byte-for-byte.
 
 Live-provider delivery and cross-tenant production evidence remain

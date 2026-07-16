@@ -1,17 +1,8 @@
-/**
- * MeetAriaSimulation — guided demo where the learner walks through a live
- * three-step conversation with ARIA, watching how she reasons.
- *
- *   Step 1: Pick a preset executive question (or type your own).
- *   Step 2: Watch ARIA stream her evidence-backed answer.
- *   Step 3: Confirm you completed the simulation → marks progress.
- */
-import { useEffect, useMemo, useRef, useState } from "react";
+/** Guided learning simulation backed by the singleton ARIA conversation. */
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
-import { Sparkles, PlayCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle2, Loader2, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
+import { useAria } from "@/lib/aria-core/hooks/useAria";
 import { updateProgress } from "@/lib/learn/lessons.functions";
 import type { Bilingual } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";
@@ -27,50 +18,31 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
   const ar = lang === "ar";
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [chosen, setChosen] = useState<string | null>(null);
+  const requestedAt = useRef(0);
   const persist = useServerFn(updateProgress);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const [transport] = useState(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/learn/aria-teach",
-        body: () => ({ slug, lang }),
-        fetch: async (url, init) => {
-          const { data } = await supabase.auth.getSession();
-          const token = data.session?.access_token;
-          const headers = new Headers(init?.headers);
-          if (token) headers.set("Authorization", `Bearer ${token}`);
-          return fetch(url, { ...init, headers });
-        },
-      }),
-  );
-  const { messages, sendMessage, status } = useChat({
-    id: `sim-meet-aria-${slug}`,
-    transport,
-  });
-
-  const streaming = status === "submitted" || status === "streaming";
-  const hasAssistant = useMemo(
-    () =>
-      messages.some(
-        (m) =>
-          m.role === "assistant" && m.parts.some((p) => p.type === "text" && p.text.length > 0),
-      ),
-    [messages],
-  );
+  const { open, activeTurn } = useAria();
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+    if (step !== 2 || !activeTurn || requestedAt.current === 0) return;
+    const startedAt = Date.parse(activeTurn.startedAt);
+    const belongsToSimulation =
+      Number.isFinite(startedAt) && startedAt >= requestedAt.current - 750;
+    if (
+      belongsToSimulation &&
+      (activeTurn.status === "completed" || activeTurn.status === "failed")
+    ) {
+      setStep(3);
+    }
+  }, [activeTurn, step]);
 
-  useEffect(() => {
-    if (step === 2 && !streaming && hasAssistant) setStep(3);
-  }, [step, streaming, hasAssistant]);
-
-  async function ask(text: string) {
+  function ask(text: string) {
     setChosen(text);
+    requestedAt.current = Date.now();
     setStep(2);
-    await sendMessage({ text });
+    const prompt = ar
+      ? `[محاكاة تعليمية — الدرس: ${slug}] اشرح استدلالك التنفيذي بوضوح لهذا السؤال: ${text}`
+      : `[Learning simulation — lesson: ${slug}] Explain your executive reasoning clearly for this question: ${text}`;
+    open({ send: prompt, focus: false });
   }
 
   async function complete() {
@@ -86,15 +58,16 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
         <div className="space-y-4">
           <div className="text-sm text-white/70">
             {ar
-              ? "اختر سؤالاً تنفيذياً لتراقب كيف تُفكّر آريا. ستستجيب فوراً ببثّ مباشر لاستدلالها."
-              : "Pick an executive question and watch how ARIA thinks. She will stream her reasoning live."}
+              ? "اختر سؤالاً تنفيذياً؛ ستفتحه آريا في محادثتها الرسمية مع الاحتفاظ بذاكرتها وصوتها الواحد."
+              : "Choose an executive question; ARIA will open it in her official conversation with one persistent memory and voice."}
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            {suggested.map((s, i) => {
-              const text = ar ? s.ar : s.en;
+            {suggested.map((suggestion, index) => {
+              const text = ar ? suggestion.ar : suggestion.en;
               return (
                 <button
-                  key={i}
+                  key={index}
+                  type="button"
                   onClick={() => ask(text)}
                   className="group flex items-start gap-3 rounded-2xl border border-cyan-400/20 bg-white/[0.02] p-4 text-start transition-all hover:border-cyan-400/50 hover:bg-cyan-400/[0.06]"
                 >
@@ -107,41 +80,26 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
         </div>
       )}
 
-      {(step === 2 || step === 3) && (
-        <div className="space-y-4">
-          {chosen && (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/90">
-              <div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-white/50">
-                {ar ? "سؤالك التنفيذي" : "Your executive question"}
-              </div>
-              <div>{chosen}</div>
-            </div>
-          )}
-          <div
-            ref={scrollRef}
-            className="max-h-[380px] min-h-[180px] overflow-y-auto rounded-2xl border border-cyan-400/20 bg-[#04111F]/70 p-4"
-          >
-            {messages
-              .filter((m) => m.role === "assistant")
-              .map((m: UIMessage) => {
-                const text = (m.parts ?? []).map((p) => (p.type === "text" ? p.text : "")).join("");
-                return (
-                  <div key={m.id} className="flex gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-cyan-400/15 ring-1 ring-cyan-400/30">
-                      <Sparkles className="h-4 w-4 text-cyan-200" />
-                    </div>
-                    <div className="flex-1 whitespace-pre-wrap text-sm leading-relaxed text-white/90">
-                      {text || <Loader2 className="h-4 w-4 animate-spin text-cyan-300" />}
-                    </div>
-                  </div>
-                );
-              })}
-            {streaming && !hasAssistant && (
-              <div className="flex items-center gap-2 text-sm text-cyan-200">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {ar ? "آريا تُفكّر…" : "ARIA is thinking…"}
-              </div>
+      {(step === 2 || step === 3) && chosen && (
+        <div className="rounded-2xl border border-cyan-400/20 bg-[#04111F]/70 p-5">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-cyan-200/70">
+            <Sparkles className="h-4 w-4" />
+            {ar ? "المحادثة الرسمية" : "Official conversation"}
+          </div>
+          <p className="mt-3 text-sm text-white/90">{chosen}</p>
+          <div className="mt-4 flex items-center gap-2 text-xs text-white/60">
+            {step === 2 ? (
+              <Loader2 className="h-4 w-4 animate-spin text-cyan-300" />
+            ) : (
+              <ShieldCheck className="h-4 w-4 text-emerald-300" />
             )}
+            {step === 2
+              ? ar
+                ? "آريا تعالج السؤال في نافذتها الموحدة…"
+                : "ARIA is processing in her unified panel…"
+              : ar
+                ? "اكتملت الجولة عبر ذاكرة آريا وصوتها الرسمي."
+                : "The turn completed through ARIA's official memory and voice."}
           </div>
         </div>
       )}
@@ -150,10 +108,11 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-400/[0.06] p-4">
           <div className="text-sm text-white/90">
             {ar
-              ? "لقد شاهدت آريا تُفكّر مباشرة. أكمل المحاكاة لتسجيل تقدّمك في الحصة."
-              : "You have watched ARIA reason live. Complete the simulation to record your progress."}
+              ? "اكتملت تجربة آريا الموحّدة. سجّل تقدمك في الحصة."
+              : "You completed the unified ARIA experience. Record your lesson progress."}
           </div>
           <button
+            type="button"
             onClick={complete}
             className={cn(
               "inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-[#04111F]",
@@ -161,7 +120,7 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
             )}
           >
             <CheckCircle2 className="h-4 w-4" />
-            {ar ? "أكملت المحاكاة" : "Mark simulation complete"}
+            {ar ? "أكملت المحاكاة" : "Mark complete"}
           </button>
         </div>
       )}
@@ -171,35 +130,27 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
 
 function ExecutiveStepper({ step, ar }: { step: 1 | 2 | 3; ar: boolean }) {
   const labels = ar
-    ? ["اختر سؤالاً تنفيذياً", "شاهد آريا تُفكّر", "أكمل المحاكاة"]
-    : ["Choose an executive question", "Watch ARIA reason", "Complete the simulation"];
+    ? ["اختر سؤالاً", "شاهد آريا الرسمية", "أكمل المحاكاة"]
+    : ["Choose a question", "Watch official ARIA", "Complete"];
+
   return (
     <ol className="flex flex-wrap items-center gap-2 text-xs">
-      {labels.map((l, i) => {
-        const n = (i + 1) as 1 | 2 | 3;
-        const done = step > n;
-        const active = step === n;
+      {labels.map((label, index) => {
+        const position = (index + 1) as 1 | 2 | 3;
+        const done = step > position;
+        const active = step === position;
         return (
           <li
-            key={i}
+            key={label}
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
-              active && "border-cyan-400/60 bg-cyan-400/10 text-cyan-100",
-              done && "border-emerald-400/50 bg-emerald-400/10 text-emerald-200",
-              !active && !done && "border-white/15 bg-white/[0.02] text-white/50",
+              "flex items-center gap-2 rounded-full border px-3 py-1.5",
+              active && "border-cyan-400/45 bg-cyan-400/10 text-cyan-100",
+              done && "border-emerald-400/35 bg-emerald-400/10 text-emerald-200",
+              !active && !done && "border-white/10 text-white/45",
             )}
           >
-            <span
-              className={cn(
-                "grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold",
-                active && "bg-cyan-400 text-[#04111F]",
-                done && "bg-emerald-400 text-[#04111F]",
-                !active && !done && "bg-white/10 text-white/60",
-              )}
-            >
-              {done ? "✓" : n}
-            </span>
-            {l}
+            <span>{done ? "✓" : position}</span>
+            {label}
           </li>
         );
       })}

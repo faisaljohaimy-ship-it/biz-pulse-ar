@@ -1,18 +1,16 @@
-import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Ban,
   CheckCircle2,
   Clock3,
   Loader2,
-  LockKeyhole,
   Mail,
   MessageSquareText,
-  Send,
   ShieldCheck,
-  Wrench,
   XCircle,
+  Wrench,
 } from "lucide-react";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { cn } from "@/lib/utils";
 import {
   approveAriaOutboundMessage,
@@ -21,8 +19,8 @@ import {
 
 /**
  * Renders an inline tool invocation from an AI SDK UIMessage part of type
- * `tool-<name>` or legacy `tool-invocation`. Outbound email/SMS receives a
- * dedicated human-approval surface: a tool result alone can never send.
+ * `tool-<name>` or legacy `tool-invocation`. Shows tool name, state, and a
+ * compact summary of the result for executive transparency.
  */
 
 type ToolPart = {
@@ -34,28 +32,12 @@ type ToolPart = {
   toolName?: string;
 };
 
-type ApprovalOutput = {
-  ok: true;
-  requiresApproval: true;
-  approval: {
-    ledgerId: string;
-    approvalToken: string;
-    expiresAt: string;
-    channel: "email" | "sms";
-    recipient: string;
-    cc?: string;
-    subject?: string;
-    body: string;
-    mediaCount: number;
-  };
-};
-
 const TOOL_LABELS: Record<string, { ar: string; en: string; icon: string }> = {
   create_task: { ar: "إنشاء مهمة", en: "Create Task", icon: "📝" },
   query_kpis: { ar: "قراءة المؤشرات", en: "Query KPIs", icon: "📊" },
   list_open_crises: { ar: "الأزمات المفتوحة", en: "Open Crises", icon: "⚠️" },
-  send_executive_email: { ar: "اعتماد بريد تنفيذي", en: "Email Approval", icon: "📧" },
-  send_executive_sms: { ar: "اعتماد رسالة نصية", en: "SMS Approval", icon: "💬" },
+  send_executive_email: { ar: "إرسال بريد تنفيذي", en: "Send Email", icon: "📧" },
+  send_executive_sms: { ar: "إرسال رسالة نصية", en: "Send SMS", icon: "💬" },
   record_executive_decision: { ar: "تسجيل قرار", en: "Record Decision", icon: "🎯" },
   query_tasks: { ar: "قراءة المهام", en: "Query Tasks", icon: "✅" },
   update_task_status: { ar: "تحديث المهمة", en: "Update Task", icon: "🔄" },
@@ -63,25 +45,11 @@ const TOOL_LABELS: Record<string, { ar: string; en: string; icon: string }> = {
   create_intelligence_alert: { ar: "إنشاء تنبيه", en: "Create Alert", icon: "🚨" },
 };
 
-function asApprovalOutput(output: unknown): ApprovalOutput | null {
-  if (!output || typeof output !== "object") return null;
-  const value = output as Partial<ApprovalOutput>;
-  if (
-    value.ok !== true ||
-    value.requiresApproval !== true ||
-    !value.approval?.ledgerId ||
-    !value.approval.approvalToken
-  ) {
-    return null;
-  }
-  return value as ApprovalOutput;
-}
-
 function summarizeOutput(toolName: string, output: unknown): string | null {
   if (!output || typeof output !== "object") return null;
   const o = output as Record<string, unknown> & { ok?: boolean; error?: string };
   if (o.ok === false) return o.error ?? "Failed";
-  if (o.requiresApproval === true) return "بانتظار اعتمادك · AWAITING APPROVAL";
+  if (o.requiresApproval === true) return "بانتظار اعتمادك · Awaiting approval";
   switch (toolName) {
     case "create_task": {
       const t = o.task as { title?: string; priority?: string } | undefined;
@@ -96,9 +64,9 @@ function summarizeOutput(toolName: string, output: unknown): string | null {
       return c ? `${c.length} open` : null;
     }
     case "send_executive_email":
-      return `Email ${String(o.status ?? "accepted")} ✓`;
+      return `Email ${String(o.status ?? "completed")} ✓`;
     case "send_executive_sms":
-      return `SMS ${String(o.status ?? "accepted")} ✓`;
+      return `SMS ${String(o.status ?? "queued")} ✓`;
     case "record_executive_decision": {
       const m = o.memory as { title?: string; kind?: string } | undefined;
       return m ? `${m.kind}: ${m.title}` : null;
@@ -124,241 +92,235 @@ function summarizeOutput(toolName: string, output: unknown): string | null {
   }
 }
 
-type ApprovalUiState =
-  | { kind: "idle" }
-  | { kind: "sending" }
-  | { kind: "sent"; provider?: string; status: string; warning?: string }
-  | { kind: "uncertain"; message: string }
-  | { kind: "cancelled" }
-  | { kind: "error"; message: string };
+type ApprovalPreview = {
+  ledgerId: string;
+  approvalToken: string;
+  expiresAt: string;
+  channel: "email" | "sms";
+  recipient: string;
+  cc?: string;
+  subject?: string;
+  body: string;
+  mediaCount: number;
+};
 
-function HumanApprovalCard({ output }: { output: ApprovalOutput }) {
-  const approve = useServerFn(approveAriaOutboundMessage);
-  const cancel = useServerFn(cancelAriaOutboundMessage);
-  const [state, setState] = useState<ApprovalUiState>({ kind: "idle" });
-  const approval = output.approval;
-  const EmailOrSms = approval.channel === "email" ? Mail : MessageSquareText;
-  const inactive = state.kind !== "idle" && state.kind !== "error";
-
-  const confirm = async () => {
-    if (inactive) return;
-    setState({ kind: "sending" });
-    try {
-      const result = await approve({
-        data: {
-          ledgerId: approval.ledgerId,
-          approvalToken: approval.approvalToken,
-        },
-      });
-      if (result.status === "unknown") {
-        setState({
-          kind: "uncertain",
-          message:
-            result.error ??
-            "تم استهلاك الاعتماد، لكن نتيجة المزوّد تحتاج مطابقة. لم يُنفذ إرسال مكرر.",
-        });
-        return;
-      }
-      if (!result.ok) {
-        setState({ kind: "error", message: result.error ?? "تعذّر إرسال الرسالة" });
-        return;
-      }
-      setState({
-        kind: "sent",
-        provider: result.provider,
-        status: result.status,
-        warning: result.error,
-      });
-    } catch (error) {
-      setState({
-        kind: "error",
-        message: error instanceof Error ? error.message : "تعذّر اعتماد الرسالة",
-      });
-    }
+function approvalPreview(output: unknown): ApprovalPreview | null {
+  if (!output || typeof output !== "object") return null;
+  const root = output as Record<string, unknown>;
+  const raw = root.approval;
+  if (root.ok !== true || root.requiresApproval !== true || !raw || typeof raw !== "object") {
+    return null;
+  }
+  const a = raw as Record<string, unknown>;
+  if (
+    typeof a.ledgerId !== "string" ||
+    typeof a.approvalToken !== "string" ||
+    typeof a.expiresAt !== "string" ||
+    (a.channel !== "email" && a.channel !== "sms") ||
+    typeof a.recipient !== "string" ||
+    typeof a.body !== "string"
+  ) {
+    return null;
+  }
+  return {
+    ledgerId: a.ledgerId,
+    approvalToken: a.approvalToken,
+    expiresAt: a.expiresAt,
+    channel: a.channel,
+    recipient: a.recipient,
+    ...(typeof a.cc === "string" ? { cc: a.cc } : {}),
+    ...(typeof a.subject === "string" ? { subject: a.subject } : {}),
+    body: a.body,
+    mediaCount: typeof a.mediaCount === "number" ? a.mediaCount : 0,
   };
+}
 
-  const reject = async () => {
-    if (inactive) return;
-    setState({ kind: "sending" });
+function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
+  const approveFn = useServerFn(approveAriaOutboundMessage);
+  const cancelFn = useServerFn(cancelAriaOutboundMessage);
+  const [reviewed, setReviewed] = useState(false);
+  const [phase, setPhase] = useState<
+    "idle" | "approving" | "cancelling" | "sent" | "cancelled" | "error"
+  >("idle");
+  const [detail, setDetail] = useState<string | null>(null);
+  const expired = new Date(approval.expiresAt).getTime() <= Date.now();
+  const busy = phase === "approving" || phase === "cancelling";
+  const ChannelIcon = approval.channel === "email" ? Mail : MessageSquareText;
+  const expiryLabel = new Date(approval.expiresAt).toLocaleTimeString("ar-SA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  async function approve() {
+    if (!reviewed || busy || expired) return;
+    setPhase("approving");
+    setDetail(null);
     try {
-      const result = await cancel({
-        data: {
-          ledgerId: approval.ledgerId,
-          approvalToken: approval.approvalToken,
-        },
+      const result = await approveFn({
+        data: { ledgerId: approval.ledgerId, approvalToken: approval.approvalToken },
       });
-      setState(result.ok ? { kind: "cancelled" } : { kind: "error", message: "تعذّر الإلغاء" });
+      if (!result.ok) throw new Error(result.error || "تعذّر إرسال الرسالة.");
+      setDetail(
+        result.status === "delivered"
+          ? "تم التسليم وتوثيق الحالة."
+          : result.provider === "outlook"
+            ? "قبل Outlook الرسالة. يعرض هذا الموصل حالة القبول فقط ولا يؤكد التسليم النهائي."
+            : "قبل مزوّد الخدمة الرسالة، وسيُحدَّث سجل التسليم تلقائياً.",
+      );
+      setPhase("sent");
     } catch (error) {
-      setState({
-        kind: "error",
-        message: error instanceof Error ? error.message : "تعذّر إلغاء الرسالة",
-      });
+      setDetail(error instanceof Error ? error.message : "تعذّر إكمال الاعتماد.");
+      setPhase("error");
     }
-  };
+  }
+
+  async function cancel() {
+    if (busy || phase === "sent" || phase === "cancelled") return;
+    setPhase("cancelling");
+    setDetail(null);
+    try {
+      const result = await cancelFn({
+        data: { ledgerId: approval.ledgerId, approvalToken: approval.approvalToken },
+      });
+      if (!result.ok) throw new Error("انتهى طلب الاعتماد أو تم استخدامه مسبقاً.");
+      setPhase("cancelled");
+      setDetail("أُلغيت المسودة ولم تُرسل.");
+    } catch (error) {
+      setDetail(error instanceof Error ? error.message : "تعذّر إلغاء المسودة.");
+      setPhase("error");
+    }
+  }
+
+  if (phase === "sent" || phase === "cancelled") {
+    const sent = phase === "sent";
+    return (
+      <div
+        role="status"
+        className={cn(
+          "my-2 rounded-2xl border p-3 text-xs",
+          sent
+            ? "border-emerald-400/35 bg-emerald-400/[0.08] text-emerald-100"
+            : "border-white/15 bg-white/[0.035] text-white/75",
+        )}
+      >
+        <div className="flex items-center gap-2 font-bold">
+          {sent ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+          {sent ? "تم الاعتماد والإرسال" : "أُلغيت المسودة"}
+        </div>
+        {detail && <p className="mt-1 leading-relaxed opacity-80">{detail}</p>}
+      </div>
+    );
+  }
 
   return (
     <section
+      aria-label="معاينة واعتماد رسالة آريا"
+      className="nexus-card my-2 overflow-hidden rounded-2xl border border-amber-300/28 bg-[#061a2e]/88 text-right shadow-[0_18px_55px_-32px_rgba(245,197,96,.7)]"
       dir="rtl"
-      className="aria-approval-card relative my-2 min-w-0 overflow-hidden rounded-[22px] border border-cyan-300/25 bg-[linear-gradient(145deg,rgba(3,18,35,.96),rgba(4,29,48,.92)_55%,rgba(4,18,33,.97))] text-right shadow-[0_24px_70px_rgba(0,7,18,.52),0_0_34px_rgba(34,211,238,.12),inset_0_1px_0_rgba(255,255,255,.08)]"
-      aria-label="معاينة رسالة تتطلب اعتماداً بشرياً"
     >
-      <div className="pointer-events-none absolute -left-16 -top-20 h-44 w-44 rounded-full bg-cyan-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="aria-approval-scan pointer-events-none absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      <header className="relative flex items-start gap-3 border-b border-white/[0.08] px-4 py-3.5">
-        <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-300/35 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,.16)]">
-          <EmailOrSms className="h-5 w-5" aria-hidden />
-          <span className="absolute inset-0 animate-pulse rounded-2xl ring-1 ring-cyan-200/20" />
+      <header className="flex items-start gap-3 border-b border-white/8 bg-white/[0.025] p-3">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-amber-300/30 bg-amber-300/10 text-amber-200">
+          <ChannelIcon className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[13px] font-black tracking-tight text-white">
-              اعتماد بشري قبل الإرسال
-            </h3>
-            <span className="rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-0.5 text-[8px] font-black tracking-[0.16em] text-amber-200">
-              HUMAN IN COMMAND
+            <h3 className="font-bold text-white">معاينة قبل الإرسال</h3>
+            <span className="rounded-full border border-amber-300/25 bg-amber-300/8 px-2 py-0.5 text-[9px] font-bold text-amber-200">
+              اعتماد بشري إلزامي
             </span>
           </div>
-          <p className="mt-1 text-[10px] leading-relaxed text-cyan-50/55">
-            آريا أعدّت الرسالة فقط. لن يحدث أي إرسال حتى تضغط «اعتماد وإرسال».
+          <p className="mt-1 text-[10px] leading-relaxed text-white/55">
+            لم تُرسل الرسالة. راجع المستلم والمحتوى ثم اعتمدها مرة واحدة.
           </p>
         </div>
-        <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-300" aria-hidden />
       </header>
 
-      <div className="relative space-y-3 px-4 py-3.5">
-        <div className="grid gap-2 sm:grid-cols-2">
-          <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2">
-            <div className="text-[8px] font-bold uppercase tracking-[0.16em] text-cyan-100/40">
-              المستلم · Recipient
-            </div>
-            <div dir="ltr" className="mt-1 truncate text-left font-mono text-[11px] text-white/90">
+      <div className="space-y-2.5 p-3">
+        <dl className="grid gap-2 text-[11px]">
+          <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+            <dt className="text-white/45">المستلم</dt>
+            <dd
+              dir="ltr"
+              className="truncate text-left font-mono text-white"
+              title={approval.recipient}
+            >
               {approval.recipient}
-            </div>
+            </dd>
           </div>
-          <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2">
-            <div className="text-[8px] font-bold uppercase tracking-[0.16em] text-cyan-100/40">
-              القناة · Channel
+          {approval.cc && (
+            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+              <dt className="text-white/45">نسخة</dt>
+              <dd dir="ltr" className="truncate text-left font-mono text-white" title={approval.cc}>
+                {approval.cc}
+              </dd>
             </div>
-            <div className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-white/85">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_#22D3EE]" />
-              {approval.channel === "email" ? "بريد إلكتروني" : "SMS / MMS"}
-              {approval.mediaCount > 0 && ` · ${approval.mediaCount} وسائط`}
+          )}
+          {approval.subject && (
+            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+              <dt className="text-white/45">الموضوع</dt>
+              <dd className="font-semibold text-white/90">{approval.subject}</dd>
             </div>
-          </div>
+          )}
+        </dl>
+
+        <div className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/20 p-3 text-[11px] leading-6 text-white/78">
+          {approval.body}
         </div>
 
-        {approval.cc && (
-          <div className="text-[10px] text-white/58">
-            <span className="font-semibold text-white/78">نسخة إلى:</span>{" "}
-            <span dir="ltr" className="font-mono">
-              {approval.cc}
-            </span>
-          </div>
-        )}
-        {approval.subject && (
-          <div className="rounded-xl border border-blue-300/10 bg-blue-300/[0.035] px-3 py-2.5">
-            <div className="text-[8px] font-bold uppercase tracking-[0.16em] text-blue-100/40">
-              الموضوع · Subject
-            </div>
-            <div className="mt-1 text-[11px] font-bold leading-relaxed text-white/88">
-              {approval.subject}
-            </div>
-          </div>
-        )}
-
-        <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20">
-          <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2">
-            <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-white/42">
-              المعاينة الكاملة · Full preview
-            </span>
-            <span className="flex items-center gap-1 text-[8px] text-emerald-200/70">
-              <LockKeyhole className="h-2.5 w-2.5" /> محتوى مشفّر في السجل
-            </span>
-          </div>
-          <pre className="max-h-52 overflow-auto whitespace-pre-wrap break-words px-3 py-3 font-sans text-[11px] leading-6 text-white/76 selection:bg-cyan-300/25">
-            {approval.body}
-          </pre>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 text-[9px] text-white/42">
-            <Clock3 className="h-3 w-3 text-amber-200/70" />
-            ينتهي الاعتماد{" "}
-            {new Date(approval.expiresAt).toLocaleTimeString("ar-SA", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-white/45">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 className="h-3 w-3" /> ينتهي الاعتماد {expiryLabel}
           </span>
-          <span className="font-mono text-[8px] tracking-wider text-white/28">
-            REF {approval.ledgerId.slice(0, 8).toUpperCase()}
-          </span>
+          {approval.mediaCount > 0 && <span>{approval.mediaCount} مرفق وسائط</span>}
         </div>
 
-        {state.kind === "error" && (
-          <div
+        <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2.5 text-[11px] leading-relaxed text-white/75">
+          <input
+            type="checkbox"
+            checked={reviewed}
+            onChange={(event) => setReviewed(event.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-cyan-400"
+          />
+          <span>راجعتُ المستلم والمحتوى، وأوافق صراحةً على الإرسال الآن.</span>
+        </label>
+
+        {(detail || expired) && (
+          <p
             role="alert"
-            className="rounded-xl border border-rose-400/25 bg-rose-400/10 px-3 py-2 text-[10px] leading-relaxed text-rose-100"
+            className="rounded-lg border border-rose-400/25 bg-rose-400/8 px-2.5 py-2 text-[10px] text-rose-200"
           >
-            {state.message}
-          </div>
-        )}
-        {state.kind === "sent" && (
-          <div className="space-y-1.5 rounded-xl border border-emerald-300/25 bg-emerald-300/10 px-3 py-2.5 text-[11px] font-bold text-emerald-100 shadow-[0_0_22px_rgba(52,211,153,.1)]">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              تم الاعتماد والإرسال عبر {state.provider ?? "المزوّد"} · الحالة {state.status}
-            </div>
-            {state.warning && (
-              <p className="text-[9px] font-medium text-amber-100/75">{state.warning}</p>
-            )}
-          </div>
-        )}
-        {state.kind === "uncertain" && (
-          <div
-            role="status"
-            className="rounded-xl border border-amber-300/25 bg-amber-300/10 px-3 py-2.5 text-[10px] leading-relaxed text-amber-50 shadow-[0_0_22px_rgba(251,191,36,.08)]"
-          >
-            <div className="mb-1 flex items-center gap-2 font-black">
-              <Clock3 className="h-4 w-4" /> قيد مطابقة سجل المزوّد
-            </div>
-            {state.message}
-          </div>
-        )}
-        {state.kind === "cancelled" && (
-          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-[11px] font-semibold text-white/62">
-            <Ban className="h-4 w-4" /> أُلغي الطلب ولم تُرسل الرسالة.
-          </div>
+            {expired ? "انتهت صلاحية هذه المسودة. اطلب من آريا إنشاء معاينة جديدة." : detail}
+          </p>
         )}
 
-        {(state.kind === "idle" || state.kind === "error" || state.kind === "sending") && (
-          <div className="grid grid-cols-[1fr_auto] gap-2 pt-0.5">
-            <button
-              type="button"
-              onClick={confirm}
-              disabled={state.kind === "sending"}
-              className="group relative min-h-11 overflow-hidden rounded-xl border border-cyan-200/45 bg-[linear-gradient(100deg,rgba(8,145,178,.72),rgba(37,99,235,.72))] px-4 py-2.5 text-[11px] font-black text-white shadow-[0_0_28px_rgba(34,211,238,.16)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-100/75 hover:shadow-[0_0_38px_rgba(34,211,238,.26)] disabled:cursor-wait disabled:opacity-65"
-            >
-              <span className="relative flex items-center justify-center gap-2">
-                {state.kind === "sending" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                )}
-                اعتماد وإرسال الآن
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={reject}
-              disabled={state.kind === "sending"}
-              className="min-h-11 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2.5 text-[10px] font-bold text-white/58 transition hover:border-rose-300/30 hover:bg-rose-300/8 hover:text-rose-100 disabled:opacity-50"
-            >
-              إلغاء
-            </button>
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => void cancel()}
+            disabled={busy}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.035] px-3 text-[11px] font-bold text-white/70 transition hover:border-white/25 hover:text-white disabled:opacity-45"
+          >
+            {phase === "cancelling" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Ban className="h-3.5 w-3.5" />
+            )}
+            إلغاء
+          </button>
+          <button
+            type="button"
+            onClick={() => void approve()}
+            disabled={!reviewed || busy || expired}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-300 px-3 text-[11px] font-black text-[#03131f] shadow-[0_10px_30px_-16px_rgba(52,211,153,.9)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {phase === "approving" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ShieldCheck className="h-3.5 w-3.5" />
+            )}
+            اعتماد وإرسال
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -367,17 +329,15 @@ function HumanApprovalCard({ output }: { output: ApprovalOutput }) {
 export function ToolInvocation({ part }: { part: ToolPart }) {
   const toolName =
     part.toolName ?? (part.type.startsWith("tool-") ? part.type.slice(5) : part.type);
-  const approval = asApprovalOutput(part.output);
-  if (part.state === "output-available" && approval) {
-    return <HumanApprovalCard output={approval} />;
-  }
-
   const label = TOOL_LABELS[toolName] ?? { ar: toolName, en: toolName, icon: "🛠" };
   const state = part.state ?? "input-available";
   const isRunning = state === "input-streaming" || state === "input-available";
   const isDone = state === "output-available";
   const isError = state === "output-error";
   const summary = isDone ? summarizeOutput(toolName, part.output) : null;
+  const approval = isDone ? approvalPreview(part.output) : null;
+
+  if (approval) return <OutboundApprovalCard approval={approval} />;
 
   return (
     <div

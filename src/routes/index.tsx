@@ -8,6 +8,7 @@ import {
   Bot,
   Radar,
   BarChart3,
+  CheckCircle2,
   Moon,
   Menu,
 } from "lucide-react";
@@ -166,9 +167,10 @@ function IntroLanding() {
     capabilities: ar ? "مكوّنات النظام" : "Platform Capabilities",
     cta_title: ar ? "جاهز للدخول إلى مركز القيادة؟" : "Ready to enter the Command Center?",
     cta_body: ar
-      ? "ادخل إلى Runtime Hub لرؤية جميع مراحل النظام مباشرة، مع وميض حي وروابط فعّالة لكل وحدة."
-      : "Open the Runtime Hub to see every stage of the platform live — pulsing modules with active links to each unit.",
-    cta_enter: ar ? "دخول النظام" : "Enter the Platform",
+      ? "شاهد التجربة التنفيذية كاملة بلا حساب، ثم انتقل إلى الدخول الآمن فقط بعد قبول العرض."
+      : "View the complete executive experience without an account, then continue to secure access only after accepting the presentation.",
+    cta_enter: ar ? "مشاهدة العرض المفتوح" : "View the open presentation",
+    cta_accept: ar ? "قبول العرض وبدء التفعيل" : "Accept and begin activation",
   };
 
   const Arrow = ar ? ArrowLeft : ArrowRight;
@@ -252,6 +254,13 @@ function IntroLanding() {
           {/* Utility row (per owner directive: Executive Bridge + Executive
               Showcase launcher buttons removed from the hero). */}
           <div className="mt-2 flex w-full items-center justify-center gap-2 sm:gap-3">
+            <Link
+              to="/executive-showcase"
+              className="nexus-command-chip min-h-11 border-emerald-300/35 bg-emerald-300/8 px-4 text-emerald-100 hover:border-emerald-300/60"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{ar ? "عرض مفتوح بلا تسجيل" : "Open presentation"}</span>
+            </Link>
             <button
               type="button"
               onClick={() => setDeptsOpen(true)}
@@ -558,13 +567,21 @@ function IntroLanding() {
         >
           <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
             <Link
-              to="/os"
+              to="/executive-showcase"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(58,232,255,0.4)] transition hover:bg-[#3AE8FF]/20 sm:w-auto"
             >
               <span>{t.cta_enter}</span>
               <Arrow className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/auth"
+              search={{ redirect: undefined }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-300 px-6 py-3 text-sm font-black text-[#03131f] shadow-[0_12px_36px_-18px_rgba(52,211,153,.9)] transition hover:brightness-110 sm:w-auto"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span>{t.cta_accept}</span>
             </Link>
           </div>
           <p

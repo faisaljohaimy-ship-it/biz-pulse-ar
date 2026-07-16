@@ -1,15 +1,34 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Crown,
+  Fingerprint,
+  KeyRound,
+  Loader2,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ExecutivePresentationPlayer } from "@/components/demo/ExecutivePresentationPlayer";
+import {
+  clearExecutiveAcceptance,
+  hasExecutiveAcceptance,
+  recordExecutiveAcceptance,
+} from "@/lib/access/executive-acceptance";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
@@ -18,9 +37,13 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const { user, loading: authLoading } = useAuth();
+  const { locale } = useI18n();
+  const isAr = locale === "ar";
   const navigate = useNavigate();
   const { redirect: redirectTo } = Route.useSearch();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [accepted, setAccepted] = useState(() =>
+    typeof window === "undefined" ? false : hasExecutiveAcceptance(window.localStorage),
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,97 +65,141 @@ function AuthPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        toast.error(result.error.message ?? "Google sign-in failed");
+        toast.error(result.error.message ?? (isAr ? "تعذّر الدخول" : "Google sign-in failed"));
         setBusy(false);
         return;
       }
       if (result.redirected) return;
       goNext();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Sign-in error");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : isAr ? "تعذّر الدخول" : "Sign-in error");
       setBusy(false);
     }
   }
 
-  async function handleEmail(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleEmail(event: FormEvent) {
+    event.preventDefault();
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        toast.success("Check your email to confirm your account.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        goNext();
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication error");
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      goNext();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : isAr ? "خطأ في المصادقة" : "Authentication error",
+      );
     } finally {
       setBusy(false);
     }
   }
 
+  if (!accepted) {
+    return (
+      <ExecutiveAcceptanceStage
+        isAr={isAr}
+        onAccept={() => {
+          recordExecutiveAcceptance(window.localStorage);
+          setAccepted(true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#06070d] text-foreground">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(214,158,46,0.12),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.08),transparent_60%)]" />
-        <div className="absolute inset-0 [background-image:linear-gradient(rgba(214,158,46,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(214,158,46,0.05)_1px,transparent_1px)] [background-size:56px_56px] opacity-25" />
-      </div>
-
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12">
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.04] px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-amber-300/80">
-            NEXUS AI OS
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="nexus-identity-stage relative min-h-[100svh] overflow-hidden text-foreground"
+    >
+      <IdentityAtmosphere />
+      <main className="relative z-10 mx-auto grid min-h-[100svh] w-full max-w-6xl items-center gap-8 px-4 py-20 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
+        <section className="hidden lg:block">
+          <BrandLockup isAr={isAr} />
+          <div className="mt-10 grid max-w-xl gap-3">
+            {[
+              {
+                icon: ShieldCheck,
+                ar: "مساحة مؤسسية محمية وعزل كامل للصلاحيات",
+                en: "Protected enterprise workspace with role isolation",
+              },
+              {
+                icon: Fingerprint,
+                ar: "كل إجراء حساس موثّق وقابل للمراجعة",
+                en: "Every sensitive action is traceable and reviewable",
+              },
+              {
+                icon: Sparkles,
+                ar: "آريا جاهزة للعمل بعد التحقق من الهوية",
+                en: "ARIA activates after identity verification",
+              },
+            ].map((item) => (
+              <div
+                key={item.en}
+                className="nexus-floating-surface flex items-center gap-3 rounded-2xl px-4 py-3"
+              >
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
+                  <item.icon className="h-4 w-4" />
+                </span>
+                <span className="text-sm text-white/78">{isAr ? item.ar : item.en}</span>
+              </div>
+            ))}
           </div>
-          <h1 className="mt-4 bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-3xl font-semibold text-transparent">
-            Executive Sign-In
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Secure access to your AI command center
-          </p>
-        </div>
+        </section>
 
-        <div className="w-full rounded-2xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur-xl">
+        <section className="nexus-window relative mx-auto w-full max-w-md overflow-hidden rounded-[1.75rem] p-5 sm:p-7">
+          <div className="mb-6 text-center">
+            <span className="nexus-command-chip">
+              <Check className="h-3.5 w-3.5" />
+              {isAr ? "تم قبول العرض" : "Presentation accepted"}
+            </span>
+            <div className="mx-auto mt-5 grid h-16 w-16 place-items-center rounded-2xl border border-primary/35 bg-primary/10 text-primary shadow-[0_0_42px_rgba(0,212,255,.24)]">
+              <LockKeyhole className="h-7 w-7" />
+            </div>
+            <h1 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
+              {isAr ? "الدخول الآمن للنظام" : "Secure platform access"}
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-white/55">
+              {isAr
+                ? "تظهر بيانات الدخول الآن فقط بعد اكتمال العرض وقبول الانتقال إلى التفعيل."
+                : "Credentials appear only after the presentation and explicit activation acceptance."}
+            </p>
+          </div>
+
           <Button
             type="button"
-            onClick={handleGoogle}
+            onClick={() => void handleGoogle()}
             disabled={busy}
-            className="w-full gap-2 bg-white text-slate-900 hover:bg-slate-100"
+            className="h-12 w-full bg-white text-slate-900 hover:bg-slate-100"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-            Continue with Google
+            {isAr ? "المتابعة عبر Google" : "Continue with Google"}
           </Button>
 
-          <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-white/35">
             <span className="h-px flex-1 bg-white/10" />
-            or
+            {isAr ? "أو" : "or"}
             <span className="h-px flex-1 bg-white/10" />
           </div>
 
-          <form onSubmit={handleEmail} className="space-y-3">
+          <form onSubmit={handleEmail} className="space-y-4">
             <div>
-              <Label htmlFor="email" className="text-xs text-slate-400">
-                Email
+              <Label htmlFor="email" className="text-xs text-white/60">
+                {isAr ? "البريد المؤسسي" : "Work email"}
               </Label>
               <Input
                 id="email"
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
+                onChange={(event) => setEmail(event.target.value)}
+                className="mt-1.5 h-12"
                 autoComplete="email"
+                inputMode="email"
               />
             </div>
             <div>
-              <Label htmlFor="password" className="text-xs text-slate-400">
-                Password
+              <Label htmlFor="password" className="text-xs text-white/60">
+                {isAr ? "كلمة المرور" : "Password"}
               </Label>
               <Input
                 id="password"
@@ -140,35 +207,203 @@ function AuthPage() {
                 required
                 minLength={8}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1"
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-1.5 h-12"
+                autoComplete="current-password"
               />
             </div>
-            <Button type="submit" disabled={busy} className="w-full">
+            <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : mode === "signup" ? (
-                "Create account"
               ) : (
-                "Sign in"
+                <KeyRound className="h-4 w-4" />
               )}
+              {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
             </Button>
           </form>
 
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-4 w-full text-xs text-muted-foreground hover:text-amber-300"
-          >
-            {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
-          </button>
-        </div>
+          <div className="mt-5 grid gap-2 border-t border-white/8 pt-4 text-center">
+            <Link
+              to="/request-demo"
+              className="text-xs font-semibold text-primary hover:text-[#3AE8FF]"
+            >
+              {isAr
+                ? "ليس لديك حساب؟ اطلب تفعيلًا مؤسسيًا"
+                : "No account? Request enterprise activation"}
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                clearExecutiveAcceptance(window.localStorage);
+                setAccepted(false);
+              }}
+              className="text-[11px] text-white/40 transition hover:text-white/75"
+            >
+              {isAr ? "إعادة مشاهدة العرض" : "Watch the presentation again"}
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
 
-        <p className="mt-6 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground/60">
-          By signing in you agree to the Terms and Privacy Policy
-        </p>
-      </div>
+function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept: () => void }) {
+  const [confirmed, setConfirmed] = useState(false);
+  const Arrow = isAr ? ArrowLeft : ArrowRight;
+  return (
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="nexus-identity-stage relative min-h-[100svh] overflow-hidden text-white"
+    >
+      <IdentityAtmosphere />
+      <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-8">
+        <Link to="/" className="flex items-center gap-3">
+          <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-primary/35 bg-primary/10 shadow-[0_0_30px_rgba(0,212,255,.2)]">
+            <img src="/nexus-icon.png" alt="NEXIOS" className="h-full w-full object-cover" />
+          </span>
+          <span>
+            <span className="block text-sm font-black tracking-[0.18em]">NEXIOS</span>
+            <span className="block text-[9px] uppercase tracking-[0.22em] text-primary/75">
+              Executive Access
+            </span>
+          </span>
+        </Link>
+        <Link to="/" className="nexus-command-chip hover:border-primary/55">
+          {isAr ? "العودة" : "Back"}
+          <Arrow className="h-3.5 w-3.5" />
+        </Link>
+      </header>
+
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-20 pt-6 sm:px-8 sm:pt-10">
+        <section className="mx-auto max-w-4xl text-center">
+          <span className="nexus-command-chip border-emerald-300/30 bg-emerald-300/8 text-emerald-200">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            {isAr ? "عرض مفتوح · لا يتطلب حسابًا" : "Open presentation · No account required"}
+          </span>
+          <h1 className="nexus-hero-title mx-auto mt-6 max-w-4xl text-balance text-3xl font-black leading-tight sm:text-5xl lg:text-6xl">
+            {isAr
+              ? "شاهد النظام أولًا. ثم قرّر. ثم ادخل."
+              : "See the system. Make the decision. Then enter."}
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/62 sm:text-base">
+            {isAr
+              ? "لن نطلب بريدًا أو كلمة مرور قبل أن تشاهد العرض التنفيذي وتؤكد رغبتك في الانتقال إلى التفعيل المؤسسي."
+              : "We do not ask for credentials before you view the executive presentation and explicitly choose enterprise activation."}
+          </p>
+        </section>
+
+        <ol className="mx-auto mt-8 grid max-w-4xl gap-3 sm:grid-cols-3">
+          {[
+            { n: "01", ar: "مشاهدة العرض", en: "View", icon: Sparkles },
+            { n: "02", ar: "قبول الانتقال", en: "Accept", icon: Check },
+            { n: "03", ar: "الدخول الآمن", en: "Secure access", icon: LockKeyhole },
+          ].map((step, index) => (
+            <li
+              key={step.n}
+              className="nexus-card relative flex items-center gap-3 rounded-2xl p-4"
+            >
+              <span className="font-mono text-[10px] text-primary/55">{step.n}</span>
+              <span className="grid h-9 w-9 place-items-center rounded-xl border border-primary/25 bg-primary/8 text-primary">
+                <step.icon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">{isAr ? step.ar : step.en}</span>
+                <span className="block text-[9px] uppercase tracking-[0.18em] text-white/35">
+                  {index === 0 ? "OPEN" : index === 1 ? "EXPLICIT" : "PROTECTED"}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        <section className="nexus-window relative mx-auto mt-8 max-w-6xl overflow-hidden rounded-[2rem] p-3 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 px-1 sm:px-2">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-65" />
+                <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">
+                {isAr ? "العرض التنفيذي بصوت آريا" : "Executive presentation · ARIA narration"}
+              </span>
+            </div>
+            <span className="nexus-command-chip">ARIA · LIVE EXPERIENCE</span>
+          </div>
+          <ExecutivePresentationPlayer />
+        </section>
+
+        <section className="nexus-window relative mx-auto mt-6 max-w-3xl overflow-hidden rounded-[1.75rem] p-5 sm:p-7">
+          <div className="grid gap-5 sm:grid-cols-[auto_1fr] sm:items-start">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-amber-300/35 bg-amber-300/10 text-amber-200 shadow-[0_0_32px_rgba(245,197,96,.16)] sm:mx-0">
+              <Crown className="h-6 w-6" />
+            </span>
+            <div>
+              <h2 className="text-lg font-black sm:text-xl">
+                {isAr ? "قبول الانتقال إلى التفعيل" : "Accept the activation transition"}
+              </h2>
+              <p className="mt-2 text-sm leading-7 text-white/58">
+                {isAr
+                  ? "هذا الإقرار لا يمثل شراءً أو عقدًا ماليًا؛ إنه يؤكد فقط أنك شاهدت العرض وترغب في فتح مرحلة الدخول المؤسسي المحمية."
+                  : "This is not a purchase or commercial contract. It only confirms that you viewed the presentation and want to open the protected enterprise-access stage."}
+              </p>
+              <label className="mt-4 flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-sm leading-6 text-white/78 transition hover:border-primary/30">
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(event) => setConfirmed(event.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-cyan-400"
+                />
+                <span>
+                  {isAr
+                    ? "شاهدت العرض وأرغب بالانتقال إلى مرحلة التفعيل والدخول الآمن."
+                    : "I viewed the presentation and want to continue to activation and secure access."}
+                </span>
+              </label>
+              <Button
+                type="button"
+                size="lg"
+                disabled={!confirmed}
+                onClick={onAccept}
+                className="mt-4 h-12 w-full text-sm font-black sm:w-auto"
+              >
+                <Check className="h-4 w-4" />
+                {isAr ? "أقبل وأنتقل للدخول" : "Accept and continue to access"}
+                <Arrow className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function BrandLockup({ isAr }: { isAr: boolean }) {
+  return (
+    <div className="max-w-2xl">
+      <span className="nexus-command-chip">
+        <Crown className="h-3.5 w-3.5" /> NEXIOS · SOVEREIGN INTELLIGENCE
+      </span>
+      <h2 className="nexus-hero-title mt-6 text-4xl font-black leading-tight xl:text-6xl">
+        {isAr ? "الذكاء، تحت القيادة." : "Intelligence, under command."}
+      </h2>
+      <p className="mt-4 max-w-xl text-base leading-8 text-white/58">
+        {isAr
+          ? "هوية تنفيذية سعودية، قرار موثّق، وآريا تعمل داخل حدود الصلاحية البشرية."
+          : "Saudi executive identity, governed decisions, and ARIA operating inside human authority."}
+      </p>
+    </div>
+  );
+}
+
+function IdentityAtmosphere() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="nexus-identity-grid absolute inset-0" />
+      <div className="nexus-identity-aurora absolute -left-[15%] -top-[25%] h-[70vw] w-[70vw] rounded-full" />
+      <div className="nexus-identity-aurora nexus-identity-aurora-secondary absolute -bottom-[35%] -right-[20%] h-[65vw] w-[65vw] rounded-full" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_24px_rgba(0,212,255,.7)]" />
     </div>
   );
 }

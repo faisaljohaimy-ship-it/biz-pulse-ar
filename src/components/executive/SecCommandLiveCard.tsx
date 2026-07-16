@@ -1,17 +1,15 @@
 /**
- * SecCommandLiveCard — Live preview card for the Industrial Security
+ * SecCommandLiveCard — presentation preview for the Industrial Security
  * Command platform on the public landing page.
  *
  * - Real dashboard screenshot as glass backdrop (16:9).
- * - Six KPI chips overlaid as HTML, refreshed every 15s from the public
- *   snapshot endpoint (getPublicKpis). Numbers marked "Public snapshot" per
- *   the security guardrail in sec.functions.ts — no tenant leakage.
- * - LIVE badge flashes on new data via `key={dataUpdatedAt}`.
+ * - Six KPI chips overlaid as HTML from the marketing-safe synthetic snapshot.
+ * - The public surface is always labelled DEMO; tenant data stays behind auth.
  * - Reduced-motion respected via CSS media query on animation utilities.
  */
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight, Radio } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ArrowDownRight, Sparkles } from "lucide-react";
 import { getPublicKpis, type PublicKpis } from "@/lib/sec.functions";
 import { useI18n } from "@/lib/i18n";
 import secPreview from "@/assets/sec-command-preview.png.asset.json";
@@ -28,7 +26,7 @@ type Chip = {
   tone: ChipTone;
 };
 
-function buildChips(ar: boolean, k: PublicKpis | undefined): Chip[] {
+function buildChips(k: PublicKpis | undefined): Chip[] {
   const fmt = (n: number | null | undefined, suffix = "") =>
     n == null || Number.isNaN(n) ? null : `${n}${suffix}`;
 
@@ -98,17 +96,19 @@ export function SecCommandLiveCard() {
   const pulse = useQuery({
     queryKey: ["sec-command-pulse"],
     queryFn: () => getPublicKpis(),
-    refetchInterval: 45_000,
-    staleTime: 10_000,
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchOnWindowFocus: false,
   });
 
-  const chips = buildChips(ar, pulse.data);
+  const chips = buildChips(pulse.data);
   const title = ar ? "الأمن الصناعي" : "Industrial Security";
   const subtitle = ar
     ? "منصة القيادة الموحّدة · Industrial Security Command"
     : "Industrial Security Command Platform";
   const openLabel = ar ? "فتح لوحة القيادة" : "Open command deck";
-  const snapshotLabel = ar ? "لقطة عامة · تُحدَّث كل 15ث" : "Public snapshot · refresh 15s";
+  const snapshotLabel = ar
+    ? "بيانات عرض توضيحي · لا تتضمن بيانات عملاء"
+    : "Demo data · no tenant data";
 
   return (
     <Link
@@ -124,13 +124,9 @@ export function SecCommandLiveCard() {
             {subtitle}
           </div>
         </div>
-        <span
-          key={pulse.dataUpdatedAt}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300 animate-live-flash"
-        >
-          <Radio className="h-3 w-3" />
-          LIVE
-          <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8DEEFF]">
+          <Sparkles className="h-3 w-3" />
+          {ar ? "عرض تجريبي" : "DEMO"}
         </span>
       </div>
 
