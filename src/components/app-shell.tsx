@@ -12,6 +12,7 @@ import {
   Grid3x3,
   Home,
   LogOut,
+  LogIn,
   MapPin,
   Menu,
   Mic,
@@ -331,8 +332,23 @@ function LangIconToggle() {
 }
 
 function SignOutIcon() {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { t } = useI18n();
+  // Guest (open browsing, no session): offer a way INTO the real login page
+  // instead of a no-op sign-out. Authenticated users get the sign-out action.
+  if (!user) {
+    return (
+      <Link
+        to="/auth"
+        search={{ redirect: typeof window !== "undefined" ? window.location.pathname : "/" }}
+        className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+        aria-label={t("auth.signin")}
+        title={t("auth.signin")}
+      >
+        <LogIn className="size-4" data-flip-rtl />
+      </Link>
+    );
+  }
   return (
     <button
       onClick={() => signOut()}
