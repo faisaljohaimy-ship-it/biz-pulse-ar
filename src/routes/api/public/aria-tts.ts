@@ -113,7 +113,6 @@ export const Route = createFileRoute("/api/public/aria-tts")({
           return Response.json({ error: "tts_failed" }, { status: 502 });
         }
       },
-
     },
   },
 });

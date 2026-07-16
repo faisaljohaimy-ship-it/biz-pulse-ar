@@ -822,7 +822,6 @@ function ExecutiveBridgePage() {
       runSilent(message);
     };
 
-
     (async () => {
       try {
         const r = await fetch("/api/public/aria-tts", {

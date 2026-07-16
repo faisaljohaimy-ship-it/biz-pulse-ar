@@ -639,6 +639,25 @@ body {
   overflow-x: hidden;
 }
 
+/* ── Responsive hygiene — every system page on phone/tablet/desktop ───────
+   A defensive layer so no widget can break the mobile layout, without
+   altering any intentional design:
+   • media (images, SVG, video, canvas, embeds) never exceed their column;
+   • long unbroken strings (IDs, URLs, emails, tokens — common in RTL data
+     views) wrap instead of forcing a horizontal clip;
+   • genuinely wide blocks (raw tables, <pre>) scroll inside their own box
+     rather than pushing the page. */
+.nexus-main :where(img, svg, video, canvas, iframe, embed, object) {
+  max-width: 100%;
+}
+.nexus-main {
+  overflow-wrap: break-word;
+}
+.nexus-main :where(table, pre) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 /* ── Executive Cockpit (mobile landscape) ─────────────────────────
    When phone is rotated, we abandon the stacked-mobile UI and render
    a compact desktop-style cockpit: collapsed icon rail + hidden mobile
