@@ -61,50 +61,59 @@ export const Route = createFileRoute("/api/public/aria-tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const elevenKey = process.env.ELEVENLABS_API_KEY;
-        if (!elevenKey) {
-          return Response.json({ error: "tts_unconfigured" }, { status: 500 });
-        }
-
-        let body: unknown;
         try {
-          body = await request.json();
-        } catch {
-          return Response.json({ error: "invalid_json" }, { status: 400 });
-        }
-        const parsed = Input.safeParse(body);
-        if (!parsed.success) {
-          return Response.json({ error: "invalid_input" }, { status: 400 });
-        }
-
-        const ip = clientIp(request);
-        const rate = await enforceRateLimit(`pub-aria-tts:${ip}`, 30, 60);
-        if (rate.unavailable) return rateLimitUnavailableResponse();
-        if (!rate.allowed) return rateLimitResponse();
-
-        const text = await diacritizeForTts(parsed.data.text);
-
-        // ElevenLabs ONLY (canonical ARIA voice — same as the chatbot).
-        // No fallback provider: a failure means silence, never another voice.
-        try {
-          const el = await synthesizeWithElevenLabs(text, elevenKey);
-          if (el) {
-            const audio = await el.arrayBuffer();
-            return new Response(audio, {
-              status: 200,
-              headers: {
-                "Content-Type": "audio/mpeg",
-                "Content-Length": String(audio.byteLength),
-                "Cache-Control": "no-store",
-              },
-            });
+          const elevenKey = process.env.ELEVENLABS_API_KEY;
+          if (!elevenKey) {
+            return Response.json({ error: "tts_unconfigured" }, { status: 503 });
           }
-        } catch (e) {
-          console.error("[public/aria-tts] elevenlabs", e instanceof Error ? e.message : e);
-        }
 
-        return Response.json({ error: "tts_failed" }, { status: 502 });
+          let body: unknown;
+          try {
+            body = await request.json();
+          } catch {
+            return Response.json({ error: "invalid_json" }, { status: 400 });
+          }
+          const parsed = Input.safeParse(body);
+          if (!parsed.success) {
+            return Response.json({ error: "invalid_input" }, { status: 400 });
+          }
+
+          const ip = clientIp(request);
+          const rate = await enforceRateLimit(`pub-aria-tts:${ip}`, 30, 60);
+          if (rate.unavailable) return rateLimitUnavailableResponse();
+          if (!rate.allowed) return rateLimitResponse();
+
+          let text = parsed.data.text;
+          try {
+            text = await diacritizeForTts(text);
+          } catch (e) {
+            console.error("[public/aria-tts] diacritize", e instanceof Error ? e.message : e);
+          }
+
+          try {
+            const el = await synthesizeWithElevenLabs(text, elevenKey);
+            if (el) {
+              const audio = await el.arrayBuffer();
+              return new Response(audio, {
+                status: 200,
+                headers: {
+                  "Content-Type": "audio/mpeg",
+                  "Content-Length": String(audio.byteLength),
+                  "Cache-Control": "no-store",
+                },
+              });
+            }
+          } catch (e) {
+            console.error("[public/aria-tts] elevenlabs", e instanceof Error ? e.message : e);
+          }
+
+          return Response.json({ error: "tts_failed" }, { status: 502 });
+        } catch (e) {
+          console.error("[public/aria-tts] unhandled", e instanceof Error ? e.message : e);
+          return Response.json({ error: "tts_failed" }, { status: 502 });
+        }
       },
+
     },
   },
 });
