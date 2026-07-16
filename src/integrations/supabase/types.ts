@@ -255,6 +255,54 @@ export type Database = {
           },
         ]
       }
+      aria_attachment_scans: {
+        Row: {
+          claimed_mime: string
+          content_sha256: string
+          created_at: string
+          detected_mime: string | null
+          id: string
+          object_path: string
+          original_name_hash: string
+          scan_engine: string
+          scan_status: string
+          scanned_at: string
+          signature: string | null
+          size_bytes: number
+          user_id: string
+        }
+        Insert: {
+          claimed_mime: string
+          content_sha256: string
+          created_at?: string
+          detected_mime?: string | null
+          id?: string
+          object_path: string
+          original_name_hash: string
+          scan_engine: string
+          scan_status: string
+          scanned_at?: string
+          signature?: string | null
+          size_bytes: number
+          user_id: string
+        }
+        Update: {
+          claimed_mime?: string
+          content_sha256?: string
+          created_at?: string
+          detected_mime?: string | null
+          id?: string
+          object_path?: string
+          original_name_hash?: string
+          scan_engine?: string
+          scan_status?: string
+          scanned_at?: string
+          signature?: string | null
+          size_bytes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       aria_decisions: {
         Row: {
           confidence: number | null
@@ -651,191 +699,6 @@ export type Database = {
           },
         ]
       }
-      aria_attachment_scans: {
-        Row: {
-          claimed_mime: string
-          content_sha256: string
-          created_at: string
-          detected_mime: string | null
-          id: string
-          object_path: string
-          original_name_hash: string
-          scan_engine: string
-          scan_status: string
-          scanned_at: string
-          signature: string | null
-          size_bytes: number
-          user_id: string
-        }
-        Insert: {
-          claimed_mime: string
-          content_sha256: string
-          created_at?: string
-          detected_mime?: string | null
-          id?: string
-          object_path: string
-          original_name_hash: string
-          scan_engine: string
-          scan_status: string
-          scanned_at?: string
-          signature?: string | null
-          size_bytes: number
-          user_id: string
-        }
-        Update: {
-          claimed_mime?: string
-          content_sha256?: string
-          created_at?: string
-          detected_mime?: string | null
-          id?: string
-          object_path?: string
-          original_name_hash?: string
-          scan_engine?: string
-          scan_status?: string
-          scanned_at?: string
-          signature?: string | null
-          size_bytes?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
-      aria_outbound_message_events: {
-        Row: {
-          delivery_status: string | null
-          event_type: string
-          id: string
-          message_id: string
-          occurred_at: string | null
-          org_id: string
-          payload_hash: string
-          provider: string
-          provider_event_id: string
-          received_at: string
-        }
-        Insert: {
-          delivery_status?: string | null
-          event_type: string
-          id?: string
-          message_id: string
-          occurred_at?: string | null
-          org_id: string
-          payload_hash: string
-          provider: string
-          provider_event_id: string
-          received_at?: string
-        }
-        Update: {
-          delivery_status?: string | null
-          event_type?: string
-          id?: string
-          message_id?: string
-          occurred_at?: string | null
-          org_id?: string
-          payload_hash?: string
-          provider?: string
-          provider_event_id?: string
-          received_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "aria_outbound_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_outbound_message_events_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_outbound_messages: {
-        Row: {
-          approval_expires_at: string
-          approved_at: string | null
-          approved_by: string | null
-          actor_id: string
-          channel: string
-          content_hash: string
-          created_at: string
-          delivered_at: string | null
-          dispatched_at: string | null
-          failure_code: string | null
-          failure_detail: string | null
-          id: string
-          idempotency_key: string
-          org_id: string
-          payload_ciphertext: string
-          payload_iv: string
-          provider: string | null
-          provider_message_id: string | null
-          provider_status: string | null
-          recipient_hint: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          approval_expires_at: string
-          approved_at?: string | null
-          approved_by?: string | null
-          actor_id: string
-          channel: string
-          content_hash: string
-          created_at?: string
-          delivered_at?: string | null
-          dispatched_at?: string | null
-          failure_code?: string | null
-          failure_detail?: string | null
-          id?: string
-          idempotency_key: string
-          org_id: string
-          payload_ciphertext: string
-          payload_iv: string
-          provider?: string | null
-          provider_message_id?: string | null
-          provider_status?: string | null
-          recipient_hint: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          approval_expires_at?: string
-          approved_at?: string | null
-          approved_by?: string | null
-          actor_id?: string
-          channel?: string
-          content_hash?: string
-          created_at?: string
-          delivered_at?: string | null
-          dispatched_at?: string | null
-          failure_code?: string | null
-          failure_detail?: string | null
-          id?: string
-          idempotency_key?: string
-          org_id?: string
-          payload_ciphertext?: string
-          payload_iv?: string
-          provider?: string | null
-          provider_message_id?: string | null
-          provider_status?: string | null
-          recipient_hint?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_outbound_messages_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       aria_learned_patterns: {
         Row: {
           confidence: number
@@ -915,6 +778,149 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_aria_memory_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_outbound_message_events: {
+        Row: {
+          delivery_status: string | null
+          event_type: string
+          id: string
+          message_id: string
+          occurred_at: string | null
+          org_id: string
+          payload_hash: string
+          provider: string
+          provider_event_id: string
+          received_at: string
+        }
+        Insert: {
+          delivery_status?: string | null
+          event_type: string
+          id?: string
+          message_id: string
+          occurred_at?: string | null
+          org_id: string
+          payload_hash: string
+          provider: string
+          provider_event_id: string
+          received_at?: string
+        }
+        Update: {
+          delivery_status?: string | null
+          event_type?: string
+          id?: string
+          message_id?: string
+          occurred_at?: string | null
+          org_id?: string
+          payload_hash?: string
+          provider?: string
+          provider_event_id?: string
+          received_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "aria_outbound_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aria_outbound_message_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_outbound_messages: {
+        Row: {
+          actor_id: string
+          approval_expires_at: string
+          approved_at: string | null
+          approved_by: string | null
+          channel: string
+          content_hash: string
+          created_at: string
+          delivered_at: string | null
+          dispatched_at: string | null
+          failure_code: string | null
+          failure_detail: string | null
+          id: string
+          idempotency_key: string
+          metadata_purge_at: string
+          org_id: string
+          payload_ciphertext: string | null
+          payload_iv: string | null
+          payload_purge_at: string
+          provider: string | null
+          provider_message_id: string | null
+          provider_status: string | null
+          recipient_hint: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actor_id: string
+          approval_expires_at: string
+          approved_at?: string | null
+          approved_by?: string | null
+          channel: string
+          content_hash: string
+          created_at?: string
+          delivered_at?: string | null
+          dispatched_at?: string | null
+          failure_code?: string | null
+          failure_detail?: string | null
+          id?: string
+          idempotency_key: string
+          metadata_purge_at?: string
+          org_id: string
+          payload_ciphertext?: string | null
+          payload_iv?: string | null
+          payload_purge_at?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          provider_status?: string | null
+          recipient_hint: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actor_id?: string
+          approval_expires_at?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          channel?: string
+          content_hash?: string
+          created_at?: string
+          delivered_at?: string | null
+          dispatched_at?: string | null
+          failure_code?: string | null
+          failure_detail?: string | null
+          id?: string
+          idempotency_key?: string
+          metadata_purge_at?: string
+          org_id?: string
+          payload_ciphertext?: string | null
+          payload_iv?: string | null
+          payload_purge_at?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          provider_status?: string | null
+          recipient_hint?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_outbound_messages_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -6950,6 +6956,13 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      purge_aria_outbound_retention: {
+        Args: never
+        Returns: {
+          ledgers_deleted: number
+          payloads_purged: number
+        }[]
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
