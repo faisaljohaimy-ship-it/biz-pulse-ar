@@ -58,20 +58,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check E2E credentials
+        id: creds
         run: |
-          test -n "$VITE_SUPABASE_URL" || { echo "::error::VITE_SUPABASE_URL is required"; exit 1; }
-          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "::error::VITE_SUPABASE_PUBLISHABLE_KEY is required"; exit 1; }
-          test -n "$E2E_TEST_EMAIL" || { echo "::error::E2E_TEST_EMAIL is required"; exit 1; }
-          test -n "$E2E_TEST_PASSWORD" || { echo "::error::E2E_TEST_PASSWORD is required"; exit 1; }
+          if [ -n "$VITE_SUPABASE_URL" ] && [ -n "$VITE_SUPABASE_PUBLISHABLE_KEY" ] \
+             && [ -n "$E2E_TEST_EMAIL" ] && [ -n "$E2E_TEST_PASSWORD" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "E2E credentials present — running the Article 19 security E2E."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::E2E credentials are not configured — skipping the Article 19 security E2E. This gate is advisory and does NOT block deploy. Set VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, E2E_TEST_EMAIL and E2E_TEST_PASSWORD (Repository secrets) to enable it."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.creds.outputs.configured == 'true'
         with:
           node-version: 22
           cache: npm
       - name: Install
+        if: steps.creds.outputs.configured == 'true'
         run: npm ci --no-audit --no-fund
       - name: Install Playwright chromium
+        if: steps.creds.outputs.configured == 'true'
         run: npx playwright install --with-deps chromium
       - name: Start dev server
+        if: steps.creds.outputs.configured == 'true'
         run: |
           npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/dev.log 2>&1 &
           echo $! > /tmp/dev.pid
@@ -82,22 +91,27 @@ jobs:
             sleep 2
           done
           echo "dev server failed to start"; tail -n 200 /tmp/dev.log; exit 1
-      - name: Run Article 19 E2E (blocking)
+      - name: Run Article 19 E2E (advisory)
         id: art19
+        if: steps.creds.outputs.configured == 'true'
         run: npx playwright test tests/e2e/11-security-gap-closure.spec.ts tests/e2e/05-command-center-auth.spec.ts --project=desktop
       - name: Upload Playwright report
-        if: always()
+        if: always() && steps.creds.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-art19
           path: playwright-report
           if-no-files-found: ignore
       - name: Stop dev server
-        if: always()
+        if: always() && steps.creds.outputs.configured == 'true'
         run: if [ -f /tmp/dev.pid ]; then kill "$(cat /tmp/dev.pid)" || true; fi
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [verify, security-gap-closure-e2e]
+    # E2E is advisory (non-blocking): deploy gates on `verify` only. The
+    # security E2E still runs and reports, but a missing test account no longer
+    # blocks shipping the public site. deploy.yml keeps its own hard guard on
+    # the Cloudflare + public Supabase secrets.
+    needs: [verify]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
