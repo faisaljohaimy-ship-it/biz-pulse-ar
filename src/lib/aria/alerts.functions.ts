@@ -14,6 +14,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasAnyPlatformRole } from "@/lib/authz.server";
 import { z } from "zod";
 
 const REGION_IDS = ["all", "central", "western", "eastern", "southern"] as const;
@@ -48,6 +49,12 @@ export const broadcastAlert = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => broadcastSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // SECURITY: a platform-wide emergency broadcast is privileged. Without this
+    // gate any authenticated user (even a viewer) could inject a "critical"
+    // alert seen by everyone. Restrict to admin/manager.
+    if (!(await hasAnyPlatformRole(userId, ["admin", "manager"]))) {
+      throw new Error("Forbidden: broadcasting an alert requires admin or manager role.");
+    }
     const channels = providerChannels();
     // Dispatch is only attempted when a provider key exists; until keys are
     // configured and verified this stays demo (dispatched = 0), but the alert

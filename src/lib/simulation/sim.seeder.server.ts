@@ -91,8 +91,9 @@ async function ensureSites(
   return SITE_SEED.map((s) => ({ code: s.code, id: have.get(s.code) as string }));
 }
 
-async function purgePriorSim(admin: Admin, orgId: string) {
-  const tables = [
+async function purgePriorSim(admin: Admin, orgId: string, seed: number) {
+  // sim_* tables are entirely simulation → delete the whole org slice.
+  const simTables = [
     "sim_history",
     "sim_notifications",
     "sim_daily_ops",
@@ -105,22 +106,37 @@ async function purgePriorSim(admin: Admin, orgId: string) {
     "sim_employees",
     "sim_departments",
   ];
-  for (const t of tables) {
+  for (const t of simTables) {
     await admin.from(t).delete().eq("org_id", orgId);
   }
+  // Borrowed operational tables hold BOTH real and simulated rows. Delete ONLY
+  // the simulated ones (tagged metadata.sim_seed) so a re-seed is idempotent and
+  // never duplicates on the deterministic refs (INC-*, PTW-*) nor touches real
+  // data. tasks has no org_id column, so it is scoped by the seed tag alone.
+  await admin
+    .from("sec_incidents")
+    .delete()
+    .eq("org_id", orgId)
+    .contains("metadata", { sim_seed: seed });
+  await admin
+    .from("sec_permits")
+    .delete()
+    .eq("org_id", orgId)
+    .contains("metadata", { sim_seed: seed });
+  await admin.from("tasks").delete().contains("metadata", { sim_seed: seed });
 }
 
 export async function runSimulationSeed(
   admin: Admin,
-  opts: { orgId: string; seed?: number },
+  opts: { orgId: string; seed?: number; userId?: string | null },
 ): Promise<SeedResult> {
   const started = Date.now();
   const seed = opts.seed ?? SIM_SEED_DEFAULT;
   const rng = makeRng(seed);
   const org_id = opts.orgId;
 
-  // 0) wipe prior sim data (idempotent)
-  await purgePriorSim(admin, org_id);
+  // 0) wipe prior sim data (idempotent) — sim_* by org, borrowed tables by seed tag
+  await purgePriorSim(admin, org_id, seed);
 
   // 1) sites (reuse or create)
   const sites = await ensureSites(admin, org_id, seed);
@@ -355,30 +371,36 @@ export async function runSimulationSeed(
   await chunkInsert(admin, "sim_corrective_actions", carRows);
 
   // 11) tasks (into existing `tasks` table, linked to incidents through metadata)
-  const taskRows: Array<Record<string, unknown>> = [];
-  const anyUser = empList[0]?.id ?? null; // tasks.user_id may be nullable? we'll try null
-  for (let i = 0; i < SIM_VOLUMES.tasks; i++) {
-    const incId = incIds.length ? rng.pick(incIds) : null;
-    taskRows.push({
-      title: `Task ${i + 1} — follow-up`,
-      description: "Auto-generated from simulation.",
-      status: rng.pick(["todo", "in_progress", "done"]),
-      priority: rng.pick(["low", "medium", "high"]),
-      due_at: rng.daysAgo(-14, 14),
-      metadata: { sim_seed: seed, incident_id: incId, org_id },
-      user_id: anyUser,
-    });
-  }
-  // tasks table has NOT NULL user_id — skip if we don't have a proper user
-  // (safer to insert without to avoid FK failures).
-  try {
-    await chunkInsert(
-      admin,
-      "tasks",
-      taskRows.map(({ user_id: _u, ...rest }) => rest),
-    );
-  } catch {
-    // tolerate schema variance
+  // tasks.user_id is NOT NULL and FKs to auth.users — use the authenticated
+  // seeding user (the platform admin who triggered the seed). Without a real
+  // user we cannot satisfy the constraint, so we skip explicitly (and loudly)
+  // rather than inserting rows that all silently fail.
+  const taskUserId = opts.userId ?? null;
+  if (taskUserId) {
+    const taskRows: Array<Record<string, unknown>> = [];
+    for (let i = 0; i < SIM_VOLUMES.tasks; i++) {
+      const incId = incIds.length ? rng.pick(incIds) : null;
+      taskRows.push({
+        title: `Task ${i + 1} — follow-up`,
+        description: "Auto-generated from simulation.",
+        status: rng.pick(["todo", "in_progress", "done"]),
+        priority: rng.pick(["low", "medium", "high"]),
+        due_at: rng.daysAgo(-14, 14),
+        metadata: { sim_seed: seed, incident_id: incId, org_id },
+        user_id: taskUserId,
+      });
+    }
+    try {
+      await chunkInsert(admin, "tasks", taskRows);
+    } catch (taskErr) {
+      // Surface (never swallow) — the seed of every sim_* table already
+      // succeeded; the borrowed tasks table is best-effort but must be visible.
+      console.error(
+        `[sim.seeder] tasks insert failed: ${taskErr instanceof Error ? taskErr.message : String(taskErr)}`,
+      );
+    }
+  } else {
+    console.warn("[sim.seeder] no seeding userId — skipped tasks (user_id is required)");
   }
 
   // 12) meetings

@@ -19,7 +19,11 @@ export const runSimulationSeedFn = createServerFn({ method: "POST" })
     // combined with the service-role client would allow cross-tenant writes.
     const orgId = await getCurrentOrgIdForUser(context.userId);
     if (!orgId) throw new Error("No org for current user");
-    return await runSimulationSeed(supabaseAdmin, { orgId, seed: data.seed });
+    return await runSimulationSeed(supabaseAdmin, {
+      orgId,
+      seed: data.seed,
+      userId: context.userId,
+    });
   });
 
 export const validateSimulationFn = createServerFn({ method: "POST" })
