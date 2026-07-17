@@ -192,6 +192,7 @@ function useNavGroups(): NavGroup[] {
       items: [
         { to: "/executive-reports", icon: FileText, label: ar("التقارير", "Reports") },
         { to: "/integrations", icon: Plug, label: ar("التكاملات", "Integrations") },
+        { to: "/connect", icon: Bot, label: ar("ربط الوكلاء (MCP)", "Agent Connect (MCP)") },
         { to: "/files", icon: FolderOpen, label: ar("الملفات", "Files") },
       ],
     },
