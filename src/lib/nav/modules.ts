@@ -15,11 +15,13 @@ import {
   BarChart3,
   Bot,
   Boxes,
+  BrainCircuit,
   Building2,
   ClipboardCheck,
   FileCheck,
   FileText,
   Gauge,
+  GraduationCap,
   ShieldCheck,
   LineChart,
   Map as MapIcon,
@@ -29,6 +31,7 @@ import {
   ShieldAlert,
   Siren,
   Sparkles,
+  Telescope,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -60,6 +63,9 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/hajj", ar: "منصة نُسك الحج", en: "Hajj Platform", icon: Moon },
   { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
   { to: "/aria-analytics", ar: "تحليلات آريا", en: "ARIA Analytics", icon: LineChart },
+  { to: "/intelligence", ar: "الذكاء والتطوّر", en: "Intelligence", icon: BrainCircuit },
+  { to: "/observability", ar: "الرصد والتكاليف", en: "Observability", icon: Telescope },
+  { to: "/learn", ar: "التعلّم", en: "Learn", icon: GraduationCap },
 ];
 
 const BY_ROUTE = new Map<string, ModuleEntry>(MODULES.map((m) => [m.to, m]));
