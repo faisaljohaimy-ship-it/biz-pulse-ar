@@ -50,3 +50,21 @@ export async function getCurrentOrgIdForUser(userId: string): Promise<string | n
   if (error) return null;
   return (data?.org_id as string | undefined) ?? null;
 }
+
+/**
+ * All org ids a user belongs to. Use to scope service-role (RLS-bypassing)
+ * reads to the caller's tenants so a query can never leak cross-tenant rows.
+ * Returns [] when the user has no membership (→ callers must return no data).
+ */
+export async function getOrgIdsForUser(userId: string): Promise<string[]> {
+  if (!userId) return [];
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", userId);
+  if (error) return [];
+  return (data ?? [])
+    .map((r) => (r as { org_id?: string }).org_id)
+    .filter((v): v is string => typeof v === "string");
+}

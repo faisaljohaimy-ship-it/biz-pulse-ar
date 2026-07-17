@@ -24,13 +24,19 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, openWorldHint: false },
   handler: async ({ region, include_findings }, ctx: ToolContext) => {
-    const callerKey =
-      (ctx?.isAuthenticated?.() && (ctx.getUserId?.() || ctx.getClientId?.())) ||
-      ctx?.getClientId?.() ||
-      "anon";
+    // Auth is REQUIRED — these tables are org-scoped and we read them via the
+    // service role (RLS bypassed), so an anonymous caller must get nothing.
+    if (!ctx?.isAuthenticated?.() || !ctx.getUserId?.()) {
+      return {
+        content: [{ type: "text", text: "Authentication required to read HCIS compliance." }],
+        isError: true,
+      };
+    }
+    const userId = ctx.getUserId() as string;
+
     try {
       const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
-      const rate = await enforceRateLimit(`mcp-hcis:${callerKey}`, 30, 60);
+      const rate = await enforceRateLimit(`mcp-hcis:${userId}`, 30, 60);
       if (rate.unavailable || !rate.allowed) {
         return {
           content: [
@@ -57,13 +63,24 @@ export default defineTool({
     }
 
     try {
+      // Tenant scoping: restrict every read to the caller's org(s). Without
+      // this, the service-role client would return HCIS data across all orgs.
+      const { getOrgIdsForUser } = await import("@/lib/authz.server");
+      const orgIds = await getOrgIdsForUser(userId);
+      if (orgIds.length === 0) {
+        return {
+          content: [{ type: "text", text: JSON.stringify({ overall_pct: 0, by_region: {} }) }],
+        };
+      }
+
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new tables not yet in generated types
       const db = supabaseAdmin as unknown as { from: (t: string) => any };
 
       const { data: assessments, error: aErr } = await db
         .from("hcis_assessments")
-        .select("region,status");
+        .select("region,status")
+        .in("org_id", orgIds);
       if (aErr) {
         return { content: [{ type: "text", text: `DB error: ${aErr.message}` }], isError: true };
       }
@@ -87,6 +104,7 @@ export default defineTool({
         let q = db
           .from("hcis_findings")
           .select("title_ar,region,severity,status,target_date")
+          .in("org_id", orgIds)
           .neq("status", "resolved")
           .order("target_date", { ascending: true })
           .limit(50);

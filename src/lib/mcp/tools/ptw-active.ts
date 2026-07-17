@@ -31,13 +31,19 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, openWorldHint: false },
   handler: async ({ region, type_key, limit }, ctx: ToolContext) => {
-    const callerKey =
-      (ctx?.isAuthenticated?.() && (ctx.getUserId?.() || ctx.getClientId?.())) ||
-      ctx?.getClientId?.() ||
-      "anon";
+    // Auth is REQUIRED — permits are org-scoped and we read them via the
+    // service role (RLS bypassed), so an anonymous caller must get nothing.
+    if (!ctx?.isAuthenticated?.() || !ctx.getUserId?.()) {
+      return {
+        content: [{ type: "text", text: "Authentication required to read work permits." }],
+        isError: true,
+      };
+    }
+    const userId = ctx.getUserId() as string;
+
     try {
       const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
-      const rate = await enforceRateLimit(`mcp-ptw:${callerKey}`, 30, 60);
+      const rate = await enforceRateLimit(`mcp-ptw:${userId}`, 30, 60);
       if (rate.unavailable || !rate.allowed) {
         return {
           content: [
@@ -64,12 +70,21 @@ export default defineTool({
     }
 
     try {
+      // Tenant scoping: restrict the read to the caller's org(s), else the
+      // service-role client would return active permits across all orgs.
+      const { getOrgIdsForUser } = await import("@/lib/authz.server");
+      const orgIds = await getOrgIdsForUser(userId);
+      if (orgIds.length === 0) {
+        return { content: [{ type: "text", text: JSON.stringify({ count: 0, permits: [] }) }] };
+      }
+
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new tables not yet in generated types
       const db = supabaseAdmin as unknown as { from: (t: string) => any };
       let q = db
         .from("permits")
         .select("ref,type_key,region,location,contractor,worker_count,ends_at,status")
+        .in("org_id", orgIds)
         .eq("status", "active")
         .order("ends_at", { ascending: true })
         .limit(limit ?? 20);
