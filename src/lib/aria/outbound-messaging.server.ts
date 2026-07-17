@@ -291,10 +291,9 @@ function previewOf(
 
 function configuredChannel(payload: OutboundPayload): boolean {
   if (payload.channel === "sms") return Boolean(resolveTwilioConfig());
-  return Boolean(
-    outlookHeaders() ||
-    (process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim()),
-  );
+  // Email is always configured: we fall back to the Lovable-managed email
+  // queue (notify.neexios.com) when Resend/Outlook credentials are absent.
+  return true;
 }
 
 function outlookHeaders(): Record<string, string> | null {
@@ -475,7 +474,40 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
     };
   }
 
-  throw new Error("Email provider is not configured.");
+  // Fallback: enqueue via the Lovable-managed email queue (notify.neexios.com).
+  // This path requires no external provider credentials; the queue processor
+  // dispatches the message and records send state in `email_send_log`.
+  const messageId = crypto.randomUUID();
+  const senderDomain = "notify.neexios.com";
+  const fromLine = `NEXUS AI OS <noreply@${senderDomain}>`;
+  const plain = payload.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  await supabaseAdmin.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: "aria_executive_email",
+    recipient_email: payload.to,
+    status: "pending",
+  });
+  const { error: enqueueError } = await supabaseAdmin.rpc("enqueue_email", {
+    queue_name: "transactional_emails",
+    payload: {
+      message_id: messageId,
+      to: payload.to,
+      cc: payload.cc,
+      from: fromLine,
+      sender_domain: senderDomain,
+      subject: payload.subject,
+      html: payload.html,
+      text: plain,
+      purpose: "transactional",
+      label: "aria_executive_email",
+      idempotency_key: idempotencyKey,
+      queued_at: new Date().toISOString(),
+    } as never,
+  });
+  if (enqueueError) {
+    throw new Error(`Email queue enqueue failed: ${enqueueError.message}`);
+  }
+  return { provider: "lovable_email_queue" as const, providerId: messageId, status: "queued" };
 }
 
 async function dispatchSms(payload: z.infer<typeof SmsPayloadSchema>) {
