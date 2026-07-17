@@ -1022,7 +1022,8 @@ export function AriaCopilot() {
         <button
           type="button"
           onClick={() => setMode("docked")}
-          aria-label="Open ARIA"
+          aria-label="Open ARIA — المخاطبة"
+          title="المخاطبة مع آريا"
           className={cn(
             "fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] end-6 z-50 flex h-14 w-14 items-center justify-center",
             "nexus-aria-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
@@ -1030,7 +1031,8 @@ export function AriaCopilot() {
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           )}
         >
-          <Sparkles className="h-6 w-6" aria-hidden />
+          <MessageCircle className="h-6 w-6" aria-hidden />
+          <Sparkles className="absolute -top-1 -end-1 h-3.5 w-3.5 text-primary drop-shadow" aria-hidden />
           <span
             className={cn(
               "absolute inset-0 rounded-full",
