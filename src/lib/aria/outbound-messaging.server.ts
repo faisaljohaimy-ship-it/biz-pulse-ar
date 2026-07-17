@@ -291,10 +291,9 @@ function previewOf(
 
 function configuredChannel(payload: OutboundPayload): boolean {
   if (payload.channel === "sms") return Boolean(resolveTwilioConfig());
-  return Boolean(
-    outlookHeaders() ||
-    (process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim()),
-  );
+  // Email is always configured: we fall back to the Lovable-managed email
+  // queue (notify.neexios.com) when Resend/Outlook credentials are absent.
+  return true;
 }
 
 function outlookHeaders(): Record<string, string> | null {
