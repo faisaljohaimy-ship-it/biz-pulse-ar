@@ -6,7 +6,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo } from "react";
-import { ShieldCheck, AlertTriangle, CalendarClock, FileDown } from "lucide-react";
+import {
+  ShieldCheck,
+  AlertTriangle,
+  CalendarClock,
+  FileDown,
+  Shield,
+  Cctv,
+  Users,
+  Siren,
+  Lock,
+  KeyRound,
+  type LucideIcon,
+} from "lucide-react";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { NexusPage, NexusCard, NexusStat, NexusPill } from "@/components/nexus-frame";
 import { useI18n } from "@/lib/i18n";
@@ -29,6 +41,17 @@ const CATEGORY_LABELS: Record<string, { ar: string; en: string }> = {
   emergency: { ar: "إدارة الطوارئ", en: "Emergency" },
   infosec: { ar: "أمن المعلومات", en: "InfoSec" },
   access: { ar: "التحكم بالدخول", en: "Access" },
+};
+
+// Icon per HCIS industrial-security category (the published category list),
+// so every row of the compliance list carries its own glyph.
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  physical: Shield,
+  surveillance: Cctv,
+  forces: Users,
+  emergency: Siren,
+  infosec: Lock,
+  access: KeyRound,
 };
 
 const SEVERITY_TONE: Record<string, string> = {
@@ -235,21 +258,29 @@ function HcisPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map((cat) => (
-                    <tr key={cat} className="border-t border-white/5">
-                      <td className="p-2 text-start text-white/80">
-                        {ar ? CATEGORY_LABELS[cat]!.ar : CATEGORY_LABELS[cat]!.en}
-                      </td>
-                      {REGIONS.map((r) => (
-                        <td key={r.id} className="p-2 text-center">
-                          <span
-                            className={`inline-block h-5 w-5 rounded ${statusColor(matrixStatus.get(`${cat}|${r.id}`))}`}
-                            title={matrixStatus.get(`${cat}|${r.id}`) ?? "-"}
-                          />
+                  {categories.map((cat) => {
+                    const CatIcon = CATEGORY_ICONS[cat] ?? ShieldCheck;
+                    return (
+                      <tr key={cat} className="border-t border-white/5">
+                        <td className="p-2 text-start text-white/80">
+                          <span className="flex items-center gap-2">
+                            <span className="nx-module-icon grid h-7 w-7 shrink-0 place-items-center rounded-lg">
+                              <CatIcon className="nx-icon-soft h-4 w-4" aria-hidden />
+                            </span>
+                            <span>{ar ? CATEGORY_LABELS[cat]!.ar : CATEGORY_LABELS[cat]!.en}</span>
+                          </span>
                         </td>
-                      ))}
-                    </tr>
-                  ))}
+                        {REGIONS.map((r) => (
+                          <td key={r.id} className="p-2 text-center">
+                            <span
+                              className={`inline-block h-5 w-5 rounded ${statusColor(matrixStatus.get(`${cat}|${r.id}`))}`}
+                              title={matrixStatus.get(`${cat}|${r.id}`) ?? "-"}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
