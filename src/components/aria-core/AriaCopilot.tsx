@@ -9,7 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AudioWaveform, Mic, Paperclip, RefreshCcw, Send, Sparkles, X } from "lucide-react";
+import { Mic, MicOff, RefreshCcw, Send, Sparkles, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -29,8 +29,6 @@ import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
 import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
-import { uploadAriaAttachment } from "@/lib/aria/attachments.functions";
-import { useServerFn } from "@tanstack/react-start";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 import { pageScriptParts } from "@/lib/aria/page-scripts";
 import { shouldSpeakAriaReply } from "@/lib/aria/reply-modality";
@@ -280,10 +278,6 @@ export function AriaCopilot() {
   const setMode = useAriaStore((s) => s.setMode);
 
   const [draft, setDraft] = useState("");
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [uploadingAttachments, setUploadingAttachments] = useState(false);
-  const uploadFn = useServerFn(uploadAriaAttachment);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [lastUserText, setLastUserText] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
@@ -409,14 +403,6 @@ export function AriaCopilot() {
   const [convMode, setConvMode] = useState(false);
   const [convPaused, setConvPaused] = useState(false);
   const [convNotice, setConvNotice] = useState<string | null>(null);
-  const [firstConvOpen, setFirstConvOpen] = useState(() => {
-    if (typeof window === "undefined") return true;
-    try {
-      return localStorage.getItem("aria-conv-seen") !== "1";
-    } catch {
-      return true;
-    }
-  });
   const convModeRef = useRef(false);
   // Armed on every send: true ⇢ the upcoming assistant reply is spoken
   // (voice turn in Conversation Mode), false ⇢ text-only (typed turn).
@@ -801,53 +787,8 @@ export function AriaCopilot() {
 
   const submit = useCallback(
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
-      const baseText = (textOverride ?? draft).trim();
-      if ((!baseText && attachments.length === 0) || isBusy) return;
-
-      // Article 24 §3 — build AI SDK multimodal parts so the model actually
-      // SEES the attachment. Never flatten into a text URL note.
-      type FilePart = { type: "file"; mediaType: string; url: string; filename?: string };
-      const fileParts: FilePart[] = [];
-      let uploadError: string | null = null;
-
-      if (attachments.length > 0) {
-        setUploadingAttachments(true);
-        try {
-          await Promise.all(
-            attachments.map(async (f) => {
-              const buf = await f.arrayBuffer();
-              let binary = "";
-              const bytes = new Uint8Array(buf);
-              for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-              const data_b64 = btoa(binary);
-              const res = await uploadFn({
-                data: {
-                  filename: f.name,
-                  mime_type: f.type || "application/octet-stream",
-                  size_bytes: f.size,
-                  data_b64,
-                },
-              });
-              fileParts.push({
-                type: "file",
-                mediaType: res.mime_type,
-                url: res.signed_url,
-                filename: f.name,
-              });
-            }),
-          );
-        } catch (err) {
-          console.error("[AriaCopilot] attachment upload failed", err);
-          uploadError = (err as Error).message;
-        } finally {
-          setUploadingAttachments(false);
-        }
-      }
-
-      const promptText = uploadError
-        ? `${baseText}\n\n[Attachment upload failed: ${uploadError}]`.trim()
-        : baseText;
-      if (!promptText && fileParts.length === 0) return;
+      const promptText = (textOverride ?? draft).trim();
+      if (!promptText || isBusy) return;
 
       primeIOSAudio();
       // Voice replies only for voice turns in Conversation Mode; typed
@@ -857,25 +798,15 @@ export function AriaCopilot() {
         fromVoice: opts?.fromVoice,
       });
       setDraft("");
-      setAttachments([]);
-      setLastUserText(promptText || `[${fileParts.length} attachment(s)]`);
+      setLastUserText(promptText);
       pendingSendAtRef.current = performance.now();
-
-      if (fileParts.length > 0) {
-        // AI SDK v5: send typed parts array so file blocks reach the model.
-        const parts: Array<{ type: "text"; text: string } | FilePart> = [];
-        if (promptText) parts.push({ type: "text", text: promptText });
-        parts.push(...fileParts);
-        void chat.sendMessage({ role: "user", parts });
-      } else {
-        void chat.sendMessage({ text: promptText });
-      }
+      void chat.sendMessage({ text: promptText });
 
       requestAnimationFrame(() => {
         composerRef.current?.focus({ preventScroll: true });
       });
     },
-    [draft, attachments, isBusy, chat, composerRef, uploadFn],
+    [draft, isBusy, chat, composerRef],
   );
 
   const retry = () => {
@@ -1031,12 +962,6 @@ export function AriaCopilot() {
     }
     setConvMode(true);
     setConvNotice(null);
-    try {
-      localStorage.setItem("aria-conv-seen", "1");
-    } catch {
-      /* noop */
-    }
-    setFirstConvOpen(false);
     AriaAudioBus.stopAll();
     startListening();
   }, [convMode, sttSupported, startListening, stopListening, composerRef]);
@@ -1138,30 +1063,6 @@ export function AriaCopilot() {
 
           {/* LAYER 2 — Header */}
           <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-4 py-3 backdrop-blur-xl">
-            {/* Conversation Mode talk toggle — start side, before mic/close */}
-            <div className="relative flex flex-col items-center gap-0.5">
-              <button
-                type="button"
-                onClick={toggleConversationMode}
-                aria-pressed={convMode}
-                aria-label="وضع المخاطبة الصوتية"
-                title="وضع المخاطبة الصوتية"
-                className={cn(
-                  "relative grid h-10 w-10 place-items-center rounded-full transition-all",
-                  convMode
-                    ? "bg-emerald-400/20 text-emerald-300 ring-2 ring-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.45)]"
-                    : "bg-white/5 text-cyan-200/70 ring-1 ring-white/10 hover:bg-white/10",
-                )}
-              >
-                <AudioWaveform className="h-5 w-5" aria-hidden />
-                {convMode && (
-                  <span className="absolute -bottom-0.5 h-1 w-6 rounded-full bg-emerald-400 animate-pulse" />
-                )}
-              </button>
-              {firstConvOpen && !convMode && (
-                <span className="text-[9px] leading-none text-emerald-200/80">مُخَاطَبَة</span>
-              )}
-            </div>
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" aria-hidden />
               <span
@@ -1193,37 +1094,9 @@ export function AriaCopilot() {
                 </span>
               </span>
               <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
-                {health === "down" ? "غير متصل" : `${statusLabel} · صوت · بريد · SMS · ملفات`}
+                {health === "down" ? "غير متصل" : `${statusLabel} · صوت`}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (!sttSupported) return;
-                if (listening) stopListening();
-                else startListening();
-              }}
-              disabled={!sttSupported}
-              aria-pressed={listening}
-              aria-label={
-                sttSupported
-                  ? listening
-                    ? "إيقاف الإنصات"
-                    : "ابدأ الإنصات"
-                  : "الإدخال الصوتي غير مدعوم في هذا المتصفح"
-              }
-              title={sttSupported ? undefined : "الإدخال الصوتي غير مدعوم في هذا المتصفح"}
-              className={cn(
-                "grid h-8 w-8 place-items-center rounded-md transition",
-                sttSupported
-                  ? listening
-                    ? "bg-emerald-500/25 text-emerald-300 ring-2 ring-emerald-400/70 animate-pulse"
-                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                  : "text-muted-foreground/70 cursor-not-allowed",
-              )}
-            >
-              <Mic className="h-4 w-4" aria-hidden />
-            </button>
             <button
               type="button"
               onClick={() => setMode("collapsed")}
@@ -1368,75 +1241,12 @@ export function AriaCopilot() {
             <ExecutiveCard />
           </div>
 
-          {/* LAYER 4 — Composer, pinned bottom + safe-area (Article 23: self-attachment) */}
+          {/* LAYER 4 — Composer, pinned bottom + safe-area. Voice conversation
+              is driven by the mic button in the input row (no toolbar). */}
           <div
             className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
-            style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+            style={{ paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))" }}
           >
-            <div
-              role="toolbar"
-              aria-label="قنوات آريا التنفيذية"
-              className="mb-2 grid grid-cols-4 gap-1.5"
-            >
-              <button
-                type="button"
-                onClick={toggleConversationMode}
-                aria-pressed={convMode}
-                className={cn(
-                  "nexus-aria-channel",
-                  convMode && "is-active border-emerald-400/55 text-emerald-200",
-                )}
-              >
-                <AudioWaveform className="h-4 w-4" aria-hidden />
-                <span>مخاطبة</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="nexus-aria-channel"
-                title="رفع صور ووسائط وملفات"
-              >
-                <Paperclip className="h-4 w-4" aria-hidden />
-                <span>ملفات</span>
-              </button>
-            </div>
-            {attachments.length > 0 && (
-              <ul className="mb-2 flex flex-wrap gap-1.5" aria-label="Attachments">
-                {attachments.map((f, idx) => (
-                  <li
-                    key={`${f.name}-${idx}`}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-primary/25 bg-primary/10 px-2 py-1 text-xs text-foreground"
-                  >
-                    <span className="max-w-[140px] truncate" title={f.name}>
-                      {f.name}
-                    </span>
-                    <span className="text-muted-foreground">{(f.size / 1024).toFixed(0)}KB</span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${f.name}`}
-                      onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
-                      className="grid h-4 w-4 place-items-center rounded hover:bg-primary/20"
-                    >
-                      <X className="h-3 w-3" aria-hidden />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.docx,.xlsx,.csv,.txt,.log,.md,.markdown,.json,.mp3,.mpeg,.wav,.webm,.m4a,.mp4,.ogg,.oga,.m4v,.mov,.qt"
-              className="hidden"
-              onChange={(e) => {
-                const files = Array.from(e.target.files ?? []);
-                if (files.length) {
-                  setAttachments((prev) => [...prev, ...files].slice(0, 10));
-                }
-                if (fileInputRef.current) fileInputRef.current.value = "";
-              }}
-            />
             {health === "ok" && providerReady === false && (
               <div
                 dir="rtl"
@@ -1508,15 +1318,30 @@ export function AriaCopilot() {
             >
               <button
                 type="button"
-                aria-label="Attach files (images, video, audio, documents)"
-                title="إرفاق ملفات · Attach files"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={toggleConversationMode}
+                aria-pressed={convMode}
+                aria-label={
+                  convMode
+                    ? "إيقاف المخاطبة الصوتية"
+                    : "بدء المخاطبة الصوتية (تحدّث وستردّ آريا صوتاً)"
+                }
+                title={
+                  convMode
+                    ? "إيقاف المخاطبة الصوتية"
+                    : "المخاطبة الصوتية — تحدّث وستردّ آريا صوتاً دون كتابة"
+                }
                 className={cn(
-                  "nexus-field grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/25",
-                  "bg-background/70 text-foreground transition-all hover:bg-primary/10 hover:border-primary/50",
+                  "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
+                  convMode
+                    ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
+                    : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
                 )}
               >
-                <Paperclip className="h-4 w-4" aria-hidden />
+                {convMode ? (
+                  <MicOff className="h-4 w-4" aria-hidden />
+                ) : (
+                  <Mic className="h-4 w-4" aria-hidden />
+                )}
               </button>
               <textarea
                 ref={composerRef}
@@ -1539,9 +1364,7 @@ export function AriaCopilot() {
               />
               <button
                 type="submit"
-                disabled={
-                  isBusy || uploadingAttachments || (!draft.trim() && attachments.length === 0)
-                }
+                disabled={isBusy || !draft.trim()}
                 aria-label="Send"
                 className={cn(
                   "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
