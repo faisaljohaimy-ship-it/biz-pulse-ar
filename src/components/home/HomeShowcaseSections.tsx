@@ -193,7 +193,7 @@ export function HomeShowcaseSections() {
                 <div className="text-[11px] leading-relaxed text-white/60">
                   {ar ? c.descAr : c.descEn}
                 </div>
-                <span className="mt-auto inline-flex items-center gap-1 text-[10px] font-semibold text-[color:var(--acc)] opacity-0 transition group-hover:opacity-100">
+                <span className="mt-auto inline-flex items-center gap-1 text-[10px] font-semibold text-[color:var(--acc)] transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
                   {ar ? "افتح" : "Open"}
                   <ArrowLeft className="h-3 w-3 rtl:rotate-0 ltr:rotate-180" aria-hidden />
                 </span>

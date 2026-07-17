@@ -297,8 +297,8 @@ function CinematicDemo() {
           <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           <span>REC · NEXUS AI OS · 4K</span>
         </div>
-        <div className="hidden md:flex items-center gap-6">
-          <span>{scene.kicker}</span>
+        <div className="flex items-center gap-3 md:gap-6">
+          <span className="hidden md:inline">{scene.kicker}</span>
           <span>
             {String(sceneIndex + 1).padStart(2, "0")} / {String(SCENES.length).padStart(2, "0")}
           </span>
@@ -320,7 +320,9 @@ function CinematicDemo() {
       <div className="absolute bottom-[8vh] inset-x-0 z-40 px-6 py-4">
         <div className="flex items-center justify-between gap-4 mb-3 text-[10px] tracking-[0.3em] text-white/60 uppercase">
           <span>{fmt(t)}</span>
-          <span className="hidden md:block">{isAr ? scene.titleAr : scene.titleEn}</span>
+          <span className="max-w-[45vw] truncate md:max-w-none">
+            {isAr ? scene.titleAr : scene.titleEn}
+          </span>
           <span>{fmt(TOTAL)}</span>
         </div>
         <div className="h-[2px] bg-white/15 relative overflow-hidden">

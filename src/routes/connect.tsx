@@ -56,9 +56,7 @@ function ConnectPage() {
           </span>
           <div>
             <h1 className="text-2xl font-black sm:text-3xl">Connect an AI assistant</h1>
-            <p className="text-sm text-white/55">
-              Use NEXIOS from ChatGPT or Claude through MCP.
-            </p>
+            <p className="text-sm text-white/55">Use NEXIOS from ChatGPT or Claude through MCP.</p>
           </div>
         </div>
 
@@ -84,8 +82,8 @@ function ConnectPage() {
             </button>
           </div>
           <p className="mt-3 text-[13px] leading-relaxed text-white/60">
-            Paste this URL into your assistant's connector settings. Once connected, you can
-            ask it to use NEXIOS tools to read incidents, KPIs, and briefings.
+            Paste this URL into your assistant's connector settings. Once connected, you can ask it
+            to use NEXIOS tools to read incidents, KPIs, and briefings.
           </p>
         </section>
 
@@ -135,8 +133,8 @@ function ConnectPage() {
             <h2 className="text-lg font-bold">Refresh after the app changes</h2>
           </div>
           <p className="mb-4 text-[13px] leading-relaxed text-white/60">
-            A connected assistant caches the tool list. When we ship new tools or updates,
-            refresh the connector so your assistant sees them.
+            A connected assistant caches the tool list. When we ship new tools or updates, refresh
+            the connector so your assistant sees them.
           </p>
 
           <div className="space-y-6">

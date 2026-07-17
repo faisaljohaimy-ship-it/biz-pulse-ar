@@ -377,6 +377,33 @@ export function HoloCommandStage({
         })}
       </div>
 
+      {/* same live KPI widgets on mobile/tablet — compact swipeable strip
+          (the floating absolute layout above only fits wide screens) */}
+      <div className="absolute inset-x-0 bottom-2 z-10 lg:hidden">
+        <div className="flex gap-2 overflow-x-auto px-3 pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+          {widgets.map((w, i) => {
+            const Icon = w.icon;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  "flex shrink-0 items-center gap-2 rounded-lg border border-cyan-300/25 bg-gradient-to-br px-2.5 py-1.5 backdrop-blur-xl",
+                  w.tone,
+                )}
+              >
+                <Icon className={cn("h-3.5 w-3.5 shrink-0", w.text)} />
+                <div className="min-w-0 leading-tight text-start">
+                  <div className="truncate text-[8px] text-white/55">{w.label}</div>
+                  <div className={cn("truncate text-[11px] font-semibold tabular-nums", w.text)}>
+                    {w.value}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,#04060d_98%)]" />
     </div>

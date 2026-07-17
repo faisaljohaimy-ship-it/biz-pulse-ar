@@ -147,6 +147,28 @@ function AuthPage() {
         </section>
 
         <section className="nexus-window relative mx-auto w-full max-w-md overflow-hidden rounded-[1.75rem] p-5 sm:p-7">
+          {/* Mobile parity: the brand identity + trust points shown in the side
+              panel on large screens, as a compact strip on small screens. */}
+          <div className="mb-5 lg:hidden">
+            <span className="nexus-command-chip">
+              <Crown className="h-3.5 w-3.5" /> NEXIOS · SOVEREIGN INTELLIGENCE
+            </span>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {[
+                { icon: ShieldCheck, ar: "مساحة مؤسسية محمية", en: "Protected workspace" },
+                { icon: Fingerprint, ar: "كل إجراء موثّق", en: "Every action traceable" },
+                { icon: Sparkles, ar: "آريا بعد التحقق", en: "ARIA after verification" },
+              ].map((item) => (
+                <span
+                  key={item.en}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-[11px] text-white/70"
+                >
+                  <item.icon className="h-3 w-3 text-primary" />
+                  {isAr ? item.ar : item.en}
+                </span>
+              ))}
+            </div>
+          </div>
           <div className="mb-6 text-center">
             <span className="nexus-command-chip">
               <Check className="h-3.5 w-3.5" />

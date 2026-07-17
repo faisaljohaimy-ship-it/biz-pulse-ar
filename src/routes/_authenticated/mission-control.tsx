@@ -566,7 +566,7 @@ function CollaborationStream({
             </div>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-[11px] text-white/50">
+        <div className="flex items-center gap-2 text-[11px] text-white/50">
           <Mic className="h-3.5 w-3.5" />
           {ar ? "الصوت جاهز — غير مفعل" : "Voice ready — not enabled"}
         </div>
@@ -1126,7 +1126,7 @@ function MissionControl() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2 text-[11px] text-white/50 px-3 py-2 rounded-full border border-white/10 bg-white/[0.03]">
+            <div className="flex items-center gap-2 text-[11px] text-white/50 px-3 py-2 rounded-full border border-white/10 bg-white/[0.03]">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               {ar ? "متصل مباشرة" : "Live"}
             </div>
