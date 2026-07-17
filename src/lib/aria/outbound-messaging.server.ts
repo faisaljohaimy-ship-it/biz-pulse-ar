@@ -705,16 +705,18 @@ export async function approveAriaOutboundMessageInternal(input: {
 }
 
 /**
- * Auto-send switch. When ARIA_OUTBOUND_AUTO_APPROVE=true, ARIA may send email/
- * SMS WITHOUT the per-message human approval step. Every other safety control
- * stays in force (admin/manager role, rate limits, provider-config gate,
- * payload encryption, content-hash integrity, atomic one-time claim, and the
- * full audit ledger). Live sends still require the provider credentials
- * (Resend/Twilio/Outlook), so the flag alone can never dispatch anything.
- * Default is OFF — the human-approval flow remains unless the owner opts in.
+ * Auto-send switch. ARIA sends email/SMS directly on request WITHOUT a
+ * per-message human approval step (owner directive). Every other safety
+ * control stays in force: admin/manager role, rate limits, provider-config
+ * gate, payload encryption, content-hash integrity, atomic one-time claim,
+ * the full audit ledger, and the immutable `approval.auto_approved` bypass
+ * marker per send. Live sends still require provider credentials
+ * (Resend/Twilio/Outlook), so this alone can never dispatch anything.
+ * Default is ON — set ARIA_OUTBOUND_AUTO_APPROVE=false to restore the
+ * per-message human approval flow.
  */
 export function ariaAutoApproveEnabled(): boolean {
-  return process.env.ARIA_OUTBOUND_AUTO_APPROVE?.trim().toLowerCase() === "true";
+  return process.env.ARIA_OUTBOUND_AUTO_APPROVE?.trim().toLowerCase() !== "false";
 }
 
 /**
@@ -746,7 +748,7 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
     return {
       ok: false,
       error:
-        "Direct send is disabled. Set ARIA_OUTBOUND_AUTO_APPROVE=true (with provider credentials) to let ARIA send without human approval.",
+        "Direct send is disabled (ARIA_OUTBOUND_AUTO_APPROVE=false). Use the per-message approval flow instead.",
     };
   }
 

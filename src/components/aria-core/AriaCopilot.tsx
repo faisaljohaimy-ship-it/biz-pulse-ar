@@ -9,17 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AudioWaveform,
-  Mail,
-  MessageSquareText,
-  Mic,
-  Paperclip,
-  RefreshCcw,
-  Send,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { AudioWaveform, Mic, Paperclip, RefreshCcw, Send, Sparkles, X } from "lucide-react";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat } from "@/lib/aria-core/services/aria-service";
@@ -906,14 +896,6 @@ export function AriaCopilot() {
     [submit, composerRef],
   );
 
-  const prepareChannelCommand = useCallback(
-    (id: "email" | "sms") => {
-      const command = QUICK_COMMANDS.find((item) => item.id === id);
-      if (command) runQuickCommand(command);
-    },
-    [runQuickCommand],
-  );
-
   const stopListening = useCallback(() => {
     const r = recRef.current;
     if (r) {
@@ -1117,7 +1099,7 @@ export function AriaCopilot() {
           onClick={() => setMode("docked")}
           aria-label="Open ARIA"
           className={cn(
-            "fixed bottom-6 end-6 z-50 flex h-14 w-14 items-center justify-center",
+            "fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] end-6 z-50 flex h-14 w-14 items-center justify-center",
             "nexus-aria-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
             "transition-all hover:scale-105 hover:border-primary",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
@@ -1407,24 +1389,6 @@ export function AriaCopilot() {
               >
                 <AudioWaveform className="h-4 w-4" aria-hidden />
                 <span>مخاطبة</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => prepareChannelCommand("email")}
-                className="nexus-aria-channel"
-                title="إرسال بريد إلكتروني عبر أريا"
-              >
-                <Mail className="h-4 w-4" aria-hidden />
-                <span>بريد</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => prepareChannelCommand("sms")}
-                className="nexus-aria-channel"
-                title="إرسال رسالة SMS عبر أريا"
-              >
-                <MessageSquareText className="h-4 w-4" aria-hidden />
-                <span>SMS</span>
               </button>
               <button
                 type="button"

@@ -215,7 +215,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     send_executive_email: tool({
       description:
-        "Send an HTML executive email. When auto-approve is enabled it sends directly (no human confirmation); otherwise it returns a preview + short-lived approval request the user confirms in the UI. All safety controls (role, rate limits, provider config, audit ledger) apply either way.",
+        "Send an HTML executive email DIRECTLY (no human confirmation step). All safety controls apply: sender role, rate limits, provider config, encryption, and the immutable audit ledger with an auto-approve marker.",
       inputSchema: z.object({
         to: z.string().email(),
         cc: z.string().email().optional(),
@@ -232,7 +232,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     send_executive_sms: tool({
       description:
-        "Send an executive SMS/MMS. When auto-approve is enabled it sends directly (no human confirmation); otherwise it returns the exact preview + short-lived approval request. Recipient numbers must use E.164 format. All safety controls apply either way.",
+        "Send an executive SMS/MMS DIRECTLY (no human confirmation step). Recipient numbers must use E.164 format. All safety controls apply: sender role, rate limits, provider config, and the immutable audit ledger with an auto-approve marker.",
       inputSchema: z.object({
         to: z.string().min(8).max(24).describe("E.164 phone number, e.g. +9665XXXXXXXX"),
         body: z.string().min(1).max(1600),

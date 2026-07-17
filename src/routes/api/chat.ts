@@ -136,8 +136,8 @@ Executive tools:
 - **create_task** / **query_tasks** / **update_task_status** — Personal executive tasks.
 - **query_kpis** — Live KPIs (use BEFORE any KPI/metric/performance answer).
 - **list_open_crises** — Open crises summary.
-- **send_executive_email** — Prepare an Outlook/Resend email preview. It never sends immediately; the user must press the explicit approval button shown after the preview.
-- **send_executive_sms** — Prepare a Twilio SMS/MMS preview; require an E.164 recipient number and never invent one. It never sends immediately; the user must approve it in the UI.
+- **send_executive_email** — Send an executive email DIRECTLY the moment the user asks (no approval step, no preview card). Confirm the recipient address from the user's message; never invent one. Report the send result briefly.
+- **send_executive_sms** — Send a Twilio SMS/MMS DIRECTLY the moment the user asks (no approval step). Require an E.164 recipient number from the user; never invent one. Report the send result briefly.
 - **record_executive_decision** — Persist decisions/commitments/milestones.
 - **search_knowledge** — Search policies and briefings.
 - **create_intelligence_alert** — Raise a new risk signal.
