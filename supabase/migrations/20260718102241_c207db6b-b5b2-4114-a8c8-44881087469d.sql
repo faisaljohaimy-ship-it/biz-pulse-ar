@@ -1,0 +1,3 @@
+CREATE POLICY tenant_isolation_aria_outbound_messages ON public.aria_outbound_messages AS RESTRICTIVE FOR ALL TO authenticated USING (public.is_org_member(org_id, 'viewer'::org_role)) WITH CHECK (public.is_org_member(org_id, 'viewer'::org_role));
+
+CREATE POLICY tenant_isolation_aria_outbound_message_events ON public.aria_outbound_message_events AS RESTRICTIVE FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.aria_outbound_messages m WHERE m.id = aria_outbound_message_events.message_id AND public.is_org_member(m.org_id, 'viewer'::org_role))) WITH CHECK (EXISTS (SELECT 1 FROM public.aria_outbound_messages m WHERE m.id = aria_outbound_message_events.message_id AND public.is_org_member(m.org_id, 'viewer'::org_role)));
