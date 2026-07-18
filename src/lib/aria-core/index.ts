@@ -39,7 +39,11 @@ export { executionQueue } from "./core/execution-queue";
 export { executionSimulator } from "./core/execution-simulator";
 export { auditTrail } from "./core/audit-trail";
 export type { ActionType, ActionDefinition } from "./core/action-registry";
-export type { ToolId, ToolDescriptor, ToolCategory } from "./core/tool-registry";
+export type {
+  ToolId,
+  ToolDescriptor,
+  ToolCategory,
+} from "./core/tool-registry";
 export type { CallerRole } from "./core/permission-guard";
 export type {
   ExecutionEnvelope,
@@ -67,7 +71,11 @@ export { attentionEngine } from "./core/attention-engine";
 export { transitionEngine } from "./core/transition-engine";
 export { avatarAnimationQueue } from "./core/avatar-animation-queue";
 export { avatarRenderer } from "./core/avatar-renderer";
-export type { AvatarState, Emotion, AvatarEvent } from "./core/avatar-state-manager";
+export type {
+  AvatarState,
+  Emotion,
+  AvatarEvent,
+} from "./core/avatar-state-manager";
 export type { AvatarFrame } from "./core/avatar-renderer";
 export type { EyeChannel } from "./core/eye-engine";
 export type { HeadChannel } from "./core/head-engine";
@@ -94,7 +102,11 @@ export { avatarHealthMonitor } from "./core/avatar-health-monitor";
 export type { TelemetrySnapshot } from "./core/avatar-telemetry";
 export type { PerfSample } from "./core/avatar-performance-engine";
 export type { HealthSnapshot, HealthLevel } from "./core/avatar-health-monitor";
-export type { PresenceSnapshot, PresenceLevel, PresenceGlow } from "./core/executive-presence";
+export type {
+  PresenceSnapshot,
+  PresenceLevel,
+  PresenceGlow,
+} from "./core/executive-presence";
 
 export type {
   AriaMode,

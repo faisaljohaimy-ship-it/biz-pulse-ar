@@ -39,7 +39,8 @@ export function resolveTwilioConfig(
   const fromNumber = env.TWILIO_FROM_NUMBER?.trim();
   const messagingServiceSid = env.TWILIO_MESSAGING_SERVICE_SID?.trim();
   const statusCallbackUrl = env.TWILIO_STATUS_CALLBACK_URL?.trim();
-  if (!accountSid || !authToken || (!fromNumber && !messagingServiceSid)) return null;
+  if (!accountSid || !authToken || (!fromNumber && !messagingServiceSid))
+    return null;
   if (statusCallbackUrl) {
     const parsed = new URL(statusCallbackUrl);
     if (parsed.protocol !== "https:") {
@@ -64,19 +65,27 @@ export function buildTwilioMessageForm(
     throw new Error("SMS body must contain between 1 and 1,600 characters.");
   }
   const mediaUrls = input.mediaUrls ?? [];
-  if (mediaUrls.length > 10) throw new Error("Twilio accepts at most 10 media URLs per message.");
+  if (mediaUrls.length > 10)
+    throw new Error("Twilio accepts at most 10 media URLs per message.");
 
   const form = new URLSearchParams();
   form.set("To", normalizeE164(input.to));
   form.set("Body", body);
-  if (config.messagingServiceSid) form.set("MessagingServiceSid", config.messagingServiceSid);
-  else if (config.fromNumber) form.set("From", normalizeE164(config.fromNumber));
-  else throw new Error("Twilio requires TWILIO_FROM_NUMBER or TWILIO_MESSAGING_SERVICE_SID.");
-  if (config.statusCallbackUrl) form.set("StatusCallback", config.statusCallbackUrl);
+  if (config.messagingServiceSid)
+    form.set("MessagingServiceSid", config.messagingServiceSid);
+  else if (config.fromNumber)
+    form.set("From", normalizeE164(config.fromNumber));
+  else
+    throw new Error(
+      "Twilio requires TWILIO_FROM_NUMBER or TWILIO_MESSAGING_SERVICE_SID.",
+    );
+  if (config.statusCallbackUrl)
+    form.set("StatusCallback", config.statusCallbackUrl);
 
   for (const rawUrl of mediaUrls) {
     const url = new URL(rawUrl);
-    if (url.protocol !== "https:") throw new Error("SMS media URLs must use HTTPS.");
+    if (url.protocol !== "https:")
+      throw new Error("SMS media URLs must use HTTPS.");
     form.append("MediaUrl", url.toString());
   }
   return form;

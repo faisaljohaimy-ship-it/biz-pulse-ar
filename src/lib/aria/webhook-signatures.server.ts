@@ -32,7 +32,11 @@ async function hmac(
     false,
     ["sign"],
   );
-  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(value),
+  );
   return bytesToBase64(new Uint8Array(signature));
 }
 
@@ -50,7 +54,8 @@ export async function verifyResendWebhook(input: {
   if (
     !input.svixId ||
     !Number.isInteger(timestamp) ||
-    Math.abs((input.nowMs ?? Date.now()) - timestamp * 1_000) > toleranceSeconds * 1_000
+    Math.abs((input.nowMs ?? Date.now()) - timestamp * 1_000) >
+      toleranceSeconds * 1_000
   ) {
     return false;
   }
@@ -73,7 +78,9 @@ export async function verifyResendWebhook(input: {
     .some((candidate) => {
       const [version, signature] = candidate.split(",", 2);
       return (
-        version === "v1" && typeof signature === "string" && constantTimeEqual(signature, expected)
+        version === "v1" &&
+        typeof signature === "string" &&
+        constantTimeEqual(signature, expected)
       );
     });
 }
@@ -90,7 +97,8 @@ export async function verifyTwilioWebhook(input: {
   } catch {
     return false;
   }
-  if (url.protocol !== "https:" || !input.signature || !input.authToken) return false;
+  if (url.protocol !== "https:" || !input.signature || !input.authToken)
+    return false;
 
   const entries = [...new URLSearchParams(input.rawFormBody).entries()].sort(
     ([leftName, leftValue], [rightName, rightValue]) => {
@@ -101,6 +109,10 @@ export async function verifyTwilioWebhook(input: {
   );
   let signed = input.publicUrl;
   for (const [name, value] of entries) signed += `${name}${value}`;
-  const expected = await hmac("SHA-1", new TextEncoder().encode(input.authToken), signed);
+  const expected = await hmac(
+    "SHA-1",
+    new TextEncoder().encode(input.authToken),
+    signed,
+  );
   return constantTimeEqual(input.signature.trim(), expected);
 }

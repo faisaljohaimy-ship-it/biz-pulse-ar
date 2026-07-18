@@ -7,7 +7,13 @@
  * No provider/model names, no raw JSON, no stack traces, no internal
  * queue states surfaced to the user.
  */
-import { ShieldAlert, Gauge, CheckCircle2, ArrowRight, Lock } from "lucide-react";
+import {
+  ShieldAlert,
+  Gauge,
+  CheckCircle2,
+  ArrowRight,
+  Lock,
+} from "lucide-react";
 import { useAriaStore } from "@/lib/aria-core/store";
 import { cn } from "@/lib/utils";
 import type { RiskLevel, PriorityLevel } from "@/lib/aria-core/types/executive";
@@ -41,7 +47,8 @@ export function ExecutiveCard() {
   if (!env) return null;
 
   const nextStep = env.steps[0];
-  const approvalRequired = env.approval.required && env.approval.status !== "granted";
+  const approvalRequired =
+    env.approval.required && env.approval.status !== "granted";
   const confidencePct = Math.round(env.confidence.percent);
 
   return (
@@ -74,7 +81,9 @@ export function ExecutiveCard() {
             <ShieldAlert className="h-3 w-3" aria-hidden />
             الأولوية
           </dt>
-          <dd className="font-medium text-foreground">{PRIORITY_AR[env.priority.level]}</dd>
+          <dd className="font-medium text-foreground">
+            {PRIORITY_AR[env.priority.level]}
+          </dd>
         </div>
         <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1.5">
           <dt className="mb-0.5 flex items-center gap-1 text-muted-foreground">
@@ -97,9 +106,14 @@ export function ExecutiveCard() {
 
       {nextStep ? (
         <div className="mb-2 flex items-start gap-2 rounded-md border border-border/40 bg-background/40 px-2 py-2">
-          <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-primary" aria-hidden />
+          <ArrowRight
+            className="mt-0.5 h-3 w-3 shrink-0 text-primary"
+            aria-hidden
+          />
           <div className="text-xs leading-relaxed text-foreground">
-            <span className="text-[10px] text-muted-foreground">الخطوة التالية</span>
+            <span className="text-[10px] text-muted-foreground">
+              الخطوة التالية
+            </span>
             <br />
             {nextStep.label_ar}
           </div>

@@ -32,7 +32,9 @@ describe("ARIA provider readiness", () => {
     });
     expect(status.ready).toBe(false);
     expect(status.intelligence.missing).toContain("AI_PROVIDER_API_KEY");
-    expect(status.outboundSecurity.missing).toContain("ARIA_MESSAGE_APPROVAL_SECRET");
+    expect(status.outboundSecurity.missing).toContain(
+      "ARIA_MESSAGE_APPROVAL_SECRET",
+    );
   });
 
   it("requires OpenAI for cross-browser recorder transcription", () => {

@@ -16,7 +16,12 @@ export type AriaIntent =
   | "engineering"
   | "unknown";
 
-export type Vendor = "openai" | "google" | "lovable" | "openrouter" | "anthropic";
+export type Vendor =
+  | "openai"
+  | "google"
+  | "lovable"
+  | "openrouter"
+  | "anthropic";
 
 export interface ResolvedModel {
   vendor: Vendor;
@@ -55,7 +60,10 @@ export interface AvailableProviders {
   anthropic?: boolean;
 }
 
-export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
+export function resolveModel(
+  _intent: AriaIntent,
+  providers: AvailableProviders,
+): ResolvedModel {
   // Highest-quality route requested for ARIA: native GPT-5.6 first. Remaining
   // providers are continuity fallbacks and never masquerade as GPT-5.6.
 

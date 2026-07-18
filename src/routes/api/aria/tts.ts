@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import {
+  enforceRateLimit,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 import {
   ARIA_ELEVENLABS_MODEL,
   ARIA_ELEVENLABS_VOICE_ID,
@@ -12,15 +15,24 @@ const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 } as const;
 
-function jsonError(error: string, status: number, extra: Record<string, unknown> = {}) {
-  return Response.json({ ok: false, error, ...extra }, { status, headers: JSON_HEADERS });
+function jsonError(
+  error: string,
+  status: number,
+  extra: Record<string, unknown> = {},
+) {
+  return Response.json(
+    { ok: false, error, ...extra },
+    { status, headers: JSON_HEADERS },
+  );
 }
 
 export const Route = createFileRoute("/api/aria/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const contentLength = Number(request.headers.get("content-length") ?? "0");
+        const contentLength = Number(
+          request.headers.get("content-length") ?? "0",
+        );
         if (Number.isFinite(contentLength) && contentLength > 24_000) {
           return jsonError("TTS request is too large.", 413);
         }
@@ -39,12 +51,19 @@ export const Route = createFileRoute("/api/aria/tts")({
           global: { headers: { Authorization: authorization } },
           auth: { persistSession: false, autoRefreshToken: false },
         });
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData.user) return jsonError("Authentication is invalid.", 401);
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
+        if (userError || !userData.user)
+          return jsonError("Authentication is invalid.", 401);
 
-        const rate = await enforceRateLimit(`aria-tts:${userData.user.id}`, 40, 60);
+        const rate = await enforceRateLimit(
+          `aria-tts:${userData.user.id}`,
+          40,
+          60,
+        );
         if (rate.unavailable) return rateLimitUnavailableResponse();
-        if (!rate.allowed) return jsonError("ARIA voice rate limit exceeded.", 429);
+        if (!rate.allowed)
+          return jsonError("ARIA voice rate limit exceeded.", 429);
 
         let body: unknown;
         try {
@@ -53,15 +72,21 @@ export const Route = createFileRoute("/api/aria/tts")({
           return jsonError("Invalid JSON body.", 400);
         }
         const text =
-          body && typeof body === "object" && typeof (body as { text?: unknown }).text === "string"
+          body &&
+          typeof body === "object" &&
+          typeof (body as { text?: unknown }).text === "string"
             ? (body as { text: string }).text.trim()
             : "";
         if (!text || text.length > 4_000) {
-          return jsonError("TTS text must contain between 1 and 4,000 characters.", 400);
+          return jsonError(
+            "TTS text must contain between 1 and 4,000 characters.",
+            400,
+          );
         }
 
         const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
-        if (!apiKey) return jsonError("ARIA voice provider is not configured.", 503);
+        if (!apiKey)
+          return jsonError("ARIA voice provider is not configured.", 503);
 
         let upstream: Response;
         try {
@@ -83,7 +108,8 @@ export const Route = createFileRoute("/api/aria/tts")({
             },
           );
         } catch (error) {
-          if (request.signal.aborted) return jsonError("TTS request was cancelled.", 499);
+          if (request.signal.aborted)
+            return jsonError("TTS request was cancelled.", 499);
           console.error("[api/aria/tts] ElevenLabs request failed", {
             error: error instanceof Error ? error.message : String(error),
           });
@@ -91,7 +117,10 @@ export const Route = createFileRoute("/api/aria/tts")({
         }
 
         if (!upstream.ok || !upstream.body) {
-          const providerReason = (await upstream.text().catch(() => "")).slice(0, 240);
+          const providerReason = (await upstream.text().catch(() => "")).slice(
+            0,
+            240,
+          );
           console.warn("[api/aria/tts] provider rejected request", {
             status: upstream.status,
             reason: providerReason,
@@ -105,7 +134,8 @@ export const Route = createFileRoute("/api/aria/tts")({
           status: 200,
           headers: {
             "Cache-Control": "no-store",
-            "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
+            "Content-Type":
+              upstream.headers.get("content-type") || "audio/mpeg",
             "X-ARIA-Voice-ID": ARIA_ELEVENLABS_VOICE_ID,
           },
         });

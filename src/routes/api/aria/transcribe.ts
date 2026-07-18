@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import {
+  enforceRateLimit,
+  rateLimitUnavailableResponse,
+} from "@/lib/governance/rate-limit.server";
 
 const MAX_AUDIO_BYTES = 12 * 1024 * 1024;
 const MAX_MULTIPART_BYTES = MAX_AUDIO_BYTES + 1024 * 1024;
@@ -30,12 +33,25 @@ export const Route = createFileRoute("/api/aria/transcribe")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const contentLength = Number(request.headers.get("content-length") ?? "0");
-        if (Number.isFinite(contentLength) && contentLength > MAX_MULTIPART_BYTES) {
+        const contentLength = Number(
+          request.headers.get("content-length") ?? "0",
+        );
+        if (
+          Number.isFinite(contentLength) &&
+          contentLength > MAX_MULTIPART_BYTES
+        ) {
           return errorResponse("Voice recording is too large.", 413);
         }
-        if (!request.headers.get("content-type")?.toLowerCase().includes("multipart/form-data")) {
-          return errorResponse("Voice input must use multipart/form-data.", 415);
+        if (
+          !request.headers
+            .get("content-type")
+            ?.toLowerCase()
+            .includes("multipart/form-data")
+        ) {
+          return errorResponse(
+            "Voice input must use multipart/form-data.",
+            415,
+          );
         }
 
         const authorization = request.headers.get("authorization")?.trim();
@@ -52,11 +68,17 @@ export const Route = createFileRoute("/api/aria/transcribe")({
           auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data, error } = await supabase.auth.getUser();
-        if (error || !data.user) return errorResponse("Authentication is invalid.", 401);
+        if (error || !data.user)
+          return errorResponse("Authentication is invalid.", 401);
 
-        const rate = await enforceRateLimit(`aria-transcribe:${data.user.id}`, 30, 60);
+        const rate = await enforceRateLimit(
+          `aria-transcribe:${data.user.id}`,
+          30,
+          60,
+        );
         if (rate.unavailable) return rateLimitUnavailableResponse();
-        if (!rate.allowed) return errorResponse("Voice transcription rate limit exceeded.", 429);
+        if (!rate.allowed)
+          return errorResponse("Voice transcription rate limit exceeded.", 429);
 
         let form: FormData;
         try {
@@ -91,12 +113,15 @@ export const Route = createFileRoute("/api/aria/transcribe")({
 
         let upstream: Response;
         try {
-          upstream = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${openAiKey}` },
-            body: upstreamForm,
-            signal: request.signal,
-          });
+          upstream = await fetch(
+            "https://api.openai.com/v1/audio/transcriptions",
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${openAiKey}` },
+              body: upstreamForm,
+              signal: request.signal,
+            },
+          );
         } catch (transcriptionError) {
           if (request.signal.aborted)
             return errorResponse("Voice transcription was cancelled.", 499);
@@ -117,7 +142,8 @@ export const Route = createFileRoute("/api/aria/transcribe")({
         const payload = (await upstream.json().catch(() => null)) as {
           text?: unknown;
         } | null;
-        const text = typeof payload?.text === "string" ? payload.text.trim() : "";
+        const text =
+          typeof payload?.text === "string" ? payload.text.trim() : "";
         if (!text) return errorResponse("No speech was detected.", 422);
         return Response.json(
           { ok: true, text: text.slice(0, 10_000) },

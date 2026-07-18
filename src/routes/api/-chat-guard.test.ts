@@ -26,7 +26,10 @@ describe("chat request guard", () => {
       }),
     );
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.data.messages[0].parts).toEqual([{ type: "text", text: "مرحبا" }]);
+    if (result.ok)
+      expect(result.data.messages[0].parts).toEqual([
+        { type: "text", text: "مرحبا" },
+      ]);
   });
 
   it("rejects unsupported file URLs", async () => {

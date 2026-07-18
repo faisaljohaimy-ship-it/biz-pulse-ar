@@ -66,7 +66,11 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
     // Soft flush: if no terminator arrived and the buffer already carries a
     // decent chunk, ship it so the first-audio budget is met on short
     // responses that never emit punctuation early.
-    if (sentenceCount === 0 && buffer.length >= softFlush && /\s$/.test(buffer)) {
+    if (
+      sentenceCount === 0 &&
+      buffer.length >= softFlush &&
+      /\s$/.test(buffer)
+    ) {
       const sentence = buffer.trim();
       buffer = "";
       sentenceCount += 1;
@@ -101,7 +105,9 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
         sentences: sentenceCount,
         firstTokenAt,
         latencyToFirstSentence:
-          firstTokenAt && sentenceCount > 0 ? performance.now() - firstTokenAt : null,
+          firstTokenAt && sentenceCount > 0
+            ? performance.now() - firstTokenAt
+            : null,
       };
     },
   };
@@ -111,17 +117,22 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
  * Emits a latency-regression beacon to the public incident sink.
  * Fire-and-forget; never throws.
  */
-export function reportVoiceLatencyRegression(latencyMs: number, detail?: string) {
+export function reportVoiceLatencyRegression(
+  latencyMs: number,
+  detail?: string,
+) {
   try {
     const body = JSON.stringify({
       kind: "aria_voice_latency_regression",
-      detail: `first_sentence_ms=${Math.round(latencyMs)}${detail ? " " + detail : ""}`.slice(
-        0,
-        500,
-      ),
+      detail:
+        `first_sentence_ms=${Math.round(latencyMs)}${detail ? " " + detail : ""}`.slice(
+          0,
+          500,
+        ),
       url: typeof window !== "undefined" ? window.location.pathname : undefined,
       device_class:
-        typeof window !== "undefined" && window.matchMedia?.("(max-width: 640px)").matches
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(max-width: 640px)").matches
           ? "mobile"
           : "desktop",
       ts: Date.now(),

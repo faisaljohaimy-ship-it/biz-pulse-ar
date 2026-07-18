@@ -35,7 +35,10 @@ const SmsPayloadSchema = z.object({
       z
         .string()
         .url()
-        .refine((value) => value.startsWith("https://"), "Media URL must use HTTPS."),
+        .refine(
+          (value) => value.startsWith("https://"),
+          "Media URL must use HTTPS.",
+        ),
     )
     .max(10)
     .optional(),
@@ -110,7 +113,9 @@ function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
   const chunk = 0x8000;
   for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, Math.min(bytes.length, i + chunk)));
+    binary += String.fromCharCode(
+      ...bytes.subarray(i, Math.min(bytes.length, i + chunk)),
+    );
   }
   return btoa(binary);
 }
@@ -132,7 +137,10 @@ function cryptoBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 function toBase64Url(bytes: Uint8Array): string {
-  return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return bytesToBase64(bytes)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
 }
 
 function fromBase64Url(value: string): Uint8Array {
@@ -149,11 +157,19 @@ function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
 }
 
 export async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  );
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
 }
 
-async function hmacSha256(value: string, secret = approvalSecret()): Promise<Uint8Array> {
+async function hmacSha256(
+  value: string,
+  secret = approvalSecret(),
+): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -161,24 +177,34 @@ async function hmacSha256(value: string, secret = approvalSecret()): Promise<Uin
     false,
     ["sign"],
   );
-  return new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value)));
+  return new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value)),
+  );
 }
 
-export async function createApprovalToken(claims: ApprovalClaims): Promise<string> {
+export async function createApprovalToken(
+  claims: ApprovalClaims,
+): Promise<string> {
   const encoded = toBase64Url(new TextEncoder().encode(JSON.stringify(claims)));
   const signature = toBase64Url(await hmacSha256(encoded));
   return `${encoded}.${signature}`;
 }
 
-export async function verifyApprovalToken(token: string): Promise<ApprovalClaims> {
+export async function verifyApprovalToken(
+  token: string,
+): Promise<ApprovalClaims> {
   const [encoded, signature, extra] = token.split(".");
-  if (!encoded || !signature || extra) throw new Error("Invalid approval token.");
+  if (!encoded || !signature || extra)
+    throw new Error("Invalid approval token.");
   const expected = await hmacSha256(encoded);
   const actual = fromBase64Url(signature);
-  if (!constantTimeEqual(expected, actual)) throw new Error("Invalid approval token signature.");
+  if (!constantTimeEqual(expected, actual))
+    throw new Error("Invalid approval token signature.");
   let claims: ApprovalClaims;
   try {
-    claims = JSON.parse(new TextDecoder().decode(fromBase64Url(encoded))) as ApprovalClaims;
+    claims = JSON.parse(
+      new TextDecoder().decode(fromBase64Url(encoded)),
+    ) as ApprovalClaims;
   } catch {
     throw new Error("Invalid approval token payload.");
   }
@@ -192,7 +218,8 @@ export async function verifyApprovalToken(token: string): Promise<ApprovalClaims
   ) {
     throw new Error("Invalid approval token claims.");
   }
-  if (Date.now() >= claims.expiresAt) throw new Error("Approval token has expired.");
+  if (Date.now() >= claims.expiresAt)
+    throw new Error("Approval token has expired.");
   return claims;
 }
 
@@ -201,7 +228,10 @@ async function encryptionKey(): Promise<CryptoKey> {
     "SHA-256",
     new TextEncoder().encode(`nexios:aria:outbound:v1:${approvalSecret()}`),
   );
-  return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
+  return crypto.subtle.importKey("raw", digest, "AES-GCM", false, [
+    "encrypt",
+    "decrypt",
+  ]);
 }
 
 function additionalData(row: {
@@ -262,7 +292,8 @@ async function decryptPayload(row: LedgerRow): Promise<OutboundPayload> {
 function maskRecipient(payload: OutboundPayload): string {
   if (payload.channel === "email") {
     const [local = "", domain = "unknown"] = payload.to.split("@");
-    const masked = local.length <= 2 ? `${local.slice(0, 1)}*` : `${local.slice(0, 2)}***`;
+    const masked =
+      local.length <= 2 ? `${local.slice(0, 1)}*` : `${local.slice(0, 2)}***`;
     return `${masked}@${domain.toLowerCase()}`;
   }
   const digits = payload.to.replace(/\D/g, "");
@@ -292,14 +323,22 @@ function htmlToText(value: string): string {
  */
 function sanitizeEmailHtml(value: string): string {
   return value
-    .replace(/<(script|iframe|object|embed|form|base|meta|link)\b[\s\S]*?<\/\1\s*>/gi, "")
-    .replace(/<(script|iframe|object|embed|form|base|meta|link)\b[^>]*\/?\s*>/gi, "")
+    .replace(
+      /<(script|iframe|object|embed|form|base|meta|link)\b[\s\S]*?<\/\1\s*>/gi,
+      "",
+    )
+    .replace(
+      /<(script|iframe|object|embed|form|base|meta|link)\b[^>]*\/?\s*>/gi,
+      "",
+    )
     .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
     .replace(/\s+(?:href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, "")
     .trim();
 }
 
-function normalizeOutboundPayload(rawPayload: OutboundPayload): OutboundPayload {
+function normalizeOutboundPayload(
+  rawPayload: OutboundPayload,
+): OutboundPayload {
   const payload = OutboundPayloadSchema.parse(rawPayload);
   if (payload.channel === "email") {
     return OutboundPayloadSchema.parse({
@@ -340,14 +379,17 @@ function previewOf(
 function configuredChannel(payload: OutboundPayload): boolean {
   if (payload.channel === "sms") return Boolean(resolveTwilioConfig());
   return Boolean(
-    (process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim()) ||
-    outlookHeaders() ||
-    managedEmailQueueEnabled(),
+    (process.env.RESEND_API_KEY?.trim() &&
+      process.env.RESEND_FROM_EMAIL?.trim()) ||
+      outlookHeaders() ||
+      managedEmailQueueEnabled(),
   );
 }
 
 function managedEmailQueueEnabled(): boolean {
-  return process.env.ARIA_ENABLE_MANAGED_EMAIL_QUEUE?.trim().toLowerCase() === "true";
+  return (
+    process.env.ARIA_ENABLE_MANAGED_EMAIL_QUEUE?.trim().toLowerCase() === "true"
+  );
 }
 
 function outlookHeaders(): Record<string, string> | null {
@@ -371,16 +413,18 @@ async function appendLedgerEvent(input: {
   payloadHash: string;
   occurredAt?: string | null;
 }): Promise<"inserted" | "duplicate"> {
-  const { error } = await supabaseAdmin.from("aria_outbound_message_events").insert({
-    message_id: input.messageId,
-    org_id: input.orgId,
-    provider: input.provider,
-    provider_event_id: input.providerEventId,
-    event_type: input.eventType,
-    delivery_status: input.status ?? null,
-    payload_hash: input.payloadHash,
-    occurred_at: input.occurredAt ?? null,
-  });
+  const { error } = await supabaseAdmin
+    .from("aria_outbound_message_events")
+    .insert({
+      message_id: input.messageId,
+      org_id: input.orgId,
+      provider: input.provider,
+      provider_event_id: input.providerEventId,
+      event_type: input.eventType,
+      delivery_status: input.status ?? null,
+      payload_hash: input.payloadHash,
+      occurred_at: input.occurredAt ?? null,
+    });
   if (!error) return "inserted";
   if (error.code === "23505") return "duplicate";
   throw new Error(`Unable to persist outbound event: ${error.message}`);
@@ -388,7 +432,9 @@ async function appendLedgerEvent(input: {
 
 async function requireSenderRole(userId: string): Promise<void> {
   if (!(await hasAnyPlatformRole(userId, ["admin", "manager"]))) {
-    throw new Error("Forbidden: ARIA outbound messaging requires admin or manager role.");
+    throw new Error(
+      "Forbidden: ARIA outbound messaging requires admin or manager role.",
+    );
   }
 }
 
@@ -397,14 +443,20 @@ export async function prepareAriaOutboundMessage(
   userId: string,
   rawPayload: OutboundPayload,
 ): Promise<
-  { ok: true; requiresApproval: true; approval: ApprovalPreview } | { ok: false; error: string }
+  | { ok: true; requiresApproval: true; approval: ApprovalPreview }
+  | { ok: false; error: string }
 > {
   try {
     await requireSenderRole(userId);
-    const draftRate = await enforceRateLimit(`aria-outbound-draft:${userId}`, 30, 600);
+    const draftRate = await enforceRateLimit(
+      `aria-outbound-draft:${userId}`,
+      30,
+      600,
+    );
     if (draftRate.unavailable)
       throw new Error("Messaging approval service is temporarily unavailable.");
-    if (!draftRate.allowed) throw new Error("Rate limit exceeded for ARIA message drafts.");
+    if (!draftRate.allowed)
+      throw new Error("Rate limit exceeded for ARIA message drafts.");
 
     const payload = normalizeOutboundPayload(rawPayload);
     if (!configuredChannel(payload)) {
@@ -431,20 +483,23 @@ export async function prepareAriaOutboundMessage(
     });
     const idempotencyKey = `aria-${payload.channel}-${id}`;
 
-    const { error } = await supabaseAdmin.from("aria_outbound_messages").insert({
-      id,
-      org_id: orgId,
-      actor_id: userId,
-      channel: payload.channel,
-      recipient_hint: maskRecipient(payload),
-      content_hash: contentHash,
-      payload_ciphertext: encrypted.ciphertext,
-      payload_iv: encrypted.iv,
-      idempotency_key: idempotencyKey,
-      status: "pending_approval",
-      approval_expires_at: expiresAt,
-    });
-    if (error) throw new Error(`Unable to persist approval request: ${error.message}`);
+    const { error } = await supabaseAdmin
+      .from("aria_outbound_messages")
+      .insert({
+        id,
+        org_id: orgId,
+        actor_id: userId,
+        channel: payload.channel,
+        recipient_hint: maskRecipient(payload),
+        content_hash: contentHash,
+        payload_ciphertext: encrypted.ciphertext,
+        payload_iv: encrypted.iv,
+        idempotency_key: idempotencyKey,
+        status: "pending_approval",
+        approval_expires_at: expiresAt,
+      });
+    if (error)
+      throw new Error(`Unable to persist approval request: ${error.message}`);
 
     try {
       await appendLedgerEvent({
@@ -491,7 +546,10 @@ export async function prepareAriaOutboundMessage(
   }
 }
 
-async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempotencyKey: string) {
+async function dispatchEmail(
+  payload: z.infer<typeof EmailPayloadSchema>,
+  idempotencyKey: string,
+) {
   // Prefer the provider with a signed delivery-event channel when both paths
   // are configured. Outlook remains a compatible fallback but its gateway only
   // confirms acceptance, not final mailbox delivery.
@@ -520,18 +578,24 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
       body: { contentType: "HTML", content: payload.html },
       toRecipients: [{ emailAddress: { address: payload.to } }],
     };
-    if (payload.cc) message.ccRecipients = [{ emailAddress: { address: payload.cc } }];
+    if (payload.cc)
+      message.ccRecipients = [{ emailAddress: { address: payload.cc } }];
     const { httpFetch } = await import("@/lib/api/http.server");
-    const response = await httpFetch(`${OUTLOOK_GATEWAY}/microsoft_outlook/me/sendMail`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ message, saveToSentItems: true }),
-      retries: 0,
-      label: "ARIA Outlook sendMail",
-    });
+    const response = await httpFetch(
+      `${OUTLOOK_GATEWAY}/microsoft_outlook/me/sendMail`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message, saveToSentItems: true }),
+        retries: 0,
+        label: "ARIA Outlook sendMail",
+      },
+    );
     if (!response.ok) {
       const detail = (await response.text().catch(() => "")).slice(0, 180);
-      throw new Error(`Outlook HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+      throw new Error(
+        `Outlook HTTP ${response.status}${detail ? `: ${detail}` : ""}`,
+      );
     }
     return {
       provider: "outlook" as const,
@@ -553,13 +617,16 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  const { error: logError } = await supabaseAdmin.from("email_send_log").insert({
-    message_id: messageId,
-    template_name: "aria_executive_email",
-    recipient_email: payload.to,
-    status: "pending",
-  });
-  if (logError) throw new Error(`Email send log write failed: ${logError.message}`);
+  const { error: logError } = await supabaseAdmin
+    .from("email_send_log")
+    .insert({
+      message_id: messageId,
+      template_name: "aria_executive_email",
+      recipient_email: payload.to,
+      status: "pending",
+    });
+  if (logError)
+    throw new Error(`Email send log write failed: ${logError.message}`);
   const { error: enqueueError } = await supabaseAdmin.rpc("enqueue_email", {
     queue_name: "transactional_emails",
     payload: {
@@ -664,10 +731,15 @@ export async function approveAriaOutboundMessageInternal(input: {
     };
   }
 
-  const sendRate = await enforceRateLimit(`aria-outbound-send:${input.userId}`, 10, 600);
+  const sendRate = await enforceRateLimit(
+    `aria-outbound-send:${input.userId}`,
+    10,
+    600,
+  );
   if (sendRate.unavailable)
     throw new Error("Messaging rate-limit service is temporarily unavailable.");
-  if (!sendRate.allowed) throw new Error("Rate limit exceeded for ARIA outbound sends.");
+  if (!sendRate.allowed)
+    throw new Error("Rate limit exceeded for ARIA outbound sends.");
 
   // Atomic one-time claim. Exactly one concurrent approver can transition the
   // row; every other request receives zero rows and therefore cannot call a
@@ -688,12 +760,14 @@ export async function approveAriaOutboundMessageInternal(input: {
       "id,org_id,actor_id,channel,content_hash,payload_ciphertext,payload_iv,idempotency_key,status,approval_expires_at,provider,provider_message_id,provider_status",
     )
     .maybeSingle();
-  if (claimError) throw new Error(`Unable to claim approval: ${claimError.message}`);
+  if (claimError)
+    throw new Error(`Unable to claim approval: ${claimError.message}`);
   if (!claimed) {
     return {
       ok: false,
       status: "unknown",
-      error: "Approval was already consumed or expired; no duplicate send was attempted.",
+      error:
+        "Approval was already consumed or expired; no duplicate send was attempted.",
     };
   }
 
@@ -748,7 +822,8 @@ export async function approveAriaOutboundMessageInternal(input: {
         status: "unknown",
         provider: result.provider,
         messageId: result.providerId,
-        error: "Provider accepted the message; ledger reconciliation is required.",
+        error:
+          "Provider accepted the message; ledger reconciliation is required.",
       };
     }
     try {
@@ -771,7 +846,8 @@ export async function approveAriaOutboundMessageInternal(input: {
         status: state,
         provider: result.provider,
         messageId: result.providerId,
-        error: "Message accepted; delivery-event audit reconciliation is required.",
+        error:
+          "Message accepted; delivery-event audit reconciliation is required.",
       };
     }
     return {
@@ -880,7 +956,11 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
     throw new Error("Direct owner email does not support CC recipients.");
   }
 
-  const prepared = await prepareAriaOutboundMessage(supabaseAdmin, input.userId, payload);
+  const prepared = await prepareAriaOutboundMessage(
+    supabaseAdmin,
+    input.userId,
+    payload,
+  );
   if ("error" in prepared) return { ok: false, error: prepared.error };
 
   // Immutable bypass marker: record that the human approval step was skipped
@@ -966,7 +1046,8 @@ function nextLedgerStatus(
 ): OutboundLedgerStatus {
   if (current === "delivered") return "delivered";
   if (incoming === "delivered" || incoming === "failed") return incoming;
-  if (current === "failed" || current === "cancelled" || current === "expired") return current;
+  if (current === "failed" || current === "cancelled" || current === "expired")
+    return current;
   return incoming;
 }
 
@@ -987,10 +1068,13 @@ export async function recordOutboundProviderEvent(input: {
     .eq("provider", input.provider)
     .eq("provider_message_id", input.providerMessageId)
     .maybeSingle();
-  if (error) throw new Error(`Unable to locate outbound message: ${error.message}`);
+  if (error)
+    throw new Error(`Unable to locate outbound message: ${error.message}`);
   if (!data) return "not_found";
   if (input.payloadHash && data.content_hash !== input.payloadHash) {
-    throw new Error("Provider event payload hash does not match the outbound ledger.");
+    throw new Error(
+      "Provider event payload hash does not match the outbound ledger.",
+    );
   }
 
   const inserted = await appendLedgerEvent({
@@ -1022,6 +1106,7 @@ export async function recordOutboundProviderEvent(input: {
     .update(deliveryUpdate)
     .eq("id", data.id)
     .eq("content_hash", data.content_hash);
-  if (updateError) throw new Error(`Unable to update delivery state: ${updateError.message}`);
+  if (updateError)
+    throw new Error(`Unable to update delivery state: ${updateError.message}`);
   return inserted === "duplicate" ? "duplicate" : "updated";
 }

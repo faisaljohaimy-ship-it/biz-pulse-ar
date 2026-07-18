@@ -26,9 +26,15 @@ describe("ARIA owner recipient policy", () => {
 
   it("enables owner-only direct send by default and supports a kill switch", () => {
     expect(isAriaOwnerDirectSendEnabled({})).toBe(true);
-    expect(isAriaOwnerDirectSendEnabled({ ARIA_DIRECT_SEND_ENABLED: "false" })).toBe(false);
-    expect(isAriaOwnerDirectSendEnabled({ ARIA_DIRECT_SEND_ENABLED: "invalid" })).toBe(false);
-    expect(isAriaOwnerDirectSendEnabled({ ARIA_OUTBOUND_AUTO_APPROVE: "true" })).toBe(true);
+    expect(
+      isAriaOwnerDirectSendEnabled({ ARIA_DIRECT_SEND_ENABLED: "false" }),
+    ).toBe(false);
+    expect(
+      isAriaOwnerDirectSendEnabled({ ARIA_DIRECT_SEND_ENABLED: "invalid" }),
+    ).toBe(false);
+    expect(
+      isAriaOwnerDirectSendEnabled({ ARIA_OUTBOUND_AUTO_APPROVE: "true" }),
+    ).toBe(true);
   });
 
   it.each([
@@ -47,7 +53,10 @@ describe("ARIA owner recipient policy", () => {
     ["do not send an SMS", "sms"],
     ["لخّص رسائل SMS", "sms"],
     ["send the report", "email"],
-  ] as const)("rejects ambiguous or wrong-channel intent: %s", (text, channel) => {
-    expect(hasExplicitOutboundIntent(text, channel)).toBe(false);
-  });
+  ] as const)(
+    "rejects ambiguous or wrong-channel intent: %s",
+    (text, channel) => {
+      expect(hasExplicitOutboundIntent(text, channel)).toBe(false);
+    },
+  );
 });

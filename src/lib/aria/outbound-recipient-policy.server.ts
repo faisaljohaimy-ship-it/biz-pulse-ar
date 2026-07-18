@@ -22,7 +22,8 @@ export type OwnerRecipients = {
 export function isAriaOwnerDirectSendEnabled(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
-  const configured = env.ARIA_DIRECT_SEND_ENABLED ?? env.ARIA_OUTBOUND_AUTO_APPROVE;
+  const configured =
+    env.ARIA_DIRECT_SEND_ENABLED ?? env.ARIA_OUTBOUND_AUTO_APPROVE;
   if (configured === undefined || configured.trim() === "") return true;
   const normalized = configured.trim().toLowerCase();
   if (normalized === "true") return true;
@@ -41,7 +42,9 @@ export function getAriaOwnerRecipients(
   env: Record<string, string | undefined> = process.env,
 ): OwnerRecipients {
   return {
-    email: normalizeEmail(env.ARIA_OWNER_EMAIL?.trim() || DEFAULT_ARIA_OWNER_EMAIL),
+    email: normalizeEmail(
+      env.ARIA_OWNER_EMAIL?.trim() || DEFAULT_ARIA_OWNER_EMAIL,
+    ),
     sms: normalizeE164(env.ARIA_OWNER_SMS?.trim() || DEFAULT_ARIA_OWNER_SMS),
   };
 }
@@ -77,20 +80,25 @@ function normalizedIntent(value: string): string {
     .toLowerCase();
 }
 
-export function hasExplicitOutboundIntent(text: string, channel: "email" | "sms"): boolean {
+export function hasExplicitOutboundIntent(
+  text: string,
+  channel: "email" | "sms",
+): boolean {
   const value = normalizedIntent(text);
   if (!value) return false;
 
   const reportedInstruction =
     /(?:المستند|الملف|النص|المحتوى|الاقتباس|document|file|text|quote)\s+(?:يقول|يطلب|يتضمن|ورد|says|asks|contains)/i;
   const explicitOverride = /(?:نفذ|طبق|قم بذلك|proceed|do it|execute it)/i;
-  if (reportedInstruction.test(value) && !explicitOverride.test(value)) return false;
+  if (reportedInstruction.test(value) && !explicitOverride.test(value))
+    return false;
 
   const negatedInstruction =
     /(?:^|\s)(?:لا|لاتقم ب|لا تقم ب|عدم|dont|don't|do not|never)\s+(?:[اأإآ]رسل(?:ي)?|ابعث(?:ي)?|send|dispatch)(?:\s|$)/i;
   if (negatedInstruction.test(value)) return false;
 
-  const sendVerb = /(?:^|\s)(?:[اأإآ]رسل(?:ي)?|ابعث(?:ي)?|send|dispatch)(?:\s|$)/i;
+  const sendVerb =
+    /(?:^|\s)(?:[اأإآ]رسل(?:ي)?|ابعث(?:ي)?|send|dispatch)(?:\s|$)/i;
   const channelWord =
     channel === "email"
       ? /(?:بريد|[اإآ]يميل|email|e-mail|mail)/i
