@@ -160,9 +160,20 @@ function HcisPage() {
   const { data, isLoading, isError, refetch } = useQuery<HcisOverview>({
     queryKey: ["hcis-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !loading,
+    // Guests fetch too — the server read is optional-auth and anon RLS
+    // policies decide what a guest sees. Only wait for the auth state.
+    enabled: !loading,
     refetchInterval: 60_000,
   });
+
+  // Guest whose anon policies expose nothing → guide to sign-in instead of an
+  // all-zero dashboard pretending to be data.
+  const guestEmpty =
+    !user &&
+    !!data &&
+    data.matrix.length === 0 &&
+    data.findings.total === 0 &&
+    data.inspections.length === 0;
 
   const matrixStatus = useMemo(() => {
     const m = new Map<string, string>();
@@ -218,30 +229,7 @@ function HcisPage() {
         </button>
       }
     >
-      {!loading && !user ? (
-        /* Guest browsing: the live matrix is auth-gated server-side — say so
-           honestly instead of an eternal "loading…" (the static directive
-           series below stays fully visible without an account). */
-        <NexusCard className="border-emerald-400/25">
-          <div className="flex flex-col items-center gap-4 py-8 text-center">
-            <span className="nx-module-icon grid h-12 w-12 place-items-center rounded-xl">
-              <KeyRound className="nx-icon-soft h-6 w-6" aria-hidden />
-            </span>
-            <p className="max-w-md text-sm leading-relaxed text-white/80">
-              {ar
-                ? "أنت تتصفّح كضيف. سجّل الدخول لعرض مصفوفة الامتثال الحيّة والفجوات وجدول التفتيشات — لائحة التوجيهات المرجعية أدناه متاحة للجميع."
-                : "You are browsing as a guest. Sign in to view the live compliance matrix, findings and inspection schedule — the reference directive series below is open to everyone."}
-            </p>
-            <Link
-              to="/auth"
-              search={{ redirect: "/hcis" }}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-6 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/25 active:scale-[0.97]"
-            >
-              {ar ? "تسجيل الدخول" : "Sign in"}
-            </Link>
-          </div>
-        </NexusCard>
-      ) : isError ? (
+      {isError ? (
         <NexusCard className="border-rose-400/25">
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <p className="text-sm text-rose-300">
@@ -261,6 +249,29 @@ function HcisPage() {
       ) : isLoading || !data ? (
         <NexusCard>
           <p className="py-10 text-center text-white/50">{ar ? "جارٍ التحميل…" : "Loading…"}</p>
+        </NexusCard>
+      ) : guestEmpty ? (
+        /* Guest browsing with no anon-visible rows: the live matrix stays
+           auth-gated — say so honestly (the static directive series below is
+           always visible without an account). */
+        <NexusCard className="border-emerald-400/25">
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <span className="nx-module-icon grid h-12 w-12 place-items-center rounded-xl">
+              <KeyRound className="nx-icon-soft h-6 w-6" aria-hidden />
+            </span>
+            <p className="max-w-md text-sm leading-relaxed text-white/80">
+              {ar
+                ? "أنت تتصفّح كضيف. سجّل الدخول لعرض مصفوفة الامتثال الحيّة والفجوات وجدول التفتيشات — لائحة التوجيهات المرجعية أدناه متاحة للجميع."
+                : "You are browsing as a guest. Sign in to view the live compliance matrix, findings and inspection schedule — the reference directive series below is open to everyone."}
+            </p>
+            <Link
+              to="/auth"
+              search={{ redirect: "/hcis" }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-6 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/25 active:scale-[0.97]"
+            >
+              {ar ? "تسجيل الدخول" : "Sign in"}
+            </Link>
+          </div>
         </NexusCard>
       ) : (
         <>

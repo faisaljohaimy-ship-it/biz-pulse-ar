@@ -3,7 +3,7 @@
  * Today board, permit cards, create form, QR verification, emergency suspend.
  * Data from the simulation-seeded permit_* tables (is_simulation=true).
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -55,12 +55,16 @@ function PtwPage() {
   const createPermit = useServerFn(createPermitFn);
   const suspendRegion = useServerFn(suspendRegionPermitsFn);
 
-  const { data, isLoading } = useQuery<PtwOverview>({
+  const { data, isLoading, isError, refetch } = useQuery<PtwOverview>({
     queryKey: ["ptw-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !loading,
+    // Guests fetch too — getPtwOverview is optional-auth; anon RLS decides.
+    enabled: !loading,
     refetchInterval: 45_000,
   });
+
+  // Guest with no anon-visible rows → sign-in card instead of all-zero stats.
+  const guestEmpty = !user && !!data && data.permits.length === 0 && data.types.length === 0;
 
   const [showCreate, setShowCreate] = useState(false);
   const [qrPermit, setQrPermit] = useState<PtwOverview["permits"][number] | null>(null);
@@ -118,9 +122,43 @@ function PtwPage() {
         </div>
       }
     >
-      {isLoading || !data ? (
+      {isError ? (
+        <NexusCard className="border-rose-400/25">
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <p className="text-sm text-rose-300">
+              {ar
+                ? "تعذّر تحميل بيانات التصاريح — تحقّق من الاتصال ثم أعد المحاولة."
+                : "Permit data failed to load — check your connection and retry."}
+            </p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-6 text-sm font-semibold text-[#BEEBFF] transition hover:bg-[#3AE8FF]/20 active:scale-[0.97]"
+            >
+              {ar ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        </NexusCard>
+      ) : isLoading || !data ? (
         <NexusCard>
           <p className="py-10 text-center text-white/50">{ar ? "جارٍ التحميل…" : "Loading…"}</p>
+        </NexusCard>
+      ) : guestEmpty ? (
+        <NexusCard className="border-emerald-400/25">
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <p className="max-w-md text-sm leading-relaxed text-white/80">
+              {ar
+                ? "أنت تتصفّح كضيف. سجّل الدخول لعرض التصاريح الحيّة وإنشاء تصريح جديد."
+                : "You are browsing as a guest. Sign in to view live permits and create new ones."}
+            </p>
+            <Link
+              to="/auth"
+              search={{ redirect: "/ptw" }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-6 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/25 active:scale-[0.97]"
+            >
+              {ar ? "تسجيل الدخول" : "Sign in"}
+            </Link>
+          </div>
         </NexusCard>
       ) : (
         <>

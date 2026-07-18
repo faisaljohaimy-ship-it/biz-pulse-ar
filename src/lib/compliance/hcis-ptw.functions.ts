@@ -4,6 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import {
   requirePlatformAdmin,
   getCurrentOrgIdForUser,
@@ -69,7 +70,9 @@ function compliancePct(rows: Array<{ status: string }>): number {
 }
 
 export const getHcisOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read: guests get an ANON-key client, so the anon RLS
+  // policies in the database decide what they see. Writes stay auth-gated.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<HcisOverview> => {
     const db = context.supabase as unknown as LooseDb;
     const [{ data: assessments }, { data: findings }, { data: inspections }, { data: reqs }] =
@@ -167,7 +170,8 @@ export type PtwOverview = {
 };
 
 export const getPtwOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Same open-showcase read model as getHcisOverview (anon RLS decides).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<PtwOverview> => {
     const db = context.supabase as unknown as LooseDb;
     const [{ data: permits }, { data: types }] = await Promise.all([
