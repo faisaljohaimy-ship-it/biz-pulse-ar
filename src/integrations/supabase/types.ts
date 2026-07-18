@@ -255,6 +255,42 @@ export type Database = {
           },
         ]
       }
+      aria_adaptive_preferences: {
+        Row: {
+          confidence: number
+          created_at: string
+          evidence_count: number
+          id: string
+          preference_key: string
+          preference_value: string
+          safety_passed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          preference_key: string
+          preference_value: string
+          safety_passed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          preference_key?: string
+          preference_value?: string
+          safety_passed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       aria_alert_acks: {
         Row: {
           alert_id: string
