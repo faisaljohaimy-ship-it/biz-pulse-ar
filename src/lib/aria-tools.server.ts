@@ -220,7 +220,7 @@ export function buildAriaTools(
           .from("hcis_compliance_status")
           .select("region_code,status,is_simulation");
         let source = "hcis_compliance_status";
-        let rows: Array<{ region: string; status: string; isSimulation: boolean }> = (seeded.data ?? []).map(
+        let rows = (seeded.data ?? []).map(
           (row: {
             region_code: string;
             status: string;
@@ -244,8 +244,7 @@ export function buildAriaTools(
           source = "hcis_assessments";
           rows = (legacy.data ?? []).map(
             (row: { region: string; status: string }) => ({
-              region: row.region,
-              status: row.status,
+              ...row,
               isSimulation: false,
             }),
           );

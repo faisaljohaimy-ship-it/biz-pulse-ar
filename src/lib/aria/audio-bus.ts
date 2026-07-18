@@ -87,7 +87,7 @@ function stopWatchdog() {
 }
 
 // Capture native methods once. Governed specialist speech uses these methods;
-// ARIA remains ElevenLabs-only.
+// authenticated ARIA speech remains server-generated Gemini audio only.
 if (typeof window !== "undefined" && window.speechSynthesis) {
   browserSpeech = window.speechSynthesis;
   nativeSpeak = browserSpeech.speak.bind(browserSpeech);
@@ -201,9 +201,9 @@ export const AriaAudioBus = {
       owner: source,
       provider:
         source === "chat-tts"
-          ? "elevenlabs-queue"
+          ? "gemini-tts-queue"
           : source === "conversation-greeting"
-            ? "elevenlabs-greeting"
+            ? "gemini-tts-greeting"
             : source === "agent-tts"
               ? "free-system-agent-voice"
               : "greeting",
