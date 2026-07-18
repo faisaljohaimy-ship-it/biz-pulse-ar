@@ -258,16 +258,19 @@ export type Database = {
       aria_alert_acks: {
         Row: {
           alert_id: string
+          org_id: string
           read_at: string
           user_id: string
         }
         Insert: {
           alert_id: string
+          org_id: string
           read_at?: string
           user_id: string
         }
         Update: {
           alert_id?: string
+          org_id?: string
           read_at?: string
           user_id?: string
         }
@@ -290,6 +293,7 @@ export type Database = {
           dispatched: number
           id: string
           is_simulation: boolean
+          org_id: string
           severity: string
           target: string
           title: string
@@ -302,6 +306,7 @@ export type Database = {
           dispatched?: number
           id?: string
           is_simulation?: boolean
+          org_id: string
           severity?: string
           target?: string
           title: string
@@ -314,6 +319,7 @@ export type Database = {
           dispatched?: number
           id?: string
           is_simulation?: boolean
+          org_id?: string
           severity?: string
           target?: string
           title?: string
