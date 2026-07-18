@@ -13,6 +13,7 @@ import { AriaVoiceDebug, type VoiceEvent } from "@/lib/aria/voice-debug";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<VoiceEvent["source"], string> = {
+  gemini: "GEM",
   elevenlabs: "EL",
   browser: "BR",
   greeting: "GRT",
