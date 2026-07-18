@@ -6,9 +6,7 @@ describe("ARIA conversation audio ownership", () => {
 
   it("allows the mobile conversation greeting to own the channel", () => {
     AriaAudioBus.unlock();
-    expect(AriaAudioBus.acquire("conversation-greeting", () => undefined)).toBe(
-      true,
-    );
+    expect(AriaAudioBus.acquire("conversation-greeting", () => undefined)).toBe(true);
     expect(AriaAudioBus.currentSource()).toBe("conversation-greeting");
     AriaAudioBus.release("conversation-greeting");
     expect(AriaAudioBus.currentSource()).toBeNull();

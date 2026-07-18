@@ -30,10 +30,7 @@ export function setPendingReplyMode(mode: "text" | "voice") {
 // Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
 // guard accepts the request. Without this the chat is silently rejected 401
 // and the user sees no reply. 30s hard timeout guarantees no infinite wait.
-async function ariaAuthedFetch(
-  input: RequestInfo | URL,
-  init: RequestInit = {},
-) {
+async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   const headers = new Headers(init.headers);

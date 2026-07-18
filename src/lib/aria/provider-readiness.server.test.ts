@@ -33,12 +33,8 @@ describe("ARIA provider readiness", () => {
       RESEND_FROM_EMAIL: "ARIA <aria@your-verified-domain.example>",
     });
     expect(status.ready).toBe(false);
-    expect(status.intelligence.missing).toContain(
-      "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY",
-    );
-    expect(status.outboundSecurity.missing).toContain(
-      "ARIA_MESSAGE_APPROVAL_SECRET",
-    );
+    expect(status.intelligence.missing).toContain("GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY");
+    expect(status.outboundSecurity.missing).toContain("ARIA_MESSAGE_APPROVAL_SECRET");
   });
 
   it("uses one Gemini key for chat, recorder transcription and TTS", () => {

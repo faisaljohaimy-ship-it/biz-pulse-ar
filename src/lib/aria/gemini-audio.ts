@@ -11,24 +11,14 @@ export type GeminiAudioBlock = {
   channels: number;
 };
 
-const BASE64_ALPHABET =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const BASE64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 function record(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === "object"
-    ? (value as Record<string, unknown>)
-    : null;
+  return value !== null && typeof value === "object" ? (value as Record<string, unknown>) : null;
 }
 
-function positiveInteger(
-  value: unknown,
-  fallback: number,
-  maximum: number,
-): number {
-  return typeof value === "number" &&
-    Number.isInteger(value) &&
-    value > 0 &&
-    value <= maximum
+function positiveInteger(value: unknown, fallback: number, maximum: number): number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 && value <= maximum
     ? value
     : fallback;
 }
@@ -46,11 +36,7 @@ function parseAudioBlock(value: unknown): GeminiAudioBlock | null {
   return {
     data,
     mimeType,
-    sampleRate: positiveInteger(
-      candidate.sample_rate ?? candidate.sampleRate,
-      24_000,
-      192_000,
-    ),
+    sampleRate: positiveInteger(candidate.sample_rate ?? candidate.sampleRate, 24_000, 192_000),
     channels: positiveInteger(candidate.channels, 1, 8),
   };
 }
@@ -68,8 +54,7 @@ export function extractGeminiAudio(payload: unknown): GeminiAudioBlock | null {
   const steps = Array.isArray(root.steps) ? [...root.steps].reverse() : [];
   for (const stepValue of steps) {
     const step = record(stepValue);
-    if (!step || step.type !== "model_output" || !Array.isArray(step.content))
-      continue;
+    if (!step || step.type !== "model_output" || !Array.isArray(step.content)) continue;
     for (const contentValue of [...step.content].reverse()) {
       const content = record(contentValue);
       if (!content || content.type !== "audio") continue;
@@ -123,8 +108,7 @@ export function extractGeminiText(payload: unknown): string {
   const steps = Array.isArray(root.steps) ? [...root.steps].reverse() : [];
   for (const stepValue of steps) {
     const step = record(stepValue);
-    if (!step || step.type !== "model_output" || !Array.isArray(step.content))
-      continue;
+    if (!step || step.type !== "model_output" || !Array.isArray(step.content)) continue;
     const text = step.content
       .map((partValue) => record(partValue)?.text)
       .filter((value): value is string => typeof value === "string")
@@ -145,38 +129,25 @@ export function bytesToBase64(bytes: Uint8Array): string {
     const combined = (a << 16) | (b << 8) | c;
     output += BASE64_ALPHABET.charAt((combined >>> 18) & 63);
     output += BASE64_ALPHABET.charAt((combined >>> 12) & 63);
-    output +=
-      index + 1 < bytes.length
-        ? BASE64_ALPHABET.charAt((combined >>> 6) & 63)
-        : "=";
-    output +=
-      index + 2 < bytes.length ? BASE64_ALPHABET.charAt(combined & 63) : "=";
+    output += index + 1 < bytes.length ? BASE64_ALPHABET.charAt((combined >>> 6) & 63) : "=";
+    output += index + 2 < bytes.length ? BASE64_ALPHABET.charAt(combined & 63) : "=";
   }
   return output;
 }
 
 /** Decode provider audio while enforcing an allocation limit. */
-export function base64ToBytes(
-  value: string,
-  maximumBytes = 12 * 1024 * 1024,
-): Uint8Array {
+export function base64ToBytes(value: string, maximumBytes = 12 * 1024 * 1024): Uint8Array {
   let normalized = value
     .trim()
     .replace(/^data:[^;,]+;base64,/i, "")
     .replace(/\s+/g, "")
     .replace(/-/g, "+")
     .replace(/_/g, "/");
-  if (!normalized || normalized.length % 4 === 1)
-    throw new Error("Invalid Gemini audio encoding.");
+  if (!normalized || normalized.length % 4 === 1) throw new Error("Invalid Gemini audio encoding.");
   while (normalized.length % 4) normalized += "=";
-  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(normalized))
-    throw new Error("Invalid Gemini audio encoding.");
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)) throw new Error("Invalid Gemini audio encoding.");
 
-  const padding = normalized.endsWith("==")
-    ? 2
-    : normalized.endsWith("=")
-      ? 1
-      : 0;
+  const padding = normalized.endsWith("==") ? 2 : normalized.endsWith("=") ? 1 : 0;
   const outputLength = (normalized.length / 4) * 3 - padding;
   if (outputLength <= 0 || outputLength > maximumBytes)
     throw new Error("Gemini audio exceeds the safe response limit.");
@@ -194,8 +165,7 @@ export function base64ToBytes(
       normalized.charAt(index + 3) === "="
         ? 0
         : BASE64_ALPHABET.indexOf(normalized.charAt(index + 3));
-    if (a < 0 || b < 0 || c < 0 || d < 0)
-      throw new Error("Invalid Gemini audio encoding.");
+    if (a < 0 || b < 0 || c < 0 || d < 0) throw new Error("Invalid Gemini audio encoding.");
     const combined = (a << 18) | (b << 12) | (c << 6) | d;
     if (offset < outputLength) output[offset++] = (combined >>> 16) & 255;
     if (offset < outputLength) output[offset++] = (combined >>> 8) & 255;
@@ -210,11 +180,7 @@ function writeAscii(view: DataView, offset: number, value: string): void {
 }
 
 /** Wrap Gemini's raw 16-bit PCM output in a browser-playable WAV container. */
-export function pcm16ToWav(
-  pcm: Uint8Array,
-  sampleRate = 24_000,
-  channels = 1,
-): Uint8Array {
+export function pcm16ToWav(pcm: Uint8Array, sampleRate = 24_000, channels = 1): Uint8Array {
   if (pcm.byteLength === 0 || pcm.byteLength > 0xffff_ffff - 44)
     throw new Error("PCM payload size is invalid.");
   const safeRate = positiveInteger(sampleRate, 24_000, 192_000);

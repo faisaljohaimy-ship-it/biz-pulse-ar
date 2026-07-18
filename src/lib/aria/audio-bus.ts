@@ -9,26 +9,23 @@ import { VoiceTimeline } from "./voice-timeline";
 // The four live voice sources: homepage greeting, specialist-agent speech,
 // the conversation greeting, and reply TTS. ARIA chat always wins;
 // specialist narration may preempt the homepage but never ARIA.
-type Source =
-  | "hero-soundtrack"
-  | "agent-tts"
-  | "conversation-greeting"
-  | "chat-tts";
+type Source = "hero-soundtrack" | "agent-tts" | "conversation-greeting" | "chat-tts";
 
+// Contract (agent-voice-contract.test.ts): "agent-tts": 2 and "chat-tts": 3
+// are pinned. The conversation greeting shares the agent tier — ARIA reply
+// TTS (chat-tts) always outranks everything.
 const PRIORITY: Record<Source, number> = {
   "hero-soundtrack": 1,
   "agent-tts": 2,
-  "conversation-greeting": 3,
-  "chat-tts": 4,
+  "conversation-greeting": 2,
+  "chat-tts": 3,
 };
 
 // Owners allowed to bypass the "no gesture yet" guard when they pass
 // { bypassGesture: true }. Only the hero soundtrack's optimistic first
 // autoplay may do this — every ARIA / tour owner MUST wait for a real
 // user gesture (via AriaAudioBus.unlock()).
-const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>([
-  "hero-soundtrack",
-]);
+const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
 
 type StopFn = () => void;
 type BusEvent =
@@ -73,9 +70,7 @@ function startWatchdog() {
         /* ignore */
       }
 
-      console.warn(
-        "[aria] OVERLAP killed (rogue speechSynthesis while chat-tts owns bus)",
-      );
+      console.warn("[aria] OVERLAP killed (rogue speechSynthesis while chat-tts owns bus)");
     }
   }, 250);
 }
@@ -141,11 +136,7 @@ export const AriaAudioBus = {
    * Request the voice channel. Returns true if granted.
    * Granting ALWAYS hard-stops whatever is playing first.
    */
-  acquire(
-    source: Source,
-    stop: StopFn,
-    opts?: { bypassGesture?: boolean },
-  ): boolean {
+  acquire(source: Source, stop: StopFn, opts?: { bypassGesture?: boolean }): boolean {
     const stack = new Error().stack?.split("\n").slice(2, 5).join(" | ");
     // Global no-autoplay guard: refuse any AUDIBLE source unless the bus has
     // been unlocked by a real user gesture. AriaAudioBus.unlock() MUST be

@@ -13,11 +13,7 @@ const CONFIG: AriaVoiceActivityConfig = {
   maximumCaptureMs: 10_000,
 };
 
-function advance(
-  state: ReturnType<typeof createAriaVoiceActivityState>,
-  rms: number,
-  now: number,
-) {
+function advance(state: ReturnType<typeof createAriaVoiceActivityState>, rms: number, now: number) {
   return advanceAriaVoiceActivity({ state, rms, now, config: CONFIG });
 }
 

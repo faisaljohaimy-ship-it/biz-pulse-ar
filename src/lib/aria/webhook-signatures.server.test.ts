@@ -1,9 +1,6 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import {
-  verifyResendWebhook,
-  verifyTwilioWebhook,
-} from "./webhook-signatures.server";
+import { verifyResendWebhook, verifyTwilioWebhook } from "./webhook-signatures.server";
 
 describe("ARIA provider webhook signatures", () => {
   it("verifies a fresh Resend/Svix signature over the raw body", async () => {
@@ -54,9 +51,7 @@ describe("ARIA provider webhook signatures", () => {
         .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
         .map(([name, value]) => `${name}${value}`)
         .join("");
-    const signature = createHmac("sha1", authToken)
-      .update(signed)
-      .digest("base64");
+    const signature = createHmac("sha1", authToken).update(signed).digest("base64");
     await expect(
       verifyTwilioWebhook({
         publicUrl,

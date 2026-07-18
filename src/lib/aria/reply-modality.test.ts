@@ -3,15 +3,9 @@ import { shouldSpeakAriaReply, toAriaSpeechText } from "./reply-modality";
 
 describe("ARIA reply modality", () => {
   it("speaks only replies to voice turns inside conversation mode", () => {
-    expect(
-      shouldSpeakAriaReply({ conversationMode: true, fromVoice: true }),
-    ).toBe(true);
-    expect(
-      shouldSpeakAriaReply({ conversationMode: true, fromVoice: false }),
-    ).toBe(false);
-    expect(
-      shouldSpeakAriaReply({ conversationMode: false, fromVoice: true }),
-    ).toBe(false);
+    expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: true })).toBe(true);
+    expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: false })).toBe(false);
+    expect(shouldSpeakAriaReply({ conversationMode: false, fromVoice: true })).toBe(false);
   });
 
   it("removes visual markup, raw links and citation tags from spoken replies", () => {

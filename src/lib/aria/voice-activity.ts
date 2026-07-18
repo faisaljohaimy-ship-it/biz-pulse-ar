@@ -23,9 +23,7 @@ export const ARIA_VOICE_ACTIVITY_DEFAULTS: AriaVoiceActivityConfig = {
   maximumCaptureMs: 30_000,
 };
 
-export function createAriaVoiceActivityState(
-  startedAt: number,
-): AriaVoiceActivityState {
+export function createAriaVoiceActivityState(startedAt: number): AriaVoiceActivityState {
   return {
     startedAt,
     candidateVoiceAt: null,
@@ -81,11 +79,7 @@ export function advanceAriaVoiceActivity(input: {
   if (!heardVoice && elapsed >= config.noSpeechMs) {
     return { state, decision: "no-speech" };
   }
-  if (
-    heardVoice &&
-    lastVoiceAt !== null &&
-    now - lastVoiceAt >= config.silenceMs
-  ) {
+  if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
     return { state, decision: "complete" };
   }
   return { state, decision: "continue" };

@@ -27,14 +27,11 @@ type ChatBody = {
   replyMode?: "text" | "voice";
 };
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function getChatRequestId(request: Request): string {
   const supplied = request.headers.get("x-aria-request-id")?.trim();
-  return supplied && /^[\w.-]{8,128}$/.test(supplied)
-    ? supplied
-    : crypto.randomUUID();
+  return supplied && /^[\w.-]{8,128}$/.test(supplied) ? supplied : crypto.randomUUID();
 }
 
 export function chatResponseHeaders(requestId: string): Record<string, string> {
@@ -46,20 +43,14 @@ export function chatResponseHeaders(requestId: string): Record<string, string> {
   };
 }
 
-export function chatJsonError(
-  error: string,
-  status: number,
-  requestId: string,
-): Response {
+export function chatJsonError(error: string, status: number, requestId: string): Response {
   return Response.json(
     { ok: false, error, requestId },
     { status, headers: chatResponseHeaders(requestId) },
   );
 }
 
-function parseDataUrl(
-  url: string,
-): { bytes: number; mediaType: string } | null {
+function parseDataUrl(url: string): { bytes: number; mediaType: string } | null {
   const match = /^data:([^;,]+);base64,([a-z0-9+/=]+)$/i.exec(url);
   if (!match) return null;
   if (match[2].length % 4 !== 0) return null;
@@ -71,11 +62,7 @@ function parseDataUrl(
 }
 
 function validateMessages(value: unknown): ChatBody["messages"] | string {
-  if (
-    !Array.isArray(value) ||
-    value.length === 0 ||
-    value.length > MAX_MESSAGES
-  ) {
+  if (!Array.isArray(value) || value.length === 0 || value.length > MAX_MESSAGES) {
     return `messages must contain between 1 and ${MAX_MESSAGES} items.`;
   }
 
@@ -84,24 +71,15 @@ function validateMessages(value: unknown): ChatBody["messages"] | string {
   let fileBytes = 0;
   let lastUserIndex = -1;
   value.forEach((item, index) => {
-    if (
-      item &&
-      typeof item === "object" &&
-      (item as { role?: unknown }).role === "user"
-    ) {
+    if (item && typeof item === "object" && (item as { role?: unknown }).role === "user") {
       lastUserIndex = index;
     }
   });
   const messages: ChatBody["messages"] = [];
   for (const [messageIndex, raw] of value.entries()) {
-    if (!raw || typeof raw !== "object")
-      return "Each message must be an object.";
+    if (!raw || typeof raw !== "object") return "Each message must be an object.";
     const message = raw as Record<string, unknown>;
-    if (
-      typeof message.id !== "string" ||
-      message.id.length < 1 ||
-      message.id.length > 128
-    ) {
+    if (typeof message.id !== "string" || message.id.length < 1 || message.id.length > 128) {
       return "Each message requires a valid id.";
     }
     if (message.role !== "user" && message.role !== "assistant") {
@@ -113,8 +91,7 @@ function validateMessages(value: unknown): ChatBody["messages"] | string {
 
     const parts: Array<Record<string, unknown>> = [];
     for (const rawPart of message.parts) {
-      if (!rawPart || typeof rawPart !== "object")
-        return "Message part is invalid.";
+      if (!rawPart || typeof rawPart !== "object") return "Message part is invalid.";
       const part = rawPart as Record<string, unknown>;
       if (part.type === "text") {
         if (typeof part.text !== "string") return "Text part is invalid.";
@@ -132,10 +109,7 @@ function validateMessages(value: unknown): ChatBody["messages"] | string {
         ) {
           return "Attachment filename is invalid.";
         }
-        if (
-          typeof part.mediaType !== "string" ||
-          !FILE_MEDIA_TYPES.has(part.mediaType)
-        ) {
+        if (typeof part.mediaType !== "string" || !FILE_MEDIA_TYPES.has(part.mediaType)) {
           return "Attachment type is not supported.";
         }
         if (messageIndex !== lastUserIndex) {
@@ -147,18 +121,15 @@ function validateMessages(value: unknown): ChatBody["messages"] | string {
         }
         if (typeof part.url !== "string") return "Attachment data is missing.";
         const parsedFile = parseDataUrl(part.url);
-        if (!parsedFile)
-          return "Only base64 data URL attachments are accepted.";
+        if (!parsedFile) return "Only base64 data URL attachments are accepted.";
         if (parsedFile.mediaType !== part.mediaType.toLowerCase()) {
           return "Attachment media type does not match its data URL.";
         }
-        if (parsedFile.bytes > MAX_FILE_BYTES)
-          return "An attachment exceeds 10 MiB.";
+        if (parsedFile.bytes > MAX_FILE_BYTES) return "An attachment exceeds 10 MiB.";
         fileCount += 1;
         fileBytes += parsedFile.bytes;
         if (fileCount > MAX_FILES) return "Too many attachments.";
-        if (fileBytes > MAX_FILE_TOTAL_BYTES)
-          return "Attachment total exceeds 20 MiB.";
+        if (fileBytes > MAX_FILE_TOTAL_BYTES) return "Attachment total exceeds 20 MiB.";
         parts.push({
           type: "file",
           filename: part.filename,
@@ -192,19 +163,10 @@ export async function validateChatRequest(
   | { ok: false; response: Response }
 > {
   const requestId = getChatRequestId(request);
-  if (
-    !request.headers
-      .get("content-type")
-      ?.toLowerCase()
-      .includes("application/json")
-  ) {
+  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
     return {
       ok: false,
-      response: chatJsonError(
-        "Content-Type must be application/json.",
-        415,
-        requestId,
-      ),
+      response: chatJsonError("Content-Type must be application/json.", 415, requestId),
     };
   }
   const contentLength = Number(request.headers.get("content-length") ?? "0");
@@ -242,19 +204,11 @@ export async function validateChatRequest(
       : typeof input.id === "string"
         ? input.id
         : undefined;
-  const threadId =
-    rawThreadId && UUID_RE.test(rawThreadId) ? rawThreadId : undefined;
+  const threadId = rawThreadId && UUID_RE.test(rawThreadId) ? rawThreadId : undefined;
   const model =
-    typeof input.model === "string" && input.model.length <= 100
-      ? input.model
-      : undefined;
-  const grounded =
-    typeof input.grounded === "boolean" ? input.grounded : undefined;
-  if (
-    input.replyMode !== undefined &&
-    input.replyMode !== "text" &&
-    input.replyMode !== "voice"
-  ) {
+    typeof input.model === "string" && input.model.length <= 100 ? input.model : undefined;
+  const grounded = typeof input.grounded === "boolean" ? input.grounded : undefined;
+  if (input.replyMode !== undefined && input.replyMode !== "text" && input.replyMode !== "voice") {
     return {
       ok: false,
       response: chatJsonError("Reply mode is invalid.", 400, requestId),
@@ -265,16 +219,11 @@ export async function validateChatRequest(
   const authorization = request.headers.get("authorization")?.trim() ?? null;
   if (
     authorization &&
-    (!/^Bearer\s+\S{20,8192}$/i.test(authorization) ||
-      /[\r\n]/.test(authorization))
+    (!/^Bearer\s+\S{20,8192}$/i.test(authorization) || /[\r\n]/.test(authorization))
   ) {
     return {
       ok: false,
-      response: chatJsonError(
-        "Authorization header is invalid.",
-        401,
-        requestId,
-      ),
+      response: chatJsonError("Authorization header is invalid.", 401, requestId),
     };
   }
 

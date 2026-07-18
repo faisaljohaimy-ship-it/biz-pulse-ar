@@ -1,13 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import {
-  enforceRateLimit,
-  rateLimitUnavailableResponse,
-} from "@/lib/governance/rate-limit.server";
-import {
-  extractGeminiAudio,
-  playableGeminiAudio,
-} from "@/lib/aria/gemini-audio";
+import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import { extractGeminiAudio, playableGeminiAudio } from "@/lib/aria/gemini-audio";
 import {
   ARIA_GEMINI_TTS_DIRECTION,
   ARIA_GEMINI_TTS_MODEL,
@@ -20,29 +14,18 @@ const JSON_HEADERS = {
   "X-Content-Type-Options": "nosniff",
 } as const;
 
-function jsonError(
-  error: string,
-  status: number,
-  extra: Record<string, unknown> = {},
-) {
-  return Response.json(
-    { ok: false, error, ...extra },
-    { status, headers: JSON_HEADERS },
-  );
+function jsonError(error: string, status: number, extra: Record<string, unknown> = {}) {
+  return Response.json({ ok: false, error, ...extra }, { status, headers: JSON_HEADERS });
 }
 
 function safeModel(value: string | undefined, fallback: string): string {
   const normalized = value?.trim() ?? "";
-  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized)
-    ? normalized
-    : fallback;
+  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized) ? normalized : fallback;
 }
 
 function safeVoice(value: string | undefined): string {
   const normalized = value?.trim() ?? "";
-  return /^[a-z][a-z0-9_-]{1,40}$/i.test(normalized)
-    ? normalized
-    : ARIA_GEMINI_TTS_VOICE;
+  return /^[a-z][a-z0-9_-]{1,40}$/i.test(normalized) ? normalized : ARIA_GEMINI_TTS_VOICE;
 }
 
 function upstreamErrorCode(payload: unknown): string | undefined {
@@ -57,9 +40,7 @@ export const Route = createFileRoute("/api/aria/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const contentLength = Number(
-          request.headers.get("content-length") ?? "0",
-        );
+        const contentLength = Number(request.headers.get("content-length") ?? "0");
         if (Number.isFinite(contentLength) && contentLength > 24_000) {
           return jsonError("TTS request is too large.", 413);
         }
@@ -78,19 +59,12 @@ export const Route = createFileRoute("/api/aria/tts")({
           global: { headers: { Authorization: authorization } },
           auth: { persistSession: false, autoRefreshToken: false },
         });
-        const { data: userData, error: userError } =
-          await supabase.auth.getUser();
-        if (userError || !userData.user)
-          return jsonError("Authentication is invalid.", 401);
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData.user) return jsonError("Authentication is invalid.", 401);
 
-        const rate = await enforceRateLimit(
-          `aria-tts:${userData.user.id}`,
-          40,
-          60,
-        );
+        const rate = await enforceRateLimit(`aria-tts:${userData.user.id}`, 40, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
-        if (!rate.allowed)
-          return jsonError("ARIA voice rate limit exceeded.", 429);
+        if (!rate.allowed) return jsonError("ARIA voice rate limit exceeded.", 429);
 
         let body: unknown;
         try {
@@ -99,16 +73,11 @@ export const Route = createFileRoute("/api/aria/tts")({
           return jsonError("Invalid JSON body.", 400);
         }
         const text =
-          body &&
-          typeof body === "object" &&
-          typeof (body as { text?: unknown }).text === "string"
+          body && typeof body === "object" && typeof (body as { text?: unknown }).text === "string"
             ? (body as { text: string }).text.trim()
             : "";
         if (!text || text.length > 4_000) {
-          return jsonError(
-            "TTS text must contain between 1 and 4,000 characters.",
-            400,
-          );
+          return jsonError("TTS text must contain between 1 and 4,000 characters.", 400);
         }
 
         const apiKey = (
@@ -116,36 +85,29 @@ export const Route = createFileRoute("/api/aria/tts")({
         )?.trim();
         if (!apiKey) return jsonError("Gemini voice is not configured.", 503);
 
-        const model = safeModel(
-          process.env.GEMINI_TTS_MODEL,
-          ARIA_GEMINI_TTS_MODEL,
-        );
+        const model = safeModel(process.env.GEMINI_TTS_MODEL, ARIA_GEMINI_TTS_MODEL);
         const voice = safeVoice(process.env.GEMINI_TTS_VOICE);
         let upstream: Response;
         try {
-          upstream = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/interactions",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": apiKey,
-              },
-              body: JSON.stringify({
-                model,
-                input: `${ARIA_GEMINI_TTS_DIRECTION}\n\n${text}`,
-                response_format: { type: "audio" },
-                generation_config: {
-                  speech_config: [{ voice }],
-                },
-                store: false,
-              }),
-              signal: request.signal,
+          upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": apiKey,
             },
-          );
+            body: JSON.stringify({
+              model,
+              input: `${ARIA_GEMINI_TTS_DIRECTION}\n\n${text}`,
+              response_format: { type: "audio" },
+              generation_config: {
+                speech_config: [{ voice }],
+              },
+              store: false,
+            }),
+            signal: request.signal,
+          });
         } catch (error) {
-          if (request.signal.aborted)
-            return jsonError("TTS request was cancelled.", 499);
+          if (request.signal.aborted) return jsonError("TTS request was cancelled.", 499);
           console.error("[api/aria/tts] Gemini request failed", {
             error: error instanceof Error ? error.message : String(error),
           });

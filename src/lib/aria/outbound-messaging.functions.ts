@@ -19,9 +19,8 @@ export const approveAriaOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => ApprovalInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { approveAriaOutboundMessageInternal } = await import(
-      "@/lib/aria/outbound-messaging.server"
-    );
+    const { approveAriaOutboundMessageInternal } =
+      await import("@/lib/aria/outbound-messaging.server");
     return approveAriaOutboundMessageInternal({
       userId: context.userId,
       ledgerId: data.ledgerId,
@@ -33,9 +32,8 @@ export const cancelAriaOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => ApprovalInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { cancelAriaOutboundMessageInternal } = await import(
-      "@/lib/aria/outbound-messaging.server"
-    );
+    const { cancelAriaOutboundMessageInternal } =
+      await import("@/lib/aria/outbound-messaging.server");
     return cancelAriaOutboundMessageInternal({
       userId: context.userId,
       ledgerId: data.ledgerId,

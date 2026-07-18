@@ -16,9 +16,7 @@ describe("Gemini audio helpers", () => {
   });
 
   it("rejects audio larger than the configured allocation limit", () => {
-    expect(() => base64ToBytes(bytesToBase64(new Uint8Array(5)), 4)).toThrow(
-      /safe response limit/,
-    );
+    expect(() => base64ToBytes(bytesToBase64(new Uint8Array(5)), 4)).toThrow(/safe response limit/);
   });
 
   it("extracts raw Interactions API audio with metadata", () => {

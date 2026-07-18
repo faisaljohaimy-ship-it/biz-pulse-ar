@@ -6,9 +6,7 @@ export type HcisReferenceRow = {
 
 function promptData(value: unknown, maxLength: number): string {
   return String(value)
-    .replace(/[<>\0]/g, (character) =>
-      character === "<" ? "‹" : character === ">" ? "›" : " ",
-    )
+    .replace(/[<>\0]/g, (character) => (character === "<" ? "‹" : character === ">" ? "›" : " "))
     .slice(0, maxLength);
 }
 
@@ -22,7 +20,7 @@ export function formatHcisReference(rows: HcisReferenceRow[]): string {
   return rows
     .map((row) => {
       const title = promptData(row.title_ar, 160)
-        .replace(/[\[\]\r\n]/g, " ")
+        .replace(/[[\]\r\n]/g, " ")
         .trim();
       const content = promptData(row.content_ar, 2_200);
       const source = promptData(row.source, 180).replace(/[\r\n]/g, " ");

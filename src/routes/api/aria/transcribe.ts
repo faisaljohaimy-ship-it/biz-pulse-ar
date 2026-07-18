@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import {
-  enforceRateLimit,
-  rateLimitUnavailableResponse,
-} from "@/lib/governance/rate-limit.server";
+import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
 import {
   bytesToBase64,
   extractGeminiText,
@@ -36,42 +33,24 @@ function errorResponse(
   status: number,
   extra: Record<string, unknown> = {},
 ): Response {
-  return Response.json(
-    { ok: false, error, ...extra },
-    { status, headers: HEADERS },
-  );
+  return Response.json({ ok: false, error, ...extra }, { status, headers: HEADERS });
 }
 
 function safeModel(value: string | undefined): string {
   const normalized = value?.trim() ?? "";
-  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized)
-    ? normalized
-    : ARIA_GEMINI_FLASH_MODEL;
+  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized) ? normalized : ARIA_GEMINI_FLASH_MODEL;
 }
 
 export const Route = createFileRoute("/api/aria/transcribe")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const contentLength = Number(
-          request.headers.get("content-length") ?? "0",
-        );
-        if (
-          Number.isFinite(contentLength) &&
-          contentLength > MAX_MULTIPART_BYTES
-        ) {
+        const contentLength = Number(request.headers.get("content-length") ?? "0");
+        if (Number.isFinite(contentLength) && contentLength > MAX_MULTIPART_BYTES) {
           return errorResponse("Voice recording is too large.", 413);
         }
-        if (
-          !request.headers
-            .get("content-type")
-            ?.toLowerCase()
-            .includes("multipart/form-data")
-        ) {
-          return errorResponse(
-            "Voice input must use multipart/form-data.",
-            415,
-          );
+        if (!request.headers.get("content-type")?.toLowerCase().includes("multipart/form-data")) {
+          return errorResponse("Voice input must use multipart/form-data.", 415);
         }
 
         const authorization = request.headers.get("authorization")?.trim();
@@ -88,17 +67,11 @@ export const Route = createFileRoute("/api/aria/transcribe")({
           auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data, error } = await supabase.auth.getUser();
-        if (error || !data.user)
-          return errorResponse("Authentication is invalid.", 401);
+        if (error || !data.user) return errorResponse("Authentication is invalid.", 401);
 
-        const rate = await enforceRateLimit(
-          `aria-transcribe:${data.user.id}`,
-          30,
-          60,
-        );
+        const rate = await enforceRateLimit(`aria-transcribe:${data.user.id}`, 30, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
-        if (!rate.allowed)
-          return errorResponse("Voice transcription rate limit exceeded.", 429);
+        if (!rate.allowed) return errorResponse("Voice transcription rate limit exceeded.", 429);
 
         let form: FormData;
         try {
@@ -122,15 +95,10 @@ export const Route = createFileRoute("/api/aria/transcribe")({
           process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
         )?.trim();
         if (!apiKey) {
-          return errorResponse(
-            "Gemini voice understanding is not configured.",
-            503,
-          );
+          return errorResponse("Gemini voice understanding is not configured.", 503);
         }
         const model = safeModel(process.env.GEMINI_TRANSCRIBE_MODEL);
-        const inlineAudio = bytesToBase64(
-          new Uint8Array(await audio.arrayBuffer()),
-        );
+        const inlineAudio = bytesToBase64(new Uint8Array(await audio.arrayBuffer()));
 
         let upstream: Response;
         try {
@@ -176,10 +144,7 @@ export const Route = createFileRoute("/api/aria/transcribe")({
                 ? transcriptionError.message
                 : String(transcriptionError),
           });
-          return errorResponse(
-            "Gemini voice understanding is unavailable.",
-            502,
-          );
+          return errorResponse("Gemini voice understanding is unavailable.", 502);
         }
 
         const payload = await upstream.json().catch(() => null);

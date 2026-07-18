@@ -30,13 +30,14 @@ import {
 import type { FileUIPart } from "ai";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
-import {
-  pingChat,
-  setPendingReplyMode,
-} from "@/lib/aria-core/services/aria-service";
+import { pingChat, setPendingReplyMode } from "@/lib/aria-core/services/aria-service";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
-import { MessageResponse } from "@/components/ai-elements/message";
+// Lean markdown renderer — the heavy MessageResponse (streamdown → shiki +
+// mermaid, ~10 MB of emitted chunks) breaks the CI performance budget; see
+// commit 34dea62. Keep react-markdown here.
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
@@ -48,24 +49,11 @@ import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
-import {
-  QUICK_COMMANDS,
-  matchQuickCommands,
-  type QuickCommand,
-} from "@/lib/aria/quick-commands";
+import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
-import {
-  shouldSpeakAriaReply,
-  toAriaSpeechText,
-} from "@/lib/aria/reply-modality";
-import {
-  chooseAriaRecorderMime,
-  recorderFileExtension,
-} from "@/lib/aria/media-recorder";
-import {
-  advanceAriaVoiceActivity,
-  createAriaVoiceActivityState,
-} from "@/lib/aria/voice-activity";
+import { shouldSpeakAriaReply, toAriaSpeechText } from "@/lib/aria/reply-modality";
+import { chooseAriaRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
+import { advanceAriaVoiceActivity, createAriaVoiceActivityState } from "@/lib/aria/voice-activity";
 import {
   ARIA_CONVERSATION_GREETING_AR,
   shouldContinueAfterAriaGreeting,
@@ -79,13 +67,10 @@ function createSilentUnlockAudio(): HTMLAudioElement {
   // 16-bit mono PCM WAV containing one silent sample. Calling play() on this
   // element during the tap unlocks later HTMLAudioElement playback on iOS.
   const bytes = new Uint8Array([
-    82, 73, 70, 70, 38, 0, 0, 0, 87, 65, 86, 69, 102, 109, 116, 32, 16, 0, 0, 0,
-    1, 0, 1, 0, 64, 31, 0, 0, 128, 62, 0, 0, 2, 0, 16, 0, 100, 97, 116, 97, 2,
-    0, 0, 0, 0, 0,
+    82, 73, 70, 70, 38, 0, 0, 0, 87, 65, 86, 69, 102, 109, 116, 32, 16, 0, 0, 0, 1, 0, 1, 0, 64, 31,
+    0, 0, 128, 62, 0, 0, 2, 0, 16, 0, 100, 97, 116, 97, 2, 0, 0, 0, 0, 0,
   ]);
-  const audio = new Audio(
-    URL.createObjectURL(new Blob([bytes], { type: "audio/wav" })),
-  );
+  const audio = new Audio(URL.createObjectURL(new Blob([bytes], { type: "audio/wav" })));
   audio.preload = "auto";
   audio.setAttribute("playsinline", "");
   return audio;
@@ -105,13 +90,11 @@ function primeIOSAudio(): void {
           webkitAudioContext?: typeof AudioContext;
         }
       ).AudioContext ??
-      (window as unknown as { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext;
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AC) {
       const g = window as unknown as { __ariaUnlockCtx?: AudioContext };
       if (!g.__ariaUnlockCtx) g.__ariaUnlockCtx = new AC();
-      if (g.__ariaUnlockCtx.state === "suspended")
-        void g.__ariaUnlockCtx.resume();
+      if (g.__ariaUnlockCtx.state === "suspended") void g.__ariaUnlockCtx.resume();
     }
 
     const mediaGlobal = window as unknown as {
@@ -209,10 +192,7 @@ function getSpeechRecognitionCtor(): (new () => SR) | null {
 async function requestAriaMicrophone(): Promise<MediaStream> {
   const mediaDevices = navigator.mediaDevices;
   if (!mediaDevices?.getUserMedia)
-    throw new DOMException(
-      "Microphone capture is unavailable.",
-      "NotFoundError",
-    );
+    throw new DOMException("Microphone capture is unavailable.", "NotFoundError");
   try {
     return await mediaDevices.getUserMedia({
       audio: {
@@ -238,8 +218,7 @@ function rmsLevel(samples: Float32Array): number {
 }
 
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
-const ERROR_MASK_AR =
-  "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
+const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
 const MAX_ATTACHMENTS = 5;
@@ -286,8 +265,7 @@ function markSpokenOrDrop(replyId: string): boolean {
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () =>
-      reject(new Error(`تعذّرت قراءة الملف: ${file.name}`));
+    reader.onerror = () => reject(new Error(`تعذّرت قراءة الملف: ${file.name}`));
     reader.onload = () => resolve(String(reader.result));
     reader.readAsDataURL(file);
   });
@@ -318,9 +296,7 @@ function sanitiseAssistantText(raw: string): string {
   let t = raw;
   t = t
     .replace(/```(?:log|trace|stacktrace)[\s\S]*?```/gi, "")
-    .replace(/```[\s\S]*?```/g, (m) =>
-      /stack\s+trace|traceback/i.test(m) ? "" : m,
-    );
+    .replace(/```[\s\S]*?```/g, (m) => (/stack\s+trace|traceback/i.test(m) ? "" : m));
   t = t.replace(
     /\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi,
     "",
@@ -333,13 +309,7 @@ function sanitiseAssistantText(raw: string): string {
 /** Panel backdrop — dark surface with an optional emerald aurora when in
  *  conversation mode. The figure lives ONLY in the top-circle avatar; no
  *  full-panel video variant, so placement stays identical across breakpoints. */
-function AriaPanelBackdrop({
-  convMode,
-  caption,
-}: {
-  convMode: boolean;
-  caption: string | null;
-}) {
+function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: string | null }) {
   const state = useAriaPresenceState();
   return (
     <div
@@ -392,8 +362,7 @@ function AriaPanelBackdrop({
           <div
             className={cn(
               "rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-md ring-1",
-              state === "listening" &&
-                "bg-emerald-500/20 text-emerald-200 ring-emerald-400/40",
+              state === "listening" && "bg-emerald-500/20 text-emerald-200 ring-emerald-400/40",
               state === "thinking" &&
                 "bg-cyan-500/20 text-cyan-200 ring-cyan-400/40 motion-safe:animate-pulse",
               state === "speaking" &&
@@ -452,12 +421,10 @@ export function AriaCopilot() {
   // null = unknown; false = endpoint reachable but no AI provider key on this
   // deployment → show an elegant "not activated yet" notice instead of errors.
   const [providerReady, setProviderReady] = useState<boolean | null>(null);
-  const [voiceProviderReady, setVoiceProviderReady] = useState<boolean | null>(
+  const [voiceProviderReady, setVoiceProviderReady] = useState<boolean | null>(null);
+  const [transcriptionProviderReady, setTranscriptionProviderReady] = useState<boolean | null>(
     null,
   );
-  const [transcriptionProviderReady, setTranscriptionProviderReady] = useState<
-    boolean | null
-  >(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
@@ -486,24 +453,17 @@ export function AriaCopilot() {
   const mediaCaptureCancelledRef = useRef(false);
   const mediaNoSpeechRef = useRef(false);
   const greetingAbortRef = useRef<AbortController | null>(null);
-  const mediaCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const mediaCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mediaAnalysisFrameRef = useRef<number | null>(null);
   const mediaAnalysisContextRef = useRef<AudioContext | null>(null);
-  const mediaAnalysisSourceRef = useRef<MediaStreamAudioSourceNode | null>(
-    null,
-  );
+  const mediaAnalysisSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const mediaAnalysisOwnsContextRef = useRef(false);
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
   const lastAssistantMessageId = useMemo(
-    () =>
-      [...chat.messages]
-        .reverse()
-        .find((message) => message.role === "assistant")?.id,
+    () => [...chat.messages].reverse().find((message) => message.role === "assistant")?.id,
     [chat.messages],
   );
 
@@ -541,9 +501,7 @@ export function AriaCopilot() {
         setHealthEvidence(probeEvidence("GET /api/chat/health", next));
         setProviderReady(r.ok ? (r.key_present ?? null) : null);
         setVoiceProviderReady(r.ok ? (r.voice_configured ?? null) : null);
-        setTranscriptionProviderReady(
-          r.ok ? (r.transcription_configured ?? null) : null,
-        );
+        setTranscriptionProviderReady(r.ok ? (r.transcription_configured ?? null) : null);
       }
     });
     // iOS Safari: prime AudioContext on the same task as the open gesture
@@ -559,10 +517,7 @@ export function AriaCopilot() {
     });
     if (typeof document !== "undefined") {
       const heads: HTMLLinkElement[] = [];
-      for (const href of [
-        window.location.origin,
-        "https://generativelanguage.googleapis.com",
-      ]) {
+      for (const href of [window.location.origin, "https://generativelanguage.googleapis.com"]) {
         const l = document.createElement("link");
         l.rel = "preconnect";
         l.href = href;
@@ -658,37 +613,30 @@ export function AriaCopilot() {
     ariaState.set("idle");
   }, []);
 
-  const splitCompleteSentences = useCallback(
-    (t: string): { complete: string[]; tail: string } => {
-      // Match anything ending with a terminator. Trailing tail (no terminator) is pending.
-      const re = /[^.!?؟\n]+[.!?؟\n]+/g;
-      const complete: string[] = [];
-      let m: RegExpExecArray | null;
-      let lastIdx = 0;
-      while ((m = re.exec(t)) !== null) {
-        const s = m[0].trim();
-        if (s) complete.push(s);
-        lastIdx = re.lastIndex;
-      }
-      const tail = t.slice(lastIdx).trim();
-      // Merge fragments <8 chars into previous (was 12 — lower threshold ships
-      // first TTS ~30% sooner). INVARIANT-9: faster first-audio.
-      const merged: string[] = [];
-      for (const s of complete) {
-        if (merged.length && s.length < 8) merged[merged.length - 1] += " " + s;
-        else merged.push(s);
-      }
-      return { complete: merged, tail };
-    },
-    [],
-  );
+  const splitCompleteSentences = useCallback((t: string): { complete: string[]; tail: string } => {
+    // Match anything ending with a terminator. Trailing tail (no terminator) is pending.
+    const re = /[^.!?؟\n]+[.!?؟\n]+/g;
+    const complete: string[] = [];
+    let m: RegExpExecArray | null;
+    let lastIdx = 0;
+    while ((m = re.exec(t)) !== null) {
+      const s = m[0].trim();
+      if (s) complete.push(s);
+      lastIdx = re.lastIndex;
+    }
+    const tail = t.slice(lastIdx).trim();
+    // Merge fragments <8 chars into previous (was 12 — lower threshold ships
+    // first TTS ~30% sooner). INVARIANT-9: faster first-audio.
+    const merged: string[] = [];
+    for (const s of complete) {
+      if (merged.length && s.length < 8) merged[merged.length - 1] += " " + s;
+      else merged.push(s);
+    }
+    return { complete: merged, tail };
+  }, []);
 
   const fetchTTS = useCallback(
-    async (
-      text: string,
-      idx: number,
-      ctrl: AbortController,
-    ): Promise<HTMLAudioElement | null> => {
+    async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
       // Keep at most three Gemini TTS segments in flight to bound memory and
       // avoid quota bursts while preserving gap-locked playback.
       let acquired = false;
@@ -803,36 +751,27 @@ export function AriaCopilot() {
               s.latencyLogged = true;
               const total = s.sendAt ? Math.round(t0 - s.sendAt) : -1;
               const firstTok =
-                s.sendAt && s.firstTokenAt
-                  ? Math.round(s.firstTokenAt - s.sendAt)
-                  : -1;
+                s.sendAt && s.firstTokenAt ? Math.round(s.firstTokenAt - s.sendAt) : -1;
               const sent1 =
                 s.firstTokenAt && s.firstSentenceAt
                   ? Math.round(s.firstSentenceAt - s.firstTokenAt)
                   : -1;
-              const tts = s.firstSentenceAt
-                ? Math.round(t0 - s.firstSentenceAt)
-                : -1;
+              const tts = s.firstSentenceAt ? Math.round(t0 - s.firstSentenceAt) : -1;
 
               // Article 24 (b): first-token → sentence1 hard ceiling 250ms.
-              if (sent1 > 250)
-                reportVoiceLatencyRegression(sent1, `send_total=${total}ms`);
+              if (sent1 > 250) reportVoiceLatencyRegression(sent1, `send_total=${total}ms`);
 
               console.log(`[aria-latency] send→first-audio ${total}ms`);
 
               console.log(
                 `[aria-latency] send→first-token ${firstTok}ms | first-token→sentence1 ${sent1}ms | tts ${tts}ms | TOTAL ${total}ms`,
               );
-              VoiceTimeline.push(
-                "AUDIO_PLAY",
-                `[0] instant-start total=${total}ms`,
-                {
-                  total,
-                  firstTok,
-                  sent1,
-                  tts,
-                },
-              );
+              VoiceTimeline.push("AUDIO_PLAY", `[0] instant-start total=${total}ms`, {
+                total,
+                firstTok,
+                sent1,
+                tts,
+              });
             }
             // Frame-perfect sync: motion is driven by the audio element's
             // real 'playing' event, not the play() promise (which resolves
@@ -889,9 +828,7 @@ export function AriaCopilot() {
       AriaAudioBus.release("chat-tts");
       streamStateRef.current.delete(messageId);
       if (convModeRef.current && s.playbackFailed) {
-        setConvNotice(
-          "تعذّر تشغيل صوت آريا — تحقق من صوت الجهاز ثم اضغط للمتابعة.",
-        );
+        setConvNotice("تعذّر تشغيل صوت آريا — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
         setConvPaused(true);
       } else if (convModeRef.current) {
         if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
@@ -912,29 +849,20 @@ export function AriaCopilot() {
     if (!last || last.role !== "assistant") return;
 
     const fullText = toAriaSpeechText(
-      sanitiseAssistantText(
-        last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
-      ),
+      sanitiseAssistantText(last.parts.map((p) => (p.type === "text" ? p.text : "")).join("")),
     );
     if (!fullText || fullText.length < 2) return;
 
     // First sight of this reply: speak it ONLY if it answers a voice turn.
     // The flag is armed per-send in submit() and consumed exactly once here.
-    if (
-      !streamStateRef.current.has(last.id) &&
-      !spokenIdsRef.current.has(last.id)
-    ) {
+    if (!streamStateRef.current.has(last.id) && !spokenIdsRef.current.has(last.id)) {
       if (!speakNextReplyRef.current) {
         rememberBounded(spokenIdsRef.current, last.id); // typed turn → text-only reply
         return;
       }
       speakNextReplyRef.current = false;
     }
-    if (
-      spokenIdsRef.current.has(last.id) &&
-      !streamStateRef.current.has(last.id)
-    )
-      return;
+    if (spokenIdsRef.current.has(last.id) && !streamStateRef.current.has(last.id)) return;
 
     let s = streamStateRef.current.get(last.id);
     if (!s) {
@@ -1053,12 +981,7 @@ export function AriaCopilot() {
       const errors: string[] = [];
       for (const file of Array.from(files)) {
         const key = `${file.name}:${file.size}:${file.lastModified}`;
-        if (
-          next.some(
-            (item) => `${item.name}:${item.size}:${item.lastModified}` === key,
-          )
-        )
-          continue;
+        if (next.some((item) => `${item.name}:${item.size}:${item.lastModified}` === key)) continue;
         if (next.length >= MAX_ATTACHMENTS) {
           errors.push(`الحد الأقصى ${MAX_ATTACHMENTS} ملفات.`);
           break;
@@ -1071,8 +994,7 @@ export function AriaCopilot() {
           errors.push(`حجم ${file.name} يتجاوز 10 م.ب.`);
           continue;
         }
-        const total =
-          next.reduce((sum, item) => sum + item.size, 0) + file.size;
+        const total = next.reduce((sum, item) => sum + item.size, 0) + file.size;
         if (total > MAX_ATTACHMENTS_TOTAL_BYTES) {
           errors.push("إجمالي المرفقات يتجاوز 20 م.ب.");
           break;
@@ -1090,8 +1012,7 @@ export function AriaCopilot() {
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
       const promptText = (textOverride ?? draft).trim();
       if ((!promptText && attachments.length === 0) || isBusy) return;
-      const messageText =
-        promptText || "حلّل المرفقات المضافة وأعطني خلاصة واضحة.";
+      const messageText = promptText || "حلّل المرفقات المضافة وأعطني خلاصة واضحة.";
 
       primeIOSAudio();
       // Voice replies only for voice turns in Conversation Mode; typed
@@ -1112,9 +1033,7 @@ export function AriaCopilot() {
         setAttachments([]);
         setAttachmentError(null);
       } catch (error) {
-        setAttachmentError(
-          error instanceof Error ? error.message : "تعذّر إرفاق الملفات.",
-        );
+        setAttachmentError(error instanceof Error ? error.message : "تعذّر إرفاق الملفات.");
       }
 
       requestAnimationFrame(() => {
@@ -1130,9 +1049,7 @@ export function AriaCopilot() {
     (cmd: QuickCommand) => {
       if (cmd.needsInput) {
         setDraft(cmd.inputPrefix ?? "");
-        requestAnimationFrame(() =>
-          composerRef.current?.focus({ preventScroll: true }),
-        );
+        requestAnimationFrame(() => composerRef.current?.focus({ preventScroll: true }));
         return;
       }
       void submit(cmd.prompt);
@@ -1214,9 +1131,7 @@ export function AriaCopilot() {
     setDraft("");
     setAttachments([]);
     setAttachmentError(null);
-    requestAnimationFrame(() =>
-      composerRef.current?.focus({ preventScroll: true }),
-    );
+    requestAnimationFrame(() => composerRef.current?.focus({ preventScroll: true }));
   }, [chat, composerRef, stopListening, stopVoicePlayback]);
 
   const closePanel = useCallback(() => {
@@ -1233,8 +1148,7 @@ export function AriaCopilot() {
       await navigator.clipboard.writeText(text);
       setCopiedMessageId(id);
       window.setTimeout(
-        () =>
-          setCopiedMessageId((current) => (current === id ? null : current)),
+        () => setCopiedMessageId((current) => (current === id ? null : current)),
         1600,
       );
     } catch {
@@ -1291,18 +1205,13 @@ export function AriaCopilot() {
   );
 
   const startRecordedListening = useCallback(async () => {
-    if (
-      !navigator.mediaDevices?.getUserMedia ||
-      typeof MediaRecorder === "undefined"
-    ) {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       setConvNotice("التسجيل الصوتي غير متاح في هذا المتصفح.");
       setConvPaused(true);
       return;
     }
     if (transcriptionProviderReady === false) {
-      setConvNotice(
-        "فهم الصوت غير مفعّل على الخادم — أضف GEMINI_API_KEY ثم أعد المحاولة.",
-      );
+      setConvNotice("فهم الصوت غير مفعّل على الخادم — أضف GEMINI_API_KEY ثم أعد المحاولة.");
       setConvPaused(true);
       return;
     }
@@ -1339,8 +1248,7 @@ export function AriaCopilot() {
         const cancelled = mediaCaptureCancelledRef.current;
         const noSpeech = mediaNoSpeechRef.current;
         const chunks = mediaChunksRef.current;
-        const actualType =
-          recorder.mimeType || mimeType || chunks[0]?.type || "audio/webm";
+        const actualType = recorder.mimeType || mimeType || chunks[0]?.type || "audio/webm";
         mediaChunksRef.current = [];
         mediaNoSpeechRef.current = false;
         mediaRecorderRef.current = null;
@@ -1384,12 +1292,10 @@ export function AriaCopilot() {
               webkitAudioContext?: typeof AudioContext;
             }
           ).AudioContext ??
-          (window as unknown as { webkitAudioContext?: typeof AudioContext })
-            .webkitAudioContext;
+          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (AudioContextCtor) {
-          const unlockContext = (
-            window as unknown as { __ariaUnlockCtx?: AudioContext }
-          ).__ariaUnlockCtx;
+          const unlockContext = (window as unknown as { __ariaUnlockCtx?: AudioContext })
+            .__ariaUnlockCtx;
           const context =
             unlockContext && unlockContext.state !== "closed"
               ? unlockContext
@@ -1433,8 +1339,7 @@ export function AriaCopilot() {
     } catch (error) {
       stopMediaAnalysis();
       for (const track of acquiredStream?.getTracks() ?? []) track.stop();
-      if (mediaStreamRef.current === acquiredStream)
-        mediaStreamRef.current = null;
+      if (mediaStreamRef.current === acquiredStream) mediaStreamRef.current = null;
       mediaRecorderRef.current = null;
       mediaChunksRef.current = [];
       setListening(false);
@@ -1531,9 +1436,7 @@ export function AriaCopilot() {
         }
         if (!convModeRef.current) return;
         if (event.error === "not-allowed") {
-          setConvNotice(
-            "تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.",
-          );
+          setConvNotice("تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.");
           setConvPaused(true);
           return;
         }
@@ -1590,8 +1493,7 @@ export function AriaCopilot() {
 
     const audio = await fetchTTS(ARIA_CONVERSATION_GREETING_AR, 0, controller);
     if (!audio || controller.signal.aborted || !convModeRef.current) {
-      if (greetingAbortRef.current === controller)
-        greetingAbortRef.current = null;
+      if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
       setGreeting(false);
       if (convModeRef.current && !controller.signal.aborted) {
         setConvNotice("تعذّر تشغيل تحية آريا، يمكنك البدء بالتحدث مباشرة.");
@@ -1651,8 +1553,7 @@ export function AriaCopilot() {
     if (audioRef.current === audio) audioRef.current = null;
     AriaAudioBus.notifyStopped("conversation-greeting");
     AriaAudioBus.release("conversation-greeting");
-    if (greetingAbortRef.current === controller)
-      greetingAbortRef.current = null;
+    if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
     setGreeting(false);
     if (!wasAborted && !playbackStarted && convModeRef.current) {
       setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت آريا.");
@@ -1687,9 +1588,7 @@ export function AriaCopilot() {
       // No speech input on this browser → Conversation Mode cannot work.
       // Stay in the text chat (typed turns are text-only by rule) and show
       // a transient notice instead of a half-broken voice mode.
-      setConvNotice(
-        "المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد آريا نصياً.",
-      );
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد آريا نصياً.");
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       noticeTimerRef.current = setTimeout(() => setConvNotice(null), 5000);
       try {
@@ -1700,23 +1599,17 @@ export function AriaCopilot() {
       return;
     }
     if (providerReady === false) {
-      setConvNotice(
-        "المساعد الذكي غير مفعّل على هذا النشر — أضف مفتاح المزوّد أولًا.",
-      );
+      setConvNotice("المساعد الذكي غير مفعّل على هذا النشر — أضف مفتاح المزوّد أولًا.");
       setConvPaused(true);
       return;
     }
     if (voiceProviderReady === false) {
-      setConvNotice(
-        "صوت آريا غير مفعّل على هذا النشر — أضف GEMINI_API_KEY أولًا.",
-      );
+      setConvNotice("صوت آريا غير مفعّل على هذا النشر — أضف GEMINI_API_KEY أولًا.");
       setConvPaused(true);
       return;
     }
     if (!sttSupported && transcriptionProviderReady === false) {
-      setConvNotice(
-        "فهم الصوت غير مفعّل على هذا النشر — أضف GEMINI_API_KEY أولًا.",
-      );
+      setConvNotice("فهم الصوت غير مفعّل على هذا النشر — أضف GEMINI_API_KEY أولًا.");
       setConvPaused(true);
       return;
     }
@@ -1874,18 +1767,14 @@ export function AriaCopilot() {
                 </span>
               </span>
               <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
-                {health === "down"
-                  ? "غير متصل"
-                  : `${statusLabel} · ${convMode ? "صوت" : "نص"}`}
+                {health === "down" ? "غير متصل" : `${statusLabel} · ${convMode ? "صوت" : "نص"}`}
               </span>
             </div>
             <button
               type="button"
               onClick={toggleConversationMode}
               aria-pressed={convMode}
-              aria-label={
-                convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع آريا"
-              }
+              aria-label={convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع آريا"}
               className={cn(
                 "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold transition-all sm:px-2.5",
                 convMode
@@ -1898,9 +1787,7 @@ export function AriaCopilot() {
               ) : (
                 <Mic className="h-3.5 w-3.5" aria-hidden />
               )}
-              <span className="hidden min-[390px]:inline">
-                {convMode ? "إنهاء" : "مخاطبة"}
-              </span>
+              <span className="hidden min-[390px]:inline">{convMode ? "إنهاء" : "مخاطبة"}</span>
             </button>
             <button
               type="button"
@@ -1955,8 +1842,7 @@ export function AriaCopilot() {
                 <span
                   className={cn(
                     "absolute inset-0 rounded-full border border-emerald-300/25 bg-emerald-400/5",
-                    (listening || state === "speaking") &&
-                      "motion-safe:animate-ping",
+                    (listening || state === "speaking") && "motion-safe:animate-ping",
                   )}
                   aria-hidden
                 />
@@ -1969,10 +1855,7 @@ export function AriaCopilot() {
                 />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-background/55 text-emerald-200 backdrop-blur-xl sm:h-28 sm:w-28">
                   {isBusy || transcribing ? (
-                    <Sparkles
-                      className="h-10 w-10 motion-safe:animate-pulse"
-                      aria-hidden
-                    />
+                    <Sparkles className="h-10 w-10 motion-safe:animate-pulse" aria-hidden />
                   ) : listening ? (
                     <Mic className="h-10 w-10" aria-hidden />
                   ) : state === "speaking" ? (
@@ -2059,38 +1942,24 @@ export function AriaCopilot() {
               ref={scrollRef}
               className={cn(
                 "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
-                convMode
-                  ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl"
-                  : "flex-1",
+                convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
               )}
             >
               <ul className="space-y-3">
                 {chat.messages.map((m) => {
-                  const raw = m.parts
-                    .map((p) => (p.type === "text" ? p.text : ""))
-                    .join("");
+                  const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                   const mine = m.role === "user";
                   const text = mine ? raw : sanitiseAssistantText(raw);
-                  const fileParts = m.parts.filter(
-                    (part) => part.type === "file",
-                  );
+                  const fileParts = m.parts.filter((part) => part.type === "file");
                   const hasNonTextWork = m.parts.some((p) => p.type !== "text");
                   const toolParts = !mine
                     ? m.parts.filter(
-                        (part) =>
-                          part.type.startsWith("tool-") ||
-                          part.type === "tool-invocation",
+                        (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
                       )
                     : [];
                   if (!text && !hasNonTextWork) return null;
                   return (
-                    <li
-                      key={m.id}
-                      className={cn(
-                        "flex",
-                        mine ? "justify-end" : "justify-start",
-                      )}
-                    >
+                    <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
                       <div
                         className={cn(
                           "group/message max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed backdrop-blur-md sm:max-w-[88%]",
@@ -2123,13 +1992,8 @@ export function AriaCopilot() {
                                   download={part.filename}
                                   className="inline-flex max-w-64 items-center gap-2 rounded-xl bg-background/50 px-3 py-2 text-xs ring-1 ring-white/15 hover:bg-background/70"
                                 >
-                                  <FileText
-                                    className="h-4 w-4 shrink-0"
-                                    aria-hidden
-                                  />
-                                  <span className="truncate">
-                                    {part.filename ?? "مرفق"}
-                                  </span>
+                                  <FileText className="h-4 w-4 shrink-0" aria-hidden />
+                                  <span className="truncate">{part.filename ?? "مرفق"}</span>
                                 </a>
                               ),
                             )}
@@ -2137,7 +2001,7 @@ export function AriaCopilot() {
                         )}
                         {text ? (
                           <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
-                            <MessageResponse>{text}</MessageResponse>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                           </div>
                         ) : toolParts.length === 0 ? (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -2148,11 +2012,7 @@ export function AriaCopilot() {
                         {toolParts.map((part, index) => (
                           <ToolInvocation
                             key={`${m.id}-tool-${index}`}
-                            part={
-                              part as Parameters<
-                                typeof ToolInvocation
-                              >[0]["part"]
-                            }
+                            part={part as Parameters<typeof ToolInvocation>[0]["part"]}
                           />
                         ))}
                         {!mine && text && !isBusy && (
@@ -2178,10 +2038,7 @@ export function AriaCopilot() {
                                 title="إعادة التوليد"
                                 className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
                               >
-                                <RefreshCcw
-                                  className="h-3.5 w-3.5"
-                                  aria-hidden
-                                />
+                                <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             )}
                           </div>
@@ -2198,9 +2055,7 @@ export function AriaCopilot() {
                         <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
                         <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {THINKING_AR}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
                     </div>
                   </li>
                 )}
@@ -2280,9 +2135,8 @@ export function AriaCopilot() {
                   role="status"
                   className="mb-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[12px] leading-relaxed text-amber-200/90"
                 >
-                  المساعد الذكي{" "}
-                  <span className="font-semibold">غير مفعّل بعد</span> على هذا
-                  النشر — يعمل فور إضافة مفتاح المزوّد في إعدادات النشر.
+                  المساعد الذكي <span className="font-semibold">غير مفعّل بعد</span> على هذا النشر —
+                  يعمل فور إضافة مفتاح المزوّد في إعدادات النشر.
                 </div>
               )}
               {attachmentError && (
@@ -2291,11 +2145,7 @@ export function AriaCopilot() {
                   className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-xs text-destructive-foreground"
                 >
                   <span>{attachmentError}</span>
-                  <button
-                    type="button"
-                    onClick={() => setAttachmentError(null)}
-                    aria-label="إغلاق"
-                  >
+                  <button type="button" onClick={() => setAttachmentError(null)} aria-label="إغلاق">
                     <X className="h-3.5 w-3.5" aria-hidden />
                   </button>
                 </div>
@@ -2308,23 +2158,15 @@ export function AriaCopilot() {
                       className="inline-flex max-w-56 shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-background/70 px-2.5 py-2 text-xs"
                     >
                       {attachmentMediaType(file).startsWith("image/") ? (
-                        <ImageIcon
-                          className="h-4 w-4 shrink-0 text-primary"
-                          aria-hidden
-                        />
+                        <ImageIcon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                       ) : (
-                        <FileText
-                          className="h-4 w-4 shrink-0 text-primary"
-                          aria-hidden
-                        />
+                        <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                       )}
                       <span className="truncate">{file.name}</span>
                       <button
                         type="button"
                         onClick={() =>
-                          setAttachments((current) =>
-                            current.filter((_, i) => i !== index),
-                          )
+                          setAttachments((current) => current.filter((_, i) => i !== index))
                         }
                         aria-label={`حذف ${file.name}`}
                         className="text-muted-foreground hover:text-destructive"
@@ -2336,38 +2178,34 @@ export function AriaCopilot() {
                 </div>
               )}
               {/* Slash-command menu — appears while the draft starts with "/". */}
-              {draft.startsWith("/") &&
-                matchQuickCommands(draft.slice(1)).length > 0 && (
-                  <div
-                    dir="rtl"
-                    role="listbox"
-                    aria-label="أوامر سريعة"
-                    className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
-                  >
-                    {matchQuickCommands(draft.slice(1)).map((cmd) => {
-                      const Icon = cmd.icon;
-                      return (
-                        <button
-                          key={cmd.id}
-                          type="button"
-                          role="option"
-                          aria-selected={false}
-                          onClick={() => runQuickCommand(cmd)}
-                          className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
-                        >
-                          <Icon
-                            className="h-4 w-4 shrink-0 text-primary"
-                            aria-hidden
-                          />
-                          <span className="font-semibold">/{cmd.slash}</span>
-                          <span className="truncate text-xs text-muted-foreground">
-                            {cmd.prompt || cmd.inputPrefix}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+              {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
+                <div
+                  dir="rtl"
+                  role="listbox"
+                  aria-label="أوامر سريعة"
+                  className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
+                >
+                  {matchQuickCommands(draft.slice(1)).map((cmd) => {
+                    const Icon = cmd.icon;
+                    return (
+                      <button
+                        key={cmd.id}
+                        type="button"
+                        role="option"
+                        aria-selected={false}
+                        onClick={() => runQuickCommand(cmd)}
+                        className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
+                      >
+                        <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                        <span className="font-semibold">/{cmd.slash}</span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {cmd.prompt || cmd.inputPrefix}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {/* Quick-command chips — shown when the composer is empty. */}
               {!draft.trim() && !isBusy && (
                 <div
@@ -2384,10 +2222,7 @@ export function AriaCopilot() {
                         title={cmd.prompt || cmd.inputPrefix}
                         className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/25 bg-background/70 px-3 py-1.5 text-xs font-medium text-foreground/90 transition-all hover:border-primary/50 hover:bg-primary/10"
                       >
-                        <Icon
-                          className="h-3.5 w-3.5 text-primary"
-                          aria-hidden
-                        />
+                        <Icon className="h-3.5 w-3.5 text-primary" aria-hidden />
                         <span>{cmd.ar}</span>
                       </button>
                     );
@@ -2407,9 +2242,7 @@ export function AriaCopilot() {
                   multiple
                   hidden
                   accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,.md,.txt,.csv,.json,.pdf"
-                  onChange={(event) =>
-                    addAttachments(event.currentTarget.files)
-                  }
+                  onChange={(event) => addAttachments(event.currentTarget.files)}
                 />
                 <button
                   type="button"
@@ -2470,9 +2303,7 @@ export function AriaCopilot() {
                 <button
                   type={isBusy ? "button" : "submit"}
                   onClick={isBusy ? stopResponse : undefined}
-                  disabled={
-                    !isBusy && !draft.trim() && attachments.length === 0
-                  }
+                  disabled={!isBusy && !draft.trim() && attachments.length === 0}
                   aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
                   className={cn(
                     "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",

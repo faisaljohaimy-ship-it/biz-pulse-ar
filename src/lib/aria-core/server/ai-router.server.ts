@@ -17,12 +17,7 @@ export type AriaIntent =
   | "engineering"
   | "unknown";
 
-export type Vendor =
-  | "openai"
-  | "google"
-  | "lovable"
-  | "openrouter"
-  | "anthropic";
+export type Vendor = "openai" | "google" | "lovable" | "openrouter" | "anthropic";
 
 export interface ResolvedModel {
   vendor: Vendor;
@@ -59,10 +54,7 @@ export interface AvailableProviders {
   anthropic?: boolean;
 }
 
-export function resolveModel(
-  _intent: AriaIntent,
-  providers: AvailableProviders,
-): ResolvedModel {
+export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
   // ARIA's canonical route is native Gemini Flash. ARIA_FORCE_GEMINI_FLASH
   // is enforced by the API caller by excluding all non-Google providers.
 

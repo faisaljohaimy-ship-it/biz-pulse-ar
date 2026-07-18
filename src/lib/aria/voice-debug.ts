@@ -22,13 +22,9 @@ let current: VoiceEvent | null = null;
 
 function isDebugFlagOn(): boolean {
   try {
-    const env = (import.meta as unknown as { env?: Record<string, string> })
-      .env;
+    const env = (import.meta as unknown as { env?: Record<string, string> }).env;
     if (env?.VITE_VOICE_DEBUG === "true") return true;
-    if (
-      typeof window !== "undefined" &&
-      window.localStorage?.getItem("aria-voice-debug") === "1"
-    )
+    if (typeof window !== "undefined" && window.localStorage?.getItem("aria-voice-debug") === "1")
       return true;
   } catch {
     /* ignore */
@@ -92,13 +88,9 @@ export const AriaVoiceDebug = {
 
 export function isGreetingEnabled(): boolean {
   try {
-    const env = (import.meta as unknown as { env?: Record<string, string> })
-      .env;
+    const env = (import.meta as unknown as { env?: Record<string, string> }).env;
     if (env?.VITE_GREETING_ENABLED === "false") return false;
-    if (
-      typeof window !== "undefined" &&
-      window.localStorage?.getItem("aria-greeting-off") === "1"
-    )
+    if (typeof window !== "undefined" && window.localStorage?.getItem("aria-greeting-off") === "1")
       return false;
   } catch {
     /* ignore */

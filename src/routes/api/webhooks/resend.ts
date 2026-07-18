@@ -45,13 +45,10 @@ export const Route = createFileRoute("/api/webhooks/resend")({
         if (Number.isFinite(length) && length > MAX_BODY_BYTES)
           return json({ ok: false, error: "Webhook body is too large." }, 413);
         const secret = process.env.RESEND_WEBHOOK_SECRET?.trim();
-        if (!secret)
-          return json({ ok: false, error: "Webhook is not configured." }, 503);
+        if (!secret) return json({ ok: false, error: "Webhook is not configured." }, 503);
         const svixId = request.headers.get("svix-id")?.trim() ?? "";
-        const svixTimestamp =
-          request.headers.get("svix-timestamp")?.trim() ?? "";
-        const svixSignature =
-          request.headers.get("svix-signature")?.trim() ?? "";
+        const svixTimestamp = request.headers.get("svix-timestamp")?.trim() ?? "";
+        const svixSignature = request.headers.get("svix-signature")?.trim() ?? "";
         const rawBody = await request.text();
         if (new TextEncoder().encode(rawBody).length > MAX_BODY_BYTES)
           return json({ ok: false, error: "Webhook body is too large." }, 413);
@@ -64,10 +61,7 @@ export const Route = createFileRoute("/api/webhooks/resend")({
             svixSignature,
           }))
         ) {
-          return json(
-            { ok: false, error: "Webhook signature is invalid." },
-            401,
-          );
+          return json({ ok: false, error: "Webhook signature is invalid." }, 401);
         }
 
         let payload: {
@@ -84,14 +78,8 @@ export const Route = createFileRoute("/api/webhooks/resend")({
         const mapped = mapResendStatus(type);
         if (!mapped) return json({ ok: true, ignored: true });
         const emailId =
-          typeof payload.data?.email_id === "string"
-            ? payload.data.email_id.trim()
-            : "";
-        if (!emailId)
-          return json(
-            { ok: false, error: "Webhook email ID is missing." },
-            400,
-          );
+          typeof payload.data?.email_id === "string" ? payload.data.email_id.trim() : "";
+        if (!emailId) return json({ ok: false, error: "Webhook email ID is missing." }, 400);
         const result = await recordOutboundProviderEvent({
           provider: "resend",
           providerMessageId: emailId,
@@ -99,12 +87,10 @@ export const Route = createFileRoute("/api/webhooks/resend")({
           eventType: type,
           status: mapped.status,
           providerStatus: type,
-          occurredAt:
-            typeof payload.created_at === "string" ? payload.created_at : null,
+          occurredAt: typeof payload.created_at === "string" ? payload.created_at : null,
           failureCode: mapped.failureCode,
         });
-        if (result === "not_found")
-          return json({ ok: false, retry: true }, 503);
+        if (result === "not_found") return json({ ok: false, retry: true }, 503);
         return json({ ok: true, result });
       },
     },
