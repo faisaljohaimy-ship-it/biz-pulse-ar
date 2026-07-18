@@ -42,7 +42,7 @@ import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
-import { ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
+import { ARIA_GEMINI_TTS_VOICE } from "@/lib/aria/voice-config";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
@@ -73,7 +73,7 @@ import {
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 // speakAria / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
-// pipeline below (ElevenLabs via /api/aria/tts, gated on the voice toggle).
+// pipeline below (Gemini Flash TTS via /api/aria/tts, gated on voice mode).
 
 function createSilentUnlockAudio(): HTMLAudioElement {
   // 16-bit mono PCM WAV containing one silent sample. Calling play() on this
@@ -138,9 +138,7 @@ function primeIOSAudio(): void {
   }
 }
 
-/** Semaphore limiting concurrent /api/aria/tts requests. ElevenLabs subscription
- *  caps parallel calls at 5; we use 3 to stay safely under while multiple
- *  sentence-level TTS requests are in-flight. */
+/** Semaphore limiting concurrent sentence-level Gemini TTS requests. */
 const ttsGate = (() => {
   const MAX = 3;
   let active = 0;
@@ -563,7 +561,7 @@ export function AriaCopilot() {
       const heads: HTMLLinkElement[] = [];
       for (const href of [
         window.location.origin,
-        "https://api.elevenlabs.io",
+        "https://generativelanguage.googleapis.com",
       ]) {
         const l = document.createElement("link");
         l.rel = "preconnect";
@@ -691,9 +689,8 @@ export function AriaCopilot() {
       idx: number,
       ctrl: AbortController,
     ): Promise<HTMLAudioElement | null> => {
-      // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
-      // at 5. Serialize to max 3 in-flight so long replies with many sentences
-      // never trigger `concurrent_limit_exceeded` (429).
+      // Keep at most three Gemini TTS segments in flight to bound memory and
+      // avoid quota bursts while preserving gap-locked playback.
       let acquired = false;
       try {
         await ttsGate.acquire(ctrl.signal);
@@ -754,9 +751,9 @@ export function AriaCopilot() {
         }
         if (idx === 0) {
           AriaVoiceDebug.emit({
-            source: "elevenlabs",
+            source: "gemini",
             reason: "authenticated",
-            voiceId: ARIA_ELEVENLABS_VOICE_ID,
+            voiceId: r.headers.get("x-aria-voice-id") || ARIA_GEMINI_TTS_VOICE,
           });
         }
         return audio;
@@ -1304,7 +1301,7 @@ export function AriaCopilot() {
     }
     if (transcriptionProviderReady === false) {
       setConvNotice(
-        "تحويل الصوت غير مفعّل على الخادم — أضف مفتاح OpenAI ثم أعد المحاولة.",
+        "فهم الصوت غير مفعّل على الخادم — أضف GEMINI_API_KEY ثم أعد المحاولة.",
       );
       setConvPaused(true);
       return;
@@ -1711,14 +1708,14 @@ export function AriaCopilot() {
     }
     if (voiceProviderReady === false) {
       setConvNotice(
-        "صوت آريا غير مفعّل على هذا النشر — أضف مفتاح ElevenLabs أولًا.",
+        "صوت آريا غير مفعّل على هذا النشر — أضف GEMINI_API_KEY أولًا.",
       );
       setConvPaused(true);
       return;
     }
     if (!sttSupported && transcriptionProviderReady === false) {
       setConvNotice(
-        "تحويل الصوت غير مفعّل على هذا النشر — أضف مفتاح OpenAI أولًا.",
+        "فهم الصوت غير مفعّل على هذا النشر — أضف GEMINI_API_KEY أولًا.",
       );
       setConvPaused(true);
       return;

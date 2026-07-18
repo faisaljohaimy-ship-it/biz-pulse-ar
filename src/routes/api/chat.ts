@@ -265,44 +265,52 @@ export const Route = createFileRoute("/api/chat")({
         });
       },
       POST: async ({ request }) => {
-        // Native OpenAI/GPT-5.6 is the quality-first route when configured.
-        // Other configured providers remain continuity routes and are cooled
-        // temporarily after fatal upstream failures.
+        // Gemini Flash is ARIA's canonical response engine. The default
+        // policy is Gemini-only; deployments must explicitly set
+        // ARIA_FORCE_GEMINI_FLASH=false to re-enable legacy fallbacks.
+        const forceGeminiFlash =
+          process.env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
         const openaiKey = process.env.OPENAI_API_KEY?.trim() || undefined;
         const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim() || undefined;
         const lovableKey = process.env.LOVABLE_API_KEY?.trim() || undefined;
         const openrouterKey =
           process.env.OPENROUTER_API_KEY?.trim() || undefined;
-        // Native Google Gemini — a FREE Google AI Studio key runs Gemini Flash
-        // with no credit gate. Accept either common env name.
-        const googleKey =
-          process.env.GEMINI_API_KEY ||
-          process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-        const useOpenai = !!openaiKey && !isCooling("openai");
+        // Native Google Gemini. Accept either common server-side env name.
+        const googleKey = (
+          process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
+        )?.trim();
+        const useOpenai =
+          !forceGeminiFlash && !!openaiKey && !isCooling("openai");
         const useGoogle = !!googleKey && !isCooling("google");
-        const useAnthropic = !!anthropicKey && !isCooling("anthropic");
-        const useOpenrouter = !!openrouterKey && !isCooling("openrouter");
-        const useLovable = !!lovableKey && !isCooling("lovable");
+        const useAnthropic =
+          !forceGeminiFlash && !!anthropicKey && !isCooling("anthropic");
+        const useOpenrouter =
+          !forceGeminiFlash && !!openrouterKey && !isCooling("openrouter");
+        const useLovable =
+          !forceGeminiFlash && !!lovableKey && !isCooling("lovable");
         // Last-ditch: if EVERY configured vendor is cooling, ignore the
         // cool-down and let the router pick anyway. Keeping ARIA "permanently
         // on" is worth one more upstream attempt — if it fails, the vendor
         // will just re-cool.
         const hasAnyKey = !!(
-          openaiKey ||
           googleKey ||
-          anthropicKey ||
-          openrouterKey ||
-          lovableKey
+          (!forceGeminiFlash &&
+            (openaiKey || anthropicKey || openrouterKey || lovableKey))
         );
         const hasAnyActiveProvider =
           useOpenai || useGoogle || useAnthropic || useOpenrouter || useLovable;
         const forceUncool = hasAnyKey && !hasAnyActiveProvider;
-        const effUseOpenai = useOpenai || (forceUncool && !!openaiKey);
+        const effUseOpenai =
+          !forceGeminiFlash && (useOpenai || (forceUncool && !!openaiKey));
         const effUseGoogle = useGoogle || (forceUncool && !!googleKey);
-        const effUseAnthropic = useAnthropic || (forceUncool && !!anthropicKey);
+        const effUseAnthropic =
+          !forceGeminiFlash &&
+          (useAnthropic || (forceUncool && !!anthropicKey));
         const effUseOpenrouter =
-          useOpenrouter || (forceUncool && !!openrouterKey);
-        const effUseLovable = useLovable || (forceUncool && !!lovableKey);
+          !forceGeminiFlash &&
+          (useOpenrouter || (forceUncool && !!openrouterKey));
+        const effUseLovable =
+          !forceGeminiFlash && (useLovable || (forceUncool && !!lovableKey));
         const effHasAnyProvider =
           effUseOpenai ||
           effUseGoogle ||
@@ -319,7 +327,9 @@ export const Route = createFileRoute("/api/chat")({
             {
               ok: false,
               code: "provider_unconfigured",
-              error: "المساعد الذكي غير مفعّل بعد على هذا النشر.",
+              error: forceGeminiFlash
+                ? "Gemini Flash غير مفعّل بعد على هذا النشر — أضف GEMINI_API_KEY."
+                : "المساعد الذكي غير مفعّل بعد على هذا النشر.",
               requestId: rid,
             },
             { status: 503, headers: responseHeaders(rid) },
@@ -338,8 +348,8 @@ export const Route = createFileRoute("/api/chat")({
         } = parsedData;
 
         // ── ARIA Brain — server-side AI Router ───────────────────────────
-        // If the client explicitly picked a model (legacy dev/tool path), honor it.
-        // Otherwise resolve from the intent hint the Brain publishes via header.
+        // Client model choices cannot override the Gemini-only server policy.
+        // Legacy choices are honored only when that policy is explicitly off.
         const intentHeader = request.headers.get("x-aria-intent");
         const routerDecision = resolveModel(parseIntent(intentHeader), {
           openai: effUseOpenai,
@@ -356,7 +366,10 @@ export const Route = createFileRoute("/api/chat")({
           | "openrouter"
           | "anthropic";
         let selectedModelId: string;
-        if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
+        if (forceGeminiFlash) {
+          vendor = "google";
+          selectedModelId = routerDecision.modelId;
+        } else if (modelId && effUseGoogle && GOOGLE_MODEL_IDS.has(modelId)) {
           vendor = "google";
           selectedModelId = modelId;
         } else if (modelId && effUseLovable && LOVABLE_MODEL_IDS.has(modelId)) {
@@ -793,7 +806,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
             )
               return "النموذج غير متاح لمفتاحك لدى المزوّد — راجع الخطة أو النموذج في إعدادات النشر.";
             if (status === "400")
-              return "رفض المزوّد الطلب (400) — غالبًا النموذج غير مدعوم بمفتاحك الحالي؛ جرّب مزوّدًا آخر.";
+              return "رفض Gemini الطلب (400) — تحقّق من اسم النموذج وصلاحية المفتاح وإعدادات المشروع.";
             if (lower.includes("aborterror") || lower.includes("timeout"))
               return "استغرقت آريا وقتًا طويلًا — أعد المحاولة، وستُعيد الاتصال تلقائيًا.";
             return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة أو راجع إعدادات المزوّد. المعرّف: ${requestId}`;

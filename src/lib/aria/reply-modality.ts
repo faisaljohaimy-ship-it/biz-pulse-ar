@@ -16,7 +16,7 @@ export function shouldSpeakAriaReply({
 }
 
 /** Convert a model reply into safe, natural speech without leaking visual
- * markup into ElevenLabs. This is a final client-side guard; the server also
+ * markup into Gemini TTS. This is a final client-side guard; the server also
  * asks the model for spoken prose when replyMode="voice". */
 export function toAriaSpeechText(value: string): string {
   return value

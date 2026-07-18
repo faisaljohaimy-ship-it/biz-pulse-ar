@@ -4,23 +4,33 @@ export const Route = createFileRoute("/api/chat/health")({
   server: {
     handlers: {
       GET: async () => {
-        const keyPresent = Boolean(
-          process.env.OPENAI_API_KEY?.trim() ||
-            process.env.GEMINI_API_KEY?.trim() ||
-            process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() ||
-            process.env.ANTHROPIC_API_KEY?.trim() ||
-            process.env.LOVABLE_API_KEY?.trim() ||
-            process.env.OPENROUTER_API_KEY?.trim(),
+        const geminiPresent = Boolean(
+          process.env.GEMINI_API_KEY?.trim() ||
+            process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim(),
         );
+        const forceGemini =
+          process.env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
+        const keyPresent = forceGemini
+          ? geminiPresent
+          : Boolean(
+              geminiPresent ||
+                process.env.OPENAI_API_KEY?.trim() ||
+                process.env.ANTHROPIC_API_KEY?.trim() ||
+                process.env.LOVABLE_API_KEY?.trim() ||
+                process.env.OPENROUTER_API_KEY?.trim(),
+            );
+        const configuredModel = process.env.GEMINI_MODEL?.trim() ?? "";
+        const model = /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(configuredModel)
+          ? configuredModel
+          : "gemini-3.5-flash";
         return Response.json(
           {
             ok: true,
-            model: "aria-router",
+            provider: "gemini",
+            model,
             key_present: keyPresent,
-            voice_configured: Boolean(process.env.ELEVENLABS_API_KEY?.trim()),
-            transcription_configured: Boolean(
-              process.env.OPENAI_API_KEY?.trim(),
-            ),
+            voice_configured: geminiPresent,
+            transcription_configured: geminiPresent,
           },
           {
             headers: {

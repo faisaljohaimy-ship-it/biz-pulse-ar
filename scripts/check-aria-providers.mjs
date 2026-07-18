@@ -4,8 +4,6 @@ const required = {
     "SUPABASE_PUBLISHABLE_KEY",
     "SUPABASE_SERVICE_ROLE_KEY",
   ],
-  intelligence: ["OPENAI_API_KEY"],
-  voice: ["ELEVENLABS_API_KEY", "OPENAI_API_KEY"],
   email: ["RESEND_API_KEY", "RESEND_FROM_EMAIL", "RESEND_WEBHOOK_SECRET"],
   sms: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN"],
   security: ["ARIA_MESSAGE_APPROVAL_SECRET"],
@@ -22,6 +20,23 @@ const usable = (name) => {
 const results = Object.entries(required).map(([capability, names]) => {
   const missing = names.filter((name) => !usable(name));
   return { capability, ready: missing.length === 0, missing };
+});
+
+const hasGeminiKey =
+  usable("GEMINI_API_KEY") || usable("GOOGLE_GENERATIVE_AI_API_KEY");
+results.push({
+  capability: "intelligence",
+  ready: hasGeminiKey,
+  missing: hasGeminiKey
+    ? []
+    : ["GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY"],
+});
+results.push({
+  capability: "voice",
+  ready: hasGeminiKey,
+  missing: hasGeminiKey
+    ? []
+    : ["GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY"],
 });
 
 const hasTwilioSender =
