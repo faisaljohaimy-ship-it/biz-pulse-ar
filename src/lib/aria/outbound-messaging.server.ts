@@ -480,7 +480,10 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
   const messageId = crypto.randomUUID();
   const senderDomain = "notify.neexios.com";
   const fromLine = `NEXUS AI OS <noreply@${senderDomain}>`;
-  const plain = payload.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const plain = payload.html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   await supabaseAdmin.from("email_send_log").insert({
     message_id: messageId,
     template_name: "aria_executive_email",

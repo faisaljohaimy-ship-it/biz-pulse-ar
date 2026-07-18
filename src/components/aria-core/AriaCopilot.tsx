@@ -1032,7 +1032,10 @@ export function AriaCopilot() {
           )}
         >
           <MessageCircle className="h-6 w-6" aria-hidden />
-          <Sparkles className="absolute -top-1 -end-1 h-3.5 w-3.5 text-primary drop-shadow" aria-hidden />
+          <Sparkles
+            className="absolute -top-1 -end-1 h-3.5 w-3.5 text-primary drop-shadow"
+            aria-hidden
+          />
           <span
             className={cn(
               "absolute inset-0 rounded-full",
