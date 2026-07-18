@@ -244,7 +244,8 @@ export function buildAriaTools(
           source = "hcis_assessments";
           rows = (legacy.data ?? []).map(
             (row: { region: string; status: string }) => ({
-              ...row,
+              region: row.region,
+              status: row.status,
               isSimulation: false,
             }),
           );
