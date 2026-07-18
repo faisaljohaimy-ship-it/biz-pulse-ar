@@ -255,6 +255,71 @@ export type Database = {
           },
         ]
       }
+      aria_alert_acks: {
+        Row: {
+          alert_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_alert_acks_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "aria_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_alerts: {
+        Row: {
+          body: string
+          channels: Json
+          created_at: string
+          created_by: string
+          dispatched: number
+          id: string
+          is_simulation: boolean
+          severity: string
+          target: string
+          title: string
+        }
+        Insert: {
+          body: string
+          channels?: Json
+          created_at?: string
+          created_by: string
+          dispatched?: number
+          id?: string
+          is_simulation?: boolean
+          severity?: string
+          target?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          channels?: Json
+          created_at?: string
+          created_by?: string
+          dispatched?: number
+          id?: string
+          is_simulation?: boolean
+          severity?: string
+          target?: string
+          title?: string
+        }
+        Relationships: []
+      }
       aria_attachment_scans: {
         Row: {
           claimed_mime: string
@@ -299,6 +364,42 @@ export type Database = {
           scanned_at?: string
           signature?: string | null
           size_bytes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      aria_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          is_simulation: boolean
+          last_message_at: string
+          message_count: number
+          metadata: Json
+          thread_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          last_message_at?: string
+          message_count?: number
+          metadata?: Json
+          thread_id: string
+          title?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          last_message_at?: string
+          message_count?: number
+          metadata?: Json
+          thread_id?: string
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -738,6 +839,42 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_learning_log: {
+        Row: {
+          created_at: string
+          failure_reason: string
+          id: string
+          intent: string | null
+          question: string
+          rating: number | null
+          resolution_note: string | null
+          resolved: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          failure_reason?: string
+          id?: string
+          intent?: string | null
+          question: string
+          rating?: number | null
+          resolution_note?: string | null
+          resolved?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          failure_reason?: string
+          id?: string
+          intent?: string | null
+          question?: string
+          rating?: number | null
+          resolution_note?: string | null
+          resolved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       aria_memory: {
         Row: {
           content: string
@@ -927,6 +1064,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      aria_preferences: {
+        Row: {
+          daily_brief_enabled: boolean
+          language: string
+          prefs: Json
+          theme: string
+          updated_at: string
+          user_id: string
+          voice_enabled: boolean
+        }
+        Insert: {
+          daily_brief_enabled?: boolean
+          language?: string
+          prefs?: Json
+          theme?: string
+          updated_at?: string
+          user_id: string
+          voice_enabled?: boolean
+        }
+        Update: {
+          daily_brief_enabled?: boolean
+          language?: string
+          prefs?: Json
+          theme?: string
+          updated_at?: string
+          user_id?: string
+          voice_enabled?: boolean
+        }
+        Relationships: []
       }
       aria_public_incidents: {
         Row: {
@@ -2283,6 +2450,318 @@ export type Database = {
           },
         ]
       }
+      hcis_approval_stages: {
+        Row: {
+          description_ar: string
+          name_ar: string
+          name_en: string
+          stage_no: number
+        }
+        Insert: {
+          description_ar: string
+          name_ar: string
+          name_en: string
+          stage_no: number
+        }
+        Update: {
+          description_ar?: string
+          name_ar?: string
+          name_en?: string
+          stage_no?: number
+        }
+        Relationships: []
+      }
+      hcis_assessments: {
+        Row: {
+          assessor: string | null
+          created_at: string
+          evidence: string | null
+          id: string
+          is_simulation: boolean
+          last_verified_at: string | null
+          metadata: Json
+          notes: string | null
+          org_id: string
+          region: string
+          requirement_id: string
+          status: string
+        }
+        Insert: {
+          assessor?: string | null
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          is_simulation?: boolean
+          last_verified_at?: string | null
+          metadata?: Json
+          notes?: string | null
+          org_id: string
+          region: string
+          requirement_id: string
+          status?: string
+        }
+        Update: {
+          assessor?: string | null
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          is_simulation?: boolean
+          last_verified_at?: string | null
+          metadata?: Json
+          notes?: string | null
+          org_id?: string
+          region?: string
+          requirement_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hcis_assessments_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "hcis_requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hcis_compliance_status: {
+        Row: {
+          directive_code: string
+          id: string
+          is_simulation: boolean
+          notes_ar: string | null
+          priority: string
+          region_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          directive_code: string
+          id?: string
+          is_simulation?: boolean
+          notes_ar?: string | null
+          priority?: string
+          region_code: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          directive_code?: string
+          id?: string
+          is_simulation?: boolean
+          notes_ar?: string | null
+          priority?: string
+          region_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hcis_compliance_status_directive_code_fkey"
+            columns: ["directive_code"]
+            isOneToOne: false
+            referencedRelation: "hcis_directives"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      hcis_directives: {
+        Row: {
+          category: string
+          code: string
+          issue_note_ar: string | null
+          name_ar: string
+          name_en: string
+          scope_ar: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          code: string
+          issue_note_ar?: string | null
+          name_ar: string
+          name_en: string
+          scope_ar: string
+          sort_order: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          issue_note_ar?: string | null
+          name_ar?: string
+          name_en?: string
+          scope_ar?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hcis_findings: {
+        Row: {
+          cap_plan: string | null
+          created_at: string
+          id: string
+          is_simulation: boolean
+          metadata: Json
+          org_id: string
+          owner: string | null
+          region: string
+          requirement_id: string | null
+          severity: string
+          status: string
+          target_date: string | null
+          title_ar: string
+        }
+        Insert: {
+          cap_plan?: string | null
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          org_id: string
+          owner?: string | null
+          region: string
+          requirement_id?: string | null
+          severity?: string
+          status?: string
+          target_date?: string | null
+          title_ar: string
+        }
+        Update: {
+          cap_plan?: string | null
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          org_id?: string
+          owner?: string | null
+          region?: string
+          requirement_id?: string | null
+          severity?: string
+          status?: string
+          target_date?: string | null
+          title_ar?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hcis_findings_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "hcis_requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hcis_inspections: {
+        Row: {
+          created_at: string
+          executed_at: string | null
+          id: string
+          is_simulation: boolean
+          metadata: Json
+          org_id: string
+          region: string
+          report: string | null
+          result: string | null
+          scheduled_at: string
+          status: string
+          title_ar: string
+        }
+        Insert: {
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          org_id: string
+          region: string
+          report?: string | null
+          result?: string | null
+          scheduled_at: string
+          status?: string
+          title_ar: string
+        }
+        Update: {
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          org_id?: string
+          region?: string
+          report?: string | null
+          result?: string | null
+          scheduled_at?: string
+          status?: string
+          title_ar?: string
+        }
+        Relationships: []
+      }
+      hcis_requirements: {
+        Row: {
+          category: string
+          clause_no: string
+          created_at: string
+          description_ar: string
+          description_en: string
+          id: string
+          is_simulation: boolean
+          mandatory_level: string
+          metadata: Json
+          org_id: string
+          verification_frequency: string
+        }
+        Insert: {
+          category: string
+          clause_no: string
+          created_at?: string
+          description_ar: string
+          description_en: string
+          id?: string
+          is_simulation?: boolean
+          mandatory_level?: string
+          metadata?: Json
+          org_id: string
+          verification_frequency?: string
+        }
+        Update: {
+          category?: string
+          clause_no?: string
+          created_at?: string
+          description_ar?: string
+          description_en?: string
+          id?: string
+          is_simulation?: boolean
+          mandatory_level?: string
+          metadata?: Json
+          org_id?: string
+          verification_frequency?: string
+        }
+        Relationships: []
+      }
+      hcis_sectors: {
+        Row: {
+          id: number
+          is_primary: boolean
+          name_ar: string
+          name_en: string
+        }
+        Insert: {
+          id: number
+          is_primary?: boolean
+          name_ar: string
+          name_en: string
+        }
+        Update: {
+          id?: number
+          is_primary?: boolean
+          name_ar?: string
+          name_en?: string
+        }
+        Relationships: []
+      }
       integration_microsoft: {
         Row: {
           client_id: string | null
@@ -3241,6 +3720,222 @@ export type Database = {
             columns: ["outcome_id"]
             isOneToOne: false
             referencedRelation: "business_outcomes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permit_approvals: {
+        Row: {
+          approver_id: string | null
+          approver_name: string | null
+          created_at: string
+          decided_at: string | null
+          decision: string
+          id: string
+          is_simulation: boolean
+          metadata: Json
+          org_id: string
+          permit_id: string
+          reason: string | null
+          role: string
+          step_order: number
+        }
+        Insert: {
+          approver_id?: string | null
+          approver_name?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          org_id: string
+          permit_id: string
+          reason?: string | null
+          role: string
+          step_order: number
+        }
+        Update: {
+          approver_id?: string | null
+          approver_name?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          org_id?: string
+          permit_id?: string
+          reason?: string | null
+          role?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permit_approvals_permit_id_fkey"
+            columns: ["permit_id"]
+            isOneToOne: false
+            referencedRelation: "permits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permit_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          detail: string | null
+          event_type: string
+          id: string
+          is_simulation: boolean
+          metadata: Json
+          occurred_at: string
+          org_id: string
+          permit_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          detail?: string | null
+          event_type: string
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          occurred_at?: string
+          org_id: string
+          permit_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          detail?: string | null
+          event_type?: string
+          id?: string
+          is_simulation?: boolean
+          metadata?: Json
+          occurred_at?: string
+          org_id?: string
+          permit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permit_events_permit_id_fkey"
+            columns: ["permit_id"]
+            isOneToOne: false
+            referencedRelation: "permits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permit_types: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          is_simulation: boolean
+          key: string
+          metadata: Json
+          name_ar: string
+          name_en: string
+          org_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_simulation?: boolean
+          key: string
+          metadata?: Json
+          name_ar: string
+          name_en: string
+          org_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_simulation?: boolean
+          key?: string
+          metadata?: Json
+          name_ar?: string
+          name_en?: string
+          org_id?: string
+        }
+        Relationships: []
+      }
+      permits: {
+        Row: {
+          contractor: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string
+          id: string
+          is_simulation: boolean
+          location: string
+          metadata: Json
+          org_id: string
+          precautions: Json
+          ref: string
+          region: string
+          starts_at: string
+          status: string
+          type_id: string | null
+          type_key: string
+          updated_at: string
+          worker_count: number
+        }
+        Insert: {
+          contractor?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at: string
+          id?: string
+          is_simulation?: boolean
+          location: string
+          metadata?: Json
+          org_id: string
+          precautions?: Json
+          ref: string
+          region: string
+          starts_at: string
+          status?: string
+          type_id?: string | null
+          type_key: string
+          updated_at?: string
+          worker_count?: number
+        }
+        Update: {
+          contractor?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string
+          id?: string
+          is_simulation?: boolean
+          location?: string
+          metadata?: Json
+          org_id?: string
+          precautions?: Json
+          ref?: string
+          region?: string
+          starts_at?: string
+          status?: string
+          type_id?: string | null
+          type_key?: string
+          updated_at?: string
+          worker_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permits_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "permit_types"
             referencedColumns: ["id"]
           },
         ]
