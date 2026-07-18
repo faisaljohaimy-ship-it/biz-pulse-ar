@@ -228,12 +228,32 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     const onlineT = window.setTimeout(() => setStatusOnline(true), 2400);
     // Hard cap safety
     const capT = window.setTimeout(() => finish(), MAX_MS);
+    // Stall watchdog — this overlay sits at z-[120] above the hero buttons,
+    // so it must NEVER block the app indefinitely. If the hero video makes no
+    // playback progress for STALL_WINDOW_MS (never started on a throttled
+    // mobile network, stalled mid-film, autoplay fully blocked, or the
+    // reduced-motion entry left idle), dismiss through finish() — which still
+    // honours MIN_DISPLAY_MS (INVARIANT-3). Explicit Skip remains instant.
+    const STALL_WINDOW_MS = 10_000;
+    let stallLastTime = -1;
+    let stallSince = performance.now();
+    const stallT = window.setInterval(() => {
+      if (finishedRef.current) return;
+      const t = v.currentTime;
+      if (t !== stallLastTime) {
+        stallLastTime = t;
+        stallSince = performance.now();
+        return;
+      }
+      if (performance.now() - stallSince >= STALL_WINDOW_MS) finish();
+    }, 2_000);
 
     if (reduced) {
       setNeedsGesture(true);
       return () => {
         window.clearTimeout(onlineT);
         window.clearTimeout(capT);
+        window.clearInterval(stallT);
         try {
           v.pause();
         } catch {
@@ -302,6 +322,7 @@ export function AriaWelcomeVideo({ onDone }: Props) {
     return () => {
       window.clearTimeout(onlineT);
       window.clearTimeout(capT);
+      window.clearInterval(stallT);
       if (pendingFinishRef.current != null) {
         window.clearTimeout(pendingFinishRef.current);
         pendingFinishRef.current = null;
