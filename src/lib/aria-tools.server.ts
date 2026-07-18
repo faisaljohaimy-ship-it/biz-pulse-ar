@@ -220,7 +220,7 @@ export function buildAriaTools(
           .from("hcis_compliance_status")
           .select("region_code,status,is_simulation");
         let source = "hcis_compliance_status";
-        let rows = (seeded.data ?? []).map(
+        let rows: Array<{ region: string; status: string; isSimulation: boolean }> = (seeded.data ?? []).map(
           (row: {
             region_code: string;
             status: string;
