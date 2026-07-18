@@ -2,7 +2,7 @@
  * الامتثال HCIS — HCIS Compliance dashboard.
  * All figures come from the simulation-seeded hcis_* tables (is_simulation=true).
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo } from "react";
@@ -157,7 +157,7 @@ function HcisPage() {
   const { user, loading } = useAuth();
   const { region } = useRegion();
   const fetchOverview = useServerFn(getHcisOverview);
-  const { data, isLoading } = useQuery<HcisOverview>({
+  const { data, isLoading, isError, refetch } = useQuery<HcisOverview>({
     queryKey: ["hcis-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     enabled: !!user && !loading,
@@ -218,7 +218,47 @@ function HcisPage() {
         </button>
       }
     >
-      {isLoading || !data ? (
+      {!loading && !user ? (
+        /* Guest browsing: the live matrix is auth-gated server-side — say so
+           honestly instead of an eternal "loading…" (the static directive
+           series below stays fully visible without an account). */
+        <NexusCard className="border-emerald-400/25">
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <span className="nx-module-icon grid h-12 w-12 place-items-center rounded-xl">
+              <KeyRound className="nx-icon-soft h-6 w-6" aria-hidden />
+            </span>
+            <p className="max-w-md text-sm leading-relaxed text-white/80">
+              {ar
+                ? "أنت تتصفّح كضيف. سجّل الدخول لعرض مصفوفة الامتثال الحيّة والفجوات وجدول التفتيشات — لائحة التوجيهات المرجعية أدناه متاحة للجميع."
+                : "You are browsing as a guest. Sign in to view the live compliance matrix, findings and inspection schedule — the reference directive series below is open to everyone."}
+            </p>
+            <Link
+              to="/auth"
+              search={{ redirect: "/hcis" }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-6 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/25 active:scale-[0.97]"
+            >
+              {ar ? "تسجيل الدخول" : "Sign in"}
+            </Link>
+          </div>
+        </NexusCard>
+      ) : isError ? (
+        <NexusCard className="border-rose-400/25">
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <p className="text-sm text-rose-300">
+              {ar
+                ? "تعذّر تحميل بيانات الامتثال — تحقّق من الاتصال ثم أعد المحاولة."
+                : "Compliance data failed to load — check your connection and retry."}
+            </p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-6 text-sm font-semibold text-[#BEEBFF] transition hover:bg-[#3AE8FF]/20 active:scale-[0.97]"
+            >
+              {ar ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        </NexusCard>
+      ) : isLoading || !data ? (
         <NexusCard>
           <p className="py-10 text-center text-white/50">{ar ? "جارٍ التحميل…" : "Loading…"}</p>
         </NexusCard>
@@ -346,43 +386,6 @@ function HcisPage() {
             </div>
           </NexusCard>
 
-          {/* HCIS directive series — icon reference grid (SEC-01..SEC-19 + SEC-RC + SAF) */}
-          <NexusCard>
-            <h3 className="mb-1 text-sm font-semibold text-white/80">
-              {ar
-                ? "لائحة التوجيهات الأمنية الصناعية (HCIS)"
-                : "HCIS Industrial-Security Directive Series"}
-            </h3>
-            <p className="mb-4 text-xs text-white/50">
-              {ar
-                ? "السلسلة المنشورة SEC-01 إلى SEC-19 مع المجمعات السكنية وسلسلة السلامة — مرجع عام؛ ليست بديلًا عن النصوص الرسمية للهيئة."
-                : "The published SEC-01..SEC-19 series with residential compounds and the safety series — general reference, not a substitute for the authority's official texts."}
-            </p>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-              {SEC_DIRECTIVES.map((d) => {
-                const Icon = d.icon;
-                return (
-                  <div
-                    key={d.code}
-                    className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 transition hover:bg-white/[0.06]"
-                  >
-                    <span className="nx-module-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg">
-                      <Icon className="nx-icon-soft h-[18px] w-[18px]" aria-hidden />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[11px] font-semibold tracking-wide text-white/50">
-                        {d.code}
-                      </span>
-                      <span className="block truncate text-xs text-white/85">
-                        {ar ? d.ar : d.en}
-                      </span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </NexusCard>
-
           {/* Findings + inspections */}
           <div className="grid gap-4 lg:grid-cols-2">
             <NexusCard>
@@ -472,6 +475,43 @@ function HcisPage() {
           </div>
         </>
       )}
+
+      {/* HCIS directive series — icon reference grid (SEC-01..SEC-19 + SEC-RC
+          + SAF). Static code-level reference data: ALWAYS rendered, for guests
+          and signed-in users alike — no DB round-trip, no auth gate. */}
+      <NexusCard>
+        <h3 className="mb-1 text-sm font-semibold text-white/80">
+          {ar
+            ? "لائحة التوجيهات الأمنية الصناعية (HCIS)"
+            : "HCIS Industrial-Security Directive Series"}
+        </h3>
+        <p className="mb-4 text-xs text-white/50">
+          {ar
+            ? "السلسلة المنشورة SEC-01 إلى SEC-19 مع المجمعات السكنية وسلسلة السلامة — مرجع عام؛ ليست بديلًا عن النصوص الرسمية للهيئة."
+            : "The published SEC-01..SEC-19 series with residential compounds and the safety series — general reference, not a substitute for the authority's official texts."}
+        </p>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+          {SEC_DIRECTIVES.map((d) => {
+            const Icon = d.icon;
+            return (
+              <div
+                key={d.code}
+                className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 transition hover:bg-white/[0.06]"
+              >
+                <span className="nx-module-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg">
+                  <Icon className="nx-icon-soft h-[18px] w-[18px]" aria-hidden />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-semibold tracking-wide text-white/50">
+                    {d.code}
+                  </span>
+                  <span className="block truncate text-xs text-white/85">{ar ? d.ar : d.en}</span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </NexusCard>
     </NexusPage>
   );
 }
