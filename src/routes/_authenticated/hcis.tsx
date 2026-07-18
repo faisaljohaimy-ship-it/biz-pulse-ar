@@ -17,6 +17,26 @@ import {
   Siren,
   Lock,
   KeyRound,
+  FileText,
+  Fence,
+  DoorClosed,
+  Lightbulb,
+  Network,
+  ScanLine,
+  Zap,
+  RadioTower,
+  Building2,
+  TrainFront,
+  UserCheck,
+  IdCard,
+  Ship,
+  ClipboardCheck,
+  Radar,
+  Waypoints,
+  Cable,
+  Factory,
+  Home,
+  Flame,
   type LucideIcon,
 } from "lucide-react";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
@@ -53,6 +73,34 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   infosec: Lock,
   access: KeyRound,
 };
+
+// The published HCIS industrial-security directive series (SEC-01..SEC-19 + SEC-RC)
+// plus the safety/fire overview (SAF-GEN). Reference list — mirrors the seeded
+// hcis_directives table. Each directive carries its own glyph in a region-tinted badge.
+type SecDirective = { code: string; ar: string; en: string; icon: LucideIcon };
+const SEC_DIRECTIVES: SecDirective[] = [
+  { code: "SEC-01", ar: "المتطلبات العامة", en: "General Requirements", icon: FileText },
+  { code: "SEC-02", ar: "الأسوار الأمنية", en: "Security Fencing", icon: Fence },
+  { code: "SEC-03", ar: "البوابات الأمنية", en: "Security Gates", icon: DoorClosed },
+  { code: "SEC-04", ar: "الإنارة الأمنية", en: "Security Lighting", icon: Lightbulb },
+  { code: "SEC-05", ar: "الأنظمة المتكاملة", en: "Integrated Systems", icon: Network },
+  { code: "SEC-06", ar: "الأجهزة الأمنية", en: "Security Devices", icon: ScanLine },
+  { code: "SEC-07", ar: "التغذية الكهربائية", en: "Power Supply", icon: Zap },
+  { code: "SEC-08", ar: "الاتصالات وشبكات البيانات", en: "Comms & Networks", icon: RadioTower },
+  { code: "SEC-09", ar: "المباني الحاضنة", en: "Housing Structures", icon: Building2 },
+  { code: "SEC-10", ar: "السكك الحديدية", en: "Railway Operations", icon: TrainFront },
+  { code: "SEC-11", ar: "التحقق من الهوية", en: "Personal Verification", icon: UserCheck },
+  { code: "SEC-12", ar: "بطاقات التعريف", en: "Identification Cards", icon: IdCard },
+  { code: "SEC-13", ar: "الأمن السيبراني", en: "Cyber Security", icon: Lock },
+  { code: "SEC-14", ar: "الواجهة البحرية", en: "Marine Interface", icon: Ship },
+  { code: "SEC-15", ar: "إدارة المشاريع الأمنية", en: "Project Management", icon: ClipboardCheck },
+  { code: "SEC-16", ar: "العمليات الأمنية", en: "Security Operations", icon: Radar },
+  { code: "SEC-17", ar: "خطوط الأنابيب", en: "Pipelines", icon: Waypoints },
+  { code: "SEC-18", ar: "محطات التحويل", en: "Power Substations", icon: Cable },
+  { code: "SEC-19", ar: "أمن المدن الصناعية", en: "Industrial Cities", icon: Factory },
+  { code: "SEC-RC", ar: "المجمعات السكنية", en: "Residential Compounds", icon: Home },
+  { code: "SAF-GEN", ar: "السلامة والحماية من الحريق", en: "Safety & Fire", icon: Flame },
+];
 
 const SEVERITY_TONE: Record<string, string> = {
   critical: "text-rose-300 border-rose-400/40 bg-rose-500/10",
@@ -295,6 +343,43 @@ function HcisPage() {
                 <i className="h-3 w-3 rounded bg-rose-500/70" />{" "}
                 {ar ? "غير ممتثل" : "Non-compliant"}
               </span>
+            </div>
+          </NexusCard>
+
+          {/* HCIS directive series — icon reference grid (SEC-01..SEC-19 + SEC-RC + SAF) */}
+          <NexusCard>
+            <h3 className="mb-1 text-sm font-semibold text-white/80">
+              {ar
+                ? "لائحة التوجيهات الأمنية الصناعية (HCIS)"
+                : "HCIS Industrial-Security Directive Series"}
+            </h3>
+            <p className="mb-4 text-xs text-white/50">
+              {ar
+                ? "السلسلة المنشورة SEC-01 إلى SEC-19 مع المجمعات السكنية وسلسلة السلامة — مرجع عام؛ ليست بديلًا عن النصوص الرسمية للهيئة."
+                : "The published SEC-01..SEC-19 series with residential compounds and the safety series — general reference, not a substitute for the authority's official texts."}
+            </p>
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+              {SEC_DIRECTIVES.map((d) => {
+                const Icon = d.icon;
+                return (
+                  <div
+                    key={d.code}
+                    className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 transition hover:bg-white/[0.06]"
+                  >
+                    <span className="nx-module-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg">
+                      <Icon className="nx-icon-soft h-[18px] w-[18px]" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[11px] font-semibold tracking-wide text-white/50">
+                        {d.code}
+                      </span>
+                      <span className="block truncate text-xs text-white/85">
+                        {ar ? d.ar : d.en}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </NexusCard>
 

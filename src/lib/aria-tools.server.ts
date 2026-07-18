@@ -213,6 +213,47 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       },
     }),
 
+    hcis_directive_lookup: tool({
+      description:
+        "Look up HCIS industrial-security directives (the published SEC-01..SEC-19 + SAF framework): name, scope and category. Use for 'ما نطاق SEC-18؟' / 'ما التوجيه الخاص بالأمن السيبراني؟' / 'اذكر توجيهات الأمن الصناعي'. Reference data from the HCIS compliance framework (public, non-verbatim).",
+      inputSchema: z.object({
+        code: z
+          .string()
+          .max(12)
+          .optional()
+          .describe("Optional exact directive code, e.g. SEC-18 or SAF-GEN."),
+        query: z
+          .string()
+          .max(120)
+          .optional()
+          .describe("Optional Arabic/English keyword to match against directive names/scope."),
+        limit: z.number().int().min(1).max(25).default(21),
+      }),
+      execute: async (args) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new reference table not yet in generated types
+        const db = supabase as unknown as { from: (t: string) => any };
+        let q = db
+          .from("hcis_directives")
+          .select("code,category,name_ar,name_en,scope_ar,sort_order")
+          .order("sort_order", { ascending: true })
+          .limit(args.limit);
+        if (args.code) q = q.eq("code", args.code.toUpperCase());
+        if (args.query) {
+          const term = args.query.replace(/[,%()]/g, " ").trim();
+          if (term)
+            q = q.or(`name_ar.ilike.%${term}%,name_en.ilike.%${term}%,scope_ar.ilike.%${term}%`);
+        }
+        const { data, error } = await q;
+        if (error) return { ok: false, error: error.message };
+        return {
+          ok: true,
+          directives: data ?? [],
+          count: (data ?? []).length,
+          note: "بيانات مرجعية عامة؛ ليست بديلًا عن النصوص الرسمية للهيئة.",
+        };
+      },
+    }),
+
     send_executive_email: tool({
       description:
         "Send an HTML executive email DIRECTLY (no human confirmation step). All safety controls apply: sender role, rate limits, provider config, encryption, and the immutable audit ledger with an auto-approve marker.",

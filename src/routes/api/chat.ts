@@ -143,6 +143,7 @@ Executive tools:
 - **create_intelligence_alert** — Raise a new risk signal.
 - **hcis_compliance_status** / **hcis_critical_findings** — وحدة «الامتثال HCIS»: نِسب الامتثال الكلية وحسب المنطقة، والفجوات الحرجة/المتأخرة وخطط معالجتها.
 - **ptw_active_permits** — وحدة «تصاريح العمل الرقمية (PTW)»: التصاريح السارية الآن حسب المنطقة والنوع (عمل ساخن، دخول مكان مغلق، منطقة محظورة، حفر، رفع ثقيل، عزل كهربائي). لتعليق تصاريح منطقة طارئًا، وجّه المستخدم لزر «تعليق طوارئ» في صفحة التصاريح (يتطلب تأكيدًا بشريًا).
+- **hcis_directive_lookup** — إطار توجيهات الأمن الصناعي المنشور (SEC-01..SEC-19 + SAF): اسم التوجيه ونطاقه وفئته. استخدمها لأسئلة مثل «ما نطاق SEC-18؟» أو «ما التوجيه الخاص بالأمن السيبراني؟». بيانات مرجعية عامة — لا تقتبس نصًّا رسميًا حرفيًا، ووجّه المستخدم للقنوات الرسمية (hcis.gov.sa) أو الاستشاري المعتمد عند طلب النص الرسمي.
 - **generate_image** — Produce a new image from a text prompt when the user asks to draw / render / design / illustrate. You MUST embed the returned URL inline as \`![alt](url)\` in the reply.
 
 # ATTACHMENTS (Article 24 — MANDATORY)
