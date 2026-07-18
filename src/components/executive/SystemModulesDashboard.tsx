@@ -45,7 +45,7 @@ export function SystemModulesDashboard() {
                 to={m.to as "/"}
                 aria-label={label}
                 style={{ animationDelay: `${-((i % 4) * 3)}s` }}
-                className="nx-sector-pulse group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.1] hover:shadow-[0_0_32px_rgba(58,232,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60"
+                className="nx-sector-pulse group flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.1] hover:shadow-[0_0_32px_rgba(58,232,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.97] active:border-[#3AE8FF]/70 active:bg-[#3AE8FF]/[0.14]"
               >
                 <span className="nx-module-icon flex h-11 w-11 items-center justify-center rounded-xl transition">
                   <Icon className="nx-icon-soft h-5 w-5" aria-hidden />

@@ -43,7 +43,7 @@ export function CommandBottomNav({ ar, accent }: { ar: boolean; accent: string }
             to={n.to as "/"}
             aria-label={ar ? n.ar : n.en}
             aria-current={active ? "page" : undefined}
-            className="group flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-center transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--acc)]/60"
+            className="group flex min-h-11 flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--acc)]/60 active:scale-[0.96] active:bg-white/10"
             style={active ? { background: `${accent}18` } : undefined}
           >
             <Icon
