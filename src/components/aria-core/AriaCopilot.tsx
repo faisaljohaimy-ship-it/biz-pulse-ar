@@ -33,7 +33,8 @@ import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat, setPendingReplyMode } from "@/lib/aria-core/services/aria-service";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
-import { MessageResponse } from "@/components/ai-elements/message";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
@@ -1771,7 +1772,7 @@ export function AriaCopilot() {
                         )}
                         {text ? (
                           <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
-                            <MessageResponse>{text}</MessageResponse>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                           </div>
                         ) : toolParts.length === 0 ? (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
