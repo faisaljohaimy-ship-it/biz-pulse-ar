@@ -15,7 +15,8 @@ function json(payload: Record<string, unknown>, status = 200): Response {
 
 function mapTwilioStatus(status: string): "accepted" | "delivered" | "failed" {
   if (status === "delivered" || status === "read") return "delivered";
-  if (status === "failed" || status === "undelivered" || status === "canceled") return "failed";
+  if (status === "failed" || status === "undelivered" || status === "canceled")
+    return "failed";
   return "accepted";
 }
 
@@ -32,13 +33,17 @@ export const Route = createFileRoute("/api/webhooks/twilio")({
             ?.toLowerCase()
             .includes("application/x-www-form-urlencoded")
         ) {
-          return json({ ok: false, error: "Webhook media type is invalid." }, 415);
+          return json(
+            { ok: false, error: "Webhook media type is invalid." },
+            415,
+          );
         }
         const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
         const publicUrl = process.env.TWILIO_STATUS_CALLBACK_URL?.trim();
         if (!authToken || !publicUrl)
           return json({ ok: false, error: "Webhook is not configured." }, 503);
-        const signature = request.headers.get("x-twilio-signature")?.trim() ?? "";
+        const signature =
+          request.headers.get("x-twilio-signature")?.trim() ?? "";
         const rawFormBody = await request.text();
         if (new TextEncoder().encode(rawFormBody).length > MAX_BODY_BYTES)
           return json({ ok: false, error: "Webhook body is too large." }, 413);
@@ -50,16 +55,24 @@ export const Route = createFileRoute("/api/webhooks/twilio")({
             authToken,
           }))
         ) {
-          return json({ ok: false, error: "Webhook signature is invalid." }, 401);
+          return json(
+            { ok: false, error: "Webhook signature is invalid." },
+            401,
+          );
         }
         const form = new URLSearchParams(rawFormBody);
-        const messageId = form.get("MessageSid")?.trim() || form.get("SmsSid")?.trim() || "";
+        const messageId =
+          form.get("MessageSid")?.trim() || form.get("SmsSid")?.trim() || "";
         const providerStatus =
           form.get("MessageStatus")?.trim().toLowerCase() ||
           form.get("SmsStatus")?.trim().toLowerCase() ||
           "unknown";
         const errorCode = form.get("ErrorCode")?.trim() || undefined;
-        if (!messageId) return json({ ok: false, error: "Webhook message ID is missing." }, 400);
+        if (!messageId)
+          return json(
+            { ok: false, error: "Webhook message ID is missing." },
+            400,
+          );
         const result = await recordOutboundProviderEvent({
           provider: "twilio",
           providerMessageId: messageId,
@@ -70,7 +83,8 @@ export const Route = createFileRoute("/api/webhooks/twilio")({
           occurredAt: new Date().toISOString(),
           failureCode: errorCode,
         });
-        if (result === "not_found") return json({ ok: false, retry: true }, 503);
+        if (result === "not_found")
+          return json({ ok: false, retry: true }, 503);
         return json({ ok: true, result });
       },
     },

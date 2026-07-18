@@ -26,7 +26,11 @@ import {
 
 type ToolPart = {
   type: string;
-  state?: "input-streaming" | "input-available" | "output-available" | "output-error";
+  state?:
+    | "input-streaming"
+    | "input-available"
+    | "output-available"
+    | "output-error";
   input?: unknown;
   output?: unknown;
   errorText?: string;
@@ -145,9 +149,13 @@ function summarizeOutput(toolName: string, output: unknown): string | null {
       return c ? `${c.length} open` : null;
     }
     case "send_executive_email":
-      return o.ok === true ? `Email · ${String(o.status ?? "accepted")}` : "Email · غير مؤكّد";
+      return o.ok === true
+        ? `Email · ${String(o.status ?? "accepted")}`
+        : "Email · غير مؤكّد";
     case "send_executive_sms":
-      return o.ok === true ? `SMS · ${String(o.status ?? "accepted")}` : "SMS · غير مؤكّد";
+      return o.ok === true
+        ? `SMS · ${String(o.status ?? "accepted")}`
+        : "SMS · غير مؤكّد";
     case "record_executive_decision": {
       const m = o.memory as { title?: string; kind?: string } | undefined;
       return m ? `${m.kind}: ${m.title}` : null;
@@ -203,7 +211,12 @@ function approvalPreview(output: unknown): ApprovalPreview | null {
   if (!output || typeof output !== "object") return null;
   const root = output as Record<string, unknown>;
   const raw = root.approval;
-  if (root.ok !== true || root.requiresApproval !== true || !raw || typeof raw !== "object") {
+  if (
+    root.ok !== true ||
+    root.requiresApproval !== true ||
+    !raw ||
+    typeof raw !== "object"
+  ) {
     return null;
   }
   const a = raw as Record<string, unknown>;
@@ -267,7 +280,9 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
       );
       setPhase("sent");
     } catch (error) {
-      setDetail(error instanceof Error ? error.message : "تعذّر إكمال الاعتماد.");
+      setDetail(
+        error instanceof Error ? error.message : "تعذّر إكمال الاعتماد.",
+      );
       setPhase("error");
     }
   }
@@ -283,11 +298,14 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
           approvalToken: approval.approvalToken,
         },
       });
-      if (!result.ok) throw new Error("انتهى طلب الاعتماد أو تم استخدامه مسبقاً.");
+      if (!result.ok)
+        throw new Error("انتهى طلب الاعتماد أو تم استخدامه مسبقاً.");
       setPhase("cancelled");
       setDetail("أُلغيت المسودة ولم تُرسل.");
     } catch (error) {
-      setDetail(error instanceof Error ? error.message : "تعذّر إلغاء المسودة.");
+      setDetail(
+        error instanceof Error ? error.message : "تعذّر إلغاء المسودة.",
+      );
       setPhase("error");
     }
   }
@@ -305,7 +323,11 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
         )}
       >
         <div className="flex items-center gap-2 font-bold">
-          {sent ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+          {sent ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <Ban className="h-4 w-4" />
+          )}
           {sent ? "تم الاعتماد والإرسال" : "أُلغيت المسودة"}
         </div>
         {detail && <p className="mt-1 leading-relaxed opacity-80">{detail}</p>}
@@ -351,7 +373,11 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
           {approval.cc && (
             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
               <dt className="text-white/45">نسخة</dt>
-              <dd dir="ltr" className="truncate text-left font-mono text-white" title={approval.cc}>
+              <dd
+                dir="ltr"
+                className="truncate text-left font-mono text-white"
+                title={approval.cc}
+              >
                 {approval.cc}
               </dd>
             </div>
@@ -359,7 +385,9 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
           {approval.subject && (
             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
               <dt className="text-white/45">الموضوع</dt>
-              <dd className="font-semibold text-white/90">{approval.subject}</dd>
+              <dd className="font-semibold text-white/90">
+                {approval.subject}
+              </dd>
             </div>
           )}
         </dl>
@@ -372,7 +400,9 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
           <span className="inline-flex items-center gap-1.5">
             <Clock3 className="h-3 w-3" /> ينتهي الاعتماد {expiryLabel}
           </span>
-          {approval.mediaCount > 0 && <span>{approval.mediaCount} مرفق وسائط</span>}
+          {approval.mediaCount > 0 && (
+            <span>{approval.mediaCount} مرفق وسائط</span>
+          )}
         </div>
 
         <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2.5 text-[11px] leading-relaxed text-white/75">
@@ -390,7 +420,9 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
             role="alert"
             className="rounded-lg border border-rose-400/25 bg-rose-400/8 px-2.5 py-2 text-[10px] text-rose-200"
           >
-            {expired ? "انتهت صلاحية هذه المسودة. اطلب من آريا إنشاء معاينة جديدة." : detail}
+            {expired
+              ? "انتهت صلاحية هذه المسودة. اطلب من آريا إنشاء معاينة جديدة."
+              : detail}
           </p>
         )}
 
@@ -431,7 +463,8 @@ export function ToolInvocation({ part }: { part: ToolPart }) {
   const navigate = useNavigate();
   const navigatedRef = useRef<string | null>(null);
   const toolName =
-    part.toolName ?? (part.type.startsWith("tool-") ? part.type.slice(5) : part.type);
+    part.toolName ??
+    (part.type.startsWith("tool-") ? part.type.slice(5) : part.type);
   const label = TOOL_LABELS[toolName] ?? {
     ar: toolName,
     en: toolName,
@@ -476,11 +509,15 @@ export function ToolInvocation({ part }: { part: ToolPart }) {
       <span className="text-muted-foreground">·</span>
       <span className="text-muted-foreground">{label.ar}</span>
       <div className="ms-auto flex items-center gap-1.5">
-        {summary && <span className="font-mono text-[11px] opacity-80">{summary}</span>}
+        {summary && (
+          <span className="font-mono text-[11px] opacity-80">{summary}</span>
+        )}
         {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {displayDone && <CheckCircle2 className="h-3.5 w-3.5" />}
         {displayError && <XCircle className="h-3.5 w-3.5" />}
-        {!isRunning && !displayDone && !displayError && <Wrench className="h-3.5 w-3.5" />}
+        {!isRunning && !displayDone && !displayError && (
+          <Wrench className="h-3.5 w-3.5" />
+        )}
       </div>
     </div>
   );

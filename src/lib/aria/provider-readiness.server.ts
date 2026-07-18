@@ -39,7 +39,10 @@ export function inspectAriaProviderReadiness(
   const database = capability("supabase", [
     ["SUPABASE_URL", /^https:\/\//i.test(env.SUPABASE_URL?.trim() ?? "")],
     ["SUPABASE_PUBLISHABLE_KEY", configured(env.SUPABASE_PUBLISHABLE_KEY, 20)],
-    ["SUPABASE_SERVICE_ROLE_KEY", configured(env.SUPABASE_SERVICE_ROLE_KEY, 20)],
+    [
+      "SUPABASE_SERVICE_ROLE_KEY",
+      configured(env.SUPABASE_SERVICE_ROLE_KEY, 20),
+    ],
   ]);
 
   const intelligenceProvider = configured(env.OPENAI_API_KEY, 20)
@@ -63,15 +66,24 @@ export function inspectAriaProviderReadiness(
     ["OPENAI_API_KEY", configured(env.OPENAI_API_KEY, 20)],
   ]);
 
-  const resendReady = configured(env.RESEND_API_KEY, 20) && configured(env.RESEND_FROM_EMAIL, 6);
+  const resendReady =
+    configured(env.RESEND_API_KEY, 20) && configured(env.RESEND_FROM_EMAIL, 6);
   const outlookReady = configured(env.MICROSOFT_OUTLOOK_API_KEY, 20);
-  const emailProvider = resendReady ? "resend" : outlookReady ? "outlook" : null;
+  const emailProvider = resendReady
+    ? "resend"
+    : outlookReady
+      ? "outlook"
+      : null;
   const email = capability(emailProvider, [
-    ["RESEND_API_KEY + RESEND_FROM_EMAIL or MICROSOFT_OUTLOOK_API_KEY", emailProvider !== null],
+    [
+      "RESEND_API_KEY + RESEND_FROM_EMAIL or MICROSOFT_OUTLOOK_API_KEY",
+      emailProvider !== null,
+    ],
   ]);
 
   const twilioSenderReady =
-    configured(env.TWILIO_FROM_NUMBER, 8) || configured(env.TWILIO_MESSAGING_SERVICE_SID, 10);
+    configured(env.TWILIO_FROM_NUMBER, 8) ||
+    configured(env.TWILIO_MESSAGING_SERVICE_SID, 10);
   const sms = capability("twilio", [
     ["TWILIO_ACCOUNT_SID", configured(env.TWILIO_ACCOUNT_SID, 20)],
     ["TWILIO_AUTH_TOKEN", configured(env.TWILIO_AUTH_TOKEN, 20)],
@@ -79,7 +91,10 @@ export function inspectAriaProviderReadiness(
   ]);
 
   const outboundSecurity = capability("internal", [
-    ["ARIA_MESSAGE_APPROVAL_SECRET", configured(env.ARIA_MESSAGE_APPROVAL_SECRET, 32)],
+    [
+      "ARIA_MESSAGE_APPROVAL_SECRET",
+      configured(env.ARIA_MESSAGE_APPROVAL_SECRET, 32),
+    ],
   ]);
 
   const deliveryTracking = capability("resend+twilio", [

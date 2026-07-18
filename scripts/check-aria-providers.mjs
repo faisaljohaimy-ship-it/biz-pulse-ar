@@ -1,5 +1,9 @@
 const required = {
-  database: ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SERVICE_ROLE_KEY"],
+  database: [
+    "SUPABASE_URL",
+    "SUPABASE_PUBLISHABLE_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+  ],
   intelligence: ["OPENAI_API_KEY"],
   voice: ["ELEVENLABS_API_KEY", "OPENAI_API_KEY"],
   email: ["RESEND_API_KEY", "RESEND_FROM_EMAIL", "RESEND_WEBHOOK_SECRET"],
@@ -20,7 +24,8 @@ const results = Object.entries(required).map(([capability, names]) => {
   return { capability, ready: missing.length === 0, missing };
 });
 
-const hasTwilioSender = usable("TWILIO_FROM_NUMBER") || usable("TWILIO_MESSAGING_SERVICE_SID");
+const hasTwilioSender =
+  usable("TWILIO_FROM_NUMBER") || usable("TWILIO_MESSAGING_SERVICE_SID");
 const sms = results.find((result) => result.capability === "sms");
 if (sms && !hasTwilioSender) {
   sms.ready = false;

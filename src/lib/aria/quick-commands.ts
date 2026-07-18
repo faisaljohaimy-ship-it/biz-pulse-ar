@@ -88,7 +88,8 @@ export const QUICK_COMMANDS: readonly QuickCommand[] = [
     icon: Mail,
     prompt: "",
     needsInput: true,
-    inputPrefix: "أرسل بريداً إلكترونياً إلى [البريد] بعنوان [الموضوع] ومحتواه: ",
+    inputPrefix:
+      "أرسل بريداً إلكترونياً إلى [البريد] بعنوان [الموضوع] ومحتواه: ",
   },
   {
     id: "sms",
@@ -106,5 +107,7 @@ export const QUICK_COMMANDS: readonly QuickCommand[] = [
 export function matchQuickCommands(query: string): readonly QuickCommand[] {
   const q = query.trim();
   if (!q) return QUICK_COMMANDS;
-  return QUICK_COMMANDS.filter((c) => c.slash.startsWith(q) || c.id.startsWith(q.toLowerCase()));
+  return QUICK_COMMANDS.filter(
+    (c) => c.slash.startsWith(q) || c.id.startsWith(q.toLowerCase()),
+  );
 }

@@ -53,7 +53,12 @@ function now(): number {
 }
 
 export const VoiceTimeline = {
-  push(tag: VoiceTag, msg: string, data?: Record<string, unknown>, opts?: { stack?: boolean }) {
+  push(
+    tag: VoiceTag,
+    msg: string,
+    data?: Record<string, unknown>,
+    opts?: { stack?: boolean },
+  ) {
     if (typeof window === "undefined") return;
     const t = now();
     const dt = last ? t - last : 0;
@@ -88,11 +93,14 @@ if (typeof window !== "undefined") {
   };
   w.__ariaTimeline = buf;
   w.__dumpAriaTimeline = () => {
-    console.table(buf.map((e) => ({ t: e.t, dt: e.dt, tag: e.tag, msg: e.msg })));
+    console.table(
+      buf.map((e) => ({ t: e.t, dt: e.dt, tag: e.tag, msg: e.msg })),
+    );
     const json = JSON.stringify(buf, null, 2);
     try {
       navigator.clipboard?.writeText(json).then(
-        () => console.log(`[timeline] ${buf.length} events copied to clipboard`),
+        () =>
+          console.log(`[timeline] ${buf.length} events copied to clipboard`),
         () => console.log(json),
       );
     } catch {
