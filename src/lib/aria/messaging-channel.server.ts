@@ -1,4 +1,7 @@
 import { httpJson } from "@/lib/api/http.server";
+import { normalizeE164 } from "./phone-number";
+
+export { normalizeE164 } from "./phone-number";
 
 export interface TwilioConfig {
   accountSid: string;
@@ -28,14 +31,6 @@ export interface ResendEmailInput {
   idempotencyKey: string;
 }
 
-export function normalizeE164(value: string): string {
-  const compact = value.trim().replace(/[\s().-]/g, "");
-  if (!/^\+[1-9]\d{7,14}$/.test(compact)) {
-    throw new Error("Phone number must use international E.164 format, for example +9665XXXXXXXX.");
-  }
-  return compact;
-}
-
 export function resolveTwilioConfig(
   env: Record<string, string | undefined> = process.env,
 ): TwilioConfig | null {
@@ -51,7 +46,13 @@ export function resolveTwilioConfig(
       throw new Error("TWILIO_STATUS_CALLBACK_URL must use HTTPS.");
     }
   }
-  return { accountSid, authToken, fromNumber, messagingServiceSid, statusCallbackUrl };
+  return {
+    accountSid,
+    authToken,
+    fromNumber,
+    messagingServiceSid,
+    statusCallbackUrl,
+  };
 }
 
 export function buildTwilioMessageForm(

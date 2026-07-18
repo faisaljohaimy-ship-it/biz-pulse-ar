@@ -1,16 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { shouldSpeakAriaReply } from "./reply-modality";
+import { shouldSpeakAriaReply, toAriaSpeechText } from "./reply-modality";
 
 describe("ARIA reply modality", () => {
-  it("keeps keyboard questions text-only", () => {
+  it("speaks only replies to voice turns inside conversation mode", () => {
+    expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: true })).toBe(true);
     expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: false })).toBe(false);
-  });
-
-  it("keeps microphone input silent outside Conversation Mode", () => {
     expect(shouldSpeakAriaReply({ conversationMode: false, fromVoice: true })).toBe(false);
   });
 
-  it("speaks replies to voice turns inside Conversation Mode", () => {
-    expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: true })).toBe(true);
+  it("removes visual markup, raw links and citation tags from spoken replies", () => {
+    expect(
+      toAriaSpeechText(
+        "## النتيجة\n- راجع [المرجع](https://example.com) [KB:سياسة] ثم افتح https://example.com/x.",
+      ),
+    ).toBe("النتيجة راجع المرجع ثم افتح");
+  });
+
+  it("does not read fenced code aloud", () => {
+    expect(toAriaSpeechText("تم التنفيذ.\n```ts\nsecret()\n```\nبنجاح.")).toBe(
+      "تم التنفيذ. بنجاح.",
+    );
   });
 });

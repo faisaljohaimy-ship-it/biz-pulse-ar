@@ -9,11 +9,12 @@ import { VoiceTimeline } from "./voice-timeline";
 // The three live voice sources: homepage greeting, specialist-agent speech,
 // and the copilot's Conversation-Mode reply TTS. ARIA chat always wins;
 // specialist narration may preempt the greeting but never ARIA.
-type Source = "hero-soundtrack" | "agent-tts" | "chat-tts";
+type Source = "hero-soundtrack" | "agent-tts" | "chat-tts" | "conversation-greeting";
 
 const PRIORITY: Record<Source, number> = {
   "hero-soundtrack": 1,
   "agent-tts": 2,
+  "conversation-greeting": 2,
   "chat-tts": 3,
 };
 
@@ -49,19 +50,19 @@ function emit(e: BusEvent) {
   }
 }
 
-// Double-voice watchdog — while chat-tts owns the channel, forcibly cancel
-// any rogue browser speechSynthesis every 250ms so ARIA can NEVER be
-// shadowed by a second voice.
+// Double-voice watchdog — while chat-tts owns the channel, cancel browser
+// speech through the captured native method. We deliberately do not monkey-
+// patch the browser API; doing so would break unrelated app/accessibility use.
 let watchdogTimer: ReturnType<typeof setInterval> | null = null;
 function startWatchdog() {
   if (watchdogTimer != null) return;
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   watchdogTimer = setInterval(() => {
     if (!current || current.source !== "chat-tts") return;
-    const s = window.speechSynthesis;
+    const s = browserSpeech;
     if (s && (s.speaking || s.pending)) {
       try {
-        s.cancel();
+        nativeCancel?.();
       } catch {
         /* ignore */
       }
@@ -77,30 +78,12 @@ function stopWatchdog() {
   }
 }
 
-// Capture the native engine once, then block every direct call. Specialist
-// speech can reach it only through speakAgentUtterance while agent-tts owns
-// the arbiter. ARIA never uses this engine; she remains ElevenLabs-only.
+// Capture native methods once. Governed specialist speech uses these methods;
+// ARIA remains ElevenLabs-only.
 if (typeof window !== "undefined" && window.speechSynthesis) {
   browserSpeech = window.speechSynthesis;
   nativeSpeak = browserSpeech.speak.bind(browserSpeech);
   nativeCancel = browserSpeech.cancel.bind(browserSpeech);
-  window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
-    const owner = current?.source ?? null;
-    const stack = new Error().stack?.split("\n").slice(2, 6).join(" | ");
-    VoiceTimeline.push("SPEECH_SYNTH", "direct speak() BLOCKED (use governed agent voice)", {
-      owner,
-      lang: u.lang,
-      voice: u.voice?.name,
-      text: u.text?.slice(0, 60),
-      stack,
-    });
-    console.warn("[agent-voice] ungoverned browser speech blocked", { owner });
-    return;
-  };
-  window.speechSynthesis.cancel = () => {
-    VoiceTimeline.push("CANCEL", "speechSynthesis.cancel()", { owner: current?.source ?? null });
-    return nativeCancel?.();
-  };
 }
 
 export const AriaAudioBus = {
@@ -160,8 +143,14 @@ export const AriaAudioBus = {
     // pass { bypassGesture: true }. No ARIA / tour source is ever exempt.
     const bypass = opts?.bypassGesture === true && BYPASS_ALLOWED.has(source);
     if (!unlocked && !bypass) {
-      console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", { source, stack });
-      VoiceTimeline.push("OWNER", "acquire REFUSED (no gesture)", { source, stack });
+      console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", {
+        source,
+        stack,
+      });
+      VoiceTimeline.push("OWNER", "acquire REFUSED (no gesture)", {
+        source,
+        stack,
+      });
       return false;
     }
     if (current && PRIORITY[source] < PRIORITY[current.source]) {
@@ -174,7 +163,11 @@ export const AriaAudioBus = {
     }
     if (current) {
       const prev = current.source;
-      VoiceTimeline.push("PREEMPT", "owner preempted", { prev, next: source, stack });
+      VoiceTimeline.push("PREEMPT", "owner preempted", {
+        prev,
+        next: source,
+        stack,
+      });
       try {
         current.stop();
       } catch {
@@ -186,12 +179,10 @@ export const AriaAudioBus = {
       }
       emit({ kind: "end", source: prev });
     }
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        /* ignore */
-      }
+    try {
+      nativeCancel?.();
+    } catch {
+      /* ignore */
     }
     current = { source, stop };
     VoiceTimeline.push("OWNER", "ACQUIRED", {
@@ -260,12 +251,10 @@ export const AriaAudioBus = {
       stopWatchdog();
       emit({ kind: "end", source: prev });
     }
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        /* ignore */
-      }
+    try {
+      nativeCancel?.();
+    } catch {
+      /* ignore */
     }
   },
 

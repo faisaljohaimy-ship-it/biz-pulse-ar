@@ -141,6 +141,8 @@ import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as VerifyPermitPermitIdRouteImport } from './routes/verify.permit.$permitId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiWebhooksTwilioRouteImport } from './routes/api/webhooks/twilio'
+import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/resend'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicPermitVerifyRouteImport } from './routes/api/public/permit-verify'
 import { Route as ApiPublicOsOverviewRouteImport } from './routes/api/public/os-overview'
@@ -157,6 +159,7 @@ import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
+import { Route as ApiAriaTranscribeRouteImport } from './routes/api/aria/transcribe'
 import { Route as ApiAriaChatRouteImport } from './routes/api/aria/chat'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
@@ -206,6 +209,7 @@ import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/
 import { Route as ApiPublicHooksAriaPatternMinerRouteImport } from './routes/api/public/hooks/aria-pattern-miner'
 import { Route as ApiPublicHooksAriaIncidentRouteImport } from './routes/api/public/hooks/aria-incident'
 import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
+import { Route as ApiAriaProvidersStatusRouteImport } from './routes/api/aria/providers/status'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -892,6 +896,16 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksTwilioRoute = ApiWebhooksTwilioRouteImport.update({
+  id: '/api/webhooks/twilio',
+  path: '/api/webhooks/twilio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
+  id: '/api/webhooks/resend',
+  path: '/api/webhooks/resend',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicVersionRoute = ApiPublicVersionRouteImport.update({
   id: '/api/public/version',
   path: '/api/public/version',
@@ -970,6 +984,11 @@ const ApiChatHealthRoute = ApiChatHealthRouteImport.update({
 const ApiAriaTtsRoute = ApiAriaTtsRouteImport.update({
   id: '/api/aria/tts',
   path: '/api/aria/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAriaTranscribeRoute = ApiAriaTranscribeRouteImport.update({
+  id: '/api/aria/transcribe',
+  path: '/api/aria/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAriaChatRoute = ApiAriaChatRouteImport.update({
@@ -1245,6 +1264,11 @@ const ApiPublicHooksAriaDocsIngestRoute =
     path: '/api/public/hooks/aria-docs-ingest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAriaProvidersStatusRoute = ApiAriaProvidersStatusRouteImport.update({
+  id: '/api/aria/providers/status',
+  path: '/api/aria/providers/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1407,6 +1431,7 @@ export interface FileRoutesByFullPath {
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/aria/chat': typeof ApiAriaChatRoute
+  '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
@@ -1423,11 +1448,14 @@ export interface FileRoutesByFullPath {
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/version': typeof ApiPublicVersionRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
+  '/api/webhooks/twilio': typeof ApiWebhooksTwilioRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
+  '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
@@ -1603,6 +1631,7 @@ export interface FileRoutesByTo {
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/aria/chat': typeof ApiAriaChatRoute
+  '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
@@ -1619,11 +1648,14 @@ export interface FileRoutesByTo {
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/version': typeof ApiPublicVersionRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
+  '/api/webhooks/twilio': typeof ApiWebhooksTwilioRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
+  '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
@@ -1803,6 +1835,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/aria/chat': typeof ApiAriaChatRoute
+  '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
@@ -1819,11 +1852,14 @@ export interface FileRoutesById {
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/version': typeof ApiPublicVersionRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
+  '/api/webhooks/twilio': typeof ApiWebhooksTwilioRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
+  '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
@@ -2003,6 +2039,7 @@ export interface FileRouteTypes {
     | '/sec/visitors'
     | '/settings/microsoft'
     | '/api/aria/chat'
+    | '/api/aria/transcribe'
     | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
@@ -2019,11 +2056,14 @@ export interface FileRouteTypes {
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
     | '/api/public/version'
+    | '/api/webhooks/resend'
+    | '/api/webhooks/twilio'
     | '/lovable/email/suppression'
     | '/verify/permit/$permitId'
     | '/assistant/'
     | '/learn/'
     | '/sec/'
+    | '/api/aria/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/aria-pattern-miner'
@@ -2199,6 +2239,7 @@ export interface FileRouteTypes {
     | '/sec/visitors'
     | '/settings/microsoft'
     | '/api/aria/chat'
+    | '/api/aria/transcribe'
     | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
@@ -2215,11 +2256,14 @@ export interface FileRouteTypes {
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
     | '/api/public/version'
+    | '/api/webhooks/resend'
+    | '/api/webhooks/twilio'
     | '/lovable/email/suppression'
     | '/verify/permit/$permitId'
     | '/assistant'
     | '/learn'
     | '/sec'
+    | '/api/aria/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/aria-pattern-miner'
@@ -2398,6 +2442,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
     | '/api/aria/chat'
+    | '/api/aria/transcribe'
     | '/api/aria/tts'
     | '/api/chat/health'
     | '/api/heygen/status'
@@ -2414,11 +2459,14 @@ export interface FileRouteTypes {
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
     | '/api/public/version'
+    | '/api/webhooks/resend'
+    | '/api/webhooks/twilio'
     | '/lovable/email/suppression'
     | '/verify/permit/$permitId'
     | '/_authenticated/assistant/'
     | '/_authenticated/learn/'
     | '/_authenticated/sec/'
+    | '/api/aria/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/aria-pattern-miner'
@@ -2496,6 +2544,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAriaChatRoute: typeof ApiAriaChatRoute
+  ApiAriaTranscribeRoute: typeof ApiAriaTranscribeRoute
   ApiAriaTtsRoute: typeof ApiAriaTtsRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
@@ -2511,8 +2560,11 @@ export interface RootRouteChildren {
   ApiPublicOsOverviewRoute: typeof ApiPublicOsOverviewRoute
   ApiPublicPermitVerifyRoute: typeof ApiPublicPermitVerifyRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
+  ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
+  ApiWebhooksTwilioRoute: typeof ApiWebhooksTwilioRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   VerifyPermitPermitIdRoute: typeof VerifyPermitPermitIdRoute
+  ApiAriaProvidersStatusRoute: typeof ApiAriaProvidersStatusRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksAriaIncidentRoute: typeof ApiPublicHooksAriaIncidentRoute
   ApiPublicHooksAriaPatternMinerRoute: typeof ApiPublicHooksAriaPatternMinerRoute
@@ -3456,6 +3508,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/twilio': {
+      id: '/api/webhooks/twilio'
+      path: '/api/webhooks/twilio'
+      fullPath: '/api/webhooks/twilio'
+      preLoaderRoute: typeof ApiWebhooksTwilioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/resend': {
+      id: '/api/webhooks/resend'
+      path: '/api/webhooks/resend'
+      fullPath: '/api/webhooks/resend'
+      preLoaderRoute: typeof ApiWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/version': {
       id: '/api/public/version'
       path: '/api/public/version'
@@ -3566,6 +3632,13 @@ declare module '@tanstack/react-router' {
       path: '/api/aria/tts'
       fullPath: '/api/aria/tts'
       preLoaderRoute: typeof ApiAriaTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/aria/transcribe': {
+      id: '/api/aria/transcribe'
+      path: '/api/aria/transcribe'
+      fullPath: '/api/aria/transcribe'
+      preLoaderRoute: typeof ApiAriaTranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/aria/chat': {
@@ -3911,6 +3984,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksAriaDocsIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/aria/providers/status': {
+      id: '/api/aria/providers/status'
+      path: '/api/aria/providers/status'
+      fullPath: '/api/aria/providers/status'
+      preLoaderRoute: typeof ApiAriaProvidersStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -4244,6 +4324,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAriaChatRoute: ApiAriaChatRoute,
+  ApiAriaTranscribeRoute: ApiAriaTranscribeRoute,
   ApiAriaTtsRoute: ApiAriaTtsRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
@@ -4259,8 +4340,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicOsOverviewRoute: ApiPublicOsOverviewRoute,
   ApiPublicPermitVerifyRoute: ApiPublicPermitVerifyRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
+  ApiWebhooksResendRoute: ApiWebhooksResendRoute,
+  ApiWebhooksTwilioRoute: ApiWebhooksTwilioRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   VerifyPermitPermitIdRoute: VerifyPermitPermitIdRoute,
+  ApiAriaProvidersStatusRoute: ApiAriaProvidersStatusRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
   ApiPublicHooksAriaIncidentRoute: ApiPublicHooksAriaIncidentRoute,
   ApiPublicHooksAriaPatternMinerRoute: ApiPublicHooksAriaPatternMinerRoute,

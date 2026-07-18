@@ -9,8 +9,9 @@ import {
   XCircle,
   Wrench,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
   approveAriaOutboundMessage,
@@ -36,18 +37,98 @@ const TOOL_LABELS: Record<string, { ar: string; en: string; icon: string }> = {
   create_task: { ar: "إنشاء مهمة", en: "Create Task", icon: "📝" },
   query_kpis: { ar: "قراءة المؤشرات", en: "Query KPIs", icon: "📊" },
   list_open_crises: { ar: "الأزمات المفتوحة", en: "Open Crises", icon: "⚠️" },
-  send_executive_email: { ar: "إرسال بريد تنفيذي", en: "Send Email", icon: "📧" },
+  send_executive_email: {
+    ar: "إرسال بريد تنفيذي",
+    en: "Send Email",
+    icon: "📧",
+  },
   send_executive_sms: { ar: "إرسال رسالة نصية", en: "Send SMS", icon: "💬" },
-  record_executive_decision: { ar: "تسجيل قرار", en: "Record Decision", icon: "🎯" },
+  record_executive_decision: {
+    ar: "تسجيل قرار",
+    en: "Record Decision",
+    icon: "🎯",
+  },
   query_tasks: { ar: "قراءة المهام", en: "Query Tasks", icon: "✅" },
   update_task_status: { ar: "تحديث المهمة", en: "Update Task", icon: "🔄" },
-  search_knowledge: { ar: "بحث في المعرفة", en: "Search Knowledge", icon: "🔎" },
-  create_intelligence_alert: { ar: "إنشاء تنبيه", en: "Create Alert", icon: "🚨" },
+  search_knowledge: {
+    ar: "بحث في المعرفة",
+    en: "Search Knowledge",
+    icon: "🔎",
+  },
+  create_intelligence_alert: {
+    ar: "إنشاء تنبيه",
+    en: "Create Alert",
+    icon: "🚨",
+  },
+  hcis_compliance_status: {
+    ar: "حالة الامتثال",
+    en: "HCIS Status",
+    icon: "🛡️",
+  },
+  hcis_critical_findings: {
+    ar: "فجوات الامتثال",
+    en: "HCIS Findings",
+    icon: "🔍",
+  },
+  ptw_active_permits: {
+    ar: "التصاريح النشطة",
+    en: "Active Permits",
+    icon: "📋",
+  },
+  sec_create_incident: { ar: "تسجيل حادث", en: "Create Incident", icon: "🚨" },
+  sec_update_incident: { ar: "تحديث حادث", en: "Update Incident", icon: "🛡️" },
+  sec_list_incidents: { ar: "قراءة الحوادث", en: "List Incidents", icon: "📑" },
+  sec_create_work_order: {
+    ar: "إنشاء أمر عمل",
+    en: "Create Work Order",
+    icon: "🧰",
+  },
+  sec_close_work_order: {
+    ar: "إغلاق أمر عمل",
+    en: "Close Work Order",
+    icon: "✅",
+  },
+  sec_list_work_orders: {
+    ar: "قراءة أوامر العمل",
+    en: "List Work Orders",
+    icon: "🛠️",
+  },
+  sec_create_permit: { ar: "إنشاء تصريح", en: "Create Permit", icon: "📋" },
+  sec_decide_permit: { ar: "قرار تصريح", en: "Permit Decision", icon: "⚖️" },
+  sec_list_permits: { ar: "قراءة التصاريح", en: "List Permits", icon: "📄" },
+  sec_schedule_patrol: { ar: "جدولة دورية", en: "Schedule Patrol", icon: "🚓" },
+  sec_list_patrols: { ar: "قراءة الدوريات", en: "List Patrols", icon: "🧭" },
+  sec_register_visitor: {
+    ar: "تسجيل زائر",
+    en: "Register Visitor",
+    icon: "🪪",
+  },
+  sec_checkout_visitor: {
+    ar: "خروج زائر",
+    en: "Check Out Visitor",
+    icon: "🚪",
+  },
+  sec_list_visitors: { ar: "قراءة الزوار", en: "List Visitors", icon: "👥" },
+  sec_list_cctv_alerts: {
+    ar: "تنبيهات الكاميرات",
+    en: "CCTV Alerts",
+    icon: "📹",
+  },
+  sec_triage_cctv_alert: {
+    ar: "فرز تنبيه كاميرا",
+    en: "Triage CCTV",
+    icon: "🎥",
+  },
+  sec_navigate: { ar: "فتح الصفحة", en: "Navigate", icon: "↗️" },
+  generate_image: { ar: "إنشاء صورة", en: "Generate Image", icon: "🎨" },
 };
 
 function summarizeOutput(toolName: string, output: unknown): string | null {
   if (!output || typeof output !== "object") return null;
-  const o = output as Record<string, unknown> & { ok?: boolean; error?: string };
+  const o = output as Record<string, unknown> & {
+    ok?: boolean;
+    error?: string;
+  };
   if (o.ok === false) return o.error ?? "Failed";
   if (o.requiresApproval === true) return "بانتظار اعتمادك · Awaiting approval";
   switch (toolName) {
@@ -64,9 +145,9 @@ function summarizeOutput(toolName: string, output: unknown): string | null {
       return c ? `${c.length} open` : null;
     }
     case "send_executive_email":
-      return `Email ${String(o.status ?? "completed")} ✓`;
+      return o.ok === true ? `Email · ${String(o.status ?? "accepted")}` : "Email · غير مؤكّد";
     case "send_executive_sms":
-      return `SMS ${String(o.status ?? "queued")} ✓`;
+      return o.ok === true ? `SMS · ${String(o.status ?? "accepted")}` : "SMS · غير مؤكّد";
     case "record_executive_decision": {
       const m = o.memory as { title?: string; kind?: string } | undefined;
       return m ? `${m.kind}: ${m.title}` : null;
@@ -87,9 +168,23 @@ function summarizeOutput(toolName: string, output: unknown): string | null {
       const a = o.alert as { title?: string; severity?: string } | undefined;
       return a ? `[${a.severity}] ${a.title}` : null;
     }
-    default:
-      return null;
+    default: {
+      if (typeof o.navigate_to === "string") return `فتح ${o.navigate_to}`;
+      if (typeof o.ref === "string") return o.ref;
+      if (typeof o.count === "number") return `${o.count} result(s)`;
+      return o.ok === true ? "تم التنفيذ" : null;
+    }
   }
+}
+
+function navigationTarget(output: unknown): string | null {
+  if (!output || typeof output !== "object") return null;
+  const result = output as { ok?: boolean; navigate_to?: unknown };
+  return result.ok === true &&
+    typeof result.navigate_to === "string" &&
+    /^\/[\w/-]*$/.test(result.navigate_to)
+    ? result.navigate_to
+    : null;
 }
 
 type ApprovalPreview = {
@@ -157,7 +252,10 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
     setDetail(null);
     try {
       const result = await approveFn({
-        data: { ledgerId: approval.ledgerId, approvalToken: approval.approvalToken },
+        data: {
+          ledgerId: approval.ledgerId,
+          approvalToken: approval.approvalToken,
+        },
       });
       if (!result.ok) throw new Error(result.error || "تعذّر إرسال الرسالة.");
       setDetail(
@@ -180,7 +278,10 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
     setDetail(null);
     try {
       const result = await cancelFn({
-        data: { ledgerId: approval.ledgerId, approvalToken: approval.approvalToken },
+        data: {
+          ledgerId: approval.ledgerId,
+          approvalToken: approval.approvalToken,
+        },
       });
       if (!result.ok) throw new Error("انتهى طلب الاعتماد أو تم استخدامه مسبقاً.");
       setPhase("cancelled");
@@ -327,15 +428,35 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
 }
 
 export function ToolInvocation({ part }: { part: ToolPart }) {
+  const navigate = useNavigate();
+  const navigatedRef = useRef<string | null>(null);
   const toolName =
     part.toolName ?? (part.type.startsWith("tool-") ? part.type.slice(5) : part.type);
-  const label = TOOL_LABELS[toolName] ?? { ar: toolName, en: toolName, icon: "🛠" };
+  const label = TOOL_LABELS[toolName] ?? {
+    ar: toolName,
+    en: toolName,
+    icon: "🛠",
+  };
   const state = part.state ?? "input-available";
   const isRunning = state === "input-streaming" || state === "input-available";
   const isDone = state === "output-available";
   const isError = state === "output-error";
+  const outputFailed =
+    isDone &&
+    !!part.output &&
+    typeof part.output === "object" &&
+    (part.output as { ok?: boolean }).ok === false;
+  const displayError = isError || outputFailed;
+  const displayDone = isDone && !outputFailed;
   const summary = isDone ? summarizeOutput(toolName, part.output) : null;
   const approval = isDone ? approvalPreview(part.output) : null;
+
+  useEffect(() => {
+    const target = isDone ? navigationTarget(part.output) : null;
+    if (!target || navigatedRef.current === target) return;
+    navigatedRef.current = target;
+    void navigate({ to: target as never });
+  }, [isDone, navigate, part.output]);
 
   if (approval) return <OutboundApprovalCard approval={approval} />;
 
@@ -343,9 +464,9 @@ export function ToolInvocation({ part }: { part: ToolPart }) {
     <div
       className={cn(
         "my-1 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs",
-        isError
+        displayError
           ? "border-destructive/40 bg-destructive/5 text-destructive"
-          : isDone
+          : displayDone
             ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300"
             : "border-primary/30 bg-primary/5 text-primary",
       )}
@@ -357,9 +478,9 @@ export function ToolInvocation({ part }: { part: ToolPart }) {
       <div className="ms-auto flex items-center gap-1.5">
         {summary && <span className="font-mono text-[11px] opacity-80">{summary}</span>}
         {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {isDone && <CheckCircle2 className="h-3.5 w-3.5" />}
-        {isError && <XCircle className="h-3.5 w-3.5" />}
-        {!isRunning && !isDone && !isError && <Wrench className="h-3.5 w-3.5" />}
+        {displayDone && <CheckCircle2 className="h-3.5 w-3.5" />}
+        {displayError && <XCircle className="h-3.5 w-3.5" />}
+        {!isRunning && !displayDone && !displayError && <Wrench className="h-3.5 w-3.5" />}
       </div>
     </div>
   );

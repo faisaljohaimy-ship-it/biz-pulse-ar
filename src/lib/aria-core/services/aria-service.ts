@@ -14,10 +14,17 @@ import type { AriaRouteHint } from "../types/aria";
 import { supabase } from "@/integrations/supabase/client";
 
 let cachedHint: AriaRouteHint | null = null;
+let cachedReplyMode: "text" | "voice" = "text";
 
 /** Publish the current route hint. AriaService attaches it as a request header. */
 export function setPendingRouteHint(hint: AriaRouteHint | null) {
   cachedHint = hint;
+}
+
+/** Select the presentation contract for the next request. Voice responses are
+ * still retained as hidden conversation history, but the UI renders audio only. */
+export function setPendingReplyMode(mode: "text" | "voice") {
+  cachedReplyMode = mode;
 }
 
 // Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
@@ -31,14 +38,22 @@ async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {})
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
-    return await fetch(input, { ...init, headers, signal: init.signal ?? controller.signal });
+    return await fetch(input, {
+      ...init,
+      headers,
+      signal: init.signal ?? controller.signal,
+    });
   } finally {
     clearTimeout(timer);
   }
 }
 
 /** Health probe — GET /api/chat/health. Returns { ok, model, key_present }. */
-export async function pingChat(): Promise<{ ok: boolean; model?: string; key_present?: boolean }> {
+export async function pingChat(): Promise<{
+  ok: boolean;
+  model?: string;
+  key_present?: boolean;
+}> {
   try {
     const r = await ariaAuthedFetch("/api/chat/health", { method: "GET" });
     if (!r.ok) return { ok: false };
@@ -69,7 +84,7 @@ export function createAriaTransport() {
       return {
         api,
         headers: out,
-        body: { ...(body ?? {}), messages, id },
+        body: { ...(body ?? {}), messages, id, replyMode: cachedReplyMode },
       };
     },
   });

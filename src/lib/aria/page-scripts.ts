@@ -495,7 +495,7 @@ export type SpeechLocale = "ar" | "en";
 export function pageScriptFor(pathname: string): PageScript | null {
   const p = normalizePath(pathname);
   for (const [prefix, script] of SCRIPTS) {
-    if (p === prefix || p.startsWith(prefix + "/") || p.startsWith(prefix)) {
+    if (p === prefix || p.startsWith(prefix + "/")) {
       return script;
     }
   }

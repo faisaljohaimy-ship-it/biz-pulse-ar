@@ -9,14 +9,31 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, RefreshCcw, Send, Sparkles, MessageCircle, X } from "lucide-react";
+import {
+  AudioWaveform,
+  Check,
+  Copy,
+  FileText,
+  Image as ImageIcon,
+  MessageCircle,
+  Mic,
+  MicOff,
+  Paperclip,
+  Plus,
+  RefreshCcw,
+  Send,
+  Sparkles,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
+import type { FileUIPart } from "ai";
 import { useAriaChat } from "@/lib/aria-core/provider";
 import { useAriaStore } from "@/lib/aria-core/store";
-import { pingChat } from "@/lib/aria-core/services/aria-service";
+import { pingChat, setPendingReplyMode } from "@/lib/aria-core/services/aria-service";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { MessageResponse } from "@/components/ai-elements/message";
 import { ExecutiveCard } from "./ExecutiveCard";
 import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
@@ -30,13 +47,16 @@ import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
 import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
-import { pageScriptParts } from "@/lib/aria/page-scripts";
-import { shouldSpeakAriaReply } from "@/lib/aria/reply-modality";
+import { shouldSpeakAriaReply, toAriaSpeechText } from "@/lib/aria/reply-modality";
+import { chooseAriaRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
+import {
+  ARIA_CONVERSATION_GREETING_AR,
+  shouldContinueAfterAriaGreeting,
+} from "@/lib/aria/conversation-greeting";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 // speakAria / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
 // pipeline below (ElevenLabs via /api/aria/tts, gated on the voice toggle).
-import { useRouterState } from "@tanstack/react-router";
 
 /** iOS Safari blocks audio started outside a user gesture. Call this
  *  synchronously inside every send/mic tap handler to prime the
@@ -114,7 +134,9 @@ type SR = {
     | ((e: {
         resultIndex: number;
         results: ArrayLike<
-          ArrayLike<{ transcript: string; isFinal?: boolean }> & { isFinal?: boolean }
+          ArrayLike<{ transcript: string; isFinal?: boolean }> & {
+            isFinal?: boolean;
+          }
         >;
       }) => void)
     | null;
@@ -134,10 +156,23 @@ function getSpeechRecognitionCtor(): (new () => SR) | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
-const EMPTY_STATE_AR = "لا توجد بيانات مباشرة حاليًا";
+const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "آريا تفكّر…";
+const MAX_ATTACHMENTS = 5;
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const MAX_ATTACHMENTS_TOTAL_BYTES = 20 * 1024 * 1024;
+const ACCEPTED_ATTACHMENT_TYPES = new Set([
+  "application/json",
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "text/csv",
+  "text/markdown",
+  "text/plain",
+]);
 
 import ariaHologramPortrait from "@/assets/aria-global-bg.jpeg.asset.json";
 
@@ -147,13 +182,52 @@ const STILL_SRC = ariaHologramPortrait.url;
 // and provider re-renders. Any second speak(replyId) for the same id is dropped
 // with a '[aria] DUP blocked' log — exactly-once guarantee per reply.
 const SPOKEN_REPLY_IDS: Set<string> = new Set();
+const MAX_SPOKEN_REPLY_IDS = 500;
+
+function rememberBounded(set: Set<string>, value: string): void {
+  if (!set.has(value) && set.size >= MAX_SPOKEN_REPLY_IDS) {
+    const oldest = set.values().next().value as string | undefined;
+    if (oldest) set.delete(oldest);
+  }
+  set.add(value);
+}
+
 function markSpokenOrDrop(replyId: string): boolean {
   if (SPOKEN_REPLY_IDS.has(replyId)) {
     console.warn(`[aria] DUP blocked replyId=${replyId}`);
     return false;
   }
-  SPOKEN_REPLY_IDS.add(replyId);
+  rememberBounded(SPOKEN_REPLY_IDS, replyId);
   return true;
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`تعذّرت قراءة الملف: ${file.name}`));
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsDataURL(file);
+  });
+}
+
+function attachmentMediaType(file: File): string {
+  if (file.type) return file.type;
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (extension === "md") return "text/markdown";
+  if (extension === "txt") return "text/plain";
+  if (extension === "csv") return "text/csv";
+  if (extension === "json") return "application/json";
+  if (extension === "pdf") return "application/pdf";
+  return "application/octet-stream";
+}
+
+async function toFileUIPart(file: File): Promise<FileUIPart> {
+  return {
+    type: "file",
+    filename: file.name,
+    mediaType: attachmentMediaType(file),
+    url: await fileToDataUrl(file),
+  };
 }
 
 function sanitiseAssistantText(raw: string): string {
@@ -278,7 +352,9 @@ export function AriaCopilot() {
   const setMode = useAriaStore((s) => s.setMode);
 
   const [draft, setDraft] = useState("");
-  const [lastUserText, setLastUserText] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
   // null = unknown; false = endpoint reachable but no AI provider key on this
@@ -287,22 +363,44 @@ export function AriaCopilot() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const objectUrlsRef = useRef<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
+  const recorderSupported = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.MediaRecorder !== "undefined" &&
+      !!navigator.mediaDevices?.getUserMedia,
+    [],
+  );
+  const voiceCaptureSupported = sttSupported || recorderSupported;
   const [listening, setListening] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [greeting, setGreeting] = useState(false);
   const recRef = useRef<SR | null>(null);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finalTranscriptRef = useRef<string>("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaChunksRef = useRef<Blob[]>([]);
+  const mediaCaptureCancelledRef = useRef(false);
+  const greetingAbortRef = useRef<AbortController | null>(null);
+  const mediaCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
   const hasError = chat.status === "error" || !!chat.error;
+  const lastAssistantMessageId = useMemo(
+    () => [...chat.messages].reverse().find((message) => message.role === "assistant")?.id,
+    [chat.messages],
+  );
 
   // Drive ARIA presence state from chat lifecycle.
   // thinking > listening > idle (speaking is driven by audio events below).
   useEffect(() => {
-    if (isBusy) {
+    if (isBusy || transcribing) {
       ariaState.set("thinking");
       return;
     }
@@ -311,7 +409,7 @@ export function AriaCopilot() {
       return;
     }
     if (ariaState.get() !== "speaking") ariaState.set("idle");
-  }, [isBusy, draft]);
+  }, [isBusy, transcribing, draft]);
   // On unmount / panel close, drop to idle.
   useEffect(
     () => () => {
@@ -365,40 +463,6 @@ export function AriaCopilot() {
     };
   }, [isOpen, composerRef]);
 
-  // Page-aware panel intro (Article 22 · page announcer, panel-open edition).
-  // On every panel open — and again whenever the pathname changes while the
-  // panel is already open — ARIA speaks a DISTINCT three-part script for the
-  // current route (title · purpose · what you can do). Routes without a
-  // dedicated script fall back silently to the existing generic greeting
-  // path; there is no placeholder line.
-  const introHandleRef = useRef<{ stop: () => void } | null>(null);
-  const lastIntroKeyRef = useRef<string | null>(null);
-  const [panelIntro, setPanelIntro] = useState<ReturnType<typeof pageScriptParts>>(null);
-  const routerPathname = useRouterState({ select: (s) => s.location.pathname });
-  useEffect(() => {
-    if (!isOpen) {
-      lastIntroKeyRef.current = null;
-      setPanelIntro(null);
-      introHandleRef.current?.stop();
-      introHandleRef.current = null;
-      return;
-    }
-    if (typeof window === "undefined") return;
-    const pathname = routerPathname || window.location.pathname;
-    const locale: "ar" | "en" =
-      typeof document !== "undefined" && document.documentElement.lang.startsWith("en")
-        ? "en"
-        : "ar";
-    const key = `${pathname}::${locale}`;
-    if (lastIntroKeyRef.current === key) return;
-    lastIntroKeyRef.current = key;
-
-    const parts = pageScriptParts(pathname);
-    setPanelIntro(parts);
-    // ARIA chat is silent by policy — no panel-open voice intro on any device.
-    return;
-  }, [isOpen, routerPathname]);
-
   // Conversation Mode state
   const [convMode, setConvMode] = useState(false);
   const [convPaused, setConvPaused] = useState(false);
@@ -418,11 +482,12 @@ export function AriaCopilot() {
   const convCaption = useMemo(() => {
     if (!convMode) return null;
     if (convPaused) return "اضغط للمتابعة 🎙";
+    if (transcribing) return "تُحَلِّلُ الصَّوْت…";
     if (state === "listening") return "تَسْتَمِع…";
     if (state === "thinking") return "تُفَكِّر…";
     if (state === "speaking") return "تَتَحَدَّث…";
     return "مُخَاطَبَة";
-  }, [convMode, convPaused, state]);
+  }, [convMode, convPaused, transcribing, state]);
 
   // ── INSTANT-START STREAMING TTS PIPELINE ───────────────────────────────
   // Fires TTS for each sentence AS IT APPEARS in the stream (not after the
@@ -448,6 +513,32 @@ export function AriaCopilot() {
   }
   const streamStateRef = useRef<Map<string, StreamState>>(new Map());
   const pendingSendAtRef = useRef<number | null>(null);
+
+  const stopVoicePlayback = useCallback(() => {
+    greetingAbortRef.current?.abort();
+    greetingAbortRef.current = null;
+    setGreeting(false);
+    for (const state of streamStateRef.current.values()) {
+      for (const controller of state.aborts) controller.abort();
+    }
+    streamStateRef.current.clear();
+    const audio = audioRef.current;
+    if (audio) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* noop */
+      }
+    }
+    audioRef.current = null;
+    for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+    objectUrlsRef.current.clear();
+    pendingSendAtRef.current = null;
+    speakNextReplyRef.current = false;
+    AriaAudioBus.stopAll();
+    ariaState.set("idle");
+  }, []);
 
   const splitCompleteSentences = useCallback((t: string): { complete: string[]; tail: string } => {
     // Match anything ending with a terminator. Trailing tail (no terminator) is pending.
@@ -476,10 +567,15 @@ export function AriaCopilot() {
       // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
       // at 5. Serialize to max 3 in-flight so long replies with many sentences
       // never trigger `concurrent_limit_exceeded` (429).
-      await ttsGate.acquire(ctrl.signal);
-      const reqT = performance.now();
-      VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/aria/tts`, { idx, chars: text.length });
+      let acquired = false;
       try {
+        await ttsGate.acquire(ctrl.signal);
+        acquired = true;
+        const reqT = performance.now();
+        VoiceTimeline.push("TTS_REQ", `[${idx}] POST /api/aria/tts`, {
+          idx,
+          chars: text.length,
+        });
         const r = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: {
@@ -521,6 +617,7 @@ export function AriaCopilot() {
         }
         const blob = await r.blob();
         const url = URL.createObjectURL(blob);
+        objectUrlsRef.current.add(url);
         const audio = new Audio(url);
         audio.preload = "auto";
         try {
@@ -545,7 +642,7 @@ export function AriaCopilot() {
         });
         return null;
       } finally {
-        ttsGate.release();
+        if (acquired) ttsGate.release();
       }
     },
     [],
@@ -558,7 +655,12 @@ export function AriaCopilot() {
     try {
       while (s.playingIdx < s.audios.length) {
         const idx = s.playingIdx;
-        const audio = await s.audios[idx];
+        let audio: HTMLAudioElement | null = null;
+        try {
+          audio = await s.audios[idx];
+        } catch {
+          audio = null;
+        }
         if (!audio) {
           s.playingIdx++;
           continue;
@@ -609,7 +711,11 @@ export function AriaCopilot() {
               };
               audio.addEventListener("playing", onPlaying, { once: true });
             }
-            audio.play().catch(() => resolve());
+            audio.play().catch(() => {
+              URL.revokeObjectURL(audio.src);
+              objectUrlsRef.current.delete(audio.src);
+              resolve();
+            });
           };
           audio.addEventListener("canplay", kick, { once: true });
           audio.addEventListener("loadeddata", kick, { once: true });
@@ -617,6 +723,7 @@ export function AriaCopilot() {
           audio.onended = () => {
             try {
               URL.revokeObjectURL(audio.src);
+              objectUrlsRef.current.delete(audio.src);
             } catch {
               /* noop */
             }
@@ -625,6 +732,7 @@ export function AriaCopilot() {
           audio.onerror = () => {
             try {
               URL.revokeObjectURL(audio.src);
+              objectUrlsRef.current.delete(audio.src);
             } catch {
               /* noop */
             }
@@ -661,8 +769,8 @@ export function AriaCopilot() {
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
 
-    const fullText = sanitiseAssistantText(
-      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    const fullText = toAriaSpeechText(
+      sanitiseAssistantText(last.parts.map((p) => (p.type === "text" ? p.text : "")).join("")),
     );
     if (!fullText || fullText.length < 2) return;
 
@@ -670,7 +778,7 @@ export function AriaCopilot() {
     // The flag is armed per-send in submit() and consumed exactly once here.
     if (!streamStateRef.current.has(last.id) && !spokenIdsRef.current.has(last.id)) {
       if (!speakNextReplyRef.current) {
-        spokenIdsRef.current.add(last.id); // typed turn → text-only reply
+        rememberBounded(spokenIdsRef.current, last.id); // typed turn → text-only reply
         return;
       }
       speakNextReplyRef.current = false;
@@ -697,7 +805,7 @@ export function AriaCopilot() {
       };
       pendingSendAtRef.current = null;
       streamStateRef.current.set(last.id, s);
-      spokenIdsRef.current.add(last.id);
+      rememberBounded(spokenIdsRef.current, last.id);
       // Acquire bus lazily on first dispatch — see below.
     }
 
@@ -739,6 +847,9 @@ export function AriaCopilot() {
             /* noop */
           }
         }
+        audioRef.current = null;
+        for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+        objectUrlsRef.current.clear();
         cur.finalized = true;
         streamStateRef.current.delete(last.id);
       });
@@ -762,20 +873,11 @@ export function AriaCopilot() {
     if (s.audios.length > 0) void pumpPlayback(last.id);
   }, [chat.messages, isBusy, splitCompleteSentences, fetchTTS, pumpPlayback]);
 
-  // Stop TTS when panel closes — barge-in / silence guarantee.
+  // Stop every TTS request/audio URL when the panel closes.
   useEffect(() => {
     if (isOpen) return;
-    const a = audioRef.current;
-    if (a) {
-      try {
-        a.pause();
-        a.currentTime = 0;
-      } catch {
-        /* noop */
-      }
-    }
-    ariaState.set("idle");
-  }, [isOpen]);
+    stopVoicePlayback();
+  }, [isOpen, stopVoicePlayback]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -785,10 +887,52 @@ export function AriaCopilot() {
     });
   }, [chat.messages, isOpen, isBusy, hasError]);
 
+  useEffect(() => {
+    const textarea = composerRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
+  }, [draft, composerRef]);
+
+  const addAttachments = useCallback(
+    (files: FileList | null) => {
+      if (!files?.length) return;
+      const next = [...attachments];
+      const errors: string[] = [];
+      for (const file of Array.from(files)) {
+        const key = `${file.name}:${file.size}:${file.lastModified}`;
+        if (next.some((item) => `${item.name}:${item.size}:${item.lastModified}` === key)) continue;
+        if (next.length >= MAX_ATTACHMENTS) {
+          errors.push(`الحد الأقصى ${MAX_ATTACHMENTS} ملفات.`);
+          break;
+        }
+        if (!ACCEPTED_ATTACHMENT_TYPES.has(attachmentMediaType(file))) {
+          errors.push(`نوع الملف غير مدعوم: ${file.name}`);
+          continue;
+        }
+        if (file.size > MAX_ATTACHMENT_BYTES) {
+          errors.push(`حجم ${file.name} يتجاوز 10 م.ب.`);
+          continue;
+        }
+        const total = next.reduce((sum, item) => sum + item.size, 0) + file.size;
+        if (total > MAX_ATTACHMENTS_TOTAL_BYTES) {
+          errors.push("إجمالي المرفقات يتجاوز 20 م.ب.");
+          break;
+        }
+        next.push(file);
+      }
+      setAttachments(next);
+      setAttachmentError(errors[0] ?? null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    },
+    [attachments],
+  );
+
   const submit = useCallback(
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
       const promptText = (textOverride ?? draft).trim();
-      if (!promptText || isBusy) return;
+      if ((!promptText && attachments.length === 0) || isBusy) return;
+      const messageText = promptText || "حلّل المرفقات المضافة وأعطني خلاصة واضحة.";
 
       primeIOSAudio();
       // Voice replies only for voice turns in Conversation Mode; typed
@@ -797,21 +941,27 @@ export function AriaCopilot() {
         conversationMode: convModeRef.current,
         fromVoice: opts?.fromVoice,
       });
+      setPendingReplyMode(speakNextReplyRef.current ? "voice" : "text");
       setDraft("");
-      setLastUserText(promptText);
       pendingSendAtRef.current = performance.now();
-      void chat.sendMessage({ text: promptText });
+      try {
+        const files = await Promise.all(attachments.map(toFileUIPart));
+        await chat.sendMessage({
+          text: messageText,
+          ...(files.length ? { files } : {}),
+        });
+        setAttachments([]);
+        setAttachmentError(null);
+      } catch (error) {
+        setAttachmentError(error instanceof Error ? error.message : "تعذّر إرفاق الملفات.");
+      }
 
       requestAnimationFrame(() => {
         composerRef.current?.focus({ preventScroll: true });
       });
     },
-    [draft, isBusy, chat, composerRef],
+    [draft, attachments, isBusy, chat, composerRef],
   );
-
-  const retry = () => {
-    if (lastUserText) submit(lastUserText);
-  };
 
   // Quick commands (Phase 2 §4). A search-style command focuses the composer
   // with a prefix; the rest send a ready-made prompt to ARIA immediately.
@@ -840,23 +990,220 @@ export function AriaCopilot() {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
+    mediaCaptureCancelledRef.current = true;
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      try {
+        recorder.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (mediaCaptureTimerRef.current) {
+      clearTimeout(mediaCaptureTimerRef.current);
+      mediaCaptureTimerRef.current = null;
+    }
+    for (const track of mediaStreamRef.current?.getTracks() ?? []) track.stop();
+    mediaStreamRef.current = null;
     setListening(false);
+  }, []);
+
+  const stopResponse = useCallback(() => {
+    void chat.stop();
+    stopVoicePlayback();
+  }, [chat, stopVoicePlayback]);
+
+  const retry = useCallback(() => {
+    if (isBusy) return;
+    primeIOSAudio();
+    stopVoicePlayback();
+    speakNextReplyRef.current = false;
+    setPendingReplyMode("text");
+    void chat.regenerate();
+  }, [chat, isBusy, stopVoicePlayback]);
+
+  const startNewChat = useCallback(() => {
+    void chat.stop();
+    stopListening();
+    stopVoicePlayback();
+    chat.setMessages([]);
+    setDraft("");
+    setAttachments([]);
+    setAttachmentError(null);
+    requestAnimationFrame(() => composerRef.current?.focus({ preventScroll: true }));
+  }, [chat, composerRef, stopListening, stopVoicePlayback]);
+
+  const closePanel = useCallback(() => {
+    stopListening();
+    stopVoicePlayback();
+    convModeRef.current = false;
+    setConvMode(false);
+    setConvPaused(false);
+    setMode("collapsed");
+  }, [setMode, stopListening, stopVoicePlayback]);
+
+  const copyMessage = useCallback(async (id: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageId(id);
+      window.setTimeout(
+        () => setCopiedMessageId((current) => (current === id ? null : current)),
+        1600,
+      );
+    } catch {
+      setCopiedMessageId(null);
+    }
+  }, []);
+
+  const transcribeVoiceBlob = useCallback(
+    async (blob: Blob, mimeType: string) => {
+      if (!convModeRef.current || blob.size === 0) return;
+      setTranscribing(true);
+      ariaState.set("thinking");
+      try {
+        const extension = recorderFileExtension(mimeType);
+        const form = new FormData();
+        form.set(
+          "audio",
+          new File([blob], `aria-voice-${Date.now()}.${extension}`, {
+            type: mimeType,
+          }),
+        );
+        const response = await authenticatedFetch("/api/aria/transcribe", {
+          method: "POST",
+          body: form,
+        });
+        const payload = (await response.json().catch(() => null)) as {
+          text?: unknown;
+          error?: unknown;
+        } | null;
+        if (!response.ok || typeof payload?.text !== "string") {
+          const reason =
+            typeof payload?.error === "string"
+              ? payload.error
+              : "تعذّر فهم الصوت — اضغط وتحدث مرة أخرى.";
+          setConvNotice(reason);
+          setConvPaused(true);
+          return;
+        }
+        const transcript = payload.text.trim();
+        if (!transcript) {
+          setConvPaused(true);
+          return;
+        }
+        setDraft("");
+        await submit(transcript, { fromVoice: true });
+      } catch {
+        setConvNotice("تعذّر تحليل الصوت — تحقق من الاتصال ثم أعد المحاولة.");
+        setConvPaused(true);
+      } finally {
+        setTranscribing(false);
+      }
+    },
+    [submit],
+  );
+
+  const startRecordedListening = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setConvNotice("التسجيل الصوتي غير متاح في هذا المتصفح.");
+      setConvPaused(true);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      });
+      if (!convModeRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      const mimeType = chooseAriaRecorderMime((candidate) =>
+        MediaRecorder.isTypeSupported(candidate),
+      );
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+      mediaStreamRef.current = stream;
+      mediaRecorderRef.current = recorder;
+      mediaChunksRef.current = [];
+      mediaCaptureCancelledRef.current = false;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) mediaChunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        mediaCaptureCancelledRef.current = true;
+        setConvNotice("حدث خطأ أثناء التسجيل الصوتي.");
+        setConvPaused(true);
+        if (recorder.state !== "inactive") recorder.stop();
+      };
+      recorder.onstop = () => {
+        const cancelled = mediaCaptureCancelledRef.current;
+        const chunks = mediaChunksRef.current;
+        const actualType = recorder.mimeType || mimeType || chunks[0]?.type || "audio/webm";
+        mediaChunksRef.current = [];
+        mediaRecorderRef.current = null;
+        if (mediaCaptureTimerRef.current) {
+          clearTimeout(mediaCaptureTimerRef.current);
+          mediaCaptureTimerRef.current = null;
+        }
+        for (const track of stream.getTracks()) track.stop();
+        if (mediaStreamRef.current === stream) mediaStreamRef.current = null;
+        setListening(false);
+        if (cancelled || !convModeRef.current) return;
+        const recording = new Blob(chunks, { type: actualType });
+        if (recording.size === 0) {
+          setConvPaused(true);
+          return;
+        }
+        void transcribeVoiceBlob(recording, actualType);
+      };
+      recorder.start(250);
+      setListening(true);
+      setConvPaused(false);
+      ariaState.set("listening");
+      mediaCaptureTimerRef.current = setTimeout(() => {
+        if (recorder.state !== "inactive") recorder.stop();
+      }, 30_000);
+    } catch {
+      setListening(false);
+      setConvPaused(true);
+      setConvNotice("تعذّر الوصول إلى الميكروفون — اسمح به من إعدادات المتصفح.");
+    }
+  }, [transcribeVoiceBlob]);
+
+  const finishListening = useCallback(() => {
+    const recognition = recRef.current;
+    if (recognition) {
+      try {
+        recognition.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      mediaCaptureCancelledRef.current = false;
+      try {
+        recorder.stop();
+      } catch {
+        /* ignore */
+      }
+    }
   }, []);
 
   const startListening = useCallback(() => {
     primeIOSAudio();
     const Ctor = getSpeechRecognitionCtor();
-    if (!Ctor) return;
-    // Barge-in: silence any ARIA speech instantly.
-    AriaAudioBus.stopAll();
-    const prev = audioRef.current;
-    if (prev) {
-      try {
-        prev.pause();
-      } catch {
-        /* noop */
-      }
+    if (!Ctor) {
+      void startRecordedListening();
+      return;
     }
+    // Barge-in: silence and release every pending ARIA speech resource.
+    stopVoicePlayback();
     if (relistenTimerRef.current) {
       clearTimeout(relistenTimerRef.current);
       relistenTimerRef.current = null;
@@ -883,7 +1230,9 @@ export function AriaCopilot() {
       r.onresult = (e) => {
         let interim = "";
         for (let i = e.resultIndex; i < e.results.length; i++) {
-          const res = e.results[i] as ArrayLike<{ transcript: string }> & { isFinal?: boolean };
+          const res = e.results[i] as ArrayLike<{ transcript: string }> & {
+            isFinal?: boolean;
+          };
           const t = res[0]?.transcript ?? "";
           if (res.isFinal) finalTranscriptRef.current += t;
           else interim += t;
@@ -915,15 +1264,103 @@ export function AriaCopilot() {
       armSilence();
     } catch {
       setListening(false);
+      void startRecordedListening();
     }
-  }, [submit, stopListening]);
+  }, [submit, stopListening, stopVoicePlayback, startRecordedListening]);
 
   useEffect(() => {
     startListeningRef.current = startListening;
   }, [startListening]);
 
+  const playConversationGreeting = useCallback(async () => {
+    const controller = new AbortController();
+    greetingAbortRef.current?.abort();
+    greetingAbortRef.current = controller;
+    setGreeting(true);
+    setConvPaused(false);
+    ariaState.set("speaking");
+
+    const audio = await fetchTTS(ARIA_CONVERSATION_GREETING_AR, 0, controller);
+    if (!audio || controller.signal.aborted || !convModeRef.current) {
+      if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
+      setGreeting(false);
+      if (convModeRef.current && !controller.signal.aborted) {
+        setConvNotice("تعذّر تشغيل تحية آريا، يمكنك البدء بالتحدث مباشرة.");
+        startListeningRef.current?.();
+      }
+      return;
+    }
+
+    const acquired = AriaAudioBus.acquire("conversation-greeting", () => {
+      controller.abort();
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* noop */
+      }
+    });
+    if (!acquired) {
+      controller.abort();
+      setGreeting(false);
+      if (convModeRef.current) startListeningRef.current?.();
+      return;
+    }
+
+    audioRef.current = audio;
+    let playbackStarted = false;
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      audio.addEventListener(
+        "playing",
+        () => {
+          playbackStarted = true;
+          ariaState.set("speaking");
+          AriaAudioBus.notifyPlaying("conversation-greeting", audio);
+        },
+        { once: true },
+      );
+      audio.onended = finish;
+      audio.onerror = finish;
+      controller.signal.addEventListener("abort", finish, { once: true });
+      audio.play().catch(finish);
+    });
+
+    const wasAborted = controller.signal.aborted;
+    try {
+      audio.pause();
+      URL.revokeObjectURL(audio.src);
+      objectUrlsRef.current.delete(audio.src);
+    } catch {
+      /* noop */
+    }
+    if (audioRef.current === audio) audioRef.current = null;
+    AriaAudioBus.notifyStopped("conversation-greeting");
+    AriaAudioBus.release("conversation-greeting");
+    if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
+    setGreeting(false);
+    if (!wasAborted && !playbackStarted && convModeRef.current) {
+      setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت آريا.");
+    }
+    if (
+      shouldContinueAfterAriaGreeting({
+        aborted: wasAborted,
+        conversationModeActive: convModeRef.current,
+      })
+    ) {
+      ariaState.set("listening");
+      startListeningRef.current?.();
+    }
+  }, [fetchTTS]);
+
   const toggleConversationMode = useCallback(() => {
     if (convMode) {
+      convModeRef.current = false;
       setConvMode(false);
       setConvPaused(false);
       setConvNotice(null);
@@ -932,21 +1369,11 @@ export function AriaCopilot() {
         relistenTimerRef.current = null;
       }
       stopListening();
-      AriaAudioBus.stopAll();
-      const a = audioRef.current;
-      if (a) {
-        try {
-          a.pause();
-          a.currentTime = 0;
-        } catch {
-          /* noop */
-        }
-      }
-      ariaState.set("idle");
+      stopVoicePlayback();
       return;
     }
     primeIOSAudio();
-    if (!sttSupported) {
+    if (!voiceCaptureSupported) {
       // No speech input on this browser → Conversation Mode cannot work.
       // Stay in the text chat (typed turns are text-only by rule) and show
       // a transient notice instead of a half-broken voice mode.
@@ -960,11 +1387,20 @@ export function AriaCopilot() {
       }
       return;
     }
+    convModeRef.current = true;
     setConvMode(true);
     setConvNotice(null);
-    AriaAudioBus.stopAll();
-    startListening();
-  }, [convMode, sttSupported, startListening, stopListening, composerRef]);
+    stopListening();
+    stopVoicePlayback();
+    void playConversationGreeting();
+  }, [
+    convMode,
+    voiceCaptureSupported,
+    playConversationGreeting,
+    stopListening,
+    stopVoicePlayback,
+    composerRef,
+  ]);
 
   // ESC exits conversation mode first, then closes panel.
   useEffect(() => {
@@ -984,6 +1420,7 @@ export function AriaCopilot() {
   useEffect(() => {
     if (isOpen) return;
     if (convModeRef.current) {
+      convModeRef.current = false;
       setConvMode(false);
       setConvPaused(false);
       if (relistenTimerRef.current) {
@@ -996,22 +1433,23 @@ export function AriaCopilot() {
   useEffect(
     () => () => {
       stopListening();
+      stopVoicePlayback();
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
     },
-    [stopListening],
+    [stopListening, stopVoicePlayback],
   );
 
   const statusLabel = useMemo(() => {
-    if (listening) return "Listening…";
+    if (listening) return "تستمع…";
     switch (voice) {
       case "processing":
         return THINKING_AR;
       case "speaking":
-        return "ARIA is speaking…";
+        return "آريا تتحدث…";
       case "listening":
-        return "Listening…";
+        return "تستمع…";
       default:
-        return pageContext ? `Context · ${pageContext.label}` : "Ready";
+        return pageContext ? `السياق · ${pageContext.label}` : "جاهزة";
     }
   }, [voice, pageContext, listening]);
 
@@ -1057,7 +1495,7 @@ export function AriaCopilot() {
             // (including the Close X) is always tappable. Desktop: centered.
             "nexus-window nexus-aria-window fixed left-1/2 z-[110] flex -translate-x-1/2 flex-col overflow-hidden rounded-[1.7rem]",
             "top-[calc(52px+env(safe-area-inset-top))]",
-            "w-[min(94vw,440px)]",
+            "w-[min(96vw,760px)]",
             "h-[calc(100dvh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]",
             "sm:top-1/2 sm:-translate-y-1/2 sm:h-[min(92vh,760px)]",
           )}
@@ -1067,7 +1505,7 @@ export function AriaCopilot() {
           <AriaVoiceDebugBadge />
 
           {/* LAYER 2 — Header */}
-          <header className="relative z-10 flex items-center gap-3 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-4 py-3 backdrop-blur-xl">
+          <header className="relative z-10 flex items-center gap-2 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-3 py-3 backdrop-blur-xl sm:gap-3 sm:px-4">
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" aria-hidden />
               <span
@@ -1099,12 +1537,40 @@ export function AriaCopilot() {
                 </span>
               </span>
               <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
-                {health === "down" ? "غير متصل" : `${statusLabel} · صوت`}
+                {health === "down" ? "غير متصل" : `${statusLabel} · ${convMode ? "صوت" : "نص"}`}
               </span>
             </div>
             <button
               type="button"
-              onClick={() => setMode("collapsed")}
+              onClick={toggleConversationMode}
+              aria-pressed={convMode}
+              aria-label={convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع آريا"}
+              className={cn(
+                "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold transition-all sm:px-2.5",
+                convMode
+                  ? "border-rose-300/45 bg-rose-500/15 text-rose-100 hover:bg-rose-500/25"
+                  : "border-emerald-300/45 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25",
+              )}
+            >
+              {convMode ? (
+                <MicOff className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <Mic className="h-3.5 w-3.5" aria-hidden />
+              )}
+              <span className="hidden min-[390px]:inline">{convMode ? "إنهاء" : "مخاطبة"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={startNewChat}
+              aria-label="محادثة جديدة"
+              title="محادثة جديدة"
+              className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={closePanel}
               aria-label="Close ARIA"
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
             >
@@ -1137,249 +1603,492 @@ export function AriaCopilot() {
 
           {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
 
-          <div
-            ref={scrollRef}
-            className={cn(
-              "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
-              convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
-            )}
-          >
-            <ul className="space-y-3">
-              {chat.messages.map((m) => {
-                const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
-                const mine = m.role === "user";
-                const text = mine ? raw : sanitiseAssistantText(raw);
-                const hasNonTextWork = !mine && m.parts.some((p) => p.type !== "text");
-                const toolParts = !mine
-                  ? m.parts.filter(
-                      (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
-                    )
-                  : [];
-                if (!text && !hasNonTextWork) return null;
-                return (
-                  <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                    <div
-                      className={cn(
-                        "max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-md backdrop-blur-md",
-                        mine
-                          ? "bg-primary/90 text-primary-foreground"
-                          : "bg-background/85 text-foreground ring-1 ring-primary/35 shadow-[0_0_24px_rgba(0,212,255,0.12)]",
-                      )}
-                    >
-                      {text ? (
-                        <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                        </div>
-                      ) : toolParts.length === 0 ? (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                          تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ…
-                        </div>
-                      ) : null}
-                      {toolParts.map((part, index) => (
-                        <ToolInvocation
-                          key={`${m.id}-tool-${index}`}
-                          part={part as Parameters<typeof ToolInvocation>[0]["part"]}
-                        />
-                      ))}
+          {convMode ? (
+            <section
+              aria-label="المخاطبة الصوتية مع آريا"
+              className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-7 overflow-hidden px-6 py-8 text-center"
+            >
+              <div className="relative grid h-40 w-40 place-items-center sm:h-48 sm:w-48">
+                <span
+                  className={cn(
+                    "absolute inset-0 rounded-full border border-emerald-300/25 bg-emerald-400/5",
+                    (listening || state === "speaking") && "motion-safe:animate-ping",
+                  )}
+                  aria-hidden
+                />
+                <span
+                  className={cn(
+                    "absolute inset-5 rounded-full border border-cyan-300/30 bg-cyan-400/10 shadow-[0_0_70px_rgba(34,211,238,.24)]",
+                    (isBusy || transcribing) && "motion-safe:animate-pulse",
+                  )}
+                  aria-hidden
+                />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-background/55 text-emerald-200 backdrop-blur-xl sm:h-28 sm:w-28">
+                  {isBusy || transcribing ? (
+                    <Sparkles className="h-10 w-10 motion-safe:animate-pulse" aria-hidden />
+                  ) : listening ? (
+                    <Mic className="h-10 w-10" aria-hidden />
+                  ) : state === "speaking" ? (
+                    <AudioWaveform className="h-10 w-10" aria-hidden />
+                  ) : (
+                    <Mic className="h-10 w-10" aria-hidden />
+                  )}
+                </div>
+              </div>
+
+              <div aria-live="polite" className="space-y-2">
+                <h2 className="text-xl font-semibold text-white sm:text-2xl">
+                  {transcribing
+                    ? "آريا تحلّل صوتك"
+                    : greeting
+                      ? "آريا ترحّب بك"
+                      : listening
+                        ? "آريا تستمع"
+                        : isBusy
+                          ? "آريا تفكّر وتنفّذ"
+                          : state === "speaking"
+                            ? "آريا تتحدث"
+                            : "المخاطبة الصوتية"}
+                </h2>
+                <p className="text-xs text-white/60 sm:text-sm">
+                  محادثة صوتية فقط · لن يظهر نص السؤال أو الرد
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={
+                    greeting
+                      ? () => {
+                          stopVoicePlayback();
+                          startListening();
+                        }
+                      : listening
+                        ? finishListening
+                        : isBusy
+                          ? stopResponse
+                          : () => startListening()
+                  }
+                  disabled={transcribing}
+                  aria-label={
+                    greeting
+                      ? "تخطي التحية والبدء بالتحدث"
+                      : listening
+                        ? "إنهاء الكلام"
+                        : isBusy
+                          ? "إيقاف الرد"
+                          : "ابدأ التحدث"
+                  }
+                  className={cn(
+                    "grid h-16 w-16 place-items-center rounded-full border text-white shadow-xl transition-all disabled:opacity-40",
+                    listening
+                      ? "border-rose-300/60 bg-rose-500/75 hover:bg-rose-500"
+                      : "border-emerald-300/60 bg-emerald-500/75 hover:scale-105 hover:bg-emerald-500",
+                  )}
+                >
+                  {greeting ? (
+                    <Mic className="h-6 w-6" aria-hidden />
+                  ) : listening ? (
+                    <Square className="h-5 w-5 fill-current" aria-hidden />
+                  ) : isBusy ? (
+                    <Square className="h-5 w-5 fill-current" aria-hidden />
+                  ) : (
+                    <Mic className="h-6 w-6" aria-hidden />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleConversationMode}
+                  aria-label="إنهاء المخاطبة الصوتية"
+                  className="grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-background/55 text-white/80 backdrop-blur-xl transition hover:border-rose-300/50 hover:text-rose-200"
+                >
+                  <X className="h-5 w-5" aria-hidden />
+                </button>
+              </div>
+            </section>
+          ) : (
+            <div
+              ref={scrollRef}
+              className={cn(
+                "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
+                convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
+              )}
+            >
+              <ul className="space-y-3">
+                {chat.messages.map((m) => {
+                  const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+                  const mine = m.role === "user";
+                  const text = mine ? raw : sanitiseAssistantText(raw);
+                  const fileParts = m.parts.filter((part) => part.type === "file");
+                  const hasNonTextWork = m.parts.some((p) => p.type !== "text");
+                  const toolParts = !mine
+                    ? m.parts.filter(
+                        (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
+                      )
+                    : [];
+                  if (!text && !hasNonTextWork) return null;
+                  return (
+                    <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                      <div
+                        className={cn(
+                          "group/message max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed backdrop-blur-md sm:max-w-[88%]",
+                          mine
+                            ? "bg-primary/90 text-primary-foreground shadow-md"
+                            : "bg-background/75 text-foreground ring-1 ring-primary/20 shadow-[0_0_24px_rgba(0,212,255,0.08)]",
+                        )}
+                      >
+                        {fileParts.length > 0 && (
+                          <div className="mb-2 flex flex-wrap gap-2">
+                            {fileParts.map((part, index) =>
+                              part.mediaType.startsWith("image/") ? (
+                                <a
+                                  key={`${m.id}-file-${index}`}
+                                  href={part.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="block overflow-hidden rounded-xl ring-1 ring-white/15"
+                                >
+                                  <img
+                                    src={part.url}
+                                    alt={part.filename ?? "صورة مرفقة"}
+                                    className="max-h-48 max-w-56 object-cover"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  key={`${m.id}-file-${index}`}
+                                  href={part.url}
+                                  download={part.filename}
+                                  className="inline-flex max-w-64 items-center gap-2 rounded-xl bg-background/50 px-3 py-2 text-xs ring-1 ring-white/15 hover:bg-background/70"
+                                >
+                                  <FileText className="h-4 w-4 shrink-0" aria-hidden />
+                                  <span className="truncate">{part.filename ?? "مرفق"}</span>
+                                </a>
+                              ),
+                            )}
+                          </div>
+                        )}
+                        {text ? (
+                          <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
+                            <MessageResponse>{text}</MessageResponse>
+                          </div>
+                        ) : toolParts.length === 0 ? (
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                            تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ…
+                          </div>
+                        ) : null}
+                        {toolParts.map((part, index) => (
+                          <ToolInvocation
+                            key={`${m.id}-tool-${index}`}
+                            part={part as Parameters<typeof ToolInvocation>[0]["part"]}
+                          />
+                        ))}
+                        {!mine && text && !isBusy && (
+                          <div className="mt-2 flex items-center gap-1 border-t border-white/10 pt-1.5 opacity-70 transition-opacity group-hover/message:opacity-100">
+                            <button
+                              type="button"
+                              onClick={() => void copyMessage(m.id, text)}
+                              aria-label="نسخ الرد"
+                              title="نسخ"
+                              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                            >
+                              {copiedMessageId === m.id ? (
+                                <Check className="h-3.5 w-3.5" aria-hidden />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" aria-hidden />
+                              )}
+                            </button>
+                            {m.id === lastAssistantMessageId && (
+                              <button
+                                type="button"
+                                onClick={retry}
+                                aria-label="إعادة توليد الرد"
+                                title="إعادة التوليد"
+                                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                              >
+                                <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+                {isBusy && (
+                  <li className="flex justify-start">
+                    <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
+                      <div className="flex gap-1">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
                     </div>
                   </li>
-                );
-              })}
-              {isBusy && (
-                <li className="flex justify-start">
-                  <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+                )}
+                {hasError && !isBusy && (
+                  <li className="flex justify-start">
+                    <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
+                      <div className="flex items-start gap-2">
+                        <span className="leading-relaxed">
+                          {(() => {
+                            const raw = (chat.error?.message || "").trim();
+                            if (!raw) return CONNECTION_ERROR_AR;
+                            // Extract server-provided reason from `{ok:false,error:"..."}` payloads
+                            try {
+                              const parsed = JSON.parse(raw) as {
+                                error?: string;
+                              };
+                              if (parsed?.error) return parsed.error;
+                            } catch {
+                              /* not JSON — fall through */
+                            }
+                            // Scrub any accidental provider/model names before showing
+                            const safe = raw
+                              .replace(
+                                /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
+                                "",
+                              )
+                              .trim();
+                            return safe || CONNECTION_ERROR_AR;
+                          })()}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={retry}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
+                        >
+                          <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
+                        </button>
+                      </div>
                     </div>
-                    <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
-                  </div>
-                </li>
-              )}
-              {hasError && !isBusy && (
-                <li className="flex justify-start">
-                  <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
-                    <div className="flex items-start gap-2">
-                      <span className="leading-relaxed">
-                        {(() => {
-                          const raw = (chat.error?.message || "").trim();
-                          if (!raw) return CONNECTION_ERROR_AR;
-                          // Extract server-provided reason from `{ok:false,error:"..."}` payloads
-                          try {
-                            const parsed = JSON.parse(raw) as { error?: string };
-                            if (parsed?.error) return parsed.error;
-                          } catch {
-                            /* not JSON — fall through */
-                          }
-                          // Scrub any accidental provider/model names before showing
-                          const safe = raw
-                            .replace(
-                              /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
-                              "",
-                            )
-                            .trim();
-                          return safe || CONNECTION_ERROR_AR;
-                        })()}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={retry}
-                        className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
-                      >
-                        <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              )}
-              {!isBusy && !hasError && chat.messages.length === 0 && (
-                <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
-                  {EMPTY_STATE_AR}
-                </li>
-              )}
-            </ul>
-          </div>
+                  </li>
+                )}
+                {!isBusy && !hasError && chat.messages.length === 0 && (
+                  <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
+                    <p>{EMPTY_STATE_AR}</p>
+                    <button
+                      type="button"
+                      onClick={toggleConversationMode}
+                      className="mx-auto mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                    >
+                      <Mic className="h-4 w-4" aria-hidden />
+                      ابدأ المخاطبة
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
 
-          <div className="relative z-10">
-            <ExecutiveCard />
-          </div>
+          {!convMode && (
+            <div className="relative z-10">
+              <ExecutiveCard />
+            </div>
+          )}
 
           {/* LAYER 4 — Composer, pinned bottom + safe-area. Voice conversation
               is driven by the mic button in the input row (no toolbar). */}
-          <div
-            className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
-            style={{ paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))" }}
-          >
-            {health === "ok" && providerReady === false && (
-              <div
-                dir="rtl"
-                role="status"
-                className="mb-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[12px] leading-relaxed text-amber-200/90"
-              >
-                المساعد الذكي <span className="font-semibold">غير مفعّل بعد</span> على هذا النشر —
-                يعمل فور إضافة مفتاح المزوّد في إعدادات النشر. بقية النظام يعمل بالكامل.
-              </div>
-            )}
-            {/* Slash-command menu — appears while the draft starts with "/". */}
-            {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
-              <div
-                dir="rtl"
-                role="listbox"
-                aria-label="أوامر سريعة"
-                className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
-              >
-                {matchQuickCommands(draft.slice(1)).map((cmd) => {
-                  const Icon = cmd.icon;
-                  return (
-                    <button
-                      key={cmd.id}
-                      type="button"
-                      role="option"
-                      aria-selected={false}
-                      onClick={() => runQuickCommand(cmd)}
-                      className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
-                    >
-                      <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                      <span className="font-semibold">/{cmd.slash}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {cmd.prompt || cmd.inputPrefix}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            {/* Quick-command chips — shown when the composer is empty. */}
-            {!draft.trim() && !isBusy && (
-              <div
-                dir="rtl"
-                className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              >
-                {QUICK_COMMANDS.map((cmd) => {
-                  const Icon = cmd.icon;
-                  return (
-                    <button
-                      key={cmd.id}
-                      type="button"
-                      onClick={() => runQuickCommand(cmd)}
-                      title={cmd.prompt || cmd.inputPrefix}
-                      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/25 bg-background/70 px-3 py-1.5 text-xs font-medium text-foreground/90 transition-all hover:border-primary/50 hover:bg-primary/10"
-                    >
-                      <Icon className="h-3.5 w-3.5 text-primary" aria-hidden />
-                      <span>{cmd.ar}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            <form
-              className="flex items-end gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                submit();
+          {!convMode && (
+            <div
+              className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
+              style={{
+                paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))",
               }}
             >
-              <button
-                type="button"
-                onClick={toggleConversationMode}
-                aria-pressed={convMode}
-                aria-label={
-                  convMode
-                    ? "إيقاف المخاطبة الصوتية"
-                    : "بدء المخاطبة الصوتية (تحدّث وستردّ آريا صوتاً)"
-                }
-                title={
-                  convMode
-                    ? "إيقاف المخاطبة الصوتية"
-                    : "المخاطبة الصوتية — تحدّث وستردّ آريا صوتاً دون كتابة"
-                }
-                className={cn(
-                  "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
-                  convMode
-                    ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
-                    : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
-                )}
-              >
-                {convMode ? (
-                  <MicOff className="h-4 w-4" aria-hidden />
-                ) : (
-                  <Mic className="h-4 w-4" aria-hidden />
-                )}
-              </button>
-              <textarea
-                ref={composerRef}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submit();
-                  }
+              {health === "ok" && providerReady === false && (
+                <div
+                  dir="rtl"
+                  role="status"
+                  className="mb-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[12px] leading-relaxed text-amber-200/90"
+                >
+                  المساعد الذكي <span className="font-semibold">غير مفعّل بعد</span> على هذا النشر —
+                  يعمل فور إضافة مفتاح المزوّد في إعدادات النشر.
+                </div>
+              )}
+              {attachmentError && (
+                <div
+                  role="alert"
+                  className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-xs text-destructive-foreground"
+                >
+                  <span>{attachmentError}</span>
+                  <button type="button" onClick={() => setAttachmentError(null)} aria-label="إغلاق">
+                    <X className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                </div>
+              )}
+              {attachments.length > 0 && (
+                <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
+                  {attachments.map((file, index) => (
+                    <div
+                      key={`${file.name}:${file.size}:${file.lastModified}`}
+                      className="inline-flex max-w-56 shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-background/70 px-2.5 py-2 text-xs"
+                    >
+                      {attachmentMediaType(file).startsWith("image/") ? (
+                        <ImageIcon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      ) : (
+                        <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      )}
+                      <span className="truncate">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAttachments((current) => current.filter((_, i) => i !== index))
+                        }
+                        aria-label={`حذف ${file.name}`}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Slash-command menu — appears while the draft starts with "/". */}
+              {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
+                <div
+                  dir="rtl"
+                  role="listbox"
+                  aria-label="أوامر سريعة"
+                  className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
+                >
+                  {matchQuickCommands(draft.slice(1)).map((cmd) => {
+                    const Icon = cmd.icon;
+                    return (
+                      <button
+                        key={cmd.id}
+                        type="button"
+                        role="option"
+                        aria-selected={false}
+                        onClick={() => runQuickCommand(cmd)}
+                        className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
+                      >
+                        <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                        <span className="font-semibold">/{cmd.slash}</span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {cmd.prompt || cmd.inputPrefix}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Quick-command chips — shown when the composer is empty. */}
+              {!draft.trim() && !isBusy && (
+                <div
+                  dir="rtl"
+                  className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                >
+                  {QUICK_COMMANDS.map((cmd) => {
+                    const Icon = cmd.icon;
+                    return (
+                      <button
+                        key={cmd.id}
+                        type="button"
+                        onClick={() => runQuickCommand(cmd)}
+                        title={cmd.prompt || cmd.inputPrefix}
+                        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/25 bg-background/70 px-3 py-1.5 text-xs font-medium text-foreground/90 transition-all hover:border-primary/50 hover:bg-primary/10"
+                      >
+                        <Icon className="h-3.5 w-3.5 text-primary" aria-hidden />
+                        <span>{cmd.ar}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <form
+                className="flex items-end gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submit();
                 }}
-                rows={1}
-                placeholder="اسأل آريا…"
-                aria-label="Ask ARIA"
-                className={cn(
-                  "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
-                  "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
-                  "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
-                )}
-              />
-              <button
-                type="submit"
-                disabled={isBusy || !draft.trim()}
-                aria-label="Send"
-                className={cn(
-                  "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
-                  "transition-all hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
-                )}
               >
-                <Send className="h-4 w-4" aria-hidden />
-              </button>
-            </form>
-          </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  hidden
+                  accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,.md,.txt,.csv,.json,.pdf"
+                  onChange={(event) => addAttachments(event.currentTarget.files)}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isBusy || attachments.length >= MAX_ATTACHMENTS}
+                  aria-label="إرفاق ملفات"
+                  title="إرفاق ملفات"
+                  className="nexus-field grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/25 bg-background/70 text-foreground transition-all hover:border-primary/50 hover:bg-primary/10 disabled:opacity-40"
+                >
+                  <Paperclip className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleConversationMode}
+                  aria-pressed={convMode}
+                  aria-label={
+                    convMode
+                      ? "إيقاف المخاطبة الصوتية"
+                      : "بدء المخاطبة الصوتية (تحدّث وستردّ آريا صوتاً)"
+                  }
+                  title={
+                    convMode
+                      ? "إيقاف المخاطبة الصوتية"
+                      : "المخاطبة الصوتية — تحدّث وستردّ آريا صوتاً دون كتابة"
+                  }
+                  className={cn(
+                    "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
+                    convMode
+                      ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
+                      : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
+                  )}
+                >
+                  {convMode ? (
+                    <MicOff className="h-4 w-4" aria-hidden />
+                  ) : (
+                    <Mic className="h-4 w-4" aria-hidden />
+                  )}
+                </button>
+                <textarea
+                  ref={composerRef}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      submit();
+                    }
+                  }}
+                  rows={1}
+                  placeholder="اسأل آريا…"
+                  aria-label="Ask ARIA"
+                  className={cn(
+                    "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
+                    "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
+                    "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
+                  )}
+                />
+                <button
+                  type={isBusy ? "button" : "submit"}
+                  onClick={isBusy ? stopResponse : undefined}
+                  disabled={!isBusy && !draft.trim() && attachments.length === 0}
+                  aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
+                  className={cn(
+                    "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
+                    "transition-all hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
+                  )}
+                >
+                  {isBusy ? (
+                    <Square className="h-3.5 w-3.5 fill-current" aria-hidden />
+                  ) : (
+                    <Send className="h-4 w-4" aria-hidden />
+                  )}
+                </button>
+              </form>
+            </div>
+          )}
         </aside>
       )}
     </>

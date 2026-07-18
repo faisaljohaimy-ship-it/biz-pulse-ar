@@ -1,0 +1,32 @@
+{
+  "name": "ARIA NEXIOS Complete Replacement",
+  "version": "2026.07.18.4",
+  "target": "NEXIOS full repository overlay",
+  "entrypoint": "src/components/aria-core/AriaCopilot.tsx",
+  "voice": {
+    "provider": "ElevenLabs",
+    "voiceId": "gVzwmdZzRgBrNjXaTmi5",
+    "greeting": "مرحباً بك، أنا آريا. كيف يمكنني مساعدتك اليوم؟"
+  },
+  "features": {
+    "visibleConversationButton": true,
+    "automaticVoiceGreeting": true,
+    "bargeInGreeting": true,
+    "voiceInputVoiceOutputOnly": true,
+    "textInputTextOutputOnly": true,
+    "gpt56Preferred": true,
+    "ownerDirectEmailAndSms": true,
+    "providerReadinessEndpoint": true,
+    "signedResendAndTwilioWebhooks": true,
+    "hcisReference": true,
+    "boundedAdaptivePreferences": true,
+    "responsive": true
+  },
+  "preflight": "supabase/preflight/aria_compatibility_check.sql",
+  "migrations": [
+    "supabase/migrations/20260718091500_hcis_aria_reference.sql",
+    "supabase/migrations/20260718092000_aria_outbound_messaging.sql",
+    "supabase/migrations/20260718092500_aria_adaptive_preferences.sql"
+  ],
+  "testsPassed": 53
+}

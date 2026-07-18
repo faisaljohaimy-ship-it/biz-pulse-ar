@@ -9,6 +9,11 @@ import {
   sendResendEmail,
   sendTwilioSms,
 } from "@/lib/aria/messaging-channel.server";
+import {
+  assertExplicitOwnerDirectSend,
+  isAriaOwnerDirectSendEnabled,
+} from "@/lib/aria/outbound-recipient-policy.server";
+import { normalizeE164 } from "@/lib/aria/phone-number";
 
 const APPROVAL_TTL_MS = 10 * 60_000;
 const OUTLOOK_GATEWAY = "https://connector-gateway.lovable.dev";
@@ -25,7 +30,15 @@ const SmsPayloadSchema = z.object({
   channel: z.literal("sms"),
   to: z.string().min(8).max(24),
   body: z.string().min(1).max(1_600),
-  mediaUrls: z.array(z.string().url()).max(10).optional(),
+  mediaUrls: z
+    .array(
+      z
+        .string()
+        .url()
+        .refine((value) => value.startsWith("https://"), "Media URL must use HTTPS."),
+    )
+    .max(10)
+    .optional(),
 });
 
 export const OutboundPayloadSchema = z.discriminatedUnion("channel", [
@@ -216,7 +229,10 @@ async function encryptPayload(
     await encryptionKey(),
     new TextEncoder().encode(JSON.stringify(payload)),
   );
-  return { ciphertext: bytesToBase64(new Uint8Array(ciphertext)), iv: bytesToBase64(iv) };
+  return {
+    ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
+    iv: bytesToBase64(iv),
+  };
 }
 
 async function decryptPayload(row: LedgerRow): Promise<OutboundPayload> {
@@ -269,6 +285,38 @@ function htmlToText(value: string): string {
     .trim();
 }
 
+/**
+ * Keep provider-bound HTML useful while removing active content. This is a
+ * narrow email sanitizer (not a browser DOM sanitizer): scripts, embedded
+ * documents, forms, event handlers and javascript: URLs are never dispatched.
+ */
+function sanitizeEmailHtml(value: string): string {
+  return value
+    .replace(/<(script|iframe|object|embed|form|base|meta|link)\b[\s\S]*?<\/\1\s*>/gi, "")
+    .replace(/<(script|iframe|object|embed|form|base|meta|link)\b[^>]*\/?\s*>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s+(?:href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, "")
+    .trim();
+}
+
+function normalizeOutboundPayload(rawPayload: OutboundPayload): OutboundPayload {
+  const payload = OutboundPayloadSchema.parse(rawPayload);
+  if (payload.channel === "email") {
+    return OutboundPayloadSchema.parse({
+      ...payload,
+      to: payload.to.trim().toLowerCase(),
+      ...(payload.cc ? { cc: payload.cc.trim().toLowerCase() } : {}),
+      subject: payload.subject.trim(),
+      html: sanitizeEmailHtml(payload.html),
+    });
+  }
+  return OutboundPayloadSchema.parse({
+    ...payload,
+    to: normalizeE164(payload.to),
+    body: payload.body.trim(),
+  });
+}
+
 function previewOf(
   payload: OutboundPayload,
 ): Omit<ApprovalPreview, "ledgerId" | "approvalToken" | "expiresAt"> {
@@ -291,9 +339,15 @@ function previewOf(
 
 function configuredChannel(payload: OutboundPayload): boolean {
   if (payload.channel === "sms") return Boolean(resolveTwilioConfig());
-  // Email is always configured: we fall back to the Lovable-managed email
-  // queue (notify.neexios.com) when Resend/Outlook credentials are absent.
-  return true;
+  return Boolean(
+    (process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim()) ||
+    outlookHeaders() ||
+    managedEmailQueueEnabled(),
+  );
+}
+
+function managedEmailQueueEnabled(): boolean {
+  return process.env.ARIA_ENABLE_MANAGED_EMAIL_QUEUE?.trim().toLowerCase() === "true";
 }
 
 function outlookHeaders(): Record<string, string> | null {
@@ -352,7 +406,7 @@ export async function prepareAriaOutboundMessage(
       throw new Error("Messaging approval service is temporarily unavailable.");
     if (!draftRate.allowed) throw new Error("Rate limit exceeded for ARIA message drafts.");
 
-    const payload = OutboundPayloadSchema.parse(rawPayload);
+    const payload = normalizeOutboundPayload(rawPayload);
     if (!configuredChannel(payload)) {
       throw new Error(
         payload.channel === "email"
@@ -422,10 +476,18 @@ export async function prepareAriaOutboundMessage(
     return {
       ok: true,
       requiresApproval: true,
-      approval: { ledgerId: id, approvalToken, expiresAt, ...previewOf(payload) },
+      approval: {
+        ledgerId: id,
+        approvalToken,
+        expiresAt,
+        ...previewOf(payload),
+      },
     };
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -444,7 +506,11 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
       html: payload.html,
       idempotencyKey,
     });
-    return { provider: "resend" as const, providerId: result.id, status: "accepted" };
+    return {
+      provider: "resend" as const,
+      providerId: result.id,
+      status: "accepted",
+    };
   }
 
   const headers = outlookHeaders();
@@ -474,9 +540,12 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
     };
   }
 
-  // Fallback: enqueue via the Lovable-managed email queue (notify.neexios.com).
-  // This path requires no external provider credentials; the queue processor
-  // dispatches the message and records send state in `email_send_log`.
+  // Optional fallback: enqueue via the deployment-managed email queue. It is
+  // opt-in because the focused bundle cannot prove that its tables, RPC and
+  // worker are installed in the target project.
+  if (!managedEmailQueueEnabled()) {
+    throw new Error("Email provider is not configured.");
+  }
   const messageId = crypto.randomUUID();
   const senderDomain = "notify.neexios.com";
   const fromLine = `NEXUS AI OS <noreply@${senderDomain}>`;
@@ -484,12 +553,13 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  await supabaseAdmin.from("email_send_log").insert({
+  const { error: logError } = await supabaseAdmin.from("email_send_log").insert({
     message_id: messageId,
     template_name: "aria_executive_email",
     recipient_email: payload.to,
     status: "pending",
   });
+  if (logError) throw new Error(`Email send log write failed: ${logError.message}`);
   const { error: enqueueError } = await supabaseAdmin.rpc("enqueue_email", {
     queue_name: "transactional_emails",
     payload: {
@@ -510,7 +580,11 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
   if (enqueueError) {
     throw new Error(`Email queue enqueue failed: ${enqueueError.message}`);
   }
-  return { provider: "lovable_email_queue" as const, providerId: messageId, status: "queued" };
+  return {
+    provider: "lovable_email_queue" as const,
+    providerId: messageId,
+    status: "queued",
+  };
 }
 
 async function dispatchSms(payload: z.infer<typeof SmsPayloadSchema>) {
@@ -601,7 +675,11 @@ export async function approveAriaOutboundMessageInternal(input: {
   const now = new Date().toISOString();
   const { data: claimed, error: claimError } = await supabaseAdmin
     .from("aria_outbound_messages")
-    .update({ status: "dispatching", approved_by: input.userId, approved_at: now })
+    .update({
+      status: "dispatching",
+      approved_by: input.userId,
+      approved_at: now,
+    })
     .eq("id", row.id)
     .eq("actor_id", input.userId)
     .eq("status", "pending_approval")
@@ -747,11 +825,12 @@ export async function approveAriaOutboundMessageInternal(input: {
  * the full audit ledger, and the immutable `approval.auto_approved` bypass
  * marker per send. Live sends still require provider credentials
  * (Resend/Twilio/Outlook), so this alone can never dispatch anything.
- * Default is ON — set ARIA_OUTBOUND_AUTO_APPROVE=false to restore the
- * per-message human approval flow.
+ * Default is ON for this owner-only path. ARIA_DIRECT_SEND_ENABLED=false is
+ * the deployment kill switch; ARIA_OUTBOUND_AUTO_APPROVE remains a supported
+ * legacy alias.
  */
 export function ariaAutoApproveEnabled(): boolean {
-  return process.env.ARIA_OUTBOUND_AUTO_APPROVE?.trim().toLowerCase() !== "false";
+  return isAriaOwnerDirectSendEnabled();
 }
 
 /**
@@ -769,6 +848,8 @@ export function ariaAutoApproveEnabled(): boolean {
 export async function sendAriaOutboundMessageDirectInternal(input: {
   userId: string;
   payload: OutboundPayload;
+  /** Current authentic user message; never RAG, memory or generated text. */
+  explicitIntentText: string;
 }): Promise<
   | {
       ok: true;
@@ -783,15 +864,27 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
     return {
       ok: false,
       error:
-        "Direct send is disabled (ARIA_OUTBOUND_AUTO_APPROVE=false). Use the per-message approval flow instead.",
+        "Direct owner send is disabled by the deployment kill switch. Use the per-message approval flow instead.",
     };
   }
 
-  const prepared = await prepareAriaOutboundMessage(supabaseAdmin, input.userId, input.payload);
-  if (!prepared.ok) return { ok: false, error: prepared.error };
+  const payload = normalizeOutboundPayload(input.payload);
+  assertExplicitOwnerDirectSend({
+    intentText: input.explicitIntentText,
+    channel: payload.channel,
+    recipient: payload.to,
+  });
+  if (payload.channel === "email" && payload.cc) {
+    // A CC is another delivery target and is outside the direct owner-only
+    // request. The reviewed approval route remains available for CC sends.
+    throw new Error("Direct owner email does not support CC recipients.");
+  }
+
+  const prepared = await prepareAriaOutboundMessage(supabaseAdmin, input.userId, payload);
+  if ("error" in prepared) return { ok: false, error: prepared.error };
 
   // Immutable bypass marker: record that the human approval step was skipped
-  // (ARIA_OUTBOUND_AUTO_APPROVE) before any dispatch. The token claims carry
+  // (ARIA_DIRECT_SEND_ENABLED) before any dispatch. The token claims carry
   // the org + content hash the ledger event needs. If this cannot be written,
   // fail closed — never dispatch an auto-approved send without its audit trail.
   try {
@@ -884,7 +977,7 @@ export async function recordOutboundProviderEvent(input: {
   eventType: string;
   status: OutboundLedgerStatus;
   providerStatus: string;
-  payloadHash: string;
+  payloadHash?: string;
   occurredAt?: string | null;
   failureCode?: string | null;
 }): Promise<"updated" | "duplicate" | "not_found"> {
@@ -896,6 +989,9 @@ export async function recordOutboundProviderEvent(input: {
     .maybeSingle();
   if (error) throw new Error(`Unable to locate outbound message: ${error.message}`);
   if (!data) return "not_found";
+  if (input.payloadHash && data.content_hash !== input.payloadHash) {
+    throw new Error("Provider event payload hash does not match the outbound ledger.");
+  }
 
   const inserted = await appendLedgerEvent({
     messageId: data.id,
@@ -904,7 +1000,7 @@ export async function recordOutboundProviderEvent(input: {
     providerEventId: input.providerEventId,
     eventType: input.eventType,
     status: input.providerStatus,
-    payloadHash: input.payloadHash,
+    payloadHash: data.content_hash,
     occurredAt: input.occurredAt ?? null,
   });
   const current = data.status as OutboundLedgerStatus;
@@ -924,7 +1020,8 @@ export async function recordOutboundProviderEvent(input: {
   const { error: updateError } = await supabaseAdmin
     .from("aria_outbound_messages")
     .update(deliveryUpdate)
-    .eq("id", data.id);
+    .eq("id", data.id)
+    .eq("content_hash", data.content_hash);
   if (updateError) throw new Error(`Unable to update delivery state: ${updateError.message}`);
   return inserted === "duplicate" ? "duplicate" : "updated";
 }

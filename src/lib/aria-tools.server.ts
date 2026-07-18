@@ -2,22 +2,34 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
+import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 import {
   prepareAriaOutboundMessage,
   sendAriaOutboundMessageDirectInternal,
   ariaAutoApproveEnabled,
 } from "@/lib/aria/outbound-messaging.server";
+import { resolveOwnerEmail, resolveOwnerSms } from "@/lib/aria/outbound-recipient-policy.server";
 
 function genRef(prefix: string) {
   const d = new Date();
   const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const rand = crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
   return `${prefix}-${ymd}-${rand}`;
 }
 
 function scoreRisk(severity: string, priority: string, category: string): number {
-  const sevMap: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
-  const prioMap: Record<string, number> = { low: 0, medium: 5, high: 10, critical: 15 };
+  const sevMap: Record<string, number> = {
+    low: 20,
+    medium: 45,
+    high: 70,
+    critical: 90,
+  };
+  const prioMap: Record<string, number> = {
+    low: 0,
+    medium: 5,
+    high: 10,
+    critical: 15,
+  };
   const catBoost = ["intrusion", "fire", "explosion", "weapon"].some((k) =>
     category.toLowerCase().includes(k),
   )
@@ -27,14 +39,12 @@ function scoreRisk(severity: string, priority: string, category: string): number
 }
 
 async function getActorOrgId(supabase: SupabaseClient, userId: string): Promise<string | null> {
-  const { data } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
-  return (data?.org_id as string | undefined) ?? null;
+  void supabase;
+  const { getCurrentOrgIdForUser } = await import("@/lib/authz.server");
+  return getCurrentOrgIdForUser(userId);
 }
+
+type AuditResult = { ok: true } | { ok: false; error: string };
 
 async function logEvent(
   supabase: SupabaseClient,
@@ -44,11 +54,11 @@ async function logEvent(
   entity_ref: string | null,
   event: string,
   payload: Record<string, unknown> = {},
-) {
+): Promise<AuditResult> {
   const org_id = await getActorOrgId(supabase, userId);
-  if (!org_id) return;
+  if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("sec_activity_events").insert({
+  const { error } = await supabaseAdmin.from("sec_activity_events").insert({
     org_id,
     entity_type,
     entity_id,
@@ -58,13 +68,47 @@ async function logEvent(
     actor_name: "ARIA",
     payload: payload as Json,
   });
+  if (error) {
+    console.error("[aria-tools] security audit write failed", {
+      entity_type,
+      entity_id,
+      event,
+      error: error.message,
+    });
+    return { ok: false, error: `Audit write failed: ${error.message}` };
+  }
+  return { ok: true };
 }
+
+async function requireOperationalWriterRole(userId: string): Promise<string | null> {
+  const { hasAnyPlatformRole } = await import("@/lib/authz.server");
+  return (await hasAnyPlatformRole(userId, ["admin", "manager"]))
+    ? null
+    : "Forbidden: this industrial-security action requires admin or manager role.";
+}
+
+function safePostgrestSearchTerm(value: string): string {
+  return value
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{N}\s_-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export type AriaToolRuntimeContext = {
+  /** Current, authentic user turn. Never populate from RAG or tool output. */
+  lastUserText?: string;
+};
 
 /**
  * Build the ARIA executive toolbelt. All tools are RLS-scoped via the
  * request supabase client and gated by connector availability.
  */
-export function buildAriaTools(supabase: SupabaseClient, userId: string) {
+export function buildAriaTools(
+  supabase: SupabaseClient,
+  userId: string,
+  runtime: AriaToolRuntimeContext = {},
+) {
   return {
     create_task: tool({
       description:
@@ -108,7 +152,7 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("key,label,label_en,value,delta,trend,tone")
           .limit(args.limit);
         if (args.name_contains) {
-          const safe = args.name_contains.replace(/[,()*\\]/g, " ").trim();
+          const safe = safePostgrestSearchTerm(args.name_contains);
           if (safe) {
             const term = `%${safe}%`;
             q = q.or(`label.ilike.${term},label_en.ilike.${term},key.ilike.${term}`);
@@ -122,7 +166,9 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     list_open_crises: tool({
       description: "List currently open crises with risk score and owner.",
-      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(8) }),
+      inputSchema: z.object({
+        limit: z.number().int().min(1).max(20).default(8),
+      }),
       execute: async (args) => {
         const { data, error } = await supabase
           .from("pulse_crises")
@@ -146,22 +192,63 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       execute: async (args) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new table not yet in generated types
         const db = supabase as unknown as { from: (t: string) => any };
-        const { data, error } = await db.from("hcis_assessments").select("region,status");
-        if (error) return { ok: false, error: error.message };
-        const rows = (data ?? []) as Array<{ region: string; status: string }>;
+        const seeded = await db
+          .from("hcis_compliance_status")
+          .select("region_code,status,is_simulation");
+        let source = "hcis_compliance_status";
+        type HcisStatusRow = {
+          region: string;
+          status: string;
+          isSimulation: boolean;
+        };
+        let rows: HcisStatusRow[] = (
+          (seeded.data ?? []) as Array<{
+            region_code: string;
+            status: string;
+            is_simulation?: boolean;
+          }>
+        ).map((row) => ({
+          region: row.region_code,
+          status: row.status,
+          isSimulation: row.is_simulation === true,
+        }));
+        if (seeded.error) {
+          const legacy = await db.from("hcis_assessments").select("region,status");
+          if (legacy.error) {
+            return {
+              ok: false,
+              error: `${seeded.error.message}; fallback failed: ${legacy.error.message}`,
+            };
+          }
+          source = "hcis_assessments";
+          rows = (legacy.data ?? []).map((row: { region: string; status: string }) => ({
+            ...row,
+            isSimulation: false,
+          }));
+        }
         const pct = (rs: Array<{ status: string }>) => {
-          const scored = rs.filter((r) => r.status !== "not_applicable");
-          if (!scored.length) return 0;
+          const scored = rs.filter(
+            (r) => r.status !== "not_applicable" && r.status !== "not_assessed",
+          );
+          if (!scored.length) return null;
           const w = (s: string) => (s === "compliant" ? 1 : s === "partial" ? 0.5 : 0);
           return Math.round((scored.reduce((a, r) => a + w(r.status), 0) / scored.length) * 100);
         };
-        const byRegion: Record<string, number> = {};
+        const byRegion: Record<string, number | null> = {};
         for (const r of ["central", "western", "eastern", "southern"])
           byRegion[r] = pct(rows.filter((x) => x.region === r));
+        const assessedCount = rows.filter(
+          (row) => row.status !== "not_assessed" && row.status !== "not_applicable",
+        ).length;
         return {
           ok: true,
           overallPct: pct(rows),
           byRegion: args.region ? { [args.region]: byRegion[args.region] } : byRegion,
+          assessedCount,
+          totalCount: rows.length,
+          dataAvailable: assessedCount > 0,
+          isSimulation: rows.some((row) => row.isSimulation),
+          source,
         };
       },
     }),
@@ -169,7 +256,9 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
     hcis_critical_findings: tool({
       description:
         "List critical/high-severity or overdue HCIS compliance findings (gaps) with their target dates. Use for 'ما الفجوات الحرجة المتأخرة؟'.",
-      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(8) }),
+      inputSchema: z.object({
+        limit: z.number().int().min(1).max(20).default(8),
+      }),
       execute: async (args) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new table not yet in generated types
         const db = supabase as unknown as { from: (t: string) => any };
@@ -180,11 +269,18 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .order("target_date", { ascending: true })
           .limit(50);
         if (error) return { ok: false, error: error.message };
-        const rows = (data ?? []) as Array<{ severity: string; status: string }>;
+        const rows = (data ?? []) as Array<{
+          severity: string;
+          status: string;
+        }>;
         const critical = rows.filter(
           (r) => r.status === "overdue" || r.severity === "critical" || r.severity === "high",
         );
-        return { ok: true, findings: critical.slice(0, args.limit), count: critical.length };
+        return {
+          ok: true,
+          findings: critical.slice(0, args.limit),
+          count: critical.length,
+        };
       },
     }),
 
@@ -213,82 +309,67 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       },
     }),
 
-    hcis_directive_lookup: tool({
-      description:
-        "Look up HCIS industrial-security directives (the published SEC-01..SEC-19 + SAF framework): name, scope and category. Use for 'ما نطاق SEC-18؟' / 'ما التوجيه الخاص بالأمن السيبراني؟' / 'اذكر توجيهات الأمن الصناعي'. Reference data from the HCIS compliance framework (public, non-verbatim).",
-      inputSchema: z.object({
-        code: z
-          .string()
-          .max(12)
-          .optional()
-          .describe("Optional exact directive code, e.g. SEC-18 or SAF-GEN."),
-        query: z
-          .string()
-          .max(120)
-          .optional()
-          .describe("Optional Arabic/English keyword to match against directive names/scope."),
-        limit: z.number().int().min(1).max(25).default(21),
-      }),
-      execute: async (args) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- new reference table not yet in generated types
-        const db = supabase as unknown as { from: (t: string) => any };
-        let q = db
-          .from("hcis_directives")
-          .select("code,category,name_ar,name_en,scope_ar,sort_order")
-          .order("sort_order", { ascending: true })
-          .limit(args.limit);
-        if (args.code) q = q.eq("code", args.code.toUpperCase());
-        if (args.query) {
-          const term = args.query.replace(/[,%()]/g, " ").trim();
-          if (term)
-            q = q.or(`name_ar.ilike.%${term}%,name_en.ilike.%${term}%,scope_ar.ilike.%${term}%`);
-        }
-        const { data, error } = await q;
-        if (error) return { ok: false, error: error.message };
-        return {
-          ok: true,
-          directives: data ?? [],
-          count: (data ?? []).length,
-          note: "بيانات مرجعية عامة؛ ليست بديلًا عن النصوص الرسمية للهيئة.",
-        };
-      },
-    }),
-
     send_executive_email: tool({
       description:
-        "Send an HTML executive email DIRECTLY (no human confirmation step). All safety controls apply: sender role, rate limits, provider config, encryption, and the immutable audit ledger with an auto-approve marker.",
+        "Send an HTML executive email to the registered ARIA owner. Direct send is allowed only when the CURRENT user message explicitly asks to send an email; recipient defaults to the registered owner and cannot be invented.",
       inputSchema: z.object({
-        to: z.string().email(),
+        to: z.string().email().optional(),
         cc: z.string().email().optional(),
         subject: z.string().min(2).max(300),
         html: z.string().min(5).max(120000),
       }),
       execute: async (args) => {
-        const payload = { channel: "email" as const, ...args };
-        return ariaAutoApproveEnabled()
-          ? sendAriaOutboundMessageDirectInternal({ userId, payload })
-          : prepareAriaOutboundMessage(supabase, userId, payload);
+        try {
+          const payload = {
+            channel: "email" as const,
+            ...args,
+            to: resolveOwnerEmail(args.to),
+          };
+          return ariaAutoApproveEnabled()
+            ? await sendAriaOutboundMessageDirectInternal({
+                userId,
+                payload,
+                explicitIntentText: runtime.lastUserText ?? "",
+              })
+            : await prepareAriaOutboundMessage(supabase, userId, payload);
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
       },
     }),
 
     send_executive_sms: tool({
       description:
-        "Send an executive SMS/MMS DIRECTLY (no human confirmation step). Recipient numbers must use E.164 format. All safety controls apply: sender role, rate limits, provider config, and the immutable audit ledger with an auto-approve marker.",
+        "Send an executive SMS/MMS to the registered ARIA owner. Direct send is allowed only when the CURRENT user message explicitly asks to send an SMS; recipient defaults to the registered owner.",
       inputSchema: z.object({
-        to: z.string().min(8).max(24).describe("E.164 phone number, e.g. +9665XXXXXXXX"),
+        to: z.string().min(8).max(24).optional().describe("Optional E.164 owner number"),
         body: z.string().min(1).max(1600),
         media_urls: z.array(z.string().url()).max(10).optional(),
       }),
       execute: async (args) => {
-        const payload = {
-          channel: "sms" as const,
-          to: args.to,
-          body: args.body,
-          mediaUrls: args.media_urls,
-        };
-        return ariaAutoApproveEnabled()
-          ? sendAriaOutboundMessageDirectInternal({ userId, payload })
-          : prepareAriaOutboundMessage(supabase, userId, payload);
+        try {
+          const payload = {
+            channel: "sms" as const,
+            to: resolveOwnerSms(args.to),
+            body: args.body,
+            mediaUrls: args.media_urls,
+          };
+          return ariaAutoApproveEnabled()
+            ? await sendAriaOutboundMessageDirectInternal({
+                userId,
+                payload,
+                explicitIntentText: runtime.lastUserText ?? "",
+              })
+            : await prepareAriaOutboundMessage(supabase, userId, payload);
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
       },
     }),
 
@@ -379,15 +460,55 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         limit: z.number().int().min(1).max(10).default(5),
       }),
       execute: async (args) => {
-        const q = args.query.replace(/[,()]/g, " ").trim();
+        const q = safePostgrestSearchTerm(args.query);
         if (!q) return { ok: true, results: [], count: 0 };
-        const { data, error } = await supabase
-          .from("knowledge_docs")
-          .select("id,title,content")
-          .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
-          .limit(args.limit);
-        if (error) return { ok: false, error: error.message };
-        return { ok: true, results: data ?? [], count: data?.length ?? 0 };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- HCIS reference table ships in its migration
+        const db = supabase as unknown as { from: (t: string) => any };
+        const [general, hcis] = await Promise.all([
+          supabase
+            .from("knowledge_docs")
+            .select("id,title,content")
+            .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
+            .limit(args.limit),
+          // NEXIOS aria_knowledge schema is (title, source, content, tags).
+          db
+            .from("aria_knowledge")
+            .select("id,title,content,source,tags")
+            .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
+            .limit(args.limit),
+        ]);
+        if (general.error && hcis.error) {
+          return {
+            ok: false,
+            error: `Knowledge search failed: ${general.error.message}; ${hcis.error.message}`,
+          };
+        }
+        const results = [
+          ...(
+            (general.data ?? []) as Array<{
+              id: string;
+              title: string;
+              content: string;
+            }>
+          ).map((row) => ({ ...row, source: "knowledge_docs" })),
+          ...(
+            (hcis.data ?? []) as Array<{
+              id: string;
+              title: string;
+              content: string;
+              source: string;
+              tags: string[];
+            }>
+          ).map((row) => ({
+            id: row.id,
+            title: row.title,
+            content: row.content,
+            citation: `[KB:${row.title}]`,
+            source: row.source,
+            tags: row.tags,
+          })),
+        ].slice(0, args.limit);
+        return { ok: true, results, count: results.length };
       },
     }),
 
@@ -442,8 +563,14 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         notes: z.string().max(2000).optional(),
       }),
       execute: async (args) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const org_id = await getActorOrgId(supabase, userId);
-        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
+        if (!org_id)
+          return {
+            ok: false,
+            error: "Actor is not assigned to an organization",
+          };
         const ref = genRef("INC");
         const ai_risk_score = scoreRisk(args.severity, args.priority, args.category);
         const { data, error } = await supabase
@@ -466,13 +593,21 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("id,ref,title_ar,severity,priority,ai_risk_score,status")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "incident", data.id, data.ref, "registered", {
-          severity: args.severity,
-          priority: args.priority,
-          ai_risk_score,
-          notes: args.notes ?? null,
-        });
-        return { ok: true, incident: data };
+        const audit = await logEvent(
+          supabase,
+          userId,
+          "incident",
+          data.id,
+          data.ref,
+          "registered",
+          {
+            severity: args.severity,
+            priority: args.priority,
+            ai_risk_score,
+            notes: args.notes ?? null,
+          },
+        );
+        return { ok: true, incident: data, audit };
       },
     }),
 
@@ -487,6 +622,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         root_cause: z.string().max(2000).optional(),
       }),
       execute: async ({ id, ...patch }) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const { data, error } = await supabase
           .from("sec_incidents")
           .update(patch)
@@ -494,8 +631,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("id,ref,status,priority")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "incident", id, data.ref, "updated", patch);
-        return { ok: true, incident: data };
+        const audit = await logEvent(supabase, userId, "incident", id, data.ref, "updated", patch);
+        return { ok: true, incident: data, audit };
       },
     }),
 
@@ -538,12 +675,18 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         asset_code: z.string().max(80).optional(),
         assigned_to: z.string().max(120).optional(),
         contractor: z.string().max(120).optional(),
-        due_at: z.string().optional(),
+        due_at: z.string().datetime().optional(),
         source_incident_id: z.string().uuid().optional(),
       }),
       execute: async (args) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const org_id = await getActorOrgId(supabase, userId);
-        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
+        if (!org_id)
+          return {
+            ok: false,
+            error: "Actor is not assigned to an organization",
+          };
         const ref = genRef("WO");
         const { data, error } = await supabase
           .from("sec_work_orders")
@@ -567,12 +710,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("id,ref,title_ar,kind,priority,status,due_at")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "work_order", data.id, data.ref, "created", {
+        const audit = await logEvent(supabase, userId, "work_order", data.id, data.ref, "created", {
           kind: args.kind,
           priority: args.priority,
           source_incident_id: args.source_incident_id ?? null,
         });
-        return { ok: true, work_order: data };
+        return { ok: true, work_order: data, audit };
       },
     }),
 
@@ -584,6 +727,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         completion_notes: z.string().min(3).max(2000),
       }),
       execute: async ({ id, completion_notes }) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const { data, error } = await supabase
           .from("sec_work_orders")
           .update({
@@ -596,25 +741,31 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("ref,source_incident_id")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "work_order", id, data.ref, "completed", {
+        const audit = await logEvent(supabase, userId, "work_order", id, data.ref, "completed", {
           completion_notes,
         });
+        let linkedIncidentAudit: AuditResult | null = null;
         if (data.source_incident_id) {
-          await supabase
+          const { error: incidentError } = await supabase
             .from("sec_incidents")
             .update({ status: "contained" })
             .eq("id", data.source_incident_id);
-          await logEvent(
-            supabase,
-            userId,
-            "incident",
-            data.source_incident_id,
-            null,
-            "auto_contained_by_work_order",
-            { work_order_ref: data.ref },
-          );
+          linkedIncidentAudit = incidentError
+            ? {
+                ok: false,
+                error: `Linked incident update failed: ${incidentError.message}`,
+              }
+            : await logEvent(
+                supabase,
+                userId,
+                "incident",
+                data.source_incident_id,
+                null,
+                "auto_contained_by_work_order",
+                { work_order_ref: data.ref },
+              );
         }
-        return { ok: true, ref: data.ref };
+        return { ok: true, ref: data.ref, audit, linkedIncidentAudit };
       },
     }),
 
@@ -645,21 +796,32 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
 
     sec_create_permit: tool({
       description: "Create a Permit-To-Work (تصريح عمل) for a contractor.",
-      inputSchema: z.object({
-        work_type: z
-          .string()
-          .min(2)
-          .max(80)
-          .describe("hot-work|confined-space|electrical|height|excavation|general"),
-        contractor: z.string().min(2).max(160),
-        risk_level: z.enum(["low", "medium", "high", "critical"]),
-        starts_at: z.string(),
-        ends_at: z.string(),
-        notes: z.string().max(2000).optional(),
-      }),
+      inputSchema: z
+        .object({
+          work_type: z
+            .string()
+            .min(2)
+            .max(80)
+            .describe("hot-work|confined-space|electrical|height|excavation|general"),
+          contractor: z.string().min(2).max(160),
+          risk_level: z.enum(["low", "medium", "high", "critical"]),
+          starts_at: z.string().datetime(),
+          ends_at: z.string().datetime(),
+          notes: z.string().max(2000).optional(),
+        })
+        .refine((value) => new Date(value.ends_at) > new Date(value.starts_at), {
+          message: "ends_at must be later than starts_at",
+          path: ["ends_at"],
+        }),
       execute: async (args) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const org_id = await getActorOrgId(supabase, userId);
-        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
+        if (!org_id)
+          return {
+            ok: false,
+            error: "Actor is not assigned to an organization",
+          };
         const ref = genRef("PTW");
         const { data, error } = await supabase
           .from("sec_permits")
@@ -678,10 +840,10 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("id,ref,work_type,contractor,risk_level,status,starts_at,ends_at")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "permit", data.id, data.ref, "created", {
+        const audit = await logEvent(supabase, userId, "permit", data.id, data.ref, "created", {
           risk_level: args.risk_level,
         });
-        return { ok: true, permit: data };
+        return { ok: true, permit: data, audit };
       },
     }),
 
@@ -712,8 +874,10 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("ref")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "permit", id, data.ref, decision, { note: note ?? null });
-        return { ok: true, ref: data.ref, decision };
+        const audit = await logEvent(supabase, userId, "permit", id, data.ref, decision, {
+          note: note ?? null,
+        });
+        return { ok: true, ref: data.ref, decision, audit };
       },
     }),
 
@@ -747,8 +911,14 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         checkpoints_total: z.number().int().min(1).max(100).default(10),
       }),
       execute: async (args) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const org_id = await getActorOrgId(supabase, userId);
-        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
+        if (!org_id)
+          return {
+            ok: false,
+            error: "Actor is not assigned to an organization",
+          };
         const ref = genRef("PT");
         const { data, error } = await supabase
           .from("sec_patrols")
@@ -764,11 +934,11 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("id,ref,team,route,status,checkpoints_total")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "patrol", data.id, data.ref, "scheduled", {
+        const audit = await logEvent(supabase, userId, "patrol", data.id, data.ref, "scheduled", {
           team: args.team,
           route: args.route,
         });
-        return { ok: true, patrol: data };
+        return { ok: true, patrol: data, audit };
       },
     }),
 
@@ -801,8 +971,14 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         badge_no: z.string().max(40).optional(),
       }),
       execute: async (args) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const org_id = await getActorOrgId(supabase, userId);
-        if (!org_id) return { ok: false, error: "Actor is not assigned to an organization" };
+        if (!org_id)
+          return {
+            ok: false,
+            error: "Actor is not assigned to an organization",
+          };
         const ref = genRef("V");
         const { data, error } = await supabase
           .from("sec_visitors")
@@ -821,10 +997,10 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("id,ref,full_name,host,badge_no,status")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "visitor", data.id, data.ref, "checked_in", {
+        const audit = await logEvent(supabase, userId, "visitor", data.id, data.ref, "checked_in", {
           host: args.host,
         });
-        return { ok: true, visitor: data };
+        return { ok: true, visitor: data, audit };
       },
     }),
 
@@ -832,6 +1008,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
       description: "Check out a visitor by id. Marks status=left and sets check_out_at.",
       inputSchema: z.object({ id: z.string().uuid() }),
       execute: async ({ id }) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const { data, error } = await supabase
           .from("sec_visitors")
           .update({ status: "left", check_out_at: new Date().toISOString() })
@@ -839,8 +1017,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
           .select("ref,full_name")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "visitor", id, data.ref, "checked_out", {});
-        return { ok: true, ref: data.ref };
+        const audit = await logEvent(supabase, userId, "visitor", id, data.ref, "checked_out", {});
+        return { ok: true, ref: data.ref, audit };
       },
     }),
 
@@ -892,17 +1070,23 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         acknowledged_by: z.string().max(160).optional(),
       }),
       execute: async ({ id, status, notes, acknowledged_by }) => {
+        const denied = await requireOperationalWriterRole(userId);
+        if (denied) return { ok: false, error: denied };
         const { data, error } = await supabase
           .from("sec_cctv_alerts")
-          .update({ status, notes: notes ?? null, acknowledged_by: acknowledged_by ?? "ARIA" })
+          .update({
+            status,
+            notes: notes ?? null,
+            acknowledged_by: acknowledged_by ?? "ARIA",
+          })
           .eq("id", id)
           .select("ref,camera_code")
           .single();
         if (error) return { ok: false, error: error.message };
-        await logEvent(supabase, userId, "cctv_alert", id, data.ref, status, {
+        const audit = await logEvent(supabase, userId, "cctv_alert", id, data.ref, status, {
           notes: notes ?? null,
         });
-        return { ok: true, ref: data.ref };
+        return { ok: true, ref: data.ref, audit };
       },
     }),
 
@@ -956,7 +1140,13 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
         aspect_ratio: z.enum(["1:1", "16:9", "9:16", "4:3", "3:4"]).default("1:1"),
       }),
       execute: async ({ prompt, alt, aspect_ratio }) => {
-        const key = process.env.LOVABLE_API_KEY;
+        const imageRate = await enforceRateLimit(`aria-image:${userId}`, 5, 600);
+        if (imageRate.unavailable) {
+          return { ok: false, error: "image_rate_limit_unavailable" };
+        }
+        if (!imageRate.allowed) return { ok: false, error: "image_rate_limit_exceeded" };
+
+        const key = process.env.LOVABLE_API_KEY?.trim();
         if (!key) return { ok: false, error: "missing_lovable_api_key" };
         try {
           const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -995,10 +1185,18 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
             return { ok: false, error: "no_image_in_response" };
           }
           const commaIdx = dataUrl.indexOf(",");
+          if (commaIdx < 6) return { ok: false, error: "invalid_image_data_url" };
           const meta = dataUrl.slice(5, commaIdx); // e.g. image/png;base64
-          const mime = meta.split(";")[0] || "image/png";
+          const mime = meta.split(";")[0] || "";
+          if (!/^(?:image\/png|image\/jpeg|image\/webp)$/.test(mime) || !/;base64$/i.test(meta)) {
+            return { ok: false, error: "unsupported_generated_image_type" };
+          }
           const b64 = dataUrl.slice(commaIdx + 1);
+          if (b64.length > 14_000_000) return { ok: false, error: "generated_image_too_large" };
           const bytes = Buffer.from(b64, "base64");
+          if (bytes.length === 0 || bytes.length > 10 * 1024 * 1024) {
+            return { ok: false, error: "generated_image_too_large" };
+          }
           const ext = mime === "image/jpeg" ? "jpg" : mime === "image/webp" ? "webp" : "png";
           const objectPath = `${userId}/generated/${crypto.randomUUID()}.${ext}`;
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -1010,8 +1208,12 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
             .from("aria-attachments")
             .createSignedUrl(objectPath, 60 * 60);
           if (signErr || !signed?.signedUrl) {
-            return { ok: false, error: `sign_failed:${signErr?.message ?? "unknown"}` };
+            return {
+              ok: false,
+              error: `sign_failed:${signErr?.message ?? "unknown"}`,
+            };
           }
+          const safeAlt = (alt ?? prompt.slice(0, 80)).replace(/[[\]\r\n]/g, " ").trim();
           return {
             ok: true,
             kind: "image",
@@ -1020,8 +1222,8 @@ export function buildAriaTools(supabase: SupabaseClient, userId: string) {
             url: signed.signedUrl,
             path: objectPath,
             prompt,
-            alt: alt ?? prompt.slice(0, 80),
-            markdown: `![${alt ?? prompt.slice(0, 80)}](${signed.signedUrl})`,
+            alt: safeAlt,
+            markdown: `![${safeAlt}](${signed.signedUrl})`,
           };
         } catch (e) {
           return {
