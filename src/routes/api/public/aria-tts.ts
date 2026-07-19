@@ -23,7 +23,7 @@ import {
 } from "@/lib/aria/voice-config";
 
 const Input = z.object({
-  text: z.string().trim().min(1).max(1200),
+  text: z.string().trim().min(1).max(4000),
 });
 
 function clientIp(req: Request): string {
