@@ -1324,6 +1324,7 @@ export function AriaCopilot() {
 
   const retry = useCallback(() => {
     if (isBusy) return;
+    dismissBlockingIntro();
     primeIOSAudio();
     stopVoicePlayback();
     speakNextReplyRef.current = false;
@@ -1930,7 +1931,14 @@ export function AriaCopilot() {
       {!isOpen && (
         <button
           type="button"
-          onClick={() => setMode("docked")}
+          onPointerDown={() => {
+            dismissBlockingIntro();
+            primeIOSAudio();
+          }}
+          onClick={() => {
+            dismissBlockingIntro();
+            setMode("docked");
+          }}
           aria-label="Open ARIA — المخاطبة"
           title="المخاطبة مع آريا"
           className={cn(
