@@ -1,18 +1,19 @@
 /**
  * ARIA reply-channel contract.
  *
- * Speech is reserved for an actual voice turn captured while Conversation
- * Mode is active. Keyboard/file turns remain visual so opening the copilot or
- * typing never causes surprise audio.
+ * Rule: when Conversation Mode ("المخاطبة") is ON, every ARIA reply is
+ * spoken — voice turn OR typed turn — so mobile users who type still hear
+ * ARIA speak. When Conversation Mode is OFF, replies stay silent (visual
+ * only), so opening the copilot or typing never causes surprise audio.
  */
 export function shouldSpeakAriaReply({
   conversationMode,
-  fromVoice,
+  fromVoice: _fromVoice,
 }: {
   conversationMode: boolean;
   fromVoice?: boolean;
 }): boolean {
-  return conversationMode && fromVoice === true;
+  return conversationMode === true;
 }
 
 /** Convert a model reply into safe, natural speech without leaking visual
