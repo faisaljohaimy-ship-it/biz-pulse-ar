@@ -1090,7 +1090,7 @@ function MissionControl() {
       dir={ar ? "rtl" : "ltr"}
       className="relative isolate min-h-screen overflow-hidden bg-[#061A2E] text-white"
     >
-      <GlossyImageBackdrop src="/ceo-dashboard-bg.png" opacity={0.5} />
+      <GlossyImageBackdrop src="/ceo-dashboard-bg.webp" opacity={0.5} />
       {!welcomeDone && (
         <WelcomeOverlay ar={ar} onDone={() => setWelcomeDone(true)} name={displayName} />
       )}

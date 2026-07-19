@@ -107,15 +107,21 @@ function PtwPage() {
       }
       actions={
         <div className="flex flex-wrap gap-2">
+          {/* Governance: write actions render DISABLED for guests, with an
+              explicit tooltip — never a dead click, never a hidden button. */}
           <button
             onClick={() => setShowCreate(true)}
-            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/15 px-4 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25"
+            disabled={!user}
+            title={!user ? (ar ? "يتطلب تسجيل الدخول" : "Sign-in required") : undefined}
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/15 px-4 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-cyan-500/15"
           >
             <Plus className="h-4 w-4" /> {ar ? "تصريح جديد" : "New permit"}
           </button>
           <button
             onClick={() => setSuspendTarget(regionId)}
-            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-500/15 px-4 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/25"
+            disabled={!user}
+            title={!user ? (ar ? "يتطلب تسجيل الدخول" : "Sign-in required") : undefined}
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-500/15 px-4 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/25 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-rose-500/15"
           >
             <Siren className="h-4 w-4" /> {ar ? "تعليق طوارئ" : "Emergency suspend"}
           </button>

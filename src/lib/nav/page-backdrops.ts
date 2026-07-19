@@ -16,7 +16,7 @@ const PAGE_BACKDROPS: Record<string, string> = {
   "/intelligence": "/ai-analytics-bg.jpeg",
   "/observability": "/ai-analytics-bg.jpeg",
   "/sec/kpi": "/ai-analytics-bg.jpeg",
-  "/agents": "/ai-assistant-bg.png",
+  "/agents": "/ai-assistant-bg.webp",
   // Decisions & risk → decision-intelligence imagery.
   "/analytics": "/decision-intel-bg.jpeg",
   "/decisions": "/decision-intel-bg.jpeg",

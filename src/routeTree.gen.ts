@@ -23,9 +23,11 @@ import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PermitsRouteImport } from './routes/permits'
 import { Route as OsRouteImport } from './routes/os'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HcisComplianceRouteImport } from './routes/hcis-compliance'
 import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
@@ -281,6 +283,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PermitsRoute = PermitsRouteImport.update({
+  id: '/permits',
+  path: '/permits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OsRoute = OsRouteImport.update({
   id: '/os',
   path: '/os',
@@ -294,6 +301,11 @@ const McpRoute = McpRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HcisComplianceRoute = HcisComplianceRouteImport.update({
+  id: '/hcis-compliance',
+  path: '/hcis-compliance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HajjPrimeRoute = HajjPrimeRouteImport.update({
@@ -1293,9 +1305,11 @@ export interface FileRoutesByFullPath {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
+  '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/os': typeof OsRoute
+  '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
@@ -1495,9 +1509,11 @@ export interface FileRoutesByTo {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
+  '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/os': typeof OsRoute
+  '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
@@ -1697,9 +1713,11 @@ export interface FileRoutesById {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/hajj-prime': typeof HajjPrimeRoute
+  '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/os': typeof OsRoute
+  '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/request-demo': typeof RequestDemoRoute
@@ -1901,9 +1919,11 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
+    | '/hcis-compliance'
     | '/login'
     | '/mcp'
     | '/os'
+    | '/permits'
     | '/pricing'
     | '/privacy'
     | '/request-demo'
@@ -2103,9 +2123,11 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
+    | '/hcis-compliance'
     | '/login'
     | '/mcp'
     | '/os'
+    | '/permits'
     | '/pricing'
     | '/privacy'
     | '/request-demo'
@@ -2304,9 +2326,11 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/hajj-prime'
+    | '/hcis-compliance'
     | '/login'
     | '/mcp'
     | '/os'
+    | '/permits'
     | '/pricing'
     | '/privacy'
     | '/request-demo'
@@ -2508,9 +2532,11 @@ export interface RootRouteChildren {
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   HajjPrimeRoute: typeof HajjPrimeRoute
+  HcisComplianceRoute: typeof HcisComplianceRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   OsRoute: typeof OsRoute
+  PermitsRoute: typeof PermitsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RequestDemoRoute: typeof RequestDemoRoute
@@ -2682,6 +2708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/permits': {
+      id: '/permits'
+      path: '/permits'
+      fullPath: '/permits'
+      preLoaderRoute: typeof PermitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/os': {
       id: '/os'
       path: '/os'
@@ -2701,6 +2734,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hcis-compliance': {
+      id: '/hcis-compliance'
+      path: '/hcis-compliance'
+      fullPath: '/hcis-compliance'
+      preLoaderRoute: typeof HcisComplianceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hajj-prime': {
@@ -4287,9 +4327,11 @@ const rootRouteChildren: RootRouteChildren = {
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
   HajjPrimeRoute: HajjPrimeRoute,
+  HcisComplianceRoute: HcisComplianceRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   OsRoute: OsRoute,
+  PermitsRoute: PermitsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RequestDemoRoute: RequestDemoRoute,

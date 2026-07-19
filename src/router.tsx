@@ -9,6 +9,8 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Instant navigation: prefetch a route's code + loader on hover/touch intent.
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
   });
 

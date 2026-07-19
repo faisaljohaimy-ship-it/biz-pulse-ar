@@ -64,7 +64,7 @@ const PREVIEWS: readonly Preview[] = [
     ar: "آريا التنفيذية",
     en: "ARIA Executive",
     descAr: "تحكّم كامل بالمساعدة الذكية أينما كنت",
-    img: "/ai-assistant-bg.png",
+    img: "/ai-assistant-bg.webp",
   },
 ];
 

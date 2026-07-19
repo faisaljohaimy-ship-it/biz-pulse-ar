@@ -7,7 +7,7 @@
  */
 import { Link } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
-import commandCenterAria from "@/assets/nexios-command-center-aria.png";
+import commandCenterAria from "@/assets/nexios-command-center-aria.webp";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";

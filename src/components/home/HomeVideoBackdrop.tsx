@@ -129,7 +129,7 @@ export function HomeVideoBackdrop() {
         src={homeBg.url}
         playsInline
         muted={muted}
-        preload="auto"
+        preload="metadata"
         className={`absolute inset-0 h-full w-full object-cover object-[center_25%] transition-opacity duration-700 ${active ? "opacity-100" : "opacity-0"}`}
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.34)_0%,rgba(2,8,18,0.12)_34%,rgba(2,8,18,0.5)_100%)]" />
