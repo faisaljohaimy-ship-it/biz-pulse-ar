@@ -6,7 +6,7 @@
  * `executive_briefings`.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type BriefingSegment = {
   /** Seconds offset from briefing start. */
@@ -42,7 +42,7 @@ function truncate(s: string | null | undefined, n: number): string {
 }
 
 export const generateExecutiveBriefing = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ExecutiveBriefing> => {
     const sb = context.supabase;
     const generated_at = new Date().toISOString();
@@ -221,17 +221,19 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       text_en: `Recommendation: ${recommendation.title_en}. Confidence ${Math.round(recommendation.confidence * 100)}%.`,
     });
 
-    // Persist the briefing.
+    // Persist the briefing (signed-in users only; guests get an ephemeral one).
     let briefing_id: string | null = null;
     try {
-      const { data: orgRow } = await sb
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", context.userId)
-        .limit(1)
-        .maybeSingle();
+      const { data: orgRow } = context.userId
+        ? await sb
+            .from("org_members")
+            .select("org_id")
+            .eq("user_id", context.userId)
+            .limit(1)
+            .maybeSingle()
+        : { data: null };
       const org_id = orgRow?.org_id ?? null;
-      if (org_id) {
+      if (org_id && context.userId) {
         const { data: inserted } = await sb
           .from("executive_briefings")
           .insert({

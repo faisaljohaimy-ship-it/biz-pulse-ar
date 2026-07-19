@@ -6,7 +6,7 @@
  * when the gateway is unavailable.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type PredictedRisk = {
   id: string;
@@ -23,7 +23,7 @@ export type PredictedRisk = {
 };
 
 export const getPredictedRisks = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<PredictedRisk[]> => {
     const sb = context.supabase;
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();

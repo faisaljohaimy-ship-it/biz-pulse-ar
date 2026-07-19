@@ -5,7 +5,7 @@
  * `sec_patrols`, `enterprise_events`) — no mocks, no fabrication.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type BridgeAgentStatus =
   | "offline"
@@ -60,7 +60,7 @@ export type BridgeState = {
 };
 
 export const getBridgeState = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<BridgeState> => {
     const sb = context.supabase;
 
@@ -257,7 +257,7 @@ export type MissionTimelineEntry = {
 };
 
 export const getMissionTimeline = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<MissionTimelineEntry[]> => {
     const { data } = await context.supabase
       .from("enterprise_events")

@@ -1505,15 +1505,35 @@ export function AriaCopilot() {
     startListeningRef.current = startListening;
   }, [startListening]);
 
+  /* Always-on resilience: a failed reply auto-retries (up to 2×, backed
+     off) before ARIA ever pauses — in BOTH text and voice conversation. */
+  const autoRetryRef = useRef(0);
   useEffect(() => {
-    if (!convMode || !hasError) return;
-    speakNextReplyRef.current = false;
-    ariaState.set("idle");
-    setConvNotice(
-      "تعذّر الحصول على رد آريا — تحقق من اتصال الخادم ومفتاح الذكاء ثم اضغط للمتابعة.",
-    );
-    setConvPaused(true);
-  }, [convMode, hasError]);
+    if (chat.status === "ready" && !chat.error) autoRetryRef.current = 0;
+  }, [chat.status, chat.error]);
+
+  useEffect(() => {
+    if (!hasError) return;
+    if (autoRetryRef.current < 2) {
+      autoRetryRef.current += 1;
+      const attempt = autoRetryRef.current;
+      if (convModeRef.current) {
+        setConvNotice(`تعذّر مؤقت في الرد — إعادة المحاولة تلقائيًا (${attempt}/2)…`);
+      }
+      const t = window.setTimeout(() => {
+        void chat.regenerate();
+      }, 1200 * attempt);
+      return () => window.clearTimeout(t);
+    }
+    if (convModeRef.current) {
+      speakNextReplyRef.current = false;
+      ariaState.set("idle");
+      setConvNotice(
+        "تعذّر الحصول على رد آريا — تحقق من اتصال الخادم ومفتاح الذكاء ثم اضغط للمتابعة.",
+      );
+      setConvPaused(true);
+    }
+  }, [hasError, chat]);
 
   const playConversationGreeting = useCallback(async () => {
     const controller = new AbortController();

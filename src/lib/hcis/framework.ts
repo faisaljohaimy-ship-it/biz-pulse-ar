@@ -69,6 +69,8 @@ export interface HcisDataset {
   directives: Directive[];
   stages: Stage[];
   compliance: ComplianceRow[];
+  /** "database" = live Supabase rows; "reference" = built-in fallback. */
+  source: "database" | "reference";
 }
 
 /* ── Directive glyphs — the approved semantic icon map ──────────────────────
@@ -174,42 +176,63 @@ function logPgError(table: string, error: PgError): void {
   );
 }
 
+/** Built-in reference copy of the framework — the page is NEVER dead. */
+async function referenceDataset(): Promise<HcisDataset> {
+  const ref = await import("./reference-data");
+  return {
+    directives: [...ref.HCIS_REFERENCE_DIRECTIVES],
+    stages: [...ref.HCIS_REFERENCE_STAGES],
+    compliance: [...ref.HCIS_REFERENCE_COMPLIANCE],
+    source: "reference",
+  };
+}
+
 export function useHcisFramework() {
   return useQuery<HcisDataset>({
     queryKey: ["hcis-framework"],
-    enabled: isSupabaseConfigured,
-    retry: 1,
+    retry: false,
     staleTime: 60_000,
     refetchInterval: 120_000,
-    queryFn: async () => {
-      const [dir, stg, cmp] = await Promise.all([
-        supabase
-          .from("hcis_directives")
-          .select("code,category,name_ar,name_en,scope_ar,issue_note_ar,sort_order")
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("hcis_approval_stages")
-          .select("stage_no,name_ar,name_en,description_ar")
-          .order("stage_no", { ascending: true }),
-        supabase
-          .from("hcis_compliance_status")
-          .select("directive_code,region_code,status,priority,is_simulation"),
-      ]);
-
-      // Primary table failing is fatal (nothing meaningful to render)…
-      if (dir.error) {
-        logPgError("hcis_directives", dir.error);
-        throw new Error(dir.error.message);
+    // NEVER throws and never returns an empty framework: the live database
+    // wins when it answers with rows; otherwise the built-in reference copy
+    // fills the showcase (clearly badged), and the real failure is logged.
+    queryFn: async (): Promise<HcisDataset> => {
+      if (!isSupabaseConfigured) {
+        console.error("[HCIS] Supabase env not configured — serving reference dataset.");
+        return referenceDataset();
       }
-      // …secondary tables degrade gracefully: log loudly, render what we have.
-      if (stg.error) logPgError("hcis_approval_stages", stg.error);
-      if (cmp.error) logPgError("hcis_compliance_status", cmp.error);
+      try {
+        const [dir, stg, cmp] = await Promise.all([
+          supabase
+            .from("hcis_directives")
+            .select("code,category,name_ar,name_en,scope_ar,issue_note_ar,sort_order")
+            .order("sort_order", { ascending: true }),
+          supabase
+            .from("hcis_approval_stages")
+            .select("stage_no,name_ar,name_en,description_ar")
+            .order("stage_no", { ascending: true }),
+          supabase
+            .from("hcis_compliance_status")
+            .select("directive_code,region_code,status,priority,is_simulation"),
+        ]);
 
-      return {
-        directives: (dir.data ?? []) as Directive[],
-        stages: (stg.error ? [] : (stg.data ?? [])) as Stage[],
-        compliance: (cmp.error ? [] : (cmp.data ?? [])) as ComplianceRow[],
-      };
+        if (dir.error) logPgError("hcis_directives", dir.error);
+        if (stg.error) logPgError("hcis_approval_stages", stg.error);
+        if (cmp.error) logPgError("hcis_compliance_status", cmp.error);
+
+        const directives = (dir.data ?? []) as Directive[];
+        if (dir.error || directives.length === 0) return referenceDataset();
+
+        return {
+          directives,
+          stages: (stg.error ? [] : (stg.data ?? [])) as Stage[],
+          compliance: (cmp.error ? [] : (cmp.data ?? [])) as ComplianceRow[],
+          source: "database",
+        };
+      } catch (error) {
+        console.error("[HCIS] framework fetch failed — serving reference dataset.", error);
+        return referenceDataset();
+      }
     },
   });
 }

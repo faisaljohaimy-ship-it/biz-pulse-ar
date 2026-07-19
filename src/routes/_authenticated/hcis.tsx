@@ -9,11 +9,10 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ShieldCheck, AlertTriangle, RefreshCw, FlaskConical, Search } from "lucide-react";
+import { ShieldCheck, FlaskConical, Search } from "lucide-react";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { NexusPage, NexusCard } from "@/components/nexus-frame";
 import { useI18n } from "@/lib/i18n";
-import { isSupabaseConfigured } from "@/integrations/supabase/client";
 import { REGIONS } from "@/lib/regions";
 import {
   DIRECTIVE_ICONS,
@@ -55,7 +54,7 @@ function SkeletonBlock({ h }: { h: string }) {
 function HcisPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const { data, isLoading, isError, refetch } = useHcisFramework();
+  const { data, isLoading } = useHcisFramework();
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [q, setQ] = useState("");
 
@@ -99,8 +98,6 @@ function HcisPage() {
     });
   }, [data, category, q]);
 
-  const configError = !isSupabaseConfigured;
-
   return (
     <NexusPage
       eyebrow="HCIS COMPLIANCE"
@@ -114,31 +111,18 @@ function HcisPage() {
         anySimulation ? (
           <span className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 text-sm font-semibold text-amber-200">
             <FlaskConical className="h-4 w-4" aria-hidden />
-            {ar ? "بيانات محاكاة" : "Simulation data"}
+            {data?.source === "reference"
+              ? ar
+                ? "بيانات محاكاة · نسخة مرجعية"
+                : "Simulation · reference copy"
+              : ar
+                ? "بيانات محاكاة"
+                : "Simulation data"}
           </span>
         ) : undefined
       }
     >
-      {configError || isError ? (
-        <NexusCard className="border-rose-400/25">
-          <div className="flex flex-col items-center gap-4 py-8 text-center">
-            <AlertTriangle className="h-8 w-8 text-rose-300" aria-hidden />
-            <p className="max-w-md text-sm leading-relaxed text-white/80">
-              {ar
-                ? "تعذّر تحميل بيانات الامتثال من قاعدة البيانات — تحقّق من الاتصال ثم أعد المحاولة."
-                : "Compliance data failed to load — check your connection and retry."}
-            </p>
-            <button
-              type="button"
-              onClick={() => void refetch()}
-              className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-6 text-sm font-semibold text-[#BEEBFF] transition hover:bg-[#3AE8FF]/20 active:scale-[0.97]"
-            >
-              <RefreshCw className="h-4 w-4" aria-hidden />
-              {ar ? "إعادة المحاولة" : "Retry"}
-            </button>
-          </div>
-        </NexusCard>
-      ) : isLoading || !data ? (
+      {isLoading || !data ? (
         <div className="space-y-4" aria-label={ar ? "جارٍ التحميل" : "Loading"}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {[0, 1, 2, 3, 4].map((i) => (
