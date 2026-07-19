@@ -45,6 +45,7 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { ARIA_GEMINI_TTS_VOICE } from "@/lib/aria/voice-config";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
+import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
@@ -140,6 +141,30 @@ function getAriaAudioContext(): AudioContext | null {
     global.__ariaUnlockCtx = new AC();
   }
   return global.__ariaUnlockCtx;
+}
+
+function dismissBlockingIntro(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem("nexios-welcome", "complete:v4");
+  } catch {
+    /* private-mode storage can fail; the live overlay is still dismissed below */
+  }
+  try {
+    setIntroActive(false);
+  } catch {
+    /* noop */
+  }
+  const skip = Array.from(document.querySelectorAll("button")).find((button) =>
+    /تخطّي|تخطي|skip/i.test(button.textContent ?? ""),
+  );
+  if (skip instanceof HTMLButtonElement) {
+    try {
+      skip.click();
+    } catch {
+      /* noop */
+    }
+  }
 }
 
 /** Semaphore limiting concurrent sentence-level Gemini TTS requests. */
