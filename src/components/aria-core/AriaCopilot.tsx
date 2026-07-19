@@ -643,6 +643,17 @@ export function AriaCopilot() {
     ariaState.set("idle");
   }, []);
 
+  const stopWebAudioFallback = useCallback(() => {
+    for (const source of webAudioSourcesRef.current) {
+      try {
+        source.stop();
+      } catch {
+        /* noop */
+      }
+    }
+    webAudioSourcesRef.current.clear();
+  }, []);
+
   const scheduleConversationRelisten = useCallback((delayMs = 280) => {
     if (!convModeRef.current) return;
     if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
@@ -1093,6 +1104,7 @@ export function AriaCopilot() {
           }
         }
         audioRef.current = null;
+        stopWebAudioFallback();
         for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
         objectUrlsRef.current.clear();
         cur.finalized = true;
@@ -1733,6 +1745,7 @@ export function AriaCopilot() {
       } catch {
         /* noop */
       }
+      stopWebAudioFallback();
     });
     if (!acquired) {
       controller.abort();
@@ -1774,7 +1787,7 @@ export function AriaCopilot() {
       ariaState.set("listening");
       startListeningRef.current?.();
     }
-  }, [fetchTTS, playAudioClip]);
+  }, [fetchTTS, playAudioClip, stopWebAudioFallback]);
 
   const toggleConversationMode = useCallback(() => {
     if (convMode) {
