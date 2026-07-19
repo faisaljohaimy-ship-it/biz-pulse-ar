@@ -168,24 +168,181 @@ export type PtwOverview = {
     status: string;
     is_simulation: boolean;
   }>;
+  /** "database" = live rows; "reference" = built-in always-on simulation. */
+  source: "database" | "reference";
 };
+
+/* ── Built-in PTW simulation (guaranteed board) ─────────────────────────
+   Mirrors supabase/migrations/20260719210000_ptw_public_demo_seed.sql but
+   with times computed RELATIVE TO NOW so «ساري الآن / ينتهي خلال ساعتين /
+   منتهٍ اليوم» stay truthful forever. Served only when the database is
+   unreachable or has no anon-visible permit rows; every row is flagged
+   is_simulation=true and the UI badges the board as reference data. */
+function buildPtwSimulation(now: number): Pick<PtwOverview, "types" | "permits"> {
+  const iso = (ms: number) => new Date(ms).toISOString();
+  const H = 3_600_000;
+  const types: PtwOverview["types"] = [
+    {
+      id: "sim-t1",
+      key: "hot_work",
+      name_ar: "أعمال ساخنة",
+      name_en: "Hot Work",
+      icon: "Flame",
+      color: "#F97316",
+    },
+    {
+      id: "sim-t2",
+      key: "confined_space",
+      name_ar: "دخول أماكن مغلقة",
+      name_en: "Confined Space Entry",
+      icon: "DoorClosed",
+      color: "#8B5CF6",
+    },
+    {
+      id: "sim-t3",
+      key: "electrical",
+      name_ar: "أعمال كهربائية",
+      name_en: "Electrical Work",
+      icon: "Zap",
+      color: "#FACC15",
+    },
+    {
+      id: "sim-t4",
+      key: "work_at_height",
+      name_ar: "العمل على ارتفاع",
+      name_en: "Work at Height",
+      icon: "TowerControl",
+      color: "#22D3EE",
+    },
+  ];
+  const permits: PtwOverview["permits"] = [
+    {
+      id: "sim-p1",
+      ref: "PTW-SIM-001",
+      type_key: "hot_work",
+      region: "western",
+      location: "محطة التحويل الغربية — خزان الوقود 3",
+      contractor: "شركة الإنشاءات المتقدمة",
+      worker_count: 4,
+      starts_at: iso(now - 2 * H),
+      ends_at: iso(now + 6 * H),
+      status: "active",
+      is_simulation: true,
+    },
+    {
+      id: "sim-p2",
+      ref: "PTW-SIM-002",
+      type_key: "electrical",
+      region: "central",
+      location: "لوحة التوزيع الرئيسية — مبنى القيادة",
+      contractor: "المقاول الوطني للطاقة",
+      worker_count: 2,
+      starts_at: iso(now - 1 * H),
+      ends_at: iso(now + 7 * H),
+      status: "active",
+      is_simulation: true,
+    },
+    {
+      id: "sim-p3",
+      ref: "PTW-SIM-003",
+      type_key: "work_at_height",
+      region: "eastern",
+      location: "برج الاتصالات الشرقي — منصة 40م",
+      contractor: "أعمال الارتفاعات المحدودة",
+      worker_count: 3,
+      starts_at: iso(now - 3 * H),
+      ends_at: iso(now + 5 * H),
+      status: "active",
+      is_simulation: true,
+    },
+    {
+      id: "sim-p4",
+      ref: "PTW-SIM-004",
+      type_key: "confined_space",
+      region: "southern",
+      location: "خزان المياه الجنوبي — غرفة الضخ",
+      contractor: "شركة الصيانة الصناعية",
+      worker_count: 5,
+      starts_at: iso(now - 0.5 * H),
+      ends_at: iso(now + 1.5 * H),
+      status: "active",
+      is_simulation: true,
+    },
+    {
+      id: "sim-p5",
+      ref: "PTW-SIM-005",
+      type_key: "hot_work",
+      region: "central",
+      location: "ورشة اللحام المركزية — خط الأنابيب B",
+      contractor: "مصنع المعدات الثقيلة",
+      worker_count: 6,
+      starts_at: iso(now + 4 * H),
+      ends_at: iso(now + 12 * H),
+      status: "pending_approval",
+      is_simulation: true,
+    },
+    {
+      id: "sim-p6",
+      ref: "PTW-SIM-007",
+      type_key: "work_at_height",
+      region: "eastern",
+      location: "رافعة الميناء الشرقي — الرصيف 2",
+      contractor: "أعمال الارتفاعات المحدودة",
+      worker_count: 4,
+      starts_at: iso(now + 6 * H),
+      ends_at: iso(now + 14 * H),
+      status: "pending_approval",
+      is_simulation: true,
+    },
+    {
+      id: "sim-p7",
+      ref: "PTW-SIM-006",
+      type_key: "electrical",
+      region: "western",
+      location: "إنارة السور المحيطي — القطاع الغربي",
+      contractor: "المقاول الوطني للطاقة",
+      worker_count: 2,
+      starts_at: iso(now - 9 * H),
+      ends_at: iso(now - 2 * H),
+      status: "expired",
+      is_simulation: true,
+    },
+  ];
+  return { types, permits };
+}
 
 export const getPtwOverview = createServerFn({ method: "GET" })
   // Same open-showcase read model as getHcisOverview (anon RLS decides).
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<PtwOverview> => {
-    const db = context.supabase as unknown as LooseDb;
-    const [{ data: permits }, { data: types }] = await Promise.all([
-      db
-        .from("permits")
-        .select(
-          "id,ref,type_key,region,location,contractor,worker_count,starts_at,ends_at,status,is_simulation",
-        )
-        .order("ends_at", { ascending: true }),
-      db.from("permit_types").select("id,key,name_ar,name_en,icon,color").order("name_ar"),
-    ]);
-    const p = (permits ?? []) as PtwOverview["permits"];
     const now = Date.now();
+    let p: PtwOverview["permits"] = [];
+    let t: PtwOverview["types"] = [];
+    let source: PtwOverview["source"] = "database";
+    try {
+      const db = context.supabase as unknown as LooseDb;
+      const [{ data: permits }, { data: types }] = await Promise.all([
+        db
+          .from("permits")
+          .select(
+            "id,ref,type_key,region,location,contractor,worker_count,starts_at,ends_at,status,is_simulation",
+          )
+          .order("ends_at", { ascending: true }),
+        db.from("permit_types").select("id,key,name_ar,name_en,icon,color").order("name_ar"),
+      ]);
+      p = (permits ?? []) as PtwOverview["permits"];
+      t = (types ?? []) as PtwOverview["types"];
+    } catch (error) {
+      console.error("[ptw] overview fetch failed — serving built-in simulation.", error);
+    }
+    // The board is NEVER empty: with no anon-visible rows (unreachable or
+    // unseeded database) serve the built-in relative-time simulation.
+    if (p.length === 0 && t.length === 0) {
+      const sim = buildPtwSimulation(now);
+      p = sim.permits;
+      t = sim.types;
+      source = "reference";
+    }
     const soon = now + 2 * 60 * 60 * 1000;
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -203,8 +360,9 @@ export const getPtwOverview = createServerFn({ method: "GET" })
           (x) => x.status === "expired" && new Date(x.ends_at).getTime() >= startOfDay.getTime(),
         ).length,
       },
-      types: (types ?? []) as PtwOverview["types"],
+      types: t,
       permits: p,
+      source,
     };
   });
 

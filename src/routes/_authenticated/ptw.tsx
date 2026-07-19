@@ -92,6 +92,18 @@ function PtwPage() {
   });
 
   const activePermits = (data?.permits ?? []).filter((p) => p.status === "active");
+  const pendingPermits = (data?.permits ?? []).filter((p) => p.status === "pending_approval");
+  const expiredToday = (data?.permits ?? []).filter((p) => {
+    if (p.status !== "expired") return false;
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return new Date(p.ends_at).getTime() >= start.getTime();
+  });
+  const fmtTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString(ar ? "ar-SA" : "en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <NexusPage
@@ -107,7 +119,13 @@ function PtwPage() {
           {(data?.permits ?? []).some((p) => p.is_simulation) && (
             <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 text-sm font-semibold text-amber-200">
               <FlaskConical className="h-4 w-4" aria-hidden />
-              {ar ? "بيانات محاكاة" : "Simulation data"}
+              {data?.source === "reference"
+                ? ar
+                  ? "بيانات محاكاة · نسخة مرجعية"
+                  : "Simulation · reference copy"
+                : ar
+                  ? "بيانات محاكاة"
+                  : "Simulation data"}
             </span>
           )}
           {/* Governance: write actions render DISABLED for guests, with an
@@ -244,6 +262,89 @@ function PtwPage() {
               )}
             </div>
           </NexusCard>
+
+          {/* Pending approvals — the 3-step chain awaiting sign-off */}
+          {pendingPermits.length > 0 && (
+            <NexusCard>
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white/80">
+                <Clock3 className="h-4 w-4 text-amber-300" />{" "}
+                {ar ? "بانتظار الموافقة" : "Pending approval"}
+              </h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {pendingPermits.map((p) => {
+                  const t = typeByKey.get(p.type_key);
+                  return (
+                    <div
+                      key={p.id}
+                      className="rounded-2xl border border-amber-400/25 bg-amber-500/[0.05] p-4"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold"
+                          style={{ color: t?.color ?? "#FBBF24" }}
+                        >
+                          <i
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ background: t?.color ?? "#FBBF24" }}
+                          />
+                          {ar ? (t?.name_ar ?? p.type_key) : (t?.name_en ?? p.type_key)}
+                        </span>
+                        <span className="font-mono text-[11px] text-white/50">{p.ref}</span>
+                      </div>
+                      <p className="mt-2 text-sm text-white/85">{p.location}</p>
+                      <p className="text-[11px] text-white/50">
+                        {p.contractor} · {p.worker_count} {ar ? "عامل" : "workers"} ·{" "}
+                        {fmtTime(p.starts_at)}–{fmtTime(p.ends_at)}
+                      </p>
+                      {/* Approval chain position (3-step governance chain) */}
+                      <div className="mt-3 flex items-center gap-1.5" aria-hidden>
+                        <span className="h-1.5 flex-1 rounded-full bg-amber-400/80" />
+                        <span className="h-1.5 flex-1 rounded-full bg-white/15" />
+                        <span className="h-1.5 flex-1 rounded-full bg-white/15" />
+                      </div>
+                      <p className="mt-1.5 text-[10px] text-amber-200/80">
+                        {ar
+                          ? "الخطوة 1 من 3 — مشرف الموقع ← السلامة ← مدير المنطقة"
+                          : "Step 1 of 3 — site supervisor → safety → region manager"}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </NexusCard>
+          )}
+
+          {/* Expired today — compact audit row */}
+          {expiredToday.length > 0 && (
+            <NexusCard>
+              <h3 className="mb-3 text-sm font-semibold text-white/60">
+                {ar ? "منتهية اليوم" : "Expired today"}
+              </h3>
+              <ul className="space-y-2">
+                {expiredToday.map((p) => {
+                  const t = typeByKey.get(p.type_key);
+                  return (
+                    <li
+                      key={p.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/8 bg-black/25 px-3 py-2 text-xs text-white/60"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <i
+                          className="h-2 w-2 shrink-0 rounded-full opacity-60"
+                          style={{ background: t?.color ?? "#94A3B8" }}
+                        />
+                        <span className="font-mono text-white/45">{p.ref}</span>
+                        <span className="truncate">{p.location}</span>
+                      </span>
+                      <span className="shrink-0 text-white/40">
+                        {ar ? "انتهى" : "ended"} {fmtTime(p.ends_at)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </NexusCard>
+          )}
         </>
       )}
 
