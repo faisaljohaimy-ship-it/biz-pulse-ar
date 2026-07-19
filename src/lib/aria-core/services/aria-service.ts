@@ -30,7 +30,8 @@ export function setPendingReplyMode(mode: "text" | "voice") {
 // Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
 // guard accepts the request. Without this the chat is silently rejected 401
 // and the user sees no reply. 30s hard timeout guarantees no infinite wait.
-async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+// Exported for the saved-repair-method contract test.
+export async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   const headers = new Headers(init.headers);
@@ -38,11 +39,27 @@ async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {})
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
-    return await fetch(input, {
+    let res = await fetch(input, {
       ...init,
       headers,
       signal: init.signal ?? controller.signal,
     });
+    // Saved repair method (Lovable, f413ffa): authenticated-first, then on
+    // 401/403 retry the SAME request anonymously — a stale/expired stored
+    // session must never surface as a chat failure; /api/chat serves the
+    // rate-limited guest demo path instead. (Same pattern as
+    // /api/aria/transcribe → /api/public/aria-transcribe and aria-tts.)
+    if (!res.ok && (res.status === 401 || res.status === 403) && headers.has("Authorization")) {
+      const anonHeaders = new Headers(init.headers);
+      anonHeaders.delete("Authorization");
+      res = await fetch(input, {
+        ...init,
+        headers: anonHeaders,
+        signal: init.signal ?? controller.signal,
+        cache: "no-store",
+      });
+    }
+    return res;
   } finally {
     clearTimeout(timer);
   }

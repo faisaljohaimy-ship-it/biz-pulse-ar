@@ -2153,7 +2153,14 @@ export function AriaCopilot() {
                               const parsed = JSON.parse(raw) as {
                                 error?: string;
                               };
-                              if (parsed?.error) return parsed.error;
+                              // Saved repair method (Lovable): never surface
+                              // auth jargon — show the neutral retry line.
+                              if (
+                                parsed?.error &&
+                                !/authenticat|unauthor|token/i.test(parsed.error)
+                              )
+                                return parsed.error;
+                              if (parsed?.error) return CONNECTION_ERROR_AR;
                             } catch {
                               /* not JSON — fall through */
                             }
