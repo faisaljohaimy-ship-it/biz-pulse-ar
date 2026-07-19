@@ -341,7 +341,7 @@ function RootComponent() {
                   <div className="relative z-10">
                     <Outlet />
                   </div>
-                  {!introActive && !isAccessGate && <AriaCopilot />}
+                  {!isAccessGate && <AriaCopilot />}
                   <InstallAppBar />
                   {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
