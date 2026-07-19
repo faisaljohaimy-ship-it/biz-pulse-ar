@@ -54,27 +54,27 @@ const HAJJ_EMBED_URL = hajjOpenUrl();
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform" },
+      { title: "NEXIOS AI  · Executive Delivery Platform" },
       {
         name: "description",
-        content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "Executive Delivery Platform",
       },
       {
         property: "og:title",
-        content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "NEXIOS AI  · Executive Delivery Platform",
       },
       {
         property: "og:description",
-        content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "Executive Delivery Platform",
       },
       { property: "og:url", content: "https://neexios.com/" },
       {
         name: "twitter:title",
-        content: "NEXIOS AI OS — منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "NEXIOS AI  · Executive Delivery Platform",
       },
       {
         name: "twitter:description",
-        content: "منصة إنجاز الأعمال التنفيذية · Executive Delivery Platform",
+        content: "Executive Delivery Platform",
       },
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],
