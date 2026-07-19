@@ -7,16 +7,24 @@ export const Route = createFileRoute("/api/chat/health")({
         const geminiPresent = Boolean(
           process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim(),
         );
-        const forceGemini = process.env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
-        const keyPresent = forceGemini
-          ? geminiPresent
-          : Boolean(
-              geminiPresent ||
-              process.env.OPENAI_API_KEY?.trim() ||
-              process.env.ANTHROPIC_API_KEY?.trim() ||
-              process.env.LOVABLE_API_KEY?.trim() ||
-              process.env.OPENROUTER_API_KEY?.trim(),
-            );
+        const openaiPresent = Boolean(process.env.OPENAI_API_KEY?.trim());
+        const anthropicPresent = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
+        const lovablePresent = Boolean(process.env.LOVABLE_API_KEY?.trim());
+        const openrouterPresent = Boolean(process.env.OPENROUTER_API_KEY?.trim());
+        const keyPresent = Boolean(
+          geminiPresent || openaiPresent || anthropicPresent || lovablePresent || openrouterPresent,
+        );
+        const provider = geminiPresent
+          ? "gemini"
+          : openaiPresent
+            ? "openai"
+            : lovablePresent
+              ? "lovable"
+              : anthropicPresent
+                ? "anthropic"
+                : openrouterPresent
+                  ? "openrouter"
+                  : null;
         const configuredModel = process.env.GEMINI_MODEL?.trim() ?? "";
         const model = /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(configuredModel)
           ? configuredModel
@@ -24,7 +32,7 @@ export const Route = createFileRoute("/api/chat/health")({
         return Response.json(
           {
             ok: true,
-            provider: "gemini",
+            provider,
             model,
             key_present: keyPresent,
             // Voice policy: the audible ARIA voice is exclusively ElevenLabs
