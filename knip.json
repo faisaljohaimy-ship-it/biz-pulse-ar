@@ -1,0 +1,41 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/router.tsx",
+    "src/start.ts",
+    "src/server.ts",
+    "src/routes/**/*.{ts,tsx}",
+    "src/test/setup.ts",
+    "scripts/*.mjs",
+    "tests/**/*.{ts,tsx}",
+    "remotion/**/*.{ts,tsx}"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": [
+    "src/routeTree.gen.ts",
+    "src/integrations/supabase/types.ts",
+    "src/integrations/supabase/auth-attacher.ts",
+    "src/integrations/supabase/auth-middleware.ts",
+    "src/integrations/supabase/client.server.ts",
+    "src/lib/aria/**",
+    "src/lib/aria-core/**",
+    "src/components/aria/**",
+    "src/components/aria-core/**",
+    "src/components/digital-humans/**",
+    "src/components/executive/**",
+    "src/components/learn/**",
+    "src/components/ui/**",
+    "src/components/mission-control/**"
+  ],
+  "ignoreDependencies": [
+    "@types/*",
+    "eslint-*",
+    "prettier",
+    "wrangler"
+  ],
+  "ignoreBinaries": ["wrangler", "playwright"],
+  "vite": true,
+  "tanstack-router": true,
+  "vitest": true,
+  "playwright": true
+}
