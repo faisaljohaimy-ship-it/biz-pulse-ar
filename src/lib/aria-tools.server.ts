@@ -317,7 +317,7 @@ export function buildAriaTools(
 
     send_executive_email: tool({
       description:
-        "Send an HTML executive email to the registered ARIA owner. Direct send is allowed only when the CURRENT user message explicitly asks to send an email; recipient defaults to the registered owner and cannot be invented.",
+        "Send an HTML executive email. Direct send is allowed only when the recipient is the registered ARIA owner AND the current user message explicitly asks to send an email; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
       inputSchema: z.object({
         to: z.string().email().optional(),
         cc: z.string().email().optional(),
@@ -326,18 +326,30 @@ export function buildAriaTools(
       }),
       execute: async (args) => {
         try {
+          const intentText = runtime.lastUserText ?? "";
+          const isOwner = isOwnerEmail(args.to);
+          const explicit = hasExplicitOutboundIntent(intentText, "email");
+          if (isOwner && explicit && ariaAutoApproveEnabled()) {
+            const payload = {
+              channel: "email" as const,
+              ...args,
+              to: resolveOwnerEmail(args.to),
+            };
+            return await sendAriaOutboundMessageDirectInternal({
+              userId,
+              payload,
+              explicitIntentText: intentText,
+            });
+          }
+          // Non-owner recipient OR non-explicit intent OR direct-send disabled
+          // → route through the reviewed approval flow with the requested
+          // recipient instead of failing.
           const payload = {
             channel: "email" as const,
             ...args,
-            to: resolveOwnerEmail(args.to),
+            to: args.to ?? resolveOwnerEmail(undefined),
           };
-          return ariaAutoApproveEnabled()
-            ? await sendAriaOutboundMessageDirectInternal({
-                userId,
-                payload,
-                explicitIntentText: runtime.lastUserText ?? "",
-              })
-            : await prepareAriaOutboundMessage(supabase, userId, payload);
+          return await prepareAriaOutboundMessage(supabase, userId, payload);
         } catch (error) {
           return {
             ok: false,
@@ -349,27 +361,37 @@ export function buildAriaTools(
 
     send_executive_sms: tool({
       description:
-        "Send an executive SMS/MMS to the registered ARIA owner. Direct send is allowed only when the CURRENT user message explicitly asks to send an SMS; recipient defaults to the registered owner.",
+        "Send an executive SMS/MMS. Direct send is allowed only when the recipient is the registered ARIA owner AND the current user message explicitly asks to send an SMS; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
       inputSchema: z.object({
-        to: z.string().min(8).max(24).optional().describe("Optional E.164 owner number"),
+        to: z.string().min(8).max(24).optional().describe("Optional E.164 recipient"),
         body: z.string().min(1).max(1600),
         media_urls: z.array(z.string().url()).max(10).optional(),
       }),
       execute: async (args) => {
         try {
+          const intentText = runtime.lastUserText ?? "";
+          const isOwner = isOwnerSms(args.to);
+          const explicit = hasExplicitOutboundIntent(intentText, "sms");
+          if (isOwner && explicit && ariaAutoApproveEnabled()) {
+            const payload = {
+              channel: "sms" as const,
+              to: resolveOwnerSms(args.to),
+              body: args.body,
+              mediaUrls: args.media_urls,
+            };
+            return await sendAriaOutboundMessageDirectInternal({
+              userId,
+              payload,
+              explicitIntentText: intentText,
+            });
+          }
           const payload = {
             channel: "sms" as const,
-            to: resolveOwnerSms(args.to),
+            to: args.to ?? resolveOwnerSms(undefined),
             body: args.body,
             mediaUrls: args.media_urls,
           };
-          return ariaAutoApproveEnabled()
-            ? await sendAriaOutboundMessageDirectInternal({
-                userId,
-                payload,
-                explicitIntentText: runtime.lastUserText ?? "",
-              })
-            : await prepareAriaOutboundMessage(supabase, userId, payload);
+          return await prepareAriaOutboundMessage(supabase, userId, payload);
         } catch (error) {
           return {
             ok: false,
