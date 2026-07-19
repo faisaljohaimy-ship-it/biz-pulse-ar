@@ -36,9 +36,10 @@ export const Route = createFileRoute("/api/chat/health")({
             provider,
             model,
             key_present: keyPresent,
-            // Voice policy: the audible ARIA voice is exclusively ElevenLabs
-            // Layan; transcription is ElevenLabs Scribe first, Gemini fallback.
-            voice_configured: Boolean(elevenLabsPresent),
+            // Voice is available if Layan/ElevenLabs is configured or the
+            // Lovable Gateway TTS fallback is active; UI must not hard-block
+            // conversation mode on one provider while another can speak.
+            voice_configured: Boolean(elevenLabsPresent || lovablePresent),
             transcription_configured: Boolean(elevenLabsPresent || geminiPresent || lovablePresent),
           },
           {

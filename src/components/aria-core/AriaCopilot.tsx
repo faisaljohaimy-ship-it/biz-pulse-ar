@@ -45,6 +45,7 @@ import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
 import { ARIA_GEMINI_TTS_VOICE } from "@/lib/aria/voice-config";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
+import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
@@ -119,6 +120,50 @@ function primeIOSAudio(): void {
     console.log("[aria-voice] unlock done");
   } catch {
     /* ignore */
+  }
+}
+
+const ARIA_AUDIO_BLOBS = new WeakMap<HTMLAudioElement, Blob>();
+
+function getAriaAudioContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  const AC: typeof AudioContext | undefined =
+    (
+      window as unknown as {
+        AudioContext?: typeof AudioContext;
+        webkitAudioContext?: typeof AudioContext;
+      }
+    ).AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return null;
+  const global = window as unknown as { __ariaUnlockCtx?: AudioContext };
+  if (!global.__ariaUnlockCtx || global.__ariaUnlockCtx.state === "closed") {
+    global.__ariaUnlockCtx = new AC();
+  }
+  return global.__ariaUnlockCtx;
+}
+
+function dismissBlockingIntro(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem("nexios-welcome", "complete:v4");
+  } catch {
+    /* private-mode storage can fail; the live overlay is still dismissed below */
+  }
+  try {
+    setIntroActive(false);
+  } catch {
+    /* noop */
+  }
+  const skip = Array.from(document.querySelectorAll("button")).find((button) =>
+    /تخطّي|تخطي|skip/i.test(button.textContent ?? ""),
+  );
+  if (skip instanceof HTMLButtonElement) {
+    try {
+      skip.click();
+    } catch {
+      /* noop */
+    }
   }
 }
 
@@ -459,6 +504,7 @@ export function AriaCopilot() {
   const mediaAnalysisContextRef = useRef<AudioContext | null>(null);
   const mediaAnalysisSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const mediaAnalysisOwnsContextRef = useRef(false);
+  const webAudioSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
@@ -606,12 +652,31 @@ export function AriaCopilot() {
       }
     }
     audioRef.current = null;
+    for (const source of webAudioSourcesRef.current) {
+      try {
+        source.stop();
+      } catch {
+        /* noop */
+      }
+    }
+    webAudioSourcesRef.current.clear();
     for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
     objectUrlsRef.current.clear();
     pendingSendAtRef.current = null;
     speakNextReplyRef.current = false;
     AriaAudioBus.stopAll();
     ariaState.set("idle");
+  }, []);
+
+  const stopWebAudioFallback = useCallback(() => {
+    for (const source of webAudioSourcesRef.current) {
+      try {
+        source.stop();
+      } catch {
+        /* noop */
+      }
+    }
+    webAudioSourcesRef.current.clear();
   }, []);
 
   const scheduleConversationRelisten = useCallback((delayMs = 280) => {
@@ -700,14 +765,20 @@ export function AriaCopilot() {
         // that case the chat answer succeeds but the authenticated TTS route
         // returns 401. Also use the same public Layan endpoint for transient
         // private-route failures so voice does not stop on mobile/laptop.
-        if (!r?.ok && (!r || r.status === 401 || r.status === 403 || r.status === 429 || r.status >= 500)) {
+        if (!r?.ok) {
           if (r) {
             VoiceTimeline.push("FALLBACK", `[${idx}] private ${r.status} fallback`, {
               idx,
               status: r.status,
             });
           }
-          r = await postPublic();
+          try {
+            r = await postPublic();
+          } catch (error) {
+            if ((error as { name?: string }).name === "AbortError") throw error;
+            VoiceTimeline.push("FALLBACK", `[${idx}] public network failure`, { idx });
+            throw error;
+          }
         }
 
         // One short retry for transient public voice errors. Terminal 4xx stays
@@ -755,6 +826,7 @@ export function AriaCopilot() {
         const url = URL.createObjectURL(blob);
         objectUrlsRef.current.add(url);
         const audio = new Audio(url);
+        ARIA_AUDIO_BLOBS.set(audio, blob);
         audio.preload = "auto";
         audio.crossOrigin = "anonymous";
         audio.setAttribute("playsinline", "");
@@ -786,6 +858,103 @@ export function AriaCopilot() {
     [],
   );
 
+  const playAudioClip = useCallback(
+    async (audio: HTMLAudioElement, onStarted?: () => void): Promise<boolean> => {
+      let started = false;
+      let settled = false;
+      let timeout: ReturnType<typeof setTimeout> | null = null;
+
+      const clear = () => {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
+      };
+
+      const settle = (ok: boolean, resolve: (value: boolean) => void) => {
+        if (settled) return;
+        settled = true;
+        clear();
+        resolve(ok);
+      };
+
+      const playViaWebAudio = async (resolve: (value: boolean) => void) => {
+        const blob = ARIA_AUDIO_BLOBS.get(audio);
+        const context = getAriaAudioContext();
+        if (!blob || !context) {
+          settle(false, resolve);
+          return;
+        }
+        try {
+          if (context.state === "suspended") await context.resume();
+          if (context.state !== "running") {
+            settle(false, resolve);
+            return;
+          }
+          const buffer = await context.decodeAudioData(await blob.arrayBuffer());
+          if (settled) return;
+          const source = context.createBufferSource();
+          source.buffer = buffer;
+          source.connect(context.destination);
+          webAudioSourcesRef.current.add(source);
+          source.onended = () => {
+            webAudioSourcesRef.current.delete(source);
+            settle(true, resolve);
+          };
+          if (!started) {
+            started = true;
+            onStarted?.();
+          }
+          source.start(Math.max(context.currentTime + 0.02, context.currentTime));
+          timeout = setTimeout(
+            () => {
+              try {
+                source.stop();
+              } catch {
+                /* noop */
+              }
+              webAudioSourcesRef.current.delete(source);
+              settle(true, resolve);
+            },
+            Math.max(1_500, buffer.duration * 1_000 + 1_000),
+          );
+        } catch {
+          settle(false, resolve);
+        }
+      };
+
+      return new Promise<boolean>((resolve) => {
+        const begin = () => {
+          if (started || settled) return;
+          const playPromise = audio.play();
+          playPromise.catch(() => {
+            void playViaWebAudio(resolve);
+          });
+        };
+        audio.addEventListener(
+          "playing",
+          () => {
+            if (!started) {
+              started = true;
+              onStarted?.();
+            }
+          },
+          { once: true },
+        );
+        audio.addEventListener("ended", () => settle(true, resolve), { once: true });
+        audio.addEventListener("error", () => void playViaWebAudio(resolve), { once: true });
+        audio.addEventListener("canplay", begin, { once: true });
+        audio.addEventListener("loadeddata", begin, { once: true });
+        timeout = setTimeout(() => {
+          if (!started) begin();
+          else settle(true, resolve);
+        }, 35_000);
+        setTimeout(begin, 150);
+      });
+    },
+    [],
+  );
+
   const pumpPlayback = useCallback(async (messageId: string) => {
     const s = streamStateRef.current.get(messageId);
     if (!s || s.pumping) return;
@@ -806,11 +975,7 @@ export function AriaCopilot() {
           continue;
         }
         audioRef.current = audio;
-        await new Promise<void>((resolve) => {
-          let started = false;
-          const kick = () => {
-            if (started) return;
-            started = true;
+        const started = () => {
             const t0 = performance.now();
             if (idx === 0 && !s.latencyLogged) {
               s.firstAudioAt = t0;
@@ -845,42 +1010,18 @@ export function AriaCopilot() {
             // reply so a multi-sentence answer plays as ONE continuous
             // speaking session (no motion reset between segments).
             if (idx === 0) {
-              const onPlaying = () => {
-                ariaState.set("speaking");
-                AriaAudioBus.notifyPlaying("chat-tts", audio);
-              };
-              audio.addEventListener("playing", onPlaying, { once: true });
+              ariaState.set("speaking");
+              AriaAudioBus.notifyPlaying("chat-tts", audio);
             }
-            audio.play().catch(() => {
-              s.playbackFailed = true;
-              URL.revokeObjectURL(audio.src);
-              objectUrlsRef.current.delete(audio.src);
-              resolve();
-            });
-          };
-          audio.addEventListener("canplay", kick, { once: true });
-          audio.addEventListener("loadeddata", kick, { once: true });
-          setTimeout(kick, 150);
-          audio.onended = () => {
-            try {
-              URL.revokeObjectURL(audio.src);
-              objectUrlsRef.current.delete(audio.src);
-            } catch {
-              /* noop */
-            }
-            resolve();
-          };
-          audio.onerror = () => {
-            s.playbackFailed = true;
-            try {
-              URL.revokeObjectURL(audio.src);
-              objectUrlsRef.current.delete(audio.src);
-            } catch {
-              /* noop */
-            }
-            resolve();
-          };
-        });
+        };
+        const played = await playAudioClip(audio, started);
+        if (!played) s.playbackFailed = true;
+        try {
+          URL.revokeObjectURL(audio.src);
+          objectUrlsRef.current.delete(audio.src);
+        } catch {
+          /* noop */
+        }
         s.playingIdx++;
       }
     } finally {
@@ -903,7 +1044,7 @@ export function AriaCopilot() {
         }, 300);
       }
     }
-  }, []);
+  }, [playAudioClip]);
 
   // Streaming TTS pipeline — voice replies are EXCLUSIVE to Conversation
   // Mode («مخاطبة») on every device: a reply is spoken aloud only when it
@@ -994,6 +1135,7 @@ export function AriaCopilot() {
           }
         }
         audioRef.current = null;
+        stopWebAudioFallback();
         for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
         objectUrlsRef.current.clear();
         cur.finalized = true;
@@ -1182,6 +1324,7 @@ export function AriaCopilot() {
 
   const retry = useCallback(() => {
     if (isBusy) return;
+    dismissBlockingIntro();
     primeIOSAudio();
     stopVoicePlayback();
     speakNextReplyRef.current = false;
@@ -1292,11 +1435,7 @@ export function AriaCopilot() {
       return;
     }
     if (transcriptionProviderReady === false) {
-      setConvNotice(
-        "فهم الصوت غير مفعّل على الخادم — أضف مفتاح ElevenLabs (أو Gemini) في إعدادات الخادم ثم أعد المحاولة.",
-      );
-      setConvPaused(true);
-      return;
+      setConvNotice("أحاول تشغيل فهم الصوت عبر المسار العام الآمن…");
     }
     let acquiredStream: MediaStream | null = null;
     try {
@@ -1603,17 +1742,13 @@ export function AriaCopilot() {
           controller,
         );
         if (audio && !controller.signal.aborted) {
-          await new Promise<void>((resolve) => {
-            audio.addEventListener("ended", () => resolve(), { once: true });
-            audio.addEventListener("error", () => resolve(), { once: true });
-            void audio.play().catch(() => resolve());
-          });
+          await playAudioClip(audio);
         }
         if (convModeRef.current) startListeningRef.current?.();
       })();
       return () => controller.abort();
     }
-  }, [hasError, fetchTTS]);
+  }, [hasError, fetchTTS, playAudioClip]);
 
   const playConversationGreeting = useCallback(async () => {
     const controller = new AbortController();
@@ -1629,7 +1764,7 @@ export function AriaCopilot() {
       setGreeting(false);
       if (convModeRef.current && !controller.signal.aborted) {
         setConvNotice("تعذّر تشغيل تحية آريا، يمكنك البدء بالتحدث مباشرة.");
-        startListeningRef.current?.();
+        scheduleConversationRelisten(180);
       }
       return;
     }
@@ -1642,36 +1777,21 @@ export function AriaCopilot() {
       } catch {
         /* noop */
       }
+      stopWebAudioFallback();
     });
     if (!acquired) {
       controller.abort();
       setGreeting(false);
-      if (convModeRef.current) startListeningRef.current?.();
+      if (convModeRef.current) scheduleConversationRelisten(180);
       return;
     }
 
     audioRef.current = audio;
     let playbackStarted = false;
-    await new Promise<void>((resolve) => {
-      let settled = false;
-      const finish = () => {
-        if (settled) return;
-        settled = true;
-        resolve();
-      };
-      audio.addEventListener(
-        "playing",
-        () => {
-          playbackStarted = true;
-          ariaState.set("speaking");
-          AriaAudioBus.notifyPlaying("conversation-greeting", audio);
-        },
-        { once: true },
-      );
-      audio.onended = finish;
-      audio.onerror = finish;
-      controller.signal.addEventListener("abort", finish, { once: true });
-      audio.play().catch(finish);
+    const playedGreeting = await playAudioClip(audio, () => {
+      playbackStarted = true;
+      ariaState.set("speaking");
+      AriaAudioBus.notifyPlaying("conversation-greeting", audio);
     });
 
     const wasAborted = controller.signal.aborted;
@@ -1687,7 +1807,7 @@ export function AriaCopilot() {
     AriaAudioBus.release("conversation-greeting");
     if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
     setGreeting(false);
-    if (!wasAborted && !playbackStarted && convModeRef.current) {
+    if (!wasAborted && (!playbackStarted || !playedGreeting) && convModeRef.current) {
       setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت آريا.");
     }
     if (
@@ -1697,9 +1817,9 @@ export function AriaCopilot() {
       })
     ) {
       ariaState.set("listening");
-      startListeningRef.current?.();
+      scheduleConversationRelisten(180);
     }
-  }, [fetchTTS]);
+  }, [fetchTTS, playAudioClip, scheduleConversationRelisten, stopWebAudioFallback]);
 
   const toggleConversationMode = useCallback(() => {
     if (convMode) {
@@ -1735,20 +1855,6 @@ export function AriaCopilot() {
     // working via Lovable AI Gateway even when the initial health probe was
     // stale/cached and reported key_present=false.
 
-    if (voiceProviderReady === false) {
-      setConvNotice(
-        "صوت آريا غير مفعّل على هذا النشر — أضف مفتاح ElevenLabs في إعدادات الخادم أولًا.",
-      );
-      setConvPaused(true);
-      return;
-    }
-    if (!sttSupported && transcriptionProviderReady === false) {
-      setConvNotice(
-        "فهم الصوت غير مفعّل على هذا النشر — أضف مفتاح ElevenLabs (أو Gemini) في إعدادات الخادم أولًا.",
-      );
-      setConvPaused(true);
-      return;
-    }
     convModeRef.current = true;
     setConvMode(true);
     setConvNotice(null);
@@ -1825,7 +1931,14 @@ export function AriaCopilot() {
       {!isOpen && (
         <button
           type="button"
-          onClick={() => setMode("docked")}
+          onPointerDown={() => {
+            dismissBlockingIntro();
+            primeIOSAudio();
+          }}
+          onClick={() => {
+            dismissBlockingIntro();
+            setMode("docked");
+          }}
           aria-label="Open ARIA — المخاطبة"
           title="المخاطبة مع آريا"
           className={cn(
@@ -2274,16 +2387,6 @@ export function AriaCopilot() {
                 paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))",
               }}
             >
-              {health === "ok" && providerReady === false && chat.messages.length === 0 && (
-                <div
-                  dir="rtl"
-                  role="status"
-                  className="mb-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[12px] leading-relaxed text-amber-200/90"
-                >
-                  المساعد الذكي <span className="font-semibold">غير مفعّل بعد</span> على هذا النشر —
-                  يعمل فور إضافة مفتاح المزوّد في إعدادات النشر.
-                </div>
-              )}
               {attachmentError && (
                 <div
                   role="alert"

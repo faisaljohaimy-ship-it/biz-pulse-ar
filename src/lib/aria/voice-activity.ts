@@ -18,7 +18,7 @@ export type AriaVoiceActivityConfig = {
 export const ARIA_VOICE_ACTIVITY_DEFAULTS: AriaVoiceActivityConfig = {
   // Tuned for fast mobile conversation turns: accept softer phone mics,
   // submit shortly after speech stops, and avoid long "silent listening" waits.
-  rmsThreshold: 0.014,
+  rmsThreshold: 0.008,
   minimumVoiceMs: 90,
   silenceMs: 800,
   noSpeechMs: 7_000,
