@@ -1,163 +1,144 @@
 /**
- * HajjEmbedFrame — the shared live embed of the external Hajj dashboard.
+ * HajjEmbedFrame — the Nusuk cinematic SHOWCASE CARD.
  *
- * One virtual 1440×900 desktop viewport, uniformly scaled to whatever
- * width the parent gives it (fixed 16:10 aspect — never cropped, never
- * stretched), so phone, tablet, and laptop all see the IDENTICAL full
- * dashboard. Dark #04111f stage with color-scheme:dark, a dark loading
- * state while the platform boots, and a "جارٍ الاتصال · فتح المنصة" card
- * when the embed cannot load (or no URL is configured) — never a white
- * screen, never a raw URL in the UI.
+ * Architectural decision (owner directive): the Nusuk platform's hosting
+ * blocks iframing (X-Frame-Options / CSP frame-ancestors) — outside our
+ * control and never worked around. The old in-page embed + connecting
+ * timeout flow is retired ENTIRELY. This component now renders instantly: a
+ * window-chrome frame (the three dots stay), a designed Nusuk cover
+ * (inline SVG — deep hajj green, gilded crescent and an abstract kaaba),
+ * the "independent platform" badge and a prominent external-open action.
+ * The WHOLE card is one link: a real <a target="_blank" rel="noopener
+ * noreferrer"> inside the user's direct gesture (iOS-safe — no
+ * window.open in async code). No loading state, no failure state.
  */
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Loader2, SatelliteDish } from "lucide-react";
-import {
-  HAJJ_INTERNAL_ROUTE,
-  HAJJ_PLATFORM_LABEL_AR,
-  HAJJ_PLATFORM_LABEL_EN,
-  hajjEmbedUrl,
-  hajjOpenUrl,
-} from "@/lib/hajj-embed";
-
-// Virtual desktop viewport the external dashboard is designed for.
-const VIRTUAL_W = 1440;
-const VIRTUAL_H = 900;
-// If the platform hasn't fired `load` by then, assume the connection is
-// blocked/slow and surface the connect card instead of a dead pane.
-const CONNECT_TIMEOUT_MS = 15_000;
+import { ExternalLink, MapPin } from "lucide-react";
+import { HAJJ_PLATFORM, HAJJ_INTERNAL_ROUTE } from "@/config/platforms";
 
 interface Props {
-  /** false → preview mode: the embed is visible but not clickable. */
+  /** Kept for call-site compatibility; the card is always tappable. */
   readonly interactive?: boolean;
   readonly ar?: boolean;
   readonly className?: string;
 }
 
-function ConnectCard({ ar }: { readonly ar: boolean }) {
-  const url = hajjOpenUrl();
-  const label = ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN;
-  const cta = (
-    <span className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#3AE8FF]/20">
-      <ExternalLink className="h-3.5 w-3.5" />
-      {ar ? "فتح المنصة" : "Open platform"}
-    </span>
-  );
+/** Designed cover — Nusuk identity: deep hajj green + crescent + kaaba. */
+function NusukCover() {
   return (
-    <div
-      dir={ar ? "rtl" : "ltr"}
-      className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#04111f] p-6 text-center"
-      style={{ colorScheme: "dark" }}
+    <svg
+      viewBox="0 0 800 360"
+      role="img"
+      aria-hidden
+      className="absolute inset-0 h-full w-full"
+      preserveAspectRatio="xMidYMid slice"
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#3AE8FF]/10 ring-1 ring-[#3AE8FF]/40">
-        <SatelliteDish className="h-6 w-6 text-[#3AE8FF]" />
-      </span>
-      <div className="text-sm font-bold text-white">{ar ? "جارٍ الاتصال" : "Connecting"}</div>
-      <p className="max-w-xs text-[11px] leading-relaxed text-white/55">
-        {ar
-          ? `تعذّر عرض ${label} داخل الصفحة حالياً — يمكنك فتحها مباشرة.`
-          : `${label} can’t be shown inline right now — open it directly.`}
-      </p>
-      {url ? (
-        <a href={url} target="_blank" rel="noopener noreferrer" aria-label={label}>
-          {cta}
-        </a>
-      ) : (
-        <Link to={HAJJ_INTERNAL_ROUTE} aria-label={label}>
-          {cta}
-        </Link>
-      )}
-    </div>
+      <defs>
+        <radialGradient id="nusuk-glow" cx="50%" cy="30%" r="80%">
+          <stop offset="0%" stopColor="#0E5C3F" />
+          <stop offset="55%" stopColor="#0A3D2B" />
+          <stop offset="100%" stopColor="#05201724" />
+        </radialGradient>
+        <linearGradient id="nusuk-gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#F5D07A" />
+          <stop offset="100%" stopColor="#C9A24B" />
+        </linearGradient>
+      </defs>
+      <rect width="800" height="360" fill="#062A1E" />
+      <rect width="800" height="360" fill="url(#nusuk-glow)" />
+      {/* subtle grid */}
+      <g stroke="#3AE8FF" strokeOpacity="0.05">
+        {Array.from({ length: 15 }, (_, i) => (
+          <line key={`v${i}`} x1={i * 56} y1="0" x2={i * 56} y2="360" />
+        ))}
+        {Array.from({ length: 7 }, (_, i) => (
+          <line key={`h${i}`} x1="0" y1={i * 56} x2="800" y2={i * 56} />
+        ))}
+      </g>
+      {/* gilded crescent */}
+      <g transform="translate(560 96)">
+        <circle r="46" fill="url(#nusuk-gold)" />
+        <circle r="46" cx="16" cy="-8" fill="#0A3D2B" />
+      </g>
+      {/* horizon line */}
+      <line x1="0" y1="302" x2="800" y2="302" stroke="#F5D07A" strokeOpacity="0.22" />
+      {/* abstract kaaba — grounded on the horizon, off-center so the
+          overlay text never collides with it */}
+      <g transform="translate(190 302)">
+        <ellipse cx="0" cy="5" rx="86" ry="9" fill="#F5D07A" opacity="0.08" />
+        <rect x="-56" y="-96" width="112" height="96" rx="4" fill="#0B1512" stroke="#F5D07A55" />
+        <rect x="-56" y="-72" width="112" height="12" fill="url(#nusuk-gold)" opacity="0.85" />
+        <rect x="-9" y="-40" width="18" height="40" rx="2" fill="#F5D07A33" />
+      </g>
+      {/* pilgrims flow dots — streaming along the horizon toward the kaaba */}
+      <g fill="#3AE8FF" fillOpacity="0.35">
+        {Array.from({ length: 24 }, (_, i) => (
+          <circle key={i} cx={60 + i * 30} cy={330 - (i % 5) * 6} r="2.5" />
+        ))}
+      </g>
+    </svg>
   );
 }
 
-export function HajjEmbedFrame({ interactive = true, ar = true, className = "" }: Props) {
-  const url = hajjEmbedUrl();
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const [scale, setScale] = useState(0);
-  const [state, setState] = useState<"loading" | "ready" | "failed">(url ? "loading" : "failed");
+export function HajjEmbedFrame({ ar = true, className = "" }: Props) {
+  const url = HAJJ_PLATFORM.url;
+  const name = ar ? HAJJ_PLATFORM.name_ar : HAJJ_PLATFORM.name_en;
+  const tagline = ar ? HAJJ_PLATFORM.tagline_ar : HAJJ_PLATFORM.tagline_en;
 
-  // Uniform scale-to-fit: the container keeps a hard 16:10 aspect ratio;
-  // the 1440px virtual viewport is scaled to the measured width.
-  useLayoutEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const compute = () => {
-      const w = el.clientWidth;
-      if (w > 0) setScale(w / VIRTUAL_W);
-    };
-    compute();
-    const ro = new ResizeObserver(compute);
-    ro.observe(el);
-    window.addEventListener("orientationchange", compute);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("orientationchange", compute);
-    };
-  }, []);
+  const body = (
+    <>
+      {/* window chrome — the three dots stay */}
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/45 px-4 py-2.5">
+        <div className="flex items-center gap-1.5" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+        </div>
+        <span className="rounded-full border border-white/15 bg-white/5 px-3 py-0.5 text-[11px] text-white/70">
+          {name}
+        </span>
+        <ExternalLink className="h-3.5 w-3.5 text-[#3AE8FF]/70" aria-hidden />
+      </div>
 
-  // Connection watchdog — no `load` event within the window → connect card.
-  useEffect(() => {
-    if (!url || state !== "loading") return;
-    const t = window.setTimeout(() => {
-      setState((s) => (s === "loading" ? "failed" : s));
-    }, CONNECT_TIMEOUT_MS);
-    return () => window.clearTimeout(t);
-  }, [url, state]);
-
-  const label = ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN;
-
-  return (
-    <div
-      ref={stageRef}
-      className={`relative w-full overflow-hidden bg-[#04111f] ${className}`}
-      style={{ colorScheme: "dark", aspectRatio: `${VIRTUAL_W} / ${VIRTUAL_H}` }}
-    >
-      {url && state !== "failed" && (
-        <iframe
-          src={url}
-          title={label}
-          loading="lazy"
-          onLoad={() => setState("ready")}
-          onError={() => setState("failed")}
-          // sandbox intentionally omitted so the platform runs its own scripts
-          className={`absolute left-0 top-0 border-0 ${interactive ? "" : "pointer-events-none"}`}
-          style={{
-            width: `${VIRTUAL_W}px`,
-            height: `${VIRTUAL_H}px`,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-            colorScheme: "dark",
-            backgroundColor: "#04111f",
-          }}
-          referrerPolicy="no-referrer-when-downgrade"
-          allow="fullscreen"
-        />
-      )}
-
-      {/* Dark loading state — shown until the platform paints. */}
-      {state === "loading" && (
+      {/* cover stage */}
+      <div className="relative aspect-[16/8] min-h-[220px] w-full overflow-hidden">
+        <NusukCover />
         <div
           dir={ar ? "rtl" : "ltr"}
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#04111f]"
-          aria-live="polite"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-t from-[#04110c]/90 via-[#04110c]/30 to-transparent p-5 text-center"
         >
-          <Loader2 className="h-6 w-6 animate-spin text-[#3AE8FF]" />
-          <span className="text-[11px] font-semibold tracking-wide text-white/65">
-            {ar ? `جارٍ تحميل ${HAJJ_PLATFORM_LABEL_AR}…` : `Loading ${HAJJ_PLATFORM_LABEL_EN}…`}
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/40 bg-emerald-950/60 px-3 py-1 text-[10px] font-semibold tracking-wide text-emerald-200 backdrop-blur">
+            <MapPin className="h-3 w-3" aria-hidden />
+            {ar ? "منصة مستقلة · تفتح خارجيًا" : "Independent platform · opens externally"}
           </span>
-          {/* Skeleton dashboard bones */}
-          <div aria-hidden className="mt-2 grid w-2/3 max-w-md grid-cols-3 gap-2 opacity-50">
-            {Array.from({ length: 6 }, (_, i) => (
-              <span key={i} className="h-8 animate-pulse rounded-lg bg-[#0a2338]" />
-            ))}
-          </div>
+          <p className="max-w-md text-xs leading-relaxed text-white/80 sm:text-sm">{tagline}</p>
+          <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2 text-sm font-semibold text-white transition group-hover:bg-[#3AE8FF]/20">
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            {ar ? "فتح المنصة" : "Open platform"}
+          </span>
         </div>
-      )}
+      </div>
+    </>
+  );
 
-      {state === "failed" && <ConnectCard ar={ar} />}
-    </div>
+  const frameClass = `group relative block w-full cursor-pointer overflow-hidden rounded-2xl border border-[#3AE8FF]/25 bg-[#04111f] transition hover:border-[#3AE8FF]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.99] ${className}`;
+
+  // The whole card is ONE link — no dead zones. External when configured,
+  // internal showcase route otherwise (env unset).
+  return url ? (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={name}
+      title={ar ? "يُفتح في نافذة جديدة" : "Opens in a new tab"}
+      className={frameClass}
+    >
+      {body}
+    </a>
+  ) : (
+    <Link to={HAJJ_INTERNAL_ROUTE} aria-label={name} className={frameClass}>
+      {body}
+    </Link>
   );
 }
-
-export default HajjEmbedFrame;

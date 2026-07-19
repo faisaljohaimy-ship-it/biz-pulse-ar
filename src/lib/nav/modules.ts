@@ -10,6 +10,7 @@
  * Every `to` is a REAL existing route under src/routes/_authenticated
  * (constitution art. 6: no dead/placeholder icons).
  */
+import { hajjPlatformUrl } from "@/config/platforms";
 import {
   Activity,
   BarChart3,
@@ -41,6 +42,8 @@ export interface ModuleEntry {
   readonly ar: string;
   readonly en: string;
   readonly icon: LucideIcon;
+  /** External sister platform: icons open it directly in a new tab. */
+  readonly external?: boolean;
 }
 
 export const MODULES: readonly ModuleEntry[] = [
@@ -60,7 +63,7 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/ptw", ar: "تصاريح العمل الرقمية", en: "Digital PTW", icon: FileCheck },
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
-  { to: "/hajj", ar: "منصة نُسك الحج", en: "Hajj Platform", icon: Moon },
+  { to: "/hajj", ar: "منصة نُسك الحج", en: "Hajj Platform", icon: Moon, external: true },
   { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
   { to: "/aria-analytics", ar: "تحليلات آريا", en: "ARIA Analytics", icon: LineChart },
   { to: "/intelligence", ar: "الذكاء والتطوّر", en: "Intelligence", icon: BrainCircuit },
@@ -79,4 +82,14 @@ export function moduleByRoute(to: string): ModuleEntry | undefined {
 export function moduleLabel(to: string, ar: boolean): string | undefined {
   const m = BY_ROUTE.get(to);
   return m ? (ar ? m.ar : m.en) : undefined;
+}
+
+/**
+ * Resolved external URL for an external module (currently only Nusuk),
+ * or null → consumers fall back to the internal route. Single source:
+ * src/config/platforms.ts.
+ */
+export function moduleExternalUrl(entry: ModuleEntry): string | null {
+  if (!entry.external) return null;
+  return hajjPlatformUrl();
 }

@@ -1,7 +1,7 @@
 /**
  * HajjCommandDashboard — a NATIVE, self-contained reproduction of the Hajj
  * platform's executive command center, rendered directly on the homepage
- * (outside the embed iframe) so the dashboard is visible as real content.
+ * (independent of the external Nusuk app) so it is visible as real content.
  *
  * Faithful to the standalone Hajj Nexus command center: brand + live clock
  * header, a 6-tile KPI strip, a stations-network panel, a live-alerts feed,

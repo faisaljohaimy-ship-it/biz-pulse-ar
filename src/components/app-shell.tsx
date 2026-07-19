@@ -29,11 +29,12 @@ import {
   Sparkles,
   Sun,
   Wrench,
+  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
-import { moduleByRoute } from "@/lib/nav/modules";
+import { moduleByRoute, moduleExternalUrl } from "@/lib/nav/modules";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
@@ -241,6 +242,33 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             <div className="space-y-1">
               {g.items.map((it) => {
                 const active = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
+                // External sister platform (Nusuk): the sidebar entry is a
+                // real anchor that opens the platform in a new tab directly.
+                const registryEntry = moduleByRoute(it.to);
+                const externalUrl = registryEntry ? moduleExternalUrl(registryEntry) : null;
+                if (externalUrl) {
+                  const ItIcon = it.icon;
+                  return (
+                    <a
+                      key={it.to}
+                      href={externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="يُفتح في نافذة جديدة"
+                      onClick={onNavigate}
+                      className="group relative flex h-11 cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent/40 hover:text-sidebar-foreground active:scale-[0.98]"
+                    >
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg transition-colors">
+                        <ItIcon className="size-4" aria-hidden />
+                      </span>
+                      <span className="truncate">{it.label}</span>
+                      <ExternalLinkIcon
+                        className="ms-auto size-3.5 shrink-0 text-primary/70"
+                        aria-hidden
+                      />
+                    </a>
+                  );
+                }
                 return (
                   <Link
                     key={it.to}

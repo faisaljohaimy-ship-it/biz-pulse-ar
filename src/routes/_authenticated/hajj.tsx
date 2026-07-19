@@ -1,5 +1,6 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Hajj Operations Command Center — مشاعر 1447
+import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -137,6 +138,10 @@ function HajjCommandCenter() {
         }
         badge={ar ? "حي" : "Live"}
       />
+
+      {/* Nusuk — the independent sister platform. Cinematic showcase card
+          (external open); deep links to /hajj land here first. */}
+      <HajjEmbedFrame ar={ar} />
 
       {/* KPI WALL */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
