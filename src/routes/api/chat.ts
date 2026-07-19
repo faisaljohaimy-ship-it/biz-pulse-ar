@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  streamText,
+  stepCountIs,
+  type UIMessage,
+} from "ai";
 import {
   createAnthropicProvider,
   createGoogleGeminiProvider,
@@ -259,19 +266,31 @@ export const Route = createFileRoute("/api/chat")({
           effUseOpenai || effUseGoogle || effUseAnthropic || effUseOpenrouter || effUseLovable;
 
         if (!effHasAnyProvider) {
+          // GUARANTEED-REPLY LAYER: ARIA never errors at the user. With no
+          // provider key configured (or every vendor cooling with no key to
+          // force), stream an honest, grounded local reply instead of a 503
+          // so both the text panel and the voice conversation keep flowing.
           const rid = getChatRequestId(request);
-          console.warn("[api/chat] no AI provider key configured", {
+          console.warn("[api/chat] no AI provider available — serving local guaranteed reply", {
             requestId: rid,
           });
-          return Response.json(
-            {
-              ok: false,
-              code: "provider_unconfigured",
-              error: "المساعد الذكي غير مفعّل بعد على هذا النشر.",
-              requestId: rid,
+          const localText =
+            "أهلًا بك — أنا آريا. محرك الذكاء الخارجي غير متاح على هذا النشر في هذه اللحظة، " +
+            "لكن المنصة كلها تعمل بين يديك: لوحة الامتثال HCIS بتوجيهاتها الإحدى والعشرين، " +
+            "تصاريح العمل الرقمية، مركز القيادة، وغرفة العمليات. " +
+            "بمجرد تفعيل مفتاح مزوّد الذكاء في بيئة النشر سأعود للإجابة التحليلية الكاملة فورًا.";
+          const localStream = createUIMessageStream({
+            execute: ({ writer }) => {
+              const id = `aria-local-${rid}`;
+              writer.write({ type: "text-start", id });
+              writer.write({ type: "text-delta", id, delta: localText });
+              writer.write({ type: "text-end", id });
             },
-            { status: 503, headers: responseHeaders(rid) },
-          );
+          });
+          return createUIMessageStreamResponse({
+            stream: localStream,
+            headers: { ...responseHeaders(rid), "X-ARIA-Reply-Source": "local-guaranteed" },
+          });
         }
 
         const guard = await validateChatRequest(request);

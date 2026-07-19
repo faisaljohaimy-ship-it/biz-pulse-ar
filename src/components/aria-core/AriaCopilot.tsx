@@ -1506,8 +1506,16 @@ export function AriaCopilot() {
   }, [startListening]);
 
   /* Always-on resilience: a failed reply auto-retries (up to 2×, backed
-     off) before ARIA ever pauses — in BOTH text and voice conversation. */
+     off) in BOTH text and voice conversation; server-side vendor cooling
+     rotates the retry onto another configured provider. In voice mode the
+     conversation NEVER dies: after exhausted retries ARIA speaks a short
+     status line and keeps listening, with a fresh retry budget for the
+     next utterance. */
   const autoRetryRef = useRef(0);
+  const regenerateRef = useRef(chat.regenerate);
+  useEffect(() => {
+    regenerateRef.current = chat.regenerate;
+  });
   useEffect(() => {
     if (chat.status === "ready" && !chat.error) autoRetryRef.current = 0;
   }, [chat.status, chat.error]);
@@ -1521,19 +1529,34 @@ export function AriaCopilot() {
         setConvNotice(`تعذّر مؤقت في الرد — إعادة المحاولة تلقائيًا (${attempt}/2)…`);
       }
       const t = window.setTimeout(() => {
-        void chat.regenerate();
+        void regenerateRef.current?.();
       }, 1200 * attempt);
       return () => window.clearTimeout(t);
     }
     if (convModeRef.current) {
       speakNextReplyRef.current = false;
       ariaState.set("idle");
-      setConvNotice(
-        "تعذّر الحصول على رد آريا — تحقق من اتصال الخادم ومفتاح الذكاء ثم اضغط للمتابعة.",
-      );
-      setConvPaused(true);
+      setConvNotice("تعذّر الاتصال بمحرك الذكاء الآن — أواصل الإصغاء وسأجيب فور استقراره.");
+      autoRetryRef.current = 0;
+      const controller = new AbortController();
+      void (async () => {
+        const audio = await fetchTTS(
+          "عُذْرًا، تَعَذَّرَ الاتِّصَالُ بِمُحَرِّكِ الذَّكَاءِ الآنَ. أُوَاصِلُ الإِصْغَاءَ إِلَيْك.",
+          0,
+          controller,
+        );
+        if (audio && !controller.signal.aborted) {
+          await new Promise<void>((resolve) => {
+            audio.addEventListener("ended", () => resolve(), { once: true });
+            audio.addEventListener("error", () => resolve(), { once: true });
+            void audio.play().catch(() => resolve());
+          });
+        }
+        if (convModeRef.current) startListeningRef.current?.();
+      })();
+      return () => controller.abort();
     }
-  }, [hasError, chat]);
+  }, [hasError, fetchTTS]);
 
   const playConversationGreeting = useCallback(async () => {
     const controller = new AbortController();
