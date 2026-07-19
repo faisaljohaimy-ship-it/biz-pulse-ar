@@ -685,7 +685,7 @@ export function AriaCopilot() {
           r = await postPrivate();
         } catch (error) {
           if ((error as { name?: string }).name === "AbortError") throw error;
-          VoiceTimeline.push("TTS_RETRY", `[${idx}] private network fallback`, { idx });
+          VoiceTimeline.push("FALLBACK", `[${idx}] private network fallback`, { idx });
         }
 
         // The homepage copilot can run before an auth session is hydrated. In
@@ -694,7 +694,7 @@ export function AriaCopilot() {
         // private-route failures so voice does not stop on mobile/laptop.
         if (!r?.ok && (!r || r.status === 401 || r.status === 403 || r.status === 429 || r.status >= 500)) {
           if (r) {
-            VoiceTimeline.push("TTS_RETRY", `[${idx}] private ${r.status} fallback`, {
+            VoiceTimeline.push("FALLBACK", `[${idx}] private ${r.status} fallback`, {
               idx,
               status: r.status,
             });
@@ -705,7 +705,7 @@ export function AriaCopilot() {
         // One short retry for transient public voice errors. Terminal 4xx stays
         // terminal so we do not loop or double-submit bad input.
         if (!r.ok && (r.status === 429 || r.status >= 500)) {
-          VoiceTimeline.push("TTS_RETRY", `[${idx}] public ${r.status} retry`, {
+          VoiceTimeline.push("FALLBACK", `[${idx}] public ${r.status} retry`, {
             idx,
             status: r.status,
           });
