@@ -16,6 +16,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
+import { synthesizeWithLovableAI } from "@/lib/aria/tts-fallback.server";
 import {
   ARIA_ELEVENLABS_VOICE_ID,
   ARIA_ELEVENLABS_VOICE_SETTINGS,
