@@ -42,29 +42,25 @@ export function inspectAriaProviderReadiness(
     ["SUPABASE_SERVICE_ROLE_KEY", configured(env.SUPABASE_SERVICE_ROLE_KEY, 20)],
   ]);
 
-  const geminiReady =
-    configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
-  const forceGemini = env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
-  const intelligenceProvider = geminiReady
-    ? "google-gemini"
-    : !forceGemini && configured(env.OPENAI_API_KEY, 20)
-      ? "openai"
-      : !forceGemini && configured(env.LOVABLE_API_KEY, 20)
+  const intelligenceProvider = configured(env.OPENAI_API_KEY, 20)
+    ? "openai"
+    : configured(env.GEMINI_API_KEY, 20)
+      ? "google"
+      : configured(env.LOVABLE_API_KEY, 20)
         ? "lovable"
-        : !forceGemini && configured(env.ANTHROPIC_API_KEY, 20)
+        : configured(env.ANTHROPIC_API_KEY, 20)
           ? "anthropic"
-          : !forceGemini && configured(env.OPENROUTER_API_KEY, 20)
+          : configured(env.OPENROUTER_API_KEY, 20)
             ? "openrouter"
             : null;
   const intelligence = capability(intelligenceProvider, [
-    [
-      forceGemini ? "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY" : "AI_PROVIDER_API_KEY",
-      intelligenceProvider !== null,
-    ],
+    ["AI_PROVIDER_API_KEY", intelligenceProvider !== null],
   ]);
 
-  const voice = capability("google-gemini", [
-    ["GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY", geminiReady],
+  const voice = capability("elevenlabs", [
+    ["ELEVENLABS_API_KEY", configured(env.ELEVENLABS_API_KEY, 20)],
+    // Recorder fallback transcription uses OpenAI even if chat uses another provider.
+    ["OPENAI_API_KEY", configured(env.OPENAI_API_KEY, 20)],
   ]);
 
   const resendReady = configured(env.RESEND_API_KEY, 20) && configured(env.RESEND_FROM_EMAIL, 6);

@@ -253,25 +253,19 @@ function IntroLanding() {
 
           {/* Utility row (per owner directive: Executive Bridge + Executive
               Showcase launcher buttons removed from the hero). */}
-          <div className="mt-2 grid w-full max-w-xl grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-center">
+          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:gap-3">
             <Link
               to="/executive-bridge"
-              role="button"
-              aria-label={ar ? "افتح الجسر التنفيذي" : "Open Executive Bridge"}
-              className="relative z-20 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/55 bg-gradient-to-r from-[#3AE8FF]/25 to-[#00D4FF]/15 px-5 py-3 text-[13px] font-bold uppercase tracking-[0.14em] text-[#EAFBFF] shadow-[0_0_28px_rgba(58,232,255,0.28)] backdrop-blur-md transition active:scale-[0.98] hover:border-[#3AE8FF]/80 hover:bg-[#3AE8FF]/25 sm:w-auto"
-              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+              className="nexus-command-chip min-h-11 border-[#3AE8FF]/45 bg-[#3AE8FF]/[0.09] px-4 text-[#BEEBFF] hover:border-[#3AE8FF]/70 hover:bg-[#3AE8FF]/[0.14]"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5" />
               <span>{ar ? "افتح الجسر التنفيذي" : "Open Executive Bridge"}</span>
             </Link>
             <Link
               to="/executive-showcase"
-              role="button"
-              aria-label={ar ? "عرض مفتوح بلا تسجيل" : "Open presentation"}
-              className="relative z-20 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-emerald-300/55 bg-gradient-to-r from-emerald-300/25 to-emerald-400/10 px-5 py-3 text-[13px] font-bold uppercase tracking-[0.14em] text-emerald-50 shadow-[0_0_28px_rgba(110,231,183,0.25)] backdrop-blur-md transition active:scale-[0.98] hover:border-emerald-200/80 hover:bg-emerald-300/25 sm:w-auto"
-              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+              className="nexus-command-chip min-h-11 border-emerald-300/35 bg-emerald-300/8 px-4 text-emerald-100 hover:border-emerald-300/60"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5" />
               <span>{ar ? "عرض مفتوح بلا تسجيل" : "Open presentation"}</span>
             </Link>
             <button

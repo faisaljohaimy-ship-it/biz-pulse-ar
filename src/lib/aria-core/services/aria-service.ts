@@ -48,26 +48,18 @@ async function ariaAuthedFetch(input: RequestInfo | URL, init: RequestInit = {})
   }
 }
 
-/** Safe capability probe. It reports booleans only and never secret values. */
+/** Health probe — GET /api/chat/health. Returns { ok, model, key_present }. */
 export async function pingChat(): Promise<{
   ok: boolean;
   model?: string;
   key_present?: boolean;
-  voice_configured?: boolean;
-  transcription_configured?: boolean;
 }> {
   try {
     const r = await ariaAuthedFetch("/api/chat/health", { method: "GET" });
     if (!r.ok) return { ok: false };
     const j = await r.json().catch(() => null);
     return j && typeof j === "object"
-      ? {
-          ok: !!j.ok,
-          model: j.model,
-          key_present: j.key_present,
-          voice_configured: j.voice_configured,
-          transcription_configured: j.transcription_configured,
-        }
+      ? { ok: !!j.ok, model: j.model, key_present: j.key_present }
       : { ok: false };
   } catch {
     return { ok: false };

@@ -1,12 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
-import {
-  bytesToBase64,
-  extractGeminiText,
-  normalizeGeminiTranscript,
-} from "@/lib/aria/gemini-audio";
-import { ARIA_GEMINI_FLASH_MODEL } from "@/lib/aria/voice-config";
 
 const MAX_AUDIO_BYTES = 12 * 1024 * 1024;
 const MAX_MULTIPART_BYTES = MAX_AUDIO_BYTES + 1024 * 1024;
@@ -28,17 +22,8 @@ const HEADERS = {
   "X-Content-Type-Options": "nosniff",
 } as const;
 
-function errorResponse(
-  error: string,
-  status: number,
-  extra: Record<string, unknown> = {},
-): Response {
-  return Response.json({ ok: false, error, ...extra }, { status, headers: HEADERS });
-}
-
-function safeModel(value: string | undefined): string {
-  const normalized = value?.trim() ?? "";
-  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized) ? normalized : ARIA_GEMINI_FLASH_MODEL;
+function errorResponse(error: string, status: number): Response {
+  return Response.json({ ok: false, error }, { status, headers: HEADERS });
 }
 
 export const Route = createFileRoute("/api/aria/transcribe")({
@@ -91,83 +76,52 @@ export const Route = createFileRoute("/api/aria/transcribe")({
           return errorResponse("Voice recording type is not supported.", 415);
         }
 
-        const apiKey = (
-          process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
-        )?.trim();
-        if (!apiKey) {
-          return errorResponse("Gemini voice understanding is not configured.", 503);
+        const openAiKey = process.env.OPENAI_API_KEY?.trim();
+        if (!openAiKey) {
+          return errorResponse("Voice transcription is not configured.", 503);
         }
-        const model = safeModel(process.env.GEMINI_TRANSCRIBE_MODEL);
-        const inlineAudio = bytesToBase64(new Uint8Array(await audio.arrayBuffer()));
+        const upstreamForm = new FormData();
+        upstreamForm.set("file", audio, audio.name.slice(0, 120));
+        upstreamForm.set(
+          "model",
+          process.env.OPENAI_TRANSCRIBE_MODEL?.trim() || "gpt-4o-transcribe",
+        );
+        upstreamForm.set("language", "ar");
+        upstreamForm.set("response_format", "json");
 
         let upstream: Response;
         try {
-          upstream = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": apiKey,
-              },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    role: "user",
-                    parts: [
-                      {
-                        text: "حوّل الكلام المسموع إلى نص بدقة. أعد نص المتحدث فقط من دون شرح أو Markdown. حافظ على الأسماء والأرقام واللغة كما نُطقت. إذا لم يوجد كلام مفهوم فأعد الرمز <NO_SPEECH> فقط.",
-                      },
-                      {
-                        inlineData: {
-                          mimeType: mediaType,
-                          data: inlineAudio,
-                        },
-                      },
-                    ],
-                  },
-                ],
-                generationConfig: {
-                  temperature: 0,
-                  maxOutputTokens: 2_048,
-                },
-              }),
-              signal: request.signal,
-            },
-          );
+          upstream = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${openAiKey}` },
+            body: upstreamForm,
+            signal: request.signal,
+          });
         } catch (transcriptionError) {
           if (request.signal.aborted)
             return errorResponse("Voice transcription was cancelled.", 499);
-          console.error("[api/aria/transcribe] Gemini unavailable", {
+          console.error("[api/aria/transcribe] provider unavailable", {
             error:
               transcriptionError instanceof Error
                 ? transcriptionError.message
                 : String(transcriptionError),
           });
-          return errorResponse("Gemini voice understanding is unavailable.", 502);
+          return errorResponse("Voice transcription is unavailable.", 502);
         }
-
-        const payload = await upstream.json().catch(() => null);
         if (!upstream.ok) {
-          console.warn("[api/aria/transcribe] Gemini rejected recording", {
+          console.warn("[api/aria/transcribe] provider rejected recording", {
             status: upstream.status,
           });
-          return errorResponse("Gemini voice transcription failed.", 502, {
-            providerStatus: upstream.status,
-          });
+          return errorResponse("Voice transcription failed.", 502);
         }
-        const text = normalizeGeminiTranscript(extractGeminiText(payload));
+        const payload = (await upstream.json().catch(() => null)) as {
+          text?: unknown;
+        } | null;
+        const text = typeof payload?.text === "string" ? payload.text.trim() : "";
         if (!text) return errorResponse("No speech was detected.", 422);
         return Response.json(
           { ok: true, text: text.slice(0, 10_000) },
-          {
-            status: 200,
-            headers: {
-              ...HEADERS,
-              "X-ARIA-Transcription-Model": model,
-              "X-ARIA-Transcription-Provider": "gemini",
-            },
-          },
+          { status: 200, headers: HEADERS },
         );
       },
     },

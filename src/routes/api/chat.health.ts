@@ -1,42 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+/**
+ * GET /api/chat/health — tiny probe used by AriaCopilot on mount to render a
+ * connectivity dot. Never returns the actual secret; only whether it exists.
+ */
 export const Route = createFileRoute("/api/chat/health")({
   server: {
     handlers: {
       GET: async () => {
-        const geminiPresent = Boolean(
-          process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim(),
-        );
-        const forceGemini = process.env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
-        const keyPresent = forceGemini
-          ? geminiPresent
-          : Boolean(
-              geminiPresent ||
-              process.env.OPENAI_API_KEY?.trim() ||
-              process.env.ANTHROPIC_API_KEY?.trim() ||
-              process.env.LOVABLE_API_KEY?.trim() ||
-              process.env.OPENROUTER_API_KEY?.trim(),
-            );
-        const configuredModel = process.env.GEMINI_MODEL?.trim() ?? "";
-        const model = /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(configuredModel)
-          ? configuredModel
-          : "gemini-3.5-flash";
-        return Response.json(
-          {
-            ok: true,
-            provider: "gemini",
-            model,
-            key_present: keyPresent,
-            voice_configured: geminiPresent,
-            transcription_configured: geminiPresent,
-          },
-          {
-            headers: {
-              "Cache-Control": "no-store",
-              "Content-Type": "application/json; charset=utf-8",
-            },
-          },
-        );
+        // Report the provider that WOULD actually serve a request, mirroring
+        // the permanent-on priority in ai-router.server.ts: Google → Lovable →
+        // OpenAI → Anthropic → OpenRouter. Never returns the secret itself —
+        // only which is active.
+        const google = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+        const openai = !!process.env.OPENAI_API_KEY;
+        const anthropic = !!process.env.ANTHROPIC_API_KEY;
+        const openrouter = !!process.env.OPENROUTER_API_KEY;
+        const lovable = !!process.env.LOVABLE_API_KEY;
+        const provider = google
+          ? "google-gemini"
+          : lovable
+            ? "lovable"
+            : openai
+              ? "openai"
+              : anthropic
+                ? "anthropic"
+                : openrouter
+                  ? "openrouter"
+                  : null;
+        const model = google
+          ? "gemini-2.5-flash"
+          : lovable
+            ? "google/gemini-3-flash-preview"
+            : openai
+              ? process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini"
+              : anthropic
+                ? "claude-3-5-sonnet-latest"
+                : openrouter
+                  ? "anthropic/claude-3.5-sonnet"
+                  : null;
+        return Response.json({ ok: true, provider, model, key_present: !!provider });
       },
     },
   },

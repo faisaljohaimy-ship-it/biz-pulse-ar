@@ -6,14 +6,11 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-// The four live voice sources: homepage greeting, specialist-agent speech,
-// the conversation greeting, and reply TTS. ARIA chat always wins;
-// specialist narration may preempt the homepage but never ARIA.
-type Source = "hero-soundtrack" | "agent-tts" | "conversation-greeting" | "chat-tts";
+// The three live voice sources: homepage greeting, specialist-agent speech,
+// and the copilot's Conversation-Mode reply TTS. ARIA chat always wins;
+// specialist narration may preempt the greeting but never ARIA.
+type Source = "hero-soundtrack" | "agent-tts" | "chat-tts" | "conversation-greeting";
 
-// Contract (agent-voice-contract.test.ts): "agent-tts": 2 and "chat-tts": 3
-// are pinned. The conversation greeting shares the agent tier — ARIA reply
-// TTS (chat-tts) always outranks everything.
 const PRIORITY: Record<Source, number> = {
   "hero-soundtrack": 1,
   "agent-tts": 2,
@@ -82,7 +79,7 @@ function stopWatchdog() {
 }
 
 // Capture native methods once. Governed specialist speech uses these methods;
-// authenticated ARIA speech remains server-generated Gemini audio only.
+// ARIA remains ElevenLabs-only.
 if (typeof window !== "undefined" && window.speechSynthesis) {
   browserSpeech = window.speechSynthesis;
   nativeSpeak = browserSpeech.speak.bind(browserSpeech);
@@ -192,12 +189,10 @@ export const AriaAudioBus = {
       owner: source,
       provider:
         source === "chat-tts"
-          ? "gemini-tts-queue"
-          : source === "conversation-greeting"
-            ? "gemini-tts-greeting"
-            : source === "agent-tts"
-              ? "free-system-agent-voice"
-              : "greeting",
+          ? "elevenlabs-queue"
+          : source === "agent-tts"
+            ? "free-system-agent-voice"
+            : "greeting",
       stack,
       bypass,
     });

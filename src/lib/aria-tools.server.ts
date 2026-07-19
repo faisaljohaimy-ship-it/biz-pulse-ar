@@ -196,14 +196,22 @@ export function buildAriaTools(
           .from("hcis_compliance_status")
           .select("region_code,status,is_simulation");
         let source = "hcis_compliance_status";
-        type Row = { region: string; status: string; isSimulation: boolean };
-        let rows: Row[] = (seeded.data ?? []).map(
-          (row: { region_code: string; status: string; is_simulation?: boolean }) => ({
-            region: row.region_code,
-            status: row.status,
-            isSimulation: row.is_simulation === true,
-          }),
-        );
+        type HcisStatusRow = {
+          region: string;
+          status: string;
+          isSimulation: boolean;
+        };
+        let rows: HcisStatusRow[] = (
+          (seeded.data ?? []) as Array<{
+            region_code: string;
+            status: string;
+            is_simulation?: boolean;
+          }>
+        ).map((row) => ({
+          region: row.region_code,
+          status: row.status,
+          isSimulation: row.is_simulation === true,
+        }));
         if (seeded.error) {
           const legacy = await db.from("hcis_assessments").select("region,status");
           if (legacy.error) {

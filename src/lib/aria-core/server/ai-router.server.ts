@@ -4,9 +4,8 @@
  * Called ONLY from `src/routes/api/chat.ts`. Never exposes model names to
  * the client.
  *
- * Production routing prefers native Gemini Flash when a Google key is
- * configured, with other providers retained only when the deployment opts
- * out of the Gemini-only policy.
+ * Production routing prefers native GPT-5.6 when an OpenAI key is configured,
+ * with Google/Lovable/Anthropic/OpenRouter retained as availability fallbacks.
  */
 
 export type AriaIntent =
@@ -25,8 +24,10 @@ export interface ResolvedModel {
   fallback?: { vendor: Vendor; modelId: string };
 }
 
+// OpenAI's current frontier alias. Pin OPENAI_MODEL to a snapshot when a
+// deployment needs fully repeatable eval behavior.
 const OPENAI_DEFAULT = "gpt-5.6";
-const GOOGLE_GEMINI_FLASH = "gemini-3.5-flash";
+const GOOGLE_GEMINI_FLASH = "gemini-2.5-flash";
 const LOVABLE_GEMINI_FLASH = "google/gemini-3-flash-preview";
 const LOVABLE_GPT_5_MINI = "openai/gpt-5-mini";
 const OPENROUTER_CLAUDE = "anthropic/claude-3.5-sonnet";
@@ -55,18 +56,15 @@ export interface AvailableProviders {
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
-  // ARIA's canonical route is native Gemini Flash. ARIA_FORCE_GEMINI_FLASH
-  // is enforced by the API caller by excluding all non-Google providers.
+  // Highest-quality route requested for ARIA: native GPT-5.6 first. Remaining
+  // providers are continuity fallbacks and never masquerade as GPT-5.6.
 
-  if (providers.google) {
+  if (providers.openai) {
     return {
-      vendor: "google",
-      modelId: process.env.GEMINI_MODEL?.trim() || GOOGLE_GEMINI_FLASH,
-      fallback: providers.openai
-        ? {
-            vendor: "openai",
-            modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT,
-          }
+      vendor: "openai",
+      modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT,
+      fallback: providers.google
+        ? { vendor: "google", modelId: GOOGLE_GEMINI_FLASH }
         : providers.lovable
           ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
           : providers.anthropic
@@ -77,10 +75,10 @@ export function resolveModel(_intent: AriaIntent, providers: AvailableProviders)
     };
   }
 
-  if (providers.openai) {
+  if (providers.google) {
     return {
-      vendor: "openai",
-      modelId: process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT,
+      vendor: "google",
+      modelId: GOOGLE_GEMINI_FLASH,
       fallback: providers.lovable
         ? { vendor: "lovable", modelId: LOVABLE_GEMINI_FLASH }
         : providers.anthropic

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateChatRequest } from "@/routes/api/-chat-guard";
+import { validateChatRequest } from "./-chat-guard";
 
 function chatRequest(body: unknown) {
   return new Request("https://example.test/api/chat", {
