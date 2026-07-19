@@ -3,7 +3,7 @@
  *
  * Owns the voice-state lifecycle contract every future voice pipeline (STT +
  * streaming TTS) will implement. Phase 1 only exposes the state channel so the
- * provider's existing SpeechSynthesis TTS can route through a single seam.
+ * provider's legacy TTS seam can route through a single seam.
  */
 import type { AriaVoiceCapabilities, AriaVoiceState } from "../types/aria";
 import { useAriaStore } from "../state/aria-store";
@@ -38,7 +38,7 @@ export const voiceManager: VoiceManager = {
     // Phase 2 will implement real STT.
   },
   async speak() {
-    // Phase 2 will implement streaming TTS. The provider's SpeechSynthesis
+    // Phase 2 will implement streaming TTS. The provider's legacy voice seam
     // fallback continues to run for now.
   },
 };

@@ -1,7 +1,7 @@
 /**
  * ARIA Voice Timeline — a single append-only ring buffer for every
  * event in the audio pipeline. Populated from audio-bus, useAriaSpeech,
- * AriaCopilot, aria-voice, and the SpeechSynthesis assertion.
+ * AriaCopilot, aria-voice, and the voice-policy assertion.
  *
  * In the browser console:
  *   __dumpAriaTimeline()          → console.table + copy JSON to clipboard

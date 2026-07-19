@@ -7,7 +7,7 @@
  *   - Updates ContextManager with each route change.
  *   - Reports stream completions/failures back to the Brain.
  *   - Drains the imperative command queue.
- *   - Runs the SpeechSynthesis TTS through VoiceManager's state channel.
+ *   - Runs the legacy TTS seam through VoiceManager's state channel.
  */
 import { useChat } from "@ai-sdk/react";
 import { type UIMessage } from "ai";
@@ -144,7 +144,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   // ── A second speak() path here caused the "first sentence clean, rest
   // ── robotic" bug: both pipelines called AriaAudioBus.acquire("chat-tts"),
   // ── stomped each other, and the loser dropped into browser
-  // ── SpeechSynthesis fallback mid-reply. Do NOT re-add speak here.
+  // ── legacy browser-voice fallback mid-reply (removed). Do NOT re-add speak here.
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
   return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;

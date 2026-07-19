@@ -86,12 +86,17 @@ describe("ARIA singleton release contract", () => {
     expect(preview).not.toMatch(/setInterval|useChat|useAriaVoice/);
   });
 
-  it("keeps ARIA on ElevenLabs and specialists on the free governed engine", () => {
+  it("keeps every audible voice on the server Layan route (no browser TTS)", () => {
     const client = source("src/lib/digital-humans/aria-voice.ts");
     const specialists = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(client).toContain('authenticatedFetch("/api/aria/tts"');
     expect(client).toContain("speakFreeAgent");
     expect(client).not.toContain("/api/agents/tts");
-    expect(specialists).not.toMatch(/ELEVENLABS|OPENAI_API_KEY|authenticatedFetch/);
+    // Specialists now speak through the SAME server ElevenLabs route,
+    // governed by the agent-tts bus channel; browser speech is banned and
+    // the provider key never appears client-side.
+    expect(specialists).toContain('authenticatedFetch("/api/aria/tts"');
+    expect(specialists).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
+    expect(specialists).not.toMatch(/ELEVENLABS_API_KEY|OPENAI_API_KEY/);
   });
 });

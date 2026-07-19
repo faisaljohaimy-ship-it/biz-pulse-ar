@@ -42,26 +42,30 @@ export function inspectAriaProviderReadiness(
     ["SUPABASE_SERVICE_ROLE_KEY", configured(env.SUPABASE_SERVICE_ROLE_KEY, 20)],
   ]);
 
-  const intelligenceProvider = configured(env.OPENAI_API_KEY, 20)
-    ? "openai"
-    : configured(env.GEMINI_API_KEY, 20)
-      ? "google"
-      : configured(env.LOVABLE_API_KEY, 20)
+  const geminiReady =
+    configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
+  const forceGemini = env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
+  const intelligenceProvider = geminiReady
+    ? "google-gemini"
+    : !forceGemini && configured(env.OPENAI_API_KEY, 20)
+      ? "openai"
+      : !forceGemini && configured(env.LOVABLE_API_KEY, 20)
         ? "lovable"
-        : configured(env.ANTHROPIC_API_KEY, 20)
+        : !forceGemini && configured(env.ANTHROPIC_API_KEY, 20)
           ? "anthropic"
-          : configured(env.OPENROUTER_API_KEY, 20)
+          : !forceGemini && configured(env.OPENROUTER_API_KEY, 20)
             ? "openrouter"
             : null;
   const intelligence = capability(intelligenceProvider, [
-    ["AI_PROVIDER_API_KEY", intelligenceProvider !== null],
+    [
+      forceGemini ? "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY" : "AI_PROVIDER_API_KEY",
+      intelligenceProvider !== null,
+    ],
   ]);
 
-  const voice = capability("elevenlabs", [
-    ["ELEVENLABS_API_KEY", configured(env.ELEVENLABS_API_KEY, 20)],
-    // Recorder fallback transcription uses OpenAI even if chat uses another provider.
-    ["OPENAI_API_KEY", configured(env.OPENAI_API_KEY, 20)],
-  ]);
+  // Owner voice policy: the audible ARIA voice is exclusively ElevenLabs Layan.
+  const elevenReady = configured(env.ELEVENLABS_API_KEY, 20);
+  const voice = capability("elevenlabs", [["ELEVENLABS_API_KEY", elevenReady]]);
 
   const resendReady = configured(env.RESEND_API_KEY, 20) && configured(env.RESEND_FROM_EMAIL, 6);
   const outlookReady = configured(env.MICROSOFT_OUTLOOK_API_KEY, 20);

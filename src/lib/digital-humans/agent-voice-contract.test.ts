@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ARIA, DIGITAL_HUMANS, SPECIALISTS } from "./registry";
-import { resolveVoice, selectSystemVoice } from "./voice-profiles";
+import { resolveVoice } from "./voice-profiles";
 
 const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
@@ -34,29 +34,31 @@ describe("specialist voice release contract", () => {
     expect(signatures.size).toBe(20);
   });
 
-  it("removes the paid specialist endpoint and uses only the governed system engine", () => {
+  it("speaks specialists through the server Layan route with zero browser TTS", () => {
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(existsSync(join(process.cwd(), "src/routes/api/agents/tts.ts"))).toBe(false);
-    expect(local).toContain("SpeechSynthesisUtterance");
-    expect(local).toContain("AriaAudioBus.systemVoices()");
+    expect(local).toContain('authenticatedFetch("/api/aria/tts"');
     expect(local).toContain('AriaAudioBus.acquire("agent-tts"');
-    expect(local).toContain("AriaAudioBus.speakAgentUtterance");
-    expect(local).not.toMatch(/OPENAI_API_KEY|gpt-4o-mini-tts|authenticatedFetch/);
+    // Owner voice policy: browser TTS is banned in every path.
+    expect(local).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
+    expect(local).not.toMatch(/OPENAI_API_KEY|gpt-4o-mini-tts/);
   });
 
-  it("selects a preferred same-language voice and keeps a deterministic fallback", () => {
-    const voice = (name: string, lang: string, localService: boolean): SpeechSynthesisVoice =>
-      ({ name, lang, localService, default: false, voiceURI: name }) as SpeechSynthesisVoice;
-    const voices = [
-      voice("Generic Arabic", "ar-SA", true),
-      voice("Microsoft Hamed Online (Natural)", "ar-SA", false),
-      voice("Samantha", "en-US", true),
-    ];
-
-    const selected = selectSystemVoice("incident", "ar", voices);
-    expect(selected.voiceName).toContain("Hamed");
-    expect(selected.languageTag).toBe("ar-SA");
-    expect(selectSystemVoice("risk", "en", []).voice).toBeNull();
+  it("keeps the audible voice exclusively ElevenLabs Layan, key server-side only", () => {
+    const tts = source("src/routes/api/aria/tts.ts");
+    expect(tts).toContain("ELEVENLABS_API_KEY");
+    expect(tts).toContain("ARIA_ELEVENLABS_VOICE_ID");
+    expect(tts).not.toMatch(/GEMINI_TTS|generativelanguage/);
+    const config = source("src/lib/aria/voice-config.ts");
+    expect(config).toContain('"gVzwmdZzRgBrNjXaTmi5"');
+    // The key never appears client-side.
+    for (const file of [
+      "src/lib/digital-humans/free-agent-speech.ts",
+      "src/lib/digital-humans/aria-voice.ts",
+      "src/components/aria-core/AriaCopilot.tsx",
+    ]) {
+      expect(source(file)).not.toContain("ELEVENLABS_API_KEY");
+    }
   });
 
   it("renders and routes all eleven speakers in presentation mode", () => {
@@ -73,11 +75,15 @@ describe("specialist voice release contract", () => {
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(bus).toContain('"agent-tts": 2');
     expect(bus).toContain('"chat-tts": 3');
-    expect(bus).toContain("speakAgentUtterance");
+    // The bus itself is a pure arbitration channel — no speech engine inside.
+    expect(bus).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
     expect(client).toContain('authenticatedFetch("/api/aria/tts"');
     expect(client).toContain("speakFreeAgent");
     expect(client).not.toContain("/api/agents/tts");
-    expect(local).toContain('AriaAudioBus.currentSource() === "chat-tts"');
+    // Specialist playback is bus-governed: it must own agent-tts first, so
+    // ARIA (chat-tts, higher priority) always preempts and never overlaps.
+    expect(local).toContain('AriaAudioBus.acquire("agent-tts"');
+    expect(local).toContain('AriaAudioBus.release("agent-tts"');
     expect(client).not.toContain("/api/public/aria-tts");
   });
 });

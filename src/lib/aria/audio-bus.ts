@@ -6,11 +6,14 @@
  */
 import { VoiceTimeline } from "./voice-timeline";
 
-// The three live voice sources: homepage greeting, specialist-agent speech,
-// and the copilot's Conversation-Mode reply TTS. ARIA chat always wins;
-// specialist narration may preempt the greeting but never ARIA.
-type Source = "hero-soundtrack" | "agent-tts" | "chat-tts" | "conversation-greeting";
+// The four live voice sources: homepage greeting, specialist-agent speech,
+// the conversation greeting, and reply TTS. ARIA chat always wins;
+// specialist narration may preempt the homepage but never ARIA.
+type Source = "hero-soundtrack" | "agent-tts" | "conversation-greeting" | "chat-tts";
 
+// Contract (agent-voice-contract.test.ts): "agent-tts": 2 and "chat-tts": 3
+// are pinned. The conversation greeting shares the agent tier — ARIA reply
+// TTS (chat-tts) always outranks everything.
 const PRIORITY: Record<Source, number> = {
   "hero-soundtrack": 1,
   "agent-tts": 2,
@@ -36,10 +39,6 @@ let currentAudioEl: HTMLMediaElement | null = null;
 let unlocked = false;
 const listeners = new Set<Listener>();
 
-let browserSpeech: SpeechSynthesis | null = null;
-let nativeSpeak: ((utterance: SpeechSynthesisUtterance) => void) | null = null;
-let nativeCancel: (() => void) | null = null;
-
 function emit(e: BusEvent) {
   for (const l of listeners) {
     try {
@@ -50,42 +49,6 @@ function emit(e: BusEvent) {
   }
 }
 
-// Double-voice watchdog — while chat-tts owns the channel, cancel browser
-// speech through the captured native method. We deliberately do not monkey-
-// patch the browser API; doing so would break unrelated app/accessibility use.
-let watchdogTimer: ReturnType<typeof setInterval> | null = null;
-function startWatchdog() {
-  if (watchdogTimer != null) return;
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  watchdogTimer = setInterval(() => {
-    if (!current || current.source !== "chat-tts") return;
-    const s = browserSpeech;
-    if (s && (s.speaking || s.pending)) {
-      try {
-        nativeCancel?.();
-      } catch {
-        /* ignore */
-      }
-
-      console.warn("[aria] OVERLAP killed (rogue speechSynthesis while chat-tts owns bus)");
-    }
-  }, 250);
-}
-function stopWatchdog() {
-  if (watchdogTimer != null) {
-    clearInterval(watchdogTimer);
-    watchdogTimer = null;
-  }
-}
-
-// Capture native methods once. Governed specialist speech uses these methods;
-// ARIA remains ElevenLabs-only.
-if (typeof window !== "undefined" && window.speechSynthesis) {
-  browserSpeech = window.speechSynthesis;
-  nativeSpeak = browserSpeech.speak.bind(browserSpeech);
-  nativeCancel = browserSpeech.cancel.bind(browserSpeech);
-}
-
 export const AriaAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
   unlock() {
@@ -93,40 +56,6 @@ export const AriaAudioBus = {
   },
   isUnlocked() {
     return unlocked;
-  },
-
-  /** Free voices currently exposed by the user's browser/operating system. */
-  systemVoices(): SpeechSynthesisVoice[] {
-    try {
-      return browserSpeech?.getVoices() ?? [];
-    } catch {
-      return [];
-    }
-  },
-
-  /**
-   * The only authorized bridge to browser speech. It succeeds exclusively
-   * while the specialist channel owns the bus; callers cannot use it for ARIA.
-   */
-  speakAgentUtterance(utterance: SpeechSynthesisUtterance): boolean {
-    if (current?.source !== "agent-tts" || !nativeSpeak) return false;
-    VoiceTimeline.push("SPEECH_SYNTH", "governed free agent voice", {
-      owner: current.source,
-      lang: utterance.lang,
-      voice: utterance.voice?.name ?? "system-default",
-      text: utterance.text.slice(0, 60),
-    });
-    nativeSpeak(utterance);
-    return true;
-  },
-
-  cancelAgentUtterance(): void {
-    if (current?.source !== "agent-tts") return;
-    try {
-      nativeCancel?.();
-    } catch {
-      /* ignore */
-    }
   },
 
   /**
@@ -179,32 +108,27 @@ export const AriaAudioBus = {
       }
       emit({ kind: "end", source: prev });
     }
-    try {
-      nativeCancel?.();
-    } catch {
-      /* ignore */
-    }
     current = { source, stop };
     VoiceTimeline.push("OWNER", "ACQUIRED", {
       owner: source,
       provider:
         source === "chat-tts"
-          ? "elevenlabs-queue"
-          : source === "agent-tts"
-            ? "free-system-agent-voice"
-            : "greeting",
+          ? "elevenlabs-layan-queue"
+          : source === "conversation-greeting"
+            ? "elevenlabs-layan-greeting"
+            : source === "agent-tts"
+              ? "elevenlabs-layan-agent"
+              : "greeting",
       stack,
       bypass,
     });
-    if (source === "chat-tts") startWatchdog();
-    else stopWatchdog();
     emit({ kind: "start", source });
     return true;
   },
 
   /**
    * Signal that real audio playback has begun (audio element 'playing' event
-   * OR SpeechSynthesisUtterance.onstart). This is the single clock that
+   * ). This is the single clock that
    * drives motion — video starts here, never before.
    */
   notifyPlaying(source: Source, audioEl?: HTMLMediaElement | null) {
@@ -230,7 +154,6 @@ export const AriaAudioBus = {
         currentAudioEl = null;
       }
       current = null;
-      stopWatchdog();
       emit({ kind: "end", source });
     }
   },
@@ -248,13 +171,7 @@ export const AriaAudioBus = {
         currentAudioEl = null;
       }
       current = null;
-      stopWatchdog();
       emit({ kind: "end", source: prev });
-    }
-    try {
-      nativeCancel?.();
-    } catch {
-      /* ignore */
     }
   },
 

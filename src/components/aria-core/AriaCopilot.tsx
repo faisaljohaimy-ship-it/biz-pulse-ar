@@ -33,6 +33,9 @@ import { useAriaStore } from "@/lib/aria-core/store";
 import { pingChat, setPendingReplyMode } from "@/lib/aria-core/services/aria-service";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
+// Lean markdown renderer — the heavy MessageResponse (streamdown → shiki +
+// mermaid, ~10 MB of emitted chunks) breaks the CI performance budget; see
+// commit 34dea62. Keep react-markdown here.
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
@@ -40,7 +43,7 @@ import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
 import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
-import { ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
+import { ARIA_GEMINI_TTS_VOICE } from "@/lib/aria/voice-config";
 import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
@@ -50,19 +53,33 @@ import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/ari
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 import { shouldSpeakAriaReply, toAriaSpeechText } from "@/lib/aria/reply-modality";
 import { chooseAriaRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
+import { advanceAriaVoiceActivity, createAriaVoiceActivityState } from "@/lib/aria/voice-activity";
 import {
   ARIA_CONVERSATION_GREETING_AR,
+  ARIA_CONVERSATION_GREETING_AR_TTS,
   shouldContinueAfterAriaGreeting,
 } from "@/lib/aria/conversation-greeting";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 // speakAria / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
-// pipeline below (ElevenLabs via /api/aria/tts, gated on the voice toggle).
+// pipeline below (Gemini Flash TTS via /api/aria/tts, gated on voice mode).
 
-/** iOS Safari blocks audio started outside a user gesture. Call this
- *  synchronously inside every send/mic tap handler to prime the
- *  AudioContext so the async reply can speak. NOTE: SpeechSynthesis is
- *  intentionally NOT primed — chat replies never use browser speech. */
+function createSilentUnlockAudio(): HTMLAudioElement {
+  // 16-bit mono PCM WAV containing one silent sample. Calling play() on this
+  // element during the tap unlocks later HTMLAudioElement playback on iOS.
+  const bytes = new Uint8Array([
+    82, 73, 70, 70, 38, 0, 0, 0, 87, 65, 86, 69, 102, 109, 116, 32, 16, 0, 0, 0, 1, 0, 1, 0, 64, 31,
+    0, 0, 128, 62, 0, 0, 2, 0, 16, 0, 100, 97, 116, 97, 2, 0, 0, 0, 0, 0,
+  ]);
+  const audio = new Audio(URL.createObjectURL(new Blob([bytes], { type: "audio/wav" })));
+  audio.preload = "auto";
+  audio.setAttribute("playsinline", "");
+  return audio;
+}
+
+/** iOS Safari blocks audible media started outside a user gesture. Call this
+ * synchronously inside every send/mic tap handler to prime both Web Audio and
+ * HTML media playback before the asynchronous TTS response arrives. */
 function primeIOSAudio(): void {
   if (typeof window === "undefined") return;
   try {
@@ -81,15 +98,31 @@ function primeIOSAudio(): void {
       if (g.__ariaUnlockCtx.state === "suspended") void g.__ariaUnlockCtx.resume();
     }
 
+    const mediaGlobal = window as unknown as {
+      __ariaUnlockAudio?: HTMLAudioElement;
+    };
+    mediaGlobal.__ariaUnlockAudio ??= createSilentUnlockAudio();
+    const unlockAudio = mediaGlobal.__ariaUnlockAudio;
+    try {
+      unlockAudio.currentTime = 0;
+      void unlockAudio.play().then(
+        () => {
+          unlockAudio.pause();
+          unlockAudio.currentTime = 0;
+        },
+        () => undefined,
+      );
+    } catch {
+      /* a later explicit tap retries the unlock */
+    }
+
     console.log("[aria-voice] unlock done");
   } catch {
     /* ignore */
   }
 }
 
-/** Semaphore limiting concurrent /api/aria/tts requests. ElevenLabs subscription
- *  caps parallel calls at 5; we use 3 to stay safely under while multiple
- *  sentence-level TTS requests are in-flight. */
+/** Semaphore limiting concurrent sentence-level Gemini TTS requests. */
 const ttsGate = (() => {
   const MAX = 3;
   let active = 0;
@@ -141,7 +174,7 @@ type SR = {
         >;
       }) => void)
     | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
   stop: () => void;
@@ -155,6 +188,34 @@ function getSpeechRecognitionCtor(): (new () => SR) | null {
     webkitSpeechRecognition?: new () => SR;
   };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
+
+async function requestAriaMicrophone(): Promise<MediaStream> {
+  const mediaDevices = navigator.mediaDevices;
+  if (!mediaDevices?.getUserMedia)
+    throw new DOMException("Microphone capture is unavailable.", "NotFoundError");
+  try {
+    return await mediaDevices.getUserMedia({
+      audio: {
+        autoGainControl: true,
+        echoCancellation: true,
+        noiseSuppression: true,
+      },
+    });
+  } catch (error) {
+    const name = error instanceof DOMException ? error.name : "";
+    if (name !== "OverconstrainedError" && name !== "TypeError") throw error;
+    // Older iOS/WebViews may reject optional audio constraints even though a
+    // plain microphone stream is available.
+    return mediaDevices.getUserMedia({ audio: true });
+  }
+}
+
+function rmsLevel(samples: Float32Array): number {
+  if (samples.length === 0) return 0;
+  let sum = 0;
+  for (const sample of samples) sum += sample * sample;
+  return Math.sqrt(sum / samples.length);
 }
 
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
@@ -361,6 +422,10 @@ export function AriaCopilot() {
   // null = unknown; false = endpoint reachable but no AI provider key on this
   // deployment → show an elegant "not activated yet" notice instead of errors.
   const [providerReady, setProviderReady] = useState<boolean | null>(null);
+  const [voiceProviderReady, setVoiceProviderReady] = useState<boolean | null>(null);
+  const [transcriptionProviderReady, setTranscriptionProviderReady] = useState<boolean | null>(
+    null,
+  );
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
@@ -387,8 +452,13 @@ export function AriaCopilot() {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const mediaChunksRef = useRef<Blob[]>([]);
   const mediaCaptureCancelledRef = useRef(false);
+  const mediaNoSpeechRef = useRef(false);
   const greetingAbortRef = useRef<AbortController | null>(null);
   const mediaCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mediaAnalysisFrameRef = useRef<number | null>(null);
+  const mediaAnalysisContextRef = useRef<AudioContext | null>(null);
+  const mediaAnalysisSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const mediaAnalysisOwnsContextRef = useRef(false);
 
   const isOpen = mode !== "collapsed";
   const isBusy = chat.status === "submitted" || chat.status === "streaming";
@@ -431,6 +501,8 @@ export function AriaCopilot() {
         setHealth(next);
         setHealthEvidence(probeEvidence("GET /api/chat/health", next));
         setProviderReady(r.ok ? (r.key_present ?? null) : null);
+        setVoiceProviderReady(r.ok ? (r.voice_configured ?? null) : null);
+        setTranscriptionProviderReady(r.ok ? (r.transcription_configured ?? null) : null);
       }
     });
     // iOS Safari: prime AudioContext on the same task as the open gesture
@@ -446,7 +518,7 @@ export function AriaCopilot() {
     });
     if (typeof document !== "undefined") {
       const heads: HTMLLinkElement[] = [];
-      for (const href of [window.location.origin, "https://api.elevenlabs.io"]) {
+      for (const href of [window.location.origin, "https://generativelanguage.googleapis.com"]) {
         const l = document.createElement("link");
         l.rel = "preconnect";
         l.href = href;
@@ -509,6 +581,7 @@ export function AriaCopilot() {
     pumping: boolean;
     busAcquired: boolean;
     finalized: boolean;
+    playbackFailed: boolean;
     aborts: AbortController[];
     latencyLogged: boolean;
   }
@@ -565,9 +638,8 @@ export function AriaCopilot() {
 
   const fetchTTS = useCallback(
     async (text: string, idx: number, ctrl: AbortController): Promise<HTMLAudioElement | null> => {
-      // Concurrency gate — ElevenLabs subscription caps parallel TTS requests
-      // at 5. Serialize to max 3 in-flight so long replies with many sentences
-      // never trigger `concurrent_limit_exceeded` (429).
+      // Keep at most three Gemini TTS segments in flight to bound memory and
+      // avoid quota bursts while preserving gap-locked playback.
       let acquired = false;
       try {
         await ttsGate.acquire(ctrl.signal);
@@ -628,9 +700,9 @@ export function AriaCopilot() {
         }
         if (idx === 0) {
           AriaVoiceDebug.emit({
-            source: "elevenlabs",
+            source: "gemini",
             reason: "authenticated",
-            voiceId: ARIA_ELEVENLABS_VOICE_ID,
+            voiceId: r.headers.get("x-aria-voice-id") || ARIA_GEMINI_TTS_VOICE,
           });
         }
         return audio;
@@ -662,7 +734,9 @@ export function AriaCopilot() {
         } catch {
           audio = null;
         }
+        if (streamStateRef.current.get(messageId) !== s) return;
         if (!audio) {
+          s.playbackFailed = true;
           s.playingIdx++;
           continue;
         }
@@ -713,6 +787,7 @@ export function AriaCopilot() {
               audio.addEventListener("playing", onPlaying, { once: true });
             }
             audio.play().catch(() => {
+              s.playbackFailed = true;
               URL.revokeObjectURL(audio.src);
               objectUrlsRef.current.delete(audio.src);
               resolve();
@@ -731,6 +806,7 @@ export function AriaCopilot() {
             resolve();
           };
           audio.onerror = () => {
+            s.playbackFailed = true;
             try {
               URL.revokeObjectURL(audio.src);
               objectUrlsRef.current.delete(audio.src);
@@ -752,7 +828,10 @@ export function AriaCopilot() {
       AriaAudioBus.notifyStopped("chat-tts");
       AriaAudioBus.release("chat-tts");
       streamStateRef.current.delete(messageId);
-      if (convModeRef.current) {
+      if (convModeRef.current && s.playbackFailed) {
+        setConvNotice("تعذّر تشغيل صوت آريا — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
+        setConvPaused(true);
+      } else if (convModeRef.current) {
         if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
         relistenTimerRef.current = setTimeout(() => {
           startListeningRef.current?.();
@@ -801,6 +880,7 @@ export function AriaCopilot() {
         pumping: false,
         busAcquired: false,
         finalized: false,
+        playbackFailed: false,
         aborts: [],
         latencyLogged: false,
       };
@@ -978,6 +1058,26 @@ export function AriaCopilot() {
     [submit, composerRef],
   );
 
+  const stopMediaAnalysis = useCallback(() => {
+    if (mediaAnalysisFrameRef.current !== null) {
+      cancelAnimationFrame(mediaAnalysisFrameRef.current);
+      mediaAnalysisFrameRef.current = null;
+    }
+    try {
+      mediaAnalysisSourceRef.current?.disconnect();
+    } catch {
+      /* ignore */
+    }
+    mediaAnalysisSourceRef.current = null;
+    const context = mediaAnalysisContextRef.current;
+    mediaAnalysisContextRef.current = null;
+    const ownsContext = mediaAnalysisOwnsContextRef.current;
+    mediaAnalysisOwnsContextRef.current = false;
+    if (ownsContext && context && context.state !== "closed") {
+      void context.close().catch(() => undefined);
+    }
+  }, []);
+
   const stopListening = useCallback(() => {
     const r = recRef.current;
     if (r) {
@@ -1004,10 +1104,11 @@ export function AriaCopilot() {
       clearTimeout(mediaCaptureTimerRef.current);
       mediaCaptureTimerRef.current = null;
     }
+    stopMediaAnalysis();
     for (const track of mediaStreamRef.current?.getTracks() ?? []) track.stop();
     mediaStreamRef.current = null;
     setListening(false);
-  }, []);
+  }, [stopMediaAnalysis]);
 
   const stopResponse = useCallback(() => {
     void chat.stop();
@@ -1110,14 +1211,18 @@ export function AriaCopilot() {
       setConvPaused(true);
       return;
     }
+    if (transcriptionProviderReady === false) {
+      setConvNotice(
+        "فهم الصوت غير مفعّل على الخادم — أضف مفتاح ElevenLabs (أو Gemini) في إعدادات الخادم ثم أعد المحاولة.",
+      );
+      setConvPaused(true);
+      return;
+    }
+    let acquiredStream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          autoGainControl: true,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      });
+      stopMediaAnalysis();
+      const stream = await requestAriaMicrophone();
+      acquiredStream = stream;
       if (!convModeRef.current) {
         stream.getTracks().forEach((track) => track.stop());
         return;
@@ -1132,6 +1237,7 @@ export function AriaCopilot() {
       mediaRecorderRef.current = recorder;
       mediaChunksRef.current = [];
       mediaCaptureCancelledRef.current = false;
+      mediaNoSpeechRef.current = false;
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) mediaChunksRef.current.push(event.data);
       };
@@ -1143,20 +1249,30 @@ export function AriaCopilot() {
       };
       recorder.onstop = () => {
         const cancelled = mediaCaptureCancelledRef.current;
+        const noSpeech = mediaNoSpeechRef.current;
         const chunks = mediaChunksRef.current;
         const actualType = recorder.mimeType || mimeType || chunks[0]?.type || "audio/webm";
         mediaChunksRef.current = [];
+        mediaNoSpeechRef.current = false;
         mediaRecorderRef.current = null;
         if (mediaCaptureTimerRef.current) {
           clearTimeout(mediaCaptureTimerRef.current);
           mediaCaptureTimerRef.current = null;
         }
+        stopMediaAnalysis();
         for (const track of stream.getTracks()) track.stop();
         if (mediaStreamRef.current === stream) mediaStreamRef.current = null;
         setListening(false);
         if (cancelled || !convModeRef.current) return;
+        if (noSpeech) {
+          ariaState.set("idle");
+          setConvNotice("لم ألتقط صوتًا واضحًا — اضغط وتحدث مرة أخرى.");
+          setConvPaused(true);
+          return;
+        }
         const recording = new Blob(chunks, { type: actualType });
         if (recording.size === 0) {
+          setConvNotice("لم يصل تسجيل صوتي صالح — اضغط وتحدث مرة أخرى.");
           setConvPaused(true);
           return;
         }
@@ -1165,16 +1281,79 @@ export function AriaCopilot() {
       recorder.start(250);
       setListening(true);
       setConvPaused(false);
+      setConvNotice(null);
       ariaState.set("listening");
+
+      // Safari commonly lacks reliable SpeechRecognition. Analyse the local
+      // microphone stream and submit automatically after the user stops
+      // speaking, instead of waiting for a second tap or the 30-second cap.
+      try {
+        const AudioContextCtor: typeof AudioContext | undefined =
+          (
+            window as unknown as {
+              AudioContext?: typeof AudioContext;
+              webkitAudioContext?: typeof AudioContext;
+            }
+          ).AudioContext ??
+          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (AudioContextCtor) {
+          const unlockContext = (window as unknown as { __ariaUnlockCtx?: AudioContext })
+            .__ariaUnlockCtx;
+          const context =
+            unlockContext && unlockContext.state !== "closed"
+              ? unlockContext
+              : new AudioContextCtor();
+          mediaAnalysisContextRef.current = context;
+          mediaAnalysisOwnsContextRef.current = context !== unlockContext;
+          if (context.state === "suspended") await context.resume();
+          const analyser = context.createAnalyser();
+          analyser.fftSize = 1_024;
+          analyser.smoothingTimeConstant = 0.2;
+          const source = context.createMediaStreamSource(stream);
+          mediaAnalysisSourceRef.current = source;
+          source.connect(analyser);
+          const samples = new Float32Array(analyser.fftSize);
+          let activity = createAriaVoiceActivityState(performance.now());
+          const analyse = () => {
+            if (recorder.state === "inactive") return;
+            analyser.getFloatTimeDomainData(samples);
+            const next = advanceAriaVoiceActivity({
+              state: activity,
+              rms: rmsLevel(samples),
+              now: performance.now(),
+            });
+            activity = next.state;
+            if (next.decision !== "continue") {
+              mediaNoSpeechRef.current = next.decision === "no-speech";
+              recorder.stop();
+              return;
+            }
+            mediaAnalysisFrameRef.current = requestAnimationFrame(analyse);
+          };
+          mediaAnalysisFrameRef.current = requestAnimationFrame(analyse);
+        }
+      } catch {
+        // Recording still works; the explicit stop control and hard cap remain.
+        stopMediaAnalysis();
+      }
       mediaCaptureTimerRef.current = setTimeout(() => {
         if (recorder.state !== "inactive") recorder.stop();
       }, 30_000);
-    } catch {
+    } catch (error) {
+      stopMediaAnalysis();
+      for (const track of acquiredStream?.getTracks() ?? []) track.stop();
+      if (mediaStreamRef.current === acquiredStream) mediaStreamRef.current = null;
+      mediaRecorderRef.current = null;
+      mediaChunksRef.current = [];
       setListening(false);
       setConvPaused(true);
-      setConvNotice("تعذّر الوصول إلى الميكروفون — اسمح به من إعدادات المتصفح.");
+      setConvNotice(
+        error instanceof DOMException && error.name === "NotAllowedError"
+          ? "تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح."
+          : "تعذّر الوصول إلى الميكروفون — تأكد من HTTPS وإذن المتصفح.",
+      );
     }
-  }, [transcribeVoiceBlob]);
+  }, [stopMediaAnalysis, transcribeVoiceBlob, transcriptionProviderReady]);
 
   const finishListening = useCallback(() => {
     const recognition = recRef.current;
@@ -1198,18 +1377,19 @@ export function AriaCopilot() {
 
   const startListening = useCallback(() => {
     primeIOSAudio();
-    const Ctor = getSpeechRecognitionCtor();
-    if (!Ctor) {
-      void startRecordedListening();
-      return;
-    }
     // Barge-in: silence and release every pending ARIA speech resource.
     stopVoicePlayback();
     if (relistenTimerRef.current) {
       clearTimeout(relistenTimerRef.current);
       relistenTimerRef.current = null;
     }
+    const Ctor = getSpeechRecognitionCtor();
+    if (!Ctor) {
+      void startRecordedListening();
+      return;
+    }
     setConvPaused(false);
+    setConvNotice(null);
     ariaState.set("listening");
     try {
       const r = new Ctor();
@@ -1217,6 +1397,7 @@ export function AriaCopilot() {
       r.interimResults = true;
       r.continuous = false;
       finalTranscriptRef.current = "";
+      let recognitionFailed = false;
       const silenceMs = convModeRef.current ? 6000 : 2500;
       const armSilence = () => {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
@@ -1241,8 +1422,29 @@ export function AriaCopilot() {
         setDraft((finalTranscriptRef.current + " " + interim).trim());
         armSilence();
       };
-      r.onerror = () => {
-        stopListening();
+      r.onerror = (event) => {
+        if (recognitionFailed) return;
+        recognitionFailed = true;
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
+        recRef.current = null;
+        setListening(false);
+        setDraft("");
+        try {
+          r.abort();
+        } catch {
+          /* ignore */
+        }
+        if (!convModeRef.current) return;
+        if (event.error === "not-allowed") {
+          setConvNotice("تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.");
+          setConvPaused(true);
+          return;
+        }
+        setConvNotice("تعذّر التعرف المباشر؛ سأستخدم التسجيل الآمن الآن.");
+        void startRecordedListening();
       };
       r.onend = () => {
         if (silenceTimerRef.current) {
@@ -1251,6 +1453,7 @@ export function AriaCopilot() {
         }
         setListening(false);
         recRef.current = null;
+        if (recognitionFailed) return;
         const finalText = finalTranscriptRef.current.trim();
         if (finalText) {
           submit(finalText, { fromVoice: true });
@@ -1273,6 +1476,16 @@ export function AriaCopilot() {
     startListeningRef.current = startListening;
   }, [startListening]);
 
+  useEffect(() => {
+    if (!convMode || !hasError) return;
+    speakNextReplyRef.current = false;
+    ariaState.set("idle");
+    setConvNotice(
+      "تعذّر الحصول على رد آريا — تحقق من اتصال الخادم ومفتاح الذكاء ثم اضغط للمتابعة.",
+    );
+    setConvPaused(true);
+  }, [convMode, hasError]);
+
   const playConversationGreeting = useCallback(async () => {
     const controller = new AbortController();
     greetingAbortRef.current?.abort();
@@ -1281,7 +1494,7 @@ export function AriaCopilot() {
     setConvPaused(false);
     ariaState.set("speaking");
 
-    const audio = await fetchTTS(ARIA_CONVERSATION_GREETING_AR, 0, controller);
+    const audio = await fetchTTS(ARIA_CONVERSATION_GREETING_AR_TTS, 0, controller);
     if (!audio || controller.signal.aborted || !convModeRef.current) {
       if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
       setGreeting(false);
@@ -1388,6 +1601,25 @@ export function AriaCopilot() {
       }
       return;
     }
+    if (providerReady === false) {
+      setConvNotice("المساعد الذكي غير مفعّل على هذا النشر — أضف مفتاح المزوّد أولًا.");
+      setConvPaused(true);
+      return;
+    }
+    if (voiceProviderReady === false) {
+      setConvNotice(
+        "صوت آريا غير مفعّل على هذا النشر — أضف مفتاح ElevenLabs في إعدادات الخادم أولًا.",
+      );
+      setConvPaused(true);
+      return;
+    }
+    if (!sttSupported && transcriptionProviderReady === false) {
+      setConvNotice(
+        "فهم الصوت غير مفعّل على هذا النشر — أضف مفتاح ElevenLabs (أو Gemini) في إعدادات الخادم أولًا.",
+      );
+      setConvPaused(true);
+      return;
+    }
     convModeRef.current = true;
     setConvMode(true);
     setConvNotice(null);
@@ -1397,6 +1629,10 @@ export function AriaCopilot() {
   }, [
     convMode,
     voiceCaptureSupported,
+    providerReady,
+    voiceProviderReady,
+    transcriptionProviderReady,
+    sttSupported,
     playConversationGreeting,
     stopListening,
     stopVoicePlayback,
@@ -1547,16 +1783,18 @@ export function AriaCopilot() {
               aria-pressed={convMode}
               aria-label={convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع آريا"}
               className={cn(
-                "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold transition-all sm:px-2.5",
+                // ≥44px touch target (mobile mandate) + pulse while the
+                // voice conversation is live so the state is unmistakable.
+                "inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold transition-all active:scale-[0.96] sm:px-3.5",
                 convMode
-                  ? "border-rose-300/45 bg-rose-500/15 text-rose-100 hover:bg-rose-500/25"
+                  ? "animate-pulse border-rose-300/45 bg-rose-500/15 text-rose-100 hover:bg-rose-500/25"
                   : "border-emerald-300/45 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25",
               )}
             >
               {convMode ? (
-                <MicOff className="h-3.5 w-3.5" aria-hidden />
+                <MicOff className="h-4 w-4" aria-hidden />
               ) : (
-                <Mic className="h-3.5 w-3.5" aria-hidden />
+                <Mic className="h-4 w-4" aria-hidden />
               )}
               <span className="hidden min-[390px]:inline">{convMode ? "إنهاء" : "مخاطبة"}</span>
             </button>

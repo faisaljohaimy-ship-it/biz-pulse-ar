@@ -1,7 +1,16 @@
+/**
+ * POST /api/aria/tts — ARIA's ONLY spoken-voice endpoint.
+ *
+ * Non-negotiable voice policy (owner directive): the audible ARIA voice is
+ * EXCLUSIVELY ElevenLabs "Layan" (ARIA_ELEVENLABS_VOICE_ID), generated here
+ * server-side and streamed straight through. The ELEVENLABS_API_KEY secret
+ * lives only in the server environment — it never reaches the client bundle
+ * or the repository — and there is NO fallback to any other voice provider:
+ * a failed segment stays silent (identity over substitution).
+ */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
-import { synthesizeWithLovableAI } from "@/lib/aria/tts-fallback.server";
 import {
   ARIA_ELEVENLABS_MODEL,
   ARIA_ELEVENLABS_VOICE_ID,
@@ -11,7 +20,11 @@ import {
 const JSON_HEADERS = {
   "Cache-Control": "no-store",
   "Content-Type": "application/json; charset=utf-8",
+  "X-Content-Type-Options": "nosniff",
 } as const;
+
+/** Hard ceiling per synthesized segment (the client speaks sentence-by-sentence). */
+const MAX_TTS_TEXT_CHARS = 4_000;
 
 function jsonError(error: string, status: number, extra: Record<string, unknown> = {}) {
   return Response.json({ ok: false, error, ...extra }, { status, headers: JSON_HEADERS });
@@ -57,69 +70,67 @@ export const Route = createFileRoute("/api/aria/tts")({
           body && typeof body === "object" && typeof (body as { text?: unknown }).text === "string"
             ? (body as { text: string }).text.trim()
             : "";
-        if (!text || text.length > 4_000) {
-          return jsonError("TTS text must contain between 1 and 4,000 characters.", 400);
+        if (!text || text.length > MAX_TTS_TEXT_CHARS) {
+          return jsonError(
+            `TTS text must contain between 1 and ${MAX_TTS_TEXT_CHARS.toLocaleString("en-US")} characters.`,
+            400,
+          );
         }
 
         const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
+        if (!apiKey) return jsonError("ARIA voice (ElevenLabs) is not configured.", 503);
 
-        if (apiKey) {
-          try {
-            const upstream = await fetch(
-              `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(ARIA_ELEVENLABS_VOICE_ID)}/stream?output_format=mp3_44100_128`,
-              {
-                method: "POST",
-                headers: {
-                  Accept: "audio/mpeg",
-                  "Content-Type": "application/json",
-                  "xi-api-key": apiKey,
-                },
-                body: JSON.stringify({
-                  text,
-                  model_id: ARIA_ELEVENLABS_MODEL,
-                  voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
-                }),
-                signal: request.signal,
+        let upstream: Response;
+        try {
+          upstream = await fetch(
+            `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(ARIA_ELEVENLABS_VOICE_ID)}/stream?output_format=mp3_44100_128`,
+            {
+              method: "POST",
+              headers: {
+                "xi-api-key": apiKey,
+                "Content-Type": "application/json",
+                Accept: "audio/mpeg",
               },
-            );
-            if (upstream.ok && upstream.body) {
-              return new Response(upstream.body, {
-                status: 200,
-                headers: {
-                  "Cache-Control": "no-store",
-                  "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
-                  "X-ARIA-Voice-ID": ARIA_ELEVENLABS_VOICE_ID,
-                  "X-ARIA-Voice-Provider": "elevenlabs",
-                },
-              });
-            }
-            const providerReason = (await upstream.text().catch(() => "")).slice(0, 240);
-            console.warn("[api/aria/tts] provider rejected request", {
-              status: upstream.status,
-              reason: providerReason,
-            });
-          } catch (error) {
-            if (request.signal.aborted) return jsonError("TTS request was cancelled.", 499);
-            console.error("[api/aria/tts] ElevenLabs request failed", {
-              error: error instanceof Error ? error.message : String(error),
-            });
-          }
+              body: JSON.stringify({
+                text,
+                model_id: ARIA_ELEVENLABS_MODEL,
+                voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
+              }),
+              signal: request.signal,
+            },
+          );
+        } catch (error) {
+          if (request.signal.aborted) return jsonError("TTS request was cancelled.", 499);
+          console.error("[api/aria/tts] ElevenLabs request failed", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return jsonError("ARIA voice service is unavailable.", 502);
         }
 
-        // Fallback — Lovable AI Gateway TTS so ARIA keeps talking.
-        const fb = await synthesizeWithLovableAI(text);
-        if (fb && fb.body) {
-          return new Response(fb.body, {
-            status: 200,
-            headers: {
-              "Cache-Control": "no-store",
-              "Content-Type": fb.headers.get("content-type") || "audio/mpeg",
-              "X-ARIA-Voice-Provider": "lovable-ai",
-            },
+        if (!upstream.ok || !upstream.body) {
+          const detail = await upstream.text().catch(() => "");
+          console.warn("[api/aria/tts] ElevenLabs rejected request", {
+            status: upstream.status,
+            detail: detail.slice(0, 200),
+          });
+          return jsonError("ARIA voice generation failed.", 502, {
+            providerStatus: upstream.status,
           });
         }
 
-        return jsonError("ARIA voice generation failed.", 502);
+        // Stream the MP3 straight through — first audible byte as early as
+        // the provider emits it.
+        return new Response(upstream.body, {
+          status: 200,
+          headers: {
+            "Cache-Control": "no-store",
+            "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
+            "X-ARIA-Voice-ID": ARIA_ELEVENLABS_VOICE_ID,
+            "X-ARIA-Voice-Model": ARIA_ELEVENLABS_MODEL,
+            "X-ARIA-Voice-Provider": "elevenlabs",
+            "X-Content-Type-Options": "nosniff",
+          },
+        });
       },
     },
   },

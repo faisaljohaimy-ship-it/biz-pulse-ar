@@ -3,7 +3,7 @@
  * mounts when VOICE_DEBUG=true (VITE_VOICE_DEBUG or localStorage
  * aria-voice-debug=1). Colors:
  *   EL  emerald — ElevenLabs (Layan gVzwmdZ…)
- *   BR  amber   — browser SpeechSynthesis fallback
+ *   BR  amber   — legacy browser-voice fallback (removed)
  *   GRT cyan    — static greeting file
  * Amber PULSE means the last ElevenLabs call FAILED (with status/reason
  * in the tooltip). Ends the guessing about which engine is on.
@@ -13,6 +13,7 @@ import { AriaVoiceDebug, type VoiceEvent } from "@/lib/aria/voice-debug";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<VoiceEvent["source"], string> = {
+  gemini: "GEM",
   elevenlabs: "EL",
   browser: "BR",
   greeting: "GRT",

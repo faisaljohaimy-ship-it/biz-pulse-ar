@@ -1,13 +1,13 @@
 /**
  * AvatarVoiceSync — bridges any speech source (real MediaStream via
- * VoiceBrain, or the browser SpeechSynthesis fallback used in Phase 1)
+ * VoiceBrain, or the legacy browser-voice fallback (removed — ElevenLabs only))
  * into the LipSyncEngine.
  *
  * Two modes:
  *   • attachStream(stream) — analyser-driven amplitudes (delegates to
  *     voiceBrain.attachStream).
  *   • startSynthetic(turnId) — when no audio stream exists (e.g. Web
- *     SpeechSynthesisUtterance whose output isn't exposed), we drive
+ *     legacy engine whose output was not exposed), we drive
  *     the lip channel with a bounded envelope so the mouth still moves
  *     in sync with the speaking state. Stops on `stop()`.
  *

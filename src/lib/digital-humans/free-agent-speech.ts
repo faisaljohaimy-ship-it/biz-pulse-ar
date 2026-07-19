@@ -1,12 +1,17 @@
 /**
- * Governed, zero-API-cost specialist speech.
+ * Governed specialist speech — server-generated ElevenLabs audio only.
  *
- * Uses only voices exposed by the user's browser/operating system. Direct
- * calls to speechSynthesis.speak are blocked globally; this module reaches the
- * captured native engine only after agent-tts owns AriaAudioBus.
+ * Owner voice policy: every audible voice in NEXIOS is ElevenLabs "Layan",
+ * synthesized server-side by /api/aria/tts (the key never reaches the
+ * client). Browser TTS is banned in all paths. Specialist narration flows
+ * through the SAME governed channel model as before: it must own the
+ * "agent-tts" source on AriaAudioBus before any audio starts, so ARIA
+ * (chat-tts) can always preempt it and no two voices ever overlap.
  */
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
-import { selectSystemVoice, type SelectedSystemVoice, type VoiceLang } from "./voice-profiles";
+import { authenticatedFetch } from "@/lib/auth-fetch";
+import { getPrimedAudioContext } from "@/lib/user-interaction";
+import type { VoiceLang } from "./voice-profiles";
 
 export interface FreeAgentSpeechOptions {
   text: string;
@@ -47,152 +52,136 @@ export function splitSpeechText(text: string, maxChars = 220): string[] {
   return chunks;
 }
 
-async function loadSystemVoices(timeoutMs = 900): Promise<SpeechSynthesisVoice[]> {
-  const initial = AriaAudioBus.systemVoices();
-  if (initial.length > 0 || typeof window === "undefined" || !window.speechSynthesis) {
-    return initial;
+let sharedCtx: AudioContext | null = null;
+function getAudioContext(): AudioContext {
+  const primed = getPrimedAudioContext();
+  if (primed && primed.state !== "closed") {
+    sharedCtx = primed;
+    return primed;
   }
-
-  return new Promise((resolve) => {
-    let settled = false;
-    const synth = window.speechSynthesis;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      synth.removeEventListener("voiceschanged", onVoicesChanged);
-      resolve(AriaAudioBus.systemVoices());
-    };
-    const onVoicesChanged = () => {
-      if (AriaAudioBus.systemVoices().length > 0) finish();
-    };
-    const timer = window.setTimeout(finish, timeoutMs);
-    synth.addEventListener("voiceschanged", onVoicesChanged);
-  });
+  try {
+    if (sharedCtx && sharedCtx.state !== "closed") return sharedCtx;
+  } catch {
+    sharedCtx = null;
+  }
+  const Ctor: typeof AudioContext =
+    (
+      window as unknown as {
+        AudioContext?: typeof AudioContext;
+        webkitAudioContext?: typeof AudioContext;
+      }
+    ).AudioContext ??
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  sharedCtx = new Ctor();
+  return sharedCtx;
 }
 
-function createUtterance(text: string, selected: SelectedSystemVoice) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = selected.voice?.lang || selected.languageTag;
-  utterance.voice = selected.voice;
-  utterance.rate = selected.rate;
-  utterance.pitch = selected.pitch;
-  utterance.volume = 1;
-  return utterance;
-}
-
-export function speakFreeAgent(options: FreeAgentSpeechOptions): FreeAgentSpeechHandle {
+/**
+ * Speak `text` as a specialist Digital Human. Audio is Layan MP3 from the
+ * server; playback happens only while this handle owns the bus "agent-tts"
+ * channel. Segments play sequentially; stop() halts immediately.
+ */
+export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHandle {
   let stopped = false;
   let ownsBus = false;
+  let source: AudioBufferSourceNode | null = null;
   let raf = 0;
-  let currentUtterance: SpeechSynthesisUtterance | null = null;
-  let settleCurrent: (() => void) | null = null;
 
   const stop = () => {
-    if (stopped) return;
     stopped = true;
-    cancelAnimationFrame(raf);
-    options.onAmplitude?.(0);
-    if (currentUtterance) {
-      currentUtterance.onstart = null;
-      currentUtterance.onend = null;
-      currentUtterance.onerror = null;
+    try {
+      source?.stop();
+    } catch {
+      /* already stopped */
     }
+    cancelAnimationFrame(raf);
+    opts.onAmplitude?.(0);
     if (ownsBus) {
-      AriaAudioBus.cancelAgentUtterance();
-      AriaAudioBus.notifyStopped("agent-tts");
       ownsBus = false;
       AriaAudioBus.release("agent-tts");
     }
-    settleCurrent?.();
-    settleCurrent = null;
-    currentUtterance = null;
   };
 
-  if (options.signal) {
-    if (options.signal.aborted) stop();
-    else options.signal.addEventListener("abort", stop, { once: true });
+  if (opts.signal) {
+    if (opts.signal.aborted) stop();
+    else opts.signal.addEventListener("abort", stop, { once: true });
   }
 
   const promise = (async () => {
+    const segments = splitSpeechText(opts.text);
+    if (segments.length === 0) return;
+    // iOS/gesture policy: never start (or spend provider quota) before the
+    // bus has been unlocked by a real user gesture.
+    if (!AriaAudioBus.isUnlocked()) return;
+
+    ownsBus = AriaAudioBus.acquire("agent-tts", stop);
+    if (!ownsBus) return;
+
+    let started = false;
     try {
-      if (stopped || !AriaAudioBus.isUnlocked()) return;
-      if (AriaAudioBus.currentSource() === "chat-tts") return;
-      if (
-        typeof window === "undefined" ||
-        !window.speechSynthesis ||
-        typeof SpeechSynthesisUtterance === "undefined"
-      ) {
-        throw new Error("free_agent_voice_unsupported");
-      }
-
-      const voices = await loadSystemVoices();
-      if (stopped || AriaAudioBus.currentSource() === "chat-tts") return;
-      const selected = selectSystemVoice(options.voiceProfileId, options.lang, voices);
-      const chunks = splitSpeechText(options.text);
-      if (chunks.length === 0) return;
-
-      ownsBus = AriaAudioBus.acquire("agent-tts", stop);
-      if (!ownsBus) return;
-
-      let announcedStart = false;
-      for (const chunk of chunks) {
-        if (stopped || !ownsBus) break;
-        const utterance = createUtterance(chunk, selected);
-        currentUtterance = utterance;
-
-        await new Promise<void>((resolve, reject) => {
-          let settled = false;
-          let timeout = 0;
-          const finish = (error?: Error) => {
-            if (settled) return;
-            settled = true;
-            window.clearTimeout(timeout);
-            settleCurrent = null;
-            currentUtterance = null;
-            if (error) reject(error);
-            else resolve();
-          };
-          settleCurrent = () => finish();
-
-          utterance.onstart = () => {
-            if (!announcedStart) {
-              announcedStart = true;
-              options.onStart?.();
-              AriaAudioBus.notifyPlaying("agent-tts");
-            }
-            const startedAt = performance.now();
-            const animateMouth = () => {
-              if (stopped || !ownsBus) return;
-              const phase = (performance.now() - startedAt) / 115;
-              const cadence = 0.18 + Math.abs(Math.sin(phase)) * 0.52;
-              options.onAmplitude?.(document.visibilityState === "hidden" ? 0 : cadence);
-              raf = requestAnimationFrame(animateMouth);
-            };
-            animateMouth();
-          };
-          utterance.onend = () => finish();
-          utterance.onerror = (event) => {
-            if (stopped || event.error === "canceled" || event.error === "interrupted") finish();
-            else finish(new Error(`free_agent_voice_${event.error || "failed"}`));
-          };
-
-          const maxChunkMs = Math.max(12_000, Math.min(45_000, chunk.length * 190));
-          timeout = window.setTimeout(() => {
-            AriaAudioBus.cancelAgentUtterance();
-            finish(new Error("free_agent_voice_timeout"));
-          }, maxChunkMs);
-
-          if (!AriaAudioBus.speakAgentUtterance(utterance)) {
-            finish(new Error("free_agent_voice_not_authorized"));
-          }
+      for (const segment of segments) {
+        if (stopped) return;
+        const res = await authenticatedFetch("/api/aria/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: segment }),
+          signal: opts.signal,
         });
+        if (!res.ok) throw new Error(`agent TTS failed: ${res.status}`);
+        if (stopped) return;
+
+        const ctx = getAudioContext();
+        if (ctx.state === "suspended") await ctx.resume().catch(() => {});
+        const audio = await ctx.decodeAudioData(await res.arrayBuffer());
+        if (stopped) return;
+
+        source = ctx.createBufferSource();
+        source.buffer = audio;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.6;
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        source.connect(analyser);
+        analyser.connect(ctx.destination);
+
+        const sampleAmp = () => {
+          if (stopped) return;
+          analyser.getByteTimeDomainData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) {
+            const v = (data[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / data.length);
+          opts.onAmplitude?.(Math.max(0, Math.min(1, rms * 2.4)));
+          raf = requestAnimationFrame(sampleAmp);
+        };
+
+        const done = new Promise<void>((resolve) => {
+          source!.onended = () => {
+            cancelAnimationFrame(raf);
+            opts.onAmplitude?.(0);
+            resolve();
+          };
+        });
+
+        if (!started) {
+          started = true;
+          opts.onStart?.();
+        }
+        source.start();
+        AriaAudioBus.notifyPlaying("agent-tts");
+        sampleAmp();
+        await done;
       }
-    } finally {
+    } catch (err) {
       cancelAnimationFrame(raf);
-      options.onAmplitude?.(0);
-      currentUtterance = null;
-      settleCurrent = null;
+      opts.onAmplitude?.(0);
+      // No fallback voice: a failed specialist segment stays silent.
+      console.warn("[free-agent-speech] specialist TTS failed — segment skipped", err);
+      if (!stopped) throw err;
+    } finally {
       if (ownsBus) {
         AriaAudioBus.notifyStopped("agent-tts");
         ownsBus = false;

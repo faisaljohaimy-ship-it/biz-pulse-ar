@@ -90,52 +90,6 @@ export function resolveVoice(profileId: string | undefined, lang: VoiceLang): Fr
   return pair[lang];
 }
 
-export interface SelectedSystemVoice extends FreeVoicePreset {
-  voice: SpeechSynthesisVoice | null;
-  voiceName: string;
-  local: boolean;
-}
-
-function sameLanguage(voice: SpeechSynthesisVoice, languageTag: string): boolean {
-  const wanted = languageTag.toLowerCase().split("-")[0];
-  return voice.lang.toLowerCase().split("-")[0] === wanted;
-}
-
-/**
- * Picks the best installed free voice. A named local match wins, then any
- * named match, then a deterministic local voice, then any same-language
- * voice. If the list is still loading, a null voice lets the browser choose
- * its default for the requested BCP-47 language.
- */
-export function selectSystemVoice(
-  profileId: string | undefined,
-  lang: VoiceLang,
-  voices: readonly SpeechSynthesisVoice[],
-): SelectedSystemVoice {
-  const profile = resolveVoice(profileId, lang);
-  const matching = voices.filter((voice) => sameLanguage(voice, profile.languageTag));
-  const byPreference = profile.preferredNames
-    .map(
-      (name) =>
-        matching.find(
-          (voice) => voice.localService && voice.name.toLowerCase().includes(name.toLowerCase()),
-        ) ?? matching.find((voice) => voice.name.toLowerCase().includes(name.toLowerCase())),
-    )
-    .find((voice): voice is SpeechSynthesisVoice => Boolean(voice));
-  const local = matching.filter((voice) => voice.localService);
-  const fallbackPool = local.length > 0 ? local : matching;
-  const voice =
-    byPreference ??
-    (fallbackPool.length > 0 ? fallbackPool[profile.fallbackIndex % fallbackPool.length] : null);
-
-  return {
-    ...profile,
-    voice,
-    voiceName: voice?.name ?? `${profile.languageTag} system default`,
-    local: voice?.localService ?? false,
-  };
-}
-
 /**
  * Map a narrator-agent id (from `event-narrator.ts`) to a registry
  * Digital Human id. Keeps the narrator and the visual roster aligned
