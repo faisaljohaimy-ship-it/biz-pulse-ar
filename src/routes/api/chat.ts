@@ -566,7 +566,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
 # VOICE-ONLY RESPONSE CONTRACT
 - This turn will be heard, not read. Return natural spoken Arabic only.
 - Do not use Markdown, tables, code fences, raw URLs, citation brackets or visual formatting.
-- Lead with the answer, keep normal replies to 2–5 short spoken sentences, and name a source naturally only when it matters.
+- Lead with the answer, keep normal replies to 1–3 short spoken sentences, and name a source naturally only when it matters.
 - Tool calls and database grounding remain fully available. State the actual execution outcome aloud.
 - If a critical detail is missing, ask one short spoken clarification.`;
         }
@@ -585,7 +585,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
           maxRetries: 2,
           abortSignal: request.signal,
           // Reasoning models (gpt-5*) count reasoning tokens toward output; keep headroom.
-          maxOutputTokens: replyMode === "voice" ? 1_600 : isGpt5Model ? 16_000 : 8_000,
+          maxOutputTokens: replyMode === "voice" ? 700 : isGpt5Model ? 16_000 : 8_000,
           // GPT-5 only accepts the default temperature (1); omit for that family.
           ...(isGpt5Model ? {} : { temperature: 0.3 }),
           // Priority serving tier (Fast mode) — reaches the gateway as a
@@ -595,7 +595,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
             ? {
                 providerOptions: {
                   openai: {
-                    reasoningEffort: replyMode === "voice" ? "medium" : "high",
+                    reasoningEffort: replyMode === "voice" ? "low" : "high",
                     ...(process.env.OPENAI_SERVICE_TIER?.trim() === "priority"
                       ? { serviceTier: "priority" as const }
                       : {}),
