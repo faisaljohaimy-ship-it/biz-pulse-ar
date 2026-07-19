@@ -1601,11 +1601,11 @@ export function AriaCopilot() {
       }
       return;
     }
-    if (providerReady === false) {
-      setConvNotice("المساعد الذكي غير مفعّل على هذا النشر — أضف مفتاح المزوّد أولًا.");
-      setConvPaused(true);
-      return;
-    }
+    // Voice depends on ElevenLabs (voice_configured), not the LLM key.
+    // Do NOT block Conversation Mode on providerReady — chat may already be
+    // working via Lovable AI Gateway even when the initial health probe was
+    // stale/cached and reported key_present=false.
+
     if (voiceProviderReady === false) {
       setConvNotice(
         "صوت آريا غير مفعّل على هذا النشر — أضف مفتاح ElevenLabs في إعدادات الخادم أولًا.",
