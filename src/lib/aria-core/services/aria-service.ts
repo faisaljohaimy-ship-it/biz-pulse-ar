@@ -57,7 +57,11 @@ export async function pingChat(): Promise<{
   transcription_configured?: boolean;
 }> {
   try {
-    const r = await ariaAuthedFetch("/api/chat/health", { method: "GET" });
+    const r = await ariaAuthedFetch(`/api/chat/health?t=${Date.now()}`, {
+      method: "GET",
+      cache: "no-store",
+      headers: { "cache-control": "no-cache", pragma: "no-cache" },
+    });
     if (!r.ok) return { ok: false };
     const j = await r.json().catch(() => null);
     return j && typeof j === "object"
