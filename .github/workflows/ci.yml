@@ -22,6 +22,8 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: Dead-code scan (advisory)
+        run: npm run check:deadcode || true
       - name: Unit tests
         run: npm test
       - name: Production dependency audit
