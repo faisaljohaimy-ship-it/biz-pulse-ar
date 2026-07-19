@@ -1189,17 +1189,24 @@ export function AriaCopilot() {
             type: mimeType,
           }),
         );
-        const response = await authenticatedFetch("/api/aria/transcribe", {
+        let response = await authenticatedFetch("/api/aria/transcribe", {
           method: "POST",
           body: form,
         });
+        if (!response.ok && (response.status === 401 || response.status === 403)) {
+          response = await fetch("/api/public/aria-transcribe", {
+            method: "POST",
+            body: form,
+            cache: "no-store",
+          });
+        }
         const payload = (await response.json().catch(() => null)) as {
           text?: unknown;
           error?: unknown;
         } | null;
         if (!response.ok || typeof payload?.text !== "string") {
           const reason =
-            typeof payload?.error === "string"
+            typeof payload?.error === "string" && !/authenticat|unauthor/i.test(payload.error)
               ? payload.error
               : "تعذّر فهم الصوت — اضغط وتحدث مرة أخرى.";
           setConvNotice(reason);
@@ -1401,6 +1408,10 @@ export function AriaCopilot() {
       clearTimeout(relistenTimerRef.current);
       relistenTimerRef.current = null;
     }
+    if (convModeRef.current && recorderSupported) {
+      void startRecordedListening();
+      return;
+    }
     const Ctor = getSpeechRecognitionCtor();
     if (!Ctor) {
       void startRecordedListening();
@@ -1488,7 +1499,7 @@ export function AriaCopilot() {
       setListening(false);
       void startRecordedListening();
     }
-  }, [submit, stopListening, stopVoicePlayback, startRecordedListening]);
+  }, [submit, stopListening, stopVoicePlayback, startRecordedListening, recorderSupported]);
 
   useEffect(() => {
     startListeningRef.current = startListening;

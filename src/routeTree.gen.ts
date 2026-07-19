@@ -150,6 +150,7 @@ import { Route as ApiPublicPermitVerifyRouteImport } from './routes/api/public/p
 import { Route as ApiPublicOsOverviewRouteImport } from './routes/api/public/os-overview'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
+import { Route as ApiPublicAriaTranscribeRouteImport } from './routes/api/public/aria-transcribe'
 import { Route as ApiPublicAriaStreamRouteImport } from './routes/api/public/aria-stream'
 import { Route as ApiPublicAriaPresenceRouteImport } from './routes/api/public/aria-presence'
 import { Route as ApiPublicAriaExplainRouteImport } from './routes/api/public/aria-explain'
@@ -944,6 +945,11 @@ const ApiPublicAriaTtsRoute = ApiPublicAriaTtsRouteImport.update({
   path: '/api/public/aria-tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAriaTranscribeRoute = ApiPublicAriaTranscribeRouteImport.update({
+  id: '/api/public/aria-transcribe',
+  path: '/api/public/aria-transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAriaStreamRoute = ApiPublicAriaStreamRouteImport.update({
   id: '/api/public/aria-stream',
   path: '/api/public/aria-stream',
@@ -1464,6 +1470,7 @@ export interface FileRoutesByFullPath {
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
+  '/api/public/aria-transcribe': typeof ApiPublicAriaTranscribeRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
@@ -1667,6 +1674,7 @@ export interface FileRoutesByTo {
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
+  '/api/public/aria-transcribe': typeof ApiPublicAriaTranscribeRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
@@ -1874,6 +1882,7 @@ export interface FileRoutesById {
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
   '/api/public/aria-presence': typeof ApiPublicAriaPresenceRoute
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
+  '/api/public/aria-transcribe': typeof ApiPublicAriaTranscribeRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
@@ -2081,6 +2090,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-stream'
+    | '/api/public/aria-transcribe'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
@@ -2284,6 +2294,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-stream'
+    | '/api/public/aria-transcribe'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
@@ -2490,6 +2501,7 @@ export interface FileRouteTypes {
     | '/api/public/aria-explain'
     | '/api/public/aria-presence'
     | '/api/public/aria-stream'
+    | '/api/public/aria-transcribe'
     | '/api/public/aria-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
@@ -2594,6 +2606,7 @@ export interface RootRouteChildren {
   ApiPublicAriaExplainRoute: typeof ApiPublicAriaExplainRoute
   ApiPublicAriaPresenceRoute: typeof ApiPublicAriaPresenceRoute
   ApiPublicAriaStreamRoute: typeof ApiPublicAriaStreamRoute
+  ApiPublicAriaTranscribeRoute: typeof ApiPublicAriaTranscribeRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicOsOverviewRoute: typeof ApiPublicOsOverviewRoute
@@ -3610,6 +3623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAriaTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/aria-transcribe': {
+      id: '/api/public/aria-transcribe'
+      path: '/api/public/aria-transcribe'
+      fullPath: '/api/public/aria-transcribe'
+      preLoaderRoute: typeof ApiPublicAriaTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/aria-stream': {
       id: '/api/public/aria-stream'
       path: '/api/public/aria-stream'
@@ -4399,6 +4419,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAriaExplainRoute: ApiPublicAriaExplainRoute,
   ApiPublicAriaPresenceRoute: ApiPublicAriaPresenceRoute,
   ApiPublicAriaStreamRoute: ApiPublicAriaStreamRoute,
+  ApiPublicAriaTranscribeRoute: ApiPublicAriaTranscribeRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicOsOverviewRoute: ApiPublicOsOverviewRoute,
