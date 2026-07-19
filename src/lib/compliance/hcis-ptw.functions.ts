@@ -166,6 +166,7 @@ export type PtwOverview = {
     starts_at: string;
     ends_at: string;
     status: string;
+    is_simulation: boolean;
   }>;
 };
 
@@ -177,7 +178,9 @@ export const getPtwOverview = createServerFn({ method: "GET" })
     const [{ data: permits }, { data: types }] = await Promise.all([
       db
         .from("permits")
-        .select("id,ref,type_key,region,location,contractor,worker_count,starts_at,ends_at,status")
+        .select(
+          "id,ref,type_key,region,location,contractor,worker_count,starts_at,ends_at,status,is_simulation",
+        )
         .order("ends_at", { ascending: true }),
       db.from("permit_types").select("id,key,name_ar,name_en,icon,color").order("name_ar"),
     ]);

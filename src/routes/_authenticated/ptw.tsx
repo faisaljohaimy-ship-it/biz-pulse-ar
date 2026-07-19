@@ -3,12 +3,12 @@
  * Today board, permit cards, create form, QR verification, emergency suspend.
  * Data from the simulation-seeded permit_* tables (is_simulation=true).
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import QRCode from "react-qr-code";
-import { Plus, QrCode, Siren, Clock3, ShieldCheck, X } from "lucide-react";
+import { FlaskConical, Plus, QrCode, Siren, Clock3, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { NexusPage, NexusCard, NexusStat, NexusPill } from "@/components/nexus-frame";
@@ -63,9 +63,6 @@ function PtwPage() {
     refetchInterval: 45_000,
   });
 
-  // Guest with no anon-visible rows → sign-in card instead of all-zero stats.
-  const guestEmpty = !user && !!data && data.permits.length === 0 && data.types.length === 0;
-
   const [showCreate, setShowCreate] = useState(false);
   const [qrPermit, setQrPermit] = useState<PtwOverview["permits"][number] | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<RegionId | null>(null);
@@ -107,8 +104,16 @@ function PtwPage() {
       }
       actions={
         <div className="flex flex-wrap gap-2">
+          {(data?.permits ?? []).some((p) => p.is_simulation) && (
+            <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 text-sm font-semibold text-amber-200">
+              <FlaskConical className="h-4 w-4" aria-hidden />
+              {ar ? "بيانات محاكاة" : "Simulation data"}
+            </span>
+          )}
           {/* Governance: write actions render DISABLED for guests, with an
-              explicit tooltip — never a dead click, never a hidden button. */}
+              explicit tooltip — never a dead click, never a hidden button.
+              The page itself is a fully open public showcase (no sign-in
+              wall): guests see the live permit board read-only. */}
           <button
             onClick={() => setShowCreate(true)}
             disabled={!user}
@@ -148,23 +153,6 @@ function PtwPage() {
       ) : isLoading || !data ? (
         <NexusCard>
           <p className="py-10 text-center text-white/50">{ar ? "جارٍ التحميل…" : "Loading…"}</p>
-        </NexusCard>
-      ) : guestEmpty ? (
-        <NexusCard className="border-emerald-400/25">
-          <div className="flex flex-col items-center gap-4 py-8 text-center">
-            <p className="max-w-md text-sm leading-relaxed text-white/80">
-              {ar
-                ? "أنت تتصفّح كضيف. سجّل الدخول لعرض التصاريح الحيّة وإنشاء تصريح جديد."
-                : "You are browsing as a guest. Sign in to view live permits and create new ones."}
-            </p>
-            <Link
-              to="/auth"
-              search={{ redirect: "/ptw" }}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-6 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/25 active:scale-[0.97]"
-            >
-              {ar ? "تسجيل الدخول" : "Sign in"}
-            </Link>
-          </div>
         </NexusCard>
       ) : (
         <>
