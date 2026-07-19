@@ -48,7 +48,10 @@ describe("ariaAuthedFetch — saved repair method (auth-first → anon fallback)
   it("retries once WITHOUT Authorization when the bearer is rejected 401", async () => {
     stubFetch((call) =>
       call === 1
-        ? new Response(JSON.stringify({ ok: false, error: "Authentication token is invalid or expired." }), { status: 401 })
+        ? new Response(
+            JSON.stringify({ ok: false, error: "Authentication token is invalid or expired." }),
+            { status: 401 },
+          )
         : new Response("ok", { status: 200 }),
     );
     const res = await ariaAuthedFetch("/api/chat", { method: "POST", body: "{}" });

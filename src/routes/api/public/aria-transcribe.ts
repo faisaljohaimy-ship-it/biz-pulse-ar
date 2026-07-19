@@ -43,7 +43,10 @@ function langFor(text: string): "ar" | "en" {
   return /[\u0600-\u06FF]/.test(text) ? "ar" : "en";
 }
 
-async function transcribeWithLovableGateway(audio: File, signal: AbortSignal): Promise<string | null> {
+async function transcribeWithLovableGateway(
+  audio: File,
+  signal: AbortSignal,
+): Promise<string | null> {
   const key = process.env.LOVABLE_API_KEY?.trim();
   if (!key) return null;
 
@@ -117,7 +120,8 @@ export const Route = createFileRoute("/api/public/aria-transcribe")({
         if (!(audio instanceof File) || audio.size === 0) {
           return errorResponse("Voice recording is missing.", 400);
         }
-        if (audio.size > MAX_AUDIO_BYTES) return errorResponse("Voice recording is too large.", 413);
+        if (audio.size > MAX_AUDIO_BYTES)
+          return errorResponse("Voice recording is too large.", 413);
         const mediaType = audio.type.split(";", 1)[0]!.toLowerCase();
         if (!AUDIO_TYPES.has(mediaType)) {
           return errorResponse("Voice recording type is not supported.", 415);
@@ -133,7 +137,8 @@ export const Route = createFileRoute("/api/public/aria-transcribe")({
             { status: 200, headers: JSON_HEADERS },
           );
         } catch (error) {
-          if (request.signal.aborted) return errorResponse("Voice transcription was cancelled.", 499);
+          if (request.signal.aborted)
+            return errorResponse("Voice transcription was cancelled.", 499);
           console.error(
             "[public/aria-transcribe] failed",
             error instanceof Error ? error.message : String(error),
