@@ -212,6 +212,7 @@ import { Route as ApiPublicHooksAriaPatternMinerRouteImport } from './routes/api
 import { Route as ApiPublicHooksAriaIncidentRouteImport } from './routes/api/public/hooks/aria-incident'
 import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
 import { Route as ApiAriaProvidersStatusRouteImport } from './routes/api/aria/providers/status'
+import { Route as AuthenticatedHcisDirectiveCodeRouteImport } from './routes/_authenticated/hcis_.directive.$code'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -1281,6 +1282,12 @@ const ApiAriaProvidersStatusRoute = ApiAriaProvidersStatusRouteImport.update({
   path: '/api/aria/providers/status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHcisDirectiveCodeRoute =
+  AuthenticatedHcisDirectiveCodeRouteImport.update({
+    id: '/hcis_/directive/$code',
+    path: '/hcis/directive/$code',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1469,6 +1476,7 @@ export interface FileRoutesByFullPath {
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
+  '/hcis/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
@@ -1671,6 +1679,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
+  '/hcis/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
@@ -1877,6 +1886,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
+  '/_authenticated/hcis_/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
@@ -2083,6 +2093,7 @@ export interface FileRouteTypes {
     | '/assistant/'
     | '/learn/'
     | '/sec/'
+    | '/hcis/directive/$code'
     | '/api/aria/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
@@ -2285,6 +2296,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/learn'
     | '/sec'
+    | '/hcis/directive/$code'
     | '/api/aria/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
@@ -2490,6 +2502,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant/'
     | '/_authenticated/learn/'
     | '/_authenticated/sec/'
+    | '/_authenticated/hcis_/directive/$code'
     | '/api/aria/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
@@ -4031,6 +4044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAriaProvidersStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/hcis_/directive/$code': {
+      id: '/_authenticated/hcis_/directive/$code'
+      path: '/hcis/directive/$code'
+      fullPath: '/hcis/directive/$code'
+      preLoaderRoute: typeof AuthenticatedHcisDirectiveCodeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -4210,6 +4230,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
   AuthenticatedAssistantThreadIdRoute: typeof AuthenticatedAssistantThreadIdRoute
   AuthenticatedAssistantIndexRoute: typeof AuthenticatedAssistantIndexRoute
+  AuthenticatedHcisDirectiveCodeRoute: typeof AuthenticatedHcisDirectiveCodeRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -4286,6 +4307,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
   AuthenticatedAssistantThreadIdRoute: AuthenticatedAssistantThreadIdRoute,
   AuthenticatedAssistantIndexRoute: AuthenticatedAssistantIndexRoute,
+  AuthenticatedHcisDirectiveCodeRoute: AuthenticatedHcisDirectiveCodeRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -1,50 +1,29 @@
 /**
  * الامتثال HCIS — HCIS Compliance dashboard.
  *
- * Reads EXCLUSIVELY from the four live framework tables (anon-readable RLS):
- *   hcis_directives (21) · hcis_sectors (13) · hcis_approval_stages (7)
- *   hcis_compliance_status (19 SEC directives × 4 regions = 76)
- * No server round-trip and no auth requirement — the page works for guests
- * and via direct deep links. All figures come from Supabase; nothing is
- * hardcoded. Every simulated row is labelled via the persistent badge.
+ * Data comes exclusively from the four framework tables via the shared
+ * hook in src/lib/hcis/framework.ts (anon-readable; guests + deep links
+ * work). Every directive tile links to its guidance page at
+ * /hcis/directive/$code. Nothing is hardcoded; simulated rows are always
+ * badged.
  */
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import {
-  ShieldCheck,
-  AlertTriangle,
-  RefreshCw,
-  FlaskConical,
-  X,
-  FileText,
-  Fence,
-  DoorClosed,
-  Lightbulb,
-  Network,
-  ScanLine,
-  Zap,
-  RadioTower,
-  Building2,
-  TrainFront,
-  UserCheck,
-  IdCard,
-  Lock,
-  Ship,
-  ClipboardCheck,
-  Radar,
-  Waypoints,
-  Cable,
-  Factory,
-  Home,
-  Flame,
-  type LucideIcon,
-} from "lucide-react";
+import { ShieldCheck, AlertTriangle, RefreshCw, FlaskConical, Search } from "lucide-react";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { NexusPage, NexusCard, NexusPill } from "@/components/nexus-frame";
+import { NexusPage, NexusCard } from "@/components/nexus-frame";
 import { useI18n } from "@/lib/i18n";
-import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
-import { REGIONS, type RegionId } from "@/lib/regions";
+import { isSupabaseConfigured } from "@/integrations/supabase/client";
+import { REGIONS } from "@/lib/regions";
+import {
+  DIRECTIVE_ICONS,
+  STATUS_META,
+  statusMeta,
+  compliancePct,
+  useHcisFramework,
+  type ComplianceRow,
+  type Directive,
+} from "@/lib/hcis/framework";
 
 export const Route = createFileRoute("/_authenticated/hcis")({
   errorComponent: RouteError,
@@ -52,140 +31,7 @@ export const Route = createFileRoute("/_authenticated/hcis")({
   component: HcisPage,
 });
 
-/* ── Types mirroring the live schema ─────────────────────────────────────── */
-
-interface Directive {
-  code: string;
-  category: "SEC" | "SAF";
-  name_ar: string;
-  name_en: string;
-  scope_ar: string;
-  issue_note_ar: string | null;
-  sort_order: number;
-}
-interface Stage {
-  stage_no: number;
-  name_ar: string;
-  name_en: string;
-  description_ar: string;
-}
-interface ComplianceRow {
-  directive_code: string;
-  region_code: string;
-  status: string;
-  priority: string;
-  is_simulation: boolean;
-}
-interface HcisDataset {
-  directives: Directive[];
-  stages: Stage[];
-  compliance: ComplianceRow[];
-}
-
-/* ── Directive glyphs (each icon matches its directive's function) ───────── */
-
-const DIRECTIVE_ICONS: Record<string, LucideIcon> = {
-  "SEC-01": FileText,
-  "SEC-02": Fence,
-  "SEC-03": DoorClosed,
-  "SEC-04": Lightbulb,
-  "SEC-05": Network,
-  "SEC-06": ScanLine,
-  "SEC-07": Zap,
-  "SEC-08": RadioTower,
-  "SEC-09": Building2,
-  "SEC-10": TrainFront,
-  "SEC-11": UserCheck,
-  "SEC-12": IdCard,
-  "SEC-13": Lock,
-  "SEC-14": Ship,
-  "SEC-15": ClipboardCheck,
-  "SEC-16": Radar,
-  "SEC-17": Waypoints,
-  "SEC-18": Cable,
-  "SEC-19": Factory,
-  "SEC-RC": Home,
-  "SAF-GEN": Flame,
-};
-
-/* ── Status presentation ─────────────────────────────────────────────────── */
-
-const STATUS_META: Record<string, { ar: string; cell: string; pill: string }> = {
-  compliant: {
-    ar: "ممتثل",
-    cell: "bg-emerald-500/70",
-    pill: "text-emerald-200 border-emerald-400/40 bg-emerald-500/10",
-  },
-  partial: {
-    ar: "جزئي",
-    cell: "bg-amber-400/70",
-    pill: "text-amber-200 border-amber-400/40 bg-amber-500/10",
-  },
-  non_compliant: {
-    ar: "غير ممتثل",
-    cell: "bg-rose-500/70",
-    pill: "text-rose-200 border-rose-400/40 bg-rose-500/10",
-  },
-  not_applicable: {
-    ar: "لا ينطبق",
-    cell: "bg-slate-500/40",
-    pill: "text-slate-300 border-slate-400/30 bg-slate-500/10",
-  },
-  not_assessed: {
-    ar: "لم يُقيَّم",
-    cell: "bg-white/10",
-    pill: "text-white/60 border-white/20 bg-white/5",
-  },
-};
-const statusMeta = (s: string) => STATUS_META[s] ?? STATUS_META.not_assessed!;
-
-/** Weighted compliance over ASSESSED rows only; null when nothing assessed. */
-function compliancePct(rows: readonly ComplianceRow[]): number | null {
-  const scored = rows.filter(
-    (r) => r.status === "compliant" || r.status === "partial" || r.status === "non_compliant",
-  );
-  if (scored.length === 0) return null;
-  const w = scored.reduce(
-    (a, r) => a + (r.status === "compliant" ? 1 : r.status === "partial" ? 0.5 : 0),
-    0,
-  );
-  return Math.round((w / scored.length) * 100);
-}
-
-/* ── Data hook: the four framework tables, one parallel fetch ────────────── */
-
-function useHcisFramework() {
-  return useQuery<HcisDataset>({
-    queryKey: ["hcis-framework"],
-    enabled: isSupabaseConfigured,
-    retry: 1,
-    refetchInterval: 120_000,
-    queryFn: async () => {
-      const [dir, stg, cmp] = await Promise.all([
-        supabase
-          .from("hcis_directives")
-          .select("code,category,name_ar,name_en,scope_ar,issue_note_ar,sort_order")
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("hcis_approval_stages")
-          .select("stage_no,name_ar,name_en,description_ar")
-          .order("stage_no", { ascending: true }),
-        supabase
-          .from("hcis_compliance_status")
-          .select("directive_code,region_code,status,priority,is_simulation"),
-      ]);
-      const firstError = dir.error ?? stg.error ?? cmp.error;
-      if (firstError) throw new Error(firstError.message);
-      return {
-        directives: (dir.data ?? []) as Directive[],
-        stages: (stg.data ?? []) as Stage[],
-        compliance: (cmp.data ?? []) as ComplianceRow[],
-      };
-    },
-  });
-}
-
-/* ── Small pieces ────────────────────────────────────────────────────────── */
+type CategoryFilter = "all" | "SEC" | "SAF";
 
 function KpiValue({ pct, ar }: { pct: number | null; ar: boolean }) {
   if (pct === null)
@@ -206,13 +52,12 @@ function SkeletonBlock({ h }: { h: string }) {
   );
 }
 
-/* ── Page ────────────────────────────────────────────────────────────────── */
-
 function HcisPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const { data, isLoading, isError, refetch } = useHcisFramework();
-  const [selected, setSelected] = useState<Directive | null>(null);
+  const [category, setCategory] = useState<CategoryFilter>("all");
+  const [q, setQ] = useState("");
 
   const byDirective = useMemo(() => {
     const m = new Map<string, Map<string, ComplianceRow>>();
@@ -239,6 +84,20 @@ function HcisPage() {
     () => (data?.directives ?? []).filter((d) => byDirective.has(d.code)),
     [data, byDirective],
   );
+
+  /* Filter bar + instant search over the full 21-directive series. */
+  const visibleDirectives = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return (data?.directives ?? []).filter((d) => {
+      if (category !== "all" && d.category !== category) return false;
+      if (!needle) return true;
+      return (
+        d.code.toLowerCase().includes(needle) ||
+        d.name_ar.includes(q.trim()) ||
+        d.name_en.toLowerCase().includes(needle)
+      );
+    });
+  }, [data, category, q]);
 
   const configError = !isSupabaseConfigured;
 
@@ -301,144 +160,151 @@ function HcisPage() {
         <>
           {/* ① KPI cards — overall + one per regional administration */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <NexusCard className="flex flex-col items-center justify-center gap-1 py-5 text-center">
-              <span className="text-[11px] font-semibold tracking-wide text-white/60">
-                {ar ? "الامتثال الإجمالي" : "Overall compliance"}
-              </span>
-              <KpiValue pct={overallPct} ar={ar} />
-              <ShieldCheck className="mt-1 h-4 w-4 text-emerald-300/80" aria-hidden />
+            <NexusCard className="py-5">
+              <div className="flex flex-col items-center justify-center gap-1 text-center">
+                <span className="text-[11px] font-semibold tracking-wide text-white/60">
+                  {ar ? "الامتثال الإجمالي" : "Overall compliance"}
+                </span>
+                <KpiValue pct={overallPct} ar={ar} />
+                <ShieldCheck className="mt-1 h-4 w-4 text-emerald-300/80" aria-hidden />
+              </div>
             </NexusCard>
             {REGIONS.map((r) => (
-              <NexusCard
-                key={r.id}
-                className="flex flex-col items-center justify-center gap-1 py-5 text-center"
-              >
-                <span className="text-[11px] font-semibold tracking-wide text-white/60">
-                  {ar ? r.shortAr : r.shortEn}
-                </span>
-                <KpiValue pct={byRegionPct[r.id] ?? null} ar={ar} />
-                <span className="text-[10px] text-white/40">
-                  {(data.compliance ?? []).filter((c) => c.region_code === r.id).length}{" "}
-                  {ar ? "توجيهًا" : "directives"}
-                </span>
+              <NexusCard key={r.id} className="py-5">
+                <div className="flex flex-col items-center justify-center gap-1 text-center">
+                  <span className="text-[11px] font-semibold tracking-wide text-white/60">
+                    {ar ? r.shortAr : r.shortEn}
+                  </span>
+                  <KpiValue pct={byRegionPct[r.id] ?? null} ar={ar} />
+                  <span className="text-[10px] text-white/40">
+                    {(data.compliance ?? []).filter((c) => c.region_code === r.id).length}{" "}
+                    {ar ? "توجيهًا" : "directives"}
+                  </span>
+                </div>
               </NexusCard>
             ))}
           </div>
 
           {/* ② Seven approval stages — horizontal timeline */}
-          <NexusCard>
-            <h3 className="mb-4 text-sm font-semibold text-white/80">
-              {ar ? "مراحل الاعتماد لدى الهيئة (SVA → FAT/SAT)" : "HCIS approval stages"}
-            </h3>
-            <ol
-              className="flex snap-x gap-0 overflow-x-auto pb-2"
-              style={{ scrollbarWidth: "thin" }}
-            >
-              {data.stages.map((s, i) => (
-                <li key={s.stage_no} className="flex min-w-[150px] snap-start items-start gap-0">
-                  <div className="flex w-[140px] flex-col items-center gap-1.5 text-center">
-                    <span className="grid h-9 w-9 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-sm font-bold text-[#3AE8FF]">
-                      {s.stage_no}
-                    </span>
-                    <span className="text-xs font-semibold leading-tight text-white/85">
-                      {ar ? s.name_ar : s.name_en}
-                    </span>
-                    <span className="line-clamp-3 text-[10px] leading-snug text-white/50">
-                      {s.description_ar}
-                    </span>
-                  </div>
-                  {i < data.stages.length - 1 && (
-                    <span aria-hidden className="mt-4 h-px w-3 shrink-0 bg-[#3AE8FF]/30 sm:w-5" />
-                  )}
-                </li>
-              ))}
-            </ol>
-          </NexusCard>
+          {data.stages.length > 0 && (
+            <NexusCard>
+              <h3 className="mb-4 text-sm font-semibold text-white/80">
+                {ar ? "مراحل الاعتماد لدى الهيئة (SVA → FAT/SAT)" : "HCIS approval stages"}
+              </h3>
+              <ol
+                className="flex snap-x gap-0 overflow-x-auto pb-2"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                {data.stages.map((s, i) => (
+                  <li key={s.stage_no} className="flex min-w-[150px] snap-start items-start gap-0">
+                    <div className="flex w-[140px] flex-col items-center gap-1.5 text-center">
+                      <span className="grid h-9 w-9 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-sm font-bold text-[#3AE8FF]">
+                        {s.stage_no}
+                      </span>
+                      <span className="text-xs font-semibold leading-tight text-white/85">
+                        {ar ? s.name_ar : s.name_en}
+                      </span>
+                      <span className="line-clamp-3 text-[10px] leading-snug text-white/50">
+                        {s.description_ar}
+                      </span>
+                    </div>
+                    {i < data.stages.length - 1 && (
+                      <span aria-hidden className="mt-4 h-px w-3 shrink-0 bg-[#3AE8FF]/30 sm:w-5" />
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </NexusCard>
+          )}
 
           {/* ③ Interactive matrix — directives × four regional administrations */}
-          <NexusCard>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-white/80">
-                {ar
-                  ? "مصفوفة الامتثال (التوجيه × الإدارة)"
-                  : "Compliance matrix (directive × region)"}
-              </h3>
-              <span className="text-[10px] text-white/45">
-                {ar ? "اضغط أي توجيه لعرض نطاقه كاملًا" : "Tap any directive for its full scope"}
-              </span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] border-collapse text-sm">
-                <thead>
-                  <tr className="text-white/60">
-                    <th className="p-2 text-start font-medium">{ar ? "التوجيه" : "Directive"}</th>
-                    {REGIONS.map((r) => (
-                      <th key={r.id} className="p-2 text-center font-medium">
-                        {ar ? r.shortAr : r.shortEn}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {matrixDirectives.map((d) => {
-                    const Icon = DIRECTIVE_ICONS[d.code] ?? ShieldCheck;
-                    const rows = byDirective.get(d.code);
-                    return (
-                      <tr key={d.code} className="border-t border-white/5">
-                        <td className="p-1.5 text-start">
-                          <button
-                            type="button"
-                            onClick={() => setSelected(d)}
-                            className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 text-start transition hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.99]"
-                          >
-                            <span className="nx-module-icon grid h-7 w-7 shrink-0 place-items-center rounded-lg">
-                              <Icon className="nx-icon-soft h-4 w-4" aria-hidden />
-                            </span>
-                            <span className="min-w-0">
-                              <span className="block text-[10px] font-semibold tracking-wide text-white/45">
-                                {d.code}
-                              </span>
-                              <span className="block truncate text-xs text-white/85">
-                                {ar ? d.name_ar : d.name_en}
-                              </span>
-                            </span>
-                          </button>
-                        </td>
-                        {REGIONS.map((r) => {
-                          const cell = rows?.get(r.id);
-                          const meta = statusMeta(cell?.status ?? "not_assessed");
-                          return (
-                            <td key={r.id} className="p-2 text-center">
-                              <button
-                                type="button"
-                                onClick={() => setSelected(d)}
-                                aria-label={`${d.code} — ${ar ? r.shortAr : r.shortEn}: ${meta.ar}`}
-                                title={meta.ar}
-                                className={`inline-block h-5 w-5 cursor-pointer rounded ${meta.cell} transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 hover:scale-110 ${cell?.priority === "critical" ? "ring-1 ring-rose-400/60" : ""}`}
-                              />
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs text-white/60">
-              {(["compliant", "partial", "non_compliant", "not_assessed"] as const).map((s) => (
-                <span key={s} className="flex items-center gap-1">
-                  <i className={`h-3 w-3 rounded ${STATUS_META[s]!.cell}`} /> {STATUS_META[s]!.ar}
+          {matrixDirectives.length > 0 && (
+            <NexusCard>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-white/80">
+                  {ar
+                    ? "مصفوفة الامتثال (التوجيه × الإدارة)"
+                    : "Compliance matrix (directive × region)"}
+                </h3>
+                <span className="text-[10px] text-white/45">
+                  {ar
+                    ? "اضغط أي توجيه لفتح صفحته الإرشادية"
+                    : "Tap any directive for its guidance page"}
                 </span>
-              ))}
-              <span className="flex items-center gap-1">
-                <i className="h-3 w-3 rounded bg-white/10 ring-1 ring-rose-400/60" />{" "}
-                {ar ? "أولوية حرجة" : "Critical"}
-              </span>
-            </div>
-          </NexusCard>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] border-collapse text-sm">
+                  <thead>
+                    <tr className="text-white/60">
+                      <th className="p-2 text-start font-medium">{ar ? "التوجيه" : "Directive"}</th>
+                      {REGIONS.map((r) => (
+                        <th key={r.id} className="p-2 text-center font-medium">
+                          {ar ? r.shortAr : r.shortEn}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matrixDirectives.map((d) => {
+                      const Icon = DIRECTIVE_ICONS[d.code] ?? ShieldCheck;
+                      const rows = byDirective.get(d.code);
+                      return (
+                        <tr key={d.code} className="border-t border-white/5">
+                          <td className="p-1.5 text-start">
+                            <Link
+                              to="/hcis/directive/$code"
+                              params={{ code: d.code }}
+                              className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 text-start transition hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.99]"
+                            >
+                              <span className="nx-module-icon grid h-7 w-7 shrink-0 place-items-center rounded-lg">
+                                <Icon className="nx-icon-soft h-4 w-4" aria-hidden />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block text-[10px] font-semibold tracking-wide text-emerald-300/90">
+                                  {d.code}
+                                </span>
+                                <span className="block truncate text-xs text-white/85">
+                                  {ar ? d.name_ar : d.name_en}
+                                </span>
+                              </span>
+                            </Link>
+                          </td>
+                          {REGIONS.map((r) => {
+                            const cell = rows?.get(r.id);
+                            const meta = statusMeta(cell?.status);
+                            return (
+                              <td key={r.id} className="p-2 text-center">
+                                <Link
+                                  to="/hcis/directive/$code"
+                                  params={{ code: d.code }}
+                                  aria-label={`${d.code} — ${ar ? r.shortAr : r.shortEn}: ${meta.ar}`}
+                                  title={meta.ar}
+                                  className={`inline-block h-5 w-5 cursor-pointer rounded ${meta.cell} transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 hover:scale-110 ${cell?.priority === "critical" ? "ring-1 ring-rose-400/60" : ""}`}
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-3 text-xs text-white/60">
+                {(["compliant", "partial", "non_compliant", "not_assessed"] as const).map((s) => (
+                  <span key={s} className="flex items-center gap-1">
+                    <i className={`h-3 w-3 rounded ${STATUS_META[s]!.cell}`} /> {STATUS_META[s]!.ar}
+                  </span>
+                ))}
+                <span className="flex items-center gap-1">
+                  <i className="h-3 w-3 rounded bg-white/10 ring-1 ring-rose-400/60" />{" "}
+                  {ar ? "أولوية حرجة" : "Critical"}
+                </span>
+              </div>
+            </NexusCard>
+          )}
 
-          {/* ④ Full directive series (21) — every tile opens the details dialog */}
+          {/* ④ Directive icon grid — filterable, every card opens its guidance page */}
           <NexusCard>
             <h3 className="mb-1 text-sm font-semibold text-white/80">
               {ar
@@ -447,126 +313,96 @@ function HcisPage() {
             </h3>
             <p className="mb-4 text-xs text-white/50">
               {ar
-                ? "السلسلة المنشورة SEC-01 إلى SEC-19 مع المجمعات السكنية وسلسلة السلامة — مرجع عام؛ ليست بديلًا عن النصوص الرسمية للهيئة."
-                : "The published SEC-01..SEC-19 series with residential compounds and the safety series — general reference only."}
+                ? "السلسلة المنشورة SEC-01 إلى SEC-19 مع المجمعات السكنية وسلسلة السلامة — اضغط أي توجيه لفتح صفحته الإرشادية."
+                : "The published SEC-01..SEC-19 series with residential compounds and the safety series — tap any directive for its guidance page."}
             </p>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-              {data.directives.map((d) => {
-                const Icon = DIRECTIVE_ICONS[d.code] ?? ShieldCheck;
-                return (
-                  <button
-                    key={d.code}
-                    type="button"
-                    onClick={() => setSelected(d)}
-                    className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-start transition hover:border-[#3AE8FF]/40 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.97]"
-                  >
-                    <span className="nx-module-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg">
-                      <Icon className="nx-icon-soft h-[18px] w-[18px]" aria-hidden />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[11px] font-semibold tracking-wide text-white/50">
-                        {d.code}
-                      </span>
-                      <span className="block truncate text-xs text-white/85">
-                        {ar ? d.name_ar : d.name_en}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </NexusCard>
 
-          {/* ⑤ Directive details dialog */}
-          {selected && (
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label={selected.name_ar}
-              className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-              onClick={() => setSelected(null)}
-            >
+            {/* Filter bar: الكل / SEC / SAF + instant search */}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <div
-                dir="rtl"
-                className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-[#3AE8FF]/25 bg-[#061325] p-5 shadow-2xl sm:rounded-2xl"
-                onClick={(e) => e.stopPropagation()}
+                role="group"
+                aria-label={ar ? "تصفية حسب الفئة" : "Filter by category"}
+                className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
               >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    {(() => {
-                      const Icon = DIRECTIVE_ICONS[selected.code] ?? ShieldCheck;
-                      return (
-                        <span className="nx-module-icon grid h-11 w-11 shrink-0 place-items-center rounded-xl">
-                          <Icon className="nx-icon-soft h-5 w-5" aria-hidden />
-                        </span>
-                      );
-                    })()}
-                    <div>
-                      <div className="text-[11px] font-semibold tracking-wide text-[#3AE8FF]">
-                        {selected.code}
-                      </div>
-                      <h4 className="text-base font-bold leading-snug text-white">
-                        {selected.name_ar}
-                      </h4>
-                      <div className="text-[11px] text-white/45">{selected.name_en}</div>
-                    </div>
-                  </div>
+                {(
+                  [
+                    ["all", ar ? "الكل" : "All"],
+                    ["SEC", "SEC"],
+                    ["SAF", "SAF"],
+                  ] as const
+                ).map(([key, label]) => (
                   <button
+                    key={key}
                     type="button"
-                    onClick={() => setSelected(null)}
-                    aria-label={ar ? "إغلاق" : "Close"}
-                    className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10"
+                    onClick={() => setCategory(key)}
+                    aria-pressed={category === key}
+                    className={`min-h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.96] ${
+                      category === key
+                        ? "bg-[#3AE8FF]/15 text-[#BEEBFF] ring-1 ring-[#3AE8FF]/40"
+                        : "text-white/60 hover:bg-white/[0.06] hover:text-white/85"
+                    }`}
                   >
-                    <X className="h-4 w-4" aria-hidden />
+                    {label}
                   </button>
-                </div>
-                <p className="text-sm leading-relaxed text-white/85">{selected.scope_ar}</p>
-                {selected.issue_note_ar && (
-                  <p className="mt-3 rounded-xl border border-amber-400/25 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-200">
-                    {selected.issue_note_ar}
-                  </p>
-                )}
-                {byDirective.has(selected.code) && (
-                  <div className="mt-4">
-                    <div className="mb-2 text-[11px] font-semibold text-white/60">
-                      {ar ? "الحالة حسب الإدارة الإقليمية" : "Status by regional administration"}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {REGIONS.map((r) => {
-                        const cell = byDirective.get(selected.code)?.get(r.id as RegionId);
-                        const meta = statusMeta(cell?.status ?? "not_assessed");
-                        return (
-                          <div
-                            key={r.id}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2"
-                          >
-                            <span className="text-xs text-white/75">
-                              {ar ? r.shortAr : r.shortEn}
-                            </span>
-                            <NexusPill
-                              tone={
-                                cell?.status === "compliant"
-                                  ? "emerald"
-                                  : cell?.status === "non_compliant"
-                                    ? "rose"
-                                    : cell?.status === "partial"
-                                      ? "amber"
-                                      : "cyan"
-                              }
-                            >
-                              {meta.ar}
-                            </NexusPill>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
+              <label className="relative min-w-0 flex-1 sm:max-w-xs">
+                <Search
+                  className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+                  aria-hidden
+                />
+                <input
+                  type="search"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder={ar ? "ابحث بالاسم أو الرمز…" : "Search by name or code…"}
+                  aria-label={ar ? "بحث في التوجيهات" : "Search directives"}
+                  className="min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] pe-3 ps-9 text-sm text-white placeholder:text-white/35 focus:border-[#3AE8FF]/40 focus:outline-none focus:ring-2 focus:ring-[#3AE8FF]/30"
+                />
+              </label>
             </div>
-          )}
+
+            {visibleDirectives.length === 0 ? (
+              <p className="py-8 text-center text-sm text-white/45">
+                {ar ? "لا نتائج مطابقة — جرّب بحثًا آخر." : "No matching directives."}
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-4">
+                {visibleDirectives.map((d) => (
+                  <DirectiveTile key={d.code} d={d} />
+                ))}
+              </div>
+            )}
+          </NexusCard>
         </>
       )}
     </NexusPage>
+  );
+}
+
+function DirectiveTile({ d }: { d: Directive }) {
+  const Icon = DIRECTIVE_ICONS[d.code] ?? ShieldCheck;
+  const special = d.code === "SEC-RC" || d.code === "SAF-GEN";
+  return (
+    <Link
+      to="/hcis/directive/$code"
+      params={{ code: d.code }}
+      className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl border p-2.5 text-start transition hover:border-[#3AE8FF]/40 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.97] ${
+        special
+          ? "border-amber-400/25 bg-amber-500/[0.05] hover:border-amber-400/50"
+          : "border-white/10 bg-white/[0.03]"
+      }`}
+    >
+      <span className="nx-module-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg">
+        <Icon className="nx-icon-soft h-[18px] w-[18px]" aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[11px] font-semibold tracking-wide text-emerald-300/90">
+          {d.code}
+        </span>
+        <span className="block truncate text-xs font-semibold text-white/90">{d.name_ar}</span>
+        <span className="block truncate text-[10px] text-white/45">{d.name_en}</span>
+      </span>
+    </Link>
   );
 }
