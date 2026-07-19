@@ -68,6 +68,29 @@ export function resolveOwnerSms(requested?: string): string {
   return owner;
 }
 
+/** Non-throwing predicates: is the requested recipient the registered owner?
+ * Used by outbound tool wrappers to decide between direct-send and the
+ * reviewed approval flow. Invalid or unrecognized input returns false. */
+export function isOwnerEmail(requested?: string): boolean {
+  try {
+    const owner = getAriaOwnerRecipients().email;
+    if (!requested) return true;
+    return normalizeEmail(requested) === owner;
+  } catch {
+    return false;
+  }
+}
+
+export function isOwnerSms(requested?: string): boolean {
+  try {
+    const owner = getAriaOwnerRecipients().sms;
+    if (!requested) return true;
+    return normalizeE164(requested) === owner;
+  } catch {
+    return false;
+  }
+}
+
 function normalizedIntent(value: string): string {
   return value
     .normalize("NFKC")
