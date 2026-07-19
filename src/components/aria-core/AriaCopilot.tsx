@@ -1408,6 +1408,10 @@ export function AriaCopilot() {
       clearTimeout(relistenTimerRef.current);
       relistenTimerRef.current = null;
     }
+    if (convModeRef.current && recorderSupported) {
+      void startRecordedListening();
+      return;
+    }
     const Ctor = getSpeechRecognitionCtor();
     if (!Ctor) {
       void startRecordedListening();
