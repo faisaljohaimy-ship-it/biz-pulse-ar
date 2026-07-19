@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import { synthesizeWithLovableAI } from "@/lib/aria/tts-fallback.server";
 import {
   ARIA_ELEVENLABS_MODEL,
   ARIA_ELEVENLABS_VOICE_ID,
