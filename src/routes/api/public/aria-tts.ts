@@ -23,7 +23,7 @@ import {
 } from "@/lib/aria/voice-config";
 
 const Input = z.object({
-  text: z.string().trim().min(1).max(1200),
+  text: z.string().trim().min(1).max(4000),
 });
 
 function clientIp(req: Request): string {
@@ -36,7 +36,11 @@ function clientIp(req: Request): string {
   );
 }
 
-async function synthesizeWithElevenLabs(text: string, apiKey: string): Promise<Response | null> {
+async function synthesizeWithElevenLabs(
+  text: string,
+  apiKey: string,
+  signal: AbortSignal,
+): Promise<Response | null> {
   // HARD-LOCKED canonical voice — no env / client override.
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${ARIA_ELEVENLABS_VOICE_ID}?output_format=mp3_44100_128`;
   const r = await fetch(url, {
@@ -47,7 +51,7 @@ async function synthesizeWithElevenLabs(text: string, apiKey: string): Promise<R
       model_id: ARIA_ELEVENLABS_MODEL,
       voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
     }),
-    signal: AbortSignal.timeout(30_000),
+    signal,
   });
   if (!r.ok) {
     const detail = (await r.text().catch(() => "")).slice(0, 240);
@@ -89,7 +93,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
 
           if (elevenKey) {
             try {
-              const el = await synthesizeWithElevenLabs(text, elevenKey);
+              const el = await synthesizeWithElevenLabs(text, elevenKey, request.signal);
               if (el) {
                 const audio = await el.arrayBuffer();
                 return new Response(audio, {
