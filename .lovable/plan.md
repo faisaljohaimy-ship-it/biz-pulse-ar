@@ -1,57 +1,42 @@
-# خطة تنفيذ التوجيه النهائي — NEXIOS ARIA
+# ARIA outbound send: recipient policy + intent gate
 
-الهدف: إغلاق النواقص فقط، بدون إعادة بناء، بدون تكرار، بدون كسر مسارات أو معماريّة. تنفيذ متسلسل عبر عدة جولات مع تحقق بعد كل مرحلة.
+Two QA findings both point at intentional guardrails in `send_executive_email` / `send_executive_sms`. The code is doing what it claims to do, but there are inconsistencies. You pick the posture; I'll implement.
 
-## الحالة الحالية (بعد فحص سريع)
+## Finding 1 — Non-owner recipients
 
-- ✅ `AriaAudioBus` (`src/lib/aria/audio-bus.ts`) يحظر `speechSynthesis.speak` كليًا، يمرّر واحدًا في كل لحظة، يوقف على `pagehide`/إخفاء التبويب، وفيه watchdog يقتل أي صوت متصفح دخيل أثناء `chat-tts`.
-- ✅ `AriaProvider` مُركَّب في `__root.tsx` مرة واحدة.
-- ✅ Ledger توجيه أريا موجود على `/aria/directive` مع تحقق حي للمراحل 1–5.
-- ⚠️ لا يوجد فحص وقت-تشغيل واضح "singleton hard-assert" لـ Brain / Provider / Voice / Avatar / Memory (المطلوب في P0).
-- ⚠️ `ExecutionEnvelope` موجود كوحدة (`execution-envelope.ts`) لكن يحتاج ربط عرض موحّد (Summary/Risk/Priority/Confidence/Action/Approval/NextStep).
-- ⚠️ Command Center موجود (`command-center.tsx`) لكن يحتاج جرد للبطاقات المطلوبة وتأكيد ربطها بمصادر حية.
-- ⚠️ سيناريو Live Demo التنفيذي يحتاج مسارًا واحدًا واضحًا يخرج المغلَّف الكامل.
+**Current behavior (intentional):** `resolveOwnerEmail/Sms` throws whenever `to` is not the registered owner, so directors/section heads cannot email or SMS anyone else through ARIA.
 
-## الجولات (تُنفَّذ متسلسلة)
+**Real bug inside this:** the thrown error tells the user to "use the reviewed approval flow for another recipient," but that flow (`prepareAriaOutboundMessage`) is unreachable — the throw fires before the `ariaAutoApproveEnabled()` branch. The user-visible promise is a lie.
 
-### الجولة 1 — P0 قفل الاستقرار (هذه الجولة القادمة)
-1. `src/lib/aria/singletons.ts`: سجل runtime لخمسة مفردات (BRAIN, PROVIDER, VOICE, AVATAR, MEMORY) مع `assertOne(key)` يرمي في dev ويسجّل تحذيرًا في prod.
-2. تسجيل المفردات من: `AriaProvider`، `voice-manager`، `avatar-runtime`، `aria-brain`، `memory-manager`.
-3. تعزيز `AriaAudioBus`: عند دخول جلسة chat جديدة استدعاء `stopAll()` قبل `acquire('chat-tts')` (مضاعف حماية للـ "prevent double playback").
-4. تحقق: typecheck + جولة Playwright قصيرة على الصفحة الرئيسية للتأكد أن لا تحذيرات مفرد مكررة.
+**Options:**
+- **A. Keep owner-only, fix the message.** Update the error text to say direct sends to non-owners are not supported at all. Minimal, preserves current security posture. (Recommended default if you want to keep the current lockdown.)
+- **B. Route non-owners to approval, owners to direct.** Move `resolveOwnerEmail/Sms` behind the auto-approve branch: if `to` == owner, direct send is allowed (subject to intent gate); if `to` != owner, always go through `prepareAriaOutboundMessage` for human approval. Matches what the current error message already promises.
+- **C. Owner-only, no exceptions.** Drop the misleading "use the approval flow" hint entirely and document owner-only as policy.
 
-### الجولة 2 — P0 مزامنة الأفاتار
-1. تدقيق `avatar-state-manager` + `avatar-voice-sync` وتأكيد الحالات: `idle/listening/thinking/speaking/explaining/warning/success`.
-2. ربط `AriaAudioBus.subscribe` → `avatar-state-manager.transition` (bus `playing` → `speaking`, `stopped/end` → `idle`).
-3. ضبط blink/breathing/gestures القائمة (`idle-engine`, `body-engine`, `gesture-engine`) للعمل تلقائيًا في `idle`/`speaking`.
+## Finding 2 — Intent gate too narrow
 
-### الجولة 3 — P1 المغلَّف التنفيذي
-1. مكوّن `src/components/aria/ExecutiveEnvelopeCard.tsx`: يعرض Summary/Risk/Priority/Confidence/RecommendedAction/ApprovalRequired/NextStep من `ExecutiveBrainAnswer`.
-2. توصيل `AriaCopilot` لعرض المغلَّف بعد كل رد Brain (بديل عن JSON الخام).
-3. زر "طلب موافقة" يُفعِّل `approval-gate` عندما `requires_human_approval=true`.
+**Current behavior (intentional):** `hasExplicitOutboundIntent` requires both a send-verb (`send`/`dispatch`/`أرسل`/`ابعث`) and a channel word. "Email me the summary" and voice transcriptions like "ابعث لي الملخّص إيميل" (verb OK, but relies on colloquial ordering) can fail. Attachment-only turns with the injected default text always fail.
 
-### الجولة 4 — P2 Live Demo
-1. مسار `/aria/demo` (تحت `_authenticated`) يشغّل سيناريو "ما حالة العمليات الآن؟" ويعرض بالتسلسل: Summary → TopRisks → Recommended Decision → Execution Steps → Final Report.
-2. يستخدم `getExecutiveBrainAnswer` الحالي + قناة صوت واحدة عبر البص.
+**Options:**
+- **A. Keep the gate; make the failure honest.** When intent doesn't match, fall back to the approval flow instead of returning an error — the message still requires human review, but the executive isn't silently refused.
+- **B. Widen the verb set.** Add English `email`/`text`/`mail`/`sms` used as verbs, Arabic `[اأإآ]بعث` variants, imperative forms like "email me…" / "text me…". Keep the negation/reported-instruction guards.
+- **C. Keep as-is.** Only exact verb + channel phrases trigger a direct send; anything else routes to approval by default.
 
-### الجولة 5 — P3 Command Center Cards
-1. جرد بطاقات `command-center.tsx` وإضافة/تفعيل المفقود من: SystemHealth, ARIAStatus, ActiveOperations, Risks, KPIs, Alerts, ExecutionQueue, RecentDecisions.
-2. كل بطاقة تربط `EvidenceBadge` + `SecLiveBadge` وفق FR-19.
+## Recommendation
 
-### الجولة 6 — UI Rules + Validation النهائي
-1. مسح شامل لأي: مصطلحات مطوّر ظاهرة، JSON خام في UI، أسماء موفّرين (OpenAI/ElevenLabs...)، شرطات `—` بديلها "لا توجد بيانات مباشرة حاليًا".
-2. RTL: تدقيق `dir="rtl"` على البطاقات الجديدة.
-3. تحقق نهائي: `tsgo --noEmit` = 0، بناء نظيف، Playwright لثلاث صفحات (`/`, `/aria/directive`, `/command-center`)، تحديث `/aria/directive` ledger.
+Do **1B + 2A** together: non-owner recipients and ambiguous intent both fall through to `prepareAriaOutboundMessage` (the reviewed approval flow) instead of returning `{ ok: false, error }`. Owner + explicit verb still gets a direct send. The result: nothing is silently refused, but nothing bypasses review either.
 
-## التفاصيل التقنية
+## Scope of change
 
-- كل server fn جديد يعيش في `*.functions.ts` منفصل، والمساعدات في `*.server.ts` (قاعدة splitting).
-- لا تعديل على `client.ts`/`auth-attacher.ts`/`types.ts`/`.env`.
-- لا `speechSynthesis` جديد نهائيًا — فقط عبر البص.
-- الألوان من tokens في `src/styles.css`، لا hardcode.
-- كل شارة/مقياس جديد عبر `EvidenceBadge` وفق FR-19.
+- `src/lib/aria/outbound-recipient-policy.server.ts` — split "is this the owner?" from "throw"; expose a predicate.
+- `src/lib/aria-tools.server.ts` — in both `send_executive_email` and `send_executive_sms`: if recipient is owner AND intent is explicit → direct send; otherwise → `prepareAriaOutboundMessage(supabase, userId, payload)` with the requested recipient.
+- `src/lib/aria/outbound-messaging.server.ts` — no change unless you pick 2B.
+- Tool `description` strings updated to reflect the actual behavior.
+- No DB changes.
 
-## المخرجات لكل جولة
-`FilesModified · FixesApplied · ARIAStatus · VoiceStatus · AvatarStatus · ExecutiveDemoStatus · CommandCenterStatus · BuildResult · TSResult · ReadinessScore`
+## Out of scope
 
-بعد موافقتك ابدأ فورًا بالجولة 1.
+- Approval-flow UI (already exists via `prepareAriaOutboundMessage`).
+- Changing the owner defaults or the `ARIA_DIRECT_SEND_ENABLED` kill switch.
+
+Pick a combo (e.g. "1B + 2A") and I'll ship it.
