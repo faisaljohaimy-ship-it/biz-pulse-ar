@@ -614,6 +614,14 @@ export function AriaCopilot() {
     ariaState.set("idle");
   }, []);
 
+  const scheduleConversationRelisten = useCallback((delayMs = 280) => {
+    if (!convModeRef.current) return;
+    if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
+    relistenTimerRef.current = setTimeout(() => {
+      if (convModeRef.current) startListeningRef.current?.();
+    }, delayMs);
+  }, []);
+
   const splitCompleteSentences = useCallback((t: string): { complete: string[]; tail: string } => {
     // Match anything ending with a terminator. Trailing tail (no terminator) is pending.
     const re = /[^.!?؟\n]+[.!?؟\n]+/g;
@@ -1221,21 +1229,25 @@ export function AriaCopilot() {
       ariaState.set("thinking");
       try {
         const extension = recorderFileExtension(mimeType);
-        const form = new FormData();
-        form.set(
-          "audio",
-          new File([blob], `aria-voice-${Date.now()}.${extension}`, {
-            type: mimeType,
-          }),
-        );
+        const audioFile = new File([blob], `aria-voice-${Date.now()}.${extension}`, {
+          type: mimeType,
+        });
+        const makeForm = () => {
+          const form = new FormData();
+          form.set("audio", audioFile);
+          return form;
+        };
         let response = await authenticatedFetch("/api/aria/transcribe", {
           method: "POST",
-          body: form,
+          body: makeForm(),
         });
-        if (!response.ok && (response.status === 401 || response.status === 403)) {
+        if (
+          !response.ok &&
+          (response.status === 401 || response.status === 403 || response.status === 429 || response.status >= 500)
+        ) {
           response = await fetch("/api/public/aria-transcribe", {
             method: "POST",
-            body: form,
+            body: makeForm(),
             cache: "no-store",
           });
         }
@@ -1249,24 +1261,28 @@ export function AriaCopilot() {
               ? payload.error
               : "تعذّر فهم الصوت — اضغط وتحدث مرة أخرى.";
           setConvNotice(reason);
-          setConvPaused(true);
+          setConvPaused(false);
+          scheduleConversationRelisten(650);
           return;
         }
         const transcript = payload.text.trim();
         if (!transcript) {
-          setConvPaused(true);
+          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvPaused(false);
+          scheduleConversationRelisten(450);
           return;
         }
         setDraft("");
         await submit(transcript, { fromVoice: true });
       } catch {
         setConvNotice("تعذّر تحليل الصوت — تحقق من الاتصال ثم أعد المحاولة.");
-        setConvPaused(true);
+        setConvPaused(false);
+        scheduleConversationRelisten(900);
       } finally {
         setTranscribing(false);
       }
     },
-    [submit],
+    [scheduleConversationRelisten, submit],
   );
 
   const startRecordedListening = useCallback(async () => {
@@ -1330,14 +1346,16 @@ export function AriaCopilot() {
         if (cancelled || !convModeRef.current) return;
         if (noSpeech) {
           ariaState.set("idle");
-          setConvNotice("لم ألتقط صوتًا واضحًا — اضغط وتحدث مرة أخرى.");
-          setConvPaused(true);
+          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvPaused(false);
+          scheduleConversationRelisten(450);
           return;
         }
         const recording = new Blob(chunks, { type: actualType });
         if (recording.size === 0) {
-          setConvNotice("لم يصل تسجيل صوتي صالح — اضغط وتحدث مرة أخرى.");
-          setConvPaused(true);
+          setConvNotice("لم يصل تسجيل صوتي صالح — أواصل الاستماع.");
+          setConvPaused(false);
+          scheduleConversationRelisten(450);
           return;
         }
         void transcribeVoiceBlob(recording, actualType);
@@ -1417,7 +1435,7 @@ export function AriaCopilot() {
           : "تعذّر الوصول إلى الميكروفون — تأكد من HTTPS وإذن المتصفح.",
       );
     }
-  }, [stopMediaAnalysis, transcribeVoiceBlob, transcriptionProviderReady]);
+  }, [scheduleConversationRelisten, stopMediaAnalysis, transcribeVoiceBlob, transcriptionProviderReady]);
 
   const finishListening = useCallback(() => {
     const recognition = recRef.current;
