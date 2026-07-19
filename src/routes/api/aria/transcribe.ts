@@ -99,8 +99,8 @@ export const Route = createFileRoute("/api/aria/transcribe")({
         if (elevenKey) {
           try {
             const sttForm = new FormData();
-            sttForm.set("file", audio, "recording");
-            sttForm.set("model_id", "scribe_v1");
+            sttForm.set("file", audio, audio.name || "recording.webm");
+            sttForm.set("model_id", "scribe_v2");
             const sttUpstream = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
               method: "POST",
               headers: { "xi-api-key": elevenKey },
@@ -119,7 +119,7 @@ export const Route = createFileRoute("/api/aria/transcribe")({
                     status: 200,
                     headers: {
                       ...HEADERS,
-                      "X-ARIA-Transcription-Model": "scribe_v1",
+                      "X-ARIA-Transcription-Model": "scribe_v2",
                       "X-ARIA-Transcription-Provider": "elevenlabs",
                     },
                   },

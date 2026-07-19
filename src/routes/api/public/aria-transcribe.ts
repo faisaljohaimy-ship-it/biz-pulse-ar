@@ -79,7 +79,7 @@ async function transcribeWithElevenLabs(audio: File, signal: AbortSignal): Promi
 
   const form = new FormData();
   form.set("file", audio, audio.name || "aria-voice.webm");
-  form.set("model_id", "scribe_v1");
+  form.set("model_id", "scribe_v2");
   const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
     method: "POST",
     headers: { "xi-api-key": key },
