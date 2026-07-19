@@ -740,14 +740,20 @@ export function AriaCopilot() {
         // that case the chat answer succeeds but the authenticated TTS route
         // returns 401. Also use the same public Layan endpoint for transient
         // private-route failures so voice does not stop on mobile/laptop.
-        if (!r?.ok && (!r || r.status === 401 || r.status === 403 || r.status === 429 || r.status >= 500)) {
+        if (!r?.ok) {
           if (r) {
             VoiceTimeline.push("FALLBACK", `[${idx}] private ${r.status} fallback`, {
               idx,
               status: r.status,
             });
           }
-          r = await postPublic();
+          try {
+            r = await postPublic();
+          } catch (error) {
+            if ((error as { name?: string }).name === "AbortError") throw error;
+            VoiceTimeline.push("FALLBACK", `[${idx}] public network failure`, { idx });
+            throw error;
+          }
         }
 
         // One short retry for transient public voice errors. Terminal 4xx stays
@@ -1732,7 +1738,7 @@ export function AriaCopilot() {
       setGreeting(false);
       if (convModeRef.current && !controller.signal.aborted) {
         setConvNotice("تعذّر تشغيل تحية آريا، يمكنك البدء بالتحدث مباشرة.");
-        startListeningRef.current?.();
+        scheduleConversationRelisten(180);
       }
       return;
     }
@@ -1750,7 +1756,7 @@ export function AriaCopilot() {
     if (!acquired) {
       controller.abort();
       setGreeting(false);
-      if (convModeRef.current) startListeningRef.current?.();
+      if (convModeRef.current) scheduleConversationRelisten(180);
       return;
     }
 
@@ -1785,9 +1791,9 @@ export function AriaCopilot() {
       })
     ) {
       ariaState.set("listening");
-      startListeningRef.current?.();
+      scheduleConversationRelisten(180);
     }
-  }, [fetchTTS, playAudioClip, stopWebAudioFallback]);
+  }, [fetchTTS, playAudioClip, scheduleConversationRelisten, stopWebAudioFallback]);
 
   const toggleConversationMode = useCallback(() => {
     if (convMode) {
