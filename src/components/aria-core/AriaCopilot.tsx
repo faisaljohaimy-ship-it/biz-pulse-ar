@@ -1499,7 +1499,7 @@ export function AriaCopilot() {
       setListening(false);
       void startRecordedListening();
     }
-  }, [submit, stopListening, stopVoicePlayback, startRecordedListening]);
+  }, [submit, stopListening, stopVoicePlayback, startRecordedListening, recorderSupported]);
 
   useEffect(() => {
     startListeningRef.current = startListening;
