@@ -8,7 +8,13 @@ import {
   sendAriaOutboundMessageDirectInternal,
   ariaAutoApproveEnabled,
 } from "@/lib/aria/outbound-messaging.server";
-import { resolveOwnerEmail, resolveOwnerSms } from "@/lib/aria/outbound-recipient-policy.server";
+import {
+  resolveOwnerEmail,
+  resolveOwnerSms,
+  isOwnerEmail,
+  isOwnerSms,
+  hasExplicitOutboundIntent,
+} from "@/lib/aria/outbound-recipient-policy.server";
 
 function genRef(prefix: string) {
   const d = new Date();
