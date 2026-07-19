@@ -11,6 +11,7 @@ export const Route = createFileRoute("/api/chat/health")({
         const anthropicPresent = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
         const lovablePresent = Boolean(process.env.LOVABLE_API_KEY?.trim());
         const openrouterPresent = Boolean(process.env.OPENROUTER_API_KEY?.trim());
+        const elevenLabsPresent = Boolean(process.env.ELEVENLABS_API_KEY?.trim());
         const keyPresent = Boolean(
           geminiPresent || openaiPresent || anthropicPresent || lovablePresent || openrouterPresent,
         );
@@ -37,10 +38,8 @@ export const Route = createFileRoute("/api/chat/health")({
             key_present: keyPresent,
             // Voice policy: the audible ARIA voice is exclusively ElevenLabs
             // Layan; transcription is ElevenLabs Scribe first, Gemini fallback.
-            voice_configured: Boolean(process.env.ELEVENLABS_API_KEY?.trim()),
-            transcription_configured: Boolean(
-              process.env.ELEVENLABS_API_KEY?.trim() || geminiPresent,
-            ),
+            voice_configured: Boolean(elevenLabsPresent),
+            transcription_configured: Boolean(elevenLabsPresent || geminiPresent || lovablePresent),
           },
           {
             headers: {
