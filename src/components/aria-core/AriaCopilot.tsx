@@ -614,6 +614,14 @@ export function AriaCopilot() {
     ariaState.set("idle");
   }, []);
 
+  const scheduleConversationRelisten = useCallback((delayMs = 280) => {
+    if (!convModeRef.current) return;
+    if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
+    relistenTimerRef.current = setTimeout(() => {
+      if (convModeRef.current) startListeningRef.current?.();
+    }, delayMs);
+  }, []);
+
   const splitCompleteSentences = useCallback((t: string): { complete: string[]; tail: string } => {
     // Match anything ending with a terminator. Trailing tail (no terminator) is pending.
     const re = /[^.!?؟\n]+[.!?؟\n]+/g;
@@ -650,28 +658,67 @@ export function AriaCopilot() {
           chars: text.length,
         });
         const payload = JSON.stringify({ text: text.slice(0, 4000) });
-        let r = await authenticatedFetch("/api/aria/tts", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: payload,
-          signal: ctrl.signal,
-        });
-
-        // The homepage copilot can run before an auth session is hydrated. In
-        // that case the chat answer succeeds but the authenticated TTS route
-        // returns 401, causing the visible "تعذّر تشغيل صوت آريا" loop. Retry
-        // through the public Layan endpoint (same ElevenLabs voice, no provider
-        // substitution) so voice works on mobile/laptop public sessions too.
-        if (!r.ok && (r.status === 401 || r.status === 403)) {
-          r = await fetch("/api/public/aria-tts", {
+        const delay = (ms: number) =>
+          new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(resolve, ms);
+            ctrl.signal.addEventListener(
+              "abort",
+              () => {
+                window.clearTimeout(timeout);
+                reject(new DOMException("Aborted", "AbortError"));
+              },
+              { once: true },
+            );
+          });
+        const postPrivate = () =>
+          authenticatedFetch("/api/aria/tts", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: payload,
+            signal: ctrl.signal,
+          });
+        const postPublic = () =>
+          fetch("/api/public/aria-tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: payload,
             signal: ctrl.signal,
             cache: "no-store",
           });
+
+        let r: Response | null = null;
+        try {
+          r = await postPrivate();
+        } catch (error) {
+          if ((error as { name?: string }).name === "AbortError") throw error;
+          VoiceTimeline.push("FALLBACK", `[${idx}] private network fallback`, { idx });
+        }
+
+        // The homepage copilot can run before an auth session is hydrated. In
+        // that case the chat answer succeeds but the authenticated TTS route
+        // returns 401. Also use the same public Layan endpoint for transient
+        // private-route failures so voice does not stop on mobile/laptop.
+        if (!r?.ok && (!r || r.status === 401 || r.status === 403 || r.status === 429 || r.status >= 500)) {
+          if (r) {
+            VoiceTimeline.push("FALLBACK", `[${idx}] private ${r.status} fallback`, {
+              idx,
+              status: r.status,
+            });
+          }
+          r = await postPublic();
+        }
+
+        // One short retry for transient public voice errors. Terminal 4xx stays
+        // terminal so we do not loop or double-submit bad input.
+        if (!r.ok && (r.status === 429 || r.status >= 500)) {
+          VoiceTimeline.push("FALLBACK", `[${idx}] public ${r.status} retry`, {
+            idx,
+            status: r.status,
+          });
+          await delay(180);
+          r = await postPublic();
         }
         VoiceTimeline.push(
           "TTS_RES",
@@ -813,7 +860,7 @@ export function AriaCopilot() {
           };
           audio.addEventListener("canplay", kick, { once: true });
           audio.addEventListener("loadeddata", kick, { once: true });
-          setTimeout(kick, 400);
+          setTimeout(kick, 150);
           audio.onended = () => {
             try {
               URL.revokeObjectURL(audio.src);
@@ -1182,21 +1229,25 @@ export function AriaCopilot() {
       ariaState.set("thinking");
       try {
         const extension = recorderFileExtension(mimeType);
-        const form = new FormData();
-        form.set(
-          "audio",
-          new File([blob], `aria-voice-${Date.now()}.${extension}`, {
-            type: mimeType,
-          }),
-        );
+        const audioFile = new File([blob], `aria-voice-${Date.now()}.${extension}`, {
+          type: mimeType,
+        });
+        const makeForm = () => {
+          const form = new FormData();
+          form.set("audio", audioFile);
+          return form;
+        };
         let response = await authenticatedFetch("/api/aria/transcribe", {
           method: "POST",
-          body: form,
+          body: makeForm(),
         });
-        if (!response.ok && (response.status === 401 || response.status === 403)) {
+        if (
+          !response.ok &&
+          (response.status === 401 || response.status === 403 || response.status === 429 || response.status >= 500)
+        ) {
           response = await fetch("/api/public/aria-transcribe", {
             method: "POST",
-            body: form,
+            body: makeForm(),
             cache: "no-store",
           });
         }
@@ -1210,24 +1261,28 @@ export function AriaCopilot() {
               ? payload.error
               : "تعذّر فهم الصوت — اضغط وتحدث مرة أخرى.";
           setConvNotice(reason);
-          setConvPaused(true);
+          setConvPaused(false);
+          scheduleConversationRelisten(650);
           return;
         }
         const transcript = payload.text.trim();
         if (!transcript) {
-          setConvPaused(true);
+          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvPaused(false);
+          scheduleConversationRelisten(450);
           return;
         }
         setDraft("");
         await submit(transcript, { fromVoice: true });
       } catch {
         setConvNotice("تعذّر تحليل الصوت — تحقق من الاتصال ثم أعد المحاولة.");
-        setConvPaused(true);
+        setConvPaused(false);
+        scheduleConversationRelisten(900);
       } finally {
         setTranscribing(false);
       }
     },
-    [submit],
+    [scheduleConversationRelisten, submit],
   );
 
   const startRecordedListening = useCallback(async () => {
@@ -1291,14 +1346,16 @@ export function AriaCopilot() {
         if (cancelled || !convModeRef.current) return;
         if (noSpeech) {
           ariaState.set("idle");
-          setConvNotice("لم ألتقط صوتًا واضحًا — اضغط وتحدث مرة أخرى.");
-          setConvPaused(true);
+          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvPaused(false);
+          scheduleConversationRelisten(450);
           return;
         }
         const recording = new Blob(chunks, { type: actualType });
         if (recording.size === 0) {
-          setConvNotice("لم يصل تسجيل صوتي صالح — اضغط وتحدث مرة أخرى.");
-          setConvPaused(true);
+          setConvNotice("لم يصل تسجيل صوتي صالح — أواصل الاستماع.");
+          setConvPaused(false);
+          scheduleConversationRelisten(450);
           return;
         }
         void transcribeVoiceBlob(recording, actualType);
@@ -1378,7 +1435,7 @@ export function AriaCopilot() {
           : "تعذّر الوصول إلى الميكروفون — تأكد من HTTPS وإذن المتصفح.",
       );
     }
-  }, [stopMediaAnalysis, transcribeVoiceBlob, transcriptionProviderReady]);
+  }, [scheduleConversationRelisten, stopMediaAnalysis, transcribeVoiceBlob, transcriptionProviderReady]);
 
   const finishListening = useCallback(() => {
     const recognition = recRef.current;
