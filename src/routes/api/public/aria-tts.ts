@@ -16,6 +16,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
+import { synthesizeWithLovableAI } from "@/lib/aria/tts-fallback.server";
 import {
   ARIA_ELEVENLABS_VOICE_ID,
   ARIA_ELEVENLABS_VOICE_SETTINGS,
@@ -63,9 +64,6 @@ export const Route = createFileRoute("/api/public/aria-tts")({
       POST: async ({ request }) => {
         try {
           const elevenKey = process.env.ELEVENLABS_API_KEY;
-          if (!elevenKey) {
-            return Response.json({ error: "tts_unconfigured" }, { status: 503 });
-          }
 
           let body: unknown;
           try {
@@ -90,21 +88,40 @@ export const Route = createFileRoute("/api/public/aria-tts")({
             console.error("[public/aria-tts] diacritize", e instanceof Error ? e.message : e);
           }
 
-          try {
-            const el = await synthesizeWithElevenLabs(text, elevenKey);
-            if (el) {
-              const audio = await el.arrayBuffer();
-              return new Response(audio, {
-                status: 200,
-                headers: {
-                  "Content-Type": "audio/mpeg",
-                  "Content-Length": String(audio.byteLength),
-                  "Cache-Control": "no-store",
-                },
-              });
+          if (elevenKey) {
+            try {
+              const el = await synthesizeWithElevenLabs(text, elevenKey);
+              if (el) {
+                const audio = await el.arrayBuffer();
+                return new Response(audio, {
+                  status: 200,
+                  headers: {
+                    "Content-Type": "audio/mpeg",
+                    "Content-Length": String(audio.byteLength),
+                    "Cache-Control": "no-store",
+                    "X-ARIA-Voice-Provider": "elevenlabs",
+                  },
+                });
+              }
+            } catch (e) {
+              console.error("[public/aria-tts] elevenlabs", e instanceof Error ? e.message : e);
             }
-          } catch (e) {
-            console.error("[public/aria-tts] elevenlabs", e instanceof Error ? e.message : e);
+          }
+
+          // Fallback — Lovable AI Gateway TTS so ARIA keeps speaking when
+          // ElevenLabs is out of quota / unavailable.
+          const fb = await synthesizeWithLovableAI(text);
+          if (fb) {
+            const audio = await fb.arrayBuffer();
+            return new Response(audio, {
+              status: 200,
+              headers: {
+                "Content-Type": "audio/mpeg",
+                "Content-Length": String(audio.byteLength),
+                "Cache-Control": "no-store",
+                "X-ARIA-Voice-Provider": "lovable-ai",
+              },
+            });
           }
 
           return Response.json({ error: "tts_failed" }, { status: 502 });
