@@ -33,3 +33,29 @@ export const ARIA_ELEVENLABS_VOICE_SETTINGS = {
 
 /** @deprecated Legacy compatibility only. */
 export const ARIA_ELEVENLABS_MODEL = "eleven_multilingual_v2";
+
+/**
+ * Specialist agent voices — ElevenLabs PREMADE (stock) voices, free within
+ * the existing subscription. Keyed by the digital-humans registry
+ * `voiceProfileId`. ARIA herself is deliberately ABSENT: her audible voice
+ * is exclusively Layan (ARIA_ELEVENLABS_VOICE_ID) — non-negotiable doctrine.
+ * The server TTS routes accept a `voiceId` ONLY when it appears in this
+ * map's values; anything else falls back to Layan.
+ */
+export const AGENT_ELEVEN_VOICES: Record<string, string> = {
+  incident: "pNInz6obpgDQGcFmaJgB", // Adam — authoritative command voice
+  risk: "ErXwobaYiN019PkySvjV", // Antoni — analytical
+  compliance: "21m00Tcm4TlvDq8ikWAM", // Rachel — precise, formal
+  cctv: "TxGEqnHWrfWFTfGW9XjX", // Josh — observant, calm
+  patrol: "VR6AewLTigWG4xSOukaG", // Arnold — field commander
+  emergency: "AZnzlk1XvdvUeBnXmlld", // Domi — urgent, clear
+  visitor: "EXAVITQu4vr4xnSDxMaL", // Bella — welcoming
+  knowledge: "MF3mGyEYCl7XYWbV9V6O", // Elli — librarian warmth
+  reporting: "JBFqnCBsd6RMkjVDRZzb", // George — broadcast narrator
+  twin: "IKne3meq5aSn9XLyUdCD", // Charlie — technical
+};
+
+/** Server-side whitelist: the ONLY voice ids `/api/aria/tts` will honor. */
+export const ALLOWED_ELEVEN_VOICE_IDS: ReadonlySet<string> = new Set(
+  Object.values(AGENT_ELEVEN_VOICES),
+);

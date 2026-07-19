@@ -62,8 +62,25 @@ export type BridgeState = {
 export const getBridgeState = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<BridgeState> => {
-    const sb = context.supabase;
+    const { buildBridgeSimulation, resilient } = await import("./showcase-simulation.server");
+    return resilient(
+      "bridge-state",
+      () => fetchBridgeState(context.supabase),
+      (v) =>
+        v.agents.length === 0 &&
+        v.health.open_incidents === 0 &&
+        v.health.active_patrols === 0 &&
+        v.health.active_permits === 0,
+      () => buildBridgeSimulation(Date.now()),
+    );
+  });
 
+async function fetchBridgeState(
+  // Structural: the RLS client injected by optional auth.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sb: any,
+): Promise<BridgeState> {
+  {
     const [
       agentDefsRes,
       agentRunsRes,
@@ -231,7 +248,8 @@ export const getBridgeState = createServerFn({ method: "GET" })
       agents,
       generated_at: new Date().toISOString(),
     };
-  });
+  }
+}
 
 // ------------------------------------------------------------------
 // Mission Timeline — bilingual storytelling stream
@@ -259,7 +277,21 @@ export type MissionTimelineEntry = {
 export const getMissionTimeline = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<MissionTimelineEntry[]> => {
-    const { data } = await context.supabase
+    const { buildTimelineSimulation, resilient } = await import("./showcase-simulation.server");
+    return resilient(
+      "mission-timeline",
+      () => fetchMissionTimeline(context.supabase),
+      (rows) => rows.length === 0,
+      () => buildTimelineSimulation(Date.now()),
+    );
+  });
+
+async function fetchMissionTimeline(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sb: any,
+): Promise<MissionTimelineEntry[]> {
+  {
+    const { data } = await sb
       .from("enterprise_events")
       .select(
         "id, topic, source, severity, actor_id, org_id, subject_type, subject_id, correlation_id, duration_ms, status, payload_json, inputs_json, outputs_json, metrics_json, occurred_at, processed_at, error",
@@ -291,4 +323,5 @@ export const getMissionTimeline = createServerFn({ method: "GET" })
         duration_ms: n.duration_ms,
       };
     });
-  });
+  }
+}

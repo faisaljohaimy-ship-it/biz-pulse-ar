@@ -3,6 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 // ============= EXECUTIVE KPIs =============
 // Zod schema is the canonical contract for the API output. The TS type below
@@ -229,12 +230,19 @@ export function computeExecKpis(src: ExecKpiSources): ExecKpis {
 }
 
 export const getExecKpis = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read: guests get the anon client (RLS decides). With no
+  // visible rows at all, the built-in simulation sources fill the board
+  // (doctrine «بيانات لا تفرغ» — CLAUDE.md).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ExecKpis> => {
-    // RLS applies: context.supabase is the authed user's client (publishable key
-    // + bearer token) injected by requireSupabaseAuth. Service role is never
-    // used here, so policies on sec_* tables filter rows as the caller.
-    const sources = await fetchExecKpiSources(context.supabase as unknown as ExecKpiSupabase);
+    const { buildExecKpiSourcesSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    const sources = await resilient(
+      "exec-kpis",
+      () => fetchExecKpiSources(context.supabase as unknown as ExecKpiSupabase),
+      (s) => Object.values(s).every((rows) => rows.length === 0),
+      () => buildExecKpiSourcesSimulation(),
+    );
     return computeExecKpis(sources);
   });
 

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { z } from "zod";
 import {
   executeTool,
@@ -345,30 +346,50 @@ export const listRecentEvents = createServerFn({ method: "GET" })
 /* ------------------------------ Agents API ------------------------------ */
 
 export const listAgents = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; simulation fills an empty registry (CLAUDE.md).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("agent_definitions")
-      .select("id, name, goal, model, tool_allowlist, permissions, enabled, updated_at")
-      .order("name", { ascending: true });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { buildAgentDefsSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "list-agents",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("agent_definitions")
+          .select("id, name, goal, model, tool_allowlist, permissions, enabled, updated_at")
+          .order("name", { ascending: true });
+        if (error) throw new Error(error.message);
+        return data ?? [];
+      },
+      (rows) => rows.length === 0,
+      () => buildAgentDefsSimulation(Date.now()),
+    );
   });
 
 export const listAgentRuns = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; سجل التشغيل never renders empty.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("agent_runs")
-      .select(
-        "id, agent_id, status, summary, steps, error, started_at, finished_at, triggered_by, goal_override, audit_json",
-      )
-      .order("started_at", { ascending: false })
-      .limit(50);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { buildAgentRunsSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "list-agent-runs",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("agent_runs")
+          .select(
+            "id, agent_id, status, summary, steps, error, started_at, finished_at, triggered_by, goal_override, audit_json",
+          )
+          .order("started_at", { ascending: false })
+          .limit(50);
+        if (error) throw new Error(error.message);
+        return data ?? [];
+      },
+      (rows) => rows.length === 0,
+      () => buildAgentRunsSimulation(Date.now()),
+    );
   });
 
 const RunAgentSchema = z.object({
@@ -453,8 +474,24 @@ export type AgentOpsOverview = {
 };
 
 export const getAgentOpsOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  // Open showcase read; the agents window fills from the built-in fleet
+  // simulation when the registry is empty (CLAUDE.md doctrine).
+  .middleware([optionalSupabaseAuth])
+  .handler(async ({ context }): Promise<AgentOpsOverview> => {
+    const { buildAgentOpsSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "agent-ops",
+      () => fetchAgentOpsOverview(context.supabase),
+      (v) => v.agents.length === 0,
+      () => buildAgentOpsSimulation(Date.now()),
+    );
+  });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchAgentOpsOverview(sb: any): Promise<AgentOpsOverview> {
+  {
+    const context = { supabase: sb };
     const windowDays = 30;
     const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
 
@@ -566,7 +603,8 @@ export const getAgentOpsOverview = createServerFn({ method: "GET" })
         window_days: windowDays,
       },
     };
-  });
+  }
+}
 
 const SetEnabledSchema = z.object({
   agentId: z.string().min(1),

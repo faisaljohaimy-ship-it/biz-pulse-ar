@@ -149,11 +149,21 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       // The global interaction tracker unlocks this synchronously on pointer,
       // keyboard, or touch input across desktop and mobile.
       if (!AriaAudioBus.isUnlocked()) return;
-      const res = await authenticatedFetch("/api/aria/tts", {
+      let res = await authenticatedFetch("/api/aria/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: opts.text }),
       });
+      // Saved repair method (CLAUDE.md): auth-first → public fallback on
+      // 401/403 — same Layan voice, guest sessions included.
+      if (!res.ok && (res.status === 401 || res.status === 403)) {
+        res = await fetch("/api/public/aria-tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: opts.text }),
+          cache: "no-store",
+        });
+      }
       if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       if (stopped) return;
       const ctx = getAudioContext();

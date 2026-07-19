@@ -84,7 +84,12 @@ describe("specialist voice release contract", () => {
     // ARIA (chat-tts, higher priority) always preempts and never overlaps.
     expect(local).toContain('AriaAudioBus.acquire("agent-tts"');
     expect(local).toContain('AriaAudioBus.release("agent-tts"');
-    expect(client).not.toContain("/api/public/aria-tts");
+    // Saved repair method (CLAUDE.md): the public endpoint is allowed ONLY
+    // as the 401/403 guest fallback of the SAME server voice pipeline —
+    // auth-first must remain the primary path in both clients.
+    expect(client).toContain('authenticatedFetch("/api/aria/tts"');
+    expect(local).toContain('authenticatedFetch("/api/aria/tts"');
+    expect(client).toMatch(/status === 401 \|\| res\.status === 403/);
   });
 });
 

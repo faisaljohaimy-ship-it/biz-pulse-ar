@@ -119,14 +119,30 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
 
     let started = false;
     try {
+      // Distinct ElevenLabs premade voice per specialist persona (server
+      // whitelists the id; ARIA herself never goes through this path).
+      const { AGENT_ELEVEN_VOICES } = await import("@/lib/aria/voice-config");
+      const voiceId = opts.voiceProfileId ? AGENT_ELEVEN_VOICES[opts.voiceProfileId] : undefined;
       for (const segment of segments) {
         if (stopped) return;
-        const res = await authenticatedFetch("/api/aria/tts", {
+        const payload = JSON.stringify({ text: segment, ...(voiceId ? { voiceId } : {}) });
+        let res = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: segment }),
+          body: payload,
           signal: opts.signal,
         });
+        // Saved repair method (CLAUDE.md): auth-first → public fallback
+        // on 401/403 so guest sessions hear the agents too.
+        if (!res.ok && (res.status === 401 || res.status === 403)) {
+          res = await fetch("/api/public/aria-tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+            signal: opts.signal,
+            cache: "no-store",
+          });
+        }
         if (!res.ok) throw new Error(`agent TTS failed: ${res.status}`);
         if (stopped) return;
 

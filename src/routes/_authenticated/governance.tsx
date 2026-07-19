@@ -20,6 +20,109 @@ function riskTone(r: string) {
   return r === "low" ? "emerald" : r === "med" ? "amber" : "rose";
 }
 
+/* Built-in reference set — «بيانات لا تفرغ» (labelled simulation). */
+const NOW_ISO = new Date().toISOString();
+const GOVERNANCE_REFERENCE_SYSTEMS = [
+  {
+    id: "sim-g1",
+    user_id: "sim",
+    name: "نظام إدارة الحوادث الأمنية",
+    kind: "أمن صناعي",
+    owner: "إدارة العمليات",
+    criticality: "critical",
+    sla: 99,
+    contract_ends: null,
+    risk: "low",
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+  {
+    id: "sim-g2",
+    user_id: "sim",
+    name: "منصة المراقبة CCTV الموحدة",
+    kind: "مراقبة",
+    owner: "غرفة التحكم",
+    criticality: "critical",
+    sla: 98,
+    contract_ends: null,
+    risk: "med",
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+  {
+    id: "sim-g3",
+    user_id: "sim",
+    name: "نظام تصاريح العمل الرقمية",
+    kind: "تشغيل",
+    owner: "السلامة",
+    criticality: "high",
+    sla: 97,
+    contract_ends: null,
+    risk: "low",
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+  {
+    id: "sim-g4",
+    user_id: "sim",
+    name: "بوابة التكامل مع الجهات (MCP)",
+    kind: "تكامل",
+    owner: "تقنية المعلومات",
+    criticality: "high",
+    sla: 96,
+    contract_ends: null,
+    risk: "med",
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+];
+const GOVERNANCE_REFERENCE_POLICIES = [
+  {
+    id: "sim-p1",
+    user_id: "sim",
+    name: "سياسة الامتثال لتوجيهات HCIS",
+    name_en: "HCIS Compliance Policy",
+    version: "2.1",
+    coverage: 97,
+    is_active: true,
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+  {
+    id: "sim-p2",
+    user_id: "sim",
+    name: "سياسة تصاريح العمل عالية الخطورة",
+    name_en: "High-risk PTW Policy",
+    version: "1.4",
+    coverage: 94,
+    is_active: true,
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+  {
+    id: "sim-p3",
+    user_id: "sim",
+    name: "سياسة الاحتفاظ بتسجيلات المراقبة",
+    name_en: "CCTV Retention Policy",
+    version: "3.0",
+    coverage: 91,
+    is_active: true,
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+  {
+    id: "sim-p4",
+    user_id: "sim",
+    name: "سياسة الوصول والهوية للمقاولين",
+    name_en: "Contractor Access Policy",
+    version: "1.9",
+    coverage: 88,
+    is_active: true,
+    created_at: NOW_ISO,
+    updated_at: NOW_ISO,
+  },
+];
+
 function GovernancePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
@@ -32,8 +135,15 @@ function GovernancePage() {
   const policiesDelete = governancePolicies.useDelete();
 
   const adapter = useEnterpriseFabricAdapter();
-  const systems = systemsQ.data ?? [];
-  const policies = policiesQ.data ?? [];
+  // Showcase doctrine (CLAUDE.md): the governance window never renders
+  // empty — with no anon-visible rows the built-in reference set fills it.
+  const usingReference = !systemsQ.isLoading && (systemsQ.data ?? []).length === 0;
+  const systems = (systemsQ.data ?? []).length
+    ? (systemsQ.data ?? [])
+    : GOVERNANCE_REFERENCE_SYSTEMS;
+  const policies = (policiesQ.data ?? []).length
+    ? (policiesQ.data ?? [])
+    : GOVERNANCE_REFERENCE_POLICIES;
 
   const tier1 = systems.filter((s) => s.criticality === "Tier-1").length;
   const expiringSoon = systems.filter((s) => {
@@ -51,9 +161,14 @@ function GovernancePage() {
           : "Live systems, SLAs, policies, and contracts from your database."
       }
       actions={
-        <NexusPill tone="cyan">
-          <Network className="h-3 w-3" /> {adapter.systemsCount} SYSTEMS
-        </NexusPill>
+        <div className="flex flex-wrap items-center gap-2">
+          {usingReference && (
+            <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
+          )}
+          <NexusPill tone="cyan">
+            <Network className="h-3 w-3" /> {adapter.systemsCount} SYSTEMS
+          </NexusPill>
+        </div>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

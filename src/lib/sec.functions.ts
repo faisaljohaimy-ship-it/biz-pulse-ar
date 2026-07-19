@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 // ============= TYPES =============
 export type SecSite = {
@@ -245,9 +246,29 @@ export type SecOverview = {
 };
 
 export const getSecOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read (anon RLS decides); simulation fills an empty board.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecOverview> => {
-    const { supabase } = context;
+    const { buildSecOverviewSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "sec-overview",
+      () => fetchSecOverview(context.supabase),
+      (v) =>
+        v.sites.length === 0 &&
+        v.incidents.length === 0 &&
+        v.patrols.length === 0 &&
+        v.assets.length === 0,
+      () => buildSecOverviewSimulation(Date.now()),
+    );
+  });
+
+async function fetchSecOverview(
+  // Structural: the RLS client injected by optional auth.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: { from: (t: string) => any },
+): Promise<SecOverview> {
+  {
     const [sites, incidents, patrols, visitors, contractors, permits, assets, cctv] =
       await Promise.all([
         supabase.from("sec_sites").select("*").order("code"),
@@ -308,7 +329,8 @@ export const getSecOverview = createServerFn({ method: "GET" })
         contractors_active: C.filter((c) => c.status === "active").length,
       },
     };
-  });
+  }
+}
 
 // ============= TWIN TREE =============
 export type TwinTree = {

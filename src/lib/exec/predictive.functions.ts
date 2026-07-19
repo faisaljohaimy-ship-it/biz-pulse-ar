@@ -25,7 +25,20 @@ export type PredictedRisk = {
 export const getPredictedRisks = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<PredictedRisk[]> => {
-    const sb = context.supabase;
+    const { buildRiskSimulation, resilient } = await import("./showcase-simulation.server");
+    return resilient(
+      "predicted-risks",
+      () => fetchPredictedRisks(context.supabase),
+      () => false,
+      () => buildRiskSimulation(),
+    );
+  });
+
+async function fetchPredictedRisks(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sb: any,
+): Promise<PredictedRisk[]> {
+  {
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
     const [incidentsRes, sitesRes] = await Promise.all([
@@ -79,7 +92,17 @@ export const getPredictedRisks = createServerFn({ method: "GET" })
       .sort((a, b) => b.z - a.z)
       .slice(0, 5);
 
-    if (anomalies.length === 0) return [];
+    if (anomalies.length === 0) {
+      // Showcase doctrine: with no observable ops data at all, serve the
+      // built-in simulated forecast so the rail is never empty; with real
+      // (calm) data the honest «ضمن المعدّل» empty state still shows.
+      const hasAnyOpsData = incidents.length > 0;
+      if (!hasAnyOpsData) {
+        const { buildRiskSimulation } = await import("./showcase-simulation.server");
+        return buildRiskSimulation();
+      }
+      return [];
+    }
 
     // Try gpt-5 for executive language; fall back deterministically.
     try {
@@ -151,4 +174,5 @@ export const getPredictedRisks = createServerFn({ method: "GET" })
         severity: sev,
       };
     });
-  });
+  }
+}

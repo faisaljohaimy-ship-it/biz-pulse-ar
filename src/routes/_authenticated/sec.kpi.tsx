@@ -19,7 +19,8 @@ function KPI() {
   const { data, dataUpdatedAt, isFetching } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !authLoading,
+    // Public showcase: guests fetch too (anon RLS / built-in simulation).
+    enabled: !authLoading,
   });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 

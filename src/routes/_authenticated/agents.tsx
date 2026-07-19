@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
+import { AgentRing } from "@/components/executive/AgentRing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -476,8 +477,8 @@ function AgentsOps() {
         title={locale === "ar" ? "منصة عمليات الوكلاء" : "Agent Operations Platform"}
         subtitle={
           locale === "ar"
-            ? "تشغيل، مراقبة، تدقيق، وتحكم — بيانات حية فقط من قاعدة البيانات."
-            : "Lifecycle, monitoring, audit & control — live production data only."
+            ? "تشغيل، مراقبة، تدقيق، وتحكم — بيانات حية من قاعدة البيانات، ومحاكاة مرجعية موسومة عند غيابها."
+            : "Lifecycle, monitoring, audit & control — live data, with a labelled reference simulation when absent."
         }
         badge="Runtime"
         actions={
@@ -507,6 +508,10 @@ function AgentsOps() {
           </div>
         }
       />
+
+      {/* Cinematic agents network — ARIA core with the specialist fleet
+          orbiting it (neural mesh). Display-only; delightful on all sizes. */}
+      <AgentRing />
 
       {/* Live operations dashboard */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">

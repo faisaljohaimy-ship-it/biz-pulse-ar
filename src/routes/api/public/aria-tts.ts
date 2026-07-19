@@ -17,6 +17,7 @@ import {
 } from "@/lib/governance/rate-limit.server";
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 import {
+  ALLOWED_ELEVEN_VOICE_IDS,
   ARIA_ELEVENLABS_VOICE_ID,
   ARIA_ELEVENLABS_VOICE_SETTINGS,
   ARIA_ELEVENLABS_MODEL,
@@ -24,6 +25,9 @@ import {
 
 const Input = z.object({
   text: z.string().trim().min(1).max(4000),
+  // Specialist-agent voice (ElevenLabs premade), honored ONLY when it is in
+  // the server whitelist; anything else uses the canonical Layan voice.
+  voiceId: z.string().trim().max(64).optional(),
 });
 
 function clientIp(req: Request): string {
@@ -40,9 +44,15 @@ async function synthesizeWithElevenLabs(
   text: string,
   apiKey: string,
   signal: AbortSignal,
+  requestedVoice?: string,
 ): Promise<Response | null> {
-  // HARD-LOCKED canonical voice — no env / client override.
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${ARIA_ELEVENLABS_VOICE_ID}?output_format=mp3_44100_128`;
+  // HARD-LOCKED canonical voice — no env / arbitrary client override. The
+  // ONLY accepted deviation is a whitelisted specialist-agent premade voice.
+  const voiceId =
+    requestedVoice && ALLOWED_ELEVEN_VOICE_IDS.has(requestedVoice)
+      ? requestedVoice
+      : ARIA_ELEVENLABS_VOICE_ID;
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
   const r = await fetch(url, {
     method: "POST",
     headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
@@ -93,7 +103,12 @@ export const Route = createFileRoute("/api/public/aria-tts")({
 
           if (elevenKey) {
             try {
-              const el = await synthesizeWithElevenLabs(text, elevenKey, request.signal);
+              const el = await synthesizeWithElevenLabs(
+                text,
+                elevenKey,
+                request.signal,
+                parsed.data.voiceId,
+              );
               if (el) {
                 const audio = await el.arrayBuffer();
                 return new Response(audio, {

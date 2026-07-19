@@ -12,6 +12,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
 import {
+  ALLOWED_ELEVEN_VOICE_IDS,
   ARIA_ELEVENLABS_MODEL,
   ARIA_ELEVENLABS_VOICE_ID,
   ARIA_ELEVENLABS_VOICE_SETTINGS,
@@ -76,6 +77,19 @@ export const Route = createFileRoute("/api/aria/tts")({
             400,
           );
         }
+        // Optional specialist-agent voice: honored ONLY when whitelisted
+        // (ElevenLabs premade voices from voice-config). Anything else —
+        // including ARIA's own speech, which never sends voiceId — uses
+        // Layan exclusively.
+        const requestedVoice =
+          body &&
+          typeof body === "object" &&
+          typeof (body as { voiceId?: unknown }).voiceId === "string"
+            ? (body as { voiceId: string }).voiceId.trim()
+            : "";
+        const voiceId = ALLOWED_ELEVEN_VOICE_IDS.has(requestedVoice)
+          ? requestedVoice
+          : ARIA_ELEVENLABS_VOICE_ID;
 
         const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
         if (!apiKey) return jsonError("ARIA voice (ElevenLabs) is not configured.", 503);
@@ -83,7 +97,7 @@ export const Route = createFileRoute("/api/aria/tts")({
         let upstream: Response;
         try {
           upstream = await fetch(
-            `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(ARIA_ELEVENLABS_VOICE_ID)}/stream?output_format=mp3_44100_128`,
+            `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream?output_format=mp3_44100_128`,
             {
               method: "POST",
               headers: {
@@ -125,7 +139,7 @@ export const Route = createFileRoute("/api/aria/tts")({
           headers: {
             "Cache-Control": "no-store",
             "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
-            "X-ARIA-Voice-ID": ARIA_ELEVENLABS_VOICE_ID,
+            "X-ARIA-Voice-ID": voiceId,
             "X-ARIA-Voice-Model": ARIA_ELEVENLABS_MODEL,
             "X-ARIA-Voice-Provider": "elevenlabs",
             "X-Content-Type-Options": "nosniff",
