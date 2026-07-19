@@ -649,14 +649,30 @@ export function AriaCopilot() {
           idx,
           chars: text.length,
         });
-        const r = await authenticatedFetch("/api/aria/tts", {
+        const payload = JSON.stringify({ text: text.slice(0, 4000) });
+        let r = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: text.slice(0, 4000) }),
+          body: payload,
           signal: ctrl.signal,
         });
+
+        // The homepage copilot can run before an auth session is hydrated. In
+        // that case the chat answer succeeds but the authenticated TTS route
+        // returns 401, causing the visible "تعذّر تشغيل صوت آريا" loop. Retry
+        // through the public Layan endpoint (same ElevenLabs voice, no provider
+        // substitution) so voice works on mobile/laptop public sessions too.
+        if (!r.ok && (r.status === 401 || r.status === 403)) {
+          r = await fetch("/api/public/aria-tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+            signal: ctrl.signal,
+            cache: "no-store",
+          });
+        }
         VoiceTimeline.push(
           "TTS_RES",
           `[${idx}] ${r.status} in ${Math.round(performance.now() - reqT)}ms`,
@@ -693,6 +709,8 @@ export function AriaCopilot() {
         objectUrlsRef.current.add(url);
         const audio = new Audio(url);
         audio.preload = "auto";
+        audio.crossOrigin = "anonymous";
+        audio.setAttribute("playsinline", "");
         try {
           audio.load();
         } catch {
