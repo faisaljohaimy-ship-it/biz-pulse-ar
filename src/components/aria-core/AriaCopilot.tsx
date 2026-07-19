@@ -2138,7 +2138,7 @@ export function AriaCopilot() {
                 paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))",
               }}
             >
-              {health === "ok" && providerReady === false && (
+              {health === "ok" && providerReady === false && chat.messages.length === 0 && (
                 <div
                   dir="rtl"
                   role="status"
