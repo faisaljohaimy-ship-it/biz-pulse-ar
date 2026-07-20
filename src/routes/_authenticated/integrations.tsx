@@ -52,9 +52,19 @@ const PROVIDER_ICON: Record<ProviderId, typeof Mail> = {
 function healthPill(h: ProviderStatus["health"], ar: boolean) {
   switch (h) {
     case "healthy":
-      return { tone: "emerald" as const, label: ar ? "متصلة" : "Connected", icon: CheckCircle2, pulse: false };
+      return {
+        tone: "emerald" as const,
+        label: ar ? "متصلة" : "Connected",
+        icon: CheckCircle2,
+        pulse: false,
+      };
     case "degraded":
-      return { tone: "amber" as const, label: ar ? "متدهورة" : "Degraded", icon: AlertTriangle, pulse: false };
+      return {
+        tone: "amber" as const,
+        label: ar ? "متدهورة" : "Degraded",
+        icon: AlertTriangle,
+        pulse: false,
+      };
     case "error":
       return {
         tone: "amber" as const,
@@ -64,15 +74,24 @@ function healthPill(h: ProviderStatus["health"], ar: boolean) {
       };
     // «قيد التهيئة» بنبض أزرق — لا «غير معروف» ولا «غير مُهيأ» بعد اليوم.
     default:
-      return { tone: "cyan" as const, label: ar ? "قيد التهيئة" : "Provisioning", icon: Circle, pulse: true };
+      return {
+        tone: "cyan" as const,
+        label: ar ? "قيد التهيئة" : "Provisioning",
+        icon: Circle,
+        pulse: true,
+      };
   }
 }
 
 /** 24h activity sparkline — thin glow line in the connector's status color. */
 function Sparkline({ points, color }: { points: number[]; color: string }) {
+  if (points.length < 2) return null;
   const max = Math.max(...points, 1);
   const path = points
-    .map((v, i) => `${((i / (points.length - 1)) * 100).toFixed(1)},${(28 - (v / max) * 24).toFixed(1)}`)
+    .map(
+      (v, i) =>
+        `${((i / (points.length - 1)) * 100).toFixed(1)},${(28 - (v / max) * 24).toFixed(1)}`,
+    )
     .join(" ");
   return (
     <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="mt-3 h-8 w-full" aria-hidden>
@@ -95,9 +114,15 @@ function fmtRel(iso: string | null, ar: boolean): string {
   const s = Math.round(diff / 1000);
   if (s < 60) return ar ? "قبل لحظات" : `${s}s ago`;
   const m = Math.round(s / 60);
-  if (m < 60) return ar ? `قبل ${m === 1 ? "دقيقة" : m === 2 ? "دقيقتين" : m <= 10 ? `${m} دقائق` : `${m} دقيقة`}` : `${m}m ago`;
+  if (m < 60)
+    return ar
+      ? `قبل ${m === 1 ? "دقيقة" : m === 2 ? "دقيقتين" : m <= 10 ? `${m} دقائق` : `${m} دقيقة`}`
+      : `${m}m ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return ar ? `قبل ${h === 1 ? "ساعة" : h === 2 ? "ساعتين" : h <= 10 ? `${h} ساعات` : `${h} ساعة`}` : `${h}h ago`;
+  if (h < 24)
+    return ar
+      ? `قبل ${h === 1 ? "ساعة" : h === 2 ? "ساعتين" : h <= 10 ? `${h} ساعات` : `${h} ساعة`}`
+      : `${h}h ago`;
   const d = Math.round(h / 24);
   return ar ? `قبل ${d === 1 ? "يوم" : d === 2 ? "يومين" : `${d} أيام`}` : `${d}d ago`;
 }
@@ -203,16 +228,16 @@ function IntegrationsHubPage() {
               {ar ? "محاكاة مرجعية" : "Reference simulation"}
             </span>
           )}
-        <button
-          onClick={() => {
-            void overview.refetch();
-            void events.refetch();
-          }}
-          className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${overview.isFetching ? "animate-spin" : ""}`} />
-          {ar ? "تحديث" : "Refresh"}
-        </button>
+          <button
+            onClick={() => {
+              void overview.refetch();
+              void events.refetch();
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${overview.isFetching ? "animate-spin" : ""}`} />
+            {ar ? "تحديث" : "Refresh"}
+          </button>
         </>
       }
     >
@@ -276,7 +301,9 @@ function IntegrationsHubPage() {
                       </div>
                     </div>
                     <NexusPill tone={pill.tone as "emerald"}>
-                      <PillIcon className={`me-1 inline h-3 w-3${pill.pulse ? " holo-dot-pulse" : ""}`} />
+                      <PillIcon
+                        className={`me-1 inline h-3 w-3${pill.pulse ? " holo-dot-pulse" : ""}`}
+                      />
                       {pill.label}
                     </NexusPill>
                   </div>

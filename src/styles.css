@@ -2794,3 +2794,88 @@ h1, h2, h3,
     transform: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SEVERITY-RADIANT SCALE — the halo's color and intensity tell the state
+   before the number is read (constitution art. 13/14). Defined ONCE:
+   critical > high > medium > healthy > idle. Implementation discipline:
+   a pre-rendered radial-gradient pseudo layer; animation touches
+   opacity/transform ONLY; reduced-motion freezes pulse, keeps the color.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --sev-critical: 248, 113, 113; /* radiant red */
+  --sev-high: 251, 191, 36; /* amber */
+  --sev-medium: 34, 211, 238; /* cyan */
+  --sev-healthy: 16, 185, 129; /* emerald */
+  --sev-idle: 100, 140, 190; /* faded blue */
+}
+
+.holo-sev {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(var(--sev-rgb, var(--sev-idle)), 0.45);
+}
+.holo-sev::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(
+    120% 120% at 50% 0%,
+    rgba(var(--sev-rgb, var(--sev-idle)), 0.22),
+    transparent 70%
+  );
+  box-shadow:
+    0 0 14px rgba(var(--sev-rgb, var(--sev-idle)), 0.4),
+    0 0 36px rgba(var(--sev-rgb, var(--sev-idle)), 0.18);
+  opacity: 0.75;
+}
+
+.holo-sev-critical { --sev-rgb: var(--sev-critical); }
+.holo-sev-high { --sev-rgb: var(--sev-high); }
+.holo-sev-medium { --sev-rgb: var(--sev-medium); }
+.holo-sev-healthy { --sev-rgb: var(--sev-healthy); }
+.holo-sev-idle { --sev-rgb: var(--sev-idle); }
+
+/* Critical: strongest — double halo pulsing fast (1.2s). */
+@keyframes sev-pulse-fast {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.015); }
+}
+.holo-sev-critical::before { animation: sev-pulse-fast 1.2s ease-in-out infinite; }
+
+/* High: strong steady halo + a beat every 3s. */
+@keyframes sev-pulse {
+  0%, 88%, 100% { opacity: 0.7; }
+  94% { opacity: 1; }
+}
+.holo-sev-high::before { animation: sev-pulse 3s ease-in-out infinite; }
+
+/* Healthy: slow 4s breathing. */
+@keyframes sev-breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+.holo-sev-healthy::before { animation: sev-breathe 4s ease-in-out infinite; }
+
+/* Medium: calm constant glow. Idle: faint, no pulse. */
+.holo-sev-medium::before { opacity: 0.6; }
+.holo-sev-idle::before { opacity: 0.35; box-shadow: 0 0 10px rgba(var(--sev-idle), 0.25); }
+
+/* Processing ring for agent avatars — slow rotation, transform only. */
+@keyframes sev-orbit { to { transform: rotate(360deg); } }
+.sev-orbit {
+  animation: sev-orbit 3.2s linear infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-sev-critical::before,
+  .holo-sev-high::before,
+  .holo-sev-healthy::before,
+  .sev-orbit {
+    animation: none !important;
+  }
+}

@@ -25,22 +25,26 @@ export function HoloModuleCard({
   module: ModuleEntry;
   index: number;
   ar: boolean;
-  badge?: string | null;
+  badge?: { text: string; title?: string } | null;
 }) {
   const Icon = m.icon;
   const label = ar ? m.ar : m.en;
   const externalUrl = moduleExternalUrl(m);
   const critical = CRITICAL_ROUTES.has(m.to);
-  const tileClass = `holo-card holo-enter group flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl p-3 text-center transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.97]${critical ? " holo-critical" : ""}`;
+  const tileClass = `holo-card holo-enter group flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl p-3 text-center transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--holo-glow),0.6)] active:scale-[0.97]${critical ? " holo-critical" : ""}`;
   const style = { animationDelay: `${index * 60}ms` };
 
   const inner = (
     <>
-      {badge && <span className="holo-badge">{badge}</span>}
+      {badge && (
+        <span className="holo-badge" title={badge.title}>
+          {badge.text}
+        </span>
+      )}
       <span className="holo-icon nx-module-icon relative flex h-11 w-11 items-center justify-center rounded-xl">
         <Icon className="nx-icon-soft h-5 w-5" aria-hidden />
         {externalUrl && (
-          <ExternalLink className="absolute -end-1 -top-1 h-3 w-3 text-[#3AE8FF]/80" aria-hidden />
+          <ExternalLink className="absolute -end-1 -top-1 h-3 w-3 text-[rgba(var(--holo-glow),0.8)]" aria-hidden />
         )}
       </span>
       <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/85">

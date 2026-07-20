@@ -28,12 +28,28 @@ export function SystemModulesDashboard() {
     refetchInterval: 120_000,
   });
   const b = badgesQ.data;
-  const badgeFor = (to: string): string | null => {
+  // Constitution art. 6: reference figures carry a VISIBLE simulation mark —
+  // a degree ring suffixed to the number + an explanatory tooltip.
+  const simMark = b?.source === "reference" ? "°" : "";
+  const simTitle =
+    b?.source === "reference"
+      ? ar
+        ? "محاكاة مرجعية — is_simulation = true"
+        : "Reference simulation — is_simulation = true"
+      : undefined;
+  const badgeFor = (to: string): { text: string; title?: string } | null => {
     if (!b) return null;
-    if (to === "/hcis") return `${b.hcis_pct}%`;
-    if (to === "/ptw") return ar ? `${b.permits_active} نشط` : `${b.permits_active} active`;
+    if (to === "/hcis") return { text: `${b.hcis_pct}%${simMark}`, title: simTitle };
+    if (to === "/ptw")
+      return {
+        text: ar ? `${b.permits_active} نشط${simMark}` : `${b.permits_active} active${simMark}`,
+        title: simTitle,
+      };
     if (to === "/executive-reports" || to === "/sec/reports")
-      return ar ? `${b.reports_count} تقارير` : `${b.reports_count} reports`;
+      return {
+        text: ar ? `${b.reports_count} تقارير${simMark}` : `${b.reports_count} reports${simMark}`,
+        title: simTitle,
+      };
     return null;
   };
 

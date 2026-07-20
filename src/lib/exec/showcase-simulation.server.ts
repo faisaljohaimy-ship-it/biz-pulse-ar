@@ -1556,8 +1556,28 @@ export function buildHajjSimulation(now: number) {
 
 export function buildIntegrationsSimulation(now: number) {
   const P = [
-    ["microsoft_outlook", "Microsoft Outlook", "مايكروسوفت آوتلوك", "Email", true, true, "healthy", 486, 0],
-    ["microsoft_onedrive", "Microsoft OneDrive", "ون درايف", "Storage", true, true, "healthy", 122, 0],
+    [
+      "microsoft_outlook",
+      "Microsoft Outlook",
+      "مايكروسوفت آوتلوك",
+      "Email",
+      true,
+      true,
+      "healthy",
+      486,
+      0,
+    ],
+    [
+      "microsoft_onedrive",
+      "Microsoft OneDrive",
+      "ون درايف",
+      "Storage",
+      true,
+      true,
+      "healthy",
+      122,
+      0,
+    ],
     ["microsoft_sharepoint", "SharePoint", "شير بوينت", "Docs", true, true, "healthy", 231, 0],
     ["microsoft_teams", "Microsoft Teams", "مايكروسوفت تيمز", "Comms", true, false, "error", 9, 3],
     ["sap", "SAP S/4HANA", "SAP S/4HANA", "ERP", true, true, "healthy", 407, 1],
@@ -2392,4 +2412,163 @@ export function buildReportsRegistrySimulation(now: number) {
       meta: { simulated: true, date: d },
     };
   });
+}
+
+/* ── Smart command center (/command-center) ────────────────────────────── */
+
+export type CommandSeverity = "critical" | "high" | "medium" | "healthy" | "idle";
+
+export type CommandCenterState = {
+  source: "database" | "reference";
+  agents: Array<{
+    id: string;
+    name_ar: string;
+    role: string;
+    status: "active" | "processing" | "idle";
+    task_ar: string | null;
+    done_today: number;
+    severity: CommandSeverity;
+  }>;
+  pipeline: Array<{
+    id: string;
+    title_ar: string;
+    stage: "proposed" | "prepared" | "approved";
+    severity: CommandSeverity;
+    agent_ar: string;
+    created_at: string;
+  }>;
+  urgent: Array<{
+    id: string;
+    title_ar: string;
+    department: string;
+    due_at: string;
+    sla_hours: number;
+    status: string;
+  }>;
+  regions: Array<{
+    region_id: "central" | "western" | "eastern" | "southern";
+    assets_active: number;
+    incidents_open: number;
+    compliance_pct: number;
+    severity: CommandSeverity;
+    last_pulse_at: string;
+  }>;
+  counters: {
+    agents_active: number;
+    proposals_pending: number;
+    urgent_open: number;
+    support_processing: number;
+    done_today: number;
+    compliance_avg: number;
+  };
+};
+
+export function buildCommandCenterSimulation(now: number): CommandCenterState {
+  const AGENTS: Array<
+    [string, string, "active" | "processing" | "idle", string | null, number, CommandSeverity]
+  > = [
+    ["آريا التنفيذية", "التنسيق العام", "active", "توليد موجز القيادة الصباحي", 14, "healthy"],
+    ["وكيل الامتثال HCIS", "الامتثال", "processing", "تدقيق SEC-18 لمحطات التحويل", 9, "medium"],
+    ["وكيل الصيانة", "الصيانة", "active", "جدولة أوامر العمل الوقائية", 11, "healthy"],
+    ["وكيل التقارير", "التقارير", "processing", "إعداد تقرير العمليات اليومي", 6, "medium"],
+    ["وكيل الرصد", "المراقبة", "active", "تتبع 142 كاميرا عبر الإدارات", 22, "healthy"],
+    ["وكيل التصاريح", "PTW", "active", "مطابقة تصاريح العمل السارية", 8, "healthy"],
+    ["وكيل الطوارئ", "الاستجابة", "idle", null, 3, "idle"],
+    ["وكيل المخاطر", "التنبؤ", "processing", "تحليل نمط إنذارات المحيط", 5, "high"],
+  ];
+  const agents = AGENTS.map(([name_ar, role, status, task_ar, done_today, severity], i) => ({
+    id: `sim-ca-${i + 1}`,
+    name_ar,
+    role,
+    status,
+    task_ar,
+    done_today,
+    severity,
+  }));
+
+  const PIPELINE: Array<
+    [string, "proposed" | "prepared" | "approved", CommandSeverity, string, number]
+  > = [
+    ["جدولة صيانة وقائية لمحطة 132 ك.ف", "proposed", "medium", "وكيل الصيانة", 26],
+    ["تعليق تصريح عمل ساخن — رياح نشطة", "prepared", "high", "وكيل التصاريح", 48],
+    ["إصدار التقرير الأسبوعي للقيادة", "prepared", "medium", "وكيل التقارير", 70],
+    ["رفع تصنيف إنذار المحيط الشرقي", "proposed", "critical", "وكيل المخاطر", 15],
+    ["تحديث قائمة تفتيش SEC-18", "approved", "medium", "وكيل الامتثال HCIS", 200],
+    ["تعزيز دورية القطاع الجنوبي", "proposed", "high", "وكيل الرصد", 95],
+    ["أرشفة بلاغات الأسبوع المغلقة", "approved", "healthy", "آريا التنفيذية", 260],
+  ];
+  const pipeline = PIPELINE.map(([title_ar, stage, severity, agent_ar, minAgo], i) => ({
+    id: `sim-cp-${i + 1}`,
+    title_ar,
+    stage,
+    severity,
+    agent_ar,
+    created_at: iso(now - minAgo * M),
+  }));
+
+  // Nine SLA items: mostly healthy, two approaching (high), ONE overdue
+  // (critical) — the full scale shown with honest drama.
+  const URGENT: Array<[string, string, number, number, string]> = [
+    ["استعادة كاميرات القطاع الشرقي", "غرفة التحكم", -2.4, 24, "قيد المعالجة"],
+    ["تجديد تصريح عمل حرج ينتهي اليوم", "الأمن الصناعي", 2.5, 24, "قيد المعالجة"],
+    ["اعتماد خطة وردية الغد", "العمليات", 3.4, 12, "جديد"],
+    ["فحص مستشعر اهتزاز متقطع", "الصيانة", 9, 48, "قيد المعالجة"],
+    ["تحديث بيانات مقاول العزل", "العقود", 16, 72, "جديد"],
+    ["مراجعة تقرير مناورة الإخلاء", "السلامة", 30, 96, "جديد"],
+    ["تدقيق سجل زوار الأسبوع", "أمن البوابات", 41, 96, "جديد"],
+    ["معايرة بوابة الشحن الذكية", "الصيانة", 55, 120, "جديد"],
+    ["تحضير عرض الجاهزية الشهري", "مكتب القيادة", 88, 168, "جديد"],
+  ];
+  const urgent = URGENT.map(([title_ar, department, dueH, sla_hours, status], i) => ({
+    id: `sim-cu-${i + 1}`,
+    title_ar,
+    department,
+    due_at: iso(now + dueH * H),
+    sla_hours,
+    status,
+  }));
+
+  const REGIONS: Array<
+    [
+      "central" | "western" | "eastern" | "southern",
+      number,
+      number,
+      number,
+      CommandSeverity,
+      number,
+    ]
+  > = [
+    ["western", 96, 2, 97, "healthy", 4],
+    ["central", 84, 1, 96, "healthy", 7],
+    ["eastern", 71, 4, 92, "critical", 2],
+    ["southern", 58, 1, 95, "medium", 11],
+  ];
+  const regions = REGIONS.map(
+    ([region_id, assets_active, incidents_open, compliance_pct, severity, minAgo]) => ({
+      region_id,
+      assets_active,
+      incidents_open,
+      compliance_pct,
+      severity,
+      last_pulse_at: iso(now - minAgo * M),
+    }),
+  );
+
+  return {
+    source: "reference",
+    agents,
+    pipeline,
+    urgent,
+    regions,
+    counters: {
+      agents_active: agents.filter((a) => a.status !== "idle").length,
+      proposals_pending: pipeline.filter((p) => p.stage !== "approved").length,
+      urgent_open: urgent.filter((u) => u.status !== "مغلق").length,
+      support_processing: 4,
+      done_today: agents.reduce((s, a) => s + a.done_today, 0),
+      compliance_avg: Math.round(
+        regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length,
+      ),
+    },
+  };
 }
