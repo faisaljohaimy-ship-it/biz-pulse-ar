@@ -3,11 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Network, ShieldCheck, FileText, Database } from "lucide-react";
-import {
-  governanceSystems,
-  governancePolicies,
-  useEnterpriseFabricAdapter,
-} from "@/lib/enterprise-domains";
+import { governanceSystems, governancePolicies } from "@/lib/enterprise-domains";
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
 export const Route = createFileRoute("/_authenticated/governance")({
@@ -134,7 +130,6 @@ function GovernancePage() {
   const policiesCreate = governancePolicies.useCreate();
   const policiesDelete = governancePolicies.useDelete();
 
-  const adapter = useEnterpriseFabricAdapter();
   // Showcase doctrine (CLAUDE.md): the governance window never renders
   // empty — with no anon-visible rows the built-in reference set fills it.
   const usingReference = !systemsQ.isLoading && (systemsQ.data ?? []).length === 0;
@@ -145,7 +140,17 @@ function GovernancePage() {
     ? (policiesQ.data ?? [])
     : GOVERNANCE_REFERENCE_POLICIES;
 
-  const tier1 = systems.filter((s) => s.criticality === "Tier-1").length;
+  // Header stats are computed from the SAME fallback-aware arrays the
+  // tables render — the counters must never contradict the rows below.
+  const avgSla = systems.length
+    ? Math.round((systems.reduce((sum, s) => sum + Number(s.sla), 0) / systems.length) * 100) / 100
+    : 0;
+  const avgPolicyCoverage = policies.length
+    ? Math.round(policies.reduce((sum, p) => sum + p.coverage, 0) / policies.length)
+    : 0;
+  const tier1 = systems.filter(
+    (s) => s.criticality === "Tier-1" || s.criticality === "critical",
+  ).length;
   const expiringSoon = systems.filter((s) => {
     if (!s.contract_ends) return false;
     return /20(2[6-9]|3[0-9])/.test(s.contract_ends); // crude
@@ -166,7 +171,7 @@ function GovernancePage() {
             <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
           )}
           <NexusPill tone="cyan">
-            <Network className="h-3 w-3" /> {adapter.systemsCount} SYSTEMS
+            <Network className="h-3 w-3" /> {systems.length} SYSTEMS
           </NexusPill>
         </div>
       }
@@ -174,12 +179,12 @@ function GovernancePage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <NexusStat
           label={ar ? "أنظمة محوكمة" : "Governed systems"}
-          value={String(adapter.systemsCount)}
+          value={String(systems.length)}
           tone="cyan"
         />
         <NexusStat
           label={ar ? "متوسط SLA" : "Avg SLA"}
-          value={adapter.systemsCount ? `${adapter.avgSla}%` : "—"}
+          value={systems.length ? `${avgSla}%` : "—"}
           tone="emerald"
         />
         <NexusStat
@@ -393,11 +398,11 @@ function GovernancePage() {
             ))}
           </div>
         )}
-        {adapter.policiesCount > 0 && (
+        {policies.length > 0 && (
           <div className="mt-3 text-[11px] text-slate-500">
             {ar
-              ? `متوسط تغطية السياسات: ${adapter.avgPolicyCoverage}%`
-              : `Avg policy coverage: ${adapter.avgPolicyCoverage}%`}
+              ? `متوسط تغطية السياسات: ${avgPolicyCoverage}%`
+              : `Avg policy coverage: ${avgPolicyCoverage}%`}
           </div>
         )}
       </NexusCard>
