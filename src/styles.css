@@ -2617,3 +2617,180 @@ h1, h2, h3,
       drop-shadow(0 0 10px rgba(var(--nx-region-rgb, 0, 212, 255), 0.3));
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HOLOGRAPHIC LAYER SYSTEM — the single visual language for module tiles
+   and activated page panels (constitution art. 13: one identity).
+   Defined ONCE here; consumed via .holo-* classes everywhere.
+   Discipline: every animation runs on transform/opacity only; hover glow
+   is an opacity fade of a pre-rendered pseudo-element (no box-shadow
+   animation); reduced-motion kills all movement but keeps the glow.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --holo-glow: 58, 232, 255; /* cyan */
+  --holo-accent: 16, 185, 129; /* emerald */
+  --holo-border: linear-gradient(
+    135deg,
+    rgba(var(--holo-glow), 0.55),
+    rgba(var(--holo-accent), 0.28) 55%,
+    rgba(var(--holo-glow), 0.4)
+  );
+}
+
+/* Card shell: gradient hairline border + glass fill. */
+.holo-card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(7, 22, 40, 0.78), rgba(7, 22, 40, 0.78)) padding-box,
+    var(--holo-border) border-box;
+  /* Performance discipline: NO per-card backdrop-filter — 20+ blurred
+     cards over a video backdrop murder scroll fps on mid phones. The
+     slightly deeper fill above provides the glass reading instead. */
+}
+
+/* Pre-rendered outer glow — hover/focus only fades its opacity. */
+.holo-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.35;
+  box-shadow:
+    0 0 18px rgba(var(--holo-glow), 0.35),
+    0 0 44px rgba(var(--holo-glow), 0.16);
+  transition: opacity 0.25s ease;
+}
+.holo-card:hover::before,
+.holo-card:focus-visible::before,
+.holo-card:focus-within::before {
+  opacity: 1;
+}
+
+/* One-shot horizontal scanline sweeping the card on hover/focus. */
+.holo-card::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6%;
+  top: 0;
+  height: 1.5px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--holo-glow), 0.9),
+    transparent
+  );
+  opacity: 0;
+  transform: translateY(0);
+}
+.holo-card:hover::after,
+.holo-card:focus-visible::after {
+  animation: holo-scan 0.9s ease-out 1;
+}
+@keyframes holo-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(76px);
+  }
+}
+
+/* Icon lift on hover — transform only, cyan drop shadow pre-exists. */
+.holo-card .holo-icon {
+  transition: transform 0.25s ease;
+}
+.holo-card:hover .holo-icon,
+.holo-card:focus-visible .holo-icon {
+  transform: translateY(-3px);
+}
+
+/* Slow functional pulse — CRITICAL modules only (HCIS/permits/urgent). */
+@keyframes holo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+.holo-critical .holo-icon {
+  animation: holo-pulse 3.6s ease-in-out infinite;
+}
+
+/* Staggered one-shot entrance (delay set inline per tile). */
+@keyframes holo-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.holo-enter {
+  animation: holo-enter 0.5s ease-out both;
+}
+
+/* Live badge chip on tiles. */
+.holo-badge {
+  position: absolute;
+  top: 6px;
+  inset-inline-start: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--holo-accent), 0.45);
+  background: rgba(var(--holo-accent), 0.12);
+  padding: 1px 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: rgb(110, 231, 183);
+  letter-spacing: 0.02em;
+}
+
+/* Status-pulse dot for "قيد التهيئة" connectors. */
+@keyframes holo-dot {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.holo-dot-pulse {
+  animation: holo-dot 1.8s ease-in-out infinite;
+}
+
+/* Reduced motion: keep the glow language, drop every movement. */
+@media (prefers-reduced-motion: reduce) {
+  .holo-card::after,
+  .holo-critical .holo-icon,
+  .holo-enter,
+  .holo-dot-pulse {
+    animation: none !important;
+  }
+  .holo-card .holo-icon {
+    transition: none !important;
+  }
+  .holo-enter {
+    opacity: 1;
+    transform: none;
+  }
+}

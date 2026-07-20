@@ -7,14 +7,35 @@
  * width, no crop/stretch), flowing into a wrapped multi-column grid on larger
  * screens. Full RTL, ≥44px touch targets, works on phone/laptop/desktop.
  */
-import { Link } from "@tanstack/react-router";
-import { ExternalLink } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useI18n } from "@/lib/i18n";
-import { MODULES, moduleExternalUrl } from "@/lib/nav/modules";
+import { MODULES } from "@/lib/nav/modules";
+import { getModuleBadges } from "@/lib/exec/module-badges.functions";
+import { HoloModuleCard } from "./HoloModuleCard";
 
 export function SystemModulesDashboard() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+
+  // Live badges — tiles breathe before they're opened. Resilient source:
+  // reference figures fill in whenever the database is silent.
+  const fetchBadges = useServerFn(getModuleBadges);
+  const badgesQ = useQuery({
+    queryKey: ["module-badges"],
+    queryFn: () => fetchBadges(),
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+  const b = badgesQ.data;
+  const badgeFor = (to: string): string | null => {
+    if (!b) return null;
+    if (to === "/hcis") return `${b.hcis_pct}%`;
+    if (to === "/ptw") return ar ? `${b.permits_active} نشط` : `${b.permits_active} active`;
+    if (to === "/executive-reports" || to === "/sec/reports")
+      return ar ? `${b.reports_count} تقارير` : `${b.reports_count} reports`;
+    return null;
+  };
 
   return (
     <section
@@ -37,57 +58,11 @@ export function SystemModulesDashboard() {
         className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:snap-none sm:grid-cols-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-6"
         style={{ scrollbarWidth: "thin" }}
       >
-        {MODULES.map((m, i) => {
-          const Icon = m.icon;
-          const label = ar ? m.ar : m.en;
-          const externalUrl = moduleExternalUrl(m);
-          const tileClass =
-            "nx-sector-pulse group flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition hover:-translate-y-0.5 hover:border-[#3AE8FF]/60 hover:bg-[#3AE8FF]/[0.1] hover:shadow-[0_0_32px_rgba(58,232,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]/60 active:scale-[0.97] active:border-[#3AE8FF]/70 active:bg-[#3AE8FF]/[0.14]";
-          const inner = (
-            <>
-              <span className="nx-module-icon relative flex h-11 w-11 items-center justify-center rounded-xl transition">
-                <Icon className="nx-icon-soft h-5 w-5" aria-hidden />
-                {externalUrl && (
-                  <ExternalLink
-                    className="absolute -end-1 -top-1 h-3 w-3 text-[#3AE8FF]/80"
-                    aria-hidden
-                  />
-                )}
-              </span>
-              <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/85">
-                {label}
-              </span>
-            </>
-          );
-          return (
-            <li key={m.to} className="w-[38%] shrink-0 snap-start sm:w-auto">
-              {externalUrl ? (
-                // External sister platform (Nusuk): a REAL anchor inside the
-                // user's direct gesture — iOS-safe, no window.open in async.
-                <a
-                  href={externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  title={ar ? "يُفتح في نافذة جديدة" : "Opens in a new tab"}
-                  style={{ animationDelay: `${-((i % 4) * 3)}s` }}
-                  className={tileClass}
-                >
-                  {inner}
-                </a>
-              ) : (
-                <Link
-                  to={m.to as "/"}
-                  aria-label={label}
-                  style={{ animationDelay: `${-((i % 4) * 3)}s` }}
-                  className={tileClass}
-                >
-                  {inner}
-                </Link>
-              )}
-            </li>
-          );
-        })}
+        {MODULES.map((m, i) => (
+          <li key={m.to} className="w-[38%] shrink-0 snap-start sm:w-auto">
+            <HoloModuleCard module={m} index={i} ar={ar} badge={badgeFor(m.to)} />
+          </li>
+        ))}
       </ul>
     </section>
   );

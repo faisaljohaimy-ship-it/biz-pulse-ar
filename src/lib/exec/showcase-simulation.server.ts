@@ -1556,42 +1556,12 @@ export function buildHajjSimulation(now: number) {
 
 export function buildIntegrationsSimulation(now: number) {
   const P = [
-    [
-      "microsoft_outlook",
-      "Microsoft Outlook",
-      "مايكروسوفت آوتلوك",
-      "Email",
-      true,
-      true,
-      "healthy",
-      34,
-      0,
-    ],
-    [
-      "microsoft_onedrive",
-      "Microsoft OneDrive",
-      "ون درايف",
-      "Storage",
-      true,
-      true,
-      "healthy",
-      12,
-      0,
-    ],
-    ["microsoft_sharepoint", "SharePoint", "شير بوينت", "Docs", true, true, "healthy", 21, 0],
-    [
-      "microsoft_teams",
-      "Microsoft Teams",
-      "مايكروسوفت تيمز",
-      "Comms",
-      true,
-      false,
-      "degraded",
-      9,
-      2,
-    ],
-    ["sap", "SAP S/4HANA", "SAP S/4HANA", "ERP", true, true, "healthy", 57, 1],
-    ["power_bi", "Power BI", "باور بي آي", "Analytics", true, false, "unknown", 0, 0],
+    ["microsoft_outlook", "Microsoft Outlook", "مايكروسوفت آوتلوك", "Email", true, true, "healthy", 486, 0],
+    ["microsoft_onedrive", "Microsoft OneDrive", "ون درايف", "Storage", true, true, "healthy", 122, 0],
+    ["microsoft_sharepoint", "SharePoint", "شير بوينت", "Docs", true, true, "healthy", 231, 0],
+    ["microsoft_teams", "Microsoft Teams", "مايكروسوفت تيمز", "Comms", true, false, "error", 9, 3],
+    ["sap", "SAP S/4HANA", "SAP S/4HANA", "ERP", true, true, "healthy", 407, 1],
+    ["power_bi", "Power BI", "باور بي آي", "Analytics", true, false, "not_configured", 29, 0],
   ] as const;
   const providers = P.map(
     ([id, name, name_ar, category, configured, connected, health, events_24h, errors_24h], i) => ({
@@ -1603,14 +1573,20 @@ export function buildIntegrationsSimulation(now: number) {
       connected,
       health,
       last_test_at: iso(now - (i + 1) * 40 * M),
-      last_test_status: health === "degraded" ? "error" : health === "unknown" ? null : "ok",
-      last_test_error: health === "degraded" ? "يتطلب تجديد الربط" : null,
-      last_sync_at: connected ? iso(now - (i + 1) * 25 * M) : null,
+      last_test_status: health === "error" ? "error" : health === "not_configured" ? null : "ok",
+      last_test_error: health === "error" ? "يتطلب تجديد الربط" : null,
+      last_sync_at: connected ? iso(now - (i + 1) * 12 * M) : null,
       last_sync_status: connected ? "ok" : null,
       events_24h,
       errors_24h,
       setup_hint_ar: "بيانات محاكاة مرجعية — اربط الموصل الفعلي من الإعدادات",
       setup_hint_en: "Reference simulation — link the live connector from settings",
+      // Deterministic hourly working-day curve scaled to the provider's
+      // 24h volume — fuel for the card sparkline.
+      activity24h: fill(24, (h) => {
+        const day = Math.max(0, Math.sin(((h - 5) / 18) * Math.PI));
+        return Math.round((events_24h / 14) * day + ((h * (i + 3)) % 3));
+      }),
     }),
   );
   return {

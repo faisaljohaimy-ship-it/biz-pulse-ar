@@ -30,6 +30,8 @@ export type ProviderStatus = {
   errors_24h: number;
   setup_hint_ar: string;
   setup_hint_en: string;
+  /** Hourly activity counts for the 24h sparkline (reference rows). */
+  activity24h?: number[];
 };
 
 export type IntegrationsOverview = {
@@ -134,7 +136,10 @@ export const getIntegrationsOverview = createServerFn({ method: "GET" })
     return resilient(
       "integrations-overview",
       () => fetchIntegrationsOverview(context.supabase),
-      () => false,
+      // A reachable database with zero connected providers and zero 24h
+      // events is an empty showcase — the reference simulation serves it
+      // (لا «غير معروف» ولا أصفار يتيمة بعد اليوم).
+      (o) => o.totals.connected === 0 && o.totals.events_24h === 0,
       () => buildIntegrationsSimulation(Date.now()) as unknown as IntegrationsOverview,
     );
   });
