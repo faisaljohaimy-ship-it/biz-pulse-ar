@@ -44,7 +44,10 @@ export function HoloModuleCard({
       <span className="holo-icon nx-module-icon relative flex h-11 w-11 items-center justify-center rounded-xl">
         <Icon className="nx-icon-soft h-5 w-5" aria-hidden />
         {externalUrl && (
-          <ExternalLink className="absolute -end-1 -top-1 h-3 w-3 text-[rgba(var(--holo-glow),0.8)]" aria-hidden />
+          <ExternalLink
+            className="absolute -end-1 -top-1 h-3 w-3 text-[rgba(var(--holo-glow),0.8)]"
+            aria-hidden
+          />
         )}
       </span>
       <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/85">

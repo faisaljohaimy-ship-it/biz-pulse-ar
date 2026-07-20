@@ -91,38 +91,64 @@ export function ArabianPeninsulaBackdrop() {
           </filter>
         </defs>
 
-        {/* Peninsula body — light-green wash with a continuous pulse */}
+        {/* Peninsula body — the blurred glow lives on a STATIC path so the
+            Gaussian filter renders once and stays cached; the breathing pulse
+            animates a separate UNfiltered stroke overlay. Animating a
+            filtered element re-runs the blur over ~600k px every frame —
+            that single combination was measured to cost more than the whole
+            rest of the page on GPU-less devices. */}
         <path
           d={PENINSULA}
           fill="url(#apb-green)"
           stroke="#86efac"
           strokeOpacity="0.22"
           strokeWidth="1.5"
-          className="apb-peninsula"
           style={{ filter: "url(#apb-glow)" }}
         />
+        <path
+          d={PENINSULA}
+          fill="none"
+          stroke="#86efac"
+          strokeOpacity="0.22"
+          strokeWidth="1.5"
+          className="apb-peninsula"
+        />
 
-        {/* Four sector territories, sky-blue borders; active one pulses */}
+        {/* Four sector territories, sky-blue borders; active one pulses.
+            Same split: static filtered glow + animated unfiltered stroke. */}
         {sectors.map((s) => {
           const active = s.id === regionId;
           return (
-            <path
-              key={s.id}
-              d={s.d}
-              fill={active ? "rgba(56,189,248,0.06)" : "rgba(134,239,172,0.03)"}
-              stroke={active ? "#7DD3FC" : "#38BDF8"}
-              strokeWidth={active ? 2.4 : 1.4}
-              strokeOpacity={active ? 0.9 : 0.4}
-              className={active ? "apb-sector-active" : "apb-sector"}
-              style={active ? { filter: "url(#apb-glow)" } : undefined}
-            />
+            <g key={s.id}>
+              {active && (
+                <path
+                  d={s.d}
+                  fill="rgba(56,189,248,0.06)"
+                  stroke="#7DD3FC"
+                  strokeWidth={2.4}
+                  strokeOpacity={0.7}
+                  style={{ filter: "url(#apb-glow)" }}
+                />
+              )}
+              <path
+                d={s.d}
+                fill={active ? "none" : "rgba(134,239,172,0.03)"}
+                stroke={active ? "#7DD3FC" : "#38BDF8"}
+                strokeWidth={active ? 2.4 : 1.4}
+                strokeOpacity={active ? 0.9 : 0.4}
+                className={active ? "apb-sector-active" : "apb-sector"}
+              />
+            </g>
           );
         })}
 
         <style>{`
-          .apb-peninsula { animation: apbBreathe 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-          .apb-sector { animation: apbFaint 6s ease-in-out infinite; }
-          .apb-sector-active { animation: apbPulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+          /* Ambient discipline (see styles.css severity scale): slow pulses
+             run on steps() — a few opacity updates per second instead of 60.
+             Invisible to the eye, ~20× less repaint damage per layer. */
+          .apb-peninsula { animation: apbBreathe 6s steps(18, jump-none) infinite; transform-box: fill-box; transform-origin: center; }
+          .apb-sector { animation: apbFaint 6s steps(18, jump-none) infinite; }
+          .apb-sector-active { animation: apbPulse 2.4s steps(12, jump-none) infinite; transform-box: fill-box; transform-origin: center; }
           @keyframes apbBreathe {
             0%, 100% { opacity: 0.7; }
             50%      { opacity: 1; }

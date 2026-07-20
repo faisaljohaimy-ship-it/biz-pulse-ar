@@ -2420,6 +2420,10 @@ export type CommandSeverity = "critical" | "high" | "medium" | "healthy" | "idle
 
 export type CommandCenterState = {
   source: "database" | "reference";
+  /** True whenever the DISPLAYED rows are simulation (reference build OR
+      seeded rows flagged is_simulation) — the badge follows this, not
+      source, so seeded data never masquerades as live (const. art. 6). */
+  simulation: boolean;
   agents: Array<{
     id: string;
     name_ar: string;
@@ -2558,6 +2562,7 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
     source: "reference",
     agents,
     pipeline,
+    simulation: true,
     urgent,
     regions,
     counters: {

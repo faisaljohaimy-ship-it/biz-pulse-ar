@@ -93,7 +93,7 @@ export function AuroraFantasyBackdrop({
             r={s.r}
             fill="#dff6ff"
             opacity={s.o * o}
-            style={{ animation: `${a}-tw ${s.d}s ease-in-out ${s.delay}s infinite` }}
+            style={{ animation: `${a}-tw ${s.d}s steps(10, jump-none) ${s.delay}s infinite` }}
           />
         ))}
       </svg>
@@ -114,11 +114,14 @@ export function AuroraFantasyBackdrop({
         @keyframes ${a}-wave { 0%,100%{transform:rotate(-8deg) translateX(0)} 50%{transform:rotate(-5deg) translateX(4%)} }
         @keyframes ${a}-wave2 { 0%,100%{transform:rotate(6deg) translateX(0)} 50%{transform:rotate(9deg) translateX(-4%)} }
         @keyframes ${a}-tw { 0%,100%{opacity:.15} 50%{opacity:1} }
-        .${a}-neb{animation:${a}-drift 22s ease-in-out infinite}
-        .${a}-neb2{animation:${a}-drift2 26s ease-in-out infinite}
-        .${a}-neb3{animation:${a}-drift3 30s ease-in-out infinite}
-        .${a}-rib{animation:${a}-wave 18s ease-in-out infinite}
-        .${a}-rib2{animation:${a}-wave2 21s ease-in-out infinite}
+        /* steps(): these layers carry 46–110px blurs — a smooth per-frame
+           drift forces giant recompositions 60×/s. A couple of position
+           updates per second on 18–30s drifts is visually identical. */
+        .${a}-neb{animation:${a}-drift 22s steps(44,jump-none) infinite}
+        .${a}-neb2{animation:${a}-drift2 26s steps(52,jump-none) infinite}
+        .${a}-neb3{animation:${a}-drift3 30s steps(60,jump-none) infinite}
+        .${a}-rib{animation:${a}-wave 18s steps(36,jump-none) infinite}
+        .${a}-rib2{animation:${a}-wave2 21s steps(42,jump-none) infinite}
         @media (prefers-reduced-motion: reduce){
           .${a}-neb,.${a}-neb2,.${a}-neb3,.${a}-rib,.${a}-rib2{animation:none}
           .${a}-stars circle{animation:none !important}

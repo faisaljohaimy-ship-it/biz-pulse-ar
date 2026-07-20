@@ -34,7 +34,11 @@ export function GlossyImageBackdrop({
         alt=""
         draggable={false}
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ opacity, filter: "saturate(1.12) brightness(1.06)" }}
+        // No CSS filter here: a saturate/brightness filter on a full-page
+        // image gets re-evaluated every time an overlapping layer animates
+        // (the sheen does, continuously) — measured as a top scroll-fps
+        // cost on weak GPUs, for a tint that is invisible at this opacity.
+        style={{ opacity }}
       />
       {/* Navy readability veil so any text above stays crisp (AA). */}
       <div
@@ -57,7 +61,10 @@ export function GlossyImageBackdrop({
         .${uid}-sheen {
           background: linear-gradient(105deg, transparent 42%, rgba(180,220,255,0.07) 50%, transparent 58%);
           transform: translateX(-25%);
-          animation: ${uid}-sweep 9s ease-in-out infinite;
+          /* steps(): ~6 position updates/s. On a layer this size a smooth
+             per-frame sweep forces full-backdrop recomposition 60×/s; the
+             stepped sweep of this soft 7%-alpha gradient reads identical. */
+          animation: ${uid}-sweep 9s steps(54, jump-none) infinite;
         }
         @keyframes ${uid}-sweep {
           0%, 100% { transform: translateX(-25%); opacity: 0.4; }

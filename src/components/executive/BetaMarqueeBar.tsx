@@ -26,7 +26,10 @@ export function BetaMarqueeBar({ showClock = true }: BetaMarqueeBarProps) {
       dir="ltr"
       role="status"
       aria-label="Beta preview banner"
-      className="pointer-events-none sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)] backdrop-blur-xl"
+      // No backdrop-blur: the gradient behind it is fully opaque, so the
+      // blur is invisible — yet the animated shine forced it to re-run
+      // every frame, taxing scroll fps on every page.
+      className="pointer-events-none sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <style>{`
@@ -43,7 +46,9 @@ export function BetaMarqueeBar({ showClock = true }: BetaMarqueeBarProps) {
         style={{
           background:
             "linear-gradient(90deg, transparent 0%, rgba(58,232,255,0.18) 50%, transparent 100%)",
-          animation: "beta-marquee-shine 6s ease-in-out infinite",
+          // steps(): a few opacity updates per second — the soft shine reads
+          // the same, the bar's repaint cost drops ~10×.
+          animation: "beta-marquee-shine 6s steps(36, jump-none) infinite",
         }}
       />
 
