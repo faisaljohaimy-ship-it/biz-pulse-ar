@@ -350,20 +350,23 @@ export type TwinTree = {
 };
 
 export const getTwinTree = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; «بيانات لا تفرغ»: unreachable/empty hierarchy ⇒
+  // built-in Western-region twin simulation (live rows always win).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<TwinTree> => {
-    const { supabase } = context;
-    const [
-      sections,
-      circles,
-      sites,
-      buildings,
-      cameras,
-      gates,
-      sensors,
-      controlRooms,
-      patrolTeams,
-    ] = await Promise.all([
+    const { buildTwinTreeSimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "twin-tree",
+      () => fetchTwinTree(context.supabase as { from: (t: string) => any }),
+      (t) => t.circles.length === 0 && t.sections.length === 0,
+      () => buildTwinTreeSimulation(Date.now()) as unknown as TwinTree,
+    );
+  });
+
+async function fetchTwinTree(supabase: { from: (t: string) => any }): Promise<TwinTree> {
+  const [sections, circles, sites, buildings, cameras, gates, sensors, controlRooms, patrolTeams] =
+    await Promise.all([
       supabase.from("sec_sections").select("*").order("code"),
       supabase.from("sec_circles").select("*").order("code"),
       supabase.from("sec_sites").select("*").order("code"),
@@ -375,82 +378,80 @@ export const getTwinTree = createServerFn({ method: "GET" })
       supabase.from("sec_patrol_teams").select("*").order("code"),
     ]);
 
-    const camerasByBuilding = new Map<string, SecCamera[]>();
-    for (const c of (cameras.data ?? []) as SecCamera[]) {
-      if (!c.building_id) continue;
-      (
-        camerasByBuilding.get(c.building_id) ??
-        camerasByBuilding.set(c.building_id, []).get(c.building_id)!
-      ).push(c);
-    }
-    const gatesByBuilding = new Map<string, SecGate[]>();
-    for (const g of (gates.data ?? []) as SecGate[]) {
-      if (!g.building_id) continue;
-      (
-        gatesByBuilding.get(g.building_id) ??
-        gatesByBuilding.set(g.building_id, []).get(g.building_id)!
-      ).push(g);
-    }
-    const sensorsByBuilding = new Map<string, SecSensor[]>();
-    for (const s of (sensors.data ?? []) as SecSensor[]) {
-      if (!s.building_id) continue;
-      (
-        sensorsByBuilding.get(s.building_id) ??
-        sensorsByBuilding.set(s.building_id, []).get(s.building_id)!
-      ).push(s);
-    }
-    const buildingsBySite = new Map<string, SecBuilding[]>();
-    for (const b of (buildings.data ?? []) as SecBuilding[]) {
-      if (!b.site_id) continue;
-      (buildingsBySite.get(b.site_id) ?? buildingsBySite.set(b.site_id, []).get(b.site_id)!).push(
-        b,
-      );
-    }
-    const sitesByCircle = new Map<string, SecSite[]>();
-    for (const s of (sites.data ?? []) as SecSite[]) {
-      if (!s.circle_id) continue;
-      (sitesByCircle.get(s.circle_id) ?? sitesByCircle.set(s.circle_id, []).get(s.circle_id)!).push(
-        s,
-      );
-    }
-    const controlRoomsByCircle = new Map<string, SecControlRoom[]>();
-    for (const cr of (controlRooms.data ?? []) as SecControlRoom[]) {
-      if (!cr.circle_id) continue;
-      (
-        controlRoomsByCircle.get(cr.circle_id) ??
-        controlRoomsByCircle.set(cr.circle_id, []).get(cr.circle_id)!
-      ).push(cr);
-    }
-    const teamsByCircle = new Map<string, SecPatrolTeam[]>();
-    for (const t of (patrolTeams.data ?? []) as SecPatrolTeam[]) {
-      if (!t.circle_id) continue;
-      (teamsByCircle.get(t.circle_id) ?? teamsByCircle.set(t.circle_id, []).get(t.circle_id)!).push(
-        t,
-      );
-    }
+  const camerasByBuilding = new Map<string, SecCamera[]>();
+  for (const c of (cameras.data ?? []) as SecCamera[]) {
+    if (!c.building_id) continue;
+    (
+      camerasByBuilding.get(c.building_id) ??
+      camerasByBuilding.set(c.building_id, []).get(c.building_id)!
+    ).push(c);
+  }
+  const gatesByBuilding = new Map<string, SecGate[]>();
+  for (const g of (gates.data ?? []) as SecGate[]) {
+    if (!g.building_id) continue;
+    (
+      gatesByBuilding.get(g.building_id) ??
+      gatesByBuilding.set(g.building_id, []).get(g.building_id)!
+    ).push(g);
+  }
+  const sensorsByBuilding = new Map<string, SecSensor[]>();
+  for (const s of (sensors.data ?? []) as SecSensor[]) {
+    if (!s.building_id) continue;
+    (
+      sensorsByBuilding.get(s.building_id) ??
+      sensorsByBuilding.set(s.building_id, []).get(s.building_id)!
+    ).push(s);
+  }
+  const buildingsBySite = new Map<string, SecBuilding[]>();
+  for (const b of (buildings.data ?? []) as SecBuilding[]) {
+    if (!b.site_id) continue;
+    (buildingsBySite.get(b.site_id) ?? buildingsBySite.set(b.site_id, []).get(b.site_id)!).push(b);
+  }
+  const sitesByCircle = new Map<string, SecSite[]>();
+  for (const s of (sites.data ?? []) as SecSite[]) {
+    if (!s.circle_id) continue;
+    (sitesByCircle.get(s.circle_id) ?? sitesByCircle.set(s.circle_id, []).get(s.circle_id)!).push(
+      s,
+    );
+  }
+  const controlRoomsByCircle = new Map<string, SecControlRoom[]>();
+  for (const cr of (controlRooms.data ?? []) as SecControlRoom[]) {
+    if (!cr.circle_id) continue;
+    (
+      controlRoomsByCircle.get(cr.circle_id) ??
+      controlRoomsByCircle.set(cr.circle_id, []).get(cr.circle_id)!
+    ).push(cr);
+  }
+  const teamsByCircle = new Map<string, SecPatrolTeam[]>();
+  for (const t of (patrolTeams.data ?? []) as SecPatrolTeam[]) {
+    if (!t.circle_id) continue;
+    (teamsByCircle.get(t.circle_id) ?? teamsByCircle.set(t.circle_id, []).get(t.circle_id)!).push(
+      t,
+    );
+  }
 
-    return {
-      region: {
-        name_ar: "إدارة الأمن الصناعي بالمنطقة الغربية",
-        name_en: "Western Region Industrial Security",
-      },
-      sections: (sections.data ?? []) as SecSection[],
-      circles: ((circles.data ?? []) as SecCircle[]).map((c) => ({
-        ...c,
-        sites: (sitesByCircle.get(c.id) ?? []).map((s) => ({
-          ...s,
-          buildings: (buildingsBySite.get(s.id) ?? []).map((b) => ({
-            ...b,
-            cameras: camerasByBuilding.get(b.id) ?? [],
-            gates: gatesByBuilding.get(b.id) ?? [],
-            sensors: sensorsByBuilding.get(b.id) ?? [],
-          })),
+  return {
+    region: {
+      name_ar: "إدارة الأمن الصناعي بالمنطقة الغربية",
+      name_en: "Western Region Industrial Security",
+    },
+    sections: (sections.data ?? []) as SecSection[],
+    circles: ((circles.data ?? []) as SecCircle[]).map((c) => ({
+      ...c,
+      sites: (sitesByCircle.get(c.id) ?? []).map((s) => ({
+        ...s,
+        buildings: (buildingsBySite.get(s.id) ?? []).map((b) => ({
+          ...b,
+          cameras: camerasByBuilding.get(b.id) ?? [],
+          gates: gatesByBuilding.get(b.id) ?? [],
+          sensors: sensorsByBuilding.get(b.id) ?? [],
         })),
-        control_rooms: controlRoomsByCircle.get(c.id) ?? [],
-        patrol_teams: teamsByCircle.get(c.id) ?? [],
       })),
-    };
-  });
+      control_rooms: controlRoomsByCircle.get(c.id) ?? [],
+      patrol_teams: teamsByCircle.get(c.id) ?? [],
+    })),
+  };
+}
 
 // ============= PROJECTS & MAINTENANCE =============
 export const getProjects = createServerFn({ method: "GET" })

@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import type { DailyOpsData } from "@/lib/exec/showcase-simulation.server";
 import { z } from "zod";
 
 // ============================================================================
@@ -379,139 +381,248 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
 // ───────────────────────────────────────────────────────────────────────────
 // Daily Operations Report (xlsx) — aggregated across incidents/WOs/permits
 // ───────────────────────────────────────────────────────────────────────────
-export const generateDailyOperationsReport = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z
-      .object({
-        date: z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/)
-          .optional(),
-      })
-      .parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    const { supabase, userId, claims } = context;
-    const actorName =
-      (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
-    const day = data.date ?? new Date().toISOString().slice(0, 10);
-    const from = new Date(`${day}T00:00:00.000Z`).toISOString();
-    const to = new Date(new Date(from).getTime() + 24 * 3600 * 1000).toISOString();
+/* ── Daily operations dataset — shared fuel for Excel + client PDF ────── */
 
-    const [inc, wo, perm, acts] = await Promise.all([
-      supabase
-        .from("sec_incidents")
-        .select(
-          "ref,title_ar,category,severity,status,priority,ai_risk_score,owner,assigned_to,reported_at,resolved_at,response_minutes,escalated",
-        )
-        .gte("reported_at", from)
-        .lt("reported_at", to)
-        .order("reported_at"),
-      supabase
-        .from("sec_work_orders")
-        .select(
-          "ref,title_ar,kind,status,priority,assigned_to,contractor,opened_at,due_at,closed_at",
-        )
-        .gte("opened_at", from)
-        .lt("opened_at", to)
-        .order("opened_at"),
-      supabase
-        .from("sec_permits")
-        .select("ref,work_type,contractor,risk_level,status,starts_at,ends_at")
-        .gte("starts_at", from)
-        .lt("starts_at", to)
-        .order("starts_at"),
-      supabase
-        .from("sec_activity_events")
-        .select("entity_type,entity_ref,event,actor_name,occurred_at")
-        .gte("occurred_at", from)
-        .lt("occurred_at", to)
-        .order("occurred_at"),
-    ]);
+async function fetchDailyOpsLive(
+  supabase: { from: (t: string) => any },
+  day: string,
+): Promise<DailyOpsData> {
+  const from = new Date(`${day}T00:00:00.000Z`).toISOString();
+  const to = new Date(new Date(from).getTime() + 24 * 3600 * 1000).toISOString();
+  const weekFrom = new Date(new Date(from).getTime() - 6 * 24 * 3600 * 1000).toISOString();
+
+  const [inc, wo, perm, acts, incWeek, woWeek, permWeek] = await Promise.all([
+    supabase
+      .from("sec_incidents")
+      .select("ref,title_ar,category,severity,status,reported_at")
+      .gte("reported_at", from)
+      .lt("reported_at", to)
+      .order("reported_at"),
+    supabase
+      .from("sec_work_orders")
+      .select("ref,title_ar,kind,status,priority,opened_at")
+      .gte("opened_at", from)
+      .lt("opened_at", to)
+      .order("opened_at"),
+    supabase
+      .from("sec_permits")
+      .select("ref,work_type,contractor,risk_level,status,starts_at")
+      .gte("starts_at", from)
+      .lt("starts_at", to)
+      .order("starts_at"),
+    supabase
+      .from("sec_activity_events")
+      .select("entity_ref,event,actor_name,occurred_at")
+      .gte("occurred_at", from)
+      .lt("occurred_at", to)
+      .order("occurred_at"),
+    supabase
+      .from("sec_incidents")
+      .select("reported_at")
+      .gte("reported_at", weekFrom)
+      .lt("reported_at", to),
+    supabase
+      .from("sec_work_orders")
+      .select("opened_at")
+      .gte("opened_at", weekFrom)
+      .lt("opened_at", to),
+    supabase.from("sec_permits").select("starts_at").gte("starts_at", weekFrom).lt("starts_at", to),
+  ]);
+
+  const dayOf = (ts: string) => ts.slice(0, 10);
+  const trend7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(new Date(from).getTime() - (6 - i) * 24 * 3600 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    return {
+      date: d,
+      incidents: ((incWeek.data ?? []) as Array<{ reported_at: string }>).filter(
+        (r) => dayOf(r.reported_at) === d,
+      ).length,
+      work_orders: ((woWeek.data ?? []) as Array<{ opened_at: string }>).filter(
+        (r) => dayOf(r.opened_at) === d,
+      ).length,
+      permits: ((permWeek.data ?? []) as Array<{ starts_at: string }>).filter(
+        (r) => dayOf(r.starts_at) === d,
+      ).length,
+    };
+  });
+
+  return {
+    date: day,
+    source: "database",
+    incidents: (inc.data ?? []) as DailyOpsData["incidents"],
+    work_orders: (wo.data ?? []) as DailyOpsData["work_orders"],
+    permits: (perm.data ?? []) as DailyOpsData["permits"],
+    activity: (
+      (acts.data ?? []) as Array<{
+        entity_ref: string | null;
+        event: string;
+        actor_name: string | null;
+        occurred_at: string;
+      }>
+    ).map((a) => ({
+      entity_ref: a.entity_ref ?? "—",
+      event: a.event,
+      actor_name: a.actor_name ?? "—",
+      occurred_at: a.occurred_at,
+    })),
+    trend7,
+  };
+}
+
+const DayInput = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+});
+
+/** Guest-capable data source: live rows win, otherwise the deterministic
+ *  per-date reference simulation («بيانات لا تفرغ»). */
+export const getDailyOpsData = createServerFn({ method: "POST" })
+  .middleware([optionalSupabaseAuth])
+  .inputValidator((d: unknown) => DayInput.parse(d))
+  .handler(async ({ data, context }): Promise<DailyOpsData> => {
+    const day = data.date ?? new Date().toISOString().slice(0, 10);
+    const { buildDailyOpsSimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "daily-ops-data",
+      () => fetchDailyOpsLive(context.supabase as { from: (t: string) => any }, day),
+      (r) =>
+        r.incidents.length === 0 &&
+        r.work_orders.length === 0 &&
+        r.permits.length === 0 &&
+        r.activity.length === 0,
+      () => buildDailyOpsSimulation(day),
+    );
+  });
+
+export const generateDailyOperationsReport = createServerFn({ method: "POST" })
+  // Guest-capable: generation works for anon visitors from the same
+  // resilient data source; persistence (storage + registry row) happens
+  // only for authenticated users.
+  .middleware([optionalSupabaseAuth])
+  .inputValidator((d: unknown) => DayInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const claims = (context as { claims?: { user_metadata?: { name?: string }; email?: string } })
+      .claims;
+    const actorName = claims?.user_metadata?.name ?? claims?.email ?? "زائر العرض";
+    const day = data.date ?? new Date().toISOString().slice(0, 10);
+    const { buildDailyOpsSimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    const ops = await resilient(
+      "daily-ops-report",
+      () => fetchDailyOpsLive(supabase as { from: (t: string) => any }, day),
+      (r) => r.incidents.length === 0 && r.work_orders.length === 0 && r.permits.length === 0,
+      () => buildDailyOpsSimulation(day),
+    );
 
     const XLSX = await import("xlsx");
     const wb = XLSX.utils.book_new();
-
     const overview = XLSX.utils.aoa_to_sheet([
-      ["NEXUS AI OS — Daily Operations Report"],
+      ["NEXIOS AI OS — Daily Operations Report"],
       ["Date", day],
+      [
+        "Source",
+        ops.source === "reference" ? "Reference simulation (is_simulation=true)" : "Live database",
+      ],
       ["Generated", new Date().toISOString()],
       ["Generated By", actorName],
       [],
       ["Section", "Count"],
-      ["Incidents", (inc.data ?? []).length],
-      ["  · Critical", (inc.data ?? []).filter((i) => i.severity === "critical").length],
-      ["  · Escalated", (inc.data ?? []).filter((i) => i.escalated).length],
-      ["Work Orders", (wo.data ?? []).length],
-      ["Permits", (perm.data ?? []).length],
-      ["Activity Events", (acts.data ?? []).length],
+      ["Incidents", ops.incidents.length],
+      ["Work Orders", ops.work_orders.length],
+      ["Permits", ops.permits.length],
+      ["Activity Events", ops.activity.length],
     ]);
     XLSX.utils.book_append_sheet(wb, overview, "Overview");
-
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inc.data ?? []), "Incidents");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(wo.data ?? []), "Work Orders");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perm.data ?? []), "Permits");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(acts.data ?? []), "Activity");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.incidents), "Incidents");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.work_orders), "Work Orders");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.permits), "Permits");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.activity), "Activity");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.trend7), "Trend 7d");
 
     const bytes = new Uint8Array(
       XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer,
     );
-    const storage_path = `daily-reports/${day}-${Date.now()}.xlsx`;
-    const { error: upErr } = await supabase.storage
-      .from(REPORT_BUCKET)
-      .upload(storage_path, bytes, {
-        contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        upsert: false,
-      });
-    if (upErr) console.warn("[daily report upload]", upErr.message);
 
-    const { data: reportRow } = await supabase
-      .from("sec_reports")
-      .insert({
-        kind: "daily",
-        format: "xlsx",
-        title: `Daily Operations — ${day}`,
-        storage_path: upErr ? null : storage_path,
-        size_bytes: bytes.length,
-        range_from: from,
-        range_to: to,
-        generated_by: userId,
-        generated_by_name: actorName,
-        meta: {
-          incidents: (inc.data ?? []).length,
-          work_orders: (wo.data ?? []).length,
-          permits: (perm.data ?? []).length,
-        },
-      })
-      .select("id")
-      .single();
+    let report_id: string | null = null;
+    if (userId) {
+      const storage_path = `daily-reports/${day}-${Date.now()}.xlsx`;
+      const { error: upErr } = await supabase.storage
+        .from(REPORT_BUCKET)
+        .upload(storage_path, bytes, {
+          contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          upsert: false,
+        });
+      if (upErr) console.warn("[daily report upload]", upErr.message);
+      const { data: reportRow } = await supabase
+        .from("sec_reports")
+        .insert({
+          kind: "daily",
+          format: "xlsx",
+          title: `تقرير العمليات اليومي — ${day}`,
+          storage_path: upErr ? null : storage_path,
+          size_bytes: bytes.length,
+          range_from: `${day}T00:00:00.000Z`,
+          generated_by: userId,
+          generated_by_name: actorName,
+          meta: {
+            source: ops.source,
+            incidents: ops.incidents.length,
+            work_orders: ops.work_orders.length,
+            permits: ops.permits.length,
+          },
+        })
+        .select("id")
+        .single();
+      report_id = reportRow?.id ?? null;
+    }
 
     return {
       file_name: `daily-ops-${day}.xlsx`,
       mime_type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       base64: u8ToBase64(bytes),
       size_bytes: bytes.length,
-      report_id: reportRow?.id ?? null,
+      report_id,
+      source: ops.source,
     };
   });
 
 export const listReports = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; «بيانات لا تفرغ»: an empty/unreachable registry
+  // serves five ready reference reports the visitor can regenerate and
+  // download instantly (client-side, deterministic per date).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("sec_reports")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { buildReportsRegistrySimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "reports-registry",
+      async () => {
+        const { data, error } = await context.supabase
+          .from("sec_reports")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100);
+        if (error) throw new Error(error.message);
+        return data ?? [];
+      },
+      (rows) => rows.length === 0,
+      () => buildReportsRegistrySimulation(Date.now()),
+    );
   });
 
 export const getReportDownloadUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ report_id: z.string().uuid() }).parse(d))
+  // Simulation rows (sim-rep-*) have no storage object — the page
+  // regenerates them client-side; only real stored rows get signed URLs.
+  .middleware([optionalSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ report_id: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
+    if (data.report_id.startsWith("sim-rep-")) return { url: null };
     const { data: row, error } = await context.supabase
       .from("sec_reports")
       .select("storage_path")

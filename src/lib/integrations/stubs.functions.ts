@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type IntegrationStatus = {
   id: string;
@@ -9,6 +9,8 @@ export type IntegrationStatus = {
   scopes: string[];
   doc: string;
   note: string;
+  /** Present on reference-simulation rows (and future live sync metadata). */
+  last_sync_at?: string | null;
 };
 
 const PROVIDERS: IntegrationStatus[] = [
@@ -152,17 +154,27 @@ function isProviderConfigured(id: string): boolean {
 }
 
 export const listIntegrations = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(
-    async (): Promise<IntegrationStatus[]> =>
-      PROVIDERS.map((provider) => {
-        const configured = isProviderConfigured(provider.id);
-        return {
-          ...provider,
-          status: configured ? "configured" : "not_configured",
-          note: configured
-            ? provider.note.replace(/^Disabled —\s*/i, "")
-            : `غير متصل — ${provider.doc}`,
-        };
-      }),
-  );
+  // Open showcase read (env-derived, no database): when NOTHING is
+  // configured (pure showcase deployment) the rich reference-simulation
+  // connector set fills the window — real env configuration always wins.
+  .middleware([optionalSupabaseAuth])
+  .handler(async (): Promise<IntegrationStatus[]> => {
+    const live = PROVIDERS.map((provider) => {
+      const configured = isProviderConfigured(provider.id);
+      return {
+        ...provider,
+        status: configured ? ("configured" as const) : ("not_configured" as const),
+        note: configured
+          ? provider.note.replace(/^Disabled —\s*/i, "")
+          : `غير متصل — ${provider.doc}`,
+      };
+    });
+    // Platform plumbing (supabase/lovable_ai/openrouter) is configured on
+    // every deployment — only EXTERNAL enterprise connectors count as real
+    // configuration for showcase purposes.
+    const PLUMBING = new Set(["supabase", "lovable_ai", "openrouter"]);
+    const hasExternal = live.some((p) => p.status === "configured" && !PLUMBING.has(p.id));
+    if (hasExternal) return live;
+    const { buildConnectorsSimulation } = await import("@/lib/exec/showcase-simulation.server");
+    return buildConnectorsSimulation(Date.now()) as unknown as IntegrationStatus[];
+  });

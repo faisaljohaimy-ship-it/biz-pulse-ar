@@ -1655,3 +1655,765 @@ export function buildIntegrationEventsSimulation(now: number) {
     items_count,
   }));
 }
+
+/* ── Digital twin (/sec/twin) — hierarchical asset model ───────────────── */
+
+export function buildTwinTreeSimulation(now: number) {
+  const site = (
+    circleIdx: number,
+    i: number,
+    code: string,
+    name_ar: string,
+    name_en: string,
+    sensitivity: string,
+    notes: string | null,
+  ) => ({
+    id: `sim-tw-site-${circleIdx}-${i}`,
+    code,
+    name_ar,
+    name_en,
+    lat: 21.4 + circleIdx * 0.11,
+    lng: 39.2 + i * 0.09,
+    sensitivity,
+    status: "operational",
+    guards_count: 8 + circleIdx * 3 + i,
+    notes,
+    updated_at: iso(now - (circleIdx + 1) * 40 * M),
+    circle_id: `sim-tw-cir-${circleIdx}`,
+  });
+  const building = (siteId: string, i: number, code: string, name_ar: string, name_en: string) => ({
+    id: `${siteId}-b${i}`,
+    site_id: siteId,
+    code,
+    name_ar,
+    name_en,
+    floors: 1 + (i % 3),
+    status: "operational",
+  });
+  const cam = (bId: string, i: number, alarm = false) => ({
+    id: `${bId}-cam${i}`,
+    building_id: bId,
+    site_id: null,
+    code: `CAM-${bId.slice(-4).toUpperCase()}${i}`,
+    kind: i % 2 ? "ptz" : "fixed",
+    status: alarm ? "degraded" : "online",
+    health: alarm ? 64 : 95 - i * 3,
+    resolution: "4K",
+    last_seen_at: iso(now - (i + 1) * 6 * M),
+  });
+  const gate = (bId: string, i: number, maint = false) => ({
+    id: `${bId}-gt${i}`,
+    building_id: bId,
+    site_id: null,
+    code: `GT-${bId.slice(-4).toUpperCase()}${i}`,
+    kind: i % 2 ? "vehicle" : "pedestrian",
+    status: maint ? "maintenance" : "online",
+    health: maint ? 55 : 96,
+    events_today: 40 + i * 23,
+    last_event_at: iso(now - (i + 2) * 11 * M),
+  });
+  const sensor = (bId: string, i: number, alarm = false) => ({
+    id: `${bId}-sn${i}`,
+    building_id: bId,
+    site_id: null,
+    code: `SNS-${bId.slice(-4).toUpperCase()}${i}`,
+    sensor_type: ["pids", "thermal", "smoke", "vibration"][i % 4]!,
+    status: alarm ? "alarm" : "online",
+    reading: alarm ? 78 : 21 + i * 4,
+    threshold: 60,
+    unit: "°C",
+    last_reading_at: iso(now - (i + 1) * 3 * M),
+  });
+
+  const CIRCLES = [
+    ["CIR-01", "دائرة محطات التحويل", "Substations Circle", "م. سلطان العتيبي"],
+    ["CIR-02", "دائرة المحيط والبوابات", "Perimeter & Gates Circle", "أ. عبدالله السبيعي"],
+    ["CIR-03", "دائرة المراقبة البصرية", "CCTV Operations Circle", "م. فهد القحطاني"],
+    ["CIR-04", "دائرة الاستشعار والإنذار", "Sensors & Alarms Circle", "م. ريان الزهراني"],
+    ["CIR-05", "دائرة الإسناد اللوجستي", "Logistics Support Circle", "أ. لمى الشهراني"],
+  ] as const;
+
+  const SITES: Array<Array<ReturnType<typeof site>>> = [
+    [
+      site(
+        0,
+        0,
+        "SUB-380-W",
+        "محطة التحويل الغربية 380 ك.ف",
+        "West 380kV Substation",
+        "critical",
+        "خاضعة للتوجيه SEC-18 — دورة اعتماد مكتملة حتى IFC",
+      ),
+      site(
+        0,
+        1,
+        "SUB-132-JN",
+        "محطة تحويل جدة الشمالية 132 ك.ف",
+        "North Jeddah 132kV",
+        "critical",
+        "خاضعة للتوجيه SEC-18 — مرحلة 90%",
+      ),
+    ],
+    [
+      site(
+        1,
+        0,
+        "PRM-WST",
+        "المحيط الأمني الغربي",
+        "Western Perimeter",
+        "high",
+        "أسوار SEC-02 وبوابات SEC-03",
+      ),
+    ],
+    [
+      site(
+        2,
+        0,
+        "CCTV-HUB",
+        "مركز المراقبة البصرية الموحد",
+        "Unified CCTV Hub",
+        "high",
+        "أنظمة متكاملة SEC-05",
+      ),
+    ],
+    [
+      site(
+        3,
+        0,
+        "SNS-FLD",
+        "حقل الاستشعار المحيطي",
+        "Perimeter Sensing Field",
+        "high",
+        "كشف تسلل PIDS — SEC-06",
+      ),
+    ],
+    [site(4, 0, "LOG-STH", "مستودع الإسناد الجنوبي", "South Logistics Depot", "medium", null)],
+  ];
+
+  const circles = CIRCLES.map(([code, name_ar, name_en, manager], ci) => {
+    const sites = SITES[ci]!.map((s) => {
+      const b1 = building(
+        s.id,
+        1,
+        `${s.code}-B1`,
+        `مبنى التحكم — ${s.name_ar}`,
+        `${s.name_en} Control Building`,
+      );
+      const b2 = building(
+        s.id,
+        2,
+        `${s.code}-B2`,
+        `مبنى المعدات — ${s.name_ar}`,
+        `${s.name_en} Equipment Building`,
+      );
+      const alarmHere = ci === 3;
+      return {
+        ...s,
+        buildings: [
+          {
+            ...b1,
+            cameras: [cam(b1.id, 1), cam(b1.id, 2)],
+            gates: [gate(b1.id, 1)],
+            sensors: [sensor(b1.id, 1), sensor(b1.id, 2, alarmHere)],
+          },
+          {
+            ...b2,
+            cameras: [cam(b2.id, 1, ci === 2)],
+            gates: [gate(b2.id, 1, ci === 1)],
+            sensors: [sensor(b2.id, 1)],
+          },
+        ],
+      };
+    });
+    return {
+      id: `sim-tw-cir-${ci}`,
+      code,
+      name_ar,
+      name_en,
+      manager,
+      lat: 21.5,
+      lng: 39.2,
+      staff_count: 24 + ci * 6,
+      sites,
+      control_rooms: [
+        {
+          id: `sim-tw-cr-${ci}`,
+          circle_id: `sim-tw-cir-${ci}`,
+          code: `CR-0${ci + 1}`,
+          name_ar: `غرفة تحكم ${name_ar}`,
+          name_en: `${name_en} Control Room`,
+          operators_count: 4 + (ci % 3),
+          screens_count: 8 + ci * 2,
+          shift_lead: "قائد الوردية أ",
+          status: "operational",
+        },
+      ],
+      patrol_teams: [
+        {
+          id: `sim-tw-pt-${ci}`,
+          circle_id: `sim-tw-cir-${ci}`,
+          code: `PT-0${ci + 1}`,
+          name_ar: ["فريق الصقر", "فريق النمر", "فريق العقاب", "فريق السهم", "فريق الدرع"][ci]!,
+          leader: "رقيب أول",
+          members_count: 4,
+          vehicle_plate: `${7100 + ci * 37} هـ ن ب`,
+          status: ci === 4 ? "available" : "on-route",
+        },
+      ],
+    };
+  });
+
+  return {
+    region: {
+      name_ar: "إدارة الأمن الصناعي بالمنطقة الغربية",
+      name_en: "Western Region Industrial Security",
+    },
+    sections: [
+      {
+        id: "sim-tw-sec-1",
+        code: "SEC-OPS",
+        name_ar: "قسم العمليات",
+        name_en: "Operations",
+        head: "م. سلطان العتيبي",
+        staff_count: 42,
+      },
+      {
+        id: "sim-tw-sec-2",
+        code: "SEC-TEC",
+        name_ar: "قسم الأنظمة التقنية",
+        name_en: "Technical Systems",
+        head: "م. فهد القحطاني",
+        staff_count: 28,
+      },
+      {
+        id: "sim-tw-sec-3",
+        code: "SEC-CMP",
+        name_ar: "قسم الامتثال HCIS",
+        name_en: "HCIS Compliance",
+        head: "أ. عبدالله السبيعي",
+        staff_count: 15,
+      },
+      {
+        id: "sim-tw-sec-4",
+        code: "SEC-SUP",
+        name_ar: "قسم الإسناد",
+        name_en: "Support",
+        head: "أ. لمى الشهراني",
+        staff_count: 19,
+      },
+    ],
+    circles,
+  };
+}
+
+/* ── Knowledge repository (/sec/knowledge) ─────────────────────────────── */
+
+const KB_CATEGORIES = [
+  ["POL", "السياسات الأمنية", "Security Policies", "shield-check"],
+  ["SOP", "الإجراءات التشغيلية", "Operating Procedures", "clipboard-list"],
+  ["FRM", "النماذج المعتمدة", "Approved Forms", "file-text"],
+  ["CHK", "قوائم التحقق", "Inspection Checklists", "check-square"],
+  ["ERP", "استجابة الطوارئ", "Emergency Response", "flame"],
+] as const;
+
+const KB_ARTICLES: Array<
+  [code: string, cat: string, ar: string, en: string, sum: string, risk: string, kw: string[]]
+> = [
+  [
+    "POL-001",
+    "POL",
+    "سياسة الامتثال لتوجيهات HCIS",
+    "HCIS Compliance Policy",
+    "الإطار الحاكم لمطابقة المنشآت مع توجيهات الهيئة العليا للأمن الصناعي ودورة الاعتماد السبع.",
+    "high",
+    ["hcis", "امتثال", "اعتماد"],
+  ],
+  [
+    "POL-002",
+    "POL",
+    "سياسة التحكم بالوصول والهوية",
+    "Access & Identity Policy",
+    "قواعد إصدار البطاقات والتحقق من الهوية للزوار والمقاولين وفق SEC-11 وSEC-12.",
+    "high",
+    ["وصول", "هوية", "بطاقات"],
+  ],
+  [
+    "POL-003",
+    "POL",
+    "سياسة الاحتفاظ بتسجيلات المراقبة",
+    "CCTV Retention Policy",
+    "مدد الاحتفاظ بالتسجيلات وضوابط الاطلاع والتسليم للجهات المختصة.",
+    "medium",
+    ["cctv", "تسجيلات"],
+  ],
+  [
+    "POL-004",
+    "POL",
+    "سياسة أمن المعلومات التشغيلية OT",
+    "OT Cybersecurity Policy",
+    "ضوابط عزل شبكات التحكم الصناعي ومتطلبات SEC-13.",
+    "critical",
+    ["سيبراني", "ot"],
+  ],
+  [
+    "SOP-001",
+    "SOP",
+    "إجراء العزل والوسم LOTO",
+    "Lockout/Tagout Procedure",
+    "خطوات فصل مصادر الطاقة ووسمها قبل أعمال الصيانة على المعدات الحرجة.",
+    "critical",
+    ["loto", "عزل", "وسم", "صيانة"],
+  ],
+  [
+    "SOP-002",
+    "SOP",
+    "إجراء تفويج المركبات الثقيلة",
+    "Heavy Vehicle Escort SOP",
+    "مسارات وتصاريح دخول الشاحنات والصهاريج عبر بوابة الشحن.",
+    "medium",
+    ["مركبات", "تفويج"],
+  ],
+  [
+    "SOP-003",
+    "SOP",
+    "إجراء الاستجابة لإنذار كشف التسلل",
+    "PIDS Alarm Response SOP",
+    "تصنيف الإنذار، التحقق البصري، وإرسال الدورية خلال 4 دقائق.",
+    "high",
+    ["pids", "إنذار", "تسلل"],
+  ],
+  [
+    "SOP-004",
+    "SOP",
+    "إجراء تسليم واستلام الوردية",
+    "Shift Handover SOP",
+    "قائمة التسليم الإلزامية بين قادة الورديات في غرفة التحكم.",
+    "medium",
+    ["وردية", "تسليم"],
+  ],
+  [
+    "SOP-005",
+    "SOP",
+    "إجراء إدارة المفاتيح الحرجة",
+    "Critical Keys Management",
+    "سجل المفاتيح، الصرف المزدوج، والجرد اليومي.",
+    "high",
+    ["مفاتيح"],
+  ],
+  [
+    "FRM-001",
+    "FRM",
+    "نموذج تصريح عمل ساخن",
+    "Hot Work Permit Form",
+    "النموذج المعتمد لأعمال اللحام والقطع داخل المناطق المصنفة.",
+    "critical",
+    ["تصريح", "عمل ساخن", "لحام"],
+  ],
+  [
+    "FRM-002",
+    "FRM",
+    "نموذج تسجيل زائر مسبق",
+    "Visitor Pre-registration Form",
+    "بيانات الزائر والمضيف والغرض ومدة الزيارة.",
+    "low",
+    ["زائر", "تسجيل"],
+  ],
+  [
+    "FRM-003",
+    "FRM",
+    "نموذج بلاغ حادث أمني",
+    "Security Incident Report Form",
+    "الحقول الإلزامية لتوثيق البلاغ خلال الساعة الأولى.",
+    "high",
+    ["بلاغ", "حادث"],
+  ],
+  [
+    "CHK-132",
+    "CHK",
+    "قائمة تفتيش محطة تحويل 132 ك.ف",
+    "132kV Substation Checklist",
+    "48 بند تحقق دوري وفق SEC-18: الأسوار، الإنارة، الكاميرات، أجهزة الاستشعار.",
+    "critical",
+    ["sec-18", "محطة", "تفتيش", "132"],
+  ],
+  [
+    "CHK-002",
+    "CHK",
+    "قائمة فحص جاهزية البوابات",
+    "Gates Readiness Checklist",
+    "فحص أسبوعي للحواجز والقارئات وأنظمة التعرف على اللوحات.",
+    "medium",
+    ["بوابات", "فحص"],
+  ],
+  [
+    "CHK-003",
+    "CHK",
+    "قائمة تدقيق غرفة التحكم",
+    "Control Room Audit Checklist",
+    "جاهزية الشاشات والاتصالات وسجلات التشغيل.",
+    "medium",
+    ["غرفة التحكم", "تدقيق"],
+  ],
+  [
+    "ERP-001",
+    "ERP",
+    "خطة الاستجابة لتسرب غاز",
+    "Gas Leak Response Plan",
+    "الإخلاء، العزل، الإبلاغ، ونقاط التجمع — تمرين نصف سنوي إلزامي.",
+    "critical",
+    ["تسرب", "غاز", "إخلاء"],
+  ],
+  [
+    "ERP-002",
+    "ERP",
+    "خطة مواجهة الاقتحام المسلح",
+    "Armed Intrusion Response",
+    "بروتوكول الإغلاق والتحصين والتنسيق مع الجهات الأمنية.",
+    "critical",
+    ["اقتحام", "طوارئ"],
+  ],
+  [
+    "ERP-003",
+    "ERP",
+    "خطة إخلاء المجمع السكني",
+    "Compound Evacuation Plan",
+    "مسارات الإخلاء وتعداد القاطنين وفق SEC-RC.",
+    "high",
+    ["إخلاء", "سكني", "sec-rc"],
+  ],
+];
+
+export function buildKbSimulation(now: number) {
+  const categories = KB_CATEGORIES.map(([code, name_ar, name_en, icon], i) => ({
+    id: `sim-kbc-${code}`,
+    code,
+    name_ar,
+    name_en,
+    description_ar: null,
+    description_en: null,
+    sort_order: i + 1,
+    icon,
+  }));
+  const articles = KB_ARTICLES.map(
+    ([doc_code, cat, title_ar, title_en, summary_ar, risk, kw], i) => ({
+      id: `sim-kba-${doc_code}`,
+      doc_code,
+      category_code: cat,
+      title_ar,
+      title_en,
+      summary_ar,
+      summary_en: title_en,
+      description_ar: summary_ar,
+      description_en: null,
+      purpose_ar: `ضمان تنفيذ «${title_ar}» بصورة موحدة وقابلة للتدقيق عبر جميع مواقع المنطقة الغربية.`,
+      purpose_en: null,
+      scope_ar: "جميع مواقع إدارة الأمن الصناعي بالمنطقة الغربية والعاملين والمقاولين المصرح لهم.",
+      scope_en: null,
+      responsibilities_ar:
+        "مدير الدائرة: الاعتماد · قائد الوردية: التنفيذ · ضابط الامتثال: التدقيق الدوري.",
+      responsibilities_en: null,
+      procedure_ar:
+        "١. التحقق من الاشتراطات المسبقة.\n٢. تنفيذ الخطوات وفق التسلسل المعتمد.\n٣. التوثيق في سجل التشغيل.\n٤. الإبلاغ عن أي انحراف فورًا لغرفة التحكم.",
+      procedure_en: null,
+      requirements_ar: "معدات الوقاية الشخصية · تصريح ساري · تدريب معتمد خلال آخر 12 شهرًا.",
+      requirements_en: null,
+      risk_level: risk,
+      priority: risk === "critical" ? "immediate" : risk === "high" ? "urgent" : "elevated",
+      escalation_level: risk === "critical" ? "مدير المنطقة" : "مدير الدائرة",
+      related_forms: cat === "SOP" ? ["FRM-001"] : [],
+      related_policies: ["POL-001"],
+      related_workflows: [],
+      related_agents: [],
+      keywords_ar: kw,
+      keywords_en: kw,
+      body_ar: `${summary_ar}\n\nيُطبق هذا المستند ضمن منظومة الامتثال لتوجيهات الهيئة العليا للأمن الصناعي، ويُراجع سنويًا أو عند صدور تحديث تنظيمي. جميع البيانات المعروضة محاكاة مرجعية موسومة is_simulation = true.`,
+      body_en: null,
+      version: "2.0",
+      owner: "قسم الامتثال HCIS",
+      review_date: iso(now + 180 * 24 * H),
+      status: "published",
+      updated_at: iso(now - (i + 3) * 26 * H),
+    }),
+  );
+  return { categories, articles };
+}
+
+/* ── Integration connectors (/sec/integrations) ────────────────────────── */
+
+export function buildConnectorsSimulation(now: number) {
+  const C = [
+    [
+      "sap_pm",
+      "SAP PM — الصيانة والأصول",
+      "erp",
+      "configured",
+      "جاهز — أوامر العمل والإشعارات تتدفق تلقائيًا.",
+      ["workorders.read", "notifications.write"],
+      "OAuth2 + OData v4",
+      22,
+    ],
+    [
+      "m365",
+      "Microsoft 365",
+      "productivity",
+      "error",
+      "يتطلب تجديد الربط — انتهت صلاحية التفويض.",
+      ["mail.read", "files.readwrite"],
+      "Graph API via connector",
+      190,
+    ],
+    [
+      "power_bi",
+      "Power BI",
+      "bi",
+      "configured",
+      "جاهز — لوحات المؤشرات التنفيذية مضمنة.",
+      ["reports.read"],
+      "Service Principal",
+      45,
+    ],
+    [
+      "zatca",
+      "هيئة الزكاة والضريبة — ZATCA",
+      "api",
+      "not_configured",
+      "قيد التهيئة — بانتظار شهادة الختم الرقمي.",
+      ["einvoice.submit"],
+      "Fatoora API v2",
+      null,
+    ],
+    [
+      "nafath",
+      "نفاذ الوطني الموحد",
+      "identity",
+      "configured",
+      "جاهز — التحقق من هوية الزوار والمقاولين.",
+      ["identity.verify"],
+      "OpenID Connect",
+      8,
+    ],
+    [
+      "twilio",
+      "Twilio SMS",
+      "automation",
+      "configured",
+      "جاهز — رسائل التصعيد للقيادات.",
+      ["sms.send"],
+      "REST + HMAC",
+      65,
+    ],
+    [
+      "elevenlabs",
+      "ElevenLabs — صوت آريا",
+      "ai",
+      "configured",
+      "نشط — صوت ليان الحصري عبر الخادم.",
+      ["tts.stream"],
+      "Server-side API key",
+      3,
+    ],
+    [
+      "resend",
+      "Resend — البريد التشغيلي",
+      "automation",
+      "configured",
+      "نشط — تقارير الوردية اليومية.",
+      ["email.send"],
+      "REST API",
+      140,
+    ],
+  ] as const;
+  return C.map(([id, label, category, status, note, scopes, doc, syncMin]) => ({
+    id,
+    label,
+    category,
+    status,
+    note,
+    scopes: [...scopes],
+    doc,
+    last_sync_at: syncMin === null ? null : iso(now - (syncMin as number) * M),
+  }));
+}
+
+/* ── Daily operations dataset (report engine fuel) ─────────────────────── */
+
+/** Deterministic per-date PRNG so a report regenerates identically. */
+function dateSeeded(dateKey: string) {
+  let h = 2166136261;
+  for (const ch of dateKey) {
+    h ^= ch.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822519);
+    h = Math.imul(h ^ (h >>> 13), 3266489917);
+    return ((h ^= h >>> 16) >>> 0) / 4294967296;
+  };
+}
+
+const OPS_INCIDENTS = [
+  ["دخول غير مصرح عند السور الشمالي", "perimeter", "high"],
+  ["إنذار حراري في غرفة المحولات", "fire", "critical"],
+  ["تعطل كاميرا البوابة الرئيسية", "cctv", "medium"],
+  ["مركبة متوقفة في منطقة محظورة", "access", "medium"],
+  ["محاولة دخول ببطاقة منتهية", "access", "low"],
+  ["انقطاع اتصال مستشعر اهتزاز", "sensors", "medium"],
+  ["تجمهر عند بوابة المقاولين", "crowd", "high"],
+  ["بلاغ فقدان بطاقة تعريف", "identity", "low"],
+  ["رصد طائرة مسيّرة قرب المحيط", "airspace", "critical"],
+] as const;
+const OPS_WORKORDERS = [
+  ["صيانة وقائية لكاميرات القطاع الغربي", "preventive"],
+  ["استبدال وحدة تغذية بوابة الشحن", "corrective"],
+  ["معايرة مستشعرات الحرارة — مبنى المحولات", "preventive"],
+  ["إصلاح إنارة السور الجنوبي", "corrective"],
+  ["فحص دوري لنظام كشف التسلل", "preventive"],
+  ["تحديث برمجيات قارئات البطاقات", "preventive"],
+  ["إصلاح حاجز مروري متعطل", "corrective"],
+] as const;
+const OPS_PERMITS = [
+  ["أعمال ساخنة — لحام سياج", "hot_work", "high"],
+  ["دخول مساحة مغلقة — خزان", "confined_space", "critical"],
+  ["حفر بالقرب من كابلات", "excavation", "high"],
+  ["أعمال على ارتفاع — برج إنارة", "work_at_height", "medium"],
+  ["فصل تيار مجدول — صيانة", "electrical", "critical"],
+] as const;
+
+export type DailyOpsData = {
+  date: string;
+  source: "database" | "reference";
+  incidents: Array<{
+    ref: string;
+    title_ar: string;
+    category: string;
+    severity: string;
+    status: string;
+    reported_at: string;
+  }>;
+  work_orders: Array<{
+    ref: string;
+    title_ar: string;
+    kind: string;
+    status: string;
+    priority: string;
+    opened_at: string;
+  }>;
+  permits: Array<{
+    ref: string;
+    work_type: string;
+    contractor: string;
+    risk_level: string;
+    status: string;
+    starts_at: string;
+  }>;
+  activity: Array<{ entity_ref: string; event: string; actor_name: string; occurred_at: string }>;
+  trend7: Array<{ date: string; incidents: number; work_orders: number; permits: number }>;
+};
+
+export function buildDailyOpsSimulation(dateKey: string): DailyOpsData {
+  const rnd = dateSeeded(dateKey);
+  const base = new Date(`${dateKey}T05:00:00.000Z`).getTime();
+  const pick = <T>(arr: readonly T[], n: number): T[] => {
+    const copy = [...arr];
+    const out: T[] = [];
+    for (let i = 0; i < n && copy.length; i++)
+      out.push(copy.splice(Math.floor(rnd() * copy.length), 1)[0]!);
+    return out;
+  };
+  const nInc = 3 + Math.floor(rnd() * 5);
+  const nWo = 4 + Math.floor(rnd() * 4);
+  const nPr = 3 + Math.floor(rnd() * 3);
+  const incidents = pick(OPS_INCIDENTS, nInc).map(([title_ar, category, severity], i) => ({
+    ref: `INC-${dateKey.replace(/-/g, "").slice(2)}-${101 + i}`,
+    title_ar,
+    category,
+    severity,
+    status: rnd() > 0.3 ? "resolved" : "open",
+    reported_at: iso(base + Math.floor(rnd() * 16) * H),
+  }));
+  const work_orders = pick(OPS_WORKORDERS, nWo).map(([title_ar, kind], i) => ({
+    ref: `WO-${dateKey.replace(/-/g, "").slice(2)}-${201 + i}`,
+    title_ar,
+    kind,
+    status: rnd() > 0.4 ? "closed" : "in_progress",
+    priority: rnd() > 0.6 ? "high" : "normal",
+    opened_at: iso(base + Math.floor(rnd() * 14) * H),
+  }));
+  const CONTRACTORS = [
+    "الإنشاءات الصناعية المتقدمة",
+    "صيانة الشبكات الموحدة",
+    "الحلول الكهروميكانيكية",
+  ];
+  const permits = pick(OPS_PERMITS, nPr).map(([work_type_ar, work_type, risk_level], i) => ({
+    ref: `PTW-${dateKey.replace(/-/g, "").slice(2)}-${301 + i}`,
+    work_type: `${work_type_ar}`,
+    contractor: CONTRACTORS[Math.floor(rnd() * CONTRACTORS.length)]!,
+    risk_level,
+    status: rnd() > 0.25 ? "active" : "closed",
+    starts_at: iso(base + Math.floor(rnd() * 10) * H),
+    _kind: work_type,
+  }));
+  const EVENTS = [
+    ["visitor_checked_in", "تسجيل دخول زائر"],
+    ["patrol_completed", "اكتمال جولة أمنية"],
+    ["gate_status_changed", "تغير حالة بوابة"],
+    ["permit_verified", "التحقق من تصريح"],
+    ["cctv_alert_ack", "معالجة تنبيه كاميرا"],
+    ["hcis_audit_step", "خطوة تدقيق HCIS"],
+  ] as const;
+  const activity = fill(8 + Math.floor(rnd() * 8), (i) => {
+    const [event] = EVENTS[Math.floor(rnd() * EVENTS.length)]!;
+    return {
+      entity_ref: `EVT-${400 + i}`,
+      event,
+      actor_name: ["نظام البوابات الآلي", "غرفة التحكم", "قائد الوردية", "دورية الصقر"][i % 4]!,
+      occurred_at: iso(base + Math.floor(rnd() * 18) * H),
+    };
+  });
+  const trend7 = fill(7, (i) => {
+    const d = new Date(base - (6 - i) * 24 * H).toISOString().slice(0, 10);
+    const r = dateSeeded(d);
+    return {
+      date: d,
+      incidents: 3 + Math.floor(r() * 5),
+      work_orders: 4 + Math.floor(r() * 4),
+      permits: 3 + Math.floor(r() * 3),
+    };
+  });
+  return {
+    date: dateKey,
+    source: "reference",
+    incidents,
+    work_orders,
+    permits: permits.map(({ _kind, ...p }) => p),
+    activity,
+    trend7,
+  };
+}
+
+/* ── Reports registry (/sec/reports) seeded rows ───────────────────────── */
+
+export function buildReportsRegistrySimulation(now: number) {
+  return fill(5, (i) => {
+    const d = new Date(now - (i + 1) * 24 * H).toISOString().slice(0, 10);
+    const pdf = i % 2 === 0;
+    return {
+      id: `sim-rep-${d}-${pdf ? "pdf" : "xlsx"}`,
+      org_id: "00000000-0000-0000-0000-00000000d360",
+      kind: "daily",
+      format: pdf ? "pdf" : "xlsx",
+      title: `تقرير العمليات اليومي — ${d}`,
+      related_entity_type: null,
+      related_entity_id: null,
+      related_entity_ref: null,
+      storage_path: null,
+      size_bytes: pdf ? 88_000 - i * 3_500 : 34_000 + i * 1_200,
+      range_from: `${d}T00:00:00.000Z`,
+      range_to: null,
+      generated_by: null,
+      generated_by_name: "محرك المحاكاة المرجعية",
+      created_at: iso(now - (i + 1) * 24 * H + 18 * H),
+      meta: { simulated: true, date: d },
+    };
+  });
+}

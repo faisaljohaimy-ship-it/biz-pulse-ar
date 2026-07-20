@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { requirePlatformAdmin } from "@/lib/authz.server";
 
 /* --------------------------------- Types --------------------------------- */
@@ -60,14 +61,24 @@ export type KbArticleFull = KbArticleSummary & {
 /* ------------------------------ Categories ------------------------------ */
 
 export const kbListCategories = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; «بيانات لا تفرغ»: unreachable/empty repository ⇒
+  // built-in bilingual reference set (live rows always win).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("sec_knowledge_categories")
-      .select("id, code, name_ar, name_en, description_ar, description_en, sort_order, icon")
-      .order("sort_order", { ascending: true });
-    if (error) throw new Error(error.message);
-    return (data ?? []) as KbCategory[];
+    const { buildKbSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "kb-categories",
+      async () => {
+        const { data, error } = await context.supabase
+          .from("sec_knowledge_categories")
+          .select("id, code, name_ar, name_en, description_ar, description_en, sort_order, icon")
+          .order("sort_order", { ascending: true });
+        if (error) throw new Error(error.message);
+        return (data ?? []) as KbCategory[];
+      },
+      (rows) => rows.length === 0,
+      () => buildKbSimulation(Date.now()).categories as KbCategory[],
+    );
   });
 
 /* ------------------------------- Articles ------------------------------- */
@@ -78,104 +89,173 @@ const ListInput = z.object({
   limit: z.number().int().min(1).max(200).default(60),
 });
 
+function simArticleSummaries(
+  sim: { articles: Array<Record<string, unknown>> },
+  filter: { category_code?: string; search?: string; limit: number },
+): KbArticleSummary[] {
+  const s = filter.search?.trim().toLowerCase();
+  return sim.articles
+    .filter((a) => !filter.category_code || a.category_code === filter.category_code)
+    .filter((a) => {
+      if (!s) return true;
+      const hay = [
+        a.title_ar,
+        a.title_en,
+        a.summary_ar,
+        a.doc_code,
+        ...((a.keywords_ar as string[]) ?? []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(s);
+    })
+    .slice(0, filter.limit)
+    .map((a) => ({
+      id: a.id,
+      doc_code: a.doc_code,
+      category_code: a.category_code,
+      title_ar: a.title_ar,
+      title_en: a.title_en,
+      summary_ar: a.summary_ar,
+      summary_en: a.summary_en,
+      risk_level: a.risk_level,
+      priority: a.priority,
+      version: a.version,
+      updated_at: a.updated_at,
+    })) as KbArticleSummary[];
+}
+
 export const kbListArticles = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; the reference simulation honours the same
+  // category/search filters so the UI search works for guests too.
+  .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => ListInput.parse(data))
   .handler(async ({ data, context }) => {
-    let q = context.supabase
-      .from("sec_knowledge_articles")
-      .select(
-        "id, doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority, version, updated_at, category_id, sec_knowledge_categories!inner(code)",
-      )
-      .eq("status", "published")
-      .order("doc_code", { ascending: true })
-      .limit(data.limit);
-
-    if (data.category_code) {
-      q = q.eq("sec_knowledge_categories.code", data.category_code);
-    }
-    if (data.search?.trim()) {
-      const s = data.search.trim().replace(/[,()]/g, " ");
-      q = q.or(
-        [
-          `title_ar.ilike.%${s}%`,
-          `title_en.ilike.%${s}%`,
-          `summary_ar.ilike.%${s}%`,
-          `summary_en.ilike.%${s}%`,
-          `doc_code.ilike.%${s}%`,
-        ].join(","),
-      );
-    }
-
-    const { data: rows, error } = await q;
-    if (error) throw new Error(error.message);
-    return (rows ?? []).map((r) => ({
-      id: r.id,
-      doc_code: r.doc_code,
-      category_code: r.sec_knowledge_categories?.code ?? null,
-      title_ar: r.title_ar,
-      title_en: r.title_en,
-      summary_ar: r.summary_ar,
-      summary_en: r.summary_en,
-      risk_level: r.risk_level,
-      priority: r.priority,
-      version: r.version,
-      updated_at: r.updated_at,
-    })) as KbArticleSummary[];
+    const { buildKbSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "kb-articles",
+      () => fetchKbArticles(context.supabase, data),
+      // An empty result WITH a filter is a legitimate "no matches" answer;
+      // only an unfiltered empty repository falls back to the simulation.
+      (rows) => rows.length === 0 && !data.category_code && !data.search?.trim(),
+      () => simArticleSummaries(buildKbSimulation(Date.now()), data),
+    );
   });
+
+async function fetchKbArticles(
+  supabase: { from: (t: string) => any },
+  data: z.infer<typeof ListInput>,
+): Promise<KbArticleSummary[]> {
+  let q = supabase
+    .from("sec_knowledge_articles")
+    .select(
+      "id, doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority, version, updated_at, category_id, sec_knowledge_categories!inner(code)",
+    )
+    .eq("status", "published")
+    .order("doc_code", { ascending: true })
+    .limit(data.limit);
+
+  if (data.category_code) {
+    q = q.eq("sec_knowledge_categories.code", data.category_code);
+  }
+  if (data.search?.trim()) {
+    const s = data.search.trim().replace(/[,()]/g, " ");
+    q = q.or(
+      [
+        `title_ar.ilike.%${s}%`,
+        `title_en.ilike.%${s}%`,
+        `summary_ar.ilike.%${s}%`,
+        `summary_en.ilike.%${s}%`,
+        `doc_code.ilike.%${s}%`,
+      ].join(","),
+    );
+  }
+
+  const { data: rows, error } = await q;
+  if (error) throw new Error(error.message);
+  return ((rows ?? []) as any[]).map((r) => ({
+    id: r.id,
+    doc_code: r.doc_code,
+    category_code: r.sec_knowledge_categories?.code ?? null,
+    title_ar: r.title_ar,
+    title_en: r.title_en,
+    summary_ar: r.summary_ar,
+    summary_en: r.summary_en,
+    risk_level: r.risk_level,
+    priority: r.priority,
+    version: r.version,
+    updated_at: r.updated_at,
+  })) as KbArticleSummary[];
+}
 
 export const kbGetArticle = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; sim articles open with full bodies for guests.
+  .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ doc_code: z.string().min(1) }).parse(data))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("sec_knowledge_articles")
-      .select(
-        "id, doc_code, title_ar, title_en, summary_ar, summary_en, description_ar, description_en, purpose_ar, purpose_en, scope_ar, scope_en, responsibilities_ar, responsibilities_en, procedure_ar, procedure_en, requirements_ar, requirements_en, risk_level, priority, escalation_level, related_forms, related_policies, related_workflows, related_agents, keywords_ar, keywords_en, body_ar, body_en, version, owner, review_date, status, updated_at, sec_knowledge_categories(code)",
-      )
-      .eq("doc_code", data.doc_code)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!row) return null;
-    const r = row;
-    return {
-      id: r.id,
-      doc_code: r.doc_code,
-      category_code: r.sec_knowledge_categories?.code ?? null,
-      title_ar: r.title_ar,
-      title_en: r.title_en,
-      summary_ar: r.summary_ar,
-      summary_en: r.summary_en,
-      description_ar: r.description_ar,
-      description_en: r.description_en,
-      purpose_ar: r.purpose_ar,
-      purpose_en: r.purpose_en,
-      scope_ar: r.scope_ar,
-      scope_en: r.scope_en,
-      responsibilities_ar: r.responsibilities_ar,
-      responsibilities_en: r.responsibilities_en,
-      procedure_ar: r.procedure_ar,
-      procedure_en: r.procedure_en,
-      requirements_ar: r.requirements_ar,
-      requirements_en: r.requirements_en,
-      risk_level: r.risk_level,
-      priority: r.priority,
-      escalation_level: r.escalation_level,
-      related_forms: r.related_forms ?? [],
-      related_policies: r.related_policies ?? [],
-      related_workflows: r.related_workflows ?? [],
-      related_agents: r.related_agents ?? [],
-      keywords_ar: r.keywords_ar ?? [],
-      keywords_en: r.keywords_en ?? [],
-      body_ar: r.body_ar,
-      body_en: r.body_en,
-      version: r.version,
-      owner: r.owner,
-      review_date: r.review_date,
-      status: r.status,
-      updated_at: r.updated_at,
-    } as KbArticleFull;
+    const { buildKbSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "kb-article",
+      () => fetchKbArticle(context.supabase, data.doc_code),
+      (row) => row === null,
+      () =>
+        (buildKbSimulation(Date.now()).articles.find((a) => a.doc_code === data.doc_code) ??
+          null) as KbArticleFull | null,
+    );
   });
+
+async function fetchKbArticle(
+  supabase: { from: (t: string) => any },
+  doc_code: string,
+): Promise<KbArticleFull | null> {
+  const { data: row, error } = await supabase
+    .from("sec_knowledge_articles")
+    .select(
+      "id, doc_code, title_ar, title_en, summary_ar, summary_en, description_ar, description_en, purpose_ar, purpose_en, scope_ar, scope_en, responsibilities_ar, responsibilities_en, procedure_ar, procedure_en, requirements_ar, requirements_en, risk_level, priority, escalation_level, related_forms, related_policies, related_workflows, related_agents, keywords_ar, keywords_en, body_ar, body_en, version, owner, review_date, status, updated_at, sec_knowledge_categories(code)",
+    )
+    .eq("doc_code", doc_code)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!row) return null;
+  const r = row;
+  return {
+    id: r.id,
+    doc_code: r.doc_code,
+    category_code: r.sec_knowledge_categories?.code ?? null,
+    title_ar: r.title_ar,
+    title_en: r.title_en,
+    summary_ar: r.summary_ar,
+    summary_en: r.summary_en,
+    description_ar: r.description_ar,
+    description_en: r.description_en,
+    purpose_ar: r.purpose_ar,
+    purpose_en: r.purpose_en,
+    scope_ar: r.scope_ar,
+    scope_en: r.scope_en,
+    responsibilities_ar: r.responsibilities_ar,
+    responsibilities_en: r.responsibilities_en,
+    procedure_ar: r.procedure_ar,
+    procedure_en: r.procedure_en,
+    requirements_ar: r.requirements_ar,
+    requirements_en: r.requirements_en,
+    risk_level: r.risk_level,
+    priority: r.priority,
+    escalation_level: r.escalation_level,
+    related_forms: r.related_forms ?? [],
+    related_policies: r.related_policies ?? [],
+    related_workflows: r.related_workflows ?? [],
+    related_agents: r.related_agents ?? [],
+    keywords_ar: r.keywords_ar ?? [],
+    keywords_en: r.keywords_en ?? [],
+    body_ar: r.body_ar,
+    body_en: r.body_en,
+    version: r.version,
+    owner: r.owner,
+    review_date: r.review_date,
+    status: r.status,
+    updated_at: r.updated_at,
+  } as KbArticleFull;
+}
 
 /* --------------------------- Semantic search ---------------------------- */
 
@@ -185,74 +265,126 @@ const SemanticInput = z.object({
   limit: z.number().int().min(1).max(20).default(8),
 });
 
+function simKeywordSearch(
+  sim: { articles: Array<Record<string, unknown>> },
+  query: string,
+  limit: number,
+) {
+  const q = query.toLowerCase();
+  return {
+    mode: "keyword" as const,
+    reason: "reference-simulation",
+    hits: sim.articles
+      .filter((a) =>
+        [a.title_ar, a.title_en, a.summary_ar, ...((a.keywords_ar as string[]) ?? [])]
+          .join(" ")
+          .toLowerCase()
+          .includes(q),
+      )
+      .slice(0, limit)
+      .map((a) => ({
+        id: a.id as string,
+        doc_code: a.doc_code as string,
+        title_ar: a.title_ar as string,
+        title_en: a.title_en as string,
+        summary_ar: a.summary_ar as string | null,
+        summary_en: a.summary_en as string | null,
+        category_code: a.category_code as string | null,
+        risk_level: a.risk_level as string | null,
+        priority: a.priority as string | null,
+        similarity: null,
+      })),
+  };
+}
+
 export const kbSemanticSearch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; unreachable database/embedding ⇒ keyword search
+  // over the built-in reference articles so ARIA search never dies.
+  .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => SemanticInput.parse(data))
   .handler(async ({ data, context }) => {
-    const { embedText } = await import("@/lib/kb-embed.server");
-    let vec: number[];
-    try {
-      vec = await embedText(data.query);
-    } catch (e) {
-      // graceful fallback to keyword search if embedding gateway is down
-      const s = data.query.replace(/[,()]/g, " ");
-      const { data: rows, error } = await context.supabase
-        .from("sec_knowledge_articles")
-        .select(
-          "id, doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority, sec_knowledge_categories(code)",
-        )
-        .eq("status", "published")
-        .or(
-          [
-            `title_ar.ilike.%${s}%`,
-            `title_en.ilike.%${s}%`,
-            `summary_ar.ilike.%${s}%`,
-            `summary_en.ilike.%${s}%`,
-          ].join(","),
-        )
-        .limit(data.limit);
-      if (error) throw new Error(error.message);
-      return {
-        mode: "keyword" as const,
-        reason: (e as Error).message,
-        hits: (rows ?? []).map((r) => ({
-          id: r.id,
-          doc_code: r.doc_code,
-          title_ar: r.title_ar,
-          title_en: r.title_en,
-          summary_ar: r.summary_ar,
-          summary_en: r.summary_en,
-          category_code: r.sec_knowledge_categories?.code ?? null,
-          risk_level: r.risk_level,
-          priority: r.priority,
-          similarity: null,
-        })),
-      };
-    }
+    const { buildKbSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "kb-semantic",
+      () =>
+        performSemanticSearch(
+          context.supabase as { from: (t: string) => any; rpc: (fn: string, args: unknown) => any },
+          data,
+        ),
+      () => false,
+      () => simKeywordSearch(buildKbSimulation(Date.now()), data.query, data.limit),
+      8_000,
+    );
+  });
 
-    const { data: rows, error } = await context.supabase.rpc("sec_kb_search", {
-      _query: vec as unknown as string,
-      _category_code: data.category_code ?? undefined,
-      _limit: data.limit,
-    });
+async function performSemanticSearch(
+  supabase: { from: (t: string) => any; rpc: (fn: string, args: unknown) => any },
+  data: { query: string; category_code?: string; limit: number },
+) {
+  const { embedText } = await import("@/lib/kb-embed.server");
+  let vec: number[];
+  try {
+    vec = await embedText(data.query);
+  } catch (e) {
+    // graceful fallback to keyword search if embedding gateway is down
+    const s = data.query.replace(/[,()]/g, " ");
+    const { data: rows, error } = await supabase
+      .from("sec_knowledge_articles")
+      .select(
+        "id, doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority, sec_knowledge_categories(code)",
+      )
+      .eq("status", "published")
+      .or(
+        [
+          `title_ar.ilike.%${s}%`,
+          `title_en.ilike.%${s}%`,
+          `summary_ar.ilike.%${s}%`,
+          `summary_en.ilike.%${s}%`,
+        ].join(","),
+      )
+      .limit(data.limit);
     if (error) throw new Error(error.message);
     return {
-      mode: "semantic" as const,
-      reason: null,
-      hits: (rows ?? []).map((r) => ({
+      mode: "keyword" as const,
+      reason: (e as Error).message,
+      hits: ((rows ?? []) as any[]).map((r) => ({
         id: r.id,
         doc_code: r.doc_code,
         title_ar: r.title_ar,
         title_en: r.title_en,
         summary_ar: r.summary_ar,
         summary_en: r.summary_en,
-        category_code: r.category_code,
+        category_code: r.sec_knowledge_categories?.code ?? null,
         risk_level: r.risk_level,
         priority: r.priority,
-        similarity: r.similarity != null ? Number(r.similarity) : null,
+        similarity: null,
       })),
     };
+  }
+
+  const { data: rows, error } = await supabase.rpc("sec_kb_search", {
+    _query: vec as unknown as string,
+    _category_code: data.category_code ?? undefined,
+    _limit: data.limit,
   });
+  if (error) throw new Error(error.message);
+  return {
+    mode: "semantic" as const,
+    reason: null,
+    hits: ((rows ?? []) as any[]).map((r) => ({
+      id: r.id,
+      doc_code: r.doc_code,
+      title_ar: r.title_ar,
+      title_en: r.title_en,
+      summary_ar: r.summary_ar,
+      summary_en: r.summary_en,
+      category_code: r.category_code,
+      risk_level: r.risk_level,
+      priority: r.priority,
+      similarity: r.similarity != null ? Number(r.similarity) : null,
+    })),
+  };
+}
 
 /* ------------------------------ Admin: seed ----------------------------- */
 
@@ -381,18 +513,30 @@ export const kbEmbedMissing = createServerFn({ method: "POST" })
 /* ----------------------------- KB stats ----------------------------- */
 
 export const kbStats = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read; empty/unreachable ⇒ reference repository stats.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const [{ count: total }, { count: embedded }] = await Promise.all([
-      context.supabase
-        .from("sec_knowledge_articles")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "published"),
-      context.supabase
-        .from("sec_knowledge_articles")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "published")
-        .not("embedding", "is", null),
-    ]);
-    return { total: total ?? 0, embedded: embedded ?? 0 };
+    const { buildKbSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "kb-stats",
+      async () => {
+        const [{ count: total }, { count: embedded }] = await Promise.all([
+          context.supabase
+            .from("sec_knowledge_articles")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "published"),
+          context.supabase
+            .from("sec_knowledge_articles")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "published")
+            .not("embedding", "is", null),
+        ]);
+        return { total: total ?? 0, embedded: embedded ?? 0 };
+      },
+      (r) => r.total === 0,
+      () => {
+        const n = buildKbSimulation(Date.now()).articles.length;
+        return { total: n, embedded: n - 1 };
+      },
+    );
   });
