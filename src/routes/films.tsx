@@ -5,7 +5,7 @@ import { DOMAIN_URL } from "@/lib/domain";
 import { ArrowLeft, Play, Clock, X, Maximize2 } from "lucide-react";
 import cinematicCity from "@/assets/cinematic-city.jpg";
 import cinematicBoardroom from "@/assets/cinematic-boardroom.jpg";
-import cinematicEarth from "@/assets/cinematic-earth.jpg";
+import cinematicEarth from "@/assets/cinematic-earth.webp";
 
 import investorAr from "@/assets/films/investor-ar.mp4.asset.json";
 import investorEn from "@/assets/films/investor-en.mp4.asset.json";

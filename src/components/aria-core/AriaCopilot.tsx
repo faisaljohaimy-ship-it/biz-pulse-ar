@@ -955,27 +955,28 @@ export function AriaCopilot() {
     [],
   );
 
-  const pumpPlayback = useCallback(async (messageId: string) => {
-    const s = streamStateRef.current.get(messageId);
-    if (!s || s.pumping) return;
-    s.pumping = true;
-    try {
-      while (s.playingIdx < s.audios.length) {
-        const idx = s.playingIdx;
-        let audio: HTMLAudioElement | null = null;
-        try {
-          audio = await s.audios[idx];
-        } catch {
-          audio = null;
-        }
-        if (streamStateRef.current.get(messageId) !== s) return;
-        if (!audio) {
-          s.playbackFailed = true;
-          s.playingIdx++;
-          continue;
-        }
-        audioRef.current = audio;
-        const started = () => {
+  const pumpPlayback = useCallback(
+    async (messageId: string) => {
+      const s = streamStateRef.current.get(messageId);
+      if (!s || s.pumping) return;
+      s.pumping = true;
+      try {
+        while (s.playingIdx < s.audios.length) {
+          const idx = s.playingIdx;
+          let audio: HTMLAudioElement | null = null;
+          try {
+            audio = await s.audios[idx];
+          } catch {
+            audio = null;
+          }
+          if (streamStateRef.current.get(messageId) !== s) return;
+          if (!audio) {
+            s.playbackFailed = true;
+            s.playingIdx++;
+            continue;
+          }
+          audioRef.current = audio;
+          const started = () => {
             const t0 = performance.now();
             if (idx === 0 && !s.latencyLogged) {
               s.firstAudioAt = t0;
@@ -1013,38 +1014,40 @@ export function AriaCopilot() {
               ariaState.set("speaking");
               AriaAudioBus.notifyPlaying("chat-tts", audio);
             }
-        };
-        const played = await playAudioClip(audio, started);
-        if (!played) s.playbackFailed = true;
-        try {
-          URL.revokeObjectURL(audio.src);
-          objectUrlsRef.current.delete(audio.src);
-        } catch {
-          /* noop */
+          };
+          const played = await playAudioClip(audio, started);
+          if (!played) s.playbackFailed = true;
+          try {
+            URL.revokeObjectURL(audio.src);
+            objectUrlsRef.current.delete(audio.src);
+          } catch {
+            /* noop */
+          }
+          s.playingIdx++;
         }
-        s.playingIdx++;
+      } finally {
+        s.pumping = false;
       }
-    } finally {
-      s.pumping = false;
-    }
-    // If stream is done and everything played, release the bus.
-    if (s.finalized && s.playingIdx >= s.audios.length && s.busAcquired) {
-      s.busAcquired = false;
-      ariaState.set("idle");
-      AriaAudioBus.notifyStopped("chat-tts");
-      AriaAudioBus.release("chat-tts");
-      streamStateRef.current.delete(messageId);
-      if (convModeRef.current && s.playbackFailed) {
-        setConvNotice("تعذّر تشغيل صوت آريا — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
-        setConvPaused(true);
-      } else if (convModeRef.current) {
-        if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
-        relistenTimerRef.current = setTimeout(() => {
-          startListeningRef.current?.();
-        }, 300);
+      // If stream is done and everything played, release the bus.
+      if (s.finalized && s.playingIdx >= s.audios.length && s.busAcquired) {
+        s.busAcquired = false;
+        ariaState.set("idle");
+        AriaAudioBus.notifyStopped("chat-tts");
+        AriaAudioBus.release("chat-tts");
+        streamStateRef.current.delete(messageId);
+        if (convModeRef.current && s.playbackFailed) {
+          setConvNotice("تعذّر تشغيل صوت آريا — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
+          setConvPaused(true);
+        } else if (convModeRef.current) {
+          if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
+          relistenTimerRef.current = setTimeout(() => {
+            startListeningRef.current?.();
+          }, 300);
+        }
       }
-    }
-  }, [playAudioClip]);
+    },
+    [playAudioClip],
+  );
 
   // Streaming TTS pipeline — voice replies are EXCLUSIVE to Conversation
   // Mode («مخاطبة») on every device: a reply is spoken aloud only when it
@@ -1386,7 +1389,10 @@ export function AriaCopilot() {
         });
         if (
           !response.ok &&
-          (response.status === 401 || response.status === 403 || response.status === 429 || response.status >= 500)
+          (response.status === 401 ||
+            response.status === 403 ||
+            response.status === 429 ||
+            response.status >= 500)
         ) {
           response = await fetch("/api/public/aria-transcribe", {
             method: "POST",
@@ -1574,7 +1580,12 @@ export function AriaCopilot() {
           : "تعذّر الوصول إلى الميكروفون — تأكد من HTTPS وإذن المتصفح.",
       );
     }
-  }, [scheduleConversationRelisten, stopMediaAnalysis, transcribeVoiceBlob, transcriptionProviderReady]);
+  }, [
+    scheduleConversationRelisten,
+    stopMediaAnalysis,
+    transcribeVoiceBlob,
+    transcriptionProviderReady,
+  ]);
 
   const finishListening = useCallback(() => {
     const recognition = recRef.current;

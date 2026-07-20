@@ -6,7 +6,7 @@ import type { AvatarIdentity } from "./types";
 const RAW: AvatarIdentity = {
   id: "aria.executive.v1",
   display_name: { en: "ARIA", ar: "آريا" },
-  reference_asset: "src/assets/aria-holo-executive.png",
+  reference_asset: "src/assets/aria-holo-executive.webp",
   // Deterministic identifier for the canonical reference asset.
   // The hash locks the identity to the committed reference file.
   reference_hash: "sha256:aria-holo-executive-v1",

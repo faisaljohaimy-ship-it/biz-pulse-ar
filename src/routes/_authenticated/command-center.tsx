@@ -484,7 +484,7 @@ function CommandCenterPage() {
       style={{ fontFamily: "'IBM Plex Sans Arabic', system-ui, sans-serif" }}
     >
       {/* Themed command-center backdrop (glossy). */}
-      <GlossyImageBackdrop src="/command-center-bg.jpeg" opacity={0.6} />
+      <GlossyImageBackdrop src="/command-center-bg.webp" opacity={0.6} />
       {/* Header */}
       <header className="border-b border-emerald-400/15 bg-[#061A2E]/80 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

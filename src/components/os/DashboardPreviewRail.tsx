@@ -29,7 +29,7 @@ const PREVIEWS: readonly Preview[] = [
     ar: "مركز القيادة التنفيذي",
     en: "Executive Command Center",
     descAr: "رؤية شاملة حيّة عبر المناطق الأربع",
-    img: "/command-center-bg.jpeg",
+    img: "/command-center-bg.webp",
   },
   {
     to: "/digital-twin",
@@ -50,7 +50,7 @@ const PREVIEWS: readonly Preview[] = [
     ar: "الخريطة التنفيذية",
     en: "Executive Map",
     descAr: "توزيع العمليات على الخريطة الحيّة",
-    img: "/smart-city-map-bg.jpeg",
+    img: "/smart-city-map-bg.webp",
   },
   {
     to: "/situation-room",

@@ -1,9 +1,9 @@
 export const KSA_IMAGES = {
-  kingdomTower: "/promo/ksa/kingdom-tower.jpg",
-  faisaliah: "/promo/ksa/faisaliah.jpg",
-  kafd: "/promo/ksa/kafd.jpg",
-  easternSkyline: "/promo/ksa/eastern-industry.jpg",
-  energyGrid: "/promo/ksa/energy-grid.jpg",
+  kingdomTower: "/promo/ksa/kingdom-tower.webp",
+  faisaliah: "/promo/ksa/faisaliah.webp",
+  kafd: "/promo/ksa/kafd.webp",
+  easternSkyline: "/promo/ksa/eastern-industry.webp",
+  energyGrid: "/promo/ksa/energy-grid.webp",
 } as const;
 
 export function preloadKsaImages() {

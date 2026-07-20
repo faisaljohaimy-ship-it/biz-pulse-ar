@@ -22,11 +22,11 @@ const PAGE_BACKDROPS: Record<string, string> = {
   "/decisions": "/decision-intel-bg.jpeg",
   "/risk": "/decision-intel-bg.jpeg",
   // Strategy & governance → strategy-map imagery.
-  "/executive": "/strategy-map-bg.jpeg",
-  "/governance": "/strategy-map-bg.jpeg",
-  "/sec/exec": "/strategy-map-bg.jpeg",
+  "/executive": "/strategy-map-bg.webp",
+  "/governance": "/strategy-map-bg.webp",
+  "/sec/exec": "/strategy-map-bg.webp",
   // Maps → smart-city map imagery.
-  "/executive-map": "/smart-city-map-bg.jpeg",
+  "/executive-map": "/smart-city-map-bg.webp",
 };
 
 /** The backdrop image for a route (exact match), or undefined. */
