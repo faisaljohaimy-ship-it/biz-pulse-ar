@@ -22,7 +22,7 @@ function Circles() {
   const { data, isLoading, dataUpdatedAt, isFetching } = useQuery({
     queryKey: ["sec-circles-tree", user?.id ?? "anon"],
     queryFn: () => fetchTree(),
-    enabled: !!user && !authLoading,
+    enabled: !authLoading,
     refetchInterval: 60_000,
   });
   const rows = data?.circles ?? [];

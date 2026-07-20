@@ -25,7 +25,7 @@ function OpsRoom() {
   const { data, isLoading, dataUpdatedAt, isFetching } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !authLoading,
+    enabled: !authLoading,
     refetchInterval: 30_000,
   });
 

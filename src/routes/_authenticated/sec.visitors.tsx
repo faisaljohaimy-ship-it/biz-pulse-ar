@@ -134,7 +134,7 @@ function VisitorsPage() {
                 <td className="px-3 py-2 font-mono text-xs">{v.vehicle_plate ?? "—"}</td>
                 <td className="px-3 py-2 font-mono text-xs">{v.badge_no ?? "—"}</td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">
-                  {new Date(v.check_in_at).toLocaleString("ar-SA")}
+                  {v.check_in_at ? new Date(v.check_in_at).toLocaleString("ar-SA") : "—"}
                 </td>
                 <td className="px-3 py-2">
                   <span

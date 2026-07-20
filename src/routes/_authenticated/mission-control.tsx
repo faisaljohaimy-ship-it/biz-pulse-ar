@@ -885,7 +885,7 @@ function MissionControl() {
   const q = useQuery({
     queryKey: ["mission-control-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !authLoading,
+    enabled: !authLoading,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });

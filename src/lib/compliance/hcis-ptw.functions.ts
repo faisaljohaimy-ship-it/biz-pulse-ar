@@ -321,14 +321,21 @@ export const getPtwOverview = createServerFn({ method: "GET" })
     let source: PtwOverview["source"] = "database";
     try {
       const db = context.supabase as unknown as LooseDb;
-      const [{ data: permits }, { data: types }] = await Promise.all([
-        db
-          .from("permits")
-          .select(
-            "id,ref,type_key,region,location,contractor,worker_count,starts_at,ends_at,status,is_simulation",
-          )
-          .order("ends_at", { ascending: true }),
-        db.from("permit_types").select("id,key,name_ar,name_en,icon,color").order("name_ar"),
+      // Hard 4s ceiling: an unreachable database must fall to the
+      // simulation, never hang the board (resilient() doctrine).
+      const [{ data: permits }, { data: types }] = await Promise.race([
+        Promise.all([
+          db
+            .from("permits")
+            .select(
+              "id,ref,type_key,region,location,contractor,worker_count,starts_at,ends_at,status,is_simulation",
+            )
+            .order("ends_at", { ascending: true }),
+          db.from("permit_types").select("id,key,name_ar,name_en,icon,color").order("name_ar"),
+        ]),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error("showcase-timeout")), 4_000);
+        }),
       ]);
       p = (permits ?? []) as PtwOverview["permits"];
       t = (types ?? []) as PtwOverview["types"];

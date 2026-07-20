@@ -150,9 +150,22 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     return useQuery<T[]>({
       queryKey: key,
       queryFn: async () => {
-        const { data, error } = await tbl().select("*").order(orderCol, { ascending });
-        if (error) throw error;
-        return (data ?? []) as T[];
+        // «بيانات لا تفرغ»: an unreachable database must resolve to an
+        // empty list within 4s so page-level reference fallbacks engage —
+        // never an infinite skeleton. Live rows win on the next refetch.
+        try {
+          const { data, error } = await Promise.race([
+            tbl().select("*").order(orderCol, { ascending }),
+            new Promise<never>((_, reject) => {
+              setTimeout(() => reject(new Error("showcase-timeout")), 4_000);
+            }),
+          ]);
+          if (error) throw error;
+          return (data ?? []) as T[];
+        } catch (error) {
+          console.error(`[showcase] ${table} list unavailable — serving empty set:`, error);
+          return [] as T[];
+        }
       },
       staleTime: 15_000,
       refetchInterval: 30_000,

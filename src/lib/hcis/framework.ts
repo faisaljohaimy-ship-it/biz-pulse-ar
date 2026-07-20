@@ -202,18 +202,26 @@ export function useHcisFramework() {
         return referenceDataset();
       }
       try {
-        const [dir, stg, cmp] = await Promise.all([
-          supabase
-            .from("hcis_directives")
-            .select("code,category,name_ar,name_en,scope_ar,issue_note_ar,sort_order")
-            .order("sort_order", { ascending: true }),
-          supabase
-            .from("hcis_approval_stages")
-            .select("stage_no,name_ar,name_en,description_ar")
-            .order("stage_no", { ascending: true }),
-          supabase
-            .from("hcis_compliance_status")
-            .select("directive_code,region_code,status,priority,is_simulation"),
+        // «بيانات لا تفرغ»: an unreachable database must resolve to the
+        // reference copy within 4s — never an infinite skeleton. Live rows
+        // win on the next scheduled refetch.
+        const [dir, stg, cmp] = await Promise.race([
+          Promise.all([
+            supabase
+              .from("hcis_directives")
+              .select("code,category,name_ar,name_en,scope_ar,issue_note_ar,sort_order")
+              .order("sort_order", { ascending: true }),
+            supabase
+              .from("hcis_approval_stages")
+              .select("stage_no,name_ar,name_en,description_ar")
+              .order("stage_no", { ascending: true }),
+            supabase
+              .from("hcis_compliance_status")
+              .select("directive_code,region_code,status,priority,is_simulation"),
+          ]),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error("showcase-timeout")), 4_000);
+          }),
         ]);
 
         if (dir.error) logPgError("hcis_directives", dir.error);

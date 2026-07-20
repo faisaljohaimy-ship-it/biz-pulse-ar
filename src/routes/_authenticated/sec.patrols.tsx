@@ -19,7 +19,7 @@ function Patrols() {
   const { data, dataUpdatedAt, isFetching } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !authLoading,
+    enabled: !authLoading,
   });
   const rows = data?.patrols ?? [];
   return (

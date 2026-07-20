@@ -20,7 +20,7 @@ function AIRec() {
   const { data, dataUpdatedAt, isFetching } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user && !authLoading,
+    enabled: !authLoading,
   });
   if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
 

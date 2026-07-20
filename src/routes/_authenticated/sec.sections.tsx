@@ -33,7 +33,7 @@ function Sections() {
   } = useQuery({
     queryKey: ["sec-sections", user?.id ?? "anon"],
     queryFn: () => fetchSections(),
-    enabled: !!user && !authLoading,
+    enabled: !authLoading,
     refetchInterval: 60_000,
   });
   return (

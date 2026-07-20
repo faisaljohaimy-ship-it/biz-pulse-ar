@@ -158,7 +158,7 @@ function AccessControlPage() {
                         </span>
                       </td>
                       <td className="px-3 py-2 text-[11px] text-muted-foreground">
-                        {new Date(g.last_event_at).toLocaleString("ar-SA")}
+                        {g.last_event_at ? new Date(g.last_event_at).toLocaleString("ar-SA") : "—"}
                       </td>
                       <td className="px-3 py-2">
                         <Select

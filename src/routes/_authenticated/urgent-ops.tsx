@@ -61,6 +61,141 @@ interface Proposal {
 
 const STATUSES: TaskStatus[] = ["جديد", "قيد المعالجة", "بانتظار اعتماد", "مغلق"];
 
+/* Built-in reference set — «بيانات لا تفرغ»: served when the database is
+   unreachable or empty (all rows are flagged simulation); live rows win. */
+function buildReferenceBoard(now: number) {
+  const h = 3600_000;
+  const tasks: UrgentTask[] = [
+    [
+      "إخلاء تجريبي لمبنى القيادة — تثبيت نقاط التجمع",
+      "السلامة",
+      "عاجل جدًا",
+      "قيد المعالجة",
+      "م. سلطان العتيبي",
+      3,
+      24,
+    ],
+    [
+      "استعادة كاميرات القطاع الغربي المتقطعة",
+      "غرفة التحكم",
+      "عاجل جدًا",
+      "جديد",
+      "فريق الصيانة التقنية",
+      6,
+      12,
+    ],
+    [
+      "تجديد 3 تصاريح عمل حرج تنتهي اليوم",
+      "الأمن الصناعي",
+      "عاجل",
+      "بانتظار اعتماد",
+      "أ. عبدالله السبيعي",
+      9,
+      24,
+    ],
+    [
+      "تعزيز بوابة المقاولين قبل ذروة الصباح",
+      "أمن البوابات",
+      "عاجل",
+      "قيد المعالجة",
+      "قائد الوردية",
+      14,
+      48,
+    ],
+    [
+      "مراجعة خطة استمرارية الأعمال للمواقع الساحلية",
+      "إدارة المخاطر",
+      "متابعة",
+      "جديد",
+      "منسق الاستمرارية",
+      72,
+      168,
+    ],
+    ["تقرير ما بعد الحدث لمناورة الإطفاء", "السلامة", "متابعة", "مغلق", "وحدة التقارير", -20, 72],
+  ].map(([title_ar, department, priority, status, owner_name, dueH, sla], i) => ({
+    id: `sim-ut-${i + 1}`,
+    title_ar: title_ar as string,
+    department: department as string,
+    priority: priority as Priority,
+    status: status as TaskStatus,
+    owner_name: owner_name as string,
+    due_at: new Date(now + (dueH as number) * h).toISOString(),
+    sla_hours: sla as number,
+    is_simulation: true,
+  }));
+  const requests: SupportRequest[] = [
+    [
+      "قائد وردية البوابة الشرقية",
+      "طلب دعم فني — قارئ البطاقات متوقف",
+      "ميداني",
+      "مفتوح",
+      null,
+      1.2,
+    ],
+    [
+      "غرفة العمليات",
+      "تخصيص مراقب إضافي لشاشات CCTV",
+      "داخلي",
+      "مفتوح",
+      "مركز خدمة تقنية المعلومات",
+      3.5,
+    ],
+    [
+      "مكتب المدير التنفيذي",
+      "تجهيز عرض الجاهزية لزيارة الغد",
+      "تنفيذي",
+      "قيد المعالجة",
+      "أ. لمى الشهراني",
+      6,
+    ],
+    ["فريق الصيانة", "صلاحية وصول مؤقتة للمحطة الشرقية", "ميداني", "مفتوح", null, 9],
+  ].map(([requester, topic_ar, channel, status, assigned_to, agoH], i) => ({
+    id: `sim-sr-${i + 1}`,
+    requester: requester as string,
+    topic_ar: topic_ar as string,
+    channel: channel as SupportRequest["channel"],
+    status: status as string,
+    assigned_to: assigned_to as string | null,
+    is_simulation: true,
+    created_at: new Date(now - (agoH as number) * h).toISOString(),
+  }));
+  const proposals: Proposal[] = [
+    [
+      "SLA",
+      "مهمتان تقتربان من خرق SLA خلال أقل من ٤ ساعات — أقترح تفعيل غرفة استجابة سريعة وإشعار مالكي المهام.",
+      "عالٍ",
+      "مقترح",
+      null,
+      0.8,
+    ],
+    [
+      "المساندة",
+      "طلبا مساندة بلا مسؤول محدد — أقترح إسنادهما آلياً لأقرب فريق متاح ومتابعة الاستجابة كل ساعة.",
+      "متوسط",
+      "مقترح",
+      null,
+      2.4,
+    ],
+    [
+      "استباق المخاطر",
+      "تكرار انقطاع كاميرات القطاع الغربي ٣ مرات هذا الأسبوع — أقترح جدولة استبدال وحدة التغذية قبل نهاية الأسبوع.",
+      "حرج",
+      "معتمد",
+      "المسؤول التنفيذي",
+      26,
+    ],
+  ].map(([area, proposal_ar, impact, status, decided_by, agoH], i) => ({
+    id: `sim-pr-${i + 1}`,
+    area: area as string,
+    proposal_ar: proposal_ar as string,
+    impact: impact as Proposal["impact"],
+    status: status as Proposal["status"],
+    decided_by: decided_by as string | null,
+    created_at: new Date(now - (agoH as number) * h).toISOString(),
+  }));
+  return { tasks, requests, proposals };
+}
+
 const PRIORITY_COLOR: Record<Priority, string> = {
   "عاجل جدًا": "bg-red-600/20 text-red-300 border-red-500/40",
   عاجل: "bg-amber-500/20 text-amber-200 border-amber-500/40",
@@ -99,9 +234,21 @@ function UrgentOpsPage() {
         .select("*")
         .order("created_at", { ascending: false }),
     ]);
-    if (t.data) setTasks(t.data as UrgentTask[]);
-    if (r.data) setRequests(r.data as SupportRequest[]);
-    if (p.data) setProposals(p.data as Proposal[]);
+    if (t.data?.length) setTasks(t.data as UrgentTask[]);
+    if (r.data?.length) setRequests(r.data as SupportRequest[]);
+    if (p.data?.length) setProposals(p.data as Proposal[]);
+  }, []);
+
+  // «بيانات لا تفرغ»: if the database hasn't answered (or is empty) within
+  // 4s, seed the built-in reference board; live rows overwrite on arrival.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const ref = buildReferenceBoard(Date.now());
+      setTasks((cur) => (cur.length ? cur : ref.tasks));
+      setRequests((cur) => (cur.length ? cur : ref.requests));
+      setProposals((cur) => (cur.length ? cur : ref.proposals));
+    }, 4_000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {

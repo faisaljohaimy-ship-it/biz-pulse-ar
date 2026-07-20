@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { z } from "zod";
 
 // ============================================================================
@@ -25,61 +26,154 @@ function actorOf(claims: unknown): string {
 // OVERVIEW (single fetch for the /sec/access dashboard)
 // ============================================================================
 
+export type AccessRaw = {
+  visitors: Array<{
+    id: string;
+    ref: string;
+    full_name: string;
+    organization: string | null;
+    host: string;
+    purpose: string | null;
+    badge_no: string | null;
+    status: string;
+    vehicle_plate: string | null;
+    expected_at: string | null;
+    check_in_at: string | null;
+    check_out_at: string | null;
+    phone: string | null;
+    site_id: string | null;
+    gate_id: string | null;
+  }>;
+  contractors: Array<{
+    id: string;
+    ref: string;
+    name: string;
+    contract_no: string;
+    workers_count: number;
+    compliance_score: number;
+    status: string;
+    expires_at: string | null;
+    phone: string | null;
+    email: string | null;
+    permit_types: string[];
+    insurance_expiry: string | null;
+  }>;
+  vehicles: Array<{
+    id: string;
+    ref: string;
+    plate: string;
+    vehicle_type: string;
+    company: string | null;
+    driver_name: string;
+    driver_phone: string | null;
+    status: string;
+    site_id: string | null;
+    gate_id: string | null;
+    permit_no: string | null;
+    permit_expires_at: string | null;
+    check_in_at: string | null;
+    check_out_at: string | null;
+    contractor_id: string | null;
+  }>;
+  gates: Array<{
+    id: string;
+    code: string;
+    kind: string;
+    status: string;
+    health: number;
+    events_today: number;
+    last_event_at: string | null;
+    site_id: string | null;
+    building_id: string | null;
+  }>;
+  denied_events: Array<{
+    id: string;
+    event: string;
+    payload: JsonValue;
+    occurred_at: string;
+    entity_type: string;
+    entity_ref: string;
+    actor_name: string | null;
+  }>;
+  sites: Array<{ id: string; code: string; name_ar: string; name_en: string }>;
+};
+
+async function fetchAccessRaw(supabase: { from: (t: string) => any }): Promise<AccessRaw> {
+  const [visitorsRes, contractorsRes, vehiclesRes, gatesRes, deniedRes, sitesRes] =
+    await Promise.all([
+      supabase
+        .from("sec_visitors")
+        .select(
+          "id,ref,full_name,organization,host,purpose,badge_no,status,vehicle_plate,expected_at,check_in_at,check_out_at,phone,site_id,gate_id",
+        )
+        .order("check_in_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("sec_contractors")
+        .select(
+          "id,ref,name,contract_no,workers_count,compliance_score,status,expires_at,phone,email,permit_types,insurance_expiry",
+        )
+        .order("updated_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("sec_vehicles")
+        .select(
+          "id,ref,plate,vehicle_type,company,driver_name,driver_phone,status,site_id,gate_id,permit_no,permit_expires_at,check_in_at,check_out_at,contractor_id",
+        )
+        .order("updated_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("sec_gates")
+        .select("id,code,kind,status,health,events_today,last_event_at,site_id,building_id")
+        .order("code"),
+      supabase
+        .from("sec_activity_events")
+        .select("id,event,payload,occurred_at,entity_type,entity_ref,actor_name")
+        .eq("event", "access_denied")
+        .order("occurred_at", { ascending: false })
+        .limit(20),
+      supabase.from("sec_sites").select("id,code,name_ar,name_en"),
+    ]);
+
+  const errs = [
+    visitorsRes.error,
+    contractorsRes.error,
+    vehiclesRes.error,
+    gatesRes.error,
+    deniedRes.error,
+    sitesRes.error,
+  ].filter(Boolean);
+  if (errs.length) throw new Error(errs.map((e: { message: string }) => e.message).join("; "));
+
+  return {
+    visitors: visitorsRes.data ?? [],
+    contractors: contractorsRes.data ?? [],
+    vehicles: vehiclesRes.data ?? [],
+    gates: gatesRes.data ?? [],
+    denied_events: deniedRes.data ?? [],
+    sites: sitesRes.data ?? [],
+  };
+}
+
 export const getAccessOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // Open showcase read (anon RLS decides visibility); «بيانات لا تفرغ»:
+  // unreachable/empty database ⇒ built-in reference simulation.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
-    const [visitorsRes, contractorsRes, vehiclesRes, gatesRes, deniedRes, sitesRes] =
-      await Promise.all([
-        supabase
-          .from("sec_visitors")
-          .select(
-            "id,ref,full_name,organization,host,purpose,badge_no,status,vehicle_plate,expected_at,check_in_at,check_out_at,phone,site_id,gate_id",
-          )
-          .order("check_in_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("sec_contractors")
-          .select(
-            "id,ref,name,contract_no,workers_count,compliance_score,status,expires_at,phone,email,permit_types,insurance_expiry",
-          )
-          .order("updated_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("sec_vehicles")
-          .select(
-            "id,ref,plate,vehicle_type,company,driver_name,driver_phone,status,site_id,gate_id,permit_no,permit_expires_at,check_in_at,check_out_at,contractor_id",
-          )
-          .order("updated_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("sec_gates")
-          .select("id,code,kind,status,health,events_today,last_event_at,site_id,building_id")
-          .order("code"),
-        supabase
-          .from("sec_activity_events")
-          .select("id,event,payload,occurred_at,entity_type,entity_ref,actor_name")
-          .eq("event", "access_denied")
-          .order("occurred_at", { ascending: false })
-          .limit(20),
-        supabase.from("sec_sites").select("id,code,name_ar,name_en"),
-      ]);
-
-    const errs = [
-      visitorsRes.error,
-      contractorsRes.error,
-      vehiclesRes.error,
-      gatesRes.error,
-      deniedRes.error,
-      sitesRes.error,
-    ].filter(Boolean);
-    if (errs.length) throw new Error(errs.map((e) => e!.message).join("; "));
-
-    const visitors = visitorsRes.data ?? [];
-    const contractors = contractorsRes.data ?? [];
-    const vehicles = vehiclesRes.data ?? [];
-    const gates = gatesRes.data ?? [];
-    const denied = deniedRes.data ?? [];
+    const { buildAccessSimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    const raw = await resilient(
+      "access-overview",
+      () => fetchAccessRaw(context.supabase as { from: (t: string) => any }),
+      (r) =>
+        r.visitors.length === 0 &&
+        r.contractors.length === 0 &&
+        r.vehicles.length === 0 &&
+        r.gates.length === 0,
+      () => buildAccessSimulation(Date.now()) as unknown as AccessRaw,
+    );
+    const { visitors, contractors, vehicles, gates } = raw;
+    const denied = raw.denied_events;
 
     const now = Date.now();
     const expiringContractors = contractors.filter(
@@ -97,7 +191,7 @@ export const getAccessOverview = createServerFn({ method: "GET" })
       vehicles,
       gates,
       denied_events: denied,
-      sites: sitesRes.data ?? [],
+      sites: raw.sites,
       kpis: {
         visitors_inside: visitors.filter((v) => v.status === "inside").length,
         visitors_expected: visitors.filter((v) => v.status === "expected").length,

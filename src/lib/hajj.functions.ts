@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type HajjSite = {
   id: string;
@@ -51,27 +52,46 @@ export type HajjKpi = {
   risk_level: "low" | "medium" | "high";
 };
 
+export type HajjOverview = {
+  sites: HajjSite[];
+  stations: HajjStation[];
+  tasks: HajjTask[];
+  kpi: HajjKpi | null;
+};
+
+async function fetchHajjOverview(sb: { from: (t: string) => any }): Promise<HajjOverview> {
+  const [sites, stations, tasks, kpi] = await Promise.all([
+    sb.from("hajj_sites").select("*").order("code"),
+    sb.from("hajj_stations").select("*").order("code"),
+    sb.from("hajj_tasks").select("*").order("reported_at", { ascending: false }).limit(50),
+    sb
+      .from("hajj_kpi_snapshots")
+      .select("*")
+      .order("snapshot_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  return {
+    sites: (sites.data ?? []) as HajjSite[],
+    stations: (stations.data ?? []) as HajjStation[],
+    tasks: (tasks.data ?? []) as HajjTask[],
+    kpi: (kpi.data ?? null) as HajjKpi | null,
+  };
+}
+
 export const getHajjOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const sb = context.supabase;
-    const [sites, stations, tasks, kpi] = await Promise.all([
-      sb.from("hajj_sites").select("*").order("code"),
-      sb.from("hajj_stations").select("*").order("code"),
-      sb.from("hajj_tasks").select("*").order("reported_at", { ascending: false }).limit(50),
-      sb
-        .from("hajj_kpi_snapshots")
-        .select("*")
-        .order("snapshot_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-    return {
-      sites: (sites.data ?? []) as HajjSite[],
-      stations: (stations.data ?? []) as HajjStation[],
-      tasks: (tasks.data ?? []) as HajjTask[],
-      kpi: (kpi.data ?? null) as HajjKpi | null,
-    };
+  // Open showcase read (anon RLS decides visibility); «بيانات لا تفرغ»:
+  // unreachable/empty database ⇒ built-in مشاعر reference simulation.
+  .middleware([optionalSupabaseAuth])
+  .handler(async ({ context }): Promise<HajjOverview> => {
+    const { buildHajjSimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    return resilient(
+      "hajj-overview",
+      () => fetchHajjOverview(context.supabase as { from: (t: string) => any }),
+      (r) => r.sites.length === 0 && r.stations.length === 0 && r.tasks.length === 0 && !r.kpi,
+      () => buildHajjSimulation(Date.now()) as unknown as HajjOverview,
+    );
   });
 
 export const updateHajjTaskStatus = createServerFn({ method: "POST" })

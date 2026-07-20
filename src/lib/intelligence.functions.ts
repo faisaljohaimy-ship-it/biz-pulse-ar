@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { computeExecutiveMetrics, type ExecutiveMetric } from "./intelligence/metrics";
 
 export type FabricSnapshot = {
@@ -36,31 +37,75 @@ export type FabricSnapshot = {
   sources: Array<{ id: string; label: string; available: boolean }>;
 };
 
-export const getFabricSnapshot = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<FabricSnapshot> => {
-    const { supabase } = context;
-    const [events, alerts, tasks] = await Promise.all([
-      supabase
-        .from("intelligence_events")
-        .select(
-          "id,kind,status,impact,progress,due_at,last_update,created_at,title,title_en,owner,department,decision_route",
-        )
-        .order("last_update", { ascending: false })
-        .limit(200),
-      supabase
-        .from("intelligence_alerts")
-        .select(
-          "id,severity,title,title_en,owner,route,source,business_impact_score,resolved_at,created_at",
-        )
-        .order("business_impact_score", { ascending: false })
-        .limit(200),
-      supabase.from("tasks").select("status,created_at,updated_at").limit(200),
-    ]);
+type FabricRows = {
+  eventRows: Array<{
+    id: string;
+    kind: string;
+    status: string;
+    impact: string;
+    progress: number;
+    due_at: string | null;
+    last_update: string;
+    created_at: string;
+    title: string;
+    title_en: string | null;
+    owner: string | null;
+    department: string | null;
+    decision_route: string | null;
+  }>;
+  alertRows: Array<{
+    id: string;
+    severity: string;
+    title: string;
+    title_en: string | null;
+    owner: string | null;
+    route: string | null;
+    source: string | null;
+    business_impact_score: number;
+    resolved_at: string | null;
+    created_at: string;
+  }>;
+  taskRows: Array<{ status: string; created_at: string; updated_at: string }>;
+};
 
-    const eventRows = events.data ?? [];
-    const alertRows = alerts.data ?? [];
-    const taskRows = tasks.data ?? [];
+async function fetchFabricRows(supabase: { from: (t: string) => any }): Promise<FabricRows> {
+  const [events, alerts, tasks] = await Promise.all([
+    supabase
+      .from("intelligence_events")
+      .select(
+        "id,kind,status,impact,progress,due_at,last_update,created_at,title,title_en,owner,department,decision_route",
+      )
+      .order("last_update", { ascending: false })
+      .limit(200),
+    supabase
+      .from("intelligence_alerts")
+      .select(
+        "id,severity,title,title_en,owner,route,source,business_impact_score,resolved_at,created_at",
+      )
+      .order("business_impact_score", { ascending: false })
+      .limit(200),
+    supabase.from("tasks").select("status,created_at,updated_at").limit(200),
+  ]);
+  return {
+    eventRows: events.data ?? [],
+    alertRows: alerts.data ?? [],
+    taskRows: tasks.data ?? [],
+  };
+}
+
+export const getFabricSnapshot = createServerFn({ method: "GET" })
+  // Open showcase read (anon RLS decides visibility); «بيانات لا تفرغ»:
+  // unreachable/empty database ⇒ built-in reference simulation rows.
+  .middleware([optionalSupabaseAuth])
+  .handler(async ({ context }): Promise<FabricSnapshot> => {
+    const { buildFabricRowsSimulation, resilient } =
+      await import("@/lib/exec/showcase-simulation.server");
+    const { eventRows, alertRows, taskRows } = await resilient(
+      "fabric-snapshot",
+      () => fetchFabricRows(context.supabase as { from: (t: string) => any }),
+      (r) => r.eventRows.length === 0 && r.alertRows.length === 0 && r.taskRows.length === 0,
+      () => buildFabricRowsSimulation(Date.now()) as unknown as FabricRows,
+    );
 
     const metrics = computeExecutiveMetrics({
       events: eventRows.map((e) => ({

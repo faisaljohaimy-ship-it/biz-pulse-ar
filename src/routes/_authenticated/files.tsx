@@ -16,6 +16,16 @@ export const Route = createFileRoute("/_authenticated/files")({
   component: FilesPage,
 });
 
+/* Built-in reference listing for the public showcase — guests see a
+   representative document set instead of an empty locker (labelled). */
+const REFERENCE_FILES = [
+  "تقرير-الجاهزية-الأمنية-الأسبوعي.pdf",
+  "خطة-الطوارئ-والإخلاء-2026.docx",
+  "مصفوفة-امتثال-توجيهات-HCIS.xlsx",
+  "محضر-اجتماع-لجنة-السلامة-يوليو.pdf",
+  "دليل-تصاريح-العمل-الحرج.pdf",
+].map((name) => ({ name, isReference: true as const }));
+
 function FilesPage() {
   const { t, locale } = useI18n();
   const { user } = useAuth();
@@ -24,14 +34,26 @@ function FilesPage() {
   const [uploading, setUploading] = useState(false);
 
   const { data: files = [], isLoading } = useQuery({
-    queryKey: ["files", user?.id],
-    enabled: !!user,
+    queryKey: ["files", user?.id ?? "anon"],
     queryFn: async () => {
-      const { data, error } = await supabase.storage.from("uploads").list(user!.id, {
-        sortBy: { column: "created_at", order: "desc" },
-      });
-      if (error) throw error;
-      return data ?? [];
+      // «بيانات لا تفرغ»: guests get the labelled reference set; a signed-in
+      // user with an unreachable/empty locker falls back to it as well.
+      if (!user) return REFERENCE_FILES;
+      try {
+        const { data, error } = await Promise.race([
+          supabase.storage.from("uploads").list(user.id, {
+            sortBy: { column: "created_at", order: "desc" },
+          }),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error("showcase-timeout")), 4_000);
+          }),
+        ]);
+        if (error) throw error;
+        return data?.length ? data : REFERENCE_FILES;
+      } catch (error) {
+        console.error("[showcase] uploads list unavailable — serving reference set:", error);
+        return REFERENCE_FILES;
+      }
     },
   });
 
@@ -88,7 +110,11 @@ function FilesPage() {
         <div className="text-sm font-semibold">
           {locale === "ar" ? "اسحب الملفات أو اضغط للرفع" : "Drop files here or click to upload"}
         </div>
-        <Button onClick={onPick} disabled={uploading}>
+        <Button
+          onClick={onPick}
+          disabled={uploading || !user}
+          title={!user ? (locale === "ar" ? "يتطلب تسجيل الدخول" : "Sign in required") : undefined}
+        >
           {uploading ? t("common.loading") : locale === "ar" ? "اختر ملف" : "Choose file"}
         </Button>
         <input
@@ -117,12 +143,18 @@ function FilesPage() {
             <div key={f.name} className="flex items-center gap-3 p-3">
               <FileText className="h-4 w-4 text-muted-foreground" />
               <div className="min-w-0 flex-1 truncate text-sm">{f.name}</div>
-              <button
-                onClick={() => remove(f.name)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              {"isReference" in f && f.isReference ? (
+                <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-600 dark:text-amber-300">
+                  {locale === "ar" ? "محاكاة مرجعية" : "Reference demo"}
+                </span>
+              ) : (
+                <button
+                  onClick={() => remove(f.name)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>

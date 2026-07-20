@@ -1116,3 +1116,542 @@ export async function resilient<T>(
     return await fallback();
   }
 }
+
+/* ── Access management (/sec/access · visitors · vehicles · contractors) ── */
+
+const ACCESS_SITES = [
+  { id: "sim-s1", code: "WST-01", name_ar: "محطة التحويل الغربية", name_en: "Western Substation" },
+  { id: "sim-s2", code: "CTR-01", name_ar: "مبنى القيادة المركزي", name_en: "Central Command" },
+  { id: "sim-s3", code: "EST-02", name_ar: "محطة الضخ الشرقية", name_en: "Eastern Pump Station" },
+  { id: "sim-s4", code: "STH-01", name_ar: "مستودع الجنوب اللوجستي", name_en: "South Logistics" },
+];
+
+export function buildAccessSimulation(now: number) {
+  const visitors = [
+    [
+      "زياد الحربي",
+      "شركة المراجعة الوطنية",
+      "م. سلطان العتيبي",
+      "اجتماع مراجعة ربع سنوية",
+      "inside",
+      2 * H,
+      "V-1042",
+    ],
+    [
+      "نورة الشمري",
+      "هيئة التقييس الخليجية",
+      "م. فهد القحطاني",
+      "جولة تفتيش معايير",
+      "inside",
+      1.2 * H,
+      "V-1043",
+    ],
+    [
+      "محمد باوزير",
+      "مقاولات الإنشاء المتحدة",
+      "أ. عبدالله السبيعي",
+      "تسليم مخططات المرحلة 3",
+      "inside",
+      45 * M,
+      "V-1044",
+    ],
+    [
+      "سارة الدوسري",
+      "مكتب الاستشارات الهندسية",
+      "م. سلطان العتيبي",
+      "ورشة عمل السلامة",
+      "expected",
+      -1.5 * H,
+      null,
+    ],
+    [
+      "خالد الغامدي",
+      "الخدمات الطبية المساندة",
+      "د. ريم القحطاني",
+      "فحص دوري للعيادة",
+      "expected",
+      -3 * H,
+      null,
+    ],
+    [
+      "إبراهيم العنزي",
+      "النقل التخصصي",
+      "أ. لمى الشهراني",
+      "استلام معدات قياس",
+      "left",
+      6 * H,
+      "V-1039",
+    ],
+  ] as const;
+  const contractors = [
+    ["الإنشاءات الصناعية المتقدمة", "C-2024-118", 340, 96, "active", 320],
+    ["صيانة الشبكات الموحدة", "C-2025-031", 180, 92, "active", 150],
+    ["الحلول الكهروميكانيكية", "C-2025-044", 95, 88, "active", 65],
+    ["خدمات العزل والطلاء", "C-2024-201", 60, 74, "suspended", 25],
+    ["النظافة والدعم اللوجستي", "C-2025-009", 220, 91, "active", 400],
+  ] as const;
+  const vehicles = [
+    ["7842 ن ص أ", "truck", "الإنشاءات الصناعية المتقدمة", "ماجد الرشيدي", "inside", 3 * H],
+    ["3311 د ط ع", "tanker", "صيانة الشبكات الموحدة", "بدر المطيري", "inside", 1.5 * H],
+    ["9057 هـ و ب", "service", "الحلول الكهروميكانيكية", "عمر الزهراني", "inside", 40 * M],
+    ["1204 أ ب ج", "car", null, "زياد الحربي", "inside", 2 * H],
+    ["5566 ر س ن", "bus", "النظافة والدعم اللوجستي", "حسن عسيري", "expected", -2 * H],
+    ["8790 ك ل م", "truck", "خدمات العزل والطلاء", "طارق جمال", "denied", 5 * H],
+  ] as const;
+  const gateNames = [
+    "البوابة الرئيسية",
+    "بوابة الشحن",
+    "بوابة المقاولين",
+    "بوابة الطوارئ",
+    "البوابة الشرقية",
+    "بوابة المستودعات",
+    "البوابة الجنوبية",
+    "بوابة كبار الزوار",
+  ];
+  const gates = gateNames.map((_, i) => ({
+    id: `sim-gate-${i + 1}`,
+    code: `GT-0${i + 1}`,
+    kind: i === 3 ? "emergency" : i % 2 === 0 ? "vehicle" : "pedestrian",
+    status: i === 5 ? "degraded" : i === 6 ? "maintenance" : "online",
+    health: i === 5 ? 71 : i === 6 ? 55 : 97 - i,
+    events_today: 180 - i * 17,
+    last_event_at: iso(now - (i + 1) * 9 * M),
+    site_id: ACCESS_SITES[i % ACCESS_SITES.length].id,
+    building_id: null,
+  }));
+  const denied_events = [
+    ["8790 ك ل م", "تصريح المركبة منتهي منذ 12 يومًا", 5 * H],
+    ["V-0991", "بطاقة زائر منتهية الصلاحية", 9 * H],
+    ["2471 ص ع ق", "لا يوجد تصريح دخول للموقع الحرج", 14 * H],
+    ["C-2024-201", "مقاول موقوف — درجة امتثال منخفضة", 20 * H],
+  ].map(([ref, reason, ago], i) => ({
+    id: `sim-deny-${i + 1}`,
+    event: "access_denied",
+    payload: { reason, target: i % 2 ? "visitor" : "vehicle" },
+    occurred_at: iso(now - (ago as number)),
+    entity_type: "access_attempt",
+    entity_ref: ref as string,
+    actor_name: "نظام البوابات الآلي",
+  }));
+  return {
+    visitors: visitors.map(([full_name, organization, host, purpose, status, ago, badge], i) => ({
+      id: `sim-vis-${i + 1}`,
+      ref: `VIS-SIM-${100 + i}`,
+      full_name,
+      organization,
+      host,
+      purpose,
+      badge_no: badge,
+      status,
+      vehicle_plate: i === 0 ? "1204 أ ب ج" : null,
+      expected_at: status === "expected" ? iso(now - ago) : null,
+      check_in_at: status === "expected" ? null : iso(now - ago),
+      check_out_at: status === "left" ? iso(now - ago + 4 * H) : null,
+      phone: null,
+      site_id: ACCESS_SITES[i % ACCESS_SITES.length].id,
+      gate_id: gates[i % gates.length].id,
+    })),
+    contractors: contractors.map(
+      ([name, contract_no, workers_count, compliance_score, status, expDays], i) => ({
+        id: `sim-con-${i + 1}`,
+        ref: `CON-SIM-${200 + i}`,
+        name,
+        contract_no,
+        workers_count,
+        compliance_score,
+        status,
+        expires_at: iso(now + (expDays as number) * 24 * H),
+        phone: null,
+        email: null,
+        permit_types: ["hot_work", "confined_space"].slice(0, (i % 2) + 1),
+        insurance_expiry: iso(now + ((expDays as number) - 10) * 24 * H),
+      }),
+    ),
+    vehicles: vehicles.map(([plate, vehicle_type, company, driver_name, status, ago], i) => ({
+      id: `sim-veh-${i + 1}`,
+      ref: `VEH-SIM-${300 + i}`,
+      plate,
+      vehicle_type,
+      company,
+      driver_name,
+      driver_phone: null,
+      status,
+      site_id: ACCESS_SITES[i % ACCESS_SITES.length].id,
+      gate_id: gates[(i * 2) % gates.length].id,
+      permit_no: status === "denied" ? null : `PRM-${4400 + i}`,
+      permit_expires_at: iso(now + (status === "denied" ? -12 : 45) * 24 * H),
+      check_in_at: status === "inside" ? iso(now - (ago as number)) : null,
+      check_out_at: null,
+      contractor_id: null,
+    })),
+    gates,
+    denied_events,
+    sites: ACCESS_SITES,
+  };
+}
+
+/* ── Intelligence fabric (/boardroom · /intelligence) raw rows ─────────── */
+
+export function buildFabricRowsSimulation(now: number) {
+  const EV = [
+    [
+      "decision",
+      "in_progress",
+      "high",
+      72,
+      3,
+      0.3,
+      "اعتماد توسعة نظام المراقبة للمنطقة الغربية",
+      "غرفة العمليات",
+      "المدير التنفيذي للأمن",
+    ],
+    [
+      "initiative",
+      "in_progress",
+      "critical",
+      64,
+      12,
+      0.6,
+      "برنامج التحول الرقمي للأمن الصناعي — المرحلة الثانية",
+      "تقنية المعلومات",
+      "لجنة التحول",
+    ],
+    [
+      "decision",
+      "open",
+      "medium",
+      35,
+      6,
+      1.2,
+      "توحيد عقود المقاولين الأمنيين",
+      "المشتريات",
+      "إدارة العقود",
+    ],
+    [
+      "initiative",
+      "in_progress",
+      "high",
+      81,
+      20,
+      0.9,
+      "رفع جاهزية الاستجابة للطوارئ إلى المستوى الذهبي",
+      "السلامة",
+      "مدير الطوارئ",
+    ],
+    [
+      "board_action",
+      "open",
+      "high",
+      40,
+      8,
+      2.1,
+      "مراجعة مصفوفة الصلاحيات للأنظمة الحرجة",
+      "الحوكمة",
+      "أمن المعلومات",
+    ],
+    [
+      "decision",
+      "blocked",
+      "medium",
+      25,
+      -2,
+      7.4,
+      "ترقية أنظمة التحكم بالدخول للمواقع الفرعية",
+      "الأمن الصناعي",
+      "إدارة المشاريع",
+    ],
+    [
+      "initiative",
+      "done",
+      "medium",
+      100,
+      30,
+      1.0,
+      "أتمتة تقارير الوردية اليومية",
+      "العمليات",
+      "غرفة التحكم",
+    ],
+    [
+      "risk",
+      "forgotten",
+      "high",
+      15,
+      9,
+      9.2,
+      "تحديث خطة استمرارية الأعمال للمواقع الساحلية",
+      "إدارة المخاطر",
+      "منسق الاستمرارية",
+    ],
+  ] as const;
+  const AL = [
+    [
+      "critical",
+      92,
+      "انقطاع اتصال متكرر في كاميرات القطاع الغربي",
+      "غرفة التحكم",
+      "/sec/cctv",
+      "cctv_monitor",
+      2,
+    ],
+    [
+      "high",
+      78,
+      "ازدحام متوقع عند بوابة المقاولين في وردية الصباح",
+      "أمن البوابات",
+      "/sec/access",
+      "predictive",
+      5,
+    ],
+    ["high", 71, "3 تصاريح عمل حرج تنتهي خلال 48 ساعة", "السلامة", "/ptw", "ptw_engine", 8],
+    [
+      "medium",
+      54,
+      "انخفاض درجة امتثال مقاول العزل عن الحد الأدنى",
+      "إدارة العقود",
+      "/sec/contractors",
+      "compliance",
+      11,
+    ],
+    [
+      "medium",
+      47,
+      "مستشعر حرارة يتطلب معايرة في المحطة الشرقية",
+      "الصيانة",
+      "/sec/maintenance",
+      "iot",
+      16,
+    ],
+    [
+      "low",
+      30,
+      "تحديث دوري لسياسة كلمات المرور مستحق",
+      "أمن المعلومات",
+      "/governance",
+      "policy",
+      30,
+    ],
+  ] as const;
+  const eventRows = EV.map(
+    ([kind, status, impact, progress, dueDays, silentDays, title, department, owner], i) => ({
+      id: `sim-ev-${i + 1}`,
+      kind,
+      status,
+      impact,
+      progress,
+      due_at: iso(now + (dueDays as number) * 24 * H),
+      last_update: iso(now - (silentDays as number) * 24 * H),
+      created_at: iso(now - ((silentDays as number) + 14) * 24 * H),
+      title,
+      title_en: null,
+      owner,
+      department,
+      decision_route: kind === "decision" ? "/boardroom" : null,
+    }),
+  );
+  const alertRows = AL.map(([severity, score, title, owner, route, source, hoursAgo], i) => ({
+    id: `sim-al-${i + 1}`,
+    severity,
+    title,
+    title_en: null,
+    owner,
+    route,
+    source,
+    business_impact_score: score,
+    resolved_at: null,
+    created_at: iso(now - (hoursAgo as number) * H),
+  }));
+  const taskRows = fill(14, (i) => ({
+    status: i < 9 ? "done" : i < 12 ? "in_progress" : "open",
+    created_at: iso(now - (i + 2) * 24 * H),
+    updated_at: iso(now - i * 20 * H),
+  }));
+  return { eventRows, alertRows, taskRows };
+}
+
+/* ── Hajj operations (مشاعر) command center ────────────────────────────── */
+
+export function buildHajjSimulation(now: number) {
+  const SITES = [
+    ["MNA", "مخيمات منى", "Mina Camps", 21.4133, 39.8933, "safe", 420],
+    ["ARF", "صعيد عرفات", "Arafat", 21.3549, 39.9841, "safe", 310],
+    ["MZD", "مزدلفة", "Muzdalifah", 21.4023, 39.9367, "alert", 180],
+    ["JMR", "منشأة الجمرات", "Jamarat", 21.4225, 39.8722, "safe", 260],
+    ["HRM", "ساحات الحرم", "Haram Plazas", 21.4225, 39.8262, "safe", 380],
+  ] as const;
+  const sites = SITES.map(([code, name_ar, name_en, lat, lng, status, staff_count], i) => ({
+    id: `sim-hs-${i + 1}`,
+    code,
+    name_ar,
+    name_en,
+    lat,
+    lng,
+    status,
+    staff_count,
+    notes: null,
+  }));
+  const STATIONS = [
+    [0, "MNA-OPS", "مركز عمليات منى", "ops", "online", 45, 128, 3],
+    [0, "MNA-MED", "النقطة الطبية — منى 3", "medical", "online", 22, 64, 1],
+    [1, "ARF-OPS", "مركز عمليات عرفات", "ops", "online", 38, 96, 2],
+    [1, "ARF-GTE", "بوابات التفويج الجنوبية", "gate", "degraded", 18, 41, 4],
+    [2, "MZD-OPS", "نقطة تنسيق مزدلفة", "ops", "online", 16, 33, 2],
+    [3, "JMR-FLW", "تدفق الجمرات — الدور الثالث", "flow", "online", 28, 87, 1],
+    [4, "HRM-PLZ", "ساحات الحرم الشمالية", "crowd", "online", 34, 110, 2],
+    [4, "HRM-LST", "مفقودات وإرشاد الحجاج", "support", "offline", 9, 18, 0],
+  ] as const;
+  const stations = STATIONS.map(
+    ([siteIdx, code, name_ar, kind, network, staff_count, reports_count, incidents_count], i) => ({
+      id: `sim-hst-${i + 1}`,
+      site_id: sites[siteIdx as number].id,
+      code,
+      name_ar,
+      name_en: code,
+      kind,
+      network,
+      staff_count,
+      reports_count,
+      incidents_count,
+    }),
+  );
+  const TASKS = [
+    ["ازدحام", "تخفيف كثافة الحشود عند بوابة عرفات الجنوبية", "P1", "in_progress", 35],
+    ["طبي", "حالة إجهاد حراري — نقل إلى النقطة الطبية منى 3", "P1", "done", 95],
+    ["نقل", "تعزيز حافلات التفويج من مزدلفة إلى الجمرات", "P2", "in_progress", 60],
+    ["مرافق", "إصلاح تكييف مخيم 214 بمنى", "P3", "pending", 140],
+    ["اتصالات", "استعادة شبكة نقطة المفقودات بالحرم", "P2", "in_progress", 80],
+    ["إرشاد", "حاج تائه — إعادته إلى حملته بمخيم 118", "P2", "done", 200],
+    ["سلامة", "إزالة عائق مسار المشاة أمام منشأة الجمرات", "P1", "done", 260],
+    ["تموين", "تزويد محطة عرفات بمياه إضافية قبل الذروة", "P3", "pending", 320],
+    ["ازدحام", "فتح مسار بديل للدور الثالث بالجمرات", "P2", "pending", 380],
+    ["طبي", "تدقيق جاهزية سيارات الإسعاف بالمشاعر", "P4", "done", 500],
+  ] as const;
+  const tasks = TASKS.map(([category, title_ar, priority, status, minAgo], i) => ({
+    id: `sim-ht-${i + 1}`,
+    station_id: stations[i % stations.length].id,
+    category,
+    title_ar,
+    title_en: null,
+    priority,
+    status,
+    reported_at: iso(now - (minAgo as number) * M),
+    started_at: status === "pending" ? null : iso(now - ((minAgo as number) - 10) * M),
+    completed_at: status === "done" ? iso(now - ((minAgo as number) - 40) * M) : null,
+  }));
+  const kpi = {
+    id: "sim-hk-1",
+    snapshot_at: iso(now - 6 * M),
+    open_incidents: 4,
+    active_alerts: 7,
+    tasks_done: 128,
+    field_staff: 1550,
+    stations_online: 6,
+    stations_total: 8,
+    compliance_pct: 94,
+    risk_level: "medium",
+  };
+  return { sites, stations, tasks, kpi };
+}
+
+/* ── Integrations hub (/integrations) ──────────────────────────────────── */
+
+export function buildIntegrationsSimulation(now: number) {
+  const P = [
+    [
+      "microsoft_outlook",
+      "Microsoft Outlook",
+      "مايكروسوفت آوتلوك",
+      "Email",
+      true,
+      true,
+      "healthy",
+      34,
+      0,
+    ],
+    [
+      "microsoft_onedrive",
+      "Microsoft OneDrive",
+      "ون درايف",
+      "Storage",
+      true,
+      true,
+      "healthy",
+      12,
+      0,
+    ],
+    ["microsoft_sharepoint", "SharePoint", "شير بوينت", "Docs", true, true, "healthy", 21, 0],
+    [
+      "microsoft_teams",
+      "Microsoft Teams",
+      "مايكروسوفت تيمز",
+      "Comms",
+      true,
+      false,
+      "degraded",
+      9,
+      2,
+    ],
+    ["sap", "SAP S/4HANA", "SAP S/4HANA", "ERP", true, true, "healthy", 57, 1],
+    ["power_bi", "Power BI", "باور بي آي", "Analytics", true, false, "unknown", 0, 0],
+  ] as const;
+  const providers = P.map(
+    ([id, name, name_ar, category, configured, connected, health, events_24h, errors_24h], i) => ({
+      id,
+      name,
+      name_ar,
+      category,
+      configured,
+      connected,
+      health,
+      last_test_at: iso(now - (i + 1) * 40 * M),
+      last_test_status: health === "degraded" ? "error" : health === "unknown" ? null : "ok",
+      last_test_error: health === "degraded" ? "Token refresh required" : null,
+      last_sync_at: connected ? iso(now - (i + 1) * 25 * M) : null,
+      last_sync_status: connected ? "ok" : null,
+      events_24h,
+      errors_24h,
+      setup_hint_ar: "بيانات محاكاة مرجعية — اربط الموصل الفعلي من الإعدادات",
+      setup_hint_en: "Reference simulation — link the live connector from settings",
+    }),
+  );
+  return {
+    providers,
+    totals: {
+      total: providers.length,
+      connected: providers.filter((p) => p.connected).length,
+      healthy: providers.filter((p) => p.health === "healthy").length,
+      degraded: providers.filter(
+        (p) => (p.health as string) === "degraded" || (p.health as string) === "error",
+      ).length,
+      errors_24h: providers.reduce((s, p) => s + p.errors_24h, 0),
+      events_24h: providers.reduce((s, p) => s + p.events_24h, 0),
+    },
+    generated_at: iso(now),
+  };
+}
+
+export function buildIntegrationEventsSimulation(now: number) {
+  const E = [
+    ["Microsoft outlook", "outlook", "ok", "مزامنة 34 رسالة تنفيذية", 18, 1840, 34],
+    ["SAP", "work_orders", "ok", "GET /workorders → 200 (57)", 25, 940, 57],
+    ["Microsoft sharepoint", "sharepoint", "ok", "رفع تقرير الوردية الصباحية", 47, 2210, 1],
+    ["Microsoft teams", "teams", "error", "Token refresh required", 63, 450, null],
+    ["SAP", "materials", "ok", "GET /materials → 200 (112)", 95, 1230, 112],
+    ["Microsoft outlook", "outlook", "ok", "مزامنة 12 دعوة اجتماع", 140, 1620, 12],
+    ["Microsoft onedrive", "onedrive", "ok", "مزامنة مجلد التقارير التنفيذية", 190, 1980, 8],
+    ["SAP", "maintenance", "ok", "POST /notifications → 201", 260, 870, 3],
+    ["Microsoft sharepoint", "sharepoint", "ok", "أرشفة تقارير الأسبوع الماضي", 330, 2540, 7],
+    ["Microsoft teams", "teams", "skipped", "قناة العمليات غير مفعّلة", 400, 120, null],
+    ["SAP", "work_orders", "ok", "GET /workorders?delta → 200 (9)", 470, 780, 9],
+    ["Microsoft outlook", "outlook", "ok", "مزامنة صندوق القيادة", 540, 1450, 21],
+  ] as const;
+  return E.map(([provider, kind, status, message, minAgo, duration_ms, items_count], i) => ({
+    id: `sim-ie-${i + 1}`,
+    provider,
+    kind,
+    status,
+    message,
+    at: iso(now - (minAgo as number) * M),
+    duration_ms,
+    items_count,
+  }));
+}

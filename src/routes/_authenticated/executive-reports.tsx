@@ -114,6 +114,30 @@ function ExecutiveReportsPage() {
   > | null>(null);
   const [lastError, setLastError] = useState<PublishErrorEnvelope | null>(null);
 
+  // «بيانات لا تفرغ»: guests browsing the public showcase see a labelled
+  // reference briefing set instead of an empty page (publishing itself
+  // remains admin-only).
+  useEffect(() => {
+    if (user) return;
+    const day = 86_400_000;
+    setBriefings(
+      [
+        ["ملخص الجاهزية الأمنية — الأسبوع الجاري", "Weekly security readiness", 0.2],
+        ["تقرير الامتثال لتوجيهات HCIS — يوليو", "HCIS compliance — July", 3],
+        ["مؤشرات تصاريح العمل الحرج", "Critical PTW indicators", 7],
+        ["موجز غرفة العمليات — مناورة الإخلاء", "Ops room brief — evacuation drill", 12],
+      ].map(([title, title_en, agoDays], i) => ({
+        id: `sim-brief-${i + 1}`,
+        title: title as string,
+        title_en: title_en as string,
+        summary: "ملخص مرجعي للعرض العام — النسخة الكاملة متاحة بعد تسجيل الدخول.",
+        summary_en: "Reference summary for the public showcase.",
+        generated_at: new Date(Date.now() - (agoDays as number) * day).toISOString(),
+      })),
+    );
+    setLoading(false);
+  }, [user]);
+
   // Check admin role
   useEffect(() => {
     if (!user) return;
