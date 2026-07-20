@@ -8,10 +8,17 @@
  * defeat it (no proxying). NEXIOS therefore presents it with a cinematic
  * showcase card and opens it EXTERNALLY in a new tab.
  *
- * The URL is resolved exclusively from the VITE_HAJJ_EMBED_URL environment
- * variable — no raw platform URL is ever written in a component or shown
- * as visible text; UI surfaces always display the product name.
+ * The URL lives ONLY in this file: the owner-approved canonical deployment
+ * below is the FOUNDATION (أساس) — every icon, the sidebar entry and the
+ * showcase card open it externally by default — and the
+ * VITE_HAJJ_EMBED_URL environment variable can override it per deployment
+ * (e.g. when Nusuk moves to hajj.neexios.com). No raw platform URL is ever
+ * written in a component or shown as visible text; UI surfaces always
+ * display the product name.
  */
+
+/** Owner-approved canonical Nusuk deployment (2026-07-19). */
+const HAJJ_CANONICAL_URL = "https://id-preview--cce9f994-0d49-4dfc-b825-6e9374183af6.lovable.app/";
 
 function resolveHttpsUrl(raw: string | undefined): string | null {
   const value = raw?.trim();
@@ -24,9 +31,13 @@ function resolveHttpsUrl(raw: string | undefined): string | null {
   }
 }
 
-/** Validated https URL of the Nusuk platform, or null when unconfigured. */
+/** Validated https URL of the Nusuk platform — env override wins, the
+ *  canonical deployment is the always-on default (never null in practice). */
 export function hajjPlatformUrl(): string | null {
-  return resolveHttpsUrl(import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined);
+  return (
+    resolveHttpsUrl(import.meta.env.VITE_HAJJ_EMBED_URL as string | undefined) ??
+    resolveHttpsUrl(HAJJ_CANONICAL_URL)
+  );
 }
 
 /** Internal showcase route (deep-link friendly card page). */
