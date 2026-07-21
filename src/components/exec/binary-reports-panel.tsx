@@ -111,12 +111,14 @@ export function BinaryReportsPanel({
       );
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      // Surface envelope.message if present, else raw
+      // Surface the structured envelope's neutral message if present, else a
+      // neutral Arabic line — never the raw error, and never an auth phrase
+      // (saved repair doctrine).
       try {
         const env = JSON.parse(msg);
         toast.error(isAr ? env.message_ar : env.message_en);
       } catch {
-        toast.error(msg);
+        toast.error(isAr ? "تعذّر إرسال التقرير حاليًا" : "Couldn't send the report right now");
       }
     } finally {
       setSending(false);
@@ -132,11 +134,18 @@ export function BinaryReportsPanel({
     try {
       setSchedules(await listFn());
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+      // Saved repair doctrine: NEVER surface an auth phrase to a viewer.
+      // A guest / expired session on this auto-load simply keeps the neutral
+      // empty "لا توجد جداول بعد" state — no toast. Real failures get a
+      // neutral Arabic line, never the raw error text.
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!/authenticat|unauthor|token|authorization header/i.test(msg)) {
+        toast.error(isAr ? "تعذّر تحميل الجداول حاليًا" : "Couldn't load schedules right now");
+      }
     } finally {
       setLoadingSchedules(false);
     }
-  }, [listFn]);
+  }, [listFn, isAr]);
   useEffect(() => {
     void refreshSchedules();
   }, [refreshSchedules]);

@@ -88,14 +88,6 @@ const STAGES: readonly Stage[] = [
     icon: BarChart3,
     to: "/executive-reports",
   },
-  {
-    key: "hajj",
-    ar: "مَنْظُومَةُ الحَجِّ ١٤٤٧",
-    en: "Hajj 1447",
-    icon: Moon,
-    to: "/hajj",
-    featured: true,
-  },
   { key: "ops", ar: "العَمَلِيَّات", en: "Operations", icon: Activity, to: "/operations" },
   {
     key: "aria",

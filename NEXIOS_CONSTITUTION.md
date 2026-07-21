@@ -239,6 +239,16 @@ article and the part that was not executed.
 **Article 20 — Amendment record.** The table below is the sole official
 amendment log; each row: date | article | change | approver.
 
+### المادة ٢١ — مبدأ الوضوح المطلق
+«لا شاشة في نكسيوس بلا تفسير. كل صفحة وأيقونة ووحدة تُعرّف بنفسها في
+ثلاث ثوان: ماذا تفعل، ما مصدر بياناتها، وما الإجراء المتاح. الغموض عيب
+دستوري كالتحميل اللانهائي.»
+**Article 21 — The Absolute-Clarity Principle.** No NEXIOS screen may go
+unexplained. Every page, icon, and module must identify itself within
+three seconds: what it does, where its data comes from, and what action
+is available. Ambiguity is a constitutional defect on par with an
+infinite loading state.
+
 ---
 
 ## سجل المواد المعدّلة — Amendment Record
@@ -246,3 +256,4 @@ amendment log; each row: date | article | change | approver.
 | التاريخ Date | المادة Article | التغيير Change | المعتمِد Approver |
 |---|---|---|---|
 | 2026-07-20 | — | التأسيس: إقرار الدستور بمواده العشرين · Founding: constitution enacted with all twenty articles | مالك المنتج Product Owner |
+| 2026-07-21 | ٢١ | إضافة مبدأ الوضوح المطلق · Added the Absolute-Clarity Principle | مالك المنتج Product Owner |

@@ -58,7 +58,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const loc = useLocation();
   const pageBackdrop = pageBackdropFor(loc.pathname);
   return (
-    <div className="nexus-app-shell relative flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#04070F]/55 backdrop-blur-[2px]">
+    // No shell-wide backdrop-filter: it sits over the solid body colour, so
+    // the blur is visually a no-op — yet it forces a full-viewport blur every
+    // frame and was measured to halve scroll fps on weak GPUs.
+    <div className="nexus-app-shell relative flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#04070F]/55">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         {pageBackdrop ? (
           <GlossyImageBackdrop src={pageBackdrop} className="absolute inset-0 z-0" opacity={0.55} />
@@ -161,7 +164,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/cctv", icon: Camera, label: ar("CCTV", "CCTV") },
         { to: "/sec/kpi", icon: BarChart3, label: ar("مؤشرات الأداء", "KPIs") },
         { to: "/sec/twin", icon: Network, label: ar("التوأم الرقمي", "Digital Twin") },
-        { to: "/hajj", icon: MapPin, label: ar("عمليات الحج", "Hajj Ops") },
+        
       ],
     },
     {

@@ -113,9 +113,28 @@ function HealthDashboard() {
   const fetchHealth = useServerFn(getRuntimeHealth);
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["runtime-health"],
-    queryFn: () => fetchHealth(),
+    // Doctrine «بيانات لا تفرغ»: the probe races a 6s cap so a hung or
+    // unreachable dependency lands in the error state below instead of an
+    // eternal "Loading health…" spinner.
+    queryFn: () =>
+      Promise.race([
+        fetchHealth(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("health timeout")), 6000),
+        ),
+      ]),
+    retry: 1,
     refetchInterval: 45_000,
   });
+
+  // Never surface an auth phrase to a viewer (saved repair doctrine): an
+  // auth-gated probe on a signed-out session shows a neutral Arabic line.
+  const rawErr = error ? ((error as Error).message ?? "") : "";
+  const errText = /authenticat|unauthor|token|authorization header/i.test(rawErr)
+    ? ar
+      ? "تعذّر جلب بيانات الصحة — يتطلب جلسة نشطة."
+      : "Health data unavailable — an active session is required."
+    : rawErr;
 
   return (
     <Section>
@@ -141,8 +160,8 @@ function HealthDashboard() {
       ) : error ? (
         <EmptyState
           reason="error"
-          title="Health probe failed"
-          description={(error as Error).message}
+          title={ar ? "تعذّر فحص الصحة" : "Health probe failed"}
+          description={errText}
         />
       ) : !data ? (
         <EmptyState

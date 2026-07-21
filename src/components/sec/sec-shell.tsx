@@ -105,7 +105,9 @@ export function SecPageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+    // Unified holographic identity (styles.css .holo-* system): the same
+    // hairline-glow language as the module grid, on every sec page header.
+    <div className="holo-card mb-4 flex flex-wrap items-end justify-between gap-3 rounded-2xl px-4 py-3">
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>

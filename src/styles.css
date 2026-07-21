@@ -306,7 +306,11 @@
       color-mix(in srgb, var(--nx-bg-1) 92%, transparent),
       color-mix(in srgb, var(--nx-bg-2) 80%, transparent)
     );
-    backdrop-filter: blur(32px) saturate(160%);
+    /* Radius discipline: the sidebar's own gradient is 80–92% opaque, so
+       the backdrop blur only tints the remaining sliver — blur(12) reads
+       identical to blur(32) here but costs a third per scroll frame
+       (backdrop-filter re-blurs on EVERY frame while content scrolls). */
+    backdrop-filter: blur(12px);
     border-right: 1px solid color-mix(in srgb, var(--nx-cyan) 12%, transparent);
   }
   .glass-card {
@@ -2616,4 +2620,309 @@ h1, h2, h3,
       drop-shadow(0 0 4px rgba(var(--nx-region-rgb, 0, 212, 255), 0.5))
       drop-shadow(0 0 10px rgba(var(--nx-region-rgb, 0, 212, 255), 0.3));
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HOLOGRAPHIC LAYER SYSTEM — the single visual language for module tiles
+   and activated page panels (constitution art. 13: one identity).
+   Defined ONCE here; consumed via .holo-* classes everywhere.
+   Discipline: every animation runs on transform/opacity only; hover glow
+   is an opacity fade of a pre-rendered pseudo-element (no box-shadow
+   animation); reduced-motion kills all movement but keeps the glow.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --holo-glow: 58, 232, 255; /* cyan */
+  --holo-accent: 16, 185, 129; /* emerald */
+  --holo-border: linear-gradient(
+    135deg,
+    rgba(var(--holo-glow), 0.55),
+    rgba(var(--holo-accent), 0.28) 55%,
+    rgba(var(--holo-glow), 0.4)
+  );
+}
+
+/* Card shell: gradient hairline border + glass fill. */
+.holo-card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(7, 22, 40, 0.78), rgba(7, 22, 40, 0.78)) padding-box,
+    var(--holo-border) border-box;
+  /* Performance discipline: NO per-card backdrop-filter — 20+ blurred
+     cards over a video backdrop murder scroll fps on mid phones. The
+     slightly deeper fill above provides the glass reading instead. */
+}
+
+/* Pre-rendered outer glow — hover/focus only fades its opacity. */
+.holo-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.35;
+  box-shadow:
+    0 0 18px rgba(var(--holo-glow), 0.35),
+    0 0 44px rgba(var(--holo-glow), 0.16);
+  transition: opacity 0.25s ease;
+}
+.holo-card:hover::before,
+.holo-card:focus-visible::before,
+.holo-card:focus-within::before {
+  opacity: 1;
+}
+
+/* One-shot horizontal scanline sweeping the card on hover/focus. */
+.holo-card::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6%;
+  top: 0;
+  height: 1.5px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--holo-glow), 0.9),
+    transparent
+  );
+  opacity: 0;
+  transform: translateY(0);
+}
+.holo-card:hover::after,
+.holo-card:focus-visible::after {
+  animation: holo-scan 0.9s ease-out 1;
+}
+@keyframes holo-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(76px);
+  }
+}
+
+/* Icon lift on hover — transform only, cyan drop shadow pre-exists. */
+.holo-card .holo-icon {
+  transition: transform 0.25s ease;
+}
+.holo-card:hover .holo-icon,
+.holo-card:focus-visible .holo-icon {
+  transform: translateY(-3px);
+}
+
+/* Slow functional pulse — CRITICAL modules only (HCIS/permits/urgent). */
+@keyframes holo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+.holo-critical .holo-icon {
+  animation: holo-pulse 3.6s ease-in-out infinite;
+}
+
+/* Staggered one-shot entrance (delay set inline per tile). */
+@keyframes holo-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.holo-enter {
+  animation: holo-enter 0.5s ease-out both;
+}
+
+/* Live badge chip on tiles. */
+.holo-badge {
+  position: absolute;
+  top: 6px;
+  inset-inline-start: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--holo-accent), 0.45);
+  background: rgba(var(--holo-accent), 0.12);
+  padding: 1px 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: rgb(110, 231, 183);
+  letter-spacing: 0.02em;
+}
+
+/* Status-pulse dot for "قيد التهيئة" connectors. */
+@keyframes holo-dot {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.holo-dot-pulse {
+  animation: holo-dot 1.8s ease-in-out infinite;
+}
+
+/* Reduced motion: keep the glow language, drop every movement. */
+@media (prefers-reduced-motion: reduce) {
+  .holo-card::after,
+  .holo-critical .holo-icon,
+  .holo-enter,
+  .holo-dot-pulse {
+    animation: none !important;
+  }
+  .holo-card .holo-icon {
+    transition: none !important;
+  }
+  .holo-enter {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SEVERITY-RADIANT SCALE — the halo's color and intensity tell the state
+   before the number is read (constitution art. 13/14). Defined ONCE:
+   critical > high > medium > healthy > idle. Implementation discipline:
+   a pre-rendered radial-gradient pseudo layer; animation touches
+   opacity/transform ONLY; reduced-motion freezes pulse, keeps the color.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --sev-critical: 248, 113, 113; /* radiant red */
+  --sev-high: 251, 191, 36; /* amber */
+  --sev-medium: 34, 211, 238; /* cyan */
+  --sev-healthy: 16, 185, 129; /* emerald */
+  --sev-idle: 100, 140, 190; /* faded blue */
+}
+
+.holo-sev {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(var(--sev-rgb, var(--sev-idle)), 0.45);
+}
+.holo-sev::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  /* Cost discipline: the halo is a radial gradient + ONE tight shadow.
+     Large-blur shadows on a continuously-animated layer multiply the
+     damage rect every frame — the wide bloom lives in the gradient. */
+  background: radial-gradient(
+    120% 120% at 50% 0%,
+    rgba(var(--sev-rgb, var(--sev-idle)), 0.26),
+    rgba(var(--sev-rgb, var(--sev-idle)), 0.08) 55%,
+    transparent 78%
+  );
+  box-shadow: 0 0 14px rgba(var(--sev-rgb, var(--sev-idle)), 0.4);
+  opacity: 0.75;
+}
+
+.holo-sev-critical { --sev-rgb: var(--sev-critical); }
+.holo-sev-high { --sev-rgb: var(--sev-high); }
+.holo-sev-medium { --sev-rgb: var(--sev-medium); }
+.holo-sev-healthy { --sev-rgb: var(--sev-healthy); }
+.holo-sev-idle { --sev-rgb: var(--sev-idle); }
+
+/* Critical: strongest — double halo pulsing fast (1.2s). The only
+   smooth (per-frame) severity animation: critical elements are few by
+   definition and deserve the full radiance. */
+@keyframes sev-pulse-fast {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.015); }
+}
+.holo-sev-critical::before { animation: sev-pulse-fast 1.2s ease-in-out infinite; }
+
+/* High: strong steady halo + a beat every 3s.
+   Ambient discipline: slow pulses run on steps() — ~6 opacity updates
+   per second instead of 60. The per-step delta (~0.03) is invisible to
+   the eye, but repaint damage drops 10× per layer, which is what keeps
+   a board full of live halos above 55fps on weak GPUs. */
+@keyframes sev-pulse {
+  0%, 88%, 100% { opacity: 0.7; }
+  94% { opacity: 1; }
+}
+.holo-sev-high::before { animation: sev-pulse 3s steps(18, jump-none) infinite; }
+
+/* Healthy: slow 4s breathing (stepped — see ambient discipline above). */
+@keyframes sev-breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+.holo-sev-healthy::before { animation: sev-breathe 4s steps(24, jump-none) infinite; }
+
+/* Medium: calm constant glow. Idle: faint, no pulse. */
+.holo-sev-medium::before { opacity: 0.6; }
+.holo-sev-idle::before { opacity: 0.35; box-shadow: 0 0 10px rgba(var(--sev-idle), 0.25); }
+
+/* Processing ring for agent avatars — slow rotation, transform only. */
+@keyframes sev-orbit { to { transform: rotate(360deg); } }
+.sev-orbit {
+  animation: sev-orbit 3.2s linear infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-sev-critical::before,
+  .holo-sev-high::before,
+  .holo-sev-healthy::before,
+  .sev-orbit {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SCROLL FRAME BUDGET — html.nx-scrolling is set by the root while the
+   user actively scrolls (see __root.tsx) and removed ~0.2s after rest.
+   Ambient animation is free at rest but competes with scrolling for the
+   same frame; pausing it during the gesture keeps scrolling at full fps
+   on GPU-less/mid devices without giving up a single pulse at rest.
+   ═══════════════════════════════════════════════════════════════════ */
+html.nx-scrolling *,
+html.nx-scrolling *::before,
+html.nx-scrolling *::after {
+  animation-play-state: paused !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRESENTATION MODE — html.nx-presenting turns any operational dashboard
+   into a room-readable executive display: navigation chrome is hidden and
+   the type scale grows (rem-based, so every element scales together) so a
+   phone or laptop can drive a live briefing on an external screen. The
+   toggle (PresentationToggle) also requests native fullscreen when the
+   platform allows; on iOS Safari — where element fullscreen is blocked —
+   this class-only mode still delivers the same clean, enlarged display.
+   ═══════════════════════════════════════════════════════════════════ */
+html.nx-presenting .nexus-sidebar,
+html.nx-presenting .nexus-mobile-header,
+html.nx-presenting [aria-label="Beta preview banner"],
+html.nx-presenting [data-nx-presentation-hide] {
+  display: none !important;
+}
+html.nx-presenting {
+  font-size: 112%;
+}
+html.nx-presenting .nexus-app-shell {
+  background: #02060d;
 }

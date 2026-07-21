@@ -14,7 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
+import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { AgentRing } from "@/components/executive/AgentRing";
+import { AgentHierarchyGraph } from "@/components/executive/AgentHierarchyGraph";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -508,6 +510,33 @@ function AgentsOps() {
           </div>
         }
       />
+
+      <PageBriefing
+        routeKey="agents"
+        what={
+          locale === "ar"
+            ? "منصة تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة آريا واعتماد بشري."
+            : "Runtime operations for the intelligent agent fleet under ARIA, human-approved."
+        }
+        dataSource="agent_definitions · agent_runs"
+        actions={
+          locale === "ar"
+            ? [
+                "تابع شجرة القيادة الهرمية وتدفّق المهام الحيّ",
+                "راجع سجل التشغيل لآخر 24 ساعة عبر زر إعادة العرض",
+                "الإجراءات الحسّاسة خلف اعتماد المدير المفوّض",
+              ]
+            : [
+                "Watch the command tree and live task flow",
+                "Replay the last 24h of runs",
+                "Sensitive actions require manager authorization",
+              ]
+        }
+      />
+
+      {/* Holographic command tree — ARIA apex, fleet, live task nodes, and
+          the single human-approval terminal every path flows into (art. 8). */}
+      <AgentHierarchyGraph agents={agents} runs={runs} ar={locale === "ar"} />
 
       {/* Cinematic agents network — ARIA core with the specialist fleet
           orbiting it (neural mesh). Display-only; delightful on all sizes. */}

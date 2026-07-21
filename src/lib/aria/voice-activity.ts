@@ -18,9 +18,12 @@ export type AriaVoiceActivityConfig = {
 export const ARIA_VOICE_ACTIVITY_DEFAULTS: AriaVoiceActivityConfig = {
   // Tuned for fast mobile conversation turns: accept softer phone mics,
   // submit shortly after speech stops, and avoid long "silent listening" waits.
+  // silenceMs 650: end-of-speech fires ~150ms sooner than the old 800 so the
+  // reply starts faster in «مخاطبة» — still well above natural mid-clause
+  // pauses (~300–450ms) so it does not cut a thinking speaker off.
   rmsThreshold: 0.008,
   minimumVoiceMs: 90,
-  silenceMs: 800,
+  silenceMs: 650,
   noSpeechMs: 7_000,
   maximumCaptureMs: 18_000,
 };

@@ -16,8 +16,7 @@ import { MissionControlStrip } from "@/components/executive/MissionControlStrip"
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
-import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
-import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
+import { AgentHierarchyGraph } from "@/components/executive/AgentHierarchyGraph";
 
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
@@ -35,21 +34,23 @@ import { useI18n } from "@/lib/i18n";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
-import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
-import {
-  HAJJ_INTERNAL_ROUTE,
-  HAJJ_PLATFORM_LABEL_AR,
-  HAJJ_PLATFORM_LABEL_EN,
-  hajjOpenUrl,
-} from "@/lib/hajj-embed";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
 
-// Resolved once — the raw URL never appears as text anywhere in this file.
-const HAJJ_EMBED_URL = hajjOpenUrl();
+// Static holographic-tree fleet mirrors the Agent Operations Platform view.
+const HOME_HOLO_AGENTS = [
+  { id: "commander-1", name: "قائد", state: "queued" },
+  { id: "analyst", name: "محلل", state: "ready" },
+  { id: "auditor", name: "مدقّق", state: "ready" },
+  { id: "intel-1", name: "ذكاء", state: "ready" },
+  { id: "commander-2", name: "قائد", state: "queued" },
+  { id: "monshi", name: "منشئ", state: "ready" },
+  { id: "intel-2", name: "ذكاء", state: "ready" },
+  { id: "messenger", name: "المراسل", state: "ready" },
+];
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -119,17 +120,8 @@ const PILLARS = [
     desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",
     desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery.",
   },
-  {
-    anchor: "tour-pillar-hajj",
-    // URL comes exclusively from VITE_HAJJ_EMBED_URL; unset → internal route.
-    to: HAJJ_EMBED_URL ?? HAJJ_INTERNAL_ROUTE,
-    external: HAJJ_EMBED_URL != null,
-    icon: Moon,
-    title_ar: "منصة نُسك الحج",
-    title_en: "Hajj Nusuk Platform",
-    desc_ar: "منصة مستقلة لعمليات الحج · مشاعر 1447 (تفتح في نافذة جديدة).",
-    desc_en: "Standalone Hajj operations platform · Mashaer 1447 (opens in new tab).",
-  },
+
+
   {
     anchor: "tour-pillar-aria",
     to: "/aria",
@@ -406,92 +398,32 @@ function IntroLanding() {
           vision, every pulsing icon breathing in the active region's colour. */}
       <HomeShowcaseSections />
 
-      <LiveSystemShowcase />
-
-      <div id="tour-hajj">
-        <HajjExecutiveStage />
-      </div>
-
-      {/* Native Hajj command dashboard — Arabic-only content, only shown in AR locale. */}
-      {ar && (
-        <section
-          dir="rtl"
-          aria-label={`لوحة قيادة · ${HAJJ_PLATFORM_LABEL_AR}`}
-          className="relative z-10 mx-auto mt-8 w-full max-w-none px-4 sm:mt-12 sm:px-6"
-        >
-          <div className="mb-4 text-center">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
-              Hajj Command Center · مشاعر 1447
-            </div>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-              لوحة قيادة {HAJJ_PLATFORM_LABEL_AR}
-            </h2>
-          </div>
-          <HajjCommandDashboard />
-        </section>
-      )}
-
-      {/* Frameless live mini-preview of the SAME Hajj dashboard, directly on
-          the homepage (identical content to the framed showcase above). */}
+      {/* Holographic command tree — replaces the retired Hajj Nusuk section.
+          Same visual as /agents: ARIA at the apex, the specialist fleet
+          beneath, converging on the human-approval gate. Full-bleed on mobile
+          and desktop. */}
       <section
+        id="tour-hologram"
         dir={ar ? "rtl" : "ltr"}
-        aria-label={
-          ar
-            ? `معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`
-            : `Live preview · ${HAJJ_PLATFORM_LABEL_EN}`
-        }
-        className="relative left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] mt-8 w-screen max-w-[100vw] px-2 sm:px-4 lg:px-6"
+        aria-label={ar ? "شجرة القيادة الهولوغرامية" : "Holographic command tree"}
+        className="relative left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] mt-8 w-screen max-w-[100vw] px-2 sm:mt-12 sm:px-4 lg:px-6"
       >
-        <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            <span className="truncate text-[11px] font-bold text-white/85 sm:text-xs">
-              {ar
-                ? `معاينة حيّة · ${HAJJ_PLATFORM_LABEL_AR}`
-                : `Live preview · ${HAJJ_PLATFORM_LABEL_EN}`}
-            </span>
+        <div className="mb-4 text-center">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+            NEXIOS · Agent Operations Platform
           </div>
-          <span className="shrink-0 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]">
-            Live
-          </span>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
+            {ar ? "منصة عمليات الوكلاء" : "Agent Operations Platform"}
+          </h2>
+          <p className="mx-auto mt-1 max-w-2xl text-xs text-white/70 sm:text-sm">
+            {ar
+              ? "تشغيل، مراقبة، تدقيق، وتحكم — تحت قيادة آريا واعتماد بشري."
+              : "Lifecycle, monitoring, audit & control — under ARIA with human approval."}
+          </p>
         </div>
-        <div className="overflow-hidden rounded-2xl ring-1 ring-[#3AE8FF]/25">
-          <HajjEmbedFrame ar={ar} interactive={false} />
-        </div>
-
-        {/* External access link — visible OUTSIDE the icon/preview, on all devices */}
-        <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
-          {HAJJ_EMBED_URL ? (
-            <a
-              href={HAJJ_EMBED_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={ar ? `فتح ${HAJJ_PLATFORM_LABEL_AR}` : `Open ${HAJJ_PLATFORM_LABEL_EN}`}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
-            >
-              <span aria-hidden>↗</span>
-              {ar ? `فتح ${HAJJ_PLATFORM_LABEL_AR}` : `Open ${HAJJ_PLATFORM_LABEL_EN}`}
-            </a>
-          ) : (
-            <Link
-              to={HAJJ_INTERNAL_ROUTE}
-              aria-label={ar ? HAJJ_PLATFORM_LABEL_AR : HAJJ_PLATFORM_LABEL_EN}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3AE8FF]/20"
-            >
-              {ar ? `الانتقال إلى ${HAJJ_PLATFORM_LABEL_AR}` : `Go to ${HAJJ_PLATFORM_LABEL_EN}`}
-            </Link>
-          )}
-          <Link
-            to={HAJJ_INTERNAL_ROUTE}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/10"
-          >
-            {ar ? "صفحة المنصة داخل نكسيوس" : "Platform page in NEXIOS"}
-          </Link>
-        </div>
+        <AgentHierarchyGraph agents={HOME_HOLO_AGENTS} runs={[]} ar={ar} />
       </section>
+
 
       <div
         id="tour-positioning"

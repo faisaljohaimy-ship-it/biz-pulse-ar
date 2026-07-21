@@ -302,6 +302,30 @@ function RootComponent() {
     };
   }, []);
 
+  // Scroll frame budget: while the user actively scrolls, EVERY ambient
+  // animation pauses (html.nx-scrolling in styles.css) so the whole frame
+  // goes to scrolling itself; pulses resume ~0.2s after the scroll rests.
+  // Dozens of live halos/pulses are free at rest but were measured to eat
+  // half the scroll budget on GPU-less devices.
+  useEffect(() => {
+    const root = document.documentElement;
+    let timer: number | undefined;
+    const onScroll = () => {
+      if (timer === undefined) root.classList.add("nx-scrolling");
+      else window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        root.classList.remove("nx-scrolling");
+        timer = undefined;
+      }, 180);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      if (timer !== undefined) window.clearTimeout(timer);
+      root.classList.remove("nx-scrolling");
+    };
+  }, []);
+
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
 

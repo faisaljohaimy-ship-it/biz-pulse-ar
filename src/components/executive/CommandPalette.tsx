@@ -75,13 +75,6 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
         group: "Navigate",
       },
       {
-        id: "hajj",
-        title_ar: "نظام الحج",
-        title_en: "Hajj Operations",
-        to: "/hajj",
-        group: "Navigate",
-      },
-      {
         id: "bridge",
         title_ar: "جسر تنفيذي",
         title_en: "Executive Bridge",

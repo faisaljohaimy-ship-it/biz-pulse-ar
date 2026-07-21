@@ -18,9 +18,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import homeBg from "@/assets/home-bg.mp4.asset.json";
-import commandHomeDesktop from "@/assets/nexios-command-home-desktop.webp";
-import commandHomeMobile from "@/assets/nexios-command-home-mobile.webp";
-import commandHomeTablet from "@/assets/nexios-command-home-tablet.webp";
+import homeToroid from "@/assets/nexios-home-toroid.png.asset.json";
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
 import { registerHomeGreeting, setHomeGreetingState } from "@/lib/home-greeting-store";
 
@@ -106,21 +104,17 @@ export function HomeVideoBackdrop() {
       dir="ltr"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
-      {/* The supplied command-room artwork is the permanent homepage
-          background. Purpose-made crops keep its focal point intact on
-          phones, tablets, laptops, ultrawide screens, and rotated devices. */}
-      <picture className="absolute inset-0 block h-full w-full">
-        <source media="(max-width: 639px)" srcSet={commandHomeMobile} />
-        <source media="(max-width: 1199px)" srcSet={commandHomeTablet} />
-        <source media="(min-width: 1200px)" srcSet={commandHomeDesktop} />
-        <img
-          src={commandHomeTablet}
-          alt=""
-          fetchPriority="high"
-          decoding="async"
-          className="h-full w-full object-cover object-center"
-        />
-      </picture>
+      {/* Permanent homepage backdrop: the cinematic NEXIOS toroid over the
+          Saudi command plateau. Object-cover keeps the toroid centred from
+          360px phones through 4K wall displays. */}
+      <img
+        src={homeToroid.url}
+        alt=""
+        fetchPriority="high"
+        decoding="async"
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      />
 
       {/* ARIA's greeting film temporarily cross-fades above the artwork only
           after an explicit user gesture, then yields back to the image. */}

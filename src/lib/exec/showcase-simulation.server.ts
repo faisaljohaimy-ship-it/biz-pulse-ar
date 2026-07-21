@@ -1564,7 +1564,7 @@ export function buildIntegrationsSimulation(now: number) {
       true,
       true,
       "healthy",
-      34,
+      486,
       0,
     ],
     [
@@ -1575,23 +1575,13 @@ export function buildIntegrationsSimulation(now: number) {
       true,
       true,
       "healthy",
-      12,
+      122,
       0,
     ],
-    ["microsoft_sharepoint", "SharePoint", "شير بوينت", "Docs", true, true, "healthy", 21, 0],
-    [
-      "microsoft_teams",
-      "Microsoft Teams",
-      "مايكروسوفت تيمز",
-      "Comms",
-      true,
-      false,
-      "degraded",
-      9,
-      2,
-    ],
-    ["sap", "SAP S/4HANA", "SAP S/4HANA", "ERP", true, true, "healthy", 57, 1],
-    ["power_bi", "Power BI", "باور بي آي", "Analytics", true, false, "unknown", 0, 0],
+    ["microsoft_sharepoint", "SharePoint", "شير بوينت", "Docs", true, true, "healthy", 231, 0],
+    ["microsoft_teams", "Microsoft Teams", "مايكروسوفت تيمز", "Comms", true, false, "error", 9, 3],
+    ["sap", "SAP S/4HANA", "SAP S/4HANA", "ERP", true, true, "healthy", 407, 1],
+    ["power_bi", "Power BI", "باور بي آي", "Analytics", true, false, "not_configured", 29, 0],
   ] as const;
   const providers = P.map(
     ([id, name, name_ar, category, configured, connected, health, events_24h, errors_24h], i) => ({
@@ -1603,14 +1593,20 @@ export function buildIntegrationsSimulation(now: number) {
       connected,
       health,
       last_test_at: iso(now - (i + 1) * 40 * M),
-      last_test_status: health === "degraded" ? "error" : health === "unknown" ? null : "ok",
-      last_test_error: health === "degraded" ? "يتطلب تجديد الربط" : null,
-      last_sync_at: connected ? iso(now - (i + 1) * 25 * M) : null,
+      last_test_status: health === "error" ? "error" : health === "not_configured" ? null : "ok",
+      last_test_error: health === "error" ? "يتطلب تجديد الربط" : null,
+      last_sync_at: connected ? iso(now - (i + 1) * 12 * M) : null,
       last_sync_status: connected ? "ok" : null,
       events_24h,
       errors_24h,
       setup_hint_ar: "بيانات محاكاة مرجعية — اربط الموصل الفعلي من الإعدادات",
       setup_hint_en: "Reference simulation — link the live connector from settings",
+      // Deterministic hourly working-day curve scaled to the provider's
+      // 24h volume — fuel for the card sparkline.
+      activity24h: fill(24, (h) => {
+        const day = Math.max(0, Math.sin(((h - 5) / 18) * Math.PI));
+        return Math.round((events_24h / 14) * day + ((h * (i + 3)) % 3));
+      }),
     }),
   );
   return {
@@ -2416,4 +2412,536 @@ export function buildReportsRegistrySimulation(now: number) {
       meta: { simulated: true, date: d },
     };
   });
+}
+
+/* ── Smart command center (/command-center) ────────────────────────────── */
+
+export type CommandSeverity = "critical" | "high" | "medium" | "healthy" | "idle";
+
+export type CommandCenterState = {
+  source: "database" | "reference";
+  /** True whenever the DISPLAYED rows are simulation (reference build OR
+      seeded rows flagged is_simulation) — the badge follows this, not
+      source, so seeded data never masquerades as live (const. art. 6). */
+  simulation: boolean;
+  agents: Array<{
+    id: string;
+    name_ar: string;
+    role: string;
+    status: "active" | "processing" | "idle";
+    task_ar: string | null;
+    done_today: number;
+    severity: CommandSeverity;
+  }>;
+  pipeline: Array<{
+    id: string;
+    title_ar: string;
+    stage: "proposed" | "prepared" | "approved";
+    severity: CommandSeverity;
+    agent_ar: string;
+    created_at: string;
+  }>;
+  urgent: Array<{
+    id: string;
+    title_ar: string;
+    department: string;
+    due_at: string;
+    sla_hours: number;
+    status: string;
+  }>;
+  regions: Array<{
+    region_id: "central" | "western" | "eastern" | "southern";
+    assets_active: number;
+    incidents_open: number;
+    compliance_pct: number;
+    severity: CommandSeverity;
+    last_pulse_at: string;
+  }>;
+  counters: {
+    agents_active: number;
+    proposals_pending: number;
+    urgent_open: number;
+    support_processing: number;
+    done_today: number;
+    compliance_avg: number;
+  };
+};
+
+export function buildCommandCenterSimulation(now: number): CommandCenterState {
+  const AGENTS: Array<
+    [string, string, "active" | "processing" | "idle", string | null, number, CommandSeverity]
+  > = [
+    ["آريا التنفيذية", "التنسيق العام", "active", "توليد موجز القيادة الصباحي", 14, "healthy"],
+    ["وكيل الامتثال HCIS", "الامتثال", "processing", "تدقيق SEC-18 لمحطات التحويل", 9, "medium"],
+    ["وكيل الصيانة", "الصيانة", "active", "جدولة أوامر العمل الوقائية", 11, "healthy"],
+    ["وكيل التقارير", "التقارير", "processing", "إعداد تقرير العمليات اليومي", 6, "medium"],
+    ["وكيل الرصد", "المراقبة", "active", "تتبع 142 كاميرا عبر الإدارات", 22, "healthy"],
+    ["وكيل التصاريح", "PTW", "active", "مطابقة تصاريح العمل السارية", 8, "healthy"],
+    ["وكيل الطوارئ", "الاستجابة", "idle", null, 3, "idle"],
+    ["وكيل المخاطر", "التنبؤ", "processing", "تحليل نمط إنذارات المحيط", 5, "high"],
+  ];
+  const agents = AGENTS.map(([name_ar, role, status, task_ar, done_today, severity], i) => ({
+    id: `sim-ca-${i + 1}`,
+    name_ar,
+    role,
+    status,
+    task_ar,
+    done_today,
+    severity,
+  }));
+
+  const PIPELINE: Array<
+    [string, "proposed" | "prepared" | "approved", CommandSeverity, string, number]
+  > = [
+    ["جدولة صيانة وقائية لمحطة 132 ك.ف", "proposed", "medium", "وكيل الصيانة", 26],
+    ["تعليق تصريح عمل ساخن — رياح نشطة", "prepared", "high", "وكيل التصاريح", 48],
+    ["إصدار التقرير الأسبوعي للقيادة", "prepared", "medium", "وكيل التقارير", 70],
+    ["رفع تصنيف إنذار المحيط الشرقي", "proposed", "critical", "وكيل المخاطر", 15],
+    ["تحديث قائمة تفتيش SEC-18", "approved", "medium", "وكيل الامتثال HCIS", 200],
+    ["تعزيز دورية القطاع الجنوبي", "proposed", "high", "وكيل الرصد", 95],
+    ["أرشفة بلاغات الأسبوع المغلقة", "approved", "healthy", "آريا التنفيذية", 260],
+  ];
+  const pipeline = PIPELINE.map(([title_ar, stage, severity, agent_ar, minAgo], i) => ({
+    id: `sim-cp-${i + 1}`,
+    title_ar,
+    stage,
+    severity,
+    agent_ar,
+    created_at: iso(now - minAgo * M),
+  }));
+
+  // Nine SLA items: mostly healthy, two approaching (high), ONE overdue
+  // (critical) — the full scale shown with honest drama.
+  const URGENT: Array<[string, string, number, number, string]> = [
+    ["استعادة كاميرات القطاع الشرقي", "غرفة التحكم", -2.4, 24, "قيد المعالجة"],
+    ["تجديد تصريح عمل حرج ينتهي اليوم", "الأمن الصناعي", 2.5, 24, "قيد المعالجة"],
+    ["اعتماد خطة وردية الغد", "العمليات", 3.4, 12, "جديد"],
+    ["فحص مستشعر اهتزاز متقطع", "الصيانة", 9, 48, "قيد المعالجة"],
+    ["تحديث بيانات مقاول العزل", "العقود", 16, 72, "جديد"],
+    ["مراجعة تقرير مناورة الإخلاء", "السلامة", 30, 96, "جديد"],
+    ["تدقيق سجل زوار الأسبوع", "أمن البوابات", 41, 96, "جديد"],
+    ["معايرة بوابة الشحن الذكية", "الصيانة", 55, 120, "جديد"],
+    ["تحضير عرض الجاهزية الشهري", "مكتب القيادة", 88, 168, "جديد"],
+  ];
+  const urgent = URGENT.map(([title_ar, department, dueH, sla_hours, status], i) => ({
+    id: `sim-cu-${i + 1}`,
+    title_ar,
+    department,
+    due_at: iso(now + dueH * H),
+    sla_hours,
+    status,
+  }));
+
+  const REGIONS: Array<
+    [
+      "central" | "western" | "eastern" | "southern",
+      number,
+      number,
+      number,
+      CommandSeverity,
+      number,
+    ]
+  > = [
+    ["western", 96, 2, 97, "healthy", 4],
+    ["central", 84, 1, 96, "healthy", 7],
+    ["eastern", 71, 4, 92, "critical", 2],
+    ["southern", 58, 1, 95, "medium", 11],
+  ];
+  const regions = REGIONS.map(
+    ([region_id, assets_active, incidents_open, compliance_pct, severity, minAgo]) => ({
+      region_id,
+      assets_active,
+      incidents_open,
+      compliance_pct,
+      severity,
+      last_pulse_at: iso(now - minAgo * M),
+    }),
+  );
+
+  return {
+    source: "reference",
+    agents,
+    pipeline,
+    simulation: true,
+    urgent,
+    regions,
+    counters: {
+      agents_active: agents.filter((a) => a.status !== "idle").length,
+      proposals_pending: pipeline.filter((p) => p.stage !== "approved").length,
+      urgent_open: urgent.filter((u) => u.status !== "مغلق").length,
+      support_processing: 4,
+      done_today: agents.reduce((s, a) => s + a.done_today, 0),
+      compliance_avg: Math.round(
+        regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length,
+      ),
+    },
+  };
+}
+
+/* ═══════════════════ BI executive dashboard simulation ═══════════════════
+   «لوحات تحليلية بنمط Power BI» — reference fuel for /bi: 90 deterministic
+   days per department (dateSeeded — same date ⇒ same numbers), severity
+   mix, HCIS compliance per region, and a weekday×hour heatmap. Filters
+   run client-side over `days`; every aggregate on the page derives from
+   the same rows (a header can never contradict its chart). */
+export type BiDayRow = {
+  date: string;
+  department: string;
+  incidents: number;
+  work_orders: number;
+  permits: number;
+  sla_met: number;
+  sla_total: number;
+};
+export type BiDashboardData = {
+  source: "database" | "reference";
+  simulation: boolean;
+  departments: string[];
+  days: BiDayRow[];
+  severity_mix: Array<{ severity: "critical" | "high" | "medium" | "low"; count: number }>;
+  compliance: Array<{ region_id: string; label_ar: string; pct: number }>;
+  /** 7 weekdays (Sun..Sat) × 24 hours, intensity 0..1. */
+  heatmap: number[][];
+};
+
+export const BI_DEPARTMENTS = [
+  "غرفة التحكم",
+  "أمن البوابات",
+  "الصيانة",
+  "السلامة",
+  "العمليات",
+] as const;
+
+export function buildBiDashboardSimulation(now: number): BiDashboardData {
+  const days: BiDayRow[] = [];
+  for (let i = 89; i >= 0; i--) {
+    const dateKey = new Date(now - i * 86400000).toISOString().slice(0, 10);
+    const rnd = dateSeeded(dateKey);
+    for (const department of BI_DEPARTMENTS) {
+      const load = 0.5 + rnd();
+      const incidents = Math.floor(rnd() * 4 * load);
+      const work_orders = 1 + Math.floor(rnd() * 5 * load);
+      const permits = Math.floor(rnd() * 4 * load);
+      const sla_total = incidents + work_orders;
+      const sla_met = Math.max(0, sla_total - (rnd() < 0.18 ? 1 : 0));
+      days.push({ date: dateKey, department, incidents, work_orders, permits, sla_met, sla_total });
+    }
+  }
+  const totalInc = days.reduce((s, r) => s + r.incidents, 0);
+  const critical = Math.round(totalInc * 0.06);
+  const high = Math.round(totalInc * 0.2);
+  const medium = Math.round(totalInc * 0.42);
+  const severity_mix = [
+    { severity: "critical" as const, count: critical },
+    { severity: "high" as const, count: high },
+    { severity: "medium" as const, count: medium },
+    { severity: "low" as const, count: Math.max(0, totalInc - critical - high - medium) },
+  ];
+  const compliance = [
+    { region_id: "central", label_ar: "الوسطى", pct: 93 },
+    { region_id: "western", label_ar: "الغربية", pct: 97 },
+    { region_id: "eastern", label_ar: "الشرقية", pct: 88 },
+    { region_id: "southern", label_ar: "الجنوبية", pct: 95 },
+  ];
+  // Shift-change peaks (06–08, 14–16, 22–23), Friday quietest — plus a
+  // small deterministic jitter so the grid reads organic, never noisy.
+  const heatmap: number[][] = Array.from({ length: 7 }, (_, wd) =>
+    Array.from({ length: 24 }, (_, h) => {
+      const shift =
+        h >= 6 && h <= 8
+          ? 0.9
+          : h >= 14 && h <= 16
+            ? 0.75
+            : h >= 22
+              ? 0.6
+              : h >= 9 && h <= 13
+                ? 0.45
+                : 0.18;
+      const week = wd === 5 ? 0.5 : wd === 4 ? 0.7 : 1;
+      const jitter = ((Math.imul(wd * 31 + h * 7, 2654435761) >>> 16) % 100) / 500;
+      return Math.min(1, shift * week + jitter);
+    }),
+  );
+  return {
+    source: "reference",
+    simulation: true,
+    departments: [...BI_DEPARTMENTS],
+    days,
+    severity_mix,
+    compliance,
+    heatmap,
+  };
+}
+
+/* ═══════════════════ Evolution organization (/intelligence) ═══════════════════ */
+
+export type EvolutionState = {
+  source: "database" | "reference";
+  simulation: boolean;
+  agents: Array<{
+    id: string;
+    name_ar: string;
+    name_en: string;
+    role: string;
+    focus_area: string;
+    status: string;
+  }>;
+  proposals: Array<{
+    id: string;
+    agent_id: string | null;
+    title_ar: string;
+    title_en: string;
+    description_ar: string | null;
+    priority: "critical" | "high" | "medium";
+    status: "proposed" | "prepared" | "approved" | "rejected" | "applied";
+    created_at: string;
+    decided_at: string | null;
+  }>;
+  logs: Array<{
+    id: string;
+    proposal_id: string | null;
+    summary_ar: string;
+    applied_at: string;
+  }>;
+};
+
+/** Mirror of the 20260721120000 seed — the visitor sees the same living
+ *  organization whether the database answers or not («بيانات لا تفرغ»). */
+export function buildEvolutionSimulation(now: number): EvolutionState {
+  const iso = (agoH: number) => new Date(now - agoH * 3_600_000).toISOString();
+  const agents = (
+    [
+      ["آريا التنفيذية", "ARIA Executive", "التنسيق العام", "توليد موجز القيادة الصباحي", "active"],
+      [
+        "وكيل الامتثال HCIS",
+        "HCIS Compliance Agent",
+        "الامتثال",
+        "تدقيق SEC-18 لمحطات التحويل",
+        "processing",
+      ],
+      ["وكيل الصيانة", "Maintenance Agent", "الصيانة", "جدولة أوامر العمل الوقائية", "active"],
+      ["وكيل التقارير", "Reporting Agent", "التقارير", "إعداد تقرير العمليات اليومي", "processing"],
+      ["وكيل الرصد", "Monitoring Agent", "المراقبة", "تتبع 142 كاميرا عبر الإدارات", "active"],
+      ["وكيل التصاريح", "PTW Agent", "PTW", "مطابقة تصاريح العمل السارية", "active"],
+      ["وكيل المخاطر", "Risk Agent", "التنبؤ", "تحليل نمط إنذارات المحيط", "processing"],
+      [
+        "وكيل التطور الذاتي",
+        "Self-Evolution Agent",
+        "التطوير",
+        "اقتراح تحسينات المنصة وقياس أثرها",
+        "active",
+      ],
+      [
+        "وكيل جودة البيانات",
+        "Data Quality Agent",
+        "الجودة",
+        "سلامة السجلات التشغيلية واكتمالها",
+        "standby",
+      ],
+    ] as const
+  ).map(([name_ar, name_en, role, focus_area, status], i) => ({
+    id: `sim-evo-agent-${i + 1}`,
+    name_ar,
+    name_en,
+    role,
+    focus_area,
+    status,
+  }));
+  const agentIdByName = new Map<string, string>(agents.map((a) => [a.name_ar, a.id]));
+
+  const P = (
+    name: string,
+    title_ar: string,
+    title_en: string,
+    desc: string,
+    priority: "critical" | "high" | "medium",
+    status: EvolutionState["proposals"][number]["status"],
+    createdAgoD: number,
+    decidedAgoD: number | null,
+    i: number,
+  ) => ({
+    id: `sim-evo-p-${i}`,
+    agent_id: agentIdByName.get(name) ?? null,
+    title_ar,
+    title_en,
+    description_ar: `${desc} — صف محاكاة مرجعية is_simulation=true`,
+    priority,
+    status,
+    created_at: iso(createdAgoD * 24),
+    decided_at: decidedAgoD === null ? null : iso(decidedAgoD * 24),
+  });
+  const proposals = [
+    P(
+      "وكيل الرصد",
+      "إضافة تنبيه استباقي عند اقتراب SLA للبلاغات الحرجة",
+      "Proactive alert before critical SLA breach",
+      "تنبيه غرفة العمليات قبل ثلاثين دقيقة من تجاوز SLA بدل الرصد اللاحق",
+      "high",
+      "proposed",
+      2,
+      null,
+      1,
+    ),
+    P(
+      "وكيل التقارير",
+      "تقصير زمن استجابة تقرير العمليات بتجميع الاستعلامات",
+      "Batch queries to speed up the operations report",
+      "دمج ثمانية استعلامات متفرقة في استعلامين مجمعين لخفض زمن التوليد",
+      "medium",
+      "proposed",
+      3,
+      null,
+      2,
+    ),
+    P(
+      "آريا التنفيذية",
+      "تحسين صياغة رد آريا عن متطلبات SEC-13",
+      "Refine ARIA answers on SEC-13 requirements",
+      "إثراء سياق الإجابة بمراجع البنود التنظيمية ونطاق التطبيق",
+      "medium",
+      "proposed",
+      5,
+      null,
+      3,
+    ),
+    P(
+      "وكيل الرصد",
+      "توسيع تغطية كاميرات البوابة الجنوبية",
+      "Extend CCTV coverage at the south gate",
+      "إضافة زاويتي رصد لتغطية النقطة العمياء المرصودة في تحليل المحاولات المرفوضة",
+      "high",
+      "proposed",
+      6,
+      null,
+      4,
+    ),
+    P(
+      "وكيل جودة البيانات",
+      "تصنيف تلقائي لبلاغات الجولات الليلية",
+      "Auto-classify night patrol reports",
+      "تصنيف بلاغات الجولات فور ورودها لتقليل زمن الفرز اليدوي",
+      "medium",
+      "proposed",
+      8,
+      null,
+      5,
+    ),
+    P(
+      "وكيل التصاريح",
+      "أتمتة أرشفة التصاريح المنتهية أسبوعيًا",
+      "Automate weekly archival of expired permits",
+      "أرشفة أسبوعية مجدولة للتصاريح المنتهية مع خلاصة إحصائية",
+      "medium",
+      "approved",
+      9,
+      2,
+      6,
+    ),
+    P(
+      "وكيل التقارير",
+      "توحيد قوالب موجز القيادة الصباحي",
+      "Unify the morning leadership brief templates",
+      "قالب واحد معتمد للموجز الصباحي يقلص زمن الإعداد والتدقيق",
+      "medium",
+      "approved",
+      12,
+      5,
+      7,
+    ),
+    P(
+      "وكيل الامتثال HCIS",
+      "فهرسة أدلة HCIS لتسريع بحث آريا",
+      "Index HCIS manuals for faster ARIA retrieval",
+      "فهرسة دلالية للأدلة التنظيمية ترفع دقة الاسترجاع وسرعته",
+      "high",
+      "approved",
+      14,
+      8,
+      8,
+    ),
+    P(
+      "وكيل المخاطر",
+      "معايرة عتبات إنذار المحيط الغربي للحد من الإنذارات الكاذبة",
+      "Recalibrate west perimeter alert thresholds",
+      "ضبط العتبات وفق نمط الرياح الموسمية لخفض الإنذارات الكاذبة",
+      "critical",
+      "approved",
+      10,
+      3,
+      9,
+    ),
+    P(
+      "وكيل التطور الذاتي",
+      "استبدال محرك التقارير بمكتبة خارجية جديدة",
+      "Replace the reporting engine with a new library",
+      "دراسة استبدال محرك التوليد الحالي بمكتبة خارجية. رُفض: الأثر لا يبرر تكلفة التنفيذ في الربع الحالي",
+      "medium",
+      "rejected",
+      16,
+      9,
+      10,
+    ),
+    P(
+      "آريا التنفيذية",
+      "تشغيل دوريات آلية إضافية في القطاع الشمالي",
+      "Add automated patrols in the north sector",
+      "توسعة الدوريات الآلية شمالًا. رُفض: يتطلب اعتمادًا ميدانيًا مسبقًا من إدارة العمليات قبل أي توسعة",
+      "high",
+      "rejected",
+      18,
+      11,
+      11,
+    ),
+    P(
+      "وكيل الرصد",
+      "إرسال تنبيهات البلاغات عبر قناة مراسلة خارجية",
+      "Send incident alerts over an external channel",
+      "بث التنبيهات عبر قناة مراسلة عامة خارج المنصة. رُفض: يتعارض مع سياسة عزل البيانات التشغيلية",
+      "medium",
+      "rejected",
+      20,
+      13,
+      12,
+    ),
+  ];
+  const proposalIdByTitle = new Map(proposals.map((p) => [p.title_ar, p.id]));
+
+  const L = (title: string | null, summary_ar: string, agoD: number, i: number) => ({
+    id: `sim-evo-l-${i}`,
+    proposal_id: title ? (proposalIdByTitle.get(title) ?? null) : null,
+    summary_ar,
+    applied_at: iso(agoD * 24),
+  });
+  const logs = [
+    L(
+      "أتمتة أرشفة التصاريح المنتهية أسبوعيًا",
+      "تفعيل الأرشفة الأسبوعية للتصاريح المنتهية — خفض السجلات المفتوحة 32%",
+      1,
+      1,
+    ),
+    L(
+      "معايرة عتبات إنذار المحيط الغربي للحد من الإنذارات الكاذبة",
+      "معايرة عتبات إنذار المحيط الغربي — خفض الإنذارات الكاذبة 41%",
+      2,
+      2,
+    ),
+    L(
+      "توحيد قوالب موجز القيادة الصباحي",
+      "توحيد قوالب الموجز الصباحي — خفض زمن الإعداد من 12 إلى 4 دقائق",
+      4,
+      3,
+    ),
+    L(
+      "فهرسة أدلة HCIS لتسريع بحث آريا",
+      "فهرسة أدلة HCIS — رفع دقة استرجاع آريا للمواد التنظيمية إلى 96%",
+      7,
+      4,
+    ),
+    L(null, "تجميع استعلامات لوحة الامتثال — خفض زمن تحميل الامتثال 40%", 12, 5),
+    L(null, "تحسين تصنيف البلاغات الواردة — رفع دقة التصنيف إلى 96%", 17, 6),
+    L(null, "ضغط مرفقات تقارير الجولات — خفض حجم الأرشيف الشهري 28%", 22, 7),
+    L(null, "إشعارات فورية لبوابة الاعتماد البشري — تقليص زمن الاعتماد 35%", 27, 8),
+  ];
+
+  return { source: "reference", simulation: true, agents, proposals, logs };
 }
